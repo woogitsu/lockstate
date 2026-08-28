@@ -298,6 +298,14 @@ describe('an incident is triggered, responded to and closed, in a session starte
      * that matters: filling an empty block with something to do does not
      * relieve the neglect that ADR 0048 made a riot out of. The riot still
      * fires at the same `RIOT_TICK`.
+     *
+     * **0.3898 since [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)**,
+     * and the 0.0011 it moves is the housed prisoner spending part of this
+     * window walking rather than standing, which moves when each need is
+     * topped up by a few ticks; at the shipped walking speed the sample lands
+     * back within a thousandth of where it was. The riot still fires at the same `RIOT_TICK`
+     * with the same participants, which is what the bound around this number
+     * is for.
      */
     expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'needs-pressure')?.value).toBeCloseTo(0.3898, 4);
     expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'contraband-pressure')?.value).toBe(0);

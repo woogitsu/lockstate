@@ -701,7 +701,7 @@ cells is exercised nowhere, because no shipped session yet furnishes two.
 
 ---
 
-## 2. Four entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, the Worker that lands with telemetry ingest, and ADR 0056's price for keeping a player's orders in order
+## 2. Five entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, the Worker that lands with telemetry ingest, ADR 0056's price for keeping a player's orders in order, and ADR 0059's price for making them walk
 
 **This heading has now read "empty", "exactly one entry: ADR 0029", "empty
 again", one entry, two, one, empty for the third time, one again, and — on
@@ -993,6 +993,57 @@ four numbers describe a front door that has changed.
 
 replacing `**Proposed, 2026-08-28.** Not self-approved.`, with the matching
 `Proposed, 2026-08-28 — …` prefix in that ADR's
+[`README.md`](./README.md) row changed to `Accepted, <date> — …`, **and this
+entry deleted in the same commit**, which is this section's standing recipe.
+
+### ADR 0059 (2026-08-28) — the walk is decided, the day it eats is not
+
+**What is waiting.**
+[ADR 0059](./0059-how-an-actor-gets-from-one-tile-to-the-next.md), `Proposed`,
+landed with its implementation on `agent/414-delta-channel`. It answers
+[ADR 0040](./0040-the-shape-of-the-render-delta-channel.md) open question 1: an
+actor that has a resolved route walks it, one tile per two kernel ticks, with
+sub-tile progress in a transient store no save carries.
+
+**The evidence, and it is measured rather than argued.** The render delta
+channel has been live at a 100 ms ceiling since ADR 0040 slice 1, and actors
+still teleported, because `ActionSystem.continueTravelling` wrote the
+destination anchor in the statement that resolved the route — a position that
+changed twice per errand. Mutating that line back reproduces the defect exactly:
+30 tiles in one tick against the 1 the guard now requires.
+
+**What approving commits the project to**, and each of these is a cost rather
+than a benefit:
+
+1. **A walking speed of ten tiles a second, chosen against a 2,400-tick day.**
+   It is bounded below by starvation, measured twice as the speed was raised:
+   one prison starved its prisoner at 2.5 tiles/s, and a second, larger one
+   starved at 5, because a journey outlasted the 100-tick regime block that had
+   sent them on it. It is bounded above by looking like sliding — 640 px/s at
+   1× zoom is hurried. **The day length is the parameter that forced both
+   raises**, and ADR 0059 open question 1 hands that back.
+2. **A prisoner spends 18–28% of the day in transit** where they spent 3.5%.
+   Twenty-five integration assertions were re-measured for it.
+3. **[ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)'s
+   exact-equality result does not survive it.** Six prisoners no longer bottom
+   out at identical hunger, because six cells at six distances give six
+   different days; the spread is bounded at three levels and no longer tracks
+   scan position, which is what #434 was about, and the assertion says so
+   rather than being deleted.
+4. **A refusal at a room's door reconsiders on the spot**, which mitigates
+   [ADR 0029](./0029-concurrent-room-use-claims.md)'s wasted trip without taking
+   the reservation-with-expiry that ADR's own revisit condition prescribes. Two
+   mechanisms for one race is how the next defect gets written, so if open
+   question 2 is ever answered, that line goes.
+5. **A save taken mid-journey restores the prisoner idle on the tile they had
+   reached.** That rule is not new; how often it is reached is, and one riot
+   fixture's live and restored arms now spend a 400-tick window 24 ticks apart
+   in what they get through while doing the same things.
+
+**The exact line that would replace the status.** In
+[`0059-how-an-actor-gets-from-one-tile-to-the-next.md`](./0059-how-an-actor-gets-from-one-tile-to-the-next.md),
+`**Proposed, 2026-08-28.**` becomes `**Accepted, <date> — <by whom, and what
+was read>.**`, with the matching `Proposed, 2026-08-28 — …` prefix in that ADR's
 [`README.md`](./README.md) row changed to `Accepted, <date> — …`, **and this
 entry deleted in the same commit**, which is this section's standing recipe.
 

@@ -1,3 +1,4 @@
+import { createWalkReading, type WalkReading } from '../locomotion';
 import {
   packRenderActorFields,
   RENDER_ACTOR_POPULATION_PRISONER,
@@ -56,6 +57,18 @@ export interface RenderActorSource {
     readonly tileX: Int32Array;
     readonly tileY: Int32Array;
   };
+  /**
+   * Where a walking actor is *between* the tiles `position` holds, and how
+   * fast ([ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)).
+   *
+   * Read rather than differenced: this is the only reason the payload can
+   * carry a velocity at all without the renderer inventing one, which is the
+   * refusal `actors-from-snapshot.ts` states and `actors-from-delta.ts`
+   * keeps.
+   */
+  readonly locomotion: {
+    read(key: number, tileX: number, tileY: number, out: WalkReading): WalkReading;
+  };
 }
 
 /**
@@ -67,8 +80,11 @@ export interface RenderActorSource {
  * depends on the order -- `ActorLayer` keys sprites by id -- but a projection
  * with an arbitrary order is a needless place for two clients to differ.
  */
-export function encodeRenderActorsKeyframe(source: RenderActorSource): ArrayBuffer {
-  const { entityStore, position } = source;
+export function encodeRenderActorsKeyframe(source: RenderActorSource, ticksPerWallSecond: number): ArrayBuffer {
+  if (!Number.isFinite(ticksPerWallSecond) || ticksPerWallSecond <= 0) {
+    throw new RangeError(`A render-actors keyframe needs a positive tick rate to express velocity in, got ${String(ticksPerWallSecond)}.`);
+  }
+  const { entityStore, position, locomotion } = source;
   // The same agreement `actorsFromSnapshot` takes between its two sections,
   // taken here between the ledger and the component arrays: a component array
   // shorter than the store's high-water mark would otherwise be read past its
@@ -81,10 +97,26 @@ export function encodeRenderActorsKeyframe(source: RenderActorSource): ArrayBuff
   }
 
   const writer = new RenderActorsKeyframeWriter(liveCount);
-  const packedFields = packRenderActorFields(RENDER_ACTOR_POPULATION_PRISONER);
+  // One reading, refilled per actor: the whole cost argument for this encoder
+  // is that it allocates nothing per actor, and `WalkReading` is documented as
+  // filled in place for that reason.
+  const reading = createWalkReading();
   for (let index = 0; index <= lastIndex; index += 1) {
     if (!entityStore.isIndexAlive(index)) continue;
-    writer.writeRecord(entityStore.getIdByIndex(index), packedFields, position.tileX[index]!, position.tileY[index]!);
+    locomotion.read(index, position.tileX[index]!, position.tileY[index]!, reading);
+    writer.writeRecord(
+      entityStore.getIdByIndex(index),
+      packRenderActorFields(RENDER_ACTOR_POPULATION_PRISONER, reading.headingX, reading.headingY),
+      reading.subX,
+      reading.subY,
+      // Sub-tile units a *tick* become sub-tile units a wall-clock second
+      // here, where the clock's speed multiplier is known. Rounded rather than
+      // truncated so a slow walk at x1 is not published as standing still;
+      // `LOCOMOTION_SUBTILE_UNITS` is a power of two and the speeds are whole
+      // numbers, so at the shipped values it is exact anyway.
+      Math.round(reading.velocitySubX * ticksPerWallSecond),
+      Math.round(reading.velocitySubY * ticksPerWallSecond),
+    );
   }
   return writer.finish();
 }

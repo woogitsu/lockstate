@@ -23,7 +23,9 @@ import {
   type MessagePortLike,
 } from '../../src/simulation/worker/state-machine';
 import { buildDeterminismScenario, SCENARIO_SEED } from '../helpers/determinism-scenario';
-import { readRenderActorsPayload } from '../helpers/render-actors-reader';
+import { createWalkReading, LOCOMOTION_SUBTILE_UNITS } from '../../src/simulation/locomotion';
+import { packRenderActorFields, RENDER_ACTOR_POPULATION_PRISONER } from '../../src/simulation/protocol/render-actors-payload';
+import { readRenderActorsPayload, type ReadRenderActorRecord } from '../helpers/render-actors-reader';
 
 /**
  * The worker's half of ADR 0040 slice 1: when a `simulation/delta` goes out,
@@ -111,20 +113,35 @@ class Harness {
 }
 
 /** The live prisoners of the scenario the worker below is restored from. */
-function scenarioActors(runtime: SimulationRuntime): readonly { entityId: number; packedFields: number; tileX: number; tileY: number }[] {
-  const { entityStore, position } = runtime.prisoners;
-  const actors: { entityId: number; packedFields: number; tileX: number; tileY: number }[] = [];
+/**
+ * What the scenario's own store says its actors are, in the payload's units.
+ *
+ * The sub-tile position and the velocity come from `LocomotionStore` since ADR
+ * 0059, so this reads it too -- against the store rather than against a list
+ * written here, which is the property that makes the comparison below worth
+ * making.
+ */
+function scenarioActors(runtime: SimulationRuntime): readonly ReadRenderActorRecord[] {
+  const { entityStore, position, locomotion } = runtime.prisoners;
+  const actors: ReadRenderActorRecord[] = [];
+  const reading = createWalkReading();
   for (let index = 0; index <= entityStore.maxActiveIndex; index += 1) {
     if (!entityStore.isIndexAlive(index)) continue;
+    locomotion.read(index, position.tileX[index]!, position.tileY[index]!, reading);
     actors.push({
       entityId: entityStore.getIdByIndex(index),
-      packedFields: 0,
-      tileX: position.tileX[index]!,
-      tileY: position.tileY[index]!,
+      packedFields: packRenderActorFields(RENDER_ACTOR_POPULATION_PRISONER, reading.headingX, reading.headingY),
+      subX: reading.subX,
+      subY: reading.subY,
+      velocitySubX: reading.velocitySubX * TICKS_PER_WALL_SECOND,
+      velocitySubY: reading.velocitySubY * TICKS_PER_WALL_SECOND,
     });
   }
   return actors;
 }
+
+/** The kernel's 50 ms step at speed 1, which is what the harness runs at. */
+const TICKS_PER_WALL_SECOND = 20;
 
 describe('the worker publishes a render delta', () => {
   beforeEach(() => {
@@ -154,7 +171,8 @@ describe('the worker publishes a render delta', () => {
     // sets or by the same wrong tile read twice. `buildDeterminismScenario`
     // admits four prisoners, at these origins.
     expect(read.recordCount).toBe(4);
-    expect(read.records.map((record) => [record.tileX, record.tileY])).toEqual([
+    // In sub-tile units, which is what layout 2 carries.
+    expect(read.records.map((record) => [record.subX / LOCOMOTION_SUBTILE_UNITS, record.subY / LOCOMOTION_SUBTILE_UNITS])).toEqual([
       [1, 1],
       [2, 1],
       [3, 1],
@@ -178,7 +196,11 @@ describe('the worker publishes a render delta', () => {
     expect(Object.hasOwn(delta!, 'replyTo')).toBe(false);
     expect(delta!.payload.delta.transport).toBe('array-buffer');
     expect(delta!.payload.delta.schemaId).toBe('lockstate.render-actors');
-    expect(delta!.payload.delta.schemaVersion).toBe(1);
+    // 2 since ADR 0059 added a sub-tile position, a velocity and a heading to
+    // the record; the envelope, the transport and the content type are
+    // untouched by that, which is the point of versioning the read model
+    // inside the payload (ADR 0003 decision 5).
+    expect(delta!.payload.delta.schemaVersion).toBe(2);
     if (delta!.payload.delta.transport !== 'array-buffer') throw new Error('unreachable');
     expect(delta!.payload.delta.contentType).toBe('application/x-lockstate-render-actors');
     expect(delta!.payload.delta.byteLength).toBe(delta!.payload.delta.data.byteLength);

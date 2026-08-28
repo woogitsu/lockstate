@@ -173,7 +173,7 @@ describe('every row the panel can draw is a row a real prison produces', () => {
      * performing-only entry is `action-phase.idle`, which is not a place a
      * prisoner walks to.
      *
-     * **Eleven, and it was nine before
+     * **Nine since ADR 0059; eleven before it, and nine before
      * [ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md).**
      * The two new rows are `action.free-association`, which this prison now
      * reaches during the two `work`/`education` blocks -- 1,000 ticks a day
@@ -183,14 +183,30 @@ describe('every row the panel can draw is a row a real prison produces', () => {
      * whose cell is not the tile they are standing on walks back to it, which
      * is a real journey the panel draws.
      */
+    /*
+     * **Nine since [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md),
+     * eleven before it, and the two that left are the two that could.** They
+     * were `action.free-association.name|true` and `action.sleep.name|true`.
+     * Both actions target the prisoner's **own cell**, and both blocks that
+     * allow them follow a block the prisoner has already walked home for -- so
+     * once walking took time and the prisoner stopped being written onto room
+     * anchors from wherever they stood, they are already standing on the cell
+     * anchor when either block opens and the journey never happens. Checked
+     * over three in-game days rather than one before this list was shortened:
+     * the two rows never appear.
+     *
+     * The panel's ability to draw a journey is untouched and is still pinned by
+     * the three `|true` rows that remain, one of which -- `eat-in-cell` -- is
+     * an own-accommodation action too, which is what says the disappearance is
+     * about *where the prisoner already is* rather than about own-accommodation
+     * actions never being walked to.
+     */
     expect([...seen].sort()).toEqual([
       'action-phase.idle.name|false',
       'action.eat-in-cell.name|false',
       'action.eat-in-cell.name|true',
       'action.free-association.name|false',
-      'action.free-association.name|true',
       'action.sleep.name|false',
-      'action.sleep.name|true',
       'action.use-toilet.name|false',
       'action.use-toilet.name|true',
       'action.yard-recreation.name|false',

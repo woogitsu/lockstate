@@ -3,6 +3,7 @@ import { Kernel } from '../../src/simulation/kernel/kernel';
 import { ComponentBitset } from '../../src/simulation/entity/component';
 import { EntityStore } from '../../src/simulation/entity/entity-store';
 import { EntityQuery } from '../../src/simulation/entity/query';
+import { LocomotionStore, LocomotionSystem } from '../../src/simulation/locomotion';
 import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { NamedRngStreams } from '../../src/simulation/rng/streams';
@@ -19,6 +20,27 @@ const RNG_STREAM = 'prisoners.classification';
 
 function makeKernel(initialTick = 0) {
   return new Kernel(initialTick, 0, new NamedRngStreams([{ name: RNG_STREAM, state: deriveXoshiroState(1, RNG_STREAM) }]));
+}
+
+/**
+ * The walk store and the system that advances it, wired the way
+ * `PrisonerOperationsRuntime` wires them (ADR 0059).
+ *
+ * A hand-wired `ActionSystem` needs both: since the arrival moved behind a
+ * walk, an `ActionSystem` registered without something stepping the walk
+ * starts journeys that never finish.
+ */
+function registerLocomotion(kernel: Kernel, position: PositionComponent): LocomotionStore {
+  const locomotion = new LocomotionStore();
+  kernel.registerSystem(
+    new LocomotionSystem('prisoners.locomotion', (ticks) =>
+      locomotion.advance(ticks, (index, tile) => {
+        position.tileX[index] = tile.x;
+        position.tileY[index] = tile.y;
+      }),
+    ),
+  );
+  return locomotion;
 }
 
 describe('ActionSystem: end-to-end selection, travel and performance', () => {
@@ -66,11 +88,12 @@ describe('ActionSystem: end-to-end selection, travel and performance', () => {
     cellBlock.doors.setState(cellBlock.canteenEntranceDoorId, 'locked');
     roomInstances.register({ instanceId: 'canteen-0', roomCatalogId: 'room.canteen', anchorTile: cellBlock.canteenTiles[0]!, residentCapacity: 10, concurrentUseCapacity: 10, objectCapabilities: ['dining'] });
 
-    const actionSystem = new ActionSystem(store, query, records, needs, currentAction, position, coldState, roomInstances, navigation, DEFAULT_REGIME_SCHEDULES, () => ({
+    const kernel = makeKernel();
+    const locomotion = registerLocomotion(kernel, position);
+    const actionSystem = new ActionSystem(store, query, records, needs, currentAction, position, coldState, roomInstances, navigation, locomotion, DEFAULT_REGIME_SCHEDULES, () => ({
       role: 'prisoner', securityClearance: 0, permissions: [],
     }));
 
-    const kernel = makeKernel();
     kernel.registerSystem(navigation);
     kernel.registerSystem(actionSystem);
 
@@ -144,8 +167,9 @@ describe('a prisoner whose best action cannot resolve a target falls back within
       });
     }
 
-    const actionSystem = new ActionSystem(store, query, records, needs, currentAction, position, coldState, roomInstances, navigation, DEFAULT_REGIME_SCHEDULES);
     const kernel = new Kernel(MEAL_BLOCK_START_TICK, 0, new NamedRngStreams([{ name: RNG_STREAM, state: deriveXoshiroState(1, RNG_STREAM) }]));
+    const locomotion = registerLocomotion(kernel, position);
+    const actionSystem = new ActionSystem(store, query, records, needs, currentAction, position, coldState, roomInstances, navigation, locomotion, DEFAULT_REGIME_SCHEDULES);
     kernel.registerSystem(navigation);
     kernel.registerSystem(actionSystem);
 

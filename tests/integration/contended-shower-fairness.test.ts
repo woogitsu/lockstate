@@ -262,7 +262,20 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
      * -- a re-baseline that quietly returned either of them to zero would fail
      * the second one.
      */
-    expect(run.showerTicksByDay[23]).toEqual([0, 0, 0, 0, 0, 40, 0, 40, 0, 40, 0, 40, 0, 40, 0, 40, 0]);
+    /*
+     * **Re-measured for [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md),
+     * which moved every figure in this file without touching what it claims.**
+     * This array read `[0, 0, 0, 0, 0, 40, 0, 40, 0, 40, 0, 40, 0, 40, 0, 40,
+     * 0]` when the scan ordering landed. A prisoner now walks to the shower
+     * room instead of appearing in it, so a wash costs part of the block it is
+     * taken in -- 36 ticks rather than the action's full 40 -- and which days a
+     * given prisoner wins moves with the staggering. Day 13's 72 is two washes
+     * in one day, which the alternation assertion below is happy with and the
+     * old literal never showed. **Both of the assertions under it are
+     * unchanged and are what this literal is for**: a re-baseline that quietly
+     * returned prisoner 22 or 23 to zero fails them.
+     */
+    expect(run.showerTicksByDay[23]).toEqual([0, 0, 0, 0, 0, 36, 36, 0, 36, 36, 36, 36, 0, 72, 0, 36, 0]);
     expect(run.showerTicks[23], 'the last prisoner scanned took no shower at all before #434').toBeGreaterThan(0);
     expect(run.showerTicks[22], 'and neither did the one before them').toBeGreaterThan(0);
 
@@ -287,8 +300,12 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
      * 40,000. Every one of them now stays well above a third of `NEED_MAX` at
      * their worst.
      */
-    expect(Math.min(...run.lowestHygiene)).toBe(96.8);
-    expect(Math.min(...run.finalHygiene)).toBe(166.4);
+    // 90.4 and 125.2 since ADR 0059, against 96.8 and 166.4 before it: a
+    // prisoner spends part of the day walking, so a two-head room washes 24
+    // people slightly less thoroughly. **Still nowhere near the floor**, which
+    // is the claim, and the per-prisoner loop below is where it is asserted.
+    expect(Math.min(...run.lowestHygiene)).toBe(90.4);
+    expect(Math.min(...run.finalHygiene)).toBe(125.2);
     for (const [n, hygiene] of run.lowestHygiene.entries()) {
       expect(hygiene, `prisoner ${n} was left to reach the hygiene floor`).toBeGreaterThan(0);
     }
@@ -309,9 +326,14 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
     // With the ceiling above what the population ever asks for, the spread that
     // the two-head run is about is gone: every prisoner washes as often as the
     // regime lets them and nobody is refused.
-    expect(Math.min(...control.showerTicks), 'the least-washed prisoner here beats the best-washed one in the two-head run').toBe(760);
-    expect(Math.max(...control.showerTicks)).toBe(1_000);
-    expect(Math.min(...control.lowestHygiene)).toBe(203.6);
+    // 612 / 828 / 185 since ADR 0059, against 760 / 1,000 / 203.6 before it.
+    // Every prisoner spends part of the day walking to the room, so the totals
+    // fall in both arms; what this test is for is the line below, and 612
+    // against the two-head run's best of 468 is the same margin the
+    // re-baseline preserved.
+    expect(Math.min(...control.showerTicks), 'the least-washed prisoner here beats the best-washed one in the two-head run').toBe(612);
+    expect(Math.max(...control.showerTicks)).toBe(828);
+    expect(Math.min(...control.lowestHygiene)).toBe(185);
     expect(Math.min(...control.showerTicks)).toBeGreaterThan(Math.max(...watchedTwoHead.showerTicks));
   });
 

@@ -26,6 +26,19 @@ export interface RenderActor {
   readonly facing?: AtlasDirection;
 }
 
+/**
+ * A `RenderActor` its owner may refill in place.
+ *
+ * `SimulationSnapshotFeed` advances each actor's drawn position from the
+ * position it was published at on every frame
+ * ([ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md),
+ * `actor-extrapolation.ts`), and allocating a fresh object per actor per frame
+ * would be garbage proportional to the population. The mutability is the
+ * feed's alone: `RenderFrame.actors` hands them out as `readonly RenderActor`,
+ * and every consumer reads them within the frame it asked for.
+ */
+export type MutableRenderActor = { -readonly [K in keyof RenderActor]: RenderActor[K] };
+
 export interface RenderFrame {
   /**
    * Increments whenever `world` or `structures` change. The tile painter
