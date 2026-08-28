@@ -6,6 +6,7 @@ import { element, eyebrowText, valueText } from '../primitives/dom';
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createNumberField, type NumberField } from '../primitives/number-field';
 import { createPanel } from '../primitives/panel';
+import { rovingFocusMove, rovingTabStop } from '../primitives/roving-focus';
 import { HUD_MESSAGE_KEY } from './messages';
 import type {
   HudLocalizer,
@@ -348,12 +349,79 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
 
   // ---- what kind of room -------------------------------------------
   const catalogueList = element('div', { className: 'hud-rooms__list' });
+  /*
+   * The eighteen rows, in a box of their own inside the scroller.
+   *
+   * ADR 0039 put the coordinate form inside `.hud-rooms__list` because that
+   * scroller is the one box in this panel with any slack -- so the list is a
+   * *mixed* container, and `role="radiogroup"` cannot go on it without
+   * swallowing four number fields and a disclosure into the group. This box
+   * holds the radios and nothing else, and the form stays its sibling exactly
+   * where the ADR measured it.
+   *
+   * It costs no height: `hud.css` gives it the same column flow the list
+   * itself has, so the rows stack as they did and the twelve-state measurement
+   * in `app-shell.spec.ts` is what checks that claim rather than this comment.
+   */
+  // Named from the section it heads rather than from a key of its own. That
+  // key reads "Room type and area" and this group is only the room types, so a
+  // narrower name was considered and refused: the section header carrying that
+  // exact text sits immediately before this box in reading order, and a second,
+  // near-identical name is noise a screen-reader player hears every time they
+  // enter the group. `status-strip.ts` labels its groups from a message key the
+  // same way; `choice-group.ts` uses `aria-labelledby` because it renders a
+  // legend of its own, and this box does not.
+  const catalogueRows = element('div', {
+    className: 'hud-rooms__rows',
+    attributes: { role: 'radiogroup', 'aria-label': t(HUD_MESSAGE_KEY.roomsCatalogue) },
+  });
+  catalogueList.append(catalogueRows);
   const rows = new Map<string, ListRow>();
 
+  /*
+   * The catalogue is one choice, so it is one tab stop (#411).
+   *
+   * The typed route this panel carries was reachable from the day ADR 0039
+   * landed, and measured: `app-shell.spec.ts` walks it and bounds every hop.
+   * What it was not was *short*. The catalogue is eighteen rows, each a
+   * `<button>` and therefore each its own tab stop, and the coordinate form is
+   * the last child of the same scroller -- so a player crossed the remainder of
+   * the list to reach it on every room they ever zoned. Measured on the
+   * assembled page: eighteen `Tab` presses to the catalogue and fourteen more
+   * to the disclosure, with `room.cell` -- the one room the whole game is
+   * gated on, no accommodation and no admission -- drawn fifth. Eighteen tab
+   * stops
+   * for one choice is what the WAI-ARIA composite-widget rule exists to
+   * prevent, and the remedy is the roving tab stop in
+   * `src/ui/primitives/roving-focus.ts`: the group costs one `Tab`, and the
+   * arrows move inside it.
+   *
+   * **The role is not decoration here, it is the half that keeps this from
+   * being a regression.** A roving `tabindex` with no announced grouping would
+   * turn "eighteen tedious stops" into "seventeen rows a sighted keyboard-only
+   * player can no longer reach at all", because `Tab` is the only mechanism
+   * they have and nothing would have told them to try an arrow. `radiogroup` /
+   * `radio` is what tells them: a screen reader says "Cell, radio button, 1 of
+   * 18, selected", which names the ring, the position and the selection in one
+   * breath -- and `aria-checked` replaces the "Selected" badge as the *machine*
+   * carrier of which room type is chosen. The badge stays as the visual one.
+   */
+  const rowOrder: string[] = model.rooms.map((room) => room.roomId);
+
   const paintCatalogue = (): void => {
+    const selectedIndex = selectedId === undefined ? undefined : rowOrder.indexOf(selectedId);
+    const tabStop = rovingTabStop(
+      rowOrder.length,
+      selectedIndex === undefined || selectedIndex < 0 ? undefined : selectedIndex,
+    );
     for (const [id, row] of rows) {
       row.setBadge(id === selectedId ? { tone: 'info', text: t(HUD_MESSAGE_KEY.roomsSelected) } : undefined);
       row.element.dataset['selected'] = id === selectedId ? 'true' : 'false';
+      row.element.setAttribute('aria-checked', id === selectedId ? 'true' : 'false');
+      // Exactly one `0` in the group, and it follows the selection so that
+      // tabbing back in lands on the player's own choice rather than at the
+      // top of a list they have already answered.
+      row.element.tabIndex = rowOrder[tabStop ?? -1] === id ? 0 : -1;
     }
   };
 
@@ -379,13 +447,58 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       },
     });
     row.element.dataset['room'] = room.roomId;
+    // `role="radio"` on a real `<button>`: the role carries the single-select
+    // meaning, and the button carries the activation, so `Enter` and `Space`
+    // still choose a room type through exactly the same `onActivate` a pointer
+    // press reaches. No second path -- the same rule #411's second acceptance
+    // criterion puts on the rectangle applies to the choice of room.
+    row.element.setAttribute('role', 'radio');
     rows.set(room.roomId, row);
-    catalogueList.append(row.element);
+    catalogueRows.append(row.element);
   }
+
+  /*
+   * The arrows, which are what the one tab stop above buys back.
+   *
+   * Focus moves; selection does not. A radiogroup conventionally selects as it
+   * moves, and that convention is refused here for a reason this panel can
+   * measure: choosing a room type while the world tool is armed re-arms it
+   * (`options.onArm` below), so selection-follows-focus would re-arm the tool
+   * once per arrow press and a player arrowing from Cell to Utility room would
+   * fire it seventeen times. Explicit activation is also what the pointer does,
+   * so the two producers of a selection stay the same gesture.
+   *
+   * `preventDefault` only for the keys actually consumed -- `rovingFocusMove`
+   * answers `undefined` for everything else, and an arrow that is not ours must
+   * stay the browser's, or the scroll region this list *is* would stop
+   * scrolling.
+   */
+  catalogueRows.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    const focused = event.target;
+    if (!(focused instanceof HTMLElement)) return;
+    const roomId = focused.dataset['room'];
+    if (roomId === undefined) return;
+    const next = rovingFocusMove(event.key, rowOrder.indexOf(roomId), rowOrder.length);
+    if (next === undefined) return;
+    const target = rows.get(rowOrder[next] ?? '');
+    if (target === undefined) return;
+    event.preventDefault();
+    // The moved-to row has to be able to take focus before it is given focus:
+    // every row but the tab stop carries `-1`, and `focus()` on a `-1` element
+    // works, but leaving the group's `0` behind would mean tabbing back in
+    // returns to the row the player arrowed away from.
+    for (const [id, row] of rows) row.element.tabIndex = id === rowOrder[next] ? 0 : -1;
+    target.element.focus();
+  });
 
   // An empty list must say so. A blank rectangle is indistinguishable from a
   // broken one -- the same rule the Build panel's catalogue follows. Reachable
   // only from a host that passes no rooms; the shipped catalogue has 18.
+  //
+  // Beside the radiogroup rather than inside it: this row is a sentence, not a
+  // choice, and a `radiogroup` whose only member is a non-interactive readout
+  // would announce "one of one" for something there is no way to select.
   if (model.rooms.length === 0) {
     catalogueList.append(
       createListRow({ icon: 'check', label: t(HUD_MESSAGE_KEY.roomsCatalogueEmpty) }).element,
