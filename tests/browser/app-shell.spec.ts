@@ -399,6 +399,59 @@ async function openApp(page: Page): Promise<void> {
 }
 
 /**
+ * Waits for the session `New prison` starts to *exist* before anything is
+ * asked of it.
+ *
+ * **A precondition, not patience** -- the distinction issue #470 turns on.
+ * `New prison` returns the instant the click is dispatched;
+ * `SessionController.createPrison` then writes the save row, claims a worker
+ * and awaits the `simulation/ready` reply to `simulation/initialize`, and only
+ * that reply sets `SimulationCommandSender.ready`
+ * (`src/ui/simulation-commands.ts`, the `'simulation/ready'` branch of
+ * `observe`). The transport controls are live throughout that window and are
+ * *meant* to be: `still mounts the interface when the simulation worker cannot
+ * start (#82)` in this file asserts that a transport press with no simulation
+ * refuses rather than doing nothing, and `src/main.ts`'s `set-clock` branch
+ * says why -- "a pause button that reports success and does nothing is a lie
+ * the player has no way to detect".
+ *
+ * So a Play pressed inside that window throws `No simulation session is
+ * running yet, so the clock cannot be changed.`, `createHud`'s `reportError`
+ * marks the button `data-action-failed="true"` and points its
+ * `aria-describedby` at the refusal line -- and **nothing retries the press**,
+ * because a host refusal clears only when the same action later succeeds. The
+ * clock never starts and `aria-pressed` stays `"false"` for the whole budget.
+ * That is exactly the DOM #470 records from CI, and #425 before it, where the
+ * same test spent its 15s poll reporting "the simulation never advanced".
+ *
+ * Measured rather than assumed: the handshake takes ~186ms on an idle
+ * container, and delaying only the worker's `simulation/initialize` reply --
+ * with Playwright running at full speed -- turns the unguarded sequence red at
+ * 250ms and green again at 100ms. A loaded CI runner sits on the wrong side of
+ * that.
+ *
+ * The condition is the worker's own first clock publication. `.hud-clock__day`
+ * reads `--` until a session reports one: `EMPTY_HUD_VIEW_MODEL.clock` is
+ * `UNKNOWN_HUD_CLOCK` with `day: 0` and `dayLengthTicks: 0`, and `displayDay`
+ * returns `undefined` below day one. `aria-pressed` on Pause is **not** usable
+ * for this -- `UNKNOWN_HUD_CLOCK.mode` is already `'paused'`, so it reads
+ * `"true"` at first paint with no session behind it. Every clock publication
+ * follows `simulation/ready` on the same channel, so a day of `1` is proof the
+ * sender is ready.
+ *
+ * The two cases in this file that have never failed this way already wait on
+ * exactly these two values before pressing Play; this is that pattern given a
+ * name and applied to the three that did not.
+ */
+async function waitForSession(page: Page): Promise<void> {
+  await expect(
+    page.locator('.hud-clock__day'),
+    'the prison was never created, so no clock could be set',
+  ).toHaveText('1');
+  await expect(page.locator('.hud-clock__day-progress')).toHaveText('0%');
+}
+
+/**
  * Arms the Build tool for the *world* route, the way a player does.
  *
  * The Build tab, then the map panel's arm toggle -- not the numeric fallback
@@ -5005,6 +5058,8 @@ test.describe('the assembled application', () => {
     // A real prison, and a running clock -- the order is dispatched at a tick,
     // so a paused simulation would leave it queued and refuse nothing.
     await page.getByRole('button', { name: 'New prison' }).click();
+    // The session before the command that needs one -- see `waitForSession` (#470).
+    await waitForSession(page);
     await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
     // The worker's answer, not the click. `aria-pressed` flips only once the
     // `set-clock` command has come back accepted, so a command that was
@@ -5227,6 +5282,8 @@ test.describe('the assembled application', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
+    // The session before the command that needs one -- see `waitForSession` (#470).
+    await waitForSession(page);
     // A running clock: the command is dispatched at a tick, so a paused
     // simulation would leave it queued and refuse nothing.
     await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
@@ -5326,6 +5383,8 @@ test.describe('the assembled application', () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
+    // The session before the command that needs one -- see `waitForSession` (#470).
+    await waitForSession(page);
     await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
     // The worker's answer, not the click. `aria-pressed` flips only once the
     // `set-clock` command has come back accepted, so a command that was
