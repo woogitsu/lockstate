@@ -161,8 +161,8 @@ describe('hiring before there is anybody to guard is a decision the balance now 
   });
 
   it('is paid for out of the same day`s income once the beds are occupied', () => {
-    // The same three guards in a prison that houses eight: the state pays 300
-    // per occupied place per day, so the day settles well ahead and the balance
+    // The same three guards in a prison that houses eight: the state pays per
+    // occupied place per day, so the day settles well ahead and the balance
     // climbs. Payroll runs *after* the income on the same tick, which is what
     // makes this one settlement rather than a dip and a recovery.
     const runtime = beddedPrison(8);
@@ -172,11 +172,26 @@ describe('hiring before there is anybody to guard is a decision the balance now 
     stepTo(runtime, DAY_LENGTH_TICKS * 10);
     expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(8);
     expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0);
-    // 2,400 a day in and 240 a day out, from 24,240 after the build: the
-    // balance climbs by 2,160 every day and reads 45,840 on day 10. The
-    // 2.5%-of-income shape of that is the finding this step reports, not a
-    // defect in it -- see the commit message.
-    expect(runtime.treasury.balanceMinorUnits).toBe(45_840);
+    /*
+     * 42,640 on day 10, from 24,240 after the build.
+     *
+     * **This read 45,840 until the state grant became conditional on the
+     * conditions a prisoner is held in**
+     * ([ADR 0064](../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)),
+     * and the 3,200 between
+     * the two figures is the whole of what this prison is now charged for
+     * being a row of cells and nothing else. `beddedPrison` builds no shower
+     * room and no yard, so `hygiene` crosses the unmet line on day 5 and
+     * `recreation` on day 7: the day's income is 2,400 for four days, 2,080
+     * for two and 1,760 for four (measured; the day-by-day series and the need
+     * levels behind it are in
+     * `tests/integration/needs-state-grant-loop.test.ts`).
+     *
+     * The 2.5%-of-income shape of the wage bill that this step used to report
+     * is unchanged -- 240 a day against income that starts at 2,400 -- and it
+     * is still the finding rather than a defect.
+     */
+    expect(runtime.treasury.balanceMinorUnits).toBe(42_640);
   });
 });
 
@@ -216,18 +231,33 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     expect(runtime.treasury.balanceMinorUnits).toBe(80);
     expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0);
 
-    // Day 5 is the first the prison cannot meet: 80 in hand plus 600 of income
-    // against a 960 bill. It pays 680, the balance stops at 0 rather than
-    // going to -280, and 280 is owed.
+    /*
+     * Day 5 is the first the prison cannot meet -- and it is also the first day
+     * the state pays it less, which is not a coincidence but the two mechanics
+     * meeting.
+     *
+     * `beddedPrison` has no shower room, so `hygiene` crosses
+     * `STATE_INCOME_UNMET_NEED_LEVEL` on day 5 and the day's income falls from
+     * 600 to 520 (two places at 260). 80 in hand plus 520 against a 960 bill:
+     * it pays 600, the balance stops at 0 rather than going to -360, and 360
+     * is owed.
+     *
+     * **This read 280 before the grant became conditional**
+     * ([ADR 0064](../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)).
+     * The extra 80 is the neglect, and the direction is the one worth stating: a
+     * prison that is failing its prisoners reaches insolvency sooner and digs
+     * out of it more slowly.
+     */
     stepTo(runtime, DAY_LENGTH_TICKS * 5);
     expect(runtime.treasury.balanceMinorUnits).toBe(0);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(280);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(360);
 
-    // And the debt compounds while nothing changes: 360 more owed every day,
-    // which is the 960 bill less the 600 the prison earns.
+    // And the debt compounds while nothing changes: 440 more on day 6, then
+    // 520 a day once `recreation` crosses the line on day 7 as well -- the 960
+    // bill less an income that is itself falling.
     stepTo(runtime, DAY_LENGTH_TICKS * 8);
     expect(runtime.treasury.balanceMinorUnits).toBe(0);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_360);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_840);
   });
 
   it('refuses a delivery first, which is the ladder`s top rung and needed no new code', () => {
@@ -251,29 +281,45 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     stepTo(runtime, DAY_LENGTH_TICKS * 5);
     const counts = projectStatusCounts(runtime, runtime.kernel.tick);
     expect(counts.treasuryMinorUnits).toBe(0);
-    expect(counts.unpaidWagesMinorUnits).toBe(280);
+    expect(counts.unpaidWagesMinorUnits).toBe(360);
     expect(counts.dailyWageBillMinorUnits).toBe(960);
   });
 
   it('digs out when the player fills the beds they already built', () => {
     // The recovery lever, and it is a command rather than a mechanic invented
     // for this: six more prisoners into six empty beds takes the income from
-    // 600 a day to 2,400 against a 960 payroll. ADR 0017 decision 8 says the
+    // 440 a day to 2,240 against a 960 payroll. ADR 0017 decision 8 says the
     // interesting part of insolvency is digging out; this is it happening.
     const runtime = overcommitted();
     stepTo(runtime, DAY_LENGTH_TICKS * 8);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_360);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_840);
 
     admit(runtime, 6, 2);
     stepTo(runtime, DAY_LENGTH_TICKS * 9);
     expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(8);
-    // 2,400 of income against 1,360 owed plus 960 for the day: the whole debt
-    // clears in one day and the balance is positive again at 80.
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0);
-    expect(runtime.treasury.balanceMinorUnits).toBe(80);
+    /*
+     * Six arrivals start at `NEED_MAX` on every need, so they are paid the
+     * undiminished 300 while the two long-standing prisoners are paid 220:
+     * 2,240 of income against 1,840 owed plus 960 for the day. It clears 2,240
+     * of the 2,800, leaving 560 owed and the balance still at 0.
+     *
+     * **This used to clear in one day** (2,400 against 1,360 + 960, ending at
+     * 80). It now takes two, and the reason is worth having in the file: the
+     * prison is short exactly what its two neglected prisoners are no longer
+     * earning it, on top of the deeper hole that neglect dug in the first
+     * place. Recovery is still unconditional and needs no command beyond the
+     * admissions -- ADR 0017 decision 8's "insolvency is a state, not a loss
+     * condition" is intact.
+     */
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(560);
+    expect(runtime.treasury.balanceMinorUnits).toBe(0);
 
-    // And it keeps climbing, so the recovery is a recovery rather than a pause.
+    // Day 10 clears the rest and the balance is positive again, and it keeps
+    // climbing after that, so the recovery is a recovery rather than a pause.
     stepTo(runtime, DAY_LENGTH_TICKS * 10);
-    expect(runtime.treasury.balanceMinorUnits).toBe(1_520);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0);
+    expect(runtime.treasury.balanceMinorUnits).toBe(720);
+    stepTo(runtime, DAY_LENGTH_TICKS * 11);
+    expect(runtime.treasury.balanceMinorUnits).toBe(2_000);
   });
 });
