@@ -436,6 +436,49 @@ rationale lives in
   of a 50 ms tick in one tick. Changing the budget's *value* or the "always
   process one request" rule is an open decision (#413), deliberately not
   taken alongside the data-structure change.
+
+  **What a navigation tick is actually made of, and how much of it the budget
+  bounds.** Re-measured 2026-08-28 at `21e5f66` (v0.0.156), same instrument as
+  the table above (`scripts/report-navigation-cost-model.mjs`, section 2) on a
+  busier container: 1.370 / 1.560 / 2.108 / 3.066 µs per expansion at 32×32
+  through 256×256, against the 1.35 / 1.48 / 1.93 / 2.46 recorded above. The
+  ratios travel and the absolute numbers do not, exactly as that table says;
+  the unit moves 2.2× over a 66× range either way. So the *unit* is a
+  reasonable proxy for time, and the budget denominated in it is not the
+  problem #413 thought it was.
+
+  The tick has four cost terms and `workBudgetPerTick` bounds one of them.
+  Measured on one open 64×64 region at the shipped budget, timing each
+  `NavigationSystem.update` on its own (section 3 of the same script):
+
+  | pending | tick 0 | steady tick | steady expansions | worst tick after 0 | its expansions |
+  | --- | --- | --- | --- | --- | --- |
+  | 250 | 12.43 ms | 4.06 ms | 2,332 | 6.96 ms | 4,026 |
+  | 5,000 | 16.37 ms | 6.79 ms | 2,332 | 9.82 ms | 3,979 |
+
+  1. **The graph rebuild.** `NavigationSystem.update` calls `ensureGraph`
+     first, and `buildNavigationGraph` runs whenever
+     `isNavigationGraphStale` says so — 12–17 ms here, and a geometry change
+     makes the next tick pay it again. Not budgeted, and no budget value
+     changes it. Measured on its own rather than inferred: an `update` on an
+     empty queue costs 10.11 ms (yard) / 10.01 ms (block) the first time and
+     0.018 / 0.026 ms the second.
+  2. **The per-tick prelude.** `processTick` copies and sorts *every* pending
+     entry and then computes a flow-field group key for every pending entry —
+     `tileKey` plus `routeContextFingerprint`, which copies, sorts and joins
+     the permission list — including for the requests the tick will never
+     reach. The two rows above differ by 2.7 ms on identical counted work,
+     and that difference is this. Not budgeted, and it grows with queue depth.
+  3. **The budgeted search.** `steady expansions` at the unit above.
+  4. **The overshoot.** Because the budget is tested before a request and
+     never inside one, a tick spends up to the budget *plus one whole
+     request*. `navigation.production.yard-crossing` gates this as
+     `tickOvershootRatio`: 2.04 (smoke), 2.46 (full).
+
+  `tests/unit/navigation-system.test.ts` already states term 4 as a contract —
+  *"the queue always finishes the request it started, so at most one request's
+  work may stand above the budget"* — so the bound is guarded; what was missing
+  was a workload in which it is large.
 - **Priority + age-based fairness.** Requests are ordered by
   `priority + floor(waitedTicks / agingIntervalTicks)`, then enqueue tick,
   then request id — never Map iteration order. Aging guarantees any

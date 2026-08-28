@@ -1,17 +1,36 @@
-// What one expanded search node costs in wall clock, measured on the
-// production navigation modules. NOT part of `pnpm benchmark`,
-// `benchmark:smoke` or `verify:benchmark`, and deliberately not a gate: every
-// number it prints is a duration, and `docs/BENCHMARKING.md`'s CI policy
-// refuses a wall-clock threshold on a shared runner.
+// What one expanded search node costs in wall clock, and what a navigation
+// tick is actually made of, measured on the production navigation modules.
+// NOT part of `pnpm benchmark`, `benchmark:smoke` or `verify:benchmark`, and
+// deliberately not a gate: every number it prints is a duration, and
+// `docs/BENCHMARKING.md`'s CI policy refuses a wall-clock threshold on a
+// shared runner.
 //
-// It exists for #413's remaining half. `path-request-queue.ts`'s work budget
-// is denominated in expanded search nodes because counted work is
-// deterministic and wall clock is not (ADR 0009, and the save format and named
-// RNG streams behind it). That is the right unit for a deterministic kernel and
-// it is only *honest* if one unit costs roughly the same everywhere -- otherwise
-// a budget of 2,000 bounds a different amount of frame time depending on the
-// shape of the search it is spent on. This measures the exchange rate, so
-// whoever decides #413 is calibrating against a number rather than guessing.
+// It exists for #413. `path-request-queue.ts`'s work budget is denominated in
+// expanded search nodes because counted work is deterministic and wall clock
+// is not (ADR 0009, and the save format and named RNG streams behind it).
+// That is the right unit for a deterministic kernel, and it is only *honest*
+// if one unit costs roughly the same everywhere and if the budget is what a
+// tick's cost is made of. This measures both, so whoever decides #413 is
+// calibrating against numbers rather than guessing.
+//
+// ## What this script measured wrongly until 2026-08-28, and what it now does
+//
+// Section 1 used to be the whole script, it divided **the whole scenario run**
+// by its expansions, and it called the quotient "µs/expansion". That number is
+// an upper bound and not a unit cost: the run it divides also contains one
+// `buildNavigationGraph` rebuild (11-16 ms, paid on the first `update` because
+// `NavigationSystem` builds its graph lazily) and, on every tick, a
+// `processTick` prelude that is O(pending) and pays nothing to any budget. On
+// `meal-rush` full it returned 3.431 µs against a marginal cost of about
+// 1.28 µs -- two thirds of what it charged to expansions was not expansions.
+// `docs/BENCHMARKING.md` carried that table and read a conclusion off it; both
+// are corrected, in both directions, and section 1 is kept with its name fixed
+// because the upper bound is still worth seeing beside the unit.
+//
+// Section 2 is the unit: `findRoute` timed on its own, nothing else in the
+// sample. Section 3 is the tick: `NavigationSystem.update` timed on its own,
+// per tick, so the graph rebuild, the O(pending) prelude and the budgeted
+// search are three columns instead of one quotient.
 //
 // ## Why the minimum, and not the mean or a percentile
 //
@@ -27,20 +46,30 @@
 import { performance } from 'node:perf_hooks';
 import process from 'node:process';
 import { normalizeRunResult } from '../benchmarks/harness.mjs';
+import { buildOpenRegionLayout } from '../benchmarks/fixtures/navigation-layouts.mjs';
+import { loadProductionNavigationOptions, loadSimulationRng } from '../benchmarks/production-modules.mjs';
 import {
   navigationProductionLockdownReturnScenario,
   navigationProductionMealRushScenario,
   navigationProductionSingleRequestBudgetScenario,
+  navigationProductionYardCrossingScenario,
 } from '../benchmarks/scenarios/navigation-production.mjs';
 
 const SCENARIOS = [
   navigationProductionSingleRequestBudgetScenario,
   navigationProductionMealRushScenario,
   navigationProductionLockdownReturnScenario,
+  navigationProductionYardCrossingScenario,
 ];
 const PROFILES = ['smoke', 'full'];
 const DEFAULT_REPEATS = 9;
 const WARMUP_REPEATS = 2;
+
+/** Open-region sides for section 2. 32 to 256 is a 66x range in search size, which is what shows whether the unit is constant. */
+const UNIT_REGION_SIDES = [32, 64, 128, 256];
+
+/** Populations for section 3, chosen so the O(pending) prelude is visible: it is what separates them. */
+const TICK_POPULATIONS = [250, 5_000];
 
 /** Every production navigation scenario reports its expansions under one of these two names. */
 function expansionsOf(metrics) {
@@ -49,19 +78,17 @@ function expansionsOf(metrics) {
 }
 
 function statistics(sorted) {
-  return {
-    min: sorted[0],
-    median: sorted[Math.floor(sorted.length / 2)],
-    max: sorted.at(-1),
-  };
+  return { min: sorted[0], median: sorted[Math.floor(sorted.length / 2)], max: sorted.at(-1) };
 }
 
-async function main() {
-  const repeats = Number.parseInt(process.argv[2] ?? String(DEFAULT_REPEATS), 10);
-  if (!Number.isInteger(repeats) || repeats < 1) throw new RangeError(`Repeats must be a positive integer, got ${String(process.argv[2])}.`);
+function sortedAscending(values) {
+  return [...values].sort((left, right) => left - right);
+}
 
-  console.log(`node ${process.version} on ${process.platform}/${process.arch}, ${String(repeats)} timed repeats after ${String(WARMUP_REPEATS)} warm-ups\n`);
-  console.log('scenario                                       profile  expansions   us/expansion (min/med/max)   budget x min');
+/** Section 1: the whole run over its expansions. An upper bound on the unit, not the unit. */
+async function reportWholeRunUpperBound(repeats) {
+  console.log('## 1. Whole run over its expansions -- an UPPER BOUND on the unit, not the unit\n');
+  console.log('scenario                                       profile  expansions   us/expansion, whole run (min/med/max)');
 
   for (const scenario of SCENARIOS) {
     for (const profileName of PROFILES) {
@@ -80,26 +107,181 @@ async function main() {
       }
 
       const expansions = expansionsOf(metrics);
-      const sorted = samplesMs.map((sample) => (sample * 1_000) / expansions).sort((left, right) => left - right);
-      const { min, median, max } = statistics(sorted);
-      // What ADR 0007's per-tick allowance buys, at the cheapest expansion this
-      // shape produced. A floor, therefore: the real tick costs at least this.
-      const budgetMs = (metrics.workBudgetPerTick * min) / 1_000;
-
+      const { min, median, max } = statistics(sortedAscending(samplesMs.map((sample) => (sample * 1_000) / expansions)));
       console.log(
         `${scenario.id.padEnd(46)} ${profileName.padEnd(7)} ${String(expansions).padStart(10)}   ` +
-          `${min.toFixed(3)} / ${median.toFixed(3)} / ${max.toFixed(3)}`.padEnd(28) +
-          `${budgetMs.toFixed(2)} ms`,
+          `${min.toFixed(3)} / ${median.toFixed(3)} / ${max.toFixed(3)}`,
       );
     }
   }
 
   console.log(
-    '\n"budget x min" is metrics.workBudgetPerTick expansions at the cheapest measured\n' +
-      'expansion of that shape -- a floor under what one tick of the navigation budget\n' +
-      'costs, not an estimate of it. Compare against the kernel step (50 ms) and the\n' +
-      'share of it navigation may have.',
+    '\nEach sample above also contains one lazy `buildNavigationGraph` rebuild and, per\n' +
+      'tick, a `processTick` prelude proportional to queue depth. Section 3 separates them.\n',
   );
+}
+
+/** Section 2: `findRoute` and nothing else. This is the exchange rate a budget is denominated against. */
+async function reportUnitCost(repeats) {
+  console.log('## 2. The unit: one `findRoute`, timed on its own\n');
+  console.log('open region  expansions   route ms (min/med/max)              us/expansion at min');
+
+  const dearest = { microseconds: 0, label: '' };
+  const bySide = new Map();
+
+  for (const side of UNIT_REGION_SIDES) {
+    const layout = await buildOpenRegionLayout(side);
+    const context = { role: 'stub-actor', securityClearance: 0 };
+    const samplesMs = [];
+    let expansions = 0;
+
+    for (let index = 0; index < repeats + WARMUP_REPEATS; index += 1) {
+      const stats = { expansions: 0 };
+      const startedAt = performance.now();
+      const result = layout.nav.findRoute(layout.world, layout.doors, layout.graph, layout.origin, layout.diagonalDestination, context, stats);
+      const elapsed = performance.now() - startedAt;
+      if (!result.ok) throw new Error(`Expected a route across a ${side}x${side} open region, got ${result.failure.reason}.`);
+      if (index >= WARMUP_REPEATS) samplesMs.push(elapsed);
+      expansions = stats.expansions;
+    }
+
+    const { min, median, max } = statistics(sortedAscending(samplesMs));
+    const microseconds = (min * 1_000) / expansions;
+    bySide.set(side, microseconds);
+    if (microseconds > dearest.microseconds) {
+      dearest.microseconds = microseconds;
+      dearest.label = `${side}x${side}`;
+    }
+    console.log(
+      `${`${side}x${side}`.padEnd(12)} ${String(expansions).padStart(10)}   ` +
+        `${min.toFixed(2).padStart(7)} / ${median.toFixed(2).padStart(7)} / ${max.toFixed(2).padStart(7)}   ` +
+        `${microseconds.toFixed(3).padStart(29)}`,
+    );
+  }
+
+  const options = await loadProductionNavigationOptions();
+  console.log(
+    `\nDearest expansion measured: ${dearest.microseconds.toFixed(3)} us (${dearest.label}). At that rate the shipped\n` +
+      `budget of ${String(options.workBudgetPerTick)} expansions is ${((options.workBudgetPerTick * dearest.microseconds) / 1_000).toFixed(2)} ms of search. Compare against the 50 ms\n` +
+      'kernel step and the share of it navigation may have -- which no document in this\n' +
+      'repository sets (docs/ARCHITECTURE.md: "Exact frame/tick budgets will be set after\n' +
+      'representative benchmark scenarios exist").\n',
+  );
+  return { dearest, bySide };
+}
+
+/**
+ * Section 3: one `NavigationSystem.update` per sample.
+ *
+ * A workload of this script's own rather than a gated scenario's, because a
+ * gated scenario reports aggregates and there is no way to time its ticks
+ * from outside it. It is the yard shape -- one open region, requests between
+ * random tiles in it -- because that is the shape where a single search is
+ * worth a large fraction of the budget, which is what makes the three columns
+ * differ from each other. It is NOT the workload
+ * `navigation.production.yard-crossing` gates, so its counted work will not
+ * match that scenario's; only the shape is shared.
+ */
+async function reportTickDecomposition(repeats, unitMicroseconds) {
+  console.log('## 3. The tick: `NavigationSystem.update`, timed per tick\n');
+
+  const options = await loadProductionNavigationOptions();
+  const { Xoshiro128StarStar, deriveXoshiroState } = await loadSimulationRng();
+  const side = 64;
+
+  console.log(
+    `one open ${side}x${side} region, budget ${String(options.workBudgetPerTick)}, element-wise minimum per tick over ${String(repeats)} repeats\n`,
+  );
+  console.log(
+    'pending  tick 0 ms  steady tick ms  steady exp  worst tick after 0, ms  its exp  prelude ms at steady',
+  );
+
+  for (const pending of TICK_POPULATIONS) {
+    let perTickMinimums = null;
+    let expansionsPerTick = null;
+
+    for (let repeat = 0; repeat < repeats + WARMUP_REPEATS; repeat += 1) {
+      const layout = await buildOpenRegionLayout(side);
+      const system = new layout.nav.NavigationSystem(layout.world, options, layout.doors);
+      system.setLoadedChunks(layout.chunkPositions);
+
+      const rng = new Xoshiro128StarStar(deriveXoshiroState(0x59524344, 'navigation.cost-model.tick').words);
+      const context = { role: 'stub-actor', securityClearance: 0 };
+      const tile = (x, y) => ({ x: layout.nav.tileCoordinate(x), y: layout.nav.tileCoordinate(y) });
+      const idWidth = String(pending - 1).length;
+      for (let index = 0; index < pending; index += 1) {
+        const origin = tile(rng.nextInt(layout.tileWidth), rng.nextInt(layout.tileHeight));
+        const destination = tile(rng.nextInt(layout.tileWidth), rng.nextInt(layout.tileHeight));
+        system.requestRoute(String(index).padStart(idWidth, '0'), origin, destination, context, rng.nextInt(3), 0);
+      }
+
+      const samplesMs = [];
+      const samplesExpansions = [];
+      let tick = 0;
+      while (system.pendingCount() > 0) {
+        const before = system.getQueueMetrics().totalExpansions;
+        const startedAt = performance.now();
+        system.update({ tick });
+        samplesMs.push(performance.now() - startedAt);
+        samplesExpansions.push(system.getQueueMetrics().totalExpansions - before);
+        tick += 1;
+      }
+
+      if (repeat < WARMUP_REPEATS) continue;
+      expansionsPerTick = samplesExpansions;
+      if (perTickMinimums === null) perTickMinimums = samplesMs;
+      else for (let index = 0; index < perTickMinimums.length; index += 1) perTickMinimums[index] = Math.min(perTickMinimums[index], samplesMs[index]);
+    }
+
+    // Tick 0 alone pays the lazy `buildNavigationGraph`; tick 1 is the first
+    // that is only queue work, and is what "steady" means here. The worst tick
+    // is taken from tick 1 onwards for the same reason -- otherwise it is
+    // always tick 0 and reports the graph rebuild a second time.
+    const first = perTickMinimums[0];
+    const steady = perTickMinimums[1];
+    const steadyExpansions = expansionsPerTick[1];
+    const afterFirst = perTickMinimums.slice(1);
+    const worst = Math.max(...afterFirst);
+    const worstExpansions = expansionsPerTick[perTickMinimums.indexOf(worst)];
+    // What the steady tick spent on something other than expanding nodes, at
+    // section 2's measured rate for this region size.
+    const prelude = steady - (steadyExpansions * unitMicroseconds) / 1_000;
+
+    console.log(
+      `${String(pending).padStart(7)}  ${first.toFixed(2).padStart(9)}  ${steady.toFixed(2).padStart(14)}  ${String(steadyExpansions).padStart(10)}  ` +
+        `${worst.toFixed(2).padStart(22)}  ${String(worstExpansions).padStart(7)}  ${prelude.toFixed(2).padStart(21)}`,
+    );
+  }
+
+  console.log(
+    '\nThree terms, and the budget bounds one of them.\n\n' +
+      '1. Tick 0 is the one-off lazy `buildNavigationGraph`. No budget value changes it,\n' +
+      '   and a geometry change makes the next tick pay it again.\n' +
+      '2. "prelude ms at steady" is what a tick spends on something other than expanding\n' +
+      '   nodes: `processTick` sorts every pending entry and computes a flow-field group\n' +
+      '   key -- `routeContextFingerprint` included -- for every pending request, every\n' +
+      '   tick, including the ones the tick will never reach. It grows with queue depth\n' +
+      '   and is not budgeted, which is why the two rows differ at the same expansion\n' +
+      '   count.\n' +
+      '3. The budgeted search, `steady exp` at section 2\'s rate.\n\n' +
+      'A fourth term is not visible here and is gated instead: the queue tests\n' +
+      '`usedBudget >= workBudget` before a request and never inside one, so a tick may\n' +
+      'spend the budget plus one whole request. `navigation.production.yard-crossing`\n' +
+      'measures that as `tickOvershootRatio` (2.04 smoke, 2.46 full).\n',
+  );
+}
+
+async function main() {
+  const repeats = Number.parseInt(process.argv[2] ?? String(DEFAULT_REPEATS), 10);
+  if (!Number.isInteger(repeats) || repeats < 1) throw new RangeError(`Repeats must be a positive integer, got ${String(process.argv[2])}.`);
+
+  console.log(`node ${process.version} on ${process.platform}/${process.arch}, ${String(repeats)} timed repeats after ${String(WARMUP_REPEATS)} warm-ups\n`);
+
+  await reportWholeRunUpperBound(repeats);
+  const { bySide } = await reportUnitCost(repeats);
+  const unitMicroseconds = bySide.get(64);
+  if (unitMicroseconds === undefined) throw new Error('Section 3 prices its ticks at the 64x64 unit, which section 2 did not measure.');
+  await reportTickDecomposition(repeats, unitMicroseconds);
 }
 
 main().catch((error) => {
