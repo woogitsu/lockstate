@@ -167,6 +167,30 @@ export function resolveActiveRegimeBlock(schedule: RegimeSchedule, tick: number)
  */
 export type PrisonerRegimeOverrideResolver = (entityId: EntityId, classificationGroupId: string) => RegimeSchedule | undefined;
 
+/**
+ * Chains two overrides so a session with more than one event able to replace
+ * a prisoner's timetable still hands `ActionSystem` exactly one resolver
+ * (issue #80: a live riot and a live solitary sanction are two independent
+ * events that can each want to say what a prisoner's day is).
+ *
+ * `first` wins whenever it answers -- a riot is an emergency in progress and a
+ * sanction is a standing consequence, so an open riot takes the prisoner's
+ * day even while they are also serving a sanction; the sanction's schedule
+ * (`HIGH_RISK_REGIME`, see `sanction-system.ts`) resumes the moment the riot
+ * closes, with no third state to track, for the reason `createRiotRegimeOverride`
+ * already gives: an override is a pure read of state the incident/sanction
+ * record already carries, not a value written down and lifted.
+ *
+ * Either argument may be `undefined` -- a session wiring only one override, or
+ * none -- and the result still satisfies `PrisonerRegimeOverrideResolver`.
+ */
+export function combineRegimeOverrides(
+  first: PrisonerRegimeOverrideResolver | undefined,
+  second: PrisonerRegimeOverrideResolver | undefined,
+): PrisonerRegimeOverrideResolver {
+  return (entityId, classificationGroupId) => first?.(entityId, classificationGroupId) ?? second?.(entityId, classificationGroupId);
+}
+
 export function findRegimeSchedule(schedules: readonly RegimeSchedule[], classificationGroupId: string): RegimeSchedule {
   const schedule = schedules.find((candidate) => candidate.classificationGroupId === classificationGroupId);
   if (schedule === undefined) {

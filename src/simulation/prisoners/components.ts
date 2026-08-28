@@ -87,6 +87,25 @@ export class PrisonerRecordComponent {
   public readonly riskTier: Uint8Array;
   public readonly classificationGroupIndex: Uint8Array;
   public readonly intakeStage: Uint8Array;
+  /**
+   * The tick a live solitary sanction ends, or `0` for a prisoner not
+   * currently sanctioned (issue #80, ADR 00XX -- number not yet assigned;
+   * see the branch's report). `0` is never a legal end tick for a real
+   * sanction: `SanctionSystem.update` only ever writes `max(existing, tick)
+   * + policy.solitaryTermTicks`, which is strictly positive from tick 0
+   * onward, so a slot reading `0` and a slot never sanctioned are the same
+   * fact, exactly as `sentenceEndTick` above already relies on for the same
+   * reason.
+   *
+   * Deliberately the *only* new persisted field this consequence needs.
+   * Whether a sanctioned prisoner is *physically* in `room.solitary-cell`
+   * yet is not stored here -- `SanctionSystem` re-derives it every scheduled
+   * tick from `PrisonerColdState.getAccommodation` and
+   * `RoomInstanceRegistry.getById`, which the save already carries. Storing
+   * a second flag for "currently relocated" would be a fact that can
+   * disagree with the room registry it is about.
+   */
+  public readonly solitarySanctionEndTick: Uint32Array;
 
   private readonly slotDefaults: readonly SlotDefault[];
 
@@ -97,6 +116,7 @@ export class PrisonerRecordComponent {
     this.riskTier = new Uint8Array(capacity);
     this.classificationGroupIndex = new Uint8Array(capacity);
     this.intakeStage = new Uint8Array(capacity);
+    this.solitarySanctionEndTick = new Uint32Array(capacity);
     this.slotDefaults = [
       // Overwritten by `submitIntake` from the admission input.
       [this.sentenceLengthTicks, 0],
@@ -115,6 +135,10 @@ export class PrisonerRecordComponent {
       [this.classificationGroupIndex, 0],
       // The stage every admission starts at; `submitIntake` writes it too.
       [this.intakeStage, intakeStageIndex('queued')],
+      // `0` -- "not sanctioned". A recycled index must not inherit its
+      // previous occupant's sanction, and a never-sanctioned prisoner is
+      // exactly what a fresh slot already reads as.
+      [this.solitarySanctionEndTick, 0],
     ];
     fillEverySlot(this.slotDefaults);
   }
@@ -136,6 +160,7 @@ export class PrisonerRecordComponent {
       riskTier: new Uint8Array(this.riskTier),
       classificationGroupIndex: new Uint8Array(this.classificationGroupIndex),
       intakeStage: new Uint8Array(this.intakeStage),
+      solitarySanctionEndTick: new Uint32Array(this.solitarySanctionEndTick),
     };
   }
 
@@ -146,6 +171,7 @@ export class PrisonerRecordComponent {
     this.riskTier.set(snapshot.riskTier);
     this.classificationGroupIndex.set(snapshot.classificationGroupIndex);
     this.intakeStage.set(snapshot.intakeStage);
+    this.solitarySanctionEndTick.set(snapshot.solitarySanctionEndTick);
   }
 }
 

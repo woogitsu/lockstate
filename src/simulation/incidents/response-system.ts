@@ -149,7 +149,32 @@ export class IncidentResponseSystem implements SystemRegistration {
      * and means every existing test of this system is unchanged.
      */
     private readonly onPrisonerEscaped: (entityId: EntityId, tick: number) => void = () => {},
+    /**
+     * What an assault costs the prisoner it was scored against (issue #80,
+     * ADR 00XX -- number not yet assigned). Called once, for `'assault'`
+     * incidents that carry an `instigatorId`, the moment the incident reaches
+     * either terminal state -- `lapse` below and the `'resolved'` branch of
+     * `advanceResponse` are the *only* two places an incident becomes
+     * terminal, exactly as `onPrisonerEscaped` above is called from both. A
+     * riot, a gang-retaliation and an escape-attempt never carry an
+     * `instigatorId` (`IncidentTriggerSystem` only ever sets one on an
+     * assault), so this is silently a no-op for the other three types rather
+     * than a branch this system has to maintain.
+     *
+     * The same narrow injected-port shape `onPrisonerEscaped` is, for the same
+     * reason: `PrisonerOperationsRuntime` is constructed before this system in
+     * `new-session.ts`, so a hard dependency would invert that order. Defaults
+     * to doing nothing, so a fixture with no prisoner slice -- and every
+     * existing test of this system -- is unchanged.
+     */
+    private readonly onAssaultAdjudicated: (entityId: EntityId, tick: number) => void = () => {},
   ) {}
+
+  /** The one thing both terminal transitions below do identically, so the two call sites cannot drift about which incidents earn a sanction or which participant it lands on. */
+  private adjudicateAssaultIfAny(incident: IncidentRecord, tick: number): void {
+    if (incident.type !== 'assault' || incident.instigatorId === undefined) return;
+    this.onAssaultAdjudicated(incident.instigatorId, tick);
+  }
 
   /**
    * Set by `loadSnapshot`, cleared by the first `update` after it: the
@@ -473,6 +498,7 @@ export class IncidentResponseSystem implements SystemRegistration {
       for (const entityId of incident.participantIds) this.onPrisonerEscaped(entityId, tick);
     }
 
+    this.adjudicateAssaultIfAny(incident, tick);
 
     // The one close `releaseResponse` cannot serve, because there is no record
     // for it to read: an incident whose response was interrupted by a save
@@ -652,6 +678,7 @@ export class IncidentResponseSystem implements SystemRegistration {
     this.releaseResponse(incident.id, incident.sectorId);
     this.incidents.transition(incident.id, 'resolved', tick, outcome);
     this.incidentsResolved += 1;
+    this.adjudicateAssaultIfAny(incident, tick);
   }
 
   public getSnapshot(): { readonly metrics: IncidentResponseMetrics } {

@@ -368,6 +368,15 @@ const prisonerComponentsSchemaFor = (needLevelMax: number) =>
     riskTier: z.array(byteSchema),
     classificationGroupIndex: z.array(byteSchema),
     intakeStage: z.array(byteSchema),
+    // **Optional, and `SAVE_SCHEMA_VERSION` is not bumped**, on ADR 0038 §1's
+    // rule (issue #80, ADR 00XX): absent is a fact about the save's age, and
+    // it means exactly what every build before this one already meant --
+    // "nobody has ever been sanctioned in this session" -- so
+    // `decodePrisonerComponents` leaves `PrisonerRecordComponent`'s own
+    // every-slot-zero default standing rather than overwriting it. A present
+    // array is still checked against `activeLength` below, exactly as every
+    // required array is.
+    solitarySanctionEndTick: z.array(uint32Schema).optional(),
     // Named, not positional: reordering `NEED_IDS` in the simulation must not
     // silently reinterpret an existing save's levels as a different need.
     needs: z
@@ -404,6 +413,7 @@ const prisonerComponentsSchemaFor = (needLevelMax: number) =>
     check('riskTier', value.riskTier);
     check('classificationGroupIndex', value.classificationGroupIndex);
     check('intakeStage', value.intakeStage);
+    if (value.solitarySanctionEndTick !== undefined) check('solitarySanctionEndTick', value.solitarySanctionEndTick);
     check('actionIndex', value.actionIndex);
     check('actionPhase', value.actionPhase);
     check('phaseStartedAtTick', value.phaseStartedAtTick);
@@ -851,6 +861,12 @@ const incidentsSectionSchema = z
               })
               .strict()
               .optional(),
+            // **Optional, and `SAVE_SCHEMA_VERSION` is not bumped**, on ADR
+            // 0038 §1's rule: absent is a fact about the save's age -- an
+            // incident this build's `IncidentTriggerSystem` did not yet mark
+            // an instigator on -- and it means exactly what an older build
+            // already meant, "no instigator recorded" (issue #80, ADR 00XX).
+            instigatorId: entityIdSchema.optional(),
           })
           .strict(),
       ]),

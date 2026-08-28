@@ -1125,22 +1125,25 @@ original `'open'`.
 
 ### Prisoner components: allocated prefix, not capacity, and not RLE
 
-`DEFAULT_PRISONER_CAPACITY` is 5,000 slots and there are eighteen per-prisoner
-arrays *in the payload*. Writing them at capacity would cost ~298 KiB (305,332 bytes) in every
+`DEFAULT_PRISONER_CAPACITY` is 5,000 slots and there are nineteen per-prisoner
+arrays *in the payload*. Writing them at capacity would cost ~308 KiB (315,360 bytes) in every
 save regardless of population — the same mistake #50 removed from `entities`,
-at eighteen times the size. That is measured, not derived: the encoded arrays
+at nineteen times the size. That is measured, not derived: the encoded arrays
 are `readonly number[]`, so the cost is digit widths rather than element sizes,
-and 298 KiB is the size at 5,000 slots with every array at its constructor
+and 308 KiB is the size at 5,000 slots with every array at its constructor
 default (needs at `NEED_MAX_SCALED` = 51,000, `actionIndex` at its `-1`
 sentinel, the rest zero) — the empty-prison case this claim is about. A
 populated mid-game prison, with seven-digit tick stamps in three of the arrays,
-measures ~425 KiB at the same capacity. They are written across the store's
+measures ~435 KiB at the same capacity. They are written across the store's
 **allocated prefix** (`maxActiveIndex + 1`) instead.
 
 Both figures moved with V4 (#259): a need level is stored scaled by
 `NEED_SCALE`, so the six need arrays carry five-digit values where they carried
 three, which is ~59 KiB across 30,000 elements at this capacity. Before that
-change the same two cases measured ~240 KiB (245,332 bytes) and ~337 KiB.
+change the same two cases measured ~240 KiB (245,332 bytes) and ~337 KiB. Both
+moved again with issue #80 (ADR 00XX): a nineteenth persisted array,
+`solitarySanctionEndTick`, was added at zero -- the pre-#80 V5 figures were
+~298 KiB (305,332 bytes) and ~425 KiB.
 `tests/unit/session-component-payload-size.test.ts` is what keeps this
 paragraph and `session-systems.ts`'s copy of it from drifting apart again.
 
@@ -1157,13 +1160,16 @@ allocated and hold exactly their component-constructor defaults, which
 Until #111 that residue was also future behaviour: `admitPrisoner` reset five
 of the then eighteen arrays, so recycling a freed index handed the next
 prisoner the previous one's needs, classification and action state. It now
-resets **all twenty**, so a dead slot's contents can no longer become a live
-prisoner's starting state. **This paragraph read "all eighteen", and since
-#435 the payload's eighteen and the runtime's twenty are two different sets**:
-`SubstitutionRecordComponent` holds two per-prisoner counters that
-`admitPrisoner` resets and no save carries, because they are diagnostics and
-nothing reads them back into a decision. The count above is the payload's; this
-one is the reset's. Whether the payload could therefore shrink to the live indices
+resets **all twenty-one**, so a dead slot's contents can no longer become a
+live prisoner's starting state. **This paragraph read "all eighteen", then
+"all twenty", and the payload's count and the runtime's count are two
+different sets**: `SubstitutionRecordComponent` holds two per-prisoner
+counters that `admitPrisoner` resets and no save carries, because they are
+diagnostics and nothing reads them back into a decision. Issue #80 then added
+`solitarySanctionEndTick` to `PrisonerRecordComponent`, which *is* state a
+system reads back (`SanctionSystem`), so it joins the payload's count as well
+as the reset's. The count above is the payload's; this one is the reset's.
+Whether the payload could therefore shrink to the live indices
 only is a save-format change and a decision of its own; it has not been taken,
 and writing the prefix is correct either way.
 

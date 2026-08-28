@@ -18,9 +18,14 @@ import { DEFAULT_PRISONER_CAPACITY } from '../../src/simulation/runtime/new-sess
  *
  * Both figures then moved, for a real reason rather than a drift: save-schema
  * V4 (#259) stores a need level scaled by `NEED_SCALE`, so the six need arrays
- * carry five-digit values where they carried three. The empty-prison case is
- * now 298 KiB and the populated one ~425 KiB, and this file is what forced
- * both documents to be rewritten in the same change rather than left behind.
+ * carry five-digit values where they carried three. The empty-prison case
+ * became 298 KiB and the populated one ~425 KiB.
+ *
+ * Both moved again with issue #80 (ADR 00XX): `solitarySanctionEndTick` is a
+ * nineteenth persisted per-prisoner array (`src/simulation/prisoners/components.ts`),
+ * so the array count below moved from eighteen to nineteen and the two
+ * figures with it, to 308 KiB and ~435 KiB. This file is what forced both
+ * documents to be rewritten in the same change rather than left behind.
  *
  * This pins it. Note what it is and is not: the figure is a **counterfactual**,
  * so it cannot be measured through `encodePrisonerComponents`, which writes the
@@ -31,7 +36,7 @@ import { DEFAULT_PRISONER_CAPACITY } from '../../src/simulation/runtime/new-sess
  * to any of them fails, which is what stops the two sentences drifting again.
  */
 
-/** The eighteen arrays, by the names `EncodedPrisonerComponents` declares. */
+/** The nineteen arrays, by the names `EncodedPrisonerComponents` declares. */
 const SCALAR_ARRAY_NAMES = [
   'sentenceLengthTicks',
   'priorIncidentsAtIntake',
@@ -39,6 +44,7 @@ const SCALAR_ARRAY_NAMES = [
   'riskTier',
   'classificationGroupIndex',
   'intakeStage',
+  'solitarySanctionEndTick',
   'actionIndex',
   'actionPhase',
   'phaseStartedAtTick',
@@ -66,20 +72,20 @@ describe('the capacity-shaped payload figure the documentation quotes', () => {
     // Each of these appears in the quoted sentences. A change to any one moves
     // the number, and the failure says which.
     expect(DEFAULT_PRISONER_CAPACITY, 'the quoted figure is for 5,000 slots').toBe(5_000);
-    expect(SCALAR_ARRAY_NAMES.length + NEED_IDS.length, 'the quoted figure is for eighteen arrays').toBe(18);
+    expect(SCALAR_ARRAY_NAMES.length + NEED_IDS.length, 'the quoted figure is for nineteen arrays').toBe(19);
     // The *stored* default, not the whole-level one: `encodePrisonerComponents`
     // writes `NeedsComponent.levels` verbatim, so it is this value's digit
     // width that the figure depends on.
     expect(NEED_MAX_SCALED, 'needs default to NEED_MAX_SCALED, and its digit width is part of the figure').toBe(51_000);
   });
 
-  it('measures 298 KiB for an empty prison at capacity, which is the claim both documents make', () => {
+  it('measures 308 KiB for an empty prison at capacity, which is the claim both documents make', () => {
     const bytes = encodedByteSizeAtCapacity(DEFAULT_PRISONER_CAPACITY, (name) =>
       name === 'needs' ? NEED_MAX_SCALED : name === 'actionIndex' ? -1 : 0,
     );
 
-    expect(bytes).toBe(305_332);
-    expect(Math.round(bytes / 1024), 'both documents say ~298 KiB').toBe(298);
+    expect(bytes).toBe(315_360);
+    expect(Math.round(bytes / 1024), 'both documents say ~308 KiB').toBe(308);
   });
 
   it('measures more for a populated prison, which is where the ~300 KiB figure came from', () => {
@@ -95,13 +101,15 @@ describe('the capacity-shaped payload figure the documentation quotes', () => {
             ? 17_400
             : name === 'tileX' || name === 'tileY'
               ? 143
-              : 3,
+              : name === 'solitarySanctionEndTick'
+                ? 0
+                : 3,
     );
 
-    expect(Math.round(bytes / 1024)).toBe(425);
+    expect(Math.round(bytes / 1024)).toBe(435);
     // The load-bearing relationship, independent of the exact scenario: the
     // populated case is strictly worse, so quoting it for the empty-prison
     // claim overstates that claim rather than understating it.
-    expect(bytes).toBeGreaterThan(305_332);
+    expect(bytes).toBeGreaterThan(315_360);
   });
 });

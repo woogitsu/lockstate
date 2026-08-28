@@ -73,6 +73,33 @@ export interface IncidentRecord {
   readonly timeline: readonly IncidentTimelineEntry[];
   readonly startedAtTick: number;
   readonly outcome?: IncidentOutcome;
+  /**
+   * Which participant the trigger scored worst, for the one type that scores
+   * individuals rather than a sector mean (issue #80, ADR 0061 open question
+   * 3).
+   *
+   * `participantIds` is sorted ascending by entity id (`IncidentTriggerSystem`
+   * sorts it before calling `open`) so that every other reader gets a
+   * canonical order -- which is exactly what destroys the ranking
+   * `tryOpenAssault` computed to pick the pair. This field is the one place
+   * that ranking survives: it names the entity `rankFlashpoints` scored
+   * worst, independent of where that id lands in the sorted list.
+   *
+   * Only `'assault'` ever sets it. A riot's and a gang-retaliation's
+   * `participantIds` are "who was there" -- the sector's occupants or a
+   * gang's membership, not a ranking -- and an escape attempt has one
+   * participant already. Widening this to those types would be inventing a
+   * culprit the trigger never scored, which is exactly the thing ADR 0032
+   * declines to do.
+   *
+   * Not a culprit field in the sense issue #80's design question means:
+   * `scoreAssaultPressure` ranks by *whose needs and holdings are worst*, not
+   * by who struck first, so this is a statement about which of the two
+   * participants the simulation can name a reason for and the other -- the
+   * `buildDisciplinaryIndex` credit both still receive, unchanged -- cannot.
+   * See the ADR this issue's branch adds for the design argument.
+   */
+  readonly instigatorId?: EntityId;
 }
 
 interface IncidentMutableRecord {
@@ -85,6 +112,7 @@ interface IncidentMutableRecord {
   timeline: IncidentTimelineEntry[];
   startedAtTick: number;
   outcome: IncidentOutcome | undefined;
+  instigatorId: EntityId | undefined;
 }
 
 function toRecord(id: string, record: IncidentMutableRecord): IncidentRecord {
@@ -100,6 +128,7 @@ function toRecord(id: string, record: IncidentMutableRecord): IncidentRecord {
     timeline: [...record.timeline],
     startedAtTick: record.startedAtTick,
     ...(record.outcome !== undefined ? { outcome: record.outcome } : {}),
+    ...(record.instigatorId !== undefined ? { instigatorId: record.instigatorId } : {}),
   };
 }
 
@@ -110,6 +139,7 @@ export interface OpenIncidentInput {
   readonly participantIds: readonly EntityId[];
   readonly severity: number;
   readonly causeFactors: readonly IncidentCauseFactor[];
+  readonly instigatorId?: EntityId;
 }
 
 /**
@@ -218,6 +248,7 @@ export class IncidentLog {
       timeline: [{ state: 'active', atTick: tick }],
       startedAtTick: tick,
       outcome: undefined,
+      instigatorId: input.instigatorId,
     });
     this.openIds.add(input.id);
     let bucket = this.openIdsBySectorId.get(input.sectorId);
