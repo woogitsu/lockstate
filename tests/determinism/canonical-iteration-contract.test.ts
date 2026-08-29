@@ -96,6 +96,12 @@ const ALLOWED: readonly CanonicalIterationExemption[] = [
       '`stop` fails every still-pending worker request with the same error after the shutdown reply, clearing each one\'s own timer. No entry\'s teardown is folded into another\'s, and the keys are `crypto.randomUUID()` message ids, so there is no order derived from state to sort into. Main-thread transport, like `worker/client.ts` below; no snapshot or save payload is built from this walk.',
   },
   {
+    file: 'src/simulation/construction/system.ts',
+    expression: 'this.orders.values()',
+    reason:
+      "`duplicateClaim` (issue #514) asks whether *any* other order still claims the same buildable, tile and edge, and stops at the first match -- a membership test like `memory-client.ts`'s below, not an ordering: every walk order returns the same boolean, because the predicate applied to each order (id, state, definitionId, location, edge) reads nothing about any other order and folds nothing across the walk. Which particular matching order the loop happens to return is never read -- `submitOrder` only checks the result against `undefined` -- so even the *identity* of the match, not only whether one exists, is order-independent. `orderedOrders()` -- the sorted accessor -- is deliberately not used here; its own doc says paying for the sort would be wasted on a caller with no use for it, and this is that caller.",
+  },
+  {
     file: 'src/simulation/contraband/intelligence.ts',
     expression: 'this.records.entries()',
     reason:

@@ -803,10 +803,12 @@ export type SimulationStatusCounts = DeepReadonly<
  * `remove-object.*` mirrors `RemoveObjectRefusalReason`, `unzone.*` mirrors
  * `UnzoneRoomRefusalReason` and `zone.*` mirrors `ZoneRoomRefusalReason`. The
  * namespace is doing real work rather than being tidy -- `out-of-bounds` and
- * `unowned-land` are members of *two* of those domain vocabularies, and
+ * `unowned-land` are members of *two* of those domain vocabularies,
  * `insufficient-funds` and `invalid-area` are each a member of two others, and
- * each means something different to a player depending on which command it
- * answers, so one flat id per spelling would put one sentence on several.
+ * `duplicate-order` is a member of *three* (`build.*`, `place-object.*` and
+ * `purchase.*`), and each means something different to a player depending on
+ * which command it answers, so one flat id per spelling would put one
+ * sentence on several.
  *
  * `src/simulation/refusals/refusal-log.ts` maps each domain value onto one of
  * these through an exhaustive `Record`, so a reason added to any of the ten
@@ -838,9 +840,9 @@ export type SimulationStatusCounts = DeepReadonly<
  * queued command in a restored save, a future producer -- can still provoke the
  * other.
  *
- * `build.unknown-buildable` is the sharpest instance of that last point and the
- * newest member here. `place-object.unknown-buildable` is the same condition on
- * the same registry, reached by `PlaceObject` instead: two commands carry a
+ * `build.unknown-buildable` is the sharpest instance of that last point.
+ * `place-object.unknown-buildable` is the same condition on the same
+ * registry, reached by `PlaceObject` instead: two commands carry a
  * `BUILDABLE_REGISTRY` id, `ObjectPlacementService` checked its one and
  * `ConstructionSystem.submitOrder` checked nothing, so an unknown id on a
  * `PlaceBuildOrder` was approved and `ConstructionSystem.update` then threw out
@@ -848,10 +850,24 @@ export type SimulationStatusCounts = DeepReadonly<
  * order is snapshotted, for the rest of the save's life. Two spellings of one
  * fact, each answering a different command, is exactly what the namespace is
  * for; that only one of them existed is what the defect was.
+ *
+ * `build.duplicate-order` is the newest member (issue #514) and the first
+ * spelling shared by *three* of the ten vocabularies at once rather than two:
+ * `place-object.duplicate-order` and `purchase.duplicate-order` already meant
+ * "a request just like this one is already standing", and `submitOrder`
+ * simply never asked the question `ObjectPlacementService.place` and
+ * `ProcurementSystem.purchase` both already ask. Before it existed, *Place
+ * order* pressed several times for the same wall queued one order per press --
+ * each approved, each eventually consuming its own materials -- for a tile
+ * that can only ever hold one wall; the namespace is why that press reads as
+ * "the build order failed" and not as "the materials were not ordered" or "the
+ * object was not placed", the sentence either of the other two spellings would
+ * have given it.
  */
 export const REFUSAL_REASONS = [
   'admit.no-accommodation',
   'admit.population-full',
+  'build.duplicate-order',
   'build.out-of-bounds',
   'build.unbuildable',
   'build.unbuildable-terrain',

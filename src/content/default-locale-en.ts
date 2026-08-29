@@ -226,6 +226,17 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // (`src/simulation/prisoners/prisoner-operations-runtime.ts`).
   'hud.alert.refusal.admit.no-accommodation': 'Nobody was admitted — there is no room to put a prisoner in yet.',
   'hud.alert.refusal.admit.population-full': 'Nobody was admitted — this prison is holding as many people as it can.',
+  /*
+   * `build.duplicate-order` (issue #514). Not new copy: the `build.*` prefix
+   * ("The build order failed — ...") is every other sentence in this
+   * namespace's own convention, and the tail is transcribed verbatim from
+   * `place-object.duplicate-order` and `purchase.duplicate-order` below,
+   * which already say "that order already exists" for the identical fact on
+   * their own commands. Mechanically combining the two rather than authoring
+   * a third phrase for one condition three commands already have a sentence
+   * for.
+   */
+  'hud.alert.refusal.build.duplicate-order': 'The build order failed — that order already exists.',
   'hud.alert.refusal.build.out-of-bounds': 'The build order failed — that tile is outside the map.',
   'hud.alert.refusal.build.unbuildable': 'The build order failed — nothing can be built on that tile.',
   'hud.alert.refusal.build.unbuildable-terrain': 'The build order failed — the ground there cannot be built on.',

@@ -520,10 +520,35 @@ describe('taking a built door back', () => {
      * order never built" -- applied to the registry. Two door orders on one
      * edge: the second registers nothing because the edge is taken, and
      * cancelling the *first* must not delete the door the second one paid for.
+     *
+     * A second, identical, still-live `door-wooden` order at this edge can no
+     * longer be *submitted* -- issue #514 refuses it as `duplicate-order` --
+     * so this seeds the pair through `restore()` instead, exactly as a save
+     * written before that fix could already hold it. `restore()` replaces the
+     * order book without re-running `submitOrder`'s checks or the completion
+     * pipeline (`system.ts`'s own `restore` doc: it is the schema-validated
+     * boundary), which is why the door is registered once, by the live build
+     * `builtWithDoor()` already did, and the second order is injected already
+     * `completed` -- a claimant `anotherCompletedDoorClaims` must see, not a
+     * second registration.
      */
     const runtime = builtWithDoor();
-    runtime.construction.submitOrder(createBuildOrder('seg-98-second-door', 'door-wooden', tile(DOORWAY.x, DOORWAY.y), DOORWAY.edge));
-    step(runtime, PERIMETER_BUILD_TICKS);
+    const snapshot = runtime.construction.snapshot();
+    runtime.construction.restore({
+      ...snapshot,
+      orders: [
+        ...snapshot.orders,
+        {
+          id: 'seg-98-second-door',
+          definitionId: 'door-wooden',
+          location: tile(DOORWAY.x, DOORWAY.y),
+          edge: DOORWAY.edge,
+          state: 'completed',
+          progress: getBuildableDefinition('door-wooden').workRequired,
+          materialsAllocated: [],
+        },
+      ],
+    });
     expect(runtime.construction.getOrder('seg-98-second-door')?.state).toBe('completed');
     expect(runtime.navigation.doors.all().map((door) => door.id)).toEqual([DOOR_ID]);
 
