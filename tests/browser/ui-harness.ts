@@ -459,6 +459,14 @@ function buildModelWithCatalogueOf(count: number): HudBuildViewModel {
     buildables: Array.from({ length: count }, (_, index) => ({
       definitionId: index === 0 ? 'wall-brick' : index === 1 ? 'door-wooden' : `buildable-${index}`,
       labelKey: index % 2 === 0 ? HUD_MESSAGE_KEY.buildableWallBrick : HUD_MESSAGE_KEY.buildableDoorWooden,
+      // Alternating, so this list always holds a row that sits on no edge --
+      // which `ui-shell.spec.ts` uses to measure a hidden edge chooser now that
+      // the two-row fixture's door does sit on one (#531). It does **not**
+      // describe the real registry, and the `door-wooden` id at index 1 is not
+      // claiming to: the ids repeat because the content catalogue defines two
+      // label keys and inventing a third would put an untranslated key on
+      // screen, exactly as the note above this function says. Read
+      // `BUILD_MODEL` for what the composition root actually projects.
       occupiesEdge: index % 2 === 0,
       // Every row is a wall route here: what this function varies is the row
       // *count*, and a mixture of gestures would make the measurement about

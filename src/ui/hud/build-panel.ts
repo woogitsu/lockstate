@@ -77,9 +77,12 @@ export interface BuildPanelIntent {
    *
    * Carried on the intent rather than looked up by the caller, because the
    * caller is the HUD's own dispatch and the answer is on the view model the
-   * panel already holds. `edge` stays populated for such a row for the reason
-   * it always was: the field has one shape and the simulation ignores it for
-   * anything that is not a wall.
+   * panel already holds. `edge` stays populated for such a row because the field
+   * has one shape -- but since #531 it carries `HUD_DEFAULT_BUILD_EDGE` rather
+   * than the panel's retained choice, because the chooser is not on screen for
+   * one. See `intentEdge`. The reason given here used to be *"the simulation
+   * ignores it for anything that is not a wall"*, and that is now too narrow:
+   * `occupiesTileEdge` is the rule, and a door is not a wall.
    */
   readonly placesObject: boolean;
   /**
@@ -90,8 +93,11 @@ export interface BuildPanelIntent {
    * keyboard route on the day it ships rather than in a follow-up: with the mode
    * on, the same two number fields and the same submit button name a tile to
    * clear. `definitionId` is still carried because the intent has one shape, and
-   * a removal names no object type -- the consumer ignores it exactly as the
-   * simulation ignores `edge` for anything that is not a wall.
+   * a removal names no object type -- the consumer ignores it exactly as
+   * `remove-object` carries no `edge` at all. That comparison read *"as the
+   * simulation ignores `edge` for anything that is not a wall"*, which was too
+   * narrow even then: what the simulation ignores an edge for is anything
+   * `occupiesTileEdge` says is not edge geometry, and a door is not a wall.
    */
   readonly removing: boolean;
 }

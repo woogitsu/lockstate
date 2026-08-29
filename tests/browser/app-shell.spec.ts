@@ -6728,6 +6728,66 @@ test.describe('the assembled application', () => {
   });
 
   /**
+   * Issue #531, against the projection the application actually builds.
+   *
+   * `tests/foundation/composition-root-contract.test.ts` pins
+   * `occupiesEdge: occupiesTileEdge(definition)` by substring, and is explicit
+   * that a substring proves a wiring is *written* and not that it works. This
+   * is the half it names: the real `BUILDABLE_REGISTRY`, the real
+   * `buildCatalogue()`, the real panel, and a control the player can see.
+   *
+   * `tests/browser/ui-shell.spec.ts` asserts the same thing against a fixture,
+   * which is a different claim -- that fixture says what `src/main.ts` *should*
+   * publish, and only this test can say what it *does*. That distinction is the
+   * whole reason the defect survived: the harness fixture carried
+   * `occupiesEdge: false` for this row and agreed with the composition root
+   * while both were wrong.
+   *
+   * A wall first, deliberately. The panel retains one edge across selections,
+   * so choosing *West* on a wall and then selecting the door is exactly the
+   * sequence that used to submit a west door with nothing on screen saying so.
+   * Here the chooser stays up and keeps the choice, which is what makes the
+   * edge the player's rather than the last row's.
+   */
+  test('the Build catalogue offers a door its edge chooser, from the real registry (#531)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    await page.getByRole('button', { name: 'Build' }).click();
+    const coordinates = page.locator('.hud-build__coordinates');
+    await coordinates.locator('> .ui-section__header').click();
+    await expect(coordinates).toHaveAttribute('data-collapsed', 'false');
+
+    // The wall first, where the chooser is undisputed -- so a hidden chooser
+    // below is a fact about the door row rather than about the whole panel.
+    const chooser = page.locator('.hud-build .ui-choice');
+    await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+    await expect(
+      page.locator('.hud-build__list [data-buildable="wall-brick"][data-selected="true"]'),
+      'the wall row did not become the selection',
+    ).toHaveCount(1);
+    await expect(chooser).toBeVisible();
+
+    // The retained edge the defect leaked. Chosen on the wall, where the
+    // control is undisputed.
+    await chooser.locator('[data-choice="west"]').click();
+
+    // And the row this issue is about. A door is edge geometry -- it writes
+    // `DOOR_EDGE_NUMERIC_ID` onto a tile edge -- so the chooser must survive
+    // the selection rather than take the setting off screen while the panel
+    // goes on submitting it.
+    await page.locator('.hud-build__list [data-buildable="door-wooden"]').click();
+    await expect(
+      page.locator('.hud-build__list [data-buildable="door-wooden"][data-selected="true"]'),
+      'the door row did not become the selection, so the chooser below is about something else',
+    ).toHaveCount(1);
+    await expect(chooser).toBeVisible();
+    await expect(chooser.locator('[data-choice="west"]')).toHaveAttribute('aria-checked', 'true');
+  });
+
+  /**
    * Issue #146's autosave, doing the thing it exists to do.
    *
    * `tests/foundation/composition-root-contract.test.ts` pins
