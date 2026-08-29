@@ -1179,6 +1179,11 @@ const snapshotMessageSchema = z
  */
 export const SIMULATION_EVENT_TYPES = [
   'economy.wages-unpaid',
+  'incidents.all-clear',
+  'incidents.assault-opened',
+  'incidents.escape-attempt-opened',
+  'incidents.gang-retaliation-opened',
+  'incidents.riot-opened',
   'prisoners.discharged',
 ] as const;
 
@@ -1250,9 +1255,129 @@ const wagesUnpaidEventSchema = z
   })
   .strict();
 
+/**
+ * An incident opened in the prison (issue #555).
+ *
+ * ## Why four members and not one carrying an `IncidentType`
+ *
+ * The obvious shape is a single `incidents.opened` with the kind as a field,
+ * and it was rejected for two measured reasons rather than on taste.
+ *
+ * - **`EVENT_PRESENTATION` grades an event by its `type` and nothing else**
+ *   (`src/ui/simulation-events.ts`). One member would therefore have to grade
+ *   a fistfight and a riot the same, and the simulation itself says they are
+ *   not the same: `ASSAULT_SEVERITY_CEILING` (`incidents/flashpoint.ts`) caps
+ *   an assault at severity 5, deliberately one below the response system's
+ *   `lockdownSeverityThreshold` of 6, *"because scoring an assault on the same
+ *   0-10 scale as a riot says two things about a fistfight that are not true
+ *   -- that it needs five guards, and that it justifies sealing every door in
+ *   the prison."* A member per kind is what lets the band say that.
+ * - **The kind would have had to cross as a raw id and be interpolated into a
+ *   sentence.** ADR 0011 keeps text off the wire, so what would cross is
+ *   `'gang-retaliation'`, and `MessageParameters` substitutes values rather
+ *   than resolving nested keys -- the player would read the slug. The repo's
+ *   own answer to "name the kind" is `HudCountsViewModel.activeIncidentTypeLabelKey`
+ *   (issue #506 finding 2), which renders `incident-type.riot.name` as a whole
+ *   element rather than inside a sentence. A member per kind puts the kind in
+ *   the authored sentence instead, where a translator can move it.
+ *
+ * ## What they carry, and what they do not
+ *
+ * No incident id, no sector id: the channel *"carries no identity"*
+ * (`SimulationEventLog`), and the `hud/incidents` projection is where a
+ * player goes to look one up. The shipped topology registers exactly one
+ * sector (ADR 0036), so a sector id would also be a constant.
+ *
+ * **Only the riot carries `participantCount`, and the reason is the sentence
+ * rather than the record.** Three of the four counts are not worth carrying:
+ * `ASSAULT_PARTICIPANT_COUNT` is 2 and `tryOpenEscapeAttempt` *"names **one**
+ * participant"*, so for those two the field could only ever hold one value,
+ * which is a constant on the wire. A gang-retaliation's list *is* variable --
+ * two gangs' membership -- and it is still left off, because nothing bounds it
+ * below at two: `GangRegistry.membersOf` may answer with one member on either
+ * side. `interpolate` (`src/services/localization/format.ts`) substitutes
+ * values and has no plural rules, so a sentence carrying that figure would
+ * read *"1 prisoners"* the first time a one-member gang retaliated. A riot has
+ * no such corner: `DEFAULT_MINIMUM_RIOT_PARTICIPANTS` is 2 and
+ * `IncidentTriggerSystem` will not open one below it, so `{count}` there is
+ * always plural and always says something the strip's badge cannot.
+ *
+ * The `count`-versus-`unpaidWagesMinorUnits` split above is the precedent for
+ * members of this union carrying different figures, and `min(1)` is for the
+ * reason every other figure on this channel has one.
+ */
+const riotOpenedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('incidents.riot-opened'),
+    participantCount: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+  })
+  .strict();
+
+const gangRetaliationOpenedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('incidents.gang-retaliation-opened'),
+  })
+  .strict();
+
+const assaultOpenedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('incidents.assault-opened'),
+  })
+  .strict();
+
+const escapeAttemptOpenedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('incidents.escape-attempt-opened'),
+  })
+  .strict();
+
+/**
+ * Every incident the prison had open has reached a terminal state (#555).
+ *
+ * **The counterpart the four members above make mandatory rather than a
+ * nicety.** Nothing on this channel is ever retracted -- rows leave for the
+ * cap or for `simulation/stopped` and for no other reason
+ * (`src/ui/simulation-events.ts`, "What clears an event") -- and the HUD's
+ * event band holds the newest event until another arrives. So an
+ * `incidents.riot-opened` graded `'danger'` with no counterpart would leave a
+ * red line reading *"A riot has broken out"* standing across a prison that is
+ * calm again, for the rest of the session, while the status strip's own badge
+ * had already gone back to *"Clear"*. That is a promise the code does not
+ * keep, which `AGENTS.md` reserves to the owner; the way not to make it is to
+ * ship the sentence that ends it.
+ *
+ * **"All clear", not "the riot ended", and that is what bounds it.** The
+ * producer emits only when the terminal transition leaves *no* incident open
+ * anywhere (`IncidentLog.openIncidentCount`), so two overlapping incidents
+ * closing produce one line rather than two, and the count of these events is
+ * bounded above by the count of openings for any session at all. It is also
+ * the only true thing to say after a *lapse*: an incident that ran its course
+ * was not "resolved", but the prison does have nothing open.
+ *
+ * Carries no figure. What it costs -- who was injured, what was damaged,
+ * whether anybody got out -- is `IncidentOutcome`, which the `hud/incidents`
+ * projection already renders per incident; summing it into one number here
+ * would be a second, coarser answer to a question that already has one.
+ */
+const incidentsAllClearEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('incidents.all-clear'),
+  })
+  .strict();
+
 const simulationEventSchema = z.discriminatedUnion('type', [
   wagesUnpaidEventSchema,
   dischargedEventSchema,
+  riotOpenedEventSchema,
+  gangRetaliationOpenedEventSchema,
+  assaultOpenedEventSchema,
+  escapeAttemptOpenedEventSchema,
+  incidentsAllClearEventSchema,
 ]);
 
 export type SimulationEvent = DeepReadonly<z.infer<typeof simulationEventSchema>>;
