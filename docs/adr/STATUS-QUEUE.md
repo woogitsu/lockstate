@@ -8,14 +8,16 @@ implementation.
 
 **Nothing here changes a status.** A status moves in the ADR and in the index,
 never in this file. What changed with this revision is what the file is *for*:
-§1 records **all thirteen** flips, §2 holds **five entries — the two dated rulings
+§1 records **all thirteen** flips, §2 holds **six entries — the two dated rulings
 #382 wrote into ADR 0008 §2, the 2026-08-27 amendment scoping that ADR's §3
 by authority, the preconditions on the change that gives this project its
 first server-side entry point, ADR 0056's price for keeping a player's
 orders in the order they gave them (2026-08-28, and the first row filed by the
-change that wrote it since the rule was restated), and ADR 0059's price for
-making an actor walk (2026-08-28, #485, the second such row)** — **this clause
-read "four entries" until `07add3e`**, and the sentence saying four is corrected
+change that wrote it since the rule was restated), ADR 0059's price for
+making an actor walk (2026-08-28, #485, the second such row), and ADR 0074's
+price for reading a restored room's rectangle off the zoning plane it already
+carries (2026-08-29, #571, the third)** — **this clause read "five entries"
+until #571's entry was filed, and "four entries" until `07add3e`**, and the sentence saying four is corrected
 rather than overwritten because the split is the finding: #485 filed ADR 0059's
 entry, moved §2's own heading with it and moved neither this paragraph nor §5's
 preamble, which is the third consecutive time the four places below have split
@@ -1759,7 +1761,7 @@ cells is exercised nowhere, because no shipped session yet furnishes two.
 
 ---
 
-## 2. Five entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, the Worker that lands with telemetry ingest, ADR 0056's price for keeping a player's orders in order, and ADR 0059's price for making them walk
+## 2. Six entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, the Worker that lands with telemetry ingest, ADR 0056's price for keeping a player's orders in order, ADR 0059's price for making them walk, and ADR 0074's price for reading a restored room's rectangle
 
 **This heading has now read "empty", "exactly one entry: ADR 0029", "empty
 again", one entry, two, one, empty for the third time, one again, and — on
@@ -2104,6 +2106,64 @@ than a benefit:
 was read>.**`, with the matching `Proposed, 2026-08-28 — …` prefix in that ADR's
 [`README.md`](./README.md) row changed to `Accepted, <date> — …`, **and this
 entry deleted in the same commit**, which is this section's standing recipe.
+
+### ADR 0074 (2026-08-29) — the recovery is decided, whether a legacy prison should silently change under a player is not
+
+**What is waiting.**
+[ADR 0074](./0074-what-a-restored-room-that-recorded-no-rectangle-is.md),
+`Proposed`, arrived with the change that implements it (#571,
+`agent/559-v4-room-bounds`). A restored room instance that recorded no rectangle
+recovers one from the zoning plane the same payload already carries, rather than
+keeping [ADR 0071](./0071-what-bounds-a-room-whose-activity-consumes-no-object.md)'s
+unbounded answer. It **amends ADR 0071 decision 2**, whose sentence still
+describes the code correctly but whose *example* — "a V4 save" — was wrong.
+
+**The evidence, and it is measured rather than argued.** `94adf1c` (v0.0.61, a
+shipped build at `SAVE_SCHEMA_VERSION` 4) was checked out and *its own* path run
+to produce `tests/fixtures/persistence/save-v4-yard.json`; every byte including
+the checksum is what a V4 build wrote. Through the real restore path an 8×8 yard
+answers **`Infinity`** where the same yard zoned by this build answers **4**. So
+#554's balance change does not reach a restored prison, and nothing on screen
+says so.
+
+**Refusing it costs #559 staying open**, and the alternatives on the table are
+both worse. A migration provably cannot reach the case: restore that payload,
+run it, capture it, and the new envelope declares version 5 and decodes with
+`migrated: false` while **still carrying the boundless row** — so the class of
+save needing repair was never "V4 saves", and a repair inside
+`migrateSaveEnvelopeV4ToV5` would have been offered such a save exactly once.
+The other alternative is a guessed finite capacity, which invents a number.
+
+**What approving commits the project to**, and this is the cost rather than the
+benefit:
+
+1. **One widening.** A restored legacy room gains object attribution and
+   instance-scoped removal it did not have. Both move it *toward* what a room
+   zoned in this build already does, which is the argument for them — but they
+   are still behaviour a player's existing prison did not have yesterday, and
+   ADR 0074 decision 6 deliberately ships **no player-facing string** saying so,
+   on the ground that copy describing a "repair" would be a promise about a
+   save's history nothing in the tree can substantiate. **Whether a legacy
+   prison should change under a player without being told is the part that is
+   the owner's**, not the arithmetic.
+2. **A recovery recomputed on every load.** Nothing is written to any file, so
+   rejecting this later costs a revert and no player's prison — which is the
+   whole reason it was built this way (ADR 0033's shape rather than ADR 0030's,
+   for the reason [#391](https://github.com/matmaxalez/lockstate/pull/391)
+   established, reached here on its own measurement rather than by deference).
+3. **A row the plane cannot support keeps ADR 0071's unbounded answer**, pinned
+   by a test so nobody later turns the residue into a silent guess.
+
+**The exact line that would replace the status.** In
+[`0074-what-a-restored-room-that-recorded-no-rectangle-is.md`](./0074-what-a-restored-room-that-recorded-no-rectangle-is.md),
+`**Proposed, 2026-08-29. Not self-approved.**` becomes `**Accepted, <date> —
+<by whom, and what was read>.**`, with the matching `Proposed, 2026-08-29 — …`
+prefix in that ADR's [`README.md`](./README.md) row changed to
+`Accepted, <date> — …`, **and this entry deleted in the same commit**, which is
+this section's standing recipe. **ADR 0071's own text is a second, separate
+debt** and is not discharged by accepting this one: its index row and its
+decision 2 still name "a V4 save" as the unbounded case, and whether that gets a
+marked amendment is the owner's call.
 
 ### ADR 0031 — accepted 2026-08-26, and the entry is deleted
 
@@ -2572,6 +2632,20 @@ first server-side entry point — so the "with the queue empty" opening no longe
 describes the file either. **Still three at `bb3a01e`**: no entry was added or
 deleted in the eleven releases, and this is one of the four places the header
 names as counting the queue, swept here for that reason.
+
+**SIX at #571, and for the first time in this sequence no place lagged.** ADR
+0074's entry was **handed over rather than filed by the change that wrote the
+ADR** — `agent/559-v4-room-bounds` left this file alone on the ADR 0032/0033/0059
+precedent and put the entry verbatim in its pull request — so the filing was a
+separate commit by a separate hand, and that hand moved §2's heading, the
+header's opening paragraph and this preamble together. **That is the mechanism
+of the split named, from the other side.** Every previous drift here happened
+because the commit filing the entry was the ADR's *own* commit, whose author was
+thinking about the decision and not about three prose counts elsewhere in a
+4,000-line file. A separate filing commit has nothing else to think about. It is
+one observation and not a rule — the next entry filed by an implementing change
+will test whether the split returns — but it is the first thing this file has
+learned about *why* the four places come apart rather than merely that they do.
 
 **FIVE at `07add3e`, and this paragraph was the one place in the file that did
 not know it — for the second consecutive anchor, by the identical mechanism.**
