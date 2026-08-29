@@ -435,6 +435,33 @@ export interface RegimeRosterRowProbe {
   /** `data-tone` on the badge, so a word and a colour that disagreed would show. */
   readonly badgeTone: string | null;
   /**
+   * The worst-need bar (issue #535 decision 6), as five separate readings.
+   *
+   * Five and not one, because the point of this readout is that a need becomes
+   * **measurable from outside the simulation**, and the bar's own drawing is the
+   * one form that is not: a fill is a `data-filled` on ten `<span>`s and a
+   * colour, and a probe reconstructing a level from those would be
+   * re-implementing the panel's quantization in the test that checks it.
+   *
+   * - `need` -- `data-need`, the stable need id. Not the translated word, so an
+   *   assertion is about the simulation rather than the locale catalog.
+   * - `needPermille` -- `data-need-permille`, `0`..`1000`, unquantized. **This is
+   *   the field that tells "the need was served" from "the need decayed but not
+   *   far enough"**, which nothing outside the worker could distinguish before.
+   * - `needUnmet` -- `data-need-unmet`, whether the state is withholding grant
+   *   over it. The worst need being unmet is exactly `unmetNeedCount >= 1`, so
+   *   this answers whether the prisoner is costing the prison income at all.
+   * - `needText` -- the need's word as drawn, so the colour never stands alone.
+   * - `needTone` / `needValueText` -- `data-tone` and `aria-valuetext` on the
+   *   bar, the accessible half of the same fact.
+   */
+  readonly need: string | null;
+  readonly needPermille: string | null;
+  readonly needUnmet: string | null;
+  readonly needText: string;
+  readonly needTone: string | null;
+  readonly needValueText: string | null;
+  /**
    * The row's border box.
    *
    * Not a way to detect a row overflowing sideways -- it is a flex item of a

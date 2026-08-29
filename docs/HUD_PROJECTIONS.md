@@ -97,9 +97,16 @@ storage decisions, and exposing either would guarantee some panel hard-codes
 `255`.
 
 Semantics are "how full", not "how bad": a need at `permille: 0` is a
-starving prisoner. There is **no** severity band, because the simulation
-defines no warning/critical thresholds for needs — inventing one would be a
-balance decision, not a projection.
+starving prisoner. `BoundedValue` carries **no** severity band — inventing one
+would be a balance decision, not a projection.
+
+That sentence used to justify the absent band with "the simulation defines no
+warning/critical thresholds for needs", which stopped being true at #488 and is
+corrected rather than overwritten (§4 of `docs/AGENT_WORKFLOW.md`). The band
+still does not belong on `BoundedValue`, for the better reason: it is shared by
+incidents, rooms and occupancy, which the state's grant line means nothing
+about. The need-specific fact lives on the need — see
+`PrisonerNeedViewModel.unmetForStateIncome` and gap 7.
 
 Incident severity and property damage keep their raw `0–10` rank alongside
 a `BoundedValue`, because `incident.ts` documents both as published scales.
@@ -740,6 +747,23 @@ decision about what to build next.
    which room would fix it. The first is already projected
    (`PrisonerDetailViewModel.needs`), the second is derivable from figures the
    status strip already carries, and the third exists nowhere.
+
+   **Half-answered by #535 decision 6, and the half that moved is the first
+   one.** `PrisonerNeedViewModel` now carries `unmetForStateIncome` — computed
+   by `isNeedUnmetForStateIncome`, the same predicate `unmetNeedCount` sums to
+   compute the money, so the readout and the treasury cannot drift — and the
+   Regime panel's roster draws each prisoner's worst need as a bar toned off
+   that flag. So "which needs are unmet per prisoner" is projected rather than
+   merely derivable, and the roster answers it for the worst one at a glance.
+
+   **This did not close the gap and did not decide the threshold.** The bar is
+   toned `warning` and never `danger`, and what that tone means is *the state
+   is withholding grant for this need* — a promise `stateIncomeForPrisonerDay`
+   keeps — not *this prisoner is in danger*, which nothing in the simulation
+   says. The player-facing "your prisoners are unhappy" line is still the
+   owner's, and so is still whether it should be this one. The second and third
+   items above are untouched: nothing says what neglect is costing per day in
+   the prison's own money, and nothing names the room that would fix it.
 8. **No need trend.** Only the current level exists; nothing records recent
    history, so a panel cannot show rising/falling.
 9. **No health, injury or medical status.** Incidents produce
