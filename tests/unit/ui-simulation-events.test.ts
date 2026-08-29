@@ -140,6 +140,41 @@ describe('the log beside the notice', () => {
     expect(withEvent?.[0]).toEqual(fault);
   });
 
+  it('does not move a row the player is already reading', () => {
+    /*
+     * The two producers of this list interleave on a cadence, and that is what
+     * makes position stability a real property rather than a tidy one.
+     * `hudAlertsFromWorkerMessage` re-appends the refusal row at the **end** of
+     * the list on every `simulation/status-counts` publication -- up to twice a
+     * second -- so if this function reorders the families against each other,
+     * the refusal row oscillates between two positions twice a second for as
+     * long as it stands.
+     *
+     * `simulation-alerts.ts` states the rule this holds it to, in
+     * `replaceOrAppend`: "the position of a row the player is already reading
+     * must not change under them". Issue #209 measured the same property from
+     * the other side, and `ui-shell.spec.ts`'s "alerts list order" block keeps
+     * that measurement.
+     *
+     * So: whatever order the caller hands in is the order that comes back,
+     * with the new event appended. Asserted on ids rather than on lengths --
+     * a length is exactly what a reordering preserves.
+     */
+    const fault: HudAlertViewModel = { id: 'fault-invalid-message', labelKey: 'hud.alert.fault.invalid-message', severity: 'danger' };
+    const refusal: HudAlertViewModel = { id: 'refusal-7', labelKey: 'hud.alert.refusal.build.unowned-land', severity: 'warning' };
+
+    const afterFirstEvent = hudEventAlertsFromWorkerMessage(publication(SAMPLE['prisoners.discharged'](1)), [fault]) ?? [];
+    // What a status-counts publication then does: it keeps every non-refusal
+    // row where it is and appends the refusal at the end.
+    const afterCounts = [...afterFirstEvent, refusal];
+    const afterSecondEvent = hudEventAlertsFromWorkerMessage(publication(SAMPLE['prisoners.discharged'](2)), afterCounts) ?? [];
+
+    expect(
+      afterSecondEvent.map((row) => row.id),
+      'every row that was already in the list must still be in the position it was in, or the player is reading a list that shuffles under them twice a second',
+    ).toEqual(['fault-invalid-message', 'event-1', 'refusal-7', 'event-2']);
+  });
+
   it('stops growing, so a long session does not become a spam feed', () => {
     /*
      * The volume rule, driven rather than asserted against its own constant.

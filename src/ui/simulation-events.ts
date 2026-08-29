@@ -138,15 +138,30 @@ export function hudEventAlertsFromWorkerMessage(
   previous: readonly HudAlertViewModel[] = [],
 ): readonly HudAlertViewModel[] | undefined {
   if (message.kind !== 'simulation/event') return undefined;
-  const row = eventAlertRow(message.payload.event);
-  const events = previous.filter((existing) => existing.id.startsWith(EVENT_ROW_PREFIX));
-  const others = previous.filter((existing) => !existing.id.startsWith(EVENT_ROW_PREFIX));
-  const kept = [...events, row].slice(-MAX_EVENT_ALERT_ROWS);
-  // The other producer's rows first, then the events, so a fault that has been
-  // standing all session does not sink below a discharge and out of sight. The
-  // two families are ordered against each other here and nowhere else, because
-  // this is the only function that sees both.
-  return [...others, ...kept];
+  const next = [...previous, eventAlertRow(message.payload.event)];
+
+  /*
+   * **Positions are preserved and only the oldest event rows are dropped.**
+   *
+   * The obvious implementation -- partition into events and non-events, trim
+   * the events, concatenate -- is wrong here, and wrong in a way that only
+   * shows up once both producers are running. `hudAlertsFromWorkerMessage`
+   * re-appends the refusal row at the *end* of the list on every
+   * `simulation/status-counts` publication, which arrives up to twice a
+   * second; a partition that grouped the families would hoist that row back
+   * above the events on every event, and it would oscillate between two
+   * positions for as long as it stood.
+   *
+   * `simulation-alerts.ts` states the rule in `replaceOrAppend` -- "the
+   * position of a row the player is already reading must not change under
+   * them" -- and issue #209 measured the same property from the other side.
+   * So this filters in place: every surviving row keeps its index relative to
+   * the others, and the new event goes on the end.
+   */
+  const eventIds = next.filter((existing) => existing.id.startsWith(EVENT_ROW_PREFIX)).map((existing) => existing.id);
+  if (eventIds.length <= MAX_EVENT_ALERT_ROWS) return next;
+  const dropped = new Set(eventIds.slice(0, eventIds.length - MAX_EVENT_ALERT_ROWS));
+  return next.filter((existing) => !dropped.has(existing.id));
 }
 
 /**
