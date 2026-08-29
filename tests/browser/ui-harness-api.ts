@@ -1,6 +1,7 @@
 import type {
   HudBuildQueueViewModel,
   HudHeldGuardsViewModel,
+  HudIntakePipelineViewModel,
   HudStaffCoverageViewModel,
   HudPendingDeliveriesViewModel,
   HudPrisonerRosterViewModel,
@@ -90,8 +91,41 @@ export interface IntakeProbe {
   readonly admitLaidOut: boolean;
   readonly admitLabel: string;
   readonly admitDisabled: boolean | null;
-  /** The sentence that says an admission needs somewhere to put the arrival. */
+  /** The sentence that says what an admission needs, and what it costs when the prison is full. */
   readonly hint: string;
+  /**
+   * The over-admission warning (issue #549), as a **box** rather than as an
+   * attribute.
+   *
+   * `null` when the line has no box at all -- which is what `[hidden]` is meant
+   * to produce and is emphatically not the same claim as `hidden === true`. A
+   * stylesheet whose `:not([hidden])` guard has been lost paints the line at
+   * full height with the attribute still set, and a spec reading `.hidden`
+   * would agree with it. `layoutBoxOf` returns `null` only for a genuinely
+   * unlaid-out node, so an assertion on this cannot pass while the player is
+   * looking at a warning that should not be there.
+   */
+  readonly noPlaceBox: LayoutBox | null;
+  /** What the warning says, or `''` when it says nothing. */
+  readonly noPlaceText: string;
+  /** `data-without-place`: the figure the panel was told, without parsing a localized sentence. */
+  readonly noPlaceCount: string | null;
+  /** The warning's colour, computed. The tone is the whole difference between this line and the readout below it. */
+  readonly noPlaceColor: string;
+  /** The pipeline readout's box, `null` when the block is folded away. */
+  readonly pipelineBox: LayoutBox | null;
+  readonly pipelineWaiting: string | null;
+  readonly pipelineFailed: string | null;
+  /** One line per stage that holds somebody: the stage id and what the line says. */
+  readonly pipelineStages: readonly { readonly stage: string; readonly text: string }[];
+  /** The panel's own box, so a spec can ask whether it has paid for its content. */
+  readonly panelBox: LayoutBox | null;
+  /** `scrollHeight - clientHeight` on the panel: how much taller its content is than the box it was given. */
+  readonly panelOverflow: number;
+  /** The same shortfall for the panel body, which is the box the new line is actually inside. */
+  readonly bodyOverflow: number;
+  /** Everything the panel drew, so a spec can assert on the sentence a player reads. */
+  readonly text: string;
 }
 
 /**
@@ -1086,6 +1120,8 @@ export interface LockstateUiHarness {
    * second draws a sentence, and the panel has to be handed each to prove it.
    */
   reportHeldGuards(held: HudHeldGuardsViewModel | undefined): void;
+  /** Publishes where the prison's arrivals are, the way `IntakePipelineReader` does in the real app. */
+  reportIntakePipeline(pipeline: HudIntakePipelineViewModel | undefined): void;
   /**
    * Publishes how many guards the prison asks for against how many it has,
    * which in the real app is read over `simulation/request-projection` by

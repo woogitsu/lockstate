@@ -539,14 +539,32 @@ const authoredMessages: Readonly<Record<string, string>> = {
 
   // The intake surface (#261 step 4). The hint states the prison's actual
   // situation rather than a feature disclaimer, because it *is* the prison's
-  // situation: an arrival needs somewhere to be accommodated, and a prison
-  // holding none refuses the press. It names the condition and not the build
-  // for exactly that reason, and that is what makes it still true now the
-  // Rooms tab (#312) exists -- a player who has zoned a cell is admitted, and
-  // a player who has not is told why not, from the one sentence.
+  // situation.
+  //
+  // It used to read "A prisoner can only be admitted into a prison that has a
+  // room to hold them", and that sentence was **false about the shipped game**
+  // (issue #549): `IntakeSystem.hasAccommodationTarget` asks whether the prison
+  // holds an instance of a housing room type and never whether a place in one
+  // is free, so a cell with one bed in it accepted twelve admissions. It is
+  // replaced rather than softened, and both halves of what the control really
+  // does are stated -- what makes a press refused, and what a press costs when
+  // the prison is full -- because a player who reads only this sentence must
+  // not come away believing the prison protects them from over-admitting.
+  //
+  // "a cell" and not "a room": every accommodation target
+  // `DEFAULT_ACCOMMODATION_POLICY` names is one, and a canteen or a yard has
+  // never made an admission possible.
   'hud.intake.title': 'Intake',
   'hud.intake.admit': 'Admit a prisoner',
-  'hud.intake.hint': 'A prisoner can only be admitted into a prison that has a room to hold them.',
+  'hud.intake.hint': 'A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits until a bed is free.',
+  // The warning beside the control, and the only toned figure on this panel.
+  // "no bed" and not "no cell": a zoned cell with nothing in it houses nobody,
+  // because `deriveRoomCapacity` credits residency to sleep surfaces and not to
+  // rooms (ADR 0028), so a player told to build a cell they have already built
+  // would be told to do the wrong thing. It states the prison's condition and
+  // promises no remedy -- placing a bed is one, and so is waiting for a
+  // sentence to end.
+  'hud.intake.no-place': '{count} waiting with no bed to sleep in',
   // Where the arrivals already admitted are. "In intake" rather than "Queue":
   // the pipeline is what the simulation calls this and the stage named
   // `queued` is only its first step, so a header saying "queue" would name one

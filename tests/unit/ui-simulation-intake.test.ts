@@ -54,6 +54,7 @@ const RNG_STREAM = 'prisoners.classification';
  */
 const population = (
   counts: Partial<Record<string, number>> = {},
+  waitingWithoutPlace = 0,
 ): PrisonerPopulationCountsViewModel => {
   const of = (stage: string, fallback: number): number => counts[stage] ?? fallback;
   const byIntakeStage = [
@@ -72,8 +73,30 @@ const population = (
       { classificationGroupId: 'high-risk', count: 0 },
     ],
     unclassified: 3,
+    waitingWithoutPlace,
   };
 };
+
+describe('what the Intake panel is told about who has no bed (issue #549)', () => {
+  it('carries the projection\'s figure through untouched, rather than deriving one here', () => {
+    // The number is the simulation's: this thread holds no room registry, so a
+    // figure computed here from a stage count would be a second definition of
+    // it that could disagree. 11 is deliberately not any of the stage counts in
+    // the fixture, so a mapping that reached for one of those fails.
+    expect(
+      intakePipelineFromProjection(population({ 'accommodation-assignment': 12 }, 11)).waitingWithoutPlace,
+    ).toBe(11);
+  });
+
+  it('reports nobody without a bed in a prison that has one for everybody waiting', () => {
+    // Four arrivals still moving through intake and none of them stuck. A
+    // mapping that copied `waiting`, or the `accommodation-assignment` count,
+    // would say four.
+    const pipeline = intakePipelineFromProjection(population());
+    expect(pipeline.waiting).toBe(4);
+    expect(pipeline.waitingWithoutPlace).toBe(0);
+  });
+});
 
 describe('what the Intake panel is told about the pipeline', () => {
   it('counts the arrivals still moving through intake, and neither terminal stage among them', () => {
@@ -132,7 +155,7 @@ describe('what the Intake panel is told about the pipeline', () => {
     const pipeline = intakePipelineFromProjection(
       population({ queued: 0, reception: 0, classification: 0, 'accommodation-assignment': 0, completed: 4, failed: 2 }),
     );
-    expect(pipeline).toEqual({ waiting: 0, failed: 2, total: 6, stages: [] });
+    expect(pipeline).toEqual({ waiting: 0, failed: 2, total: 6, stages: [], waitingWithoutPlace: 0 });
   });
 
   it('says an empty prison is empty rather than saying nothing', () => {
@@ -148,8 +171,9 @@ describe('what the Intake panel is told about the pipeline', () => {
       ],
       byClassificationGroupId: [],
       unclassified: 0,
+      waitingWithoutPlace: 0,
     });
-    expect(pipeline).toEqual({ waiting: 0, failed: 0, total: 0, stages: [] });
+    expect(pipeline).toEqual({ waiting: 0, failed: 0, total: 0, stages: [], waitingWithoutPlace: 0 });
   });
 });
 
@@ -214,6 +238,7 @@ describe('the reader that asks for the pipeline', () => {
       waiting: 2,
       failed: 0,
       total: 2,
+      waitingWithoutPlace: 0,
       stages: [
         { stageId: 'accommodation-assignment', labelKey: 'intake-stage.accommodation-assignment.name', count: 2 },
       ],
@@ -310,6 +335,13 @@ describe('what the readout says about a prison with one cell and three arrivals'
       waiting: 2,
       failed: 0,
       total: 3,
+      // The one bed in this prison is taken, so both of the two waiting are
+      // waiting for nothing that exists yet (issue #549). It is the same number
+      // as `waiting` here only because every arrival still in intake happens to
+      // be past classification; the readout above and this warning are not the
+      // same question, and `what the Intake panel is told about who has no bed`
+      // separates them.
+      waitingWithoutPlace: 2,
       stages: [
         { stageId: 'accommodation-assignment', labelKey: 'intake-stage.accommodation-assignment.name', count: 2 },
       ],

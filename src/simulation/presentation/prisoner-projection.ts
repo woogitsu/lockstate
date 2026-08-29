@@ -7,6 +7,7 @@ import type { ActorIdentitySource } from '../identity/actor-identity';
 import { DEFAULT_ACTIONS } from '../prisoners/actions';
 import {
   ACTION_PHASES,
+  CLASSIFICATION_GROUP_IDS,
   classificationGroupIdFromIndex,
   type ActionPhase,
   type CurrentActionComponent,
@@ -16,6 +17,13 @@ import {
   type PrisonerColdState,
   type PrisonerRecordComponent,
 } from '../prisoners/components';
+import {
+  accommodationTargetKey,
+  DEFAULT_ACCOMMODATION_POLICY,
+  firstAvailableAccommodationTarget,
+  resolveAccommodationTargets,
+  type AccommodationPolicy,
+} from '../prisoners/intake-system';
 import { NEED_IDS, NEED_MAX, type NeedId, type NeedsComponent } from '../prisoners/needs';
 import type { ActionCategory } from '../prisoners/regime';
 import type { RoomInstanceRegistry } from '../prisoners/room-instance-registry';
@@ -63,6 +71,20 @@ export interface PrisonerProjectionSource {
    * since left", which a live count of zero cannot distinguish on its own.
    */
   readonly admittedCount: number;
+  /**
+   * The accommodation policy this session's `IntakeSystem` is running, which is
+   * what `waitingWithoutPlace` is scoped by.
+   *
+   * Optional and structural, exactly as `StatusStripSource.accommodationPolicy`
+   * is: `PrisonerOperationsRuntime` declares one and therefore satisfies this
+   * without being told, while a fixture that stands up prisoner components
+   * alone is not obliged to invent one and gets
+   * `DEFAULT_ACCOMMODATION_POLICY`. A projection may not name `room.cell` in a
+   * condition of its own -- which room types house a resident is content
+   * (`AGENTS.md` boundary 6), and the content lives in an
+   * `AccommodationPolicy`.
+   */
+  readonly accommodationPolicy?: AccommodationPolicy;
 }
 
 /**
@@ -202,6 +224,43 @@ export interface PrisonerPopulationCountsViewModel {
   readonly byIntakeStage: readonly { readonly intakeStage: IntakeStage; readonly count: number }[];
   readonly byClassificationGroupId: readonly { readonly classificationGroupId: string; readonly count: number }[];
   readonly unclassified: number;
+  /**
+   * How many arrivals are waiting for accommodation the prison has **no free
+   * place for right now** -- issue #549.
+   *
+   * ### Why this is not the `accommodation-assignment` count
+   *
+   * `byIntakeStage` already answers "how many are at Cell Assignment", and that
+   * is a different question. `IntakeSystem` runs every five ticks, so an
+   * arrival reaching that stage sits in it for one scheduled interval **before
+   * anybody looks for a bed for them** -- in a prison with a free cell they are
+   * housed on the next intake tick and were never stuck. A readout keyed on the
+   * stage would therefore blink a warning at a prison that is working, and a
+   * player who learned to ignore that blink would ignore the real thing too.
+   *
+   * This subtracts the places the prison can actually offer. It is `0` for
+   * every arrival that has somewhere to go and rises only once the beds run
+   * out, which is the state issue #549 measured: a one-bed cell, twelve
+   * admissions, one housed and eleven with nowhere to sleep.
+   *
+   * ### What it deliberately does not count
+   *
+   * - **Arrivals before `accommodation-assignment`.** `queued`, `reception` and
+   *   `classification` arrivals have not been classified yet, and which room
+   *   type they may be housed in is a `prisoners.classification` draw that has
+   *   not been made. Counting them would mean predicting that draw, which is
+   *   the thing `IntakeSystem.hasAccommodationTarget`'s own note refuses to do.
+   * - **Arrivals whose classification group has no room type in this prison at
+   *   all.** They reach the terminal `failed` stage on the next intake tick and
+   *   `byIntakeStage` reports them there. They are a different sentence -- a
+   *   place will not release them -- and counting them here as well would
+   *   report one person twice.
+   *
+   * So this is exactly "somebody a bed would house, and there is no bed". It is
+   * not a claim about the *future*: an arrival counted here is housed the
+   * moment a place exists, and nothing here says one ever will.
+   */
+  readonly waitingWithoutPlace: number;
 }
 
 function roomRef(
@@ -367,6 +426,107 @@ export function projectPrisonerRoster(
 }
 
 /**
+ * Free resident places per accommodation target, from the registry the intake
+ * stage itself asks.
+ *
+ * The same walk `accommodationCapacityOf` makes in
+ * `status-strip-projection.ts` -- targets in `resolveAccommodationTargets`
+ * order, each instance credited to at most one target -- with two differences,
+ * and both are the point:
+ *
+ * - it subtracts the current occupancy, because a full cell is capacity and not
+ *   a place; and
+ * - it keeps the totals **per target** rather than summing them, because a
+ *   high-risk arrival held for a solitary cell is not housed by a free place in
+ *   an ordinary one. A single prison-wide total would report nobody waiting in
+ *   exactly the configuration that strands somebody.
+ *
+ * `Math.max(0, ...)` on each instance rather than on the total: an instance
+ * whose `residentCapacity` fell below its occupancy -- a bed removed from a
+ * cell somebody sleeps in -- has no places to offer, and must not cancel out
+ * the places another cell does have.
+ *
+ * Deterministic and allocation-bounded by the number of accommodation
+ * instances: `allByRoomCatalogId` returns its cached ascending-instance-id
+ * sort, the target list is authored, and both collections are keyed rather
+ * than iterated.
+ */
+function freeAccommodationPlacesByTarget(
+  roomInstances: RoomInstanceRegistry,
+  policy: AccommodationPolicy,
+): Map<string, number> {
+  const free = new Map<string, number>();
+  const counted = new Set<string>();
+
+  for (const target of resolveAccommodationTargets(policy)) {
+    let places = 0;
+    for (const instance of roomInstances.allByRoomCatalogId(target.roomCatalogId)) {
+      if (counted.has(instance.instanceId)) continue;
+      if (
+        target.requiredObjectCapability !== undefined &&
+        !instance.objectCapabilities.includes(target.requiredObjectCapability)
+      ) {
+        continue;
+      }
+      counted.add(instance.instanceId);
+      places += Math.max(0, instance.residentCapacity - roomInstances.occupancyOf(instance.instanceId));
+    }
+    free.set(accommodationTargetKey(target), places);
+  }
+
+  return free;
+}
+
+/**
+ * How many of the arrivals waiting at `accommodation-assignment` the prison
+ * currently has nowhere to put -- see `waitingWithoutPlace`.
+ *
+ * It resolves each group's target the way `IntakeSystem` does, through the one
+ * shared `firstAvailableAccommodationTarget`, and then spends that target's
+ * free places on the arrivals holding it. What it does **not** do is re-run the
+ * placement: which instance an arrival lands in is a cell-sharing rating
+ * (`rateCellSharing`) and it cannot change whether a place exists, so counting
+ * needs the budget and not the choice.
+ *
+ * The answer does not depend on the order groups are visited in, because a
+ * target's shortfall is `max(0, arrivals holding it - its places)` however the
+ * arrivals holding it are split between groups. `CLASSIFICATION_GROUP_IDS`
+ * order is used anyway, so nothing here reads a `Map`'s insertion order
+ * (`docs/DETERMINISM.md`).
+ *
+ * A group whose target is `undefined` is skipped rather than counted: the
+ * prison holds no instance of any room type that group may be housed in, so
+ * those arrivals become `failed` on the next intake tick and `byIntakeStage`
+ * reports them there. Counting them here as well would put one person in two
+ * sentences that mean opposite things -- "a bed would fix this" and "nothing
+ * will".
+ */
+function waitingWithoutPlaceCount(
+  source: PrisonerProjectionSource,
+  policy: AccommodationPolicy,
+  waitingByGroup: ReadonlyMap<string, number>,
+): number {
+  if (waitingByGroup.size === 0) return 0;
+
+  const free = freeAccommodationPlacesByTarget(source.roomInstances, policy);
+  let withoutPlace = 0;
+
+  for (const groupId of CLASSIFICATION_GROUP_IDS) {
+    const waiting = waitingByGroup.get(groupId) ?? 0;
+    if (waiting <= 0) continue;
+    const target = firstAvailableAccommodationTarget(policy, source.roomInstances, groupId);
+    if (target === undefined) continue;
+    const key = accommodationTargetKey(target);
+    const places = free.get(key) ?? 0;
+    const housed = Math.min(waiting, places);
+    free.set(key, places - housed);
+    withoutPlace += waiting - housed;
+  }
+
+  return withoutPlace;
+}
+
+/**
  * Population counts without building a single row. Same index walk as the
  * roster, no per-prisoner allocation at all -- this is what a status strip
  * or a filter chip should read.
@@ -374,6 +534,8 @@ export function projectPrisonerRoster(
 export function projectPrisonerPopulationCounts(source: PrisonerProjectionSource): PrisonerPopulationCountsViewModel {
   const byStage = new Map<IntakeStage, number>();
   const byGroup = new Map<string, number>();
+  /** Arrivals at `accommodation-assignment` only, by the group whose targets decide where they may go. */
+  const waitingByGroup = new Map<string, number>();
   let total = 0;
   let unclassified = 0;
 
@@ -388,6 +550,7 @@ export function projectPrisonerPopulationCounts(source: PrisonerProjectionSource
     }
     const groupId = classificationGroupIdFromIndex(source.records.classificationGroupIndex[index]!);
     byGroup.set(groupId, (byGroup.get(groupId) ?? 0) + 1);
+    if (stage === 'accommodation-assignment') waitingByGroup.set(groupId, (waitingByGroup.get(groupId) ?? 0) + 1);
   }
 
   return {
@@ -403,6 +566,11 @@ export function projectPrisonerPopulationCounts(source: PrisonerProjectionSource
       count: byGroup.get(groupId) ?? 0,
     })),
     unclassified,
+    waitingWithoutPlace: waitingWithoutPlaceCount(
+      source,
+      source.accommodationPolicy ?? DEFAULT_ACCOMMODATION_POLICY,
+      waitingByGroup,
+    ),
   };
 }
 
