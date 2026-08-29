@@ -399,10 +399,22 @@ export class RoomInstanceRegistry {
    * matters -- now fills up.
    *
    * **One exception, and it is the shape of the old sentence surviving in a
-   * corner:** a V4 instance restored from a save has no `width`/`height` to
-   * derive from and still answers `POSITIVE_INFINITY` (ADR 0071 records that
-   * the format does not carry bounds). So a legacy save keeps the unbounded
-   * behaviour this paragraph used to describe of every instance.
+   * corner:** an instance that records no `width`/`height` has nothing to
+   * derive from and still answers `POSITIVE_INFINITY`.
+   *
+   * **This exception used to name a V4 save as its example and no longer may**
+   * (issue #559, ADR 0074). It read *"a V4 instance restored from a save has no
+   * `width`/`height` to derive from and still answers `POSITIVE_INFINITY` ...
+   * so a legacy save keeps the unbounded behaviour"*, and that was the defect
+   * rather than a description of one: a V4 yard restored on a build with #554
+   * in it kept the very dominance #554 exists to remove. A V4 row records no
+   * rectangle, but the payload's *world* section does -- `RoomZoningService.zone`
+   * paints the room type over every tile it designates -- so
+   * `restoreSessionSystems` recovers it
+   * (`src/simulation/rooms/bounds-recovery.ts`) and such an instance normally
+   * arrives here with bounds. What is left in this corner is an instance whose
+   * plane cannot support a rectangle at all: a hand-edited save, or paint
+   * cleared out from under a row. Inventing one for those is still refused.
    *
    * A linear walk of the claim map when scoped, rather than a second index per
    * capability: the map holds one entry per actor *currently performing in this
@@ -444,13 +456,21 @@ export class RoomInstanceRegistry {
    *    4 and a 16x16 yard admits 16, from the rectangle the player drew.
    *
    *    **An instance with no recorded rectangle keeps the old answer, and that
-   *    is not a hedge.** A V4 save genuinely records no bounds
-   *    (`RoomInstance.width`), the rule has no domain without them, and
-   *    inventing a rectangle would assert a room the player did not zone --
-   *    which is `roomBoundsOf`'s reasoning in
+   *    is not a hedge.** The rule has no domain without bounds, and inventing a
+   *    rectangle would assert a room the player did not zone -- which is
+   *    `roomBoundsOf`'s reasoning in
    *    `src/simulation/objects/room-capacity.ts` applied to the one place a
    *    missing rectangle would otherwise start refusing prisoners a room they
    *    had before the upgrade.
+   *
+   *    **This paragraph named a V4 save as the case, and that half is
+   *    withdrawn** (issue #559, ADR 0074). A V4 *row* records no rectangle, but
+   *    the same payload's world section carries the zoning plane the room was
+   *    painted into, so the restore recovers the rectangle from it and a
+   *    restored V4 yard is bounded like any other. Keeping the unbounded answer
+   *    for it was not conservatism, it was #554 not reaching the save path.
+   *    What still reaches this branch is an instance the plane cannot support:
+   *    see `src/simulation/rooms/bounds-recovery.ts`.
    *
    *    The previous rule, kept rather than overwritten because it was right
    *    about what it denied: an *object-footprint* ceiling on an objectless
@@ -731,8 +751,11 @@ export class RoomInstanceRegistry {
     return this.allByRoomCatalogId(roomCatalogId).find((instance) => {
       const ceiling = this.concurrentUseCapacityFor(instance, requiredObjectCapability);
       // Infinity now means only one thing: an instance that records no
-      // rectangle, which is what a V4 save carries. There is no number to
-      // compare against and no reason to walk the claim map for it. **This
+      // rectangle. **This used to add "which is what a V4 save carries"**, and
+      // that clause is withdrawn (issue #559, ADR 0074): a V4 row's rectangle
+      // is recovered from the zoning plane at restore, so what reaches this
+      // branch is a row no plane can support. There is no number to compare
+      // against and no reason to walk the claim map for it. **This
       // short-circuit used to be the yard's**, and since #532 the yard has a
       // finite ceiling and falls through to the comparison below like every
       // other room.
@@ -914,8 +937,11 @@ export class RoomInstanceRegistry {
    * which since #532 answers
    * `max(1, floor(width * height / TILES_PER_OPEN_GROUND_PLACE))` rather than
    * `Infinity`. **This said "bounded by nothing"**, which was true of that case
-   * before #532 and is now true only of a **V4 instance restored from a save**,
-   * which has no stored bounds to derive from.
+   * before #532; it then said it was true of *a V4 instance restored from a
+   * save*, and that is withdrawn too (issue #559, ADR 0074) -- the restore
+   * recovers such an instance's rectangle from the zoning plane the same
+   * payload carries. What is left unbounded is an instance whose plane shows no
+   * rectangle at all.
    *
    * It is recorded either way, because `releaseUse`, `claimCountOf` and
    * `totalUseClaims` all need to know the actor is in there.

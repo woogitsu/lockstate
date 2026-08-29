@@ -890,10 +890,16 @@ export class RoomZoningService {
    * ## The tiles no instance claims
    *
    * A painted tile that resolves to no instance keeps the old flood fill, and
-   * that is not a leftover. Two states produce one: a V4 room instance records
-   * no rectangle (`roomBoundsOf` answers `undefined` and there is no honest
+   * that is not a leftover. Two states produce one: an instance that records no
+   * rectangle (`roomBoundsOf` answers `undefined` and there is no honest
    * default -- see `../objects/room-capacity.ts`), and a save written before
-   * zoning painted the plane can leave paint with no instance at all. Removal
+   * zoning painted the plane can leave paint with no instance at all.
+   *
+   * **The first used to be named as "a V4 room instance" and no longer is**
+   * (issue #559, ADR 0074): a V4 row's rectangle is recovered at restore from
+   * this very plane (`./bounds-recovery.ts`), so a restored V4 room resolves to
+   * its instance and its removal takes the instance path above rather than this
+   * fill. What still reaches here is a row the plane cannot support. Removal
    * exists so that no designation is permanent, so those tiles must stay
    * clearable; resolving them to nothing and leaving them would be the
    * unremovable-room defect this command was built to close.

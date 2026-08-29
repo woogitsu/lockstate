@@ -258,17 +258,42 @@ type RoomInstancesV5 = readonly {
  * `tests/migrations/save-v4-to-v5.test.ts` re-verifies the premise off a real
  * captured session rather than trusting this paragraph.
  *
- * **No `width`/`height` is fabricated.** They are optional at V5 precisely so
- * that this step does not have to choose: `1x1` would assert a room the player
- * did not zone and `64x64` one that overlaps its neighbours, and either is the
- * invented-consequence defect. An instance with no rectangle is attributed no
- * objects, so its capacity stays 0 -- which is what it was.
+ * **No `width`/`height` is fabricated *here*, and that is still right.** They
+ * are optional at V5 precisely so that this step does not have to choose:
+ * `1x1` would assert a room the player did not zone and `64x64` one that
+ * overlaps its neighbours, and either is the invented-consequence defect.
  *
- * And the hard case is unreachable in practice for a *player's* save: while
- * `ZoneRoom` had no producer no save could contain a room instance at all, and
- * the producer arrived in the same release train as this migration. What this
- * handles honestly is a save written by a build that had the Rooms tab and not
- * object placement, plus any hand-authored one.
+ * **What follows from that is no longer "so a migrated room has no rectangle"**
+ * (issue #559,
+ * [ADR 0074](../../docs/adr/0074-what-a-restored-room-that-recorded-no-rectangle-is.md)).
+ * The payload's *world* section carries the zoning plane, and
+ * `RoomZoningService.zone` painted the room type over every tile of the
+ * rectangle when the player designated it -- so the rectangle survives in the
+ * save even though the row does not carry it, and `restoreSessionSystems`
+ * reads it back (`src/simulation/rooms/bounds-recovery.ts`). Nothing about
+ * that belongs here: a migration writes a conclusion into the file, and the
+ * restored session can derive this one from what it was handed, which is
+ * [ADR 0033](../../docs/adr/0033-releasing-an-interrupted-incident-response-at-runtime.md)'s
+ * distinction and the reason ADR 0030 decision 3's premise failed (#391).
+ *
+ * **Two sentences here claimed the hard case was unreachable in practice, and
+ * both were false.** They read: *"An instance with no rectangle is attributed
+ * no objects, so its capacity stays 0 -- which is what it was"*, and *"the hard
+ * case is unreachable in practice for a player's save: while `ZoneRoom` had no
+ * producer no save could contain a room instance at all, and the producer
+ * arrived in the same release train as this migration."*
+ *
+ * The first stopped being true when #554 gave an objectless room a ceiling
+ * derived from its own ground: an instance with no rectangle then answered
+ * `Infinity` for a capability-free action rather than 0, which is #559.
+ *
+ * The second was never true. `84e1c61` shipped the Rooms tab that zones a room
+ * at 2026-08-25 16:59 and `6cededc` moved the schema to V5 at 20:08 the same
+ * day, with **twelve tagged releases in between** (v0.0.49 .. v0.0.61) and
+ * `room.yard` in the catalogue throughout.
+ * `tests/fixtures/persistence/save-v4-yard.json` is a save v0.0.61 actually
+ * wrote, captured from that build in a detached worktree, and it holds a zoned
+ * yard.
  */
 function dropDerivedRoomFields(instances: RoomInstancesV4): RoomInstancesV5 {
   return instances.map((instance) => ({
