@@ -7,6 +7,7 @@ import {
   tileCoordinate,
 } from '../../src/simulation/world/coordinates';
 
+
 test('new-session runtime owns an initial loaded chunk and applies build commands', () => {
   const runtime = createNewSimulationRuntime();
   const initialChunk = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
@@ -57,9 +58,18 @@ test('new-session runtime wires security sectors, guard deployment and patrol', 
   // `'security-sector.prison'`, which is also the order `assignUnassignedGuards`
   // fills them in -- so the single guard hired here goes to this test's sector
   // and the default one reports the shortage it honestly has.
+  //
+  // **The derived sector's row moved with issue #533 and `'sector-1'`'s did
+  // not**, which is the whole of that change's scope in one assertion. This
+  // prison holds no prisoners, so the derived sector -- whose occupants are
+  // every prisoner on owned land -- is empty and asks for nobody. `'sector-1'`
+  // is a registered sector whose occupant count is only of its post tile, an
+  // undercount ADR 0048 accepts because a registered sector records no extent,
+  // so its authored schedule stands and it still asks for the one guard this
+  // fixture pushed.
   expect(runtime.deploymentSystem.getCoverageReport(0)).toEqual([
     { sectorId: 'sector-1', required: 1, assigned: 1, shortage: 0 },
-    { sectorId: 'security-sector.prison', required: 1, assigned: 0, shortage: 1 },
+    { sectorId: 'security-sector.prison', required: 0, assigned: 0, shortage: 0 },
   ]);
 });
 

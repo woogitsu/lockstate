@@ -12,6 +12,8 @@ import type {
   HudHeldGuardsViewModel,
   HudLocalizer,
   HudStaffCoverageViewModel,
+  HudStaffRosterRowViewModel,
+  HudStaffRosterViewModel,
   HudStaffViewModel,
 } from './view-model';
 
@@ -118,6 +120,38 @@ export interface StaffPanelHireIntent {
 export const HELD_GUARD_ROW_LIMIT = 3;
 
 /**
+ * How many roster rows the dismiss block shows at once (issue #533).
+ *
+ * **Three, and it is inherited rather than re-measured, which is stated because
+ * inheriting a measurement is the thing this repository has been burned by.**
+ * `HELD_GUARD_ROW_LIMIT` above carries a real measurement -- three rows plus the
+ * overflow line, every control above the fold at five viewports, a fourth row
+ * 9.0px below it at 900x600 -- and this block is that block's shape: the same
+ * row height, the same button, the same overflow line, on the same panel. What
+ * is *not* inherited is the arrival cost, and that is why this block is
+ * **collapsed when it appears** rather than open: a second three-row list under
+ * the first would put the second one's controls exactly where the fourth held
+ * row was measured to be. Collapsed, the block costs its header and nothing
+ * else, which is the answer `.hud-build__queue` already gave to the identical
+ * problem (`unconsumed-command-contract.test.ts` records it: *"the block being
+ * `hidden` while nothing is queued and collapsed when it appears, so the
+ * panel's arrival height is unchanged"*).
+ *
+ * **The fold measurement for the expanded block has not been taken**, because
+ * this environment has no browser and `vitest.config.ts` is `environment:
+ * 'node'`. The claim made here is therefore the weaker one it can support: the
+ * *arrival* height is unchanged, which is checkable from the collapse alone, and
+ * the expanded height is the browser job's to confirm. Saying so is cheaper than
+ * a measurement nobody took.
+ */
+export const STAFF_ROSTER_ROW_LIMIT = 3;
+
+/** What one press of a dismiss control asks for: a staff id and nothing else. */
+export interface StaffPanelDismissIntent {
+  readonly staffId: number;
+}
+
+/**
  * What one press of a release control asks for: a guard id and nothing else.
  *
  * **No claim.** The row knows what is holding the guard, because it says so, and
@@ -137,6 +171,8 @@ export interface StaffPanelOptions {
   readonly onHire: (intent: StaffPanelHireIntent) => void;
   /** Release one held guard from whatever is holding it (ADR 0034). */
   readonly onRelease: (intent: StaffPanelReleaseIntent) => void;
+  /** End one staff member's employment (issue #533). */
+  readonly onDismiss: (intent: StaffPanelDismissIntent) => void;
 }
 
 /**
@@ -246,14 +282,48 @@ export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): Staf
   }
   // Includes a prison that asks for nobody: a `DeploymentSchedule` of zero is an
   // *exemption* a save can carry (ADR 0048 decision 3), and "this prison has the
-  // guards it asks for" is true of a prison that asks for none. It is not
-  // reachable from `applyDefaultSecuritySector`, which authors a floor of one.
+  // guards it asks for" is true of a prison that asks for none.
+  //
+  // **This comment used to end "It is not reachable from
+  // `applyDefaultSecuritySector`, which authors a floor of one", and that is no
+  // longer true** (issue #533). The floor is still one, but
+  // `resolveOccupancyScaledGuardCount` now answers `0` for a sector holding
+  // nobody, so this branch is what an *empty* prison reads -- the ordinary
+  // state of a session a player has just started, rather than a case only a
+  // hand-edited save reaches. Nothing here changes: the branch was already
+  // correct for `required: 0`, and that it needed no new sentence is the check
+  // that #533 changed a demand rather than a promise.
   return {
     tone: 'success',
     badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
     hintKey: HUD_MESSAGE_KEY.securityCoverageMetHint,
     hireCount: 0,
   };
+}
+
+/**
+ * What one roster row says: who, and what they are doing.
+ *
+ * Pure and exported for `formatHeldGuardText`'s reason -- nothing headless can
+ * call `createStaffPanel`, so the sentence has to be assertable over real text
+ * from a real catalog.
+ *
+ * It reuses `hud.security.held-row` and `hud.security.held-row-unnamed` rather
+ * than drafting two more, which is a decision with a stated cost: those keys
+ * name their second placeholder `claim`, and what fills it here is a
+ * *deployment phase*. The rendered sentence is the same shape and the same fact
+ * about a person on a row -- `Guard · On Post` -- so two keys would be two
+ * strings translated identically, and the mismatch is in the placeholder's name
+ * alone. It is recorded here and in `messages.ts` rather than papered over.
+ */
+export function formatStaffRosterText(
+  t: (key: LocalizationKey, parameters?: MessageParameters) => string,
+  staff: HudStaffRosterRowViewModel,
+): string {
+  const claim = t(staff.statusLabelKey);
+  return staff.roleLabelKey === undefined
+    ? t(HUD_MESSAGE_KEY.securityHeldRowUnnamed, { id: staff.entityId, claim })
+    : t(HUD_MESSAGE_KEY.securityHeldRow, { name: t(staff.roleLabelKey), claim });
 }
 
 export interface StaffPanel {
@@ -281,6 +351,13 @@ export interface StaffPanel {
    * whose row is hidden is present and disabled rather than absent.
    */
   readonly releaseControls: readonly HTMLButtonElement[];
+  /**
+   * The dismiss buttons, in row order, on `releaseControls`' terms and for its
+   * reasons -- fixed length (`STAFF_ROSTER_ROW_LIMIT`) because the rows are
+   * pooled, so a button whose row is hidden is present and disabled rather than
+   * absent.
+   */
+  readonly dismissControls: readonly HTMLButtonElement[];
   /** Current selection, exposed so a test can assert it without reading the DOM. */
   getSelection(): string | undefined;
   /**
@@ -300,6 +377,16 @@ export interface StaffPanel {
    * up and the reason both are `| undefined` rather than defaulted.
    */
   setCoverage(coverage: HudStaffCoverageViewModel | undefined): void;
+  /**
+   * Repaint the roster block from a fresh `hud/staff` reply (issue #533).
+   *
+   * `undefined` hides the section, and it is a different state from an empty
+   * roster, on `setHeldGuards`' terms: "nothing has asked yet" must not render
+   * as "nobody is hired", because only the second is a statement about the
+   * prison -- and only the second is a state in which there is nothing to
+   * dismiss.
+   */
+  setStaffRoster(roster: HudStaffRosterViewModel | undefined): void;
   setVisible(visible: boolean): void;
 }
 
@@ -572,6 +659,116 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     }
   }
 
+  // ---- who is on the payroll, and the control that ends it (#533) -----
+  /**
+   * One pooled row: who somebody is and what they are doing, and the control
+   * that dismisses them.
+   *
+   * `staffId` is read at *press* time rather than captured when the row is
+   * built, for the held rows' reason and with a sharper consequence: the row is
+   * pooled and names whichever staff member the last publication put in it, so a
+   * captured id would sack whoever was in this row two seconds ago -- and a
+   * dismissal, unlike a release, cannot be undone by waiting.
+   */
+  interface RosterRow {
+    readonly element: HTMLElement;
+    readonly label: HTMLSpanElement;
+    readonly dismiss: ActionButton;
+    /** The staff member this row currently names, or `undefined` while it is hidden. */
+    staffId: number | undefined;
+  }
+
+  const rosterList = element('div', { className: 'hud-staff__held-list' });
+
+  const rosterRows: readonly RosterRow[] = Array.from({ length: STAFF_ROSTER_ROW_LIMIT }, (): RosterRow => {
+    const label = valueText('', 'hud-staff__held-label');
+    const row: RosterRow = {
+      element: element('div', { className: 'hud-staff__held-row' }),
+      label,
+      dismiss: createActionButton({
+        label: t(HUD_MESSAGE_KEY.securityRosterDismiss),
+        onActivate: () => {
+          const { staffId } = row;
+          if (staffId === undefined) return;
+          options.onDismiss({ staffId });
+        },
+      }),
+      staffId: undefined,
+    };
+    row.element.append(element('div', { className: 'hud-staff__held-text', children: [label] }), row.dismiss.element);
+    row.element.hidden = true;
+    rosterList.append(row.element);
+    return row;
+  });
+
+  const rosterMore = eyebrowText('', 'hud-staff__note hud-staff__held-more');
+
+  /*
+   * Collapsible, and **collapsed** -- see `STAFF_ROSTER_ROW_LIMIT` for the
+   * measurement this stands in for. `roles` above is the panel's other
+   * collapsible section and uses the same `onToggle` -> `setCollapsed`
+   * handshake, which the primitive requires: it reports what the player asked
+   * for and changes nothing until the owner says so.
+   */
+  const rosterSection: CollapsibleSection = createCollapsibleSection({
+    eyebrow: t(HUD_MESSAGE_KEY.securityRosterTitle),
+    collapsed: true,
+    onToggle: (collapsed) => rosterSection.setCollapsed(collapsed),
+  });
+  rosterSection.element.classList.add('hud-staff__roster');
+  rosterSection.body.append(rosterList, rosterMore, eyebrowText(t(HUD_MESSAGE_KEY.securityRosterHint), 'hud-staff__note'));
+
+  let roster: HudStaffRosterViewModel | undefined;
+
+  function paintRoster(): void {
+    // Hidden while nothing has asked *and* while nobody is hired. The second is
+    // this block's own rule rather than the held block's: a roster section on a
+    // prison with no staff is a header promising a list that cannot exist, and
+    // the panel already has a "Who to hire" section saying what to do about it.
+    rosterSection.element.hidden = roster === undefined || roster.hired === 0;
+    if (roster === undefined) {
+      // Every pooled row emptied as well as hidden, so a press that somehow
+      // reached a hidden button cannot name somebody from the last publication.
+      for (const row of rosterRows) {
+        row.staffId = undefined;
+        row.element.hidden = true;
+        row.dismiss.setDisabled(true);
+        delete row.element.dataset['staff'];
+      }
+      return;
+    }
+
+    const staff = roster.staff.slice(0, STAFF_ROSTER_ROW_LIMIT);
+    rosterRows.forEach((row, index) => {
+      const member = staff[index];
+      if (member === undefined) {
+        row.staffId = undefined;
+        row.element.hidden = true;
+        row.dismiss.setDisabled(true);
+        delete row.element.dataset['staff'];
+        return;
+      }
+      row.staffId = member.entityId;
+      row.label.textContent = formatStaffRosterText(t, member);
+      row.element.hidden = false;
+      row.dismiss.setDisabled(false);
+      // The row's identity for a browser probe, in the shape `data-guard` gives
+      // the held rows and needed for the same reason: the rows are pooled, so
+      // "the second row" is not a stable name for a person.
+      row.element.dataset['staff'] = String(member.entityId);
+    });
+
+    rosterList.hidden = staff.length === 0;
+    // Counted against `roster.hired` and not against `roster.staff.length`: the
+    // reader asks for one row budget's worth of rows, so the window is what
+    // arrived and the total is what the prison employs.
+    const remaining = roster.hired - staff.length;
+    rosterMore.hidden = remaining <= 0;
+    if (remaining > 0) {
+      rosterMore.textContent = t(HUD_MESSAGE_KEY.securityHeldMore, { count: localizer.formatNumber(remaining) });
+    }
+  }
+
   const panel = createPanel({
     title: t(HUD_MESSAGE_KEY.securityStaffTitle),
     icon: 'security',
@@ -585,18 +782,25 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       children: [hire.element, eyebrowText(t(HUD_MESSAGE_KEY.securityStaffHint), 'hud-staff__note')],
     }),
     heldBlock,
+    rosterSection.element,
   );
 
   paintRoles();
   paintHire();
   paintHeld();
   paintCoverage();
+  paintRoster();
 
   return {
     element: panel.element,
-    controls: [hire.element, ...heldRows.map((row) => row.release.element)],
+    controls: [
+      hire.element,
+      ...heldRows.map((row) => row.release.element),
+      ...rosterRows.map((row) => row.dismiss.element),
+    ],
     hireControl: hire.element,
     releaseControls: heldRows.map((row) => row.release.element),
+    dismissControls: rosterRows.map((row) => row.dismiss.element),
     getSelection: () => selectedId,
     setHeldGuards(next: HudHeldGuardsViewModel | undefined): void {
       held = next;
@@ -605,6 +809,10 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     setCoverage(next: HudStaffCoverageViewModel | undefined): void {
       coverage = next;
       paintCoverage();
+    },
+    setStaffRoster(next: HudStaffRosterViewModel | undefined): void {
+      roster = next;
+      paintRoster();
     },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;

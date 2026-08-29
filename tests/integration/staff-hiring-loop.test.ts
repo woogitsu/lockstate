@@ -127,22 +127,38 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
     const counts = projectStatusCounts(runtime, runtime.kernel.tick);
     expect(counts.staff).toBe(1);
     /*
-     * **Posted, not unassigned**, and the change is the whole of issue #396.
+     * **Unassigned, and this line has now been all three things** -- which is
+     * why both earlier readings are kept rather than overwritten.
      *
-     * This assertion used to read `staffUnassigned === 1`, with a comment
-     * saying "honestly so: a new session registers no deployment schedule, so
+     * It first read `staffUnassigned === 1`, with a comment saying "honestly
+     * so: a new session registers no deployment schedule, so
      * `DeploymentSystem` has no sector to send anybody to". That was true and
-     * it was the bug: `securitySectors.register` had one caller in all of
-     * `src/`, the restore path, so the whole security tier was inert in every
-     * session a player could start. Since
-     * [ADR 0036](../../docs/adr/0036-a-derived-default-security-sector.md) a
-     * session carries one derived sector asking for one guard all day, and the
-     * first hire fills it -- on the tick the hire lands, because the hire is
-     * dispatched at a tick and `DeploymentSystem` runs on the same step.
+     * it was issue #396's bug: `securitySectors.register` had one caller in all
+     * of `src/`, the restore path, so the whole security tier was inert in
+     * every session a player could start.
+     *
+     * ADR 0036 fixed that and the line became `0` / `'on-post'`: a session
+     * carries one derived sector asking for one guard all day, and the first
+     * hire filled it on the tick the command landed.
+     *
+     * Issue #533 moves it back to `1`, for a reason that is *not* #396's and
+     * must not be read as its return. The tier is still wired -- the sector,
+     * the schedule and the watch entry are all registered, and
+     * `tests/integration/security-default-sector.test.ts` measures a guard
+     * posted the moment the prison holds anybody. What changed is the demand:
+     * this fixture's prison has **no prisoners**, and a sector with nobody in
+     * it asks for no guards, so the hire lands in the pool
+     * `IncidentResponseSystem` and `SearchSystem` claim from rather than on a
+     * post nobody needs. The distinction is checkable rather than rhetorical,
+     * and the next three lines check it: the sector exists, it asks for
+     * nobody, and it reports no shortage.
      */
-    expect(counts.staffUnassigned).toBe(0);
-    expect(runtime.securityGuards.getDeploymentPhase(runtime.securityGuards.allGuardIds()[0]!)).toBe('on-post');
-    expect(runtime.securityGuards.getSectorId(runtime.securityGuards.allGuardIds()[0]!)).toBe('security-sector.prison');
+    expect(counts.staffUnassigned).toBe(1);
+    expect(runtime.securityGuards.getDeploymentPhase(runtime.securityGuards.allGuardIds()[0]!)).toBe('unassigned');
+    expect(runtime.securityGuards.getSectorId(runtime.securityGuards.allGuardIds()[0]!)).toBeUndefined();
+    expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)).toEqual([
+      { sectorId: 'security-sector.prison', required: 0, assigned: 0, shortage: 0 },
+    ]);
 
     // 2. The view model the status strip actually renders, off the wire.
     expect(hudCountsFromWorkerMessage(publication(runtime))?.staff).toBe(1);
@@ -154,15 +170,17 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
     expect(roster.roster.rows[0]?.staffRoleId).toBe(GUARD);
     expect(roster.roster.rows[0]?.staffRoleNameKey).toBe(defaultStaffRoleRegistry.getById(GUARD)!.nameKey);
     expect(roster.roster.rows[0]?.department).toBe('security');
-    // `NEW_PRISON_ORIGIN_TILE` is also the derived sector's post tile, so the
-    // hire is standing on its post already and `DeploymentSystem` posts it
-    // without a route request (ADR 0036) -- the tile is unchanged and the phase
-    // is not.
+    // The tile is where the hire was placed and stays there, which is now true
+    // for a duller reason than it used to be: `NEW_PRISON_ORIGIN_TILE` is also
+    // the derived sector's post tile (ADR 0036), so a posted hire would not have
+    // moved either. See the `staffUnassigned` block above for why this prison
+    // posts nobody -- it holds no prisoners, and issue #533 stopped an empty
+    // sector demanding a guard.
     expect(roster.roster.rows[0]?.tile).toEqual({ x: ORIGIN.x, y: ORIGIN.y });
-    expect(roster.roster.rows[0]?.assignment.deploymentPhase).toBe('on-post');
-    expect(roster.roster.rows[0]?.assignment.sectorId).toBe('security-sector.prison');
+    expect(roster.roster.rows[0]?.assignment.deploymentPhase).toBe('unassigned');
+    expect(roster.roster.rows[0]?.assignment.sectorId).toBeUndefined();
     expect(roster.countsByRoleId.find((entry) => entry.staffRoleId === GUARD)?.count).toBe(1);
-    expect(roster.totals).toMatchObject({ hired: 1, unassigned: 0 });
+    expect(roster.totals).toMatchObject({ hired: 1, unassigned: 1 });
   });
 
   it('refuses a hire the treasury cannot cover with exactly one player-visible message, and hires nobody', () => {

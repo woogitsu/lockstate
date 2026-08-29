@@ -438,9 +438,19 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // 175 at #532: `action.kitchen-work` is one label added to the existing
       // `action` namespace, so `namespaces` does not move.
       labels: 175,
-      namespacesWithACallSite: 11,
-      namespacesWithoutACallSite: 31,
-      labelsWithoutACallSite: 118,
+      // 11 on `main` before issue #533, which itself moved this line from 10;
+      // #533 gives `deployment-phase` its first call site, so it is 12. The
+      // Staff panel's roster block labels what each staff member is doing, and
+      // `src/ui/simulation-staff-roster.ts` derives the key rather than
+      // hand-writing four strings. No namespace and no label was added, so
+      // `namespaces` and `labels` do not move -- the four `deployment-phase.*`
+      // labels simply stop waiting for a panel, which is the direction these
+      // two unreachable counts exist to record. So the two unreachable counts
+      // below are #532's numbers less #533's namespace and its four labels:
+      // 31 - 1 and 118 - 4.
+      namespacesWithACallSite: 12,
+      namespacesWithoutACallSite: 30,
+      labelsWithoutACallSite: 114,
     });
   });
 
@@ -453,6 +463,14 @@ describe('the message-key namespaces are counted, and no call site names one tha
       'build-edge',
       'build-order-state',
       'classification-group',
+      // Issue #533's addition, and the pair it makes with `guard-claim` below is
+      // worth reading rather than scanning past: they are two vocabularies for
+      // two questions about one guard. A *claim* says which system is holding
+      // them and its resolution needs both `'on-search'` claimants asked live
+      // inside the simulation (ADR 0033 decision 4); a *phase* is a field the
+      // roster already carries. The held list needs the first; the roster block
+      // needs the second and must not reach for the first.
+      'deployment-phase',
       'guard-claim',
       'incident-type',
       'intake-stage',

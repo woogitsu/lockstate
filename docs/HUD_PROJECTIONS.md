@@ -596,10 +596,16 @@ only when that system decides the claim is over. So a claim whose owner had lost
 track of it was permanent -- which is exactly what #352 was, measured at four
 guards and one sector still held 53,000 ticks after a restore. A guard id is a
 staff `EntityId` minted inside the simulation and it never reached the main thread
-at all: `hud/staff` was catalogued and read by nobody. (It has a reader now --
-see the sixth below -- and that reader takes the `totals` rather than the roster,
-so the paragraph after this one is unaffected: a coverage figure still cannot say
-which of the two `'on-search'` claimants holds a guard.)
+at all: `hud/staff` was catalogued and read by nobody. (It has **two** readers
+now -- the sixth below takes its `totals` rather than the roster, and
+`src/ui/simulation-staff-roster.ts` takes a row window for `DismissStaff`
+(#533). Neither affects the paragraph after this one: a coverage figure cannot
+say which of the two `'on-search'` claimants holds a guard, and neither can a
+roster row, because both read `assignment.deploymentPhase` and that is exactly
+the field the next paragraph is about. `DismissStaff` does not need to know --
+it dismisses whoever the row names and lets `GuardReleaseService` resolve the
+claim inside the simulation -- which is why the roster block could be built on
+a projection the release command could not use.)
 
 **And `hud/staff` would not have been enough even if it had been read**, which is
 where this differs from the queue's case and the deliveries'. It carries

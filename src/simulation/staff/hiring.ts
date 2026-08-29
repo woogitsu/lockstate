@@ -78,10 +78,18 @@ import type { TilePosition } from '../world/coordinates';
  * ([ADR 0053](../../../docs/adr/0053-who-may-stand-a-security-post.md)
  * decision 2, issue #456). The sentence above is why it is a refusal rather
  * than a hire that quietly does nothing: this service is the only way anybody
- * reaches `GuardRoster`, nothing in `src/` ever removes a staff member from
- * it, and `PayrollSystem` bills every id it holds at every in-game day
+ * reaches `GuardRoster`, ~~nothing in `src/` ever removes a staff member from
+ * it~~, and `PayrollSystem` bills every id it holds at every in-game day
  * boundary -- so hiring a role no duty can claim is an unrecoverable standing
  * cost for no effect, and the player has no channel that would tell them.
+ *
+ * **The struck clause was true when it was written and stopped being true with
+ * issue #533**: `src/simulation/staff/dismissal.ts` removes a staff member, so
+ * the cost is no longer unrecoverable. The refusal is kept and its argument is
+ * now the weaker but still sufficient one -- a hire that quietly does nothing
+ * is a charge the player has to notice and undo by hand, and a refusal tells
+ * them before the money moves. Marked rather than rewritten, because the reason
+ * this refusal exists is worth reading against the world that produced it.
  * A refusal has one: `src/simulation/refusals/refusal-log.ts` carries it to the
  * status strip, where `src/ui/simulation-alerts.ts` maps the id onto an
  * authored sentence -- a resolved message key and never a raw dotted id, which
@@ -163,17 +171,27 @@ export class StaffHiringService {
      * fault into the ordinary refusal the player is told about, which is the
      * reading `Treasury.spend` already takes of a purchase nobody can afford.
      *
-     * `allGuardIds().length` is the live headcount rather than a high-water
-     * mark: nothing dismisses a guard, so this store's occupancy cannot yet
-     * disagree with it. **The guard store, specifically** -- this comment used
-     * to say "nothing in `src/` destroys an entity (#31)", and since #441 gave
-     * a prisoner's sentence an end that is false of the *prisoner* store, which
-     * recycles indices in an ordinary session. Staff and prisoners are two
-     * `EntityStore`s, and no path in `src/` destroys a staff entity. The
-     * reading was already the one that survives a destroy path arriving here,
-     * which is why nothing needs to change but the sentence.
+     * **`canSpawn`, not a headcount, and the previous reading was wrong the
+     * moment a dismissal existed** (issue #533). This line read
+     * `this.roster.allGuardIds().length >= this.roster.entityStore.capacity`
+     * under a comment that said the live headcount "is the reading that
+     * survives a destroy path arriving here". It is not, and the reason is
+     * ADR 0026 question 1's answer (#169): `EntityStore.destroy` **retires** a
+     * slot that dies at generation 4,095 rather than recycling it, so a store
+     * can be genuinely out of indices while its headcount sits below capacity.
+     * A headcount gate would have passed and `spawn()` would then have thrown
+     * `'EntityStore capacity exhausted'` out of the kernel's command handler --
+     * a crashed tick on a command the worker had already acknowledged as
+     * queued, which is the exact failure this check exists to prevent.
+     *
+     * `EntityStore.canSpawn` is the question `spawn()` actually asks, and its
+     * own doc says why it is not a population count: *"a recycled index is a
+     * spawn this can allow and a headcount would not"*. It was written for
+     * `admitPrisoner`'s `population-full` refusal (#261 step 4) and this is the
+     * same gate on the staff store -- one definition of "the store is full", on
+     * both of the two stores that have one.
      */
-    if (this.roster.allGuardIds().length >= this.roster.entityStore.capacity) {
+    if (!this.roster.entityStore.canSpawn) {
       return { kind: 'refused', reason: 'roster-full' };
     }
 
