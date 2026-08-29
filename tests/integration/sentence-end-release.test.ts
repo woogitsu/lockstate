@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
 import { projectPrisonerDetail, projectPrisonerPopulationCounts, projectPrisonerRoster } from '../../src/simulation/presentation/prisoner-projection';
 import { packCommand } from '../../src/simulation/protocol/commands';
+import { SIMULATION_PROTOCOL_VERSION, workerToMainMessageSchema, type WorkerToMainMessage } from '../../src/simulation/protocol/types';
+import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
+import { hudEventAlertsFromWorkerMessage, hudEventNoticeFromWorkerMessage } from '../../src/ui/simulation-events';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 import { carriedScopeState, hashFullRuntime, toJsonValue } from '../helpers/determinism-state';
@@ -375,5 +379,146 @@ describe('the roster projection tells "never admitted" from "fully discharged" (
     // admitted has since left, and `total: 0` alone cannot say that -- only
     // `everAdmitted` can.
     expect(projectPrisonerRoster(runtime.prisoners, { limit: 50 })).toMatchObject({ total: 0, everAdmitted: true });
+  });
+});
+
+describe('a sentence that ends says so (#507)', () => {
+  /**
+   * The question this asks is the player's, not the code's: **when a
+   * prisoner's sentence ended, was I told?**
+   *
+   * It is deliberately not an assertion that `SimulationEventLog.count` moved.
+   * That would pass for an implementation that recorded an event nothing could
+   * ever publish, and "the count went up" is not what a player finds out. So
+   * this walks the whole route a sentence takes to reach a screen -- real
+   * session, real kernel, real discharge, the real `simulation/event` envelope
+   * the worker posts, the real translator `src/main.ts` calls, and the real
+   * bundled English catalog -- and asserts on the finished sentence.
+   *
+   * Before this change every step of that route existed except the first and
+   * the last: `PrisonerDischargeSystem` released the prisoner and told nobody,
+   * `simulation/event` had no producer, and `HudSeverity`'s `'info'` had no
+   * assignment anywhere in `src/`. Measured in a played prison, the population
+   * count went 1 -> 0 with nothing on screen.
+   */
+  it('tells the player, in words, that somebody has been released', () => {
+    const runtime = twoCellPrison();
+    const prisoner = admit(runtime, 'admit-for-notice');
+    housedIn(runtime, prisoner);
+    const endTick = runtime.prisoners.records.sentenceEndTick[runtime.prisoners.entityStore.getIndex(prisoner)]!;
+
+    // Nothing has been said yet, and that is the state this test exists to see
+    // change. Asserted before the discharge rather than after, so a channel
+    // that announced a release on every tick could not pass.
+    expect(runtime.events.since(0), 'a prison that has released nobody has nothing to say about a release').toEqual([]);
+
+    stepTo(runtime, endTick + 20);
+    expect(runtime.prisoners.entityStore.isAlive(prisoner), 'the sentence must actually have ended for this test to mean anything').toBe(false);
+    expect(population(runtime), 'and the count the player sees must have fallen').toBe(0);
+
+    // What the worker would post. Built through the protocol schema rather than
+    // hand-shaped, so a payload the real boundary would reject cannot pass here.
+    const recorded = runtime.events.since(0);
+    expect(recorded.length, 'exactly one thing happened, so the prison says one thing').toBe(1);
+    const message = workerToMainMessageSchema.parse({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: '00000000-0000-4000-8000-000000000507',
+      kind: 'simulation/event',
+      payload: { tick: runtime.kernel.tick, event: recorded[0]! },
+    }) as WorkerToMainMessage;
+
+    const notice = hudEventNoticeFromWorkerMessage(message);
+    expect(notice, 'the band must be given something to say').not.toBe('none');
+    expect(notice).toBeDefined();
+    if (notice === undefined || notice === 'none') throw new Error('unreachable');
+
+    // The severity is the point of issue #507. A discharge is not a warning:
+    // nothing went wrong, and until this change `'info'` was a member of
+    // `HudSeverity` that nothing in `src/` ever assigned.
+    expect(notice.severity, 'a served sentence is good news, and the channel must be able to say so').toBe('info');
+
+    // And the finished sentence, resolved against the catalog that actually
+    // ships. A message key is just a string: a typo type-checks, passes every
+    // schema, and reaches a player as its own dotted self.
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const sentence = localizer.format(notice.labelKey, notice.labelParameters);
+    expect(sentence, 'the player must not be shown a raw message key').not.toContain('hud.alert.event');
+    expect(sentence, 'and the sentence must name how many people left').toContain('1');
+    expect(sentence.length, 'an empty band is the defect this closes, not the fix').toBeGreaterThan(0);
+
+    // The log, beside the notice. Both surfaces, because the band is what the
+    // player is told and the list is what they can look back at.
+    const rows = hudEventAlertsFromWorkerMessage(message, []);
+    expect(rows?.map((row) => row.severity)).toEqual(['info']);
+    expect(localizer.format(rows![0]!.labelKey, rows![0]!.labelParameters)).toBe(sentence);
+  });
+
+  /**
+   * The aggregation rule, against a real cohort.
+   *
+   * `ADMISSION_REQUEST` in `src/main.ts` asks for the same
+   * `sentenceLengthTicks` every time, which ADR 0050 flagged, so prisoners
+   * admitted together leave together -- the ordinary case rather than a corner
+   * one. A row per prisoner would put a burst of identical sentences on the
+   * channel exactly when the prison is busiest.
+   *
+   * The fixture does not supply the thing it measures: both prisoners are
+   * admitted through the real `AdmitPrisoner` command and the tick they leave
+   * on is the kernel's, not this test's.
+   */
+  it('says it once for a cohort that leaves together, and says how many', () => {
+    const runtime = twoCellPrison();
+    const first = admit(runtime, 'cohort-first');
+    const second = admit(runtime, 'cohort-second');
+    housedIn(runtime, first);
+    housedIn(runtime, second);
+    const endTick = Math.max(
+      runtime.prisoners.records.sentenceEndTick[runtime.prisoners.entityStore.getIndex(first)]!,
+      runtime.prisoners.records.sentenceEndTick[runtime.prisoners.entityStore.getIndex(second)]!,
+    );
+
+    stepTo(runtime, endTick + 20);
+    expect(population(runtime), 'both sentences must have ended for this test to mean anything').toBe(0);
+
+    const recorded = runtime.events.since(0);
+    expect(recorded.length, 'two prisoners leaving on one tick is one occurrence, not two').toBe(1);
+    expect(recorded[0]).toMatchObject({ type: 'prisoners.discharged', count: 2 });
+
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const message = workerToMainMessageSchema.parse({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: '00000000-0000-4000-8000-000000000508',
+      kind: 'simulation/event',
+      payload: { tick: runtime.kernel.tick, event: recorded[0]! },
+    }) as WorkerToMainMessage;
+    const notice = hudEventNoticeFromWorkerMessage(message);
+    if (notice === undefined || notice === 'none') throw new Error('the band must be given something to say');
+    // The number the player reads is the cohort's size, not "1" repeated.
+    expect(localizer.format(notice.labelKey, notice.labelParameters)).toContain('2');
+  });
+
+  /**
+   * A restored prison does not re-announce a release the player has already
+   * read.
+   *
+   * This is the persistence decision, asserted rather than described: the event
+   * log is not snapshotted, so a save carries no event history and a load
+   * announces nothing. The *conditions* behind events do persist -- arrears are
+   * in the save (ADR 0049) -- which is what makes this a formatting decision
+   * the save never has to see rather than a fact the player loses.
+   */
+  it('does not replay a release across a save', () => {
+    const runtime = twoCellPrison();
+    const prisoner = admit(runtime, 'admit-before-save');
+    housedIn(runtime, prisoner);
+    const endTick = runtime.prisoners.records.sentenceEndTick[runtime.prisoners.entityStore.getIndex(prisoner)]!;
+    stepTo(runtime, endTick + 20);
+    expect(runtime.events.since(0).length, 'the release must have been announced before the save').toBe(1);
+
+    const restored = saveAndLoad(runtime);
+    expect(
+      restored.events.since(0),
+      'a loaded prison must not announce a release that happened before the save -- the player has already read it, and the tick it names is not the one they are looking at',
+    ).toEqual([]);
   });
 });

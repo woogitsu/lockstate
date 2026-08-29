@@ -142,6 +142,12 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'The only exemption here for a vocabulary that genuinely does reach the player, and the distinction is *how*. This table labels an id a panel renders as a **label** -- a cell reading "Awaiting Materials", a badge reading "High Risk" -- and a refusal is not a label: it is a whole sentence saying what did not happen and why ("The build order failed -- you do not own that land."), which a derived `refusal-reason.build.unowned-land.name` reading "Unowned Land" cannot be and would have nowhere to be rendered. So the id maps 1:1 onto an authored HUD sentence key in `src/ui/simulation-alerts.ts` (#261). The completeness this table would give is given there instead, and in two directions: the mapping is a `Record` over the closed union, so a reason added to the protocol fails to compile until it has a key, and `tests/unit/ui-simulation-alerts.test.ts` resolves every one of those keys against the bundled default catalog so none can ship as its own raw dotted text.',
   },
   {
+    sourceFile: 'src/simulation/protocol/types.ts',
+    declaration: 'SIMULATION_EVENT_TYPES',
+    reason:
+      'Exempt for exactly the reason `REFUSAL_REASONS` above is, and the two are best read together because they are the same shape on opposite channels. This table labels an id a panel renders as a **label**; an event is a whole sentence saying what the prison just did ("Payday went unpaid -- your staff are owed 360."), and a derived `simulation-event.economy.wages-unpaid.name` reading "Wages Unpaid" could not carry the figure and would have nowhere to be rendered. So each id maps 1:1 onto an authored HUD sentence key in `src/ui/simulation-events.ts` (#507), which is where the completeness this table would give is given instead, and in the same two directions: the mapping is a `Record` over the closed union, so an event type added to the protocol fails to compile until somebody has decided what it says and how loudly, and `tests/unit/ui-simulation-events.test.ts` resolves every key against the bundled default catalog so none can ship as its own raw dotted text. These sentences additionally take `labelParameters`, which no derived label ever could.',
+  },
+  {
     sourceFile: 'src/simulation/presentation/construction-projection.ts',
     declaration: 'PENDING_BUILD_ORDER_STATES',
     reason:

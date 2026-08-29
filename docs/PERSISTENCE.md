@@ -578,6 +578,24 @@ work are not.**
   `identity` arrived — which is why this entry is about what it would *buy*
   rather than what it would cost. Also recorded in
   `docs/HUD_PROJECTIONS.md` gap 33.
+- **`SimulationEventLog`** (`SimulationRuntime.events`, #507). What the prison
+  just did — a sentence that ended, a payday it could not meet — published on
+  `simulation/event` and rendered on the events band and in the alerts list.
+  Excluded on `RefusalLog`'s reasoning above and one addition of its own: an
+  event is a statement that something happened *now*, so a loaded prison
+  announcing last week's discharges would be describing a tick the player is
+  not looking at, and this channel has no dismissal either.
+  What makes the exclusion cost nothing is that the *conditions* behind the
+  events are persisted independently. Arrears are carried in
+  `simulation.payroll.unpaidWagesMinorUnits` ([ADR 0049](./adr/0049-what-a-prison-that-cannot-make-payroll-owes.md),
+  "arrears are *history*"), so a restored prison that is still broke says so
+  again at its next payday rather than replaying the one before the save;
+  sentence ticks are carried in the prisoner component arrays, so a sentence
+  that ends after a load is announced when it ends. The log is therefore
+  derivable-forward rather than lost.
+  Asserted rather than described: `tests/integration/sentence-end-release.test.ts`
+  saves a prison that has just released somebody and requires the restored one
+  to announce nothing. Also recorded in `docs/HUD_PROJECTIONS.md` gap 33.
 - **Storage backend, compression algorithm, encryption.** Out of scope per
   issue #18; see "Size hook" below for the one hook this schema does provide.
 
