@@ -176,6 +176,196 @@ asks for"** on a prison with no guards: true, because an empty prison asks for
 none, and it reads as reassurance at the moment a player has done nothing.
 **No cause and no impact are claimed.**
 
+## 7. The strongest thing this pass found: the Rooms panel calls a finished wall "open"
+
+**This is the one finding here with a measured mechanism, and it lands exactly
+on the ordering route.**
+
+### What was done
+
+Mouse-driven at 1440x900, on a fresh prison: buy 60 bricks, run the clock, lay
+four wall runs around tiles 12..15 x 12..15 (16 `PlaceBuildOrder` commands), poll
+the Build panel's queue **once a second** until it is gone, then re-drag the same
+rectangle once a second and read the Rooms panel's note.
+
+### What was seen, pasted
+
+```
+queue empty at page t=43395ms (poll 14)
+t=49406ms (+6011ms after queue empty)  open=true
+t=55580ms (+12185ms after queue empty) open=true
+t=61038ms (+17643ms after queue empty) open=false
+```
+
+and the `simulation/snapshot` arrivals from the same run, timestamped on the
+page's own clock by a `Worker` tee:
+
+```
+... {"t":28979,"tick":869},{"t":34695,"tick":1098},{"t":58999,"tick":2070}
+```
+
+Between `t=34695` and `t=58999` **no world snapshot arrived at all** — 24.3
+seconds. The Build panel said the queue was empty at `t=43395`. The Rooms panel
+went on calling the rectangle open until the first drag after `t=58999`.
+
+The same thing at 900x600, in a separate run, with the consequence attached:
+
+```
+AREA block now: "Designate 4 × 4 | Discard | AREA | 4 × 4 tiles at 14, 13 |
+                 OPEN ON AT LEAST ONE SIDE"
+strip: ... | 1 | ROOMS | ...
+--- .hud__refusal: {"hidden":true, ... ,"text":""}
+```
+
+The panel said *open*; the player pressed Designate anyway; **the simulation
+accepted it** and `ROOMS` went 0 → 1.
+
+### What would establish the cause
+
+Two channels with different cadences, and the panel reads the slow one:
+
+- The Build panel's queue comes over the **projection** channel
+  (`src/ui/simulation-build-queue.ts:15` — *"Reads what is still waiting to be
+  built, over the projection channel"*).
+- The enclosure verdict comes from `RoomTool.classifyArea`
+  (`src/ui/room-tool.ts:156`), which walks `WorldRenderView`
+  (`src/rendering/world/world-view.ts:201-208`) — and that view is replaced only
+  by a full **snapshot** (`src/rendering/feed/simulation-snapshot-feed.ts:523`).
+
+The feed's own header says when it asks for one
+(`src/rendering/feed/simulation-snapshot-feed.ts:41-46`), and the third bullet is
+the load-bearing one:
+
+> - after any command is accepted, since commands are what change geometry,
+>   and again once the simulation reaches the tick that command was scheduled
+>   for, which is when it actually changed any;
+
+**For construction that last clause does not hold.** The tick a
+`PlaceBuildOrder` is scheduled for is the tick the *order* is created. The wall
+is built many ticks later, and a completion is not a command, so nothing marks
+the feed dirty then. The next world the panel can read is the 30-second
+consistency poll (`DEFAULT_POLL_INTERVAL_SECONDS = 30`,
+`src/rendering/feed/simulation-snapshot-feed.ts:107`). The 24.3-second gap above
+is that poll.
+
+**This is a hypothesis with the timeline behind it, not a proven cause.** The
+cheapest measurement that would settle it: mark the feed dirty when a
+construction order completes and re-run the transcript above — if the window
+collapses, the cause is named.
+
+### What would establish the impact
+
+Nothing in this repository. Nobody plays the game yet. What can be stated
+without a player: the note is the Confirm control's `aria-describedby`
+(`src/ui/hud/rooms-panel.ts:1126-1133`), so a screen-reader player is told the
+rectangle is open at the moment they focus the button that would designate it.
+
+### Why this is different from #493's accepted false negative
+
+`src/ui/hud/rooms-panel.ts:1163-1190` accepts a false negative on purpose, and
+bounds it: *"shown when it need not have been, it costs confusion for one press
+and no more, because the control stays live and the real simulation still
+decides"*, with the cause given as staleness *"for as long as the session stays
+paused"*. Both halves are narrower than what was measured: the session was
+**running** at x2, and the player who sees it has just been refused for this
+exact reason and has just spent money and in-game time building the walls that
+fix it. The panel then repeats the refusal's own sentence. That is not "one
+press of confusion"; it is the game telling a recovering player their fix did
+not work.
+
+**Handed over rather than acted on** — this is `src/ui/**` and
+`src/rendering/**`, and this pass is read-only on `src/`.
+
+## 8. #492's fix holds. Verified, not assumed
+
+Issue #492 — *"A simulation refusal outlives the thing it refused: a successful
+zoning leaves the rejection on screen"* — was fixed by PR #496 with a **narrow**
+supersession key (`src/simulation/runtime/session-commands.ts:148-163`: the same
+rectangle and room type, and *"a room zoned elsewhere leaves a standing refusal
+about this rectangle alone, because its key would not match"*).
+
+**MEASURED**, walking exactly #492's steps at 900x600: refused 4x4 at (14,13),
+band reads *"The room was not zoned — this room type must be enclosed…"*; walls
+built; the same 4x4 designated again; `ROOMS` 0 → 1; and
+
+```
+--- .hud__refusal: {"hidden":true,"box":{"w":0,"h":0,"x":0,"y":0},"text":""}
+```
+
+Fixed, still fixed. Recorded so nobody re-derives it.
+
+**What the narrow key leaves standing is a different sentence, and it was
+measured too.** A refusal about anything the player never retries *at the same
+target* stands for the whole session. The calibration probe presses Remove on
+bare ground once; *"Nothing was removed — there is no object on that tile, and
+none being built there."* was then the entire content of `.hud__refusal` three
+in-game days later, in a working prison with 3 prisoners, 2 guards and 2 rooms.
+That is the designed consequence of a per-target key, not a regression, and
+whether the band should have a notion of age is the owner's call. **No cause and
+no impact are claimed.**
+
+## 9. A prison larger than one cell, with guards and prisoners and a whole day
+
+**Not reached by the previous pass; reached here.** Mouse-driven at 1440x900, one
+run, no keyboard except the purchase quantity field:
+
+buy 160 bricks + 6 planks x2 + 6 bricks → run the clock → **eight** wall runs
+(32 `PlaceBuildOrder`, two 4x4 perimeters) → two doors → zone both cells → four
+objects → hire 2 guards → admit 3 prisoners → run to the next day.
+
+It works. Verbatim, after a day:
+
+```
+3 PRISONERS | 2 STAFF | 2 ROOMS | 0 INCIDENTS Clear | 0 CONTRABAND |
+17,420 FUNDS | 394 EARNED TODAY | DAY 3
+REGIME: "TODAY'S BLOCKS / General Population 16% THROUGH / High Risk 3% THROUGH /
+         PRISONERS 3 of 3 / Malik Tamm Sleeping Hygiene Minimal /
+         Lars Balogh Sleeping Hygiene Minimal / Wanda Okafor Idle Bladder Minimal"
+SECURITY: "GUARD COVERAGE 1 of 1 Covered ... ON DUTY 1 held · 1 free /
+           Guard · Sector Post / Release"
+INTAKE: "1 waiting with no bed to sleep in / IN INTAKE 1 of 3 / 1 at Cell Assignment"
+```
+
+Two beds for three prisoners, and the third waits at Cell Assignment — which is
+what the Intake panel's own arrival sentence says will happen. No `pageerror`,
+no console output, across the whole run.
+
+**A note about the Security panel, which is #557 and not new:** it read
+*"GUARD COVERAGE 0 of 0 / Covered"* immediately after two guards were hired and
+*"1 of 1 / Covered"* a day later. That is ADR 0036's deliberate consequence,
+already recorded; not re-reported.
+
+## 10. What a player sees after a designation succeeds
+
+**MEASURED.** The instant a designation is accepted, the Rooms panel folds
+itself:
+
+```
+rooms panel immediately after success: catalogueVisible=false collapsed=true
+.hud-rooms text: "ROOMS\nExpand"
+```
+
+and on returning to the tab to zone a second room:
+
+```
+Rooms panel on arrival: catalogue visible=false, panel data-collapsed=true,
+                        header="ROOMS | Expand"
+```
+
+**READ, and it is deliberate.** `src/ui/hud/rooms-panel.ts:513` —
+`folded()` is `drawingFolded` whenever the tool is armed with nothing pending,
+and `drawingFolded` starts `true` on every arm press, *"because a panel that
+covers the thing it operates on is not a panel the player can draw on"*
+(`:439-465`). The tool stays armed, so the second rectangle can be dragged
+without touching the panel at all.
+
+What the fold costs is stated rather than judged: while it is shut, the panel
+does not say **which room type is selected**, and changing it needs the header
+pressed first. Nothing else confirms a designation — `.hud__event` was
+`hidden: true` at every one of the seven dumps in that run, and the only change
+on screen is the `ROOMS` count in the status strip. **No cause and no impact are
+claimed.**
+
 ---
 
 ## Weakest claim, and the cheapest thing that would falsify it
@@ -188,3 +378,25 @@ one level up — every premise checked, the conclusion invented.
 **The single cheapest measurement that would falsify it:** ask the owner what
 they tried after the refusal. If they had already built walls and were stopped
 by something else, §2 is a nice-to-have and the cause is elsewhere.
+
+**§7 is the stronger candidate and has its own weakest claim**: that the
+30-second snapshot poll is *why* the note is wrong. The timeline fits and the
+feed's own header names the rule that does not cover a construction completion,
+but nothing in this pass instrumented the feed. **Cheapest falsification:** mark
+the feed dirty on a completed construction order and re-run the one-second
+transcript in §7. If the window survives, the cause is elsewhere.
+
+## What this pass did not reach
+
+- **A player.** Every impact statement above is withheld for that reason.
+- **A trackpad.** §3's `wheel`-vs-pan question is open.
+- **Riots, contraband, incidents.** Three in-game days, `0 INCIDENTS Clear`
+  throughout; nothing was provoked.
+- **Any viewport below 900x600**, and no phone.
+- **The Regime tab's controls.** It was read at 900x600 and after a day; nothing
+  on it was pressed.
+- **Whether the finished walls are *drawn* during §7's window.** `structures`
+  comes off the same snapshot as the world edges
+  (`src/rendering/feed/simulation-snapshot-feed.ts:523-525`), so the same lag
+  would apply, but no pixel was read. **Cheapest measurement:** screenshot the
+  world at `queue empty + 2s` and at `+20s` and compare.
