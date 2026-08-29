@@ -175,6 +175,8 @@ describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () =
     'brand-badge.ts',
     'brand-messages.ts',
     'build-tool.ts',
+    'display-scale-messages.ts',
+    'display-scale.ts',
     'object-tool.ts',
     'room-tool.ts',
     'save-panel.ts',

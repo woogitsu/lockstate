@@ -107,16 +107,52 @@
   /* Non-colour tokens                                                 */
   /* ---------------------------------------------------------------- */
 
-  /* 4px spacing grid. Nothing in the UI may use an off-grid length. */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
+  /*
+   * The player's interface scale, as a multiplier (#545).
+   *
+   * Every length below is a multiple of it, so setting this one property is
+   * the whole of applying a UI scale: the HUD's type, spacing, icons, tap
+   * targets, panel width and strip height all move together, and so do the
+   * `calc()` floors in `hud.css` that are sums of those tokens. That is only
+   * possible because `tokens.css` already forbade a component from spending a
+   * raw length -- the same single rule that makes a re-skin a one-file change
+   * makes a re-scale one.
+   *
+   * `1` here is the default a page has before anything is read out of
+   * storage, so a stylesheet loaded with no script behind it renders at the
+   * size it always did. `src/ui/display-scale.ts` writes the player's chosen
+   * step as an inline custom property on `:root`, which beats this rule.
+   *
+   * The legal values are the six fixed steps in `src/input/accessibility.ts`
+   * (0.75 ... 2), not a continuum: this property is set from
+   * `snapUiScaleToStep`'s answer and from nothing else.
+   *
+   * **Three kinds of length deliberately do not scale**, and each is a
+   * decision rather than an omission:
+   *   - `--hairline`, and the focus outlines in `primitives.css`. A separator
+   *     and a focus ring are device affordances, not content: 1px is the
+   *     thinnest line a display can draw and 1.75px of it is a blurred one.
+   *     Their contribution to the `calc()` floors is a fraction of a pixel.
+   *   - `--label-tracking` and `--label-line-height`, which are already
+   *     relative (`em` and unitless) and therefore scale by inheriting.
+   *   - the `@media` breakpoints. A 900px viewport is 900px wide whatever the
+   *     interface scale is, so the layout regime does not change under the
+   *     player's feet. `zoom` and a root `font-size` share that property; it
+   *     is a real limit of every mechanism available here, and it is why the
+   *     top steps are measured at 900x600 rather than assumed.
+   */
+  --ui-scale: 1;
 
-  --radius-sm: 4px;
-  --radius-md: 6px;
+  /* 4px spacing grid. Nothing in the UI may use an off-grid length. */
+  --space-1: calc(4px * var(--ui-scale));
+  --space-2: calc(8px * var(--ui-scale));
+  --space-3: calc(12px * var(--ui-scale));
+  --space-4: calc(16px * var(--ui-scale));
+  --space-5: calc(20px * var(--ui-scale));
+  --space-6: calc(24px * var(--ui-scale));
+
+  --radius-sm: calc(4px * var(--ui-scale));
+  --radius-md: calc(6px * var(--ui-scale));
 
   --hairline: 1px;
 
@@ -128,9 +164,9 @@
     ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', Menlo, Consolas,
     'Liberation Mono', monospace;
 
-  --text-size-value: 13px;
-  --text-size-body: 13px;
-  --text-size-label: 11px;
+  --text-size-value: calc(13px * var(--ui-scale));
+  --text-size-body: calc(13px * var(--ui-scale));
+  --text-size-label: calc(11px * var(--ui-scale));
   --label-tracking: 0.14em;
   /* The line-height every label-sized run of type is set in. A token rather
      than a literal because a layout has to be able to *sum* a line of it:
@@ -140,14 +176,14 @@
      element inherits rather than pinning one. */
   --label-line-height: 1.2;
 
-  --icon-size-sm: 16px;
-  --icon-size-md: 18px;
-  --icon-size-lg: 20px;
+  --icon-size-sm: calc(16px * var(--ui-scale));
+  --icon-size-md: calc(18px * var(--ui-scale));
+  --icon-size-lg: calc(20px * var(--ui-scale));
   --icon-stroke: 1.5;
 
   /* Every control is tap-reachable; 44px is the smallest target that is
      comfortably hittable on a touch screen. */
-  --tap-target: 44px;
+  --tap-target: calc(44px * var(--ui-scale));
 
   --hud-layer: 20;
   /* The height of the HUD's status strip. It used to be shared with code
@@ -156,14 +192,14 @@
      panel into the HUD's own grid, so nothing outside `hud.css` has to clear
      the strip by hand any more -- the grid does it. Still a token rather than
      a literal because the 720px breakpoint overrides it. */
-  --hud-strip-height: 48px;
+  --hud-strip-height: calc(48px * var(--ui-scale));
   /* The border-box width of every panel in the HUD's right rail, above the
      720px breakpoint where the rail stretches and its panels go full-width
      instead. The panels have to agree exactly or the column stops reading as
      one, and they live in different files -- the save panel in
      `src/styles.css`, the Build panel in `src/ui/hud/hud.css` -- so a literal
      in each is two numbers that nothing keeps equal. */
-  --hud-rail-panel-width: 264px;
+  --hud-rail-panel-width: calc(264px * var(--ui-scale));
   /* The floor under the Build panel's catalogue: the shortest the list of
      buildables may be squeezed to before the panel goes back to scrolling as
      a whole (issue #143). Two rows, because one row plus a scrollbar is not a

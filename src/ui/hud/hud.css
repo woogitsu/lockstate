@@ -76,8 +76,33 @@
   grid-area: strip;
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  height: var(--hud-strip-height);
+  /*
+   * Wraps at every width, and `min-height` rather than `height` (#545).
+   *
+   * The strip is a single row of items that mostly cannot shrink -- the brand
+   * slot is `flex: none`, the clock is its own width and the three transport
+   * buttons are three whole tap targets -- with `.hud-strip__metrics` the only
+   * flexible one. That is fine while the tap target is 44px, and it stops
+   * being fine the moment the player scales the interface up: at 200 % the
+   * transport alone is 264px and the fixed items together want more than a
+   * 900px viewport has. Without a wrap they do not overflow *visibly*, they
+   * push the transport controls off the right edge of the screen, which is
+   * the same "present, reachable by nothing" failure issue #88 measured in
+   * the rail.
+   *
+   * `min-height` is what lets a wrapped strip be two rows tall instead of two
+   * rows laid inside a one-row box. Below 720px the strip has always wrapped
+   * and this is the same declaration it already made there, hoisted: the rule
+   * in the `@media` block now only raises the floor.
+   *
+   * At 100 % nothing here wraps at any viewport the browser suite visits, so
+   * this changes no measurement that exists today -- it decides what happens
+   * at the scales that did not exist before.
+   */
+  flex-wrap: wrap;
+  align-content: center;
+  gap: var(--space-1) var(--space-4);
+  min-height: var(--hud-strip-height);
   padding: 0 var(--space-3);
   box-sizing: border-box;
   min-width: 0;
@@ -168,7 +193,10 @@
   padding: var(--space-3);
 }
 
-.hud-minimap { width: 224px; background: var(--surface-raised); }
+/* The frame scales with the rest of the interface (#545): it is a HUD panel
+   like any other, and a minimap that stayed 224px while the type inside it
+   grew would be the one island the scale did not reach. */
+.hud-minimap { width: calc(224px * var(--ui-scale)); background: var(--surface-raised); }
 
 .hud-minimap__surface {
   display: flex;
@@ -1713,12 +1741,36 @@
 .hud-tabs__inner {
   display: flex;
   align-items: stretch;
+  /*
+   * Wraps (#545). `justify-self: center` on `.hud__tabs` sizes the bar to
+   * `fit-content` of the grid column, so a row of tabs wider than the viewport
+   * is squeezed into a box it does not fit -- and this element's own
+   * `overflow: hidden`, which is what keeps the tabs inside the rounded
+   * corners, then *clips* the ones that do not fit. Every tab carries a
+   * `min-width` floor, so they cannot shrink their way out of it either.
+   *
+   * At 100 % the five tabs fit every viewport the browser suite visits, so
+   * this rule is inert there. It decides what happens at the scales #545
+   * adds: the bar is a multiple of `--tap-target` and `--text-size-label`
+   * wide, so it grows with the scale while the viewport does not, and the
+   * clip above is silent. Wrapping turns "two tabs are off the bar and
+   * nothing says so" into "the bar is two rows tall", which costs the world a
+   * band and loses no control.
+   *
+   * `justify-content: center` so a short second row sits under the middle of
+   * the first rather than hanging off its left edge.
+   */
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 0;
+  max-width: 100%;
   background: var(--surface-raised);
   border: var(--hairline) solid var(--border);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
+
+.hud__tabs { max-width: 100%; box-sizing: border-box; }
 
 .hud-tabs__inner > .ui-tab + .ui-tab {
   border-left: var(--hairline) solid var(--border-hairline);
@@ -2405,7 +2457,7 @@
 @media (max-width: 720px) {
   :root {
     /* The strip wraps to two rows here. */
-    --hud-strip-height: 88px;
+    --hud-strip-height: calc(88px * var(--ui-scale));
   }
 
   /* The minimap would collide with the tab bar; the bar wins, because it is
@@ -2466,5 +2518,5 @@
     border-left: 0;
   }
 
-  .ui-tab { min-width: 64px; padding: var(--space-2); }
+  .ui-tab { min-width: calc(64px * var(--ui-scale)); padding: var(--space-2); }
 }

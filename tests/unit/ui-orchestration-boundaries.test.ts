@@ -209,6 +209,34 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       'Type-only: `LocalizationKey` from `src/content/localization`. The module is a frozen registry of the save panel\'s message keys and nothing else -- the shape `src/ui/hud/messages.ts` already uses for the HUD -- and naming the key type is what lets `satisfies Readonly<Record<string, LocalizationKey>>` check every entry at compile time. Erased, so no content code runs because of it, and it names no other layer at all.',
   },
   {
+    file: 'src/ui/display-scale-messages.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey` from `src/content/localization`. A frozen registry of the interface-scale control's three message keys and nothing else, in the shape `src/ui/hud/messages.ts`, `save-panel-messages.ts` and `brand-messages.ts` all use; naming the key type is what lets `satisfies Readonly<Record<string, LocalizationKey>>` check every entry at compile time. Erased, so no content code runs because of it, and it names no other layer.",
+  },
+  {
+    file: 'src/ui/display-scale.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey`, to type the control's `DisplayScaleLocalizer` port and the keys it resolves. The same erased naming-of-a-key-type `save-panel-messages.ts`, `simulation-alerts.ts` and `brand-badge.ts` make; no content code runs because of it.",
+  },
+  {
+    file: 'src/ui/display-scale.ts',
+    tree: 'input',
+    kind: 'value',
+    reason:
+      "Value: `snapUiScaleToStep`, `stepUiScale` and `canStepUiScale` from `src/input/accessibility`, plus the erased `AccessibilitySettings`. **The kind is the point of this entry, and so is the direction.** #545's finding was that `uiScale` was declared, range-checked and persisted in that module and read by nothing; a control that decided for itself which values are legal would close the issue by creating a second vocabulary -- the stylesheet at one set of steps and the storage key's validator at another -- which is the same class of defect one level along. So the steps and the arithmetic over them stay beside the range a persisted record is checked against, and this module calls them. All three are pure functions of a number: they touch no DOM, no store and no event surface, which is what `tests/foundation/documentation-claims-contract.test.ts` holds for that file from the other side. `src/input/**` imports no package at all (`tests/unit/input-module-boundaries.test.ts` asserts it outright), so this is the narrowest kind of value dependency available -- but that is a fact about that tree and not something this gate follows, exactly as the `generation-policy.ts` entries record. A value import of `src/input/storage.ts` would be the erosion to catch: it would mean the control had started reading and writing the settings store itself instead of being handed a scale by the composition root, which is what keeps it *controlled*.",
+  },
+  {
+    file: 'src/ui/display-scale.ts',
+    tree: 'services',
+    kind: 'type-only',
+    reason:
+      "Type-only: `MessageParameters`, for the `format(key, parameters)` signature of the `DisplayScaleLocalizer` port the composition root satisfies with the page's one `Localizer`. The same erased dependency `save-panel.ts` and `telemetry-consent-prompt.ts` carry; the control constructs no localizer of its own and never falls back to one.",
+  },
+  {
     file: 'src/ui/simulation-clock.ts',
     tree: 'simulation',
     kind: 'value',
@@ -497,6 +525,8 @@ describe('UI orchestration boundaries', () => {
       'src/ui/brand-badge.ts',
       'src/ui/brand-messages.ts',
       'src/ui/build-tool.ts',
+      'src/ui/display-scale-messages.ts',
+      'src/ui/display-scale.ts',
       'src/ui/object-tool.ts',
       'src/ui/room-tool.ts',
       'src/ui/save-panel-messages.ts',
