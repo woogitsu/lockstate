@@ -506,6 +506,13 @@ needs a cell before it can admit anyone. It does not need a free bed…"*
 - Any viewport other than 1440x900.
 - Save/load of *this* prison. `2026-08-29-mouse-playtest.md` §3 covers a
   mouse-built prison across a reload; nothing here re-derives it.
+- **Re-zoning the same rectangle after removing the room, and removing a
+  placed bed with the Build panel.** Both are steps 2 and 3 of the removal
+  scenario in the harness; the run had not returned them when this record was
+  written and **no claim is made about either**. Step 1 — the removal itself —
+  is §8 and is complete. Whoever picks this up should run
+  `-g "remove a room and remove an object"` and read the two lines after
+  `after removal:`.
 
 ## Weakest claim, and the cheapest thing that would falsify it
 
