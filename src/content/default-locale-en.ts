@@ -397,6 +397,24 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.fault.shutting-down': 'A simulation request was refused — the session is shutting down.',
   'hud.alert.fault.internal-error': 'The simulation hit an internal error.',
 
+  // The events channel (issue #507). Namespaced `hud.alert.event.*` beside the
+  // refusal and fault families for the same reason those two are namespaced:
+  // all three are rendered by the alerts list and by a band, and the namespace
+  // is what keeps "the prison did something" from being read as "the prison
+  // refused something".
+  //
+  // Both sentences are written in the same voice as the refusals above -- what
+  // happened first, then why or how much after an em dash -- and neither names
+  // a control, because unlike a refusal neither is about anything the player
+  // just pressed.
+  //
+  // `{count}` and `{total}` are substituted from `HudAlertViewModel.
+  // labelParameters`, which these are the first producer of. `{total}` is a
+  // number of minor units formatted by the localizer, exactly as the Build and
+  // Staff panels format a price.
+  'hud.alert.event.prisoners.discharged': '{count} released — their sentences are served.',
+  'hud.alert.event.economy.wages-unpaid': 'Payday went unpaid — your staff are owed {total}.',
+
   // A browser that cannot start a Worker gets a page with no simulation
   // behind it. Saying so is the whole point: the failure was previously
   // reported to the console only, so the player saw an empty world and had

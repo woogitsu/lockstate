@@ -43,11 +43,12 @@
      notice would sit *on* the world, and this HUD's rule is that it frames
      the world and never covers it -- as rows they borrow their band from the
      middle instead. */
-  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr) auto;
   grid-template-areas:
     'strip'
     'unavailable'
     'notice'
+    'event'
     'middle'
     'tabs';
   pointer-events: none;
@@ -272,6 +273,77 @@
 /* Wraps rather than truncates: a refusal that ends in an ellipsis is a
    refusal the player cannot act on, and there is no hover on touch. */
 .hud-refusal__text { white-space: normal; }
+
+/* ------------------------------------------------------------------- */
+/* The events line: what the prison just did (issue #507)               */
+/* ------------------------------------------------------------------- */
+
+/*
+ * The fourth row, and the third band, on exactly the terms the two above it
+ * were built on: not in `.hud__corner`, because that region is `display: none`
+ * at 720px and below and the alerts section inside it starts folded, so a
+ * sentence routed only there is invisible at every viewport. `hud.ts` holds
+ * the argument for why an event is a third class rather than a second use of
+ * the refusal line.
+ *
+ * **Toned by `data-severity` rather than by class**, which is the one way this
+ * band differs from its neighbours. Both of those are permanently red because
+ * everything they can say is bad; this one carries `'info'` (a sentence ended,
+ * nothing is wrong) and `'warning'` (payday went unpaid) from the same
+ * element. Swapping a class would change the band's identity in the DOM
+ * mid-sentence; an attribute leaves `.hud__event` addressable by tests and by
+ * `hidden` regardless of what it currently says.
+ *
+ * The `info` tokens are the same pair `--badge-info-bg`/`--status-info` the
+ * status badges use, so a `'info'` event and an `'info'` badge in the alerts
+ * list beside it read as the same thing -- which they are.
+ *
+ * `pointer-events` stays `none` (inherited from `.hud`): the line carries no
+ * control, so a click on it belongs to the world underneath.
+ */
+.hud__event {
+  grid-area: event;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--badge-info-bg);
+  border-bottom: var(--hairline) solid var(--status-info);
+  color: var(--status-info);
+  font-size: var(--text-size-body);
+}
+
+.hud__event[data-severity='warning'] {
+  background: var(--badge-warning-bg);
+  border-bottom-color: var(--status-warning);
+  color: var(--status-warning);
+}
+
+/* No event carries `'danger'` today -- `EVENT_PRESENTATION` in
+   `src/ui/simulation-events.ts` is a closed `Record` over
+   `SimulationEventType` and its two members are `'info'` and `'warning'`.
+   The rule is here anyway because the failure without it is silent: a third
+   event type graded `'danger'` would inherit the `'info'` blue above and be
+   painted as good news, which is a worse outcome than an unstyled band and
+   is not something a type checker can catch. Written once here rather than
+   left for whoever adds that type to notice. */
+.hud__event[data-severity='danger'] {
+  background: var(--badge-danger-bg);
+  border-bottom-color: var(--status-danger);
+  color: var(--status-danger);
+}
+
+/* The same trap `.hud__refusal[hidden]` and `.hud__unavailable[hidden]` close,
+   for the same reason: the author `display: flex` above beats the user agent's
+   `[hidden] { display: none }`, so without this every session would paint an
+   empty band across the top of the world from first paint, before the prison
+   had done anything at all. */
+.hud__event[hidden] { display: none; }
+
+/* Wraps rather than truncates, for the reason the refusal text does: there is
+   no hover on touch, and a sentence that ends in an ellipsis is one the player
+   cannot read. */
+.hud-event__text { white-space: normal; }
 
 /*
  * The other half of the report, on the control that was pressed.

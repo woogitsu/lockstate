@@ -46,6 +46,7 @@ import {
 } from './ui/hud';
 import { hudClockFromWorkerMessage } from './ui/simulation-clock';
 import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from './ui/simulation-alerts';
+import { hudEventAlertsFromWorkerMessage, hudEventNoticeFromWorkerMessage } from './ui/simulation-events';
 import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { BuildQueueReader } from './ui/simulation-build-queue';
@@ -1585,19 +1586,39 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     // open -- which the list is not, at any viewport (#220, and see
     // `hudRefusalFromWorkerMessage` for the split).
     const refusal = hudRefusalFromWorkerMessage(message);
+    /*
+     * The events channel (issue #507), read on the same two surfaces the
+     * refusal is and in the same order: the log first, then the notice.
+     *
+     * `alerts` above and `eventAlerts` here are two producers of one list, so
+     * this one is threaded through the *result* of that one rather than through
+     * `viewModel.alerts` -- otherwise a `simulation/stopped`, which both
+     * translate, would have the second overwrite the first's emptying with a
+     * list rebuilt from the stale field. `hudEventAlertsFromWorkerMessage`
+     * answers `undefined` for every message but `simulation/event`, so on all
+     * other messages this is exactly `alerts`.
+     */
+    const eventAlerts = hudEventAlertsFromWorkerMessage(message, alerts ?? viewModel.alerts);
+    // The same event, read a second time for the surface that is actually on
+    // screen. The list is the log; this is the notice, and it goes to a band
+    // laid out at every viewport with no section to open -- which the alerts
+    // list is not, at any viewport (#220).
+    const event = hudEventNoticeFromWorkerMessage(message);
+    const nextAlerts = eventAlerts ?? alerts;
     if (
       clock === undefined &&
       counts === undefined &&
-      alerts === undefined &&
+      nextAlerts === undefined &&
       zoning === undefined &&
-      refusal === undefined
+      refusal === undefined &&
+      event === undefined
     )
       return;
     viewModel = {
       ...viewModel,
       ...(clock === undefined ? {} : { clock }),
       ...(counts === undefined ? {} : { counts }),
-      ...(alerts === undefined ? {} : { alerts }),
+      ...(nextAlerts === undefined ? {} : { alerts: nextAlerts }),
       // Three states, not two, which is why the translator returns `'none'`
       // rather than `undefined` for "no room has been designated": `undefined`
       // means this message said nothing about zoning and the field must be left
@@ -1613,6 +1634,11 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       // itself. Optional, so clearing it deletes the key below rather than
       // writing `undefined` -- `exactOptionalPropertyTypes` is on.
       ...(refusal === undefined ? {} : refusal === 'none' ? {} : { refusal }),
+      // Three states, for the reason `zoning` and `refusal` each have three:
+      // `undefined` is a message that said nothing about an event, `'none'` is
+      // a session that has ended, and a notice is the event itself. Optional,
+      // so clearing it deletes the key below rather than writing `undefined`.
+      ...(event === undefined ? {} : event === 'none' ? {} : { event }),
     };
     if (zoning === 'none' && viewModel.zoning !== undefined) {
       const { zoning: _cleared, ...withoutZoning } = viewModel;
@@ -1621,6 +1647,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     if (refusal === 'none' && viewModel.refusal !== undefined) {
       const { refusal: _withdrawn, ...withoutRefusal } = viewModel;
       viewModel = withoutRefusal;
+    }
+    if (event === 'none' && viewModel.event !== undefined) {
+      const { event: _ended, ...withoutEvent } = viewModel;
+      viewModel = withoutEvent;
     }
     hud?.update(viewModel);
 

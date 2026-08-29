@@ -237,6 +237,20 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       'Type-only: `RefusalReason` and `WorkerToMainMessage` from `src/simulation/protocol/types`. It reads the refusal off a status-counts publication into a HUD alert row and nothing else -- the same shape as `simulation-counts.ts` beside it, and for the same reason: the HUD may not import the simulation (`AGENTS.md` boundary 1), so the module that has to know both a protocol message and a view model sits outside `src/ui/hud/`. No simulation code runs because of it, and the `Record` over `RefusalReason` is what makes a reason added to the protocol fail to compile until it has something to say (#261).',
   },
   {
+    file: 'src/ui/simulation-events.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      'Type-only: `LocalizationKey` from `src/content/localization`, so the `Record` over `SimulationEventType` can be checked at compile time to give every event type a message key and a severity. Exactly the use `simulation-alerts.ts` above makes of it, and for the same purpose; erased, so no content code runs because of it.',
+  },
+  {
+    file: 'src/ui/simulation-events.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      'Type-only: `SimulationEvent`, `SimulationEventType` and `WorkerToMainMessage` from `src/simulation/protocol/types`. It reads a `simulation/event` publication into a HUD alert row and a band notice and does nothing else -- the same shape as `simulation-alerts.ts` beside it, and for the same reason: the HUD may not import the simulation (`AGENTS.md` boundary 1), so the module that has to know both a protocol message and a view model sits outside `src/ui/hud/`. No simulation code runs because of it, and the `Record` over `SimulationEventType` is what makes an event type added to the protocol fail to compile until somebody has decided what it says to a player and how loudly (#507).',
+  },
+  {
     file: 'src/ui/simulation-counts.ts',
     tree: 'content',
     kind: 'value',
@@ -478,6 +492,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-clock.ts',
       'src/ui/simulation-commands.ts',
       'src/ui/simulation-counts.ts',
+      'src/ui/simulation-events.ts',
       'src/ui/simulation-held-guards.ts',
       'src/ui/simulation-intake.ts',
       'src/ui/simulation-pending-deliveries.ts',

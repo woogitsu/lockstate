@@ -1,3 +1,4 @@
+import { SimulationEventLog } from '../../src/simulation/events';
 import { describe, expect, it } from 'vitest';
 import { loadStaffRoleCatalog } from '../../src/content/staff-role-catalog';
 import { PayrollSystem, Treasury, dailyWageBillMinorUnits, staffDailyWageMinorUnits } from '../../src/simulation/economy';
@@ -67,12 +68,15 @@ function rosterOf(...roleIds: readonly string[]): GuardRoster {
 function payrollOnlyKernel(
   roster: GuardRoster,
   startingBalance: number,
-): { kernel: Kernel; treasury: Treasury; payroll: PayrollSystem } {
+): { kernel: Kernel; treasury: Treasury; payroll: PayrollSystem; events: SimulationEventLog } {
   const treasury = new Treasury(startingBalance);
-  const payroll = new PayrollSystem(treasury, roster, ROLES.registry);
+  // Returned rather than swallowed so a payday test can assert what the prison
+  // *said*, not only what it now owes (issue #507).
+  const events = new SimulationEventLog();
+  const payroll = new PayrollSystem(treasury, roster, events, ROLES.registry);
   const kernel = new Kernel();
   kernel.registerSystem(payroll);
-  return { kernel, treasury, payroll };
+  return { kernel, treasury, payroll, events };
 }
 
 function step(kernel: Kernel, ticks: number): void {

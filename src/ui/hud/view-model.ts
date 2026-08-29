@@ -922,10 +922,62 @@ export interface HudRefusalNoticeViewModel {
   readonly labelKey: LocalizationKey;
 }
 
+/**
+ * The most recent thing the prison did, for the events band (issue #507).
+ *
+ * ## Why this is a third band and not a second use of the refusal line
+ *
+ * `hud.ts` states the rule the two existing bands were built under: a band
+ * holds one *class* of sentence with one lifetime, and sharing one "would need
+ * a rule about which sentence wins". The two classes there are "whatever
+ * refused a player command" and "this page has no simulation". An event is
+ * neither. It is not a refusal -- nothing was refused, and in the
+ * `'info'` case nothing is even wrong -- and it does not belong to a control,
+ * so it cannot clear the way a refusal clears when the same action later
+ * succeeds. Putting a discharge notice on the refusal line would silently
+ * evict a refusal the player has not read yet, which is the eviction that rule
+ * exists to prevent.
+ *
+ * ## Why the band exists at all, when the alerts list already renders these
+ *
+ * Because the alerts list does not reach the player. `hud.css` drops
+ * `.hud__corner` entirely at 720px and below, and the alerts section inside it
+ * starts folded (`INITIAL_HUD_SHELL_STATE`), so a row appended there is
+ * `offsetParent === null` at *every* viewport until somebody opens it --
+ * measured in Chromium at 1280x800 and 375x812 for issue #220, which is the
+ * defect that gave the refusal its own band and then gave "no simulation" a
+ * second one. Routing `'info'` to the list alone would have been the third
+ * repetition of that defect and would have made the channel's first producers
+ * invisible in exactly the way the silent sentence-end already was.
+ *
+ * So the split is the one `src/ui/simulation-alerts.ts` already names for
+ * refusals: **the band is the notice and the list is the log**, and an event
+ * appears on both.
+ *
+ * `sequence` is the event's own 1-based ordinal from the session's
+ * `SimulationEventLog`, used to tell a re-render of the event already showing
+ * from a newer one -- the same job it does for a refusal, though the pressure
+ * is lower here because this channel does not republish.
+ *
+ * `severity` rather than a fixed tone, because this band is the first surface
+ * that carries more than one: a discharge is `'info'` and an unpaid payday is
+ * `'warning'`. `HudSeverity`'s `'info'` member had no producer anywhere in
+ * `src/` before this.
+ */
+export interface HudEventNoticeViewModel {
+  readonly sequence: number;
+  /** A message key, never text. */
+  readonly labelKey: LocalizationKey;
+  readonly labelParameters?: MessageParameters;
+  readonly severity: HudSeverity;
+}
+
 export interface HudViewModel {
   readonly counts: HudCountsViewModel;
   readonly clock: HudClockViewModel;
   readonly alerts: readonly HudAlertViewModel[];
+  /** Absent until this session has had something to say. See the interface. */
+  readonly event?: HudEventNoticeViewModel;
   /** Absent until this session has designated a room. Not zeroed -- see the interface. */
   readonly zoning?: HudZoningNoticeViewModel;
   /** Absent until this session has refused something. See the interface. */
