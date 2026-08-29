@@ -319,6 +319,20 @@
   color: var(--status-warning);
 }
 
+/* No event carries `'danger'` today -- `EVENT_PRESENTATION` in
+   `src/ui/simulation-events.ts` is a closed `Record` over
+   `SimulationEventType` and its two members are `'info'` and `'warning'`.
+   The rule is here anyway because the failure without it is silent: a third
+   event type graded `'danger'` would inherit the `'info'` blue above and be
+   painted as good news, which is a worse outcome than an unstyled band and
+   is not something a type checker can catch. Written once here rather than
+   left for whoever adds that type to notice. */
+.hud__event[data-severity='danger'] {
+  background: var(--badge-danger-bg);
+  border-bottom-color: var(--status-danger);
+  color: var(--status-danger);
+}
+
 /* The same trap `.hud__refusal[hidden]` and `.hud__unavailable[hidden]` close,
    for the same reason: the author `display: flex` above beats the user agent's
    `[hidden] { display: none }`, so without this every session would paint an
