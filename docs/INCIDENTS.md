@@ -288,13 +288,30 @@ regression test asserting zero route failures through a live lockdown.
 
 ## Alerts: projections, not the record
 
-`alerts.ts`'s `IncidentAlert` is what a player sees: type, sector, state,
-severity, participant *count* and start tick. The incident's
+`IncidentRowViewModel` (`src/simulation/presentation/incident-projection.ts`)
+is what a player sees: type, sector, state, severity, participant *count*,
+start tick, age, outcome and required responder count. The incident's
 `causeFactors` — the raw risk and grudge scores that produced it — are
 withheld, exactly as #27's contraband ground truth stays behind its
-intelligence projection. `summarizeIncidents` gives aggregate post-incident
-metrics (resolved/lapsed/open, injuries, damage, escapes) for a future
-economy/story consumer, still with no hidden calculations exposed.
+intelligence projection. `summarizeIncidents`
+(`src/simulation/incidents/incident-summary.ts`) gives aggregate
+post-incident metrics (resolved/lapsed/open, injuries, damage, escapes) for
+a future economy/story consumer, still with no hidden calculations exposed.
+
+**This section named `alerts.ts`'s `IncidentAlert` until issue #555, and
+that projection is gone.** It had no caller outside its own test for as
+long as it had existed and carried a strict subset of the fields the
+projection above carries; keeping both would have been two answers to one
+question, with the unreachable one free to rot. The file was renamed
+`incident-summary.ts` with the deletion and carries the full argument.
+
+**What a player is told about an incident *as it happens* is a different
+channel and is not this one.** `simulation/event` carries
+`incidents.riot-opened` and its three siblings the moment
+`IncidentTriggerSystem` opens one, and `incidents.all-clear` when the last
+one closes; those are occurrences and are pushed once, where everything
+above is a projection the HUD pulls. See `src/ui/simulation-events.ts` for
+which kind is graded `'danger'` and why.
 
 ## Snapshot/restore
 

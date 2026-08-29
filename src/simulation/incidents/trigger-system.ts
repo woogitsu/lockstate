@@ -457,7 +457,8 @@ export class IncidentTriggerSystem implements SystemRegistration {
    * one in `IncidentResponseSystem`: *"so the two call sites cannot drift
    * about which incidents earn a sanction"*. There are four here, and a fifth
    * producer added later inherits the announcement instead of having to
-   * remember it -- which is exactly what did not happen to `toIncidentAlert`.
+   * remember it -- which is exactly what did not happen to the deleted
+   * `toIncidentAlert` (`incident-summary.ts` has that story).
    *
    * **This is where the volume is bounded, not at `MAX_EVENT_ALERT_ROWS`.**
    * Every caller below has already passed `isQuiet` for its own `(sector,
