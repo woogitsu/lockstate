@@ -177,13 +177,51 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   is what produced the false red above. Nothing enforces this -- it is a habit,
   and four minutes of waiting is much cheaper than a root-cause pass on a red
   `main`, which also stops publication (`deploy.yml` fires on CI completion).
-- **Never edit a source file while a Playwright run is live.** Vite serves
-  `src/**` with HMR, so the edit is pushed into the running page: a keyboard
-  walk loses focus mid-test and the run dies somewhere unrelated to both the old
-  code and the new. This is the *active* form of the baseline rule two bullets
-  up -- that one is about reading your edits, this one is about the browser
-  reacting to them. A ten-minute run was lost to it on 2026-08-29 and the
-  failure was briefly mistaken for a real one.
+- **Never edit ANY file in the tree while a Playwright run is live** -- not
+  just a source file. This bullet said *"never edit a **source** file"* until
+  2026-08-29 and **that was too narrow**, which cost a playtest its last
+  scenario. `tests/browser/vite.config.ts:26` sets `root: repositoryRoot`, so
+  the dev server watches the whole repository. A file no module imports -- a
+  markdown note under `docs/research/`, say -- has no HMR boundary, so Vite
+  cannot patch it and does a **full page reload** instead.
+  **And the symptom does not look like what it is.** An edit to `src/**` at
+  least dies near the code: a keyboard walk loses focus mid-test and the run
+  fails somewhere unrelated to both the old code and the new. A full reload
+  takes the worker with it, and what Playwright captures minutes later is the
+  arrival screen -- `Funds "0"` on a prison that held 22,405 a moment earlier,
+  `Day "--"`, the initial tab, a *New prison* button -- so it reads as a control
+  that will never become clickable, which reads as a product defect. **The agent
+  writing its findings into a research note as the run proceeds is doing exactly
+  the thing that kills it**, which is why the narrow wording was worse than no
+  wording: it named the one directory an agent is least likely to be editing.
+  This is the *active* form of the baseline rule two bullets up -- that one is
+  about reading your edits, this one is about the browser reacting to them. Two
+  ten-minute runs and one playtest scenario were lost to it on 2026-08-29, and
+  in two of the three the failure was briefly mistaken for a real one.
+- **Never mutation-test in the shared checkout.** Take a worktree. A contaminated
+  run on 2026-08-27 **reported a surviving mutation as KILLED** -- the failure
+  mode a mutation test exists to prevent, produced by the mutation test itself,
+  and the most expensive kind of wrong because it is indistinguishable from
+  success. Another process touching the tree while the mutation is in place is
+  enough; you do not have to be the one who touched it.
+- **Pinning does not stop rot, it makes rot diagnosable.** A pinned action, a
+  pinned version, a pinned fingerprint: none of them freezes the thing they
+  name. What they buy is that when it moves, the move is a diff somebody can
+  read rather than a mystery. Do not cite a pin as evidence that something has
+  not changed.
+- **Never put a model identifier in a commit message**, a pull request title or
+  body, a code comment, or anything else pushed to this repository. The owner's
+  instruction, and it applies whichever model is running.
+- **Label every factual claim with how you got it.** `VERIFIED` -- you opened
+  the source and read it, or ran it. `INFERRED` -- you reasoned to it. And for a
+  defect, `LIVE` -- it affects `main` now -- against `LATENT` -- reachable only
+  through a path nothing takes yet. `docs/research/README.md` carries the fuller
+  tier list for records filed there. **Longer is better**: a report that carries
+  its evidence beats a shorter one that asks to be trusted.
+- **Branch protection is off on this repository**, and there is a trap under
+  that: a *skipped* required check reports as satisfied. So "the checks are
+  green" and "the checks ran" are different sentences, and only the second one
+  is worth anything -- read the run, not the tick.
 - **A change that breaks fixtures breaks them wherever they live.** ADR 0045's
   refusal turned about 104 tests red in 16 files; the agent fixed those and
   missed `tests/browser/app-shell.spec.ts`, because it could not run the browser
