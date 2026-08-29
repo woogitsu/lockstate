@@ -2,7 +2,7 @@ import type { LocalizationKey } from '../../content/localization';
 import type { MessageParameters } from '../../services/localization/format';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
-import { element, eyebrowText, valueText } from '../primitives/dom';
+import { describeBy, element, eyebrowText, nextUiId, valueText } from '../primitives/dom';
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createNumberField, type NumberField } from '../primitives/number-field';
 import { createPanel } from '../primitives/panel';
@@ -893,6 +893,29 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * module's boundary, and the verdict it returns is all this line ever reads.
    */
   const note = eyebrowText(t(HUD_MESSAGE_KEY.roomsArmHint), 'hud-rooms__note');
+  /*
+   * The note is the Confirm control's description, and it is one in all three
+   * of the states `paintNote` writes -- the too-small warning that is *why*
+   * the control below is disabled, the open-perimeter warning that is why
+   * pressing it will probably be refused, and the drag hint that is what to
+   * do before it means anything. A player who cannot see the note reaches
+   * Confirm and is told "disabled" and nothing else (finding from a
+   * keyboard-only playtest of the assembled app).
+   *
+   * Wired once here rather than from `paintNote`, because the *relationship*
+   * never changes -- only the sentence does, and a screen reader re-reads a
+   * described element's description when it changes. `role="status"` would be
+   * the wrong tool: this text is not an announcement, it is the standing
+   * explanation of a control that is on screen the whole time.
+   *
+   * This needs `markControl` in `hud.ts` to merge rather than replace, which
+   * is exactly what the comment above `commandControls` there predicted a
+   * control gaining its own `aria-describedby` would need. Confirm is one of
+   * those controls: it composes a `ZoneRoom` intent, so a refusal marks it.
+   */
+  const noteId = nextUiId('hud-rooms-note');
+  note.id = noteId;
+  describeBy(confirmButton.element, noteId);
 
   const actionsRow = element('div', {
     className: 'hud-rooms__actions',

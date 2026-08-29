@@ -1100,10 +1100,19 @@ window.lockstateUiHarness = {
       width: line?.getBoundingClientRect().width ?? 0,
       height: line?.getBoundingClientRect().height ?? 0,
       failedControls: marked.map((control) => control.getAttribute('title') ?? control.textContent ?? ''),
+      // Token containment, not string equality. `aria-describedby` is a list
+      // of ids, and a control may carry its own description beside the
+      // refusal -- the Rooms panel's Confirm button carries the note that
+      // says why it is disabled. This read used to be `=== line.id`, which
+      // asserted "the refusal is the *only* thing describing this control",
+      // a stronger claim than the property being tested and one that goes
+      // false the moment any panel describes a control of its own.
       describedByRefusal:
         line !== null &&
         marked.length > 0 &&
-        marked.every((control) => control.getAttribute('aria-describedby') === line.id),
+        marked.every((control) =>
+          (control.getAttribute('aria-describedby') ?? '').split(/\s+/u).includes(line.id),
+        ),
       role: line?.getAttribute('role') ?? null,
       ariaLive: line?.getAttribute('aria-live') ?? null,
     };
@@ -1680,6 +1689,24 @@ window.lockstateUiHarness = {
       cancelLaidOut: laidOut('.hud-rooms__cancel'),
       confirmText: document.querySelector<HTMLElement>('.hud-rooms__confirm')?.textContent?.trim() ?? '',
       confirmDisabled: document.querySelector<HTMLButtonElement>('.hud-rooms__confirm')?.disabled ?? false,
+      // Resolved rather than compared: the note's id is generated
+      // (`nextUiId`), so a test may not name it, and what is being asserted is
+      // that the id Confirm points at *is the note* -- and that it still is
+      // once a refusal has joined the list.
+      confirmDescribedBy: (() => {
+        const confirm = document.querySelector<HTMLElement>('.hud-rooms__confirm');
+        if (confirm === null) return [];
+        return (confirm.getAttribute('aria-describedby') ?? '')
+          .split(/\s+/u)
+          .filter((token) => token !== '')
+          .map((id) => {
+            const target = document.getElementById(id);
+            if (target === null) return 'dangling';
+            if (target.classList.contains('hud-rooms__note')) return 'note';
+            if (target.classList.contains('hud__refusal')) return 'refusal';
+            return 'other';
+          });
+      })(),
       coordinates: [
         '.hud-rooms__coord-x input',
         '.hud-rooms__coord-y input',

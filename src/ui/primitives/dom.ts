@@ -79,3 +79,45 @@ export function nextUiId(prefix: string): string {
 export function detach(node: Node): void {
   node.parentNode?.removeChild(node);
 }
+
+/**
+ * Adds `id` to a control's `aria-describedby`, keeping whatever was already
+ * there.
+ *
+ * `aria-describedby` is a *list* of ids, and a control can have more than one
+ * thing worth saying about it at once. The HUD's refusal band writes one of
+ * them (`hud.ts`, `markControl`); a panel that keeps a standing note beside a
+ * control writes another. Whoever wrote last used to win, because both sides
+ * called `setAttribute`, and the loser's sentence became unreachable to a
+ * screen reader while staying perfectly visible on screen -- the failure mode
+ * that is hardest to notice, since sighted testing cannot see it.
+ *
+ * Idempotent, so a repaint that re-describes the same control does not grow
+ * the list. Order is insertion order, which is the order a screen reader
+ * reads the descriptions in.
+ */
+export function describeBy(control: Element, id: string): void {
+  const present = (control.getAttribute('aria-describedby') ?? '').split(/\s+/u).filter((token) => token !== '');
+  if (present.includes(id)) return;
+  present.push(id);
+  control.setAttribute('aria-describedby', present.join(' '));
+}
+
+/**
+ * Removes `id` from a control's `aria-describedby`, leaving the rest.
+ *
+ * The attribute is removed outright once nothing is left, rather than left as
+ * an empty string: `aria-describedby=""` is not the same as absent to every
+ * assistive technology, and an empty list is what "nothing describes this"
+ * means.
+ */
+export function undescribeBy(control: Element, id: string): void {
+  const remaining = (control.getAttribute('aria-describedby') ?? '')
+    .split(/\s+/u)
+    .filter((token) => token !== '' && token !== id);
+  if (remaining.length === 0) {
+    control.removeAttribute('aria-describedby');
+    return;
+  }
+  control.setAttribute('aria-describedby', remaining.join(' '));
+}
