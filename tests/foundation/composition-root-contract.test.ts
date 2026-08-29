@@ -179,6 +179,12 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
       'ADR 0048 consequence 1 (issue #442), and the half a player does *not* notice, which is why it is pinned in context rather than by its own name. `refreshStaffCoverage()` appears twice in this file and `toContain` cannot tell the two apart, so this entry names the cadence call by the line above it. Without it the block is painted once when the Security tab opens and never again: a player who leaves that tab showing while the ninth prisoner is admitted keeps reading a green "Covered" over a prison that has since outgrown its guards, which is worse than no readout. The whitespace is safe to pin because this repository has no formatter -- `agrees with package.json about whether a linter or formatter exists`, below, is the gate that keeps that true. Deleting the call leaves `tsc` clean and every test green.',
   },
   {
+    what: 'the Build catalogue asks the simulation which rows sit on an edge',
+    source: 'occupiesEdge: occupiesTileEdge(definition)',
+    reason:
+      "Issue #531. This line read `occupiesEdge: definition.category === 'wall'` -- a second copy of a rule the simulation already owns, and `occupiesTileEdge`'s own comment had been amended to record that the two answers disagreed. Measured over the whole registry, `door-wooden` is the only row they disagree about, and it is also the only row that reaches `place-build-order` while answering `false`: it is `category: 'object'` naming a `placesDoor`, so it writes `DOOR_EDGE_NUMERIC_ID` onto an edge while this row told the HUD it sat on none. The Build panel therefore hid its edge chooser for a door and submitted the panel's retained edge regardless, so a door typed into the coordinate form took whichever edge had last been chosen for a wall rather than one the player picked. Restoring the re-derivation leaves `tsc` clean and every unit test green, because nothing headless imports this file and `occupiesTileEdge`'s own tests pass either way, which is the mutation this entry kills. The behaviour is measured in `tests/browser/ui-shell.spec.ts` (\"shows the edge chooser for a door\"); this catches it in `pnpm test`.",
+  },
+  {
     what: 'the lifecycle save handler is attached to the controller',
     source: 'new LifecycleSaveHandler(controller).attach()',
     reason:

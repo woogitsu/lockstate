@@ -931,18 +931,33 @@ export const DOOR_EDGE_NUMERIC_ID = 2;
  * is a predicate and not `category === 'wall'` written out at each call site:
  * a `'wall'`, and any buildable that names a `placesDoor`.
  *
- * **The composition root does not call it, and the two answers already
- * disagree.** This said it was exported *"because the composition root needs
- * the same answer to decide whether the Build panel shows its edge chooser
- * (`src/main.ts`), and a second copy of the rule there is how the two would
- * come to disagree"* -- future tense for something already true when it was
- * written. `src/main.ts` publishes `occupiesEdge: definition.category ===
- * 'wall'` and imports no predicate, so the Build panel's numeric route hides
- * the edge chooser for `door-wooden`; `tests/integration/door-construction-loop.test.ts`
- * records the same gap from the other side and leaves it open as a HUD
- * question. The sentence is kept rather than replaced because the reason it
- * gives is right and is why `submitOrder` calls this function rather than
- * spelling the rule again (issue #448).
+ * **The composition root calls it. It did not, and that is what issue #531
+ * was.** Two earlier states of this paragraph are worth keeping, because each
+ * was true when written and the second is the defect:
+ *
+ * 1. It was exported *"because the composition root needs the same answer to
+ *    decide whether the Build panel shows its edge chooser (`src/main.ts`), and
+ *    a second copy of the rule there is how the two would come to disagree"* --
+ *    future tense for something already true when it was written.
+ * 2. So the paragraph was corrected to say the opposite: *"The composition root
+ *    does not call it, and the two answers already disagree"*, with
+ *    `src/main.ts` publishing `occupiesEdge: definition.category === 'wall'`,
+ *    the Build panel's numeric route hiding the edge chooser for `door-wooden`,
+ *    and `tests/integration/door-construction-loop.test.ts` recording the same
+ *    gap from the other side as an open HUD question.
+ *
+ * Both are now history. `src/main.ts` publishes `occupiesEdge:
+ * occupiesTileEdge(definition)`, so the panel offers a door its edge chooser
+ * and the door lands where the player put it. What the disagreement cost, for
+ * the record: a door submitted through the coordinate form took whichever edge
+ * the previous *wall* had used, because the panel hid the chooser and submitted
+ * its retained value anyway. `tests/foundation/composition-root-contract.test.ts`
+ * pins the call site, since deleting it leaves `tsc` clean and every unit test
+ * green; the panel's half is `intentEdge` in `src/ui/hud/build-panel.ts`, which
+ * stops a hidden control's value reaching any command at all.
+ *
+ * Reason (1) is why `submitOrder` calls this function rather than spelling the
+ * rule again (issue #448), and it is why there is one predicate to call.
  */
 export function occupiesTileEdge(definition: BuildableDefinition): boolean {
   return definition.category === 'wall' || definition.placesDoor !== undefined;

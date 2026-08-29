@@ -63,7 +63,12 @@ import { RoomTool } from './ui/room-tool';
 import { OBJECT_CATEGORY_NAME_KEYS, defaultObjectRegistry } from './content/object-catalog';
 import { defaultRoomContentRegistry } from './content/room-catalog';
 import { PLANNED_OBJECT_TINT, zoningTint } from './rendering/world/appearance';
-import { BUILDABLE_REGISTRY, buildableObjectCategory, type BuildableDefinition } from './simulation/construction';
+import {
+  BUILDABLE_REGISTRY,
+  buildableObjectCategory,
+  occupiesTileEdge,
+  type BuildableDefinition,
+} from './simulation/construction';
 // The one reader of the room catalogue's *area* requirements outside the
 // simulation, and it is the composition root by design: three layers ask this
 // question and none may re-derive the answer. See `roomCatalogue()` below.
@@ -703,7 +708,17 @@ function buildCatalogue(): HudBuildViewModel {
     buildables.push({
       definitionId: definition.id,
       labelKey,
-      occupiesEdge: definition.category === 'wall',
+      // The simulation's own predicate, called rather than re-derived. This
+      // read `definition.category === 'wall'`, which is the same answer for
+      // twenty of the registry's twenty-one rows and the wrong one for
+      // `door-wooden`: a door is `category: 'object'` that names a
+      // `placesDoor`, so it occupies an edge and this row said it did not
+      // (issue #531). The Build panel therefore hid its edge chooser for a
+      // door while still submitting an edge, and the door landed on whichever
+      // edge the previous wall had used. `occupiesTileEdge` is the one place
+      // the rule is written, which is what `submitOrder` already calls and
+      // what `docs/NAVIGATION.md` said this surface was owed.
+      occupiesEdge: occupiesTileEdge(definition),
       // Which group the catalogue's filter puts this row in, and what that
       // group is called (ADR 0035). Both are answers only this layer can give:
       // the id is simulation content and the key is a localization key, and the
