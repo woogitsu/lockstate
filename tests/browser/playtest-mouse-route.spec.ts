@@ -10,8 +10,17 @@ import { expect, test, type Page } from '@playwright/test';
  * guard. The findings live in `docs/research/2026-08-29-mouse-playtest.md` on
  * `agent/playtest-research-note`; the guard for the fix belongs beside the fix.
  *
- * If you are fixing #569: `-g "what each one does"` is the shortest path to
- * the defect, and `-g "the mouse-only route"` is the whole naive walk.
+ * **#569 is NOT a defect and was retracted by its author.** The refusal a
+ * designation earns reaches `.hud__refusal`, a full-width band under the
+ * status strip, measured at 1440x32 and at 900x32 with `role="status"`, which
+ * does not auto-dismiss -- it is #220's fix for the very 0x0 alerts row this
+ * script measures. This file kept looking only at named panels and never at
+ * `.hud` itself, which is how it missed a 32px band across the whole screen.
+ * `docs/research/2026-08-29-mouse-playtest.md` on `agent/playtest-research-note`
+ * carries the correction.
+ *
+ * `-g "the mouse-only route"` is still the whole naive walk, and `-g "walls
+ * first"` is the ordering question that is actually still open.
  *
  * The owner's complaint is that a prison could not be built by playing:
  * "znajdz bugi i bledy grajac, bo ja nie moglem postawic wiezienia itp grajac
