@@ -9,7 +9,7 @@ import { expect, test, type Page } from '@playwright/test';
  * count, the resident count and the amount actually credited, separately.
  *
  * Its output is the deliverable. The findings live in
- * `docs/research/2026-08-30-economy-and-mouse-playtest.md`.
+ * `docs/research/2026-08-29-what-a-day-actually-pays.md`.
  */
 
 const APP_URL = '/index.html';
