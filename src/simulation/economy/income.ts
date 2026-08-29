@@ -496,12 +496,28 @@ export function stateIncomeAccruedByTick(dailyGrantMinorUnits: number, tick: num
  * which is the cost the record itself names when it rejects a per-tick credit
  * two paragraphs earlier.
  *
- * So the sampled reading is what the chosen cadence can express, it is what
- * the readout shows all day, and the difference between the two is invisible
- * until something can change occupancy inside a day -- which, with no
- * admission wired, is nothing. If integration is later wanted, this is the
+ * So the sampled reading is what the chosen cadence can express, and it is what
+ * the readout shows all day. If integration is later wanted, this is the
  * comment that says what it costs and which decision has to be reopened
  * first.
+ *
+ * **What this used to say about when the difference is visible is now false.**
+ * It read *"the difference between the two is invisible until something can
+ * change occupancy inside a day -- which, with **no admission wired**, is
+ * nothing."* Two things changed underneath it, and either alone is enough:
+ *
+ *  - **Admission is wired.** `src/main.ts` submits an `AdmitPrisoner` from the
+ *    Intake panel's control, and a playtest pressed it twelve times in one
+ *    session.
+ *  - **Discharge is wired.** `PrisonerDischargeSystem` releases a prisoner at
+ *    the end of their sentence (ADR 0050), which takes them out of the housed
+ *    population mid-day just as surely.
+ *
+ * So occupancy *does* move inside a day, and the sampled-versus-integrated
+ * difference is reachable rather than hypothetical. That does **not** reopen
+ * the decision -- the cost paragraph above is unchanged and still the reason --
+ * but a reader must not be told the case cannot arise. It can, and how much it
+ * is worth has simply not been measured.
  */
 export class StateIncomeSystem implements SystemRegistration {
   public readonly id = 'economy.state-income';

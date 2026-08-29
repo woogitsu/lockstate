@@ -64,10 +64,26 @@ export function classifiedAtTickOf(sentenceEndTick: number, sentenceLengthTicks:
  *
  * `'queued'`, `'reception'` and `'classification'` have not written one yet --
  * `riskTier` is still the zero a fresh slot holds, which is the same reason
- * `prisoner-projection.ts` reports `classified: false` for them. `'failed'` is
- * excluded because it is terminal and inert (ADR 0028 decision 8): no branch
- * of `IntakeSystem.update` matches it and nothing releases the record, so a
- * tier written there could never reach a regime or a placement.
+ * `prisoner-projection.ts` reports `classified: false` for them.
+ *
+ * `'failed'` is excluded because a tier written there could never reach a
+ * regime or a placement: no branch of `IntakeSystem.update` matches the stage.
+ *
+ * **This used to give a second reason and that reason is now false.** It read
+ * *"it is terminal and inert (ADR 0028 decision 8): no branch of
+ * `IntakeSystem.update` matches it and **nothing releases the record**"*.
+ * `PrisonerDischargeSystem` releases it: `SENTENCE_BEARING_STAGES` is
+ * `['accommodation-assignment', 'completed', 'failed']`, and that file states
+ * the difference from this list explicitly, from its own side -- *"a
+ * `'failed'` record is a prisoner the prison is holding, counted in the
+ * population and drawn on the map, whose sentence is running exactly like
+ * anybody else's"*. Only this side was left saying the old thing.
+ *
+ * The exclusion itself is unchanged and still right; what changed is that it
+ * rests on one reason rather than two. A `'failed'` prisoner is released at
+ * the end of their sentence like anybody else -- they are simply never
+ * *reviewed* while they are held, because a tier written at that stage has
+ * nowhere to go.
  */
 const REVIEWABLE_STAGES: readonly string[] = ['accommodation-assignment', 'completed'];
 

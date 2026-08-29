@@ -93,8 +93,35 @@ export interface ContrabandIntroductionPolicy {
  *
  * `RiskTier` is produced by `classifyPrisoner` from the `sentenceLengthTicks`
  * and `priorIncidents` the `AdmitPrisoner` command carries, and is revised
- * afterwards by `ClassificationReviewSystem` -- so this reads a number the
- * player influences twice over rather than a dice roll in a costume.
+ * afterwards by `ClassificationReviewSystem`.
+ *
+ * **This used to end *"-- so this reads a number the player influences twice
+ * over rather than a dice roll in a costume."* That is false, and it is false
+ * three times over.** Recorded rather than deleted, because the sentence
+ * describes what this policy is *for*, and the gap between that intent and the
+ * shipped game is the thing worth knowing:
+ *
+ *  1. **The player influences neither input.** `src/main.ts` is
+ *     `const ADMISSION_REQUEST = { priorIncidents: 0 } as const` -- pinned, and
+ *     held deliberately -- and since ADR 0069 the sentence is no longer sent
+ *     from there at all: it is *drawn inside the worker* from the
+ *     `prisoners.sentence` stream. Neither number is a player decision.
+ *  2. **The revision never happens.** This system is globally phased at
+ *     `intervalTicks - 1`, so it runs at ticks 23,999 and 47,999, while
+ *     eligibility is `tick - classifiedAt >= 24,000` -- nobody qualifies at
+ *     23,999, so the first reachable review is **47,999**. The drawn sentence
+ *     is at most `MAX_SENTENCE_DAYS` (16) x `DAY_LENGTH_TICKS` (2,400) =
+ *     **38,400 ticks**. Every prisoner is discharged before any review runs.
+ *  3. **The sentence cannot move the tier even if it were chosen.**
+ *     `classifyPrisoner` reads it as
+ *     `sentenceLengthTicks >= LONG_SENTENCE_THRESHOLD_TICKS ? 1 : 0` with the
+ *     threshold at **200,000**, which is 5.2x the largest sentence the shipped
+ *     range can draw. That term is always 0.
+ *
+ * So `riskTier` is, today, exactly the dice roll this sentence said it was not:
+ * reachable tiers are `[0, 1]` and which one a prisoner gets is the draw alone.
+ * The policy below is still the right shape for the game this comment describes
+ * -- it is the reading of the *present tense* that was wrong.
  */
 export const DEFAULT_CONTRABAND_INTRODUCTION_POLICY: ContrabandIntroductionPolicy = {
   baseProbability: 0.1,
