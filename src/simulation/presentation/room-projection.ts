@@ -6,6 +6,8 @@ import { defaultRoomContentRegistry } from '../../content/room-catalog';
 import type { SecurityGradeDefinition } from '../../content/security-grade-catalog';
 import { defaultSecurityGradeRegistry } from '../../content/security-grade-catalog';
 import type { EntityId } from '../entity/entity-store';
+import type { PlacedObject } from '../objects/placed-object';
+import { roomContains } from '../objects/room-capacity';
 import type { RoomInstance, RoomInstanceRegistry } from '../prisoners/room-instance-registry';
 import type { SecuritySectorDefinition } from '../security/sector';
 import {
@@ -31,6 +33,23 @@ export interface RoomSectorSource {
   getDefinition(id: string): SecuritySectorDefinition | undefined;
 }
 
+/**
+ * Read-only slice of `PlacedObjectRegistry` the room projection needs to
+ * *count* the objects standing in a room, rather than only to know which
+ * capabilities they supply.
+ *
+ * `all()` and not `inRect`, which the registry also offers and which expresses
+ * the same containment rule: `all()` sorts on every call
+ * (`PlacedObjectRegistry.all`, deliberately -- the collection changes only on a
+ * build or a revert), so a list projection asking `inRect` once per room would
+ * pay that sort once per room. This asks once per projection and attributes the
+ * objects itself, through `roomContains` -- ADR 0028 decision 2's anchor-tile
+ * rule, read from the one module that states it rather than re-derived here.
+ */
+export interface RoomObjectSource {
+  all(): readonly PlacedObject[];
+}
+
 export interface RoomProjectionSource {
   readonly roomInstances: RoomInstanceRegistry;
 }
@@ -53,32 +72,74 @@ export interface RoomProjectionOptions {
    */
   readonly sectorIdByRoomInstanceId?: ReadonlyMap<string, string>;
   readonly sectors?: RoomSectorSource;
+  /**
+   * What is standing in the prison, so an `object` requirement can be checked
+   * against its authored `minQuantity` instead of only against the room's
+   * capability list. See `RoomRequirementStatus`.
+   *
+   * **Optional, and its absence is a weaker answer rather than a wrong one.**
+   * Without it every `object` requirement falls back to the capability-set test
+   * this projection made before #528, which ignores `minQuantity` -- the state
+   * a hand-built fixture that registers `objectCapabilities` directly is in,
+   * and the only state a V4 save's boundless instances can be in. The worker
+   * supplies it (`worker/projection-catalog.ts`), so no session a player runs
+   * takes that path.
+   */
+  readonly placedObjects?: RoomObjectSource;
 }
 
 /**
  * How far a room catalog requirement can actually be checked against a
  * registered room instance.
  *
- * - `'satisfied-by-capability'` -- an `object` requirement whose object's
- *   catalog capabilities are declared on the instance. This is the same
- *   signal `ActionSystem`/`IntakeSystem` actually gate on
+ * - `'satisfied-by-capability'` -- an `object` requirement the room holds at
+ *   least `minQuantity` satisfying objects for. Which objects those are is the
+ *   capability rule below; the count is `satisfyingObjectCount`. The capability
+ *   half is the same signal `ActionSystem`/`IntakeSystem` actually gate on
  *   (`requiredObjectCapability`), so it is real, load-bearing state.
- * - `'missing-capability'` -- an `object` requirement whose capabilities
- *   are not declared on the instance.
+ * - `'missing-capability'` -- an `object` requirement the room holds fewer than
+ *   `minQuantity` satisfying objects for, including none at all.
  * - `'not-evaluated'` -- `enclosed`, `outdoors` and `minimum-size`. Both of
  *   those are evaluated *at zoning time* (`RoomZoningService`: the minimum size
  *   is refused, the enclosure is reported on a notice) and neither answer is
  *   recorded on the instance, so there is still nothing for this projection to
  *   read.
  *
- *   `minQuantity` is likewise still uncheckable, and the reason has changed.
- *   Object placement now exists (ADR 0028 phase 1) and objects *are*
- *   individuated, so counting the beds in a cell is possible for the first
- *   time -- what is missing is that this projection is not handed the placed
- *   objects. Wiring that is phase 4's, which is when a second object type makes
- *   a *quantity* mean something; until then every `object` requirement is
- *   answered from the instance's derived capability list exactly as before.
- *   `docs/HUD_PROJECTIONS.md` gap 13 narrows rather than closes.
+ * ## `minQuantity` is read, and this comment said for three days that it was not
+ *
+ * **What it said**, from ADR 0028 phase 1 until this change: *"`minQuantity` is
+ * likewise still uncheckable, and the reason has changed. Object placement now
+ * exists (ADR 0028 phase 1) and objects *are* individuated, so counting the beds
+ * in a cell is possible for the first time -- what is missing is that this
+ * projection is not handed the placed objects. Wiring that is phase 4's, which
+ * is when a second object type makes a *quantity* mean something; until then
+ * every `object` requirement is answered from the instance's derived capability
+ * list exactly as before."* `docs/HUD_PROJECTIONS.md` gap 13 carried the same
+ * sentence.
+ *
+ * **What is true.** Phase 4 landed at `b097e70` on 2026-08-26 (#384) and did
+ * *not* wire it -- that commit's own ADR section says so in its own words, *"gap
+ * 13 stayed half-answerable rather than becoming answered: `requirementStatus`
+ * still compares capabilities and never counts objects, so one chair still
+ * satisfies a classroom's requirement for four"*, and calls the counting *"a
+ * mechanism, not a row"*. So the deferral above named a phase that had already
+ * shipped without it, and the sentence was false from `b097e70` onwards rather
+ * than merely stale. Issue #528 is what a player then saw: `room.canteen` asks
+ * for two dining tables and four benches, and one of each read the room
+ * finished.
+ *
+ * This projection is now handed the placed objects -- `RoomProjectionOptions.
+ * placedObjects` -- and `requirementStatus` counts them. The deferral is
+ * therefore discharged rather than re-dated.
+ *
+ * **The capability fallback survives, and only where there is nothing to
+ * count.** An instance with no recorded rectangle (a V4 save; see
+ * `RoomInstance`) contains nothing this projection can attribute to it, and a
+ * caller that supplies no `placedObjects` has handed it nothing to attribute.
+ * Both answer from `instance.objectCapabilities` exactly as before, ignoring
+ * `minQuantity`, because the alternative is to report a furnished room as empty.
+ * That is the same shape, and the same reason, as
+ * `RoomInstanceRegistry.concurrentUseCapacityFor`'s third case.
  *
  * These three statuses are the **only** answers the codebase gives to "does
  * this room satisfy its catalog requirements" (#123 item 2). There used to be
@@ -210,24 +271,115 @@ export function collectRoomInstances(
   return collected.sort((left, right) => compareStableIds(left.instanceId, right.instanceId));
 }
 
+/**
+ * What each room instance contains, keyed by instance id -- or `undefined` when
+ * nothing was handed to this projection to attribute.
+ *
+ * An instance **with** a rectangle always gets an entry, empty list included:
+ * "this room has a rectangle and nothing is standing in it" is a different
+ * answer from "nobody told this projection what is standing anywhere", and only
+ * the first may be counted against a `minQuantity`. An instance with no
+ * rectangle gets no entry, for the reason `roomBoundsOf` gives: a V4 save
+ * records none and inventing one would assert a room the player did not zone.
+ *
+ * **Cost.** One `all()` -- a single `O(objects log objects)` sort -- and then
+ * one `roomContains` test per (instance, object) pair. Rectangles never
+ * overlap (`RoomZoningService.zone` refuses `overlaps-existing-room`), so the
+ * inner loop stops at the first instance that claims an object.
+ */
+function contentsByInstanceId(
+  instances: readonly RoomInstance[],
+  placedObjects: RoomObjectSource | undefined,
+): ReadonlyMap<string, readonly PlacedObject[]> | undefined {
+  if (placedObjects === undefined) return undefined;
+  const contents = new Map<string, PlacedObject[]>();
+  const bounded: RoomInstance[] = [];
+  for (const instance of instances) {
+    if (instance.width === undefined || instance.height === undefined) continue;
+    contents.set(instance.instanceId, []);
+    bounded.push(instance);
+  }
+  for (const object of placedObjects.all()) {
+    for (const instance of bounded) {
+      if (!roomContains(instance, object.anchorTile)) continue;
+      contents.get(instance.instanceId)!.push(object);
+      break;
+    }
+  }
+  return contents;
+}
+
+/**
+ * How many of the objects standing in a room satisfy one `object` requirement.
+ *
+ * **Capability containment, per object, and that is the rule this repository
+ * already chose rather than a new one.** An object satisfies a requirement when
+ * *its own* catalog capabilities are a superset of the required object's, which
+ * is what `src/simulation/construction/definition.ts` states in the buildable
+ * registry and calls "the containment rule doing its job, not an accident of
+ * these rows": a security console standing in a reception satisfies its **desk**
+ * requirement, because a console declares `'workstation'` and everything else a
+ * desk declares, while a desk in a security office does not satisfy the console
+ * requirement, because it declares no `'surveillance'`. The same asymmetry makes
+ * a medical bed a bed and a bed not a medical bed.
+ *
+ * **Per object, where the pre-#528 test was against the room's capability
+ * *union*.** That union permitted two objects to jointly satisfy one
+ * requirement -- a desk plus some other `'surveillance'` thing reading as a
+ * security console -- which nothing ever stated and which counting cannot
+ * express anyway, since a count has to attribute each object to at most one
+ * requirement it satisfies. It is unobservable in the shipped catalogues: each
+ * of the four required objects declaring more than one capability
+ * (`object.shower-head`, `object.bench`, `object.security-console`,
+ * `object.medical-bed`) owns one of its capabilities outright -- `'shower'`,
+ * `'recreation'`, `'surveillance'`, `'medical-treatment'` -- so a room whose
+ * union covers the set already contains the object itself.
+ *
+ * An object naming a catalogue id this build does not declare counts for
+ * nothing rather than throwing, for `deriveRoomCapacity`'s reason: the row can
+ * only have come from a save, and one unreadable row must not make a prison
+ * read as unfinished.
+ */
+function satisfyingObjectCount(
+  required: ObjectDefinition,
+  contents: readonly PlacedObject[],
+  objects: ContentRegistry<ObjectDefinition>,
+): number {
+  let count = 0;
+  for (const placed of contents) {
+    const definition = objects.getById(placed.objectId);
+    if (definition === undefined) continue;
+    if (required.capabilities.every((capability) => definition.capabilities.includes(capability))) count += 1;
+  }
+  return count;
+}
+
 function requirementStatus(
   requirement: RoomRequirementDefinition,
   instance: RoomInstance,
   objects: ContentRegistry<ObjectDefinition>,
+  contents: readonly PlacedObject[] | undefined,
 ): RoomRequirementStatus {
   if (requirement.type !== 'object') return 'not-evaluated';
   const definition = objects.getById(requirement.objectId);
   if (definition === undefined || definition.capabilities.length === 0) return 'missing-capability';
-  const satisfied = definition.capabilities.every((capability) => instance.objectCapabilities.includes(capability));
-  return satisfied ? 'satisfied-by-capability' : 'missing-capability';
+  if (contents === undefined) {
+    // Nothing to count: answer from the instance's derived capability list, the
+    // pre-#528 test, which ignores `minQuantity`. See `RoomProjectionOptions.placedObjects`.
+    const present = definition.capabilities.every((capability) => instance.objectCapabilities.includes(capability));
+    return present ? 'satisfied-by-capability' : 'missing-capability';
+  }
+  const satisfying = satisfyingObjectCount(definition, contents, objects);
+  return satisfying >= requirement.minQuantity ? 'satisfied-by-capability' : 'missing-capability';
 }
 
 function projectRequirement(
   requirement: RoomRequirementDefinition,
   instance: RoomInstance,
   objects: ContentRegistry<ObjectDefinition>,
+  contents: readonly PlacedObject[] | undefined,
 ): RoomRequirementViewModel {
-  const status = requirementStatus(requirement, instance, objects);
+  const status = requirementStatus(requirement, instance, objects, contents);
   if (requirement.type === 'object') {
     const nameKey = objects.getById(requirement.objectId)?.nameKey;
     return {
@@ -290,6 +442,7 @@ function projectRow(
   objects: ContentRegistry<ObjectDefinition>,
   grades: ContentRegistry<SecurityGradeDefinition>,
   options: RoomProjectionOptions,
+  contents: readonly PlacedObject[] | undefined,
 ): RoomListRowViewModel {
   const definition = rooms.getById(instance.roomCatalogId);
   const requirements = definition?.requirements ?? [];
@@ -299,7 +452,7 @@ function projectRow(
   let missingCapability = 0;
   let notEvaluated = 0;
   for (const requirement of requirements) {
-    const status = requirementStatus(requirement, instance, objects);
+    const status = requirementStatus(requirement, instance, objects, contents);
     if (status === 'not-evaluated') notEvaluated += 1;
     else {
       objectRequirements += 1;
@@ -347,7 +500,10 @@ export function projectRoomList(
   const grades = options.grades ?? defaultSecurityGradeRegistry;
 
   const instances = collectRoomInstances(source, rooms);
-  const allRows = instances.map((instance) => projectRow(source, instance, rooms, objects, grades, options));
+  const contents = contentsByInstanceId(instances, options.placedObjects);
+  const allRows = instances.map((instance) =>
+    projectRow(source, instance, rooms, objects, grades, options, contents?.get(instance.instanceId)),
+  );
 
   let occupants = 0;
   let capacity = 0;
@@ -393,11 +549,14 @@ export function projectRoomDetail(
   const objects = options.objects ?? defaultObjectRegistry;
   const grades = options.grades ?? defaultSecurityGradeRegistry;
   const definition = rooms.getById(instance.roomCatalogId);
+  const contents = contentsByInstanceId([instance], options.placedObjects)?.get(instanceId);
 
   return {
     schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
-    ...projectRow(source, instance, rooms, objects, grades, options),
+    ...projectRow(source, instance, rooms, objects, grades, options, contents),
     occupantEntityIds: [...source.roomInstances.occupantsOf(instanceId)].sort(compareEntityIds),
-    requirements: (definition?.requirements ?? []).map((requirement) => projectRequirement(requirement, instance, objects)),
+    requirements: (definition?.requirements ?? []).map((requirement) =>
+      projectRequirement(requirement, instance, objects, contents),
+    ),
   };
 }

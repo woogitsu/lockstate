@@ -173,9 +173,16 @@ function prisonFurnishedWith(placements: readonly (typeof FURNISHING)[number][])
   return runtime;
 }
 
-/** The catalogue requirement statuses a room reads, keyed by object id. */
+/**
+ * The catalogue requirement statuses a room reads, keyed by object id.
+ *
+ * `placedObjects` is supplied, which is what `worker/projection-catalog.ts`
+ * does and what makes the authored `minQuantity` count (#528). Without it the
+ * projection falls back to the room's capability list and a canteen holding one
+ * dining table reads finished.
+ */
 function objectRequirementStatuses(runtime: SimulationRuntime, instanceId: string): Record<string, string> {
-  const detail = projectRoomDetail(runtime.prisoners, instanceId);
+  const detail = projectRoomDetail(runtime.prisoners, instanceId, { placedObjects: runtime.placedObjects });
   const statuses: Record<string, string> = {};
   for (const requirement of detail?.requirements ?? []) {
     if (requirement.objectId === undefined) continue;
@@ -227,16 +234,69 @@ describe('a shower room and a canteen become satisfiable for the first time', ()
 
     // `enclosed` and `minimum-size` are evaluated at zoning time and not
     // recorded on the instance, so they still read `'not-evaluated'`
-    // (`docs/HUD_PROJECTIONS.md` gap 13). The canteen's two object
-    // requirements are both met and neither is counted against `minQuantity`,
-    // which the same gap owns.
-    expect(projectRoomDetail(runtime.prisoners, CANTEEN_ID)?.requirementSummary).toEqual({
+    // (`docs/HUD_PROJECTIONS.md` gap 13).
+    //
+    // **The sentence that stood here is now false and is kept rather than
+    // deleted:** *"The canteen's two object requirements are both met and
+    // neither is counted against `minQuantity`, which the same gap owns."* The
+    // second half was true when it was written and stopped being true at #528 --
+    // both requirements are now counted, and they read met because `FURNISHING`
+    // builds exactly the authored two dining tables and four benches. The
+    // room-short-of-its-quantities case is the test below.
+    expect(projectRoomDetail(runtime.prisoners, CANTEEN_ID, { placedObjects: runtime.placedObjects })?.requirementSummary).toEqual({
       total: 4,
       objectRequirements: 2,
       satisfiedByCapability: 2,
       missingCapability: 0,
       notEvaluated: 2,
     });
+  });
+
+  /**
+   * Issue #528, on this same real path: the canteen furnished with **one**
+   * dining table and **one** bench, against `room.canteen`'s authored two and
+   * four (`src/content/room-catalog.ts`).
+   *
+   * Before the fix both requirements read `'satisfied-by-capability'` and the
+   * panel dropped its "Not ready" block, while the room's footprint-derived
+   * `'dining'` ceiling seated three diners rather than six -- so the room the
+   * game called finished was half a canteen.
+   *
+   * The ceiling is asserted alongside the verdict deliberately. The two come
+   * from different rules (`deriveRoomCapacity` sums footprint widths;
+   * `requirementStatus` counts objects) and the defect was that they disagreed
+   * about whether the room was done, so a test that read only one of them could
+   * not see it.
+   */
+  it('reads a canteen holding one table and one bench as unfinished, and seats three', () => {
+    const runtime = prisonFurnishedWith(
+      FURNISHING.filter((placement) => !['o-dt2', 'o-b2', 'o-b3', 'o-b4'].includes(placement.orderId)),
+    );
+    expect(runtime.refusals.count).toBe(0);
+    stepTo(runtime, BUILT_BY);
+
+    // Six of the ten objects: the cell's bed and toilet and the shower room's
+    // two heads are furnished exactly as above, and only the canteen is short --
+    // one of its two tables and one of its four benches.
+    expect(runtime.placedObjects.size).toBe(6);
+
+    expect(objectRequirementStatuses(runtime, CANTEEN_ID)).toEqual({
+      'object.dining-table': 'missing-capability',
+      'object.bench': 'missing-capability',
+    });
+    // The cell is untouched by the change: one bed and one toilet against an
+    // authored one of each, so counting and the old capability test agree.
+    expect(objectRequirementStatuses(runtime, CELL_ID)).toEqual({
+      'object.bed': 'satisfied-by-capability',
+      'object.toilet': 'satisfied-by-capability',
+    });
+
+    // One `3x2` dining table, so 1*3 -- half the 2*3 the finished canteen reads
+    // above, which is the player-visible cost of calling this room done.
+    expect(runtime.prisoners.roomInstances.concurrentUseCapacityFor(
+      runtime.prisoners.roomInstances.getById(CANTEEN_ID)!,
+      'dining',
+    )).toBe(3);
   });
 
   it('charges the footprint-derived bill and nothing else', () => {
