@@ -296,8 +296,22 @@ describe('every declared simulation command either has a producer or is accounte
     // loud. A pattern that matched nothing, or a stripper that blanked every
     // file, would do the same in a way the file count cannot see, so the
     // positive control names every command that genuinely has a producer and
-    // where it is -- all eleven in `src/main.ts`, which is the composition root
-    // and the only place in `src/` that builds a command object.
+    // where it is -- all fourteen in `src/main.ts`, which is the composition
+    // root and the only place in `src/` that builds a command object.
+    //
+    // **This read `all eleven` until this change**, and it was right when #367
+    // wrote it at `0e70f14`. It went false at `8dc95eb` (#392,
+    // `CancelMaterialPurchase`), then further at `e44bcb9` (#394,
+    // `ReleaseGuardAssignment`) and `a8a446e` (#533, `DismissStaff`) -- three
+    // additions, none of which touched the sentence
+    // counting them, which is the shape `docs/AGENT_WORKFLOW.md` section 4 names:
+    // a sentence stating a tally is not touched by adding the thing it tallies.
+    // Corrected rather than overwritten, because the number is not the finding
+    // and the assertion below is: `COMMAND_TYPES.length` is pinned two lines
+    // down, so the *comment* could rot for three additions while the *gate*
+    // could not rot for one. Thirteen of the fourteen are named in this block;
+    // `Undo` is named at the `case 'Undo':` case below, for the reason given
+    // there.
     expect(producerSources.length).toBeGreaterThan(50);
     expect(COMMAND_TYPES.length).toBe(14);
 
