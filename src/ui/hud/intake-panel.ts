@@ -83,10 +83,15 @@ import type { HudIntakePipelineViewModel, HudIntakeStageViewModel, HudLocalizer 
  * prisoner "can only be admitted into a prison that has a room to hold them",
  * and the admission guard has never asked that: `hasAccommodationTarget` wants
  * an *instance* of a housing room type and never a free place in one, so a
- * played prison with a single bed accepted twelve admissions, housed one, paid
- * the state grant on all twelve, and told the player nothing. The note now
- * states what the control actually needs, and this line states what the press
- * actually costs when the prison is full.
+ * played prison with a single bed accepted twelve admissions, housed one, and
+ * told the player nothing. The note now states what the control actually needs,
+ * and this line states what the press actually costs when the prison is full.
+ *
+ * This paragraph also said the prison "paid the state grant on all twelve",
+ * repeating the issue's second claim, and that half was checked and does not
+ * hold: `stateIncomeForCompletedDay` walks the *occupied places*, so an arrival
+ * with no bed is worth nothing (`tests/integration/over-admission-signal.test.ts`).
+ * The money is not the defect; the silence is.
  *
  * **Not a refusal, deliberately.** Over-admission is the ordinary route into
  * the incidents `DEFAULT_SECTOR_RISK_POLICY` opens -- an arrival with no
