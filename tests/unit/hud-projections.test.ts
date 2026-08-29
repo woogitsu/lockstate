@@ -1147,7 +1147,13 @@ describe('contraband', () => {
       searchPolicies: runtime.searchPolicies,
     });
 
-    expect(contraband.policies.map((policy) => policy.scope)).toEqual(['cell']);
+    // All four since #552: a session ships one policy per scope, and the
+    // scenario replaces the `'cell'` one rather than appending a second (which
+    // `findPolicy` would never have reached). The permille below is still the
+    // scenario's own 0.5 and not a default -- `default-search-policies.ts`
+    // authors 0.7 for `'cell'` -- so this case still distinguishes the policy
+    // the fixture chose from the one the session ships.
+    expect(contraband.policies.map((policy) => policy.scope)).toEqual(['cell', 'delivery', 'person', 'sector']);
     expect(contraband.policies[0]?.baseDetectionProbability.permille).toBe(500);
     expect(contraband.metrics).toMatchObject(runtime.searchSystem.getMetrics());
     for (const order of contraband.searchOrders) {

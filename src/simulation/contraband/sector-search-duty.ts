@@ -109,6 +109,17 @@ export class SectorSearchDutySystem implements SystemRegistration {
     if (policy === undefined) return;
     const sweepIndex = Math.floor(context.tick / this.schedule.intervalTicks);
 
+    /*
+     * The claimable read below is taken *before* `contraband.search` runs, so
+     * with several staffed sectors this loop can order more sweeps in one tick
+     * than there are spare guards to walk them. The surplus stays queued and
+     * drains as guards free up, which is `SearchSystem`'s documented
+     * "observable backlog, not a failure" -- and it is bounded rather than
+     * unbounded, because `hasOutstandingSweep` allows each sector exactly one.
+     * Reserving against the pool here instead would put a second copy of the
+     * staffing rule in this file, which is what ADR 0053 exists to prevent.
+     */
+
     for (const sector of this.sectors.all()) {
       if (this.hasOutstandingSweep(sector.id)) continue;
       if (this.assignedGuardCount(sector.id) === 0) continue;
