@@ -943,6 +943,44 @@ async function installTrustedPointerTripwire(page: Page): Promise<void> {
   });
 }
 
+/**
+ * Every `aria-busy` transition the page makes, in order.
+ *
+ * The busy group writes that attribute on every control it owns on both
+ * transitions (`src/ui/primitives/async-action.ts`), so this is the page's own
+ * record of which control was busy and when. It exists to close one hole in
+ * the keyboard test below: a press the *gate* refuses -- `run` answers
+ * `refused-busy` and calls no handler -- never disables anything, so the
+ * control keeps the focus it already had and a test that only looked at where
+ * focus ended would pass for a press that was never a command at all.
+ * `data-action-failed` cannot see that case, because a refused-busy press is
+ * not a failure and is reported to nobody.
+ *
+ * Recorded by the page rather than polled, because the busy window is one
+ * `await` long and a poll would miss it.
+ */
+interface BusyChangeRecorder {
+  __busyChanges?: string[];
+}
+
+async function installBusyTransitionRecorder(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const store = window as unknown as BusyChangeRecorder;
+    store.__busyChanges = [];
+    new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        const target = mutation.target;
+        if (!(target instanceof Element)) continue;
+        (store.__busyChanges ??= []).push(`${target.className}=${target.getAttribute('aria-busy') ?? ''}`);
+      }
+    }).observe(document, { attributes: true, attributeFilter: ['aria-busy'], subtree: true });
+  });
+}
+
+async function busyChanges(page: Page): Promise<readonly string[]> {
+  return page.evaluate(() => (window as unknown as BusyChangeRecorder).__busyChanges ?? []);
+}
+
 async function trustedPresses(page: Page): Promise<readonly string[]> {
   return page.evaluate(() => (window as unknown as TrustedPressRecorder).__trustedPresses ?? []);
 }
@@ -4514,6 +4552,7 @@ test.describe('the assembled application', () => {
     test.slow();
     await page.setViewportSize({ width: 1280, height: 800 });
     await installTrustedPointerTripwire(page);
+    await installBusyTransitionRecorder(page);
     await openApp(page);
 
     const metric = (id: string) => page.locator(`[data-metric="${id}"] .ui-stat__value`);
@@ -4527,35 +4566,55 @@ test.describe('the assembled application', () => {
       readonly focus: string;
       /** The pressed control's `data-action-failed`; `null` is "the host took it". */
       readonly refused: string | null;
+      /** Whether *this* press really put the control into a busy cycle of its own. */
+      readonly dispatched: boolean;
       readonly kept: boolean;
     }
     const records: KeyboardRecord[] = [];
 
     /**
-     * Waits out the busy cycle the press started, then records where the
-     * keyboard ended up.
+     * Presses the control that has focus, waits out the busy cycle it starts,
+     * and records what the press did to the keyboard.
      *
      * `aria-busy` is the condition rather than a timeout: the busy group writes
      * it on every control it owns on both transitions, so `"false"` again is
      * the exact moment the group has finished re-enabling and has had its one
      * chance to give focus back. Waiting a fixed number of milliseconds would
      * measure the scheduler as much as the page.
+     *
+     * `settle` is each caller's own proof that the command reached the host and
+     * came back -- a count that moved, a refusal line that stayed down -- and it
+     * runs before the attribute is read, so the wait is never the whole of the
+     * evidence.
+     *
+     * The transitions recorded *since this press* are what make `dispatched`
+     * mean this press: several of these controls are pressed earlier in the
+     * route by `wallRectanglesFromTheKeyboard`, so a mark taken before the key
+     * goes down is the difference between "this control was busy at some point"
+     * and "this press made it busy".
      */
-    const recordPress = async (
+    const pressAndRecord = async (
       command: string,
       pressed: Locator,
       wanted: FocusTarget,
       wantedName: string,
+      settle: () => Promise<void>,
     ): Promise<void> => {
+      const mark = (await busyChanges(page)).length;
+      await page.keyboard.press('Enter');
+      await settle();
       await expect(pressed, `${command} never came back from its busy cycle`).toHaveAttribute(
         'aria-busy',
         'false',
       );
+      const className = (await pressed.getAttribute('class')) ?? '';
+      const since = (await busyChanges(page)).slice(mark);
       records.push({
         command,
         wanted: wantedName,
         focus: await focusedControl(page),
         refused: await pressed.getAttribute('data-action-failed'),
+        dispatched: since.includes(`${className}=true`),
         kept: await focusIs(page, wanted),
       });
     };
@@ -4566,13 +4625,14 @@ test.describe('the assembled application', () => {
       text: localeText('save.action.create'),
     };
     await tabTo(page, 'the New prison button', createButton);
-    await page.keyboard.press('Enter');
-    await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
-    await recordPress(
+    await pressAndRecord(
       'New prison',
       page.locator('.save-panel__button', { hasText: localeText('save.action.create') }),
       createButton,
       'the New prison button',
+      async () => {
+        await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+      },
     );
 
     // ---- a walled cell, so the Designate below is a real one ------------
@@ -4605,9 +4665,15 @@ test.describe('the assembled application', () => {
     await page.keyboard.press('Enter');
     const buySubmit: FocusTarget = { selector: '.hud-build__buy-submit' };
     await tabTo(page, 'the buy control', buySubmit);
-    await page.keyboard.press('Enter');
-    await expect(page.locator('.hud__refusal'), 'the extra brick was refused').toBeHidden();
-    await recordPress('Buy', page.locator('.hud-build__buy-submit'), buySubmit, 'the Buy control');
+    await pressAndRecord(
+      'Buy',
+      page.locator('.hud-build__buy-submit'),
+      buySubmit,
+      'the Buy control',
+      async () => {
+        await expect(page.locator('.hud__refusal'), 'the extra brick was refused').toBeHidden();
+      },
+    );
 
     // Folded again, so the panel is left the shape the helper left it.
     await shiftTabTo(page, 'the buy disclosure', { selector: '.hud-build__buy-toggle' });
@@ -4635,13 +4701,14 @@ test.describe('the assembled application', () => {
     await page.keyboard.type('16');
     const placeOrder: FocusTarget = { selector: '.hud-build__coordinates .ui-action' };
     await tabTo(page, 'the Place order control', placeOrder);
-    await page.keyboard.press('Enter');
-    await expect(page.locator('.hud__refusal'), 'the extra wall order was refused').toBeHidden();
-    await recordPress(
+    await pressAndRecord(
       'Place order',
       page.locator('.hud-build__coordinates .ui-action'),
       placeOrder,
       'the Place order control',
+      async () => {
+        await expect(page.locator('.hud__refusal'), 'the extra wall order was refused').toBeHidden();
+      },
     );
 
     // Folded again: with the section open the next hop to another tab is 49
@@ -4680,12 +4747,6 @@ test.describe('the assembled application', () => {
       `${cell.x},${cell.y},${cell.width},${cell.height}`,
     );
     await tabTo(page, 'the confirm control', { selector: '.hud-rooms__confirm' });
-    await page.keyboard.press('Enter');
-    // A room the worker really accepted. Since ADR 0051 the count moves on this
-    // press rather than on a later Play, which is why nothing is resumed first.
-    await expect(metric('rooms'), 'no room reached the worker, so this Designate was refused').toHaveText(
-      '1',
-    );
     /*
      * *Arm*, not *Designate*. The control that was pressed is `hidden` by the
      * time the command is dispatched -- it is one of four controls sharing one
@@ -4694,11 +4755,20 @@ test.describe('the assembled application', () => {
      * which is also the one a player who has just designated a room reaches for
      * to draw the next.
      */
-    await recordPress(
+    await pressAndRecord(
       'Designate',
       page.locator('.hud-rooms__confirm'),
       { selector: '.hud-rooms__arm' },
       'the Arm control that replaced it',
+      async () => {
+        // A room the worker really accepted. Since ADR 0051 the count moves on
+        // this press rather than on a later Play, which is why nothing is
+        // resumed first.
+        await expect(
+          metric('rooms'),
+          'no room reached the worker, so this Designate was refused',
+        ).toHaveText('1');
+      },
     );
 
     // ---- Hire ------------------------------------------------------------
@@ -4716,29 +4786,36 @@ test.describe('the assembled application', () => {
     ).toHaveCount(1);
     const hire: FocusTarget = { selector: '.hud-staff__hire' };
     await tabTo(page, 'the Hire control', hire);
-    await page.keyboard.press('Enter');
-    await expect(metric('staff'), 'nobody was hired, so this Hire was refused').toHaveText('1');
-    await recordPress('Hire', page.locator('.hud-staff__hire'), hire, 'the Hire control');
+    await pressAndRecord('Hire', page.locator('.hud-staff__hire'), hire, 'the Hire control', async () => {
+      await expect(metric('staff'), 'nobody was hired, so this Hire was refused').toHaveText('1');
+    });
 
     // ---- Admit -----------------------------------------------------------
     await tabTo(page, 'the Overview tab', { selector: '.ui-tab[data-tab="overview"]' });
     await page.keyboard.press('Enter');
     const admit: FocusTarget = { selector: '.hud-intake__admit' };
     await tabTo(page, 'the Admit control', admit);
-    await page.keyboard.press('Enter');
-    await expect(metric('prisoners'), 'nobody was admitted, so this Admit was refused').toHaveText('1');
-    await recordPress('Admit', page.locator('.hud-intake__admit'), admit, 'the Admit control');
+    await pressAndRecord('Admit', page.locator('.hud-intake__admit'), admit, 'the Admit control', async () => {
+      await expect(metric('prisoners'), 'nobody was admitted, so this Admit was refused').toHaveText('1');
+    });
 
     // ---- what the six presses did to the keyboard ------------------------
     const summary = records
       .map(
         (record) =>
-          `${record.command} -> ${record.focus} (wanted ${record.wanted}; data-action-failed=${String(record.refused)})`,
+          `${record.command} -> ${record.focus} (wanted ${record.wanted}; data-action-failed=${String(record.refused)}; dispatched=${String(record.dispatched)})`,
       )
       .join('\n  ');
-    // First, that every press really was a command the host took. A refusal
-    // drops focus the same way, so this is what stops the assertion below from
-    // passing for a reason that has nothing to do with a working command.
+    // First, that every press really was a command the host took, from both
+    // ends. A press the gate refused as busy never disables anything, so the
+    // control keeps the focus it already had -- which would pass the assertion
+    // below for a press that was never a command; and a press the host refused
+    // drops focus exactly as a successful one did. Neither is what this test is
+    // about, and neither is visible in where focus ended up.
+    expect(
+      records.filter((record) => !record.dispatched).map((record) => record.command),
+      `a press never started a busy cycle of its own, so no command was issued:\n  ${summary}`,
+    ).toEqual([]);
     expect(
       records.filter((record) => record.refused !== null).map((record) => record.command),
       `a command was refused on this thread, so its record is about a refusal:\n  ${summary}`,
