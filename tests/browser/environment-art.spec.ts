@@ -1,6 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { ENVIRONMENT_SPRITE_IDS } from '../../src/rendering/assets/environment-sprites';
 import { FLOOR_ART_DEPTH } from '../../src/rendering/depth';
+import { EDGE_WALL_THICKNESS_TILES, edgeAppearance } from '../../src/rendering/world/appearance';
+import { DOOR_EDGE_NUMERIC_ID, WALL_EDGE_NUMERIC_ID } from '../../src/simulation/construction/definition';
 import type { HarnessPixel, HarnessWorldFixture } from './environment-art-harness-api';
 
 /**
@@ -191,6 +193,108 @@ test.describe('the environment artwork', () => {
     expect(
       channelDistance(withArt, withoutArt),
       `the zoned tile looked the same with art (${withArt.join(',')}) and without it (${withoutArt.join(',')})`,
+    ).toBeGreaterThan(20);
+  });
+
+  /*
+   * The state every session's first frames are in.
+   *
+   * `docs/RENDERING.md` requires that "art that fails to load leaves a
+   * playable, legible tile world", and the sheets are Git LFS content fetched
+   * over the network -- so the coloured-block fallback is not a degraded mode,
+   * it is what the player sees before the atlas arrives. #462 gave the painter
+   * `edgeAppearance(value)` for both paths, but only the *art* path was gated:
+   * every existing edge assertion above reads `tileSprites()` frame names, and
+   * the one test that calls `removeArt()` reads a zoned floor tile.
+   *
+   * Measured on this branch, with `paintSlab`'s appearance argument in
+   * `tile-layer.ts` replaced by the constant `EDGE_WALL_APPEARANCE` -- the
+   * shipped defect, restricted to the no-art path: `tsc -b` clean, 309 test
+   * files and 3586 Node tests passed, and all six tests in this file passed.
+   * Nothing in the repository could observe it, which is why this gate is here
+   * and not in `tests/unit/`: `edgeAppearance` itself is a pure function and is
+   * already covered in `tests/unit/environment-art.test.ts`, so what is left to
+   * prove is the *wiring* -- that the painter passes the per-value appearance
+   * rather than a constant -- and wiring can only be observed by drawing.
+   */
+  test('draws a door differently from a wall when the artwork never arrives', async ({ page }) => {
+    const fixture = await openHarness(page);
+    const tile = fixture.tileSizePx;
+
+    /*
+     * Both edge values are drawn at the wall's height on purpose (a door at its
+     * own 0.55 would notch the top of every wall line it sits in), so the two
+     * slabs occupy the *same* rectangle and colour is the only thing that can
+     * tell them apart. Asserting that first keeps the probe below honest: if
+     * the heights ever diverge, the two readings would differ for a reason this
+     * test is not measuring.
+     */
+    const door = edgeAppearance(DOOR_EDGE_NUMERIC_ID);
+    const wall = edgeAppearance(WALL_EDGE_NUMERIC_ID);
+    expect(door.heightTiles, 'a door edge and a wall edge should be the same height').toBe(wall.heightTiles);
+
+    /*
+     * The centre of the side face of a north edge: `slabFaces` puts it at
+     * `top + depth - height`, `height` tall. Geometry is used only to aim --
+     * every assertion below compares two *rendered* readings against each
+     * other, never against a colour this file names, so no expectation here is
+     * computed by the code under test.
+     */
+    const probeY = fixture.wallRowTileY * tile + EDGE_WALL_THICKNESS_TILES * tile - (wall.heightTiles * tile) / 2;
+    const wallTileX = fixture.doorTileX - 1;
+    expect(wallTileX, 'the tile west of the door should be part of the same wall run').toBeGreaterThanOrEqual(
+      fixture.zonedMinTileX,
+    );
+
+    const read = async (worldX: number): Promise<HarnessPixel> =>
+      page.evaluate(async (point) => {
+        const harness = window.lockstateEnvironmentArtHarness!;
+        await harness.centreCameraOn(point.x, point.y);
+        return harness.centrePixel();
+      }, { x: worldX, y: probeY });
+
+    const doorWorldX = (fixture.doorTileX + 0.5) * tile;
+    const wallWorldX = (wallTileX + 0.5) * tile;
+
+    /*
+     * Aim is proved before the artwork is taken away, and structurally rather
+     * than by naming a colour. Both probes sit above the zoned room on ground
+     * that carries no floor art, so the only thing at either point that can
+     * change when the environment atlas is removed is the edge sprite drawn
+     * over it -- a probe that had missed its slab would read the same ground
+     * twice. A first attempt guarded this by distance from a bare tile instead
+     * and was withdrawn: the terrain is dirt (106,87,68) and a wooden door is
+     * (124,96,55), so two correct readings sat 18 apart and the guard fired on
+     * a working renderer.
+     */
+    const doorWithArt = await read(doorWorldX);
+    const wallWithArt = await read(wallWorldX);
+
+    await page.evaluate(() => window.lockstateEnvironmentArtHarness!.removeArt());
+    expect(
+      await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites().length),
+      'removing the artwork should leave no tiling sprites behind',
+    ).toBe(0);
+
+    const onDoor = await read(doorWorldX);
+    const onWall = await read(wallWorldX);
+
+    expect(onDoor[3], 'the renderer produced a transparent frame').toBeGreaterThan(200);
+    for (const [name, withArt, withoutArt] of [
+      ['door', doorWithArt, onDoor],
+      ['wall', wallWithArt, onWall],
+    ] as const) {
+      expect(
+        channelDistance(withArt, withoutArt),
+        `the ${name} probe read the same pixel with art (${withArt.join(',')}) and without it (${withoutArt.join(',')}), so it is not on the edge`,
+      ).toBeGreaterThan(20);
+    }
+
+    // The whole claim, in one comparison: with no artwork at all, the finished
+    // door is still not the wall beside it.
+    expect(
+      channelDistance(onDoor, onWall),
+      `the door (${onDoor.join(',')}) is drawn as the wall beside it (${onWall.join(',')}) with no artwork loaded`,
     ).toBeGreaterThan(20);
   });
 
