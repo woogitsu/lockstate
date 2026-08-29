@@ -38,6 +38,11 @@ The parts of it that are rules rather than advice:
 - An implementing agent takes its own git worktree before it touches anything.
 - Parallelise across unrelated surfaces, serialise within one. Name each agent's
   surface, and the others', in its brief.
+- **Nothing may exist only in the container.** A session dies without warning
+  and takes every unpushed change with it, so every agent commits *and pushes*
+  after its first coherent chunk rather than at the end, and a coordinator runs
+  `scripts/wip-sweep.sh` beside them instead of relying on them to. See
+  `docs/AGENT_WORKFLOW.md` §2.
 - ADR numbers are assigned centrally, after drafts return. A number is not
   reserved until it appears in `docs/adr/README.md`.
 - A test proves nothing until the production code has been mutated and that test
