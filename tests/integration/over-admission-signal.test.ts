@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { defaultMessageCatalogEn } from '../../src/services/localization';
 import { Localizer } from '../../src/services/localization';
+import {
+  stateIncomeForCompletedDay,
+  stateIncomeForPrisonerDay,
+  unmetNeedCount,
+} from '../../src/simulation/economy/income';
 import { projectPrisonerPopulationCounts } from '../../src/simulation/presentation/prisoner-projection';
 import { projectStatusStrip } from '../../src/simulation/presentation/status-strip-projection';
 import { packCommand } from '../../src/simulation/protocol/commands';
@@ -157,6 +162,24 @@ describe('twelve admissions into a one-bed cell (issue #549)', () => {
 
     // And the figure that is new: eleven people the prison has no bed for.
     expect(counts.waitingWithoutPlace).toBe(11);
+
+    // **Issue #549 also says the state grant is paid for those eleven, and on
+    // this tree it is not.** The issue read "Earned today" rising after every
+    // press and concluded the money followed the head count; the readout is
+    // `stateIncomeAccruedByTick`, which prorates the day's grant over the day's
+    // ticks and therefore rises on its own with the clock whether anybody is
+    // admitted or not. What the day is *worth* is a walk over
+    // `RoomInstanceRegistry.residentIds` -- the occupied places -- so an arrival
+    // with no bed occupies nothing and is worth nothing (ADR 0064). Pinned
+    // here, beside the count, because the two claims travel together and only
+    // one of them was true.
+    const residents = runtime.prisoners.roomInstances.residentIds();
+    expect(residents, 'one of the twelve occupies the one bed').toHaveLength(1);
+    const residentIndex = runtime.prisoners.entityStore.getIndex(residents[0]!);
+    // The whole prison's day is worth exactly the one occupied place's day.
+    expect(stateIncomeForCompletedDay(runtime.prisoners)).toBe(
+      stateIncomeForPrisonerDay(unmetNeedCount(runtime.prisoners.needs, residentIndex)),
+    );
   });
 
   it('puts a true sentence on the panel, in the words a player reads', () => {
