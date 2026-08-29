@@ -2877,6 +2877,53 @@ test.describe('the Rooms panel', () => {
     });
   });
 
+  /*
+   * ...and it takes that clamp without rewriting a number still being typed
+   * (#548).
+   *
+   * The test above drives the fields the way the harness always has: it sets
+   * `input.value` and dispatches `change`, which is what a browser does when a
+   * *finished* entry loses focus. That is one keystroke's worth of the story.
+   * Since #548 the field also reports on `input`, which fires on every
+   * keystroke -- and a keystroke is where clamping and typing can fight.
+   *
+   * `MAX_ROOM_SIDE_TILES` is 64, so `152` is over the ceiling; but it is also
+   * what the box says on the way to `15` becoming something else, and on the
+   * way *through* `152` to anything longer. The owner is told 64 immediately,
+   * because that is the value a control pressed right now would act on -- and
+   * the box is left saying `152`, because an owner that answered a keystroke by
+   * writing its clamped value back would move the caret to the end of the field
+   * and delete what the player was halfway through. The two reconcile on the
+   * way out, which is the third assertion.
+   *
+   * Real keystrokes and not `fill`: `fill` sets a value and dispatches its own
+   * events without a focus to lose, so it cannot tell a field that reports
+   * while focused from one that reports on blur.
+   */
+  test('a bounded field takes its clamp without rewriting what is still being typed (#548)', async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates'));
+
+    const width = page.locator('.hud-rooms__coord-width .ui-number__input');
+    await width.click({ clickCount: 3 });
+    await page.keyboard.type('152');
+
+    // Nothing has left the field, so no `change` has fired and none can have.
+    await expect(width, 'the field lost focus, so what follows is not a claim about typing').toBeFocused();
+    await expect(width, 'the clamp overwrote a number the player was still typing').toHaveValue('152');
+
+    // Out of the field, and now the owner's value is the one on screen.
+    await page.keyboard.press('Tab');
+    await expect(width, 'leaving the field did not reconcile the box with the value the panel holds').toHaveValue(
+      String(MAX_ROOM_SIDE_TILES),
+    );
+
+    // And the clamp is the rectangle's rather than only the box's.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates-submit'));
+    expect(await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).toMatchObject({
+      area: `0,0,${MAX_ROOM_SIDE_TILES},1`,
+    });
+  });
+
   /**
    * A typed rectangle under the room's authored minimum is held and not sent
    * (#411).

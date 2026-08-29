@@ -6727,6 +6727,108 @@ test.describe('the assembled application', () => {
     );
   });
 
+  /*
+   * Issue #548, performed as a hand performs it: type, then press, with
+   * nothing in between.
+   *
+   * **What the player did and what it cost.** Build tab, Buy, triple-click the
+   * quantity, type `33`, click Buy. No Tab and no Enter. The control read
+   * `Buy 2 x Brick - 80` at the instant it was pressed and took 1,320, and
+   * only *then* repainted itself to say `Buy 33 x Brick - 1,320`. The label was
+   * correct about every purchase except the one it was on screen for.
+   *
+   * **Why no other suite can hold this.** `NumberField` used to report on
+   * `change` alone, and a browser fires `change` when a field is *left* -- so
+   * the click on Buy was itself the blur. The report and the activation
+   * therefore arrived in one event turn, in that order, and the ordering *is*
+   * the defect. Nothing but a real pointer on a real focused field produces
+   * that ordering: `vitest.config.ts` runs `environment: 'node'` with no jsdom,
+   * `field.fill()` in the harness dispatches its own events without a focus to
+   * lose, and every existing buy test here presses Enter first, which settles
+   * the entry and hides the whole thing.
+   *
+   * **The assertion is a comparison of two independently produced numbers**,
+   * not a fixture agreeing with itself. The count comes out of the label
+   * `paintBuyTotal` wrote; the quantity comes out of the `PurchaseMaterials`
+   * that `buySubmit`'s activation posted from a different closure. Before the
+   * fix they are 2 and 33. The literal strings below are here as well so that a
+   * future change which makes both wrong in the same direction is still caught.
+   */
+  test('the Buy control charges the quantity its label was showing when it was pressed (#548)', async ({ page }) => {
+    await installCommandTee(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    // A real prison: `submit` throws until a snapshot has baselined the
+    // command sequence, so a purchase before this sends nothing at all.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    const funds = page.locator('[data-metric="funds"] .ui-stat__value');
+    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+
+    await openBuyRow(page);
+    const field = page.locator('.hud-build__buy .ui-number__input');
+    const buy = page.locator('.hud-build__buy-submit');
+
+    // The arithmetic this test rests on, read out of the catalog the page
+    // itself prices against rather than asserted twice from the same literal.
+    const unitPrice = unitPriceOf('item.brick');
+    const typed = 33;
+    expect(2 * unitPrice).toBe(80);
+    expect(typed * unitPrice).toBe(1_320);
+    expect(typed * unitPrice).toBeLessThan(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+
+    // The arrival state: one wall's worth of brick, which is where the defect
+    // report starts.
+    await expect(buy).toHaveText(`Buy 2 × Brick · ${fundsText(2 * unitPrice)}`);
+
+    // ---- the gesture -------------------------------------------------------
+    // Triple-click selects what is in the box and the keystrokes replace it.
+    // `keyboard.type` and not `fill`: `fill` sets the value and dispatches its
+    // own events, which is not the same thing as a field that has focus and
+    // has not lost it yet.
+    await field.click({ clickCount: 3 });
+    await page.keyboard.type(String(typed));
+    await expect(field).toHaveValue(String(typed));
+    // Still the field's, so no `change` has fired and none can have.
+    await expect(field).toBeFocused();
+
+    /*
+     * Read once and without retrying. "What the label said" is a fact about
+     * this instant, and `toHaveText` would poll until a later repaint agreed
+     * with it -- which is exactly the repaint the defect performs after taking
+     * the money.
+     */
+    const shown = await buy.textContent();
+    expect(shown, 'the Buy control did not repaint for a quantity the player had already typed').toBe(
+      `Buy ${typed} × Brick · ${fundsText(typed * unitPrice)}`,
+    );
+    const shownCount = Number.parseInt(/Buy (\d+) /.exec(shown ?? '')?.[1] ?? '', 10);
+    expect(shownCount, 'the label carried no count to compare the charge against').toBe(typed);
+
+    // ---- the press ---------------------------------------------------------
+    await buy.click();
+    await expect
+      .poll(async () => (await purchasesSent(page)).length, {
+        message: 'pressing Buy sent no PurchaseMaterials command at all',
+      })
+      .toBe(1);
+    await expect(page.locator('.hud__refusal')).toBeHidden();
+
+    // The number the player read, against the number they were charged.
+    expect(await purchasesSent(page)).toEqual([{ itemId: 'item.brick', quantity: shownCount }]);
+
+    // And in money, which is the form the defect was reported in: 25,000 down
+    // to 23,680, not to 24,920.
+    await expect
+      .poll(async () => funds.textContent(), {
+        message: 'the purchase never reached the treasury, so what it charged cannot be read off the strip',
+        timeout: 20_000,
+      })
+      .toBe(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - shownCount * unitPrice));
+  });
+
   /**
    * Issue #531, against the projection the application actually builds.
    *

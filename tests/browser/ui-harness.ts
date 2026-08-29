@@ -1579,9 +1579,15 @@ window.lockstateUiHarness = {
       const input = document.querySelector<HTMLInputElement>(selector);
       if (input === null) return false;
       input.value = String(value);
-      // What a browser does when a typed field loses focus, and the only event
-      // `NumberField` listens to. Bubbling, because that is how the real one
-      // travels.
+      // What a browser does when a typed field loses focus. Bubbling, because
+      // that is how the real one travels.
+      //
+      // It used to be the *only* event `NumberField` listened to; since #548 it
+      // also reports on `input`, which is what makes a control pressed without
+      // an intervening blur act on the number on screen. This helper still
+      // drives `change` alone, deliberately: it exists to put a settled value
+      // into a field, and the keystroke-by-keystroke half is asserted with real
+      // key presses in `tests/browser/ui-shell.spec.ts` instead.
       input.dispatchEvent(new Event('change', { bubbles: true }));
     }
     return true;
