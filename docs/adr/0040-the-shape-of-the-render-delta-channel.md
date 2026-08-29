@@ -207,7 +207,7 @@ periodically and on the first wake after `simulation/ready`.
 ### Option 6 — pull `world/render-snapshot` on the existing projection channel
 
 - **Rejected as a fix, though it should eventually be reached.**
-  `src/simulation/presentation/world-projection.ts:27-45` carries chunk terrain RLE
+  `src/simulation/presentation/world-projection.ts:29-47` carries chunk terrain RLE
   and **no actors at all**; every catalogue entry is posted with
   `transport: 'structured-clone' as const,`, which `PROJECTION_CATALOG` never
   spells at all -- `handleRequestProjection` stamps it on every reply
@@ -446,7 +446,7 @@ base-tick rule is the only new receiver logic.
 
 **Slice 4 — geometry, and the poll's retirement.** Carry chunk geometry
 incrementally (the `geometryRevision`/`contentRevision` counters
-`world-projection.ts:7-15` already exposes are the natural key). Only then does
+`world-projection.ts:9-17` already exposes are the natural key). Only then does
 `SimulationSnapshotFeed` stop polling for renders at all, and
 `simulation/request-snapshot` returns to being the persistence path's message
 alone.

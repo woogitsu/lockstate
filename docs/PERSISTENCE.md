@@ -1437,11 +1437,25 @@ both callers with each one's own error type.
 
 Not in scope, and still open: #102's unbounded `chunkSize` (already bounded by
 `WORLD_CHUNK_SIZE_LIMIT` in the envelope schema, but the ADR that decision
-needs is not written), and `decodeRenderLayer` in
-`src/simulation/presentation/world-projection.ts`, which is a third
-implementation of the same run shape. That one decodes a worker-to-main render
-payload rather than a save, so it is outside this section's contract, but it is
-the same defect class.
+needs is not written).
+
+**Corrected 2026-08-29 (#182).** This section used to list a third open
+item here: `decodeRenderLayer` in `src/simulation/presentation/world-projection.ts`,
+a third hand-rolled implementation of the same run shape, decoding the
+`world/render-snapshot` worker-projection channel's payload rather than a
+save. It is closed rather than open. `world-projection.ts` already lives under
+`src/simulation/`, so its calling `expandRunLengthsInto` crosses no tree
+boundary — it is simulation-internal, the same as the two callers above, not a
+presentation module reaching into simulation. (It also turned out to have no
+production caller at all outside its own test — `world/render-snapshot` is a
+registered, tested worker channel with nothing on the main thread consuming
+it — so the fold-in cost nothing a shipped feature depended on.) It now
+decodes through the same shared codec, with its own two `RangeError`
+messages preserved via `fail`. `tests/unit/run-length-codec-unification.test.ts`
+covers all three callers, including a case the old hand-rolled loop got wrong:
+a malformed run that is not a 2-element array used to escape as a bare,
+undocumented `TypeError` from the destructuring itself, rather than the
+`RangeError` the decoder's contract promises.
 
 ## Error taxonomy
 
