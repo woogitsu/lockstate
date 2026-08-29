@@ -7,7 +7,6 @@ import {
   IntelligenceSystem,
   InformantRegistry,
   SearchSystem,
-  introduceContrabandOnIntake,
   type CategoryConcealmentResolver,
   type SearchPolicyDefinition,
   type SearchTarget,
@@ -26,7 +25,6 @@ import {
   SectorRiskTracker,
   TunnelRegistry,
   createRiotRegimeOverride,
-  type PrisonerFlashpointSampler,
   type SectorOccupantResolver,
   type SectorRiskSampler,
 } from '../incidents';
@@ -68,27 +66,6 @@ export const PRISONER_CLASSIFICATION_RNG_STREAM = 'prisoners.classification';
 export const CONTRABAND_DETECTION_RNG_STREAM = 'contraband.detection';
 /** `reportInformantTip`'s confidence-jitter draw -- a manual hook call, not a per-tick system, but still claims its own named stream up front so it's available whenever a session/scenario calls it. */
 export const CONTRABAND_INTELLIGENCE_RNG_STREAM = 'contraband.intelligence';
-/**
- * `introduceContrabandOnIntake`'s two draws -- whether an arrival is concealing
- * something, and what.
- *
- * Its own stream rather than either of the two above, for the reason those two
- * are separate from each other: issue #27's *"one subsystem's draws cannot
- * perturb another"*. Admitting a prisoner must not shift the sequence a search
- * checks concealment against, or a player's intake decisions would silently
- * re-roll every future detection.
- *
- * **A fifth stream is a save-compatibility question and it is answered rather
- * than assumed** (#415, #479). `Kernel.restoreState` *merges* the payload's
- * streams over the ones the runtime factory derived, so a bundle written before
- * this stream existed restores with the state
- * `deriveXoshiroState(masterSeed, 'contraband.introduction')` gives it --
- * identical on every client loading that bundle, because the seed is in the
- * bundle (ADR 0038 §2 and §4). No save-schema field is added, no version is
- * bumped, and `tests/determinism/save-rng-stream-compatibility.test.ts` pins
- * the whole set by name.
- */
-export const CONTRABAND_INTRODUCTION_RNG_STREAM = 'contraband.introduction';
 
 /**
  * Directional defaults, not a committed performance contract -- see
@@ -337,7 +314,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     { name: PRISONER_CLASSIFICATION_RNG_STREAM, state: deriveXoshiroState(masterSeed, PRISONER_CLASSIFICATION_RNG_STREAM) },
     { name: CONTRABAND_DETECTION_RNG_STREAM, state: deriveXoshiroState(masterSeed, CONTRABAND_DETECTION_RNG_STREAM) },
     { name: CONTRABAND_INTELLIGENCE_RNG_STREAM, state: deriveXoshiroState(masterSeed, CONTRABAND_INTELLIGENCE_RNG_STREAM) },
-    { name: CONTRABAND_INTRODUCTION_RNG_STREAM, state: deriveXoshiroState(masterSeed, CONTRABAND_INTRODUCTION_RNG_STREAM) },
     { name: ACTOR_IDENTITY_RNG_STREAM, state: deriveXoshiroState(masterSeed, ACTOR_IDENTITY_RNG_STREAM) },
   ]);
   const kernel = new Kernel(0, 0, rng);
@@ -388,25 +364,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const gangs = new GangRegistry();
   const jobWorkers = new JobWorkerPool();
 
-  /*
-   * The contraband ground truth, hoisted to here for the same reason `gangs`
-   * and `jobWorkers` are and with the same consequence for the arrows: it is a
-   * bare constructor with no dependencies, and `PrisonerOperationsRuntime` now
-   * needs it twice over
-   * ([ADR 0061](../../../docs/adr/0061-what-the-prison-produces-on-its-own.md)).
-   * Once because intake introduces into it, and once because a prisoner who
-   * leaves the prison takes what they were concealing with them. The rest of
-   * #27's substrate -- the intelligence ledger, the informants, the search
-   * policies and the search system -- is still constructed further down beside
-   * the systems that read it.
-   *
-   * **It is still empty here.** Nothing in this function puts an item in it;
-   * the first item any session holds is put there by an `AdmitPrisoner` command
-   * the player sent, which is the distinction the "no fabricated default
-   * content" note further down is about.
-   */
-  const contraband = new ContrabandRegistry();
-
   const prisoners = new PrisonerOperationsRuntime({
     capacity: DEFAULT_PRISONER_CAPACITY,
     navigation,
@@ -429,22 +386,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     regimeOverride: createRiotRegimeOverride(incidents),
     gangs,
     jobWorkers,
-    contraband,
-    /*
-     * How contraband gets into the prison (ADR 0061 decision 1). The rule is in
-     * `src/simulation/contraband/introduction.ts` and none of it is here: this
-     * is the wiring, and it supplies the two things the rule cannot reach on
-     * its own -- the registry to introduce into, and the authored catalogue to
-     * choose from. Deciding *what* an arrival brings in the composition root
-     * would be the mistake `projection-catalog.ts` names about itself, one
-     * module over.
-     */
-    contrabandIntroducer: {
-      introduce: (entityId, riskTier, tick, introductionRng) => {
-        introduceContrabandOnIntake(contraband, defaultContrabandRegistry.all(), entityId, riskTier, tick, introductionRng);
-      },
-    },
-    contrabandRngStreamName: CONTRABAND_INTRODUCTION_RNG_STREAM,
   });
 
   /*
@@ -646,42 +587,16 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   );
   const patrolSystem = new PatrolSystem(securitySectors, securityGuards, navigation);
 
-  /*
-   * Issue #27's contraband/intelligence/search substrate.
-   *
-   * **This comment used to read "no contraband instances, no intelligence, no
-   * informants and no search policies until a session/scenario introduces
-   * them", and two thirds of that is still true.** It is marked in both
-   * directions rather than overwritten, because the sentence was the stated
-   * reason the whole substrate ran over an empty set for ever, and the reason
-   * it stopped being true is a decision rather than a drift
-   * ([ADR 0061](../../../docs/adr/0061-what-the-prison-produces-on-its-own.md)):
-   *
-   * - **Contraband instances**: introduced by `IntakeSystem` on the arrivals
-   *   the player admits, and by nothing else. A session that admits nobody
-   *   still holds none, so the convention this comment names is intact -- what
-   *   changed is that "a session introduces them" now has a producer inside
-   *   `src/` instead of waiting for a scenario format that does not exist.
-   * - **Intelligence**: written by `contraband.observation` below, as decaying
-   *   sector-scoped suspicion derived from those instances. That is
-   *   [ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md) open
-   *   question 5's *"the term is structurally zero until something calls"* --
-   *   the something is now here.
-   * - **Informants and search policies are still empty**, and still for the
-   *   original reason. Recruiting an informant is a relationship model (#39)
-   *   and a search policy is a player order nothing can give (ADR 0061 open
-   *   question 1) -- both are content decisions with no producer, and
-   *   fabricating either would be exactly what this convention forbids.
-   *
-   * `locateSearchTarget` resolves a search target's tile from the *real*
-   * registries already constructed above (prisoner positions, room-instance
-   * anchors, guard tiles) rather than a parallel location model; `'container'`
-   * targets (the `'delivery'` scope) fall back to `searchContainerLocations`,
-   * since `Container` itself carries no position -- and that fallback is why
-   * ADR 0061 decision 1 could not take the delivery route it was clearly built
-   * for: nothing registers a location for the container a purchase lands in,
-   * because #141's delivery bay does not exist to have one.
-   */
+  // Issue #27's contraband/intelligence/search substrate: no contraband
+  // instances, no intelligence, no informants and no search policies until
+  // a session/scenario introduces them -- same "no fabricated default
+  // content" convention as everything above. `locateSearchTarget` resolves
+  // a search target's tile from the *real* registries already constructed
+  // above (prisoner positions, room-instance anchors, guard tiles) rather
+  // than a parallel location model; `'container'` targets (the `'delivery'`
+  // scope) fall back to `searchContainerLocations`, since `Container`
+  // itself carries no position.
+  const contraband = new ContrabandRegistry();
   const intelligence = new IntelligenceLedger();
   const informants = new InformantRegistry();
   const searchPolicies: SearchPolicyDefinition[] = [];
@@ -771,39 +686,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     return sector === undefined ? [] : resolveSectorOccupants(sector, world, prisoners);
   };
 
-  /**
-   * One prisoner's mean unmet-need deficit over `NEED_IDS`, 0-1.
-   *
-   * Extracted because two samplers now need it and they must not disagree:
-   * `sampleSectorRisk` averages it across a sector
-   * ([ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md)
-   * decision 2) and `sampleFlashpoints` reads it per prisoner
-   * ([ADR 0061](../../../docs/adr/0061-what-the-prison-produces-on-its-own.md)
-   * decision 3). Two copies of this loop is how the mean and the individual
-   * would come to be measured on different terms, which is exactly the
-   * distinction both ADRs turn on.
-   *
-   * `NEED_IDS` in its declared order, which is the iteration discipline
-   * `NeedsComponent` uses everywhere; the sum is over floats, so the order is
-   * load-bearing for bit-reproducibility rather than merely tidy.
-   */
-  const needDeficitOf = (entityId: number): number => {
-    const index = prisoners.entityStore.getIndex(entityId);
-    let deficit = 0;
-    for (const needId of NEED_IDS) deficit += (NEED_MAX - prisoners.needs.get(index, needId)) / NEED_MAX;
-    return deficit / NEED_IDS.length;
-  };
-
-  /** The worst authored `severity` among what this prisoner is concealing, scaled to 0-1; 0 for a prisoner carrying nothing. */
-  const contrabandSeverityOf = (entityId: number): number => {
-    let worst = 0;
-    for (const item of contraband.byHolder('prisoner', String(entityId))) {
-      const category = defaultContrabandRegistry.getById(item.categoryId);
-      if (category !== undefined && category.severity > worst) worst = category.severity;
-    }
-    return worst / 10;
-  };
-
   const sampleSectorRisk: SectorRiskSampler = (sectorId, tick) => {
     const coverage = deploymentSystem.getCoverageReport(tick).find((entry) => entry.sectorId === sectorId);
     const staffingShortfall = coverage === undefined || coverage.required === 0 ? 0 : coverage.shortage / coverage.required;
@@ -826,7 +708,12 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     let needsPressure = 0;
     if (occupants.length > 0) {
       let deficitSum = 0;
-      for (const entityId of occupants) deficitSum += needDeficitOf(entityId);
+      for (const entityId of occupants) {
+        const index = prisoners.entityStore.getIndex(entityId);
+        let occupantDeficit = 0;
+        for (const needId of NEED_IDS) occupantDeficit += (NEED_MAX - prisoners.needs.get(index, needId)) / NEED_MAX;
+        deficitSum += occupantDeficit / NEED_IDS.length;
+      }
       needsPressure = deficitSum / occupants.length;
     }
 
@@ -836,49 +723,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     return { needsPressure, staffingShortfall, contrabandPressure };
   };
 
-  /*
-   * Each occupant's own pressures, for ADR 0061's two producers.
-   *
-   * The wiring, and deliberately none of the rule: every weight, threshold and
-   * comparison lives in `src/simulation/incidents/flashpoint.ts`, and what
-   * happens here is reading four numbers out of the registries that already
-   * hold them. `sentenceRemaining` is guarded against a zero-length sentence
-   * rather than assumed away -- `sentenceLengthTicks` is 0 in every slot until
-   * the classification stage writes one, so an arrival still at reception would
-   * otherwise divide by zero and score `NaN`, which compares false against
-   * every threshold and would have made the bug invisible instead of loud.
-   *
-   * Ascending entity id, because `resolveOccupants` answers in that order and
-   * this maps over it.
-   */
-  const sampleFlashpoints: PrisonerFlashpointSampler = (sectorId, tick) =>
-    resolveOccupants(sectorId).map((entityId) => {
-      const index = prisoners.entityStore.getIndex(entityId);
-      const sentenceLengthTicks = prisoners.records.sentenceLengthTicks[index]!;
-      const sentenceRemaining =
-        sentenceLengthTicks <= 0 ? 0 : Math.max(0, Math.min(1, (prisoners.records.sentenceEndTick[index]! - tick) / sentenceLengthTicks));
-      return {
-        entityId,
-        needDeficit: needDeficitOf(entityId),
-        contrabandSeverity: contrabandSeverityOf(entityId),
-        sentenceRemaining,
-        riskTier: prisoners.records.riskTier[index]!,
-      };
-    });
-
-  const incidentTriggerSystem = new IncidentTriggerSystem(
-    incidents,
-    sectorRisk,
-    gangs,
-    incidentSectorIds,
-    sampleSectorRisk,
-    resolveOccupants,
-    undefined,
-    undefined,
-    undefined,
-    sampleFlashpoints,
-  );
-
+  const incidentTriggerSystem = new IncidentTriggerSystem(incidents, sectorRisk, gangs, incidentSectorIds, sampleSectorRisk, resolveOccupants);
 
   // The policy and the route-context resolver are the constructor's own
   // defaults, restated (and skipped) only so the seventh argument can be
@@ -896,18 +741,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     DEFAULT_INCIDENT_RESPONSE_POLICY,
     undefined,
     () => searchSystem.claimedGuardIds(),
-    /*
-     * A prisoner who got out is gone (ADR 0061 decision 5). `releasePrisoner`
-     * is the one door into a departure -- the same one `PrisonerDischargeSystem`
-     * uses for a sentence that ended -- so an escape frees the same bed, drops
-     * the same name and the same gang membership, and takes the same contraband
-     * out of the prison as any other way of leaving. Nothing about *why* they
-     * left is recorded on the prisoner, because ADR 0050 decision 4 and #31 own
-     * that: the incident log is where the reason lives, and it keeps it.
-     */
-    (entityId, tick) => {
-      prisoners.releasePrisoner(entityId, tick);
-    },
   );
 
   // After both `'on-search'` claimants, because it reads each of them live: a

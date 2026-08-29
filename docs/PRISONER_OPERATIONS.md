@@ -92,24 +92,9 @@ What release now does is `releasePrisoner`
 It frees room-instance residency and any concurrent-use claim, cancels an
 in-flight path request, drops the cold state, releases the actor identity
 (ADR 0015), drops the gang membership, unregisters the prisoner from the job
-labour pool, **takes whatever contraband they were concealing out of the prison
-with them**, clears the `ComponentBitset` bit and destroys the entity -- in that
-order, for the reasons that function records. See
-[ADR 0050](adr/0050-when-a-sentence-ends.md) and
-[ADR 0061](adr/0061-what-the-prison-produces-on-its-own.md).
-
-The contraband step is the one on that list an executable gate cannot see, and
-`release.ts` says so at length rather than leaving it to be rediscovered:
-`tests/unit/prisoner-release-completeness.test.ts` walks the session's object
-graph looking for the departing prisoner's numeric `EntityId`, and
-`ContrabandHolder.id` is that id *as a string*. The next store keyed by a
-stringified id will have the same hole.
-
-**A sentence ending is no longer the only way out.** Since ADR 0061 decision 5
-an escape attempt nobody contained reaches the same function, for the same
-reason it has to: `IncidentResponseSystem.lapse` records `escaped: true`, and a
-panel saying so beside a prisoner still asleep in their cell would be a promise
-the code does not keep.
+labour pool, clears the `ComponentBitset` bit and destroys the entity -- in
+that order, for the reasons that function records. See
+[ADR 0050](adr/0050-when-a-sentence-ends.md).
 
 It deliberately does **not** reset the component arrays. That stays where
 `admitPrisoner` does it, so the defaults are stated once; a freed slot therefore

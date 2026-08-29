@@ -139,37 +139,6 @@ export class IncidentLog {
   private readonly lastStartedAtTickBySectorId = new Map<string, number>();
 
   /**
-   * The same question asked per `(sector, type)` -- how long since this sector
-   * last had an incident **of this kind**.
-   *
-   * A fifth derived index, added with ADR 0061's two new producers, and it
-   * exists because the sector-wide answer above cannot serve three triggers at
-   * once. `IncidentTriggerSystem`'s quiet period is what stops a prison nobody
-   * fixes producing one incident per sampling window
-   * ([ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md)
-   * decision 4); read sector-wide by three producers, the *first* one to fire
-   * would silence the other two for the whole window, so a prison that assaults
-   * every two days would stop rioting -- which is a behaviour change nobody
-   * asked for, arrived at by accident, and it would have quietly undone the
-   * measured riot cadence ADR 0048 settled.
-   *
-   * Per type, each channel paces itself and the others carry on. Nothing else
-   * changes: the sector-wide accessor is untouched and still answers what it
-   * always answered.
-   *
-   * Keyed `"<type>\u0000<sectorId>"`. `IncidentType` is a closed union of
-   * kebab-case literals and a sector id is an `identifierSchema` value, so
-   * neither half can contain the separator and no two pairs can collide.
-   * Derived and rebuilt in `loadSnapshot` exactly as the four indices around it
-   * are, so the save format does not move.
-   */
-  private readonly lastStartedAtTickBySectorAndType = new Map<string, number>();
-
-  private static sectorTypeKey(sectorId: string, type: IncidentType): string {
-    return `${type}\u0000${sectorId}`;
-  }
-
-  /**
    * How many *open* riots name each prisoner as a participant, so a caller can
    * ask "is this prisoner rioting right now" in one map lookup rather than by
    * walking `openIncidents()`.
@@ -226,7 +195,7 @@ export class IncidentLog {
       this.openIdsBySectorId.set(input.sectorId, bucket);
     }
     bucket.add(input.id);
-    this.noteStart(input.sectorId, input.type, tick);
+    this.noteStart(input.sectorId, tick);
     this.noteRiotParticipants(input.type, input.participantIds, 1);
   }
 
@@ -272,27 +241,14 @@ export class IncidentLog {
    * order they arrive in, which is what lets the live and restored answers
    * agree.
    */
-  private noteStart(sectorId: string, type: IncidentType, tick: number): void {
+  private noteStart(sectorId: string, tick: number): void {
     const previous = this.lastStartedAtTickBySectorId.get(sectorId);
     if (previous === undefined || tick > previous) this.lastStartedAtTickBySectorId.set(sectorId, tick);
-
-    const key = IncidentLog.sectorTypeKey(sectorId, type);
-    const previousOfType = this.lastStartedAtTickBySectorAndType.get(key);
-    if (previousOfType === undefined || tick > previousOfType) this.lastStartedAtTickBySectorAndType.set(key, tick);
   }
 
-  /**
-   * When the most recent incident in this sector opened, or `undefined` where
-   * none ever has. With `type`, the most recent one **of that type**.
-   *
-   * The optional parameter rather than a second method, because it is one
-   * question at two scopes and a caller choosing between two names would have
-   * to know which; and defaulted to the sector-wide answer, so every existing
-   * caller reads exactly what it read before.
-   */
-  public lastIncidentStartedAtTick(sectorId: string, type?: IncidentType): number | undefined {
-    if (type === undefined) return this.lastStartedAtTickBySectorId.get(sectorId);
-    return this.lastStartedAtTickBySectorAndType.get(IncidentLog.sectorTypeKey(sectorId, type));
+  /** When the most recent incident in this sector opened, or `undefined` where none ever has. */
+  public lastIncidentStartedAtTick(sectorId: string): number | undefined {
+    return this.lastStartedAtTickBySectorId.get(sectorId);
   }
 
   /** Rejects any transition not in `LEGAL_TRANSITIONS` -- "incidents progress through one validated lifecycle." */
@@ -345,11 +301,10 @@ export class IncidentLog {
     this.openIds.clear();
     this.openIdsBySectorId.clear();
     this.lastStartedAtTickBySectorId.clear();
-    this.lastStartedAtTickBySectorAndType.clear();
     this.openRiotCountByParticipant.clear();
     for (const [id, record] of snapshot) {
       this.records.set(id, { ...record, participantIds: [...record.participantIds], causeFactors: record.causeFactors.map((factor) => ({ ...factor })), timeline: record.timeline.map((entry) => ({ ...entry })) });
-      this.noteStart(record.sectorId, record.type, record.startedAtTick);
+      this.noteStart(record.sectorId, record.startedAtTick);
       if (record.state !== 'resolved' && record.state !== 'lapsed') {
         this.noteRiotParticipants(record.type, record.participantIds, 1);
         this.openIds.add(id);

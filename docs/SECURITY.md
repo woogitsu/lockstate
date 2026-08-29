@@ -124,18 +124,6 @@ four resolved, sixteen responders dispatched, nobody injured.** Under the rule
 the same prison has six riots, all six lapsed, nobody dispatched and eighteen
 injuries, which is what a prison with no guards should look like.
 
-**Both figures are riot counts, and a riot is no longer the only thing that
-prison produces.** Since
-[ADR 0061](./adr/0061-what-the-prison-produces-on-its-own.md) the same
-unguarded, unhoused prison also opens `'assault'` incidents in the stretches
-between riot windows -- `tests/integration/security-default-sector.test.ts`
-pins one of them, at `incidentsTriggered: 2` against `riotsTriggered: 1`. The
-riot half of the measurement above was **not** re-run at 30,000 ticks for this
-change, so it is left as the measurement it was rather than restated as a
-current one; what was re-measured, across seven prisons at 30,000 ticks each, is
-that no riot count and no peak sector risk moved, and that table is in ADR 0061's
-Consequences.
-
 ## Deployment: filling sector requirements without teleporting
 
 `deployment-schedule.ts`'s `DeploymentSchedule` states a sector's required

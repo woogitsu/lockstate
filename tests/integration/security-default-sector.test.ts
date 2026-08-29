@@ -208,24 +208,6 @@ describe('deployment reaches a guard hired through the real command path', () =>
   });
 });
 
-/**
- * The one riot in the log, whatever id the shared incident sequence gave it.
- *
- * **By type rather than by `'incident.riot.1'`.**
- * `IncidentTriggerSystem.nextIncidentId` mints from a single sequence shared by
- * every incident type, so since
- * [ADR 0061](../../docs/adr/0061-what-the-prison-produces-on-its-own.md) gave
- * `'assault'` a producer, an assault opening earlier in the same run takes `.1`
- * and this prison's riot is a later number. Everything this file asserts about
- * the riot -- its tick, its severity, its cause factors, its participants, its
- * response -- is unchanged; the id was the brittle part.
- */
-function theRiot(runtime: SimulationRuntime) {
-  const riots = runtime.incidents.all().filter((incident) => incident.type === 'riot');
-  expect(riots, 'exactly one riot is what this prison produces').toHaveLength(1);
-  return riots[0]!;
-}
-
 describe('an incident is triggered, responded to and closed, in a session started from nothing', () => {
   /**
    * The measured tick a riot opens at, for this seed and this fixture.
@@ -251,16 +233,13 @@ describe('an incident is triggered, responded to and closed, in a session starte
     const runtime = overcrowdedPrison();
 
     stepTo(runtime, RIOT_TICK - 1);
-    // No *riot* yet. This asserted an empty log until ADR 0061 gave `'assault'`
-    // a producer; an unguarded prison holding two prisoners with nowhere to
-    // live now also produces those in the stretches before the riot streak
-    // completes, so the precondition is narrowed to its own subject.
-    expect(runtime.incidents.all().filter((incident) => incident.type === 'riot')).toEqual([]);
+    expect(runtime.incidents.all()).toEqual([]);
     stepTo(runtime, RIOT_TICK + 1);
 
-    const riots = runtime.incidents.all().filter((incident) => incident.type === 'riot');
+    const riots = runtime.incidents.all();
     expect(riots).toHaveLength(1);
     expect(riots[0]).toMatchObject({
+      id: 'incident.riot.1',
       type: 'riot',
       sectorId: DEFAULT_SECTOR_ID,
       severity: 7,
@@ -314,7 +293,7 @@ describe('an incident is triggered, responded to and closed, in a session starte
   it('dispatches responders the player hires in reaction, walks them to the post tile and resolves the riot', () => {
     const runtime = overcrowdedPrison();
     stepTo(runtime, RIOT_TICK + 1);
-    expect(theRiot(runtime).state).toBe('active');
+    expect(runtime.incidents.get('incident.riot.1')?.state).toBe('active');
 
     /*
      * Five hires, at a tile the guards have to walk from.
@@ -331,13 +310,13 @@ describe('an incident is triggered, responded to and closed, in a session starte
      */
     for (let index = 0; index < 5; index += 1) hire(runtime, `hire-${String(index)}`, FAR_TILE);
 
-    while (theRiot(runtime).state !== 'responding' && runtime.kernel.tick < RIOT_TICK + 600) {
+    while (runtime.incidents.get('incident.riot.1')!.state !== 'responding' && runtime.kernel.tick < RIOT_TICK + 600) {
       runtime.kernel.step();
     }
 
     // Contained inside the 600-tick deadline, with the lockdown a severity-7
     // riot calls for (`lockdownSeverityThreshold` is 6) actually applied.
-    expect(theRiot(runtime).state).toBe('responding');
+    expect(runtime.incidents.get('incident.riot.1')!.state).toBe('responding');
     expect(runtime.securitySectors.getControlState(DEFAULT_SECTOR_ID)).toBe('lockdown');
     expect(phases(runtime)).toEqual(['on-post', 'on-search', 'on-search', 'on-search', 'on-search']);
     expect(runtime.incidentResponseSystem.claimedGuardIds()).toEqual([1, 2, 3, 4]);
@@ -352,24 +331,15 @@ describe('an incident is triggered, responded to and closed, in a session starte
     // Resolved rather than lapsed, with nobody hurt -- the containment outcome
     // ADR 0032's consequence tier reads, produced by a session started from
     // nothing.
-    expect(theRiot(runtime)).toMatchObject({
+    expect(runtime.incidents.get('incident.riot.1')).toMatchObject({
       state: 'resolved',
       outcome: { injuredEntityIds: [], propertyDamage: 3, escaped: false },
     });
     // The lockdown lifted and the responders went back to the pool.
     expect(runtime.securitySectors.getControlState(DEFAULT_SECTOR_ID)).toBe('normal');
     expect(phases(runtime)).toEqual(['on-post', 'unassigned', 'unassigned', 'unassigned', 'unassigned']);
-    /*
-     * Both counters are session-wide and both moved with ADR 0061, which gave
-     * `'assault'` a producer: this prison lapses one assault before the riot
-     * opens, so `incidentsLapsed` is 1 rather than 0 and `incidentsTriggered`
-     * is 2 rather than 1. `riotsTriggered` and `incidentsResolved` are the two
-     * that carry this case's claim -- one riot, contained -- and neither has
-     * moved. The assault's own reachability is `incident-trigger-reachability.test.ts`'s
-     * subject, not this file's.
-     */
-    expect(runtime.incidentResponseSystem.getMetrics()).toMatchObject({ incidentsResolved: 1, incidentsLapsed: 1 });
-    expect(runtime.incidentTriggerSystem.getMetrics()).toEqual({ incidentsTriggered: 2, riotsTriggered: 1, retaliationsTriggered: 0 });
+    expect(runtime.incidentResponseSystem.getMetrics()).toMatchObject({ incidentsResolved: 1, incidentsLapsed: 0 });
+    expect(runtime.incidentTriggerSystem.getMetrics()).toEqual({ incidentsTriggered: 1, riotsTriggered: 1, retaliationsTriggered: 0 });
   });
 
   it('is deterministic: the same seed and the same commands produce the same riot, twice', () => {
