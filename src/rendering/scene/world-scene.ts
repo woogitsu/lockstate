@@ -345,8 +345,21 @@ export class WorldScene extends Phaser.Scene {
     // `visibilitychange` does not fire for it. Phaser's own
     // `Core.Events.BLUR` would work too; `window` keeps this symmetric with the
     // two listeners above, so the pair is added and removed together.
+    //
+    // `cancelAllGestures()` closes the same gap for the mouse (issue #516):
+    // a button released while the page has no focus can lose its `mouseup`
+    // the same way a `keyup` does, and `buildPointerId`/`areaPointerId`/
+    // `objectPointerId` have no timeout and no other listener that would ever
+    // notice. Left alone, the ghost for whichever gesture was open keeps
+    // following the cursor on plain hover -- `extendBuild` and its two
+    // siblings match on a pointer id, not on whether a button is actually
+    // down -- until `Escape` clears it by hand. Cancelling rather than
+    // committing matches `keyboard.releaseAll()`'s own choice: a release that
+    // never arrived is not evidence the player meant to finish the gesture,
+    // it is evidence nothing is listening for them any more.
     const blur = (): void => {
       this.keyboard.releaseAll();
+      this.cancelAllGestures();
     };
     window.addEventListener('keydown', keyDown);
     window.addEventListener('keyup', keyUp);
@@ -414,9 +427,7 @@ export class WorldScene extends Phaser.Scene {
           // player never loses the ability to move around while building.
           // A second finger abandons any run in progress rather than
           // committing a wall the player was actually trying to scroll past.
-          this.cancelBuild();
-          this.cancelObject();
-          this.cancelArea();
+          this.cancelAllGestures();
           const camera = this.cameras.main;
           const panned = this.cameraState();
           const next = zoomAtScreenPoint(
@@ -592,13 +603,11 @@ export class WorldScene extends Phaser.Scene {
           this.stepZoom(1 / KEYBOARD_ZOOM_STEP);
           break;
         case 'build.cancel':
-          // One key, both gestures. At most one of them has anything in
-          // progress -- the two tools are armed from panels on different tabs
+          // One key, all three gestures. At most one of them has anything in
+          // progress -- the tools are armed from panels on different tabs
           // and leaving a tab disarms its tool -- and each is a no-op with
           // nothing to abandon, so `Escape` cannot cancel the wrong one.
-          this.cancelBuild();
-          this.cancelObject();
-          this.cancelArea();
+          this.cancelAllGestures();
           break;
         /*
          * Reported, not performed. Undo reverses a *simulation* transaction --
@@ -754,6 +763,18 @@ export class WorldScene extends Phaser.Scene {
   /** True when the move belonged to a run in progress and the camera must not act on it. */
   private extendBuild(pointer: Phaser.Input.Pointer): boolean {
     if (this.buildPointerId !== pointer.id || this.buildPress === undefined) return false;
+    // #516: this pointer's release may have happened with nothing left to
+    // hear it. Detected here rather than only at `blur`, because focus never
+    // has to leave the page for a `pointerup` to go missing -- see
+    // `releaseMissed`. Returning `false` after cancelling lets this same move
+    // fall through to the ordinary armed-hover path below, so the ghost is
+    // repainted at the current position on this move rather than one move
+    // later.
+    if (this.releaseMissed(pointer)) {
+      this.cancelBuild();
+      this.hoveredEdge = undefined;
+      return false;
+    }
     this.buildSegments = edgeRunFromDrag(this.buildPress, this.worldPointOf(pointer));
     this.paintBuildPreview();
     return true;
@@ -776,12 +797,15 @@ export class WorldScene extends Phaser.Scene {
   /**
    * Abandons a run without placing anything.
    *
-   * Three ways in: a second finger arriving during a pinch, the tool being
-   * disarmed mid-gesture, and `Escape` (`build.cancel`, #200 item 2). The
-   * early return means `Escape` with nothing in progress does nothing, which is
-   * the truthful behaviour -- there is no run to abandon, and clearing the
-   * hover ghost as well would take away the preview the armed tool is supposed
-   * to be showing.
+   * Five ways in: a second finger arriving during a pinch, the tool being
+   * disarmed mid-gesture, `Escape` (`build.cancel`, #200 item 2), the window
+   * losing focus (`blur`, #516 -- the same recovery #202 added for a held key),
+   * and a hover move that proves this pointer's release never reached
+   * `pointerup`/`pointerupoutside` at all (`extendBuild`'s `releaseMissed`
+   * check, #516). The early return means `Escape` with nothing in progress
+   * does nothing, which is the truthful behaviour -- there is no run to
+   * abandon, and clearing the hover ghost as well would take away the preview
+   * the armed tool is supposed to be showing.
    *
    * It leaves the pointer down. A player who presses `Escape` mid-drag and
    * keeps dragging gets the ordinary armed-hover preview back, and the release
@@ -813,6 +837,13 @@ export class WorldScene extends Phaser.Scene {
   /** True when the move belonged to an area gesture and the camera must not act on it. */
   private extendArea(pointer: Phaser.Input.Pointer): boolean {
     if (this.areaPointerId !== pointer.id || this.areaPress === undefined) return false;
+    // #516: the same recovery `extendBuild` performs, for the same reason --
+    // see `releaseMissed`.
+    if (this.releaseMissed(pointer)) {
+      this.cancelArea();
+      this.hoveredTile = undefined;
+      return false;
+    }
     this.areaRect = tileRectFromDrag(this.areaPress, this.worldPointOf(pointer));
     this.paintAreaPreview();
     return true;
@@ -835,7 +866,7 @@ export class WorldScene extends Phaser.Scene {
   /**
    * Abandons an area gesture without designating anything.
    *
-   * The same three ways in as `cancelBuild`, the same early return for the
+   * The same five ways in as `cancelBuild`, the same early return for the
    * same reason -- `Escape` with nothing in progress does nothing, which is the
    * truthful behaviour -- and it leaves the pointer down, so a player who
    * presses `Escape` mid-drag and keeps dragging designates nothing on release,
@@ -869,6 +900,13 @@ export class WorldScene extends Phaser.Scene {
   /** True when the move belonged to an object gesture and the camera must not act on it. */
   private extendObject(pointer: Phaser.Input.Pointer): boolean {
     if (this.objectPointerId !== pointer.id) return false;
+    // #516: the same recovery `extendBuild` performs, for the same reason --
+    // see `releaseMissed`.
+    if (this.releaseMissed(pointer)) {
+      this.cancelObject();
+      this.hoveredObjectTile = undefined;
+      return false;
+    }
     this.objectRect = this.footprintUnder(pointer);
     this.paintObjectPreview();
     return true;
@@ -893,7 +931,7 @@ export class WorldScene extends Phaser.Scene {
   /**
    * Abandons an object gesture without placing anything.
    *
-   * The same three ways in as `cancelBuild` and `cancelArea`, the same early
+   * The same five ways in as `cancelBuild` and `cancelArea`, the same early
    * return for the same reason, and it leaves the pointer down -- so a player
    * who presses `Escape` mid-drag and keeps dragging places nothing on release,
    * because `commitObject` matches on an `objectPointerId` this has cleared.
@@ -904,6 +942,62 @@ export class WorldScene extends Phaser.Scene {
     this.objectRect = undefined;
     this.objectOverlay?.clear();
     this.objectTool?.target?.(undefined);
+  }
+
+  /**
+   * Abandons whichever of the three pointer gestures is in progress, without
+   * placing anything.
+   *
+   * Exists so the three call sites that need "all three, unconditionally" --
+   * a second finger arriving mid-pinch, `Escape` (`build.cancel`), and now
+   * `blur` (#516) -- say so once rather than repeating the same three calls
+   * each time a fourth needed them. Each `cancel*` already returns immediately
+   * when its own pointer id is `undefined` (see `cancelBuild`), so calling all
+   * three here is exactly as safe as it was at each call site before this
+   * existed: at most one of the three ever has anything to abandon, because
+   * the tools are armed from panels on different tabs and `isRoomArmed`/
+   * `isObjectArmed` already arbitrate the rest.
+   */
+  private cancelAllGestures(): void {
+    this.cancelBuild();
+    this.cancelObject();
+    this.cancelArea();
+  }
+
+  /**
+   * True when a plain move proves this pointer's release never reached the
+   * page as an explicit `pointerup`/`pointerupoutside` (issue #516).
+   *
+   * `commitBuild`/`commitArea`/`commitObject` only ever run from those two
+   * Phaser events, and nothing else watches for a release going missing --
+   * `blur` (above) covers the window losing focus, but a `pointerup` can go
+   * missing without focus ever leaving the page (a driver dropping the event,
+   * a release the browser delivers to a different element under pointer
+   * capture in a way this app never sees). When that happens the gesture's
+   * pointer id survives untouched, and the next plain hover move recomputes
+   * the pending run/rectangle against the *original* press point as though the
+   * button were still down -- reproduced twice in #516's evidence, including
+   * `Escape` being the only thing that ever cleared it.
+   *
+   * `pointer.buttons` is Phaser's own bitmask, current as of this call: `0`
+   * means the engine believes no button is held.
+   *
+   * `!pointer.wasTouch` is not a hedge, it is load-bearing, and it is checked
+   * first: a touch pointer's `buttons` is set to `1` once, by `touchstart`,
+   * and a plain `touchmove` never revisits it -- only `touchend` sets it back
+   * to `0` (`node_modules/phaser/src/input/Pointer.js`, `touchstart`/
+   * `touchmove`/`touchend`). So a touch drag's `pointermove` events never
+   * legitimately read `buttons === 0` while the finger is still down, and the
+   * one touch event that does carry `0` (`touchend`) already fires
+   * `pointerup`/`pointerupoutside` first, through the ordinary commit path,
+   * before any further move could observe it. Without this guard a second
+   * finger arriving mid-drag -- which the `pinch` branch above already
+   * cancels on purpose, through `cancelAllGestures()` -- would risk this
+   * running too on a gesture that is not actually abandoned; with it, this
+   * function only ever answers `true` for the mouse.
+   */
+  private releaseMissed(pointer: Phaser.Input.Pointer): boolean {
+    return !pointer.wasTouch && pointer.buttons === 0;
   }
 
   private previewObjectHover(pointer: Phaser.Input.Pointer): void {
