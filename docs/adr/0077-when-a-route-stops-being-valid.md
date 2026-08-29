@@ -194,6 +194,26 @@ ran throughout the measurement. An upper bound honestly labelled is worth more
 here than a clean number nobody can place, because the argument this table
 supports is a comparison and not a budget claim.
 
+**The cadence that table prices is gated, not merely asserted.** "Once per tile
+crossed, not once per tick" is a *count*, so unlike the microseconds beside it
+it can be checked on a shared runner — which is the whole of why
+`docs/BENCHMARKING.md` refuses a wall-clock threshold and this decision still
+gets a standing gate. Two of them ask the question at different scales:
+`tests/unit/simulation-locomotion.test.ts` records which edges a single walker
+is offered over six ticks, and
+`benchmarks/scenarios/actor-render-publication.mjs` reports `canCrossCalls` and
+`canCrossCallsPerWalkerPerPublication` over 500 and 5,000 actors and pins the
+second at exactly `1` — one call per walker per two-tick publication, and none
+for the standing population.
+
+Both were watched failing. Moving the predicate out of the crossing branch and
+into the per-tick loop — plausible, because it is how option A would look if
+somebody re-derived it from "re-validate every tick" rather than from this
+sentence — fails the unit test on the edge list and takes `canCrossCalls` to
+334 against 167 at smoke and 3,334 against 1,667 at full. That doubling is the
+first row of the table above turning into the second, and nothing else in the
+publication scenario moves with it.
+
 ### B. Snapshot semantics, with an exception for security barriers — rejected
 
 Declare that a route means the world of the tick it was calculated on, and carve
