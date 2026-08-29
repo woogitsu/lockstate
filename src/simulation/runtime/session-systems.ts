@@ -25,6 +25,7 @@ import {
 } from '../prisoners/components';
 import { NEED_IDS, NeedsComponent, type NeedId } from '../prisoners/needs';
 import type { PlacedObject } from '../objects';
+import { recoverRoomBoundsFromZoningPlane } from '../rooms/bounds-recovery';
 import { applyDefaultSecuritySector } from '../security/default-sector';
 import type { DeploymentSchedule } from '../security/deployment-schedule';
 import type { GuardRecord, GuardRoster } from '../security/guard-roster';
@@ -708,10 +709,40 @@ export function restoreSessionSystems(
   //    the restore order stated rather than implicit -- and it has to be this
   //    way round, because a capacity is a fact about the objects inside a
   //    rectangle and the rectangle has to exist first.
+  //
+  //    **A row that records no rectangle gets one back from the world's zoning
+  //    plane, which this payload also carries** (issue #559,
+  //    [ADR 0074](../../../docs/adr/0074-what-a-restored-room-that-recorded-no-rectangle-is.md)).
+  //    A save-schema V4 row carries an anchor and no extent, and until #554
+  //    that cost nothing visible; ADR 0071 then gave a room with a rectangle a
+  //    concurrent-use ceiling derived from its own ground and left
+  //    `POSITIVE_INFINITY` standing for a room without one, so a restored V4
+  //    yard admitted every prisoner at once while the same yard zoned in this
+  //    build admitted four. `RoomZoningService.zone` paints the room type's
+  //    `numericId` over every tile it designates and that plane is persisted,
+  //    so the rectangle is *recoverable* rather than lost --
+  //    `recoverRoomBoundsFromZoningPlane` is the arithmetic, and its own header
+  //    is why the answer is exact rather than a guess.
+  //
+  //    **It runs here rather than in `migrateSaveEnvelopeV4ToV5`**, and the
+  //    reason is measured in `tests/migrations/save-v4-room-bounds.test.ts`: a
+  //    V4 payload restored and re-captured produces a *current-version*
+  //    envelope that still carries the boundless row, so a repair inside the
+  //    migration would never be offered that save again. Nothing is written to
+  //    any file here; the recovery is recomputed on every load, which is
+  //    [ADR 0033](../../../docs/adr/0033-releasing-an-interrupted-incident-response-at-runtime.md)'s
+  //    shape rather than ADR 0030's.
+  //
+  //    A row the plane cannot support keeps its absent bounds and ADR 0071's
+  //    unbounded ceiling. That residue is deliberate: inventing a rectangle the
+  //    plane does not show would assert a room the player never zoned.
+  const recoveredBounds = recoverRoomBoundsFromZoningPlane(runtime.world, systems.prisoners.roomInstanceDefinitions);
   for (const instance of systems.prisoners.roomInstanceDefinitions) {
+    const recovered = recoveredBounds.get(instance.instanceId);
     runtime.prisoners.roomInstances.register({
       ...instance,
       anchorTile: { ...instance.anchorTile },
+      ...(recovered === undefined ? {} : { width: recovered.width, height: recovered.height }),
       residentCapacity: 0,
       concurrentUseCapacity: 0,
       objectCapabilities: [],
