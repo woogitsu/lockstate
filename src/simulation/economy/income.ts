@@ -153,6 +153,27 @@ export const STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS = 300;
  * bed standing, **900 minor units a day against a control's 300** for the same
  * single furnished place.
  *
+ * **[ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+ * decision A(ii) is this rule, and it was reached twice independently.** That
+ * ADR, written on another branch from an economy audit's ECON-003 while this
+ * was being implemented from #585, states it as *"`StateIncomeSystem` pays for
+ * `min(occupancy, residentCapacity)` per room instance"* and calls it "the
+ * backstop": its decision A(i) relocates the excess resident where there is
+ * somewhere to put them, and A(ii) is what makes the branch where there is
+ * **not** -- a full prison, a one-cell prison, and every prison running the
+ * recycling loop by construction -- cost the state nothing. A(i) is not
+ * implemented here and is a separate change; nothing in this module needs it.
+ *
+ * **`min(occupancy, residentCapacity)` is a count, and since
+ * [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md) a
+ * count cannot answer what a day is worth.** Two residents over one bed pay
+ * differently depending on which of them holds the place, so the rule needs a
+ * *which* as well as a *how many*, and
+ * `RoomInstanceRegistry.residentIdsWithExistingPlace` supplies it: the lowest
+ * entity ids keep the places, in the total order that registry already imposes
+ * everywhere. That is a refinement of A(ii) rather than a departure from it,
+ * and it is recorded because the ADR's own arithmetic does not reach it.
+ *
  * So the count is taken at the boundary from the capacity standing *then*,
  * which is the only reading under which "a place" means something the prison
  * still has. It costs nothing at the moment of assignment -- a prisoner housed
