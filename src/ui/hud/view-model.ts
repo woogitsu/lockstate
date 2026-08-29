@@ -180,7 +180,12 @@ export interface HudAlertViewModel {
 }
 
 /**
- * Which edge of a tile a wall order occupies.
+ * Which edge of a tile an edge-geometry order occupies.
+ *
+ * This said "a wall order" until issue #531. A wall is no longer the only
+ * thing that occupies an edge -- `door-wooden` names a `placesDoor` and writes
+ * `DOOR_EDGE_NUMERIC_ID` -- so the narrower sentence had become a claim about
+ * content rather than about the vocabulary.
  *
  * Deliberately re-declared here rather than imported: the HUD may not import
  * `src/simulation/**` (`AGENTS.md` boundary 1, checked by
@@ -192,6 +197,19 @@ export interface HudAlertViewModel {
  */
 export const HUD_BUILD_EDGES = ['north', 'west'] as const;
 export type HudBuildEdge = (typeof HUD_BUILD_EDGES)[number];
+
+/**
+ * The edge an order means when nobody chose one.
+ *
+ * Re-declared for the same reason `HUD_BUILD_EDGES` above is, held to the
+ * simulation's `DEFAULT_BUILD_EDGE` by the same test, and named rather than
+ * left as the literal `'north'` because #531 gave it a second reader: the
+ * Build panel seeds its retained edge with it *and* falls back to it for an
+ * intent whose chooser is hidden (`intentEdge`). Two spellings of one default
+ * is how the panel would come to submit an edge the simulation does not
+ * resolve to.
+ */
+export const HUD_DEFAULT_BUILD_EDGE: HudBuildEdge = 'north';
 
 /**
  * What a buildable is made of, and what that material costs to buy (#89).
@@ -242,6 +260,17 @@ export interface HudBuildableViewModel {
    * Whether this buildable sits on a tile edge and therefore needs an
    * orientation. False hides the edge chooser rather than showing a control
    * whose value would be ignored.
+   *
+   * "Would be ignored" was the whole justification and it was only ever true of
+   * the *consumer*. The panel went on submitting the hidden control's retained
+   * value, so a row that reached `place-build-order` with `occupiesEdge: false`
+   * carried the last edge some other row had been given (#531). It no longer
+   * does -- `intentEdge` in `build-panel.ts` resolves a hidden chooser to
+   * `HUD_DEFAULT_BUILD_EDGE` -- so the sentence is now true of what is sent as
+   * well as of what is read.
+   *
+   * The composition root answers this with `occupiesTileEdge`, not with
+   * `category === 'wall'`. The difference is a door.
    */
   readonly occupiesEdge: boolean;
   /**
@@ -253,10 +282,17 @@ export interface HudBuildableViewModel {
    * Both are answers the composition root supplies, because what a buildable
    * places is simulation content the HUD may not read (`AGENTS.md` boundary 1).
    *
-   * The two are not opposites. `door-wooden` is neither -- it sits on no edge
-   * and places no object, which is a shipped defect this phase deliberately
-   * leaves as it found it (see `edgeNumericIdFor`) -- so a row can answer
-   * `false` to both and the panel offers it the wall route, unchanged.
+   * The two are not opposites, and `door-wooden` is why. That case read: *"it
+   * sits on no edge and places no object, which is a shipped defect this phase
+   * deliberately leaves as it found it (see `edgeNumericIdFor`)"*. Both halves
+   * of that have since closed. `door-wooden` names a `placesDoor` and writes
+   * `DOOR_EDGE_NUMERIC_ID`, so it *does* occupy an edge; and since #531 the
+   * composition root derives this row's `occupiesEdge` from `occupiesTileEdge`
+   * rather than from `category === 'wall'`, so a door answers `true` here and
+   * `false` to `placesObject` -- an edge row that places no object, which is
+   * the shape the wall route was always for. A row answering `false` to both
+   * is still expressible and still takes the wall route unchanged; no
+   * buildable in the registry is one today.
    */
   readonly placesObject: boolean;
   /**

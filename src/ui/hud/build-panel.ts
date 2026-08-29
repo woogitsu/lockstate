@@ -12,6 +12,7 @@ import { rovingFocusMove, rovingTabStop } from '../primitives/roving-focus';
 import { HUD_MESSAGE_KEY } from './messages';
 import {
   HUD_BUILD_EDGES,
+  HUD_DEFAULT_BUILD_EDGE,
   type HudBuildEdge,
   type HudBuildableViewModel,
   type HudBuildOrderViewModel,
@@ -76,9 +77,12 @@ export interface BuildPanelIntent {
    *
    * Carried on the intent rather than looked up by the caller, because the
    * caller is the HUD's own dispatch and the answer is on the view model the
-   * panel already holds. `edge` stays populated for such a row for the reason
-   * it always was: the field has one shape and the simulation ignores it for
-   * anything that is not a wall.
+   * panel already holds. `edge` stays populated for such a row because the field
+   * has one shape -- but since #531 it carries `HUD_DEFAULT_BUILD_EDGE` rather
+   * than the panel's retained choice, because the chooser is not on screen for
+   * one. See `intentEdge`. The reason given here used to be *"the simulation
+   * ignores it for anything that is not a wall"*, and that is now too narrow:
+   * `occupiesTileEdge` is the rule, and a door is not a wall.
    */
   readonly placesObject: boolean;
   /**
@@ -89,8 +93,11 @@ export interface BuildPanelIntent {
    * keyboard route on the day it ships rather than in a follow-up: with the mode
    * on, the same two number fields and the same submit button name a tile to
    * clear. `definitionId` is still carried because the intent has one shape, and
-   * a removal names no object type -- the consumer ignores it exactly as the
-   * simulation ignores `edge` for anything that is not a wall.
+   * a removal names no object type -- the consumer ignores it exactly as
+   * `remove-object` carries no `edge` at all. That comparison read *"as the
+   * simulation ignores `edge` for anything that is not a wall"*, which was too
+   * narrow even then: what the simulation ignores an edge for is anything
+   * `occupiesTileEdge` says is not edge geometry, and a door is not a wall.
    */
   readonly removing: boolean;
 }
@@ -243,6 +250,61 @@ type Translate = (key: LocalizationKey, parameters?: MessageParameters) => strin
  */
 export function buildEdgeChoiceOptions(t: Translate): readonly ChoiceOption[] {
   return HUD_BUILD_EDGES.map((id) => ({ id, label: t(edgeLabelKey(id)) }));
+}
+
+/**
+ * Whether the numeric route shows its edge chooser for what is currently
+ * selected.
+ *
+ * The chooser is hidden, not disabled, for a buildable that does not sit on an
+ * edge: a disabled control still claims the setting exists. A removal has no
+ * edge for the same reason it has no buildable -- what goes is whatever is on
+ * the tile -- so the mode hides it too.
+ *
+ * Exported and pure for the reason `buildEdgeChoiceOptions` above is, and for
+ * one more: `paintPlacement` used to spell this rule out and `readSelection`
+ * did not consult it at all, so the panel could hide a control and still put
+ * its value on a command. One function is now the answer to both questions,
+ * which is what makes that pair unable to disagree.
+ */
+export function edgeChooserShown(buildable: HudBuildableViewModel | undefined, removing: boolean): boolean {
+  return !removing && buildable?.occupiesEdge === true;
+}
+
+/**
+ * The edge a submitted intent carries: the player's choice while the chooser is
+ * on screen, and `HUD_DEFAULT_BUILD_EDGE` while it is not.
+ *
+ * **A hidden control's retained value must not become part of a command**, and
+ * that is the rule this function exists to state once. The panel keeps one
+ * `edge` for the life of the mount so that returning to an edge buildable finds
+ * the orientation you last used; before issue #531 that retained value was read
+ * unconditionally, so a row whose chooser was hidden submitted whatever the
+ * last *visible* choice had been. The player was shown no control, was given no
+ * way to change it, and the command carried a setting anyway.
+ *
+ * It resolves to a default rather than refusing, deliberately. A refusal here
+ * would strand a player who has already been charged for materials, and every
+ * consumer of an intent whose chooser is hidden ignores the field: `hud.ts`
+ * dispatches `remove-object` for a removal and `place-object` for a row that
+ * places one, neither of which carries an edge, and `edgeNumericIdFor` writes
+ * nothing for a buildable that is not edge geometry. So the field keeps one
+ * shape and stops carrying history.
+ *
+ * The `door-wooden` case that made this visible is *not* fixed here -- it is
+ * fixed by `src/main.ts` publishing `occupiesTileEdge`, which puts the chooser
+ * on screen for a door so that `chosen` is a choice the player actually made.
+ * This function is the other half: with the composition root correct, no row in
+ * today's registry reaches the default branch at all, and the branch is what
+ * stops the next non-edge buildable that takes the `place-build-order` route
+ * from inheriting an edge the same way.
+ */
+export function intentEdge(
+  buildable: HudBuildableViewModel | undefined,
+  removing: boolean,
+  chosen: HudBuildEdge,
+): HudBuildEdge {
+  return edgeChooserShown(buildable, removing) ? chosen : HUD_DEFAULT_BUILD_EDGE;
 }
 
 /**
@@ -593,7 +655,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   let selectedId = model.buildables[0]?.definitionId;
   let tileX = Math.trunc(model.origin.x);
   let tileY = Math.trunc(model.origin.y);
-  let edge: HudBuildEdge = 'north';
+  let edge: HudBuildEdge = HUD_DEFAULT_BUILD_EDGE;
   let armed = false;
   /** Whether the armed gesture takes an object away instead of placing one (ADR 0028 phase 3). */
   let removing = false;
@@ -1628,11 +1690,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   );
 
   function paintPlacement(): void {
-    // The edge chooser is hidden, not disabled, for a buildable that does not
-    // sit on an edge: a disabled control still claims the setting exists. A
-    // removal has no edge for the same reason it has no buildable -- what goes
-    // is whatever is on the tile -- so the mode hides it too.
-    edgeChoice.element.hidden = removing || selectedBuildable()?.occupiesEdge !== true;
+    // The rule itself is in `edgeChooserShown`, which `readSelection` also
+    // reads. It was written out here and nowhere else, which is how a hidden
+    // chooser and a submitted edge came to disagree (#531).
+    edgeChoice.element.hidden = !edgeChooserShown(selectedBuildable(), removing);
   }
   paintPlacement();
 
@@ -1702,7 +1763,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     // mistake was placing the single row in an empty catalogue could not undo it.
     if (buildable === undefined) {
       return removing
-        ? { definitionId: '', x: tileX, y: tileY, edge, placesObject: false, removing: true }
+        ? {
+            definitionId: '',
+            x: tileX,
+            y: tileY,
+            edge: intentEdge(undefined, true, edge),
+            placesObject: false,
+            removing: true,
+          }
         : undefined;
     }
     return {
@@ -1710,9 +1778,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       x: tileX,
       y: tileY,
       // A buildable that is not edge geometry still reports an edge, because
-      // the command carries one shape; the simulation ignores it for anything
-      // that is not a wall.
-      edge,
+      // the command carries one shape -- but it reports the default rather than
+      // the retained one, because the control that holds the retained one is not
+      // on screen (#531). `intentEdge` is where that is decided, and it is the
+      // same predicate `paintPlacement` hides the control with.
+      edge: intentEdge(buildable, removing, edge),
       // Which of the two placement commands this row needs. A shape fact the
       // catalogue carried in, exactly like `occupiesEdge` -- the panel does not
       // decide it and cannot derive it, because what a buildable places is
