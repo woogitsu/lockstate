@@ -192,9 +192,28 @@ describe('save-schema V4 -> V5 migration', () => {
       concurrentUseCapacity: 0,
       objectCapabilities: [],
     });
-    // The rectangle is genuinely unknown for a migrated row, and the instance
-    // says so rather than claiming one.
-    expect(restored.prisoners.roomInstances.getById(CELL_INSTANCE_ID)?.width).toBeUndefined();
+    /*
+     * **This assertion used to read `.width).toBeUndefined()`**, under the
+     * comment *"the rectangle is genuinely unknown for a migrated row, and the
+     * instance says so rather than claiming one"*. Both directions are marked
+     * rather than overwritten, because the sentence was right about the
+     * *migration* and wrong about the *restore*, and only the second half
+     * moved.
+     *
+     * The migration still invents nothing -- the assertion above this one,
+     * over `migrateSaveEnvelopeV4ToV5`'s own output, is unchanged and still
+     * says so. What changed is that `restoreSessionSystems` now recovers the
+     * rectangle from the world's zoning plane, which the same payload carries
+     * and which `RoomZoningService.zone` painted when the room was designated
+     * (issue #559, ADR 0074). So the rectangle was never *unknown*; it was
+     * unread.
+     *
+     * `2x3` is `CELL_RECT`, the rectangle this fixture's own V4 session was
+     * told to zone. It is asserted against that constant rather than against
+     * anything the restore computed.
+     */
+    expect(restored.prisoners.roomInstances.getById(CELL_INSTANCE_ID)?.width).toBe(CELL_RECT.width);
+    expect(restored.prisoners.roomInstances.getById(CELL_INSTANCE_ID)?.height).toBe(CELL_RECT.height);
     expect(restored.placedObjects.size).toBe(0);
   });
 

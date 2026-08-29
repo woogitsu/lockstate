@@ -314,14 +314,26 @@ describe('RoomInstanceRegistry', () => {
       expect(registry.claimUse('yard-1', 500 as never, 'recreation')).toBe(false);
     });
 
-    it('keeps the unbounded answer for an instance that records no rectangle, which is what a V4 save is', () => {
+    it('keeps the unbounded answer for an instance that records no rectangle', () => {
       /*
-       * The rule reads `width * height`, and a save written before bounds were
-       * recorded carries neither. Inventing a rectangle would assert a room the
-       * player did not zone -- `roomBoundsOf` in
+       * The rule reads `width * height`, and an instance that records neither
+       * has nothing to derive from. Inventing a rectangle would assert a room
+       * the player did not zone -- `roomBoundsOf` in
        * `src/simulation/objects/room-capacity.ts` refuses to for that reason --
-       * so the honest answer is the one this case had before #532, and an
-       * upgraded save does not start refusing prisoners a yard they had.
+       * so the honest answer is the one this case had before #532.
+       *
+       * **This test was named "... which is what a V4 save is" and no longer
+       * is** (issue #559, ADR 0074). The assertion is unchanged and still
+       * correct -- this registry answers `Infinity` for an instance with no
+       * rectangle, and that is what it should do. What was wrong was the
+       * example: a V4 *row* records no rectangle, but the same payload's world
+       * section carries the zoning plane the room was painted into, so
+       * `restoreSessionSystems` recovers it
+       * (`src/simulation/rooms/bounds-recovery.ts`) and a restored V4 yard
+       * arrives here bounded. Naming a V4 save here made a defect look like a
+       * decision: `tests/migrations/save-v4-room-bounds.test.ts` measures what
+       * a V4 save actually gets. What still reaches this branch is an instance
+       * no plane can support, which is exactly what is registered below.
        */
       const registry = new RoomInstanceRegistry();
       registry.register({

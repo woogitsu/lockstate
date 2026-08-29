@@ -133,8 +133,9 @@ export interface RoomProjectionOptions {
  * therefore discharged rather than re-dated.
  *
  * **The capability fallback survives, and only where there is nothing to
- * count.** An instance with no recorded rectangle (a V4 save; see
- * `RoomInstance`) contains nothing this projection can attribute to it, and a
+ * count.** An instance with no recorded rectangle (see `RoomInstance`; a V4 row
+ * used to be the example and since #559 its rectangle is recovered at restore)
+ * contains nothing this projection can attribute to it, and a
  * caller that supplies no `placedObjects` has handed it nothing to attribute.
  * Both answer from `instance.objectCapabilities` exactly as before, ignoring
  * `minQuantity`, because the alternative is to report a furnished room as empty.
@@ -306,8 +307,10 @@ export function collectRoomInstances(
  * "this room has a rectangle and nothing is standing in it" is a different
  * answer from "nobody told this projection what is standing anywhere", and only
  * the first may be counted against a `minQuantity`. An instance with no
- * rectangle gets no entry, for the reason `roomBoundsOf` gives: a V4 save
- * records none and inventing one would assert a room the player did not zone.
+ * rectangle gets no entry, for the reason `roomBoundsOf` gives: inventing one
+ * would assert a room the player did not zone. (A V4 row was the example here;
+ * since #559 the restore recovers its rectangle from the zoning plane, so what
+ * is left is a row no plane supports.)
  *
  * **Cost.** One `all()` -- a single `O(objects log objects)` sort -- and then
  * one `roomContains` test per (instance, object) pair. Rectangles never
