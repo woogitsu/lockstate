@@ -291,70 +291,68 @@ State 3 is what `version.yml` produces after every merge. Its bump commit is pus
 
 > ---
 >
-> **Re-measured 2026-08-29, and nothing has moved.** Read-only `curl` against
-> both hosts on that date:
+> **Answered by the owner, 2026-08-29, and this is now the primary record.**
+> In their own words: *"jeżeli sprawdzał na www.lockstate.io to normalne, tam
+> nie ma aktualnej gry, aktualna gra jest na
+> `lockstate-staging.matmaxalez94.workers.dev`"* — if it was checked on
+> `www.lockstate.io` that is normal, there is no current game there; the
+> current game is on `lockstate-staging.matmaxalez94.workers.dev`.
 >
-> | | `workers.dev` | `lockstate.io` |
+> **THE ONE SENTENCE THIS SECTION EXISTS FOR:** *the current build is served by
+> `https://lockstate-staging.matmaxalez94.workers.dev/`, and `lockstate.io` is
+> not — anything measured against `lockstate.io` is a measurement of an old
+> build and is not evidence about `main`.*
+>
+> **Re-measured 2026-08-29 with read-only `curl`, and nothing has moved.**
+> `lockstate.io` still serves `assets/index-CwVFOnxX.js` — the same bundle hash
+> this note recorded on 2026-08-27, two days and three releases later — still
+> without the five headers. Byte counts of what each host actually returns,
+> beside a local production build of `origin/main`:
+>
+> | | index chunk | worker chunk |
 > |---|---|---|
-> | bundle | `assets/index-BPp-3u0k.js` | `assets/index-CwVFOnxX.js` |
-> | the five headers above | present | absent |
+> | `lockstate.io` | 1,596,326 B | 235,634 B |
+> | `workers.dev` | 1,753,637 B | 337,563 B |
+> | local `pnpm build` of `origin/main` | 1,753,637 B | 337,563 B |
 >
-> `lockstate.io` serves **the same bundle hash this note recorded on
-> 2026-08-27**, two days and three releases later. The pinning is not drifting;
-> it is stationary.
+> The `workers.dev` host matches a local build of `main` exactly; `lockstate.io`
+> is a materially smaller, different build. Its age is derived from the headers
+> rather than from the bundle: the five that are absent entered `public/_headers`
+> at `cea6849` (2026-08-24 04:15 UTC), so the deployment behind that domain
+> predates it. `git rev-list --count cea6849..origin/main` gives the distance.
 >
-> **How old that build is, derived rather than assumed.** Two independent
-> signals, both readable from here:
+> **A retraction, recorded rather than deleted.** An earlier revision of this
+> note dated the live build a second way: it said the served bundle "contains no
+> `data-build-id` and no `lockstate-<version>-<sha>` literal at all", and
+> concluded the build predated the badge at `2e8ca6e`. **That inference was
+> wrong and the grep behind it proves nothing.** Neither literal appears in *any*
+> build, including one whose badge was then read out of a running page as
+> `lockstate-0.0.206-ec10451` — the attribute name and the identity are assembled
+> at runtime, not written as greppable literals. Absence of the string was
+> absence of evidence. The header signal above is independent and stands on its
+> own, which is the only reason the conclusion survived the correction.
 >
-> - The live bundle contains **no `data-build-id` and no `lockstate-<version>-<sha>`
->   literal at all.** The build badge and its injected identity arrived at
->   `2e8ca6e` (2026-08-24 06:20 UTC), so the live build predates it.
-> - The live responses still lack the five headers, which entered
->   `public/_headers` at `cea6849` (2026-08-24 04:15 UTC), so it predates that
->   too.
->
-> Both put `lockstate.io` on a build from **2026-08-24 or earlier**. Derive the
-> distance rather than trusting a number: `git rev-list --count cea6849..origin/main`.
->
-> **THE RULE THIS CREATES, and it has already cost a finding.** *An observation
-> of `lockstate.io` is not an observation of `main`, and must not be reported as
+> **THE RULE THIS CREATES, and it has now cost two findings.** *An observation of
+> `lockstate.io` is not an observation of `main`, and must not be reported as
 > one.* On 2026-08-29 an external audit drove a real browser against
-> `lockstate.io`, found that New prison → Load ended in "Loading failed: The
+> `lockstate.io`, found New prison → Load ending in "Loading failed: The
 > simulation worker did not reply within 15000ms" with every save-panel button
 > disabled and Play not starting the clock, and filed it as a critical defect in
-> commit `4c18bc4` (v0.0.203, 2026-08-29). Built from that tree and driven
-> locally, that sequence passes — both loads settle in well under a second and
-> the clock advances (`tests/browser/production-artifact.spec.ts` is now the
-> standing gate for it). The audit measured a build **744 commits and five days**
-> older than the one it named. That is the same trap this note was written for:
-> a previous agent measured the five missing headers with complete rigour and
-> then called them a defect, and one sentence from the owner demolished the
-> conclusion.
+> commit `4c18bc4` (v0.0.203). Built from that tree and driven locally, that
+> sequence passes: both loads settle in well under a second and the clock
+> advances (`tests/browser/production-artifact.spec.ts` is now the standing gate
+> for it). **The observation was real; the conclusion was invented.** It is the
+> same shape as the earlier finding this note already exists to prevent, where an
+> agent measured five missing headers with every step rigorous and then wrote
+> "defect" into this document. Rigorous evidence about the wrong host is what
+> makes the mistake persuasive.
 >
-> **What the old build's symptom most likely is**, offered as a reading and not
-> as a claim, because nothing here executed it — this container's browser cannot
-> reach the public internet, only `curl` can. `dd676c3` *"Give every session its
-> own simulation worker (#149)"* landed 2026-08-24 13:44 UTC, **after** the live
-> build. `tests/foundation/composition-root-contract.test.ts` records what the
-> code did before it: *"a page that builds one worker and drives it with a bare
-> `WorkerSessionHost` … can start exactly one session, and every load after the
-> first fails with no way forward but a page reload."* One session works, every
-> load after it fails, and a further New prison behaves identically — which is
-> the audit's sequence, verbatim. `SimulationClient`'s own header explains how
-> that surfaces as a *timeout* rather than as a refusal: a reply the host cannot
-> match to a pending request leaves it to wait out its 15 s budget and report
-> "the simulation worker did not reply", *"the misleading symptom #103 records,
-> reached by a second route"*.
->
-> **The question for the owner, which no measurement here can answer.** Is
-> `lockstate.io` still meant to be switched off? Nothing in git records the
-> current intent — only the 2026-08-27 statement that it was deliberate then —
-> and Cloudflare → Workers → `lockstate-staging` → Settings → Domains & Routes
-> is the only place the live state exists. If the answer is yes, the note above
-> stands and every future audit of the live domain needs pointing at
-> `workers.dev` instead. If it is no, switching it back on republishes 744
-> commits at once, and the reading above says the very defect the audit reported
-> is among the things that would be fixed by doing so.
+> **What is deliberately NOT written here:** a root cause for what the old build
+> does. Nothing in this container executed it — Chromium cannot reach the public
+> internet through the agent proxy, which closes the tunnel for the browser while
+> `curl` succeeds — and the owner has said the host is stale by design. Guessing
+> at a mechanism for a build nobody is going to fix is how the last paragraph got
+> written.
 
 **One Worker, not two.** `lockstate.io` is served by **`lockstate-staging`** — the Worker the `staging` job deploys — through a Custom Domain attached by hand in the Cloudflare dashboard. Production and staging are the same thing for now, by the owner's decision.
 

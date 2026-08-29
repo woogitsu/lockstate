@@ -38,16 +38,24 @@ import { defaultMessageCatalogEn } from '../../src/services/localization';
  * whether tree shaking left the round trips intact. Each assertion here is one
  * a dev-server run cannot make.
  *
- * WHAT PROMPTED IT, precisely. An external audit reported that on
- * `lockstate.io` a load ended in "Loading failed: The simulation worker did
- * not reply within 15000ms", with every save-panel button disabled and Play
- * not starting the clock. Built and driven locally at v0.0.206 that sequence
- * passes -- both loads settled in well under a second and the clock advanced
- * -- so the report was not a property of the commit. It is still a symptom
- * worth a standing gate, because the one thing measured that DOES produce it
- * verbatim is a worker chunk URL that does not resolve to the worker chunk,
- * and that is invisible to every other check here. The `content-type`
- * assertion in the first test is aimed at exactly that.
+ * WHAT PROMPTED IT, and what that does and does not mean. An external audit
+ * drove `lockstate.io` and reported a load ending in "Loading failed: The
+ * simulation worker did not reply within 15000ms", with every save-panel
+ * button disabled and Play not starting the clock. **That host does not serve
+ * the current build** -- the owner confirmed it on 2026-08-29 and
+ * `docs/DEPLOYMENT.md` records both the confirmation and the measurement -- so
+ * the report is not evidence about this commit, and nothing in this file
+ * treats it as such. Built and driven locally at v0.0.206 the same sequence
+ * passes: both loads settle in well under a second and the clock advances.
+ *
+ * This file exists for the gap the audit did NOT settle, which three separate
+ * reports named independently and which was true before the audit and after
+ * it: nothing had ever asserted that the artefact executes. The 15-second
+ * symptom is worth an assertion of its own regardless of where it was seen,
+ * because the one thing measured here that reproduces it verbatim is a worker
+ * chunk URL that does not resolve to the worker chunk -- invisible to every
+ * other check in this repository. The `content-type` assertion in the first
+ * test is aimed at exactly that.
  */
 
 function localeText(key: string): string {
