@@ -1551,6 +1551,41 @@
   letter-spacing: 0;
 }
 
+/* The activity and the worst-need pair share one line, so adding the bar costs
+   the row no height on a roster wide enough to hold both. `flex-wrap: wrap` is
+   the escape: at the narrowest viewport the suite visits, a long action word
+   plus a ten-segment bar does not fit, and wrapping is the only alternative to
+   the bar being squeezed to nothing. `align-items: baseline` so the need's word
+   sits on the activity's baseline rather than floating against the bar. */
+.hud-regime__roster-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
+}
+
+/* The word and the bar are one unit and never split across the wrap: a bar that
+   wrapped away from its own label would be a colour with no subject, which is
+   the failure `.ui-badge` carrying its word beside its tone exists to avoid.
+   `align-items: center` because the bar's segments are a block, not text. */
+.hud-regime__roster-need {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 0 0 auto;
+}
+
+/* Matches `.hud-regime__roster-activity`: a label rather than a heading, and it
+   never wraps -- the six need words are single short catalogue words, and a
+   wrapped one would be the thing that makes the row taller. */
+.hud-regime__roster-need-name {
+  white-space: nowrap;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 /* Never shrinks. The pair beside it wraps instead. */
 .hud-regime__roster-row > .ui-badge { flex: 0 0 auto; }
 

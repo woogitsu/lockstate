@@ -307,6 +307,25 @@ interface should band a need bar at it, and how the reduction should be
 explained beside the "earned today" chip that already moves with it, is the
 owner's.
 
+**Narrowed again 2026-08-29 (#535 decision 6), and only the first of those two
+questions moved.** The Regime panel's roster now draws each prisoner's worst
+need as a bar, and it *is* banded at that line: `warning` when
+`STATE_INCOME_UNMET_NEED_LEVEL` is crossed, `neutral` otherwise, off a flag the
+projection computes with the same predicate `unmetNeedCount` sums. So the
+interface bands at the state's line — but read what that band claims, because
+it is narrower than the question above:
+
+- It says **the state is withholding grant for this need**, which
+  `stateIncomeForPrisonerDay` really does.
+- It does **not** say the prisoner is in danger, and the bar is never toned
+  `danger` for exactly that reason. The player-facing "warning"/"critical" band
+  gap 7 describes is still undefined and still the owner's, and so is whether it
+  should be this same line.
+
+**The second question is untouched.** Nothing explains the reduction beside the
+"earned today" chip: a player can see a bar go amber and can see the chip fall,
+and no surface connects the two. That is still open and still the owner's.
+
 **`action.free-association` is the catalogue's one entry with no need effect,
 and that is deliberate.** `scoreAction` sums `deficit x effect`, so an action
 with no effects scores exactly 0 -- the floor, since no authored effect is

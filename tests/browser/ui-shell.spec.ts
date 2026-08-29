@@ -3463,6 +3463,25 @@ test.describe('the Regime panel (issue #451)', () => {
    * tier -- and the third is the one the raw-key check below needs: it is the
    * only row whose badge word comes out of `intake-stage` and whose name comes
    * out of `hud.regime.roster-unnamed`.
+   *
+   * ### The four `lowestNeed` values are four branches of the bar, not filler
+   *
+   * `permille: 200` is the level the state's line sits on exactly
+   * (`STATE_INCOME_UNMET_NEED_LEVEL` is 51 of `NEED_MAX` 255, and 51/255 is
+   * a fifth to the digit), and rows 1 and 3 straddle it: 200 with
+   * `unmetForStateIncome: true` and 204 -- the very next level, 52 -- with
+   * `false`. A panel that drew the tone off the wrong side of the comparison
+   * would repaint one of the two and be caught. Row 2 is the floor a need with
+   * no route at all falls to, and row 4 is a fully served one.
+   *
+   * **These flags are supplied, not derived, and that is the limit of what this
+   * file can prove.** `HudPrisonerRosterViewModel` is what the panel is *told*;
+   * whether the flag agrees with the money is a question about
+   * `prisonerRosterFromProjection` and `projectPrisonerRoster`, and it is asked
+   * where those can be run -- `tests/unit/regime-need-bar.test.ts` and
+   * `tests/integration/prisoner-roster-readout.test.ts`. What this file proves
+   * is that the panel renders the flag it was given, which is the half that
+   * needs a browser.
    */
   const ROSTER: HudPrisonerRosterViewModel = {
     total: 9,
@@ -3476,6 +3495,7 @@ test.describe('the Regime panel (issue #451)', () => {
         standingLabelKey: 'risk-tier.1.name',
         classificationGroupId: 'general-population',
         riskTier: 1,
+        lowestNeed: { needId: 'hunger', labelKey: 'need.hunger.name', permille: 200, unmetForStateIncome: true },
       },
       {
         entityId: 5,
@@ -3485,12 +3505,14 @@ test.describe('the Regime panel (issue #451)', () => {
         standingLabelKey: 'risk-tier.3.name',
         classificationGroupId: 'high-risk',
         riskTier: 3,
+        lowestNeed: { needId: 'hygiene', labelKey: 'need.hygiene.name', permille: 0, unmetForStateIncome: true },
       },
       {
         entityId: 8,
         activityLabelKey: 'action-phase.idle.name',
         travelling: false,
         standingLabelKey: 'intake-stage.classification.name',
+        lowestNeed: { needId: 'bladder', labelKey: 'need.bladder.name', permille: 204, unmetForStateIncome: false },
       },
       {
         entityId: 11,
@@ -3500,6 +3522,7 @@ test.describe('the Regime panel (issue #451)', () => {
         standingLabelKey: 'risk-tier.0.name',
         classificationGroupId: 'general-population',
         riskTier: 0,
+        lowestNeed: { needId: 'recreation', labelKey: 'need.recreation.name', permille: 1000, unmetForStateIncome: false },
       },
     ],
   };
@@ -3676,6 +3699,36 @@ test.describe('the Regime panel (issue #451)', () => {
     // The badge's word, which is what makes its colour readable without colour.
     expect(probe.rows.map((row) => row.badgeText)).toEqual(['Low', 'High', 'Classification', 'Minimal']);
 
+    // ---- the worst-need bar (issue #535 decision 6) --------------------
+    //
+    // **The machine-readable half, asserted as attributes rather than as a
+    // drawing.** This is the point of the readout: before it, "the need was
+    // served" and "the need decayed but not far enough" were indistinguishable
+    // from outside the simulation, and a bar whose value lived only in a CSS
+    // width would not have changed that. These three attributes are what a
+    // Playwright script measuring the grant-withholding schedule actually
+    // reads.
+    expect(probe.rows.map((row) => row.need)).toEqual(['hunger', 'hygiene', 'bladder', 'recreation']);
+    expect(probe.rows.map((row) => row.needPermille)).toEqual(['200', '0', '204', '1000']);
+    expect(probe.rows.map((row) => row.needUnmet)).toEqual(['true', 'true', 'false', 'false']);
+
+    // **The tone follows the flag, and rows 0 and 2 are what prove it is not
+    // following the level.** Their per-milles are `200` and `204` -- adjacent
+    // need levels, 51 and 52, indistinguishable to the eye and to a
+    // ten-segment bar, which lights two for both. They tone differently because
+    // they fall on opposite sides of `STATE_INCOME_UNMET_NEED_LEVEL`. Any panel
+    // that had invented its own band would have to have invented exactly this
+    // one to pass, and a band on anything rounder -- a quarter, a fifth of the
+    // *bar* rather than of `NEED_MAX` -- puts them both on the same side.
+    expect(probe.rows.map((row) => row.needTone)).toEqual(['warning', 'warning', 'neutral', 'neutral']);
+
+    // The word beside the bar, so the colour never stands alone -- the rule the
+    // badge follows, applied to the bar. Six authored labels, none new.
+    expect(probe.rows.map((row) => row.needText)).toEqual(['Hunger', 'Hygiene', 'Bladder', 'Recreation']);
+
+    // The accessible value, which is a formatted number and not a sentence.
+    expect(probe.rows.map((row) => row.needValueText)).toEqual(['20%', '0%', '20%', '100%']);
+
     // **The sweep.** ADR 0011 renders an unresolved key as itself, so a missing
     // catalog entry is a raw identifier on screen. `probe.text` is `innerText`,
     // so this is what the browser painted -- the pooled rows the panel hid are
@@ -3732,6 +3785,23 @@ test.describe('the Regime panel (issue #451)', () => {
     // the assertion above a measurement rather than a coincidence: all four
     // nodes are still in the document, three of them without a box.
     expect(await page.locator('.hud-regime__roster-row').count()).toBe(4);
+
+    // **The need attributes are cleared with the row, not left behind.** A
+    // pooled row that kept its `data-need-permille` would answer a probe with
+    // the last prisoner who occupied that slot -- and unlike a stale *word*,
+    // which the rendered-text sweep above catches, a stale attribute survives
+    // `getClientRects()` filtering entirely and would be read by exactly the
+    // measurement this readout exists to enable.
+    const staleNeeds = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.hud-regime__roster-row')]
+        .filter((row) => row.getClientRects().length === 0)
+        .map((row) => [row.dataset['need'] ?? null, row.dataset['needPermille'] ?? null, row.dataset['needUnmet'] ?? null]),
+    );
+    expect(staleNeeds).toEqual([
+      [null, null, null],
+      [null, null, null],
+      [null, null, null],
+    ]);
   });
 
   test("keeps the last line of the roster inside the panel's fold at every viewport", async ({ page }) => {

@@ -380,6 +380,18 @@ describe('the message-key namespaces are counted, and no call site names one tha
    * with no new copy: the labels were already written and this is the first
    * call site any of them had. Both halves are left standing rather than one
    * being overwritten, for the same reason the paragraph above gives.
+   *
+   * **`need` made the same move, by one, for issue #535 decision 6** -- 32
+   * unreachable namespaces became 31, and 124 unreachable labels became 118
+   * (this namespace's whole six, `hunger` / `sleep` / `hygiene` / `bladder` /
+   * `safety` / `recreation`, in one move, for `incident-type`'s reason exactly:
+   * the call site (`src/ui/simulation-prisoner-roster.ts`) passes a *variable*
+   * need id read off the projection rather than a literal). The Regime panel's
+   * roster now draws each prisoner's worst need as a bar and needs the word for
+   * it. Third demonstration of the same shape, and the third time the labels
+   * turned out to have been written before the panel that renders them --
+   * which is the census's actual finding, and the reason it counts rather than
+   * lists.
    */
   it('reports the namespace census exactly', () => {
     expect({
@@ -397,9 +409,9 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // is one of the 33 namespaces waiting for a panel, and the new member
       // waits with the two beside it.
       labels: 174,
-      namespacesWithACallSite: 10,
-      namespacesWithoutACallSite: 32,
-      labelsWithoutACallSite: 124,
+      namespacesWithACallSite: 11,
+      namespacesWithoutACallSite: 31,
+      labelsWithoutACallSite: 118,
     });
   });
 
@@ -415,6 +427,7 @@ describe('the message-key namespaces are counted, and no call site names one tha
       'guard-claim',
       'incident-type',
       'intake-stage',
+      'need',
       'risk-tier',
     ]);
   });

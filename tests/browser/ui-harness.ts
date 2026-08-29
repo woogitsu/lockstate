@@ -656,6 +656,7 @@ function regimeProbe(): RegimeProbe {
     countText: textOf(roster?.querySelector('.hud-regime__roster-count')),
     rows: rows.map((row): RegimeRosterRowProbe => {
       const badge = row.querySelector<HTMLElement>('.ui-badge');
+      const bar = row.querySelector<HTMLElement>('.hud-regime__roster-need .ui-bar');
       return {
         prisoner: row.dataset['prisoner'] ?? '',
         classificationGroup: row.dataset['classificationGroup'] ?? null,
@@ -664,6 +665,12 @@ function regimeProbe(): RegimeProbe {
         activityText: textOf(row.querySelector('.hud-regime__roster-activity')),
         badgeText: textOf(badge),
         badgeTone: badge?.dataset['tone'] ?? null,
+        need: row.dataset['need'] ?? null,
+        needPermille: row.dataset['needPermille'] ?? null,
+        needUnmet: row.dataset['needUnmet'] ?? null,
+        needText: textOf(row.querySelector('.hud-regime__roster-need-name')),
+        needTone: bar?.dataset['tone'] ?? null,
+        needValueText: bar?.getAttribute('aria-valuetext') ?? null,
         box: layoutBoxOf(row),
       };
     }),

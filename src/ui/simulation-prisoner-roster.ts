@@ -48,8 +48,15 @@ import {
  *   excludes runtime-registered ids by name and says why -- and nothing in
  *   `src/` registers a gang into a new session, so it is absent in every prison
  *   a player can start.
- * - `lowestNeed` is renderable and is dropped for a different reason, which
- *   belongs to the panel: gap 7, no threshold. See `regime-panel.ts`.
+ * - `lowestNeed` **was** dropped here for a different reason, which belonged to
+ *   the panel: gap 7, no threshold. See `regime-panel.ts`. It is forwarded as
+ *   of issue #535 decision 6, and the bullet is amended rather than deleted
+ *   because the reason it gave was real and is only half spent: the *level* was
+ *   always renderable and what was missing was a line to read it against. #488
+ *   supplied one the simulation acts on (`STATE_INCOME_UNMET_NEED_LEVEL`), the
+ *   projection now reports it per need, and this module forwards the pair. What
+ *   is still missing -- and is still not invented here -- is the player-facing
+ *   threshold gap 7 keeps with the owner.
  *
  * ## The twelfth translator, and why it is a class
  *
@@ -83,7 +90,7 @@ const TRAVELLING_PHASE: ProjectedActionPhase = 'travelling';
 /**
  * What one row says, from one projected row.
  *
- * Three decisions, and none of them is a figure:
+ * Four decisions, and only the third carries a figure:
  *
  * 1. **The activity is the action when there is one and the phase when there
  *    is not.** `currentActionId` is absent while the store holds its `-1`
@@ -95,7 +102,16 @@ const TRAVELLING_PHASE: ProjectedActionPhase = 'travelling';
  * 2. **`travelling` is true only when there is an action to name.** "Heading
  *    to Idle" is not a sentence, and a phase of `travelling` with no action
  *    selected cannot say where.
- * 3. **The badge word is the tier once classification has run, and the intake
+ * 3. **The worst need is carried as an id, a key, a figure and a flag, and none
+ *    of the four is computed here.** The projection picked *which* need is
+ *    lowest and whether the state withholds for it; this reads both off the row
+ *    and derives the word from the id the same way every other label on the row
+ *    is derived. A threshold comparison on this thread would be the failure
+ *    decision 3 above describes for the badge -- recomputing a simulation line
+ *    in the layer that renders it -- and it would need
+ *    `src/simulation/economy/income.ts`, a *deep* simulation import this module
+ *    refuses for `ActionPhase`'s reason above.
+ * 4. **The badge word is the tier once classification has run, and the intake
  *    stage before it.** `classified` is the projection's own flag and it exists
  *    precisely because `riskTier` is still a zero-initialised `0` beforehand --
  *    which decodes as "Minimal" and would show every queued arrival as an
@@ -120,6 +136,12 @@ function prisonerRow(row: PrisonerRosterRowViewModel): HudPrisonerRowViewModel {
         : deriveSimulationMessageKey('intake-stage', row.intakeStage),
     ...(row.classificationGroupId === undefined ? {} : { classificationGroupId: row.classificationGroupId }),
     ...(riskTier === undefined ? {} : { riskTier }),
+    lowestNeed: {
+      needId: row.lowestNeed.needId,
+      labelKey: deriveSimulationMessageKey('need', row.lowestNeed.needId),
+      permille: row.lowestNeed.level.permille,
+      unmetForStateIncome: row.lowestNeed.unmetForStateIncome,
+    },
   };
 }
 

@@ -145,6 +145,26 @@ acceptance criterion asks to be *named* rather than built, and it is named here:
 **HUD_PROJECTIONS gap 7 is the surface this ruling depends on, and it is the
 owner's, because a threshold is a statement to a player about what is bad.**
 
+> **Amended 2026-08-29 (#535 decision 6). The decision is untouched; the
+> paragraph above is now factually stale and is marked rather than rewritten,
+> because the sentence a reader would rely on is the one that changed.**
+>
+> **"Nothing on screen tells a player that hygiene is at zero" is no longer
+> true, and "the Regime panel renders no need bar" is no longer true.** Each
+> roster row now draws that prisoner's worst need as a segmented bar with the
+> need's word beside it. The quoted comment at `regime-panel.ts:50-57` no longer
+> exists in that form either -- it is quoted in place there, with the reason it
+> expired.
+>
+> **What has not changed is the leg this document actually rests on.** The bar
+> is toned off `STATE_INCOME_UNMET_NEED_LEVEL` (#488), which is a statement
+> about what the state declines to pay for. The player-facing threshold -- "a
+> statement to a player about what is bad" -- is still unmade and still the
+> owner's, exactly as the paragraph above rules. So the ruling stands and the
+> surface it depends on is still open; what moved is that a player can now see
+> the *level* and see that the prison is losing grant income over it, which is
+> the half #436's third criterion asked to be named.
+
 > **Amended 2026-08-28, on #436's re-verification pass. The decision stands. Its
 > first leg is narrower than the paragraph above states, and its rejection of
 > alternative C is stronger than that section argues.** Both halves are marked

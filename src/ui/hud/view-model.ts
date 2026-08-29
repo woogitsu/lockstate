@@ -1014,6 +1014,49 @@ export interface HudPrisonerRowViewModel {
   readonly classificationGroupId?: string;
   /** `0` (minimal) to `3` (high risk); absent until classification has run. */
   readonly riskTier?: number;
+  /**
+   * The prisoner's **worst** need: the most depleted of the six, with the word
+   * for it and how full it is (issue #535, decision 6).
+   *
+   * Always present. A prisoner always has six needs and one of them is always
+   * the lowest, so there is no "no need" state to render -- which is why this
+   * is not optional and why the panel never has to choose what an absent bar
+   * would mean.
+   */
+  readonly lowestNeed: HudPrisonerNeedViewModel;
+}
+
+/**
+ * One need, as a roster row shows it.
+ *
+ * Four fields, because they answer different questions and only one is a word:
+ *
+ * - `needId` is *which* need, as the stable simulation id. Carried for the
+ *   reason `classificationGroupId` above is: it is the row's handle for a
+ *   browser assertion, and a probe that had to recognise a need by its
+ *   *translated* word would be asserting the locale catalog rather than the
+ *   simulation.
+ * - `labelKey` is that same need as a word. It resolves through the `need` enum
+ *   group in `src/content/simulation-message-keys.ts`, whose six labels --
+ *   Hunger, Sleep, Hygiene, Bladder, Safety, Recreation -- were authored there
+ *   long before this row rendered one. Nothing new is written for this readout.
+ *   Derived from `needId` by `deriveSimulationMessageKey` rather than stored
+ *   beside it, so the pair cannot drift.
+ * - `permille` is *how full*, `0` empty to `1000` satisfied, carried from the
+ *   projection's `BoundedValue`. The bar quantizes it to ten segments for the
+ *   eye; this is the figure behind the quantization, and it is what a browser
+ *   assertion reads rather than counting lit segments.
+ * - `unmetForStateIncome` is whether the state is withholding part of this
+ *   prisoner's day of the operating grant over it. **A fact about the grant,
+ *   not a verdict about the prisoner** -- see the projection field of the same
+ *   name, and `docs/HUD_PROJECTIONS.md` gap 7 for why the player-facing
+ *   "this is bad" threshold is still the owner's and is not this one.
+ */
+export interface HudPrisonerNeedViewModel {
+  readonly needId: string;
+  readonly labelKey: LocalizationKey;
+  readonly permille: number;
+  readonly unmetForStateIncome: boolean;
 }
 
 export interface HudPrisonerRosterViewModel {
