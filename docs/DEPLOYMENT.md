@@ -517,6 +517,43 @@ Overlapping `_headers` rules **concatenate** into a single `Cache-Control` inste
 6. Verify `/`, a deep route, security headers and a fingerprinted asset on `lockstate.io`.
 7. Record the deployed Worker version ID in release notes.
 
+## Proposed: a post-deploy smoke test against the published URL
+
+**A proposal, not a change.** It would live in `.github/workflows/deploy.yml`,
+which is deploy configuration and stays the owner's (`AGENTS.md`, "The owner's
+standing mandate"), so it is written here for approval rather than landed. The
+artefact-level gate that *is* landed — `pnpm test:artifact`, in the `browser`
+job — proves the built client runs; it says nothing about whether the build a
+visitor receives is that build.
+
+**What it would cost, and why it is worth asking for.** Nothing in this
+repository has ever read back what a deploy published. That is not a
+theoretical gap: `lockstate.io` has served a build from 2026-08-24 or earlier
+for at least five days and 744 commits, every CI run in that window was green,
+and the only reason anyone knows is that a person opened the site and a second
+person re-measured it by hand. A job that fetched the published URL after the
+`staging` job and asserted three things would have said so on the first run:
+
+1. the served `index.html` names an `/assets/index-*.js` that returns
+   `content-type: text/javascript` — not the SPA fallback's `text/html`, which
+   is what a chunk this deployment does not have returns with **HTTP 200**;
+2. the same for the `worker-*.js` that bundle names, which is the specific
+   resolution failure that produces "The simulation worker did not reply within
+   15000ms" with no failed request anywhere;
+3. the served bundle carries a `data-build-id` matching the commit just
+   deployed — which is the one assertion that distinguishes "the deploy
+   succeeded" from "the deploy succeeded and the URL serves it".
+
+All three are `curl` and a grep; none needs a browser, and (3) is the one that
+catches a domain that is not receiving the deploy at all.
+
+**Two things the owner has to decide, because neither is derivable here.**
+*Which URL it checks* — `lockstate.io` is switched off, so a job asserting
+against it would be red on every merge by design, and the honest target today is
+`lockstate-staging.matmaxalez94.workers.dev`. And *what a failure should do*: a
+deploy has already happened by the time this runs, so the job reports rather
+than prevents, which makes it a notification channel more than a gate.
+
 ## Rollback
 Every Worker deployment creates a version. List production versions and deployments:
 
