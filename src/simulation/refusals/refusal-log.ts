@@ -191,6 +191,7 @@ export class RefusalLog {
  * would not compile.
  */
 export const BUILD_REFUSAL_REASONS: Readonly<Record<BuildOrderFailReason, RefusalReason>> = {
+  'duplicate-order': 'build.duplicate-order',
   'out-of-bounds': 'build.out-of-bounds',
   unbuildable: 'build.unbuildable',
   'unbuildable-terrain': 'build.unbuildable-terrain',

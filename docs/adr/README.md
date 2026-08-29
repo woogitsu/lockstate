@@ -32,21 +32,46 @@ change to settle it. It changes no status either.
 
 The `Status` column reproduces what each ADR's own document says, not a
 normalised judgement. Two heading styles are in use — some ADRs carry a
-`- Status:` bullet and others a `## Status` section, and every ADR in the table
-above carries `Accepted` in some form, several with a qualifier the ADR itself
-carries.
+`- Status:` bullet and others a `## Status` section.
 
-**Every ADR in this directory is accepted.** The table above is the count, and
-this paragraph deliberately no longer carries one. It used to read *"Eight
-decisions were approved on 2026-08-26"* and enumerate them; three more were
-approved the same evening — 0038, 0039 and 0040, all under the same delegation —
-which made the sentence wrong again without anything touching it. **A tally in
-prose beside a table that computes the same tally is this corpus's most reliably
-rotting shape**, and it has now rotted here three ways in one day: an ADR
-arriving Proposed, that ADR being accepted, and three more arriving at all. What
-the day is evidence of is unchanged and is the part worth keeping: this corpus
-moves at several decisions an evening, so a sentence that enumerates them is
-stale before it is read.
+**This sentence used to end "and every ADR in the table above carries
+`Accepted` in some form" — true when written, false since the next morning,
+and left corrected rather than deleted because the failure is the finding.**
+`git blame` puts that clause at `64cd3799`, 2026-08-26 21:22, the evening
+eight decisions (then eleven, with 0038-0040) were accepted by delegation and
+nothing on disk was `Proposed`. `c78908b`, the next morning at 09:12, landed
+ADR 0042 `Proposed` — the first of what the table below now shows as
+twenty-two `Proposed` rows plus 0013's split §§5-6 — and no edit to this
+paragraph followed. Nothing mechanical caught it:
+`tests/foundation/adr-status-reference-contract.test.ts` checks a sentence
+that names an ADR number against that ADR's status, and this sentence names
+none — its own docstring lists "a claim that names no ADR" as a shape it
+deliberately cannot catch, and this is that shape. Read the table for the
+true count; it is a status column checked against its documents in both
+directions by `adr-numbering-contract.test.ts`, which is not a claim that
+can go stale the way a sentence can.
+
+**"Every ADR in this directory is accepted" was the next sentence, and it
+rotted for the identical reason at the identical hour.** The table above is
+the count, and this paragraph deliberately no longer carries one. It used to
+read *"Eight decisions were approved on 2026-08-26"* and enumerate them;
+three more were approved the same evening — 0038, 0039 and 0040, all under
+the same delegation — which made the sentence wrong again without anything
+touching it. **A tally in prose beside a table that computes the same tally
+is this corpus's most reliably rotting shape**, and it had already rotted
+here three ways in one day before the fourth: an ADR arriving Proposed, that
+ADR being accepted, three more arriving at all, and then — the next
+morning — the *absence* of any `Proposed` row stopped being true too, for as
+long as this corpus has had one since. What the day is evidence of is
+unchanged and is the part worth keeping: this corpus moves at several
+decisions an evening (and, since 2026-08-27, several afternoons in a row),
+so a sentence that enumerates or denies them is stale before it is read.
+The durable statement is the one the table already makes without prose
+beside it: some ADRs here are `Proposed`, each says so in its own `Status`,
+and [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §5 records that most of them are
+`Proposed` deliberately — decided under the owner's standing mandate and
+left unapproved on purpose, the way [0054](./0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)
+is — rather than left outstanding by accident.
 
 **This paragraph was corrected twice on 2026-08-26, in opposite directions, and
 both edits are marked rather than overwritten.** 0037 arrived Proposed, which

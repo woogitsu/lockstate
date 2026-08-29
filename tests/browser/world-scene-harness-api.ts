@@ -29,6 +29,20 @@ export interface HarnessEdge {
   readonly edge: string;
 }
 
+/** One tile rectangle, flattened out of `TileRect` so it crosses `page.evaluate`. */
+export interface HarnessRect {
+  readonly tileX: number;
+  readonly tileY: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/** One tile index, in the shape `ObjectToolPort.place` takes one. */
+export interface HarnessTile {
+  readonly tileX: number;
+  readonly tileY: number;
+}
+
 /**
  * What Phaser's input manager is holding, for the `addPointer(2)` comment
  * (issue #209).
@@ -137,6 +151,28 @@ export interface LockstateWorldSceneHarness {
   clearHistoryRequests(): void;
   /** What the panel readout would currently show: the run in progress, or `undefined`. */
   targetedRun(): readonly HarnessEdge[] | undefined;
+
+  /**
+   * Arms the room tool, so a left-button drag designates a rectangle instead
+   * of panning (#516: the area gesture is one of the three this issue's
+   * `blur`/`releaseMissed` recovery covers, verified rather than assumed by
+   * exercising it here the same way the build gesture already was).
+   */
+  armRoomTool(armed: boolean): void;
+  /** Rectangles the room tool has been asked to designate. `Escape`, `blur` and a missed release must all leave this empty. */
+  placedAreas(): readonly HarnessRect[];
+  /** What the panel readout would currently show for the area gesture, or `undefined`. */
+  targetedArea(): HarnessRect | undefined;
+
+  /**
+   * Arms the object tool with a 1x1 footprint, so a left-button press places
+   * one tile instead of panning (#516, the third of the three gestures).
+   */
+  armObjectTool(armed: boolean): void;
+  /** Tiles the object tool has been asked to place. */
+  placedObjects(): readonly HarnessTile[];
+  /** What the panel readout would currently show for the object gesture, or `undefined`. */
+  targetedObject(): HarnessRect | undefined;
 }
 
 declare global {

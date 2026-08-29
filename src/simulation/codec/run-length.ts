@@ -28,11 +28,21 @@
  *   `RunLengthFailure` and calls the caller's `fail`, which builds its own
  *   error type with its own message.
  *
- * This module is **not** the render projection's decoder
- * (`decodeRenderLayer` in `src/simulation/presentation/world-projection.ts`).
- * That one decodes a worker-to-main render payload rather than a save, and it
- * is a third implementation of this same shape -- reported, not folded in
- * here, because #123 item 3 names the save-format pair only.
+ * A third caller joined the two above without crossing any tree boundary:
+ * `decodeRenderLayer` in `src/simulation/presentation/world-projection.ts`
+ * decodes the `world/render-snapshot` worker-projection channel's payload
+ * rather than a save, and until #182 it was a third hand-rolled
+ * implementation of this same shape with its own inlined validation --
+ * reported by #123 item 3 as out of that issue's scope, since that issue
+ * named the save-format pair only. #182 folded it in: `world-projection.ts`
+ * already lives under `src/simulation/`, so calling `expandRunLengthsInto`
+ * from there is simulation-internal, not a presentation module reaching into
+ * simulation -- no boundary rule in `tests/unit/*-boundaries.test.ts` names
+ * `src/simulation/presentation/**` as a presentation tier, and neither
+ * `src/ui/**` nor `src/rendering/**` imports this module or `world-projection.ts`
+ * directly. It keeps its own `RangeError` messages via `fail`, collapsed the
+ * same way the original loop collapsed them, so nothing that catches or
+ * matches on those two strings changes.
  */
 
 /** A `[value, length]` run. `length` is a count of slots, never an index. */

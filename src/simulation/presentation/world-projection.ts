@@ -1,3 +1,5 @@
+import type { RunLengthDecodeContract } from '../codec/run-length';
+import { expandRunLengthsInto } from '../codec/run-length';
 import type { TerrainRle } from '../world/sparse-world';
 import { SparseWorld } from '../world/sparse-world';
 
@@ -44,32 +46,36 @@ export function projectWorldForRendering(world: SparseWorld): WorldRenderSnapsho
   };
 }
 
+/** Inclusive upper bound on a render layer's value: the only shape this decodes is a `Uint8Array`. */
+const RENDER_LAYER_MAX_VALUE = 255;
+
+/**
+ * Renders a shared-codec failure as one of the two `RangeError`s this decoder
+ * has always thrown -- collapsed the same way the original hand-rolled loop
+ * did, so a caller pattern-matching on either message keeps working unchanged.
+ */
+function renderLayerRleContract(expectedLength: number): RunLengthDecodeContract {
+  return {
+    maxValue: RENDER_LAYER_MAX_VALUE,
+    fail: (failure): never => {
+      switch (failure.kind) {
+        case 'malformed-run':
+        case 'value-out-of-range':
+        case 'invalid-length':
+        case 'exceeds-capacity':
+          throw new RangeError('Invalid render-layer RLE.');
+        case 'length-mismatch':
+          throw new RangeError('Render-layer RLE length mismatch.');
+      }
+    },
+  };
+}
+
 export function decodeRenderLayer(
   rle: TerrainRle,
   expectedLength: number,
 ): Uint8Array {
   const data = new Uint8Array(expectedLength);
-  let offset = 0;
-
-  for (const [value, count] of rle) {
-    if (
-      !Number.isSafeInteger(value) ||
-      value < 0 ||
-      value > 255 ||
-      !Number.isSafeInteger(count) ||
-      count <= 0 ||
-      offset + count > expectedLength
-    ) {
-      throw new RangeError('Invalid render-layer RLE.');
-    }
-
-    data.fill(value, offset, offset + count);
-    offset += count;
-  }
-
-  if (offset !== expectedLength) {
-    throw new RangeError('Render-layer RLE length mismatch.');
-  }
-
+  expandRunLengthsInto(rle, data, renderLayerRleContract(expectedLength));
   return data;
 }

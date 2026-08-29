@@ -65,16 +65,37 @@ import {
  *
  * ## Scope, stated rather than assumed
  *
- * `src/services/**` and `src/persistence/**` only. #378 proposes generalising
- * the walk to the whole of `src/`, and that is the right end state — the walk
- * is already general, and `reachableModules` takes the entry points as an
- * argument. It is not done here because the remaining unreachable modules live
- * under `src/simulation/`, `src/rendering/`, `src/ui/` and `src/content/`, and
- * each needs a reason written by somebody who knows why that particular barrel
- * has no importer. An allow-list of eleven entries whose reasons are all "a
- * barrel nobody imports" would be the list nobody reads that
- * `tests/helpers/simulation-enum-source.ts` argues against. ADR 0044 records
- * the widening as the follow-up and what it costs.
+ * `src/services/**` and `src/persistence/**`, plus one named exception below.
+ * #378 proposes generalising the walk to the whole of `src/`, and that is the
+ * right end state — the walk is already general, and `reachableModules` takes
+ * the entry points as an argument. It is not done wholesale here because the
+ * remaining unreachable modules live under `src/simulation/`, `src/rendering/`,
+ * most of `src/ui/` and `src/content/`, and each needs a reason written by
+ * somebody who knows why that particular barrel has no importer. An allow-list
+ * of eleven entries whose reasons are all "a barrel nobody imports" would be
+ * the list nobody reads that `tests/helpers/simulation-enum-source.ts` argues
+ * against. ADR 0044 records the wider widening as the follow-up and what it
+ * costs.
+ *
+ * ## One more tree, added 2026-08-29 rather than waiting for that follow-up
+ *
+ * `src/ui/account/` did not exist when ADR 0044 scoped this gate to
+ * `src/services/**` and `src/persistence/**` — it landed two days later
+ * (`fee6115`, "the pure account-session and save-list layer for #34 (phase
+ * 1)"), and it is the same shape as the four trees above: real capability
+ * code with its own tests (`tests/unit/ui-account-session.test.ts`,
+ * `tests/unit/ui-account-save-list.test.ts`,
+ * `tests/foundation/account-metadata-boundaries.test.ts`), no production
+ * caller, and a stated reason. Its own commit message says why it stayed
+ * unreachable on purpose: *"None of the four imports `src/persistence/cloud/`,
+ * so ADR 0044's parked-tree gate stays green"* — but nothing made *this* tree's
+ * own absence a checked fact, which is exactly the gap #378 is about. Rather
+ * than wait for someone to widen the walk to all of `src/ui/` — which would
+ * still have to explain eleven unrelated barrels first — this one self-
+ * contained, non-barrel tree is added to `SCANNED_ROOTS` and `PARKED_TREES`
+ * directly. That is a narrower fix than #378's proposal and a faster one: it
+ * closes the one drift this re-measurement actually found, without taking on
+ * the barrel inventory ADR 0044 deferred.
  *
  * ## What it cannot prove
  *
@@ -85,8 +106,12 @@ import {
  * would invite deleting an interface every reachable module depends on.
  */
 
-/** `src/services/**` and `src/persistence/**`: the two trees this gate rules on. */
-const SCANNED_ROOTS = ['src/services', 'src/persistence'] as const;
+/**
+ * `src/services/**` and `src/persistence/**`: the two trees ADR 0044 scoped
+ * this gate to. `src/ui/account` is the one named exception, added 2026-08-29
+ * — see "One more tree" above for why it, and not the rest of `src/ui/`.
+ */
+const SCANNED_ROOTS = ['src/services', 'src/persistence', 'src/ui/account'] as const;
 
 interface ParkedTree {
   /** Repository-relative directory prefix, with a trailing slash. */
@@ -120,7 +145,7 @@ const PARKED_TREES: readonly ParkedTree[] = [
     modules: 5,
     what: 'The client half of Supabase cloud save (#20, ADR 0008, ADR 0013; `docs/CLOUD_SAVE.md`). `CloudSaveClient`, its Supabase adapter, an in-memory double and `PrisonSyncEngine`.',
     waitingOn:
-      'A signed-in account, which does not exist in `src/` at all: nothing calls `createClient`, and `@supabase/supabase-js` is imported type-only in the two modules that name it. The account/save-slot UX is #34. The server half is live — 23 migrations and 11 pgTAP suites run in CI — and `scripts/verify-supabase-stack.mjs` drives the whole contract over real HTTP with its own `fetch` calls rather than through this client.',
+      "A signed-in account. `src/ui/account/account-session.ts` (#34 phase 1, `src/ui/account/` below) is the reducer for that and says outright it does not talk to Supabase; the effectful caller -- actually calling `createClient`, `signInAnonymously` or `linkIdentity` -- still does not exist in `src/` at all, and `@supabase/supabase-js` is imported type-only in the two modules that name it. The server half is live -- 23 migrations and 11 pgTAP suites run in CI -- and `scripts/verify-supabase-stack.mjs` drives the whole contract over real HTTP with its own `fetch` calls rather than through this client.",
     whatWouldMakeItDead:
       'The owner deciding cloud save is out of scope. That deletion is much larger than these five modules: `supabase/`, the migrations and the 287 pgTAP assertions go with it, and this tree is the smallest part of it.',
   },
@@ -139,6 +164,15 @@ const PARKED_TREES: readonly ParkedTree[] = [
     waitingOn:
       "A payment provider, which #36's own Out of scope requires a separate commercial and legal review to choose, and — for the free-tier half, which needs no provider — cloud save, because the slots being counted are cloud slots. Its server half is live: `entitlements`, `entitlement_events`, `record_entitlement_event`, and `supabase/tests/002`, `003` and `004` in CI.",
     whatWouldMakeItDead: 'The owner deciding there will be no paid tier.',
+  },
+  {
+    prefix: 'src/ui/account/',
+    modules: 4,
+    what: "The pure account-session and save-list layer for #34 phase 1 (ADR 0043): `account-session.ts` (a five-state reducer, no Supabase call), `account-preferences.ts`, `save-list-projection.ts` and `cloud-slot-availability.ts`. Its own commit message (`fee6115`) states it stays out of the graph on purpose: none of the four imports `src/persistence/cloud/`, so wiring cloud save and wiring this tree are the same event.",
+    waitingOn:
+      "Two things, neither of which this tree can supply on its own. First, the DOM save/account panel (#34 phase 2) that would call it -- deliberately not built alongside phase 1 because `vitest.config.ts` runs in `environment: 'node'` with no jsdom, so a module touching `document` is unreachable from `pnpm test` and needs the browser suite instead. Second, the same owner decision `src/persistence/cloud/` is waiting on: `account-session.ts` says outright that 'nothing here talks to Supabase' and that performing the effect -- calling `signInAnonymously`, calling `linkIdentity` -- 'belongs to the caller, which does not exist yet'.",
+    whatWouldMakeItDead:
+      "The same event that would kill `src/persistence/cloud/`: the owner deciding cloud save is out of scope. Short of that, this tree is a phase of work already in flight and not a candidate for deletion on its own terms.",
   },
 ];
 

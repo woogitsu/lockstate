@@ -1,8 +1,8 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { stripComments } from '../helpers/canonical-iteration';
-import { PROJECTION_IDS } from '../../src/simulation/protocol/types';
+import { PROJECTION_IDS, type ProjectionId } from '../../src/simulation/protocol/types';
 import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catalog';
 
 /**
@@ -78,6 +78,28 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * (`simulation-regime.ts`). `src/rendering/` matches none. The six with a route
  * and nobody on it are `hud/prisoner-detail`, `hud/security`, `hud/contraband`,
  * `hud/incidents`, `hud/incident-detail` and `world/render-snapshot`.
+ *
+ * **Added 2026-08-29 (#157), reinstating the `UNPAINTED_ROUTE` idiom this file
+ * deleted at #331 -- named per id this time rather than as one entry, because
+ * six ids need it rather than two.** #157 asked whether an unread route is
+ * dead, waiting on something named, or blocked on a protocol shape the channel
+ * lacks; investigating it found five of the six waiting on the same undone
+ * decision (`tests/foundation/unconsumed-action-contract.test.ts`'s
+ * `AWAITING_CONSUMER['selection.primary']`: *"there is no selection state, no
+ * highlight and no inspector"*) and the sixth (`world/render-snapshot`)
+ * superseded by `simulation-snapshot-feed.ts`'s session-snapshot bundle, an
+ * open question ADR 0040 already records and defers to its slice 4. Neither is
+ * an accident this gate should paper over, and neither should be allowed to
+ * become one silently again: `UNPAINTED_PROJECTION_IDS` below names each id
+ * with what blocks it, and the test after `ROUTED_ELSEWHERE`'s own is written
+ * to fail in both directions -- an id with a reader keeps a stale entry from
+ * standing (exactly how the single `UNPAINTED_ROUTE` entry died at #331), and
+ * an id added to `PROJECTION_CATALOG` tomorrow with neither a reader nor an
+ * entry fails immediately instead of joining this list unnoticed the way
+ * `world/render-snapshot` did. This is a narrower promise than "every route is
+ * painted" -- it is "every unpainted route says why," which is the one a text
+ * scan over stable string ids can actually keep without drifting the day a
+ * panel's internal shape changes.
  *
  * **This said "nine of the fifteen" and "six", then "eight" and "seven", and
  * every one of them was right when written.** The directions are marked rather
@@ -183,6 +205,7 @@ const ROOT = join(__dirname, '../..');
 const PRESENTATION_DIR = 'src/simulation/presentation';
 const CATALOG_FILE = 'src/simulation/worker/projection-catalog.ts';
 const UI_DIR = 'src/ui';
+const RENDERING_DIR = 'src/rendering';
 
 const read = (path: string): string => stripComments(readFileSync(join(ROOT, path), 'utf8'));
 
@@ -246,6 +269,57 @@ const catalogSource = read(CATALOG_FILE);
 
 /** A projection the catalog actually calls: `projectThing(` in the catalog's source. */
 const catalogued = (name: string): boolean => new RegExp(`\\b${name}\\s*\\(`).test(catalogSource);
+
+/** Every `.ts` file under `directory`, recursively, as a path relative to `ROOT`. */
+function collectTypeScriptFiles(directory: string): readonly string[] {
+  const files: string[] = [];
+  for (const entry of [...readdirSync(join(ROOT, directory))].sort()) {
+    const relative = `${directory}/${entry}`;
+    if (statSync(join(ROOT, relative)).isDirectory()) {
+      files.push(...collectTypeScriptFiles(relative));
+    } else if (entry.endsWith('.ts')) {
+      files.push(relative);
+    }
+  }
+  return files;
+}
+
+/**
+ * Every candidate reader file, scanned once. Recursive (unlike `PAINTERS`'
+ * own top-level scan) because a per-id check has no equivalent of
+ * `SimulationProjectionRequester` to anchor on -- it is looking for the id
+ * literal itself, and that could in principle be quoted from a subdirectory
+ * such as `src/ui/hud/`.
+ */
+const READER_SURFACE = [...collectTypeScriptFiles(UI_DIR), ...collectTypeScriptFiles(RENDERING_DIR)];
+
+/**
+ * Files that quote this projection id as a string literal -- the same
+ * technique the doc comment above used by hand to produce "nine of fifteen",
+ * mechanized so it cannot go stale the way a tally in a comment does.
+ */
+const readersOf = (id: string): readonly string[] => READER_SURFACE.filter((file) => read(file).includes(`'${id}'`));
+
+/**
+ * Projection ids with a route and, today, no reader -- named individually with
+ * what blocks one, so the entry a reader makes stale is exactly the entry that
+ * described its own absence. A reason must state what is verifiably true
+ * today, with a citation, and must not merely restate a plan.
+ */
+const UNPAINTED_PROJECTION_IDS: Readonly<Partial<Record<ProjectionId, string>>> = {
+  'hud/prisoner-detail':
+    "No reader in `src/ui/` or `src/rendering/`. Blocked on a selection model that does not exist yet: `tests/foundation/unconsumed-action-contract.test.ts`'s `AWAITING_CONSUMER['selection.primary']` records \"there is no selection state, no highlight and no inspector.\" `docs/research/audit-2026-08-26/10-product-roadmap.md:327` names the missing panel this route waits on, \"Selection + one generic inspector panel\" -- a product feature, not this issue's protocol-channel fix.",
+  'hud/incident-detail':
+    "No reader. The `-detail` half of the incidents pair waits on the same blocker as `hud/prisoner-detail`: no selection model exists (`tests/foundation/unconsumed-action-contract.test.ts`'s `AWAITING_CONSUMER['selection.primary']`), and `docs/research/audit-2026-08-26/10-product-roadmap.md:327` names the same generic-inspector panel as its route out.",
+  'hud/incidents':
+    'No reader. `docs/research/audit-2026-08-26/10-product-roadmap.md:328` names the panel this waits on, "Incident notification + response controls," and it is not built. Separately, `projectIncidents` (`src/simulation/presentation/incident-projection.ts`) calls `IncidentLog.all()` and pages in memory, so each request costs `O(all incidents ever recorded)` regardless of the requested window -- tracked at `docs/HUD_PROJECTIONS.md:1130-1133` as a gap this route does not yet have a panel to hit.',
+  'hud/contraband':
+    'No reader. `docs/research/audit-2026-08-26/10-product-roadmap.md:328` lists this as unbuilt, after the incidents panel ("then hud/contraband and hud/security"). `ConfiscationLedger.all()` (`src/simulation/contraband/confiscation.ts`) is unbounded over a session for the reason `docs/HUD_PROJECTIONS.md:1117-1120` gives, and `drain()` still has no caller anywhere in `src/` or `tests/`.',
+  'hud/security':
+    'No reader. `docs/adr/0036-a-derived-default-security-sector.md:490` says plainly "no panel reads `hud/security` at all," and `docs/research/audit-2026-08-26/10-product-roadmap.md:328` lists it as the last of this family\'s unbuilt panels.',
+  'world/render-snapshot':
+    "No reader. `decodeRenderLayer` (`src/simulation/presentation/world-projection.ts`) has no caller outside its own module and `tests/`; the render path gets world chunks through `src/rendering/feed/simulation-snapshot-feed.ts`'s session-snapshot bundle instead of pulling this projection. ADR 0040 open question 4 (`docs/adr/0040-the-shape-of-the-render-delta-channel.md:522`) leaves reuse-versus-delete to slice 4 and deliberately does not decide it here.",
+};
 
 describe('every projection the worker can produce has a route out of it', () => {
   it('scans the read-model layer it means to, and really finds projections in it', () => {
@@ -359,5 +433,36 @@ describe('every projection the worker can produce has a route out of it', () => 
     // had been deleted and the readers were mentioning a name that no longer
     // sends anything.
     expect(read(`${UI_DIR}/simulation-projections.ts`)).toContain("kind: 'simulation/request-projection',");
+  });
+
+  it('gives every projection id a reader, or a reason blocking one', () => {
+    for (const id of PROJECTION_IDS) {
+      const readers = readersOf(id);
+      const reason = UNPAINTED_PROJECTION_IDS[id];
+      if (readers.length > 0) {
+        // The direction that killed the single `UNPAINTED_ROUTE` entry at
+        // #331: a reader landed and the entry describing its absence must go
+        // with it, or the next reader down this list learns nothing from a
+        // record that is already false.
+        expect(
+          reason,
+          `${id} is now read by ${readers.join(', ')} -- delete its UNPAINTED_PROJECTION_IDS entry, it is stale`,
+        ).toBeUndefined();
+      } else {
+        expect(
+          reason,
+          `${id} has no reader under src/ui/ or src/rendering/ and no UNPAINTED_PROJECTION_IDS entry saying why. Wire a reader, or add an entry naming what blocks one`,
+        ).toBeDefined();
+        expect(reason!.trim().length, `${id}'s UNPAINTED_PROJECTION_IDS entry needs a reason, not a label`).toBeGreaterThan(80);
+      }
+    }
+  });
+
+  it('keeps the unpainted-projection list honest in the other direction', () => {
+    const declared = new Set<string>(PROJECTION_IDS);
+    expect(
+      Object.keys(UNPAINTED_PROJECTION_IDS).filter((id) => !declared.has(id)),
+      'this key is not a declared projection id, so its entry accounts for nothing and can never go stale',
+    ).toEqual([]);
   });
 });

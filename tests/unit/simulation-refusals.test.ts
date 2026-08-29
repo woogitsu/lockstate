@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BUILD_ORDER_FAIL_REASONS } from '../../src/simulation/construction/build-order';
+import { BUILD_EDGES, BUILD_ORDER_FAIL_REASONS, isBuildEdge } from '../../src/simulation/construction/build-order';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { REFUSAL_REASONS, type RefusalReason } from '../../src/simulation/protocol/types';
 import {
@@ -15,7 +15,11 @@ import {
   UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
 } from '../../src/simulation/refusals';
-import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import {
+  CONSTRUCTION_MATERIALS_CONTAINER_ID,
+  createNewSimulationRuntime,
+  type SimulationRuntime,
+} from '../../src/simulation/runtime/new-session';
 import { chunkCoordinate } from '../../src/simulation/world/coordinates';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
@@ -152,6 +156,7 @@ describe('the wire vocabulary is exactly what the ten domains can produce', () =
       'population-full': 'admit.population-full',
     });
     expect(BUILD_REFUSAL_REASONS).toEqual({
+      'duplicate-order': 'build.duplicate-order',
       'out-of-bounds': 'build.out-of-bounds',
       unbuildable: 'build.unbuildable',
       'unbuildable-terrain': 'build.unbuildable-terrain',
@@ -344,6 +349,26 @@ describe('the wire vocabulary is exactly what the ten domains can produce', () =
     expect(HIRE_REFUSAL_REASONS['insufficient-funds']).not.toBe(
       PURCHASE_REFUSAL_REASONS['insufficient-funds'],
     );
+  });
+
+  it('keeps `duplicate-order` -- the first spelling three domains share at once -- as three different wire ids (#514)', () => {
+    // `build.duplicate-order` is the newest arrival, and it lands on a
+    // spelling `place-object.*` and `purchase.*` already used for the
+    // identical fact ("a request just like this one is already standing") on
+    // their own commands. A flat id here would tell somebody who pressed
+    // *Place order* that their materials were not ordered, or that an object
+    // was not placed -- neither of which is the control they pressed.
+    expect(BUILD_REFUSAL_REASONS['duplicate-order']).toBe('build.duplicate-order');
+    expect(PLACE_OBJECT_REFUSAL_REASONS['duplicate-order']).toBe('place-object.duplicate-order');
+    expect(PURCHASE_REFUSAL_REASONS['duplicate-order']).toBe('purchase.duplicate-order');
+    expect(
+      new Set([
+        BUILD_REFUSAL_REASONS['duplicate-order'],
+        PLACE_OBJECT_REFUSAL_REASONS['duplicate-order'],
+        PURCHASE_REFUSAL_REASONS['duplicate-order'],
+      ]).size,
+      'three domains, three different wire ids for the same condition',
+    ).toBe(3);
   });
 });
 
@@ -715,5 +740,211 @@ describe('issue #492: a refusal is withdrawn once the simulation accepts the ver
       runtime.refusals.last,
       'a successful admission, even with different parameters, disproves the standing admit refusal',
     ).toBeUndefined();
+  });
+});
+
+/**
+ * Issue #514: eight rapid *Place order* presses at one tile and edge queued
+ * eight distinct build orders for a wall only one of which could ever exist.
+ *
+ * Every case here is driven through `PlaceBuildOrder`, dispatched by the real
+ * kernel and the real `createConstructionCommandHandler`
+ * (`src/simulation/construction/handler.ts`) -- never by calling
+ * `ConstructionSystem.submitOrder` by hand -- because the defect was in the
+ * production route a player press actually takes, and a fixture that called
+ * the system directly would not exercise it (#375).
+ */
+describe('issue #514: a repeated build order at the same tile and edge is refused, not queued again', () => {
+  it('refuses the second identical press while the first order is still standing, under its own wire id', () => {
+    const runtime = createNewSimulationRuntime(0x514);
+    placeWall(runtime, 0, OWNED_TILE);
+    expect(runtime.refusals.last).toBeUndefined();
+    expect(runtime.construction.getOrder('order-0')?.state, 'the first press is accepted').not.toBe('failed');
+
+    placeWall(runtime, 1, OWNED_TILE);
+
+    expect(runtime.refusals.last?.reason).toBe('build.duplicate-order');
+    expect(runtime.construction.getOrder('order-1')).toEqual(
+      expect.objectContaining({ state: 'failed', failReason: 'duplicate-order' }),
+    );
+    // The refusal touches only the new order. The one already standing is
+    // exactly as it was -- a refused press does not cancel or otherwise
+    // disturb it.
+    expect(runtime.construction.getOrder('order-0')?.state).not.toBe('failed');
+  });
+
+  it('the playtest reproduction: eight presses at the same tile and edge leave exactly one live order', () => {
+    const runtime = createNewSimulationRuntime(0x514);
+    for (let sequence = 0; sequence < 8; sequence += 1) placeWall(runtime, sequence, OWNED_TILE);
+
+    const states = Array.from({ length: 8 }, (_, sequence) => runtime.construction.getOrder(`order-${String(sequence)}`)?.state);
+    expect(states[0], 'order-0').not.toBe('failed');
+    for (let sequence = 1; sequence < 8; sequence += 1) {
+      expect(states[sequence], `order-${String(sequence)}`).toBe('failed');
+    }
+    // Seven of the eight presses were refused; `count` is the historical
+    // tally and `last` is the most recent of the seven.
+    expect(runtime.refusals.count).toBe(7);
+    expect(runtime.refusals.last?.reason).toBe('build.duplicate-order');
+  });
+
+  it('does not block re-ordering the same tile and edge once the standing order is cancelled', () => {
+    const runtime = createNewSimulationRuntime(0x514);
+    placeWall(runtime, 0, OWNED_TILE);
+    expect(runtime.refusals.last).toBeUndefined();
+
+    submit(runtime, 1, packCommand({ type: 'CancelBuildOrder', orderId: 'order-0' }));
+    expect(runtime.construction.getOrder('order-0')?.state).toBe('cancelled');
+
+    placeWall(runtime, 2, OWNED_TILE);
+
+    expect(runtime.refusals.last, 'a cancelled order gives the tile back -- ordinary play, not a duplicate press').toBeUndefined();
+    expect(runtime.construction.getOrder('order-2')?.state).not.toBe('failed');
+  });
+
+  it('does not treat the opposite edge of the same tile as a duplicate', () => {
+    const runtime = createNewSimulationRuntime(0x514);
+    submit(
+      runtime,
+      0,
+      packCommand({ type: 'PlaceBuildOrder', orderId: 'order-0', definitionId: 'wall-brick', x: OWNED_TILE.x, y: OWNED_TILE.y, edge: 'north' }),
+    );
+    submit(
+      runtime,
+      1,
+      packCommand({ type: 'PlaceBuildOrder', orderId: 'order-1', definitionId: 'wall-brick', x: OWNED_TILE.x, y: OWNED_TILE.y, edge: 'west' }),
+    );
+
+    expect(runtime.refusals.last, 'the north face and the west face of one tile are two different walls').toBeUndefined();
+    expect(runtime.construction.getOrder('order-0')?.state).not.toBe('failed');
+    expect(runtime.construction.getOrder('order-1')?.state).not.toBe('failed');
+  });
+
+  it('does not treat the same edge spelling at a genuinely different tile as a duplicate', () => {
+    // `BuildEdge` names only `'north'` and `'west'` -- the two slots
+    // `SparseWorld` actually stores (`build-order.ts`). North of (x, y) and
+    // north of (x + 1, y) share a spelling and are not the same wall, so this
+    // is the case the obvious "same tile and edge" definition has to get
+    // right without help from a third field.
+    const runtime = createNewSimulationRuntime(0x514);
+    submit(
+      runtime,
+      0,
+      packCommand({ type: 'PlaceBuildOrder', orderId: 'order-0', definitionId: 'wall-brick', x: OWNED_TILE.x, y: OWNED_TILE.y, edge: 'north' }),
+    );
+    submit(
+      runtime,
+      1,
+      packCommand({
+        type: 'PlaceBuildOrder',
+        orderId: 'order-1',
+        definitionId: 'wall-brick',
+        x: OWNED_TILE.x + 1,
+        y: OWNED_TILE.y,
+        edge: 'north',
+      }),
+    );
+
+    expect(runtime.refusals.last).toBeUndefined();
+    expect(runtime.construction.getOrder('order-1')?.state).not.toBe('failed');
+  });
+
+  it("names no 'east' or 'south' edge, so a caller cannot address one physical edge two different ways from its two neighbouring tiles", () => {
+    // The concern the issue names directly: a wall at `(x, west)` and a wall
+    // ordered as `(x - 1, east)` could be the same physical edge stored
+    // twice under different keys, which would make this duplicate check miss
+    // it. `BuildEdge` has no `'east'` or `'south'` member at all --
+    // `build-order.ts`'s own comment says a caller "thinking in those terms
+    // addresses the neighbouring tile instead" -- so there is exactly one
+    // way to name any given wall, and the risk this test rules out cannot
+    // arise through this type.
+    expect([...BUILD_EDGES]).toEqual(['north', 'west']);
+    expect(isBuildEdge('east')).toBe(false);
+    expect(isBuildEdge('south')).toBe(false);
+  });
+
+  it('refuses a repeat order for a tile edge a previous order already finished building, rather than silently rebuilding it', () => {
+    const runtime = createNewSimulationRuntime(0x514);
+    runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID).deposit('item.brick', 2);
+    placeWall(runtime, 0, OWNED_TILE);
+    for (let i = 0; i < 200; i += 1) runtime.kernel.step();
+    expect(runtime.construction.getOrder('order-0')?.state, 'the wall really finished').toBe('completed');
+
+    placeWall(runtime, 1, OWNED_TILE);
+
+    expect(runtime.refusals.last?.reason, 'an already-built edge is refused the same way a still-queued one is').toBe(
+      'build.duplicate-order',
+    );
+    expect(runtime.construction.getOrder('order-1')).toEqual(
+      expect.objectContaining({ state: 'failed', failReason: 'duplicate-order' }),
+    );
+  });
+});
+
+/**
+ * Issue #514's other question: were the materials of a redundant order
+ * refunded when it found the tile already walled?
+ *
+ * Answer, established here rather than guessed from the HUD (no
+ * material-stock readout is surfaced in any panel): **no.**
+ * `ConstructionSystem` has exactly one path that returns spent materials --
+ * `cancelOrder`, through `materialsProvider.release` (`system.ts`) -- and
+ * `finalizeConstruction` (`system.ts`), which is what runs when an order
+ * reaches `completed`, never calls it. A duplicate order that was approved
+ * and left to run its course would have spent its materials exactly as a
+ * legitimate order does, permanently, with nothing to give them back. That is
+ * why the fix above stops the second press from ever being *approved* rather
+ * than letting it run and reconciling the container afterwards -- there is no
+ * "afterwards" mechanism to reconcile with, and #514 is therefore an economic
+ * leak this session's own container proves, not queue hygiene.
+ */
+describe('issue #514: the material cost a duplicate order would have leaked, and why prevention is the only fix', () => {
+  it('a completed order never gives its materials back on its own -- only an explicit cancellation does', () => {
+    // The general fact the refund answer rests on, restated at this file's
+    // own level: two ordinary, non-duplicate orders (different tiles) both
+    // consume their own materials on completion, and nothing hands any of it
+    // back merely because the order finished. `cancelOrder` is the only
+    // route that does (`tests/unit/operations-construction-integration.test.ts`
+    // exercises that route directly); nothing here calls it.
+    const runtime = createNewSimulationRuntime(0x514);
+    const site = runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID);
+    site.deposit('item.brick', 4); // exactly enough for two genuinely separate walls, no more
+
+    submit(
+      runtime,
+      0,
+      packCommand({ type: 'PlaceBuildOrder', orderId: 'order-0', definitionId: 'wall-brick', x: OWNED_TILE.x, y: OWNED_TILE.y }),
+    );
+    submit(
+      runtime,
+      1,
+      packCommand({
+        type: 'PlaceBuildOrder',
+        orderId: 'order-1',
+        definitionId: 'wall-brick',
+        x: OWNED_TILE.x + 1,
+        y: OWNED_TILE.y,
+      }),
+    );
+    for (let i = 0; i < 200; i += 1) runtime.kernel.step();
+
+    expect(runtime.construction.getOrder('order-0')?.state).toBe('completed');
+    expect(runtime.construction.getOrder('order-1')?.state).toBe('completed');
+    expect(site.quantityOf('item.brick'), 'both walls really cost their own materials, permanently').toBe(0);
+  });
+
+  it('eight presses at the same target now cost one wall, not eight -- the leak is closed by refusing the press, not by refunding it later', () => {
+    const runtime = createNewSimulationRuntime(0x514);
+    const site = runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID);
+    site.deposit('item.brick', 16); // enough for eight walls, if all eight had wrongly been approved
+
+    for (let sequence = 0; sequence < 8; sequence += 1) placeWall(runtime, sequence, OWNED_TILE);
+    for (let i = 0; i < 200; i += 1) runtime.kernel.step();
+
+    expect(runtime.construction.getOrder('order-0')?.state).toBe('completed');
+    for (let sequence = 1; sequence < 8; sequence += 1) {
+      expect(runtime.construction.getOrder(`order-${String(sequence)}`)?.state, `order-${String(sequence)}`).toBe('failed');
+    }
+    expect(site.quantityOf('item.brick'), 'only the one wall that could ever exist was ever paid for').toBe(14);
   });
 });

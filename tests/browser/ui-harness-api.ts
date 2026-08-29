@@ -610,6 +610,12 @@ export interface RoomsProbe {
   readonly confirmText: string;
   readonly confirmDisabled: boolean;
   /**
+   * What each id in Confirm's `aria-describedby` resolves to, in order:
+   * `'note'`, `'refusal'`, `'other'`, or `'dangling'` for an id that names no
+   * element. Resolved in the page because the ids are generated.
+   */
+  readonly confirmDescribedBy: readonly string[];
+  /**
    * What the four coordinate fields hold, as the strings the inputs carry:
    * tile X, tile Y, width, height.
    *
@@ -720,7 +726,7 @@ export interface RefusalProbe {
   readonly height: number;
   /** `title` of every control the HUD has marked as having failed. */
   readonly failedControls: readonly string[];
-  /** True when every marked control's `aria-describedby` is the refusal line's id. */
+  /** True when every marked control's `aria-describedby` *contains* the refusal line's id. */
   readonly describedByRefusal: boolean;
   /** The line's `role` and `aria-live`, so "a live region says it" is asserted and not assumed. */
   readonly role: string | null;

@@ -57,7 +57,20 @@ anchor the same way, and the index agrees again: twenty-two rows opening
 `Proposed`. A count that has been zero, nine, thirteen, seventeen, twenty-one
 and twenty-two across forty-nine releases is the argument against writing it
 here at all, and it is written only because each restatement is dated and
-derived.
+derived. **Twenty-two is twenty-two at this anchor**, seven releases later
+again — the first reading in this sequence at which the number does not
+move at all, because no commit in the window added an ADR: the six merged
+pull requests (#511, #512, #513, #515, #518, #519) are re-measurements,
+corrections and refusals-added-to-existing-systems, and not one drafts a new
+decision. So the ratio holds too, at **two of twenty-two** (0056 and 0059,
+unchanged since `07add3e`), and the abandonment streak neither grows nor
+breaks — it simply has nothing new to be measured against this time.
+Re-counted on disk the same way (the first non-blank line under each
+document's own status statement, `## Status` heading or `- Status:` bullet
+alike — 0064 and 0067 use the bullet form and a scan that only reads headings
+undercounts by two, caught before it was reported), and the index agrees:
+still twenty-two rows opening `Proposed`, **Next free number: 0069**,
+unmoved.
 
 **This sentence and the title above it were both false, and this is the second
 time this file's title has rotted the same way.** They read *"One decision is
@@ -129,23 +142,49 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `33510df` (**v0.0.170**) by the delta method this
-header describes, from `01974e5` (v0.0.163). **This is the first re-anchor
-dispatched deliberately with the gate green and headroom to spare** — seven of
-the ten releases the budget allows — rather than in response to a fail or
+Re-anchored at `main` @ `4ace2da` (**v0.0.177**) by the delta method this
+header describes, from `33510df` (v0.0.170). **This is the second consecutive
+re-anchor dispatched deliberately with the gate green and headroom to
+spare** — seven of the ten releases the budget allows, the identical margin
+the previous anchor was dispatched at — rather than in response to a fail or
 right at the bound; the previous anchor's own recommendation was a scheduled
 read rather than a warning band, and this pass is that recommendation taken a
-second time. `33510df` is `origin/main`'s tip at the time of writing and is
-itself the **v0.0.170 release commit** — named deliberately rather than the
+third time. `4ace2da` is `origin/main`'s tip at the time of writing and is
+itself the **v0.0.177 release commit** — named deliberately rather than the
 merge commit beneath it, for the reason every previous anchor gives: this
-release commit is cut *after* the last merge in the window (#509, `795ba81`),
+release commit is cut *after* the last merge in the window (#519, `f43e98b`),
 contains every sentence below, and is the exact tree every citation here was
-re-derived from. One commit in the window, `15a8df6` (#501), is the previous
-anchor's own re-anchoring pass — it wrote the paragraph this one now
-supersedes and is not separately re-read as new drift, because its content
-*is* the previous anchor's account, already kept below.
+re-derived from. **Two release bumps for one merge, recorded because a reader
+will find it in `git log` and wonder**: `v0.0.176` (`6ae2cb6`) and `v0.0.177`
+(`4ace2da`) are consecutive commits with no merge between them, both
+immediately after #519 on `git log --first-parent`. The version workflow ran
+twice for one merge rather than once; this header already treats a release
+bump as a commit that "starts no CI run" and is not guaranteed 1:1 with a
+merge, so the release count below is read from the tag on the tip rather than
+from counting bump commits, and is unaffected either way. One commit in the
+window, `d61df4e` (#510), is the previous anchor's own re-anchoring pass — it
+wrote the paragraph this one now supersedes and is not separately re-read as
+new drift, because its content *is* the previous anchor's account, already
+kept below.
 
 **The previous anchor's account, kept.** It read: *"Re-anchored at `main` @
+`33510df` (**v0.0.170**) by the delta method this header describes, from
+`01974e5` (v0.0.163). This is the first re-anchor dispatched deliberately with
+the gate green and headroom to spare — seven of the ten releases the budget
+allows — rather than in response to a fail or right at the bound; the
+previous anchor's own recommendation was a scheduled read rather than a
+warning band, and this pass is that recommendation taken a second time.
+`33510df` is `origin/main`'s tip at the time of writing and is itself the
+v0.0.170 release commit — named deliberately rather than the merge commit
+beneath it, for the reason every previous anchor gives: this release commit
+is cut after the last merge in the window (#509, `795ba81`), contains every
+sentence below, and is the exact tree every citation here was re-derived
+from. One commit in the window, `15a8df6` (#501), is the previous anchor's
+own re-anchoring pass — it wrote the paragraph this one now supersedes and is
+not separately re-read as new drift, because its content is the previous
+anchor's account, already kept below."*
+
+**The anchor before that one, kept.** It read: *"Re-anchored at `main` @
 `01974e5` (**v0.0.163**) by the delta method this header describes, from
 `07add3e` (v0.0.152). This is the first re-anchor the gate itself refused to
 pass: eleven releases since the previous anchor against a budget of ten,
@@ -854,6 +893,97 @@ at `:5` is untouched; and `docs/research/README.md` gained one table row,
 which the *"deliberately left"* bullet's citation does not depend on the
 contents of.
 
+**The four-place queue sweep for this anchor, run again and finding nothing to
+find** — the first window in the series with nothing filed at all, not merely
+nothing filed with a row. §2 gained **zero** entries in the seven releases to
+`4ace2da`, and for the first time that is not because a `Proposed` ADR arrived
+without one: **no commit in the window adds a `Proposed` ADR**, so the rule
+this section states — "any commit that adds an outstanding ADR adds an entry
+here" — had nothing to be obeyed or abandoned against. The heading, the title,
+the header paragraph and §5's preamble all still read "five" / name the same
+five entries, in agreement, for the **fifth** consecutive anchor now — three
+of those five anchors (`07add3e`, `01974e5`, this one) have found the four
+places already agreeing, which is the longest run of agreement this file has
+recorded. **Both halves of the question this task was asked to check, stated
+separately because a quiet mechanism is not the same finding as a quiet
+window:** the four-place split itself has not recurred in three anchors
+running, and the abandonment rate is unmeasurable this window rather than
+holding or improving, because there was no arrival to abandon a row for. The
+streak resumes the moment the next `Proposed` ADR lands with no row, and
+nothing here predicts which way that goes.
+
+**The delta note for this anchor, `33510df..4ace2da`, stated so a reader can
+re-run it.** The diff is `git diff --name-only v0.0.170..origin/main`,
+**28 files**, across seven releases (`v0.0.170` at the base is excluded, as
+every anchor's convention states) carrying **six** merged pull requests: #511,
+#512, #513, #515, #518 and #519, read off
+`git log --oneline --first-parent v0.0.170..origin/main` (excluding the seven
+release-bump commits and `d61df4e`/#510, the previous anchor's own writing
+commit, already accounted for above — that commit touches
+`docs/adr/STATUS-QUEUE.md` alone, confirmed by `git show --stat`, so it is
+correctly the only file in the raw diff this note does not treat as this
+window's content). Intersected with the set as it stood *before* this commit
+extended it — and nothing needs to extend it, see below — it is **five**:
+`package.json` is not among them, by the same convention as every anchor
+before this one, and `docs/adr/STATUS-QUEUE.md` is not a member of its own
+set, also by convention — but `docs/CLOUD_SAVE.md`,
+`docs/adr/0022-room-zoning-surface.md`,
+`docs/adr/0044-what-happens-to-a-service-tier-nothing-calls.md`,
+`docs/adr/README.md` and `src/simulation/protocol/types.ts` are. **No file
+under `supabase/migrations/` changed** — the directory still holds
+twenty-three, so §3's table needed no re-derivation. **No new ADR joins the
+set**, because none was added — the first window since this convention began
+at which that sentence is simply true rather than "zero this time, still
+watching." Five files read.
+
+**Twenty-three of the twenty-eight changed files are outside the set and
+outside it correctly** — checked by reading every one of the six PRs' subjects
+and touched files against every citation in §§3-6 rather than assumed, and
+nothing found: the pointer-gesture recovery (#519) and the run-length-codec
+fold (#518, which also corrected `docs/PERSISTENCE.md` and two line citations
+inside ADR 0022 and ADR 0040's own bodies — neither line is one this file
+cites) touch rendering, presentation and persistence-doc surfaces §§3-6 make
+no claim about; the tick-cost re-measurement (#513, which left
+`scripts/report-tick-system-cost.mjs` behind) and the duplicate-build-order
+refusal (#515, which also found `ObjectPlacementService.remove` never
+cancelling its finished construction order) touch construction and economy
+surfaces this file is likewise silent on.
+
+**What the five cost: nothing, and every one of the five was opened rather
+than assumed.** `src/simulation/protocol/types.ts` gained 28 lines from #515's
+new `build.duplicate-order` reason, all of it inside and below the
+`REFUSAL_REASONS` doc comment starting at line 803 — below every anchor this
+file cites (`:12`, `:23`, `:173`, `:223`, `:442`), and `grep -c
+"protocol/handshake"` still returns **nine**, still split 4/2/3, confirmed by
+re-running it rather than trusting the arithmetic. `docs/adr/README.md`'s own
+edit (#511) corrected its "every ADR is Accepted" prose but touched no line
+this file cites by number — all of this file's own citations into it are
+either historical (already retired to quotation) or the Proposed-count/Next-
+free-number reading already re-derived above, which is unchanged at
+twenty-two rows and `0069`. `docs/adr/0022-room-zoning-surface.md` and
+`docs/adr/0044-what-happens-to-a-service-tier-nothing-calls.md` were each
+corrected by #518 and #512 respectively, in their own bodies, at lines
+neither of this file's own citations names (this file cites ADR 0022's
+*"÷ 12.2 is 23.9"* line, re-verified still at `:588`, and ADR 0044's title
+only, by name). `docs/CLOUD_SAVE.md` gained nine lines from #512's account-
+reducer correction, at `:201-218`, above the capacity table this file quotes
+rather than lines (`:1659-1661`, moved by the insertion and re-verified,
+quoted here rather than numbered for exactly the reason §6's recommendation 1
+gives).
+
+**What no diff could have found, and this pass's one real correction.** §6's
+`income.ts` bullet had been contradicting itself for at least two anchors: the
+paragraph correctly stating "nine readings… across seven anchors… twenty-two"
+was immediately followed, unheaded, by the leftover tail of an already-
+superseded **six-reading, "it is thirteen"** paragraph — a duplicate of the
+same title/§2 defect this file's own header records finding twice before, in
+the one bullet a delta pass is least likely to open because none of its five
+changed files touches it. Found and corrected in place below, in §6, by the
+check the header prescribes for exactly this class: reading the file's own
+paragraphs against each other. Recorded here because the sweep that found it
+is not the four-place sweep above it, and conflating the two would understate
+how many independent checks this anchor actually ran.
+
 **The four-place queue sweep for the `01974e5` anchor, kept as a record.** It
 found nothing that window — not because the mechanism improved, but because
 nothing was filed to drift. §2 gained **zero** entries in that window: all four
@@ -868,8 +998,9 @@ recur, because there was no third filing for it to lag behind. The abandonment
 continued at a higher rate than ever — four more in that window, none obeying
 the rule — while the drift this file specifically watches for stayed dormant.
 
-**The delta note for this anchor, `01974e5..33510df`, stated so a reader can
-re-run it.** The diff is `git diff --name-only 01974e5..origin/main`,
+**The previous anchor's delta note, kept as a record.** The diff was
+`git diff --name-only 01974e5..origin/main` (`origin/main` there meaning
+`33510df`, the previous anchor's own tip),
 **61 files**, across seven releases carrying **six** merged pull requests:
 #498, #502, #504, #505, #508 and #509, read off
 `git log --oneline --first-parent 01974e5..origin/main` (excluding the release
@@ -938,10 +1069,11 @@ reading the heading above the hit — the exact discipline this task's own
 brief named as the trap and the reason to name it here rather than silently
 fix it.
 
-**The four-place queue sweep for this anchor, run again and finding nothing
-new — not because the mechanism improved, but because nothing was filed to
-drift.** §2 gained **zero** entries in this window: the one Proposed ADR that
-landed (0068) is, like nineteen before it, a decision with no queue row. So
+**The four-place queue sweep for the `33510df` anchor, kept as a record.** It
+found nothing new that window either — not because the mechanism improved,
+but because nothing was filed to drift. §2 gained **zero** entries in that
+window: the one Proposed ADR that landed (0068) is, like nineteen before it,
+a decision with no queue row. So
 the heading, the title, the header paragraph and §5's preamble all still read
 "five" / name the same five entries, in agreement, for the fourth consecutive
 anchor now. The abandonment continues — one more decision with no row, seven
@@ -1777,7 +1909,7 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `33510df`, unchanged since the previous anchor,
+absences were re-verified at `4ace2da`, unchanged since the previous anchor,
 the one before it, and the one before that — the directory has not moved
 across any of those windows — by grepping the
 whole `supabase/migrations/` tree for a total-bytes, retention or pruning
@@ -1943,7 +2075,7 @@ is recommendation 1 at the foot of §6 producing a measurable result rather than
 being restated: **three of the four citations into the fastest-moving document
 in the set survived an edit that moved every line of them.**
 
-The half of the decision that *is* in this repository stays verified at `33510df`:
+The half of the decision that *is* in this repository stays verified at `4ace2da`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` (`:34`) with no
 `push:`, requires a typed `confirm_project_ref` (`:41`), and its apply job is
 environment-gated (`:65`) — all three re-read at this anchor and all three still
@@ -3349,27 +3481,35 @@ never recorded before this round:
   `income.ts` is untouched in this window — not among the sixty-one files the
   diff reports — so this reading is on the same tree as the previous one, and
   it still carries no count, re-verified by grep rather than assumed.
-  it is thirteen.** 0053, 0054, 0056 and 0057 joined the nine, derived the same
-  way. **So the count has now been nine, one, one, none, nine and thirteen —
-  six readings of one sentence in one file** — and the fifth and sixth were
-  eleven releases apart. Each restatement was correct on the day it was made,
-  which is precisely the argument: *a count of documents in a status is
-  something the index already computes, so prose should not restate it*, and
-  this bullet is now its own six-item proof. The live consequence in §5's first
-  bullet has moved with it: thirteen outstanding decisions, **one** §2 row. The two line citations that
-  came with it — `docs/adr/README.md:100` as "the single `Proposed` row" and
-  `0031-build-queue-cancellation-surface.md:5` as its status line — are stale for
-  the same reason and are dropped rather than re-pointed. **That is the same
-  sentence rotting three times inside one file**, which is the argument for the
-  rule §6 closes with: a count of documents in a status is something the index
-  already computes, so prose should not restate it. Re-read at this commit: `income.ts` carries no count at
-  all, which is why the correction itself did not go stale with the number — the
-  argument for keeping the rate on issue #29 never depended on the count, so the
-  count is gone from it, and that is the durable half. The stale sentence was
-  this file's own parenthetical naming which ADR the count was, which is a
-  reminder that §6 is a record and a record has to be re-read too. **The other half of this entry was already fixed before this change**: the
-  *"ADR 0023 open, ADR 0028 proposed"* parenthesis is no longer in the file,
-  which ADR 0028's phase 1 rewrote along with the measurement around it.
+
+  **Found at this anchor (`4ace2da`), and it is the same class of defect as
+  the title/§2 split recorded near the top of this file: this bullet had been
+  contradicting itself, not diffably, since at least `01974e5`.** Immediately
+  after the "ninth time… twenty-two" paragraph above, the text continued,
+  unheaded, as the tail of a **sixth-time** reading it had already
+  superseded: *"it is thirteen[…] So the count has now been nine, one, one,
+  none, nine and thirteen — six readings of one sentence in one file[…]
+  thirteen outstanding decisions, **one** §2 row."* Three later insertions —
+  seventeen (`07add3e`), twenty-one (`01974e5`), twenty-two (`33510df`) — had
+  each prepended a new paragraph above it without removing the one each
+  superseded, so the bullet stated two different reading-counts (six and
+  nine) and two different tallies (thirteen and twenty-two) for the same
+  sentence in the same breath. Found by the check this file's own header
+  prescribes — reading its paragraphs against each other, which no diff of
+  any window would have raised, because no line in the superseded tail had
+  changed since it was written. **Corrected by removing the superseded tail
+  rather than by prepending a tenth paragraph**, since the count it restated
+  is already given, correctly, above.
+
+  One fact in the removed tail is not recorded anywhere else in this file and
+  is kept: ADR 0031's acceptance (§1, `e560656`) dropped two stale line
+  citations this entry had carried — `docs/adr/README.md:100` as "the single
+  `Proposed` row" and `0031-build-queue-cancellation-surface.md:5` as its
+  status line — rather than re-pointing them, because both sentences they had
+  supported were gone by then. **The other half of this entry was already
+  fixed before this change**: the *"ADR 0023 open, ADR 0028 proposed"*
+  parenthesis is no longer in the file, which ADR 0028's phase 1 rewrote along
+  with the measurement around it.
 - `src/simulation/rooms/zoning.ts` — ADR 0012 *"is still `Proposed`"*, plus
   *"ADR 0012 has to be settled first"* in the move-or-resize clause. 0012 is
   Accepted, so what a future resize would force is its **taxonomy being applied
