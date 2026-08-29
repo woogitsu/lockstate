@@ -809,8 +809,14 @@ export class ActionSystem implements SystemRegistration {
     if (action.target.kind !== 'room-catalog-id') return true;
     // The same capability `resolveTargetInstance` selected against, handed over
     // rather than re-derived, so the seat claimed here is the seat the room was
-    // asked for (issue #326). An action naming none claims an unbounded place:
-    // `room.yard` requires no object and so has nothing to run out of.
+    // asked for (issue #326). An action naming none claims a place bounded by
+    // the room's own ground instead of by an object -- see
+    // `RoomInstanceRegistry.concurrentUseCapacityFor` case 1. **This comment
+    // read "claims an unbounded place: `room.yard` requires no object and so
+    // has nothing to run out of" until #532**, which was true of the rule and
+    // false about the prison: the yard was the one room that admitted every
+    // prisoner at once however small it was, and `action.common-room-recreation`
+    // had no state it could win as a result.
     return this.roomInstances.claimUse(instanceId, entityId, action.requiredObjectCapability);
   }
 

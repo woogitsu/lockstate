@@ -50,7 +50,35 @@ const ARRIVAL = { x: 16, y: 16 } as const;
 const ADMISSION = { sentenceLengthTicks: 400_000, priorIncidents: 0 } as const;
 
 const SHOWER = { x: 26, y: 1, width: 3, height: 3 } as const;
-const YARD = { x: 20, y: 20, width: 8, height: 8 } as const;
+/**
+ * **16x8 rather than `room.yard`'s 8x8 authored minimum, and the extra eight
+ * columns are this file's subject rather than a change to it.**
+ *
+ * `SERVED` is *"the same prison with the two rooms ADR 0054 decision 1 rules
+ * `hygiene` and `recreation` gated behind"*, and every assertion below reads
+ * from a prison that genuinely serves both needs to all eight prisoners. Since
+ * issue #532 a yard is bounded by its own ground -- `floor(tiles /
+ * TILES_PER_OPEN_GROUND_PLACE)`, 16 tiles a place -- so the 8x8 minimum admits
+ * **4** and eight prisoners no longer all get outside. Measured on this
+ * prison with the 8x8 left as it was: three of the ten days paid 2,360 instead
+ * of 2,400, one prisoner below `STATE_INCOME_UNMET_NEED_LEVEL` on recreation,
+ * and `served - neglected` fell from 3,200 to 3,080.
+ *
+ * That is the new rule working, not this file breaking: a minimum yard is
+ * undersized for eight. Taking the measured numbers as the new expectation
+ * would have quietly renamed this suite -- *"a prison that serves every need"*
+ * would have described a prison that does not -- so the fixture is corrected
+ * to still be the prison its name claims. 128 tiles is 8 places, one per
+ * prisoner, and it costs the player nothing but ground they already own,
+ * which is the remedy the rule is designed to leave open.
+ * `tests/integration/yard-and-common-room.test.ts` asserts the crowded case
+ * deliberately, on a prison built to have it.
+ *
+ * It is anchored at x 12 rather than at the 8x8's x 20 for a reason unrelated
+ * to any of the above: 20 + 16 leaves the parcel this prison owns, and every
+ * command here is asserted accepted.
+ */
+const YARD = { x: 12, y: 20, width: 16, height: 8 } as const;
 const SECTOR = 'security-sector.prison';
 
 /**
@@ -265,7 +293,9 @@ describe('a prison that serves every need is paid exactly what it was paid befor
 
     // The incentive, stated as the number a player would weigh a build order
     // against. `room.yard` needs no object at all, so half of this is the
-    // return on zoning 8x8 of ground the prison already owns.
+    // return on zoning 16x8 of ground the prison already owns -- see the
+    // `YARD` comment for why the rectangle is twice the authored minimum and
+    // what it costs (nothing) to make it so.
     expect(served - neglected).toBe(3_200);
   });
 });

@@ -17,17 +17,24 @@ export interface ActionDefinition {
    * ceiling the room admits this action against**: the summed footprint width
    * of the objects in the room carrying this capability, and nothing else's.
    *
-   * **Absent means any instance of the target room type qualifies, and no
-   * object-derived ceiling applies** -- a stronger statement than it used to
-   * be, so a `room-catalog-id` action leaves this out only when the room really
-   * is unbounded by furniture. `room.yard` is the one such room in
-   * `src/content/room-catalog.ts`: it requires no object at all, and the
-   * previous rule read that as a ceiling of zero and admitted nobody to 64
-   * tiles of open ground. `action.common-room-recreation` and
-   * `action.classroom-education` had this absent for the same reason and were
-   * not unbounded at all -- `room.common-room` requires two benches and
-   * `room.classroom` a bookshelf and four chairs -- so they now name the
-   * capability those objects already carried.
+   * **Absent means any instance of the target room type qualifies, and the
+   * ceiling comes from the room's own ground rather than from its objects** --
+   * so a `room-catalog-id` action leaves this out only when the room really is
+   * bounded by space and not by furniture. `room.yard` is the one such room in
+   * `src/content/room-catalog.ts`: it requires no object at all.
+   * `action.common-room-recreation` and `action.classroom-education` had this
+   * absent too and were not such rooms -- `room.common-room` requires two
+   * benches and `room.classroom` a bookshelf and four chairs -- so they now
+   * name the capability those objects already carried.
+   *
+   * **Both previous readings of "absent" are kept rather than overwritten**,
+   * because each was right about what it denied. Before issue #326 the
+   * object-footprint rule applied to an objectless room and read as a ceiling
+   * of **zero**, admitting nobody to 64 tiles of open ground. #326 replaced
+   * that with **no ceiling at all**, and this docblock said so: *"no
+   * object-derived ceiling applies ... the room really is unbounded by
+   * furniture."* Still true of objects, and issue #532 measured what it meant
+   * for people -- see `RoomInstanceRegistry.concurrentUseCapacityFor`.
    */
   readonly requiredObjectCapability?: string;
   readonly minDurationTicks: number;
