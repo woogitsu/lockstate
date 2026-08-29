@@ -56,6 +56,39 @@ import { defaultMessageCatalogEn } from '../../src/services/localization';
  * chunk URL that does not resolve to the worker chunk -- invisible to every
  * other check in this repository. The `content-type` assertion in the first
  * test is aimed at exactly that.
+ *
+ * THIS GATE HAS BEEN MUTATED FROM THE ARTEFACT SIDE, which is the only side
+ * that proves anything about it: a gate nothing can make fail is not a gate,
+ * and mutating the *spec* would only prove the spec runs. Both mutations were
+ * applied to the emitted `dist/assets/index-<hash>.js` by hand, run, and
+ * reversed by hand back to a byte-identical file (`md5sum -c`: OK).
+ *
+ *   1. The worker chunk URL rewritten to a hash the build does not contain
+ *      (`/assets/worker-DEADBEEF.js`). RED in 1.4 s, on the `content-type`
+ *      assertion and not on a timeout:
+ *
+ *        Error: /assets/worker-DEADBEEF.js was served as
+ *        "text/html; charset=utf-8" rather than JavaScript.
+ *
+ *      -- the SPA fallback answering HTTP 200 with the index body, exactly as
+ *      the comment on that assertion describes. Unmutated, and with the chunk
+ *      absent, the second test also fails, on "The built client created no
+ *      save slot", which is why the media-type check is ordered first.
+ *
+ *   2. The worker chunk URL rewritten to the dev server's bare module shape
+ *      (`/src/simulation/worker/worker.ts?worker_file&type=module`). RED in
+ *      2.6 s on the fingerprint assertion below, with the message this file
+ *      writes for it.
+ *
+ *   Restored: `2 passed (17.6s)`.
+ *
+ * Mutation 2 is worth naming precisely, because that exact string arrived as a
+ * CI failure on this file (run 33271621137) without any artefact being
+ * involved: `tests/browser/playwright.config.ts` was collecting this spec into
+ * the **dev-server** suite. The assertion was right and the subject was wrong.
+ * That config now excludes this file, and
+ * `tests/foundation/browser-suite-partition-contract.test.ts` fails if either
+ * config stops complementing the other.
  */
 
 function localeText(key: string): string {
