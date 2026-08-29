@@ -138,15 +138,18 @@ export interface RoomDerivedCapacity {
  * How many tiles of open ground one prisoner needs to use a room that supplies
  * no object for them to use.
  *
- * **A proposal for the owner's review**, in the standing sense the
- * repository's other directional constants carry
+ * [ADR 0071](../../../docs/adr/0071-what-bounds-a-room-whose-activity-consumes-no-object.md),
+ * which is where the reasoning lives; this comment is the arithmetic.
+ *
+ * **Data rather than architecture** (ADR 0017 decision 5), and it carries the
+ * standing flag the repository's other directional constants carry
  * (`src/simulation/prisoners/sentence.ts`'s bounds,
  * `src/simulation/contraband/intelligence.ts`'s decay,
- * `src/simulation/world/tile-ownership.ts`'s rule). Issue #532's *mechanism*
- * -- that an objectless room is bounded by its ground rather than by nothing
- * -- is what the owner decided; this integer is the balance figure that
- * follows from it, and it is the one number in this change that could be
- * different without the change being wrong.
+ * `src/simulation/world/tile-ownership.ts`'s rule): **taken on the measurement
+ * below and open to re-measurement, not settled for ever.** Issue #532's
+ * *mechanism* -- that an objectless room is bounded by its ground rather than
+ * by nothing -- is what the owner decided, and a different integer changes how
+ * much rather than whether.
  *
  * ## Where 16 comes from
  *
@@ -167,6 +170,13 @@ export interface RoomDerivedCapacity {
  * ground rather than people at a piece of furniture, and the one room whose
  * capacity the player can extend for nothing. A number inside that range would
  * make the free room the densest as well as the cheapest.
+ *
+ * Measured at 8 instead of 16: a minimum yard admits 8, all six prisoners of
+ * the reference prison fit, and `action.common-room-recreation` falls back to
+ * the 96 ticks it had before this change -- so 8 does not deliver the decision
+ * at that prison size, which is the evidence the figure rests on rather than a
+ * preference. `tests/integration/yard-and-common-room.test.ts` is where that
+ * was measured.
  *
  * What it produces at the catalogue minimums is the figure the decision is
  * actually about: an 8x8 yard -- the smallest `RoomZoningService.zone` permits
@@ -416,7 +426,8 @@ export class RoomInstanceRegistry {
    *    win: it scores below `action.yard-recreation` at every non-zero
    *    deficit, and a yard that never fills never falls through to it.
    *    So the ceiling comes from the resource such a room actually has, which
-   *    is its floor: `floor(width * height / TILES_PER_OPEN_GROUND_PLACE)`.
+   *    is its floor: `floor(width * height / TILES_PER_OPEN_GROUND_PLACE)`
+   *    ([ADR 0071](../../../docs/adr/0071-what-bounds-a-room-whose-activity-consumes-no-object.md)).
    *    Still derived and still authored nowhere per room -- an 8x8 yard admits
    *    4 and a 16x16 yard admits 16, from the rectangle the player drew.
    *
