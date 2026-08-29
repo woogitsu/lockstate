@@ -462,9 +462,21 @@ const roomInstanceSchemaV4 = z
  * `width`/`height` are **optional**, and that is a decision rather than
  * caution: a V4 row genuinely does not record the rectangle and there is no
  * honest default -- `1x1` asserts a room the player did not zone, `64x64`
- * asserts one that overlaps its neighbours. An instance with no rectangle
- * contains no objects and therefore resolves to zero capacity, which is
- * precisely the pre-object-placement behaviour and so not a regression.
+ * asserts one that overlaps its neighbours.
+ *
+ * **What an absent rectangle then means at *restore* moved** (issue #559,
+ * [ADR 0074](../../docs/adr/0074-what-a-restored-room-that-recorded-no-rectangle-is.md)),
+ * and the sentence that stood here is marked rather than deleted: it read *"An
+ * instance with no rectangle contains no objects and therefore resolves to zero
+ * capacity, which is precisely the pre-object-placement behaviour and so not a
+ * regression."* True of *object-derived* capacity, and it stopped covering the
+ * case once #554 gave an objectless room a ceiling from its own ground -- an
+ * instance with no rectangle answered `Infinity` there, not zero.
+ * `restoreSessionSystems` now recovers the rectangle from the *world* section's
+ * zoning plane, which the same payload carries, so an absent rectangle in this
+ * row is no longer an absent rectangle in the restored session. This schema is
+ * untouched by that and `SAVE_SCHEMA_VERSION` does not move: nothing is written
+ * back, and the recovery is recomputed on every load.
  *
  * Bounded at `MAX_ZONE_DIMENSION_TILES` on both sides, which is the bound
  * `RoomZoningService.zone` refuses `invalid-area` above, so a hand-edited save
@@ -1162,8 +1174,12 @@ const savePayloadV4Schema = z
  * - **`width`/`height` fail the "absence is unambiguous" condition.** A V4 room
  *   instance genuinely does not record its rectangle and there is no honest
  *   default, so the field is optional *at V5* and absence keeps its own
- *   meaning: this room's rectangle was not recorded, so nothing can be
- *   attributed to it.
+ *   meaning: this **row's** rectangle was not recorded. Since #559 that is no
+ *   longer the same statement as "this room's rectangle is unknown" -- the
+ *   payload's world section carries the zoning plane the room was painted into,
+ *   and the restore reads the rectangle back off it (ADR 0074). The field stays
+ *   optional and this schema stays frozen; what changed is only what a restore
+ *   does with an absent one.
  * - **The removal of `capacity` crosses the line V4 itself crossed.** It was a
  *   *required* field, so dropping it changes the shape.
  *
