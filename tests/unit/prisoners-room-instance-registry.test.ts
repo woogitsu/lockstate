@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
-import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
+import { RoomInstanceRegistry, TILES_PER_OPEN_GROUND_PLACE } from '../../src/simulation/prisoners/room-instance-registry';
 
 const TILE = { x: tileCoordinate(0), y: tileCoordinate(0) };
 
@@ -231,13 +231,31 @@ describe('RoomInstanceRegistry', () => {
       expect(registry.totalUseClaims).toBe(0);
     });
 
-    it('gives an action that names no capability no object-derived ceiling, rather than a ceiling of zero', () => {
+    it('bounds an action that names no capability by the room\'s own ground, not by nothing and not by zero', () => {
       /*
-       * The yard, and the reason it is a derivation rather than an exemption.
-       * An action that names no capability consumes no object, so a rule that
-       * sums object footprints has no domain for it -- and an undefined ceiling
-       * means "this rule does not bound it", not "it bounds it at zero". Zero is
-       * what the old rule said about 64 tiles of empty ground.
+       * The yard, and the third answer this case has had.
+       *
+       * **Both previous directions are kept rather than overwritten**, because
+       * each was right about what it denied:
+       *
+       * 1. Before issue #326 the *object-footprint* rule applied to an
+       *    objectless room and read as a ceiling of **zero** -- 64 tiles of
+       *    empty ground that admitted nobody, while the same yard holding one
+       *    three-tile delivery door admitted three.
+       * 2. #326 replaced that with **no ceiling at all**, on the reading that
+       *    an undefined *object* ceiling means "this rule does not bound it".
+       *    True of that rule, and it is still true: nothing below consults an
+       *    object.
+       * 3. Issue #532 measured what "not bounded by that rule" turned into in
+       *    a running prison -- the only room in the game that admitted every
+       *    prisoner at once, for ever, however small it was -- and gave the
+       *    room the ceiling its own resource supports. A room whose activity
+       *    is people on open ground is bounded by how much ground there is.
+       *
+       * `TILES_PER_OPEN_GROUND_PLACE` is 16, so the 8x8 minimum yard below
+       * derives **4** -- and 4 is read off that constant and the rectangle
+       * rather than typed in, because a test that hard-codes the product of a
+       * balance figure it is also asserting would agree with any value of it.
        */
       const registry = new RoomInstanceRegistry();
       registry.register({
@@ -252,18 +270,107 @@ describe('RoomInstanceRegistry', () => {
         objectCapabilities: [],
       });
       const yard = registry.getById('yard-1')!;
+      const expectedPlaces = Math.floor((8 * 8) / TILES_PER_OPEN_GROUND_PLACE);
 
-      expect(registry.concurrentUseCapacityFor(yard, undefined)).toBe(Number.POSITIVE_INFINITY);
-      expect(registry.findAvailableForUse('room.yard')?.instanceId).toBe('yard-1');
-      for (let entity = 1; entity <= 64; entity += 1) expect(registry.claimUse('yard-1', entity as never)).toBe(true);
-      expect(registry.totalUseClaims).toBe(64);
-      expect(registry.findAvailableForUse('room.yard')?.instanceId).toBe('yard-1');
+      expect(expectedPlaces, 'a minimum yard must admit somebody, or this asserts the pre-#326 defect').toBeGreaterThan(0);
+      expect(registry.concurrentUseCapacityFor(yard, undefined)).toBe(expectedPlaces);
+      expect(registry.concurrentUseCapacityFor(yard, undefined)).not.toBe(Number.POSITIVE_INFINITY);
 
-      // **Unbounded is not the same as "anything goes".** The empty yard still
-      // admits nobody to anything a room needs an object for, so this is not a
-      // hole that a capability-naming action could fall through.
+      // Admits exactly that many and then refuses, which is the half that used
+      // to be unreachable: before this, the 65th prisoner got in too.
+      for (let entity = 1; entity <= expectedPlaces; entity += 1) {
+        expect(registry.findAvailableForUse('room.yard')?.instanceId, `place ${entity} must still be offered`).toBe('yard-1');
+        expect(registry.claimUse('yard-1', entity as never)).toBe(true);
+      }
+      expect(registry.totalUseClaims).toBe(expectedPlaces);
+      expect(registry.claimUse('yard-1', (expectedPlaces + 1) as never), 'a full yard refuses').toBe(false);
+      expect(registry.findAvailableForUse('room.yard'), 'and offers nothing').toBeUndefined();
+      expect(registry.totalUseClaims).toBe(expectedPlaces);
+
+      // Bigger ground, more places: the ceiling is the rectangle the player
+      // drew and not a per-room-type number, so enlarging the yard is the
+      // response to a full one.
+      registry.register({
+        instanceId: 'yard-2',
+        roomCatalogId: 'room.yard',
+        anchorTile: { x: tileCoordinate(96), y: TILE.y },
+        width: 16,
+        height: 16,
+        residentCapacity: 0,
+        concurrentUseCapacity: 0,
+        concurrentUseCapacityByCapability: [],
+        objectCapabilities: [],
+      });
+      expect(registry.concurrentUseCapacityFor(registry.getById('yard-2')!, undefined)).toBe(
+        Math.floor((16 * 16) / TILES_PER_OPEN_GROUND_PLACE),
+      );
+      expect(registry.concurrentUseCapacityFor(registry.getById('yard-2')!, undefined)).toBeGreaterThan(expectedPlaces);
+
+      // **Bounded is still not "the room supplies everything".** The empty
+      // yard admits nobody to anything a room needs an object for, so this is
+      // not a hole a capability-naming action could fall through -- #326's
+      // half, unchanged.
       expect(registry.findAvailableForUse('room.yard', 'recreation')).toBeUndefined();
       expect(registry.claimUse('yard-1', 500 as never, 'recreation')).toBe(false);
+    });
+
+    it('keeps the unbounded answer for an instance that records no rectangle, which is what a V4 save is', () => {
+      /*
+       * The rule reads `width * height`, and a save written before bounds were
+       * recorded carries neither. Inventing a rectangle would assert a room the
+       * player did not zone -- `roomBoundsOf` in
+       * `src/simulation/objects/room-capacity.ts` refuses to for that reason --
+       * so the honest answer is the one this case had before #532, and an
+       * upgraded save does not start refusing prisoners a yard they had.
+       */
+      const registry = new RoomInstanceRegistry();
+      registry.register({
+        instanceId: 'yard-v4',
+        roomCatalogId: 'room.yard',
+        anchorTile: TILE,
+        residentCapacity: 0,
+        concurrentUseCapacity: 0,
+        concurrentUseCapacityByCapability: [],
+        objectCapabilities: [],
+      });
+      const yard = registry.getById('yard-v4')!;
+
+      expect(yard.width).toBeUndefined();
+      expect(registry.concurrentUseCapacityFor(yard, undefined)).toBe(Number.POSITIVE_INFINITY);
+      for (let entity = 1; entity <= 64; entity += 1) expect(registry.claimUse('yard-v4', entity as never)).toBe(true);
+      expect(registry.totalUseClaims).toBe(64);
+    });
+
+    it('never derives zero for a room that has a rectangle, which is the defect #326 removed', () => {
+      /*
+       * The clamp, stated as the property rather than as a rounding note.
+       * `floor(6 / 16)` is 0, so a 2x3 cell -- the smallest room the catalogue
+       * permits -- would admit nobody without it, and "a room that exists and
+       * admits nobody" is precisely what an object-footprint ceiling on an
+       * objectless room used to produce. No legal `room.yard` reaches the
+       * clamp; every smaller room type does.
+       */
+      const registry = new RoomInstanceRegistry();
+      for (const [instanceId, width, height] of [['tiny-1', 1, 1], ['cell-1', 2, 3], ['laundry-1', 3, 3]] as const) {
+        registry.register({
+          instanceId,
+          roomCatalogId: 'room.cell',
+          anchorTile: { x: TILE.x, y: TILE.y },
+          width,
+          height,
+          residentCapacity: 0,
+          concurrentUseCapacity: 0,
+          concurrentUseCapacityByCapability: [],
+          objectCapabilities: [],
+        });
+        expect(width * height, 'this case is only interesting below one place').toBeLessThan(TILES_PER_OPEN_GROUND_PLACE);
+        expect(
+          registry.concurrentUseCapacityFor(registry.getById(instanceId)!, undefined),
+          `${instanceId} is ${width}x${height} and must still admit one`,
+        ).toBe(1);
+        expect(registry.claimUse(instanceId, 1 as never)).toBe(true);
+        expect(registry.claimUse(instanceId, 2 as never), 'and only one').toBe(false);
+      }
     });
 
     it('is idempotent for a claim already held against the same capability', () => {

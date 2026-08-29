@@ -410,6 +410,24 @@ export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
    * reason. `tests/integration/furnished-prison-loop.test.ts` measures both
    * numbers off the real command path.
    *
+   * **The kitchen's three appliances were, until #532, the other half of what
+   * the laundry paragraph above describes**: `'food-preparation'` (stove, prep
+   * counter) and `'food-storage'` (fridge) appeared in no `DEFAULT_ACTIONS`
+   * entry, so a player could finish this room, see every requirement read
+   * satisfied, and change no prisoner's behaviour. `action.kitchen-work` is
+   * `'food-preparation'`'s consumer (`src/simulation/prisoners/actions.ts`):
+   * a work action targeting `room.kitchen`, gaining `hunger` at 1 a tick
+   * against `action.eat-meal`'s 4, on the same 120-tick shift as
+   * `action.laundry-work` and `action.classroom-education`. Stove and prep
+   * counter are each 2 tiles wide, so `concurrentUse(kitchen,
+   * 'food-preparation')` at the room's catalogue minimum is **4** -- a
+   * furnished kitchen puts four prisoners to work, the same number a furnished
+   * laundry does, by the same arithmetic and with nothing authored.
+   * `'food-storage'` is **not** gated, deliberately: one action consumes one
+   * capability (#326), and a cold store is not a work station. Both directions
+   * are kept rather than overwritten, because the sentence this extends was
+   * correct when written and is still correct about the fridge.
+   *
    * Materials by the block's rule. Brick for the three kitchen appliances --
    * a fired stove body, a masonry prep counter, a machine fridge -- and plank
    * for the two pieces of timber furniture. Widths 2, 2, 1, 3 and 2, so

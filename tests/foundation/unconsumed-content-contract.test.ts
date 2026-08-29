@@ -107,7 +107,11 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   // refuses legal -- which is how that test proves the minimum comes from
   // content rather than from a constant the service holds.
   'room.garbage-room': 'Declared with no reader anywhere; no build order, job, need or regime action names it.',
-  'room.kitchen': 'Declared with no reader anywhere.',
+  // `room.kitchen` left this list at #532, and by the wide route rather than
+  // the narrow one: `action.kitchen-work` names it in
+  // `src/simulation/prisoners/actions.ts`, so both measures move. Its entry is
+  // removed rather than reworded, which is what the stale-entry gate below
+  // asks for. Its read was: *"Declared with no reader anywhere."*
   // `room.reception` and `room.security-office` left this list at #528, and
   // their entries are gone rather than reworded, which is what the stale-entry
   // gate below asks for. **Both directions, because the reason one of them gave
@@ -415,7 +419,12 @@ describe('every unconsumed content id is accounted for', () => {
       // reason. `unconsumedBySrcOnly` does not move: no `src/` file names either
       // room, because `requirementStatus` counts objects against whatever room
       // the instance says it is and writes no room id literal.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 6, unconsumedBySrcOnly: 30 });
+      //
+      // 5 and 29, from 6 and 30: #532 moves both by one for ADR 0054's exact
+      // reason one paragraph up. `action.kitchen-work` names `room.kitchen` in
+      // `src/simulation/prisoners/actions.ts`, so the second room a player
+      // could zone and furnish to no effect now puts prisoners to work.
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 5, unconsumedBySrcOnly: 29 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

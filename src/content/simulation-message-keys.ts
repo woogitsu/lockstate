@@ -177,6 +177,14 @@ export const SIMULATION_ENUM_GROUPS = [
       // The job, not the room: a roster cell says what the prisoner is doing,
       // and `room.laundry.name` is already "Laundry" two catalogs over.
       'action.laundry-work': 'Laundry Duty',
+      // Same rule as the line above, and the same shape: `room.kitchen.name`
+      // is already "Kitchen" two catalogs over, so the cell says the job.
+      // **This is the one new player-facing sentence issue #532 adds, and it
+      // is a draft for the owner's review** -- no existing string in this file
+      // fits (the `work` *category* label is "Work", which is what a roster
+      // would say for laundry duty too, and `room.kitchen.name` names the
+      // place rather than the activity).
+      'action.kitchen-work': 'Kitchen Duty',
     },
   },
   {

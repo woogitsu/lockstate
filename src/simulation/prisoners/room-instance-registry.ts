@@ -134,6 +134,95 @@ export interface RoomDerivedCapacity {
   readonly objectCapabilities: readonly string[];
 }
 
+/**
+ * How many tiles of open ground one prisoner needs to use a room that supplies
+ * no object for them to use.
+ *
+ * [ADR 0071](../../../docs/adr/0071-what-bounds-a-room-whose-activity-consumes-no-object.md),
+ * which is where the reasoning lives; this comment is the arithmetic.
+ *
+ * **Data rather than architecture** (ADR 0017 decision 5), and it carries the
+ * standing flag the repository's other directional constants carry
+ * (`src/simulation/prisoners/sentence.ts`'s bounds,
+ * `src/simulation/contraband/intelligence.ts`'s decay,
+ * `src/simulation/world/tile-ownership.ts`'s rule): **taken on the measurement
+ * below and open to re-measurement, not settled for ever.** Issue #532's
+ * *mechanism* -- that an objectless room is bounded by its ground rather than
+ * by nothing -- is what the owner decided, and a different integer changes how
+ * much rather than whether.
+ *
+ * ## Where 16 comes from
+ *
+ * Every other room's ceiling is `tiles / places` at its authored catalogue
+ * minimum, and those densities are already in the content:
+ *
+ * ```
+ * room.laundry      3x3 =  9 tiles / 4 places ('laundry',          2 machines x 2)  =  2.25
+ * room.kitchen      4x4 = 16 tiles / 4 places ('food-preparation', stove + counter) =  4.0
+ * room.shower-room  3x3 =  9 tiles / 2 places ('hygiene',          2 heads x 1)     =  4.5
+ * room.canteen      6x6 = 36 tiles / 6 places ('dining',           2 tables x 3)    =  6.0
+ * room.common-room  5x5 = 25 tiles / 4 places ('recreation',       2 benches x 2)   =  6.25
+ * room.classroom    5x5 = 25 tiles / 2 places ('education',        1 bookshelf x 2) = 12.5
+ * ```
+ *
+ * 16 is deliberately **looser than all six**, which is the honest reading of
+ * what the yard is: the one activity that is people spread out over open
+ * ground rather than people at a piece of furniture, and the one room whose
+ * capacity the player can extend for nothing. A number inside that range would
+ * make the free room the densest as well as the cheapest.
+ *
+ * Measured at 8 instead of 16: a minimum yard admits 8, all six prisoners of
+ * the reference prison fit, and `action.common-room-recreation` falls back to
+ * the 96 ticks it had before this change -- so 8 does not deliver the decision
+ * at that prison size, which is the evidence the figure rests on rather than a
+ * preference. `tests/integration/yard-and-common-room.test.ts` is where that
+ * was measured.
+ *
+ * What it produces at the catalogue minimums is the figure the decision is
+ * actually about: an 8x8 yard -- the smallest `RoomZoningService.zone` permits
+ * -- admits **4**, exactly what a 5x5 common room with its two authored
+ * benches admits. The yard keeps every advantage it had except being
+ * unbounded: it still scores higher (`recreation: 3` and `safety: 0.1` against
+ * the common room's `recreation: 2`), it still costs no walls, no objects and
+ * no materials, and a player who wants all of a larger population outdoors
+ * simply zones more ground. What it no longer does is admit everybody in every
+ * prison for ever, which is what left `action.common-room-recreation` with no
+ * state it could win in.
+ */
+export const TILES_PER_OPEN_GROUND_PLACE = 16;
+
+/**
+ * How many actors an instance's own rectangle admits for an action that
+ * consumes no object, or `Number.POSITIVE_INFINITY` when the instance records
+ * no rectangle.
+ *
+ * Reads nothing but the instance, which is why it lives here rather than
+ * beside `deriveRoomCapacity`: this module has no runtime imports at all, and
+ * a ceiling that needed the object catalogue to answer "how big is this room"
+ * would be the reason it acquired one.
+ *
+ * **Never below 1 for an instance that has a rectangle at all**, and that
+ * clamp is the rule rather than a rounding convenience. `Math.floor` alone
+ * would answer 0 for every rectangle under 16 tiles -- a 2x3 cell, a 3x3
+ * laundry -- and a room that exists but admits nobody is exactly the defect
+ * issue #326 removed when it stopped reading an objectless yard as a ceiling
+ * of zero. Reintroducing it one room size down would be the same mistake with
+ * a different subject. A rectangle the player drew is somewhere at least one
+ * prisoner can stand.
+ *
+ * No zoned `room.yard` reaches the clamp: its authored `minimum-size`
+ * requirement is 8x8 and 64 tiles, which `RoomZoningService.zone` enforces, so
+ * the smallest legal yard derives 4. The clamp is there for every *other*
+ * room, which is where a future action naming no capability would otherwise
+ * find a silent zero.
+ */
+function openGroundCapacityOf(instance: RoomInstance): number {
+  const { width, height } = instance;
+  if (width === undefined || height === undefined) return Number.POSITIVE_INFINITY;
+  if (width < 1 || height < 1) return Number.POSITIVE_INFINITY;
+  return Math.max(1, Math.floor((width * height) / TILES_PER_OPEN_GROUND_PLACE));
+}
+
 export class RoomInstanceRegistry {
   private readonly instances = new Map<string, RoomInstance>();
   private readonly occupants = new Map<string, Set<EntityId>>();
@@ -325,16 +414,37 @@ export class RoomInstanceRegistry {
    * Three cases, and the first is the one that turned the yard from an
    * exemption into a derivation:
    *
-   * 1. **No capability required: no object-derived ceiling at all.** An action
-   *    that names no capability consumes no object, so a rule that sums object
-   *    footprints has no domain, and the honest reading of an undefined ceiling
-   *    is "this rule does not bound it" rather than "it bounds it at zero".
-   *    Zero is what the previous rule said, and it said it about `room.yard` --
-   *    64 tiles of open ground that admitted nobody, while the same yard
-   *    holding one three-tile delivery door admitted three prisoners for
-   *    outdoor exercise. `room.yard` requires no object in
-   *    `src/content/room-catalog.ts`; it is the only room type that does not,
-   *    and it is therefore the only genuinely unbounded one.
+   * 1. **No capability required: bounded by the room's own ground.** An action
+   *    that names no capability consumes no object, so the rule that sums
+   *    object footprints has no domain here -- but "no *object-derived*
+   *    ceiling" is not the same statement as "no ceiling", and reading it as
+   *    the second is what issue #532 measured the cost of. `room.yard`
+   *    requires no object in `src/content/room-catalog.ts` and is the only
+   *    room type that does not, so it was the only room in the game that
+   *    admitted every prisoner at once, for ever, however small it was. That
+   *    is what left `action.common-room-recreation` with no state it could
+   *    win: it scores below `action.yard-recreation` at every non-zero
+   *    deficit, and a yard that never fills never falls through to it.
+   *    So the ceiling comes from the resource such a room actually has, which
+   *    is its floor: `floor(width * height / TILES_PER_OPEN_GROUND_PLACE)`
+   *    ([ADR 0071](../../../docs/adr/0071-what-bounds-a-room-whose-activity-consumes-no-object.md)).
+   *    Still derived and still authored nowhere per room -- an 8x8 yard admits
+   *    4 and a 16x16 yard admits 16, from the rectangle the player drew.
+   *
+   *    **An instance with no recorded rectangle keeps the old answer, and that
+   *    is not a hedge.** A V4 save genuinely records no bounds
+   *    (`RoomInstance.width`), the rule has no domain without them, and
+   *    inventing a rectangle would assert a room the player did not zone --
+   *    which is `roomBoundsOf`'s reasoning in
+   *    `src/simulation/objects/room-capacity.ts` applied to the one place a
+   *    missing rectangle would otherwise start refusing prisoners a room they
+   *    had before the upgrade.
+   *
+   *    The previous rule, kept rather than overwritten because it was right
+   *    about what it denied: an *object-footprint* ceiling on an objectless
+   *    room read as zero, and admitted nobody to 64 tiles of open ground while
+   *    the same yard holding one three-tile delivery door admitted three. This
+   *    does not put that back -- no object is consulted here at all.
    * 2. **A resolved instance: the capability's own sum**, or zero when no
    *    object in the room carries it. Zero here subsumes the separate "is this
    *    capability present" test `findAvailableForUse` used to make, since a
@@ -347,7 +457,7 @@ export class RoomInstanceRegistry {
    *    dispatch and a restore resolves every instance before a tick runs.
    */
   public concurrentUseCapacityFor(instance: RoomInstance, capability?: string): number {
-    if (capability === undefined) return Number.POSITIVE_INFINITY;
+    if (capability === undefined) return openGroundCapacityOf(instance);
     const breakdown = instance.concurrentUseCapacityByCapability;
     if (breakdown === undefined) {
       return instance.objectCapabilities.includes(capability) ? instance.concurrentUseCapacity : 0;
@@ -608,8 +718,12 @@ export class RoomInstanceRegistry {
   public findAvailableForUse(roomCatalogId: string, requiredObjectCapability?: string): RoomInstance | undefined {
     return this.allByRoomCatalogId(roomCatalogId).find((instance) => {
       const ceiling = this.concurrentUseCapacityFor(instance, requiredObjectCapability);
-      // An action naming no capability has no object-derived ceiling, so there
-      // is nothing to count and no reason to walk the claim map for it.
+      // Infinity now means only one thing: an instance that records no
+      // rectangle, which is what a V4 save carries. There is no number to
+      // compare against and no reason to walk the claim map for it. **This
+      // short-circuit used to be the yard's**, and since #532 the yard has a
+      // finite ceiling and falls through to the comparison below like every
+      // other room.
       if (ceiling === Number.POSITIVE_INFINITY) return true;
       return this.useOccupancyOf(instance.instanceId, requiredObjectCapability) < ceiling;
     });
