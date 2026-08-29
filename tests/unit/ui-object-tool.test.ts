@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { footprintRectAt, pickTileAtWorld } from '../../src/rendering/build/area-picking';
 import { TILE_SIZE_PX } from '../../src/rendering/tile-metrics';
-import type { HudObjectGesture } from '../../src/ui/hud';
+import type { BuildPanelTarget, HudObjectGesture } from '../../src/ui/hud';
 import { ObjectTool } from '../../src/ui/object-tool';
 
 /**
@@ -155,5 +155,68 @@ describe('a press becomes a placement or a removal, decided by the mode', () => 
 
     tool.setArmed(true);
     expect(tool.isRemoving(), 'the mode is remembered, so re-arming resumes it').toBe(true);
+  });
+});
+
+/**
+ * The live readout, issue #550.
+ *
+ * The tool declared `target` and left it empty through phase 1, on the argument
+ * that the Build panel's line was edge-shaped. The consequence was not a blank
+ * line: the wall tool published its aims into that same line and was disarmed
+ * without withdrawing them, so with a bed armed the panel named a tile the
+ * player had finished with. `tests/unit/ui-build-target-readout.test.ts` holds
+ * the whole sequence; these hold this tool's two halves of it.
+ */
+describe('the object tool says where the press would land', () => {
+  function watched(): { readonly tool: ObjectTool; readonly aims: (BuildPanelTarget | undefined)[] } {
+    const aims: (BuildPanelTarget | undefined)[] = [];
+    const tool = new ObjectTool();
+    tool.attachReadout((target) => aims.push(target));
+    return { tool, aims };
+  }
+
+  it('reports the anchor tile, not the rectangle the ghost is drawing', () => {
+    // The scene hands in the footprint, because that is what it paints. What the
+    // readout answers is *where*, and where is the tile the press names -- the
+    // same one `place` reports and the same one the command carries. A 1x2 bed
+    // hovering over 4,6 is a press on 4,6.
+    const { tool, aims } = watched();
+    tool.setArmed(true, { definitionId: 'bed-wooden', footprint: { width: 1, height: 2 } });
+
+    tool.target(footprintRectAt(pickTileAtWorld(at(4, 6)), { width: 1, height: 2 }));
+
+    expect(aims).toEqual([{ x: 4, y: 6 }]);
+  });
+
+  it('reports no edge, because a tile has none', () => {
+    // The line a bed reports into is shared with the wall tool, whose aims carry
+    // an edge and a segment count. An object aim that carried either would have
+    // the panel print "North" beside a bed.
+    const { tool, aims } = watched();
+    tool.setArmed(true, { removing: true });
+
+    tool.target(footprintRectAt(pickTileAtWorld(at(9, 2)), { width: 1, height: 1 }));
+
+    expect(aims.at(-1)).not.toHaveProperty('edge');
+    expect(aims.at(-1)).not.toHaveProperty('segments');
+  });
+
+  it('withdraws its aim when it is disarmed', () => {
+    const { tool, aims } = watched();
+    tool.setArmed(true, { removing: true });
+    tool.target(footprintRectAt(pickTileAtWorld(at(9, 2)), { width: 1, height: 1 }));
+    expect(aims.at(-1)).toEqual({ x: 9, y: 2 });
+
+    tool.setArmed(false);
+
+    expect(aims.at(-1), 'a disarmed tool is aimed at nothing').toBeUndefined();
+  });
+
+  it('drops an aim when nothing is attached, which is a page with a world and no interface', () => {
+    const tool = new ObjectTool();
+    tool.setArmed(true, { removing: true });
+    expect(() => tool.target(undefined)).not.toThrow();
+    expect(() => tool.setArmed(false)).not.toThrow();
   });
 });

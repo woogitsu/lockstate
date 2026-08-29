@@ -267,6 +267,20 @@ export interface HudWorldObjectSource {
    * documents.
    */
   attachGestures(report: (gesture: HudObjectGesture) => void): void;
+  /**
+   * Points the live readout at the mounted panel. Called once, at mount (#550).
+   *
+   * The same member `HudWorldRoomSource` has, aimed at a different panel: a room
+   * gesture's rectangle is read back on the Rooms panel's "Area" line, and an
+   * object gesture's tile on the Build panel's "Where" line, because the Build
+   * panel is where an object is armed from.
+   *
+   * It carries `BuildPanelTarget` rather than a tile shape of its own, because
+   * it feeds the identical line `BuildTool.attachReadout` feeds and the two must
+   * not be able to disagree about what that line accepts. An object aim is that
+   * shape with no edge on it.
+   */
+  attachReadout(readout: (target: BuildPanelTarget | undefined) => void): void;
 }
 
 /** Which way along the edit history the player asked to move. */
@@ -1589,6 +1603,21 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       return;
     }
     dispatchCommand({ kind: 'place-object', definitionId: gesture.definitionId, x: gesture.x, y: gesture.y });
+  });
+
+  /*
+   * The object aim, joined to the Build panel's one live readout (#550).
+   *
+   * Wired here rather than at the composition root -- which is where the wall
+   * tool's identical readout is wired, through `HudHandle.setBuildTarget` --
+   * because this source is already an option of this mount and the room source
+   * already attaches its readout here. Two tools reporting into one line
+   * through two different seams is how the line came to be able to lie: the
+   * panel is handed a target and has no way to ask which tool it came from, so
+   * the fewer places that can hand it one, the better.
+   */
+  options.worldObjects?.attachReadout((target) => {
+    buildPanel.setTarget(target);
   });
 
   /**

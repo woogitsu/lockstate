@@ -112,6 +112,16 @@ export class RoomTool implements RoomToolPort, HudWorldRoomSource {
     if (options.roomId !== undefined) this.roomId = options.roomId;
     this.removing = options.removing ?? this.removing;
     this.armed = armed && (this.removing || this.roomId !== undefined);
+    // A tool that is not armed is aimed at nothing, and says so -- the rule
+    // `BuildTool.setArmed` records in full (#550).
+    //
+    // This surface reached the defect from a different direction than the Build
+    // panel did, and it is the same defect: nothing else clears the Rooms
+    // panel's "Area" line when the player presses "Draw on map" a second time,
+    // so it kept naming the last rectangle the pointer passed over while the
+    // pointer had been handed back to the camera. Leaving the tab already
+    // cleared it; disarming on the tab did not.
+    if (!this.armed) this.readout?.(undefined);
   }
 
   public isArmed(): boolean {
