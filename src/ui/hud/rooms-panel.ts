@@ -773,13 +773,25 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    *     controls do not vanish and come back between two fields;
    *   - the same four numbers can be used twice, which matters for a row of
    *     identical cells;
-   *   - and they *have* to be usable twice. `NumberField` reports on `change`,
-   *     and a field re-entered with the value it already holds fires nothing
-   *     -- so a form that only listened to its fields would go dead after the
-   *     first designation, with four numbers on screen and no way to say them
-   *     again. Measured: the keyboard removal spec in
+   *   - and they *have* to be usable twice. `NumberField` reported on `change`
+   *     alone, and a field re-entered with the value it already holds fires
+   *     nothing -- so a form that only listened to its fields would go dead
+   *     after the first designation, with four numbers on screen and no way to
+   *     say them again. Measured: the keyboard removal spec in
    *     `tests/browser/app-shell.spec.ts` ran out of Tab presses looking for a
    *     confirm control that a re-typed identical rectangle never revealed.
+   *
+   * **Amended 2026-08-29 (#548).** That third reason is now the weakest of the
+   * three, and the first is the strongest -- marked rather than overwritten,
+   * because the press is still right and the reason it is right has moved.
+   * `NumberField` now reports on `input` as well as on `change`, so a re-typed
+   * identical rectangle *does* reach its fields and the going-dead failure
+   * above could no longer happen by that route. What replaces it is the first
+   * bullet, sharpened: `input` fires on every keystroke, so a form that adopted
+   * a rectangle from its fields would now adopt one **per keystroke** --
+   * designating `1`, `15` and `152` on the way to a width the player had not
+   * finished saying. The button is what keeps a rectangle something the player
+   * states rather than something they are overheard assembling.
    */
   const coordinatesSubmit: ActionButton = createActionButton({
     // No icon and no tone, exactly as the Build panel's own submit carries

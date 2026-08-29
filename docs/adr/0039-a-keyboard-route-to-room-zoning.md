@@ -219,6 +219,20 @@ found it. A press also keeps a half-typed rectangle from becoming pending
 between two fields, which would make the arm and remove controls vanish and come
 back mid-edit.
 
+**Amended 2026-08-29 (#548).** The premise in that paragraph — "`NumberField`
+reports on `change`" — stopped being the whole truth on that date, and the
+sentence is marked rather than rewritten because the decision it supports did
+not move. The field now reports on `input` as well: `change` fires when a field
+is *left*, the click on a button beside it is what leaves it, and the Build
+panel's Buy control was therefore reading a stale quantity at the instant it was
+pressed. The consequence for this ADR is that the going-dead failure above could
+no longer happen by that route — a re-typed identical rectangle does now reach
+its fields. **The decision stands, on the other argument in the same paragraph,
+which `input` strengthens rather than weakens:** `input` fires on every
+keystroke, so fields that wrote the pending rectangle themselves would now write
+one *per keystroke*, designating `1`, `15` and `152` on the way to a width the
+player had not finished saying. The button is still the release.
+
 Everything downstream is untouched: `paintActions` swaps the one 44px row to
 "Designate W × H" / "Discard" off `pending !== undefined`, `pendingIsTooSmall`
 disables the confirm with the authored minimum's warning, and
