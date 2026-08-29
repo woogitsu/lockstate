@@ -62,6 +62,22 @@ function neglectfulPrison(cells = 1, seed: number = SEED): SimulationRuntime {
     wallRoomPerimeter(runtime.world, rectangle, { doors: runtime.navigation.doors });
     submit(runtime, `zone-${index}`, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...rectangle }));
   }
+  /*
+   * **One guard, hired for what this prison is *not* neglectful about**
+   * (issue #588). The subject of this file is the two room-gated needs and the
+   * boundaries a sentence has to outlast to be charged for them; since
+   * coverage became the provisioner of `safety`, an unstaffed prison also
+   * crosses that need's line -- 4,080 ticks after admission, well before
+   * hygiene's 10,180 -- and the day-4 row below would then read 260 for a
+   * reason this file is not about.
+   *
+   * Hiring is the honest fix rather than raising the expectation: the prison
+   * is meant to be neglectful about *rooms*, and a guard changes nothing else.
+   * It is submitted before the admission so the sector is covered from the
+   * first tick the prisoner is in it.
+   */
+  submit(runtime, 'hire-guard', packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ARRIVAL }));
+
   const instances = runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell');
   expect(instances.length, 'every cell must have been zoned for this fixture to mean anything').toBe(cells);
   for (const instance of instances) {
