@@ -377,6 +377,73 @@ a lock never requires rebuilding the graph, only re-checking (or evicting
 from cache) the entries whose answer that door could change — which, per the
 bullet above, is not the same set as the routes that cross it.
 
+## What invalidation cannot reach: a route that has already left
+
+Everything above is about answers this subsystem still holds. A route that has
+been handed to a caller is no longer one of them, and no counter here can reach
+it.
+
+That gap was a shipped defect until the ADR *When a route stops being valid*
+(drafted on the `agent/sim-001-stale-routes` branch; number assigned at merge).
+`ActionSystem` resolved a route, `LocomotionStore.beginWalk` took its waypoints,
+and the walk then ran for as many ticks as the journey was long. `beginWalk`
+validated only the *shape* of that list — non-empty, one orthogonal tile per leg
+— and retained no geometry revision, no door version and no route-dependency
+token; `advance` incremented progress and wrote each reached waypoint into the
+position store without re-asking anything. Two audits of `4c18bc4` found it
+independently and disagreed about whether a player could actually reach it. A
+player can: measured through the real `PlaceBuildOrder` command path, a wall
+completed at tick 1,621 with the prisoner thirteen tiles short of it, and the
+prisoner crossed that edge at tick 1,657 and finished inside a cell nothing
+could reach. `ConstructionSystem` is order 100 and `LocomotionSystem` order 200,
+so the wall is standing when the walk steps.
+
+The rule now is:
+
+> No actor may traverse an edge that is non-traversable at the tick on which
+> the edge is crossed, regardless of when its route was calculated.
+
+`NavigationSystem.canTraverseEdge(from, to, context)` is what answers it, over
+`isEdgeTraversable` in `traversal.ts`. It is deliberately the cheapest thing on
+that class — two chunk-cell reads and a `Map` lookup, no graph, no cache, no
+queue — and deliberately **not** region-aware: a region graph answers "are these
+two tiles connected", which is a question about a whole prison and is rebuilt
+lazily from a geometry revision, while a walker halfway down a corridor is
+asking whether one boundary is standing. `LocomotionStore.advance` requires the
+predicate rather than defaulting it, and asks it once per tile *crossed* rather
+than once per tick. A walker whose next edge has closed under it stops on the
+tile it legitimately occupies and its owner replans on its own cadence — so a
+wall completion sends nobody back to the router except the walkers it actually
+stopped, which is what keeps this off the budgeted pathfinding path
+(`AGENTS.md` boundary 9).
+
+`edgeStanding` in the same module is the door-beats-wall-beats-open ordering,
+shared with `canStep`. The two apply different *door policies* — the search
+crosses only a door the portal search upstream admitted, a walker consults its
+own `RouteContext` — but a registered door decides the edge whatever value the
+edge layer holds, and that sentence is now written once. A door and a wall share
+one edge slot (`DOOR_EDGE_NUMERIC_ID`), so a reader that consulted the edge
+value first finds every door impassable.
+
+### Giving a request back when its owner goes away
+
+The mirror of the same ownership question, on the request side. Six systems call
+`requestRoute` and keep the id somewhere of their own; the queue and the result
+map are keyed by that id and **neither expires anything**. `PathRequestQueue`'s
+aging raises a waiting request's *effective priority* and never evicts it, and
+`clearResult`'s own comment says the system never expires results on its own. So
+a teardown that deletes its copy of the id leaves the request to be searched at
+full budget cost and the result to be retained for the life of the session.
+
+`NavigationSystem.abandonRequest(id)` does both halves in one call, because
+which half a request is in on a given tick is a race the caller cannot win. Every
+path that gives up a claim calls it: `IncidentResponseSystem.releaseResponder`
+and `releaseResponse`, `SearchSystem.releaseGuard` and its target advance, and
+`GuardReleaseService.release` — which has to read the roster's `pathRequestId`
+*before* `GuardRoster.unassign` clears it. `prisoners/release.ts` and
+`staff/dismissal.ts` reach the same result through their own narrow ports with
+two calls, which predates this method.
+
 ## Known correctness caveat: hierarchical vs. flat-optimal cost
 
 The portal-graph search picks the cheapest *sequence of doors*, treating
