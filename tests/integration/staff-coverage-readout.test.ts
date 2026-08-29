@@ -48,7 +48,13 @@ const SEED = 0x448;
 /** `NEW_PRISON_ORIGIN_TILE` in `src/main.ts`, written out -- the tile an admission arrives at and a hire starts on. */
 const ORIGIN = { x: 16, y: 16 } as const;
 
-/** Copied from `ADMISSION_REQUEST` in `src/main.ts`: long enough that nobody is released mid-measurement. */
+/**
+ * Named here, not drawn: long enough that nobody is released mid-measurement.
+ *
+ * It used to be described as copied from `ADMISSION_REQUEST` in `src/main.ts`, which since #535
+ * decision 5 carries no sentence at all -- a press leaves the length to the simulation, and a
+ * drawn one can be as short as two in-game days.
+ */
 const ADMISSION = { sentenceLengthTicks: 200_000, priorIncidents: 0 } as const;
 
 /**

@@ -157,6 +157,40 @@ describe('a sentence drawn at admission (#535 decision 5)', () => {
     expect(runtime.prisoners.records.sentenceEndTick[runtime.prisoners.entityStore.getIndex(entityId)]!).toBe(OLD_FIXED_SENTENCE_TICKS + 15);
   });
 
+  it('draws from `prisoners.sentence` and leaves `prisoners.classification` exactly where it was', () => {
+    // The stream choice, pinned as behaviour rather than as a spelling. A draw
+    // made on `prisoners.classification` instead would produce sentences in
+    // range, day-quantised, deterministic and varied -- every other case in
+    // this file would still pass -- and would silently shift every risk tier
+    // every seed has ever produced, one admission onward. Nothing else in the
+    // repository can see that: `tests/determinism/`'s scenario names its own
+    // sentences, so it never makes the draw at all.
+    const wordsOf = (runtime: SimulationRuntime, name: string): readonly number[] =>
+      runtime.kernel.snapshot().rngStates.find((entry) => entry.name === name)!.state.words;
+
+    const runtime = neglectfulPrison();
+    const classificationBefore = wordsOf(runtime, 'prisoners.classification');
+    const sentenceBefore = wordsOf(runtime, 'prisoners.sentence');
+
+    const entityId = admit(runtime, 'admit');
+    stepTo(runtime, 40);
+    expect(sentenceOf(runtime, entityId)).toBeGreaterThan(0);
+
+    // The sentence stream moved, so the draw really came from it.
+    expect(wordsOf(runtime, 'prisoners.sentence')).not.toEqual(sentenceBefore);
+    // The classification stream moved by exactly the one draw
+    // `classifyPrisoner` has always made -- which is what a second prison that
+    // names its sentence explicitly proves, because that one makes no sentence
+    // draw at all and must land on the same classification state.
+    const named = neglectfulPrison();
+    admit(named, 'admit', OLD_FIXED_SENTENCE_TICKS);
+    stepTo(named, 40);
+    expect(wordsOf(named, 'prisoners.classification')).toEqual(wordsOf(runtime, 'prisoners.classification'));
+    expect(wordsOf(named, 'prisoners.classification')).not.toEqual(classificationBefore);
+    // And that second prison never touched the sentence stream.
+    expect(wordsOf(named, 'prisoners.sentence')).toEqual(sentenceBefore);
+  });
+
   it('is what makes the state withhold a grant for a neglected prisoner, which the old fixed sentence never could', () => {
     // The boundaries the two room-gated needs cross, derived in this file's
     // header and written out rather than computed here.

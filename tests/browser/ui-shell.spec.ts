@@ -3512,10 +3512,15 @@ test.describe('the Regime panel (issue #451)', () => {
    * different history. `projectPrisonerRoster` sets `everAdmitted` from
    * `admittedCount`, which every real admission increments and nothing ever
    * decrements (`prisoner-projection.ts`), so this is the state a live
-   * session reaches after a batch of prisoners is admitted together and
-   * later discharged together (`ADMISSION_REQUEST`'s fixed
-   * `sentenceLengthTicks`, ADR 0050 "What this does not decide") -- not a
-   * state this file invents for the panel to react to.
+   * session reaches once every prisoner it has held has been discharged --
+   * not a state this file invents for the panel to react to.
+   *
+   * It used to say "admitted together and later discharged together
+   * (`ADMISSION_REQUEST`'s fixed `sentenceLengthTicks`, ADR 0050 'What this
+   * does not decide')". Since #535 decision 5 the length is drawn per
+   * prisoner, so they leave over a spread instead of at once; the reachable
+   * state this view model stands for is unchanged, and only the story of how a
+   * session gets there is.
    */
   const DISCHARGED_ROSTER: HudPrisonerRosterViewModel = { total: 0, everAdmitted: true, rows: [] };
 
@@ -3608,9 +3613,10 @@ test.describe('the Regime panel (issue #451)', () => {
 
   test('a prison everybody has left draws no false sentence about non-admission (issue #506)', async ({ page }) => {
     // Same `total: 0` as the test above, and the opposite history: five
-    // prisoners were admitted, served the fixed sentence `ADMISSION_REQUEST`
-    // gives every one of them, and were discharged within the same window
-    // (ADR 0050, "What this does not decide") -- so the population is back to
+    // prisoners were admitted, served their sentences -- one fixed sentence
+    // each until #535 decision 5, a length drawn per prisoner since -- and
+    // were all discharged (ADR 0050, "What this does not decide"), so the
+    // population is back to
     // zero, and "Nobody has been admitted yet" would be false of it. There is
     // no shipped sentence that says the true thing instead (searched
     // `default-locale-en.ts`; see `regime-panel.ts`'s `paintRoster` comment),

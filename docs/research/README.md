@@ -57,6 +57,7 @@ So the standing rules for anything added here:
 | [2026-08-26 repository audit](./2026-08-26-repository-audit.md) | Across every discipline at once, what is wrong with this repository at v0.0.108, and what should be done first? | None yet — it ranks work and names the decisions that need an ADR |
 | [2026-08-28 risk tier and income](./2026-08-28-risk-tier-and-income.md) | Does a prisoner's `riskTier` change what the state pays, or what the prison spends? | None — it refutes an audit finding and proposes no change. ADR 0017 decision 6 stands |
 | [2026-08-28 navigation tick budget](./2026-08-28-navigation-tick-budget.md) | What does a navigation tick cost, and may its budget be a wall clock? | None yet — it carries an ADR draft awaiting a centrally assigned number. ADR 0009 stands unamended |
+| [2026-08-29 sentence length at admission](./2026-08-29-sentence-length-at-admission.md) | Where does a sentence length come from — which thread, which RNG stream — and how long should it be? | [#535](https://github.com/matmaxalez/lockstate/issues/535) decision 5. **Carries an ADR draft awaiting a centrally assigned number**; the range itself is a proposal for the owner, not a settled call |
 | [2026-08-28 drawing guards](./2026-08-28-drawing-guards.md) | Should a guard be drawn while `GuardRecord` still teleports, the question ADR 0059 open question 4 left open? | Answers that open question in place, within ADR 0040 slice 2 (issue #414's surviving half); no new ADR number taken |
 
 ### Findings from the first four records that changed a decision

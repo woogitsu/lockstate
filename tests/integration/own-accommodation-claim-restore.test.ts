@@ -68,7 +68,13 @@ const CELL_ID = 'room.cell:4:6';
 
 /** The tile `src/main.ts` admits at: the middle of the one chunk a new prison owns. */
 const ARRIVAL = { x: 16, y: 16 } as const;
-/** What one press of the Intake panel's control asks for, copied from `ADMISSION_REQUEST` in `src/main.ts`. */
+/**
+ * What one press of the Intake panel's control asks for -- the tile and `priorIncidents: 0` from
+ * `ADMISSION_REQUEST` in `src/main.ts`, and a sentence length that press no longer sends.
+ * Since #535 decision 5 an omitted length is drawn inside the simulation from
+ * `prisoners.sentence`; naming one here is still legal, is never redrawn, and is what keeps
+ * this fixture's timings fixed.
+ */
 const ADMISSION = { sentenceLengthTicks: 10_000, priorIncidents: 0 } as const;
 
 const ADMIT_AT = 200;

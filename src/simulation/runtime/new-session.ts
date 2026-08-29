@@ -878,10 +878,20 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * comparison lives in `src/simulation/incidents/flashpoint.ts`, and what
    * happens here is reading four numbers out of the registries that already
    * hold them. `sentenceRemaining` is guarded against a zero-length sentence
-   * rather than assumed away -- `sentenceLengthTicks` is 0 in every slot until
-   * the classification stage writes one, so an arrival still at reception would
-   * otherwise divide by zero and score `NaN`, which compares false against
-   * every threshold and would have made the bug invisible instead of loud.
+   * rather than assumed away, so an arrival whose length is not settled yet
+   * cannot divide by zero and score `NaN` -- which compares false against every
+   * threshold and would have made the bug invisible instead of loud.
+   *
+   * **The sentence saying when that happens was wrong, and #535 decision 5 has
+   * made it right.** It read "`sentenceLengthTicks` is 0 in every slot until
+   * the classification stage writes one"; what that stage wrote was
+   * `sentenceEndTick`, and `submitIntake` had already written a length at the
+   * dispatch tick -- so the only slots reading 0 were slots nobody had ever
+   * been admitted into. Since that decision an admission that leaves its length
+   * to the simulation does read 0 from the dispatch tick until the
+   * `classification` stage draws one, about fifteen ticks later. The guard now
+   * covers the window the comment always claimed for it, and both directions
+   * are recorded rather than the first overwritten.
    *
    * Ascending entity id, because `resolveOccupants` answers in that order and
    * this maps over it.
