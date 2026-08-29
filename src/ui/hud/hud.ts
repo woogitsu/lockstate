@@ -11,7 +11,6 @@ import type { IconId } from '../primitives/icon';
 import { type CollapsibleSection, createCollapsibleSection } from '../primitives/collapsible-section';
 import { type ListRow, createListRow } from '../primitives/list-row';
 import { type Panel, createPanel } from '../primitives/panel';
-import { type StatusBadge, createStatusBadge } from '../primitives/status-badge';
 import { type TabButton, createTabButton } from '../primitives/tab-button';
 import { type BuildPanel, type BuildPanelTarget, createBuildPanel } from './build-panel';
 import { type IntakePanel, createIntakePanel } from './intake-panel';
@@ -28,7 +27,7 @@ import {
   isPanelCollapsed,
 } from './hud-state';
 import { HUD_MESSAGE_KEY } from './messages';
-import { nextFastForwardSpeed, refusalMessageKey, severityLabelKey, severityTone, summariseAlerts } from './projection';
+import { nextFastForwardSpeed, refusalMessageKey, severityLabelKey, severityTone } from './projection';
 import { createStaffPanel, type StaffPanel } from './staff-panel';
 import { type TransportIntentKind, createStatusStrip } from './status-strip';
 import {
@@ -1251,29 +1250,8 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   });
 
   const alertList = element('div', { className: 'hud-alerts__list' });
-  /*
-   * What the folded header says (issue #569).
-   *
-   * The section is folded on arrival by `INITIAL_HUD_SHELL_STATE` and that
-   * stays -- see `summariseAlerts` in `projection.ts` for why the fold is
-   * right and why a silent folded header was not. `trailing` is the slot
-   * `createCollapsibleSection` already offers for exactly this and the Build
-   * panel's queue already uses (`build-panel.ts`, `trailing: queueCount`), and
-   * it is inside the header `<button>`, so what goes in it must be inert: a
-   * badge is, which is the other half of why this is a badge.
-   *
-   * It costs the layout nothing. `.ui-section__header` is
-   * `min-height: var(--tap-target)` -- 44px, already in every height budget
-   * that sums this section -- and `.ui-badge` is `height: var(--space-5)`,
-   * well inside it. Measured on the assembled page at the binding 900x600
-   * viewport rather than assumed; see `tests/browser/ui-shell.spec.ts`.
-   */
-  const alertsCount: StatusBadge = createStatusBadge({ tone: 'neutral', text: '' });
-  alertsCount.element.classList.add('hud-alerts__count');
-  alertsCount.element.hidden = true;
   const alertsSection: CollapsibleSection = createCollapsibleSection({
     eyebrow: t(HUD_MESSAGE_KEY.alertsTitle),
-    trailing: alertsCount.element,
     collapsed: isPanelCollapsed(state, 'alerts'),
     onToggle: (collapsed) => {
       dispatchShell(
@@ -1800,29 +1778,6 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       if (seen.has(id)) continue;
       row.element.remove();
       alertRows.delete(id);
-    }
-
-    /*
-     * And the folded header says the same thing in one word, because while the
-     * section is shut the row below is a 0x0 box (issue #569). The decision --
-     * how many, and how bad is the worst of them -- is `summariseAlerts`, a
-     * pure function, so it is provable in the default `node` environment where
-     * this builder never runs.
-     *
-     * Hidden rather than blanked when there is nothing to say. `.ui-badge`
-     * carries a background and horizontal padding, so an empty one is still a
-     * visible pill; the queue count one module over can blank its text because
-     * it is a bare span. `primitives.css` is what makes the attribute bite --
-     * `.ui-badge` sets its own `display`, which outranks the UA `[hidden]`
-     * rule, and that class is now in the list there that restates it.
-     */
-    const summary = summariseAlerts(viewModel.alerts);
-    if (summary === undefined) {
-      alertsCount.element.hidden = true;
-      alertsCount.update({ tone: 'neutral', text: '' });
-    } else {
-      alertsCount.element.hidden = false;
-      alertsCount.update({ tone: summary.tone, text: t(HUD_MESSAGE_KEY.alertsCount, { count: summary.count }) });
     }
 
     // An empty list must say it is empty. A blank rectangle is indistinguishable

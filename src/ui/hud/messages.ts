@@ -82,15 +82,6 @@ export const HUD_MESSAGE_KEY = {
   minimapPlaceholder: 'hud.minimap.placeholder',
   alertsTitle: 'hud.alerts.title',
   alertsEmpty: 'hud.alerts.empty',
-  /**
-   * The badge on the *folded* alerts header (issue #569).
-   *
-   * `alertsEmpty` above is what the open list says when there is nothing in
-   * it; this is what the closed header says when there is. They are two
-   * different surfaces and neither can carry the other's text: one is a row
-   * inside a body nobody can see while the section is shut.
-   */
-  alertsCount: 'hud.alerts.count',
 
   panelCollapse: 'hud.panel.collapse',
   panelExpand: 'hud.panel.expand',

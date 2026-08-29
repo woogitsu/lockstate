@@ -9,16 +9,13 @@ import {
   refusalMessageKey,
   severityLabelKey,
   severityTone,
-  summariseAlerts,
   transportPressedStates,
 } from '../../src/ui/hud/projection';
 import {
   EMPTY_HUD_VIEW_MODEL,
   UNKNOWN_HUD_CLOCK,
-  type HudAlertViewModel,
   type HudClockViewModel,
   type HudCountsViewModel,
-  type HudSeverity,
   type HudSpeed,
 } from '../../src/ui/hud/view-model';
 import { DEFAULT_BAR_SEGMENTS, filledSegments } from '../../src/ui/primitives/segmented-bar';
@@ -401,67 +398,5 @@ describe('refusalMessageKey: what a refused control says', () => {
 
   it('says nothing about an action it has never heard of', () => {
     expect(refusalMessageKey('teleport-prisoner')).toBeUndefined();
-  });
-});
-
-/**
- * What the *folded* alerts header says for itself (issue #569).
- *
- * The defect this guards is not a wrong string, it is a sentence rendered into
- * a 0x0 box: a designation refused `zone.not-enclosed` put its explanation in
- * the DOM under a header reading `ALERTS` and nothing else, so the press read
- * to the player as a press that did nothing. The rendered box is asserted in
- * `tests/browser/ui-shell.spec.ts`, because only a browser has one. What is
- * provable here is the decision behind it, which is why it is a pure function
- * at all -- `hud.ts` never runs in this environment.
- */
-describe('summariseAlerts: what a folded alerts header has to say', () => {
-  const alert = (id: string, severity: HudSeverity): HudAlertViewModel => ({
-    id,
-    labelKey: 'hud.alerts.empty',
-    severity,
-  });
-
-  it('says nothing at all when there is nothing to say', () => {
-    // The half that keeps `INITIAL_HUD_SHELL_STATE`'s reason for folding
-    // intact: a quiet prison must stay exactly as quiet as it was.
-    expect(summariseAlerts([])).toBeUndefined();
-  });
-
-  it('counts every row, not the rows one severity happens to have', () => {
-    const summary = summariseAlerts([alert('a', 'info'), alert('b', 'warning'), alert('c', 'info')]);
-    expect(summary?.count).toBe(3);
-  });
-
-  it('reports the worst severity present, not the first and not the last', () => {
-    // Ordered so that neither "first" nor "last" would give the right answer:
-    // a badge that took either would say Info for a list holding a danger.
-    const summary = summariseAlerts([alert('a', 'info'), alert('b', 'danger'), alert('c', 'info')]);
-    expect(summary?.severity).toBe('danger');
-    expect(summary?.tone).toBe(severityTone('danger'));
-  });
-
-  it('ranks warning above info and danger above warning', () => {
-    expect(summariseAlerts([alert('a', 'info'), alert('b', 'warning')])?.severity).toBe('warning');
-    expect(summariseAlerts([alert('a', 'warning'), alert('b', 'danger')])?.severity).toBe('danger');
-  });
-
-  it('carries the tone that matches the severity it reported', () => {
-    // Not a re-derivation of the mapping: `severityTone` is the one place the
-    // pairing is written, so asking it here is asking the same source the
-    // rows in the list itself ask.
-    for (const severity of ['info', 'warning', 'danger'] as const) {
-      const summary = summariseAlerts([alert('only', severity)]);
-      expect(summary?.tone).toBe(severityTone(severity));
-    }
-  });
-
-  it('is the sentence the folded header actually has a key for', () => {
-    // The badge text is `HUD_MESSAGE_KEY.alertsCount` with `{count}`, and that
-    // key has to resolve in the bundled catalog or the header would carry a
-    // raw identifier. `ui-hud-messages.test.ts` owns the catalog sweep; this
-    // pins that the count this function returns is what fills it.
-    expect(HUD_MESSAGE_KEY.alertsCount).toBe('hud.alerts.count');
-    expect(summariseAlerts([alert('a', 'warning'), alert('b', 'warning')])?.count).toBe(2);
   });
 });

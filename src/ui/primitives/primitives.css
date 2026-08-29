@@ -54,17 +54,6 @@
    which is why the fix is here rather than a `:not([hidden])` on each -- a
    third panel with its own `display` would have inherited the same defect.
 
-   `.ui-badge` joined the list for issue #569, and it is the same shape as
-   `.ui-panel__body` above: `.ui-badge` sets `display: inline-flex`, so the
-   attribute alone left it on screen -- and a badge is not a block of text that
-   merely reads oddly when empty, it is a coloured pill with padding and a
-   background, so an alerts header with nothing to report would have carried a
-   small empty lozenge for ever. Nothing in `src/` set `hidden` on a badge
-   before this, so the entry changes no existing rendering; it is here rather
-   than as a `:not([hidden])` at the one call site for the reason the paragraph
-   above gives, which is that the next component to hide a badge would
-   otherwise inherit the same defect.
-
    That one entry carries `.ui-panel >` and the rest do not, and the prefix is
    load-bearing rather than tidy: `.hud-rooms > .ui-panel__body` is two classes,
    so a bare `.ui-panel__body[hidden]` ties it on specificity and loses on
@@ -74,7 +63,6 @@
    child, so the prefix costs nothing and wins. */
 .ui-panel[hidden],
 .ui-panel > .ui-panel__body[hidden],
-.ui-badge[hidden],
 .ui-choice[hidden],
 .ui-number[hidden],
 .ui-action[hidden],
