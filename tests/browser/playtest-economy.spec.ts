@@ -393,10 +393,18 @@ async function buildAndPopulate(page: Page, options: PrisonOptions): Promise<{ o
 
   // Admit, from the Overview tab's Intake panel.
   await tab(page, 'overview').click();
+  const admitMs: number[] = [];
   for (let index = 0; index < options.admits; index += 1) {
+    const pressStarted = Date.now();
     await page.locator('.hud-intake__admit').click();
+    admitMs.push(Date.now() - pressStarted);
     await page.waitForTimeout(150);
   }
+  // How long each press *took*, which is how long Playwright had to wait for
+  // the control to be actionable. A player pressing Admit twelve times pays
+  // this twelve times.
+  log(`admit press durations (ms): ${JSON.stringify(admitMs)}`);
+  log(`admit control disabled attribute now: ${await page.locator('.hud-intake__admit').getAttribute('disabled')}`);
   await page.waitForTimeout(2000);
   log(`intake panel after ${options.admits} admissions: ${await panelText(page, '.hud-intake')}`);
   log(`no-place warning data: ${await page.locator('.hud-intake__no-place').getAttribute('data-without-place')}`);

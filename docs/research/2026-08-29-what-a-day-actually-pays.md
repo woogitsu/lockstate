@@ -95,6 +95,29 @@ So, for a twelve-prisoner prison with three beds:
 | per resident | **300** — the full rate, nothing withheld |
 | staff, wage bill, unpaid wages | 0, 0, 0 |
 
+### The control: twelve beds, twelve admitted
+
+The same prison built again with **twelve** beds instead of three, so that
+twelve paid places actually exist. Pasted:
+
+```
+=== DAY BOUNDARY at tick 9599 ===
+last sample before:  {"tick":9562,"prisoners":12,"prisonersInIntake":0,"prisonersHighRisk":0,
+                      "rooms":1,"roomCapacity":12,"accommodationCapacity":12,"roomOccupants":12,
+                      "treasuryMinorUnits":23190,"stateIncomeAccruedTodayMinorUnits":3544,
+                      "dailyWageBillMinorUnits":0,"unpaidWagesMinorUnits":0,"staff":0}
+first sample at/after:{"tick":9602,...,"treasuryMinorUnits":26790,...}
+treasury delta across the boundary = 3600 | accrual just before = 3544 | roster = 12 | residents = 12
+```
+
+and the next boundary is 3600 again. **Twelve paid places gross 3,600 a day,
+not 720.** #601's floor argument bounds the answer below by 720 and the real
+answer is five times that, for the reason §3 gives: the floor is not reached.
+
+Across three prisons and five boundaries, every credit is `300 x residents`
+exactly — 900, 900, 660 (= 900 - 240 wages), 3600, 3600 — and
+`unmetNeeds` was 0 every time.
+
 ## 3. Which reading is true
 
 **Reading 1 — "most of that population was not housed" — is true about the
@@ -154,7 +177,8 @@ twelve on the roster and three beds earns 900/day, of which every minor unit
 is paid for the three people who have somewhere to sleep.*
 
 **No economy sink should be sized against 150.** The figure to size against is
-`300 x residents`, and residents is bounded by beds, not by admissions.
+`300 x residents`, and residents is bounded by beds, not by admissions. The
+three prisons this pass built pay **900**, **900** and **3,600** a day.
 
 ## 4. Why "twelve prisoners, three beds" is the prison a player builds
 
@@ -336,10 +360,30 @@ different prison than the one the game builds.
   and it is written down here so the next harness does not lose ten minutes to
   it.
 
+- **`prisonersHighRisk` was 0 at every sample of every run, and it is 0 by
+  construction.** **READ, not measured beyond that:** the application admits
+  with a hard-coded `ADMISSION_REQUEST = { priorIncidents: 0 }`
+  (`src/main.ts:862`), and `classifyPrisoner`
+  (`src/simulation/prisoners/classification.ts:82`) scores
+  `+1` for a long sentence, `+0..2` for prior incidents and `-1|0|+1` for
+  screening variance — so a UI admission tops out at tier **2**, and
+  `classificationGroupIdForTier` (`classification.ts:58`) needs `>= 3` for
+  `'high-risk'`. The Regime tab therefore shows a **High Risk** schedule that
+  no prisoner a player can admit is subject to. `reviewClassification` can
+  reach tier 3 later through disciplinary findings, which need incidents.
+  The comment at `src/main.ts:859` names the same gap from the other side:
+  *"risk tier the HUD never shows"*. **No cause and no impact are claimed** —
+  whether the player should be able to choose an arrival's history is a design
+  question, and `docs/research/2026-08-28-risk-tier-and-income.md` already
+  establishes that the tier changes neither what the state pays nor what the
+  prison spends.
+
 ## 9. What this pass did not reach
 
 - A player. Every impact statement above is withheld for that reason.
-- Risk tiers 2-3, contraband and incidents: `0 INCIDENTS Clear` throughout.
+- Contraband and incidents: `0 INCIDENTS Clear` throughout, nothing provoked.
+- Risk tier 3 in a live session. §8 argues from code that it is unreachable at
+  admission; nothing here drove a classification review to test the other route.
 - Any viewport other than 1440x900.
 - Save/load of *this* prison. `2026-08-29-mouse-playtest.md` §3 covers a
   mouse-built prison across a reload; nothing here re-derives it.
