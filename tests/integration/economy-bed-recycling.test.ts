@@ -11,7 +11,34 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * **One plank pays for as many revenue-bearing residents as the prison has
- * cells to zone.**
+ * cells to zone** -- **and it no longer does, since
+ * [ADR 0076](../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+ * decision A(ii) shipped on `agent/585-occupied-place` (#585).**
+ *
+ * **Both directions are marked rather than overwritten**, and this file is the
+ * reason the marking matters: every measurement below was taken before the fix
+ * existed, by a different agent, on a different branch, and it is the strongest
+ * evidence the fix works precisely because nobody who wrote it was trying to
+ * make the fix look good. What changed is one number in one assertion:
+ *
+ * ```
+ *                          recycled   control
+ *   before A(ii)             29,315    26,395
+ *   after  A(ii)             26,395    26,395
+ * ```
+ *
+ * The recycled prison now ends on the control's balance **to the minor unit**,
+ * which is a stronger statement than "the exploit is smaller": the same plank,
+ * the same three cells, the same ticks and the same three admissions earn
+ * exactly what playing it straight earns. `StateIncomeSystem` pays for
+ * `min(occupancy, residentCapacity)` per room instance
+ * (`RoomInstanceRegistry.residentIdsWithExistingPlace`), and the two cells the
+ * loop leaves bedless have a capacity of 0.
+ *
+ * **The three residents are still housed and this file still asserts it.** ADR
+ * 0028 decision 2 is untouched: nobody is evicted, `totalOccupancy` still reads
+ * 3, and A(i) -- relocating the excess -- is a separate change that has not
+ * shipped. What A(ii) removes is what that state is *worth*.
  *
  * Audit finding ECON-003, reproduced by playing it. The loop is four commands
  * a player already has, in an order nothing refuses:
@@ -50,9 +77,13 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * A balance asserted on its own would be a number with no claim in it. The
  * claim is a **ratio between two prisons that bought the same thing**: both
  * spend exactly 65, once, on one plank; both run to tick 12,000 from the same
- * seed. One plays the loop above, the other does not. The recycled prison ends
- * on three residents and 4,380 of state income; the control ends on one and
- * 1,460 -- exactly a third, for exactly the same money.
+ * seed. One plays the loop above, the other does not.
+ *
+ * **As measured before A(ii)**, and kept because it is what the finding was:
+ * the recycled prison ended on three residents and 4,380 of state income; the
+ * control on one and 1,460 -- exactly a third, for exactly the same money.
+ * **The ratio is now 1**, and the comparison is still the claim rather than the
+ * number: two prisons that bought the same thing earn the same thing.
  *
  * Both figures are written out as literals, per `docs/TESTING.md`: an expected
  * value computed as `control * 3` would hold for any implementation, including
@@ -111,7 +142,7 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
     expect(procurableMaterial('item.wood-plank')?.unitPriceMinorUnits).toBe(65);
   });
 
-  it('turns one plank into three paying residents, and earns exactly three times the control', () => {
+  it('leaves three residents housed and pays for the one place that still exists (was: three times the control)', () => {
     const runtime = prisonWithOnePlankAndThreeCells();
 
     for (let index = 0; index < RECTS.length; index += 1) {
@@ -141,21 +172,42 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
       expect(planksInStock(runtime), 'undo hands the plank back, whole').toBe(1);
       expect(
         runtime.prisoners.roomInstances.totalOccupancy,
-        'and the resident it was holding stays, still counted by the income system',
+        'and the resident it was holding stays -- ADR 0028 decision 2, unchanged by ADR 0076 A(ii)',
       ).toBe(index + 1);
       expect(
         runtime.prisoners.roomInstances.getById(`${CELL}:${rect.x}:${rect.y}`)?.residentCapacity,
         'in a cell whose capacity is now zero',
       ).toBe(0);
+      // **This clause read "still counted by the income system" and is
+      // withdrawn.** It was true when it was written and is what ADR 0076
+      // A(ii) removes: the place goes with the bed. At *this* instant the
+      // plank is back in the container and no bed stands anywhere in the
+      // prison, so a prison holding `index + 1` residents holds **no** places
+      // at all -- which is the sharpest form of the invariant, and it is the
+      // same at every turn of the loop however many residents have piled up.
+      expect(runtime.placedObjects.size, 'no bed stands anywhere at this instant').toBe(0);
+      expect(
+        runtime.prisoners.roomInstances.residentIdsWithExistingPlace(),
+        'so no resident is a place, whatever the occupancy above says',
+      ).toEqual([]);
     }
 
     expect(runtime.prisoners.roomInstances.totalOccupancy, 'three residents').toBe(3);
     expect(runtime.placedObjects.size, 'standing on one bed between them').toBe(1);
+    expect(runtime.prisoners.roomInstances.residentIdsWithExistingPlace(), 'and one place between them').toHaveLength(1);
 
     stepTo(runtime, MEASURE_TICK);
-    // 29,315 - 24,935. Written as the literal it is, not as a subtraction the
-    // code under test could satisfy with any pair of numbers.
-    expect(runtime.treasury.balanceMinorUnits).toBe(29_315);
+    // 26,395 - 24,935 = 1,460, one resident's worth of state income for the
+    // four whole days this tick settles. **This assertion read 29,315 until
+    // ADR 0076 A(ii) shipped** -- 24,935 + 3 x 1,460, exactly three times the
+    // income for exactly the same money -- and that number is the finding this
+    // file was written to record rather than an old expectation to forget.
+    //
+    // Written as the literal it is, not as a subtraction or as the control's
+    // balance read back, either of which the code under test could satisfy with
+    // any pair of numbers. That the literal now *equals* the control's literal
+    // is the result; the next test asserts that one independently.
+    expect(runtime.treasury.balanceMinorUnits).toBe(26_395);
   });
 
   it('control: the same prison, the same plank, the same ticks, without the undo', () => {
@@ -179,8 +231,12 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
 
     expect(runtime.prisoners.roomInstances.totalOccupancy, 'one bed, one resident').toBe(1);
     stepTo(runtime, MEASURE_TICK);
-    // 26,395 - 24,935 = 1,460, and 24,935 + 3 x 1,460 is 29,315: the recycled
-    // prison's figure above, to the minor unit.
+    // 26,395 - 24,935 = 1,460. **This comment used to end "and 24,935 + 3 x
+    // 1,460 is 29,315: the recycled prison's figure above, to the minor unit",
+    // and the arithmetic is still right about the prison it described.** Since
+    // ADR 0076 A(ii) the recycled prison's figure is this one instead, so the
+    // two literals now agree -- which is the whole result, and it is stated in
+    // both files as its own literal rather than either reading the other back.
     expect(runtime.treasury.balanceMinorUnits).toBe(26_395);
   });
 
