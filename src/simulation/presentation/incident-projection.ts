@@ -26,14 +26,19 @@ import {
  * all hidden calculations." The `SectorRiskTracker`'s running score is
  * withheld for the same reason.
  *
- * **This used to say "exactly as `src/simulation/incidents/alerts.ts` already
- * withholds it from `IncidentAlert`", and that projection no longer exists.**
- * It was deleted in issue #555 as superseded by this one, which carries every
- * field it did and is the only one a session serves; the deletion's argument
- * is kept in `src/simulation/incidents/incident-summary.ts`, the file that was
- * `alerts.ts`. So this is not merely the second place the rule is applied any
- * more -- it is the only one, which is why the rule is now stated here
- * outright rather than by reference. The timeline is *not*
+ * **This used to name a second module applying the same rule -- an
+ * `IncidentAlert` projection, in the file now called
+ * `src/simulation/incidents/incident-summary.ts` -- and that projection no
+ * longer exists.** It was deleted in issue #555 as superseded by this one,
+ * which carries every field it did and is the only one a session serves; the
+ * deletion's argument is kept in that file. So this is not merely the second
+ * place the rule is applied any more, it is the only one, which is why the
+ * rule is stated here outright rather than by reference.
+ *
+ * The dead module is deliberately not spelled as a rooted path:
+ * `tests/foundation/documentation-links-contract.test.ts` requires every one
+ * cited in a source comment to be on disk, and it caught this sentence's first
+ * draft doing exactly that. The timeline is *not*
  * hidden: it is a record of what visibly happened and when.
  *
  * Severity and property damage keep their raw rank alongside a
