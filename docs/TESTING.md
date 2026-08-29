@@ -9,6 +9,7 @@ pnpm typecheck
 pnpm test
 pnpm test:watch
 pnpm test:browser
+pnpm test:artifact
 pnpm verify
 pnpm verify:assets
 pnpm verify:deployment
@@ -142,10 +143,75 @@ CI runs that script in the `browser` job and then `pnpm test:browser`, so the la
 | Determinism | Same initial state and command stream produce identical state/hash | `tests/determinism/` |
 | Migration | Versioned fixture upgrades and forward-only save compatibility | `tests/migrations/` |
 | Browser E2E | Real browser storage/durability, real `DOMException` names, real quota exhaustion, save migration off real storage, whether a real DOM lifecycle event reaches its handler, agreement between a pure transform and a real Phaser camera, what a two-finger touch gesture does to a real camera, and the assembled page: canvas sizing, hit-testing, image decode, a second session in a second real `Worker` | `tests/browser/`, via `pnpm test:browser` (own command, required CI job) |
+| Production artefact | The built client, served from `dist/` through workerd: that the bundle boots, that its emitted worker chunk is reachable and parses, that compile-time `define`s survived, and that one command and one persistence round trip complete | `tests/browser/production-artifact.spec.ts`, via `pnpm test:artifact` (run inside the `browser` CI job) |
 | Measurement | Reported size/timing evidence with no timing assertions | `tests/perf/`, opt-in via its own Vitest config |
 | Benchmark | Repeatable performance evidence, never correctness by elapsed time | `benchmarks/` and `docs/BENCHMARKING.md` |
 
 Use the lowest layer that proves the behavior. Do not use a browser test to cover logic that can be proven by a fast headless unit or contract test.
+
+### The production artefact layer, and the hole it closes
+
+`pnpm test:browser` and `pnpm test:artifact` both drive Chromium and they are
+not the same test. The first runs a **Vite dev server over `src/**`** using
+`tests/browser/vite.config.ts`, which says of itself that it "loads no
+Cloudflare plugin and never participates in `pnpm build`". Everything it proves
+is a statement about the sources. The second runs `vite preview` over `dist/`
+with the production `vite.config.ts`, so the page under test is workerd serving
+the built client with `public/_headers` applied exactly as production applies
+them.
+
+Until `pnpm test:artifact` existed, **nothing in this repository had ever
+executed the artefact a player downloads.** That is not a gap between two
+similar checks; it is a gap with three existing checks stacked either side of
+it, each of which stops one step short:
+
+- `pnpm build` proves the bundle compiles and emits, and `vite.config.ts`'s
+  `assertContentValidationIsShipped` plugin reads one marker out of the emitted
+  chunk. It runs no code.
+- `scripts/verify-cloudflare-build.mjs` reads the generated Wrangler config and
+  the emitted files. It runs no code.
+- `scripts/verify-deployment-preview.mjs` serves `dist/` through workerd and
+  asserts the response headers — and names the hole itself: *"What it CANNOT
+  check is that the policy still lets the renderer run, because it never opens
+  a browser. ... A Phaser upgrade that started needing `'unsafe-eval'`, a
+  cross-origin CDN or a `blob:` worker would pass every check in this
+  repository and break the page."*
+
+Two defect classes were **measured** slipping through all of them, and each is
+now an assertion in `tests/browser/production-artifact.spec.ts`:
+
+1. **A `define` that reaches the dev server and not the artefact.** Deleting
+   `buildIdentityDefines()` from `vite.config.ts` — the *production* config —
+   leaves `tsc` clean, `pnpm build` green, `verify-cloudflare-build.mjs` green,
+   and `app-shell.spec.ts`'s own build-badge test green, because
+   `tests/browser/vite.config.ts` carries an independent copy of the same
+   resolver. Measured: that mutation shipped `lockstate-unknown-unknown` to
+   every player with the badge test passing in 2.6 s.
+2. **A worker chunk that is served as something other than JavaScript.**
+   `wrangler.jsonc` sets `assets.not_found_handling:
+   "single-page-application"` in every environment, and that fallback covers
+   `/assets/*` too — so a chunk hash the deployment does not have is not a 404
+   but **HTTP 200 with the index.html body**, cached `immutable`. `new Worker()`
+   on that constructs, fails to parse, never posts `simulation/ready`, and the
+   session times out after 15 s. No `requestfailed` listener sees it, because
+   the request succeeds. The media type of the chunk the page actually loaded is
+   asserted for exactly this.
+
+**It is deliberately two tests and not a second copy of `app-shell.spec.ts`.**
+The sources are the same sources; what differs between a dev server and a
+bundle is the small set above plus tree shaking, chunking and the shipped CSP.
+Measured cost is ~14 s per CI run — a 3.3 s production build and a 10.9 s
+suite — inside a `browser` job that already takes about five minutes. Keep it
+that shape: behaviour belongs in the layers below, and a duplicate suite here
+would be paid for on every pull request for ever.
+
+`dist/` is an **input** to this suite, not something it builds.
+`tests/browser/playwright.artifact.config.ts` fails with a message naming
+`pnpm build` when `dist/index.html` is absent, deliberately rather than
+building one itself: a suite that builds its own subject can pass on a tree
+nobody deployed. It also needs the Git LFS runtime art for the same reason
+`pnpm test:browser` does — the renderer decodes every atlas — which is one more
+reason it runs inside the `browser` job, where the art has already been pulled.
 
 ## Naming and placement
 

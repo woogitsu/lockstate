@@ -289,6 +289,73 @@ State 3 is what `version.yml` produces after every merge. Its bump commit is pus
 > on, that stops being true and this note has to go** — the paragraphs below
 > are then correct again, which is why they were marked rather than deleted.
 
+> ---
+>
+> **Re-measured 2026-08-29, and nothing has moved.** Read-only `curl` against
+> both hosts on that date:
+>
+> | | `workers.dev` | `lockstate.io` |
+> |---|---|---|
+> | bundle | `assets/index-BPp-3u0k.js` | `assets/index-CwVFOnxX.js` |
+> | the five headers above | present | absent |
+>
+> `lockstate.io` serves **the same bundle hash this note recorded on
+> 2026-08-27**, two days and three releases later. The pinning is not drifting;
+> it is stationary.
+>
+> **How old that build is, derived rather than assumed.** Two independent
+> signals, both readable from here:
+>
+> - The live bundle contains **no `data-build-id` and no `lockstate-<version>-<sha>`
+>   literal at all.** The build badge and its injected identity arrived at
+>   `2e8ca6e` (2026-08-24 06:20 UTC), so the live build predates it.
+> - The live responses still lack the five headers, which entered
+>   `public/_headers` at `cea6849` (2026-08-24 04:15 UTC), so it predates that
+>   too.
+>
+> Both put `lockstate.io` on a build from **2026-08-24 or earlier**. Derive the
+> distance rather than trusting a number: `git rev-list --count cea6849..origin/main`.
+>
+> **THE RULE THIS CREATES, and it has already cost a finding.** *An observation
+> of `lockstate.io` is not an observation of `main`, and must not be reported as
+> one.* On 2026-08-29 an external audit drove a real browser against
+> `lockstate.io`, found that New prison → Load ended in "Loading failed: The
+> simulation worker did not reply within 15000ms" with every save-panel button
+> disabled and Play not starting the clock, and filed it as a critical defect in
+> commit `4c18bc4` (v0.0.203, 2026-08-29). Built from that tree and driven
+> locally, that sequence passes — both loads settle in well under a second and
+> the clock advances (`tests/browser/production-artifact.spec.ts` is now the
+> standing gate for it). The audit measured a build **744 commits and five days**
+> older than the one it named. That is the same trap this note was written for:
+> a previous agent measured the five missing headers with complete rigour and
+> then called them a defect, and one sentence from the owner demolished the
+> conclusion.
+>
+> **What the old build's symptom most likely is**, offered as a reading and not
+> as a claim, because nothing here executed it — this container's browser cannot
+> reach the public internet, only `curl` can. `dd676c3` *"Give every session its
+> own simulation worker (#149)"* landed 2026-08-24 13:44 UTC, **after** the live
+> build. `tests/foundation/composition-root-contract.test.ts` records what the
+> code did before it: *"a page that builds one worker and drives it with a bare
+> `WorkerSessionHost` … can start exactly one session, and every load after the
+> first fails with no way forward but a page reload."* One session works, every
+> load after it fails, and a further New prison behaves identically — which is
+> the audit's sequence, verbatim. `SimulationClient`'s own header explains how
+> that surfaces as a *timeout* rather than as a refusal: a reply the host cannot
+> match to a pending request leaves it to wait out its 15 s budget and report
+> "the simulation worker did not reply", *"the misleading symptom #103 records,
+> reached by a second route"*.
+>
+> **The question for the owner, which no measurement here can answer.** Is
+> `lockstate.io` still meant to be switched off? Nothing in git records the
+> current intent — only the 2026-08-27 statement that it was deliberate then —
+> and Cloudflare → Workers → `lockstate-staging` → Settings → Domains & Routes
+> is the only place the live state exists. If the answer is yes, the note above
+> stands and every future audit of the live domain needs pointing at
+> `workers.dev` instead. If it is no, switching it back on republishes 744
+> commits at once, and the reading above says the very defect the audit reported
+> is among the things that would be fixed by doing so.
+
 **One Worker, not two.** `lockstate.io` is served by **`lockstate-staging`** — the Worker the `staging` job deploys — through a Custom Domain attached by hand in the Cloudflare dashboard. Production and staging are the same thing for now, by the owner's decision.
 
 Two consequences follow, and the second is a trap:
