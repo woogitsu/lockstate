@@ -10,6 +10,29 @@ export interface ClassificationInput {
   readonly priorIncidents: number;
 }
 
+/**
+ * What an admission asks for -- `ClassificationInput` with the sentence made
+ * optional (#535 decision 5).
+ *
+ * The two types are deliberately separate rather than one type with an
+ * optional field. `ClassificationInput` is what `classifyPrisoner` reads, and
+ * by then the length is a number: it was either named by the admission or
+ * drawn at the `classification` stage from `prisoners.sentence`
+ * (`src/simulation/prisoners/sentence.ts`). This type is what crosses the
+ * command boundary, where "the simulation decides" is a legal answer and the
+ * one `src/main.ts` gives.
+ *
+ * A `ClassificationInput` is assignable to this, which is why every existing
+ * caller that names a length -- every fixture in `tests/`, every queued
+ * `AdmitPrisoner` in a save written before this change -- keeps its exact
+ * behaviour: a named length is used, never redrawn.
+ */
+export interface AdmissionRequest {
+  /** Omitted: drawn inside the simulation. Present: used exactly as given, and `admitPrisonerSchema` has already refused a non-positive or out-of-range one. */
+  readonly sentenceLengthTicks?: number;
+  readonly priorIncidents: number;
+}
+
 export interface ClassificationResult {
   readonly riskTier: RiskTier;
   readonly classificationGroupId: string;

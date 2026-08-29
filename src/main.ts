@@ -793,27 +793,62 @@ function staffRoster(): HudStaffViewModel {
 /**
  * What one press of the admit control asks the simulation for (#261 step 4).
  *
- * `ClassificationInput`'s two figures, chosen here because the interface
- * offers no field for either and could not label one honestly: a sentence
- * length is quoted in ticks and nothing on screen renders a sentence, and a
- * prior-incident count feeds a risk tier the HUD never shows
- * (`docs/HUD_PROJECTIONS.md`). A control with three steppers for numbers with
- * no readout would be three controls a player cannot use.
+ * ## One figure now, and the other one is the simulation's
  *
- * Neither number is a balance decision this file is entitled to make, so both
- * are deliberately the least eventful values in range rather than
- * interesting ones: `0` prior incidents is the bottom of the
- * `priorIncidentsAtIntake` slot, and 10,000 ticks is well under
- * `LONG_SENTENCE_THRESHOLD_TICKS` (200,000), so neither adds to
- * `classifyPrisoner`'s score. The tier that results is therefore the
- * screening draw alone -- which is the point: the variation comes from
- * `prisoners.classification`, seeded, and not from a figure picked here.
+ * This used to carry two: `sentenceLengthTicks: 10_000` beside
+ * `priorIncidents: 0`. **The sentence is gone from here** (#535 decision 5,
+ * `src/simulation/prisoners/sentence.ts`), and the paragraph that used to
+ * justify keeping it is the reason it left. It read: *"they are constants and
+ * not a random draw for the same reason: `Math.random` on this thread would
+ * make two runs of the same seed produce different prisoners, which is exactly
+ * what `docs/DETERMINISM.md` forbids."* That is right, and it rules out a
+ * main-thread draw of any kind rather than only an unseeded one -- the seed a
+ * session is reproducible from lives in the worker. So the answer was never a
+ * better constant here; it was for the field to become optional on the wire and
+ * for the draw to happen where the risk tier and the prisoner's name are
+ * already drawn. `admitPrisonerSchema` now permits the omission and
+ * `IntakeSystem` draws at the `classification` stage, from `prisoners.sentence`.
  *
- * They are constants and not a random draw for the same reason: `Math.random`
- * on this thread would make two runs of the same seed produce different
- * prisoners, which is exactly what `docs/DETERMINISM.md` forbids.
+ * **What the owner decided and what is still open.** #535 decision 5 settles
+ * that sentences vary; the bounds -- 2 to 16 in-game days, uniform -- are a
+ * proposal recorded at `MIN_SENTENCE_DAYS` with the decay measurements they
+ * were derived from, and are the owner's to confirm or replace. Nothing on
+ * screen renders a sentence today, so a varying one adds no player-facing
+ * sentence and needs no new copy: `projectPrisonerDetail` already carries
+ * `sentence.lengthTicks` and `sentence.endTick`, and the HUD already declines
+ * to draw them.
+ *
+ * ## `priorIncidents` stays 0, and that is a held decision rather than an
+ * oversight
+ *
+ * It is still the least eventful value in range: `0` is the bottom of the
+ * `priorIncidentsAtIntake` slot, so it adds nothing to `classifyPrisoner`'s
+ * score and the tier that results is the screening draw alone. The measured
+ * consequence, stated so it is not mistaken for a gap nobody looked at:
+ * `classifyPrisoner`'s reachable tiers at `priorIncidents: 0` are `[0, 1]`
+ * (`tests/unit/prisoners-classification.test.ts`), and
+ * `classificationGroupIdForTier` only answers `'high-risk'` at tier 3 -- so
+ * **no admission a player can make from this panel has ever produced a
+ * high-risk prisoner**, and `room.solitary-cell`'s accommodation branch is
+ * reachable only through `ClassificationReviewSystem` later revising a tier
+ * upward.
+ *
+ * That is a real dead branch of exactly the kind #535 decision 5 was taken
+ * about, and it is deliberately **not** fixed here. Drawing prior incidents
+ * would move risk tiers, and risk tiers decide cell sharing, contraband
+ * introduction and which regime timetable a prisoner runs -- a balance change
+ * with a far wider blast radius than a sentence length, and one the owner has
+ * not taken. Keeping it at 0 is also what preserves this change's strongest
+ * safety property: with the sentence drawn from its own stream and the range
+ * entirely below `LONG_SENTENCE_THRESHOLD_TICKS`, every tier every existing
+ * seed has ever produced is bit-identical after it.
+ *
+ * The interface still offers no field for either figure and could not label one
+ * honestly -- a sentence is quoted in ticks and a prior-incident count feeds a
+ * risk tier the HUD never shows (`docs/HUD_PROJECTIONS.md`) -- which is the
+ * original reason neither is a control, and is unchanged.
  */
-const ADMISSION_REQUEST = { sentenceLengthTicks: 10_000, priorIncidents: 0 } as const;
+const ADMISSION_REQUEST = { priorIncidents: 0 } as const;
 
 /**
  * What the Rooms panel may offer, projected from the room catalogue.
@@ -2284,7 +2319,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           }
           sender.submit({
             type: 'AdmitPrisoner',
-            sentenceLengthTicks: ADMISSION_REQUEST.sentenceLengthTicks,
+            // No `sentenceLengthTicks`. Omitting the field is what asks the
+            // simulation to draw one (#535 decision 5); sending `undefined`
+            // would not, because `admitPrisonerSchema` is `.strict()` and the
+            // wire distinguishes an absent key from a present empty one.
             priorIncidents: ADMISSION_REQUEST.priorIncidents,
             // The arrival tile, from the same constant the Build panel's
             // fields start at and a hire's first tile comes from. No id is

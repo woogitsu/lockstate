@@ -66,7 +66,16 @@ const ORIGIN = { x: 16, y: 16 } as const;
 /** A tile a guard has to walk from, so a deployment or a response is a real route request rather than an arrival by coincidence. */
 const FAR_TILE = { x: 0, y: 0 } as const;
 
-/** What one press of the Intake panel's control asks for, copied from `ADMISSION_REQUEST` in `src/main.ts`, with a sentence long enough to outlast the measurements below. */
+/**
+ * What one press of the Intake panel's control asks for -- the tile and `priorIncidents: 0` from
+ * `ADMISSION_REQUEST` in `src/main.ts`, and a sentence length that press no longer sends.
+ * Since #535 decision 5 an omitted length is drawn inside the simulation from
+ * `prisoners.sentence`; naming one here is still legal, is never redrawn, and is what keeps
+ * this fixture's timings fixed.
+ *
+ * The length here is long enough to outlast the measurements below, which is why it is named
+ * rather than drawn: a drawn one could be as short as two in-game days.
+ */
 const ADMISSION = { sentenceLengthTicks: 200_000, priorIncidents: 0 } as const;
 
 const DEFAULT_SECTOR_ID = 'security-sector.prison';

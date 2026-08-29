@@ -38,7 +38,7 @@ import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
 import { Kernel } from '../kernel';
 import { NavigationSystem, type NavigationSystemOptions } from '../navigation';
 import { Container, ContainerMaterialsProvider, ContainerRegistry, JobBoard, JobSystem, JobWorkerPool, UtilityNetwork } from '../operations';
-import { NEED_IDS, NEED_MAX, PrisonerJobWorkerAdapter, PrisonerOperationsRuntime, type DisciplinaryEvidenceSource } from '../prisoners';
+import { NEED_IDS, NEED_MAX, PRISONER_SENTENCE_RNG_STREAM, PrisonerJobWorkerAdapter, PrisonerOperationsRuntime, type DisciplinaryEvidenceSource } from '../prisoners';
 import { ObjectPlacementService, PlacedObjectRegistry, RoomCapacityResolver } from '../objects';
 import { TopologyManager } from '../rooms/topology';
 import { RoomZoningService } from '../rooms/zoning';
@@ -61,7 +61,7 @@ import { SparseWorld } from '../world/sparse-world';
 /** Well-known container id every session's `ConstructionSystem` draws build materials from -- session/scenario setup deposits into it (directly, or via delivery jobs from other containers) to make construction orders actually wait for and consume real materials (issue #25). */
 export const CONSTRUCTION_MATERIALS_CONTAINER_ID = 'construction-materials';
 
-/** Prisoner intake's one intentional RNG use (see `src/simulation/prisoners/classification.ts`); pre-registered on every session's Kernel so `IntakeSystem` can claim it. */
+/** Prisoner intake's screening-variance draw (see `src/simulation/prisoners/classification.ts`); pre-registered on every session's Kernel so `IntakeSystem` can claim it. */
 export const PRISONER_CLASSIFICATION_RNG_STREAM = 'prisoners.classification';
 
 /** `SearchSystem`'s detection checks -- kept separate from `CONTRABAND_INTELLIGENCE_RNG_STREAM` so a tip's draw can never perturb a search's draw (issue #27: "one subsystem's draws cannot perturb another"). */
@@ -335,6 +335,30 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
 
   const rng = new NamedRngStreams([
     { name: PRISONER_CLASSIFICATION_RNG_STREAM, state: deriveXoshiroState(masterSeed, PRISONER_CLASSIFICATION_RNG_STREAM) },
+    /**
+     * Intake's *other* draw: how long an admission that named no sentence holds
+     * its prisoner for (#535 decision 5, `src/simulation/prisoners/sentence.ts`).
+     *
+     * **Its own stream and not `PRISONER_CLASSIFICATION_RNG_STREAM`**, which is
+     * the sixth registration this session makes and the reason worth writing down.
+     * The two draws are made at the same stage, one line apart, for the same
+     * prisoner -- so sharing a stream would have looked economical. It would also
+     * have shifted `prisoners.classification` by one draw per admission, changing
+     * every risk tier every seed has ever produced, in a game whose challenge
+     * verification is deterministic replay (ADR 0009). Isolation is what
+     * `docs/DETERMINISM.md` asks these streams for and this is the case it asks
+     * for it in: with the drawn range entirely below
+     * `LONG_SENTENCE_THRESHOLD_TICKS`, adding this stream leaves every
+     * classification outcome of every existing seed bit-identical.
+     *
+     * Adding it is **not** a save-format change (ADR 0038 §2, #415): a bundle that
+     * predates it restores with the stream seeded from its own `masterSeed`, which
+     * is the state a new session would have given it, and
+     * `tests/determinism/save-rng-stream-compatibility.test.ts` had to be extended
+     * by hand before this line could ship -- which is that file working exactly as
+     * its own comment says it should.
+     */
+    { name: PRISONER_SENTENCE_RNG_STREAM, state: deriveXoshiroState(masterSeed, PRISONER_SENTENCE_RNG_STREAM) },
     { name: CONTRABAND_DETECTION_RNG_STREAM, state: deriveXoshiroState(masterSeed, CONTRABAND_DETECTION_RNG_STREAM) },
     { name: CONTRABAND_INTELLIGENCE_RNG_STREAM, state: deriveXoshiroState(masterSeed, CONTRABAND_INTELLIGENCE_RNG_STREAM) },
     { name: CONTRABAND_INTRODUCTION_RNG_STREAM, state: deriveXoshiroState(masterSeed, CONTRABAND_INTRODUCTION_RNG_STREAM) },
@@ -854,10 +878,20 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * comparison lives in `src/simulation/incidents/flashpoint.ts`, and what
    * happens here is reading four numbers out of the registries that already
    * hold them. `sentenceRemaining` is guarded against a zero-length sentence
-   * rather than assumed away -- `sentenceLengthTicks` is 0 in every slot until
-   * the classification stage writes one, so an arrival still at reception would
-   * otherwise divide by zero and score `NaN`, which compares false against
-   * every threshold and would have made the bug invisible instead of loud.
+   * rather than assumed away, so an arrival whose length is not settled yet
+   * cannot divide by zero and score `NaN` -- which compares false against every
+   * threshold and would have made the bug invisible instead of loud.
+   *
+   * **The sentence saying when that happens was wrong, and #535 decision 5 has
+   * made it right.** It read "`sentenceLengthTicks` is 0 in every slot until
+   * the classification stage writes one"; what that stage wrote was
+   * `sentenceEndTick`, and `submitIntake` had already written a length at the
+   * dispatch tick -- so the only slots reading 0 were slots nobody had ever
+   * been admitted into. Since that decision an admission that leaves its length
+   * to the simulation does read 0 from the dispatch tick until the
+   * `classification` stage draws one, about fifteen ticks later. The guard now
+   * covers the window the comment always claimed for it, and both directions
+   * are recorded rather than the first overwritten.
    *
    * Ascending entity id, because `resolveOccupants` answers in that order and
    * this maps over it.

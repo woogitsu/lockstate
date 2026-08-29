@@ -44,7 +44,19 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  * must fail this file** -- which is exactly the delivery hazard #415 is about,
  * made loud at the one place that can see it.
  *
- * **It did exactly that, once, on purpose.** ADR 0061 added a fifth stream,
+ * **It has done exactly that, twice, on purpose.** ADR 0061 added a fifth
+ * stream and #535 decision 5 added a sixth, `prisoners.sentence` -- the stream
+ * a sentence length is drawn from when an admission does not name one. Both
+ * times every case below failed until the list and both word tables were
+ * extended by hand, which is this file working. The second one is the cleaner
+ * demonstration of what the file is *for*: a save written before
+ * `prisoners.sentence` existed carries five streams, restores, and the first
+ * admission that leaves its sentence to the simulation draws from a stream
+ * that bundle never mentioned. It works because the restore merges rather than
+ * replaces, and the words pinned below are what say the merge seeded it from
+ * the bundle's own `masterSeed` rather than from anywhere else.
+ *
+ * The first time, for the record: ADR 0061 added a fifth stream,
  * `contraband.introduction`, and every case below failed until the list and
  * both word tables were extended by hand. That is this file working, and the
  * extension is the deliberate, reviewed edit the paragraph above asks for --
@@ -59,7 +71,7 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  * Written out, never read from `new-session.ts`. If this list is wrong the
  * cases below fail; if it goes stale the cases below fail. That is the point.
  */
-const REGISTERED_STREAMS = ['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification'] as const;
+const REGISTERED_STREAMS = ['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification', 'prisoners.sentence'] as const;
 
 /**
  * `deriveXoshiroState(seed, name).words` for the two seeds these cases use,
@@ -77,6 +89,7 @@ const DERIVED_WORDS_AT_SCENARIO_SEED: Readonly<Record<string, readonly number[]>
   'contraband.introduction': [3484590104, 358788944, 3779368715, 3836528074],
   'identity.actor-name': [1389004806, 3929526187, 801062818, 758337395],
   'prisoners.classification': [3766015752, 2847574757, 3141289015, 3676423178],
+  'prisoners.sentence': [1659324535, 280634646, 2187164178, 2228777105],
 };
 
 const DERIVED_WORDS_AT_SEED_ZERO: Readonly<Record<string, readonly number[]>> = {
@@ -85,6 +98,7 @@ const DERIVED_WORDS_AT_SEED_ZERO: Readonly<Record<string, readonly number[]>> = 
   'contraband.introduction': [4191607977, 1599308922, 1831874870, 2722278899],
   'identity.actor-name': [53358203, 2080006951, 2778740427, 1505507477],
   'prisoners.classification': [1731836178, 401524879, 2842153704, 1358188498],
+  'prisoners.sentence': [2971190074, 2860075831, 2101535010, 3330131813],
 };
 
 /**

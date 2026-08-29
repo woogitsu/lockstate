@@ -332,9 +332,10 @@ describe('a sentence that ends (#441)', () => {
  * Issue #506: the Regime panel's roster-empty sentence, "Nobody has been
  * admitted yet", read `roster.total === 0` as its only condition -- so a
  * prison whose entire population served its sentence and left (exactly what
- * the test above produces, and what `ADMISSION_REQUEST`'s fixed
- * `sentenceLengthTicks` in `src/main.ts` makes routine for a batch admitted
- * together, ADR 0050 "What this does not decide") triggered the same sentence
+ * the test above produces; `ADMISSION_REQUEST` in `src/main.ts` used to make
+ * that routine for a whole batch admitted together, ADR 0050 "What this does
+ * not decide", and since #535 decision 5 sentences are drawn per prisoner so
+ * a batch leaves over a spread rather than at once) triggered the same sentence
  * as a prison nobody had ever touched. `projectPrisonerRoster`'s
  * `everAdmitted` (`admittedCount > 0`, `prisoner-operations-runtime.ts`) is
  * the fact that tells the two apart.

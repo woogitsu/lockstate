@@ -113,7 +113,11 @@ describe('deterministic replay of a seeded session', () => {
     const runtime = runScenario();
     const streams = runtime.kernel.snapshot().rngStates;
 
-    expect(streams.map((entry) => entry.name)).toEqual(['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification']);
+    // `prisoners.sentence` joined the set with #535 decision 5. This
+    // scenario's admissions name their own sentences, so the stream is never
+    // drawn from here and every canonical hash below is unmoved by it -- which
+    // is the property an isolated stream is registered for.
+    expect(streams.map((entry) => entry.name)).toEqual(['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification', 'prisoners.sentence']);
     for (const stream of streams) {
       expect(stream.state.algorithm).toBe('xoshiro128**');
       expect(stream.state.words).toHaveLength(4);

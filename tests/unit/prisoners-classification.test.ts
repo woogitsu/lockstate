@@ -78,10 +78,16 @@ describe('classifyPrisoner', () => {
     }
 
     it('cannot reach high-risk from what the Intake panel asks for, at any seed', () => {
-      // `ADMISSION_REQUEST` in `src/main.ts`. Deliberately the least eventful
-      // values in range: 0 priors and a sentence well under the 200,000-tick
-      // threshold, so the score is 0 and the tier is the screening draw alone.
+      // What the Intake panel asks for. `priorIncidents: 0` is still
+      // `ADMISSION_REQUEST` in `src/main.ts`; the 10,000 was too until #535
+      // decision 5 made the length a draw, and it is kept here because the
+      // whole drawn range (4,800-38,400, `prisoners/sentence.ts`) is on the
+      // same side of the 200,000-tick threshold -- so the score is 0 and the
+      // tier is the screening draw alone for *every* sentence a press can now
+      // produce, not only for the one it used to produce.
       expect(reachableTiers({ sentenceLengthTicks: 10_000, priorIncidents: 0 })).toEqual([0, 1]);
+      expect(reachableTiers({ sentenceLengthTicks: 4_800, priorIncidents: 0 })).toEqual([0, 1]);
+      expect(reachableTiers({ sentenceLengthTicks: 38_400, priorIncidents: 0 })).toEqual([0, 1]);
     });
 
     it('reaches high-risk from two priors alone, or from one plus a long sentence', () => {

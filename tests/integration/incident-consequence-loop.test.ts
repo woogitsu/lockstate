@@ -52,7 +52,7 @@ const ARRIVAL = { x: 16, y: 16 };
  * One press of the Intake panel's control (`ADMISSION_REQUEST` in
  * `src/main.ts`), **with a longer sentence**.
  *
- * The panel asks for 10,000 ticks and this file used to copy that figure. It
+ * The panel asked for 10,000 ticks and this file used to copy that figure. It
  * cannot any more: since #441 a sentence ends, and every case below runs to at
  * least `FIRST_REVIEW_TICK` (23,999) -- three of them to 96,000 -- so the
  * prisoner whose tier is under measurement left the prison long before the
@@ -65,9 +65,16 @@ const ARRIVAL = { x: 16, y: 16 };
  * every tier in this file exactly where it was, and 150,000 clears the longest
  * run here (96,000) with room for the review interval to move.
  *
- * That the panel's own figure now empties a cell in about four in-game days is
- * a **balance** question rather than a defect, and it is recorded in ADR 0050's
+ * That the panel's own figure emptied a cell in about four in-game days was a
+ * **balance** question rather than a defect, recorded in ADR 0050's
  * consequences rather than answered by editing `src/main.ts` from a test file.
+ * **The owner has since answered it** (#535 decision 5): the panel sends no
+ * length at all, and one is drawn per prisoner from `prisoners.sentence` over
+ * 2 to 16 in-game days. That does not change this file, whose whole point is
+ * that it names its own sentence rather than inheriting one -- but it does
+ * retire the question, and the longest drawn sentence (38,400) is still far
+ * short of the 96,000 these cases run to, so naming one here is still
+ * required.
  */
 const ADMISSION = { sentenceLengthTicks: 150_000, priorIncidents: 0 };
 

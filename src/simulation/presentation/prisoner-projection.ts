@@ -275,10 +275,19 @@ export interface PrisonerRosterPage extends ViewModelPage<PrisonerRosterRowViewM
    * answers.
    *
    * This is what lets a reader distinguish a prison nobody has used yet from
-   * one whose entire population served its sentence and left inside the
-   * same batch (`ADMISSION_REQUEST`'s fixed `sentenceLengthTicks` in
-   * `src/main.ts`, ADR 0050 "What this does not decide") -- both read
+   * one whose entire population served its sentence and left -- both read
    * `total: 0`, and only this field tells them apart.
+   *
+   * **That used to be a claim about a *batch* leaving together**, because
+   * `ADMISSION_REQUEST` in `src/main.ts` gave every admission the same fixed
+   * `sentenceLengthTicks` (ADR 0050, "What this does not decide"). Since #535
+   * decision 5 it does not: a sentence is drawn per prisoner from
+   * `prisoners.sentence`, so a batch admitted together now leaves over a
+   * spread of up to fourteen in-game days. The sentence above is narrowed
+   * rather than deleted, because the state it describes is unchanged and
+   * merely arrived at differently -- and it is *more* reachable now, not less:
+   * one prisoner leaving at a time means `total` passes through zero on the
+   * way down whenever the last of them goes.
    */
   readonly everAdmitted: boolean;
 }
