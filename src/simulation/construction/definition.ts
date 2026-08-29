@@ -911,15 +911,40 @@ export const WALL_EDGE_NUMERIC_ID = 1;
  *
  * ## Why not simply reuse `WALL_EDGE_NUMERIC_ID`
  *
- * Nothing in `src/` discriminates on the value yet -- every consumer tests
- * `!== 0` -- so a door written as `1` would behave identically today. It is a
- * separate value because the *save* carries it: the edge layers are RLE'd into
- * the world snapshot, so a prison built now records where its doors are, and a
- * renderer that draws a door differently becomes a change to the renderer alone
- * rather than a change that cannot tell the two apart in any existing save.
- * **The renderer does not draw it differently today**, and that is owed work
- * rather than a claim: `tile-layer.ts` paints every non-zero edge with
- * `EDGE_WALL_APPEARANCE`, so a finished door currently looks like a wall.
+ * It is a separate value because the *save* carries it: the edge layers are
+ * RLE'd into the world snapshot, so a prison built now records where its doors
+ * are, and a renderer that draws a door differently becomes a change to the
+ * renderer alone rather than a change that cannot tell the two apart in any
+ * existing save.
+ *
+ * **That bet has since been collected, and the two sentences that used to open
+ * this section are kept below rather than deleted, because they are what the
+ * fix spent.** They read:
+ *
+ * > Nothing in `src/` discriminates on the value yet -- every consumer tests
+ * > `!== 0` -- so a door written as `1` would behave identically today.
+ * >
+ * > **The renderer does not draw it differently today**, and that is owed work
+ * > rather than a claim: `tile-layer.ts` paints every non-zero edge with
+ * > `EDGE_WALL_APPEARANCE`, so a finished door currently looks like a wall.
+ *
+ * Both became false in 087a76a (#462, 2026-08-28), which is where the owed
+ * work was done. `src/rendering/world/appearance.ts` now discriminates on this
+ * value in `edgeAppearance`, `src/rendering/world/environment-art.ts` does the
+ * same in `edgeArt`, and `tile-layer.ts` asks both -- so a finished door is
+ * drawn with the interior-door sheet where the artwork has loaded and in
+ * `door-wooden`'s own colours where it has not. `docs/RENDERING.md` carries the
+ * same retraction under "What is not rendered yet".
+ *
+ * The correction is recorded here because the stale sentence was not merely
+ * untrue, it was *load-bearing*: it was still being read as an open task and
+ * dispatched as one in the session that wrote this paragraph, fifty-one
+ * releases after the work it describes shipped in v0.0.132. A sentence in the
+ * present tense about another module's behaviour is the shape that rots first
+ * (`docs/AGENT_WORKFLOW.md` §4), and this one had no test tying it to the code
+ * it described. It has one now, in
+ * `tests/browser/environment-art.spec.ts`: *"draws a door differently from a
+ * wall when the artwork never arrives"*.
  */
 export const DOOR_EDGE_NUMERIC_ID = 2;
 
