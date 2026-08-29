@@ -288,18 +288,38 @@ export interface RoomsPanel {
  *
  * | viewport | fold slack | catalogue-list slack |
  * | --- | --- | --- |
- * | 900x600, `room.kitchen` | **3.58px** | **0.0px** |
- * | 900x600, `room.staff-room` | 7.89px | 8.9px |
- * | 375x812 | 7.89px | 89.9px |
- * | 1024x768 | 7.89px | 94.9px |
- * | 1280x720 | 7.89px | 58.9px |
- * | 1440x900 | 7.89px | 193.9px |
+ * | 900x600, `room.staff-room` | 7.89px | 51.2px |
+ * | 900x600, `room.classroom` | 7.89px | 51.2px |
+ * | 375x812 | 7.89px | 140.2px |
+ * | 1024x768 | 7.89px | 145.2px |
+ * | 1280x720 | 7.89px | 109.2px |
+ * | 1440x900 | 7.89px | 244.2px |
  *
- * **900x600 is the binding viewport and the phone is not**, which reverses the
- * assumption this constant was raised under: at 375x812 the catalogue list has
- * 89.9px to give and at 900x600 it has 8.9px, falling to nothing under the
- * deepest room. The Rooms panel gets 451.1px of rail at 375x812 against 338.1px
- * at 900x600, and that is the whole of the difference.
+ * **This table was re-measured and it moved, so both readings are kept.** It
+ * said, when this constant was raised:
+ *
+ * > | 900x600, `room.kitchen` | **3.58px** | **0.0px** |
+ * > | 900x600, `room.staff-room` | 7.89px | 8.9px |
+ * > | 375x812 | 7.89px | 89.9px |
+ *
+ * and concluded that *"a fourth object requirement on any room is now a layout
+ * change as well as a balance change"*. **That conclusion is withdrawn**, and
+ * not because it was wrong -- it was right about the panel it measured. The
+ * panel changed underneath it: `.hud-rooms__area` and `.hud-rooms__enclosure`
+ * now fold when they have nothing to report, which is 34.3px of placeholder
+ * this panel used to draw in every state, and `.hud-rooms[data-needs]` donates
+ * the catalogue's floor while a room is unfinished. `room.kitchen` is no longer
+ * in the tightest six at any viewport, and the deepest room the catalogue can
+ * offer now leaves the **same 7.89px** as every other -- which is this panel's
+ * designed gap rather than a margin that happens to be positive.
+ *
+ * **900x600 is still the binding viewport and the phone is still not**, which
+ * remains the reversal of the assumption this constant was raised under: the
+ * Rooms panel gets 451.1px of rail at 375x812 against 338.1px at 900x600, and
+ * that is the whole of the difference. What changed is how much of it is spent,
+ * not which viewport is tightest. The catalogue-list slack at 900x600 went from
+ * 8.9px to 51.2px, so the figure a block added here spends is no longer
+ * within one line of nothing.
  *
  * The readout itself, at the deepest shape the shipped catalogue can produce --
  * header, room line and three object lines -- **measures 100px**
@@ -1217,10 +1237,15 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
 
   function paintEnclosure(): void {
     if (notice === undefined) {
+      // Folded for `paintArea`'s reason and with the same `:not([hidden])`
+      // guard behind it: until a room has been designated this reads
+      // `Enclosure / Not evaluated yet`, which is 14.3px spent saying nothing.
       enclosureValue.textContent = t(HUD_MESSAGE_KEY.roomsEnclosureNone);
+      enclosureBlock.hidden = true;
       delete enclosureBlock.dataset['enclosure'];
       return;
     }
+    enclosureBlock.hidden = false;
     enclosureValue.textContent = t(
       notice.enclosure === 'sealed'
         ? HUD_MESSAGE_KEY.roomsEnclosureSealed
@@ -1313,6 +1338,15 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
      */
     const shown = needs !== undefined && needs.unfinishedRooms > 0 ? needs : undefined;
     needsBlock.hidden = shown === undefined;
+    /*
+     * The block's presence, on the panel, because a stylesheet cannot ask
+     * whether a descendant has a box -- and `hud.css` has to, to donate the
+     * catalogue's floor to this readout exactly as `.hud-build[data-queued]`
+     * donates to the build queue. See that rule for the argument; the numbers
+     * for this one are in `.hud-rooms[data-needs]`.
+     */
+    if (shown === undefined) delete panel.element.dataset['needs'];
+    else panel.element.dataset['needs'] = String(shown.totalNeeds);
     if (shown === undefined) {
       needsCount.textContent = '';
       needsLine.textContent = '';
@@ -1565,10 +1599,23 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   function paintArea(): void {
     const shown = pending ?? area;
     if (shown === undefined) {
+      /*
+       * Folded, not blanked: `Area / Nothing selected` is 20px of a panel that
+       * has none to spare at 900x600, and it is a placeholder for a figure the
+       * player has not asked for yet. The sentence is kept rather than removed
+       * so the block reads correctly the instant it comes back, and so a test
+       * that reads the text without a rectangle still gets the honest answer.
+       *
+       * `hud.css` gives this block an author `display: flex` behind a
+       * `:not([hidden])` guard, without which this line would do nothing at
+       * all -- the same trap the catalogue body's rule documents.
+       */
       areaValue.textContent = t(HUD_MESSAGE_KEY.roomsAreaNone);
+      areaBlock.hidden = true;
       delete areaBlock.dataset['area'];
       return;
     }
+    areaBlock.hidden = false;
     areaValue.textContent = t(HUD_MESSAGE_KEY.roomsAreaValue, {
       width: shown.width,
       height: shown.height,

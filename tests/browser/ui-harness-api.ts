@@ -623,6 +623,16 @@ export interface RoomsProbe {
   /** `data-area` on the readout block: `x,y,width,height`, or empty for none. */
   readonly area: string;
   readonly areaText: string;
+  /**
+   * Whether the area readout has a box at all.
+   *
+   * Laid out and not merely present, for `armLaidOut`'s reason and one more:
+   * the block folds when there is no rectangle to report, and `hud.css` gives
+   * it an author `display: flex` behind a `:not([hidden])` guard -- so a probe
+   * that read the attribute would agree with a rule that had lost its guard and
+   * was painting the placeholder anyway.
+   */
+  readonly areaLaidOut: boolean;
   /** The one note line: the arm hint, the removal hint, the too-small warning or the enclosure warning. */
   readonly noteText: string;
   /** `data-tone`, so a warning is distinguishable from a hint without matching prose. */
@@ -630,6 +640,10 @@ export interface RoomsProbe {
   /** The two rule lines: the authored minimum, and the enclosure requirement. */
   readonly ruleText: readonly string[];
   readonly enclosureText: string;
+  /** Whether the enclosure readout has a box, for `areaLaidOut`'s reason: it folds until a room has been evaluated. */
+  readonly enclosureLaidOut: boolean;
+  /** `data-needs` on the panel: the total the readout was told about, or empty when it has no box. */
+  readonly panelNeeds: string;
   readonly armLaidOut: boolean;
   readonly removeLaidOut: boolean;
   readonly confirmLaidOut: boolean;
