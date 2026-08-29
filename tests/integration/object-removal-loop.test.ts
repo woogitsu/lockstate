@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { stateIncomeForCompletedDay } from '../../src/simulation/economy';
 import { projectRoomDetail } from '../../src/simulation/presentation/room-projection';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { ACTION_PHASES, intakeStageFromIndex } from '../../src/simulation/prisoners/components';
@@ -335,7 +336,21 @@ describe('a bed removed from an occupied cell evicts nobody (ADR 0028 decision 2
     expect(runtime.prisoners.coldState.getAccommodation(prisoner)).toBe(cellInstanceId);
     expect(runtime.prisoners.roomInstances.occupancyOf(cellInstanceId)).toBe(1);
     expect(runtime.prisoners.roomInstances.getById(cellInstanceId)?.residentCapacity).toBe(0);
-    expect(runtime.prisoners.roomInstances.totalOccupancy, 'the state still pays for the place they occupy').toBe(1);
+    expect(runtime.prisoners.roomInstances.totalOccupancy, 'and the registry still counts them as housed').toBe(1);
+    // **This assertion's message read "the state still pays for the place they
+    // occupy" and is withdrawn** (issue #585,
+    // [ADR 0076](../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+    // decision A(ii)). It was true when it was written, and note what it was:
+    // a *count* of occupancy carrying a claim about *money* in its message, so
+    // the count went on passing after the money changed and only the sentence
+    // was false. That is the shape `docs/AGENT_WORKFLOW.md` §4 warns about, met
+    // in a test message rather than in prose, and the fix is to assert the
+    // thing the sentence claims.
+    expect(
+      runtime.prisoners.roomInstances.residentIdsWithExistingPlace(),
+      'and the state pays for none of it: the place went with the bed',
+    ).toEqual([]);
+    expect(stateIncomeForCompletedDay(runtime.prisoners), 'so a whole day is worth nothing here').toBe(0);
 
     // **The cell admits nobody new**, and the second cell still does -- so this
     // is the cell refusing, not the prison having run out.

@@ -151,6 +151,9 @@ function buildAssociationFixture(options: {
     roomInstances.register({
       instanceId: 'yard-0',
       roomCatalogId: 'room.yard',
+      // The open-area tag `RoomZoningService.zone` would have carried onto a
+      // real yard (owner's ruling of 2026-08-29, #585).
+      openArea: true,
       anchorTile: cellBlock.canteenTiles[0]!,
       residentCapacity: 0,
       concurrentUseCapacity: 8,

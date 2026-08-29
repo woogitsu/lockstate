@@ -1,4 +1,4 @@
-import { defaultRoomContentRegistry, type RoomCatalogDefinition } from '../../content/room-catalog';
+import { defaultRoomContentRegistry, isOpenAreaRoom, type RoomCatalogDefinition } from '../../content/room-catalog';
 import type { ContentRegistry } from '../../content/registry';
 import { roomBoundsOf, roomInstanceContaining } from '../objects/room-capacity';
 import type { RoomInstance, RoomInstanceRegistry } from '../prisoners/room-instance-registry';
@@ -600,6 +600,13 @@ export class RoomZoningService {
       residentCapacity: 0,
       concurrentUseCapacity: 0,
       objectCapabilities: [],
+      // The room *type*'s open-area tag, carried onto the instance because
+      // `RoomInstanceRegistry` may not read a catalogue (ADR 0071 decision 4).
+      // Unlike the three fields above this is not a zero waiting for
+      // `updateDerived`: it never changes for the life of the instance,
+      // because it is a fact about the room type and not about what is
+      // standing inside it. Owner's ruling of 2026-08-29, issue #585.
+      openArea: isOpenAreaRoom(definition.id),
     };
     this.roomInstances.register(registered);
     // Immediately, and inside the same command dispatch, so no tick exists in

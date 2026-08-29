@@ -8,16 +8,19 @@ implementation.
 
 **Nothing here changes a status.** A status moves in the ADR and in the index,
 never in this file. What changed with this revision is what the file is *for*:
-§1 records **all thirteen** flips, §2 holds **six entries — the two dated rulings
+§1 records **all thirteen** flips, §2 holds **seven entries — the two dated rulings
 #382 wrote into ADR 0008 §2, the 2026-08-27 amendment scoping that ADR's §3
 by authority, the preconditions on the change that gives this project its
 first server-side entry point, ADR 0056's price for keeping a player's
 orders in the order they gave them (2026-08-28, and the first row filed by the
 change that wrote it since the rule was restated), ADR 0059's price for
-making an actor walk (2026-08-28, #485, the second such row), and ADR 0074's
+making an actor walk (2026-08-28, #485, the second such row), ADR 0074's
 price for reading a restored room's rectangle off the zoning plane it already
-carries (2026-08-29, #571, the third)** — **this clause read "five entries"
-until #571's entry was filed, and "four entries" until `07add3e`**, and the sentence saying four is corrected
+carries (2026-08-29, #571, the third), and ADR 0071's open-area amendment
+(2026-08-29, #585, the fourth — and the second consecutive row filed by a
+commit whose only job was the filing)** — **this clause read "six entries"
+until #585's entry was filed, "five entries"
+until #571's, and "four entries" until `07add3e`**, and the sentence saying four is corrected
 rather than overwritten because the split is the finding: #485 filed ADR 0059's
 entry, moved §2's own heading with it and moved neither this paragraph nor §5's
 preamble, which is the third consecutive time the four places below have split
@@ -406,7 +409,11 @@ and still land. Both claims are re-anchored to `cfab558`.
 **The four places that count §2 were swept and all four agree at six** — this
 header's paragraph, the title (which states a subject and no count, and is
 therefore the only one that cannot rot this way), §2's own heading *"## 2. Six
-entries"*, and §5's preamble's *"SIX at #571"*. **This is the first window in
+entries"*, and §5's preamble's *"SIX at #571"*. **They agree at seven since
+#585**, which filed ADR 0071's open-area amendment as its own commit and moved
+the three that carry a number with it; this sentence records what the sweep
+found at `cfab558` and is left standing rather than restated, because the
+anchor is the whole of what makes it readable. **This is the first window in
 the series in which an entry was filed *and* the four places did not split**,
 and the mechanism is the one §5's preamble names: `9f0096c`/#574 was a commit
 whose only job was to file ADR 0074's entry, so it had nothing else to think
@@ -1982,7 +1989,7 @@ cells is exercised nowhere, because no shipped session yet furnishes two.
 
 ---
 
-## 2. Six entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, the Worker that lands with telemetry ingest, ADR 0056's price for keeping a player's orders in order, ADR 0059's price for making them walk, and ADR 0074's price for reading a restored room's rectangle
+## 2. Seven entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, the Worker that lands with telemetry ingest, ADR 0056's price for keeping a player's orders in order, ADR 0059's price for making them walk, ADR 0074's price for reading a restored room's rectangle, and ADR 0071's open-area amendment
 
 **This heading has now read "empty", "exactly one entry: ADR 0029", "empty
 again", one entry, two, one, empty for the third time, one again, and — on
@@ -2385,6 +2392,101 @@ this section's standing recipe. **ADR 0071's own text is a second, separate
 debt** and is not discharged by accepting this one: its index row and its
 decision 2 still name "a V4 save" as the unbounded case, and whether that gets a
 marked amendment is the owner's call.
+
+### ADR 0071's open-area amendment (2026-08-29) — the scoping is the owner's, the document it scopes is still `Proposed`
+
+**What is waiting.** A dated amendment section in
+[ADR 0071](./0071-what-bounds-a-room-whose-activity-consumes-no-object.md),
+*"Amendment, 2026-08-29: floor-area capacity applies only to a room type tagged
+as an open area (issue #585)"*, arrived with the change that implements it
+(#585, `agent/585-occupied-place`). Capacity derived from a room's own ground
+now binds only a room type explicitly tagged in `src/content/room-catalog.ts` —
+`room.yard`, `room.holding-cell`, `room.delivery-bay` — and every other room
+type answers **0** for an action that consumes no object, whatever its
+rectangle and whether or not it has one.
+
+**Two things are outstanding, and neither of them is the ruling.** The ruling
+is the owner's, recorded on
+[issue #585](https://github.com/matmaxalez/lockstate/issues/585) on 2026-08-29
+in the owner's own words, and the amendment says so in its own opening as
+[`README.md`](./README.md)'s *"An amendment to an accepted ADR"* section
+requires. What a reader cannot see without this row is:
+
+1. **ADR 0071 itself is still `Proposed, 2026-08-29. Not self-approved.`** This
+   section's rule exists for exactly this: an amendment inside a document is
+   invisible to `adr-numbering-contract.test.ts`, which counts documents by
+   their `Status` line. So a reader meeting decision 1 has to be told both that
+   it is proposed and that it is already narrower than it reads — and neither
+   fact is reachable from the index row, which still describes the unscoped
+   rule at length.
+2. **The debt ADR 0074's entry named is still open.** That entry records that
+   *"ADR 0071's own text is a second, separate debt … its index row and its
+   decision 2 still name 'a V4 save' as the unbounded case, and whether that
+   gets a marked amendment is the owner's call."* This amendment does **not**
+   discharge it. It touches decision 2 only for the untagged case; "a V4 save"
+   is still there and still wrong, in the ADR and in its README row.
+
+**The evidence, and part of it is a correction to the ruling's own premise.**
+Measured at `05640b6` (v0.0.210):
+
+- **The decision being amended is ADR 0071's, not ADR 0017 decision 5**, which
+  the ruling names. ADR 0017 decision 5 reads, in full: *"This ADR decides no
+  prices and no balance values. #29 puts final pricing and balance out of scope
+  and nothing here changes that."*
+- **A bedless `cell` has never had floor-area capacity in this tree**, so floor
+  area was not the cause of the exploit #585 measured. `residentCapacity` is
+  the summed `footprint.width` of the `'sleep-surface'` objects standing in the
+  room (`src/simulation/objects/room-capacity.ts:176-201`, ADR 0028 decision 2)
+  and reads no rectangle; the rule this amendment scopes is the
+  *concurrent-use* ceiling, whose three production callers
+  (`src/simulation/prisoners/action-system.ts:820`, `:1067`, `:1082`) all pass a
+  capability and all sit behind a `room-catalog-id` target, so only
+  `action.yard-recreation` on `room.yard` can reach it.
+- **The exploit was residency's and is fixed by the other half of #585.** Three
+  prisoners assigned above one standing bed earned **900 minor units a day
+  before and 300 after**, against a control's unchanged 300, measured through
+  the real command router.
+
+**So this amendment changes nothing a player can currently reach**, and that is
+the argument for it rather than against it: `room.yard` is tagged, every
+ceiling in the game is what it was, and not one number in ADR 0071 moves. What
+it buys is that the door cannot open later — the next action naming no
+capability, on any room type, cannot conjure a place out of a bedless cell's
+floor, and cannot do it by omission either, because an absent tag means "not an
+open area".
+
+**What approving commits the project to**, and this is the cost rather than the
+benefit:
+
+1. **A per-room-type authoring obligation, paid forever.** Every room type
+   added from now on is not an open area unless somebody says so. The only
+   guard is `tests/unit/content-catalogs.test.ts`, which pins the tagged set as
+   a whole rather than as three memberships, so a *fourth* room quietly
+   acquiring the tag fails.
+2. **A generality given up.** Decision 1 used to be a statement about rooms and
+   is now a statement about three of them. A future room whose activity really
+   is people on open ground gets nothing until it is tagged, and it will look
+   like the pre-#326 defect when it does — a room that exists and admits
+   nobody.
+3. **The owner's own stated cost:** *"this is a change to a decision, not to an
+   implementation, and every reader of [the ADR] who learned decision 5 in its
+   general form now has to learn the exception."*
+
+**Refusing it costs nothing a player would notice and leaves the door open.**
+The tag, `RoomInstance.openArea`, the two registration sites and the domain
+test in `openGroundCapacityOf` revert together; nothing is persisted, so no
+save carries it and no prison changes under anybody.
+
+**The exact line that would replace the status.** There is no status of this
+amendment's own to move — that is the point of
+[`README.md`](./README.md)'s ruling 3. Approving it means ADR 0071's own
+`**Proposed, 2026-08-29. Not self-approved.**` becoming `**Accepted, <date> —
+<by whom, and what was read>.**`, with the matching `Proposed, 2026-08-29 — …`
+prefix in its [`README.md`](./README.md) row changed to `Accepted, <date> — …`
+**and a clause added to that row recording that the document is amended**, on
+the model of 0022's and 0023's rows — **and this entry deleted in the same
+commit**, which is this section's standing recipe. Point 2 above is *not*
+discharged by that and outlives it.
 
 ### ADR 0031 — accepted 2026-08-26, and the entry is deleted
 
@@ -2893,6 +2995,19 @@ first server-side entry point — so the "with the queue empty" opening no longe
 describes the file either. **Still three at `bb3a01e`**: no entry was added or
 deleted in the eleven releases, and this is one of the four places the header
 names as counting the queue, swept here for that reason.
+
+**SEVEN at #585, and the second consecutive anchor at which no place lagged.**
+ADR 0071's open-area amendment (the owner's ruling of 2026-08-29 on issue #585)
+was filed by a commit whose only job was the filing, which is the mechanism the
+paragraph below names — so the header's opening paragraph, §2's own heading and
+this preamble moved together for the second time running. **The observation now
+has two instances and is still not a rule**, and the reason is unchanged and
+worth repeating rather than quietly dropping: the split has never been tested
+against an implementing change since the rule was restated, because no
+implementing change has filed an entry since #485. #585 does not test it either
+— its implementing work is in the two commits before the filing, and the filing
+commit touches this file and nothing else, on purpose and because this
+paragraph told it to.
 
 **SIX at #571, and for the first time in this sequence no place lagged.** ADR
 0074's entry was **handed over rather than filed by the change that wrote the
