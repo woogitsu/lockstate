@@ -6,6 +6,7 @@ import {
   BUILD_CATEGORY_ALL,
   BUILD_QUEUE_ROW_LIMIT,
   PENDING_DELIVERY_ROW_LIMIT,
+  buildCatalogueFocusRing,
   buildCategoryOptions,
   buildEdgeChoiceOptions,
   formatBuildQueueOrderText,
@@ -14,6 +15,7 @@ import {
   visibleBuildableIds,
 } from '../../src/ui/hud/build-panel';
 import { HUD_MESSAGE_KEYS } from '../../src/ui/hud/messages';
+import { rovingFocusMove } from '../../src/ui/primitives/roving-focus';
 import {
   HUD_BUILD_EDGES,
   HUD_BUILD_ORDER_STATES,
@@ -521,5 +523,159 @@ describe('the buildable catalogue groups by category', () => {
 
   it('shows nothing for a category no row carries', () => {
     expect(visibleBuildableIds(rows, 'medical', undefined)).toEqual([]);
+  });
+});
+
+/**
+ * The keyboard's ring around that same catalogue (#411, the Build half).
+ *
+ * ### Why these are the assertions
+ *
+ * The Rooms catalogue got a roving tab stop and this one did not, and the
+ * reason it could not simply be copied is the category filter above: a row can
+ * be `hidden`, `hidden` takes an element out of sequential focus navigation,
+ * and `focus()` on one does nothing. So both halves of the roving tab stop have
+ * to be read off the *visible* rows:
+ *
+ * - a `tabIndex = 0` parked on a filtered-out row is a catalogue `Tab` cannot
+ *   enter **at all** -- twenty-one rows unreachable, strictly worse than the
+ *   twenty-one tab stops the change removes;
+ * - a ring that included hidden rows would give the player an arrow press that
+ *   silently moves nothing.
+ *
+ * ### Why they are here rather than in the browser suite
+ *
+ * `vitest.config.ts` runs in `environment: 'node'` with no jsdom
+ * (`docs/TESTING.md`), so nothing headless can call `createBuildPanel` or read
+ * a resolved `tabIndex`. What *is* reachable from node is the arithmetic, and
+ * that is what this file pins. The wiring -- that the panel really puts the `0`
+ * on the row this function names, and that a real arrow press moves a real
+ * `document.activeElement` -- is asserted in
+ * `tests/browser/ui-shell.spec.ts`, which is the same split
+ * `tests/unit/ui-roving-focus.test.ts` and that file already make for the Rooms
+ * catalogue.
+ *
+ * The fixtures are written out rather than derived from `BUILDABLE_REGISTRY`,
+ * for the reason the block above says.
+ */
+describe("the Build catalogue's keyboard focus ring", () => {
+  const buildable = (
+    definitionId: string,
+    categoryId: string,
+    categoryLabelKey: string,
+  ): HudBuildableViewModel => ({
+    definitionId,
+    labelKey: `content.${definitionId}`,
+    occupiesEdge: false,
+    placesObject: true,
+    categoryId,
+    categoryLabelKey,
+  });
+
+  /** Interleaved categories, so an implementation that assumed the rows arrive grouped fails here. */
+  const rows: readonly HudBuildableViewModel[] = [
+    buildable('wall-brick', 'structure', 'category.structure'),
+    buildable('bed-wooden', 'furniture', 'category.furniture'),
+    buildable('door-wooden', 'structure', 'category.structure'),
+    buildable('toilet-brick', 'sanitation', 'category.sanitation'),
+    buildable('chair-wooden', 'furniture', 'category.furniture'),
+  ];
+
+  it('rings every row, and stops on the selection, when nothing is filtered', () => {
+    expect(buildCatalogueFocusRing(rows, BUILD_CATEGORY_ALL, 'door-wooden')).toEqual({
+      visibleIds: ['wall-brick', 'bed-wooden', 'door-wooden', 'toilet-brick', 'chair-wooden'],
+      tabStopId: 'door-wooden',
+    });
+  });
+
+  it('rings only the rows the filter left on screen', () => {
+    // `wall-brick` is structural and selected, so it is on screen inside the
+    // furniture group -- and the two rows the filter hid are not in the ring,
+    // which is what stops an arrow press from naming one of them.
+    expect(buildCatalogueFocusRing(rows, 'furniture', 'wall-brick')).toEqual({
+      visibleIds: ['wall-brick', 'bed-wooden', 'chair-wooden'],
+      tabStopId: 'wall-brick',
+    });
+  });
+
+  it('falls back to the first *visible* row when nothing is selected', () => {
+    // The case that separates a ring over the visible rows from a ring over
+    // every row: `wall-brick` is first in the catalogue and hidden here, so an
+    // implementation that counted from the full list would hand the group's one
+    // tab stop to a row `Tab` cannot reach -- and the catalogue would have no
+    // keyboard entry point at all.
+    expect(buildCatalogueFocusRing(rows, 'furniture', undefined)).toEqual({
+      visibleIds: ['bed-wooden', 'chair-wooden'],
+      tabStopId: 'bed-wooden',
+    });
+  });
+
+  it('has no tab stop when the filter left nothing on screen', () => {
+    // Not a state the application reaches -- `buildCategoryOptions` only ever
+    // offers a group some row is in -- but `undefined` is the honest answer and
+    // `0` would name a row that does not exist.
+    expect(buildCatalogueFocusRing(rows, 'medical', undefined)).toEqual({
+      visibleIds: [],
+      tabStopId: undefined,
+    });
+  });
+
+  it('has no tab stop for an empty catalogue', () => {
+    expect(buildCatalogueFocusRing([], BUILD_CATEGORY_ALL, undefined)).toEqual({
+      visibleIds: [],
+      tabStopId: undefined,
+    });
+  });
+
+  /**
+   * The property the whole change turns on, over every state the filter can be
+   * in and every row that can be selected -- rather than over the four cases
+   * above, which is what an off-by-one hides behind.
+   */
+  it('never parks the tab stop on a row that is not on screen', () => {
+    const categories = [BUILD_CATEGORY_ALL, 'structure', 'furniture', 'sanitation', 'medical'];
+    const selections = [undefined, ...rows.map((row) => row.definitionId)];
+    for (const categoryId of categories) {
+      for (const selectedId of selections) {
+        const ring = buildCatalogueFocusRing(rows, categoryId, selectedId);
+        const where = `category ${categoryId}, selection ${selectedId ?? 'none'}`;
+        if (ring.visibleIds.length === 0) {
+          expect(ring.tabStopId, `${where}: an empty catalogue was given a tab stop`).toBeUndefined();
+          continue;
+        }
+        expect(
+          ring.tabStopId,
+          `${where}: the catalogue has rows on screen and no way to Tab into them`,
+        ).toBeDefined();
+        expect(
+          ring.visibleIds,
+          `${where}: the one tab stop is on a row the filter hid, so Tab cannot enter the catalogue`,
+        ).toContain(ring.tabStopId);
+      }
+    }
+  });
+
+  /**
+   * And that the ring really is a ring of the *visible* rows, read through the
+   * same function the panel's `keydown` handler uses.
+   *
+   * `bed-wooden` is the case that discriminates: forwards from it the next row
+   * in the full catalogue is `door-wooden`, which this filter has hidden, and
+   * the next row in the ring is `chair-wooden`. An arrow that named the hidden
+   * one would move nothing at all.
+   */
+  it('arrows past the rows the filter hid rather than into them', () => {
+    const { visibleIds } = buildCatalogueFocusRing(rows, 'furniture', 'wall-brick');
+    const step = (from: string, key: string): string | undefined => {
+      const next = rovingFocusMove(key, visibleIds.indexOf(from), visibleIds.length);
+      return next === undefined ? undefined : visibleIds[next];
+    };
+    expect(step('bed-wooden', 'ArrowDown'), 'ArrowDown stepped onto a filtered-out row').toBe('chair-wooden');
+    expect(step('bed-wooden', 'ArrowUp')).toBe('wall-brick');
+    expect(step('chair-wooden', 'ArrowDown'), 'the ring did not wrap').toBe('wall-brick');
+    expect(step('wall-brick', 'ArrowUp'), 'the ring did not wrap backwards').toBe('chair-wooden');
+    expect(step('bed-wooden', 'End')).toBe('chair-wooden');
+    expect(step('bed-wooden', 'Home')).toBe('wall-brick');
+    expect(step('bed-wooden', 'Tab'), 'the group swallowed a key that is not its own').toBeUndefined();
   });
 });

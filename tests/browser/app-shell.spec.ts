@@ -1266,9 +1266,23 @@ async function wallRectanglesFromTheKeyboard(
   // prints the arithmetic so it is asserted rather than assumed.
   const bricks = 2 * segments.length;
   const buyToggle = page.locator('.hud-build__buy-toggle');
-  // Backwards: the tab bar is the last thing in the document and this panel is
-  // above it, so forwards from the Build tab is a lap of the whole page --
-  // which, with this panel open, is more than `MAX_TAB_PRESSES_PER_HOP`.
+  /*
+   * Backwards, because the tab bar is the last thing in the document and this
+   * panel is above it: the disclosure is **one** `Shift+Tab` from the Build
+   * tab, and forwards is a lap of the whole page.
+   *
+   * This comment used to add "which, with this panel open, is more than
+   * `MAX_TAB_PRESSES_PER_HOP`", and that half is withdrawn rather than
+   * overwritten, because the reason for going backwards has not changed --
+   * only the tally has. Measured on this page at 1280x800 with one prison
+   * saved, the forward walk from the Build tab to this control was **43**
+   * presses before the Build catalogue got its roving tab stop (#411, the
+   * Build half) and is **23** after it; the bound is 48, so it was inside it
+   * either way. `BUILDABLE_REGISTRY` already held twenty-one rows at
+   * `fe6a890`, the commit that wrote the sentence, which makes it likely the
+   * claim was false the day it was written -- but the walk was not re-run at
+   * that commit, so that is an inference and not a measurement.
+   */
   await shiftTabTo(page, 'the buy disclosure', { selector: '.hud-build__buy-toggle' });
   if ((await buyToggle.getAttribute('aria-expanded')) === 'false') await page.keyboard.press('Enter');
   await expect(page.locator('.hud-build__buy')).toBeVisible();
@@ -3202,6 +3216,242 @@ test.describe('the assembled application', () => {
           `"Everything" did not bring the whole catalogue back at ${width}x${height}, ${state}`,
         ).toBe(everything.laidOutRows);
       }
+    }
+  });
+
+  /**
+   * The Build catalogue is one choice, so it costs one tab stop -- and the
+   * category filter can never take that stop away (#411, the Build half).
+   *
+   * ### What was wrong, measured on this page
+   *
+   * #411 gave the *Rooms* catalogue a roving tab stop and left this one as it
+   * found it, although it is longer: twenty-one rows against eighteen, each a
+   * `<button>` and therefore each its own tab stop. Measured here, on the
+   * assembled application with one prison saved, at 1280x800: the forward walk
+   * from the Build tab to the buy disclosure was **43** presses, of which
+   * presses 20 to 40 were the catalogue -- twenty-one of them for one choice.
+   * The same walk after this change is **23**.
+   *
+   * The other twenty-two are not the catalogue's and are not this change's to
+   * spend: sixteen of them are outside the Build panel altogether (the tab bar
+   * finishing its own three buttons, the brand region, the metrics row, three
+   * transport controls, two panel toggles, the Alerts header and six save-panel
+   * buttons -- four global plus Load and Delete for the one saved prison), and
+   * the last six are the panel's own header, its filter, the catalogue, *Place
+   * on map*, *Remove* and *Buy*. So the catalogue was twenty-one of forty-three
+   * and is one of twenty-three, and the panel's own share went from twenty-six
+   * presses to six.
+   *
+   * ### What only this page can answer
+   *
+   * `tests/browser/ui-harness.ts` draws two buildables in one group, so
+   * `buildCategoryOptions` answers `[]` there and the panel it mounts has **no
+   * category filter at all** -- which is deliberate (see `BUILD_MODEL`) and is
+   * exactly why the interesting half of this cannot be asserted there. Hiding
+   * rows is the whole hazard: `hidden` takes an element out of sequential focus
+   * navigation, so a roving `tabIndex = 0` left on a filtered-out row is a
+   * catalogue `Tab` cannot enter at all, and `focus()` on one does nothing, so
+   * an arrow that named a hidden row would be a key that silently moves
+   * nothing. Both need the real eight-group projection, and both are asserted
+   * below.
+   *
+   * The arithmetic underneath -- which row holds the stop and which rows the
+   * ring is made of -- is pure and pinned in
+   * `tests/unit/ui-hud-build-panel.test.ts` and
+   * `tests/unit/ui-roving-focus.test.ts`. This is the wiring: a real resolved
+   * `tabIndex`, a real `document.activeElement` after a real key press.
+   *
+   * ### The half that keeps this from being a regression
+   *
+   * A roving `tabindex` with nothing announcing the group would turn "twenty-one
+   * tedious stops" into "twenty rows a sighted keyboard-only player can no
+   * longer reach", because `Tab` is the only mechanism they have and nothing
+   * would have told them to try an arrow. So `role="radiogroup"` on the box
+   * holding only the rows and `role="radio"` with `aria-checked` on each are
+   * asserted here as part of the behaviour rather than as decoration.
+   */
+  test('the Build catalogue is one tab stop, and the filter never takes it away (#411)', async ({ page }) => {
+    test.slow();
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    // A prison, so the walk below is the one a player actually takes: the save
+    // panel grows a row with its own Load and Delete buttons, and those two
+    // presses are part of every measurement quoted above.
+    await page.getByRole('button', { name: localeText('save.action.create') }).click();
+    await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    await expect(page.locator('.hud-build')).toBeVisible();
+
+    /**
+     * The catalogue, as the browser resolved it.
+     *
+     * `hidden` is read explicitly rather than inferred from text or from a
+     * class: a filtered row keeps its `textContent` and its `data-buildable`,
+     * and reading either would report on a row that is not on screen.
+     */
+    const rowState = async (): Promise<{
+      readonly rows: readonly string[];
+      readonly laidOut: readonly string[];
+      readonly tabStops: readonly string[];
+      readonly hiddenTabStops: readonly string[];
+      readonly checked: readonly string[];
+      readonly focused: string;
+      readonly focusedIsHidden: boolean;
+    }> =>
+      page.evaluate(() => {
+        const rows = [...document.querySelectorAll<HTMLElement>('.hud-build__list [data-buildable]')];
+        const id = (row: HTMLElement): string => row.dataset['buildable'] ?? '';
+        const active = document.activeElement;
+        return {
+          rows: rows.map(id),
+          laidOut: rows.filter((row) => !row.hidden).map(id),
+          tabStops: rows.filter((row) => row.tabIndex === 0).map(id),
+          hiddenTabStops: rows.filter((row) => row.tabIndex === 0 && row.hidden).map(id),
+          checked: rows.filter((row) => row.getAttribute('aria-checked') === 'true').map(id),
+          focused: active instanceof HTMLElement ? (active.dataset['buildable'] ?? '') : '',
+          focusedIsHidden: active instanceof HTMLElement && active.hidden !== false,
+        };
+      });
+
+    // ---- the group is announced as one ---------------------------------
+    expect(
+      await page.evaluate(() => document.querySelector('.hud-build__list')?.getAttribute('role') ?? ''),
+      'the catalogue is not announced as a single choice',
+    ).toBe('radiogroup');
+    expect(
+      await page.evaluate(() => document.querySelector('.hud-build__list')?.getAttribute('aria-label') ?? ''),
+      'the choice has no name',
+    ).toBe(localeText('hud.build.catalogue'));
+    expect(
+      await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.hud-build__list [data-buildable]')].every(
+          (row) => row.getAttribute('role') === 'radio',
+        ),
+      ),
+      'a catalogue row is not announced as a member of the choice',
+    ).toBe(true);
+    // The box that is the group holds the rows and nothing else. The Build
+    // panel's typed route is its own section rather than a child of this
+    // scroller -- which is why this panel needed no extra box where
+    // `rooms-panel.ts` did -- and this is what checks that claim.
+    expect(
+      await page.evaluate(
+        () =>
+          [...document.querySelectorAll<HTMLElement>('.hud-build__list > *')].filter(
+            (child) => child.dataset['buildable'] === undefined,
+          ).length,
+      ),
+      'something that is not a catalogue row is a member of the radiogroup',
+    ).toBe(0);
+
+    const arrival = await rowState();
+    expect(arrival.rows.length, 'the real catalogue is shorter than the Rooms one this mirrors').toBeGreaterThanOrEqual(
+      18,
+    );
+    expect(arrival.tabStops, 'the catalogue does not cost exactly one tab stop').toHaveLength(1);
+    expect(arrival.tabStops, 'the tab stop is not on the row the player has chosen').toEqual(arrival.checked);
+
+    // ---- one Tab in, one Tab out --------------------------------------
+    // Row-count-independent, and the property the press counts in the header
+    // are a consequence of: focus is put on the catalogue's own section header
+    // so what is counted is the catalogue's cost and not a lap of the page.
+    await page.locator('.hud-build__catalogue > .ui-section__header-row .ui-section__header').focus();
+    // The header row holds the eyebrow's button and the category filter beside
+    // it (ADR 0035), so the filter is the hop between the two.
+    await page.keyboard.press('Tab');
+    expect(
+      await page.evaluate(() => document.activeElement?.classList.contains('hud-build__category') === true),
+      'the control after the catalogue header is not the category filter',
+    ).toBe(true);
+    await page.keyboard.press('Tab');
+    expect((await rowState()).focused, 'one Tab did not land on the catalogue').toBe(arrival.tabStops[0]);
+    await page.keyboard.press('Tab');
+    expect(
+      await page.evaluate(() => {
+        const active = document.activeElement;
+        return active instanceof HTMLElement && active.classList.contains('hud-build__arm');
+      }),
+      'one Tab out of the catalogue did not reach the control after it',
+    ).toBe(true);
+
+    // ---- the arrows, which are what the one tab stop buys back ---------
+    const rows = arrival.rows;
+    const last = rows.length - 1;
+    await page.locator(`.hud-build__list [data-buildable="${rows[0]}"]`).focus();
+    await page.keyboard.press('ArrowDown');
+    expect((await rowState()).focused, 'ArrowDown did not step to the next buildable').toBe(rows[1]);
+    // The tab stop follows focus, so tabbing back in returns to where the
+    // player arrowed to rather than to the top of a list they have moved through.
+    expect((await rowState()).tabStops, 'the group kept two tab stops after an arrow').toEqual([rows[1]]);
+    await page.keyboard.press('ArrowUp');
+    expect((await rowState()).focused, 'ArrowUp did not step back').toBe(rows[0]);
+    await page.keyboard.press('ArrowUp');
+    expect((await rowState()).focused, 'the ring did not wrap backwards off the first row').toBe(rows[last]);
+    await page.keyboard.press('Home');
+    expect((await rowState()).focused, 'Home did not reach the first buildable').toBe(rows[0]);
+    await page.keyboard.press('End');
+    expect((await rowState()).focused, 'End did not reach the last buildable').toBe(rows[last]);
+
+    /*
+     * Focus moves; selection does not -- the same refusal `rooms-panel.ts`
+     * records, plus one of this panel's own: choosing a row re-arms the world
+     * tool and clears removal, so selection-follows-focus would fire that once
+     * per arrow press.
+     */
+    expect(
+      (await rowState()).checked,
+      'arrowing across the catalogue changed the selection without the player choosing',
+    ).toEqual([rows[0]]);
+
+    // `Enter` on the focused row is what chooses it, through the same
+    // `onActivate` a pointer press reaches.
+    await page.keyboard.press('Enter');
+    const chosen = await rowState();
+    expect(chosen.checked, 'Enter on a focused row did not choose it').toEqual([rows[last]]);
+    expect(chosen.tabStops, 'the tab stop did not follow the new selection').toEqual([rows[last]]);
+
+    // ---- and the filter, which is what this panel has and Rooms does not --
+    const filter = page.locator('.hud-build__category');
+    await expect(filter).toBeVisible();
+    // A group the chosen row is not in, so the two halves below are both real:
+    // the selection is kept on screen by `visibleBuildableIds` whatever the
+    // filter says, and every other row of its group is hidden.
+    await filter.selectOption({ label: localeText('object.category.furniture.name') });
+    const filtered = await rowState();
+    expect(filtered.laidOut.length, 'the filter hid nothing, so it proves nothing here').toBeLessThan(
+      arrival.rows.length,
+    );
+    expect(filtered.laidOut.length, 'the filter left nothing on screen').toBeGreaterThanOrEqual(2);
+    expect(
+      filtered.hiddenTabStops,
+      'the one tab stop is on a row the filter hid, so Tab cannot enter the catalogue at all',
+    ).toEqual([]);
+    expect(filtered.tabStops, 'the filtered catalogue has no tab stop, or more than one').toHaveLength(1);
+    expect(filtered.tabStops, 'the tab stop left the row the player chose').toEqual(filtered.checked);
+
+    // Still reachable, which is the claim the two assertions above are for.
+    await page.locator('.hud-build__catalogue > .ui-section__header-row .ui-section__header').focus();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Tab');
+    const entered = await rowState();
+    expect(entered.focused, 'Tab no longer reaches the filtered catalogue').toBe(filtered.tabStops[0]);
+    expect(entered.focusedIsHidden, 'Tab landed on a row that is not on screen').toBe(false);
+
+    /*
+     * And the arrows step over the rows the filter hid rather than into them.
+     * A ring built from every row would name one here, `focus()` would do
+     * nothing, and the player would press a key that appears dead.
+     */
+    for (const key of ['ArrowDown', 'ArrowDown', 'ArrowUp', 'End', 'Home']) {
+      await page.keyboard.press(key);
+      const moved = await rowState();
+      expect(moved.focusedIsHidden, `${key} moved focus onto a row the filter hid`).toBe(false);
+      expect(
+        filtered.laidOut,
+        `${key} left the rows that are on screen`,
+      ).toContain(moved.focused);
+      expect(moved.hiddenTabStops, `${key} left the group's tab stop on a hidden row`).toEqual([]);
     }
   });
 
