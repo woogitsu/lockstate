@@ -8,15 +8,9 @@ common-destination scenarios. #21 implements the *shape* of a route and
 the rules for what makes one valid; #22 (see its own section below and
 `docs/adr/0007-navigation-work-budgets-and-flow-fields.md`) bounds and
 schedules *how much of that* runs per tick, and shares it where many
-actors converge on one destination. Crowd steering, door animations and
-teleporting-on-failure remain out of scope for both.
-
-> **"Actor movement/rendering" was in that list and is not any more.**
-> [ADR 0059](./adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md) gave the
-> waypoints this module produces a consumer: `LocomotionStore.beginWalk` walks
-> them one tile at a time, and refuses a route whose legs are not one tile along
-> one axis rather than cutting a corner. Nothing about *how a route is found*
-> moved -- what changed is that the answer is now travelled rather than applied.
+actors converge on one destination. Actor movement/rendering, crowd
+steering, door animations and teleporting-on-failure remain out of scope
+for both.
 
 ## Why hierarchical, not one flat search
 

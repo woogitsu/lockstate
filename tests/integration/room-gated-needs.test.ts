@@ -281,14 +281,8 @@ describe('zoning the room is the whole of the escape', () => {
     // purchase, no delivery, no placement. This is the cheapest escape in the
     // game and ADR 0054 decision 1's argument depends on it being real.
     expect(watched.everRose.recreation).toBe(true);
-    // 232.65 since [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md),
-    // 233.55 before it: the prisoner walks to the yard, so a fraction more of
-    // the recreation need decays before each session starts. What this pins is
-    // that recreation is *served at all*, which the assertion beside it makes.
-    expect(watched.lowest.recreation).toBe(232.65);
-    // 2,116 since ADR 0059, 2,300 before it: 184 of the twenty days' ticks go
-    // on walking to the yard instead of standing in it.
-    expect(watched.performingTicks['action.yard-recreation']).toBe(2_116);
+    expect(watched.lowest.recreation).toBe(233.55);
+    expect(watched.performingTicks['action.yard-recreation']).toBe(2_300);
 
     // And the other room-gated need is untouched by it, so the two are separate
     // buildings rather than one switch.
@@ -301,10 +295,7 @@ describe('zoning the room is the whole of the escape', () => {
 
     expect(watched.everRose.hygiene).toBe(true);
     expect(watched.lowest.hygiene).toBe(212.4);
-    // 722 since ADR 0059, 760 before it: the walk to the shower room costs 38
-    // ticks of the twenty days this watches, and the claim is the line under
-    // it -- hygiene is reachable once the room is zoned.
-    expect(watched.performingTicks['action.shower']).toBe(722);
+    expect(watched.performingTicks['action.shower']).toBe(760);
 
     expect(watched.everRose.recreation).toBe(false);
     expect(watched.lowest.recreation).toBe(0);
@@ -361,10 +352,7 @@ describe('what the neglect costs, and how much of it is the staffing term', () =
     // neglect now scores 0.7979 and clears the threshold. `sustainedSamplesRequired`
     // 12 and `DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT` are why it is three
     // riots in twenty days rather than one every window.
-    // 0.7981 since ADR 0059, and the two ten-thousandths are the prisoners
-    // spending part of the day walking. Well clear of the 0.65 threshold in
-    // both readings, which is what the sentence above is about.
-    expect(watched.peakRisk).toBeCloseTo(0.7981, 4);
+    expect(watched.peakRisk).toBeCloseTo(0.7979, 4);
     expect(watched.runtime.deploymentSystem.getCoverageReport(watched.runtime.kernel.tick)).toEqual([
       { sectorId: SECTOR, required: 1, assigned: 0, shortage: 1 },
     ]);

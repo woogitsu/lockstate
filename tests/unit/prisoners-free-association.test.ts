@@ -3,7 +3,6 @@ import { Kernel } from '../../src/simulation/kernel/kernel';
 import { ComponentBitset } from '../../src/simulation/entity/component';
 import { EntityStore } from '../../src/simulation/entity/entity-store';
 import { EntityQuery } from '../../src/simulation/entity/query';
-import { LocomotionStore, LocomotionSystem } from '../../src/simulation/locomotion';
 import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { NamedRngStreams } from '../../src/simulation/rng/streams';
@@ -23,26 +22,6 @@ import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instan
 import { isActionCategoryAllowed, rankActions, scoreAction } from '../../src/simulation/prisoners/utility-ai';
 import { buildRiotRegimeSchedule, RIOT_ALLOWED_CATEGORIES } from '../../src/simulation/incidents/riot-regime';
 import { buildCellBlockFixture } from '../helpers/navigation-fixture';
-
-/**
- * The walk store and the system that advances it, wired the way
- * `PrisonerOperationsRuntime` wires them (ADR 0059). An `ActionSystem`
- * registered without one starts journeys that never finish, because the
- * arrival now happens when the walk ends rather than when the router answers.
- */
-function registerLocomotion(kernel: Kernel, position: PositionComponent): LocomotionStore {
-  const locomotion = new LocomotionStore();
-  kernel.registerSystem(
-    new LocomotionSystem('prisoners.locomotion', (ticks) =>
-      locomotion.advance(ticks, (index, tile) => {
-        position.tileX[index] = tile.x;
-        position.tileY[index] = tile.y;
-      }),
-    ),
-  );
-  return locomotion;
-}
-
 
 /**
  * # `action.free-association`, driven through the real `ActionSystem`
@@ -155,11 +134,10 @@ function buildAssociationFixture(options: {
     });
   }
 
-  const kernel = new Kernel(options.startTick, 0, new NamedRngStreams([{ name: RNG_STREAM, state: deriveXoshiroState(1, RNG_STREAM) }]));
-  const locomotion = registerLocomotion(kernel, position);
   const actionSystem = new ActionSystem(
-    store, query, records, needs, currentAction, position, coldState, roomInstances, navigation, locomotion, options.schedules,
+    store, query, records, needs, currentAction, position, coldState, roomInstances, navigation, options.schedules,
   );
+  const kernel = new Kernel(options.startTick, 0, new NamedRngStreams([{ name: RNG_STREAM, state: deriveXoshiroState(1, RNG_STREAM) }]));
   kernel.registerSystem(navigation);
   kernel.registerSystem(actionSystem);
 

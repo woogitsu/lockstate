@@ -195,20 +195,10 @@ describe('a bed placed in a zoned cell gives that cell a capacity', () => {
     expect(DEFAULT_ACTIONS[runtime.prisoners.currentAction.actionIndex[arrival]!]?.id).toBe('action.sleep');
     expect(runtime.prisoners.coldState.getActionTarget(arrivalId)).toBe(cellInstanceId);
     // And the need it fulfils is the one that stays high while every other one
-    // falls: measured at tick 400, `sleep` is 249.0 of 255 while `hunger` has
-    // dropped below it. The bed is doing work.
-    //
-    // **This comment read "`sleep` is 254.7 of 255 while `hunger` has dropped
-    // to 242.5 and `bladder` to 235", and the floor below was 250.** Both were
-    // right for an abstracted arrival. Since ADR 0059 the prisoner walks from
-    // the delivery tile to the cell anchor instead of being written onto it,
-    // so part of the window between admission and tick 400 is spent walking
-    // and the sleep level at 400 is 249.0. The floor is re-measured rather
-    // than relaxed: it is still above the level a prison with no bed reaches,
-    // which is what the assertion is for, and the comparison against `hunger`
-    // on the next line is untouched.
+    // falls: measured at tick 400, `sleep` is 254.7 of 255 while `hunger` has
+    // dropped to 242.5 and `bladder` to 235. The bed is doing work.
     const sleepLevel = runtime.prisoners.needs.levels.sleep[arrival]! / NEED_SCALE;
-    expect(sleepLevel).toBeGreaterThan(248);
+    expect(sleepLevel).toBeGreaterThan(250);
     expect(runtime.prisoners.needs.levels.hunger[arrival]! / NEED_SCALE).toBeLessThan(sleepLevel);
   });
 });

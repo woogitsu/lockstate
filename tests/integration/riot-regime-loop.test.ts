@@ -190,42 +190,16 @@ function meanNeedDeficit(runtime: SimulationRuntime): number {
   return population === 0 ? 0 : sum / population;
 }
 
-/**
- * The one riot in the log, whatever id the shared incident sequence gave it.
- *
- * **Looked up by type rather than by `'incident.riot.1'`, and the reason is a
- * change rather than a preference.** `IncidentTriggerSystem.nextIncidentId`
- * mints from a *single* sequence shared by every incident type, so since
- * [ADR 0061](../../docs/adr/0061-what-the-prison-produces-on-its-own.md) gave
- * `'assault'` a producer, an assault opening earlier in the same run takes
- * `.1` and this prison's riot is `incident.riot.2`. The riot itself is
- * unchanged -- same tick, same severity, same participants, all asserted below
- * -- so the id was the brittle part of the assertion and not the subject of it.
- */
-function theRiot(runtime: SimulationRuntime) {
-  const riots = runtime.incidents.all().filter((incident) => incident.type === 'riot');
-  expect(riots, 'exactly one riot is what this prison produces').toHaveLength(1);
-  return riots[0]!;
-}
-
 describe('a neglected prison a player can build riots, and the riot reaches its participants', () => {
   it('opens one riot naming both prisoners, and the same prison with guards opens none', () => {
     const rioting = neglectedPrison(0);
     stepTo(rioting, RIOT_TICK);
-    /*
-     * **No riot yet**, which is what this asserted before ADR 0061 by asserting
-     * an empty log. It cannot any more, and the difference is the subject of
-     * that ADR rather than an accident here: this prison is unguarded and its
-     * prisoners are 0.42 of their needs short, so it also produces `'assault'`
-     * incidents in the cool stretches before the riot streak completes. The
-     * assertion is narrowed to its own claim -- the riot has not started -- and
-     * the riot's tick, severity and participants below are all unchanged from
-     * the numbers ADR 0057 measured.
-     */
-    expect(rioting.incidents.all().filter((incident) => incident.type === 'riot')).toEqual([]);
+    expect(rioting.incidents.all()).toEqual([]);
     rioting.kernel.step();
 
-    expect(theRiot(rioting)).toMatchObject({
+    expect(rioting.incidents.all()).toHaveLength(1);
+    expect(rioting.incidents.all()[0]).toMatchObject({
+      id: 'incident.riot.1',
       type: 'riot',
       sectorId: DEFAULT_SECTOR_ID,
       severity: 7,
@@ -268,34 +242,21 @@ describe('a neglected prison a player can build riots, and the riot reaches its 
     stepTo(calm, RIOT_TICK);
     const control = censusOver(calm, 601);
 
-    // Re-measured for [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md):
-    // a prisoner walks between rooms now, so `travellingTicks` rises sharply
-    // and every performing term loses the ticks it gained. The *shape* of each
-    // census -- which actions appear and which do not -- is what these
-    // assertions are for and is unchanged except where noted.
-    //
-    // `action.eat-meal` now appears in **both** columns, and it did not before:
-    // the meal block inside this 601-tick window used to be spent walking to a
-    // canteen that was reached instantly and eaten in outside the window. The
-    // term that carries this test is still `action.use-toilet`, present in the
-    // control and absent under the riot.
-    console.log('DURING', JSON.stringify(during));
     expect(during).toEqual({
-      byAction: { 'action.eat-meal': 60, 'action.free-association': 753 },
-      idleTicks: 261,
-      travellingTicks: 128,
+      byAction: { 'action.free-association': 882 },
+      idleTicks: 280,
+      travellingTicks: 40,
     });
-    console.log('CONTROL', JSON.stringify(control));
     expect(control).toEqual({
-      byAction: { 'action.eat-meal': 60, 'action.free-association': 612, 'action.use-toilet': 100 },
-      idleTicks: 302,
-      travellingTicks: 128,
+      byAction: { 'action.free-association': 720, 'action.use-toilet': 120 },
+      idleTicks: 322,
+      travellingTicks: 40,
     });
 
     // And it is given back. The incident lapses -- nobody was hired to answer
     // it -- and the toilet is legal again on the next reconsideration.
     stepTo(rioting, RIOT_LAPSE_TICK + 1);
-    expect(theRiot(rioting)).toMatchObject({
+    expect(rioting.incidents.get('incident.riot.1')).toMatchObject({
       state: 'lapsed',
       timeline: [{ state: 'active', atTick: RIOT_TICK }, { state: 'lapsed', atTick: RIOT_LAPSE_TICK }],
       outcome: { injuredEntityIds: [0, 1], propertyDamage: 7, escaped: false },
@@ -310,12 +271,10 @@ describe('a neglected prison a player can build riots, and the riot reaches its 
      * the window -- 200 and 160 prisoner-ticks against association's 58, where
      * the same window inside the riot was 882 of association and nothing else.
      */
-    // Re-measured for ADR 0059, like every other census in this file.
-    console.log('AFTER', JSON.stringify(censusOver(rioting, 400)));
     expect(censusOver(rioting, 400)).toEqual({
-      byAction: { 'action.sleep': 751 },
-      idleTicks: 49,
-      travellingTicks: 0,
+      byAction: { 'action.eat-meal': 160, 'action.free-association': 58, 'action.use-toilet': 200 },
+      idleTicks: 302,
+      travellingTicks: 80,
     });
   });
 
@@ -333,21 +292,15 @@ describe('a neglected prison a player can build riots, and the riot reaches its 
      * not moved.** On `c62ed74` the rioting column was identical to it, term
      * for term -- that is what "a riot changes nobody's timetable" was.
      */
-    // Re-measured for [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md):
-    // a prisoner walks between rooms now, so `travellingTicks` rises sharply
-    // and every performing term loses the ticks it gained. The *shape* of each
-    // census -- which actions appear and which do not -- is what these
-    // assertions are for and is unchanged except where noted.
-    console.log('CONTROLDAY', JSON.stringify(controlDay));
     expect(controlDay).toEqual({
       byAction: {
-        'action.eat-meal': 204,
-        'action.free-association': 1_572,
+        'action.eat-meal': 240,
+        'action.free-association': 1_680,
         'action.sleep': 1_200,
-        'action.use-toilet': 292,
+        'action.use-toilet': 360,
       },
-      idleTicks: 1_020,
-      travellingTicks: 512,
+      idleTicks: 1_160,
+      travellingTicks: 160,
     });
 
     /*
@@ -365,16 +318,15 @@ describe('a neglected prison a player can build riots, and the riot reaches its 
      * instead; where the streak lands in the day is a property of this fixture,
      * not of the mechanism.
      */
-    console.log('RIOTDAY', JSON.stringify(riotDay));
     expect(riotDay).toEqual({
       byAction: {
-        'action.eat-meal': 204,
-        'action.free-association': 1_752,
+        'action.eat-meal': 240,
+        'action.free-association': 1_920,
         'action.sleep': 1_200,
-        'action.use-toilet': 172,
+        'action.use-toilet': 200,
       },
-      idleTicks: 960,
-      travellingTicks: 512,
+      idleTicks: 1_080,
+      travellingTicks: 160,
     });
   });
 
@@ -392,29 +344,18 @@ describe('a neglected prison a player can build riots, and the riot reaches its 
     const calm = neglectedPrison(2);
     stepTo(rioting, RIOT_TICK);
     stepTo(calm, RIOT_TICK);
-    // 0.4007 since ADR 0059, 0.3752 before it: a prison whose prisoners spend
-    // part of the day walking meets slightly fewer needs by the tick the riot
-    // opens. **What this pair asserts is the equality**, which is what makes
-    // the divergence after the riot attributable to the riot.
-    console.log('DEF1', meanNeedDeficit(rioting), meanNeedDeficit(calm));
-    expect(meanNeedDeficit(rioting)).toBeCloseTo(0.4007, 4);
-    expect(meanNeedDeficit(calm)).toBeCloseTo(0.4007, 4);
+    expect(meanNeedDeficit(rioting)).toBeCloseTo(0.3752, 4);
+    expect(meanNeedDeficit(calm)).toBeCloseTo(0.3752, 4);
 
     stepTo(rioting, RIOT_LAPSE_TICK + 1);
     stepTo(calm, RIOT_LAPSE_TICK + 1);
 
-    // 0.4526 against 0.3480 since ADR 0059, and 0.4542 against 0.3497 before
-    // it: the riot costs 0.1046 of mean deficit over 611 ticks where it used to
-    // cost 0.1045 -- a thousandth apart, against a `hotThreshold` of 0.65 that `needsPressure` enters
-    // at weight 1. Both arms sit slightly worse because both spend part of the
-    // window walking; the gap between them is smaller for the same reason and
-    // is still the whole of what this asserts. `bladder` is where nearly all of
-    // it is -- 94 of 255 against the control's 254, because
-    // `action.use-toilet` was illegal throughout, and **those two numbers did
-    // not move**.
-    console.log('DEF2', meanNeedDeficit(rioting), meanNeedDeficit(calm), rioting.prisoners.needs.get(0, 'bladder'), calm.prisoners.needs.get(0, 'bladder'));
-    expect(meanNeedDeficit(rioting)).toBeCloseTo(0.4526, 4);
-    expect(meanNeedDeficit(calm)).toBeCloseTo(0.3480, 4);
+    // 0.4542 against 0.3497: the riot cost 0.1045 of mean deficit over 611
+    // ticks, against a `hotThreshold` of 0.65 that `needsPressure` enters at
+    // weight 1. `bladder` is where nearly all of it is -- 94 of 255 against the
+    // control's 254, because `action.use-toilet` was illegal throughout.
+    expect(meanNeedDeficit(rioting)).toBeCloseTo(0.4542, 4);
+    expect(meanNeedDeficit(calm)).toBeCloseTo(0.3497, 4);
     expect(rioting.prisoners.needs.get(0, 'bladder')).toBe(94);
     expect(calm.prisoners.needs.get(0, 'bladder')).toBe(254);
   });
@@ -442,7 +383,7 @@ describe('a riot survives a save, because nothing about it is stored', () => {
      */
     const live = neglectedPrison(0);
     stepTo(live, RIOT_TICK + 100);
-    expect(theRiot(live).state).toBe('active');
+    expect(live.incidents.get('incident.riot.1')?.state).toBe('active');
     expect(live.incidents.isOpenRiotParticipant(0)).toBe(true);
 
     // Stated as a pinned value, because "no schema bump" is the claim: nothing
@@ -464,34 +405,7 @@ describe('a riot survives a save, because nothing about it is stored', () => {
     // no toilet.
     const liveCensus = censusOver(live, 400);
     const restoredCensus = censusOver(restored, 400);
-    /*
-     * **`toEqual(liveCensus)` until [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md);
-     * the two sessions now spend 400 ticks doing the same *things* and 24
-     * ticks apart in how much of one of them they get through.**
-     *
-     * A save carries no walk. `PrisonerOperationsRuntime.loadSnapshot` has
-     * always dropped a restored `travelling` prisoner to `idle` -- their path
-     * request named a queue entry in a `NavigationSystem` a restored session
-     * rebuilds empty -- and until locomotion existed `travelling` lasted a tick
-     * or two, so the rule almost never fired. It now covers the whole journey,
-     * and this save is taken mid-journey: the live session walks on, the
-     * restored one re-selects at the next twenty-tick reconsideration. Measured
-     * here as **592 ticks of association and 28 travelling live, against 568
-     * and 72 restored** -- one reconsideration cycle of difference, in a window this
-     * test chose for the riot rather than for the walk.
-     *
-     * The claim this test exists for is the *regime*, and it is asserted on the
-     * terms that carry it rather than relaxed: the two sessions perform the
-     * **same set of actions**, both censuses are pinned so the divergence is
-     * recorded rather than hidden, and the toilet is absent from both. ADR 0059 open question 3 is where
-     * persisting a walk -- which is a save-schema question, not a locomotion
-     * one -- is left.
-     */
-    expect(Object.keys(restoredCensus.byAction).sort()).toEqual(Object.keys(liveCensus.byAction).sort());
-    expect({ live: liveCensus, restored: restoredCensus }).toEqual({
-      live: { byAction: { 'action.free-association': 592 }, idleTicks: 180, travellingTicks: 28 },
-      restored: { byAction: { 'action.free-association': 568 }, idleTicks: 160, travellingTicks: 72 },
-    });
+    expect(restoredCensus).toEqual(liveCensus);
     expect(restoredCensus.byAction['action.use-toilet']).toBeUndefined();
   });
 
@@ -500,7 +414,7 @@ describe('a riot survives a save, because nothing about it is stored', () => {
     // simply overrode everybody for ever would pass that one.
     const live = neglectedPrison(0);
     stepTo(live, RIOT_LAPSE_TICK + 1);
-    expect(theRiot(live).state).toBe('lapsed');
+    expect(live.incidents.get('incident.riot.1')?.state).toBe('lapsed');
 
     const restored = restoreSimulationRuntime(captureSessionSnapshot(live), SEED).runtime;
 
@@ -510,16 +424,10 @@ describe('a riot survives a save, because nothing about it is stored', () => {
     // The same catching-up census the live session spends, term for term: the
     // restored prisoners are back on `GENERAL_POPULATION_REGIME` and the
     // toilet is legal again.
-    // Re-measured for [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md):
-    // a prisoner walks between rooms now, so `travellingTicks` rises sharply
-    // and every performing term loses the ticks it gained. The *shape* of each
-    // census -- which actions appear and which do not -- is what these
-    // assertions are for and is unchanged except where noted.
-    console.log('RESTORED', JSON.stringify(restoredCensus));
     expect(restoredCensus).toEqual({
-      byAction: { 'action.eat-meal': 92, 'action.free-association': 29, 'action.sleep': 11, 'action.use-toilet': 172 },
-      idleTicks: 240,
-      travellingTicks: 256,
+      byAction: { 'action.eat-meal': 160, 'action.free-association': 58, 'action.use-toilet': 200 },
+      idleTicks: 302,
+      travellingTicks: 80,
     });
   });
 });

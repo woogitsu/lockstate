@@ -43,11 +43,9 @@ instance; `legalContext` is descriptive data for future policy work.
 `item.ts`'s `ContrabandRegistry` is the full lifecycle issue #27 requires:
 `introduce` (the one and only way an item is created -- no fabricated
 stock), `moveHolder` (the one and only way possession changes, appending
-to a permanent `movementLog`), `confiscate` (the way an item is taken out
-of circulation *by the prison*; there is deliberately no further "destroy"
--- disposal of confiscated evidence is a future #28 concern), and
-`departHolder` (the way an item leaves *with its holder*). A record is
-never deleted by any of them. A holder is
+to a permanent `movementLog`), and `confiscate` (the one and only way an
+item leaves circulation; there is deliberately no further "destroy" --
+disposal of confiscated evidence is a future #28 concern). A holder is
 `{ kind: 'prisoner' | 'staff' | 'cell' | 'container', id }`: `'prisoner'`/
 `'staff'` ids are `EntityStore` ids (as decimal strings) from
 `PrisonerOperationsRuntime`/`GuardRoster` respectively -- two separate
@@ -61,60 +59,6 @@ delivery crate awaiting inspection).
 -- issue #27's explicit "avoid scanning every entity/item for each search
 tick." A confiscated item is removed from that index immediately, so a
 later search of its last holder never re-finds it.
-
-**`'departed'` is the third `ContrabandState`**, added by
-[ADR 0061](./adr/0061-what-the-prison-produces-on-its-own.md) with the
-introduction route below: a prisoner who is discharged, or who gets out
-through an escape attempt nobody contained, takes what they were concealing
-with them. It is not a fourth way for an item to leave from *inside* the
-prison -- nothing consumes or destroys one -- and the record and its movement
-log survive, because issue #27 asks for provenance "sufficient for debugging
-and evidence". Left `'concealed'` instead, the item would sit at a holder key
-naming a destroyed entity for the rest of the session, and
-`tests/unit/prisoner-release-completeness.test.ts` could not see it: that gate
-walks the session graph for the numeric `EntityId`, and a `ContrabandHolder.id`
-is a string.
-
-## How contraband gets in
-
-`introduction.ts`, and it is the answer to a sentence that stood in this
-document's wiring section for months: *"no fabricated contraband ... the same
-convention every prior issue's wiring follows"*. That convention is intact --
-**a session that admits nobody holds no contraband, for ever** -- and what
-changed is that "until a session introduces them" now has a producer inside
-`src/` instead of waiting for a scenario format that does not exist.
-
-At the `classification` stage of intake, where an arrival's `RiskTier` is
-written, one draw on `contraband.introduction` decides whether they are
-concealing something and a second decides what. `IntakeSystem` takes it as an
-optional injected port, exactly as it already takes `ActorIdentityMinter`.
-
-- **Who the player admits decides both halves.** The chance rises with the tier
-  (0.10 at tier 0 to 0.40 at tier 3) and so does the band of the catalogue they
-  can draw from: the `2 + tier` least severe entries in `severity` order. Only
-  an arrival classified high risk can bring a weapon in. That is a prefix of an
-  authored ordering rather than a second weight table, so a category added to
-  `contraband-catalog.ts` places itself by its own `severity`.
-- **The id is derived, not allocated** ([ADR 0012](./adr/0012-derived-identifier-reproducibility.md)
-  category 2): `contraband.intake.<entityId>.<tick>`, so no counter joins the
-  save payload and a restored session mints exactly what a continuous one did.
-- **Why the arrival and not the delivery.** The substrate anticipates the
-  delivery route most concretely — `SearchScope` declares `'delivery'`,
-  `ContrabandHolderKind` declares `'container'`, and `searchContainerLocations`
-  exists for it. It is the one route that cannot be built: `ProcurementSystem`'s
-  own header records that `room.delivery-bay` and `object.loading-dock-door`
-  "are declared content that no session instantiates (#141)", so a delivery
-  lands in a container with no location and `locateSearchTarget` throws for one.
-  Contraband introduced there would be unreachable by the system built to find
-  it.
-
-**What the prison cannot yet do about it is order a search.** `SearchSystem` is
-complete and `submitOrder` has no production caller, `searchPolicies` is empty
-in every session, and there is no command type. So a prison now holds
-contraband it has no way to look for, and that half is the owner's — ADR 0061
-open question 1. What contraband *does* do meanwhile is feed the two incident
-producers ADR 0061 added: it is a term in the assault score and a precondition
-of an escape attempt (`docs/INCIDENTS.md`, "Three producers").
 
 ## Intelligence: uncertain, scoped and expiring
 
@@ -233,15 +177,9 @@ resuming and completing correctly after a full restore.
 `IntelligenceLedger`, `InformantRegistry`, `ConfiscationLedger`, an empty
 mutable `searchPolicies` array and an empty `searchContainerLocations` map
 (no fabricated contraband, intelligence, informants or policies -- the
-same convention every prior issue's wiring follows; see "How contraband gets
-in" above for what that convention does and does not now mean), registers
+same convention every prior issue's wiring follows), registers
 `IntelligenceSystem` and `SearchSystem` on the kernel, and pre-registers
-all three named RNG streams -- `contraband.detection`,
-`contraband.intelligence` and, since ADR 0061, `contraband.introduction`.
-The third is separate from the other two for the reason they are separate
-from each other (issue #27's *"one subsystem's draws cannot perturb
-another"*): admitting a prisoner must not shift the sequence a search checks
-concealment against. `SearchSystem`'s default `TargetLocationResolver`
+both named RNG streams. `SearchSystem`'s default `TargetLocationResolver`
 (`locateSearchTarget`) resolves a target's tile from the real registries
 already constructed for that session: `PrisonerOperationsRuntime.position`
 for `'prisoner'` targets, `GuardRoster.getTile` for `'staff'` targets,

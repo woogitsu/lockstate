@@ -452,21 +452,12 @@ describe('the prisoner uses the rooms, which is what the phase is for', () => {
      * late. `action.laundry-work` is absent, and deliberately: it names
      * `room.laundry`, and this prison has a cell, a shower room and a canteen.
      */
-    /*
-     * **Re-measured for [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md).**
-     * A prisoner now walks the tiles between one room and the next instead of
-     * being written onto the destination anchor in the tick their route
-     * resolved, so every count here loses the ticks spent in transit. The
-     * counts this replaces are named beside each entry; what the assertion is
-     * *for* -- that the room-gated actions were reached at all -- is the
-     * property loop below it and is unchanged.
-     */
     expect(performingTicks).toEqual({
-      'action.sleep': 1_224, // 1,800
-      'action.eat-meal': 356, // 360
-      'action.use-toilet': 228, // 280
-      'action.shower': 288, // 240
-      'action.free-association': 2_976, // 3,160
+      'action.sleep': 1_800,
+      'action.eat-meal': 360,
+      'action.use-toilet': 280,
+      'action.shower': 240,
+      'action.free-association': 3_160,
     });
     // Stated as a property as well as a count, so the intent survives a
     // re-baseline: the two room-gated actions really were reached.
@@ -524,52 +515,22 @@ describe('the prisoner uses the rooms, which is what the phase is for', () => {
     // 400 / 340, not 560 / 300, plus the 3,240 ticks of association: the same
     // ADR 0054 change recorded on the run above, measured on the prison whose
     // canteen has no table.
-    /*
-     * **Re-measured for [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md).**
-     * A prisoner now walks the tiles between one room and the next instead of
-     * being written onto the destination anchor in the tick their route
-     * resolved, so every count here loses the ticks spent in transit. The
-     * counts this replaces are named beside each entry; what the assertion is
-     * *for* -- that the room-gated actions were reached at all -- is the
-     * property loop below it and is unchanged.
-     */
     expect(control.performingTicks).toEqual({
-      'action.sleep': 1_224, // 1,800
-      'action.eat-in-cell': 560, // 400
-      'action.use-toilet': 264, // 340
-      'action.shower': 288, // 240
-      'action.free-association': 3_316, // 3,240
+      'action.sleep': 1_800,
+      'action.eat-in-cell': 400,
+      'action.use-toilet': 340,
+      'action.shower': 240,
+      'action.free-association': 3_240,
     });
 
     // Stated as the player-visible consequence as well as a count: a hunger
     // level that rises is a meal that happened, and no decay curve can produce
     // one. Before ADR 0041 this prison's prisoner ate nothing at all.
     expect(control.hungerEverRose, 'a hunger level that rises is a meal that happened').toBe(true);
-    // 231.5, unmoved by ADR 0059 at the shipped walking speed; the paragraph below -- which says the two
-    // prisons end *level* at 231.5 -- is corrected there rather than here.
     expect(control.finalHunger).toBe(231.5);
 
     /*
      * And the cost of losing the canteen is a **worse meal**, not starvation.
-     *
-     * > **Re-checked for ADR 0059 at the shipped walking speed: they are level
-     * > again, both at 231.5, which is where the paragraph below leaves them.**
-     * > They separated at an earlier, slower speed -- 233.5 with tables against
-     * > 229.5 without -- because a walk costs the cell-meal prison more than
-     * > the canteen prison, and the separation closed as the walk got cheaper.
-     * > The equality is therefore a **coincidence at this speed** rather than a
-     * > property, exactly as the paragraph below already says of it.** The paragraph below says they *"now end level
-     * > at 231.5"* and that the end level is therefore no longer what
-     * > distinguishes the two prisons. That held while an arrival was
-     * > instantaneous. A walk costs the cell-meal prison more than the canteen
-     * > prison, because `action.eat-in-cell` is served in the prisoner's own
-     * > cell but the prisoner is not always standing in it, and the canteen
-     * > prison's own losses are smaller -- so the end levels separate again and
-     * > the canteen prison is the better-fed one, which is the direction the
-     * > catalogue's `hunger` rates predict. The paragraph is kept rather than
-     * > rewritten because its *reasoning* about where meal ticks went is still
-     * > the reasoning, and because a comment that silently adopts the number it
-     * > was written to explain stops being readable.
      *
      * **The two now end level at 231.5, and until ADR 0054 they ended one
      * apart** (230.5 against 231.5). Nothing about either meal changed: the
@@ -657,11 +618,7 @@ describe('the prisoner uses the rooms, which is what the phase is for', () => {
     // unchanged at 91, because a prison with no shower head has nothing whose
     // timing could shift.
     expect(withShower.hygieneEverRose, 'a hygiene level that rises is a shower that happened').toBe(true);
-    // 218.8, not the 215.6 the comment above records: ADR 0059 makes the walk
-    // to the shower room cost ticks, so fewer of the window's ticks are spent
-    // showering. The comparison against the control on the next line -- which
-    // is what this test is for -- is unchanged.
-    expect(withShower.finalHygiene).toBe(218.8);
+    expect(withShower.finalHygiene).toBe(215.6);
     expect(withShower.finalHygiene).toBeGreaterThan(control.finalHygiene);
 
     // Both prisons bought and paid for the same 15 planks and 3 bricks -- the

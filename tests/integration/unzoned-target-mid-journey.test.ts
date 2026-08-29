@@ -108,20 +108,7 @@ describe('un-zoning a canteen a prisoner is halfway to', () => {
       travellingAt = tick;
       break;
     }
-    /*
-     * **2,021 until ADR 0059, 2,001 since, and it moved *earlier*** -- which
-     * is worth a sentence, because a decision that makes walking take time
-     * looks like it can only move things later.
-     *
-     * The prisoner sets out at the same reconsideration it always did. What
-     * changed is the one before it: with an abstracted arrival the prisoner
-     * reached their cell and *started performing* inside the tick the route
-     * resolved, so at the 2,000 cycle they were still mid-action and the
-     * canteen was chosen twenty ticks later. Walking to that cell now costs
-     * ticks, the action had not started by 2,000, and the meal block found
-     * them idle.
-     */
-    expect(travellingAt, 'the prisoner never set out for the canteen').toBe(2_001);
+    expect(travellingAt, 'the prisoner never set out for the canteen').toBe(2_021);
     expect(DEFAULT_ACTIONS[prisoners.currentAction.actionIndex[index]!]!.id).toBe('action.eat-meal');
 
     /*

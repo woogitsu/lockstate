@@ -157,54 +157,6 @@ describe('IncidentLog: how long a sector has been quiet, without walking the log
   });
 });
 
-describe('IncidentLog: how long a sector has been quiet *of one kind of incident*', () => {
-  /**
-   * The per-type index ADR 0061 adds, and the defect it exists to prevent.
-   *
-   * `IncidentTriggerSystem` now has three producers sharing one sector. Read
-   * sector-wide, the quiet period would let whichever fired first silence the
-   * other two for its whole window -- so a prison that assaulted every in-game
-   * day would stop rioting, which is a behaviour change nobody asked for.
-   */
-  function twoKinds(): IncidentLog {
-    const log = new IncidentLog();
-    log.open({ id: 'r-1', type: 'riot', sectorId: 'block-a', participantIds: [1, 2], severity: 5, causeFactors: [] }, 1_000);
-    log.open({ id: 'a-1', type: 'assault', sectorId: 'block-a', participantIds: [1, 2], severity: 3, causeFactors: [] }, 9_000);
-    return log;
-  }
-
-  it('answers per type, and the sector-wide answer is unchanged', () => {
-    const log = twoKinds();
-
-    expect(log.lastIncidentStartedAtTick('block-a', 'riot')).toBe(1_000);
-    expect(log.lastIncidentStartedAtTick('block-a', 'assault')).toBe(9_000);
-    // A type this sector has never had is `undefined`, not the sector's own
-    // latest -- the same distinction the sector-wide accessor draws for a
-    // sector with no history at all.
-    expect(log.lastIncidentStartedAtTick('block-a', 'escape-attempt')).toBeUndefined();
-    // And omitting the type still answers what it always answered.
-    expect(log.lastIncidentStartedAtTick('block-a')).toBe(9_000);
-  });
-
-  it('rebuilds per type on restore, so a save does not hand one producer a clean slate', () => {
-    const restored = new IncidentLog();
-    restored.loadSnapshot(twoKinds().getSnapshot());
-
-    expect(restored.lastIncidentStartedAtTick('block-a', 'riot')).toBe(1_000);
-    expect(restored.lastIncidentStartedAtTick('block-a', 'assault')).toBe(9_000);
-    expect(restored.lastIncidentStartedAtTick('block-a', 'escape-attempt')).toBeUndefined();
-  });
-
-  it('keeps two sectors’ answers apart for the same type', () => {
-    const log = twoKinds();
-    log.open({ id: 'a-2', type: 'assault', sectorId: 'block-b', participantIds: [5, 6], severity: 3, causeFactors: [] }, 20_000);
-
-    expect(log.lastIncidentStartedAtTick('block-a', 'assault')).toBe(9_000);
-    expect(log.lastIncidentStartedAtTick('block-b', 'assault')).toBe(20_000);
-    expect(log.lastIncidentStartedAtTick('block-b', 'riot')).toBeUndefined();
-  });
-});
-
 describe('incident alerts and summary: player-visible projections only', () => {
   it('an alert withholds the raw cause factors that produced the incident', () => {
     const log = new IncidentLog();

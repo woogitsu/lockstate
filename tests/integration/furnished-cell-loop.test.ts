@@ -327,15 +327,7 @@ describe('what the toilet does and does not change in the running prison', () =>
      * to select `action.shower`, find no shower room and stand idle: now they
      * fall back to `action.use-toilet`.
      */
-    // 240.5, which is what the paragraph above records, reached again by a
-    // different route: ADR 0059 puts a walk
-    // in front of every arrival, so the last cell meal inside the window falls
-    // a few ticks differently. The paragraph's claim is the *equality between
-    // the two prisons*, and that is the assertion on the next line.
     expect(needLevel(furnished, 'hunger')).toBe(240.5);
-    // 247.8, which is what the paragraph above records: at the shipped walking
-    // speed the toilet is close enough that the walk costs this level nothing.
-    // The equality between the two prisons is what this test asserts.
     expect(needLevel(furnished, 'bladder')).toBe(247.8);
     expect(needLevel(furnished, 'sleep')).toBeGreaterThan(250);
   });

@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import type { IncidentRecord, IncidentType } from '../../src/simulation/incidents/incident';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { wallRoomPerimeter } from '../helpers/room-walls';
@@ -64,16 +63,6 @@ interface PrisonPlan {
   readonly amenities: boolean;
   readonly prisoners: number;
   readonly guards: number;
-  /**
-   * `AdmitPrisoner.priorIncidents`, defaulting to the 0 every case in this file
-   * used before ADR 0061.
-   *
-   * It is here because it is the one figure on the admission command that
-   * decides a `RiskTier`, and the escape-attempt producer is gated on the tier
-   * (`ESCAPE_ATTEMPT_MINIMUM_RISK_TIER`). A prison is not only what the player
-   * builds; it is also who they agree to take.
-   */
-  readonly priorIncidents?: number;
 }
 
 function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<typeof packCommand>): void {
@@ -139,7 +128,7 @@ function buildPrison(plan: PrisonPlan): SimulationRuntime {
     submit(runtime, `hire${String(index)}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ARRIVAL }));
   }
   for (let index = 0; index < plan.prisoners; index += 1) {
-    submit(runtime, `admit${String(index)}`, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, priorIncidents: plan.priorIncidents ?? ADMISSION.priorIncidents, ...ARRIVAL }));
+    submit(runtime, `admit${String(index)}`, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
   }
 
   // A refused purchase, zoning or placement would make every figure below a
@@ -154,40 +143,6 @@ function run(plan: PrisonPlan): SimulationRuntime {
   return runtime;
 }
 
-/**
- * Every incident of one type, in log order.
- *
- * The whole file used to read `runtime.incidents.all()` and mean "the riots",
- * because a riot was the only thing `src/` could produce. Since
- * [ADR 0061](../../docs/adr/0061-what-the-prison-produces-on-its-own.md) it can
- * produce three, so each claim now names the type it is about -- and the ones
- * that were about riots are unchanged in every number.
- */
-function incidentsOfType(runtime: SimulationRuntime, type: IncidentType): readonly IncidentRecord[] {
-  return runtime.incidents.all().filter((incident) => incident.type === type);
-}
-
-/** Every living prisoner's `riskTier`, read off the component the classification draw wrote. */
-function riskTiers(runtime: SimulationRuntime): readonly number[] {
-  const store = runtime.prisoners.entityStore;
-  const tiers: number[] = [];
-  for (let index = 0; index <= store.maxActiveIndex; index += 1) {
-    if (store.isIndexAlive(index)) tiers.push(runtime.prisoners.records.riskTier[index]!);
-  }
-  return tiers;
-}
-
-function livingPrisoners(runtime: SimulationRuntime): number {
-  return riskTiers(runtime).length;
-}
-
-/** How many prisoners hold a cell, summed over the instances -- the other half of "they are gone". */
-function housedPrisoners(runtime: SimulationRuntime): number {
-  return runtime.prisoners.roomInstances
-    .allByRoomCatalogId('room.cell')
-    .reduce((total, instance) => total + runtime.prisoners.roomInstances.occupantsOf(instance.instanceId).length, 0);
-}
-
 const WELL_RUN = { cells: 8, toilets: true, amenities: true, prisoners: 8, guards: 1 } as const;
 
 describe('a prison that meets its prisoners’ needs does not riot, however it is staffed', () => {
@@ -197,33 +152,9 @@ describe('a prison that meets its prisoners’ needs does not riot, however it i
     // incident chip would be permanently red.
     for (const guards of [1, 0]) {
       const runtime = run({ ...WELL_RUN, guards });
-      expect(incidentsOfType(runtime, 'riot'), `guards: ${String(guards)}`).toEqual([]);
+      expect(runtime.incidents.all(), `guards: ${String(guards)}`).toEqual([]);
       expect(runtime.incidentTriggerSystem.getMetrics().riotsTriggered).toBe(0);
     }
-  });
-
-  /**
-   * **The same claim for the producer ADR 0061 added**, and it is here rather
-   * than in a file of its own because it is the same question: a trigger that
-   * fires in a prison that is doing everything right is as broken as one that
-   * never fires.
-   *
-   * The staffed row is the strict one. The unguarded row is not a clean sweep
-   * and is asserted as what it is: this prison is *well run* and still has no
-   * security at all, and a prisoner who drew a weapon at intake scores
-   * `0.10 + 0.36 + 0.30` against a 0.65 line. That is the mechanic working --
-   * an armed prisoner and nobody watching -- and pretending otherwise would be
-   * asserting a comfort rather than a measurement.
-   */
-  it('has no assaults either, once a single guard is on post', () => {
-    const runtime = run({ ...WELL_RUN, guards: 1 });
-    expect(incidentsOfType(runtime, 'assault')).toEqual([]);
-    expect(incidentsOfType(runtime, 'escape-attempt')).toEqual([]);
-
-    // Non-vacuous: contraband really did come in with these arrivals, so the
-    // silence above is the score being low rather than the substrate being
-    // empty. If this ever reads 0 the case above has stopped testing anything.
-    expect(runtime.contraband.all().length).toBeGreaterThan(0);
   });
 });
 
@@ -238,70 +169,18 @@ describe('a prison with beds and nothing else is one guard away from rioting', (
 
   it('riots when nobody is guarding it', () => {
     const runtime = run({ ...BED_ONLY, guards: 0 });
-    const riots = incidentsOfType(runtime, 'riot');
+    const riots = runtime.incidents.all();
     expect(riots.length).toBeGreaterThan(0);
+    expect(riots[0]!.type).toBe('riot');
     expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'staffing-shortfall')?.value).toBe(1);
   });
 
-  it('does not riot, once a single guard is hired — which is the whole of the difference', () => {
+  it('does not, once a single guard is hired — which is the whole of the difference', () => {
     const runtime = run({ ...BED_ONLY, guards: 1 });
-    expect(incidentsOfType(runtime, 'riot')).toEqual([]);
+    expect(runtime.incidents.all()).toEqual([]);
     expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)).toEqual([
       { sectorId: 'security-sector.prison', required: 1, assigned: 1, shortage: 0 },
     ]);
-  });
-
-  /**
-   * **What that guard does not buy, which is issue #477's whole subject.**
-   *
-   * #477 measured this prison's staffed row and found nothing: *"with one
-   * guard, two needs at zero cannot reach the riot threshold — neglect costs a
-   * staffed prison nothing"*. The riot row above still reads exactly that, and
-   * deliberately: ADR 0061 changed no weight in `DEFAULT_SECTOR_RISK_POLICY`
-   * and the sector score in #477's own fixture still peaks at 0.4824.
-   *
-   * What it costs the prison now is this. Eight prisoners with beds and nothing
-   * else run a mean need deficit near 0.48, and a prisoner who is also
-   * concealing something worth using clears the same 0.65 line the sector is
-   * judged at -- so the prison that could not riot has fights instead, once a
-   * fortnight of in-game days rather than never.
-   *
-   * Nothing here hands the prison contraband. It arrives with the arrivals, on
-   * `AdmitPrisoner` commands this fixture was already sending before ADR 0061,
-   * and the assertion below reads it back out of the registry rather than
-   * putting it there -- which is the shape issue #375 catalogues four failures
-   * of.
-   */
-  it('but it does have assaults, which is what neglect costs a staffed prison', () => {
-    const runtime = run({ ...BED_ONLY, guards: 1 });
-
-    const assaults = incidentsOfType(runtime, 'assault');
-    expect(assaults.length).toBeGreaterThan(0);
-    // Two prisoners, and both of them real: an assault names the pair the
-    // prison has failed worst, and `IncidentResponseSystem` injures both when
-    // nobody contains it.
-    for (const assault of assaults) expect(assault.participantIds).toHaveLength(2);
-
-    // The cause factors say which real inputs did it, so this cannot pass on an
-    // assault that fired for some other reason. The staffing term is zero --
-    // the guard *is* on post -- which is exactly what makes this #477's answer
-    // rather than a restatement of the unguarded row.
-    const factors = new Map(assaults[0]!.causeFactors.map((factor) => [factor.kind, factor.value]));
-    expect([...factors.keys()]).toEqual(['assault-pressure', 'need-deficit', 'contraband-severity', 'staffing-shortfall']);
-    expect(factors.get('staffing-shortfall')).toBe(0);
-    // The deficit *at the tick the first assault opened*, which is lower than
-    // the 0.4824 the same prison settles at over twenty days -- needs decay
-    // towards their floor rather than starting there. A bound rather than a
-    // pinned value, because the tick the first one lands on is a property of
-    // the whole ladder and this case is about the terms, not the timing.
-    expect(factors.get('need-deficit')).toBeGreaterThan(0.35);
-    expect(factors.get('contraband-severity')).toBeGreaterThan(0);
-    expect(factors.get('assault-pressure')).toBeGreaterThanOrEqual(0.65);
-
-    // And the prison the assault happened in is the one the sector score still
-    // reads as calm, which is the whole of the split this case exists to show.
-    expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.65);
-    expect(runtime.incidentTriggerSystem.getMetrics().riotsTriggered).toBe(0);
   });
 });
 
@@ -311,56 +190,22 @@ describe('a prison outgrows its staffing, and the coverage report says so before
 
   it('asks for a second guard at sixteen prisoners, and riots while it has one', () => {
     const runtime = run({ ...OVERCROWDED, guards: 1 });
+
+    // The requirement moved because the population did: sixteen against
+    // `DEFAULT_SECTOR_PRISONERS_PER_GUARD`'s eight. Before ADR 0048 this read
+    // `required: 1, shortage: 0` at any population.
     expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)).toEqual([
       { sectorId: 'security-sector.prison', required: 2, assigned: 1, shortage: 1 },
     ]);
-    expect(incidentsOfType(runtime, 'riot').length).toBeGreaterThan(0);
+    expect(runtime.incidents.all().length).toBeGreaterThan(0);
   });
 
-  it('stops rioting once the second guard is hired, without a single cell being built', () => {
+  it('stays clear once the second guard is hired, without a single cell being built', () => {
     const runtime = run({ ...OVERCROWDED, guards: 2 });
     expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)).toEqual([
       { sectorId: 'security-sector.prison', required: 2, assigned: 2, shortage: 0 },
     ]);
-    expect(incidentsOfType(runtime, 'riot')).toEqual([]);
-  });
-
-  /**
-   * **And the eight prisoners it never housed are still there.**
-   *
-   * The case above is the one #442 and ADR 0048 left the prison in: hire the
-   * second guard and the readout goes quiet, with half the population standing
-   * on the arrival tile with nowhere to sleep, eat or wash. Their six needs
-   * decay unopposed to a deficit near 0.95, and the sector *mean* -- eight of
-   * them against eight who are perfectly well housed -- comes to 0.5908, under
-   * the line. That is the mean hiding the individual, and it is the reading
-   * `flashpoint.ts` exists to add.
-   *
-   * This is the strongest single case in the file for ADR 0061, because it
-   * needs no contraband at all: being unhoused is enough on its own.
-   */
-  it('and the prisoners it never housed produce assaults the sector score cannot see', () => {
-    const runtime = run({ ...OVERCROWDED, guards: 2 });
-
-    expect(incidentsOfType(runtime, 'assault').length).toBeGreaterThan(0);
-    // The sector is calm by its own measure, throughout: `getScore` is the last
-    // sample and the run ends on one.
-    expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.65);
-
-    // The state that produced it, read back rather than arranged: half the
-    // population never left `accommodation-assignment`, because eight beds do
-    // not house sixteen people.
-    const housed = runtime.prisoners.roomInstances
-      .allByRoomCatalogId('room.cell')
-      .reduce((total, instance) => total + runtime.prisoners.roomInstances.occupantsOf(instance.instanceId).length, 0);
-    expect(housed).toBe(8);
-
-    const factors = new Map(incidentsOfType(runtime, 'assault')[0]!.causeFactors.map((factor) => [factor.kind, factor.value]));
-    expect(factors.get('staffing-shortfall')).toBe(0);
-    // Well above the sector mean of 0.5908 that the same prison reports, which
-    // is the point: this is one unhoused prisoner's own figure, read at the
-    // tick their assault opened rather than at the end of the run.
-    expect(factors.get('need-deficit')).toBeGreaterThan(0.5);
+    expect(runtime.incidents.all()).toEqual([]);
   });
 });
 
@@ -391,17 +236,7 @@ describe('the rate is a game rather than a nuisance', () => {
     // and this is the assertion that keeps it.
     const runtime = run({ cells: 8, toilets: false, amenities: false, prisoners: 8, guards: 0 });
 
-    /*
-     * Sorted by tick, and it has to be. `IncidentLog.all()` sorts by *id*
-     * lexicographically, and since ADR 0061 a shared incident sequence reaches
-     * double figures in a run this long -- so `incident.riot.11` sorts before
-     * `incident.riot.2` and the gaps below came out negative. That was a latent
-     * fragility in this assertion rather than a new one: it held only while a
-     * prison produced fewer than ten incidents in twelve in-game days.
-     */
-    const startTicks = incidentsOfType(runtime, 'riot')
-      .map((incident) => incident.startedAtTick)
-      .sort((left, right) => left - right);
+    const startTicks = runtime.incidents.all().map((incident) => incident.startedAtTick);
     expect(startTicks.length).toBeGreaterThan(1);
     for (let index = 1; index < startTicks.length; index += 1) {
       expect(startTicks[index]! - startTicks[index - 1]!).toBeGreaterThanOrEqual(2 * DAY);
@@ -414,85 +249,5 @@ describe('the rate is a game rather than a nuisance', () => {
     const first = run({ cells: 8, toilets: false, amenities: false, prisoners: 8, guards: 0 });
     const second = run({ cells: 8, toilets: false, amenities: false, prisoners: 8, guards: 0 });
     expect(second.incidents.all()).toEqual(first.incidents.all());
-  });
-});
-
-describe('who the prison agreed to take is a decision too, and an unguarded prison loses them', () => {
-  /**
-   * **The escape-attempt producer**
-   * ([ADR 0061](../../docs/adr/0061-what-the-prison-produces-on-its-own.md)
-   * decisions 4 and 5), and the pair is the whole of the case: the *same*
-   * prison, the same eight people, the same twelve and a half in-game days, one
-   * `HireStaff` command apart.
-   *
-   * Nothing about this prison is neglected. It is `WELL_RUN` -- eight furnished
-   * cells with toilets, a shower room, a canteen and a yard -- so `needsPressure`
-   * peaks at 0.1869 and neither the riot nor the assault producer can reach it.
-   * What is different is **who it agreed to take**: `priorIncidents: 2` against
-   * a sentence over `LONG_SENTENCE_THRESHOLD_TICKS` puts almost every arrival in
-   * the `high-risk` classification group, and two of them concealed something at
-   * intake.
-   *
-   * Neither of those is arranged here. The tier is a `classifyPrisoner` draw off
-   * the `prisoners.classification` stream from figures the `AdmitPrisoner`
-   * command carries; the contraband is an `introduceContrabandOnIntake` draw off
-   * `contraband.introduction` at the classification stage. Both are read back
-   * out of the real registries below rather than written into them -- the shape
-   * issue #375 catalogues four failures of.
-   */
-  const HIGH_RISK_INTAKE = { ...WELL_RUN, priorIncidents: 2 } as const;
-
-  it('lets two of them out when nobody is on post, and they are gone from the prison', () => {
-    const runtime = run({ ...HIGH_RISK_INTAKE, guards: 0 });
-
-    const attempts = incidentsOfType(runtime, 'escape-attempt');
-    expect(attempts.length).toBeGreaterThan(0);
-    // One participant: an escape attempt is one person leaving, and a list
-    // would make it several people gone at once on a single roll.
-    for (const attempt of attempts) expect(attempt.participantIds).toHaveLength(1);
-
-    // Nobody was hired, so nothing answered them: `IncidentResponseSystem`
-    // lapses at `responseDeadlineTicks` and `escaped` is what a lapsed escape
-    // attempt means. That flag has been in `lapse` since #28 and had never once
-    // been true in a running prison.
-    expect(attempts.every((attempt) => attempt.state === 'lapsed')).toBe(true);
-    expect(attempts.every((attempt) => attempt.outcome?.escaped === true)).toBe(true);
-
-    /*
-     * **And the flag is not a claim the code fails to keep.** The prisoners the
-     * log names are not in the prison any more: the population is down by
-     * exactly the number of escapes, the entity ids are dead, and the cells
-     * they held are free again. Without this half, the incidents panel would
-     * read "escaped: yes" beside a prisoner still asleep in their bed, which is
-     * the class of defect `AGENTS.md` reserves to the owner.
-     */
-    const escaped = attempts.flatMap((attempt) => attempt.participantIds);
-    for (const entityId of escaped) expect(runtime.prisoners.entityStore.isAlive(entityId)).toBe(false);
-    expect(livingPrisoners(runtime)).toBe(WELL_RUN.prisoners - escaped.length);
-    expect(housedPrisoners(runtime)).toBe(WELL_RUN.prisoners - escaped.length);
-
-    // They took what they were concealing with them, rather than leaving it in
-    // a registry keyed by an entity that no longer exists.
-    const departed = runtime.contraband.all().filter((item) => item.state === 'departed');
-    expect(departed.length).toBe(escaped.length);
-    for (const item of departed) expect(escaped.map(String)).toContain(item.holder.id);
-  });
-
-  it('and loses none of them for one hire, which is the whole of the difference', () => {
-    const runtime = run({ ...HIGH_RISK_INTAKE, guards: 1 });
-
-    expect(incidentsOfType(runtime, 'escape-attempt')).toEqual([]);
-    expect(livingPrisoners(runtime)).toBe(WELL_RUN.prisoners);
-
-    /*
-     * Non-vacuous three times over, because every one of these is a premise the
-     * case above rests on and a silent change to any of them would make this
-     * test pass for the wrong reason: the prison really did take high-risk
-     * prisoners, contraband really did come in with them, and it is still
-     * concealed rather than having left with somebody.
-     */
-    expect(riskTiers(runtime).filter((tier) => tier >= 3).length).toBeGreaterThan(0);
-    expect(runtime.contraband.all().length).toBeGreaterThan(0);
-    expect(runtime.contraband.all().every((item) => item.state === 'concealed')).toBe(true);
   });
 });
