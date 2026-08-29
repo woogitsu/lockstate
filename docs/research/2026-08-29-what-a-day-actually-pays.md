@@ -354,6 +354,30 @@ different prison than the one the game builds.
   consequence attached: the panel's note was wrong and the simulation was
   right. Nothing new is claimed about the cause; that record's snapshot-poll
   hypothesis is the one to test.
+- **Removing a room with the mouse works, and the confirm control understates
+  what it does.** A separate run built the same 6x6 cell, then pressed *"Remove
+  rooms"* and dragged a **3x3** across the middle of it. Pasted:
+
+  ```
+  before removal: {"tick":3776,...,"rooms":1,"roomCapacity":1,"accommodationCapacity":1,...}
+  remove control label: "Remove rooms"
+  panel in remove mode: ["ROOMS","Expand"]
+  confirm reads: "Remove 3 × 3" enabled=true
+  after removal:  {"tick":5616,...,"rooms":0,"roomCapacity":0,"accommodationCapacity":0,...}
+  ```
+
+  The whole 6x6 room went, which is what `hud.rooms.remove-hint` promises —
+  *"Drag across any part of a room to remove all of it."* — so the behaviour is
+  right and documented. **The button is the part that is not:**
+  `hud.rooms.confirm-remove` is *"Remove {width} × {height}"* and those are the
+  dimensions of the *rectangle dragged*, so a press labelled **"Remove 3 × 3"**
+  deleted a thirty-six-tile room. Reported as a string that understates its own
+  press, not as a behaviour defect. The finding this closes is
+  `docs/research/README.md`'s *"a mis-drag is currently permanent"*, already
+  marked overtaken there by #312: **overtaken, and now exercised by dragging.**
+  Note also that the Rooms panel folds itself on entering remove mode exactly as
+  it does on arming — `["ROOMS","Expand"]` — and re-opens once a rectangle is
+  pending.
 - **The refusal band latches, still.** The whole time — through 24 wall orders,
   a designation, four object placements and twelve admissions — `.hud__refusal`
   read *"Nothing was removed — there is no object on that tile, and none being
