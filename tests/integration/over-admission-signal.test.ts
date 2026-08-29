@@ -23,11 +23,15 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *
  * The issue was found by playing, with a mouse: a walled box zoned `room.cell`
  * with one bed in it, and then twelve presses of *Admit a prisoner*. All twelve
- * were accepted, no refusal was ever shown, the admit control never disabled,
- * and the state grant was paid on every one of them. Eleven of the twelve then
- * sat at Cell Assignment indefinitely while the only sentence on screen that
- * mentioned accommodation said *"A prisoner can only be admitted into a prison
- * that has a room to hold them."*
+ * were accepted, no refusal was ever shown, and the admit control never
+ * disabled. Eleven of the twelve then sat at Cell Assignment indefinitely while
+ * the only sentence on screen that mentioned accommodation said *"A prisoner
+ * can only be admitted into a prison that has a room to hold them."*
+ *
+ * The issue reported one more thing -- that the state grant was being paid for
+ * all twelve -- and that half **does not reproduce**. It is checked in the
+ * first case below rather than repeated here as background, because a sentence
+ * in a header is exactly where a claim nobody re-measured goes to survive.
  *
  * Every step below goes through the real kernel, the real command decoder and
  * the real projection, and ends at the sentence the panel puts on screen,
