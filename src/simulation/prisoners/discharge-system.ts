@@ -188,14 +188,33 @@ export class PrisonerDischargeSystem implements SystemRegistration {
      * One event for the tick, carrying how many left, rather than one per
      * prisoner.
      *
-     * `due()` returns everybody whose sentence has ended by this tick, so a
-     * prison whose intake arrived together discharges together --
-     * `ADMISSION_REQUEST` in `src/main.ts` asks for the same
+     * `due()` returns everybody whose sentence has ended by this tick, so the
+     * aggregation is **per due tick and nothing else**.
+     *
+     * **This used to justify itself on cohorts and that justification is
+     * withdrawn.** It read: *"a prison whose intake arrived together discharges
+     * together -- `ADMISSION_REQUEST` in `src/main.ts` asks for the same
      * `sentenceLengthTicks` every time, which ADR 0050 flagged, so that is the
-     * ordinary case rather than the corner one. A row per prisoner would put a
-     * burst of identical sentences on the channel for what a player reads as
-     * one occurrence, and the burst would be worst exactly when the prison is
-     * busiest.
+     * ordinary case rather than the corner one."* Since ADR 0069 `main.ts`
+     * sends no sentence at all and `IntakeSystem` draws one **per prisoner**
+     * (`drawSentenceLengthTicks` inside the per-entity walk, then
+     * `sentenceEndTick[index] = context.tick + sentenceLengthTicks[index]`), so
+     * an intake that arrived together does **not** discharge together.
+     *
+     * The aggregation is still right, and now for a plainer reason: whoever is
+     * due on a tick is one occurrence to a player, whether they arrived
+     * together or not. A row per prisoner would put a burst on the channel for
+     * what reads as one event.
+     *
+     * **What the draw does to the spacing is genuinely two-directional**, so no
+     * claim is made about it here. Two prisoners admitted together with 2- and
+     * 16-day sentences leave 33,600 ticks apart -- a cohort split. And one
+     * admitted at tick 0 with 16 days ends at 38,400 while one admitted at
+     * 2,400 with 15 days ends at 2,400 + 36,000 = **38,400 as well** -- two
+     * separate intakes merged onto one tick, which the old fixed 10,000 would
+     * have left 2,400 apart. Both directions change the event count, and which
+     * dominates is a question about admission cadence that nobody has
+     * measured.
      *
      * `recordDischarge` ignores a count below 1, so a tick on which nobody was
      * due -- every tick but a handful -- records nothing without this needing a

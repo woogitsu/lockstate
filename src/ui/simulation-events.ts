@@ -92,9 +92,25 @@ const EVENT_ROW_PREFIX = 'event-';
  * **inside the worker**, uniformly over whole in-game days in `[2, 16]`, so
  * 4,800..38,400 ticks with a mean of 21,600 -- nine days rather than four.
  *
- * The conclusion is unchanged and the wider spread strengthens it: cohorts
- * leave *further* apart than the old fixed sentence implied, not closer
- * together. `DISCHARGE_CHECK_INTERVAL_TICKS` is how often anybody can leave. A
+ * **The conclusion drawn from that is withdrawn too, and it was mine.** It read
+ * *"the wider spread strengthens it: cohorts leave further apart than the old
+ * fixed sentence implied, not closer together."* Replacing a stale number with
+ * a confident direction is not a correction, and the direction is false: an
+ * independent draw per prisoner **both splits cohorts and merges them.**
+ *
+ * Two prisoners admitted together with 2- and 16-day sentences leave 33,600
+ * ticks apart -- split. One admitted at tick 0 with 16 days ends at 38,400, and
+ * one admitted a day later at 2,400 with 15 days ends at 2,400 + 36,000 =
+ * **38,400 as well** -- merged onto a single tick, where the old fixed 10,000
+ * would have left them 2,400 apart. `PrisonerDischargeSystem` aggregates only
+ * those due on the *same tick*, so both directions really do move the count.
+ *
+ * So **eight rows is no longer an argued figure, it is an unmeasured one**.
+ * What would settle it is the number of discharge events a real admission
+ * cadence produces, and nobody has run that. Recorded as open rather than
+ * defended, because a cap justified by reasoning that has been withdrawn twice
+ * is a cap nobody is checking.
+ * `DISCHARGE_CHECK_INTERVAL_TICKS` is how often anybody can leave. A
  * prison admitting steadily therefore produces discharge events on the order
  * of one per admission cohort rather than one per prisoner -- the aggregation
  * above is what makes that true -- so eight rows is several cohorts of
