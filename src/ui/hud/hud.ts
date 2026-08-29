@@ -6,7 +6,7 @@ import {
   createBusyGroup,
   runReported,
 } from '../primitives/async-action';
-import { element, eyebrowText, nextUiId } from '../primitives/dom';
+import { describeBy, element, eyebrowText, nextUiId, undescribeBy } from '../primitives/dom';
 import type { IconId } from '../primitives/icon';
 import { type CollapsibleSection, createCollapsibleSection } from '../primitives/collapsible-section';
 import { type ListRow, createListRow } from '../primitives/list-row';
@@ -926,9 +926,18 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * the control that was pressed* rather than merely somewhere on screen.
    *
    * `AsyncActionFailure.actionId` is the intent kind and the gate is
-   * single-slot, so one entry per kind is enough to name the button. The
-   * controls registered here carry no `aria-describedby` of their own; one
-   * that gained one would need this to merge rather than replace.
+   * single-slot, so one entry per kind is enough to name the button.
+   *
+   * This paragraph used to end "The controls registered here carry no
+   * `aria-describedby` of their own; one that gained one would need this to
+   * merge rather than replace." Both halves have since changed. One of them
+   * *did* gain one -- the Rooms panel's Confirm button is described by the
+   * note beside it (`rooms-panel.ts`, `noteId`), because a keyboard-only
+   * playtest found a player reaching a disabled Confirm and being told
+   * "disabled" and nothing else -- and `markControl` below now merges, so the
+   * prediction is satisfied rather than outstanding. It merges for every
+   * control, not only that one: the next panel to describe a control of its
+   * own needs nothing here.
    *
    * A kind is *deleted* rather than left standing when a command arrives with
    * no control behind it, which is what a drag on the world is (issue #225).
@@ -968,11 +977,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     if (control === undefined) return;
     if (refused) {
       control.dataset['actionFailed'] = 'true';
-      control.setAttribute('aria-describedby', refusalId);
+      describeBy(control, refusalId);
       return;
     }
     delete control.dataset['actionFailed'];
-    control.removeAttribute('aria-describedby');
+    undescribeBy(control, refusalId);
   };
 
   /**

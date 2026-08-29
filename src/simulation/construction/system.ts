@@ -1,6 +1,6 @@
 import { type SystemRegistration, type SimulationContext } from '../kernel/system';
 import { type BuildEdge, type BuildOrder, type BuildOrderFailReason, resolveBuildEdge } from './build-order';
-import { BUILDABLE_REGISTRY, edgeNumericIdFor, getBuildableDefinition, occupiesTileEdge } from './definition';
+import { BUILDABLE_REGISTRY, type BuildableDefinition, edgeNumericIdFor, getBuildableDefinition, occupiesTileEdge } from './definition';
 import { type ConstructionMaterialsProvider, UNLIMITED_MATERIALS_PROVIDER } from './materials-provider';
 import { SnapshotRefusedError } from '../runtime/restore-refusal';
 import { SparseWorld } from '../world/sparse-world';
@@ -243,13 +243,14 @@ export class ConstructionSystem implements SystemRegistration {
   /**
    * Accepts an order, or fails it with a reason.
    *
-   * Three checks, in this order, and the order matters.
+   * Four checks, in this order, and the order matters.
    *
    * **The buildable is asked about first**, because it is the only one of the
-   * three that is a property of the *request* rather than of a tile: an order
-   * naming a row nobody declared is refused whatever is under it, so asking
-   * about the world at all would be answering a narrower question first. It
-   * also touches nothing -- no chunk lookup, no `canBuildAt` -- which matters
+   * four that is a property of the *request* rather than of a tile or of the
+   * order book: an order naming a row nobody declared is refused whatever is
+   * under it and whatever else is queued, so asking about anything else would
+   * be answering a narrower question first. It also touches nothing -- no
+   * chunk lookup, no `canBuildAt`, no scan of `this.orders` -- which matters
    * because `SparseWorld` materialises a chunk on write and a refusal must
    * grow no world (`ObjectPlacementService.place` orders its own checks for the
    * same reason).
@@ -263,6 +264,13 @@ export class ConstructionSystem implements SystemRegistration {
    * `update`'s own lookup then threw on every scheduled tick for the rest of the
    * session -- and, because `snapshot()` carries the order, for the rest of the
    * save's life as well.
+   *
+   * **Second, whether this exact request is already standing** --
+   * `duplicateClaim`, issue #514. Also a property of the request rather than
+   * of a tile (it reads `this.orders`, never the world), so it keeps the same
+   * place in the ordering the buildable check argues for: cheaper and more
+   * fundamental questions first. See `duplicateClaim` for what "already
+   * standing" means and why `completed` is included in it.
    *
    * Then the two tile checks, in the order they were already in: a tile outside
    * the materialised world has no ownership to ask about, so `out-of-bounds` is
@@ -324,6 +332,13 @@ export class ConstructionSystem implements SystemRegistration {
       return;
     }
 
+    if (this.duplicateClaim(order, definition) !== undefined) {
+      order.state = 'failed';
+      order.failReason = 'duplicate-order';
+      this.orders.set(order.id, order);
+      return;
+    }
+
     const refusal = this.admits(order.location);
     if (refusal !== undefined) {
       const across = occupiesTileEdge(definition) ? tileAcrossEdge(order.location, resolveBuildEdge(order)) : undefined;
@@ -354,6 +369,100 @@ export class ConstructionSystem implements SystemRegistration {
     const buildability = canBuildAt(this.world, tile, SUBMISSION_REQUIREMENT);
     if (buildability.buildable) return undefined;
     return SUBMISSION_FAIL_REASONS[buildability.reason] ?? 'unbuildable';
+  }
+
+  /**
+   * The other order this exact request duplicates, or `undefined` if none
+   * claims the same ground (issue #514).
+   *
+   * "Same request" is `definitionId`, tile and resolved edge together --
+   * exactly `buildSupersessionKey`'s four fields, because the withdrawal a
+   * later success performs and the refusal a duplicate attempt earns are
+   * about the identical identity: what a supersession forgives is what a
+   * duplicate check should have refused in the first place. Only two of the
+   * four are compared as coordinates and the third as a resolved edge because
+   * `resolveBuildEdge` is what makes an order with no explicit `edge` and one
+   * carrying `DEFAULT_BUILD_EDGE` explicitly compare equal, the same
+   * normalisation `createConstructionCommandHandler` already applies when it
+   * builds `order`'s own supersession key from this same order right after
+   * `submitOrder` returns.
+   *
+   * **`definitionId` is part of the identity, not dropped.** Two different
+   * buildables claiming the same tile edge -- a wall and, on the same edge, a
+   * door -- are not a duplicate of one another under this method; whether
+   * that combination should itself be refused is a separate, pre-existing
+   * question this change does not touch (`revertConstruction`'s own comment
+   * records that nothing rejects a second wall of a *different* kind on an
+   * edge that already has one, and that stays true here).
+   *
+   * **`cancelled` and `failed` never claim, `completed` usually does, and
+   * *which* buildable decides the exception.** A `completed` order has
+   * already written its wall into the world -- that is the entire content of
+   * issue #514's third question, "what happens to an order for a tile that
+   * is already built": before this method existed, nothing did, and a second
+   * identical order for an already-built edge was **approved**, allocated
+   * its own materials once the crew reached it, and rebuilt geometry that
+   * was already there, for nothing. Folding "already built" into the same
+   * check that catches "still queued" is also the shape
+   * `ObjectPlacementService.place` already uses for the identical pair of
+   * facts about a tile, under its own `tile-occupied`.
+   *
+   * `cancelled` and `failed` are excluded unconditionally because both gave
+   * the tile back: a cancelled order must not permanently block the same
+   * request from being retried, and neither may an order that failed for an
+   * unrelated reason (out of bounds, unowned land) and is then corrected and
+   * resubmitted -- both are ordinary play, not a duplicate press.
+   *
+   * **A `completed` order for an *object* buildable (`placesObjectId`) is
+   * the one case excluded too, and it is not this method guessing -- it is
+   * this class's own asymmetry.** `ObjectPlacementService.remove` takes a
+   * standing object away by deleting it from `PlacedObjectRegistry` directly
+   * (`object-placement-service.ts`) and never calls `cancelOrder` for an
+   * object that has already completed -- only for one still in flight. So a
+   * bed's finished order stays `completed` in `this.orders` for the rest of
+   * the session even after the bed itself is gone, and `PlacedObjectRegistry`
+   * -- not this order -- is what is now authoritative for "is something
+   * standing here". Counting that stale `completed` order as a claim would
+   * refuse a player who removed a bed to move it from ever placing another
+   * one on the freed tile, which is a worse bug than #514 in the opposite
+   * direction: a refusal too eager to let ordinary play through
+   * (`docs/AGENT_WORKFLOW.md`, "a refusal that is too eager is a worse bug
+   * than the one being fixed"). It costs this method nothing extra to get
+   * right: `ObjectPlacementService.place` already refuses a tile a standing
+   * object or an in-flight order covers, under `tile-occupied`, before this
+   * class is ever asked -- `tilesClaimedByOrdersInFlight` even excludes
+   * `completed` from that scan for the identical reason -- so this method
+   * only has to agree with a check that already exists, not invent tile
+   * occupancy for objects on its own. Edge geometry (walls, doors) and pure
+   * utility buildables have no such second registry -- `cancelOrder` is the
+   * only way any of them is ever taken back, and it always leaves `cancelled`
+   * behind -- so `completed` keeps meaning "still there" for every buildable
+   * that is not this one exception.
+   *
+   * **Cost is one pass over every order this session has ever held, on a
+   * player press and not on a tick.** `ObjectPlacementService`'s analogous
+   * scan documents the same trade-off in the same words for the same reason:
+   * `update()` already walks and sorts the full order list on every
+   * scheduled construction tick (`schedule.intervalTicks: 10`, twice a
+   * second, forever), which is a materially higher-frequency cost than one
+   * more unsorted pass per `PlaceBuildOrder` command. Iteration order does not
+   * matter to the answer -- this asks *whether* a claim exists, never *which*
+   * one -- so the raw `Map` is walked directly rather than through
+   * `orderedOrders()`, which would pay for a sort this method has no use for.
+   */
+  private duplicateClaim(order: BuildOrder, definition: BuildableDefinition): BuildOrder | undefined {
+    const edge = resolveBuildEdge(order);
+    const isObjectBuildable = definition.placesObjectId !== undefined;
+    for (const existing of this.orders.values()) {
+      if (existing.id === order.id) continue;
+      if (existing.state === 'cancelled' || existing.state === 'failed') continue;
+      if (existing.state === 'completed' && isObjectBuildable) continue;
+      if (existing.definitionId !== order.definitionId) continue;
+      if (existing.location.x !== order.location.x || existing.location.y !== order.location.y) continue;
+      if (resolveBuildEdge(existing) !== edge) continue;
+      return existing;
+    }
+    return undefined;
   }
 
   public registerTransactionOrder(orderId: string, transactionId?: string): void {

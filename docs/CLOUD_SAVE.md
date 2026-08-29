@@ -201,9 +201,18 @@ design. That gap is now closed except where noted:
 
   It is a decision rather than an oversight, and the decision is written down:
   [ADR 0044](./adr/0044-what-happens-to-a-service-tier-nothing-calls.md) keeps
-  this tree on stated terms — it is waiting on a signed-in account, which does
-  not exist in `src/` (#34), and what would make it dead is the owner deciding
-  cloud save is out of scope. Two gates hold the state in both directions:
+  this tree on stated terms — it is waiting on a signed-in account (#34), and
+  what would make it dead is the owner deciding cloud save is out of scope.
+
+  **Correction, 2026-08-29.** The reducer for that account state now exists —
+  `src/ui/account/account-session.ts`, #34 phase 1, landed 2026-08-27 — and
+  says outright that it "does not talk to Supabase"; the effectful caller that
+  would actually call `createClient`, `signInAnonymously` or `linkIdentity`
+  still does not exist in `src/` at all. That new tree is unreachable for the
+  same reason and on the same terms as this one, and is now tracked the same
+  way: `tests/foundation/trusted-tier-reachability-contract.test.ts` added it
+  to `SCANNED_ROOTS` and `PARKED_TREES` (2026-08-29). Two gates hold the state
+  in both directions:
   `tests/foundation/documentation-claims-contract.test.ts` fails if any module
   outside `src/persistence/cloud/` reads Supabase configuration, and
   `tests/foundation/trusted-tier-reachability-contract.test.ts` fails if the

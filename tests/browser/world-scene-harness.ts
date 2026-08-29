@@ -3,10 +3,12 @@ import type { KeyValueStore } from '../../src/shared/key-value-store';
 import { EMPTY_RENDER_FRAME, type RenderFeed } from '../../src/rendering/feed/render-feed';
 import { WorldScene } from '../../src/rendering/scene/world-scene';
 import type { BuildToolPort, EdgeTarget, EditHistoryPort } from '../../src/rendering/build/edge-picking';
+import type { ObjectToolPort, RoomToolPort, TileRect } from '../../src/rendering/build/area-picking';
 import type {
   CameraScroll,
   HarnessEdge,
   HarnessPoint,
+  HarnessRect,
   LockstateWorldSceneHarness,
   PointerCensus,
 } from './world-scene-harness-api';
@@ -103,12 +105,65 @@ const editHistory: EditHistoryPort = {
 };
 
 const toHarnessEdge = (edge: EdgeTarget): HarnessEdge => ({ tileX: edge.tileX, tileY: edge.tileY, edge: edge.edge });
+const toHarnessRect = (rect: TileRect): HarnessRect => ({
+  tileX: rect.tileX,
+  tileY: rect.tileY,
+  width: rect.width,
+  height: rect.height,
+});
+
+/**
+ * A room tool that records instead of zoning.
+ *
+ * The same double the build tool above is, for the same reason (#516): what
+ * `blur`/`releaseMissed` must do is entirely on the renderer's side of the
+ * boundary, and a list of what `place` received plus the last thing `target`
+ * was shown is the smallest thing that can tell "cancelled" from "committed".
+ */
+let roomArmed = false;
+const placedAreas: TileRect[] = [];
+let targetedArea: TileRect | undefined;
+
+const roomTool: RoomToolPort = {
+  isArmed: () => roomArmed,
+  isRemoving: () => false,
+  place: (rect) => {
+    placedAreas.push(rect);
+  },
+  target: (rect) => {
+    targetedArea = rect;
+  },
+};
+
+/**
+ * An object tool that records instead of placing, with a fixed 1x1 footprint
+ * while armed -- the simplest shape that exercises the gesture (#516). The
+ * bed's 1x2 footprint is the HUD's concern, not this recovery's; `isObjectArmed`
+ * only needs `footprint()` to answer something.
+ */
+let objectArmed = false;
+const placedObjects: { tileX: number; tileY: number }[] = [];
+let targetedObject: TileRect | undefined;
+
+const objectTool: ObjectToolPort = {
+  isArmed: () => objectArmed,
+  isRemoving: () => false,
+  footprint: () => (objectArmed ? { width: 1, height: 1 } : undefined),
+  place: (tile) => {
+    placedObjects.push({ tileX: tile.tileX, tileY: tile.tileY });
+  },
+  target: (rect) => {
+    targetedObject = rect;
+  },
+};
 
 const scene = new WorldScene({
   feed: emptyFeed,
   keyValueStore: memoryStore(),
   buildTool,
   editHistory,
+  roomTool,
+  objectTool,
   // No atlas library: the harness asserts nothing about art, and loading one
   // would make every spec here depend on the git-LFS baseline.
   loadAtlasLibrary: () => Promise.reject(new Error('the input harness loads no atlases')),
@@ -207,6 +262,16 @@ const harness: LockstateWorldSceneHarness = {
     historyRequests.length = 0;
   },
   targetedRun: () => targeted?.map(toHarnessEdge),
+  armRoomTool: (armed) => {
+    roomArmed = armed;
+  },
+  placedAreas: () => placedAreas.map(toHarnessRect),
+  targetedArea: () => (targetedArea === undefined ? undefined : toHarnessRect(targetedArea)),
+  armObjectTool: (armed) => {
+    objectArmed = armed;
+  },
+  placedObjects: () => [...placedObjects],
+  targetedObject: () => (targetedObject === undefined ? undefined : toHarnessRect(targetedObject)),
 };
 
 window.lockstateWorldSceneHarness = harness;

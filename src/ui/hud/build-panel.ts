@@ -8,6 +8,7 @@ import { element, eyebrowText, nextUiId, valueText } from '../primitives/dom';
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createNumberField, type NumberField } from '../primitives/number-field';
 import { createPanel } from '../primitives/panel';
+import { rovingFocusMove, rovingTabStop } from '../primitives/roving-focus';
 import { HUD_MESSAGE_KEY } from './messages';
 import {
   HUD_BUILD_EDGES,
@@ -346,6 +347,62 @@ export function visibleBuildableIds(
 }
 
 /**
+ * Which catalogue rows the keyboard's focus ring is made of, and which one of
+ * them carries the group's single tab stop (#411, the Build half).
+ *
+ * ### Why this exists where the Rooms panel needed nothing
+ *
+ * `rooms-panel.ts` builds its ring straight out of `model.rooms`, because
+ * every room type it draws is on screen for ever. This catalogue has a
+ * category filter (ADR 0035), so a row can be laid out or not, and the two
+ * halves of a roving tab stop both have to be read off the *visible* rows
+ * rather than off all of them:
+ *
+ * - **The `0` must never land on a hidden row.** `hidden` takes an element out
+ *   of sequential focus navigation, so a group whose only `tabIndex = 0` is on
+ *   a filtered-out row is a group `Tab` cannot enter at all -- twenty-one rows
+ *   unreachable, which is a worse defect than the twenty-one tab stops this
+ *   change removes.
+ * - **The arrows must not step onto one either.** `focus()` on a `hidden`
+ *   element does nothing, so an `ArrowDown` that named a filtered row would
+ *   leave focus where it was and read as a dead key.
+ *
+ * Both are one decision, so this answers both at once and the panel holds no
+ * second copy of the filter.
+ *
+ * ### Why it cannot land on a hidden row twice over
+ *
+ * `visibleBuildableIds` already guarantees the selected row is visible whatever
+ * the filter says, and `rovingTabStop` puts the stop on the selection -- so the
+ * stop is on a visible row by construction. This function is what makes that a
+ * *checked* property rather than an inference from two other functions'
+ * comments: `tests/unit/ui-hud-build-panel.test.ts` asserts the answer is
+ * always a member of `visibleIds`, across filters that hide the selection's own
+ * group.
+ *
+ * Pure, and exported, for `visibleBuildableIds`'s reason: `vitest.config.ts`
+ * runs in `environment: 'node'`, so a decision left inside a `keydown` listener
+ * is one the unit suite cannot reach at all (`docs/TESTING.md`).
+ */
+export interface BuildCatalogueFocusRing {
+  /** The rows a `Tab` or an arrow may land on, in list order. */
+  readonly visibleIds: readonly string[];
+  /** The one row carrying `tabIndex = 0`, or `undefined` when there are none. */
+  readonly tabStopId: string | undefined;
+}
+
+export function buildCatalogueFocusRing(
+  buildables: readonly HudBuildableViewModel[],
+  activeCategoryId: string,
+  selectedId: string | undefined,
+): BuildCatalogueFocusRing {
+  const visibleIds = visibleBuildableIds(buildables, activeCategoryId, selectedId);
+  const selectedIndex = selectedId === undefined ? -1 : visibleIds.indexOf(selectedId);
+  const tabStop = rovingTabStop(visibleIds.length, selectedIndex < 0 ? undefined : selectedIndex);
+  return { visibleIds, tabStopId: tabStop === undefined ? undefined : visibleIds[tabStop] };
+}
+
+/**
  * What the target readout says for a given aim, including the case where the
  * pointer is aimed at nothing.
  *
@@ -634,11 +691,22 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     else if (below > 0) catalogueList.scrollTop += below;
   }
 
+  /*
+   * The rows the keyboard may currently land on, and which of them holds the
+   * group's one tab stop. Repainted with the catalogue, and read by the arrow
+   * handler below, so the two can never disagree about what the ring is.
+   */
+  let focusRing = buildCatalogueFocusRing(model.buildables, activeCategoryId, selectedId);
+
   const paintCatalogue = (): void => {
-    const visible = new Set(visibleBuildableIds(model.buildables, activeCategoryId, selectedId));
+    focusRing = buildCatalogueFocusRing(model.buildables, activeCategoryId, selectedId);
+    const visible = new Set(focusRing.visibleIds);
     for (const [id, row] of rows) {
       row.setBadge(id === selectedId ? { tone: 'info', text: t(HUD_MESSAGE_KEY.buildSelected) } : undefined);
       row.element.dataset['selected'] = id === selectedId ? 'true' : 'false';
+      // `aria-checked` is the *machine* carrier of which buildable is chosen,
+      // as it is in `rooms-panel.ts`; the badge above stays the visual one.
+      row.element.setAttribute('aria-checked', id === selectedId ? 'true' : 'false');
       /*
        * `hidden` rather than a class, so a filtered row lays out no box at all
        * and the list's `scrollHeight` really is the filtered list's height --
@@ -647,6 +715,12 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
        * shorten nothing.
        */
       row.element.hidden = !visible.has(id);
+      // Exactly one `0` in the group, and it follows the selection so that
+      // tabbing back in lands on the player's own choice rather than at the
+      // top of a list they have already answered. It is read off the *visible*
+      // order, so the filter can never park it on a row `Tab` cannot reach --
+      // see `buildCatalogueFocusRing`.
+      row.element.tabIndex = focusRing.tabStopId === id ? 0 : -1;
     }
   };
 
@@ -673,17 +747,109 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       },
     });
     row.element.dataset['buildable'] = buildable.definitionId;
+    // `role="radio"` on a real `<button>`, exactly as `rooms-panel.ts` does it:
+    // the role carries the single-select meaning, the button carries the
+    // activation, so `Enter` and `Space` still choose through the same
+    // `onActivate` a pointer press reaches. No second path.
+    row.element.setAttribute('role', 'radio');
     rows.set(buildable.definitionId, row);
     catalogueList.append(row.element);
   }
 
-  // An empty list must say so. A blank rectangle is indistinguishable from a
-  // broken one.
+  /*
+   * The catalogue is one choice, so it is announced as one -- and the role is
+   * not decoration, it is the half that keeps the roving tab stop below from
+   * being a regression.
+   *
+   * A roving `tabindex` with nothing announcing the grouping would turn
+   * "twenty-one tedious stops" into "twenty rows a sighted keyboard-only player
+   * can no longer reach at all", because `Tab` is the only mechanism they have
+   * and nothing would have told them to try an arrow. `radiogroup` / `radio` is
+   * what tells them: a screen reader says "Brick wall, radio button, 1 of 21,
+   * selected", naming the ring, the position and the selection in one breath.
+   *
+   * ### Why on the scroller itself, where the Rooms panel needed a box
+   *
+   * `rooms-panel.ts` boxes its rows in a `.hud-rooms__rows` child because its
+   * scroller holds two different things -- the rows *and* the typed coordinate
+   * form ADR 0039 measured into it -- and four number fields must not become
+   * members of the choice. This scroller holds the rows and nothing else: the
+   * Build panel's typed route is its own collapsible section
+   * (`.hud-build__coordinates`), a sibling of this one. So the box that is
+   * only the rows already exists, and adding a second one would spend a flex
+   * layer inside the panel whose height budget is measured in single-figure
+   * pixels (see `buyToggle`) to change nothing about what is announced.
+   *
+   * Named from the section it heads, as the Rooms group is: that eyebrow reads
+   * "What to build", it sits immediately before this box in reading order, and
+   * a second near-identical name is noise a screen-reader player hears on every
+   * entry. It is an existing key rather than a new sentence.
+   */
+  if (model.buildables.length > 0) {
+    catalogueList.setAttribute('role', 'radiogroup');
+    catalogueList.setAttribute('aria-label', t(HUD_MESSAGE_KEY.buildCatalogue));
+  }
+
+  /*
+   * An empty list must say so. A blank rectangle is indistinguishable from a
+   * broken one.
+   *
+   * It stays inside the scroller, and the scroller is *not* a `radiogroup` in
+   * that state -- which is the same ruling `rooms-panel.ts` reaches by putting
+   * its own empty row beside the group rather than in it. This row is a
+   * sentence, not a choice, and a `radiogroup` whose only member is a
+   * non-interactive readout would announce "one of one" for something there is
+   * no way to select. Reachable only from a host that passes no buildables; the
+   * shipped catalogue has 21.
+   */
   if (model.buildables.length === 0) {
     catalogueList.append(
       createListRow({ icon: 'check', label: t(HUD_MESSAGE_KEY.buildCatalogueEmpty) }).element,
     );
   }
+
+  /*
+   * The arrows, which are what the one tab stop buys back.
+   *
+   * Focus moves; selection does not. A radiogroup conventionally selects as it
+   * moves, and that convention is refused here for the reason `rooms-panel.ts`
+   * refuses it and for one more of this panel's own: choosing a row re-arms the
+   * world tool and clears removal (`onActivate` above), so
+   * selection-follows-focus would fire `options.onArm` once per arrow press and
+   * a player arrowing from Brick wall to Storage rack would re-arm it twenty
+   * times. Explicit activation is also what the pointer does, so the two
+   * producers of a selection stay one gesture.
+   *
+   * The ring is `focusRing.visibleIds` rather than every row, so the category
+   * filter cannot make an arrow press land on a row that is not laid out --
+   * `focus()` on a `hidden` element does nothing, and a key that silently does
+   * nothing is the failure this whole change exists to remove.
+   *
+   * `preventDefault` only for the keys actually consumed -- `rovingFocusMove`
+   * answers `undefined` for everything else, and an arrow that is not ours must
+   * stay the browser's, or the scroll region this list *is* would stop
+   * scrolling.
+   */
+  catalogueList.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    const focused = event.target;
+    if (!(focused instanceof HTMLElement)) return;
+    const definitionId = focused.dataset['buildable'];
+    if (definitionId === undefined) return;
+    const order = focusRing.visibleIds;
+    const next = rovingFocusMove(event.key, order.indexOf(definitionId), order.length);
+    if (next === undefined) return;
+    const targetId = order[next];
+    const target = rows.get(targetId ?? '');
+    if (target === undefined) return;
+    event.preventDefault();
+    // The moved-to row has to be able to take focus before it is given focus:
+    // every row but the tab stop carries `-1`, and `focus()` on a `-1` element
+    // works, but leaving the group's `0` behind would mean tabbing back in
+    // returns to the row the player arrowed away from.
+    for (const [id, row] of rows) row.element.tabIndex = id === targetId ? 0 : -1;
+    target.element.focus();
+  });
 
   const catalogue: CollapsibleSection = createCollapsibleSection({
     eyebrow: t(HUD_MESSAGE_KEY.buildCatalogue),

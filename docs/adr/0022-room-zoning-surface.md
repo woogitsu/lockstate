@@ -253,7 +253,7 @@ zone should be undoable at all is left open in §*What this does not settle*.
 
 **An accepted zone is visible with no renderer work at all.** The zoning plane
 is already projected, decoded and painted per tile with a per-category tint:
-`src/simulation/presentation/world-projection.ts:14,42` carries `zoning` in the
+`src/simulation/presentation/world-projection.ts:16,44` carries `zoning` in the
 chunk projection → `src/rendering/world/world-view.ts:116` decodes the RLE and
 `:179` reads it per tile → `src/rendering/phaser/tile-layer.ts:189-197` fills the
 tile with `zoningTint` (`src/rendering/world/appearance.ts:96`) at
