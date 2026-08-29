@@ -255,13 +255,14 @@ export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
   });
 
   /**
-   * Rebuilds the readout from what the host last said.
+   * Draws or folds the over-admission warning, from what the host last said
+   * (issue #549).
    *
-   * The rows are rebuilt rather than reconciled, and that is affordable here in
-   * a way it is not for the alerts list: there are at most four of them, bounded
-   * by the pipeline's own non-terminal stages rather than by the population, and
-   * none of them carries a control. Nothing in this block is focusable, so
-   * replacing it cannot take focus away from a player mid-press.
+   * Separate from `paintPipeline` below and called by it, rather than inlined,
+   * because the two fold on different conditions: the readout has something to
+   * say whenever anybody is in intake, and this has something to say only once
+   * the prison is out of beds. One function keyed on one predicate would make
+   * the warning appear on every admission.
    */
   function paintWithoutPlace(): void {
     const warn = isIntakeWithoutPlaceWorthShowing(pipeline) ? pipeline : undefined;
@@ -277,6 +278,18 @@ export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
     else withoutPlace.dataset['withoutPlace'] = String(warn.waitingWithoutPlace);
   }
 
+  /**
+   * Rebuilds the readout from what the host last said, and the warning above it.
+   *
+   * The rows are rebuilt rather than reconciled, and that is affordable here in
+   * a way it is not for the alerts list: there are at most four of them, bounded
+   * by the pipeline's own non-terminal stages rather than by the population, and
+   * none of them carries a control. Nothing in this block is focusable, so
+   * replacing it cannot take focus away from a player mid-press.
+   *
+   * The one entry point for both, so there is no route by which the panel could
+   * repaint the readout and leave last session's warning standing beside it.
+   */
   function paintPipeline(): void {
     paintWithoutPlace();
     const shown = isIntakePipelineWorthShowing(pipeline) ? pipeline : undefined;
