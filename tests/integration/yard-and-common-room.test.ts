@@ -274,6 +274,16 @@ describe('a prison with a minimum yard and a common room', () => {
      *     minimum 8x8   yard 5,872   common room 1,248   peak 4 of 6
      *     enlarged 16x8 yard 7,208   common room   336   peak 6 of 6
      *
+     * **The enlarged row is the unmodified tree's row, to the tick.** Measured
+     * on a second worktree checked out at `feefbc4` (v0.0.189), before this
+     * change: an 8x8 yard gave 6,952 / 96 and a 16x8 yard gave 7,208 / 336,
+     * both with a ceiling of `Infinity`. So a yard with room for its
+     * population behaves exactly as it did -- the ceiling binds nothing and
+     * costs nothing -- and the whole of this change is what happens to a yard
+     * that is too small for the prison around it. That is the strongest
+     * statement available about its blast radius, and it is why the number to
+     * watch is the 96 -> 1,248 on the row above rather than anything here.
+     *
      * The common room does not fall to nothing, and that is the tie the first
      * test in this file isolates: at exactly zero recreation and safety
      * deficit both actions score 0 and the ascending-id tie-break takes
