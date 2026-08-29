@@ -50,8 +50,9 @@ export const NEED_MIN_SCALED = NEED_MIN * NEED_SCALE;
 export const NEED_MAX_SCALED = NEED_MAX * NEED_SCALE;
 
 /**
- * **Why `safety` decays at 0.05 and not at 0.01** (issue #588, the owner's
- * ruling on issue #599).
+ * **Why `safety` decays at 0.05 and not at 0.01.**
+ * "What keeps a prisoner safe" (the ADR of that title) decision 2, issue #588,
+ * and the owner's ruling on issue #599.
  *
  * The ruling separates `safety` from the other two needs a normal sentence
  * cannot finish: *"Safety is a bug. Guards exist, sectors exist, the HUD

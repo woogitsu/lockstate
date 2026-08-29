@@ -171,7 +171,8 @@ every need by exactly that batch's elapsed ticks in one call.
 
 **One need is provisioned by something other than an action.** `safety` is
 restored by **guard coverage** rather than by anything in `DEFAULT_ACTIONS`
-([#588](https://github.com/matmaxalez/lockstate/issues/588), under the owner's
+([ADR 0078](./adr/0078-what-keeps-a-prisoner-safe.md),
+[#588](https://github.com/matmaxalez/lockstate/issues/588), under the owner's
 ruling on [#599](https://github.com/matmaxalez/lockstate/issues/599)):
 `SafetyCoverageSystem` walks each security sector's occupants every ten ticks
 and adds `SAFETY_COVERAGE_PROVISION_PER_TICK` for a `covered` sector, half of it

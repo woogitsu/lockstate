@@ -2,7 +2,8 @@
  * **What a sector's guard coverage is, as one word** — the three-rung ladder
  * the Staff panel has read out since [ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md)
  * consequence 1, lifted into the simulation because a second reader now needs
- * it (issue #588).
+ * it -- "What keeps a prisoner safe" (the ADR of that title) decision 1,
+ * issue #588.
  *
  * `describeStaffCoverage` (`src/ui/hud/staff-panel.ts`) already decides these
  * three from `required`/`assigned`/`shortage` and argues the boundary at

@@ -22,7 +22,8 @@ export interface SafetyCoverageReportSource {
 }
 
 /**
- * **Coverage provisions the `safety` need** -- issue #588, the reader half of
+ * **Coverage provisions the `safety` need** -- "What keeps a prisoner safe"
+ * (the ADR of that title), issue #588, the reader half of
  * [ADR 0017](../../../docs/adr/0017-money-primary-resource-model.md)
  * decision 1 that was never wired, under the owner's ruling on issue #599.
  *
