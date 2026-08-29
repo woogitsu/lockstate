@@ -160,11 +160,17 @@ export default defineConfig({
      *
      * ## What that costs, and why no ratio is quoted here
      *
-     * It was not possible to measure honestly where this change was written:
-     * that container was running seven agents, and `world-scene-input.spec.ts`
-     * took 2.2 min for its 24 tests with tracing on against a control that was
-     * still contending for the same cores. A ratio taken there would be a
-     * fiction. **The measurement that matters is free and arrives by itself**:
+     * **This paragraph first said a ratio could not be taken here at all**,
+     * and it is corrected rather than overwritten because the correction is
+     * the useful part. The control finished after that sentence was written:
+     * `world-scene-input.spec.ts`, 24 tests, **130 s with tracing against
+     * 115 s without**, or about **13%**. Both runs contended with seven
+     * agents on the same cores, so treat 13% as an order of magnitude and not
+     * a figure -- but "roughly a seventh" is a far more useful thing to hold
+     * than "unmeasurable", and on this suite's 5.8 min it is about 45 s.
+     *
+     * **The measurement that matters is still free and still arrives by
+     * itself**:
      * this suite's browser job has run eleven times on `main` in a single
      * afternoon in a 5.5-6.0 min band, so the first run carrying this change
      * reports its own overhead against that baseline. If it leaves the band,
