@@ -1,5 +1,10 @@
 import { z } from 'zod';
 import { isJsonValue, type JsonValue } from '../../shared/json';
+// Type-only: erased at build time, so this file still runs no simulation code
+// on its account. See `statusCountsIncidentTypeSchema` below for why this is
+// the one declaration in this file that names another simulation module at
+// all, and why it is a compile-time check rather than a value dependency.
+import type { IncidentType } from '../incidents/incident';
 
 export const SIMULATION_PROTOCOL_VERSION = 1 as const;
 
@@ -556,11 +561,63 @@ const deltaMessageSchema = z
 const countSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 
 /**
+ * Mirrors `IncidentType` (`src/simulation/incidents/incident.ts`) rather than
+ * importing its runtime values, exactly as `REFUSAL_REASONS` above mirrors
+ * ten domain unions rather than importing them: this file's vocabularies are
+ * authored locally so the protocol layer stays free of a dependency on the
+ * systems that produce them.
+ *
+ * Authored, not imported -- **and checked against the real declaration below
+ * rather than trusted**, because a hand-copied four-member list is exactly
+ * the kind of drift the rest of this file's vocabularies accept only under a
+ * test (`tests/unit/simulation-refusals.test.ts` for `REFUSAL_REASONS`). Four
+ * members is too small a surface to spend a whole test file on, so the check
+ * here is a type-level one instead: `IncidentType` is imported for types only
+ * (erased, so this file still runs no simulation code because of it) and
+ * `AssertSame` below fails to compile the moment the two lists name a
+ * different set of literals, in either direction.
+ */
+const statusCountsIncidentTypeSchema = z.enum(['assault', 'escape-attempt', 'gang-retaliation', 'riot']);
+
+/**
+ * `true` only when `Wide` and `Narrow` name exactly the same literals --
+ * neither may have a member the other lacks. A **value**, not merely a type
+ * alias: a type alias that resolved to `never` would compile silently and
+ * assert nothing, so the check has to be a `const` of that type, assigned
+ * `true`, for `tsc` to have something to refuse.
+ *
+ * **`[Wide] extends [Narrow]`, not the bare `Wide extends Narrow` this
+ * started as.** A naked type parameter distributes: `Wide extends Narrow`
+ * over a four-member `Wide` checks each of the four members individually and
+ * *unions* the four results, so one member missing from `Narrow` produces
+ * `never` for that one member and `true` for the rest -- and `never` unioned
+ * with anything vanishes, so the check silently passed with a member
+ * missing. Measured, not guessed: dropping `'gang-retaliation'` from
+ * `statusCountsIncidentTypeSchema` below and running `tsc -b` produced no
+ * error from this line at all until the tuple wrapping was added, which is
+ * exactly the false confidence this check exists to avoid.
+ */
+type AssertSame<Wide, Narrow extends Wide> = [Wide] extends [Narrow] ? true : never;
+const _statusCountsIncidentTypeMirrorsIncidentType: AssertSame<IncidentType, z.infer<typeof statusCountsIncidentTypeSchema>> =
+  true;
+void _statusCountsIncidentTypeMirrorsIncidentType;
+
+/**
  * The `counts` block of the status-strip projection
  * (`src/simulation/presentation/status-strip-projection.ts`), field for
  * field.
  *
- * Every field is a non-negative integer, and that is the whole payload.
+ * **Every field used to be a non-negative integer, and this sentence said so
+ * outright.** `activeIncidentType` below is the correction: issue #506
+ * finding 2 measured that a bare count can never say *which* incident is
+ * open, and `IncidentType` is a stable id (ADR 0011), not a count, so the
+ * field this fix needed is not a `countSchema` member. What the sentence was
+ * really protecting still holds and is worth restating precisely now that a
+ * count is no longer the whole of it: **no field here is a list, an object or
+ * anything of unbounded size** -- every member is a scalar, a `countSchema`
+ * integer or a small closed string enum, so the payload's size is still
+ * capacity-independent. It is also the one field in this object that is
+ * `.optional()` rather than required, for the reason its own comment gives.
  * The projection also computes a clock position and the active regime
  * blocks; neither is carried here (see `simulation/status-counts` below for
  * why).
@@ -613,6 +670,25 @@ export const statusCountsSchema = z
     accommodationCapacity: countSchema,
     roomOccupants: countSchema,
     activeIncidents: countSchema,
+    /**
+     * The kind of the incident `activeIncidents` above counts, when the
+     * projection can name one -- see `StatusStripViewModel.counts.activeIncidentType`
+     * (`src/simulation/presentation/status-strip-projection.ts`) for the full
+     * argument (issue #506 finding 2, ADR 0061 decision 6).
+     *
+     * **The one field in this object that is not a `countSchema` member, and
+     * `.optional()` rather than a required possibly-`undefined` union.** That
+     * is not merely a style choice: this same view model also crosses the
+     * *pulled* `hud/status-strip` route validated by the generic
+     * `jsonValueSchema`, and `isJsonValue` accepts a missing key but not an
+     * explicit `undefined` value -- see the field's own doc comment on
+     * `StatusStripViewModel` for the measured reason. `.optional()` is what
+     * makes "absent" the only representation of "no single kind to report" on
+     * both channels at once, matching `exactOptionalPropertyTypes`
+     * (`tsconfig.json`), which would otherwise let a required-but-`undefined`
+     * TypeScript shape drift from what the projection actually sends.
+     */
+    activeIncidentType: statusCountsIncidentTypeSchema.optional(),
     contrabandDiscovered: countSchema,
     /**
      * The treasury balance, in the minor units `Treasury` holds it in (#96).

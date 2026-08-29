@@ -1,3 +1,4 @@
+import { deriveSimulationMessageKey } from '../content/simulation-message-keys';
 import type { WorkerToMainMessage } from '../simulation/protocol/types';
 import { EMPTY_HUD_VIEW_MODEL, type HudCountsViewModel } from './hud/view-model';
 
@@ -13,10 +14,19 @@ import { EMPTY_HUD_VIEW_MODEL, type HudCountsViewModel } from './hud/view-model'
  * nor a DOM.
  *
  * Every value it returns comes out of a `simulation/status-counts`
- * publication the worker sent. Nothing is derived, extrapolated or
- * remembered between messages: before this existed the HUD's counts were the
- * literal zeros of `EMPTY_HUD_VIEW_MODEL` for the whole session, however
- * many prisoners the simulation held (issue #104).
+ * publication the worker sent, and nothing is extrapolated or remembered
+ * between messages: before this existed the HUD's counts were the literal
+ * zeros of `EMPTY_HUD_VIEW_MODEL` for the whole session, however many
+ * prisoners the simulation held (issue #104).
+ *
+ * **One field is composed rather than read straight through**, since issue
+ * #506 finding 2: `activeIncidentTypeLabelKey` turns the worker's stable
+ * `activeIncidentType` id into a message key with `deriveSimulationMessageKey`.
+ * That is content-namespace composition, not simulation derivation -- it
+ * resolves no catalogue and holds no state, the same distinction
+ * `simulation-intake.ts` and this module's other `value`-content peers draw
+ * -- so "nothing is derived" above still means what it always meant: no
+ * simulation figure is computed here.
  */
 export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCountsViewModel | undefined {
   switch (message.kind) {
@@ -56,6 +66,25 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
         staff: counts.staff,
         rooms: counts.rooms,
         activeIncidents: counts.activeIncidents,
+        /**
+         * The one label this module derives rather than reads straight
+         * through, and it is derived for the reason `simulation-intake.ts`
+         * and the three other `value`-content translators give: the
+         * alternative is a hand-written table of four `incident-type.*.name`
+         * strings, which is exactly the drift `deriveSimulationMessageKey`'s
+         * own derivation rule exists to prevent. `counts.activeIncidentType`
+         * is absent exactly when the worker could not name one kind (issue
+         * #506 finding 2), and the key is **omitted**, not set to
+         * `undefined`, when that happens -- the spread below rather than a
+         * ternary value, because `HudCountsViewModel.activeIncidentTypeLabelKey`
+         * is optional for the reason its own doc comment gives (a channel one
+         * layer down cannot carry a present-but-`undefined` value). The strip
+         * decides what "no single kind" reads as (`src/ui/hud/projection.ts`),
+         * not this translator.
+         */
+        ...(counts.activeIncidentType === undefined
+          ? {}
+          : { activeIncidentTypeLabelKey: deriveSimulationMessageKey('incident-type', counts.activeIncidentType) }),
         contrabandFound: counts.contrabandDiscovered,
         treasuryMinorUnits: counts.treasuryMinorUnits,
         stateIncomeAccruedTodayMinorUnits: counts.stateIncomeAccruedTodayMinorUnits,

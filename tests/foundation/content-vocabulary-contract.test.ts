@@ -358,15 +358,28 @@ describe('the message-key namespaces are counted, and no call site names one tha
    * So this asserts the count exactly -- a number that moves is a visible
    * change -- and gates the one direction that is unambiguously a defect,
    * below. **An allow-list with a reason per namespace is owed and not
-   * delivered**: it would be 33 entries whose reason is uniformly "the panel
+   * delivered**: it would be entries whose reason is uniformly "the panel
    * that would render it is not built yet", edited on every feature that
    * builds one, which is the trade-off `unconsumed-content-contract` declines
-   * in terms ("a list nobody reads enforces nothing"). Which of the 33 are
-   * genuinely awaiting a panel and which are the `REFUSAL_REASONS` case --
-   * vocabularies that reach the player as a *sentence* and should be exempted
-   * from the table rather than labelled by it -- is a judgement per namespace,
-   * and `tests/unit/simulation-message-keys.test.ts` already holds the
-   * exemption mechanism and the reasons for the ones that have been made.
+   * in terms ("a list nobody reads enforces nothing"). Which of the
+   * unreachable namespaces are genuinely awaiting a panel and which are the
+   * `REFUSAL_REASONS` case -- vocabularies that reach the player as a
+   * *sentence* and should be exempted from the table rather than labelled by
+   * it -- is a judgement per namespace, and
+   * `tests/unit/simulation-message-keys.test.ts` already holds the exemption
+   * mechanism and the reasons for the ones that have been made.
+   *
+   * **`incident-type` moved from unreachable to reachable, by one, since
+   * issue #506 finding 2** -- 33 became 32, and 128 unreachable labels became
+   * 124 (this namespace's whole four, `assault` / `escape-attempt` / `riot` /
+   * `gang-retaliation`, in one move: the call site
+   * (`src/ui/simulation-counts.ts`) passes a *variable* incident type, not a
+   * literal id, so the scanner that finds it credits the namespace and every
+   * label in it, the same shape the five-namespace move above already
+   * demonstrates). This is the finding that made the fix possible to ship
+   * with no new copy: the labels were already written and this is the first
+   * call site any of them had. Both halves are left standing rather than one
+   * being overwritten, for the same reason the paragraph above gives.
    */
   it('reports the namespace census exactly', () => {
     expect({
@@ -384,9 +397,9 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // is one of the 33 namespaces waiting for a panel, and the new member
       // waits with the two beside it.
       labels: 174,
-      namespacesWithACallSite: 9,
-      namespacesWithoutACallSite: 33,
-      labelsWithoutACallSite: 128,
+      namespacesWithACallSite: 10,
+      namespacesWithoutACallSite: 32,
+      labelsWithoutACallSite: 124,
     });
   });
 
@@ -400,6 +413,7 @@ describe('the message-key namespaces are counted, and no call site names one tha
       'build-order-state',
       'classification-group',
       'guard-claim',
+      'incident-type',
       'intake-stage',
       'risk-tier',
     ]);

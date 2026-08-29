@@ -65,10 +65,16 @@ export function projectStatusCounts(runtime: SimulationRuntime, tick: number): S
 /**
  * Whether two readouts say the same thing.
  *
- * Every field of `SimulationStatusCounts` is a number, so comparing the keys
- * of one against the other compares the whole payload -- there is no nested
- * object or array to miss. Both arguments come from `projectStatusCounts`
- * within one worker, so they always have the same key set.
+ * **Every field of `SimulationStatusCounts` used to be a number, and this
+ * comment said so outright.** `activeIncidentType` (issue #506 finding 2) is
+ * a stable id or `undefined`, not a number, and `!==` still compares it
+ * correctly -- string/string, `undefined`/`undefined` and the mixed cases all
+ * compare exactly as a change-detector needs. What the old sentence was
+ * really claiming still holds and is the part worth keeping: there is no
+ * nested object or array to miss, so comparing the keys of one payload
+ * against the other's compares the whole of it. Both arguments come from
+ * `projectStatusCounts` within one worker, so they always have the same key
+ * set.
  *
  * This is what makes a steady prison cost the boundary nothing: the
  * publication is skipped when nothing it reports has changed.

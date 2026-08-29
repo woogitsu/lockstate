@@ -181,6 +181,9 @@ describe('simulation worker protocol', () => {
             accommodationCapacity: 150,
             roomOccupants: 3,
             activeIncidents: 0,
+            // Agrees with `activeIncidents: 0` above -- nothing open, nothing
+            // to name (issue #506 finding 2).
+            activeIncidentType: undefined,
             contrabandDiscovered: 7,
             treasuryMinorUnits: 24_920,
             // Derived from this payload's own `tick` and `roomOccupants`
@@ -399,6 +402,7 @@ describe('simulation worker protocol', () => {
       accommodationCapacity: 150,
       roomOccupants: 3,
       activeIncidents: 0,
+      activeIncidentType: undefined,
       contrabandDiscovered: 7,
       // Present so each refusal below is refused for the reason it names.
       // Without it every payload here is already invalid for a *missing
@@ -502,6 +506,7 @@ describe('simulation worker protocol', () => {
       accommodationCapacity: 0,
       roomOccupants: 0,
       activeIncidents: 0,
+      activeIncidentType: undefined,
       contrabandDiscovered: 0,
       treasuryMinorUnits: 25_000,
       stateIncomeAccruedTodayMinorUnits: 0,

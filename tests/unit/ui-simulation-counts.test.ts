@@ -30,6 +30,10 @@ const COUNTS = {
   accommodationCapacity: 44,
   roomOccupants: 31,
   activeIncidents: 1,
+  // Agrees with `activeIncidents: 1` above -- one incident open, one kind to
+  // name (issue #506 finding 2). `'riot'` rather than a lower-severity type on
+  // no particular grounds beyond needing one real `IncidentType` member.
+  activeIncidentType: 'riot',
   contrabandDiscovered: 5,
   treasuryMinorUnits: 24_920,
   // Deliberately a different figure from the balance beside it, and not a
@@ -39,7 +43,7 @@ const COUNTS = {
   stateIncomeAccruedTodayMinorUnits: 9_300,
 } as const;
 
-function statusCounts(counts: Record<string, number> = { ...COUNTS }): WorkerToMainMessage {
+function statusCounts(counts: Record<string, number | string | undefined> = { ...COUNTS }): WorkerToMainMessage {
   return {
     protocolVersion: SIMULATION_PROTOCOL_VERSION,
     messageId: 'counts-1',
@@ -58,6 +62,9 @@ describe('the HUD counts are read from the worker', () => {
       staff: 11,
       rooms: 9,
       activeIncidents: 1,
+      // Derived, not read straight through: `deriveSimulationMessageKey`
+      // composed from the worker's stable `'riot'` id (issue #506 finding 2).
+      activeIncidentTypeLabelKey: 'incident-type.riot.name',
       // The publication names this `contrabandDiscovered`, because that is
       // what the search system counts; the HUD field is `contrabandFound`.
       contrabandFound: 5,
@@ -134,7 +141,14 @@ describe('the HUD counts are read from the worker', () => {
     // A new session genuinely has nothing in it. This is the case that makes
     // the channel's value hard to see on screen today (issue #104's
     // sequencing note) and it must still be reported rather than skipped.
-    const empty = Object.fromEntries(Object.keys(COUNTS).map((key) => [key, 0]));
+    //
+    // `activeIncidentType` is the one key this blanket zero-fill cannot cover
+    // sensibly: `0` is not a member of `IncidentType`, and "nothing open" is
+    // `undefined`, not a numeric zero (issue #506 finding 2).
+    const empty = {
+      ...Object.fromEntries(Object.keys(COUNTS).map((key) => [key, 0])),
+      activeIncidentType: undefined,
+    };
 
     expect(hudCountsFromWorkerMessage(statusCounts(empty))).toEqual(EMPTY_HUD_VIEW_MODEL.counts);
   });
@@ -167,21 +181,34 @@ describe('the HUD counts are read from the worker', () => {
     expect(hudCountsFromWorkerMessage(clock)).toBeUndefined();
   });
 
-  it('carries integers only, so a bounded value cannot reach the HUD unnoticed', () => {
+  it('carries integers only, aside from the one labelled exception, so a bounded value cannot reach the HUD unnoticed', () => {
     // The status-strip projection also computes `BoundedValue`s
     // (`clock.dayProgress`, `regime[].blockProgress`); this channel drops
     // them. It used to be the thing keeping issue #123 item 1 from being
     // decided by accident -- the projection's fill and the HUD primitive's
     // disagreed for every small-but-nonzero value -- and that is now one rule
     // pinned by `tests/unit/segment-fill-agreement.test.ts`. What this still
-    // asserts is the narrower and durable fact: the payload is flat integers,
-    // so widening it to carry a structured value is a visible change to this
-    // test rather than a field that quietly appears.
+    // asserts is the narrower and durable fact: the payload is flat scalars,
+    // so widening it to carry a structured value (an object or an array) is a
+    // visible change to this test rather than a field that quietly appears.
+    //
+    // **This used to say "carries integers only" with no exception, full
+    // stop.** `activeIncidentTypeLabelKey` (issue #506 finding 2) is a message
+    // key -- a string, or `undefined` when nothing names a single kind -- and
+    // it is named explicitly below rather than silently exempted, so a
+    // second non-integer field arriving later still fails this test until it
+    // is named here too.
     const counts = hudCountsFromWorkerMessage(statusCounts());
 
     expect(counts).toBeDefined();
-    for (const value of Object.values(counts ?? {})) {
-      expect(Number.isInteger(value)).toBe(true);
+    for (const [key, value] of Object.entries(counts ?? {})) {
+      if (key === 'activeIncidentTypeLabelKey') {
+        expect(typeof value === 'string' || value === undefined, `counts.${key} is not a string or undefined`).toBe(
+          true,
+        );
+        continue;
+      }
+      expect(Number.isInteger(value), `counts.${key} is not an integer`).toBe(true);
     }
   });
 });
