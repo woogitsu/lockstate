@@ -222,6 +222,32 @@ test.describe('playtest: build a prison with the mouse only', () => {
 
     console.log('=== ROOMS PANEL, after confirm (as the player sees it) ===');
     console.log(await panelText(page, '.hud-rooms'));
+    console.log('=== ALERTS after the refused designation ===');
+    console.log(`.hud-minimap    -> ${JSON.stringify(await panelText(page, '.hud-minimap'))}`);
+    console.log(`.hud-alerts__list -> ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+    console.log(
+      `alerts geometry: ${JSON.stringify(
+        await page.evaluate(() => {
+          const list = document.querySelector<HTMLElement>('.hud-alerts__list');
+          if (list === null) return 'absent';
+          const rect = list.getBoundingClientRect();
+          const rows = [...list.querySelectorAll<HTMLElement>('[data-alert]')].map((row) => ({
+            alert: row.dataset['alert'],
+            text: row.innerText,
+            onScreen: row.getBoundingClientRect().width > 0 && row.getBoundingClientRect().height > 0,
+          }));
+          const centre = {
+            x: Math.round(rect.x + rect.width / 2),
+            y: Math.round(rect.y + rect.height / 2),
+          };
+          return {
+            rect: { x: Math.round(rect.x), y: Math.round(rect.y), w: Math.round(rect.width), h: Math.round(rect.height) },
+            topmostAtCentre: document.elementFromPoint(centre.x, centre.y)?.className ?? null,
+            rows,
+          };
+        }),
+      )}`,
+    );
     console.log(`rooms panel data-collapsed = ${await page.locator('.hud-rooms').getAttribute('data-collapsed')}`);
     // Re-open it by hand, the way a player who lost the panel would.
     await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
@@ -315,6 +341,123 @@ test.describe('playtest: build a prison with the mouse only', () => {
     console.log(await panelText(page, '.hud-build__queue'));
     console.log('=== WHAT THE WORKER SAID BACK (no deltas/snapshots) ===');
     for (const reply of await workerReplies(page)) console.log(JSON.stringify(reply));
+    console.log('=== console ===');
+    console.log(consoleLines.join('\n') || '(nothing)');
+  });
+});
+
+/**
+ * The *informed* route: what a player has to know that the game never says.
+ *
+ * Test one above establishes that zoning first dead-ends. This one plays the
+ * order the simulation actually requires -- buy bricks, run the clock, build
+ * the four walls, and only then zone the enclosed rectangle -- and asks
+ * whether the game is finishable that way at all.
+ *
+ * Departure from mouse-only, stated rather than hidden: the purchase quantity
+ * is typed rather than stepped, because the stepper would be a hundred
+ * presses and the quantity field is not what is under test. Every world
+ * gesture -- every wall run, the room drag, every object placement -- is a
+ * real mouse gesture.
+ */
+test.describe('playtest: the informed route', () => {
+  test('walls first, then zone', async ({ page }) => {
+    test.setTimeout(300_000);
+    const consoleLines: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'debug') return;
+      const text = message.text();
+      if (text.startsWith('%cPhaser') || text.includes('WebGL')) return;
+      consoleLines.push(`[${message.type()}] ${text}`);
+    });
+    page.on('pageerror', (error) => consoleLines.push(`[pageerror] ${error.message}`));
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await installCommandTee(page);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    // Open the folded Alerts box, so a refusal is at least visible to *this*
+    // run. A player has no reason to do this.
+    await page.locator('.hud-minimap .ui-section__header').click();
+    console.log(`alerts opened: ${JSON.stringify(await panelText(page, '.hud-minimap'))}`);
+
+    await page.getByRole('button', { name: 'Build' }).click();
+    const origin = await calibrate(page);
+    console.log(`calibration: tile(0,0) top-left = (${origin.originX}, ${origin.originY})`);
+    console.log(`alerts now: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+
+    // ---- buy bricks --------------------------------------------------
+    await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+    await page.locator('.hud-build__buy-toggle').click();
+    console.log(`buy row: ${JSON.stringify(await panelText(page, '.hud-build__buy'))}`);
+    await page.locator('.hud-build__buy .ui-number__input').fill('60');
+    await page.locator('.hud-build__buy-submit').click();
+    await page.waitForTimeout(300);
+    console.log(`after buy -- funds: ${await page.locator('.hud-strip').innerText().then((t) => t.replace(/\n/g, ' | '))}`);
+    console.log(`deliveries: ${JSON.stringify(await panelText(page, '.hud-build__deliveries'))}`);
+
+    // ---- run the clock so the delivery can land ----------------------
+    await page.getByRole('button', { name: 'Fast forward' }).click();
+    await page.waitForTimeout(4000);
+    console.log(`day/progress: ${await page.locator('.hud-clock__day').innerText()} / ${await page.locator('.hud-clock__day-progress').innerText()}`);
+    console.log(`deliveries after running: ${JSON.stringify(await panelText(page, '.hud-build__deliveries'))}`);
+
+    // ---- four wall runs, with the mouse ------------------------------
+    await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+    const arm = await page.locator('.hud-build__arm').innerText();
+    if (arm.trim().toLowerCase().startsWith('place')) await page.locator('.hud-build__arm').click();
+    const northY = origin.originY + 12 * TILE;
+    const westX = origin.originX + 12 * TILE;
+    const eastX = origin.originX + 16 * TILE;
+    const southY = origin.originY + 16 * TILE;
+    for (const run of [
+      { name: 'north', a: { x: westX + TILE / 2, y: northY }, b: { x: eastX - TILE / 2, y: northY } },
+      { name: 'south', a: { x: westX + TILE / 2, y: southY }, b: { x: eastX - TILE / 2, y: southY } },
+      { name: 'west', a: { x: westX, y: northY + TILE / 2 }, b: { x: westX, y: southY - TILE / 2 } },
+      { name: 'east', a: { x: eastX, y: northY + TILE / 2 }, b: { x: eastX, y: southY - TILE / 2 } },
+    ]) {
+      await page.mouse.move(run.a.x, run.a.y);
+      await page.mouse.down({ button: 'left' });
+      await page.mouse.move((run.a.x + run.b.x) / 2, (run.a.y + run.b.y) / 2, { steps: 8 });
+      await page.mouse.move(run.b.x, run.b.y, { steps: 8 });
+      await page.mouse.up({ button: 'left' });
+      await page.waitForTimeout(150);
+    }
+    console.log(`queue right after the runs: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+
+    for (const wait of [3000, 5000, 10000, 15000]) {
+      await page.waitForTimeout(wait);
+      console.log(
+        `t+${wait}: queue ${JSON.stringify(await panelText(page, '.hud-build__queue'))} | day ${await page.locator('.hud-clock__day').innerText()} ${await page.locator('.hud-clock__day-progress').innerText()}`,
+      );
+    }
+    console.log(`alerts: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+
+    // ---- now zone the enclosed rectangle -----------------------------
+    await page.getByRole('button', { name: 'Rooms' }).click();
+    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+    await page.locator('.hud-rooms__arm').click();
+    const from = centreOf(origin, 12, 12);
+    const to = centreOf(origin, 15, 15);
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down({ button: 'left' });
+    await page.mouse.move((from.x + to.x) / 2, (from.y + to.y) / 2, { steps: 6 });
+    await page.mouse.move(to.x, to.y, { steps: 6 });
+    await page.mouse.up({ button: 'left' });
+    await page.waitForTimeout(300);
+    console.log('=== rooms panel with the designation pending ===');
+    console.log(await panelText(page, '.hud-rooms'));
+    await page.locator('.hud-rooms__confirm').click();
+    await page.waitForTimeout(600);
+    console.log(`ROOMS count now: ${await page.locator('.hud-strip').innerText().then((t) => t.replace(/\n/g, ' | '))}`);
+    console.log(`alerts: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+    console.log('=== rooms panel after confirm ===');
+    console.log(await panelText(page, '.hud-rooms'));
+
+    console.log('=== last worker refusals ===');
+    for (const reply of (await workerReplies(page)).slice(-6)) console.log(JSON.stringify(reply).slice(0, 700));
     console.log('=== console ===');
     console.log(consoleLines.join('\n') || '(nothing)');
   });
