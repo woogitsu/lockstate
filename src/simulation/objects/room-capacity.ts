@@ -28,10 +28,17 @@ export const SLEEP_SURFACE_CAPABILITY = 'sleep-surface';
  * A room instance's rectangle, or `undefined` when the instance does not
  * record one.
  *
- * Absent bounds are a real state rather than a defect: a V4 save carries no
- * rectangle and inventing one would assert a room the player did not zone (see
- * `RoomInstance`). Every caller treats "no rectangle" as "contains nothing",
- * which is precisely the pre-object-placement behaviour.
+ * Absent bounds are a real state rather than a defect: inventing a rectangle
+ * would assert a room the player did not zone (see `RoomInstance`). Every
+ * caller treats "no rectangle" as "contains nothing", which is precisely the
+ * pre-object-placement behaviour.
+ *
+ * **A V4 save was the example, and is no longer** (issue #559, ADR 0074). A V4
+ * *row* carries no rectangle, but the same payload's world section carries the
+ * zoning plane the room was painted into, so `restoreSessionSystems` recovers
+ * it (`../rooms/bounds-recovery.ts`) and a restored V4 room arrives here with
+ * bounds like any other. What genuinely records none is a row the plane cannot
+ * support -- a hand-edited save, or paint cleared from under a row.
  */
 export function roomBoundsOf(
   instance: RoomInstance,
