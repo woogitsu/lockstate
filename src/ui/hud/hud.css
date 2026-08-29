@@ -1873,33 +1873,6 @@
 }
 
 /*
- * The eighteen room rows, boxed so they can be a `radiogroup` (#411).
- *
- * The scroller above holds two different things -- the rows, and the typed
- * coordinate form ADR 0039 measured into it -- so the group that is *one
- * choice* needs a box that is only the rows. This is that box, and it is
- * deliberately nothing else: the same column flow the list itself has, so the
- * rows stack exactly as they did when they were the list's own children and
- * the twelve-state measurement in `app-shell.spec.ts` still reads the figures
- * ADR 0039 recorded.
- *
- * `flex: 0 0 auto` for the reason the form below carries it: this column
- * shrinks, and rows squeezed under their own tap-target height would be a
- * catalogue that fails `every HUD control ... is a real tap target`. The
- * scroller absorbs the overflow, which is what it is for.
- *
- * One visible consequence, and it is wanted: the last row is now
- * `.ui-row:last-child`, so it drops its bottom hairline -- and the form's own
- * `.ui-section` border-top supplies the single separator that used to be two
- * stacked on each other.
- */
-.hud-rooms__rows {
-  display: flex;
-  flex-direction: column;
-  flex: 0 0 auto;
-}
-
-/*
  * The typed route to a rectangle, inside the one box that can pay for it
  * (#411).
  *
