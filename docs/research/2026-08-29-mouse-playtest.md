@@ -2,8 +2,20 @@
 
 Recorded 2026-08-29 against `origin/main` at `6c309fc` (v0.0.200), in a real
 Chromium at 1440x900, driving `index.html` + `src/main.ts` -- not a harness
-page. The script is `tests/browser/playtest-mouse-route.spec.ts`; every number
-below is pasted from its output, and every `file:line` was opened.
+page. The script is `playtest-mouse-route.spec.ts`, which lives on the branch
+`agent/playtest-mouse-route` and **deliberately not in this tree** -- see "The
+reproduction is not merged" below. Every number here is pasted from its output,
+and every `file:line` was opened.
+
+**Its name is written without a rooted path on purpose.**
+`tests/foundation/documentation-links-contract.test.ts` requires every rooted
+path cited in documentation to be on disk, and it caught the first draft of this
+record twice. That gate is right and the allowlist beside it is the wrong tool:
+every entry there names a path that *has never existed in any commit on any
+branch*, where the sentence's own subject is the absence. This file's subject is
+not absence -- it points a reader at a harness -- so the honest fix is to name
+the branch that carries it rather than a tree path that would dangle for anyone
+reading this on `main`.
 
 The brief was the owner's: *"znajdź bugi i błędy grając, bo ja nie mogłem
 postawić więzienia itp grając sam"* -- find bugs by playing, because I could
@@ -18,7 +30,7 @@ of that kind, so the mapping is stated once rather than repeated per line:
 
 - **VERIFIED** covers everything below except where a line says otherwise. It
   means one of two things, both first-party: a measurement produced by running
-  `tests/browser/playtest-mouse-route.spec.ts` against a real Chromium and
+  `playtest-mouse-route.spec.ts` (see above) against a real Chromium and
   pasted verbatim from its output, or a `file:line` in this repository that was
   opened and read. There is no third kind of claim in this record.
 - **SEARCH-SUMMARY** does not occur. No external page was consulted.
