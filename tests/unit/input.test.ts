@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTION_REGISTRY, DEFAULT_ACCESSIBILITY_SETTINGS, DEFAULT_INPUT_SETTINGS, DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, type KeyValueStore, PointerInputAdapter, TouchGestureTracker, decodeAccessibilitySettings, decodeInputSettings, findBindingConflicts, loadAccessibilitySettings, loadInputSettings, remapAndPersistKeyboardBinding, remapKeyboardBinding, isTextEntryFocused, resolveBrowserKeyValueStore, resolveKeyboardLabel, saveAccessibilitySettings, saveInputSettings, validateInputSettings } from '../../src/input';
+import { ACTION_REGISTRY, DEFAULT_ACCESSIBILITY_SETTINGS, MAX_UI_SCALE, MIN_UI_SCALE, UI_SCALE_STEPS, nextUiScaleStep, snapUiScaleToStep, DEFAULT_INPUT_SETTINGS, DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, type KeyValueStore, PointerInputAdapter, TouchGestureTracker, decodeAccessibilitySettings, decodeInputSettings, findBindingConflicts, loadAccessibilitySettings, loadInputSettings, remapAndPersistKeyboardBinding, remapKeyboardBinding, isTextEntryFocused, resolveBrowserKeyValueStore, resolveKeyboardLabel, saveAccessibilitySettings, saveInputSettings, validateInputSettings } from '../../src/input';
 
 class MemoryStore implements KeyValueStore {
   private readonly values = new Map<string, string>();
@@ -145,6 +145,114 @@ describe('semantic input', () => {
   it('keeps accessibility preferences versioned and outside prison state', () => {
     expect(decodeAccessibilitySettings(DEFAULT_ACCESSIBILITY_SETTINGS)).toEqual(DEFAULT_ACCESSIBILITY_SETTINGS);
     expect(decodeAccessibilitySettings({ version: 1, reducedMotion: true, uiScale: 2.1 })).toBeUndefined();
+  });
+
+  /*
+   * The interface scale, as arithmetic (#545).
+   *
+   * These live here rather than beside the control because
+   * `vitest.config.ts` runs `environment: 'node'` with no jsdom: a decision
+   * inside a `click` listener is unreachable from this suite entirely, so a
+   * mutation to one survives because nothing can observe it. The same move
+   * `orderPrisonsForDisplay` and `readNumberFieldEntry` were extracted for.
+   *
+   * The expected values are written out rather than derived from
+   * `UI_SCALE_STEPS`, which is the fixture rule `docs/TESTING.md` states:
+   * a list computed from the code under test holds for any implementation
+   * of it, including a broken one.
+   */
+  it('offers exactly the six fixed steps, 25 percentage points apart', () => {
+    expect(UI_SCALE_STEPS).toEqual([0.75, 1, 1.25, 1.5, 1.75, 2]);
+    // Every step is a quarter, so every step is exact in binary floating
+    // point and `===` against one is safe. That is load-bearing: `stepUiScale`
+    // finds the current step with `indexOf`, and `canStepUiScale` compares
+    // two answers with `!==`.
+    for (const step of UI_SCALE_STEPS) expect(step * 4).toBe(Math.round(step * 4));
+    // The band the persisted record is checked against, restated from the
+    // other side: the steps run from the floor to the ceiling and leave
+    // neither unreachable.
+    expect(UI_SCALE_STEPS[0]).toBe(MIN_UI_SCALE);
+    expect(UI_SCALE_STEPS[UI_SCALE_STEPS.length - 1]).toBe(MAX_UI_SCALE);
+  });
+
+  it('snaps a scale that is not a step to the nearest one, ties to the larger', () => {
+    for (const step of [0.75, 1, 1.25, 1.5, 1.75, 2]) expect(snapUiScaleToStep(step)).toBe(step);
+
+    // Nearer the lower neighbour, nearer the upper, and the exact midpoints.
+    expect(snapUiScaleToStep(0.8)).toBe(0.75);
+    expect(snapUiScaleToStep(0.9)).toBe(1);
+    expect(snapUiScaleToStep(1.3)).toBe(1.25);
+    expect(snapUiScaleToStep(1.4)).toBe(1.5);
+    expect(snapUiScaleToStep(0.875)).toBe(1);
+    expect(snapUiScaleToStep(1.125)).toBe(1.25);
+    expect(snapUiScaleToStep(1.875)).toBe(2);
+
+    // Outside the band it still answers a step: the *decoder* is what refuses
+    // an out-of-range record, and this function is also called on a number a
+    // caller hands `applyUiScale` directly.
+    expect(snapUiScaleToStep(0.1)).toBe(0.75);
+    expect(snapUiScaleToStep(9)).toBe(2);
+    // Not a scale at all -> the default, never NaN.
+    expect(snapUiScaleToStep(Number.NaN)).toBe(1);
+    expect(snapUiScaleToStep(Number.POSITIVE_INFINITY)).toBe(1);
+  });
+
+  it('cycles one place at a time and wraps from the top back to the bottom', () => {
+    expect(nextUiScaleStep(0.75)).toBe(1);
+    expect(nextUiScaleStep(1)).toBe(1.25);
+    expect(nextUiScaleStep(1.25)).toBe(1.5);
+    expect(nextUiScaleStep(1.5)).toBe(1.75);
+    expect(nextUiScaleStep(1.75)).toBe(2);
+
+    // The ring closes. One button is the whole control, so a step that stopped
+    // at the top would be a control the player can press into a state they
+    // cannot press out of.
+    expect(nextUiScaleStep(2)).toBe(0.75);
+
+    // Six presses from any step return to it, which is the property that makes
+    // one button enough for six values. Written as a loop over the steps rather
+    // than as six literals so it says the *ring* is closed and not that one
+    // path through it happens to be.
+    for (const step of [0.75, 1, 1.25, 1.5, 1.75, 2]) {
+      let value = step;
+      for (let press = 0; press < 6; press += 1) value = nextUiScaleStep(value);
+      expect(value).toBe(step);
+    }
+
+    // A value restored from a build that allowed any number advances from its
+    // *nearest step*, not from nothing. Without the snap inside, `indexOf`
+    // answers -1 and a press on a stored 0.9 would land on 0.75 -- a press
+    // that makes the interface smaller.
+    expect(nextUiScaleStep(0.9)).toBe(1.25);
+    expect(nextUiScaleStep(0.8)).toBe(1);
+  });
+
+  it('snaps a persisted scale that is no longer a legal step, and still refuses one out of range', () => {
+    // The migration question #545 raises, decided in the decoder. 0.9 was a
+    // legal stored value before the steps existed and is not one now.
+    // Rejecting the record would take `reducedMotion` down with it -- the
+    // decoder answers `undefined` for the whole record or nothing at all --
+    // so the scale is normalised and the rest of the record survives.
+    expect(decodeAccessibilitySettings({ version: 1, reducedMotion: true, uiScale: 0.9 })).toEqual({
+      version: 1,
+      reducedMotion: true,
+      uiScale: 1,
+    });
+    expect(decodeAccessibilitySettings({ version: 1, reducedMotion: false, uiScale: 1.6 })?.uiScale).toBe(1.5);
+
+    // And the range check is untouched: a value outside [0.75, 2] is refused
+    // exactly as it always was, so a stored 0.63 still falls back to the
+    // default rather than being clamped up to 75 %.
+    expect(decodeAccessibilitySettings({ version: 1, reducedMotion: true, uiScale: 0.63 })).toBeUndefined();
+    const store = new MemoryStore();
+    store.setItem('lockstate.settings.accessibility', JSON.stringify({ version: 1, reducedMotion: true, uiScale: 0.63 }));
+    expect(loadAccessibilitySettings(store)).toEqual(DEFAULT_ACCESSIBILITY_SETTINGS);
+
+    // A record written by this build round-trips unchanged, so the snap is
+    // idempotent and a load/save cycle cannot walk a player's setting.
+    const stepped = { ...DEFAULT_ACCESSIBILITY_SETTINGS, uiScale: 1.75 };
+    saveAccessibilitySettings(store, stepped);
+    expect(loadAccessibilitySettings(store)).toEqual(stepped);
   });
 
   it('falls back to defaults when no settings, or corrupted settings, are stored', () => {

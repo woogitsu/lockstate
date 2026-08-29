@@ -127,6 +127,28 @@
   align-items: center;
   min-width: 0;
   flex: none;
+  /*
+   * The slot wraps its own contents, and is bounded by the strip (#545).
+   *
+   * `flex: none` above is what stops the metrics squeezing the badge, and it
+   * is kept -- but on its own it also means the slot is exactly as wide as
+   * whatever the host mounts, however wide that is. With two things in it (the
+   * badge and the interface-scale control) that was 389px at the 375px phone
+   * width, so the control was laid *outside the viewport* with nothing saying
+   * so: measured 233,0..389,44 of 375x812 at 100 %, and 637..909 of 900x600 at
+   * 175 %. Present, and unreachable, which is the failure mode issue #88
+   * measured in the rail.
+   *
+   * `max-width: 100%` bounds the slot by the strip's content box without
+   * making it shrinkable by its neighbours -- the two are different
+   * properties, and only the second is what `flex: none` is protecting. The
+   * wrap is then what the bound is *for*: the slot's contents stack instead of
+   * being pushed off the edge. The cost is one row of strip height at the
+   * viewports where it triggers, and it is paid only there.
+   */
+  flex-wrap: wrap;
+  max-width: 100%;
+  row-gap: var(--space-1);
 }
 
 .hud-strip__metrics {
@@ -191,7 +213,39 @@
   justify-self: start;
   align-self: end;
   padding: var(--space-3);
+  /*
+   * And never taller than the row it sits in (#545).
+   *
+   * `.hud-minimap__surface` is `aspect-ratio: 1 / 1` off the frame's width, so
+   * the corner's height is a *function of its width* -- and both scale. At
+   * 175 % on a 900x600 window that is 392px of square in a 280px middle row,
+   * and a grid item taller than a `minmax(0, 1fr)` row overflows it rather
+   * than growing it. `align-self: end` then sends the overflow **upward, over
+   * the status strip**: measured, `elementFromPoint` at the centre of each
+   * interface-scale button returned `.hud-minimap__surface`, so the two
+   * controls were on screen, laid out, and could not be pressed.
+   *
+   * That is a property of the corner and not of the scale -- a tall enough
+   * frame in a short enough row does it at 100 % too -- so the fix is the
+   * bound rather than a rule about scales. A flex column with a definite
+   * `max-height` plus `min-height: 0` down the chain is what lets the square
+   * *shrink* instead of overflowing; the frame stops being square before it
+   * stops being on screen, which is the right way round for a placeholder
+   * whose whole content is one centred line of text.
+   */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  max-height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
 }
+
+/* Both `min-height: 0`s are the shrink the block above depends on: a flex
+   item's automatic minimum size is its content, which is exactly what would
+   keep the square square and the corner too tall. */
+.hud-minimap { min-height: 0; }
+.hud-minimap__surface { min-height: 0; }
 
 /* The frame scales with the rest of the interface (#545): it is a HUD panel
    like any other, and a minimap that stayed 224px while the type inside it

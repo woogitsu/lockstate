@@ -14,7 +14,7 @@ import type { LocalizationKey } from '../content/localization';
  * what it changes is a browser preference rather than anything the simulation
  * has an opinion about.
  *
- * **Three keys, and no key for the readout.** What the control displays is the
+ * **Two keys, and no key for the readout.** What the control displays is the
  * scale itself, and a percentage is a *number*: it goes through
  * `localizer.formatNumber(value, { style: 'percent' })`, so the per-cent sign,
  * its spacing and the digits follow the player's locale rather than an English
@@ -32,8 +32,16 @@ export const DISPLAY_SCALE_MESSAGE_KEY = {
    * world zoom. It says "interface", which is the distinction.
    */
   region: 'display.scale.region',
-  decrease: 'display.scale.decrease',
-  increase: 'display.scale.increase',
+  /**
+   * The `title` on the one button, which is what says the button *does*
+   * something.
+   *
+   * The button's accessible name is its own content -- the percentage -- so
+   * that a screen reader announces the current scale, and this is the tooltip
+   * beside it rather than an `aria-label`, which would replace that name
+   * instead of adding to it.
+   */
+  cycle: 'display.scale.cycle',
 } as const satisfies Readonly<Record<string, LocalizationKey>>;
 
 export type DisplayScaleMessageKey = (typeof DISPLAY_SCALE_MESSAGE_KEY)[keyof typeof DISPLAY_SCALE_MESSAGE_KEY];

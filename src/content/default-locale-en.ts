@@ -1039,17 +1039,17 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // `hud.`: it changes a browser preference, not anything the simulation has an
   // opinion about.
   //
-  // Three entries and no fourth. What the control shows is the scale itself,
-  // and a percentage is a number -- it goes through `formatNumber` with
+  // Two entries and no third. What the control shows is the scale itself, and
+  // a percentage is a number -- it goes through `formatNumber` with
   // `style: 'percent'`, so the sign, its spacing and the digits follow the
   // player's locale instead of being assembled from an English literal here.
   //
-  // "Interface", explicitly, in all three. This game also has a camera zoom
-  // bound to `+`/`-`, and the two visible controls here are a `−` and a `+`;
-  // a name that said only "scale" or "zoom" would be describing the wrong one.
+  // "Interface", explicitly, in both. This game also has a camera zoom bound
+  // to `+`/`-`, so a name that said only "scale" or "zoom" would leave a
+  // player -- and a screen reader -- unable to tell which of the two a control
+  // in the status strip changes.
   'display.scale.region': 'Interface scale',
-  'display.scale.decrease': 'Make the interface smaller',
-  'display.scale.increase': 'Make the interface larger',
+  'display.scale.cycle': 'Change the interface scale',
 };
 
 /**

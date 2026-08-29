@@ -92,35 +92,33 @@ export function snapUiScaleToStep(value: number): number {
 }
 
 /**
- * One press of a step control: the neighbouring step in `direction`, or the
- * same one at either end.
+ * One press of the scale control: the next step up, wrapping from the top back
+ * to the bottom.
  *
- * Clamping rather than wrapping. A control that jumps from 200 per cent to 75
- * on one more press of "larger" is a control that can lose a player their
- * interface with a mis-tap, and the ends of a six-item list are not far
- * enough apart to need a shortcut between them.
+ * **A ring, because the control is one button.** Minecraft's GUI Scale is a
+ * single cycling button and this is the same control for the same reason: the
+ * status strip on a 375px phone has 359px of row, the brand badge takes 225 of
+ * it, and a pair of `-`/`+` tap targets with a readout between them is 127px
+ * irreducible -- 7px of margin against a badge whose width grows every time
+ * the patch version gains a digit. Measured, not estimated: with the pair in
+ * the strip the Build panel arrived at 362px of box for 375px of content at
+ * 375x812, which `app-shell.spec.ts` fails on, and with one button it is
+ * 379/379 as it was before.
+ *
+ * The wrap is what makes one button enough. Six steps is a short ring: any
+ * scale is at most five presses from any other, and the alternative -- a
+ * button that stops at 200 per cent -- is a control that can be pressed into a
+ * state it cannot be pressed out of.
  *
  * It snaps first, so a value that is not a step -- one restored from a build
- * that allowed any number -- steps to a *neighbour of its nearest step*
- * rather than to nothing. Without that, `+` on a stored 0.9 would answer 0.9.
+ * that allowed any number -- advances from *its nearest step* rather than from
+ * nothing. Without that, `indexOf` answers -1 and a press on a stored 0.9
+ * would land on 0.75, making the interface smaller.
  */
-export function stepUiScale(value: number, direction: 1 | -1): number {
+export function nextUiScaleStep(value: number): number {
   const current = snapUiScaleToStep(value);
   const index = UI_SCALE_STEPS.indexOf(current);
-  const next = index + direction;
-  if (next < 0 || next >= UI_SCALE_STEPS.length) return current;
-  return UI_SCALE_STEPS[next] as number;
-}
-
-/**
- * Whether a step control in `direction` would do anything.
- *
- * The button is disabled at the end of the list rather than merely inert,
- * because a control that accepts a press and changes nothing is the same
- * defect #545 reports one level up.
- */
-export function canStepUiScale(value: number, direction: 1 | -1): boolean {
-  return stepUiScale(value, direction) !== snapUiScaleToStep(value);
+  return UI_SCALE_STEPS[(index + 1) % UI_SCALE_STEPS.length] as number;
 }
 
 export function decodeAccessibilitySettings(input: unknown): AccessibilitySettings | undefined {

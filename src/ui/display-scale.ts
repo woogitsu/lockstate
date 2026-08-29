@@ -1,10 +1,5 @@
 import type { LocalizationKey } from '../content/localization';
-import {
-  type AccessibilitySettings,
-  canStepUiScale,
-  snapUiScaleToStep,
-  stepUiScale,
-} from '../input/accessibility';
+import { type AccessibilitySettings, nextUiScaleStep, snapUiScaleToStep } from '../input/accessibility';
 import type { MessageParameters } from '../services/localization/format';
 import { element } from './primitives/dom';
 import { createIcon } from './primitives/icon';
@@ -59,7 +54,7 @@ export interface DisplayScaleControlOptions {
 
 export interface DisplayScaleControl {
   readonly element: HTMLElement;
-  /** The two step buttons, for an owner that wants to gate them. */
+  /** The one button, for an owner that wants to gate it. */
   readonly controls: readonly HTMLButtonElement[];
   setScale(scale: number): void;
 }
@@ -104,36 +99,40 @@ export function createDisplayScaleControl(options: DisplayScaleControlOptions): 
   let current = snapUiScaleToStep(options.scale);
 
   /*
-   * `role="status"` and not `aria-live="assertive"`: the readout is the answer
-   * to a press the player just made, so it should be announced, and it should
-   * wait its turn behind anything more urgent. `ui-value` gives it the
-   * monospace tabular figures every number in the strip is set in -- without
-   * them the group would change width between "75%" and "100%" and shove the
-   * `+` button under the player's finger between two presses.
+   * The readout is the button's own content, and therefore its accessible
+   * name: a screen reader announces "Interface scale, 125 %, button" from the
+   * group's label plus this. `role="status"` on top of that is what makes a
+   * *change* announced -- a button whose name changes under a press says
+   * nothing by itself.
+   *
+   * `ui-value` gives it the monospace tabular figures every number in the
+   * strip is set in. That is not decoration here: without them the button
+   * would change width between "75%" and "100%" and walk out from under the
+   * finger that is pressing it.
    */
   const readout = element('span', {
     className: 'ui-value display-scale__value',
     attributes: { role: 'status' },
   });
 
-  const step = (direction: 1 | -1, labelKey: LocalizationKey, symbol: string): HTMLButtonElement =>
-    element('button', {
-      className: 'display-scale__step',
-      attributes: { type: 'button', 'aria-label': t(labelKey) },
-      dataset: { direction: direction === 1 ? 'increase' : 'decrease' },
-      children: [
-        // A symbol for the eye and a sentence for everything else. `title` is
-        // a bonus for a pointer; the `aria-label` above is the real name,
-        // because touch has no hover.
-        element('span', { attributes: { 'aria-hidden': 'true' }, text: symbol }),
-      ],
-    });
-
-  // U+2212 MINUS SIGN, not a hyphen: the same call `number-field.ts` makes.
-  const decrease = step(-1, DISPLAY_SCALE_MESSAGE_KEY.decrease, '−');
-  const increase = step(1, DISPLAY_SCALE_MESSAGE_KEY.increase, '+');
-  decrease.title = t(DISPLAY_SCALE_MESSAGE_KEY.decrease);
-  increase.title = t(DISPLAY_SCALE_MESSAGE_KEY.increase);
+  /*
+   * One button that cycles, which is Minecraft's own GUI Scale control and is
+   * here for a measured reason rather than a stylistic one. A `-`/readout/`+`
+   * trio is 127px at 100 % before any label, and the status strip's first row
+   * on a 375px phone has 134px left after the brand badge -- a margin that the
+   * patch version gaining a digit would spend. Measured on the assembled page:
+   * with the trio the Build panel arrived at 362px of box for 375px of content
+   * at 375x812; with this button it is 379/379, which is what it was before
+   * the control existed.
+   *
+   * `title` rather than `aria-label`, because an `aria-label` would *replace*
+   * the accessible name and take the current scale out of it.
+   */
+  const button = element('button', {
+    className: 'display-scale__cycle',
+    attributes: { type: 'button', title: t(DISPLAY_SCALE_MESSAGE_KEY.cycle) },
+    children: [readout],
+  });
 
   const apply = (): void => {
     // Through the localizer, so the per-cent sign, its spacing and the digits
@@ -141,49 +140,35 @@ export function createDisplayScaleControl(options: DisplayScaleControlOptions): 
     // step is a whole percentage by construction -- it guards the *format*
     // against a locale default, not the arithmetic.
     readout.textContent = localizer.formatNumber(current, { style: 'percent', maximumFractionDigits: 0 });
-    // Disabled at the ends rather than inert there. A control that takes a
-    // press and changes nothing is the defect this whole issue is about, one
-    // level down.
-    decrease.disabled = !canStepUiScale(current, -1);
-    increase.disabled = !canStepUiScale(current, 1);
   };
   apply();
 
-  for (const [button, direction] of [
-    [decrease, -1],
-    [increase, 1],
-  ] as const) {
-    button.addEventListener('click', () => {
-      const next = stepUiScale(current, direction);
-      if (next === current) return;
-      options.onSelect(next);
-    });
-  }
+  button.addEventListener('click', () => {
+    options.onSelect(nextUiScaleStep(current));
+  });
 
   const root = element('div', {
     className: 'display-scale',
     attributes: {
       role: 'group',
-      // Names the pair "interface scale" rather than leaving two bare symbols
-      // beside a game that also has a camera zoom.
+      // Names the control "interface scale" rather than leaving a bare
+      // percentage beside a game that also has a camera zoom.
       'aria-label': t(DISPLAY_SCALE_MESSAGE_KEY.region),
     },
     children: [
-      // Two letters at two sizes: the universal "text size" glyph, and the
-      // only visible thing that distinguishes this pair from the world's zoom
-      // for a player who is not using a screen reader. `createIcon` marks
-      // every glyph `aria-hidden`, so it adds nothing to the group's name --
-      // which is `aria-label` above, and is not repeated as content here.
+      // Two letters at two sizes: the glyph a player already reads as "text
+      // size" everywhere else, and the only visible thing distinguishing this
+      // from the world's zoom for someone not using a screen reader.
+      // `createIcon` marks every glyph `aria-hidden`, so it adds nothing to
+      // the name.
       createIcon('ui-scale', 'sm'),
-      decrease,
-      readout,
-      increase,
+      button,
     ],
   });
 
   return {
     element: root,
-    controls: [decrease, increase],
+    controls: [button],
     setScale(scale: number): void {
       const next = snapUiScaleToStep(scale);
       if (next === current) return;
