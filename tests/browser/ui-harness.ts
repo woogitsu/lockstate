@@ -60,6 +60,7 @@ import {
   HUD_MESSAGE_KEY,
   type HudBuildViewModel,
   type HudHeldGuardsViewModel,
+  type HudIntakePipelineViewModel,
   type HudStaffCoverageViewModel,
   type HudStaffViewModel,
 } from '../../src/ui/hud';
@@ -1466,7 +1467,10 @@ window.lockstateUiHarness = {
 
   intakeProbe(): IntakeProbe {
     const panel = document.querySelector<HTMLElement>('.hud-intake');
+    const body = panel?.querySelector<HTMLElement>('.ui-panel__body') ?? null;
     const admit = document.querySelector<HTMLButtonElement>('.hud-intake .hud-intake__admit');
+    const noPlace = panel?.querySelector<HTMLElement>('.hud-intake__no-place') ?? null;
+    const pipeline = panel?.querySelector<HTMLElement>('.hud-intake__pipeline') ?? null;
     return {
       // `offsetParent` is null for an element that is `hidden` or inside one,
       // which is what `setVisible(false)` leaves the panel in. Presence alone
@@ -1478,7 +1482,42 @@ window.lockstateUiHarness = {
       admitLabel: admit?.textContent ?? '',
       admitDisabled: admit?.disabled ?? null,
       hint: document.querySelector<HTMLElement>('.hud-intake__note')?.textContent ?? '',
+      // The box, never the attribute -- see `IntakeProbe.noPlaceBox`.
+      noPlaceBox: layoutBoxOf(noPlace),
+      noPlaceText: noPlace === null ? '' : (noPlace.textContent ?? ''),
+      noPlaceCount: noPlace?.dataset['withoutPlace'] ?? null,
+      // Computed, so a declaration that never reached the element cannot pass:
+      // the tone is what separates this line from the untoned readout below it.
+      noPlaceColor: noPlace === null ? '' : window.getComputedStyle(noPlace).color,
+      pipelineBox: layoutBoxOf(pipeline),
+      pipelineWaiting: pipeline?.dataset['waiting'] ?? null,
+      pipelineFailed: pipeline?.dataset['failed'] ?? null,
+      pipelineStages: [...(pipeline?.querySelectorAll<HTMLElement>('.hud-intake__pipeline-stage') ?? [])].map(
+        (line) => ({ stage: line.dataset['stage'] ?? '', text: line.textContent ?? '' }),
+      ),
+      panelBox: layoutBoxOf(panel),
+      panelOverflow: panel === null ? 0 : panel.scrollHeight - panel.clientHeight,
+      bodyOverflow: body === null ? 0 : body.scrollHeight - body.clientHeight,
+      // `innerText`, so the answer is what was rendered: a folded line is left
+      // out of it rather than contributing its text.
+      text: panel === null ? '' : panel.innerText,
     };
+  },
+
+  /**
+   * Publishes where the prison's arrivals are, which in the real app arrives
+   * over `simulation/request-projection` (`hud/prisoner-population`) while the
+   * Overview tab is the one showing.
+   *
+   * Spread rather than passed as `undefined`, so "nothing has asked" is an
+   * absent property: `exactOptionalPropertyTypes` is on and the panel branches
+   * on the field being there at all.
+   */
+  reportIntakePipeline(pipeline: HudIntakePipelineViewModel | undefined): void {
+    hud?.update({
+      ...BASE_VIEW_MODEL,
+      ...(pipeline === undefined ? {} : { intakePipeline: pipeline }),
+    });
   },
 
   clickBuildable(definitionId: string): boolean {

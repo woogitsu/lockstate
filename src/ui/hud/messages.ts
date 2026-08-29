@@ -381,17 +381,34 @@ export const HUD_MESSAGE_KEY = {
   /**
    * The intake surface (#261 step 4).
    *
-   * `intakeHint` is not decoration and is not a disclaimer. Until something
-   * in the application can zone a room, every press of the admit control is
-   * refused, and a control that can only be refused has to say why *before*
-   * it is pressed as well as after -- the refusal line answers "that did not
-   * happen", and the hint answers "and it will not until you have somewhere
-   * to put them". The two sentences are different jobs and neither replaces
-   * the other.
+   * `intakeHint` is not decoration and is not a disclaimer. A control that can
+   * be refused has to say why *before* it is pressed as well as after -- the
+   * refusal line answers "that did not happen", and the hint answers "and here
+   * is what this control needs". The two sentences are different jobs and
+   * neither replaces the other.
+   *
+   * **The hint used to describe a refusal that does not exist**, and this note
+   * used to defend it: it said an admission needs "a room to hold them", and
+   * the note here said every press was refused "until something in the
+   * application can zone a room". Neither survived contact with a played
+   * prison (issue #549). `IntakeSystem.hasAccommodationTarget` refuses on a
+   * prison that holds no *instance* of a housing room type -- it never asks
+   * whether a place in one is free -- so a one-bed cell took twelve admissions,
+   * housed one, and left eleven waiting at Cell Assignment while the panel's
+   * own sentence said that could not happen.
+   *
+   * `intakeNoPlace` is the other half of that correction and the reason the
+   * hint does not have to carry a warning: the hint states the standing rule,
+   * and this states what is true of *this* prison right now. It is the one
+   * toned figure on the panel, it sits beside the control that produces it, and
+   * it says nothing at all until the prison actually runs out of beds -- see
+   * `HudIntakePipelineViewModel.waitingWithoutPlace` for why that is not the
+   * `accommodation-assignment` stage count.
    */
   intakeTitle: 'hud.intake.title',
   intakeAdmit: 'hud.intake.admit',
   intakeHint: 'hud.intake.hint',
+  intakeNoPlace: 'hud.intake.no-place',
 
   /**
    * Where the arrivals the player has already admitted are (#104's channel,

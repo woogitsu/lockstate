@@ -845,6 +845,25 @@ export interface HudIntakePipelineViewModel {
   readonly total: number;
   /** The stages that hold somebody, in the pipeline's own order. A stage holding nobody is absent, not zero. */
   readonly stages: readonly HudIntakeStageViewModel[];
+  /**
+   * Arrivals the prison has **no free place for right now** -- issue #549.
+   *
+   * A subset of `waiting`, and never the same question as the
+   * `accommodation-assignment` line in `stages`. An arrival sits at that stage
+   * for one scheduled intake interval before anybody looks for a bed for them,
+   * so in a prison with a free cell the stage line counts somebody who was
+   * never stuck. This counts nobody until the beds actually run out.
+   *
+   * It is the only figure on this panel that is a warning rather than a
+   * readout, and it is what a player pressing Admit into a full prison gets
+   * told: the admission is accepted, the money arrives, and there is nowhere
+   * for the person to sleep.
+   *
+   * `0` is the ordinary state and draws nothing. It is a statement about the
+   * prison *now* and not a forecast -- an arrival counted here is housed the
+   * moment a place exists.
+   */
+  readonly waitingWithoutPlace: number;
 }
 
 /**

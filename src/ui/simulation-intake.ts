@@ -127,7 +127,13 @@ export function intakePipelineFromProjection(view: PrisonerPopulationCountsViewM
     });
   }
 
-  return { waiting, failed, total: view.total, stages };
+  // Carried straight through, never recomputed here. The projection subtracts
+  // the free places the prison can offer from the arrivals holding out for
+  // them, and it is the only side of the boundary that can: this thread holds
+  // no room registry, and a figure derived here from a stage count and a
+  // capacity read on a different tick would be a second, disagreeing definition
+  // of the one number this panel warns on.
+  return { waiting, failed, total: view.total, stages, waitingWithoutPlace: view.waitingWithoutPlace };
 }
 
 export class IntakePipelineReader {

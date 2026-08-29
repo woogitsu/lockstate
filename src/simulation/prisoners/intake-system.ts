@@ -160,6 +160,24 @@ export function firstAvailableAccommodationTarget(
   return undefined;
 }
 
+/**
+ * The identity of an accommodation target, as a string a `Map` or a `Set` can
+ * key on: the room type **and** the capability it must offer, never the room
+ * type alone.
+ *
+ * Extracted from `resolveAccommodationTargets` so that a second caller asking
+ * "how many free places does this target have" keys its budget by exactly what
+ * that function deduplicated by. Two spellings of this pair is how a reader
+ * would come to credit one target with another's places.
+ *
+ * `identifierSchema` (`src/simulation/protocol/types.ts`) admits no `\u0000`,
+ * and both halves of the pair are catalogue ids it validates, so the joined
+ * key cannot collide with a different pair.
+ */
+export function accommodationTargetKey(target: AccommodationTarget): string {
+  return `${target.roomCatalogId}\u0000${target.requiredObjectCapability ?? ''}`;
+}
+
 export function resolveAccommodationTargets(
   policy: AccommodationPolicy = DEFAULT_ACCOMMODATION_POLICY,
 ): readonly AccommodationTarget[] {
@@ -168,10 +186,7 @@ export function resolveAccommodationTargets(
 
   for (const classificationGroupId of CLASSIFICATION_GROUP_IDS) {
     for (const target of policy.resolveTargets(classificationGroupId)) {
-      // `identifierSchema` (`src/simulation/protocol/types.ts`) admits no
-      // `\u0000`, and both halves of this pair are catalogue ids it validates,
-      // so the joined key cannot collide with a different pair.
-      const key = `${target.roomCatalogId}\u0000${target.requiredObjectCapability ?? ''}`;
+      const key = accommodationTargetKey(target);
       if (seen.has(key)) continue;
       seen.add(key);
       targets.push(target);

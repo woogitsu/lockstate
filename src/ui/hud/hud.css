@@ -1411,6 +1411,34 @@
 .hud-intake__note { white-space: normal; text-transform: none; letter-spacing: 0; }
 
 /*
+ * The over-admission warning, beside the control that causes it (issue #549).
+ *
+ * Toned like `.hud-intake__pipeline-failed` below and unlike everything else on
+ * this panel, because it is the same *kind* of thing that line is -- a standing
+ * fact about people already inside the prison, rather than a refusal, which the
+ * refusal band answers. The two never contradict each other: this one is
+ * released by a bed and that one by nothing, and they count different people
+ * (`PrisonerPopulationCountsViewModel.waitingWithoutPlace`).
+ *
+ * `:not([hidden])` on the `display` rule, not merely on the colour: an author
+ * `display: block` beats the `display: none` a user agent gives `[hidden]`, so
+ * a guard on the colour alone would leave the box painted and the panel paying
+ * for a line reading nothing. `.hud-intake__pipeline` one block down is guarded
+ * for exactly this reason and the mistake is worth making impossible twice.
+ *
+ * A sentence, not a label, so the eyebrow's uppercase single-line treatment is
+ * undone here as `.hud-intake__note` above undoes it.
+ */
+.hud-intake__no-place:not([hidden]) {
+  display: block;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--status-warning);
+}
+
+/*
  * Where the arrivals are (#104's channel, third consumer).
  *
  * The shape `.hud-rooms__needs` uses, deliberately: it is the same kind of

@@ -72,6 +72,36 @@ import type { HudIntakePipelineViewModel, HudIntakeStageViewModel, HudLocalizer 
  * refusal line's job, and `hud.intake.pipeline-failed` is the one sentence here
  * that is about a state a player cannot act on.
  *
+ * ### The one thing it warns about (issue #549)
+ *
+ * Everything above is a readout. `hud.intake.no-place` is not: it is the count
+ * of people the player has admitted that the prison has **no bed for**, and it
+ * sits beside the admit control rather than in the block, because it is a fact
+ * about the button and not about the pipeline.
+ *
+ * It exists because the panel's own standing note was false. That note said a
+ * prisoner "can only be admitted into a prison that has a room to hold them",
+ * and the admission guard has never asked that: `hasAccommodationTarget` wants
+ * an *instance* of a housing room type and never a free place in one, so a
+ * played prison with a single bed accepted twelve admissions, housed one, and
+ * told the player nothing. The note now states what the control actually needs,
+ * and this line states what the press actually costs when the prison is full.
+ *
+ * This paragraph also said the prison "paid the state grant on all twelve",
+ * repeating the issue's second claim, and that half was checked and does not
+ * hold: `stateIncomeForCompletedDay` walks the *occupied places*, so an arrival
+ * with no bed is worth nothing (`tests/integration/over-admission-signal.test.ts`).
+ * The money is not the defect; the silence is.
+ *
+ * **Not a refusal, deliberately.** Over-admission is the ordinary route into
+ * the incidents `DEFAULT_SECTOR_RISK_POLICY` opens -- an arrival with no
+ * accommodation is the term that pushes needs pressure past the line -- so
+ * closing it would close the game's most interesting content. The player is
+ * told; the button still works.
+ *
+ * It is folded away at `0`, which is every prison with a bed to spare, so it is
+ * not furniture and a player who sees it has genuinely run out.
+ *
  * ### What it does not offer, and why
  *
  * No sentence-length field, no prior-incidents field and no arrival tile. The
@@ -134,6 +164,29 @@ export function formatIntakeFailedText(t: Translate, pipeline: HudIntakePipeline
   return t(HUD_MESSAGE_KEY.intakePipelineFailed, { count: pipeline.failed });
 }
 
+/**
+ * Whether the prison has run out of beds for the people already in it (issue
+ * #549).
+ *
+ * Keyed on `waitingWithoutPlace` and on nothing else -- not on `waiting`, and
+ * emphatically not on the `accommodation-assignment` stage line. Every arrival
+ * passes through that stage, including every arrival the prison houses without
+ * trouble, so a warning keyed on it would fire on a prison that is working. The
+ * projection has already subtracted the places the prison can offer; `0` means
+ * everybody waiting has somewhere to go.
+ *
+ * `undefined` draws nothing for the reason `isIntakePipelineWorthShowing` gives:
+ * nothing is answering for this prison, so there is no prison to warn about.
+ */
+export function isIntakeWithoutPlaceWorthShowing(pipeline: HudIntakePipelineViewModel | undefined): boolean {
+  return pipeline !== undefined && pipeline.waitingWithoutPlace > 0;
+}
+
+/** How many people the player has admitted that the prison has nowhere to sleep. */
+export function formatIntakeWithoutPlaceText(t: Translate, pipeline: HudIntakePipelineViewModel): string {
+  return t(HUD_MESSAGE_KEY.intakeNoPlace, { count: pipeline.waitingWithoutPlace });
+}
+
 export interface IntakePanel {
   readonly element: HTMLElement;
   /**
@@ -175,6 +228,22 @@ export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
    */
   let pipeline: HudIntakePipelineViewModel | undefined;
 
+  /*
+   * The warning, beside the control that produces it (issue #549).
+   *
+   * Outside `pipelineBlock` and not a fifth line inside it, because it is not
+   * the same kind of statement. That block is a readout of where the prison's
+   * arrivals are and is deliberately untoned; this is the one sentence on the
+   * panel that says the player has done something the prison cannot absorb, and
+   * it has to be next to the button that does it rather than at the bottom of a
+   * list a player who is pressing Admit is not reading.
+   *
+   * It folds independently of the block, so a prison with arrivals moving
+   * normally through intake shows the readout and no warning -- which is every
+   * prison that is working.
+   */
+  const withoutPlace = eyebrowText('', 'hud-intake__no-place');
+
   const pipelineCount = valueText('', 'hud-intake__pipeline-count');
   const pipelineStages = element('div', { className: 'hud-intake__pipeline-stages' });
   const pipelineFailed = eyebrowText('', 'hud-intake__pipeline-failed');
@@ -191,15 +260,43 @@ export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
   });
 
   /**
-   * Rebuilds the readout from what the host last said.
+   * Draws or folds the over-admission warning, from what the host last said
+   * (issue #549).
+   *
+   * Separate from `paintPipeline` below and called by it, rather than inlined,
+   * because the two fold on different conditions: the readout has something to
+   * say whenever anybody is in intake, and this has something to say only once
+   * the prison is out of beds. One function keyed on one predicate would make
+   * the warning appear on every admission.
+   */
+  function paintWithoutPlace(): void {
+    const warn = isIntakeWithoutPlaceWorthShowing(pipeline) ? pipeline : undefined;
+    // The box, then the text. `hidden` alone would not take the box away --
+    // `.hud-intake__no-place` carries an author `display`, which beats the
+    // `display: none` a user agent gives `[hidden]` -- so the stylesheet guards
+    // on `:not([hidden])` and this is the attribute it guards on.
+    withoutPlace.hidden = warn === undefined;
+    withoutPlace.textContent = warn === undefined ? '' : formatIntakeWithoutPlaceText(t, warn);
+    // The figure as data as well as as text, so a test reads what the panel was
+    // told without parsing a localized sentence.
+    if (warn === undefined) delete withoutPlace.dataset['withoutPlace'];
+    else withoutPlace.dataset['withoutPlace'] = String(warn.waitingWithoutPlace);
+  }
+
+  /**
+   * Rebuilds the readout from what the host last said, and the warning above it.
    *
    * The rows are rebuilt rather than reconciled, and that is affordable here in
    * a way it is not for the alerts list: there are at most four of them, bounded
    * by the pipeline's own non-terminal stages rather than by the population, and
    * none of them carries a control. Nothing in this block is focusable, so
    * replacing it cannot take focus away from a player mid-press.
+   *
+   * The one entry point for both, so there is no route by which the panel could
+   * repaint the readout and leave last session's warning standing beside it.
    */
   function paintPipeline(): void {
+    paintWithoutPlace();
     const shown = isIntakePipelineWorthShowing(pipeline) ? pipeline : undefined;
     pipelineBlock.hidden = shown === undefined;
     if (shown === undefined) {
@@ -253,6 +350,7 @@ export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
       className: 'hud-intake__actions',
       children: [admit.element],
     }),
+    withoutPlace,
     eyebrowText(t(HUD_MESSAGE_KEY.intakeHint), 'hud-intake__note'),
     pipelineBlock,
   );

@@ -554,6 +554,27 @@ gap 12a rather than closing it: *how many* are waiting is now on screen, *how
 long* (`accommodationBacklogTicks`) and *why* a particular arrival failed are
 still read by nothing.
 
+**Since issue #549 this projection also carries `waitingWithoutPlace`**, and it
+is a different question from every stage count beside it: how many of the
+arrivals at `accommodation-assignment` the prison has **no free place for right
+now**, computed by subtracting each accommodation target's unoccupied resident
+capacity from the arrivals holding out for that target. It exists because the
+stage count could not be used for a warning. Every arrival passes through that
+stage — `IntakeSystem` advances one stage per scheduled tick, so an arrival sits
+there for a whole interval before anybody looks for a bed — so a signal keyed on
+it fires on a prison that is working. Measured on this tree: two arrivals
+admitted at one tick into a two-bed cell read `accommodation-assignment: 2` for
+five ticks and `waitingWithoutPlace: 0` throughout.
+
+That is what made the Intake panel's standing note false rather than merely
+imprecise. It said *"A prisoner can only be admitted into a prison that has a
+room to hold them"*, and `IntakeSystem.hasAccommodationTarget` asks whether the
+prison holds an *instance* of a housing room type and never whether a place in
+one is free — so a played prison with one bed accepted twelve admissions, housed
+one, and left eleven at Cell Assignment with nothing on screen saying so. The
+note now states both halves of what the control needs, and
+`hud.intake.no-place` states what the press costs when the prison is full.
+
 `src/ui/simulation-pending-deliveries.ts` is the fourth, on the same three terms
 as the build queue -- `hud/pending-deliveries`, while the Build tab is showing, on
 the counts cadence, asking for the panel's own three-row window rather than the
@@ -805,7 +826,13 @@ decision about what to build next.
     `IntakeSystem` itself, so a prisoner stuck at
     `accommodation-assignment` for an in-game week is still
     indistinguishable on screen from one who arrived a tick ago, and nothing
-    projects *why* a particular arrival failed — only that one did. This is why #261 step 4 puts the
+    projects *why* a particular arrival failed — only that one did.
+    **Narrowed again by #549, in one direction only and not the one named
+    above.** `waitingWithoutPlace` now separates an arrival the prison has a
+    bed for from one it does not, which is the difference a player can act on;
+    *how long* anybody has been waiting is still `accommodationBacklogTicks`,
+    still cumulative ticks over the whole prison rather than per arrival, and
+    still published nowhere. This is why #261 step 4 puts the
     admission *refusal* on the `RefusalLog` route instead: a refusal is a
     fact about a press and reaches the player, while the backlog is a
     condition of the prison and reaches nothing. Prison Architect's answer

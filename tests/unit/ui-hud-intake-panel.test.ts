@@ -4,7 +4,9 @@ import {
   formatIntakeFailedText,
   formatIntakePipelineCountText,
   formatIntakeStageText,
+  formatIntakeWithoutPlaceText,
   isIntakePipelineWorthShowing,
+  isIntakeWithoutPlaceWorthShowing,
 } from '../../src/ui/hud/intake-panel';
 import type { HudIntakePipelineViewModel } from '../../src/ui/hud/view-model';
 
@@ -32,6 +34,7 @@ const sentinels = buildMessageCatalog('en', {
   'hud.intake.pipeline-count': 'count/{waiting}/{total}',
   'hud.intake.pipeline-stage': 'stage/{count}/{stage}',
   'hud.intake.pipeline-failed': 'failed/{count}',
+  'hud.intake.no-place': 'no-place/{count}',
 });
 const localizer = new Localizer({ locale: 'en', catalogs: [sentinels] });
 const t = (key: Parameters<Localizer['format']>[0], parameters?: Parameters<Localizer['format']>[1]): string =>
@@ -41,6 +44,7 @@ const pipeline = (overrides: Partial<HudIntakePipelineViewModel> = {}): HudIntak
   waiting: 3,
   failed: 0,
   total: 5,
+  waitingWithoutPlace: 0,
   stages: [
     { stageId: 'queued', labelKey: 'intake-stage.queued.name', count: 1 },
     { stageId: 'accommodation-assignment', labelKey: 'intake-stage.accommodation-assignment.name', count: 2 },
@@ -96,5 +100,35 @@ describe('when the intake readout is drawn at all', () => {
     // The case a `waiting > 0` test alone would drop, and the one that matters
     // most: nothing else on screen says that arrival is stuck for good.
     expect(isIntakePipelineWorthShowing(pipeline({ waiting: 0, failed: 1, stages: [] }))).toBe(true);
+  });
+});
+
+describe('the warning beside the admit control (issue #549)', () => {
+  it('says how many people the prison has no bed for, not how many are in intake', () => {
+    // Twelve admitted into a one-bed cell: eleven at Cell Assignment, eleven
+    // without a bed, and one of those two numbers is the warning. They coincide
+    // here on purpose -- this is the state the issue measured -- and the case
+    // below is the one that separates them.
+    expect(
+      formatIntakeWithoutPlaceText(t, pipeline({ waiting: 11, total: 12, waitingWithoutPlace: 11, stages: [] })),
+    ).toBe('no-place/11');
+  });
+
+  it('warns about nobody while every arrival still has somewhere to go', () => {
+    // Three people moving through intake in a prison with beds for them. The
+    // stage line still reads three and the warning must not: a signal that
+    // fires on a prison that is working is one a player learns to ignore.
+    expect(isIntakeWithoutPlaceWorthShowing(pipeline({ waiting: 3, waitingWithoutPlace: 0 }))).toBe(false);
+  });
+
+  it('warns as soon as one person has no bed, even with the rest of intake quiet', () => {
+    expect(isIntakeWithoutPlaceWorthShowing(pipeline({ waiting: 1, waitingWithoutPlace: 1 }))).toBe(true);
+  });
+
+  it('says nothing at all before anything has answered for this prison', () => {
+    // The same rule the readout follows: "nothing has asked" is not "nobody is
+    // waiting", and a warning left standing about a prison nothing is answering
+    // for is the class of lie this layer exists to avoid.
+    expect(isIntakeWithoutPlaceWorthShowing(undefined)).toBe(false);
   });
 });
