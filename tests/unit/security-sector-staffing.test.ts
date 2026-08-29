@@ -9,7 +9,9 @@ import { SecuritySectorRegistry } from '../../src/simulation/security/sector';
 import {
   DEFAULT_SECTOR_PRISONERS_PER_GUARD,
   resolveOccupancyScaledGuardCount,
+  sectorOccupantCountIsComplete,
 } from '../../src/simulation/security/sector-staffing';
+import { DEFAULT_SECURITY_SECTOR_ID } from '../../src/simulation/security/default-sector';
 
 /**
  * **A staffing requirement that moves with the population**
@@ -42,7 +44,7 @@ describe('resolveOccupancyScaledGuardCount: the schedule is a floor, the populat
     // Eight per guard, so a sector of eight still asks for the one its schedule
     // authored, and the ninth arrival is what changes the answer.
     expect(DEFAULT_SECTOR_PRISONERS_PER_GUARD).toBe(8);
-    expect(resolveOccupancyScaledGuardCount(1, 1)).toBe(1);
+    expect(resolveOccupancyScaledGuardCount(1, 0)).toBe(1);
     expect(resolveOccupancyScaledGuardCount(1, 8)).toBe(1);
     expect(resolveOccupancyScaledGuardCount(1, 9)).toBe(2);
     expect(resolveOccupancyScaledGuardCount(1, 16)).toBe(2);
@@ -73,15 +75,47 @@ describe('resolveOccupancyScaledGuardCount: the schedule is a floor, the populat
      * single `(1, 0)` case would not show: a scenario asking for five guards on
      * an empty sector is asking for five guards to cover nobody.
      */
-    expect(resolveOccupancyScaledGuardCount(1, 0)).toBe(0);
-    expect(resolveOccupancyScaledGuardCount(5, 0)).toBe(0);
+    expect(resolveOccupancyScaledGuardCount(1, 0, true)).toBe(0);
+    expect(resolveOccupancyScaledGuardCount(5, 0, true)).toBe(0);
     // A negative count is a caller's bug, not a demand: it must not read as one
     // and it must not read as a shortage either.
-    expect(resolveOccupancyScaledGuardCount(1, -3)).toBe(0);
+    expect(resolveOccupancyScaledGuardCount(1, -3, true)).toBe(0);
     // ...and the floor comes straight back with the first occupant, so this is
     // an exemption for an empty sector rather than a weakened floor.
-    expect(resolveOccupancyScaledGuardCount(1, 1)).toBe(1);
-    expect(resolveOccupancyScaledGuardCount(5, 1)).toBe(5);
+    expect(resolveOccupancyScaledGuardCount(1, 1, true)).toBe(1);
+    expect(resolveOccupancyScaledGuardCount(5, 1, true)).toBe(5);
+  });
+
+  it('keeps an authored schedule when the count is only of the post tile, which is the default', () => {
+    /*
+     * **The first cut of #533 got this wrong and three scenario fixtures caught
+     * it**, so the case is pinned rather than left to them.
+     * `resolveSectorOccupants` counts the whole prison for the derived sector
+     * and *only the post tile* for any other, so a `0` from a scenario sector
+     * means "nobody is standing on one tile" and not "this sector is empty".
+     * Zeroing on that would silently withdraw a requirement its author wrote,
+     * on the strength of a measure ADR 0048 itself calls a fallback.
+     *
+     * The default is the conservative one, so a caller that does not know keeps
+     * the schedule -- which is also why every unit fixture written before #533
+     * still measures what it measured.
+     */
+    expect(resolveOccupancyScaledGuardCount(1, 0, false)).toBe(1);
+    expect(resolveOccupancyScaledGuardCount(1, 0)).toBe(1);
+    expect(resolveOccupancyScaledGuardCount(5, 0)).toBe(5);
+    // The raising direction is unaffected by the flag: an undercount that
+    // happens to be non-zero has always been allowed to raise the floor.
+    expect(resolveOccupancyScaledGuardCount(1, 9, false)).toBe(2);
+    expect(resolveOccupancyScaledGuardCount(1, 9, true)).toBe(2);
+  });
+
+  it('names the derived sector as the only one whose occupant count is complete', () => {
+    // ADR 0036 derives `security-sector.prison` from owned land and ADR 0048
+    // decision 1 makes its occupants every prisoner on that land. Every other
+    // sector has an area only its author knows.
+    expect(sectorOccupantCountIsComplete(DEFAULT_SECURITY_SECTOR_ID)).toBe(true);
+    expect(sectorOccupantCountIsComplete('sector-a')).toBe(false);
+    expect(sectorOccupantCountIsComplete(SECTOR_ID)).toBe(false);
   });
 
   it('treats a zero as an exemption rather than as a small number', () => {

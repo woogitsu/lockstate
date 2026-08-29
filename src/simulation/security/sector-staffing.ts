@@ -1,4 +1,4 @@
-import { DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT } from './default-sector';
+import { DEFAULT_SECURITY_SECTOR_ID, DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT } from './default-sector';
 
 /**
  * **How many guards a sector asks for, once it has people in it**
@@ -28,11 +28,13 @@ import { DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT } from './default-sector';
  * **A sector's requirement is the larger of what its schedule authors and one
  * guard per `DEFAULT_SECTOR_PRISONERS_PER_GUARD` occupants**, and:
  *
- * - **An empty sector requires nobody.** Issue #533; the owner's decision on
- *   issue #535 decision 4. This is the one direction in which occupancy
- *   *lowers* the answer, and the bullet below said it never did — see "What
- *   changed, and what the old sentence got right" further down, which is the
- *   correction rather than an overwrite.
+ * - **An empty sector requires nobody — where the occupant count is a complete
+ *   measure of who is in it.** Issue #533; the owner's decision on issue #535
+ *   decision 4. This is the one direction in which occupancy *lowers* the
+ *   answer, and the bullet below said it never did — see "What changed, and
+ *   what the old sentence got right" further down, which is the correction
+ *   rather than an overwrite. The qualification is load-bearing and
+ *   `sectorOccupantCountIsComplete` below is where it is decided.
  * - **Otherwise it only ever raises.** A `DeploymentSchedule` is authored data
  *   — a scenario, a save payload or `applyDefaultSecuritySector` put it there —
  *   and a rule that replaced it would make the authored number unreadable.
@@ -70,6 +72,32 @@ import { DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT } from './default-sector';
  * `staffingShortfall` as `0` whenever `required` is `0`, so this makes the
  * risk term unreachable rather than undefined. The floor is restored by the
  * first admission, at which point both of its arguments start applying again.
+ *
+ * ## Why the exemption is the derived sector's alone
+ *
+ * `resolveSectorOccupants` (`src/simulation/security/sector-occupancy.ts`)
+ * answers two different questions under one name, and ADR 0048 decision 1
+ * argues the asymmetry at length: **the derived default sector is the prison**,
+ * so its occupants are every living prisoner on owned land, while *any other*
+ * sector keeps the post-tile rule — the prisoners standing on the single tile a
+ * guard is posted to. That narrow rule was safe while occupancy could only
+ * *raise* a requirement: undercounting a scenario sector's population meant the
+ * authored schedule stood, which is what the schedule is for.
+ *
+ * It is not safe in the lowering direction, and the first cut of this change
+ * got it wrong. Zeroing on the post-tile count would have taken an authored
+ * `constantDeploymentSchedule('sector-a', 1)` down to nothing unless a prisoner
+ * happened to be standing on exactly one tile — silently withdrawing a
+ * requirement its author wrote, on the strength of a measure ADR 0048 itself
+ * describes as what a sector without a drawn extent has to settle for. Three
+ * scenario fixtures caught it, which is the only reason this paragraph exists
+ * rather than a defect.
+ *
+ * So the exemption is gated on the occupant count being a *complete* measure,
+ * and today exactly one sector's is. That is the same shape as
+ * `sector-occupancy.ts`'s own rule and it moves with it: the day a player can
+ * draw a sector with an extent, that sector's count becomes complete too and
+ * this predicate is where it is said so.
  *
  * **What the player is told needs no new sentence**, which is the check that
  * this is a change to a demand rather than to a promise:
@@ -129,19 +157,60 @@ export type SectorOccupantCountResolver = (sectorId: string) => number;
  * `applyDefaultSecuritySector` derived from it, and reapplying it would impose
  * that floor on a sector that authored an exemption.
  */
-export function resolveOccupancyScaledGuardCount(scheduledGuardCount: number, occupantCount: number): number {
+export function resolveOccupancyScaledGuardCount(
+  scheduledGuardCount: number,
+  occupantCount: number,
+  /**
+   * Whether `occupantCount` is a *complete* count of who is in this sector, or
+   * only of who is standing on its post tile
+   * (`resolveSectorOccupants`). Defaults to `false`, which is the
+   * conservative answer: a caller that does not know keeps the authored
+   * schedule, and only a caller that can say "this count is the whole
+   * population" unlocks the empty-sector exemption. Every unit fixture that
+   * passes two arguments therefore behaves exactly as it did before #533.
+   *
+   * `sectorOccupantCountIsComplete` is the one place that decides it for a
+   * sector id -- see the section above for why this is a precondition rather
+   * than a flag.
+   */
+  occupantCountIsComplete = false,
+): number {
   if (scheduledGuardCount <= 0) return scheduledGuardCount;
   /*
    * Issue #533. Checked *before* the floor rather than folded into the
    * `Math.max` below, because the two are different rules and collapsing them
    * would hide that: the `Math.max` says "the population may raise what the
-   * schedule authored", and this says "there is no population, so the schedule
-   * has nothing to author against". Written as `<= 0` for the same reason the
-   * `Math.max(0, occupantCount)` below exists -- a negative count is a caller's
-   * bug and must not read as a demand.
+   * schedule authored", and this says "there is nobody here, so the schedule
+   * has nobody to author a guard for". Written as `<= 0` for the same reason
+   * the `Math.max(0, occupantCount)` below exists -- a negative count is a
+   * caller's bug and must not read as a demand.
    */
-  if (occupantCount <= 0) return 0;
+  if (occupantCountIsComplete && occupantCount <= 0) return 0;
   return Math.max(scheduledGuardCount, Math.ceil(Math.max(0, occupantCount) / DEFAULT_SECTOR_PRISONERS_PER_GUARD));
+}
+
+/**
+ * Whether a sector's occupant count is the whole of its population, and
+ * therefore whether `0` means "empty" rather than "nobody on the post tile"
+ * (issue #533).
+ *
+ * **One sector, and it is the one whose extent is known without being drawn.**
+ * ADR 0036 derives `security-sector.prison` from owned land and calls it the
+ * prison; ADR 0048 decision 1 makes its occupants every prisoner on that land.
+ * A sector somebody registered has an area only they know, so
+ * `resolveSectorOccupants` falls back to counting the post tile for it -- an
+ * undercount that is harmless while occupancy only raises a requirement and
+ * silently destructive if it could lower one.
+ *
+ * A function of the id rather than a field on `SecuritySectorDefinition`,
+ * because a save carries those definitions: a new field would be a schema
+ * change (ADR 0038) for a fact that is derivable from the id, and the id of the
+ * derived sector is a constant for exactly the reason `default-sector.ts` gives
+ * -- it is written into incident records, guard records and gang claims, so it
+ * cannot move.
+ */
+export function sectorOccupantCountIsComplete(sectorId: string): boolean {
+  return sectorId === DEFAULT_SECURITY_SECTOR_ID;
 }
 
 /** Restated so the constant above cannot drift from ADR 0036's floor without a compile-time reader noticing. */

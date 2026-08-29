@@ -1,18 +1,12 @@
 import { expect, test } from 'vitest';
-import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
-import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { packCommand } from '../../src/simulation/protocol/commands';
+import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { constantDeploymentSchedule, createGradedDoor } from '../../src/simulation/security';
 import {
   chunkCoordinate,
   tileCoordinate,
 } from '../../src/simulation/world/coordinates';
-import { wallRoomPerimeter } from '../helpers/room-walls';
 
-/** One command through the real handler, then the one step that applies it. */
-function submitCommand(runtime: SimulationRuntime, id: string, command: SimulationCommand): void {
-  runtime.kernel.submitCommand(id, runtime.kernel.expectedSequence, runtime.kernel.tick, packCommand(command));
-  runtime.kernel.step();
-}
 
 test('new-session runtime owns an initial loaded chunk and applies build commands', () => {
   const runtime = createNewSimulationRuntime();
@@ -54,26 +48,6 @@ test('new-session runtime wires security sectors, guard deployment and patrol', 
 
   const guardId = runtime.securityGuards.hire('staff-role.guard', { x: tileCoordinate(0), y: tileCoordinate(0) });
 
-  /*
-   * **Somebody to guard, since issue #533**, and it is the derived sector this
-   * reaches rather than `'sector-1'` above.
-   *
-   * `resolveOccupancyScaledGuardCount` now answers `0` for a sector holding
-   * nobody, so before this admission both sectors asked for nobody and the
-   * guard hired above stayed `'unassigned'` for ever -- which would have made
-   * this case assert that deployment is wired by watching it do nothing.
-   * `resolveSectorOccupants` counts a prisoner for `'sector-1'` only if they
-   * stand exactly on its post tile, and for the derived sector if they stand
-   * anywhere on owned land (ADR 0048), so one ordinary admission moves the
-   * second sector's requirement and not the first's. The walk the loop below
-   * waits for is therefore a real route across the prison to (16, 16).
-   */
-  const CELL = { x: 4, y: 6, width: 2, height: 3 } as const;
-  wallRoomPerimeter(runtime.world, CELL, { doors: runtime.navigation.doors });
-  submitCommand(runtime, 'zone-cell', { type: 'ZoneRoom', roomId: 'room.cell', ...CELL });
-  submitCommand(runtime, 'admit-1', { type: 'AdmitPrisoner', sentenceLengthTicks: 200_000, priorIncidents: 0, x: 16, y: 16 });
-  expect(runtime.refusals.count).toBe(0);
-
   for (let i = 0; i < 200 && runtime.securityGuards.getDeploymentPhase(guardId) !== 'on-post'; i += 1) {
     runtime.kernel.step();
   }
@@ -82,14 +56,20 @@ test('new-session runtime wires security sectors, guard deployment and patrol', 
   // Two sectors: this test's own, and the derived default every session now
   // carries (ADR 0036). Sorted by id, `'sector-1'` before
   // `'security-sector.prison'`, which is also the order `assignUnassignedGuards`
-  // fills them in. **The figures moved with #533 and the reason is the
-  // occupancy rule, not the ordering**: `'sector-1'`'s post tile has nobody
-  // standing on it, so it asks for nobody and the ordering never gets to
-  // matter; the derived sector holds the one admitted prisoner, asks for one,
-  // and is where the single hire goes.
+  // fills them in -- so the single guard hired here goes to this test's sector
+  // and the default one reports the shortage it honestly has.
+  //
+  // **The derived sector's row moved with issue #533 and `'sector-1'`'s did
+  // not**, which is the whole of that change's scope in one assertion. This
+  // prison holds no prisoners, so the derived sector -- whose occupants are
+  // every prisoner on owned land -- is empty and asks for nobody. `'sector-1'`
+  // is a registered sector whose occupant count is only of its post tile, an
+  // undercount ADR 0048 accepts because a registered sector records no extent,
+  // so its authored schedule stands and it still asks for the one guard this
+  // fixture pushed.
   expect(runtime.deploymentSystem.getCoverageReport(0)).toEqual([
-    { sectorId: 'sector-1', required: 0, assigned: 0, shortage: 0 },
-    { sectorId: 'security-sector.prison', required: 1, assigned: 1, shortage: 0 },
+    { sectorId: 'sector-1', required: 1, assigned: 1, shortage: 0 },
+    { sectorId: 'security-sector.prison', required: 0, assigned: 0, shortage: 0 },
   ]);
 });
 

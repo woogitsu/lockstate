@@ -5,7 +5,7 @@ import type { TilePosition } from '../world/coordinates';
 import { resolveStaffRouteContext } from './access-policy';
 import { resolveRequiredGuardCount, type DeploymentSchedule } from './deployment-schedule';
 import { claimableGuardIds } from './post-eligibility';
-import { resolveOccupancyScaledGuardCount, type SectorOccupantCountResolver } from './sector-staffing';
+import { resolveOccupancyScaledGuardCount, sectorOccupantCountIsComplete, type SectorOccupantCountResolver } from './sector-staffing';
 import type { EntityId } from '../entity/entity-store';
 import type { GuardRoster } from './guard-roster';
 import type { SecuritySectorRegistry } from './sector';
@@ -104,7 +104,18 @@ export class DeploymentSystem implements SystemRegistration {
     if (schedule === undefined) return 0;
     const scheduled = resolveRequiredGuardCount(schedule, tick);
     if (this.resolveOccupantCount === undefined) return scheduled;
-    return resolveOccupancyScaledGuardCount(scheduled, this.resolveOccupantCount(sectorId));
+    /*
+     * The third argument is issue #533's empty-sector exemption, and it is
+     * passed rather than assumed: `resolveSectorOccupants` counts the whole
+     * prison for the derived sector and only the post tile for any other, so
+     * `0` means "empty" for the first and "nobody is standing on one tile" for
+     * the second. `sectorOccupantCountIsComplete` is where that is decided.
+     */
+    return resolveOccupancyScaledGuardCount(
+      scheduled,
+      this.resolveOccupantCount(sectorId),
+      sectorOccupantCountIsComplete(sectorId),
+    );
   }
 
   private assignedGuardCountFor(sectorId: string): number {
