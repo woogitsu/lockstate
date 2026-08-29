@@ -117,7 +117,42 @@ outstanding ADR to skip §2 (0064, 0065, 0066, 0067, 0068, 0069, 0071, 0073, now
 overall since the rule was restated, against two that did (0056, 0059).
 Counted on disk at `e1813b7` this time, by the same method; the index agrees,
 twenty-six rows opening `Proposed`, and **Next free number: 0074** is unmoved,
-because 0070 is below the ceiling 0073 had already set.
+because 0070 is below the ceiling 0073 had already set. **Twenty-six is
+twenty-seven at `cfab558`**, seven releases later: 0074 (what a restored room
+that recorded no rectangle is, #571) arrived, `Proposed, 2026-08-29. Not
+self-approved.` — and **it is the first arrival since 0059 to get a §2 row**,
+filed by #574 three merges later. So the ratio moves to **three of
+twenty-seven**, and the nine-long streak of consecutive outstanding ADRs
+skipping §2 — 0064 through 0071, 0073 and 0070 — **is broken**. Counted on
+disk at `cfab558` by the same method as every reading in this sequence, the
+first non-blank line under each document's own status statement, `## Status`
+heading or `- Status:` bullet alike (0064 and 0067 still use the bullet form);
+the index agrees, **twenty-seven** rows opening `Proposed` out of 68 rows, and
+**Next free number** has moved **0074 → 0075**, because 0074 was the new
+maximum on disk.
+
+**And the header has been the only place carrying this number for three
+anchors, which no diff could have said.** §3's opening, §5's first bullet and
+§6's `income.ts` bullet are the other three places that state it, and all
+three still read **twenty-two** — the value that was correct at `4ace2da`
+(v0.0.177) and went false when 0069 landed at #541, inside the
+`4ace2da..85c1c29` window. The `85c1c29` pass moved the header to
+twenty-three and wrote, in the derivation subsection below, that *"§3's
+opening, §5's first bullet and §6's `income.ts` bullet now enumerate
+**twenty-three** `Proposed` documents"*; **they enumerated twenty-two when
+that sentence was written**, and the same sentence was repeated in
+substance at the two anchors after it. That is the class this header calls a
+claim already false when its window opened, in this file's own maintenance
+prose rather than in an entry, and it is the second count in this sequence
+found to have been taken on one tree and written about another. All three are
+corrected in place at this anchor, to **twenty-seven**, with the sentences
+saying twenty-two left standing beside them; the sentence in the derivation
+subsection is corrected where it sits.
+
+**The three ADRs with a known expiry were re-read at this anchor rather than
+carried.** 0051, 0052 and 0054 still read `Proposed` on disk at `cfab558`, so
+the handover recorded below stands unchanged and all three are still inside
+the twenty-seven.
 
 **Three of those twenty-three have a known expiry and are handed over rather
 than acted on here.** The owner decided on 2026-08-29 (issue #535, decision 8)
@@ -207,26 +242,163 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `e1813b7` (**v0.0.201**) by the delta method this
-header describes, from `82ae630` (v0.0.195). **Dispatched at six of the ten
-releases the budget allows, with three agents at work whose branches are
-expected to spend three more.** So this is the second pass in the series
-dispatched because a queue was about to spend the budget, and the first
-dispatched *before* that queue exists rather than once it has formed.
-`e1813b7` is `origin/main`'s tip at the time of writing and is itself the
-**v0.0.201 release commit**, named deliberately rather than the merge commit
-beneath it, for the reason every previous anchor gives.
+Re-anchored at `main` @ `cfab558` (**v0.0.208**) by the delta method this
+header describes, from `e1813b7` (v0.0.201). **Dispatched at seven of the ten
+releases the budget allows, with five non-draft pull requests open -- #577,
+#578, #579, #580 and #581 -- so the queue on the day this was dispatched was
+already larger than the headroom left.** That makes this the third pass in the
+series dispatched because a queue was about to spend the budget rather than
+because the gate had fired. `cfab558` is `origin/main`'s tip at the time of
+writing and is itself the **v0.0.208 release commit**, named deliberately
+rather than the merge commit beneath it, for the reason every previous anchor
+gives: it is cut after the last merge in the window (#574, `9f0096c`),
+contains every sentence below, and is the exact tree every citation here was
+re-derived from.
 
-**The window is 80 files.** Six merges landed in it (#564, #533, #548, #549,
-#543 and #566, with their releases). The delta intersection against the **43**
-files §§3-6 cite is **eight**, and two of those are this file and the index,
-which are not in their own dependency sets -- so **six entries were re-read**.
-**The enumerated set grew from 41 to 43 with no commit deciding to grow it**:
-it is derived by scanning §§3-6 for rooted paths that exist on disk, so a
-citation added anywhere in those sections joins the dependency set silently.
-That is worth knowing before the next reader treats 41 as a fixed number, and
-it is the one respect in which this method is self-maintaining rather than
-carried.
+**The window is 53 files**, across seven releases carrying **seven** merged
+pull requests -- #567, #568, #570, #571, #572, #575 and #574 -- read off
+`git log --oneline --first-parent e1813b7..origin/main` (excluding the seven
+release-bump commits). **Two of the seven edit this file and neither is new
+drift**: `6165952`/#567 is the previous anchor's own writing commit, kept
+below as that anchor's account, and `9f0096c`/#574 filed §2's sixth entry and
+swept all four counts in the same commit, which is the case §5's preamble
+records from the other side.
+
+The delta intersection against the enumerated set is **ten**:
+`docs/adr/README.md`, `docs/research/README.md`, `package.json` (read for its
+version rather than diffed, as every anchor's convention states),
+`src/persistence/save-schema.ts`,
+`src/simulation/presentation/room-projection.ts`,
+`src/simulation/rooms/zoning.ts`, `src/ui/hud/build-panel.ts`,
+`src/ui/hud/hud.ts`, `src/ui/hud/messages.ts` and
+`tests/foundation/unconsumed-command-contract.test.ts`.
+`docs/adr/STATUS-QUEUE.md` is an eleventh changed file that §§3-6 name and is
+deliberately outside its own set. **No file under `supabase/migrations/`
+changed** -- the directory still holds twenty-three, so §3's table needed no
+re-derivation. **Four ADRs join the set in this commit** -- **0070**,
+**0071**, **0073** and **0074** -- by the rule the derivation subsection
+states: the corrected counts below now enumerate them.
+
+**One sentence in the previous anchor's window note is wrong about this file's
+own dependency set, and it is the cheap kind to find.** It read *"two of those
+are this file and the index, which are not in their own dependency sets"*.
+This file is not in its own set and says so wherever the question comes up;
+**`docs/adr/README.md` is a declared member**, named in the second bullet of
+*"The set, in full"* below since long before that sentence was written.
+Corrected here rather than overwritten, because the arithmetic around it is
+unaffected -- the index was read either way -- and because a sentence that
+takes a member out of the set is exactly how a later delta pass comes to skip
+a file.
+
+**The previous anchor's window note, kept.** It read: *"**The window is 80
+files.** Six merges landed in it (#564, #533, #548, #549, #543 and #566, with
+their releases). The delta intersection against the **43** files §§3-6 cite is
+**eight** ... **The enumerated set grew from 41 to 43 with no commit deciding
+to grow it**: it is derived by scanning §§3-6 for rooted paths that exist on
+disk, so a citation added anywhere in those sections joins the dependency set
+silently."* **That derivation was re-run at this anchor and its own total of
+43 is not reproducible**, which is recorded rather than quietly restated:
+scanning §§3-6 for backticked rooted paths that exist on disk returns **79**
+distinct spans here, of which **18** are bare directory prefixes and **61**
+are files -- one of them `docs/adr/STATUS-QUEUE.md` itself. The two numbers
+are not comparable, because the sentence giving 43 does not state its filter;
+what *is* comparable is the residue, and it is unchanged: **no member the
+enumerated list has never named**, for the fourth anchor running.
+
+**What the ten cost: three entries corrected, and two of the three were
+already false when this window opened.** The one this window actually
+falsified is the smallest of them.
+
+**Falsified by this window:** §5's ADR 0009 entry cites
+`src/persistence/save-schema.ts:1198` for the comment naming `masterSeedSchema`
+*"from `services/challenges`"*. #571's V4 bounds-recovery work added sixteen
+lines above it, so it is **`:1214`** here. That is the fifth pair of numbers
+this one comment has been given and the sentence it supports has never
+changed a word, which is the symbol-over-line argument made again by the
+same citation.
+
+**Already false, first: `src/ui/hud/hud.ts`, and the count as well as the
+numbers.** §5's ADR 0022 entry states the live measurement *"`HudIntent`
+declares **eighteen** members"*. It declares **nineteen** at `cfab558`,
+counted the way the entry says to count it — `grep -c "readonly kind: '"`
+between `export type HudIntent =` and the union's close. The nineteenth is
+`dismiss-staff`, added by **#533 at `a8a446e`**, which is in the *previous*
+window; `git show <sha>:src/ui/hud/hud.ts` puts the member on `e1813b7` and
+not on `82ae630`. **The previous pass had that pull request in front of it and
+recounted the wrong union**: its own header records #533 moving the command
+union from thirteen to fourteen, in the same paragraph, and did not recount
+the intent union the same change extended. Three of that entry's member
+anchors were stale by the same window or an earlier one and are re-derived
+here: `arm-build-tool` `:429-434` → **`:444-449`**, `cancel-build-order`
+`:471` → **`:486`** and `arm-room-tool` `:561-566` → **`:598-603`**. The first
+two were exact at `4ace2da`/`85c1c29` and one line out from `82ae630`; the
+third was **twenty-three lines out at `e1813b7`**, moved by #533 as well. The
+count *"three of them room-related"* holds — `dismiss-staff` is not a room —
+and that is the half of the sentence worth keeping.
+
+**Already false, second: `src/simulation/rooms/zoning.ts`, stale across five
+anchors.** §5's ADR 0023/0028 entry gives the `RoomZoningService` capacity
+collaborator as declared at `:398` and called at `:567`, the zeroes `register`
+writes at `:560-562` and the comment above them at `:556`. All four are the
+`bb3a01e`-through-`07add3e` values; **`7d81040` (#499) moved them inside the
+`07add3e..01974e5` window** and they have been carried unchanged through
+`01974e5`, `33510df`, `4ace2da`, `85c1c29`, `82ae630` and `e1813b7`. At
+`cfab558` the declaration is **`:428`**, the call **`:607`**, the zeroes
+**`:600-602`** and the comment **`:596`** — and `git show` puts them at those
+values on every one of those six trees, so nothing in *this* window moved
+them. The entry already says these numbers *"have now been wrong at three
+successive anchors"* and that they are *"an aid rather than the citation"*;
+the sentence is right about the shape and now understates the run, so the
+number in it is corrected too. The two zoning anchors the entry cites for the
+enclosure refusal, `:217` and the quoted comment at `:255-256`, were opened
+and both still land.
+
+**Seven intersecting citations survived unchanged, every one opened rather
+than rested on the diff.** `src/ui/hud/build-panel.ts` still says *"7.8px is
+the entire budget"* after a 48-line change; `src/ui/hud/messages.ts` still
+says ADR 0017 is Accepted and still names no currency after a 17-line change;
+`src/simulation/presentation/room-projection.ts` still reads an over-capacity
+room as full at 100 % (its two edits in this window replace *"a V4 save"* with
+the post-#559 wording and touch nothing this file cites);
+`tests/foundation/unconsumed-command-contract.test.ts` gained sixteen lines
+**below** everything cited, so `AWAITING_PRODUCER` is still declared at
+`:224` with its gate comment at `:250` and **still empty**;
+`docs/research/README.md` gained one table row and §6's *"deliberately left"*
+bullet rests on the rule that file states rather than on the table.
+`src/simulation/protocol/commands.ts` and `src/simulation/economy/income.ts`
+are outside this window and were re-grepped anyway: fourteen `type: z.literal`
+hits with `simulationCommandSchema` still at `:542`, and no `Proposed` count
+in `income.ts` at all.
+
+**`docs/adr/README.md` moved one line this file cites by value.** **Next free
+number** went **0074 → 0075** with 0074's row, and the Proposed row count went
+26 → 27; every other citation this file makes into the index by number sits
+inside a preserved record of a superseded claim and is left as it stands.
+
+**The two live `verified at` claims were re-run rather than carried.** Neither
+`supabase/migrations/` nor `.github/workflows/` appears anywhere in this
+window's 53 files. The migrations directory still holds twenty-three files;
+the retention grep still returns exactly one hit and it is still
+`20260826130000_server_stamp_updated_at.sql:68`, prose rather than a
+mechanism; all six SQL anchors (`:45`, `:71-73`, `:91`, `:150`, `:178`,
+`:188`) and all four workflow anchors (`:33`, `:34`, `:41`, `:65`) were opened
+and still land. Both claims are re-anchored to `cfab558`.
+
+**The four places that count §2 were swept and all four agree at six** — this
+header's paragraph, the title (which states a subject and no count, and is
+therefore the only one that cannot rot this way), §2's own heading *"## 2. Six
+entries"*, and §5's preamble's *"SIX at #571"*. **This is the first window in
+the series in which an entry was filed *and* the four places did not split**,
+and the mechanism is the one §5's preamble names: `9f0096c`/#574 was a commit
+whose only job was to file ADR 0074's entry, so it had nothing else to think
+about and moved all four together. The observation now has two instances
+rather than one, and it is still an observation: the split has never been
+tested against an implementing change since the rule was restated, because no
+implementing change has filed an entry since #485.
+
+**The previous anchor's findings, kept as a record. The paragraphs below are
+that pass's, including its own four-place sweep, which found all four agreeing
+at five.**
 
 **Two entries had drifted, and one is the telemetry bullet in §5 for the second
 consecutive anchor.** Its `src/main.ts` anchors moved as before -- uniformly two
@@ -2379,7 +2551,7 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `e1813b7`, unchanged since the previous anchor,
+absences were re-verified at `cfab558`, unchanged since the previous anchor,
 the one before it, the one before that, and the one before that — the
 directory has not moved across any of those windows and still holds
 twenty-three files — by grepping the
@@ -2554,7 +2726,7 @@ is recommendation 1 at the foot of §6 producing a measurable result rather than
 being restated: **three of the four citations into the fastest-moving document
 in the set survived an edit that moved every line of them.**
 
-The half of the decision that *is* in this repository stays verified at `e1813b7`:
+The half of the decision that *is* in this repository stays verified at `cfab558`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` (`:34`) with no
 `push:`, requires a typed `confirm_project_ref` (`:41`), and its apply job is
 environment-gated (`:65`) — all three re-read at this anchor and all three still
