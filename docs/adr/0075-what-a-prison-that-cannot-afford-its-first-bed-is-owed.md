@@ -111,9 +111,9 @@ they are why a starting grant of planks was put to the owner and left out:
   Nobody spent the treasury. A charge the player cannot decline walked it below
   the price of the one object that starts the income line. **Any remedy that
   only defends a press is incomplete by construction**, because this route
-  presses nothing — which is why a starting grant of planks (spent by day two,
-  and never reached by this route at all) and a spend-it-all confirmation (which
-  never fires) were both put to the owner and neither was taken.
+  presses nothing — which is why a spend-it-all confirmation (which never fires)
+  was put to the owner and not taken, and why decision 1 below says in its own
+  terms that its first threshold, taken alone, does not close the class either.
 
 ### Why it is terminal, which is three facts and no bug in any of them
 
@@ -167,64 +167,123 @@ composable with the controls as shipped.
 
 **Three decisions, not a choice between three options.** The owner ruled on
 2026-08-29 that all three are to be built, in the order below, and the ordering
-is the substance rather than a preference: **decision 1 is the only one that
-closes the class on its own, and decisions 2 and 3 are what make insolvency
-*interesting* rather than merely survivable.**
+is the substance rather than a preference: **decision 1 gets a prison its first
+bed and pays for growth after that; decision 2 is what happens when the money
+runs out anyway; and decision 3 is the way out of holding the wrong thing.**
 
-### 1. A recurring grant, as ADR 0017 decision 3's secondary income line
+### 1. Development grants at population thresholds — one-off per threshold, thresholds continuing indefinitely
 
-The state pays the prison an unconditional amount per in-game day, independent
-of population, alongside the per-occupied-place remuneration that stays the
-primary line.
+**The owner's own shape, and it is not one of the four that were offered.** In
+their words: *"dotacje na rozwój typu jak przekroczysz x więźniów to dostajesz
+x €, i tak w nieskończoność by można było grać na duże więzienia"* — development
+grants; cross X prisoners and receive X; thresholds continuing indefinitely so a
+player can play toward large prisons. Asked how a threshold should behave, they
+chose **one-off per threshold, with the first threshold very low**.
 
-**This is the decision that closes the class**, and it is the only one of the
-three that does. It is the only remedy that defends the **payroll route**: a
-grant arrives whether or not the player presses anything, so a balance walking
-downward on a charge nobody chose is met by a credit nobody has to earn. Every
-other remedy considered — a plank grant, a purchase warning, a liquidity floor —
-defends a press, and the payroll route makes no press.
+**Why this is better than the flat recurring grant it replaces**, and the reason
+belongs in the record rather than in the choosing:
 
-It is also the smallest possible discharge of ADR 0017 decision 3: grants are
-already accepted as a secondary line, and this authors one.
+- **It pays for growth, not for existing**, so it does not fall under what
+  ADR 0017 decision 1 rejected by name. That decision considered a *"scheduled
+  block grant"* and refused it because *"a block grant pays for surviving to a
+  date, which is the timer the audit warns about"*. A threshold grant is not a
+  schedule: no amount of time crosses one. Waiting pays nothing.
+- **It serves ADR 0017 decision 1's stated goal directly.** That decision chose
+  per-occupied-place because it is *"the only one of the four that makes the two
+  things the player builds — capacity and the ability to keep people in it
+  safely — pay off through the same line, so expansion and competence are not
+  separate currencies."* A grant that fires on population crossing a threshold
+  is paid for exactly that, on the same axis, in a lump.
+- **It cannot be milked.** One-off per threshold is what makes this true: a
+  threshold crossed once does not renew, so there is no loop in which a player
+  gains by cycling population across a boundary. This is the property to protect
+  when the amounts are set — a *repeating* threshold grant would be a different
+  and much worse decision.
+- **It is unbounded upward on purpose**, which is the owner's stated reason for
+  wanting it: thresholds keep arriving, so a large prison is something to play
+  toward rather than a plateau.
 
-**The rate is not decided here**, per ADR 0017 decision 5, which reserves prices
-and balance values to [#29](https://github.com/matmaxalez/lockstate/issues/29).
-What *is* decided is the shape: unconditional, per in-game day, an integer in
-minor units, paid on the same day boundary the existing lines settle on. The
-rate has one hard constraint and it should be stated where the rate is chosen: a
-grant large enough to fund expansion by itself removes the pressure the whole
-economy exists to create. The floor it must clear is much lower — enough that a
-prison with no income can eventually buy one plank.
+**The very low first threshold is a starting grant in disguise, and this ADR
+says so rather than letting it pass.** A starting grant of planks was measured
+and left out precisely because the payroll route is *"spent by day two"*; a first
+threshold low enough to fire almost immediately is the same money arriving by a
+different door. That is a reasonable thing to want — it buys the first bed, which
+is the thing ECON-002 makes impossible — and the trade is accepted knowingly.
+**So: the first threshold alone does not close the class.** It gets the prison
+started; the recurring pressure that the payroll route demonstrates is answered
+by decision 2's ladder and its loan, not by this.
 
-### 2. The degradation ladder, which requires the balance to go negative
+**What is not decided here**, per ADR 0017 decision 5, which reserves prices and
+balance values to [#29](https://github.com/matmaxalez/lockstate/issues/29): the
+thresholds, the amounts, and the shape of the sequence. **Whoever sets them owns
+whether the class is closed**, because that is a comparison between three numbers
+this ADR does not hold — the first threshold's amount, the wage bill, and the
+price of a plank. This is named here as an open number for the same reason the
+loan terms are in decision 2.
 
-Author and surface ADR 0017 decision 8's ladder: *"deliveries refused first,
+### 2. The balance may go negative, the ladder runs on it, loans are the way out — and nothing ends the session
+
+**Author and surface ADR 0017 decision 8's ladder:** *"deliveries refused first,
 then construction halted, then staff unpaid with the morale and incident
 consequences that follow."*
 
 **Its precondition is named in ADR 0017's own text and is not met today.**
 `Treasury.spend` refuses rather than overdrawing
-(`src/simulation/economy/treasury.ts:111`), so there is no negative balance for
-a ladder to respond to. Building this decision therefore means changing that,
-and the change is not cosmetic: `Treasury`'s own docblock currently argues at
-length that the four non-negative validators are *"load-bearing for decision 8
-rather than in its way"*, on the reasoning that a floored balance produces the
-ladder by itself because discretionary spends are refused before the
-undeclinable one. **That argument is now the thing being overturned**, and
-whoever implements this owes that paragraph a correction rather than a deletion:
-the ladder it describes is real but silent, and decision 8's requirement is that
-degradation be *authored and surfaced*, which a refusal nobody explains is not.
+(`src/simulation/economy/treasury.ts:111`), so there is no negative balance for a
+ladder to respond to. Building this means changing that.
 
-**This is the decision that makes insolvency interesting.** It does not close
-ECON-002 on its own — a prison that goes negative and degrades is still a prison
-that cannot buy a plank — but it converts the failure from a stall into a state
-with visible consequences the player can act against, which is what ADR 0017
-promised and what #96 asked for.
+**The owner was asked whether bankruptcy should follow some number of days in
+the red, and refused it.** Their words: *"Bez bankructwa, tylko minus i
+pożyczki"* — no bankruptcy, only a negative balance and loans. **That refusal is
+a decision not to overturn ADR 0017 decision 8**, which was put to them in those
+terms, and which reads:
 
-**It is also the one with a player-facing surface**, and therefore the one whose
-copy is the owner's under `AGENTS.md`: a degradation the player cannot see is
-the *"invisible stall"* the ADR is trying to avoid, so this decision is not done
-when the mechanics land.
+> **Accepted: insolvency is a state, not a loss condition.** … **No game-over,
+> no silent stall.**
+
+and gives its reason:
+
+> a loss condition ends the session, and a session that ends removes the
+> interesting part, which is digging out. It also fits the subject — a real
+> prison that runs out of money does not close, it gets worse.
+
+**ADR 0017 decision 8 therefore stays in force, and this ADR states that
+explicitly because a reader will otherwise assume the opposite.** A negative
+balance is the ordinary reading of "bankrupt" in most games. Here it is not: the
+balance goes negative, the prison degrades visibly down the ladder, the player
+borrows, and the session continues. There is no game-over state anywhere in this
+decision.
+
+**`Treasury`'s own docblock argues the reverse and is owed a correction, not a
+deletion.** It currently reasons that the four non-negative validators are
+*"load-bearing for decision 8 rather than in its way"*, because a floored balance
+produces the ladder by itself — discretionary spends are refused before the
+undeclinable one. That reasoning was sound and is now superseded rather than
+wrong: **the validators were defending decision 8 by preventing the debt; under
+this ruling decision 8 is defended by the loan instead.** Whoever implements this
+rewrites that paragraph to say so, and does not simply remove it — the argument
+it makes is the reason anybody would have hesitated, and the record of why it no
+longer holds is the useful part.
+
+**The loan is not a nice-to-have beside the ladder. It is what keeps decision 8
+honest.** With no floor and no terminal state, a prison can reach a position from
+which recovery is arithmetically impossible: wages exceed every income line, the
+balance falls for ever, and the session runs on with nothing the player can do —
+**a hard-lock again, only slower, and dressed as a mechanic.** That risk was put
+to the owner and is accepted as a cost rather than dismissed, on the basis that
+borrowing is the exit. So the loan is load-bearing: without it this decision
+recreates ECON-002 in a form that takes longer to recognise.
+
+**Whoever sets the loan terms owns whether the class is really closed.** Interest
+rate, principal ceiling, and what borrowing costs when it cannot be repaid are
+all #29's numbers, and they decide whether "you can always borrow your way back"
+is true or merely available. That is the same shape as decision 1's open number
+and it is named for the same reason.
+
+**This is also the decision with a player-facing surface**, and therefore the one
+whose copy is the owner's under `AGENTS.md`: a degradation the player cannot see
+is the *"invisible stall"* ADR 0017 warns about, and a loan the player cannot
+understand the price of is worse than no loan.
 
 ### 3. Sell-back at a loss
 
@@ -237,8 +296,8 @@ It fixes every future variant rather than this instance, and it is what a
 management sim normally offers.
 
 **The loss is the point and not a tax.** A round-trip at full price makes
-purchase decisions free and turns the treasury into a warehouse; a loss keeps
-the decision to buy a real one. The ratio is a balance value and is #29's, per
+purchase decisions free and turns the treasury into a warehouse; a loss keeps the
+decision to buy a real one. The ratio is a balance value and is #29's, per
 ADR 0017 decision 5.
 
 **What it costs to build**, stated so it is not discovered later: a command in
@@ -249,51 +308,83 @@ named union (`simulation-refusals.test.ts` fails a boolean), a HUD control, and
 
 ### What was considered and not taken
 
-- **A liquidity floor** — `Treasury.spend` refusing a spend that would leave
-  less than one plank's price. **Rejected, and it is worth recording why rather
-  than only that**: it is the cheapest patch and it is in direct conflict with
-  decision 2, which requires the balance to go negative. It also couples the
-  treasury to a content price and never touches the payroll route, since payroll
-  is not a spend the player chose.
-- **A starting grant of planks.** Not taken. It is spent by day two, and the
-  payroll route reaches the trap without ever spending it.
+**Other shapes the income line could have had**, all four put up against
+decision 1 and none taken:
+
+- **Prison labour.** ADR 0017 decision 3 already names it as the *other*
+  secondary line — *"grants and labour income remain, as secondary lines"* — and
+  nothing implements it. Not taken **now**, and worth flagging as the natural
+  next one rather than as a rejection: the work rooms exist in content, and
+  [ADR 0054](./0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)
+  measured that `action.classroom-education` already performs 9,000 of a
+  prisoner's 10,000 work-and-education ticks in a furnished prison, so the
+  occupancy a labour line would price is already there. It is the one shape here
+  that would make a prisoner's day pay for itself.
+- **A flat daily subsidy.** Not taken. It is the *"scheduled block grant"*
+  ADR 0017 decision 1 refused by name, and its objection applies unchanged:
+  it pays for surviving to a date.
+- **A threshold backstop keyed to the price of a plank** — a credit that fires
+  whenever the balance falls below what a sleep surface costs. Not taken. It
+  targets ECON-002 exactly and nothing else, which is its whole problem: it is a
+  rule about one content price wired into the treasury, invisible until it
+  fires, and it would have to be explained to the player as a mechanic or it
+  reads as a bug.
+- **A one-off starting stock** — planks in the opening container. Not taken as
+  its own mechanic; decision 1's very low first threshold is this, arriving
+  through a rule that keeps paying afterwards.
+
+**And the remedies from the original option list that the rulings displaced:**
+
+- **A liquidity floor** — `Treasury.spend` refusing a spend that would leave less
+  than one plank's price. **Rejected, and now in direct conflict with decision 2**,
+  which requires the balance to go negative. It also couples the treasury to a
+  content price and never touches the payroll route, since payroll is not a spend
+  the player chose.
 - **A warning before a purchase that spends the last of the treasury.** Not
   taken. The payroll route presses nothing, so the dialog never fires.
-- **An explicit "you are stuck, start again" state.** Not taken; it is the loss
-  condition ADR 0017 decision 8 rejected, and taking it would mean amending that
-  decision rather than discharging it.
+- **An explicit "you are stuck, start again" state**, and **bankruptcy after N
+  days in the red**. Both refused, and the second explicitly: *"Bez bankructwa"*.
+  Either would mean amending ADR 0017 decision 8 rather than discharging it.
 
 ## Consequences
 
-- **No save format moves under any of the three.** A grant and a sell-back are
-  balance arithmetic on state a save already carries. Decision 2's negative
+- **No save format moves under decisions 1 or 3.** Both are balance arithmetic on
+  state a save already carries. **Decision 2 needs checking and may.** A negative
   balance is a sign change on a persisted integer, not a new field —
-  `PayrollSystem`'s docblock already notes that the alternative it rejected
-  would have needed *"either a sign change on a persisted field or a new
-  persisted arrears"*, so the field is sized for it. Whoever builds decision 2
-  must confirm the save schema's balance validator admits a negative, and say so
-  loudly if it does not, because that would be a format change.
-- **A determinism fingerprint moves under decisions 1 and 3**, because both put
-  new values into the balance a fingerprint hashes. Both must ship as integer
-  minor units for the reason `Treasury` already gives: a fractional currency puts
-  a float into hashed state and floating-point addition is not associative.
+  `PayrollSystem`'s docblock already notes that the alternative it rejected would
+  have needed *"either a sign change on a persisted field or a new persisted
+  arrears"* — but the loan is a second thing to persist: outstanding principal
+  has to survive a save or a player reloads out of their debt. **Whoever builds
+  decision 2 must confirm the save schema's balance validator admits a negative
+  and decide where the loan lives, and say loudly if either is a format change.**
+  Decision 1 also needs the crossed-threshold set persisted, or a reload re-pays
+  every grant already collected — which is the milking loop the one-off rule
+  exists to prevent, reintroduced through the save.
+- **A determinism fingerprint moves under decisions 1, 2 and 3**, because all
+  three put new values into the balance a fingerprint hashes. All must ship as
+  integer minor units for the reason `Treasury` already gives: a fractional
+  currency puts a float into hashed state and floating-point addition is not
+  associative.
 - **Decisions 2 and 3 each add a player-facing string** and are therefore partly
-  the owner's under `AGENTS.md`. Decision 1 adds none if the grant is simply a
-  credit; it adds one the moment the HUD names it, which it probably should.
-- **The ordering consequence ADR 0017 already incurred applies to decision 1 and
-  is inherited rather than created here.** That ADR records, of its own income
-  answer, that *"income scales with population, so overcrowding must be punished
-  elsewhere (#79, #80, #81) or the optimum is to pack the prison"*. A grant is
-  the one income line that does **not** scale with population, so it slightly
-  weakens that pressure rather than adding to it — but it does not discharge the
-  debt, and #79/#80/#81 remain the place it is owed.
+  the owner's under `AGENTS.md`. Decision 1 adds one the moment a threshold grant
+  is announced to the player, which it must be — an unexplained credit is as
+  confusing as an unexplained refusal.
+- **The ordering consequence ADR 0017 already incurred is inherited and slightly
+  sharpened by decision 1.** That ADR records, of its own income answer, that
+  *"income scales with population, so overcrowding must be punished elsewhere
+  (#79, #80, #81) or the optimum is to pack the prison."* A threshold grant is
+  paid **for** population crossing a line, so it pushes in the same direction as
+  the per-place line rather than against it. It does not create the debt, and it
+  does not discharge it; #79, #80 and #81 remain where it is owed, and it is
+  worth more now than it was.
 - **The reproduction is deliberately left green against the defect.**
   `tests/integration/economy-liquidity-hard-lock.test.ts` will need updating by
   each of the three changes — decision 1 breaks *"balance 0 five in-game days
-  later"*, decision 3 breaks the fourteen-command enumeration — so a remedy
-  cannot merge without somebody reading what the trap was.
-- **No production code is in this branch.** Each decision is its own change
-  after acceptance.
+  later"*, decision 2 breaks *"and it never rises again"* and the payroll case's
+  final `toBe(0)`, decision 3 breaks the fourteen-command enumeration — so a
+  remedy cannot merge without somebody reading what the trap was.
+- **No production code is in this branch.** Each decision is its own change after
+  acceptance.
 
 ## What would change this
 
@@ -306,9 +397,13 @@ sequence that raises the balance above 0 from the state the test leaves refutes
 it, and the enumeration assertion is written so that adding a crediting command
 fails a named assertion rather than silently making the file a false story.
 
-The weakest claim in the *decisions* is that decision 1 closes the class. It
-closes it for every drain rate slower than the grant. A prison whose payroll
-exceeds its grant still walks downward — into decision 2's ladder rather than
-into a stall, which is the intended destination, but the word "closes" is doing
-work that only holds once #29 sets the two numbers against each other. Whoever
-sets them owns that comparison.
+**The weakest claim in the decisions is that the class is closed at all**, and it
+now has two owners rather than one. Decision 1 closes it only if the first
+threshold's amount beats the wage bill for long enough to reach the second;
+decision 2 closes it only if the loan terms make recovery arithmetically possible
+from any reachable position. Neither number is in this ADR. **If both are set
+badly, this ruling produces a slower ECON-002 rather than none** — a prison
+falling for ever down a ladder with a loan it cannot service — and the thing that
+would change my mind in either direction is the arithmetic between the first
+threshold, the loan's terms and `wageBand.minPerDay`, run once against a real
+prison.

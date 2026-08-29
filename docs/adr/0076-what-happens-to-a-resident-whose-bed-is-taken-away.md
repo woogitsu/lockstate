@@ -19,12 +19,13 @@
 It answers an economy audit finding raised against `4c18bc4` (v0.0.203) as
 ECON-003 and reproduced by running it against `ec10451` (v0.0.206).
 
-**Two questions, and they did not arrive here the same way.** Question B — what
-a finished object un-builds into — was put to the owner with its cost and
-**ruled on 2026-08-29**. Question A — what happens to the resident — **was not
-put to them**, and is proposed here. That asymmetry is stated at the top because
-the consequences section turns on it: **B's answer makes A urgent rather than
-optional**, and the two must not be accepted separately in that order.
+**Two questions, both ruled on by the owner on 2026-08-29**, with the
+measurements in this document in front of them: what a finished object un-builds
+into, and what happens to the resident. The second ruling — **relocate** — arrived
+after this document's first draft had recommended revalidating the payment
+instead, and the two are **not** alternatives. They are the behaviour and the
+invariant, and the decision section below is written that way rather than as a
+reversal.
 
 **It amends [ADR 0028](./0028-object-placement-and-derived-room-capacity.md)
 decision 2**, whose subsection *"A room whose objects are removed while
@@ -169,11 +170,11 @@ mechanism.
 
 ## Decision
 
-### B (the owner's, ruled 2026-08-29). A finished object un-builds into its full materials, by either route
+### B (the owner's). A finished object un-builds into its full materials, by either route
 
 `RemoveObject` on a completed order returns everything the order consumed, the
-same as `Undo` already does. The two commands stop disagreeing, and they agree
-on the generous answer.
+same as `Undo` already does. The two commands stop disagreeing, and they agree on
+the generous answer.
 
 **The cost was put to the owner and is accepted rather than argued away.**
 Dismantling becomes free and perfectly reversible: a wall can be taken down and
@@ -182,103 +183,144 @@ and the early-game pressure that came from materials being spent irreversibly
 goes. That is a real change to how the first hour plays and it was chosen
 knowingly.
 
-**It also supersedes, for object removal, the expectation ADR 0017's
-consequences recorded** — that #99's dismantle-to-salvage would return a built
-object's value *"as carried salvage, not as cash"*. Salvage remains a coherent
-future mechanic and is a physical-logistics question rather than an economic
-one; what this decides is that removal does not destroy value while waiting for
-it. **Whoever implements #99 should read this decision first**, because a
-salvage route that also refunds would refund twice.
+**It also supersedes, for object removal, the expectation ADR 0017's consequences
+recorded** — that #99's dismantle-to-salvage would return a built object's value
+*"as carried salvage, not as cash"*. Salvage remains a coherent future mechanic
+and is a physical-logistics question rather than an economic one; what this
+decides is that removal does not destroy value while waiting for it. **Whoever
+implements #99 should read this decision first**, because a salvage route that
+also refunds would refund twice.
 
-**The implementation hazard, named because the measurement above found it.**
-The allocation record is what `cancelOrder` refunds from, and `RemoveObject`
-does not clear it. A refund added to `RemoveObject` that leaves
-`materialsAllocated` populated is refunded **a second time** by a subsequent
-`Undo` — value created from nothing, which is the defect class
+**The implementation hazard, named because the measurement in the Context found
+it.** The allocation record is what a refund draws from, and `RemoveObject` does
+not clear it. A refund added to `RemoveObject` that leaves `materialsAllocated`
+populated is refunded **a second time** by a subsequent `Undo` — value created
+from nothing, which is the defect class
 `tests/integration/economy-money-conservation.test.ts` exists to catch. So this
-decision is not "add a release call to `RemoveObject`": it is *one* refund per
+decision is not "add a release call to `RemoveObject`": it is **one refund per
 order, whichever command triggers it, with the allocation emptied in the same
-step exactly as `cancelOrder` already empties it. A conservation test over
-`Remove` → `Undo` and `Undo` → `Remove` is the gate.
+step** exactly as `cancelOrder` already empties it. **A conservation test over
+`Remove` → `Undo` and `Undo` → `Remove` is the gate**, and it is not optional.
 
-### A (proposed, not ruled on). Pay only for places the prison has furnished, and relocate the excess once the no-vacancy branch has an owner
+### A (the owner's). Relocate the resident; pay only for furnished places when relocation cannot
 
-**A2, now: `StateIncomeSystem` pays for `min(occupancy, residentCapacity)` per
-room instance.**
+**These are one decision in two parts — the behaviour and the invariant — and
+they ship together.**
 
-It is the smallest change that exists — one system, no new mechanic, nobody
-moved, nobody stranded — and it makes `src/simulation/economy/income.ts:112`'s
-paragraph true again rather than deleting it. It closes the money leak
-completely and in every case, including the case A1 cannot reach.
+**A(i), the behaviour: a removal that drops a room's capacity below its occupancy
+relocates the excess**, through
+`PrisonerOperationsRuntime.relocateResidentsOutOf`
+(`src/simulation/prisoners/prisoner-operations-runtime.ts:500`).
 
-**A1, next: relocate the excess through `relocateResidentsOutOf` when a removal
-drops capacity below occupancy.** This is the fiction fix rather than the money
-fix: it puts the prisoner in a bed that exists. It needs a real answer to
-*"there is nowhere to put them"* — refuse the removal, which is what `UnzoneRoom`
-did before #478 and which #478 exists because it was wrong, or leave the state
-as it is today — and that answer is the reason it is second rather than first.
+This is the owner's ruling and it is the better game. A resident silently living
+in a bedless room is a prison that has quietly stopped making sense; a resident
+moved to a bed that exists is a prison that reacted. The mechanism is already
+written, already atomic, already deterministic, and already trusted by
+`UnzoneRoom` — this decision gives it its second caller rather than inventing
+anything. Its one gap for this use is that it empties whole instances: a room
+losing one of two beds needs *the excess* relocated, which is a narrowing of the
+same walk.
+
+**A(ii), the invariant: `StateIncomeSystem` pays for
+`min(occupancy, residentCapacity)` per room instance.**
+
+This is the backstop, and **it is what makes A(i) safe rather than a second way
+of being wrong.** The argument is the one this document made before the ruling
+and it survives the ruling unchanged, because it was never an argument against
+relocating:
+
+> **A(i) does not close the leak, and A(ii) does.** After a relocation the
+> resident occupies a real furnished bed and *should* be paid for — so
+> relocation's correctness rests entirely on the `'no-vacancy'` branch, and in
+> that branch the state is exactly today's: occupancy above capacity, still paid.
+> A(ii) is unconditional.
+
+**So shipping relocation alone leaves the leak open in exactly the branch that
+matters**, and that branch is not an edge case — it is a prison with one cell, or
+a prison that is full, which is every prison the moment the player is under
+pressure. The recycling loop this ADR exists to close runs *through* the
+no-vacancy branch, because a player exploiting it has no spare furnished bed by
+construction.
+
+`src/simulation/economy/income.ts:112`'s paragraph — *"can never exceed the
+capacity the prison has actually furnished"* — becomes true again under A(ii) and
+under nothing else here.
 
 **Not taken: refusing the removal while a resident depends on the object.** For
 #478's reason, already established: a room could become permanently un-editable
 through ordinary play.
 
-**Not taken here: charging the prison for an over-capacity cell.** The most
+**Not taken: charging the prison for an over-capacity cell.** The most
 interesting answer and much the most expensive — a new mechanic and a new balance
 value (#29), plus a player-facing string. Recorded as a real option that was not
-chosen rather than as one that was missed.
+chosen rather than one that was missed. Note that under A(i) the state it would
+charge for becomes rare, which weakens the case for it.
 
 ## Consequences
 
-- **B without A makes the exploit one press instead of two, and that is the
-  ordering constraint this ADR exists to state.** Today the loop needs
-  `Undo` (or `Remove` then `Undo`). Under B alone, `RemoveObject` returns the
-  plank by itself while the resident keeps paying — so a single press furnishes
-  the next cell and leaves a paying resident behind in this one. **B is a good
-  decision provided the residency half is closed, and a bad one on its own.**
-  They must not be accepted separately in that order.
-- **B does not reorder A, and the reason is worth stating rather than
-  asserting.** It would be natural to conclude that B's urgency promotes A1
-  ahead of A2. It does not, because **A1 does not close the leak and A2 does**:
-  after a relocation the resident occupies a real furnished bed and *should* be
-  paid for, so A1's correctness depends on the `'no-vacancy'` branch, and in that
-  branch the state is exactly today's — occupancy above capacity, still paid.
-  A2 is unconditional. So the recommendation is unchanged by the ruling: **A2
-  first, and A2 shipped in the same release as B**, with A1 after.
-- **The existing tests are the gate, and one of them going red is correct.**
-  `object-removal-loop.test.ts` asserts today's behaviour including *"the state
-  still pays for the place they occupy"*. A2 turns that red, and it should: the
-  sentence is the thing being amended, and it must not be possible to change the
-  money without editing the sentence that promised it. B turns red the same
-  file's *"gives back the materials a cancelled order had allocated, and does
-  not refund a built object"*, whose comment reads *"the plank became a bed"* —
-  also correct, and also a sentence that has to be rewritten by hand.
-- **No save format moves under A1, A2 or B.** A1 writes only state the save
-  already carries — residency and cold-state accommodation, both persisted; A2
-  changes an arithmetic at the day boundary; B moves an existing quantity between
-  an order record and a container, both persisted.
-- **A determinism fingerprint moves under A2 and B**, because both change the
-  balance or the stock a fingerprint hashes for a prison in the affected state.
-  **No pinned fingerprint is re-baselined**: a prison that never removes an
-  occupied cell's last bed and never removes a completed object is unaffected,
-  which is the property to check before extending any pinned list.
-- **No player-facing string is added by A1, A2 or B.** The over-capacity readout
-  ADR 0028 decision 2 already owes — *"what it cannot yet say is 'over
-  capacity'"* — is still owed and is still a later phase's, and it is the one
-  thing here that would need copy.
-- **No production code is in this branch.** Each decision is its own change
-  after acceptance.
+- **All three parts — B, A(i) and A(ii) — ship in the same release, and the
+  ordering constraint is the reason this ADR exists.** **B without A makes the
+  recycling one press instead of two**: today the loop needs `Undo`, and under B
+  alone `RemoveObject` returns the plank by itself while the resident keeps
+  paying, so a single press furnishes the next cell and leaves a paying resident
+  behind in this one. **B is a good decision provided the residency half is
+  closed, and a bad one on its own.** They must not be accepted separately in
+  that order.
+- **A(i) without A(ii) is the same mistake one layer down.** Relocation looks
+  like it closes the loop and does not, for the reason A(ii) states: the exploit
+  lives in the branch relocation cannot serve. A release that shipped B and A(i)
+  and deferred A(ii) would read as complete and would leave the measured
+  behaviour of `economy-bed-recycling.test.ts` intact for any prison with no
+  spare bed.
+- **The existing tests are the gate, and three assertions going red is correct.**
+  `object-removal-loop.test.ts` asserts today's behaviour in all three places
+  being changed: *"the state still pays for the place they occupy"* (A(ii)),
+  *"keeps the prisoner housed"* and *"keeps the prisoner sleeping in the cell
+  whose bed has gone"* (A(i)), and *"gives back the materials a cancelled order
+  had allocated, and does not refund a built object"*, whose comment reads *"the
+  plank became a bed"* (B). Each is a sentence that has to be rewritten by hand,
+  and that is the point: it must not be possible to change this behaviour without
+  editing the sentences that promised the old one.
+- **ADR 0028 decision 2's two quoted sentences survive A(i), narrowly, and the
+  narrowing must be written into that ADR.** *"Nobody is evicted"* stays true in
+  the sense it was decided — nobody is put on the street, and the `'no-vacancy'`
+  branch still houses them exactly where they were. What changes is that a
+  resident may be **moved** rather than left, when there is somewhere to move
+  them. *"Occupancy above capacity is a legal, named state"* also stays true, and
+  becomes the no-vacancy branch's state specifically rather than the general
+  outcome.
+- **No save format moves under A(i), A(ii) or B.** A(i) writes only state the
+  save already carries — residency and cold-state accommodation, both persisted;
+  A(ii) changes an arithmetic at the day boundary; B moves an existing quantity
+  between an order record and a container, both persisted.
+- **A determinism fingerprint moves under all three**, because each changes the
+  balance, the residency or the stock a fingerprint hashes for a prison in the
+  affected state. **No pinned fingerprint is re-baselined**: a prison that never
+  removes an occupied cell's last bed and never removes a completed object is
+  unaffected, which is the property to check before extending any pinned list.
+- **No player-facing string is added by A(i), A(ii) or B.** The over-capacity
+  readout ADR 0028 decision 2 already owes — *"what it cannot yet say is 'over
+  capacity'"* — is still owed and is still a later phase's. **A(i) arguably
+  creates a new one it does not owe**: a prisoner who moves cell without the
+  player asking is a thing the player should be told about, and saying nothing is
+  cheaper than saying it badly. Flagged rather than decided, because copy is the
+  owner's.
+- **No production code is in this branch.** Each part is its own change after
+  acceptance.
 
 ## What would change this
-
-If the owner would rather a bed removal never move anybody, **A2 is the whole
-answer and A1 should be dropped rather than deferred** — the ADR would then read
-that residency is permanent and only the payment is revalidated, which is a
-coherent game and one sentence shorter to explain.
 
 The weakest claim here is the ceiling. Three residents from one plank is
 measured; *"one per zonable cell"* is an inference from the loop's shape, and the
 number of `room.cell` instances the starter chunk admits was **not counted and is
-not guessed**. If that number turned out to be three or four, this would be a
-leak worth a comment rather than an ADR. Counting it is the cheapest thing that
-would change my mind in either direction — and it changes nothing about B, which
-is a decision about materials and not about the exploit.
+not guessed**. If that number turned out to be three or four, this would be a leak
+worth a comment rather than an ADR. Counting it is the cheapest thing that would
+change my mind in either direction — and it changes nothing about B, which is a
+decision about materials and not about the exploit.
+
+The second weakest is the claim that A(ii) is unconditional. It is unconditional
+*given* that `residentCapacity` is the right ceiling to pay against, which is
+ADR 0028 decision 2's derivation and not this ADR's. If a future room type earned
+income from something other than a sleep surface, `min(occupancy,
+residentCapacity)` would start withholding money the prison had earned, and this
+decision would need re-reading rather than extending.
