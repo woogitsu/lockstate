@@ -4,7 +4,8 @@ import { EntityQuery } from '../entity/query';
 import { ACTOR_IDENTITY_RNG_STREAM, type ActorIdentityMinter } from '../identity/actor-identity';
 import type { Xoshiro128StarStar } from '../rng/xoshiro128starstar';
 import { rateCellSharing, type CellSharingView } from './cell-sharing';
-import { classifyPrisoner, type ClassificationInput } from './classification';
+import { classifyPrisoner, type AdmissionRequest } from './classification';
+import { drawSentenceLengthTicks, PRISONER_SENTENCE_RNG_STREAM, SENTENCE_UNSET_TICKS } from './sentence';
 import {
   CLASSIFICATION_GROUP_IDS,
   classificationGroupIdFromIndex,
@@ -223,11 +224,38 @@ export class IntakeSystem implements SystemRegistration {
      */
     private readonly contrabandIntroducer?: IntakeContrabandIntroducer,
     private readonly contrabandRngStreamName: string = 'contraband.introduction',
+    /**
+     * The stream a sentence length is drawn from when the admission did not
+     * name one (#535 decision 5, `src/simulation/prisoners/sentence.ts`).
+     *
+     * A name and not an optional port, unlike `identity` and
+     * `contrabandIntroducer` above, because there is no collaborator to leave
+     * out -- the draw needs the stream and nothing else. **A session that has
+     * not registered this stream is still never asked for it**, for the same
+     * reason those two ports keep their sessions honest: the draw is made only
+     * for an admission that omitted a length, and `admitPrisonerSchema`
+     * requires `.positive()` of the length it carries, so every admission that
+     * names one reaches `NamedRngStreams.get` exactly as often as it did
+     * before this parameter existed: never.
+     */
+    private readonly sentenceRngStreamName: string = PRISONER_SENTENCE_RNG_STREAM,
   ) {}
 
-  public submitIntake(entityId: EntityId, input: ClassificationInput): void {
+  /**
+   * Records what the admission asked for, and what it left to the simulation.
+   *
+   * `AdmissionRequest` rather than `ClassificationInput`: since #535 decision 5
+   * the length is optional at the boundary, and an omitted one is stored as
+   * `SENTENCE_UNSET_TICKS` for the `classification` stage to draw. That is a
+   * write of the value the slot already holds -- `records.reset` runs one line
+   * earlier in `admitPrisoner` -- and it is made explicitly rather than skipped
+   * so that this method still writes every field it is responsible for, which
+   * is what `tests/unit/prisoners-intake-system.test.ts`'s "already-admitted
+   * prisoner" cases read it as doing.
+   */
+  public submitIntake(entityId: EntityId, input: AdmissionRequest): void {
     const index = this.store.getIndex(entityId);
-    this.records.sentenceLengthTicks[index] = input.sentenceLengthTicks;
+    this.records.sentenceLengthTicks[index] = input.sentenceLengthTicks ?? SENTENCE_UNSET_TICKS;
     this.records.priorIncidentsAtIntake[index] = Math.min(255, input.priorIncidents);
     this.records.intakeStage[index] = intakeStageIndex('queued');
   }
@@ -412,6 +440,34 @@ export class IntakeSystem implements SystemRegistration {
       }
 
       if (stage === 'classification') {
+        // The sentence, for an admission that did not name one (#535 decision
+        // 5). Here rather than in the command handler, and here rather than at
+        // `'reception'`, for three reasons that all point at the same line:
+        //
+        //   - It is inside `EntityQuery.execute()`'s canonical
+        //     ascending-entity-id walk, exactly as the name minting above and
+        //     the contraband introduction below are. So the order sentences are
+        //     drawn in is a function of *state*, not of the order a player
+        //     happened to press Admit or of how many commands shared a tick --
+        //     which is the property the two draws either side of it are
+        //     commented to defend, and the one a draw in `session-commands.ts`
+        //     could not have offered.
+        //   - Both readers of the value are the next two statements:
+        //     `classifyPrisoner` reads it against
+        //     `LONG_SENTENCE_THRESHOLD_TICKS`, and `sentenceEndTick` is the
+        //     sum of it and the clock. Drawing it anywhere earlier would mean
+        //     carrying a decided number through two stages for nobody.
+        //   - `prisoners.sentence`, never `prisoners.classification`. An extra
+        //     draw on the classification stream would shift every risk tier
+        //     every seed has ever produced, one admission onward, for a reason
+        //     that has nothing to do with screening variance. Isolated streams
+        //     are what `docs/DETERMINISM.md` asks for and this is the case they
+        //     are for: with the drawn range entirely below
+        //     `LONG_SENTENCE_THRESHOLD_TICKS`, the tier this stage assigns is
+        //     bit-identical to the one it assigned before this line existed.
+        if (this.records.sentenceLengthTicks[index] === SENTENCE_UNSET_TICKS) {
+          this.records.sentenceLengthTicks[index] = drawSentenceLengthTicks(context.rng.get(this.sentenceRngStreamName));
+        }
         const rng = context.rng.get(this.rngStreamName);
         const result = classifyPrisoner(
           { sentenceLengthTicks: this.records.sentenceLengthTicks[index]!, priorIncidents: this.records.priorIncidentsAtIntake[index]! },

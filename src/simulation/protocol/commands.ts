@@ -227,6 +227,32 @@ export const cancelMaterialPurchaseSchema = z.object({
  * `AdmitPrisoner` restored from a save *should* admit when it is dispatched
  * -- it had not run yet. An id here would be a field with no reader.
  *
+ * ## The sentence is optional, and that is the whole of #535 decision 5's wire
+ *
+ * **Omitted, the simulation draws one** -- at the `classification` stage, from
+ * the `prisoners.sentence` stream, exactly where the tier and the name are
+ * drawn and for the reason stated one paragraph above. That is what
+ * `src/main.ts` now sends, because a composition root has no business deciding
+ * how long anybody is held for and could not do it reproducibly if it tried.
+ *
+ * **Present, it is used exactly as given and never redrawn.** Every fixture in
+ * `tests/` that names a length keeps its exact behaviour, and so does a queued
+ * `AdmitPrisoner` restored from a save written before this field became
+ * optional -- which is why this is a widening rather than a removal.
+ * `queuedCommandSchema` carries a command payload as an opaque `jsonValue`
+ * (`src/persistence/save-schema.ts`) and this schema is what re-validates it on
+ * the way out, so an old save's queued admission has to keep parsing here or it
+ * would fault a restore. It does: making a required field optional accepts
+ * every payload the required version accepted.
+ *
+ * The reverse is not true and is worth stating rather than discovering: a save
+ * written *after* this change may carry a queued admission with no
+ * `sentenceLengthTicks`, and a build predating it would refuse that payload.
+ * That is [ADR 0065](../../../docs/adr/0065-what-happens-to-a-save-this-build-cannot-read.md)'s
+ * case and needs no version bump of its own -- `SAVE_SCHEMA_VERSION` names the
+ * *shape* of the envelope, which has not moved, and a pending command has
+ * always been a payload the current build's own schemas judge.
+ *
  * ## The bounds are the components', not a taste
  *
  * `sentenceLengthTicks` is written into a `Uint32Array`
@@ -240,7 +266,7 @@ export const cancelMaterialPurchaseSchema = z.object({
  */
 export const admitPrisonerSchema = z.object({
   type: z.literal('AdmitPrisoner'),
-  sentenceLengthTicks: z.number().int().positive().max(MAX_SENTENCE_LENGTH_TICKS),
+  sentenceLengthTicks: z.number().int().positive().max(MAX_SENTENCE_LENGTH_TICKS).optional(),
   priorIncidents: z.number().int().min(0).max(MAX_PRIOR_INCIDENTS),
   x: z.number().int(),
   y: z.number().int(),
@@ -536,7 +562,12 @@ function commandJson(command: SimulationCommand): JsonValue {
     case 'AdmitPrisoner':
       return {
         type: command.type,
-        sentenceLengthTicks: command.sentenceLengthTicks,
+        // Conditionally, in `ZoneRoom.transactionId`'s shape above and for the
+        // same reason: `exactOptionalPropertyTypes` distinguishes an absent
+        // key from one holding `undefined`, and an admission that leaves the
+        // sentence to the simulation must not put a `sentenceLengthTicks:
+        // undefined` on the wire for `.strict()` to judge.
+        ...(command.sentenceLengthTicks === undefined ? {} : { sentenceLengthTicks: command.sentenceLengthTicks }),
         priorIncidents: command.priorIncidents,
         x: command.x,
         y: command.y,

@@ -14,4 +14,5 @@ export * from './prisoner-operations-runtime';
 export * from './regime';
 export * from './release';
 export * from './room-instance-registry';
+export * from './sentence';
 export * from './utility-ai';

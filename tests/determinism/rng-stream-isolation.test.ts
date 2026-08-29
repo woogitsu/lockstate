@@ -183,10 +183,20 @@ describe('named RNG stream isolation in the real session runtime', () => {
     const names = runtime.kernel.snapshot().rngStates.map((entry) => entry.name);
 
     // `identity.actor-name` joined the list when #70 wired ADR 0015's
-    // registry into `new-session.ts`, and `contraband.introduction` when
-    // ADR 0061 gave contraband a producer. Adding a stream changes what a
-    // recorded command stream reproduces, so this pin must move deliberately.
-    expect(names).toEqual(['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification']);
+    // registry into `new-session.ts`, `contraband.introduction` when
+    // ADR 0061 gave contraband a producer, and `prisoners.sentence` when #535
+    // decision 5 made a sentence length a draw instead of a constant on the
+    // main thread. Adding a stream changes what a recorded command stream
+    // reproduces, so this pin must move deliberately.
+    //
+    // **`prisoners.sentence` is deliberately absent from the non-vacuous check
+    // in the case above**, and the absence is the interesting half: this
+    // scenario's admissions all name their own `sentenceLengthTicks`, so the
+    // stream is registered, snapshotted and never drawn from -- which is
+    // exactly what it should do for a command that decided its own sentence,
+    // and is why every canonical state hash in `session-replay.test.ts` is
+    // unchanged by this stream existing.
+    expect(names).toEqual(['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification', 'prisoners.sentence']);
 
     // Seeding is checked against a session that has not been *used* yet.
     // `buildDeterminismScenario` hires five guards, and since #70 wired ADR

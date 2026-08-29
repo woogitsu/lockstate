@@ -6,7 +6,7 @@ import type { Kernel } from '../kernel/kernel';
 import { LocomotionStore, LocomotionSystem } from '../locomotion';
 import type { NavigationSystem } from '../navigation/navigation-system';
 import { ActionSystem, type PrisonerRouteContextResolver } from './action-system';
-import type { ClassificationInput } from './classification';
+import type { AdmissionRequest } from './classification';
 import { ClassificationReviewSystem } from './classification-review-system';
 import { rateCellSharing, type CellSharingView } from './cell-sharing';
 import type { DisciplinaryEvidenceSource } from './disciplinary-record';
@@ -686,14 +686,14 @@ export class PrisonerOperationsRuntime {
    * classification still come from `identity.actor-name` and
    * `prisoners.classification` at the intake stages that own them.
    */
-  public requestAdmission(input: ClassificationInput, originTile: { readonly x: number; readonly y: number }): AdmitPrisonerOutcome {
+  public requestAdmission(input: AdmissionRequest, originTile: { readonly x: number; readonly y: number }): AdmitPrisonerOutcome {
     if (!this.intakeSystem.hasAccommodationTarget()) return { kind: 'refused', reason: 'no-accommodation' };
     if (!this.entityStore.canSpawn) return { kind: 'refused', reason: 'population-full' };
     return { kind: 'admitted', entityId: this.admitPrisoner(input, originTile) };
   }
 
   /** Allocates a new prisoner entity and submits it to intake. Accommodation, classification and action selection happen over subsequent scheduled ticks -- there is no synchronous "spawn fully processed" shortcut. Unguarded: `requestAdmission` is what a player's command reaches. */
-  public admitPrisoner(input: ClassificationInput, originTile: { readonly x: number; readonly y: number }): EntityId {
+  public admitPrisoner(input: AdmissionRequest, originTile: { readonly x: number; readonly y: number }): EntityId {
     const entityId = this.entityStore.spawn();
     const index = this.entityStore.getIndex(entityId);
     // Counted at the one door every admission passes through, before

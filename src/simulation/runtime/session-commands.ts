@@ -229,10 +229,21 @@ export function createSessionCommandHandler(
       // `PrisonerOperationsRuntime.requestAdmission`.
       //
       // Nothing here draws. Identity comes from `identity.actor-name` at the
-      // reception stage and the risk tier from `prisoners.classification` at
-      // the classification stage, both inside `IntakeSystem` -- so the same
-      // command at the same tick of the same seed produces the same prisoner,
-      // and this branch could not perturb either stream if it tried.
+      // reception stage, the risk tier from `prisoners.classification` at the
+      // classification stage and -- since #535 decision 5 -- the sentence
+      // length from `prisoners.sentence` at that same stage, all three inside
+      // `IntakeSystem`. So the same command at the same tick of the same seed
+      // produces the same prisoner, and this branch could not perturb any of
+      // the three streams if it tried.
+      //
+      // **The sentence was the one of the three that used to be decided
+      // outside the simulation**, as a constant on the main thread rather than
+      // as a draw, which is why it could sit on the wire at all. It is drawn
+      // now, and the reason it is drawn *there* and not here is in
+      // `IntakeSystem.update`: a draw made in this handler would advance the
+      // stream in command-dispatch order, which is deterministic but is not
+      // the ascending-entity-id order every other per-prisoner draw is made
+      // in.
       //
       // **`src/main.ts` refuses one of these two cases before it submits**,
       // exactly as it does for a purchase: it compares the room count the
@@ -249,7 +260,18 @@ export function createSessionCommandHandler(
       // why this maps the whole union rather than the one reason a panel can
       // provoke.
       const outcome = runtimePrisoners.requestAdmission(
-        { sentenceLengthTicks: simCommand.sentenceLengthTicks, priorIncidents: simCommand.priorIncidents },
+        {
+          // Conditionally spread, not `sentenceLengthTicks:
+          // simCommand.sentenceLengthTicks`: under
+          // `exactOptionalPropertyTypes` an explicit `undefined` is not the
+          // same as an absent key, and `AdmissionRequest`'s contract is that
+          // the *absent* key means "the simulation draws one" (#535 decision
+          // 5). This branch still decides nothing about the sentence -- it
+          // forwards what the command carried, or the fact that it carried
+          // nothing.
+          ...(simCommand.sentenceLengthTicks === undefined ? {} : { sentenceLengthTicks: simCommand.sentenceLengthTicks }),
+          priorIncidents: simCommand.priorIncidents,
+        },
         { x: simCommand.x, y: simCommand.y },
       );
       if (outcome.kind === 'refused') {
