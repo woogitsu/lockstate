@@ -306,13 +306,29 @@ citation here was re-derived from.
 `tests/foundation/adr-status-queue-anchor-contract.test.ts` counts every span
 matching *"Re-anchored at `main` @ `<sha>` (v<version>)"* and requires exactly
 **one**, so a verbatim quotation of a superseded anchor line fails the gate as
-a second live anchor. Written out here because the first attempt at this
-paragraph did quote it and the gate caught it -- `1 failed`, *"must open with
-exactly one"*, `- 1 / + 2`. **That test grants a past-tense exemption to
-`verified at` claims and none to its own anchor line**, which is a real
-asymmetry rather than an oversight to route around: the exemption exists so
-§5 can preserve what a superseded entry used to claim, and the anchor line has
-no such record to preserve because this paragraph is it. Four of those five have merged
+a second live anchor. The first attempt at this paragraph did quote it and the
+gate caught it -- `1 failed`, *"must open with exactly one"*, `expected […] to
+have a length of 1 but got 2`. **That test grants a past-tense exemption to
+`verified at` claims and none to its own anchor line**, which is an asymmetry
+rather than an oversight to route around: the exemption exists so §5 can
+preserve what a superseded entry used to claim, and the anchor line has no
+such record to preserve because this paragraph is it.
+
+**And the six kept anchor records further down this file do quote it verbatim,
+which looks like a contradiction and is instead an undocumented load-bearing
+line break.** Each reads *"It read: 'Re-anchored at `main` @"* with the sha on
+the **next** line, and the gate's pattern requires a literal space between `@`
+and the opening backtick -- ``Re-anchored at `main` @ `([0-9a-f]{7,40})` ``. A
+newline is not that space, so every one of those six records is invisible to
+the scanner **because of where the paragraph happens to wrap**. Measured, not
+inferred: joining the `82ae630` record onto one line and running the gate gives
+*"expected […] to have a length of 1 but got 2"*, and restoring the break gives
+`4 passed`. **So re-flowing any of those six paragraphs -- a formatting edit,
+the kind nobody reviews -- turns a historical record into a second live anchor
+and fails a gate whose message will talk about anchors rather than about
+wrapping.** Written down because it is exactly the shape of trap this file
+exists to record: a property everything below depends on, held by nothing that
+says so. Four of those five have merged
 inside this window and are accounted for below; **#578 is still open**, which
 makes it the only pull request to have been named in two consecutive anchors'
 dispatch notes as outstanding. That is recorded rather than acted on: whether
@@ -385,11 +401,14 @@ four in `src/main.ts` and two in `src/ui/telemetry-consent-prompt.ts`, and the
 two prose hits are still the same two.
 
 **Unchanged, every one opened rather than rested on the diff.**
-`src/ui/hud/hud.css` gained 126 lines and still records no `3.9`;
-`src/ui/tokens.css` gained 207 and `src/ui/primitives/primitives.css` one, and
-neither records one either -- so the four-`.css`-file half of the ADR 0025
-finding survived the largest edit any of those files has taken inside a
-window this file has measured. `docs/research/README.md` gained one table row
+`src/ui/hud/hud.css` took 121 added lines against 5 removed and still records
+no `3.9`; `src/ui/tokens.css` took 190 against 17 and
+`src/ui/primitives/primitives.css` one against one, and neither records one
+either -- so the four-`.css`-file half of the ADR 0025 finding survived the
+largest edit any of those files has taken inside a window this file has
+measured. Counted with `git diff --numstat` rather than `--stat`, because
+`--stat`'s single figure is added *plus* removed, and reading it as growth is
+how a line count in this file comes to be wrong by the size of a deletion. `docs/research/README.md` gained one table row
 and §6's *"deliberately left"* bullet still rests on the rule that file states
 rather than on the table; the rule is still there, under *"Research
 records"*, in the sentence *"records here are read-only history: when the code
@@ -1386,6 +1405,36 @@ The set, in full:
   and 46 recorded at `07add3e`, because each pass has filtered the spans
   differently and none of the three states its filter in the sentence that
   gives the number; the residue is what is comparable, and it is unchanged.
+  **Added at `53e1405`, for the same reason and by the same rule**: **0075**,
+  **0076** and **0077** — §3's opening, §5's first bullet and §6's
+  `income.ts` bullet now enumerate **thirty** `Proposed` documents and these
+  are the three that joined; none of the three has a §2 row, and the header's
+  window note decides each of them separately rather than treating them as one
+  case. Each is read here only for its `Status` line, and all three read
+  `**Proposed, 2026-08-29. Not self-approved.**` at this anchor — re-read on
+  disk rather than taken from the index, because **PR #606 is open to move two
+  of them to `Accepted`** and a member read off a branch would be a member read
+  off a tree this file is not anchored to. **0072 is still not a member and
+  still not missing**, for the fifth anchor running: no such document exists on
+  disk, the number being held for the events-persistence decision. **No other
+  member joins at this anchor**: both derivation scans were re-run over §§3-6 —
+  every backticked path and every bare `00NN` token — and neither returned a
+  member the list has never named, which is the fifth anchor running at which
+  that is true. The path scan returned **79** distinct existing spans, of which
+  18 are bare directory prefixes and 61 are files; its only non-member file is
+  `docs/adr/STATUS-QUEUE.md`, deliberately outside its own set. **The number
+  scan returned 65 tokens and its residue grew by one**: **0078**, which is the
+  index's new **Next free number** and therefore the same class as the seven
+  this subsection already names — 0030, 0038, 0039, 0040, 0041, 0055 and 0058
+  — a number inside a claim about that line rather than a citation of an ADR
+  document. It is written down rather than passed over, because the residue
+  being *unchanged* has been this subsection's reported result for four
+  anchors and this is the first time it has moved; the rule that classifies it
+  is unchanged, and a reader re-deriving the list should expect eight
+  next-free tokens now rather than seven. Those totals are **not** comparable
+  with the 67/55 at `85c1c29` or the 89/46 at `07add3e`, for the reason every
+  reading in this sequence gives: each pass filters the spans differently and
+  none states its filter in the sentence that gives the number.
 - Files under `src/` — sixteen until 2026-08-28, when the omissions were counted:
   `ui/hud/messages.ts`, `ui/hud/projection.ts`,
   `ui/hud/hud.ts`, `ui/hud/build-panel.ts`, `content/procurement-catalog.ts`,
@@ -2550,6 +2599,64 @@ the checksum is what a V4 build wrote. Through the real restore path an 8×8 yar
 answers **`Infinity`** where the same yard zoned by this build answers **4**. So
 #554's balance change does not reach a restored prison, and nothing on screen
 says so.
+
+**That measurement was taken before the recovery landed, and it is kept
+because it is why the decision exists — but it is not true of `main` and has
+not been since `d0af2d7` (#571).** Through the same restore path at
+`53e1405` a restored 8×8 yard answers **4**, the number the live zoning gives,
+and `tests/migrations/save-v4-room-bounds.test.ts` pins it: *"restores a yard
+bounded by the ground the save says it covers, not an unbounded one"* asserts
+`expect(ceiling).toBe(YARD_PLACES)` and, beside it,
+`expect(ceiling, 'issue #559 is that this was Infinity, so the claim gate
+never refused').not.toBe(Number.POSITIVE_INFINITY)`. Run at this anchor:
+`./node_modules/.bin/vitest run tests/migrations/save-v4-room-bounds.test.ts`
+-> `Test Files 1 passed (1) / Tests 9 passed (9)`. **Both sentences stand. The
+paragraph above is the evidence the decision was taken on and the paragraph
+here is the state of `main`**, and overwriting the first would delete the only
+statement of what the bug was.
+
+**Why this correction was owed, and why no gate could have asked for it.**
+[Issue #608](https://github.com/matmaxalez/lockstate/issues/608) raised it from
+an independent re-audit against `23edabc` (v0.0.213) and made the argument
+against itself first: read in context the `Infinity` sentence sits under *"The
+evidence, and it is measured rather than argued"*, and the paragraph after it
+opens *"Refusing it costs #559 staying open"*, so the passage is the case
+**for** the change and the sentence is a record of what was found. **That
+reading does not save it, and this file's own introduction is what settles
+it**: *an entry's evidence is a claim about `main`, so landing the change an
+entry describes means updating that entry in the same commit.* #571 landed the
+recovery and did not update the entry, so a reader trusting the contract this
+file states was misled — the exact class this file exists to catch, occurring
+inside the file itself. The audit was right on the substance and slightly
+overstated in form, and both halves are recorded because *"a false claim"* and
+*"a true record the file's own rules require to be updated"* are different
+defects with different fixes.
+
+**And the gap in scope is the more useful half.** The `cfab558` re-anchor
+(#583) re-read §§3-6 against its diff window and swept §2's four counters.
+**§2's entry *content* was in neither scope**, and no delta could have raised
+it: `docs/adr/0074-…md` did not change in that window, this file's §2 is not
+covered by the §§3-6 derivation, and the sentence that went false is prose in
+a section the method never opens. So this is the same structural blindness the
+header records twice already — a delta pass cannot see a claim falsified
+outside its enumerated set — arriving in the one section the method excludes
+by construction. **The scope question is left open for the owner rather than
+decided here**: whether re-anchoring should read every §2 entry whose subject
+has since landed is a change to what a re-anchor costs, and #608 asks it in
+those terms. What is decided is the instance, in both directions, above.
+
+**Two entries carry evidence of the same shape and were deliberately not
+checked, which is stated rather than left for the next reader to discover.**
+ADR 0056's row opens **"The evidence."** and reproduces #437 on `6f671d5`;
+ADR 0059's opens **"The evidence, and it is measured rather than argued."**
+and gives a 100 ms render-delta ceiling and a 24-tick fixture divergence.
+Both are present-tense measurements on named trees, exactly like ADR 0074's,
+and **neither was re-run at this anchor** — their subjects are outside this
+window and outside §§3-6, and this pass's scope is the delta plus the seven
+counts plus the one entry #608 names. **That is a gap, not a verdict**: it is
+not a claim that either has gone false, and the only way to find out is to run
+them. Named here so that whoever decides #608's scope question has the size of
+the job in front of them rather than having to re-derive it.
 
 **Refusing it costs #559 staying open**, and the alternatives on the table are
 both worse. A migration provably cannot reach the case: restore that payload,
@@ -3913,12 +4020,15 @@ one direction.
 
   **Re-run at `bb3a01e`, the same grep is not clean and the conclusion inverts.**
   `grep -rn "services/telemetry" src/ --include=*.ts` outside the directory
-  returns `src/main.ts:98-100` (`createTelemetryPipeline`, `createCrashReporter`,
+  returns `src/main.ts:103-105` (`createTelemetryPipeline`, `createCrashReporter`,
   and a `CancelScheduledPump` type import) and
-  `src/ui/telemetry-consent-prompt.ts:8`. `src/main.ts:158-199` builds the
+  `src/ui/telemetry-consent-prompt.ts:8`. **The first of those read `:98-100`
+  until `53e1405`**, and is corrected here rather than overwritten for the
+  reason this bullet keeps every previous value: the sequence is the argument.
+  `src/main.ts:163-204` builds the
   pipeline as the first thing after `GAME_VERSION` and registers `error` and
   `unhandledrejection` listeners that call `crashReporter.reportUnhandledError`;
-  `src/main.ts:2766-2771` mounts the consent prompt (**this read `:2494-2499`;
+  `src/main.ts:2837-2842` mounts the consent prompt (**this read `:2494-2499`;
   #468's save-import work moved it twelve lines and it was re-anchored to
   `:2506-2511` at `c00b641`, then held through `07add3e`, then #500's
   `generateMasterSeed` function — inserted above it for the determinism reason
@@ -3926,16 +4036,28 @@ one direction.
   then #534's door-edge work and #541's sentence draw pushed it 53 further to
   `:2598-2603`, then it moved **76 more** to `:2674-2679` — the largest single
   jump in the run — because #546's requirements work and #551's event channel
-  both landed above it; and at this anchor **92 more**, to `:2766-2771`, which
-  is the whole of what `src/main.ts` gained in this window**). **The import span
-  moved for the third consecutive anchor**, having held across the four before
-  that: `:82-84`, then `:87-89`, then `:96-98`, and `:98-100` here — two lines
-  down, because #533's dismissal work added an import to the block above it.
+  both landed above it; then **92 more**, to `:2766-2771`, which was the whole
+  of what `src/main.ts` gained in that window; and at `53e1405` **71 more**, to
+  `:2837-2842`, which is again the file's entire net growth in the window
+  (`git diff --numstat cfab558..origin/main -- src/main.ts` is `72 1`, and
+  `git log --first-parent cfab558..origin/main -- src/main.ts` names
+  `2a00f98`/#579 as the only commit that touched it)**). **The import span
+  moved for the fourth consecutive anchor**, having held across the four before
+  that: `:82-84`, then `:87-89`, then `:96-98`, then `:98-100` — two lines
+  down, because #533's dismissal work added an import to the block above it, and
+  **`:103-105` at `53e1405`**, five lines down, because #579's interface-scale
+  work added an import block above it in turn. **The two halves of this bullet
+  have now moved by different amounts in the same window**, which they had not
+  done before: five lines at the top of the file and seventy-one at the bottom,
+  because #579 added code both above the imports and above the mount. A single
+  shift figure would have been wrong for one of them, which is why every anchor
+  here is opened rather than offset.
   `src/ui/telemetry-consent-prompt.ts:8` is the one anchor in this bullet that
   has **still** never moved, on a file no window has touched — six anchors now,
   five of which have moved and the sixth being the only one cited by symbol.
   **Two hits this sentence has never named, recorded because the next reader
-  will run the grep and count six**: `src/main.ts:174` (this read `:172`, two
+  will run the grep and count six**: `src/main.ts:179` (this read `:172`, then
+  `:174`, and is five lines further down again at `53e1405`; two
   lines down with the rest) and `src/ui/telemetry-consent-prompt.ts:17` are
   prose inside doc comments, not imports. **The count in this sentence was `four` until this anchor and it was
   right then**; the import span gaining a third line (`CancelScheduledPump`) is
@@ -3953,7 +4075,17 @@ one direction.
   anything, because the transport's destination comes from deployment
   configuration, nothing sets it, and with it absent the pipeline constructs
   *nothing* — so the consent prompt is not mounted either
-  (`src/main.ts:196-199`, and `:2762` — both gate on `telemetry.enabled`).
+  (`src/main.ts:201-204`, and `:2833` — both gate on `telemetry.enabled`).
+  **This parenthesis read `:196-199` and `:2762` until `53e1405`**; both were
+  correct at `cfab558` — they are the pair that anchor re-derived by symbol,
+  after two consecutive anchors of naming the wrong code — and both moved with
+  the rest of the file at #579, the first by five lines and the second by
+  seventy-one. **That is the first time in this bullet's history that these two
+  numbers went stale by ordinary drift rather than by having been wrong when
+  they were written**, and it is the evidence that re-deriving them by symbol
+  worked: a citation that is right on the tree that writes it moves cleanly
+  afterwards, while one that is not accumulates a second error every time
+  somebody offsets it.
   **Both numbers in this parenthesis read differently until this anchor, and
   neither of them named a gate.** It read *"(`src/main.ts:185-188`, and `:2598`
   — this read `:2494`, then `:2506` at `c00b641`/`07add3e`, then `:2545` — both
@@ -4093,6 +4225,41 @@ one direction.
   fact — **the 900×600 budget now has two figures in the corpus, 7.81 live and
   11.8/12.2 recorded as superseded, and no third** — and one lesson, that the
   entry's own hand count of `.css` files was the least reliable thing in it.
+
+  **And at `53e1405` the sentence this entry quotes as the discharge has gone
+  partly false, in the one clause nobody was watching.** ADR 0025's withdrawal
+  reads *"`3.9` appears in no other ADR, in no `.css` file and nowhere in
+  `src/`"*. The last clause stopped being true at **`2a00f98`** (#579,
+  v0.0.212): `src/ui/primitives/icon.ts:68` now holds `'M15.8 16.1h3.9'`, the
+  fourth stroke of the `ui-scale` glyph the interface-scale work added.
+  `git show cfab558:src/ui/primitives/icon.ts` returns no `3.9` at all, and
+  `git log -S 'h3.9' -- src/ui/primitives/icon.ts` names that one commit, so
+  the date is derived rather than inferred from the window.
+
+  **The sentence's point survives and its grep does not, and the distinction
+  is the whole of the finding.** No `.css` file records the figure — there are
+  still **four** under `src/ui/`, re-derived at this anchor by
+  `git ls-tree -r HEAD -- src/ui`, so the count this entry once got wrong is
+  right now and stays right — no other ADR records it, and nothing in `src/`
+  records it *as a measurement*. What changed is that a reader running the raw
+  grep the sentence invites gets a hit, and has to work out unaided that SVG
+  path data in an icon is not a headroom figure. **That is precisely the move
+  this entry already made once**, for `grep '3\.9'` also matching ADR 0022's
+  *"÷ 12.2 is 23.9"*, and the caveat it wrote for that case is the shape the
+  new one needs: name the hit, say why it is not the thing, and let the next
+  reader stop.
+
+  **The fix is ADR 0025's and is handed over rather than made here**, because
+  this commit's surface is `docs/adr/STATUS-QUEUE.md` alone and an accepted
+  ADR's body is amended in its own commit — the rule §5 applies to every other
+  entry. What it is owed is one clause, corrected in both directions: the
+  measurement claim kept, and beside it the path-data hit named with its
+  commit. **The class, not the instance**: a sentence of the form *"X appears
+  nowhere in `src/`"* is the absence-claim `docs/AGENT_WORKFLOW.md` §4 says
+  rots first, and it is falsified by any file that happens to contain the
+  characters for an unrelated reason. Two of the three clauses in this one are
+  bounded (ADRs and `.css` files are small, enumerable sets); the third is
+  bounded by nothing, and it is the one that broke.
 - **ADR 0022 was written against v0.0.30, its structural citations had drifted,
   and at `bb3a01e` the ADR has corrected them itself.** This entry read *"its
   structural citations have drifted"* and left the body verbatim on the ground
