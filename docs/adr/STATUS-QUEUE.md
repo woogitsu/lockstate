@@ -2835,12 +2835,13 @@ one direction.
   ADR 0027's subject — co-occupancy of one cell, and both placements went through
   the approved seam: `IntakeSystem` allocates through
   `RoomInstanceRegistry.findBestAvailable` and nothing else
-  (`src/simulation/prisoners/intake-system.ts:474`, whose own comment at `:468`
+  (`src/simulation/prisoners/intake-system.ts:530`, whose own comment at `:524`
   names #79 and the rating; this entry read `:348` and `:342`, then `:409` and
-  `:403`, then `:448` and `:442` at `07add3e`, and #497's assault-sanction work
-  (ADR 0067) is the only commit touching this file in the window to this
-  anchor, so it is what moved both again). **Fourth anchor, fourth pair of
-  numbers, and the expression has not changed**:
+  `:403`, then `:448` and `:442` at `07add3e`, then `:474` and `:468` at
+  `01974e5`, held through `4ace2da`, and #541's sentence draw — inserted into
+  the same `classification` stage, above them — is what moved both again).
+  **Fifth anchor, fifth pair of numbers, and the expression has still not
+  changed**:
   `findBestAvailable` is still handed a `rateCellSharing` closure and is still
   the only allocator. It is happening in a session a player can start.
 
@@ -3093,16 +3094,28 @@ one direction.
 
   **Re-run at `bb3a01e`, the same grep is not clean and the conclusion inverts.**
   `grep -rn "services/telemetry" src/ --include=*.ts` outside the directory
-  returns `src/main.ts:82-84` (`createTelemetryPipeline`, `createCrashReporter`,
+  returns `src/main.ts:87-89` (`createTelemetryPipeline`, `createCrashReporter`,
   and a `CancelScheduledPump` type import) and
-  `src/ui/telemetry-consent-prompt.ts:8`. `src/main.ts:154-195` builds the
+  `src/ui/telemetry-consent-prompt.ts:8`. `src/main.ts:159-200` builds the
   pipeline as the first thing after `GAME_VERSION` and registers `error` and
   `unhandledrejection` listeners that call `crashReporter.reportUnhandledError`;
-  `src/main.ts:2545-2550` mounts the consent prompt (**this read `:2494-2499`;
+  `src/main.ts:2598-2603` mounts the consent prompt (**this read `:2494-2499`;
   #468's save-import work moved it twelve lines and it was re-anchored to
-  `:2506-2511` at `c00b641`, then held through `07add3e`, and #500's
+  `:2506-2511` at `c00b641`, then held through `07add3e`, then #500's
   `generateMasterSeed` function — inserted above it for the determinism reason
-  its own doc comment gives — pushed it down 39 lines more at this anchor**).
+  its own doc comment gives — pushed it down 39 lines more to `:2545-2550`, and
+  at this anchor #534's door-edge work and #541's sentence draw pushed it 53
+  further**). **The import span moved too and this is the first anchor at which
+  it has**: `:82-84` had held across four anchors and is `:87-89` here, five
+  lines down, because #541 added `createTelemetryConsentPrompt` to the import
+  block above it. `src/ui/telemetry-consent-prompt.ts:8` is the one anchor in
+  this bullet that has never moved, on a file no window has touched.
+  **Two hits this sentence has never named, recorded because the next reader
+  will run the grep and count four**: `src/main.ts:163` and
+  `src/ui/telemetry-consent-prompt.ts:17` are prose inside doc comments, not
+  imports. They were there at `bb3a01e` too, so the sentence has always been
+  about the import sites rather than about the raw hit count; it is left saying
+  what it means and the difference is written down here instead.
   So **the sentence this entry
   said did not hold is the one that now does** — telemetry is fed from the main
   thread's orchestration layer, off the tick and frame paths — and the sentence
@@ -3113,9 +3126,14 @@ one direction.
   anything, because the transport's destination comes from deployment
   configuration, nothing sets it, and with it absent the pipeline constructs
   *nothing* — so the consent prompt is not mounted either
-  (`src/main.ts:180-183`, unmoved, and `:2545` — this read `:2494`, then `:2506`
-  at `c00b641`/`07add3e` — both gate on
-  `telemetry.enabled`). That is
+  (`src/main.ts:185-188`, and `:2598` — this read `:2494`, then `:2506`
+  at `c00b641`/`07add3e`, then `:2545` — both gate on
+  `telemetry.enabled`). **The word "unmoved" stood on the first of those two
+  anchors and is withdrawn rather than deleted**: `:180-183` was the
+  `crashReporter` gate at `4ace2da` and is the doc comment above it here, the
+  same five-line shift the import block took. A citation described as unmoved
+  is the one a reader is least likely to re-check, which is the argument for
+  not writing the word at all. That is
   [ADR 0044](./0044-what-happens-to-a-service-tier-nothing-calls.md)'s rule
   obeyed, not inertness: the old claim was *"nobody wired it"* and the new fact
   is *"it is wired and switched off by the absence of a destination"*. The two
@@ -3144,14 +3162,29 @@ one direction.
 
   **Two corrections at `bb3a01e`, both to the same clause.** It said *"the single
   mention elsewhere (`src/main.ts:86`) is a comment naming the file, not an
-  import"*. `src/main.ts:86` is now `import './styles.css';` — a real import, of
-  nothing to do with challenges, so the anchor no longer supports the sentence it
-  was given for. The comment moved to `src/main.ts:102`, where it reads
+  import"*. `src/main.ts:86` was then `import './styles.css';` — a real import, of
+  nothing to do with challenges, so the anchor no longer supported the sentence it
+  was given for. The comment moved to `src/main.ts:102`, where it read
   *"`src/services/challenges/verification.ts`, against a challenge definition's
   …"*. (**Written here as `import type { CancelScheduledPump }` in the first
   draft of this correction and caught by re-deriving every anchor mechanically
-  before commit** — that line is `:84`. Recorded because it is the same off-by-two
-  the entry is about, committed while correcting it.) And **there are two mentions
+  before commit** — that line was `:84`. Recorded because it is the same off-by-two
+  the entry is about, committed while correcting it.)
+
+  **Every number in the paragraph above has now moved, and the correction rotted
+  no slower than the claim it corrected.** At `85c1c29`: `src/main.ts:86` is
+  `import { createTelemetryConsentPrompt } from './ui/telemetry-consent-prompt';`,
+  `import './styles.css';` is at **`:91`**, the challenges comment is at
+  **`:107`**, and `import type { CancelScheduledPump }` is at **`:89`** — all
+  five lines down, from #541 adding one import above them. The three sentences
+  are put into the past tense against `bb3a01e` rather than renumbered, because
+  the useful content is the *shape* of the error and not the values: this is a
+  correction of a correction of an anchor, three deep, and the only one of the
+  four spans that has ever stayed put is the one cited by symbol. §4 of
+  `docs/AGENT_WORKFLOW.md` says a correction is no more durable than the claim
+  it corrected; this is the fourth consecutive anchor at which that has been
+  demonstrated inside this file's own text, which stops being an anecdote and
+  starts being the measured base rate. And **there are two mentions
   now, not one**: `src/persistence/save-schema.ts:1198` names
   `masterSeedSchema` *"from `services/challenges`"* in a comment explaining why it
   does **not** import it (this read `:1164`, then `:1182` at `07add3e` after
@@ -3290,10 +3323,13 @@ one direction.
   (#328) made it fifteen; and `cancel-build-order` (#367) has now made it
   **sixteen** — so a sentence written to record somebody else's drifted count has
   itself been wrong at three successive readings. The two members the original
-  hand count missed are `arm-build-tool` (`src/ui/hud/hud.ts:404-409`) and
-  `arm-room-tool` (`:537-542`), the only two declared across several lines rather
+  hand count missed are `arm-build-tool` (**`src/ui/hud/hud.ts:429-434`**, which
+  read `:404-409` from `bb3a01e` until #498 moved it) and
+  `arm-room-tool` (**`:561-566`**, which read `:537-542` over the same span), the
+  only two declared across several lines rather
   than on one, which is exactly the shape a hand count skips. The sixteenth,
-  though, is on a single line (`:446`, `cancel-build-order`) and was missed for
+  though, is on a single line (**`:471`**, `cancel-build-order`, which read
+  `:446`) and was missed for
   the ordinary reason: nobody recounted.
 
   **Make it four readings, and the fourth was a self-contradiction rather than a
@@ -3327,8 +3363,10 @@ one direction.
   member rather than adding one. **It no longer holds at that count.**
   `simulationCommandSchema`, declared
   `export const simulationCommandSchema = z.discriminatedUnion('type', [` in
-  `src/simulation/protocol/commands.ts` (`:467`, unmoved at `bb3a01e`; this entry
-  cited `:437` and then `:465`, and both were overtaken), still discriminates
+  `src/simulation/protocol/commands.ts` (**`:493` at this anchor**; this entry
+  cited `:437`, then `:465`, then `:467`, and all three were overtaken —
+  `:467` held from `bb3a01e` through `4ace2da` and #536's and #541's
+  insertions above it moved it 26 lines), still discriminates
   **thirteen**, matching the thirteen hits of
   `grep -c "type: z.literal" src/simulation/protocol/commands.ts`: #392
   added `CancelMaterialPurchase` and #394 added `ReleaseGuardAssignment`, both
@@ -3356,11 +3394,35 @@ one direction.
   `docs/adr/0027-cell-sharing-assessment.md` says a freshly zoned room is
   registered with `capacity: 0` *"because object placement does not exist"*. ADR
   0028 phase 1 falsified the premise in both. The document they both cite has
-  already moved — gap 13 now opens *"Object placement exists, and `minQuantity`
+  already moved — gap 13 opened *"Object placement exists, and `minQuantity`
   is still unchecked"* in `docs/HUD_PROJECTIONS.md`, which is how it should be
-  cited: that number has been `:553`, then `:639`, and is `:754` at `bb3a01e`,
-  three anchors and three readings of a sentence that has never changed a word,
-  so the number is retired here and the quotation kept — so the two ADRs are the
+  cited: that number has been `:553`, then `:639`, and was `:754` at `bb3a01e`,
+  three anchors and three readings of a sentence that had never changed a word,
+  so the number was retired there and the quotation kept.
+
+  **And then the quotation itself went false, which had not happened before in
+  this file.** At `85c1c29` gap 13 opens **"Object placement exists, and
+  `minQuantity` is counted"** — #530 (issue #528) closed the second half of the
+  gap, and its own body now says so in terms: *"both halves of this gap are now
+  closed, the second at #528"*, with the superseded paragraph kept beneath it in
+  the same marked-rather-than-overwritten style this file uses. The quotation is
+  corrected above and the old wording left standing beside it. **This is worth
+  more than the correction.** §4 of `docs/AGENT_WORKFLOW.md` ranks a quoted
+  sentence as the most durable citation available here, and this entry retired a
+  line number *to* a quotation three anchors ago on exactly that ground. The
+  ranking survives — the number moved three times in the span the sentence
+  survived once — but "most durable" is not "cannot rot", and the thing that
+  falsifies a quotation is the only thing that should: a real change to the
+  subject, rather than an edit anywhere above it. A quotation fails **loudly**,
+  because the words are gone and no grep finds them, where a line number fails
+  **silently** by landing on a plausible neighbour. That asymmetry is the actual
+  argument for the rule, and it is stronger than the durability claim this entry
+  had been making for it. **The consequence for the two ADRs is the opposite of
+  a discharge**: both halves of gap 13 are now closed, so
+  `docs/adr/0023-room-occupancy-authority.md` and
+  `docs/adr/0027-cell-sharing-assessment.md` are further from the world than
+  when this entry was written, not closer, and the handover to amend them
+  stands and has grown — so the two ADRs are the
   last places in the corpus asserting the old world, and a reader who follows
   either citation lands on a page contradicting the sentence that sent them. The
   two sentences are still there and were re-read here:
