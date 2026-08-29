@@ -159,6 +159,8 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.status.staff': 'Staff',
   'hud.status.rooms': 'Rooms',
   'hud.status.incidents': 'Incidents',
+  'hud.status.coverage': 'Coverage',
+  'hud.status.coverage-detail': '{understaffed} understaffed · {unguarded} unguarded',
   'hud.status.contraband': 'Contraband',
   // The treasury balance (#96). "Funds" names no currency on purpose: #96
   // settled that money is primary and did not name a unit, and the number is

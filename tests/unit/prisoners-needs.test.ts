@@ -10,7 +10,12 @@ import {
   NEED_MIN_SCALED,
   NEED_SCALE,
   NeedsComponent,
+  provisionSafety,
+  SAFETY_COVERAGE_PROVISION_MULTIPLIER,
+  SAFETY_COVERAGE_PROVISION_PER_TICK,
+  SAFETY_COVERAGE_PROVISION_SCALED_PER_TICK,
 } from '../../src/simulation/prisoners/needs';
+import { SECTOR_COVERAGE_STATES } from '../../src/simulation/security/coverage-state';
 
 describe('the scale the needs store uses', () => {
   it('represents every decay rate as a whole number of stored units per tick', () => {
@@ -25,6 +30,37 @@ describe('the scale the needs store uses', () => {
       expect(Number.isInteger(NEED_DECAY_SCALED_PER_TICK[needId])).toBe(true);
       expect(NEED_DECAY_SCALED_PER_TICK[needId]).toBeGreaterThan(0);
     }
+  });
+
+  it('represents every coverage provision rate as a whole number of stored units per tick', () => {
+    // The same property the decay table above has, and for the same reason:
+    // `provisionSafety` promises to be exactly linear in `ticksElapsed`, which
+    // is only true while every rate it multiplies is a whole number of stored
+    // units. It bites harder here, because the middle rung is *half* the full
+    // rate -- a full rate `NEED_SCALE` could represent but whose half it could
+    // not would round, and the ladder would stop being a ladder.
+    for (const state of SECTOR_COVERAGE_STATES) {
+      const exact = SAFETY_COVERAGE_PROVISION_PER_TICK * SAFETY_COVERAGE_PROVISION_MULTIPLIER[state] * NEED_SCALE;
+      expect(SAFETY_COVERAGE_PROVISION_SCALED_PER_TICK[state], `${state} is not a whole number of stored units per tick`).toBe(exact);
+      expect(Number.isInteger(SAFETY_COVERAGE_PROVISION_SCALED_PER_TICK[state])).toBe(true);
+    }
+  });
+
+  it('keeps the three rungs three distinct outcomes, which is the bracket the rate was chosen inside', () => {
+    /*
+     * The property issue #588's ladder rests on, stated as arithmetic rather
+     * than as a comment: `provision / 2 < decay < provision`. Below the lower
+     * bound an understaffed sector recovers and stops costing anything; above
+     * the upper bound a covered one drains and the instrument reads backwards.
+     * A later balance pass may move either number, and it has to move them
+     * together or fail here.
+     */
+    const decay = NEED_DECAY_SCALED_PER_TICK.safety;
+    expect(SAFETY_COVERAGE_PROVISION_SCALED_PER_TICK.covered).toBeGreaterThan(decay);
+    expect(SAFETY_COVERAGE_PROVISION_SCALED_PER_TICK.understaffed).toBeLessThan(decay);
+    expect(SAFETY_COVERAGE_PROVISION_SCALED_PER_TICK.unguarded).toBe(0);
+    // And the middle rung is exactly half, not approximately.
+    expect(SAFETY_COVERAGE_PROVISION_SCALED_PER_TICK.understaffed * 2).toBe(SAFETY_COVERAGE_PROVISION_SCALED_PER_TICK.covered);
   });
 
   it('keeps the full stored range inside a Uint16Array', () => {
@@ -82,6 +118,35 @@ describe('decayNeed', () => {
 
       expect(stepped, `${needId} depends on how the ticks were batched`).toBe(decayNeed(NEED_MAX_SCALED, needId, 37));
       expect(batched, `${needId} depends on how the ticks were batched`).toBe(stepped);
+    }
+  });
+});
+
+describe('provisionSafety', () => {
+  it('adds the rung\'s rate for each tick, and the same ticks split across calls land on the same level', () => {
+    // `decayNeed`'s contract, on the other side of the same need: a scenario
+    // provisions identically however the ticks are batched, which is what makes
+    // `SafetyCoverageSystem.schedule.intervalTicks` a scheduling choice.
+    const oneCall = provisionSafety(0, 'covered', 30);
+    let split = 0;
+    for (let index = 0; index < 3; index += 1) split = provisionSafety(split, 'covered', 10);
+    expect(oneCall).toBe(split);
+    expect(oneCall).toBe(SAFETY_COVERAGE_PROVISION_SCALED_PER_TICK.covered * 30);
+  });
+
+  it('clamps at both ends of the stored range', () => {
+    expect(provisionSafety(NEED_MAX_SCALED, 'covered', 1_000)).toBe(NEED_MAX_SCALED);
+    expect(provisionSafety(NEED_MIN_SCALED, 'unguarded', 1_000)).toBe(NEED_MIN_SCALED);
+  });
+
+  it('never subtracts, on any rung, from any level', () => {
+    // The refinement issue #588 carries from its source: the provision is
+    // *suspended* and never made negative, so a security lapse cannot
+    // manufacture a debt on top of the decay that is already charged.
+    for (const state of SECTOR_COVERAGE_STATES) {
+      for (const level of [NEED_MIN_SCALED, 1, NEED_MAX_SCALED / 2, NEED_MAX_SCALED]) {
+        expect(provisionSafety(level, state, 10), `${state} at ${String(level)}`).toBeGreaterThanOrEqual(level);
+      }
     }
   });
 });

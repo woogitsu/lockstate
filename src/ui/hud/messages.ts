@@ -20,6 +20,37 @@ export const HUD_MESSAGE_KEY = {
   staff: 'hud.status.staff',
   rooms: 'hud.status.rooms',
   incidents: 'hud.status.incidents',
+  /**
+   * The guard-coverage chip (issue #588).
+   *
+   * "Coverage" rather than "Guards", because the chip beside it already counts
+   * guards: `staff` is how many the prison employs and this is how many
+   * *prisoners* those guards are covering, which is the number the state's
+   * withholding now depends on. Naming it for the headcount would put two
+   * chips on one fact and leave the fact that matters unnamed.
+   *
+   * The same word the Staff panel's own badge uses for the top rung
+   * (`securityCoverageMet`, "Covered"), in its noun form, so the strip and the
+   * panel are recognisably about one thing.
+   */
+  coverage: 'hud.status.coverage',
+  /**
+   * The two rungs that are *not* covered, as a sentence under the chip.
+   *
+   * The chip's own value is how many prisoners are covered; this names the
+   * remainder and splits it, which is what issue #588 asks the strip for --
+   * `Covered N / Understaffed N / Unguarded N`, *"so the 40s are
+   * attributable"*. A player whose prisoner-day grant is short of the headline
+   * 300 can read off this line how much of the population is paying the
+   * `safety` withholding and which of the two reasons each part of it is
+   * paying for.
+   *
+   * Not rendered when both are zero: the badge falls back to
+   * `securityCoverageMet` ("Covered"), which is a sentence this repository
+   * already ships and which an all-covered prison should read as. A line of
+   * two zeroes would be noise on the one strip a player glances at.
+   */
+  coverageDetail: 'hud.status.coverage-detail',
   contraband: 'hud.status.contraband',
   /**
    * The treasury balance chip (#96).

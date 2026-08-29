@@ -180,6 +180,14 @@ describe('simulation worker protocol', () => {
             // decoder that read the wrong one apart from a correct one.
             accommodationCapacity: 150,
             roomOccupants: 3,
+            // Three distinct figures summing to 4, which is this payload's own
+            // `prisoners` -- so a decoder reading the wrong one of the three,
+            // or deriving any of them from another field, cannot pass. They
+            // are the guard-coverage rungs the population is standing on
+            // (issue #588).
+            prisonersCovered: 1,
+            prisonersUnderstaffed: 2,
+            prisonersUnguarded: 1,
             activeIncidents: 0,
             // Agrees with `activeIncidents: 0` above -- nothing open, nothing
             // to name (issue #506 finding 2).
@@ -510,6 +518,11 @@ describe('simulation worker protocol', () => {
       roomCapacity: 0,
       accommodationCapacity: 0,
       roomOccupants: 0,
+      // A prison at tick 0 has nobody in a sector, so no rung holds anybody
+      // (issue #588). Zero for the same reason every count above is.
+      prisonersCovered: 0,
+      prisonersUnderstaffed: 0,
+      prisonersUnguarded: 0,
       activeIncidents: 0,
       activeIncidentType: undefined,
       contrabandDiscovered: 0,

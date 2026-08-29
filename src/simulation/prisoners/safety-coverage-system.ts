@@ -23,7 +23,7 @@ export interface SafetyCoverageReportSource {
 
 /**
  * **Coverage provisions the `safety` need** -- issue #588, the reader half of
- * [ADR 0017](../../../docs/adr/0017-what-a-prison-earns-and-what-it-owes.md)
+ * [ADR 0017](../../../docs/adr/0017-money-primary-resource-model.md)
  * decision 1 that was never wired, under the owner's ruling on issue #599.
  *
  * ## The mechanic, in one sentence

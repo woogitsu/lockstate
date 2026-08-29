@@ -669,6 +669,38 @@ export const statusCountsSchema = z
      */
     accommodationCapacity: countSchema,
     roomOccupants: countSchema,
+    /**
+     * **How many prisoners are standing in a sector on each rung of the guard
+     * coverage ladder** (issue #588): `covered` has all the guards it asks
+     * for, `understaffed` has some of them, `unguarded` has none.
+     *
+     * Three counts rather than one ratio, because the strip's job here is that
+     * *"the 40s are attributable"*: since ADR 0064 the state withholds
+     * `STATE_INCOME_UNMET_NEED_WITHHOLDING_MINOR_UNITS` of the prisoner-day
+     * grant per unmet need, and `SafetyCoverageSystem` is what decides whether
+     * `safety` is one of them. A player looking at a grant smaller than the
+     * headline rate has to be able to see how much of the population is paying
+     * that particular 40, and a single percentage cannot say which rung the
+     * missing ones are on.
+     *
+     * They sum to the population **standing in a sector**, which in the
+     * shipped single-sector topology is every living prisoner on owned land
+     * (ADR 0048 decision 1) -- not necessarily to `prisoners` above, which
+     * counts every prisoner in existence including an arrival still in
+     * transit. Nothing here should be derived by subtraction from that count.
+     *
+     * `SafetyCoverageSystem.getCensus` produces them on the same walk that
+     * provisions the need, so the readout cannot disagree with what was
+     * provisioned. It is at most nine ticks stale, and reads all zeroes for
+     * the first ten ticks after a load, which is the ordinary staleness of
+     * every ten-tick cadence in the kernel rather than a missing value.
+     *
+     * **`HUD_VIEW_MODEL_SCHEMA_VERSION` is deliberately not bumped**, for the
+     * reason `accommodationCapacity` above gives.
+     */
+    prisonersCovered: countSchema,
+    prisonersUnderstaffed: countSchema,
+    prisonersUnguarded: countSchema,
     activeIncidents: countSchema,
     /**
      * The kind of the incident `activeIncidents` above counts, when the
