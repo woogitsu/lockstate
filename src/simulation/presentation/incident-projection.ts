@@ -21,11 +21,19 @@ import {
  * **What this projection deliberately does not carry.**
  *
  * `IncidentRecord.causeFactors` -- the raw sustained-risk score, needs
- * deficit and staffing shortfall that produced an incident -- is withheld,
- * exactly as `src/simulation/incidents/alerts.ts` already withholds it from
- * `IncidentAlert`: issue #28's "alerts/logs reveal appropriate information
- * without exposing all hidden calculations." The `SectorRiskTracker`'s
- * running score is withheld for the same reason. The timeline is *not*
+ * deficit and staffing shortfall that produced an incident -- is withheld:
+ * issue #28's "alerts/logs reveal appropriate information without exposing
+ * all hidden calculations." The `SectorRiskTracker`'s running score is
+ * withheld for the same reason.
+ *
+ * **This used to say "exactly as `src/simulation/incidents/alerts.ts` already
+ * withholds it from `IncidentAlert`", and that projection no longer exists.**
+ * It was deleted in issue #555 as superseded by this one, which carries every
+ * field it did and is the only one a session serves; the deletion's argument
+ * is kept in `src/simulation/incidents/incident-summary.ts`, the file that was
+ * `alerts.ts`. So this is not merely the second place the rule is applied any
+ * more -- it is the only one, which is why the rule is now stated here
+ * outright rather than by reference. The timeline is *not*
  * hidden: it is a record of what visibly happened and when.
  *
  * Severity and property damage keep their raw rank alongside a

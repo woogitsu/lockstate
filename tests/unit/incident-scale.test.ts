@@ -10,7 +10,7 @@ import { IncidentLog } from '../../src/simulation/incidents/incident';
 import { IncidentResponseSystem } from '../../src/simulation/incidents/response-system';
 import { DEFAULT_SECTOR_RISK_POLICY, SectorRiskTracker } from '../../src/simulation/incidents/sector-risk';
 import { IncidentTriggerSystem } from '../../src/simulation/incidents/trigger-system';
-import { summarizeIncidents } from '../../src/simulation/incidents/alerts';
+import { summarizeIncidents } from '../../src/simulation/incidents/incident-summary';
 
 /**
  * Issue #28's performance requirement: "benchmark large simultaneous
