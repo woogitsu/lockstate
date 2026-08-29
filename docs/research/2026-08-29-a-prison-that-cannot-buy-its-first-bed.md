@@ -8,9 +8,19 @@ nothing: it read for them. This record plays them.
 
 Both still exist. Neither has been fixed and neither is fixed here — the
 remedies are game-design decisions with real alternatives, and §5 and §6 carry
-the two ADR drafts they need. **Both drafts are unnumbered.** `docs/adr/README.md`
-says next free is 0075 and that 0072 is held; a number is not reserved until it
-is a row in that index, and this record does not take one.
+the two ADR drafts they need.
+
+**The drafts were unnumbered when this record was written and have since
+landed**, as [ADR 0075](../adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+and [ADR 0076](../adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md),
+with the numbers assigned centrally after a sweep across every remote head and
+recomputed off disk at commit time. This paragraph read *"Both drafts are
+unnumbered … this record does not take one"* and is corrected rather than
+overwritten, because a research record that keeps saying "awaiting a number"
+after the number arrives is how this directory stops being readable — the
+correction `docs/research/README.md` makes about the navigation-tick-budget row,
+applied to this one before it can rot. §5 and §6 remain the drafts as written;
+the ADRs are the decided form of them and are what to cite.
 
 ## 1. What is claimed, in one line each
 
@@ -127,6 +137,24 @@ Neither is the decided answer. ADR 0017's consequences already record it:
 that *"would give `ContainerRegistry` a removal path"*. So the repository holds
 a third answer for removal that neither command implements.
 
+**`Remove` then `Undo` already returns the plank today**, measured on this tree
+after the drafts were written and load-bearing for the ruling on question B:
+
+```
+after build   planks 0  order completed  materialsAllocated [{item.wood-plank, 1}]
+after remove  planks 0  order completed  materialsAllocated [{item.wood-plank, 1}]
+after undo    planks 1  order cancelled  placed objects 0
+```
+
+`RemoveObject` takes the object out of the registry and leaves the order
+`completed` with its allocation intact — deliberately, since
+`object-removal-loop.test.ts` pins that a second press answers
+`remove-object.nothing-to-remove` rather than cancelling and *"refund[ing] a
+plank that became a bed"*. `Undo` afterwards still reaches `cancelOrder`, which
+still releases the allocation. That is why a refund added to `RemoveObject`
+must empty the allocation in the same step: otherwise a later `Undo` refunds a
+second time, which is value created from nothing.
+
 **What the two halves make together.** Place, admit, undo, repeat.
 
 | | recycled | control |
@@ -176,6 +204,18 @@ than a second mechanism.
   records.
 
 ## 5. ADR draft — what a prison that cannot afford its first bed is owed
+
+> **Superseded by the owner's ruling of 2026-08-29 and kept unchanged below.**
+> This section is a set of options with a recommendation; the owner was shown
+> them and **chose three of them together** — a recurring grant, ADR 0017's
+> degradation ladder, and sell-back at a loss — leaving out the starting plank
+> grant. So
+> [ADR 0075](../adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+> is three decisions in build order, not a choice, and it is the document to
+> cite. This draft is kept as the record of what was known and recommended
+> *before* the ruling, per this directory's rule that a record is read-only
+> history: the recommendation below (option 3 now, option 2 next) was **not**
+> what was taken, and marking that is more useful than overwriting it.
 
 **Unnumbered. Renumber the file, its row in `docs/adr/README.md` and every
 citation of it when a number is assigned.**
@@ -240,6 +280,18 @@ irrecoverably, 6 becomes the right answer and the rest are wrong. That is a
 product call and it is the owner's.
 
 ## 6. ADR draft — what happens to a resident whose bed is taken away, and what a finished object un-builds into
+
+> **Question B superseded by the owner's ruling of 2026-08-29; question A stands
+> as proposed. Kept unchanged below.** On B the owner chose **B3, full materials
+> by both routes** — `RemoveObject` starts refunding — with the cost that
+> dismantling becomes free put in front of them and accepted. This draft
+> recommends *no* option on B and records the disagreement instead; that was the
+> right call before a ruling and is not what the ruling says.
+> [ADR 0076](../adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+> is the decided form. Question A was **not** put to the owner, so §6's A2-then-A1
+> recommendation is carried into the ADR unchanged — and the ADR adds the
+> ordering constraint this draft could not have known: **B without A makes the
+> recycling one press instead of two.**
 
 **Unnumbered.** Same renumbering commitment as §5. **This ADR amends ADR 0028
 decision 2**, which decided that a removal evicts nobody, and it should be read
@@ -321,3 +373,106 @@ reproduces the recycling loop — `object-removal-loop.test.ts` already covers t
 residency half of that across a save round trip, but nothing covers the plank
 refund across one; and how many `room.cell` instances the starter chunk actually
 admits, which is the real ceiling on §3's table.
+
+
+## 8. Handed over: the two `docs/adr/STATUS-QUEUE.md` §2 entries
+
+**These were not filed by the commit that added the ADRs, deliberately, and the
+reason is a live concurrency conflict rather than a shortcut.**
+
+§2's rule is *"any commit that adds an outstanding ADR adds an entry here in the
+same commit"*, and filing an entry means moving **all four** places that count
+§2 — the header paragraph, the title (which states a subject and no count, so it
+cannot rot), §2's own heading, and §5's preamble. On this branch, cut from
+`ec10451`, those places read **five**. They read **six** on
+`agent/status-queue-0074-entry`, an unmerged single-commit branch whose whole
+subject is *"File STATUS-QUEUE.md's section 2 entry for ADR 0074, and sweep all
+four counts"* and which touches no other file.
+
+So any count written here is wrong by one whichever way the two branches land,
+in all four places at once, and the merge conflicts in exactly the four
+paragraphs whose value is the record of how they came apart. §2's own text calls
+its rule *"unsatisfiable under concurrency"*; this is that case. The entries are
+therefore handed to the integrator as text, which is what
+[#571](https://github.com/matmaxalez/lockstate/pull/571) did — a separate filing
+commit has nothing else to think about, and it can read the true count off the
+merged file.
+
+Both entries below are written to be pasted with only the count in §2's heading,
+the header paragraph and §5's preamble adjusted to whatever the merged file
+holds.
+
+### Entry — ADR 0075's price for a prison that cannot afford its first bed
+
+**What it decides.** Three things, ruled on by the owner on 2026-08-29 with the
+measurements in front of them: a **recurring grant** (ADR 0017 decision 3's
+already-accepted secondary income line), the **ADR 0017 degradation ladder**,
+and **sell-back at a loss** — in that build order. It is not a choice between
+remedies. Only the recurring grant closes the class on its own, because it is
+the only one that defends the payroll route.
+
+**The evidence.** `tests/integration/economy-liquidity-hard-lock.test.ts`, six
+cases through the real kernel. 625 `item.brick` at 40 spends exactly the opening
+25,000 and nothing refuses it; five escapes are then exhausted by running them,
+and `simulationCommandSchema` is enumerated to close the sixth. 624 bricks
+leaves 40 and the same trap. A prison reaches the same state with **no such
+press at all**: 616 bricks, one guard hired, three in-game days of payroll at 80,
+balance 40 and falling.
+
+**What settling it commits the project to.** Decision 1 commits to a grant rate
+(#29's, per ADR 0017 decision 5). Decision 2 commits to **letting the balance go
+negative** — ADR 0017 names that precondition itself, *"`Treasury.spend` refuses
+rather than overdrawing, so there is no negative balance for a degradation
+ladder to respond to"* — which overturns `Treasury`'s own argument that its
+non-negative validators are load-bearing *for* decision 8, and requires the save
+schema's balance validator to be confirmed to admit a negative. Decision 3
+commits to a `SellMaterials` command, a refusal reason from an exhaustive
+`Record`, a HUD control, **a player-facing string** and a loss ratio. Decisions
+2 and 3 each add player-facing copy, which is the owner's under `AGENTS.md`.
+
+**The exact line that would replace the status:** `**Accepted, <date>.**` in
+`docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md` and in
+its `docs/adr/README.md` row, naming which numbered option was taken. **Delete
+this entry in the same commit.**
+
+### Entry — ADR 0076's price for a resident whose bed is taken away
+
+**What it decides.** Two questions that arrived differently. **B, the owner's,
+ruled 2026-08-29:** a finished object un-builds into its **full materials by
+either route** — `RemoveObject` starts refunding — with the cost that
+dismantling becomes free and early material pressure goes put in front of them
+and accepted. **A, not put to the owner and proposed:** pay
+`min(occupancy, residentCapacity)` now, and relocate the excess through
+`relocateResidentsOutOf` once the `'no-vacancy'` branch has an owner; refusing
+the removal is rejected for #478's reason.
+
+**It amends [ADR 0028](../adr/0028-object-placement-and-derived-room-capacity.md)
+decision 2**, whose *"Nobody is evicted"* and *"Removing the last bed from an
+occupied cell does not homeless anybody"* are **kept**. What is amended is what
+that legal state may be worth.
+
+**The evidence.** `tests/integration/economy-bed-recycling.test.ts`: one 65
+plank, three residents, 4,380 of state income against a control's 1,460 — exactly
+three times, ending on one standing bed. And a false paragraph in the tree,
+`src/simulation/economy/income.ts:112`, which argues the occupancy count *"can
+never exceed the capacity the prison has actually furnished"* while the same
+system pays for occupancy 1 against capacity 0.
+
+**What settling it commits the project to, and the constraint that must not be
+lost.** **B without A makes the recycling one press instead of two**, so the two
+cannot be accepted separately in that order — B is a good decision provided the
+residency half is closed and a bad one on its own. B's named implementation
+hazard is that `RemoveObject` does not clear `materialsAllocated`, so a refund
+that leaves it populated is refunded a second time by a later `Undo`; the gate
+is a conservation test over `Remove` → `Undo` and `Undo` → `Remove`. A2 turns
+`tests/integration/object-removal-loop.test.ts` red at *"the state still pays for
+the place they occupy"* and B turns the same file red at *"does not refund a
+built object"* — both correct, both sentences that have to be rewritten by hand.
+A determinism fingerprint moves for prisons in the affected state and no pinned
+fingerprint is re-baselined. No save format moves and no player-facing string is
+added by any decision taken.
+
+**The exact line that would replace the status:** `**Accepted, <date>.**` in
+`docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md` and in its
+`docs/adr/README.md` row, naming which option was taken on A and whether B is
+deferred. **Delete this entry in the same commit.**
