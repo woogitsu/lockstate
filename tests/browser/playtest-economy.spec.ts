@@ -560,3 +560,75 @@ test.describe('playtest: what a day actually pays (#601)', () => {
     console.log(`[C/guards] console: ${consoleLines.slice(0, 40).join('\n') || '(nothing)'}`);
   });
 });
+
+/**
+ * Why a press takes two seconds: the in-flight gate, or click stability?
+ *
+ * The Intake panel's Admit control measured ~2.1 s per press across twelve
+ * consecutive presses. Two candidates fit and they have opposite consequences
+ * for a player, so this separates them on a control that needs no prison: the
+ * Build panel's Buy submit goes through exactly the same `busy` set
+ * (`src/ui/hud/hud.ts`), and a fresh session can press it immediately.
+ *
+ * It samples the button's `disabled` property and its `getBoundingClientRect`
+ * every 25 ms from inside the page, so the answer is what the DOM did rather
+ * than what the driver decided.
+ */
+test.describe('probe: what holds a command control between presses', () => {
+  test('disabled, or unstable', async ({ page }) => {
+    test.setTimeout(180_000);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await installTee(page);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await tab(page, 'build').click();
+    await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+    const buyRow = page.locator('.hud-build__buy');
+    if (await buyRow.isHidden()) await page.locator('.hud-build__buy-toggle').click();
+    await page.locator('.hud-build__buy .ui-number__input').fill('1');
+
+    await page.evaluate(() => {
+      const samples: { t: number; disabled: boolean; x: number; y: number }[] = [];
+      (window as unknown as { lockstateProbe: typeof samples }).lockstateProbe = samples;
+      const start = performance.now();
+      const tick = (): void => {
+        const node = document.querySelector<HTMLButtonElement>('.hud-build__buy-submit');
+        if (node !== null) {
+          const box = node.getBoundingClientRect();
+          samples.push({ t: Math.round(performance.now() - start), disabled: node.disabled, x: Math.round(box.x), y: Math.round(box.y) });
+        }
+        if (performance.now() - start < 60_000) setTimeout(tick, 25);
+      };
+      tick();
+    });
+
+    const durations: number[] = [];
+    for (let index = 0; index < 6; index += 1) {
+      const started = Date.now();
+      await page.locator('.hud-build__buy-submit').click();
+      durations.push(Date.now() - started);
+      await page.waitForTimeout(120);
+    }
+    console.log(`[probe] buy press durations (ms): ${JSON.stringify(durations)}`);
+
+    const summary = await page.evaluate(() => {
+      const samples = (window as unknown as { lockstateProbe: { t: number; disabled: boolean; x: number; y: number }[] }).lockstateProbe;
+      const runs: { from: number; to: number }[] = [];
+      let open: number | undefined;
+      for (const sample of samples) {
+        if (sample.disabled && open === undefined) open = sample.t;
+        if (!sample.disabled && open !== undefined) {
+          runs.push({ from: open, to: sample.t });
+          open = undefined;
+        }
+      }
+      if (open !== undefined) runs.push({ from: open, to: samples[samples.length - 1]!.t });
+      const positions = [...new Set(samples.map((s) => `${s.x},${s.y}`))];
+      return { sampleCount: samples.length, disabledRuns: runs, distinctPositions: positions };
+    });
+    console.log(`[probe] samples=${summary.sampleCount}`);
+    console.log(`[probe] intervals the control was disabled (ms): ${JSON.stringify(summary.disabledRuns)}`);
+    console.log(`[probe] distinct button positions seen: ${JSON.stringify(summary.distinctPositions)}`);
+  });
+});

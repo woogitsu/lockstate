@@ -44,7 +44,7 @@ portable. Re-derived, not trusted.
 
 ## 1. The prison that was built, with the mouse
 
-Six wall runs of six segments each around tiles (12,12)-(17,17) — 24
+Four wall runs of six segments each around tiles (12,12)-(17,17) — 24
 `PlaceBuildOrder` commands, every one from a real mouse drag — then the
 rectangle zoned as a Cell, then three beds and a toilet placed by pressing
 tiles, then twelve presses of **Admit a prisoner**. Verbatim from the run:
@@ -94,6 +94,10 @@ So, for a twelve-prisoner prison with three beds:
 | credited at the day boundary | **900**, twice, exactly |
 | per resident | **300** — the full rate, nothing withheld |
 | staff, wage bill, unpaid wages | 0, 0, 0 |
+
+**Run twice, from a fresh page, and the same both times.** A second,
+independent run of the same route produced `900` at both of its boundaries,
+`roster = 12`, `residents = 3` and `data-without-place="9"` again.
 
 ### The control: twelve beds, twelve admitted
 
@@ -377,6 +381,86 @@ different prison than the one the game builds.
   question, and `docs/research/2026-08-28-risk-tier-and-income.md` already
   establishes that the tier changes neither what the state pays nor what the
   prison spends.
+
+- **Each press of Admit took about two seconds before the next one could be
+  made.** Measured, twelve consecutive presses on the Intake panel, each timed
+  from the start of the press to the moment the click completed:
+
+  ```
+  admit press durations (ms): [2283,2220,2576,1793,1770,2043,2354,1916,2197,2304,2260,1850]
+  admit control disabled attribute now: null
+  ```
+
+  Mean about 2.1 s, so admitting twelve people is about **25 seconds** of a
+  control that will not take the next press. The `disabled` attribute was
+  `null` immediately afterwards, so whatever holds the press does clear.
+
+  **Two candidates fitted, and the probe below kills both.** One: the HUD's
+  in-flight gate — *"while one is in flight the transport controls are disabled
+  and a further command is refused"* (`src/ui/hud/hud.ts:732`), and the Intake
+  panel's controls are added to that same `busy` set (`src/ui/hud/hud.ts:1704`)
+  — is genuinely holding the button for two seconds per admission. Two: the
+  control is never *stable* for two consecutive animation frames, because the
+  panel repaints on every counts publication, and a real browser driver waits
+  for stability before it will click. The first would be a defect a player
+  feels; the second would be an artefact of how this was driven and would cost
+  a player nothing.
+
+  **The measurement was named and then taken, and it refutes both.** Same
+  `busy` set, on a control a fresh session can press immediately — the Build
+  panel's Buy submit — with the page sampling that button's `disabled` property
+  and its `getBoundingClientRect()` from inside itself every 25 ms:
+
+  ```
+  [probe] buy press durations (ms): [859,876,870,938,878,861]
+  [probe] samples=56
+  [probe] intervals the control was disabled (ms): []
+  [probe] distinct button positions seen: ["1177,679"]
+  ```
+
+  The control was **never** disabled and **never** moved, and a press still
+  took about 880 ms. The third line is the answer: 56 samples over roughly six
+  seconds is one every ~107 ms against a requested 25 ms, so the page's own
+  timer was starved by about four. **The main thread is saturated**, in a
+  headless container on software GL, with the simulation *paused*. A driver's
+  actionability checks need animation frames, and there are not many.
+
+  **So this is a property of where the playtest ran and is not reported as a
+  player-facing defect.** The two-second Admit figure stands as a measurement
+  and its cause is now known not to be the in-flight gate. What it would take
+  to make a claim about a real player: the same probe on real hardware with a
+  GPU. Nothing in this repository can supply that.
+
+## 8b. Every player-facing string this pass read, and what is wrong with them
+
+Asked for explicitly, so the empty answers are stated as well as the full ones.
+
+**No key is missing and no raw key reached the screen.** Checked
+mechanically as well as by reading the dumps: of the 181 dotted keys named in
+`src/ui/hud/messages.ts`, all 181 have an entry in
+`src/content/default-locale-en.ts`. Nothing in any panel dump of any of the
+four runs contained a `hud.` token.
+
+Two sentences read wrong, and both are already known:
+
+1. *"Open on at least one side"* (`hud.rooms.enclosure-open`) and *"Must be
+   enclosed"* (`hud.rooms.requirement-enclosed`), printed by the Rooms panel
+   about a rectangle the simulation accepted in the same press — three
+   independent reproductions in §8. It is not a wording defect; the sentence
+   is right and the world it describes is stale.
+2. The latched refusal band: *"Nothing was removed — there is no object on
+   that tile, and none being built there."* was the whole content of
+   `.hud__refusal` for entire sessions, earned by one press at tick 0. True
+   when written; a statement with no age.
+
+One sentence is authored and never rendered: *"{value} of {capacity}"*
+(`hud.status.occupancy-value`), §6.
+
+Three read exactly right and are worth naming because they are the ones that
+would have prevented #601's confusion if anybody had been looking at them:
+*"9 waiting with no bed to sleep in"* (`hud.intake.no-place`), *"A prison
+needs a cell before it can admit anyone. It does not need a free bed…"*
+(`hud.intake.hint`), and *"Hire Guard · 80"* (`hud.security.hire`).
 
 ## 9. What this pass did not reach
 
