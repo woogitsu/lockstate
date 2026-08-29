@@ -230,6 +230,286 @@ describe('createBusyGroup: controls cannot drift out of sync with what is in fli
   });
 });
 
+/**
+ * The accessibility playtest of 2026-08-29.
+ *
+ * Driven keyboard-only against the assembled application, with a
+ * `pointerdown`/`mousedown` tripwire proving no trusted pointer event reached
+ * the page: pressing *Admit* admitted a prisoner -- the count moved 1 -> 2 and
+ * `data-action-failed` was `null`, so it was not a masked refusal -- and 300 ms
+ * later `document.activeElement` was `document.body`. Every command-issuing
+ * control in the HUD shares one of these groups (`src/ui/hud/hud.ts`), so that
+ * was every command in the game: Buy, Place order, Designate, Hire, Admit and
+ * every transport press, whether the host took the command or refused it.
+ *
+ * The mechanism is one line: `apply` sets `disabled` on every registered
+ * control, a disabled element cannot hold focus, and the browser blurs it. That
+ * a browser really does that needs a browser, and the wiring to five panels
+ * needs the assembled page -- both are
+ * `tests/browser/app-shell.spec.ts`'s, per `docs/TESTING.md`. What is here is
+ * the group's side of the contract: *which* control it gives the keyboard back
+ * to, and every condition under which it must not.
+ */
+describe('createBusyGroup: the keyboard comes back to the control that took the command', () => {
+  interface FocusControl {
+    disabled: boolean;
+    hidden: boolean;
+    isConnected: boolean;
+    focused: number;
+    setAttribute(name: string, value: string): void;
+    focus(): void;
+  }
+
+  function focusControl(state: Partial<FocusControl> = {}): FocusControl {
+    return {
+      disabled: false,
+      hidden: false,
+      isConnected: true,
+      focused: 0,
+      setAttribute(): void {},
+      focus(): void {
+        this.focused += 1;
+      },
+      ...state,
+    };
+  }
+
+  /** A document whose `activeElement` follows `focus()`, as a real one's does. */
+  function documentWith(active: unknown): { activeElement: unknown; body: unknown } {
+    return { activeElement: active, body: 'the body element' };
+  }
+
+  it('gives the keyboard back to the control it disabled', () => {
+    const pressed = focusControl();
+    const other = focusControl();
+    const owner = documentWith(pressed);
+    const group = createBusyGroup({ focusOwner: owner });
+    group.add(pressed);
+    group.add(other);
+
+    // Disabling blurs it, which is what a browser does and what the group has
+    // to assume: it reads who held the keyboard *before* it disables anything.
+    group.setBusy(true);
+    owner.activeElement = owner.body;
+
+    group.setBusy(false);
+    expect(pressed.focused).toBe(1);
+    expect(other.focused).toBe(0);
+  });
+
+  it('gives it back only once, and not again on the next idle transition', () => {
+    const pressed = focusControl();
+    const owner = documentWith(pressed);
+    const group = createBusyGroup({ focusOwner: owner });
+    group.add(pressed);
+
+    group.setBusy(true);
+    owner.activeElement = owner.body;
+    group.setBusy(false);
+    // A second command, pressed with the pointer this time: nothing in the
+    // group held the keyboard, so the group has nothing to give back and must
+    // not replay the last control it remembered.
+    group.setBusy(true);
+    group.setBusy(false);
+    expect(pressed.focused).toBe(1);
+  });
+
+  it('takes nothing back when no control of its own held the keyboard', () => {
+    // The Rooms panel's *Designate* is this case: it hides itself before it
+    // dispatches (`paintActions` in `src/ui/hud/rooms-panel.ts`), so it is
+    // already blurred by the time the group sees it. That hand-off is the
+    // panel's, and a group that guessed would focus a hidden control.
+    const registered = focusControl();
+    const elsewhere = focusControl();
+    const owner = documentWith(elsewhere);
+    const group = createBusyGroup({ focusOwner: owner });
+    group.add(registered);
+
+    group.setBusy(true);
+    owner.activeElement = owner.body;
+    group.setBusy(false);
+
+    expect(registered.focused).toBe(0);
+  });
+
+  it('does not take focus back from a player who moved it while the command was in flight', () => {
+    // Tabbing away during a request is a deliberate act, and the controls this
+    // group owns are all disabled at that moment, so wherever focus went is
+    // somewhere else on the page. Restoring would be a theft, not a restore.
+    const pressed = focusControl();
+    const owner = documentWith(pressed);
+    const group = createBusyGroup({ focusOwner: owner });
+    group.add(pressed);
+
+    group.setBusy(true);
+    owner.activeElement = 'a control outside this group';
+    group.setBusy(false);
+
+    expect(pressed.focused).toBe(0);
+  });
+
+  it('does not focus a control that the panel hid while the command was in flight', () => {
+    // The Build panel's queue rows are pooled and their Cancel buttons are
+    // registered once at mount (`src/ui/hud/build-panel.ts`). Cancelling the
+    // last order hides the row, so the control the group is about to re-enable
+    // is one nothing can focus -- and focusing it would leave the page with a
+    // hidden `activeElement` rather than merely a blurred one.
+    const pressed = focusControl();
+    const owner = documentWith(pressed);
+    const group = createBusyGroup({ focusOwner: owner });
+    group.add(pressed);
+
+    group.setBusy(true);
+    owner.activeElement = owner.body;
+    pressed.hidden = true;
+    group.setBusy(false);
+
+    expect(pressed.focused).toBe(0);
+  });
+
+  it('does not focus a control that is still disabled for a reason of its own', () => {
+    // Modelled with a control the group does not get to enable, because that is
+    // what "disabled for a reason of its own" means: the Staff panel's *Hire*
+    // is disabled until a role row is chosen (`src/ui/hud/staff-panel.ts`) and
+    // the panel is the authority on that, whatever the group last wrote.
+    const pressed = focusControl();
+    // Defined after construction rather than passed in: an object spread reads
+    // an accessor and copies its *value*, so a getter in the literal would
+    // have become a plain property the group could then write to -- which is
+    // how this case first passed for the wrong reason.
+    Object.defineProperty(pressed, 'disabled', {
+      get: () => true,
+      set: () => {
+        /* the panel owns this control's enabled state, whatever the group writes */
+      },
+    });
+    const owner = documentWith(pressed);
+    const group = createBusyGroup({ focusOwner: owner });
+    group.add(pressed);
+
+    group.setBusy(true);
+    owner.activeElement = owner.body;
+    group.setBusy(false);
+
+    expect(pressed.focused).toBe(0);
+  });
+
+  it('gives the keyboard to the row that replaced the one the action rebuilt', () => {
+    /*
+     * The save panel's own case (`src/ui/save-panel.ts`). `requestLoad`
+     * refreshes the list from *inside* its action, so the row that was pressed
+     * is dropped from the group and detached before the gate clears, and the
+     * element the group remembered can never be focused again.
+     *
+     * The `focusKey` is what carries the keyboard across that: it names the
+     * control by what it does and which prison it does it to, so the rebuilt
+     * row's own button -- a different node with the same job -- inherits it.
+     */
+    const pressed = focusControl();
+    const owner = documentWith(pressed);
+    const group = createBusyGroup({ focusOwner: owner });
+    group.add(pressed, 'load:alpha');
+
+    group.setBusy(true);
+    owner.activeElement = owner.body;
+    pressed.isConnected = false;
+    group.clear();
+    const rebuilt = focusControl();
+    const neighbour = focusControl();
+    group.add(rebuilt, 'load:alpha');
+    group.add(neighbour, 'delete:alpha');
+    group.setBusy(false);
+
+    expect(rebuilt.focused).toBe(1);
+    expect(neighbour.focused).toBe(0);
+    expect(pressed.focused).toBe(0);
+  });
+
+  it('prefers a live control with the same key over a registered one that can no longer take focus', () => {
+    /*
+     * `clear()` is deliberately *not* called here, which is the whole
+     * difference from the case above. A group whose rows are re-registered
+     * without being dropped still holds the control that was pressed, and that
+     * one is hidden rather than detached -- so "give it back to the control
+     * that held it" has to mean "if it can still hold it", or the key would
+     * only ever be consulted for a caller that had happened to call `clear()`
+     * first. The key is what says the two are the same control; whether the
+     * group was tidied is not part of that.
+     */
+    const pressed = focusControl();
+    const owner = documentWith(pressed);
+    const group = createBusyGroup({ focusOwner: owner });
+    group.add(pressed, 'load:alpha');
+
+    group.setBusy(true);
+    owner.activeElement = owner.body;
+    pressed.hidden = true;
+    const rebuilt = focusControl();
+    group.add(rebuilt, 'load:alpha');
+    group.setBusy(false);
+
+    expect(rebuilt.focused).toBe(1);
+    expect(pressed.focused).toBe(0);
+  });
+
+  it('focuses nothing when the rebuilt list no longer holds that control at all', () => {
+    // `requestDelete` is the case: the prison is gone, so no row replaces the
+    // one that was pressed. A control that is really gone is not a control that
+    // moved, and there is nothing here that knows what should stand in for it.
+    const pressed = focusControl();
+    const owner = documentWith(pressed);
+    const group = createBusyGroup({ focusOwner: owner });
+    group.add(pressed, 'delete:alpha');
+
+    group.setBusy(true);
+    owner.activeElement = owner.body;
+    pressed.isConnected = false;
+    group.clear();
+    const survivor = focusControl();
+    group.add(survivor, 'delete:beta');
+    group.setBusy(false);
+
+    expect(survivor.focused).toBe(0);
+    expect(pressed.focused).toBe(0);
+  });
+
+  it('focuses nothing when a keyless control is rebuilt away', () => {
+    // A control registered without a key is one built once and kept, so a
+    // detached one is a bug elsewhere rather than a row that moved. The group
+    // leaves the keyboard where the browser put it rather than guessing.
+    const pressed = focusControl();
+    const owner = documentWith(pressed);
+    const group = createBusyGroup({ focusOwner: owner });
+    group.add(pressed);
+
+    group.setBusy(true);
+    owner.activeElement = owner.body;
+    pressed.isConnected = false;
+    group.clear();
+    const replacement = focusControl();
+    group.add(replacement);
+    group.setBusy(false);
+
+    expect(replacement.focused).toBe(0);
+    expect(pressed.focused).toBe(0);
+  });
+
+  it('works with no document at all, which is what the unit environment is', () => {
+    // `vitest.config.ts` runs `environment: 'node'`, so `globalThis.document`
+    // is undefined and the default focus owner is too. Nothing here may throw
+    // on that path, or every existing caller of `createBusyGroup()` would.
+    const group = createBusyGroup();
+    const control = focusControl();
+    group.add(control);
+    expect(() => {
+      group.setBusy(true);
+      group.setBusy(false);
+    }).not.toThrow();
+    expect(control.focused).toBe(0);
+    expect(control.disabled).toBe(false);
+  });
+});
+
 describe('runReported: a notification that must not block and must not leak', () => {
   it('owns a rejection from an async notification', async () => {
     const failures: AsyncActionFailure[] = [];

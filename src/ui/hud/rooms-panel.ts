@@ -3,6 +3,7 @@ import type { MessageParameters } from '../../services/localization/format';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
 import { describeBy, element, eyebrowText, nextUiId, valueText } from '../primitives/dom';
+import { ambientFocusOwner, handOffFocus, holdsFocus } from '../primitives/focus-handoff';
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createNumberField, type NumberField } from '../primitives/number-field';
 import { createPanel } from '../primitives/panel';
@@ -824,6 +825,34 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   });
   removeButton.element.classList.add('hud-rooms__remove');
 
+  /**
+   * Hands the keyboard on when this row swaps one pair of controls for the
+   * other.
+   *
+   * The confirm row is four controls sharing one 44px box, of which two are
+   * `hidden` at any moment (`paintActions`), and `hidden` blurs whatever was
+   * standing on it. Pressing *Designate* therefore drops a keyboard player at
+   * the top of the document **before** the command is even dispatched -- so
+   * this is not the busy group's loss to give back (`createBusyGroup` in
+   * `src/ui/primitives/async-action.ts` only restores focus it took by
+   * disabling), and it has to be handed on here, by the surface that knows
+   * which control replaced which.
+   *
+   * *Arm* is where it goes, for both the confirm and the cancel: it is the
+   * control that takes the same place in the same row, and it is what a player
+   * who has just designated a room reaches for to draw the next one. It is
+   * read **before** the repaint, because after it the element is already
+   * hidden and already blurred, and `handOffFocus` declines when *Arm* is
+   * disabled for want of a selected room type -- which leaves focus where the
+   * browser put it rather than forcing it somewhere useless.
+   */
+  const handConfirmRowFocusToArm = (from: HTMLElement): (() => void) => {
+    const held = holdsFocus(ambientFocusOwner(), from);
+    return () => {
+      if (held) handOffFocus(armButton.element);
+    };
+  };
+
   const confirmButton: ActionButton = createActionButton({
     label: t(HUD_MESSAGE_KEY.roomsConfirm, { width: 0, height: 0 }),
     tone: 'primary',
@@ -831,10 +860,12 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     onActivate: () => {
       const rectangle = pending;
       if (rectangle === undefined) return;
+      const handOn = handConfirmRowFocusToArm(confirmButton.element);
       if (removing) {
         pending = undefined;
         pendingEnclosure = undefined;
         paintActions();
+        handOn();
         options.onRemove(rectangle);
         return;
       }
@@ -846,6 +877,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       pending = undefined;
       pendingEnclosure = undefined;
       paintActions();
+      handOn();
       options.onDesignate({ roomId, area: rectangle });
     },
   });
@@ -854,9 +886,11 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   const cancelButton: ActionButton = createActionButton({
     label: t(HUD_MESSAGE_KEY.roomsCancel),
     onActivate: () => {
+      const handOn = handConfirmRowFocusToArm(cancelButton.element);
       pending = undefined;
       pendingEnclosure = undefined;
       paintActions();
+      handOn();
     },
   });
   cancelButton.element.classList.add('hud-rooms__cancel');

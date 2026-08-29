@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { procurableMaterial } from '../../src/content/procurement-catalog';
 import { SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
@@ -15,7 +15,7 @@ import { HUD_TAB_IDS } from '../../src/ui/hud';
  *
  * Every other spec in this directory drives a purpose-built harness page.
  * That is the right shape for a module under test, but it means nothing so
- * far has ever loaded the page a player loads. Fourteen claims only exist once
+ * far has ever loaded the page a player loads. Fifteen claims only exist once
  * the pieces are assembled in a browser, and none of them can be settled a
  * layer down (the count is this list's own length, and it read "six" while
  * the list held seven):
@@ -139,6 +139,22 @@ import { HUD_TAB_IDS } from '../../src/ui/hud';
  *    `tests/browser/ui-shell.spec.ts` covers the control and its four
  *    refusals against a stub; only here are the bytes the page produced the
  *    same bytes it reads.
+ *
+ * 15. **A command press leaves the keyboard somewhere a player can use.**
+ *    Every command-issuing control in the HUD shares one `BusyGroup`, which
+ *    disables all of them while a command is in flight -- and a disabled
+ *    element is blurred by the browser, which re-enabling does not undo. So
+ *    every command in the game returned a keyboard player to the top of the
+ *    document. The rules for giving focus back are pure predicates and are
+ *    proven headlessly (`tests/unit/ui-focus-handoff.test.ts`,
+ *    `tests/unit/ui-async-action-gate.test.ts`); what only a browser can
+ *    settle is that `disabled` and `hidden` really blur, that
+ *    `document.activeElement` really lands on `<body>`, and that the one group
+ *    really is wired to the status strip, four HUD panels and a save panel
+ *    mounted into the HUD by `bootPersistence` -- which no harness page has all
+ *    of at once. The Rooms panel's *Designate* is in the same test for the
+ *    opposite reason: it hides itself before it dispatches, so the group never
+ *    sees it hold focus and the hand-off has to come from the panel.
  *
  * Deliberately NOT here, because a headless test already proves it and a
  * browser test that repeats one costs a minute of CI and adds no evidence:
@@ -925,6 +941,44 @@ async function installTrustedPointerTripwire(page: Page): Promise<void> {
     document.addEventListener('pointerdown', record, true);
     document.addEventListener('mousedown', record, true);
   });
+}
+
+/**
+ * Every `aria-busy` transition the page makes, in order.
+ *
+ * The busy group writes that attribute on every control it owns on both
+ * transitions (`src/ui/primitives/async-action.ts`), so this is the page's own
+ * record of which control was busy and when. It exists to close one hole in
+ * the keyboard test below: a press the *gate* refuses -- `run` answers
+ * `refused-busy` and calls no handler -- never disables anything, so the
+ * control keeps the focus it already had and a test that only looked at where
+ * focus ended would pass for a press that was never a command at all.
+ * `data-action-failed` cannot see that case, because a refused-busy press is
+ * not a failure and is reported to nobody.
+ *
+ * Recorded by the page rather than polled, because the busy window is one
+ * `await` long and a poll would miss it.
+ */
+interface BusyChangeRecorder {
+  __busyChanges?: string[];
+}
+
+async function installBusyTransitionRecorder(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const store = window as unknown as BusyChangeRecorder;
+    store.__busyChanges = [];
+    new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        const target = mutation.target;
+        if (!(target instanceof Element)) continue;
+        (store.__busyChanges ??= []).push(`${target.className}=${target.getAttribute('aria-busy') ?? ''}`);
+      }
+    }).observe(document, { attributes: true, attributeFilter: ['aria-busy'], subtree: true });
+  });
+}
+
+async function busyChanges(page: Page): Promise<readonly string[]> {
+  return page.evaluate(() => (window as unknown as BusyChangeRecorder).__busyChanges ?? []);
 }
 
 async function trustedPresses(page: Page): Promise<readonly string[]> {
@@ -4680,6 +4734,411 @@ test.describe('the assembled application', () => {
       await trustedPresses(page),
       'a pointer press reached the page, so this test did not prove a keyboard-only route',
     ).toEqual([]);
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    expect(
+      await trustedPresses(page),
+      'the tripwire recorded nothing for a real pointer press, so it was never watching',
+    ).not.toEqual([]);
+  });
+
+
+  /**
+   * Where the keyboard is left after a command, measured on every control that
+   * issues one (the accessibility playtest of 2026-08-29).
+   *
+   * ### What was measured, and what it cost a player
+   *
+   * Every command-issuing control in the HUD shares one `BusyGroup`, and
+   * dispatching a command sets `disabled` on all of them
+   * (`src/ui/primitives/async-action.ts`, `src/ui/hud/hud.ts`). Disabling the
+   * element that holds focus blurs it to `<body>`, and re-enabling it a moment
+   * later does not undo that. So a keyboard player was returned to the top of
+   * the document by *every command in the game* -- Buy, Place order, Designate,
+   * Hire, Admit, New prison and every transport press -- whether the command
+   * succeeded or was refused.
+   *
+   * The Rooms panel's *Designate* reached the same end by a different road,
+   * which is why it is measured here rather than assumed to follow: that
+   * control **hides itself** before it dispatches (`paintActions` swaps the
+   * confirm pair for the arm pair in `src/ui/hud/rooms-panel.ts`), so it is
+   * already blurred by the time the busy group sees it and no amount of
+   * restoring inside the group can reach it. It is handed on by the panel, to
+   * the control that took its place in the same row.
+   *
+   * ### Why this is a browser test and why it is here
+   *
+   * The *rules* -- give back only focus you took, only while nobody else has
+   * claimed it, only to a control that can hold it -- are pure predicates and
+   * are proven in the `node` environment by
+   * `tests/unit/ui-async-action-gate.test.ts` and
+   * `tests/unit/ui-focus-handoff.test.ts`, per the pairing rule in
+   * `docs/TESTING.md`. What no unit test can reach is that a real browser
+   * really blurs a control it disables, that `document.activeElement` really
+   * ends on `<body>`, and that the group really is wired to the five panels.
+   * `vitest.config.ts` runs `environment: 'node'` with no jsdom, so the whole
+   * of that is invisible one layer down.
+   *
+   * It belongs in *this* file rather than in `ui-shell.spec.ts` because the
+   * claim is about the assembled application: one busy group is shared by the
+   * status strip and five panels that are built separately, and the save panel
+   * -- which has two busy groups of its own -- is mounted into the HUD's aside
+   * slot by `bootPersistence`. No harness page has all of them.
+   *
+   * ### Every command below really is a command
+   *
+   * A press that was quietly refused would drop focus the same way, so a test
+   * that did not check would prove nothing about the working case. Each record
+   * carries the control's own `data-action-failed`, which `createHud` sets on
+   * a host refusal, and the refusal line is asserted hidden -- and the prison,
+   * the walls, the room and the admission are each asserted to have happened.
+   */
+  test('every command hands the keyboard back to the control that issued it', async ({ page }) => {
+    /*
+     * Slow for the reason `zones a room and admits a prisoner` above is slow,
+     * and the same ten wall segments are behind it: ADR 0045 makes an enclosed
+     * perimeter a precondition of `zone`, so a *successful* Designate cannot be
+     * reached without building one first. Measured end to end at ~110 s.
+     *
+     * **`test.slow()` is not enough, and the ~110 s above is why it looked as
+     * though it were.** That figure is real and was taken on an idle machine;
+     * `test.slow()` triples the 60 s budget to 180 s, which reads like 60 s of
+     * headroom. It is not, because this test's cost is dominated by keyboard
+     * round trips through the assembled page -- six command presses, each
+     * reached by a `Tab` walk that costs one `page.evaluate` per press -- and
+     * that cost scales with how contended the machine is rather than with
+     * anything the test does. Re-measured on this branch with three other
+     * Playwright runs live (load average ~9): **2.8 min**, or 93% of the 180 s
+     * budget, and two earlier runs at the same load went over it and failed --
+     * on `keyboard.press` once and on `locator.getAttribute` the next, which
+     * is the signature of a test running out of time rather than of any one
+     * step being wrong.
+     *
+     * So the budget is set explicitly, and against the *contended* measurement
+     * rather than the idle one. 300 s is ~1.8x the loaded figure. This is not
+     * a timeout raised over a flaky assertion: nothing below is weakened,
+     * nothing polls for longer, and every press is still asserted to have been
+     * a real command before its focus is read. It is a budget set against the
+     * conditions CI actually runs in.
+     *
+     * Recorded because it was nearly misdiagnosed: those two failures were
+     * first read as a Tab walk broken by the Build catalogue's roving tab stop
+     * (#524), which had landed on `main` between this branch's base and its
+     * merge. An A/B of this test on the pre-merge commit and on the merge, at
+     * recorded load, killed that: **2.8 min passing before, 2.7 min passing
+     * after**. #524 shortened the Build walk from 43 presses to 23, so if
+     * anything it made this test faster, which is what the second figure says.
+     */
+    test.setTimeout(300_000);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await installTrustedPointerTripwire(page);
+    await installBusyTransitionRecorder(page);
+    await openApp(page);
+
+    const metric = (id: string) => page.locator(`[data-metric="${id}"] .ui-stat__value`);
+
+    /** What one command press did to the keyboard. */
+    interface KeyboardRecord {
+      readonly command: string;
+      /** Where the keyboard should be afterwards, named for a failure message. */
+      readonly wanted: string;
+      /** Where it actually was, in enough detail to name the control. */
+      readonly focus: string;
+      /** The pressed control's `data-action-failed`; `null` is "the host took it". */
+      readonly refused: string | null;
+      /** Whether *this* press really put the control into a busy cycle of its own. */
+      readonly dispatched: boolean;
+      readonly kept: boolean;
+    }
+    const records: KeyboardRecord[] = [];
+
+    /**
+     * Presses the control that has focus, waits out the busy cycle it starts,
+     * and records what the press did to the keyboard.
+     *
+     * `aria-busy` is the condition rather than a timeout: the busy group writes
+     * it on every control it owns on both transitions, so `"false"` again is
+     * the exact moment the group has finished re-enabling and has had its one
+     * chance to give focus back. Waiting a fixed number of milliseconds would
+     * measure the scheduler as much as the page.
+     *
+     * `settle` is each caller's own proof that the command reached the host and
+     * came back -- a count that moved, a refusal line that stayed down -- and it
+     * runs before the attribute is read, so the wait is never the whole of the
+     * evidence.
+     *
+     * The transitions recorded *since this press* are what make `dispatched`
+     * mean this press: several of these controls are pressed earlier in the
+     * route by `wallRectanglesFromTheKeyboard`, so a mark taken before the key
+     * goes down is the difference between "this control was busy at some point"
+     * and "this press made it busy".
+     */
+    const pressAndRecord = async (
+      command: string,
+      pressed: Locator,
+      wanted: FocusTarget,
+      wantedName: string,
+      settle: () => Promise<void>,
+    ): Promise<void> => {
+      const mark = (await busyChanges(page)).length;
+      await page.keyboard.press('Enter');
+      await settle();
+      await expect(pressed, `${command} never came back from its busy cycle`).toHaveAttribute(
+        'aria-busy',
+        'false',
+      );
+      const className = (await pressed.getAttribute('class')) ?? '';
+      const since = (await busyChanges(page)).slice(mark);
+      records.push({
+        command,
+        wanted: wantedName,
+        focus: await focusedControl(page),
+        refused: await pressed.getAttribute('data-action-failed'),
+        dispatched: since.includes(`${className}=true`),
+        kept: await focusIs(page, wanted),
+      });
+    };
+
+    // ---- the save panel's own busy group -------------------------------
+    const createButton: FocusTarget = {
+      selector: '.save-panel__button',
+      text: localeText('save.action.create'),
+    };
+    await tabTo(page, 'the New prison button', createButton);
+    await pressAndRecord(
+      'New prison',
+      page.locator('.save-panel__button', { hasText: localeText('save.action.create') }),
+      createButton,
+      'the New prison button',
+      async () => {
+        await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+      },
+    );
+
+    // ---- a walled cell, so the Designate below is a real one ------------
+    const cell: TileRectangle = { x: 4, y: 4, width: 2, height: 3 };
+    await wallRectanglesFromTheKeyboard(page, [cell]);
+
+    /*
+     * ---- Buy, measured on a purchase of its own -------------------------
+     *
+     * The helper above already buys, and deliberately is not measured through:
+     * it presses *Buy* once among thirty other presses and this test would then
+     * be asserting against a control state several hops old. One more brick,
+     * pressed here, is a purchase the same code path answers and one this test
+     * owns from press to record.
+     *
+     * Backwards to the tab bar and backwards again into the panel, for the
+     * reason `wallRectanglesFromTheKeyboard` gives: with the Build tab showing,
+     * the catalogue is twenty-one tab stops between the top of the page and
+     * this panel, and forwards from the status strip is past
+     * `MAX_TAB_PRESSES_PER_HOP`.
+     */
+    await shiftTabTo(page, 'the Build tab', { selector: '.ui-tab[data-tab="build"]' });
+    const buyToggle = page.locator('.hud-build__buy-toggle');
+    await shiftTabTo(page, 'the buy disclosure', { selector: '.hud-build__buy-toggle' });
+    if ((await buyToggle.getAttribute('aria-expanded')) === 'false') await page.keyboard.press('Enter');
+    await expect(page.locator('.hud-build__buy')).toBeVisible();
+    await tabTo(page, 'the buy quantity field', { selector: '.hud-build__buy .ui-number__input' });
+    await page.keyboard.press('Control+a');
+    await page.keyboard.type('1');
+    await page.keyboard.press('Enter');
+    const buySubmit: FocusTarget = { selector: '.hud-build__buy-submit' };
+    await tabTo(page, 'the buy control', buySubmit);
+    await pressAndRecord(
+      'Buy',
+      page.locator('.hud-build__buy-submit'),
+      buySubmit,
+      'the Buy control',
+      async () => {
+        await expect(page.locator('.hud__refusal'), 'the extra brick was refused').toBeHidden();
+      },
+    );
+
+    // Folded again, so the panel is left the shape the helper left it.
+    await shiftTabTo(page, 'the buy disclosure', { selector: '.hud-build__buy-toggle' });
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.hud-build__buy')).toBeHidden();
+
+    /*
+     * ---- Place order, on one more wall segment --------------------------
+     *
+     * Away from the cell the room is zoned in, at a tile nothing else in this
+     * test touches, so a segment that does or does not get built cannot change
+     * what the Designate below is answered with.
+     */
+    const coordinates = page.locator('.hud-build__coordinates');
+    await tabTo(page, 'the Build panel coordinates disclosure', {
+      selector: '.hud-build__coordinates > .ui-section__header',
+    });
+    if ((await coordinates.getAttribute('data-collapsed')) === 'true') await page.keyboard.press('Enter');
+    await expect(coordinates).toHaveAttribute('data-collapsed', 'false');
+    await tabTo(page, 'the Tile X field', { selector: BUILD_TILE_X_FIELD });
+    await page.keyboard.press('Control+a');
+    await page.keyboard.type('16');
+    await tabTo(page, 'the Tile Y field', { selector: BUILD_TILE_Y_FIELD });
+    await page.keyboard.press('Control+a');
+    await page.keyboard.type('16');
+    const placeOrder: FocusTarget = { selector: '.hud-build__coordinates .ui-action' };
+    await tabTo(page, 'the Place order control', placeOrder);
+    await pressAndRecord(
+      'Place order',
+      page.locator('.hud-build__coordinates .ui-action'),
+      placeOrder,
+      'the Place order control',
+      async () => {
+        await expect(page.locator('.hud__refusal'), 'the extra wall order was refused').toBeHidden();
+      },
+    );
+
+    // Folded again: with the section open the next hop to another tab is 49
+    // presses and `MAX_TAB_PRESSES_PER_HOP` is 48 -- the helper's own note.
+    await shiftTabTo(page, 'the Build panel coordinates disclosure', {
+      selector: '.hud-build__coordinates > .ui-section__header',
+    });
+    await page.keyboard.press('Enter');
+    await expect(coordinates).toHaveAttribute('data-collapsed', 'true');
+
+    /*
+     * ---- Designate, the one that is not the busy group's to give back ----
+     */
+    await tabTo(page, 'the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.hud-rooms')).toBeVisible();
+    await chooseRoomTypeFromTheKeyboard(page, 'room.cell');
+    await tabTo(page, 'the coordinates disclosure', {
+      selector: '.hud-rooms__coordinates > .ui-section__header',
+    });
+    if ((await page.locator('.hud-rooms__coordinates').getAttribute('data-collapsed')) === 'true') {
+      await page.keyboard.press('Enter');
+    }
+    for (const [field, value] of [
+      ['x', cell.x],
+      ['y', cell.y],
+      ['width', cell.width],
+      ['height', cell.height],
+    ] as const) {
+      await typeCoordinate(page, field, value);
+    }
+    await tabTo(page, 'the form control', { selector: '.hud-rooms__coordinates-submit' });
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.hud-rooms__area')).toHaveAttribute(
+      'data-area',
+      `${cell.x},${cell.y},${cell.width},${cell.height}`,
+    );
+    await tabTo(page, 'the confirm control', { selector: '.hud-rooms__confirm' });
+    /*
+     * *Arm*, not *Designate*. The control that was pressed is `hidden` by the
+     * time the command is dispatched -- it is one of four controls sharing one
+     * 44px row, of which two show at a time -- so there is nothing to give the
+     * keyboard back to. It goes to the control that took its place in that row,
+     * which is also the one a player who has just designated a room reaches for
+     * to draw the next.
+     */
+    await pressAndRecord(
+      'Designate',
+      page.locator('.hud-rooms__confirm'),
+      { selector: '.hud-rooms__arm' },
+      'the Arm control that replaced it',
+      async () => {
+        // A room the worker really accepted. Since ADR 0051 the count moves on
+        // this press rather than on a later Play, which is why nothing is
+        // resumed first.
+        await expect(
+          metric('rooms'),
+          'no room reached the worker, so this Designate was refused',
+        ).toHaveText('1');
+      },
+    );
+
+    // ---- Hire ------------------------------------------------------------
+    await tabTo(page, 'the Security tab', { selector: '.ui-tab[data-tab="security"]' });
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.hud-staff')).toBeVisible();
+    await tabTo(page, 'a staff role row', { selector: '.hud-staff__list [data-staff-role]' });
+    await page.keyboard.press('Enter');
+    // A vacuity guard rather than a claim, and the reason it gives is not the
+    // one written here first.
+    //
+    // This comment said "*Hire* is disabled until a role is chosen
+    // (`src/ui/hud/staff-panel.ts`), so an unchosen row would make the press
+    // below a press on a disabled control." **That is false**, and it was
+    // false when written: `staff-panel.ts` opens with
+    // `let selectedId = model.roles[0]?.staffRoleId`, so the first role is
+    // already chosen before anything is pressed, and `HIREABLE_STAFF_ROLE_IDS`
+    // holds exactly one id (`src/main.ts`) -- so there is no state in this
+    // build where the list has a row and *Hire* is disabled. Measured by
+    // playing: the control arrives reading `Hire Guard · 80` with
+    // `disabled: false`, before any row is clicked.
+    //
+    // The guard is kept, because what it actually rules out is the case the
+    // press above failed to reach a row at all -- `tabTo` landing somewhere
+    // else, or the catalogue rendering empty -- which would leave the record
+    // below describing a press on a control the test never found. That is a
+    // different vacuity from the one the old sentence named, and it is the
+    // one this assertion can see.
+    await expect(
+      page.locator('.hud-staff__list [data-selected="true"]'),
+      'no staff role was chosen, so the Hire press below has no subject',
+    ).toHaveCount(1);
+    const hire: FocusTarget = { selector: '.hud-staff__hire' };
+    await tabTo(page, 'the Hire control', hire);
+    await pressAndRecord('Hire', page.locator('.hud-staff__hire'), hire, 'the Hire control', async () => {
+      await expect(metric('staff'), 'nobody was hired, so this Hire was refused').toHaveText('1');
+    });
+
+    // ---- Admit -----------------------------------------------------------
+    await tabTo(page, 'the Overview tab', { selector: '.ui-tab[data-tab="overview"]' });
+    await page.keyboard.press('Enter');
+    const admit: FocusTarget = { selector: '.hud-intake__admit' };
+    await tabTo(page, 'the Admit control', admit);
+    await pressAndRecord('Admit', page.locator('.hud-intake__admit'), admit, 'the Admit control', async () => {
+      await expect(metric('prisoners'), 'nobody was admitted, so this Admit was refused').toHaveText('1');
+    });
+
+    // ---- what the six presses did to the keyboard ------------------------
+    const summary = records
+      .map(
+        (record) =>
+          `${record.command} -> ${record.focus} (wanted ${record.wanted}; data-action-failed=${String(record.refused)}; dispatched=${String(record.dispatched)})`,
+      )
+      .join('\n  ');
+    // First, that every press really was a command the host took, from both
+    // ends. A press the gate refused as busy never disables anything, so the
+    // control keeps the focus it already had -- which would pass the assertion
+    // below for a press that was never a command; and a press the host refused
+    // drops focus exactly as a successful one did. Neither is what this test is
+    // about, and neither is visible in where focus ended up.
+    expect(
+      records.filter((record) => !record.dispatched).map((record) => record.command),
+      `a press never started a busy cycle of its own, so no command was issued:\n  ${summary}`,
+    ).toEqual([]);
+    expect(
+      records.filter((record) => record.refused !== null).map((record) => record.command),
+      `a command was refused on this thread, so its record is about a refusal:\n  ${summary}`,
+    ).toEqual([]);
+    expect(
+      records.filter((record) => !record.kept).map((record) => record.command),
+      `a command press dropped the keyboard:\n  ${summary}`,
+    ).toEqual([]);
+    // And every command was actually pressed, rather than the filters above
+    // quietly matching an empty list because a step was reworded away.
+    expect(records.map((record) => record.command), `the route was not walked:\n  ${summary}`).toEqual([
+      'New prison',
+      'Buy',
+      'Place order',
+      'Designate',
+      'Hire',
+      'Admit',
+    ]);
+
+    // ---- the tripwire -----------------------------------------------------
+    expect(
+      await trustedPresses(page),
+      'a pointer press reached the page, so this test did not prove a keyboard-only route',
+    ).toEqual([]);
+    // And the recorder was live throughout, which is the half that stops the
+    // assertion above from being a green light for a listener that never
+    // attached. One deliberate pointer press, after every claim is made.
     await page.locator('.ui-tab[data-tab="build"]').click();
     expect(
       await trustedPresses(page),
