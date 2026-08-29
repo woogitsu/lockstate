@@ -17,7 +17,9 @@ import {
   projectStatusStrip,
   toBoundedValue,
 } from '../../src/simulation/presentation';
+import type { RoomDetailViewModel, RoomListViewModel } from '../../src/simulation/presentation/room-projection';
 import { placedObjectAt } from '../../src/simulation/objects';
+import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catalog';
 import type { AccommodationPolicy } from '../../src/simulation/prisoners/intake-system';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -618,6 +620,285 @@ describe('room list and detail', () => {
   it('returns undefined for an unregistered instance id', () => {
     const runtime = runScenario();
     expect(projectRoomDetail(runtime.prisoners, 'no-such-room')).toBeUndefined();
+  });
+});
+
+/**
+ * Issue #528: the authored `minQuantity` on an `object` requirement, which
+ * `requirementStatus` never read.
+ *
+ * `room.canteen` asks for two dining tables and four benches
+ * (`src/content/room-catalog.ts`), and one of each read the room finished --
+ * not cosmetically, because the concurrent-use ceiling is footprint-derived, so
+ * a canteen the panel called finished seated three diners rather than six.
+ *
+ * ## Every fixture below is a real session
+ *
+ * `createNewSimulationRuntime`, real `PlacedObject` rows through
+ * `PlacedObjectRegistry.place`, and the real `RoomCapacityResolver` writing the
+ * derived fields -- the same shape `buildAccommodationPrison` above uses, and
+ * for the same reason: an instance whose `objectCapabilities` are typed into the
+ * fixture proves only that the fixture and the assertion agree. The rooms are
+ * registered directly rather than zoned, because `ZoneRoom` needs a walled,
+ * enclosed rectangle and what is under test is the projection rather than the
+ * zoning gate; `tests/integration/furnished-prison-loop.test.ts` is the same
+ * assertion off real `ZoneRoom` and `PlaceObject` commands.
+ *
+ * ## Every expected count is a literal read off the catalogues
+ *
+ * `room.canteen` -> 2 dining tables and 4 benches. `room.classroom` -> 1
+ * bookshelf and 4 chairs. `room.reception` -> 1 desk and 2 chairs.
+ * `room.security-office` -> 1 security console. Written out here rather than
+ * read from `defaultRoomContentRegistry`, so a requirement edited to `1` would
+ * fail these instead of moving with them.
+ */
+describe('room requirement quantities (#528)', () => {
+  const TILE = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
+
+  interface FurnishedRoom {
+    readonly instanceId: string;
+    readonly roomCatalogId: string;
+    readonly anchorTile: { readonly x: number; readonly y: number };
+    readonly width: number;
+    readonly height: number;
+    /** `[objectId, anchor]`, anchors chosen so no two footprints overlap. */
+    readonly objects: readonly (readonly [string, { readonly x: number; readonly y: number }])[];
+  }
+
+  function furnish(rooms: readonly FurnishedRoom[]): SimulationRuntime {
+    const runtime = createNewSimulationRuntime(SCENARIO_SEED);
+    for (const room of rooms) {
+      runtime.prisoners.roomInstances.register({
+        instanceId: room.instanceId,
+        roomCatalogId: room.roomCatalogId,
+        anchorTile: room.anchorTile as never,
+        width: room.width,
+        height: room.height,
+        residentCapacity: 0,
+        concurrentUseCapacity: 0,
+        objectCapabilities: [],
+      });
+      for (const [objectId, anchor] of room.objects) {
+        if (!runtime.placedObjects.place(placedObjectAt(objectId, anchor as never, 0))) {
+          throw new Error(`the fixture's ${objectId} at (${anchor.x}, ${anchor.y}) must be placeable`);
+        }
+      }
+    }
+    runtime.roomCapacity.resolveAll();
+    return runtime;
+  }
+
+  /** The requirement statuses one room reads, keyed by the object id each names. */
+  function statuses(runtime: SimulationRuntime, instanceId: string): Record<string, string> {
+    const detail = projectRoomDetail(runtime.prisoners, instanceId, { placedObjects: runtime.placedObjects })!;
+    const byObjectId: Record<string, string> = {};
+    for (const requirement of detail.requirements) {
+      if (requirement.objectId === undefined) continue;
+      byObjectId[requirement.objectId] = requirement.status;
+    }
+    return byObjectId;
+  }
+
+  /** One dining table and one bench: the exact prison issue #528 was played in. */
+  const SHORT_CANTEEN: FurnishedRoom = {
+    instanceId: 'canteen-short',
+    roomCatalogId: 'room.canteen',
+    anchorTile: TILE(8, 8),
+    width: 6,
+    height: 6,
+    objects: [
+      ['object.dining-table', TILE(8, 8)],
+      ['object.bench', TILE(8, 11)],
+    ],
+  };
+
+  /** The same room with the authored two tables and four benches standing in it. */
+  const FULL_CANTEEN: FurnishedRoom = {
+    instanceId: 'canteen-full',
+    roomCatalogId: 'room.canteen',
+    anchorTile: TILE(20, 8),
+    width: 6,
+    height: 6,
+    objects: [
+      ['object.dining-table', TILE(20, 8)],
+      ['object.dining-table', TILE(23, 8)],
+      ['object.bench', TILE(20, 11)],
+      ['object.bench', TILE(22, 11)],
+      ['object.bench', TILE(20, 12)],
+      ['object.bench', TILE(22, 12)],
+    ],
+  };
+
+  it('reads a canteen short of its authored quantities as unfinished', () => {
+    const runtime = furnish([SHORT_CANTEEN]);
+
+    // One of each, against an authored two and four.
+    expect(statuses(runtime, 'canteen-short')).toEqual({
+      'object.dining-table': 'missing-capability',
+      'object.bench': 'missing-capability',
+    });
+    expect(projectRoomDetail(runtime.prisoners, 'canteen-short', { placedObjects: runtime.placedObjects })!.requirementSummary)
+      .toEqual({ total: 4, objectRequirements: 2, satisfiedByCapability: 0, missingCapability: 2, notEvaluated: 2 });
+
+    // And the list projection agrees, which is the number the Rooms panel reads
+    // (`unfinishedRoomIds` filters on `missingCapability > 0`).
+    const row = projectRoomList(runtime.prisoners, {}, { placedObjects: runtime.placedObjects })
+      .rooms.rows.find((candidate) => candidate.instanceId === 'canteen-short')!;
+    expect(row.requirementSummary.missingCapability).toBe(2);
+  });
+
+  it('reads the same canteen finished once the authored two and four stand in it', () => {
+    const runtime = furnish([FULL_CANTEEN]);
+    expect(statuses(runtime, 'canteen-full')).toEqual({
+      'object.dining-table': 'satisfied-by-capability',
+      'object.bench': 'satisfied-by-capability',
+    });
+  });
+
+  it('counts only the objects inside the room\'s own rectangle', () => {
+    // Both canteens in one prison. The short one is one table and one bench
+    // short-of-quantity while six more of the same objects stand 12 tiles away,
+    // so a count that forgot the rectangle would call it finished.
+    const runtime = furnish([SHORT_CANTEEN, FULL_CANTEEN]);
+    expect(statuses(runtime, 'canteen-short')).toEqual({
+      'object.dining-table': 'missing-capability',
+      'object.bench': 'missing-capability',
+    });
+    expect(statuses(runtime, 'canteen-full')).toEqual({
+      'object.dining-table': 'satisfied-by-capability',
+      'object.bench': 'satisfied-by-capability',
+    });
+  });
+
+  /**
+   * Substitution: an object satisfies a requirement when its own capabilities
+   * cover the required object's. That rule is not new here -- it is what
+   * `src/simulation/construction/definition.ts` states about the buildable rows
+   * and calls "the containment rule doing its job" -- and #528 is about the
+   * *count*, so these pin that counting did not quietly change the rule.
+   */
+  it('counts an object whose capabilities cover the required one\'s, in both directions', () => {
+    const runtime = furnish([
+      // Four benches, no chair. `object.bench` is `['seating', 'recreation']`
+      // and `object.chair` is `['seating']`, so each bench covers a chair.
+      {
+        instanceId: 'classroom-benches',
+        roomCatalogId: 'room.classroom',
+        anchorTile: TILE(2, 2),
+        width: 6,
+        height: 5,
+        objects: [
+          ['object.bookshelf', TILE(2, 2)],
+          ['object.bench', TILE(2, 3)],
+          ['object.bench', TILE(4, 3)],
+          ['object.bench', TILE(2, 4)],
+          ['object.bench', TILE(4, 4)],
+        ],
+      },
+      // One bench where four chairs are asked for: covered, and not enough.
+      {
+        instanceId: 'classroom-one-bench',
+        roomCatalogId: 'room.classroom',
+        anchorTile: TILE(10, 2),
+        width: 6,
+        height: 5,
+        objects: [
+          ['object.bookshelf', TILE(10, 2)],
+          ['object.bench', TILE(10, 3)],
+        ],
+      },
+      // A security console covers a desk (`['surveillance', 'workstation']`
+      // over `['workstation']`)...
+      {
+        instanceId: 'reception-console',
+        roomCatalogId: 'room.reception',
+        anchorTile: TILE(2, 10),
+        width: 6,
+        height: 5,
+        objects: [
+          ['object.security-console', TILE(2, 10)],
+          ['object.chair', TILE(2, 11)],
+          ['object.chair', TILE(3, 11)],
+        ],
+      },
+      // ...and a desk does not cover a security console, for want of
+      // `'surveillance'`. Two desks, so this cannot pass on quantity either.
+      {
+        instanceId: 'security-office-desks',
+        roomCatalogId: 'room.security-office',
+        anchorTile: TILE(10, 10),
+        width: 6,
+        height: 5,
+        objects: [
+          ['object.desk', TILE(10, 10)],
+          ['object.desk', TILE(12, 10)],
+        ],
+      },
+    ]);
+
+    expect(statuses(runtime, 'classroom-benches')).toEqual({
+      'object.bookshelf': 'satisfied-by-capability',
+      'object.chair': 'satisfied-by-capability',
+    });
+    expect(statuses(runtime, 'classroom-one-bench')).toEqual({
+      'object.bookshelf': 'satisfied-by-capability',
+      'object.chair': 'missing-capability',
+    });
+    expect(statuses(runtime, 'reception-console')).toEqual({
+      'object.desk': 'satisfied-by-capability',
+      'object.chair': 'satisfied-by-capability',
+    });
+    expect(statuses(runtime, 'security-office-desks')).toEqual({
+      'object.security-console': 'missing-capability',
+    });
+  });
+
+  /**
+   * The documented fallback, and the reason the fix is not a regression for a
+   * save that predates room bounds: with nothing to count, the projection
+   * answers from the instance's capability list exactly as it did before #528.
+   * Both halves are asserted, because "the fallback exists" and "the fallback is
+   * the weaker answer" are different claims.
+   */
+  it('falls back to the capability list when it is handed nothing to count', () => {
+    const runtime = furnish([SHORT_CANTEEN]);
+
+    // No `placedObjects` option: the same short canteen reads finished, which is
+    // precisely the pre-#528 answer and precisely why the worker supplies it.
+    const withoutObjects = projectRoomDetail(runtime.prisoners, 'canteen-short')!;
+    expect(withoutObjects.requirements.filter((requirement) => requirement.type === 'object').map((requirement) => requirement.status))
+      .toEqual(['satisfied-by-capability', 'satisfied-by-capability']);
+
+    // And an instance with no recorded rectangle -- a V4 save's shape -- takes
+    // the same path even when the objects are supplied, because nothing can be
+    // attributed to a room whose rectangle is unknown.
+    runtime.prisoners.roomInstances.register({
+      instanceId: 'canteen-boundless',
+      roomCatalogId: 'room.canteen',
+      anchorTile: TILE(8, 8) as never,
+      residentCapacity: 0,
+      concurrentUseCapacity: 0,
+      objectCapabilities: ['dining', 'recreation', 'seating'],
+    });
+    expect(statuses(runtime, 'canteen-boundless')).toEqual({
+      'object.dining-table': 'satisfied-by-capability',
+      'object.bench': 'satisfied-by-capability',
+    });
+  });
+
+  it('is what the worker actually asks for, so a real session counts', () => {
+    // The wiring and not the rule: `projection-catalog.ts` must hand the
+    // registry over, or every session a player runs takes the fallback above and
+    // #528 is unfixed on screen while every test here passes.
+    const runtime = furnish([SHORT_CANTEEN]);
+
+    const detail = PROJECTION_CATALOG['hud/room-detail'].project(runtime, 0, {
+      target: { kind: 'id', id: 'canteen-short' },
+    }).view as unknown as RoomDetailViewModel | undefined;
+    expect(detail?.requirementSummary.missingCapability).toBe(2);
+
+    const list = PROJECTION_CATALOG['hud/room-list'].project(runtime, 0, {}).view as unknown as RoomListViewModel;
+    expect(list.rooms.rows.find((row) => row.instanceId === 'canteen-short')?.requirementSummary.missingCapability).toBe(2);
   });
 });
 

@@ -108,25 +108,38 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   // content rather than from a constant the service holds.
   'room.garbage-room': 'Declared with no reader anywhere; no build order, job, need or regime action names it.',
   'room.kitchen': 'Declared with no reader anywhere.',
-  // Still unconsumed, but no longer for the reason this entry gave. It read
-  // "intake has no admission path yet (#89)" until an admission path arrived:
-  // `src/main.ts` handles an `admit-prisoner` command (#261 step 4) and the
-  // HUD has a control that produces it. That closed the stated reason without
-  // touching the id, which is why a wrong reason is as much a defect here as a
-  // missing entry -- the next reader would have deleted this line on the
-  // strength of the admission path alone.
+  // `room.reception` and `room.security-office` left this list at #528, and
+  // their entries are gone rather than reworded, which is what the stale-entry
+  // gate below asks for. **Both directions, because the reason one of them gave
+  // has not been falsified.** `room.reception`'s read: *"Declared with no reader
+  // anywhere. Intake has an admission path now (#261), but it names no reception
+  // room: `IntakeSystem`'s `'reception'` stage is a stage of the arrival record
+  // rather than a place, and the only room ids the pipeline names are the
+  // accommodation targets `room.cell` and `room.solitary-cell`."* Every word of
+  // that is still true -- no `src/` file names either room, which is why
+  // `unconsumedBySrcOnly` does not move -- and its own preamble, kept below,
+  // records that the entry had already survived one wrong reason.
   //
-  // What is true instead: the intake pipeline names no room this one could be.
-  // `IntakeSystem` has a `'reception'` *stage*, but it is a stage of the
-  // arrival record, not a place -- the branch for it assigns an identity and
-  // advances to `'classification'`, and it reads no room instance and no tile.
-  // The only room ids the pipeline names at all are the accommodation targets
-  // `room.cell` and `room.solitary-cell`
-  // (`DEFAULT_ACCOMMODATION_POLICY`), and a prisoner is admitted straight into
-  // one of those. Nothing between the command and the cell asks where the
-  // prisoner was processed, so a zoned reception would change nothing today.
-  'room.reception': "Declared with no reader anywhere. Intake has an admission path now (#261), but it names no reception room: `IntakeSystem`'s `'reception'` stage is a stage of the arrival record rather than a place, and the only room ids the pipeline names are the accommodation targets `room.cell` and `room.solitary-cell`.",
-  'room.security-office': 'Declared with no reader anywhere.',
+  // What gained them a consumer is `tests/unit/hud-projections.test.ts`, which
+  // furnishes one of each to pin the requirement rule #528 made countable: a
+  // reception holding a security console reads its **desk** requirement
+  // satisfied, because a console declares everything a desk does; a security
+  // office holding two desks reads its console requirement missing, for want of
+  // `'surveillance'`. The pair are the only two rooms in the catalogue that can
+  // state that asymmetry -- `object.security-console` is required by
+  // `room.security-office` alone -- so the test could not be written without
+  // naming them. Same graduation route as `room.infirmary` and
+  // `object.storage-rack` above: a test that stands a particular object in a
+  // particular room type moves `unconsumedBySrcAndTests` and nothing else.
+  //
+  // The preamble `room.reception` carried, kept because it is the record of a
+  // reason that expired without the id moving: it read "intake has no admission
+  // path yet (#89)" until an admission path arrived -- `src/main.ts` handles an
+  // `admit-prisoner` command (#261 step 4) and the HUD has a control that
+  // produces it. That closed the stated reason without touching the id, which is
+  // why a wrong reason is as much a defect here as a missing entry -- the next
+  // reader would have deleted that line on the strength of the admission path
+  // alone.
   'room.staff-room': 'Declared with no reader anywhere.',
   'room.utility-room': 'Declared with no reader anywhere.',
 
@@ -393,7 +406,16 @@ describe('every unconsumed content id is accounted for', () => {
       // Between them that is the pair ADR 0052's `object.sink` and ADR 0053's
       // staff roles illustrate: a consumer in `src/` moves both counts, a
       // consumer that only reads a field moves one.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 8, unconsumedBySrcOnly: 30 });
+      //
+      // 6, not 8: `room.reception` and `room.security-office` gained test
+      // consumers in `tests/unit/hud-projections.test.ts` at #528, where one of
+      // each is furnished to pin that a security console satisfies a desk
+      // requirement and a desk does not satisfy a console requirement. Their
+      // entries are removed from the list above rather than kept with a new
+      // reason. `unconsumedBySrcOnly` does not move: no `src/` file names either
+      // room, because `requirementStatus` counts objects against whatever room
+      // the instance says it is and writes no room id literal.
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 6, unconsumedBySrcOnly: 30 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

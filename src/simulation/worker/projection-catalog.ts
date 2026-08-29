@@ -77,6 +77,14 @@ import type { SimulationRuntime } from '../runtime/new-session';
  * room-instance-to-sector mapping at all -- `room-projection.ts` says so at
  * length -- and inventing a spatial containment rule *here*, in the wiring,
  * would be the worst place in the repository to decide it.
+ *
+ * `RoomProjectionOptions.placedObjects` **is** supplied, and it is the one
+ * option this file passes. There the spatial rule is not invented here: ADR 0028
+ * decision 2 already states it (an object belongs to the room whose rectangle
+ * contains its anchor), `roomContains` implements it, and the projection reads
+ * that. Without it every `object` requirement falls back to the room's
+ * capability list and ignores its authored `minQuantity`, which is issue #528 --
+ * a canteen with one dining table and one bench reading finished.
  */
 
 /** What one request asks for, after the boundary has validated it. */
@@ -317,7 +325,9 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     paged: true,
     target: 'none',
     project: (runtime, _tick, request) => {
-      const view = projectRoomList(runtime.prisoners, pageRequest(request));
+      const view = projectRoomList(runtime.prisoners, pageRequest(request), {
+        placedObjects: runtime.placedObjects,
+      });
       return { view: view as unknown as JsonValue, page: pageOfView(view.rooms) };
     },
   },
@@ -327,7 +337,9 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     paged: false,
     target: 'id',
     project: (runtime, _tick, request) => {
-      const detail = projectRoomDetail(runtime.prisoners, idTarget(request));
+      const detail = projectRoomDetail(runtime.prisoners, idTarget(request), {
+        placedObjects: runtime.placedObjects,
+      });
       return detail === undefined ? {} : { view: detail as unknown as JsonValue };
     },
   },
