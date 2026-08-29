@@ -141,6 +141,19 @@ async function currentClock(page: Page): Promise<unknown> {
   });
 }
 
+/**
+ * The tab bar, by `data-tab` rather than by accessible name.
+ *
+ * `getByRole('button', { name: 'Build' })` matched two elements once the wall
+ * tool was armed -- the tab and the Build panel's own arm control, whose label
+ * changes -- and a strict-mode violation killed a ten-minute run. A tab is
+ * addressed by its id here for the same reason a test addresses a room row by
+ * `data-room`.
+ */
+function tab(page: Page, id: 'overview' | 'build' | 'rooms' | 'security' | 'regime') {
+  return page.locator(`.hud__tabs [data-tab="${id}"]`);
+}
+
 async function openApp(page: Page): Promise<void> {
   await page.goto(APP_URL);
   await page.waitForSelector('#game-root canvas');
@@ -238,7 +251,7 @@ async function buy(page: Page, buildableId: string, quantity: number): Promise<v
  */
 async function waitForQueueEmpty(page: Page, timeoutMs = 240_000): Promise<number> {
   const started = Date.now();
-  await page.getByRole('button', { name: 'Build' }).click();
+  await tab(page, 'build').click();
   for (;;) {
     const text = await panelText(page, '.hud-build__queue');
     if (/0 waiting . 0 being built/.test(text) || text.includes('not laid out') || text.includes('ABSENT')) {
@@ -262,15 +275,16 @@ async function runUntilTick(page: Page, target: number, timeoutMs = 180_000): Pr
 
 async function fastForwardToMax(page: Page): Promise<void> {
   // 1 -> 2 -> 4. Two presses from a paused/1x clock.
-  await page.getByRole('button', { name: 'Fast forward' }).click();
+  await page.locator('.hud-strip__transport button').nth(2).click();
   await page.waitForTimeout(200);
-  await page.getByRole('button', { name: 'Fast forward' }).click();
+  await page.locator('.hud-strip__transport button').nth(2).click();
   await page.waitForTimeout(200);
 }
 
 interface PrisonOptions {
   readonly beds: number;
   readonly admits: number;
+  readonly guards: number;
   readonly label: string;
 }
 
@@ -284,7 +298,7 @@ async function buildAndPopulate(page: Page, options: PrisonOptions): Promise<{ o
   await page.getByRole('button', { name: 'New prison' }).click();
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
 
-  await page.getByRole('button', { name: 'Build' }).click();
+  await tab(page, 'build').click();
   const origin = await calibrate(page);
   log(`calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
 
@@ -329,7 +343,7 @@ async function buildAndPopulate(page: Page, options: PrisonOptions): Promise<{ o
   let attempts = 0;
   for (;;) {
     attempts += 1;
-    await page.getByRole('button', { name: 'Rooms' }).click();
+    await tab(page, 'rooms').click();
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
@@ -352,7 +366,7 @@ async function buildAndPopulate(page: Page, options: PrisonOptions): Promise<{ o
   log(`zoned after ${attempts} attempt(s), ${Date.now() - zoneStarted}ms after the queue emptied: rooms=${zoned?.rooms} accommodationCapacity=${zoned?.accommodationCapacity}`);
 
   // Beds and a toilet, inside.
-  await page.getByRole('button', { name: 'Build' }).click();
+  await tab(page, 'build').click();
   await armBuildable(page, 'bed-wooden');
   let placed = 0;
   for (const row of [12, 14]) {
@@ -372,11 +386,11 @@ async function buildAndPopulate(page: Page, options: PrisonOptions): Promise<{ o
   const built = await latestCounts(page);
   log(`at tick ${built?.tick}: rooms=${built?.rooms} roomCapacity=${built?.roomCapacity} accommodationCapacity=${built?.accommodationCapacity}`);
   log(`queue: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
-  await page.getByRole('button', { name: 'Rooms' }).click();
+  await tab(page, 'rooms').click();
   log(`rooms panel: ${await panelText(page, '.hud-rooms')}`);
 
   // Admit, from the Overview tab's Intake panel.
-  await page.getByRole('button', { name: 'Overview' }).click();
+  await tab(page, 'overview').click();
   for (let index = 0; index < options.admits; index += 1) {
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(150);
@@ -385,6 +399,20 @@ async function buildAndPopulate(page: Page, options: PrisonOptions): Promise<{ o
   log(`intake panel after ${options.admits} admissions: ${await panelText(page, '.hud-intake')}`);
   log(`no-place warning data: ${await page.locator('.hud-intake__no-place').getAttribute('data-without-place')}`);
   log(`status strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+
+  if (options.guards > 0) {
+    await tab(page, 'security').click();
+    await page.locator('.hud-staff__list [data-staff-role="staff.guard"]').click();
+    log(`hire control reads: ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);
+    for (let index = 0; index < options.guards; index += 1) {
+      await page.locator('.hud-staff__hire').click();
+      await page.waitForTimeout(300);
+    }
+    await page.waitForTimeout(1500);
+    const hired = await latestCounts(page);
+    log(`after hiring ${options.guards}: staff=${hired?.staff} dailyWageBill=${hired?.dailyWageBillMinorUnits} funds=${hired?.treasuryMinorUnits}`);
+    log(`staff panel: ${await panelText(page, '.hud-staff')}`);
+  }
 
   return origin;
 }
@@ -420,7 +448,7 @@ test.describe('playtest: what a day actually pays (#601)', () => {
     await installTee(page);
     await openApp(page);
 
-    await buildAndPopulate(page, { beds: 12, admits: 12, label: 'A/12-beds' });
+    await buildAndPopulate(page, { beds: 12, admits: 12, guards: 0, label: 'A/12-beds' });
 
     // The boundaries that come *after* the prison was populated, computed from
     // where the clock actually is rather than assumed to be day 1's.
@@ -457,7 +485,7 @@ test.describe('playtest: what a day actually pays (#601)', () => {
     await installTee(page);
     await openApp(page);
 
-    await buildAndPopulate(page, { beds: 3, admits: 12, label: 'B/3-beds' });
+    await buildAndPopulate(page, { beds: 3, admits: 12, guards: 0, label: 'B/3-beds' });
 
     // The boundaries that come *after* the prison was populated, computed from
     // where the clock actually is rather than assumed to be day 1's.
@@ -477,5 +505,42 @@ test.describe('playtest: what a day actually pays (#601)', () => {
       );
     }
     console.log(`[B/3-beds] console: ${consoleLines.slice(0, 40).join('\n') || '(nothing)'}`);
+  });
+
+  test('three housed, three guards -- the other half of the loop', async ({ page }) => {
+    test.setTimeout(900_000);
+    const consoleLines: string[] = [];
+    page.on('console', (m) => {
+      if (m.type() === 'debug') return;
+      const text = m.text();
+      if (text.startsWith('%cPhaser') || text.includes('WebGL')) return;
+      consoleLines.push(`[${m.type()}] ${text}`);
+    });
+    page.on('pageerror', (e) => consoleLines.push(`[pageerror] ${e.message}`));
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await installTee(page);
+    await openApp(page);
+
+    await buildAndPopulate(page, { beds: 3, admits: 3, guards: 3, label: 'C/guards' });
+
+    // The boundaries that come *after* the prison was populated, computed from
+    // where the clock actually is rather than assumed to be day 1's.
+    const populatedAt = await currentTick(page);
+    console.log(`[C/guards] populated at tick ${populatedAt}`);
+    for (let day = Math.floor(populatedAt / 2400) + 1; day <= Math.floor(populatedAt / 2400) + 2; day += 1) {
+      const boundary = day * 2400 - 1;
+      await runUntilTick(page, boundary + 60);
+      reportBoundary('C/guards', await countsSeries(page), boundary);
+    }
+
+    const series = await countsSeries(page);
+    console.log('[C/guards] === FULL SERIES ===');
+    for (const s of series) {
+      console.log(
+        `[C/guards] t=${s.tick} roster=${s.prisoners} inIntake=${s.prisonersInIntake} residents=${s.roomOccupants} cap=${s.accommodationCapacity} accrued=${s.stateIncomeAccruedTodayMinorUnits} funds=${s.treasuryMinorUnits}`,
+      );
+    }
+    console.log(`[C/guards] console: ${consoleLines.slice(0, 40).join('\n') || '(nothing)'}`);
   });
 });
