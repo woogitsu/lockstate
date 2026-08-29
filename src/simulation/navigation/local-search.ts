@@ -2,8 +2,9 @@ import type { SparseWorld } from '../world/sparse-world';
 import { tileKey, type TilePosition } from '../world/coordinates';
 import { DoorRegistry } from './door';
 import { FrontierHeap } from './frontier-heap';
-import { neighbors, resolveEdge, type NavigationGraph, type RegionId } from './region-graph';
+import { neighbors, type NavigationGraph, type RegionId } from './region-graph';
 import { doorTraversalCost } from './route-context';
+import { edgeStanding } from './traversal';
 
 export interface LocalSearchOptions {
   /** Bounds the search to tiles in these regions -- "bounded", never a full-map search. */
@@ -57,13 +58,20 @@ function canStep(
   // adjacent tiles is open -- a region can wrap around an internal wall
   // segment -- so passability is re-derived per edge here, using the same
   // door-first rule buildNavigationGraph used to decide connectivity.
-  const edge = resolveEdge(world, current, neighbor);
-  const door = doors.getByEdge(edge.ownerTile, edge.side);
-  if (door !== undefined) {
-    if (!options.allowedDoorIds.has(door.id)) return { allowed: false, cost: 0 };
-    return { allowed: true, cost: doorTraversalCost(door) };
+  //
+  // `edgeStanding` is where that door-first rule now lives, shared with
+  // `isEdgeTraversable` (`traversal.ts`), which is what a walker asks at the
+  // moment it crosses an edge. The *policy* still differs and stays here: this
+  // search crosses only a door the portal search upstream already admitted,
+  // where a walker consults its own `RouteContext`. What the two must not
+  // disagree about is that a registered door decides the edge whatever value
+  // the edge layer holds -- and that sentence is now written once.
+  const standing = edgeStanding(world, doors, current, neighbor);
+  if (standing.kind === 'door') {
+    if (!options.allowedDoorIds.has(standing.door.id)) return { allowed: false, cost: 0 };
+    return { allowed: true, cost: doorTraversalCost(standing.door) };
   }
-  if (edge.wallValue !== 0) return { allowed: false, cost: 0 };
+  if (standing.kind === 'wall') return { allowed: false, cost: 0 };
   return { allowed: true, cost: PLAIN_STEP_COST };
 }
 

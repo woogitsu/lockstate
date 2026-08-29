@@ -12,6 +12,7 @@ import {
 import { buildNavigationGraph, isNavigationGraphStale, type NavigationGraph } from './region-graph';
 import { RouteCache, type RouteCacheMetrics } from './route-cache';
 import type { RouteContext } from './route-context';
+import { isEdgeTraversable } from './traversal';
 
 export interface NavigationSystemOptions {
   /** Deterministic work-unit (expanded search node) budget spent per tick; see `PathRequestQueue.processTick`. */
@@ -108,6 +109,29 @@ export class NavigationSystem implements SystemRegistration {
 
   public getGraph(): NavigationGraph {
     return this.ensureGraph();
+  }
+
+  /**
+   * Whether `context` may cross the boundary between two orthogonally adjacent
+   * tiles **as the world stands on this tick**
+   * (the ADR *When a route stops being valid*).
+   *
+   * The one question a walker asks this system, and the reason it is a method
+   * here rather than a free function the caller wires itself: `world` and
+   * `doors` are this system's, and a caller holding its own references to both
+   * would be a second place that has to be handed the same pair and kept in
+   * step with a restore. It is deliberately cheaper than everything else on
+   * this class -- two chunk-cell reads and a `Map` lookup, no graph, no cache,
+   * no queue -- because `LocomotionSystem` runs at 20 Hz and calls it once per
+   * walker per tile crossed.
+   *
+   * It does **not** consult the region graph, and that is the point.
+   * `ensureGraph` rebuilds lazily from a geometry revision, so routing through
+   * it would make one walker's step depend on a whole-prison recomputation;
+   * this asks only whether the one boundary in front of the actor is standing.
+   */
+  public canTraverseEdge(from: TilePosition, to: TilePosition, context: RouteContext): boolean {
+    return isEdgeTraversable(this.world, this.doors, from, to, context);
   }
 
   private ensureGraph(): NavigationGraph {

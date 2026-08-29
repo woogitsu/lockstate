@@ -664,6 +664,27 @@ export class ActionSystem implements SystemRegistration {
   }
 
   /**
+   * The `RouteContext` this prisoner's doors are judged against.
+   *
+   * One definition, read by two callers at two different moments: the router,
+   * when a route is *planned* (`beginNextAction` above), and the walker, when
+   * an edge is actually *crossed*
+   * (the ADR *When a route stops being valid*,
+   * wired in `PrisonerOperationsRuntime`). Those two moments are up to a whole
+   * journey apart, which is the finding that ADR is about -- so the one thing
+   * that must not differ between them is *whose* clearance is being checked.
+   * A second spelling of this expression would be the way that drifts.
+   *
+   * Public for that wiring alone. It reads `records`, which this system
+   * already owns, and allocates one object per call: at the crossing site that
+   * is one allocation per walker per tile, which is the same order as the
+   * waypoint array a walk already retains.
+   */
+  public routeContextFor(index: number): RouteContext {
+    return this.routeContextResolver(classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!), this.records.riskTier[index]!);
+  }
+
+  /**
    * The walks this system started that reached their last waypoint on this
    * tick.
    *
@@ -970,8 +991,7 @@ export class ActionSystem implements SystemRegistration {
 
       this.requestSequence += 1;
       const requestId = `prisoner.${entityId}.${this.requestSequence}`;
-      const routeContext = this.routeContextResolver(classificationGroupId, this.records.riskTier[index]!);
-      this.navigation.requestRoute(requestId, currentTile, target.anchorTile, routeContext, 1, tick);
+      this.navigation.requestRoute(requestId, currentTile, target.anchorTile, this.routeContextFor(index), 1, tick);
       this.coldState.setPathRequestId(entityId, requestId);
       this.currentAction.phase[index] = phaseIndex('travelling');
       this.currentAction.phaseStartedAtTick[index] = tick;

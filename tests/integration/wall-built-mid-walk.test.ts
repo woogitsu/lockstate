@@ -74,8 +74,8 @@ const SEED = 0x0b1ec7;
 /** `room.cell`'s authored 2x3 minimum, in the corner diagonally opposite the arrival tile. */
 const CELL_RECT = { x: 28, y: 27, width: 2, height: 3 } as const;
 /** Where the cell's doorway is approached from, and the far side of the edge the player closes. */
-const APPROACH: TilePosition = { x: 28, y: 31 };
-const DOORWAY: TilePosition = { x: 28, y: 30 };
+const APPROACH_XY = { x: 28, y: 31 } as const;
+const DOORWAY_XY = { x: 28, y: 30 } as const;
 
 const ARRIVAL = { x: 1, y: 1 } as const;
 const ADMISSION = { sentenceLengthTicks: 100_000, priorIncidents: 0 } as const;
@@ -91,6 +91,9 @@ function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<type
 }
 
 const tile = (x: number, y: number): TilePosition => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
+
+const APPROACH = tile(APPROACH_XY.x, APPROACH_XY.y);
+const DOORWAY = tile(DOORWAY_XY.x, DOORWAY_XY.y);
 
 /**
  * Whether a wall stands between two orthogonally adjacent tiles *right now*,
@@ -177,7 +180,7 @@ function walkThenWall(): Observation {
   // prisoner is on their way to it. Nothing refuses this: the tile is owned,
   // the bricks are in stock, and ADR 0029 decision 2 gives a traveller no
   // claim on anything.
-  submit(runtime, 'wall', packCommand({ type: 'PlaceBuildOrder', orderId: 'o-wall', definitionId: 'wall-brick', x: APPROACH.x, y: APPROACH.y, edge: 'north' }));
+  submit(runtime, 'wall', packCommand({ type: 'PlaceBuildOrder', orderId: 'o-wall', definitionId: 'wall-brick', x: APPROACH_XY.x, y: APPROACH_XY.y, edge: 'north' }));
 
   let sealedAtTick = -1;
   let walkingWhenSealed = false;
@@ -193,7 +196,7 @@ function walkThenWall(): Observation {
     if (sealedAtTick < 0 && blockedEdgeBetween(runtime, APPROACH, DOORWAY) === true) {
       sealedAtTick = runtime.kernel.tick;
       walkingWhenSealed = prisoners.locomotion.isWalking(index);
-      tilesShortWhenSealed = Math.abs(current.x - APPROACH.x) + Math.abs(current.y - APPROACH.y);
+      tilesShortWhenSealed = Math.abs(current.x - APPROACH_XY.x) + Math.abs(current.y - APPROACH_XY.y);
     }
 
     if (current.x !== previous.x || current.y !== previous.y) {
