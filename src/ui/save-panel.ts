@@ -588,8 +588,27 @@ export class SavePanel {
       item.append(label);
 
       item.append(
-        this.button(this.rowBusy, SAVE_PANEL_MESSAGE_KEY.actionLoad, () => this.requestLoad(prison.prisonId)),
-        this.button(this.rowBusy, SAVE_PANEL_MESSAGE_KEY.actionDelete, () => this.requestDelete(prison.prisonId)),
+        // The `focusKey` is what carries the keyboard across the rebuild.
+        // `requestLoad` refreshes the list from inside its own action, so by
+        // the time the gate clears, the button that was pressed is a detached
+        // node and the group cannot focus it again. Keyed by what the control
+        // does and which prison it does it to, the row that replaces this one
+        // inherits the focus -- and a *deleted* prison has no replacement row,
+        // which is a control that is really gone rather than one that moved,
+        // so nothing is focused and the keyboard stays where the browser left
+        // it.
+        this.button(
+          this.rowBusy,
+          SAVE_PANEL_MESSAGE_KEY.actionLoad,
+          () => this.requestLoad(prison.prisonId),
+          `load:${prison.prisonId}`,
+        ),
+        this.button(
+          this.rowBusy,
+          SAVE_PANEL_MESSAGE_KEY.actionDelete,
+          () => this.requestDelete(prison.prisonId),
+          `delete:${prison.prisonId}`,
+        ),
       );
       this.listElement.append(item);
     }
@@ -837,15 +856,22 @@ export class SavePanel {
     return this.gate.run(actionId, action);
   }
 
-  private button(group: BusyGroup, labelKey: LocalizationKey, onClick: () => void): HTMLButtonElement {
+  private button(
+    group: BusyGroup,
+    labelKey: LocalizationKey,
+    onClick: () => void,
+    focusKey?: string,
+  ): HTMLButtonElement {
     const element = document.createElement('button');
     element.type = 'button';
     element.textContent = this.text(labelKey);
     element.className = 'save-panel__button';
     element.addEventListener('click', onClick);
     // Registered at creation, so a row rebuilt by `refresh` during a busy
-    // period comes back disabled rather than live.
-    group.add(element);
+    // period comes back disabled rather than live -- and, with a `focusKey`,
+    // so the rebuilt row takes back the keyboard the pressed one was holding.
+    if (focusKey === undefined) group.add(element);
+    else group.add(element, focusKey);
     return element;
   }
 }
