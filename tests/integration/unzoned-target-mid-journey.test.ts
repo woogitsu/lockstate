@@ -170,6 +170,55 @@ describe('un-zoning a canteen a prisoner is halfway to', () => {
     expect(detail?.currentAction?.targetRoomInstanceId, 'the HUD named a room the player had already demolished').toBeUndefined();
   });
 
+  it('gives the route back to navigation instead of leaving it there for the session', () => {
+    /*
+     * **SIM-002 reaching the prisoner path**, and the reason this case lives
+     * beside the one above rather than in a file of its own: it is the same
+     * player action, on the same tick, and the residue it leaves is invisible
+     * from everything the case above asserts.
+     *
+     * The vanished-instance exit runs *before* `continueTravelling` reads its
+     * route result, and the removal can land in the twenty ticks between
+     * `beginNextAction` issuing the request and that read. So the resolved
+     * route was never collected, and `beginNextAction` then overwrote the only
+     * copy of its id on the next errand.
+     *
+     * Nothing reclaims it. `PathRequestQueue`'s aging raises a waiting
+     * request's effective priority and never evicts it, and
+     * `NavigationSystem.clearResult`'s own comment says the system never
+     * expires results on its own. Measured before the fix, on this prison:
+     * `prisoner.0.2` was still in the result map 2,400 ticks after the
+     * `UnzoneRoom` that stranded it, and 2,400 ticks is a full in-game day.
+     */
+    const runtime = prisonWithACanteen();
+    const prisoners = runtime.prisoners;
+    const prisoner = prisoners.entityStore.getIdByIndex(0);
+    const index = prisoners.entityStore.getIndex(prisoner);
+
+    for (let tick = runtime.kernel.tick + 1; tick <= 6_000; tick += 1) {
+      stepTo(runtime, tick);
+      if (prisoners.currentAction.phase[index] === TRAVELLING_PHASE && prisoners.coldState.getActionTarget(prisoner) === CANTEEN_ID) break;
+    }
+
+    // Non-vacuity: there is a request to lose. Without this the assertion
+    // below would hold for a run in which the prisoner had never asked for a
+    // route at all.
+    expect(prisoners.coldState.getPathRequestId(prisoner), 'the prisoner had no route in flight, so this run could not strand one').toBeDefined();
+    expect(runtime.navigation.pendingCount() + runtime.navigation.resultCount()).toBeGreaterThan(0);
+
+    submit(runtime, 'unzone', packCommand({ type: 'UnzoneRoom', ...CANTEEN_RECT }));
+    // A full in-game day, so a residue that merely takes a while to be
+    // collected is not mistaken for one that is never collected.
+    for (let n = 0; n < 2_400; n += 1) runtime.kernel.step();
+
+    // **The assertion the defect fails**, with `1` before the fix.
+    expect(runtime.navigation.resultCount(), 'a stranded journey left its resolved route in the navigation system').toBe(0);
+    expect(runtime.navigation.pendingCount(), 'a stranded journey left a request queued').toBe(0);
+    // And the id itself is forgotten, so the next errand cannot overwrite the
+    // only handle on it.
+    expect(prisoners.coldState.getPathRequestId(prisoner)).toBeUndefined();
+  });
+
   it('recovers: the prisoner takes the cell meal instead and hunger rises again', () => {
     // The consequence that makes the reset worth having rather than merely
     // tidy. ADR 0041's fallback needs a clean `idle` to reconsider from, and

@@ -587,6 +587,27 @@ export class ActionSystem implements SystemRegistration {
    * defence in depth, and `tests/integration/unzoned-target-mid-journey.test.ts`
    * covers the one that is not.
    */
+  /**
+   * Gives back the route this prisoner had asked for, and forgets its id.
+   *
+   * Both halves, through `NavigationSystem.abandonRequest`: a journey can be
+   * abandoned while the request is still queued or after it has resolved and
+   * is waiting to be collected, and which one it is on a given tick is a race
+   * this system cannot win. Neither the queue nor the result map expires
+   * anything (SIM-002; `docs/NAVIGATION.md`, "Giving a request back when its
+   * owner goes away"), so an id merely deleted is an entry nothing will ever
+   * remove.
+   *
+   * Total: a prisoner with no outstanding request is a no-op, which is what
+   * every exit that gives up on a journey wants to be able to assume.
+   */
+  private abandonRoute(entityId: number): void {
+    const requestId = this.coldState.getPathRequestId(entityId);
+    if (requestId === undefined) return;
+    this.navigation.abandonRequest(requestId);
+    this.coldState.setPathRequestId(entityId, undefined);
+  }
+
   private continueTravelling(entityId: number, index: number, tick: number): void {
     /*
      * **The room went away while they were walking to it.**
@@ -608,6 +629,16 @@ export class ActionSystem implements SystemRegistration {
     const targetInstanceId = this.coldState.getActionTarget(entityId);
     if (targetInstanceId !== undefined && this.roomInstances.getById(targetInstanceId) === undefined) {
       this.locomotion.cancelWalk(index);
+      // The route to a room that no longer exists is given back, not merely
+      // dropped. This exit can fire while the request is *unconsumed* -- the
+      // room is un-zoned in the twenty ticks between `beginNextAction` issuing
+      // the request and this method reading it -- and it is checked before the
+      // `getResult` below, so without this the resolved route stayed in
+      // `NavigationSystem` for the rest of the session while
+      // `beginNextAction` overwrote the only copy of its id. Measured through
+      // the real `UnzoneRoom` command on `tests/integration/unzoned-target-mid-journey.test.ts`'s
+      // prison: `prisoner.0.2` was still in the result map 2,400 ticks later.
+      this.abandonRoute(entityId);
       this.currentAction.phase[index] = phaseIndex('idle');
       this.coldState.setActionTarget(entityId, undefined);
       this.unmetDemandCycles += 1;

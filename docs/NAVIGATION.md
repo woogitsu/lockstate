@@ -437,12 +437,22 @@ full budget cost and the result to be retained for the life of the session.
 
 `NavigationSystem.abandonRequest(id)` does both halves in one call, because
 which half a request is in on a given tick is a race the caller cannot win. Every
-path that gives up a claim calls it: `IncidentResponseSystem.releaseResponder`
-and `releaseResponse`, `SearchSystem.releaseGuard` and its target advance, and
+path that gives up a route calls it: `IncidentResponseSystem.releaseResponder`
+and `releaseResponse`, `SearchSystem.releaseGuard` and its target advance,
 `GuardReleaseService.release` — which has to read the roster's `pathRequestId`
-*before* `GuardRoster.unassign` clears it. `prisoners/release.ts` and
-`staff/dismissal.ts` reach the same result through their own narrow ports with
-two calls, which predates this method.
+*before* `GuardRoster.unassign` clears it — `ActionSystem`'s vanished-instance
+exit, and `JobSystem`'s failure and cancellation paths.
+`prisoners/release.ts` and `staff/dismissal.ts` reach the same result through
+their own narrow ports with two calls, which predates this method.
+
+The prisoner one is the player-reachable one and is worth naming separately:
+un-zoning a room somebody is walking to is legal (ADR 0029 decision 2 — a
+traveller holds no claim), the abandonment is checked *before*
+`continueTravelling` reads its route result, and the removal can land in the
+twenty ticks between the request being issued and that read. Measured before
+the fix: `prisoner.0.2` was still in the result map 2,400 ticks — a full in-game
+day — after the `UnzoneRoom` that stranded it, and `beginNextAction` had
+overwritten the only copy of its id on the next errand.
 
 ## Known correctness caveat: hierarchical vs. flat-optimal cost
 
