@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { SimulationEventLog } from '../../src/simulation/events';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
 import { buildCellBlockFixture } from '../helpers/navigation-fixture';
@@ -45,6 +46,7 @@ describe('incident scale: many simultaneous incidents across many sectors', () =
     for (let i = 0; i < 120; i += 1) guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
 
     const incidents = new IncidentLog();
+    const events = new SimulationEventLog();
     const risk = new SectorRiskTracker(DEFAULT_SECTOR_RISK_POLICY);
     const gangs = new GangRegistry();
 
@@ -60,8 +62,9 @@ describe('incident scale: many simultaneous incidents across many sectors', () =
         const cellIndex = Number(sectorId.slice('sector-'.length));
         return [cellIndex, cellIndex + cellCount];
       },
+      events,
     );
-    const response = new IncidentResponseSystem(incidents, sectors, guards, navigation);
+    const response = new IncidentResponseSystem(incidents, sectors, guards, navigation, events);
 
     const kernel = new Kernel();
     kernel.registerSystem(navigation);

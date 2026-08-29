@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { SimulationEventLog } from '../../src/simulation/events';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
 import { buildCellBlockFixture } from '../helpers/navigation-fixture';
@@ -20,7 +21,8 @@ function buildHarness(policy: IncidentResponsePolicy = DEFAULT_INCIDENT_RESPONSE
 
   const guards = new GuardRoster(64);
   const incidents = new IncidentLog();
-  const response = new IncidentResponseSystem(incidents, sectors, guards, navigation, policy);
+  const events = new SimulationEventLog();
+  const response = new IncidentResponseSystem(incidents, sectors, guards, navigation, events, policy);
 
   const kernel = new Kernel();
   kernel.registerSystem(navigation);
