@@ -1895,19 +1895,49 @@ test.describe('HUD shell', () => {
     });
 
     test('hides the edge chooser for a buildable that does not sit on an edge', async ({ page }) => {
-      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      // Four rows, because the non-edge row this needs is a synthetic one now.
+      // It used to be `door-wooden` out of the two-row fixture, with the note
+      // *"a door is an object, not edge geometry"* -- which was a statement of
+      // issue #531's defect rather than a fact about doors. A door is edge
+      // geometry, `src/main.ts` says so since that issue, and the test below
+      // asserts it. `buildModelWithCatalogueOf` alternates `occupiesEdge`, so
+      // `buildable-3` is a row that genuinely sits on no edge.
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell({ buildables: 4 }));
       await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
       // The chooser lives in the numeric fallback: the map route reads the
       // edge off the gesture instead of asking for it twice.
       await page.evaluate(() => window.lockstateUiHarness.expandBuildCoordinates());
       expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).edgeChooserVisible).toBe(true);
 
-      // A door is an object, not edge geometry. A disabled chooser would still
-      // claim the setting exists; it is hidden instead.
+      // A disabled chooser would still claim the setting exists; it is hidden
+      // instead.
+      await page.evaluate(() => window.lockstateUiHarness.clickBuildable('buildable-3'));
+      const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      expect(probe.selected).toBe('buildable-3');
+      expect(probe.edgeChooserVisible).toBe(false);
+    });
+
+    /**
+     * Issue #531, in the surface the player actually touches.
+     *
+     * A door occupies a tile edge -- `occupiesTileEdge` in
+     * `src/simulation/construction/definition.ts` -- and the coordinate form
+     * used to hide the chooser for one while submitting its retained value
+     * anyway, so a door typed into the two number fields landed on whichever
+     * edge the last wall had used. `tests/foundation/composition-root-contract.test.ts`
+     * pins the projection that decides this and `tests/unit/ui-hud-build-panel.test.ts`
+     * pins the panel's two rules; neither can see a control's box, which is
+     * what this measures.
+     */
+    test('shows the edge chooser for a door, which is edge geometry (#531)', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      await page.evaluate(() => window.lockstateUiHarness.expandBuildCoordinates());
+
       await page.evaluate(() => window.lockstateUiHarness.clickBuildable('door-wooden'));
       const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
       expect(probe.selected).toBe('door-wooden');
-      expect(probe.edgeChooserVisible).toBe(false);
+      expect(probe.edgeChooserVisible).toBe(true);
     });
 
     /**

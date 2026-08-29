@@ -9,9 +9,11 @@ import {
   buildCatalogueFocusRing,
   buildCategoryOptions,
   buildEdgeChoiceOptions,
+  edgeChooserShown,
   formatBuildQueueOrderText,
   formatBuildTargetText,
   formatPendingDeliveryText,
+  intentEdge,
   visibleBuildableIds,
 } from '../../src/ui/hud/build-panel';
 import { HUD_MESSAGE_KEYS } from '../../src/ui/hud/messages';
@@ -19,6 +21,8 @@ import { rovingFocusMove } from '../../src/ui/primitives/roving-focus';
 import {
   HUD_BUILD_EDGES,
   HUD_BUILD_ORDER_STATES,
+  HUD_DEFAULT_BUILD_EDGE,
+  type HudBuildEdge,
   type HudBuildableViewModel,
   type HudBuildOrderViewModel,
   type HudPendingDeliveryViewModel,
@@ -42,6 +46,130 @@ describe('the HUD edge vocabulary matches the simulation', () => {
 
   it('can express the simulation default', () => {
     expect(HUD_BUILD_EDGES as readonly string[]).toContain(DEFAULT_BUILD_EDGE);
+  });
+
+  /**
+   * Stronger than the assertion above it, and kept beside it rather than in
+   * place of it: `toContain` says the HUD *can* name the default, and this says
+   * it names the same one. It matters from #531 onward because
+   * `HUD_DEFAULT_BUILD_EDGE` became the value an intent carries when the
+   * chooser is hidden -- a HUD default that drifted from the simulation's would
+   * put an edge on a command that `resolveBuildEdge` resolves differently.
+   */
+  it('defaults to the edge the simulation defaults to', () => {
+    expect(HUD_DEFAULT_BUILD_EDGE).toBe(DEFAULT_BUILD_EDGE);
+  });
+});
+
+/**
+ * **What a hidden control may contribute to a command: nothing** (issue #531).
+ *
+ * The panel keeps one retained `edge` for the life of the mount, so that coming
+ * back to an edge buildable finds the orientation you last used. `readSelection`
+ * read that value unconditionally while `paintPlacement` decided separately
+ * whether the control holding it was on screen -- two spellings of one rule,
+ * and the pair disagreed. A row whose chooser was hidden submitted whatever the
+ * last *visible* choice had been, with the player shown no control and given no
+ * way to change it.
+ *
+ * `door-wooden` is how that became visible, and the fix for the door itself is
+ * in `src/main.ts` rather than here: with the composition root publishing
+ * `occupiesTileEdge`, a door's chooser is shown and its edge is a real choice.
+ * These two functions are the independent half -- they stop the *next* buildable
+ * that takes the `place-build-order` route with no chooser from inheriting an
+ * edge the same way.
+ *
+ * Exported and pure for the reason the formatters below are: the default Vitest
+ * environment is `node` (`docs/TESTING.md`), so nothing headless can call
+ * `createBuildPanel`, and "what the panel submits" has to be assertable without
+ * a DOM. Whether the control's box is actually hidden is a browser question and
+ * is measured in `tests/browser/ui-shell.spec.ts`.
+ */
+describe('the edge chooser and the edge a command carries agree', () => {
+  const row = (occupiesEdge: boolean): HudBuildableViewModel => ({
+    definitionId: occupiesEdge ? 'wall-brick' : 'bed-wooden',
+    labelKey: 'content.buildable',
+    occupiesEdge,
+    placesObject: !occupiesEdge,
+    categoryId: 'structure',
+    categoryLabelKey: 'category.structure',
+  });
+
+  /** An edge that is not the default, so a fallback to the default is visible. */
+  const CHOSEN = HUD_BUILD_EDGES.find((candidate) => candidate !== HUD_DEFAULT_BUILD_EDGE);
+
+  it('has a non-default edge to test with, or the assertions below prove nothing', () => {
+    // This suite's own guard against a one-member vocabulary: every "falls back
+    // to the default" assertion would pass vacuously if the only edge there is
+    // were the default one.
+    expect(CHOSEN, 'HUD_BUILD_EDGES has no member other than the default').toBeDefined();
+  });
+
+  it('shows the chooser for a buildable that sits on an edge', () => {
+    expect(edgeChooserShown(row(true), false)).toBe(true);
+  });
+
+  it('hides it for a buildable that does not', () => {
+    expect(edgeChooserShown(row(false), false)).toBe(false);
+  });
+
+  it('hides it while removing, whatever is selected', () => {
+    // What goes is whatever is on the tile, so a removal has no orientation to
+    // offer -- the same reason it has no buildable.
+    expect(edgeChooserShown(row(true), true)).toBe(false);
+    expect(edgeChooserShown(row(false), true)).toBe(false);
+  });
+
+  it('hides it when nothing is selected', () => {
+    expect(edgeChooserShown(undefined, false)).toBe(false);
+  });
+
+  it('carries the choice the player made while the chooser is shown', () => {
+    expect(intentEdge(row(true), false, CHOSEN as HudBuildEdge)).toBe(CHOSEN);
+  });
+
+  it('carries the default, not the retained value, when the chooser is hidden', () => {
+    // The defect, stated as a property: the retained edge is `CHOSEN` because
+    // some earlier *visible* choice set it, and this row's chooser is not on
+    // screen. Reading it back out would put a setting the player cannot see on
+    // a command.
+    expect(intentEdge(row(false), false, CHOSEN as HudBuildEdge)).toBe(HUD_DEFAULT_BUILD_EDGE);
+  });
+
+  it('carries the default for a removal, whatever is selected', () => {
+    expect(intentEdge(row(true), true, CHOSEN as HudBuildEdge)).toBe(HUD_DEFAULT_BUILD_EDGE);
+    expect(intentEdge(undefined, true, CHOSEN as HudBuildEdge)).toBe(HUD_DEFAULT_BUILD_EDGE);
+  });
+
+  it('resolves to an edge in every case rather than refusing', () => {
+    // Deliberate, and the reason is a player rather than a type: a refusal here
+    // would strand someone who has already been charged for materials. Every
+    // consumer of an intent whose chooser is hidden ignores the field anyway --
+    // `hud.ts` dispatches `remove-object` or `place-object`, neither of which
+    // carries an edge -- so the field keeps one shape and stops carrying
+    // history.
+    for (const buildable of [row(true), row(false), undefined]) {
+      for (const removing of [true, false]) {
+        expect(HUD_BUILD_EDGES as readonly string[]).toContain(
+          intentEdge(buildable, removing, CHOSEN as HudBuildEdge),
+        );
+      }
+    }
+  });
+
+  it('never contradicts the control the panel painted', () => {
+    // The invariant the two functions exist to hold, over every combination:
+    // the intent carries the retained value exactly when the control holding it
+    // is on screen. An implementation that read the retained edge
+    // unconditionally fails here, and so does one that always sent the default.
+    for (const buildable of [row(true), row(false), undefined]) {
+      for (const removing of [true, false]) {
+        const shown = edgeChooserShown(buildable, removing);
+        expect(intentEdge(buildable, removing, CHOSEN as HudBuildEdge), `shown=${shown}`).toBe(
+          shown ? CHOSEN : HUD_DEFAULT_BUILD_EDGE,
+        );
+      }
+    }
   });
 });
 

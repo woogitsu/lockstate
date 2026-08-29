@@ -391,19 +391,21 @@ const BUILD_MODEL: HudBuildViewModel = {
     {
       definitionId: 'door-wooden',
       labelKey: HUD_MESSAGE_KEY.buildableDoorWooden,
-      occupiesEdge: false,
+      // `true` and `false`, which is why the two flags are not opposites: a
+      // door occupies a tile edge and places no *object* -- what it places is a
+      // door, which is a fact about that edge.
+      //
+      // This row read `occupiesEdge: false`, with the note: *"`occupiesEdge` is
+      // derived from `category === 'wall'` there, so the panel hides its edge
+      // chooser for one. That second half is a known gap rather than a fact
+      // about doors ... This fixture mirrors what the composition root produces
+      // today; it moves when that does."* It has moved. `src/main.ts` derives
+      // this from `occupiesTileEdge` since issue #531, so the projection this
+      // fixture mirrors now answers `true` for a door, and a fixture left at
+      // `false` would be an assertion agreeing with the defect.
+      occupiesEdge: true,
       categoryId: 'structure',
       categoryLabelKey: HUD_MESSAGE_KEY.buildCategoryStructure,
-      // Both `false`, which is what `src/main.ts` still projects for this row
-      // and is why the two flags are not opposites: a door places no *object*
-      // (it places a door, which is a fact about a tile edge), and
-      // `occupiesEdge` is derived from `category === 'wall'` there, so the panel
-      // hides its edge chooser for one. That second half is a known gap rather
-      // than a fact about doors -- a completed `door-wooden` order does occupy
-      // an edge now, and `occupiesTileEdge` in
-      // `src/simulation/construction/definition.ts` is the predicate that
-      // surface is owed. This fixture mirrors what the composition root
-      // produces today; it moves when that does.
       placesObject: false,
       material: {
         itemId: 'item.wood-plank',

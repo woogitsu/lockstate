@@ -86,12 +86,18 @@ needs.
 - **Orientation.** A `DoorDefinition` needs a `side` and `BuildOrder` already
   carries an `edge` that the world pointer tool fills in;
   `doorSideForBuildEdge` is the one place the two vocabularies meet
-  (`'north'`/`'west'` against `'top'`/`'left'`). **The Build panel's coordinate
-  form is still owed a fix**: it derives `occupiesEdge` from
-  `category === 'wall'` (`src/main.ts`) and hides the edge chooser for a door,
-  so a door submitted through the two number fields silently takes whichever
-  edge was last selected. `occupiesTileEdge` in
-  `construction/definition.ts` is the predicate that surface should read.
+  (`'north'`/`'west'` against `'top'`/`'left'`). **The Build panel's coordinate form has been
+  fixed** (issue #531). This said it *"is still owed a fix: it derives
+  `occupiesEdge` from `category === 'wall'` (`src/main.ts`) and hides the edge
+  chooser for a door, so a door submitted through the two number fields silently
+  takes whichever edge was last selected"*, and named `occupiesTileEdge` in
+  `construction/definition.ts` as the predicate that surface should read. It
+  reads it now, so the form offers a door the same chooser it offers a wall.
+  The panel gained a second guard at the same time: `intentEdge` resolves a
+  *hidden* chooser to the default rather than to whatever the control still
+  held, so no future non-edge buildable inherits an edge the way the door did.
+  Doors already written into a save keep the edge they were built on -- this was
+  a fix to what the panel sends, not a migration of what the world holds.
 - **Removal.** `DoorRegistry.unregister` exists, and
   `structuralRevision`'s contract widened with it: it is bumped when a door is
   added **or removed**, because both change the region/portal graph.
