@@ -327,3 +327,52 @@ describe('a sentence that ends (#441)', () => {
     expect(levels.some((level, index) => index > 0 && level < levels[index - 1]!), `population log: ${left.log.join(' ')}`).toBe(true);
   });
 });
+
+/**
+ * Issue #506: the Regime panel's roster-empty sentence, "Nobody has been
+ * admitted yet", read `roster.total === 0` as its only condition -- so a
+ * prison whose entire population served its sentence and left (exactly what
+ * the test above produces, and what `ADMISSION_REQUEST`'s fixed
+ * `sentenceLengthTicks` in `src/main.ts` makes routine for a batch admitted
+ * together, ADR 0050 "What this does not decide") triggered the same sentence
+ * as a prison nobody had ever touched. `projectPrisonerRoster`'s
+ * `everAdmitted` (`admittedCount > 0`, `prisoner-operations-runtime.ts`) is
+ * the fact that tells the two apart.
+ *
+ * Driven through the real `AdmitPrisoner` command and the real
+ * `PrisonerDischargeSystem` cadence -- not by constructing a roster reply
+ * with `total: 0` by hand, which would prove only that a fixture and an
+ * assertion agree (#375).
+ */
+describe('the roster projection tells "never admitted" from "fully discharged" (#506)', () => {
+  it('reads `everAdmitted: false` before any admission and `true` once a real admission and a real discharge empty the roster again', () => {
+    const runtime = twoCellPrison();
+
+    // The state every new game starts in: nobody has been admitted, ever.
+    expect(projectPrisonerRoster(runtime.prisoners, { limit: 50 })).toMatchObject({ total: 0, everAdmitted: false });
+
+    const first = admit(runtime, 'admit-first', SENTENCE);
+    const second = admit(runtime, 'admit-second', SENTENCE);
+    housedIn(runtime, first);
+    housedIn(runtime, second);
+    expect(population(runtime)).toBe(2);
+
+    const indexOf = (entityId: number): number => runtime.prisoners.entityStore.getIndex(entityId);
+    const endTick = Math.max(
+      runtime.prisoners.records.sentenceEndTick[indexOf(first)]!,
+      runtime.prisoners.records.sentenceEndTick[indexOf(second)]!,
+    );
+    expect(endTick).toBeGreaterThan(0);
+
+    stepTo(runtime, endTick + 20);
+
+    expect(runtime.prisoners.entityStore.isAlive(first)).toBe(false);
+    expect(runtime.prisoners.entityStore.isAlive(second)).toBe(false);
+    expect(population(runtime)).toBe(0);
+
+    // The false state issue #506 measured in live play: everybody who was
+    // admitted has since left, and `total: 0` alone cannot say that -- only
+    // `everAdmitted` can.
+    expect(projectPrisonerRoster(runtime.prisoners, { limit: 50 })).toMatchObject({ total: 0, everAdmitted: true });
+  });
+});

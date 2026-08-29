@@ -787,6 +787,30 @@ decision about what to build next.
     `accommodation-assignment` at tick 1,000 with
     `accommodationBacklogTicks` at 196, and the only thing the strip says
     about them is that they are one of `prisonersInIntake`.
+12b. **Closed: whether a `total: 0` roster means "never admitted" or "fully
+    discharged."** Issue #506 measured this live -- five prisoners admitted,
+    served the sentence `ADMISSION_REQUEST`'s fixed `sentenceLengthTicks`
+    gives every one of them, and discharged within the same window (ADR
+    0050 "What this does not decide"), and the Regime panel's roster-empty
+    sentence, "Nobody has been admitted yet", was shown over that prison as
+    though nobody ever had been. `projectPrisonerRoster` now carries
+    `everAdmitted` (`PrisonerOperationsRuntime.admittedCount > 0`,
+    `prisoner-projection.ts`), read at the one door every real admission
+    passes through, so the two states are distinguishable at the projection
+    for the first time.
+
+    **What is still true, and is not this gap re-opening:** `admittedCount`
+    is observability-only and not persisted, the same shape gap 33 already
+    names for `PrisonerDischargeSystem.dischargedCount` and `IntakeMetrics`
+    — a session restored from a save whose prison was populated and then
+    fully emptied *before* the save reads `everAdmitted: false` once more,
+    for exactly as long as it takes to admit and discharge again in the
+    restored session. And the panel itself still authors no sentence for the
+    "fully discharged" state: `regime-panel.ts`'s `paintRoster` draws
+    neither the false "Nobody has been admitted yet" nor an invented
+    replacement there, because the sentence that should replace it is a new
+    player-facing string and `AGENTS.md`'s fourth exclusion keeps that the
+    owner's.
 
 ### Rooms
 

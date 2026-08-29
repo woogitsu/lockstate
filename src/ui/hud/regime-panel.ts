@@ -214,8 +214,10 @@ export interface RegimePanel {
   /**
    * Repaint the roster from a fresh `hud/prisoner-roster` reply.
    *
-   * `undefined` hides the block; `total: 0` draws the empty sentence. The two
-   * are different facts and the second is the one that is about the prison.
+   * `undefined` hides the block. `total: 0` draws the empty sentence only
+   * when `everAdmitted` is also false -- see `paintRoster`'s own comment
+   * (issue #506) for why a roster that emptied by discharge draws no
+   * sentence at all rather than this one, which would be false of it.
    */
   setRoster(roster: HudPrisonerRosterViewModel | undefined): void;
   setVisible(visible: boolean): void;
@@ -337,6 +339,7 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
     if (roster === undefined) {
       rosterCount.textContent = '';
       delete rosterBlock.dataset['total'];
+      delete rosterBlock.dataset['everAdmitted'];
       for (const row of rosterRows) {
         row.element.hidden = true;
         delete row.element.dataset['prisoner'];
@@ -353,6 +356,7 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
     // parsing a localized sentence -- the job `data-waiting` does on the
     // Intake panel's readout.
     rosterBlock.dataset['total'] = String(roster.total);
+    rosterBlock.dataset['everAdmitted'] = String(roster.everAdmitted);
 
     const shown = roster.rows.slice(0, PRISONER_ROSTER_ROW_LIMIT);
     rosterCount.textContent = t(HUD_MESSAGE_KEY.regimeRosterCount, {
@@ -386,7 +390,21 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
     });
 
     rosterList.hidden = shown.length === 0;
-    rosterEmpty.hidden = shown.length > 0;
+    // "Nobody has been admitted yet" is true of exactly one state: nobody
+    // ever has been (issue #506). A prison that admitted a batch and has
+    // since discharged all of it also reads `shown.length === 0`, and that
+    // sentence would be false of it -- five people were admitted, served
+    // their sentence and left, which is the opposite of "nobody". There is
+    // no shipped sentence that says the true thing (searched
+    // `default-locale-en.ts`: every other "nobody"/"empty" string names a
+    // different subject -- guards, alerts, rooms, saves -- and reusing one
+    // would only be a different false claim), and authoring one is the
+    // owner's call (`AGENTS.md`'s fourth exclusion covers any new
+    // player-facing sentence). So this state draws neither sentence: no box
+    // asserting non-admission that isn't true, and no invented substitute.
+    // The header above it still reads "0 of 0", which is not a claim about
+    // history.
+    rosterEmpty.hidden = shown.length > 0 || roster.everAdmitted;
     // Counted against `roster.total` and not against the rows that arrived: the
     // reader asks for one row budget's worth, so the window is what came back
     // and the total is what the prison holds.

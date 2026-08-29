@@ -53,6 +53,15 @@ export interface PrisonerProjectionSource {
   readonly position: PositionComponent;
   readonly coldState: PrisonerColdState;
   readonly roomInstances: RoomInstanceRegistry;
+  /**
+   * How many prisoners have ever been admitted this session, whatever
+   * became of them since (`PrisonerOperationsRuntime.admittedCount`,
+   * issue #506). Not the live population -- `entityStore` already answers
+   * that -- but the one fact that lets `projectPrisonerRoster` tell "nobody
+   * has ever been admitted" apart from "everybody who was admitted has
+   * since left", which a live count of zero cannot distinguish on its own.
+   */
+  readonly admittedCount: number;
 }
 
 /**
@@ -254,6 +263,27 @@ function projectRosterRow(
 }
 
 /**
+ * `projectPrisonerRoster`'s reply: the paged window plus one fact the page
+ * envelope alone cannot state -- issue #506.
+ */
+export interface PrisonerRosterPage extends ViewModelPage<PrisonerRosterRowViewModel> {
+  /**
+   * True once `admittedCount` is nonzero: at least one prisoner has been
+   * admitted this session, even if the live population (`total`) has since
+   * fallen back to zero. `false` only means "nobody has ever been admitted"
+   * -- it is not a claim about who is here *now*, which `total` already
+   * answers.
+   *
+   * This is what lets a reader distinguish a prison nobody has used yet from
+   * one whose entire population served its sentence and left inside the
+   * same batch (`ADMISSION_REQUEST`'s fixed `sentenceLengthTicks` in
+   * `src/main.ts`, ADR 0050 "What this does not decide") -- both read
+   * `total: 0`, and only this field tells them apart.
+   */
+  readonly everAdmitted: boolean;
+}
+
+/**
  * One window of the prisoner roster, in ascending entity-index order --
  * the same canonical order `EntityQuery.execute()` walks (ADR 0005), so
  * paging is stable across ticks and identical on every client.
@@ -275,7 +305,7 @@ export function projectPrisonerRoster(
   source: PrisonerProjectionSource,
   request: PageRequest = {},
   options: PrisonerProjectionOptions = {},
-): ViewModelPage<PrisonerRosterRowViewModel> {
+): PrisonerRosterPage {
   const rooms = options.rooms ?? defaultRoomContentRegistry;
   const { offset, limit } = resolvePageRequest(request);
   const rows: PrisonerRosterRowViewModel[] = [];
@@ -290,7 +320,7 @@ export function projectPrisonerRoster(
     rows.push(projectRosterRow(source, rooms, options.gangs, options.identity, index));
   }
 
-  return { total, offset, limit, rows };
+  return { total, offset, limit, rows, everAdmitted: source.admittedCount > 0 };
 }
 
 /**

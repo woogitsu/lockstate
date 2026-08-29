@@ -958,6 +958,15 @@ export interface HudPrisonerRosterViewModel {
   readonly total: number;
   /** The window the panel asked for, in ascending entity index (ADR 0005). */
   readonly rows: readonly HudPrisonerRowViewModel[];
+  /**
+   * True once at least one prisoner has ever been admitted this session,
+   * carried unchanged from `PrisonerRosterPage.everAdmitted` (issue #506).
+   * `total: 0` alone cannot say whether nobody has been admitted or whether
+   * the whole population has since been discharged, and this is the fact
+   * that tells the two apart -- see `regime-panel.ts`'s roster-empty note
+   * for what the panel does with it.
+   */
+  readonly everAdmitted: boolean;
 }
 
 /**
