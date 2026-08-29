@@ -209,3 +209,53 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
     expect(runtime.treasury.balanceMinorUnits, 'the 40 is unspendable on the one thing that matters').toBe(40);
   });
 });
+
+describe('the same lock reached by a charge the player cannot decline', () => {
+  /**
+   * The route that matters more than the 625-brick press, because nobody has
+   * to make a reckless purchase to find it.
+   *
+   * `PayrollSystem` bills every employee's `wageBand.minPerDay` at the end of
+   * every in-game day -- a guard is 80 (`src/content/staff-role-catalog.ts:150`)
+   * -- and `HireStaff` charges one day's wage up front
+   * (`src/simulation/staff/hiring.ts:198`). A prison that spends most of its
+   * money on walls and hires one guard is then losing 80 a day against an
+   * income line that cannot start until it buys a 65 plank. The balance walks
+   * itself below 65 with no further press, and every press after that is
+   * refused.
+   *
+   * ADR 0049 made insolvency a state rather than a loss condition, and it is a
+   * state a *furnished* prison digs out of. This is the same state entered
+   * before the first bed, where there is nothing to dig with.
+   */
+  it('walks a prison below one plank on payroll alone, with no further press', () => {
+    const runtime = createNewSimulationRuntime(SEED);
+    // Walls, not a spending spree: 616 bricks is 24,640, which at two bricks a
+    // wall segment is 308 segments. The prison keeps 360 -- five planks' worth,
+    // and it never presses a purchase again.
+    send(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: 616 });
+    expect(runtime.treasury.balanceMinorUnits).toBe(360);
+
+    send(runtime, 'hire', { type: 'HireStaff', staffRoleId: 'staff-role.guard', x: 16, y: 16 });
+    expect(runtime.refusals.last, 'the hire is affordable and is accepted').toBeUndefined();
+    expect(runtime.treasury.balanceMinorUnits, 'one day of a guard, up front').toBe(280);
+
+    // Three in-game days of payroll at 80, and nothing else pressed at all.
+    // 280 - 240 = 40: a positive balance on the status strip, and below the 65
+    // that would end this -- the same zone the brick sequence above measures,
+    // walked into by a charge rather than by a press.
+    stepTo(runtime, 3 * 2_400 + 1);
+    expect(runtime.treasury.balanceMinorUnits).toBe(40);
+
+    send(runtime, 'buy-plank', { type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.wood-plank', quantity: 1 });
+    expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
+    expect(runtime.treasury.balanceMinorUnits).toBe(40);
+
+    // And it goes down, never up: the fourth day takes what is left and the
+    // rest becomes arrears (ADR 0049), which is a state a furnished prison digs
+    // out of and this one cannot.
+    stepTo(runtime, 12_000);
+    expect(runtime.treasury.balanceMinorUnits).toBe(0);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBeGreaterThan(0);
+  });
+});
