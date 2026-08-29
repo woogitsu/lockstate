@@ -102,7 +102,7 @@ run the player drew.
 
 **READ, and relevant to how much that bound costs:** with a mouse, the camera
 pans on the **middle button only** — `if (pointer.button !== 1) return;` at
-`src/rendering/scene/world-scene.ts:407`. The wheel zooms
+`src/rendering/scene/world-scene.ts:408`. The wheel zooms
 (`src/rendering/scene/world-scene.ts:368-381`), it does not pan. The Build
 panel's own hint states this, verbatim from the run: *"Click a tile edge to
 place a wall. Drag along it to lay a run. Two fingers, the middle button or the
@@ -110,11 +110,29 @@ arrow keys still move the camera."* So it is **documented, in the panel, at the
 moment it matters** — which is why this is filed as a measurement of the
 workspace and not as a missing-affordance claim.
 
-**NOT ESTABLISHED:** what a laptop trackpad does here. A two-finger trackpad
-swipe emits `wheel`, which this code zooms with; whether that leaves a trackpad
-player able to reach the world they want is not something this pass measured.
-**Cheapest measurement that would settle it:** dispatch a `wheel` sequence and
-re-run the reachability count above at 900x600, before and after.
+**The table's numbers are at zoom 1, and that qualification matters — this
+paragraph corrects the reading the table invites.** The cheapest falsification
+was named as "dispatch a `wheel` sequence and re-measure", and it was taken:
+
+```
+canvas sample points before any wheel:      1184
+tile under screen centre before wheel:      {"x":16,"y":16}
+canvas sample points after 10 wheel-down:   1184
+tile under screen centre after wheel-down:  {"x":16,"y":16}
+tile 100px right of centre (after):         {"x":20,"y":16}
+```
+
+Ten wheel-down notches (`zoom * 0.9` each, `src/rendering/scene/world-scene.ts:368-381`)
+leave the *chrome* exactly where it was — 1184 canvas sample points either way —
+and change what a pixel is worth: 100px right of centre resolved to tile 16 +1
+before and tile 16 +4 after, so the same hole in the HUD is worth about **2.7x
+more world**, and `ZOOM_BOUNDS` (`src/rendering/scene/world-scene.ts:68`) allows
+`0.2`, five times out.
+
+So a trackpad player is **not** stuck with 54 tiles: a two-finger swipe reaches
+this page as a `wheel`, and a `wheel` zooms. The table above measures the
+workspace at the zoom the game starts at, and nothing more. **Empty category,
+with the numbers that establish it.**
 
 **Overlap declared:** an agent is working `src/ui/**` on the UI scale (#545).
 The table above is theirs to use; this pass did not touch `src/`.
@@ -257,12 +275,49 @@ collapses, the cause is named.
 
 Nothing in this repository. Nobody plays the game yet. What can be stated
 without a player: the note is the Confirm control's `aria-describedby`
-(`src/ui/hud/rooms-panel.ts:1126-1133`), so a screen-reader player is told the
+(`src/ui/hud/rooms-panel.ts:1126-1140`), so a screen-reader player is told the
 rectangle is open at the moment they focus the button that would designate it.
+
+### The third surface: the finished walls are not drawn either
+
+The other measurement this record named as cheapest — *"screenshot the world at
+`queue empty + 2s` and at `+20s` and compare"* — was taken. Same route, tool
+disarmed and the pointer parked off the world so no ghost overlay is in the
+frame, then a SHA-256 of a 320x320 clip covering the walled rectangle, every
+2.5 seconds:
+
+```
+queue empty at t=43669ms
+t=44809ms wallRegionHash=fefe6f067ad5
+t=47663ms wallRegionHash=fefe6f067ad5
+t=50509ms wallRegionHash=fefe6f067ad5
+t=53352ms wallRegionHash=fefe6f067ad5
+t=56213ms wallRegionHash=9b9a5859e80c   <-- changes here, once
+t=59067ms wallRegionHash=9b9a5859e80c
+...
+distinct hashes: 2 of 12
+```
+
+**Byte-identical for 9.7 seconds after the Build panel said the queue was empty**,
+then one change at +12.5s, then stable. So three surfaces disagree at once, and
+only the first is current:
+
+| surface | channel | at `queue empty + 5s` |
+| --- | --- | --- |
+| Build panel queue | projection (`src/ui/simulation-build-queue.ts:15`) | empty — correct |
+| the drawn world | snapshot (`simulation-snapshot-feed.ts:523`) | unchanged |
+| Rooms panel note | snapshot, via `classifyArea` | "OPEN ON AT LEAST ONE SIDE" |
+
+A player who lays walls therefore watches the queue empty and sees **nothing at
+all happen on the map**, for about ten seconds, and is then told the area is
+still open. **The pixel hash establishes that the frame did not change; it does
+not by itself establish what the frame contained.** What would settle that: read
+the `structures` array the scene draws from, or diff the two frames rather than
+hashing them.
 
 ### Why this is different from #493's accepted false negative
 
-`src/ui/hud/rooms-panel.ts:1163-1190` accepts a false negative on purpose, and
+`src/ui/hud/rooms-panel.ts:1164-1190` accepts a false negative on purpose, and
 bounds it: *"shown when it need not have been, it costs confusion for one press
 and no more, because the control stays live and the real simulation still
 decides"*, with the cause given as staleness *"for as long as the session stays
@@ -389,14 +444,12 @@ transcript in §7. If the window survives, the cause is elsewhere.
 ## What this pass did not reach
 
 - **A player.** Every impact statement above is withheld for that reason.
-- **A trackpad.** §3's `wheel`-vs-pan question is open.
+- **A real trackpad.** §3 measures a synthetic `wheel`, which is what a
+  trackpad swipe reaches a page as, but no hardware was involved.
 - **Riots, contraband, incidents.** Three in-game days, `0 INCIDENTS Clear`
   throughout; nothing was provoked.
 - **Any viewport below 900x600**, and no phone.
 - **The Regime tab's controls.** It was read at 900x600 and after a day; nothing
   on it was pressed.
-- **Whether the finished walls are *drawn* during §7's window.** `structures`
-  comes off the same snapshot as the world edges
-  (`src/rendering/feed/simulation-snapshot-feed.ts:523-525`), so the same lag
-  would apply, but no pixel was read. **Cheapest measurement:** screenshot the
-  world at `queue empty + 2s` and at `+20s` and compare.
+- **What the unchanged frame in §7 actually contained.** The hash establishes
+  that it did not change, not what was in it.
