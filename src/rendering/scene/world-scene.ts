@@ -962,12 +962,19 @@ export class WorldScene extends Phaser.Scene {
   }
 
   /** Sprite and layer counts, for a diagnostics overlay or a manual budget check. */
-  public get rendererStats(): { readonly actors: number; readonly pooledSprites: number; readonly tileObjects: number } {
+  public get rendererStats(): {
+    readonly actors: number;
+    readonly pooledSprites: number;
+    readonly tileObjects: number;
+    /** Actors this frame whose logical asset id has no loaded clip -- `ActorLayer.stats.unresolved`. Zero is the healthy number. */
+    readonly unresolvedActors: number;
+  } {
     const stats = this.actors?.stats;
     return {
       actors: stats?.visible ?? 0,
       pooledSprites: stats?.pooled ?? 0,
       tileObjects: this.tiles?.pooledObjectCount ?? 0,
+      unresolvedActors: stats?.unresolved ?? 0,
     };
   }
 

@@ -304,14 +304,25 @@ it is on.
 
 ## What is not rendered yet, and why
 
-- **Guards.** Prisoners walk (see below); guards do not reach the renderer at
-  all yet. They are the other population whose tiles the simulation already
-  holds (`simulation.security.guards`, as `GuardRecord.tileX`/`tileY`), the
-  delta's record carries a population ordinal for exactly this, and ADR 0040
-  puts them in slice 2. [ADR 0059](./adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)
-  open question 4 says why the two halves are one decision: guards still
-  teleport between patrol waypoints, and drawing them doing it beside prisoners
-  who walk would look worse than not drawing them.
+- **Guards, until #414's surviving half.** This bullet used to say guards "do
+  not reach the renderer at all yet" and that ADR 0059 open question 4 left
+  the two halves -- decode them at all, and decode them while they still
+  teleport -- as one undecided decision. They now reach the renderer:
+  `actors-from-snapshot.ts` decodes `simulation.security.guards.records` and
+  `render-actors-keyframe.ts`/`actors-from-delta.ts` carry them on the delta at
+  the guard population ordinal (ADR 0040 slice 2), drawn with
+  `actor.guard.base` -- already in `public/assets/actors/asset-registry.json`,
+  so this needed no new art. `docs/research/2026-08-28-drawing-guards.md`
+  answers the question ADR 0059 left open, rather than deciding it silently
+  here: draw them anyway, because `deriveDefaultSecuritySector` authors no
+  patrol route in a session a player can start, so a hired guard mostly stands
+  at a fixed post and the teleport-between-waypoints case that worried ADR 0059
+  is the rare one, not the common one, and it degrades to exactly the
+  motionless-snapshot look a prisoner had before ADR 0059 -- which shipped and
+  was fine. **What has not changed**: a guard record still carries zero
+  velocity and zero heading, always, because `GuardRecord.tileX`/`tileY` still
+  update only on arrival -- see "How a prisoner is drawn while walking" below
+  for what that costs a guard next to a walking prisoner.
 
   > **Prisoner movement was in this list until ADR 0059, and the paragraph that
   > held it read:** *"The render delta channel is not what is missing for
@@ -343,11 +354,16 @@ it is on.
   the clock runs. Without that a prisoner walking at ten tiles a second moves
   in whole-tile steps ten times a second.
 
-  Guards are the other population whose tiles the simulation already holds
-  (`simulation.security.guards`, as `GuardRecord.tileX`/`tileY`), and they are
-  reachable **without** waiting for anything: the delta's record carries a
-  population ordinal for exactly this, and ADR 0040 puts guards in slice 2 with
-  their own asset choice.
+  Guards are the other population whose tiles the simulation holds
+  (`simulation.security.guards`, as `GuardRecord.tileX`/`tileY`), and this
+  paragraph used to say they were reachable "without waiting for anything" and
+  named ADR 0040 slice 2 as the step that would do it. That step has landed
+  (see "Guards, until #414's surviving half" above): a guard is drawn at
+  `GUARD_ACTOR_ASSET_ID`, at whatever tile `GuardRecord` last recorded, with
+  `deltaX`/`deltaY` always `0` -- there is no sub-tile position or velocity to
+  publish for a population that only ever teleports on arrival, so a guard
+  always renders in its idle clip, never its walk clip, unlike a prisoner
+  after ADR 0059.
 
 - **Environment art, for everything except floors, walls and doors.** Three of
   the 23 sheets under `public/game-content/source-art/` are now read

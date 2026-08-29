@@ -1,7 +1,9 @@
 import { createWalkReading, type WalkReading } from '../locomotion';
 import {
   packRenderActorFields,
+  RENDER_ACTOR_POPULATION_GUARD,
   RENDER_ACTOR_POPULATION_PRISONER,
+  RENDER_ACTORS_SUBTILE_UNITS,
   RenderActorsKeyframeWriter,
 } from '../protocol/render-actors-payload';
 
@@ -9,13 +11,15 @@ import {
  * The worker's half of the render delta channel: one keyframe, read off the
  * live simulation.
  *
- * ADR 0040 slice 1. This is the counterpart of
- * `src/rendering/feed/actors-from-snapshot.ts` -- the same population, the same
- * two sources of truth, the same refusal to invent a field -- with one
- * difference that is the entire point: `actorsFromSnapshot` reads a *captured
- * session bundle*, so producing it costs a full `captureSessionSnapshot`, while
- * this reads the live component arrays directly and costs one walk of the
- * allocated prefix.
+ * ADR 0040 slice 1 for prisoners, slice 2 for guards (this file used to write
+ * prisoners only, with a comment naming guards as a later slice's job -- this
+ * is that slice). This is the counterpart of
+ * `src/rendering/feed/actors-from-snapshot.ts` -- the same two populations, the
+ * same two sources of truth per population, the same refusal to invent a field
+ * -- with one difference that is the entire point: `actorsFromSnapshot` reads a
+ * *captured session bundle*, so producing it costs a full
+ * `captureSessionSnapshot`, while this reads the live prisoner component arrays
+ * and the live `GuardRoster` directly and costs one walk of each.
  *
  * ### Strictly a read
  *
@@ -37,13 +41,29 @@ import {
  * `EntityId` is packed from -- a recycled slot must not inherit the pooled
  * sprite of the prisoner that used to occupy it.
  *
+ * `RenderGuardSource` needs no such ledger: `GuardRoster.allGuardIds()` is
+ * already exactly the live set (its own `Map`, nothing clears an entry from
+ * it today -- see `actors-from-snapshot.ts`'s "No liveness join" paragraph,
+ * which states the same fact for the snapshot channel this mirrors).
+ *
+ * ### Why a guard record always carries zero velocity and zero heading
+ *
+ * `GuardRecord.tileX`/`tileY` update only on arrival (`patrol-system.ts`);
+ * ADR 0059 gave prisoners a `LocomotionStore` between two tiles and left
+ * guards on that convention. There is no sub-tile position or velocity to
+ * read for a guard, so writing one would be inventing simulation state this
+ * layer does not have -- the same refusal `RenderActorSource.locomotion`'s own
+ * comment states for prisoners, applied to a population that genuinely has
+ * nothing to read.
+ *
  * ### Two passes, deliberately
  *
  * The buffer's size is a function of the live count, so the count has to be
  * known before the first byte is written. The first pass reads one liveness
  * flag per allocated slot and the second writes one record per live actor;
  * growing a buffer instead would allocate and copy, which is what this format
- * exists to stop.
+ * exists to stop. Guards need only the second pass, because
+ * `RenderGuardSource.allGuardIds()` already answers the count.
  */
 
 /** The narrow slice of `PrisonerOperationsRuntime` this reads. Structural, so a test needs no session. */
@@ -72,15 +92,40 @@ export interface RenderActorSource {
 }
 
 /**
- * The complete live prisoner population as one keyframe buffer.
+ * The narrow slice of `GuardRoster` this reads. Structural, so a test needs no
+ * session -- the same reason `RenderActorSource` is an interface and not the
+ * prisoner runtime type itself.
  *
- * Emitted in ascending entity-index order: the canonical order
- * `EntityQuery.execute` walks (ADR 0005), so the same session produces the same
- * bytes on every client and after a save/restore round trip. Nothing downstream
- * depends on the order -- `ActorLayer` keys sprites by id -- but a projection
- * with an arbitrary order is a needless place for two clients to differ.
+ * No `entityStore`/liveness member, unlike `RenderActorSource`: `allGuardIds`
+ * is already the live set (see the module comment's "Which slots are live"
+ * section), and no `locomotion` member, because a guard has none to read.
  */
-export function encodeRenderActorsKeyframe(source: RenderActorSource, ticksPerWallSecond: number): ArrayBuffer {
+export interface RenderGuardSource {
+  allGuardIds(): readonly number[];
+  getTile(entityId: number): { readonly x: number; readonly y: number };
+}
+
+/**
+ * The complete live prisoner and guard populations as one keyframe buffer.
+ *
+ * `guards` is optional so a caller with no `GuardRoster` handy -- every
+ * existing test that predates ADR 0040 slice 2 -- keeps encoding prisoners
+ * alone; omitting it is exactly "this session has no guards", the same
+ * meaning an empty roster would produce.
+ *
+ * Emitted in ascending entity-index order within each population --
+ * prisoners in the canonical order `EntityQuery.execute` walks (ADR 0005),
+ * then guards in `allGuardIds`'s ascending entity-id order -- so the same
+ * session produces the same bytes on every client and after a save/restore
+ * round trip. Nothing downstream depends on the order -- `ActorLayer` keys
+ * sprites by id -- but a projection with an arbitrary order is a needless
+ * place for two clients to differ.
+ */
+export function encodeRenderActorsKeyframe(
+  source: RenderActorSource,
+  ticksPerWallSecond: number,
+  guards?: RenderGuardSource,
+): ArrayBuffer {
   if (!Number.isFinite(ticksPerWallSecond) || ticksPerWallSecond <= 0) {
     throw new RangeError(`A render-actors keyframe needs a positive tick rate to express velocity in, got ${String(ticksPerWallSecond)}.`);
   }
@@ -96,7 +141,8 @@ export function encodeRenderActorsKeyframe(source: RenderActorSource, ticksPerWa
     if (entityStore.isIndexAlive(index)) liveCount += 1;
   }
 
-  const writer = new RenderActorsKeyframeWriter(liveCount);
+  const guardIds = guards?.allGuardIds() ?? [];
+  const writer = new RenderActorsKeyframeWriter(liveCount + guardIds.length);
   // One reading, refilled per actor: the whole cost argument for this encoder
   // is that it allocates nothing per actor, and `WalkReading` is documented as
   // filled in place for that reason.
@@ -118,5 +164,23 @@ export function encodeRenderActorsKeyframe(source: RenderActorSource, ticksPerWa
       Math.round(reading.velocitySubY * ticksPerWallSecond),
     );
   }
+
+  // Guards: zero velocity and zero heading on every record, because a
+  // `GuardRecord` tile updates only on arrival -- see the module comment's
+  // "Why a guard record always carries zero velocity and zero heading".
+  if (guards !== undefined) {
+    for (const guardId of guardIds) {
+      const tile = guards.getTile(guardId);
+      writer.writeRecord(
+        guardId,
+        packRenderActorFields(RENDER_ACTOR_POPULATION_GUARD, 0, 0),
+        tile.x * RENDER_ACTORS_SUBTILE_UNITS,
+        tile.y * RENDER_ACTORS_SUBTILE_UNITS,
+        0,
+        0,
+      );
+    }
+  }
+
   return writer.finish();
 }

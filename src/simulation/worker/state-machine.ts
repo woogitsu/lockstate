@@ -570,9 +570,10 @@ export class SimulationWorkerStateMachine {
    * in the layout so that landing them changes no version.
    *
    * **Strictly a report**, exactly like `publishClockState` and
-   * `publishStatusCounts`. It reads `Kernel.tick` and the prisoner position SoA
-   * after the tick loop has finished stepping, calls nothing on the kernel,
-   * steps nothing and writes nothing but the buffer it posts
+   * `publishStatusCounts`. It reads `Kernel.tick`, the prisoner position SoA and
+   * the live `GuardRoster` (ADR 0040 slice 2) after the tick loop has finished
+   * stepping, calls nothing on the kernel, steps nothing and writes nothing but
+   * the buffer it posts
    * (`tests/determinism/render-delta-publication.test.ts`). There is no request
    * that provokes it and no main-thread module that can ask for one, so there
    * is no feedback path from the renderer into the simulation to close --
@@ -602,7 +603,7 @@ export class SimulationWorkerStateMachine {
     // of which the main thread should have to track (ADR 0059).
     const control = this._clock.control;
     const ticksPerWallSecond = (1_000 / this._clock.stepMilliseconds) * (control.mode === 'running' ? control.speed : 1);
-    const data = encodeRenderActorsKeyframe(this._runtime.prisoners, ticksPerWallSecond);
+    const data = encodeRenderActorsKeyframe(this._runtime.prisoners, ticksPerWallSecond, this._runtime.securityGuards);
     const message: WorkerToMainMessage = {
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
       messageId: crypto.randomUUID(),
