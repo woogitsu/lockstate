@@ -45,6 +45,7 @@ let modulesPromise;
 let optionsPromise;
 let rngPromise;
 let actorPublicationPromise;
+let runtimePromise;
 
 export function assertTypeScriptTransformEnabled() {
   if (process.features.typescript === 'transform') return;
@@ -148,6 +149,33 @@ export async function loadProductionNavigationOptions() {
     (module) => module.DEFAULT_NAVIGATION_SYSTEM_OPTIONS,
   );
   return optionsPromise;
+}
+
+/**
+ * The whole session composition root and the bare kernel class, loaded once
+ * per process. `createNewSimulationRuntime` is the one function that wires
+ * every registered system exactly as a real session does -- so a benchmark
+ * that measures per-system tick cost against it is measuring the shipped
+ * graph, not a hand-assembled stand-in of it. `Kernel` is exported alongside
+ * it so a benchmark can register a subset of the same system instances
+ * (`runtime.navigation`, say) on a fresh kernel of its own, to isolate one
+ * system's tick cost without rebuilding the object graph around it.
+ */
+export async function loadSimulationRuntimeModules() {
+  assertTypeScriptTransformEnabled();
+  registerTypeScriptResolution();
+
+  runtimePromise ??= (async () => {
+    const [newSession, kernel] = await Promise.all([
+      importSimulation('runtime/new-session.ts'),
+      importSimulation('kernel/kernel.ts'),
+    ]);
+    return Object.freeze({
+      createNewSimulationRuntime: newSession.createNewSimulationRuntime,
+      Kernel: kernel.Kernel,
+    });
+  })();
+  return runtimePromise;
 }
 
 /**
