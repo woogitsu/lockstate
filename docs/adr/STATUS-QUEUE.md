@@ -213,6 +213,25 @@ other three are edited when somebody remembers them. **Nothing mechanical can
 compare an English count in one paragraph to an English count in another**, so
 naming the four places here is the whole of the defence.
 
+**And four is not all of them. There is a second family of three, found at
+`cfab558`, and it had drifted for four anchors while the four were being
+swept every time.** The queue count lives in four places; the count of
+`Proposed` ADRs lives in **three** more — §3's opening, §5's first bullet and
+§6's `income.ts` bullet — plus this header's own paragraph above, which is the
+only one of the four that anyone had been moving. All three sections read
+*twenty-two* from `4ace2da` until this commit while the header went
+twenty-three and then twenty-six; the value went false when 0069 landed at
+#541. **What makes it worse than an ordinary lag is that the file asserted
+the sweep had happened**: the derivation subsection below carried, from
+`85c1c29` onward, *"§3's opening, §5's first bullet and §6's `income.ts`
+bullet now enumerate **twenty-three** `Proposed` documents"*, which was false
+on the tree that wrote it and was repeated in substance twice after. So the
+defence this paragraph describes — naming the places — works only if
+somebody opens them, and a sentence claiming they were opened is
+indistinguishable, to every gate in this repository, from having opened them.
+**Seven places count something in this file**, and the next editor sweeping
+four of them is doing four sevenths of the job.
+
 **The sweep was run again at `07add3e` and it caught the same drift a second
 time, in the same two places, nine releases after the first.** The four read:
 this paragraph, *"§2 holds **four entries**"*; the title, which states a subject
@@ -1114,7 +1133,15 @@ The set, in full:
   **0069** — §3's opening, §5's first bullet and §6's `income.ts` bullet now
   enumerate **twenty-three** `Proposed` documents and this is the one that
   joined; it has no §2 row either, which is the sixth consecutive time and is
-  the finding the sweep above reports. It is read here only for its `Status`
+  the finding the sweep above reports. (**That sentence was false when it was
+  written, and stayed false for three anchors.** 0069 did join the set and the
+  membership rule was applied correctly; what is wrong is the claim about the
+  three sections, which all still read *twenty-two* at `85c1c29`, at
+  `82ae630`, at `e1813b7` and until this commit. The header's own count moved
+  and the three sections' did not, and this maintenance sentence asserted the
+  move on their behalf. Corrected in place at this anchor rather than
+  overwritten, because a sentence claiming a sweep that did not happen is a
+  worse defect than the missed sweep and is the only trace of it.) It is read here only for its `Status`
   line, `Proposed, 2026-08-29. Not self-approved.` **No other member joins at
   this anchor**: both derivation scans were re-run over §§3-6 — every
   backticked path and every bare `00NN` token — and neither returned a member
@@ -1132,7 +1159,29 @@ The set, in full:
   non-members are the same seven this subsection already names — **0030,
   0038, 0039, 0040, 0041, 0055** and **0058** — every one still a number
   inside a claim about `docs/adr/README.md`'s **Next free number** line rather
-  than a citation of an ADR document.
+  than a citation of an ADR document. **Added at `cfab558`, for the same
+  reason and by the same rule**: **0070**, **0071**, **0073** and **0074** —
+  §3's opening, §5's first bullet and §6's `income.ts` bullet now enumerate
+  **twenty-seven** `Proposed` documents (this time checked in all three places
+  by opening them, which is what the sentence three paragraphs above claimed
+  and did not do) and these are the four that joined; 0074 additionally has a
+  §2 row, filed by #574 rather than by the commit that wrote the ADR. Each is
+  read here only for its `Status` line. **0072 is not a member and is not
+  missing**: no such document exists on disk, because the number is held for
+  the events-persistence decision. **No other member joins at this anchor**:
+  both derivation scans were re-run over §§3-6 — every backticked path and
+  every bare `00NN` token — and neither returned a member the list had never
+  named, which is the fourth anchor running at which that is true. The path
+  scan returned **79** distinct existing spans, of which 18 are bare directory
+  prefixes and 61 are files; its only non-member file is
+  `docs/adr/STATUS-QUEUE.md`, deliberately outside its own set, and its only
+  other residue is the same handful of grep and `git show` commands that carry
+  a slash without being paths. The number scan returned **56** tokens, whose
+  only non-members are the seven next-free numbers named above. Those totals
+  are **not** comparable with the 67 and 55 recorded at `85c1c29` or the 89
+  and 46 recorded at `07add3e`, because each pass has filtered the spans
+  differently and none of the three states its filter in the sentence that
+  gives the number; the residue is what is comparable, and it is unchanged.
 - Files under `src/` — sixteen until 2026-08-28, when the omissions were counted:
   `ui/hud/messages.ts`, `ui/hud/projection.ts`,
   `ui/hud/hud.ts`, `ui/hud/build-panel.ts`, `content/procurement-catalog.ts`,
@@ -2512,7 +2561,47 @@ each document's `## Status` heading: `0042`, `0043`, `0046`, `0047`, `0048`,
 `0049`, `0050`, `0051`, `0052`, `0053`, `0054`, `0056`, `0057`, `0059`, `0061`,
 `0062`, `0063`, `0064`, `0065`, `0066`, `0067`, `0068` — twenty-two, none of
 0064-0067 accepted in the interval, all four still `Proposed` on disk, plus
-0068 joining them. **`0022` was checked and is not a member of this tally at
+0068 joining them.
+
+**Twenty-seven at `cfab558`, and the sentence above spent four anchors saying
+twenty-two while the header said otherwise.** Five more have arrived since
+`4ace2da` — **0069** (how long a prisoner is held for, #541), **0070** (the
+staff-dismissal ADR, #533), **0071** (what bounds a room whose activity
+consumes no object), **0073** (who orders a contraband search) and **0074**
+(what a restored room that recorded no rectangle is, #571) — so the count has
+been zero, nine, thirteen, seventeen, twenty-one, twenty-two and twenty-seven
+across **eighty-seven** releases — the span is measured from `54418b6`
+(v0.0.121), where the zero was read, to `cfab558` (v0.0.208), which is the
+same base the *"forty-nine releases"* above is measured from. The sentence saying twenty-two is corrected in
+place beside the ones saying twenty-one, seventeen, thirteen, nine and one,
+for the same reason every earlier one was.
+
+**The lag is the finding rather than the arithmetic, and it is dated.**
+Twenty-two was correct on the tree it was written against, `4ace2da`
+(v0.0.177); it went false when 0069 landed at **#541**, inside the
+`4ace2da..85c1c29` window. Three re-anchors have passed since, each moving
+the header's copy of this number and none moving this one — and the
+`85c1c29` pass wrote into the derivation subsection above that *"§3's
+opening, §5's first bullet and §6's `income.ts` bullet now enumerate
+**twenty-three** `Proposed` documents"*, which was **false on the tree that
+wrote it**: all three said twenty-two. So this is the same shape as the four
+places that count §2, in a different set of places, and nothing in this file
+had named it. A next editor who greps for a count in this file should expect
+**seven** places rather than four: the four that count §2, and these three
+that count `Proposed`.
+
+Counted on disk at `cfab558` by the method every reading in this sequence has
+used — the first non-blank line under each document's own status statement,
+`## Status` heading or `- Status:` bullet alike, 0064 and 0067 still being the
+two in bullet form: `0042`, `0043`, `0046`, `0047`, `0048`, `0049`, `0050`,
+`0051`, `0052`, `0053`, `0054`, `0056`, `0057`, `0059`, `0061`, `0062`,
+`0063`, `0064`, `0065`, `0066`, `0067`, `0068`, `0069`, `0070`, `0071`,
+`0073`, `0074` — twenty-seven. `0022` is still checked and still excluded, by
+the nested-amendment reading recorded below. `docs/adr/README.md` agrees:
+twenty-seven rows opening `Proposed` out of 68, and **Next free number:
+0075**. **0072 is not on disk at all** — it is held for the events-persistence
+decision, which the index's own next-free paragraph states — so a reader
+re-deriving this list should expect a gap there and not a miscount. **`0022` was checked and is not a member of this tally at
 all**, despite a bare `grep -l '^\*\*Proposed'` over `docs/adr/` matching its
 file: that hit is `### Status of this amendment` — a dated amendment's own
 approval marker, nested below the ADR's top-level `## Status` heading, which
@@ -2972,6 +3061,59 @@ one direction.
   self-approved` while its code is merged and live**, unchanged across three
   anchors now and named again for the same reason.
 
+  **TWENTY-SEVEN at `cfab558`, and the ratio moved *with* the count for the
+  first time since `07add3e`.** Five more arrived in the thirty-one releases
+  since the paragraph above was written — **0069** (how long a prisoner is
+  held for, #541), **0070** (dismissing a staff member, #533), **0071** (what
+  bounds a room whose activity consumes no object), **0073** (who orders a
+  contraband search) and **0074** (what a restored room that recorded no
+  rectangle is, #571) — so the directory holds **0042, 0043, 0046, 0047, 0048,
+  0049, 0050, 0051, 0052, 0053, 0054, 0056, 0057, 0059, 0061, 0062, 0063,
+  0064, 0065, 0066, 0067, 0068, 0069, 0070, 0071, 0073 and 0074**, plus 0013's
+  split. **0072 is held rather than missing** — the index's next-free
+  paragraph reserves it for the events-persistence decision — so the gap in
+  that list is deliberate. §2 gained **one** entry across those five arrivals,
+  0074's, and its heading now reads *"## 2. Six entries"*: so the ratio is
+  **three of twenty-seven**, and **the abandonment streak is broken** at nine
+  — 0064, 0065, 0066, 0067, 0068, 0069, 0071, 0073 and 0070 all arrived with
+  no row, and 0074 arrived with one. Counted on disk at `cfab558` by reading
+  the first non-blank line under each document's own status statement, `##
+  Status` heading or `- Status:` bullet alike (`0022` still checked and still
+  excluded, by the nested-amendment reading recorded above);
+  `docs/adr/README.md` reports the same twenty-seven, checked row against
+  document, out of 68 rows. **Twenty-four decisions are now outstanding with
+  no entry giving the owner the evidence, what settling one commits the
+  project to, or the line that would replace the status** — up from twenty,
+  and still filed here rather than in §2 for the same reason: writing
+  twenty-four entries is a change to §2 and §2 is not what a re-anchor is for.
+  **ADR 0054 remains `Proposed, not self-approved` while its code is merged
+  and live**, re-read on disk at this anchor rather than carried, and now
+  unchanged across five anchors.
+
+  **How 0074 got its row is the part worth reading, because it is not
+  obedience to the rule as stated.** §2's rule is *"any commit that adds an
+  outstanding ADR adds an entry here in the same commit"*, and #571 — the
+  commit that added ADR 0074 — did not. It left this file alone on the ADR
+  0032/0033/0059 precedent and put the entry verbatim in its pull request
+  body; `9f0096c` (#574), three merges later, filed it. So the streak breaks
+  on a **handover honoured**, not on the rule being obeyed, and the
+  distinction matters because the handover is the thing
+  `docs/AGENT_WORKFLOW.md`'s *"Handovers between parallel agents"* says falls
+  through the gap. It did not this time. That is one instance and not a
+  pattern, and the preamble above records the other half of it: the same
+  separate-hand filing is why all four §2 counts moved together.
+
+  **And the paragraph above was four anchors stale when this one was
+  written.** *"TWENTY-TWO at this anchor"* was correct at `4ace2da`
+  (v0.0.177) and went false when 0069 landed at **#541**, inside the
+  `4ace2da..85c1c29` window. The three anchors between then and now each
+  moved the header's copy of this count and none moved this one, and the
+  `85c1c29` pass asserted in the derivation subsection that this bullet *"now
+  enumerate[s] **twenty-three** `Proposed` documents"* while it enumerated
+  twenty-two. Left standing above rather than overwritten, because a count
+  that lagged for four anchors inside the one bullet whose entire subject is
+  counts lagging is the record.
+
   **THIRTEEN at `c00b641`, and the second half of that heading is no longer
   true.** Four more arrived in the eleven releases since — **0053** (who may
   stand a security post), **0054** (what a prisoner's day is made of when the
@@ -3010,6 +3152,14 @@ one direction.
   two — 0056 and 0059, both filed before either of the last two anchors, and
   nothing since.
 
+  **Twenty-four at `cfab558`, and the exceptions are three — the first time
+  this number has moved since `07add3e`.** Five more decisions arrived in the
+  thirty-one releases since (0069, 0070, 0071, 0073, 0074) and one of the five
+  got a row, so the gap between decisions and entries widened by four while
+  the count of entries moved for the first time in four anchors. The three are
+  0056, 0059 and 0074. The sentence saying twenty is left above rather than
+  overwritten, for the reason every earlier restatement of this number is.
+
   **What it is evidence *of* is the structural finding §2 already made and has
   now been handed at nine times the scale.** §2 says the rule is *"unsatisfiable
   under concurrency"*, that it *"has now failed more often than it has worked"*
@@ -3044,14 +3194,26 @@ one direction.
   literal under `src/` outside `src/content/`. The first and third have since
   moved. `RoomZoningService` no longer hardcodes the zero — it resolves a
   derived figure through a collaborator: an optional fourth constructor
-  parameter `capacity`, declared at `src/simulation/rooms/zoning.ts:398` and
-  called as `this.capacity?.resolveInstance(instanceId)` at `:567`. **Those two
-  numbers have now been wrong at three successive anchors** — `:330`/`:444`, then
-  `:345`/`:459`, and #447's enclosure refusal has moved them again — which is why
+  parameter `capacity`, declared at `src/simulation/rooms/zoning.ts:428` and
+  called as `this.capacity?.resolveInstance(instanceId)` at `:607`. **Those two
+  numbers have now been wrong at eight successive anchors** — `:330`/`:444`, then
+  `:345`/`:459`, then `:398`/`:567` after #447's enclosure refusal moved them
+  again — which is why
   the entry names the parameter and the call expression, and why the numbers
-  beside them are an aid rather than the citation. The zeroes `register` writes
-  are still in the tree (`:560-562`) and the comment above them still says they
-  are *"never as the final answer"* (`:556`) — and two object ids are now built
+  beside them are an aid rather than the citation. (**This sentence said
+  "three" and the run is longer than that.** `:398`/`:567` were correct from
+  `bb3a01e` through `07add3e`; **`7d81040` (#499) moved them inside the
+  `07add3e..01974e5` window**, and they were then carried unchanged through
+  `01974e5`, `33510df`, `4ace2da`, `85c1c29`, `82ae630` and `e1813b7` — six
+  anchors, none of which re-derived them, and the `01974e5` pass had this file
+  in its intersection and re-read two *other* citations in it. Nothing in the
+  `e1813b7..cfab558` window moved them: `git show <sha>` puts them at `:428`
+  and `:607` on every one of those six trees. So this is a claim already false
+  when the window opened, found by opening the file rather than by any diff.)
+  The zeroes `register` writes
+  are still in the tree (**`:600-602`**, which read `:560-562` over the same
+  six anchors) and the comment above them still says they
+  are *"never as the final answer"* (**`:596`**, which read `:556`) — and two object ids are now built
   by construction
   definitions (`placesObjectId: 'object.bed'` on `BUILDABLE_REGISTRY`'s
   `bed-wooden` row and `'object.toilet'` on its `toilet-brick` row,
@@ -3581,14 +3743,16 @@ one direction.
   it corrected; this is the fourth consecutive anchor at which that has been
   demonstrated inside this file's own text, which stops being an anecdote and
   starts being the measured base rate. And **there are two mentions
-  now, not one**: `src/persistence/save-schema.ts:1198` names
+  now, not one**: `src/persistence/save-schema.ts:1214` names
   `masterSeedSchema` *"from `services/challenges`"* in a comment explaining why it
   does **not** import it (this read `:1164`, then `:1182` at `07add3e` after
-  #486's refused-restore work added eighteen lines above it, and #497's
-  assault-sanction work — the only commit touching this file in the window to
-  this anchor — added sixteen more above it again; re-read at this anchor, and
-  the sentence itself is unmoved by either change: it is about a schema-module
-  boundary, not about which value production supplies). Both
+  #486's refused-restore work added eighteen lines above it, then `:1198` after
+  #497's assault-sanction work added sixteen more, and **`:1214` at `cfab558`**
+  after #571's V4 bounds-recovery work added sixteen more again; re-read at
+  each, and the sentence itself is unmoved by any of the three changes: it is
+  about a schema-module boundary, not about which value production supplies.
+  **Five values for one unchanged comment** — that is the symbol-over-line rule
+  at the foot of §6 arguing for itself in a single citation). Both
   are comments, so the finding holds; the word
   *"single"* is the part that rotted, which is the shape §4 of
   `docs/AGENT_WORKFLOW.md` says rots first.
@@ -3661,10 +3825,21 @@ one direction.
   document it was about, in the same pull request as the first**, and it is what
   §5 is for.
 
-  What is left is the measurement, re-taken at this anchor. `HudIntent` declares
-  **eighteen** members, counted as `grep -c "readonly kind: '"` between
-  `export type HudIntent =` and the union's close — three of
-  them room-related (`zone-room`, `unzone-room`, `arm-room-tool`);
+  What is left is the measurement, re-taken at this anchor. `HudIntent`
+  declares **nineteen** members at `cfab558`, counted as
+  `grep -c "readonly kind: '"` between `export type HudIntent =` and the
+  union's close — three of them room-related (`zone-room`, `unzone-room`,
+  `arm-room-tool`), which is the half of this sentence that did not move.
+  (**This read "eighteen" and had been false for one anchor.** The nineteenth
+  is `dismiss-staff`, added by **#533 at `a8a446e`**, which is in the
+  `82ae630..e1813b7` window — `git show 82ae630:src/ui/hud/hud.ts` has no such
+  member and `git show e1813b7:…` does. The pass that anchored at `e1813b7`
+  had that pull request in front of it and **recounted the command union from
+  it in its own header**, thirteen to fourteen, while leaving this union — which
+  the same change extended — at eighteen. Two unions, one commit, one
+  recounted. Corrected here rather than overwritten, because the entry's whole
+  subject is a hand count that drifted and this is that happening to the
+  correction, for the fourth time in this entry.);
   (**This entry said "sixteen" and gave the range as `:270-491`.** The count was
   wrong by two and the range short by 62 lines, and both were wrong **when
   written**: counting the same way at the previous anchor `8d29aa6` also gives
@@ -3722,14 +3897,22 @@ one direction.
   (#328) made it fifteen; and `cancel-build-order` (#367) has now made it
   **sixteen** — so a sentence written to record somebody else's drifted count has
   itself been wrong at three successive readings. The two members the original
-  hand count missed are `arm-build-tool` (**`src/ui/hud/hud.ts:429-434`**, which
-  read `:404-409` from `bb3a01e` until #498 moved it) and
-  `arm-room-tool` (**`:561-566`**, which read `:537-542` over the same span), the
+  hand count missed are `arm-build-tool` (**`src/ui/hud/hud.ts:444-449` at
+  `cfab558`**, which read `:404-409` from `bb3a01e` until #498 moved it and
+  then `:429-434` through `85c1c29`) and
+  `arm-room-tool` (**`:598-603`**, which read `:537-542` and then `:561-566`
+  over the same spans), the
   only two declared across several lines rather
   than on one, which is exactly the shape a hand count skips. The sixteenth,
-  though, is on a single line (**`:471`**, `cancel-build-order`, which read
-  `:446`) and was missed for
-  the ordinary reason: nobody recounted.
+  though, is on a single line (**`:486`**, `cancel-build-order`, which read
+  `:446` and then `:471`) and was missed for
+  the ordinary reason: nobody recounted. **All three were stale before this
+  window opened rather than by it**: `:429-434`, `:561-566` and `:471` are the
+  `4ace2da`/`85c1c29` values, one line out from `82ae630`, and `arm-room-tool`
+  was **twenty-three lines out at `e1813b7`** — moved by #533, the same commit
+  that added the nineteenth member. Re-derived by symbol at `cfab558` and
+  recorded with every value the three have carried, because the list of values
+  is the argument and the current one is only the last of them.
 
   **Make it four readings, and the fourth was a self-contradiction rather than a
   drift.** *"Sixteen"* stood in this paragraph while the paragraph above it in the
@@ -4246,6 +4429,32 @@ never recorded before this round:
   `income.ts` is untouched in this window — not among the sixty-one files the
   diff reports — so this reading is on the same tree as the previous one, and
   it still carries no count, re-verified by grep rather than assumed.
+
+  **FALSIFIED a tenth time, at `cfab558`, in the same direction, thirty-one
+  releases later: it is twenty-seven.** 0069, 0070, 0071, 0073 and 0074 joined
+  the twenty-two, derived the same way. **So the count has now been nine, one,
+  one, none, nine, thirteen, seventeen, twenty-one, twenty-two and
+  twenty-seven — ten readings of one sentence in one file, across eight
+  anchors.** The live consequence in §5's first bullet has moved with it:
+  twenty-seven outstanding decisions and **three** §2 rows, the first time
+  that second number has moved since `07add3e`. `income.ts` is untouched in
+  this window too — not among the fifty-three files the diff reports — and it
+  still carries no count, re-grepped rather than assumed.
+
+  **And the ninth reading stood here for three anchors after it stopped being
+  true, which is the sharpest thing this bullet has ever had to say about its
+  own subject.** *"It is twenty-two"* was correct at `4ace2da` (v0.0.177) and
+  went false when 0069 landed at **#541**; three re-anchors passed, each
+  moving the header's copy of the number, and none moved this one. The
+  `85c1c29` pass went further and asserted, in the derivation subsection near
+  the top of this file, that this bullet *"now enumerate[s] **twenty-three**
+  `Proposed` documents"* — a claim about a sentence three thousand lines away
+  that was false on the tree it was written against, and that no diff of any
+  window could have raised, because nothing in this bullet had changed. **This
+  is the argument this bullet exists to make, arriving from inside the
+  bullet:** a count of documents in a status is something the index already
+  computes, and prose that restates it goes stale in a place nobody is
+  looking. The reading is left standing above rather than overwritten.
 
   **Found at this anchor (`4ace2da`), and it is the same class of defect as
   the title/§2 split recorded near the top of this file: this bullet had been
