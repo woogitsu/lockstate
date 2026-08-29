@@ -4798,8 +4798,37 @@ test.describe('the assembled application', () => {
      * and the same ten wall segments are behind it: ADR 0045 makes an enclosed
      * perimeter a precondition of `zone`, so a *successful* Designate cannot be
      * reached without building one first. Measured end to end at ~110 s.
+     *
+     * **`test.slow()` is not enough, and the ~110 s above is why it looked as
+     * though it were.** That figure is real and was taken on an idle machine;
+     * `test.slow()` triples the 60 s budget to 180 s, which reads like 60 s of
+     * headroom. It is not, because this test's cost is dominated by keyboard
+     * round trips through the assembled page -- six command presses, each
+     * reached by a `Tab` walk that costs one `page.evaluate` per press -- and
+     * that cost scales with how contended the machine is rather than with
+     * anything the test does. Re-measured on this branch with three other
+     * Playwright runs live (load average ~9): **2.8 min**, or 93% of the 180 s
+     * budget, and two earlier runs at the same load went over it and failed --
+     * on `keyboard.press` once and on `locator.getAttribute` the next, which
+     * is the signature of a test running out of time rather than of any one
+     * step being wrong.
+     *
+     * So the budget is set explicitly, and against the *contended* measurement
+     * rather than the idle one. 300 s is ~1.8x the loaded figure. This is not
+     * a timeout raised over a flaky assertion: nothing below is weakened,
+     * nothing polls for longer, and every press is still asserted to have been
+     * a real command before its focus is read. It is a budget set against the
+     * conditions CI actually runs in.
+     *
+     * Recorded because it was nearly misdiagnosed: those two failures were
+     * first read as a Tab walk broken by the Build catalogue's roving tab stop
+     * (#524), which had landed on `main` between this branch's base and its
+     * merge. An A/B of this test on the pre-merge commit and on the merge, at
+     * recorded load, killed that: **2.8 min passing before, 2.7 min passing
+     * after**. #524 shortened the Build walk from 43 presses to 23, so if
+     * anything it made this test faster, which is what the second figure says.
      */
-    test.slow();
+    test.setTimeout(300_000);
     await page.setViewportSize({ width: 1280, height: 800 });
     await installTrustedPointerTripwire(page);
     await installBusyTransitionRecorder(page);
