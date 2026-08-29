@@ -144,12 +144,6 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   nothing is the precondition for any such claim, and re-running one test while
   another suite runs proves nothing at all. Let the PR's own `browser` job be the
   gate.
-  **Do not wrap that check in `until ! ps … | grep -q "[p]laywright/test/cli"; do
-  sleep …; done`.** It deadlocks: the waiting shell's own command line contains
-  the pattern, so the loop matches itself and waits for ever. Two agents sat
-  spinning on an already-idle machine on 2026-08-28 before one of them worked out
-  why. Append `| grep -v "bash -c"`, or just run the check by hand between runs —
-  the point is a decision, not a wait.
 - **A local browser run in the worktree you are editing is not a baseline.** Vite
   serves `src/**` live, so a run started before your edits reads them off disk as
   they land, and a "before" measurement taken that way is a measurement of the

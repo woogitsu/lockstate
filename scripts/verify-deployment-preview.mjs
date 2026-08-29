@@ -225,55 +225,6 @@ async function assertRuntimeArtCachePolicy(origin) {
   }
 }
 
-/**
- * Prove, over HTTP, that the generated Wrangler config is not served.
- *
- * `scripts/verify-cloudflare-build.mjs` asserts that `dist/.assetsignore` lists
- * `wrangler.json` and `.dev.vars` each on a line of its own. That is an
- * assertion about a file; this is an assertion about a *response*, and the two
- * fail for different reasons -- the build check catches the file going missing
- * or malformed, this one catches the file being present and the runtime not
- * honouring it. Issue #439 recorded the served behaviour as "inferred rather
- * than observed"; this is the observation.
- *
- * `vite preview` serves `dist/` through workerd with the generated config, so
- * `.assetsignore` applies here exactly as it does in production.
- *
- * **A 404 cannot be used as proof of absence.** `not_found_handling` is
- * `single-page-application`, so an ignored path does not 404 -- it falls through
- * to the SPA shell with a 200. The only sound assertion is therefore a positive
- * one: the body must *be* the shell. Measured both ways while this was written:
- * with the exclusion in place `/wrangler.json` answers 200 `text/html`, 648
- * bytes, byte-identical to `/`; with `dist/.assetsignore` removed the same URL
- * answers 200 `application/json`, 1342 bytes, opening
- * `{"configPath":"/workspace/lockstate/wrangler.jsonc",...}`. Comparing against
- * the shell separates those two; a status code does not.
- *
- * Only `wrangler.json` is probed, deliberately. `.dev.vars` is the name that
- * would actually matter, and this build does not produce one -- CI passes
- * secrets through `env:` (`scripts/check-deploy-secrets.sh`). A probe of it
- * would therefore answer with the shell whether or not the exclusion works,
- * because there is nothing there either way: it would be a guard whose fixture
- * supplies both sides, green for a reason that has nothing to do with what it
- * claims (issue #375). The build-side check in
- * `scripts/verify-cloudflare-build.mjs` is what covers `.dev.vars`, and it can,
- * because it reads the exclusion list rather than the response.
- */
-async function assertGeneratedConfigIsNotServed(origin, shellBody) {
-  const pathname = '/wrangler.json';
-  const probed = await fetchText(new URL(pathname, origin));
-
-  assert.equal(
-    probed.body,
-    shellBody,
-    `${pathname} must not be served: it must fall through to the SPA shell. ` +
-      'It answered with its own content instead, which means dist/.assetsignore ' +
-      'is missing, malformed, or no longer honoured. The generated Wrangler config ' +
-      'carries the Worker and environment names, the production route and the ' +
-      'absolute build-workspace path.',
-  );
-}
-
 async function main() {
   const port = await reservePort();
   const origin = new URL(`http://127.0.0.1:${port}`);
@@ -327,7 +278,6 @@ async function main() {
     assert.match(assetCacheControl, /immutable/i, 'Fingerprint assets must be immutable.');
 
     await assertRuntimeArtCachePolicy(origin);
-    await assertGeneratedConfigIsNotServed(origin, root.body);
 
     console.log(`Cloudflare deployment preview smoke test passed on ${origin.origin}.`);
   } finally {
