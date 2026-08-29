@@ -263,6 +263,28 @@ export const HUD_MESSAGE_KEY = {
   securityHeldRelease: 'hud.security.held-release',
   securityHeldMore: 'hud.security.held-more',
   securityHeldHint: 'hud.security.held-hint',
+  /**
+   * The Staff panel's roster block (issue #533, the owner's decision on issue
+   * #535 decision 4). Three keys, and the count is deliberate: **every string
+   * this change adds is flagged for the owner's review**, so the block reuses
+   * `securityHeldRow`, `securityHeldRowUnnamed` and `securityHeldMore` rather
+   * than duplicating them and only drafts what has no existing equivalent.
+   *
+   * The reuse of `securityHeldRow` -- `'{name} · {claim}'` -- is worth naming
+   * because its placeholder is called `claim` and what fills it here is a
+   * *deployment phase*. The rendered sentence is the same shape and the same
+   * fact about a person on a row, so a second key would be two sentences to
+   * translate identically; the mismatch is in the placeholder's name alone and
+   * is recorded here rather than papered over.
+   *
+   * `securityRosterEmpty` is absent for a reason rather than forgotten: the
+   * block has no box at all until somebody is hired, so there is no empty state
+   * to word. `securityRosterSummary` likewise -- the overflow line already says
+   * how many did not fit.
+   */
+  securityRosterTitle: 'hud.security.roster',
+  securityRosterDismiss: 'hud.security.roster-dismiss',
+  securityRosterHint: 'hud.security.roster-hint',
 
   /**
    * The Staff panel's coverage block

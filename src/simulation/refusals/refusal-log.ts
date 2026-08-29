@@ -5,6 +5,7 @@ import type { AdmitPrisonerRefusalReason } from '../prisoners/prisoner-operation
 import type { RefusalReason, SimulationRefusal } from '../protocol/types';
 import type { UnzoneRoomRefusalReason, ZoneRoomRefusalReason } from '../rooms/zoning';
 import type { GuardReleaseRefusalReason } from '../security/guard-release';
+import type { StaffDismissRefusalReason } from '../staff/dismissal';
 import type { StaffHireRefusalReason } from '../staff/hiring';
 
 /**
@@ -345,6 +346,36 @@ export const RELEASE_GUARD_REFUSAL_REASONS: Readonly<Record<GuardReleaseRefusalR
 };
 
 /**
+ * `StaffDismissRefusalReason`, mapped onto the wire's. Exhaustive for the same
+ * reason as every table above (issue #533).
+ *
+ * **One member, and a `Record` over a one-member union rather than a bare
+ * constant**, which is the point worth stating: the table is what makes a
+ * *second* reason impossible to add without deciding what the player is told.
+ * `RELEASE_GUARD_REFUSAL_REASONS` records the same argument from the other
+ * direction -- a boolean return could not reach a player-visible surface at all
+ * -- and a one-line table is the cheapest way to keep this command inside that
+ * rule from its first day rather than from the day it grows a second refusal.
+ *
+ * Namespaced `dismiss.*` rather than folded into `hire.*` or `release-guard.*`,
+ * and against both for the same reason the namespace exists at all. Against
+ * `hire.*`: they are opposite gestures on one roster, and somebody who pressed
+ * Dismiss must not read that nobody was hired. Against `release-guard.*`: those
+ * two are the *closest* pair in this file -- both name a staff id read off the
+ * same panel -- and that is exactly why they must not share a sentence. A
+ * release that failed leaves a guard employed and assigned; a dismissal that
+ * failed leaves them employed and being paid.
+ *
+ * `unknown-staff` is reachable without the player doing anything wrong, which
+ * is the property `release-guard.not-held` has and `release-guard.unknown-guard`
+ * does not: the roster the panel draws from is a projection on a cadence, so a
+ * staff member dismissed by one press can still be on screen for the next.
+ */
+export const DISMISS_STAFF_REFUSAL_REASONS: Readonly<Record<StaffDismissRefusalReason, RefusalReason>> = {
+  'unknown-staff': 'dismiss.unknown-staff',
+};
+
+/**
  * `ZoneRoomRefusalReason`, mapped onto the wire's. Exhaustive for the same
  * reason as above.
  *
@@ -484,4 +515,17 @@ export function removeObjectSupersessionKey(x: number, y: number): string {
 /** `release-guard.*`'s key: the guard id, which is the one thing `ReleaseGuardAssignment` names. */
 export function releaseGuardSupersessionKey(guardId: number): string {
   return `release-guard:${guardId}`;
+}
+
+/**
+ * `dismiss.*`'s key: the staff id, which is the one thing `DismissStaff` names.
+ *
+ * Per staff member rather than per command (issue #492's rule): a dismissal
+ * that succeeded for somebody else must not silence a standing `unknown-staff`
+ * about this row. Distinct from `releaseGuardSupersessionKey` even for the same
+ * id, because a release and a dismissal are two standing facts about one person
+ * and neither answers the other.
+ */
+export function dismissStaffSupersessionKey(staffId: number): string {
+  return `dismiss:${staffId}`;
 }

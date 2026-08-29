@@ -32,7 +32,7 @@ import {
 } from '../incidents';
 import { PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury } from '../economy';
 import { RefusalLog } from '../refusals';
-import { StaffHiringService } from '../staff';
+import { StaffDismissalService, StaffHiringService } from '../staff';
 import { createSessionCommandHandler } from './session-commands';
 import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
 import { Kernel } from '../kernel';
@@ -238,6 +238,21 @@ export interface SimulationRuntime {
    * decision 4 gives.
    */
   readonly guardRelease: GuardReleaseService;
+  /**
+   * The `DismissStaff` consumer (issue #533, the owner's decision on issue #535
+   * decision 4). A session-level service for `staffHiring`'s and
+   * `guardRelease`'s reason: no tick work, no state of its own.
+   *
+   * It is what finally gives the staff roster a way *out*. `staffHiring` above
+   * says it is "what finally gives `GuardRoster.hire` a caller in `src/`"; this
+   * is the counterpart sentence, and until it existed a hire was a standing
+   * payroll line no command could end.
+   *
+   * Constructed after `guardRelease` because it delegates to it: taking a claim
+   * apart is that service's job and ADR 0034 argues at length why doing it any
+   * other way corrupts the claimant's own bookkeeping.
+   */
+  readonly staffDismissal: StaffDismissalService;
   /**
    * `DeploymentSystem` reads this array live, so pushing into it after
    * construction is how a scenario -- or `applyDefaultSecuritySector` -- adds a
@@ -969,6 +984,27 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // captured claim view would be exactly the mistake ADR 0033 decision 4
   // measured, one command later.
   const guardRelease = new GuardReleaseService(securityGuards, searchSystem, incidentResponseSystem);
+  /*
+   * Issue #533's consumer. Every optional surface is supplied here and none is
+   * omitted, which is the point of naming them one by one rather than passing
+   * the runtime: `StaffDismissalSurfaces` makes the list visible and cannot make
+   * it complete, so the session is where a store that exists gets connected and
+   * `tests/unit/staff-dismissal-completeness.test.ts` is what notices one that
+   * did not.
+   *
+   * `navigation` is the one a reader should check first. Before this, nothing
+   * in `src/` had ever cancelled a *guard's* route -- `cancelRequest` had
+   * exactly one caller, `releasePrisoner` -- so a dismissal that left it out
+   * would have stranded one navigation request per travelling guard dismissed,
+   * for the life of the save.
+   */
+  const staffDismissal = new StaffDismissalService({
+    roster: securityGuards,
+    claims: guardRelease,
+    navigation,
+    identity: actorIdentity,
+    contraband,
+  });
 
   kernel.registerSystem(construction);
   kernel.registerSystem(procurement);
@@ -984,7 +1020,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(searchSystem);
   kernel.registerSystem(incidentResponseSystem);
   kernel.setCommandHandler(
-    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, objectPlacement, guardRelease, refusals),
+    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, objectPlacement, guardRelease, staffDismissal, refusals),
   );
 
   return {
@@ -1023,6 +1059,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     confiscations,
     searchPolicies,
     guardRelease,
+    staffDismissal,
     searchSystem,
     searchContainerLocations,
     incidents,

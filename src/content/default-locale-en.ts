@@ -323,6 +323,17 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * reachable from the panel and is worded for the case that does reach it: a
    * command naming somebody who is not on the roster.
    */
+  /*
+   * **Drafted for issue #533 and flagged for the owner's review.** It is the
+   * one new player-facing sentence that change adds, and it exists because
+   * `REFUSAL_LABEL_KEYS` is a `Record` over the closed `RefusalReason` union: a
+   * reason with no key does not compile, so `dismiss.unknown-staff` could not
+   * ship without a sentence. It is modelled on
+   * `hud.alert.refusal.release-guard.unknown-guard` below, which is the same
+   * absence read off the same roster, and it says what did not happen before it
+   * says why -- the shape every refusal in this block follows.
+   */
+  'hud.alert.refusal.dismiss.unknown-staff': 'Nobody was dismissed — that staff member is not on the roster.',
   'hud.alert.refusal.release-guard.not-held': 'Nothing was released — that guard is already off duty.',
   'hud.alert.refusal.release-guard.unknown-guard': 'Nothing was released — that guard is not on the roster.',
   // `zone.out-of-bounds` and `zone.unowned-land` describe the same condition
@@ -569,6 +580,28 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.security.held-release': 'Release',
   'hud.security.held-more': 'and {count} more',
   'hud.security.held-hint': 'A released guard stays hired and goes back to the pool.',
+
+  /*
+   * The Staff panel's roster block (issue #533).
+   *
+   * **All three are drafted and flagged for the owner's review**, together with
+   * `hud.alert.refusal.dismiss.unknown-staff` above. They are the whole of what
+   * this change adds to what a player reads, and they are three rather than
+   * seven because the block reuses `hud.security.held-row`,
+   * `hud.security.held-row-unnamed` and `hud.security.held-more` -- see
+   * `securityRosterTitle` in `src/ui/hud/messages.ts` for what that reuse costs
+   * and why it is taken.
+   *
+   * `hud.security.roster-hint` says the consequence rather than the mechanism,
+   * and it says the *money* half because that is the half a player pressing this
+   * is acting on: `hud.security.hire-hint` two blocks up already told them the
+   * wage is taken on hire, and `PayrollSystem` goes on taking it every in-game
+   * day until this control is pressed. It deliberately does not promise a refund
+   * or a severance, because there is neither.
+   */
+  'hud.security.roster': 'On the payroll',
+  'hud.security.roster-dismiss': 'Dismiss',
+  'hud.security.roster-hint': 'A dismissed staff member leaves the prison for good, and their wage stops.',
 
   // The Staff panel's coverage block (ADR 0048). `hud.security.coverage-summary`
   // is assigned against required, in the shape `hud.status.occupancy-value` set

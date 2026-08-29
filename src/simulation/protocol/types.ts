@@ -793,10 +793,11 @@ export type SimulationStatusCounts = DeepReadonly<
  * message key in `src/ui/simulation-alerts.ts`; no text crosses the boundary.
  *
  * Declared in ascending code-unit order, and namespaced by the command the
- * refusal answers, so the ten vocabularies behind it cannot collide:
+ * refusal answers, so the eleven vocabularies behind it cannot collide:
  * `admit.*` mirrors `AdmitPrisonerRefusalReason`, `build.*` mirrors
  * `BuildOrder.failReason`, `cancel-purchase.*` mirrors
- * `PurchaseCancelRefusalReason`, `hire.*` mirrors `StaffHireRefusalReason`,
+ * `PurchaseCancelRefusalReason`, `dismiss.*` mirrors
+ * `StaffDismissRefusalReason`, `hire.*` mirrors `StaffHireRefusalReason`,
  * `place-object.*` mirrors `PlaceObjectRefusalReason`,
  * `purchase.*` mirrors `PurchaseOutcome`'s refusal reasons,
  * `release-guard.*` mirrors `GuardReleaseRefusalReason`,
@@ -811,9 +812,9 @@ export type SimulationStatusCounts = DeepReadonly<
  * sentence on several.
  *
  * `src/simulation/refusals/refusal-log.ts` maps each domain value onto one of
- * these through an exhaustive `Record`, so a reason added to any of the ten
+ * these through an exhaustive `Record`, so a reason added to any of the eleven
  * fails to compile until it is named here -- and
- * `tests/unit/simulation-refusals.test.ts` asserts the ten tables between
+ * `tests/unit/simulation-refusals.test.ts` asserts the eleven tables between
  * them cover this list exactly, so a member declared here and produced by
  * nothing is a failure too.
  *
@@ -851,6 +852,18 @@ export type SimulationStatusCounts = DeepReadonly<
  * fact, each answering a different command, is exactly what the namespace is
  * for; that only one of them existed is what the defect was.
  *
+ * `dismiss.*` is the eleventh namespace (issue #533), and it is a namespace of
+ * its own against the *two* it sits between rather than one. Against `hire.*`,
+ * for `cancel-purchase.*`'s reason: opposite gestures on one roster, and
+ * somebody who pressed Dismiss must not read that nobody was hired. Against
+ * `release-guard.*`, which is the harder case because the two commands name the
+ * same staff id read off the same panel: a release that failed leaves a guard
+ * employed and assigned, a dismissal that failed leaves them employed and being
+ * paid, and those are two sentences. `unknown-staff` is a third spelling of
+ * "the simulation has no such thing" beside `release-guard.unknown-guard` --
+ * the same roster, the same absence, and a different thing the player was
+ * trying to do.
+ *
  * `build.duplicate-order` is the newest member (issue #514) and the first
  * spelling shared by *three* of the ten vocabularies at once rather than two:
  * `place-object.duplicate-order` and `purchase.duplicate-order` already meant
@@ -875,6 +888,7 @@ export const REFUSAL_REASONS = [
   'build.unowned-land',
   'build.water-blocked',
   'cancel-purchase.not-pending',
+  'dismiss.unknown-staff',
   'hire.insufficient-funds',
   'hire.no-duty-for-role',
   'hire.roster-full',

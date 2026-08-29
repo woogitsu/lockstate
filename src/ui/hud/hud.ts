@@ -519,6 +519,28 @@ export type HudIntent =
    */
   | { readonly kind: 'release-guard'; readonly guardId: number }
   /**
+   * The player asked for a staff member's employment to end (issue #533, the
+   * owner's decision on issue #535 decision 4).
+   *
+   * An id and nothing else, and deliberately **no role and no money**. The role
+   * is a property of the record the id already reaches; the money is absent
+   * because a dismissal moves none, which is
+   * `src/simulation/staff/dismissal.ts`'s decision and stated there.
+   *
+   * A *command*, so it goes through the same gate as a hire: a second tap while
+   * one is in flight must not hand a busy host two dismissals. Like a refused
+   * release, a refused dismissal is a real state a player meets without doing
+   * anything wrong -- the roster block is a projection on a cadence, so a row
+   * can name somebody already dismissed -- and the simulation reports that as
+   * `dismiss.unknown-staff` on the alerts channel.
+   *
+   * **The counterpart of `hire-staff`, not of `release-guard`.** Releasing hands
+   * a guard back to the pool and `DeploymentSystem` may post them again on its
+   * next cycle; this ends the payroll line. Before it, nothing in the
+   * application could end one.
+   */
+  | { readonly kind: 'dismiss-staff'; readonly staffId: number }
+  /**
    * The player asked for an area to become a room (ADR 0022, amended).
    *
    * Ids and numbers only -- the host turns this into a `ZoneRoom` command; the
@@ -1397,6 +1419,26 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     onRelease: (intent) => {
       dispatchCommand({ kind: 'release-guard', guardId: intent.guardId });
     },
+    /*
+     * Dismissing is a command on the same terms as releasing, and the button
+     * that was pressed is *not* passed as the refusal's control for the same
+     * reason: the rows are pooled and repainted on the counts cadence, so a mark
+     * left on row two would end up on whoever the next publication put there.
+     * The refusal line still says what did not happen, and it is on screen at
+     * every viewport.
+     *
+     * **No confirmation step**, and that is a decision rather than an omission.
+     * A dismissal cannot be undone -- it destroys an entity -- so a confirm
+     * would be defensible; but this repository has no confirmation primitive,
+     * inventing a modal here would be a UI pattern decided inside one panel, and
+     * the control the player is reaching for is the way *out* of a trap they
+     * cannot otherwise escape. `hud.security.roster-hint` states the
+     * consequence beside the button instead. A confirm step is worth proposing
+     * once there is a pattern for one.
+     */
+    onDismiss: (intent) => {
+      dispatchCommand({ kind: 'dismiss-staff', staffId: intent.staffId });
+    },
   });
 
   // ---- bottom-right intake panel (Overview tab) ---------------------
@@ -1686,6 +1728,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // decides nothing -- which is the whole reason the HUD may render a figure
     // it could not have computed.
     staffPanel.setCoverage(next.staffCoverage);
+    // And who is on the payroll, on identical terms (issue #533). The roster is
+    // `GuardRoster`'s, the projection windowed it, the panel decides the
+    // sentences, and this line decides nothing.
+    staffPanel.setStaffRoster(next.staffRoster);
     // And where the arrivals are, on identical terms: pulled, absent when
     // nothing asked, and passed straight through. The projection decided how
     // many are at each stage and which stage is terminal; the panel decides the

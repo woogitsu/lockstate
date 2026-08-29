@@ -95,6 +95,49 @@ function hire(runtime: SimulationRuntime, id: string, tile: { readonly x: number
   submit(runtime, id, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', x: tile.x, y: tile.y }));
 }
 
+/**
+ * One admission, and nothing else.
+ *
+ * **Issue #533 is why this exists in six cases below that did not need it.**
+ * `resolveOccupancyScaledGuardCount` answers `0` for a sector holding nobody,
+ * so an empty prison asks for no guards and `DeploymentSystem` posts nobody --
+ * which is the decision, not an accident. Every case that is *about* deployment
+ * therefore has to put somebody in the prison first, and each one below says so
+ * where it calls this.
+ *
+ * A zoned cell and no furniture. The zoning is not decoration: `AdmitPrisoner`
+ * is refused `no-accommodation` unless a room instance exists that some
+ * classification group's accommodation target names
+ * (`PrisonerOperationsRuntime.requestAdmission`), so a fixture that admitted
+ * into bare ground would be refused and would leave the sector empty --
+ * measuring the very state it was written to leave behind. The bed is left out
+ * because an *unhoused* arrival is still an occupant: they stand on the arrival
+ * tile, which is owned land, and `resolveSectorOccupants` counts every living
+ * prisoner on owned land (ADR 0048). One is enough to restore the derived floor
+ * of one, and it stays one until the ninth.
+ */
+function admitOne(runtime: SimulationRuntime, id = 'admit-occupant'): void {
+  wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
+  submit(runtime, `${id}-zone`, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
+  submit(runtime, id, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ORIGIN }));
+  // Not `expect` on a projection: the refusal log is the session's own record,
+  // and a silently refused admission here would leave the sector empty and make
+  // every assertion below measure the wrong prison.
+  if (runtime.refusals.count > 0) throw new Error('The admission this fixture depends on was refused.');
+  /*
+   * Land the session back on a tick `security.deployment` is scheduled for.
+   *
+   * `DeploymentSystem.schedule` is `{ intervalTicks: 10, phaseTicks: 0 }`, and
+   * the cases below assert what a hire is *on the tick its command lands* --
+   * which only holds when that step is one deployment also runs in. A fresh
+   * runtime is on tick 0 and satisfies it for free, which is why those cases
+   * never had to say so; the three commands above cost three ticks and break
+   * it. Advancing to the next multiple of ten restores the precondition
+   * instead of weakening the assertion to "eventually".
+   */
+  while (runtime.kernel.tick % 10 !== 0) runtime.kernel.step();
+}
+
 function phases(runtime: SimulationRuntime): readonly string[] {
   return runtime.securityGuards.allGuardIds().map((guardId) => runtime.securityGuards.getDeploymentPhase(guardId));
 }
@@ -164,9 +207,27 @@ describe('a session a player can start has a security sector', () => {
     expect(createNewSimulationRuntime(SEED).securitySectors.requireDefinition(DEFAULT_SECTOR_ID).postTile).toEqual(ORIGIN);
   });
 
-  it('reports the shortage it honestly has, rather than fabricating coverage', () => {
-    const runtime = createNewSimulationRuntime(SEED);
-    expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)).toEqual([
+  it('asks for nobody while the prison holds nobody, and reports the shortage honestly once it does', () => {
+    /*
+     * **This assertion is the one issue #533 changed, and the old one is quoted
+     * rather than deleted**: it read `required: 1, assigned: 0, shortage: 1` for
+     * a session `createNewSimulationRuntime` had just built -- no prisoners, no
+     * rooms -- and the Staff panel rendered that as `Guard coverage · 0 of 1 ·
+     * Unguarded` with `Nobody is on duty. Hire 1 to cover this population.` The
+     * population it named was zero, and obeying cost a day's wage on the click
+     * and the same again at the next day boundary against no income.
+     *
+     * What the old case was *for* survives in the second half: a shortage must
+     * be reported rather than papered over. It is now measured where a shortage
+     * means something.
+     */
+    const empty = createNewSimulationRuntime(SEED);
+    expect(empty.deploymentSystem.getCoverageReport(empty.kernel.tick)).toEqual([
+      { sectorId: DEFAULT_SECTOR_ID, required: 0, assigned: 0, shortage: 0 },
+    ]);
+
+    admitOne(empty);
+    expect(empty.deploymentSystem.getCoverageReport(empty.kernel.tick)).toEqual([
       { sectorId: DEFAULT_SECTOR_ID, required: 1, assigned: 0, shortage: 1 },
     ]);
   });
@@ -175,6 +236,9 @@ describe('a session a player can start has a security sector', () => {
 describe('deployment reaches a guard hired through the real command path', () => {
   it('posts the first hire, and leaves every hire after it in the pool the other claimants draw from', () => {
     const runtime = createNewSimulationRuntime(SEED);
+    // Somebody to guard (#533): an empty sector requires nobody, so without
+    // this the requirement is 0 and every hire below stays in the pool.
+    admitOne(runtime);
 
     hire(runtime, 'hire-1', ORIGIN);
     // On the tick the command lands: the hire is standing on the post already,
@@ -199,6 +263,7 @@ describe('deployment reaches a guard hired through the real command path', () =>
 
   it('walks a hire that starts somewhere else to the post through the real navigation system', () => {
     const runtime = createNewSimulationRuntime(SEED);
+    admitOne(runtime); // #533: a sector with nobody in it posts nobody.
     hire(runtime, 'hire-far', FAR_TILE);
 
     // A real route request, not a teleport: the guard is `'travelling'` with a
@@ -400,6 +465,7 @@ describe('the derived sector survives a save without a schema bump', () => {
 
   it('re-derives the same sector a live session had, and registers it exactly once', () => {
     const live = createNewSimulationRuntime(SEED);
+    admitOne(live); // #533: so the hire below is actually posted and the sector id is worth asserting.
     hire(live, 'hire-1', ORIGIN);
     stepTo(live, 100);
 
@@ -459,7 +525,13 @@ describe('the derived sector survives a save without a schema bump', () => {
 
     // Behavioural, not structural: a guard hired into the reloaded old save is
     // posted, which it could not have been in the session that wrote the file.
+    // The admission is #533's: the derived requirement is a demand for covering
+    // people, so the tier is reachable only once the prison holds one.
+    admitOne(restored, 'admit-after-load');
     hire(restored, 'hire-after-load', ORIGIN);
+    // Guard id 0, not 1: staff and prisoners are two separate `EntityStore`s
+    // and both hand out 0 (`actor-identity.ts`, "Ids are not unique across
+    // populations"), so the admission above does not shift the guard's id.
     expect(restored.securityGuards.getDeploymentPhase(0)).toBe('on-post');
   });
 
@@ -484,6 +556,7 @@ describe('the derived sector survives a save without a schema bump', () => {
 describe('what a sector does not bring back, measured rather than assumed', () => {
   it('leaves patrol inert, because the derived sector has no route and a derived route would be invented', () => {
     const runtime = createNewSimulationRuntime(SEED);
+    admitOne(runtime); // #533: the guard below is only posted because somebody is here to guard.
     hire(runtime, 'hire-1', ORIGIN);
     stepTo(runtime, 5_000);
 

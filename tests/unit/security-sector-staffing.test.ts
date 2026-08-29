@@ -42,7 +42,7 @@ describe('resolveOccupancyScaledGuardCount: the schedule is a floor, the populat
     // Eight per guard, so a sector of eight still asks for the one its schedule
     // authored, and the ninth arrival is what changes the answer.
     expect(DEFAULT_SECTOR_PRISONERS_PER_GUARD).toBe(8);
-    expect(resolveOccupancyScaledGuardCount(1, 0)).toBe(1);
+    expect(resolveOccupancyScaledGuardCount(1, 1)).toBe(1);
     expect(resolveOccupancyScaledGuardCount(1, 8)).toBe(1);
     expect(resolveOccupancyScaledGuardCount(1, 9)).toBe(2);
     expect(resolveOccupancyScaledGuardCount(1, 16)).toBe(2);
@@ -56,6 +56,32 @@ describe('resolveOccupancyScaledGuardCount: the schedule is a floor, the populat
     expect(resolveOccupancyScaledGuardCount(5, 8)).toBe(5);
     expect(resolveOccupancyScaledGuardCount(5, 40)).toBe(5);
     expect(resolveOccupancyScaledGuardCount(5, 41)).toBe(6);
+  });
+
+  it('asks for nobody in a sector holding nobody, whatever the schedule authored', () => {
+    /*
+     * Issue #533, and this assertion **replaces one that agreed with the bug**:
+     * this file used to pin `resolveOccupancyScaledGuardCount(1, 0)` at `1`,
+     * beside a comment about the ninth arrival that had nothing to do with the
+     * empty case. An empty prison therefore read `Guard coverage · 0 of 1 ·
+     * Unguarded` and told the player to hire, at 80 minor units on the click and
+     * the same again at every day boundary, against no income -- and the suite
+     * was green throughout, because the fixture and the composition root
+     * computed the same wrong number.
+     *
+     * The authored floor is not consulted at all here, which is the half a
+     * single `(1, 0)` case would not show: a scenario asking for five guards on
+     * an empty sector is asking for five guards to cover nobody.
+     */
+    expect(resolveOccupancyScaledGuardCount(1, 0)).toBe(0);
+    expect(resolveOccupancyScaledGuardCount(5, 0)).toBe(0);
+    // A negative count is a caller's bug, not a demand: it must not read as one
+    // and it must not read as a shortage either.
+    expect(resolveOccupancyScaledGuardCount(1, -3)).toBe(0);
+    // ...and the floor comes straight back with the first occupant, so this is
+    // an exemption for an empty sector rather than a weakened floor.
+    expect(resolveOccupancyScaledGuardCount(1, 1)).toBe(1);
+    expect(resolveOccupancyScaledGuardCount(5, 1)).toBe(5);
   });
 
   it('treats a zero as an exemption rather than as a small number', () => {

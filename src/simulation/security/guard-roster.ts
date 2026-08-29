@@ -79,6 +79,13 @@ export class GuardRoster {
     // has a name, so a recycled id that somehow kept its entry cannot shift
     // the stream (`release` on destroy is what actually prevents that; see
     // ADR 0015's "a destroy path must release").
+    //
+    // **That destroy path now exists** (issue #533): `dismissStaff` in
+    // `src/simulation/staff/dismissal.ts` calls
+    // `ActorIdentityRegistry.release('staff', id)` before `forget` below
+    // destroys the entity, so the parenthetical above names a real caller
+    // rather than a requirement nobody met. A staff index is recycled in an
+    // ordinary session from that change onward.
     this.identity?.assign('staff', entityId, this.identityRng!());
     this.records.set(entityId, {
       staffRoleId,
@@ -91,6 +98,31 @@ export class GuardRoster {
       patrolLoopStartedAtTick: undefined,
     });
     return entityId;
+  }
+
+  /**
+   * Drops one staff member's record and destroys their entity -- the one roster
+   * write a dismissal performs (issue #533).
+   *
+   * **Deliberately not called `dismiss`, and deliberately not the whole of one.**
+   * A dismissal has to give back a claim through its claimant, cancel a route,
+   * release a name and take contraband out of the prison, and none of that is
+   * the roster's to know: `src/simulation/staff/dismissal.ts` owns the ordering
+   * for exactly the reason `GuardReleaseService` owns the release ordering
+   * rather than `unassign` doing it (ADR 0034). Calling this alone leaves a
+   * search job routing somebody who no longer exists. It is `public` because
+   * that module is in a different directory, not because it is a way in.
+   *
+   * `false` for an id this roster does not hold, and it touches nothing in that
+   * case -- so a double dismissal cannot destroy whoever occupies the slot now.
+   * The record goes first and the entity second, matching `releasePrisoner`'s
+   * step 7: `destroy` bumps the generation, after which every read above would
+   * have been a lookup against the wrong key.
+   */
+  public forget(entityId: EntityId): boolean {
+    if (!this.records.delete(entityId)) return false;
+    this.entityStore.destroy(entityId);
+    return true;
   }
 
   private require(entityId: EntityId): GuardRecord {

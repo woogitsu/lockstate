@@ -29,6 +29,7 @@ import {
   type HudBuildableViewModel,
   type HudHandle,
   type HudHeldGuardsViewModel,
+  type HudStaffRosterViewModel,
   type HudStaffCoverageViewModel,
   type HudIntakePipelineViewModel,
   type HudIntent,
@@ -51,6 +52,7 @@ import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { BuildQueueReader } from './ui/simulation-build-queue';
 import { IntakePipelineReader } from './ui/simulation-intake';
 import { HeldGuardsReader } from './ui/simulation-held-guards';
+import { StaffRosterReader } from './ui/simulation-staff-roster';
 import { StaffCoverageReader } from './ui/simulation-staff-coverage';
 import { PrisonerRosterReader } from './ui/simulation-prisoner-roster';
 import { RegimeReader } from './ui/simulation-regime';
@@ -1154,6 +1156,26 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       ? undefined
       : new HeldGuardsReader(client, (staffRoleId) => defaultStaffRoleRegistry.getById(staffRoleId)?.nameKey);
   /**
+   * The roster behind `DismissStaff` (issue #533).
+   *
+   * A second reader on `hud/staff` beside `staffCoverageReader` below, and two
+   * readers on one projection is worth a sentence rather than a shrug: they ask
+   * for different things. The coverage reader asks with `limit: 0` -- totals and
+   * no rows -- and this one asks for the panel's row budget. Merging them would
+   * mean one request whose window is whichever of the two blocks happens to want
+   * more, published to a block that cannot use it, and it would tie a warning
+   * readout's cadence to a control list's.
+   *
+   * The staff-role lookup is handed over rather than duplicated, exactly as
+   * `heldGuardsReader`'s is and for the same reason: a role's `nameKey` is
+   * content this file already reads, and neither the projection nor the HUD may
+   * read it.
+   */
+  const staffRosterReader =
+    client === undefined
+      ? undefined
+      : new StaffRosterReader(client, (staffRoleId) => defaultStaffRoleRegistry.getById(staffRoleId)?.nameKey);
+  /**
    * The sixth reader on #104's channel, and the first whose subject is a
    * *warning* rather than a readout or a control
    * ([ADR 0048](../../docs/adr/0048-what-a-sectors-occupants-are.md)
@@ -1304,6 +1326,37 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       viewModel = { ...viewModel, heldGuards: next };
     }
     hud?.update(viewModel);
+  };
+
+  /**
+   * Puts the roster on the view model, or takes it off (issue #533). The same
+   * absent-property dance the others do, and for the same reason: "nothing has
+   * asked" and "nobody is hired" are different facts, and only the second is a
+   * statement about the prison.
+   */
+  const applyStaffRoster = (next: HudStaffRosterViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.staffRoster === undefined) return;
+      const { staffRoster: _cleared, ...withoutStaffRoster } = viewModel;
+      viewModel = withoutStaffRoster;
+    } else {
+      viewModel = { ...viewModel, staffRoster: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  const refreshStaffRoster = (): void => {
+    if (staffRosterReader === undefined || activeTab !== 'security') return;
+    void staffRosterReader
+      .read()
+      .then((next) => {
+        // `undefined` is "a read was already in flight", not an answer.
+        if (next !== undefined) applyStaffRoster(next);
+      })
+      // The section comes off rather than staying, for the held list's reason
+      // and more sharply: every row is a control that *destroys* somebody, so a
+      // row nothing is answering for is the worst kind of stale button.
+      .catch(() => applyStaffRoster(undefined));
   };
 
   const refreshHeldGuards = (): void => {
@@ -1592,6 +1645,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       applyIntakePipeline(undefined);
       applyPendingDeliveries(undefined);
       applyHeldGuards(undefined);
+      applyStaffRoster(undefined);
       applyStaffCoverage(undefined);
       applyRegime(undefined);
       applyPrisonerRoster(undefined);
@@ -1601,6 +1655,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       refreshIntakePipeline();
       refreshPendingDeliveries();
       refreshHeldGuards();
+      refreshStaffRoster();
       refreshStaffCoverage();
       refreshRegime();
       refreshPrisonerRoster();
@@ -1703,6 +1758,12 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // exactly the same terms (ADR 0034).
           if (activeTab === 'security') refreshHeldGuards();
           else applyHeldGuards(undefined);
+          // And who is on the payroll, on the same tab and the same terms
+          // (#533). Arriving asks at once for the coverage block's reason turned
+          // round: a player who opened this tab because they are haemorrhaging
+          // money must not have to wait 500ms to see the control that stops it.
+          if (activeTab === 'security') refreshStaffRoster();
+          else applyStaffRoster(undefined);
           // And how many guards the prison asks for against how many it has, on
           // the same tab and the same terms (ADR 0048). Arriving asks at once:
           // waiting up to 500ms for the next counts publication would mean a
@@ -1940,6 +2001,37 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          */
         case 'release-guard':
           requireSimulation(commands).submit({ type: 'ReleaseGuardAssignment', guardId: intent.guardId });
+          return;
+
+        /*
+         * The way off the payroll (issue #533, the owner's decision on issue
+         * #535 decision 4).
+         *
+         * The counterpart of `hire-staff` rather than of `release-guard`, and
+         * the difference is what a player gets out of it: a release hands a
+         * guard back to the pool and `DeploymentSystem` may post them again on
+         * its next cycle, while this ends the employment and with it the wage
+         * `PayrollSystem` bills at every in-game day boundary. Before this line,
+         * **nothing in the application could end one** -- `staff/hiring.ts` said
+         * so in its own words, and the measured consequence was a prison spent
+         * down to nothing by guards it had no use for.
+         *
+         * The id was never minted on this thread: it is a staff `EntityId`
+         * allocated by `EntityStore.spawn` inside the simulation, and it reaches
+         * here on `hud/staff` -- which had been catalogued and unread for the
+         * whole of `HeldGuardsReader`'s life, because the held subset is the
+         * wrong subset for this command. A guard nobody has posted is not held,
+         * and a guard nobody has posted is exactly the one a player wants rid
+         * of.
+         *
+         * **No pre-check**, for `release-guard`'s reason with a person instead
+         * of a claim: whether the roster still holds this id is not something
+         * this thread's cadence-old copy may decide. The simulation refuses
+         * rather than swallowing -- `session-commands.ts` records
+         * `dismiss.unknown-staff` and the alerts list says so.
+         */
+        case 'dismiss-staff':
+          requireSimulation(commands).submit({ type: 'DismissStaff', staffId: intent.staffId });
           return;
 
         case 'place-build-order': {

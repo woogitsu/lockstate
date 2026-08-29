@@ -28,11 +28,16 @@ import { DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT } from './default-sector';
  * **A sector's requirement is the larger of what its schedule authors and one
  * guard per `DEFAULT_SECTOR_PRISONERS_PER_GUARD` occupants**, and:
  *
- * - **It only ever raises.** A `DeploymentSchedule` is authored data — a
- *   scenario, a save payload or `applyDefaultSecuritySector` put it there — and
- *   a rule that replaced it would make the authored number unreadable. Taking
- *   the maximum keeps the schedule a floor and the population a demand on top
- *   of it.
+ * - **An empty sector requires nobody.** Issue #533; the owner's decision on
+ *   issue #535 decision 4. This is the one direction in which occupancy
+ *   *lowers* the answer, and the bullet below said it never did — see "What
+ *   changed, and what the old sentence got right" further down, which is the
+ *   correction rather than an overwrite.
+ * - **Otherwise it only ever raises.** A `DeploymentSchedule` is authored data
+ *   — a scenario, a save payload or `applyDefaultSecuritySector` put it there —
+ *   and a rule that replaced it would make the authored number unreadable.
+ *   Taking the maximum keeps the schedule a floor and the population a demand
+ *   on top of it.
  * - **Zero stays zero.** A schedule asking for no guards is an *exemption*, not
  *   a small number: `applyDefaultSecuritySector`'s "anything already present
  *   wins" is what lets a save carry one, and
@@ -40,6 +45,38 @@ import { DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT } from './default-sector';
  *   for files whose subject is not the default sector. Scaling an exemption up
  *   would silently withdraw it, and it would do so only after a save round
  *   trip, which is the worst way for it to happen.
+ *
+ * ## What changed, and what the old sentence got right
+ *
+ * This function used to answer `1` for a sector holding nobody, because the
+ * schedule floor of one applied unconditionally. Measured on an empty prison —
+ * no prisoners, no rooms — the Staff panel therefore read *"Guard coverage · 0
+ * of 1 · Unguarded"* and *"Nobody is on duty. Hire 1 to cover this
+ * population."*, and a player who obeyed paid one day's wage at the click plus
+ * the same figure again at the day boundary (`src/simulation/economy/payroll.ts`)
+ * against no income and no population to guard. That is the demand half of
+ * issue #533; the other half is that nothing could undo it, which
+ * `src/simulation/staff/dismissal.ts` closes.
+ *
+ * **The floor's own argument survives intact and is worth reading before
+ * assuming this weakened it.** `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT`
+ * argues the floor from two facts, and both are facts about a prison with
+ * people in it: that a requirement of zero leaves `DeploymentSystem` inert, so
+ * no hire is ever visibly posted; and that `IncidentResponseSystem` and
+ * `DeploymentSystem` draw from one pool, so a floor above one starves the
+ * responder pool. A sector with no occupants has nothing to post a guard
+ * *against* and produces no incident for a responder to answer —
+ * `sampleSectorRisk` in `src/simulation/runtime/new-session.ts` already reads
+ * `staffingShortfall` as `0` whenever `required` is `0`, so this makes the
+ * risk term unreachable rather than undefined. The floor is restored by the
+ * first admission, at which point both of its arguments start applying again.
+ *
+ * **What the player is told needs no new sentence**, which is the check that
+ * this is a change to a demand rather than to a promise:
+ * `describeStaffCoverage` in `src/ui/hud/staff-panel.ts` already maps
+ * `required: 0` onto its `success` branch, authored for the exemption case, so
+ * an empty prison now reads *Covered* with the existing
+ * `securityCoverageMetHint` string and no key is added.
  *
  * ## Where it is applied, and why not in a system of its own
  *
@@ -94,6 +131,16 @@ export type SectorOccupantCountResolver = (sectorId: string) => number;
  */
 export function resolveOccupancyScaledGuardCount(scheduledGuardCount: number, occupantCount: number): number {
   if (scheduledGuardCount <= 0) return scheduledGuardCount;
+  /*
+   * Issue #533. Checked *before* the floor rather than folded into the
+   * `Math.max` below, because the two are different rules and collapsing them
+   * would hide that: the `Math.max` says "the population may raise what the
+   * schedule authored", and this says "there is no population, so the schedule
+   * has nothing to author against". Written as `<= 0` for the same reason the
+   * `Math.max(0, occupantCount)` below exists -- a negative count is a caller's
+   * bug and must not read as a demand.
+   */
+  if (occupantCount <= 0) return 0;
   return Math.max(scheduledGuardCount, Math.ceil(Math.max(0, occupantCount) / DEFAULT_SECTOR_PRISONERS_PER_GUARD));
 }
 
