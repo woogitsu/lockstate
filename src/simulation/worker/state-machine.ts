@@ -84,9 +84,17 @@ export const CLOCK_STATE_PUBLISH_INTERVAL_MS = 250;
  * place is occupied -- so once the prison holds anybody the skip stops firing
  * and the channel runs at its full two messages a second for the rest of the
  * session. The ceiling still bounds it, which is the reason this is acceptable
- * and the reason the cadence is expressed as one. It is not being paid yet:
- * nothing in `src/` can admit a prisoner, so the accrual is a constant zero
- * and the skip still applies. `docs/HUD_PROJECTIONS.md` records the trade
+ * and the reason the cadence is expressed as one.
+ *
+ * **This used to end "It is not being paid yet: nothing in `src/` can admit a
+ * prisoner, so the accrual is a constant zero and the skip still applies."
+ * That is false.** `src/main.ts` submits `AdmitPrisoner` from the Intake
+ * panel's control, and a playtest pressed it twelve times in one session. So
+ * the accrual does rise, the skip does stop firing, and this channel does run
+ * at its full two messages a second once a prison holds anybody -- which is
+ * the case the paragraph above describes and this sentence used to say could
+ * not arise. The ceiling is what makes that acceptable, exactly as stated;
+ * what is withdrawn is the claim that it is untested in practice. `docs/HUD_PROJECTIONS.md` records the trade
  * beside the paging contract it bears on.
  *
  * Wall-clock milliseconds rather than a count of ticks, for the same reason

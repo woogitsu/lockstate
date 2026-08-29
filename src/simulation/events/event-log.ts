@@ -1,11 +1,21 @@
 import type { SimulationEvent } from '../protocol/types';
 
 /**
- * The bound on how many un-published events the log will hold at once.
+ * The bound on how many events the log retains at once -- **published ones
+ * included**.
  *
- * Reached only if the tick loop emits more than this between two publications
- * -- a wake apart, in practice -- and that takes a prison discharging on a
- * tick while payday falls on the same one, twice over. It exists so the log
+ * **This said "un-published", and that is wrong about what the buffer holds.**
+ * `append` trims `_buffered` unconditionally on every append, and `since` only
+ * *filters* what is already retained; the publisher's watermark lives outside
+ * this class entirely, on the worker state machine. So the limit is reached by
+ * the **65th event of a session**, however promptly each was published, not by
+ * a 65th that nobody drained.
+ *
+ * What the old sentence was right about is the condition under which an event
+ * is actually **lost**: that still takes the tick loop emitting more than this
+ * many between two publications -- a wake apart, in practice -- which takes a
+ * prison discharging on a tick while payday falls on the same one, twice over.
+ * The two claims were run together, and only the second one held. It exists so the log
  * cannot grow with the session if a publisher ever stops draining it: an
  * unbounded buffer behind a consumer that has gone away is the failure
  * `docs/HUD_PROJECTIONS.md` contract 5 forbids on the cadence channel, and
