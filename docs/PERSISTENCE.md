@@ -927,9 +927,46 @@ Three changes, and only one of them would have needed a bump on its own:
   tile in this room" is unanswerable and no rule about a room's contents has a
   domain. Optional, because a V4 row genuinely does not record it and there is
   no honest default: `1×1` asserts a room the player did not zone, `64×64`
-  asserts one that overlaps its neighbours. An instance with no rectangle is
-  attributed no objects, so its capacity stays `0` — its
-  pre-object-placement behaviour, and therefore not a regression.
+  asserts one that overlaps its neighbours.
+
+  **Two sentences stood here and are marked rather than replaced**, because
+  each was true when written and each stopped being true for a different
+  reason (issue #559,
+  [ADR 0074](./adr/0074-what-a-restored-room-that-recorded-no-rectangle-is.md)).
+  They read: *"An instance with no rectangle is attributed no objects, so its
+  capacity stays `0` — its pre-object-placement behaviour, and therefore not a
+  regression."*
+
+  The first half is still true of *object-derived* capacity. It stopped
+  covering the case at #554, which gave an objectless room a concurrent-use
+  ceiling from its own ground: an instance with no rectangle then answered
+  `Infinity` for a capability-free action, not `0`, so a restored V4 yard
+  admitted every prisoner at once while the same yard zoned in this build
+  admitted four. Measured on a save v0.0.61 actually wrote
+  (`tests/fixtures/persistence/save-v4-yard.json`).
+
+  The second half — *therefore not a regression* — is what that made false, and
+  the repair is **not** in this format. **A V4 row records no rectangle; a V4
+  payload does.** `RoomZoningService.zone` paints the room type's `numericId`
+  over every tile it designates, the world section carries that plane, and
+  `restoreSessionSystems` reads the rectangle back off it
+  (`src/simulation/rooms/bounds-recovery.ts`). So this field stays optional,
+  this schema stays frozen, **`SAVE_SCHEMA_VERSION` stays 5, no migration is
+  added and nothing is written to any save** — the recovery is recomputed on
+  every load, which is
+  [ADR 0033](./adr/0033-releasing-an-interrupted-incident-response-at-runtime.md)'s
+  shape rather than ADR 0030's.
+
+  **A migration could not have done it, and that is measured.** Restore a V4
+  payload, run it, capture it: the envelope declares `saveSchemaVersion: 5`,
+  decodes with `migrated: false`, and still carries a row with no rectangle. The
+  class of save needing repair was never "V4 saves".
+
+  **What an old payload gets**: a room whose plane still shows it restores with
+  its rectangle and therefore with the capacity, object attribution and removal
+  behaviour a currently-zoned room has. A row the plane cannot support — a
+  hand-edited save, or paint cleared out from under it — recovers nothing and
+  keeps ADR 0071's unbounded ceiling, deliberately and pinned by a test.
 
   **Issue #337 gave this field a second consumer, and no new field.**
   `RoomZoningService.unzone` used to grow each covered tile into the connected
@@ -942,10 +979,15 @@ Three changes, and only one of them would have needed a bump on its own:
   adding it would have re-created exactly the shape the third bullet below
   removes, a persisted value derivable from state it could disagree with. So
   **#337 changed nothing in this format: no field, no section, no version
-  bump.** `SAVE_SCHEMA_VERSION` stays at 5. A V4 row's absent rectangle keeps
-  its own meaning here too: nothing resolves to such an instance, so its tiles
-  fall to the same-type fill they always used, which is what keeps a restored
-  V4 room removable rather than permanent.
+  bump.** `SAVE_SCHEMA_VERSION` stays at 5. **This paragraph then said "A V4
+  row's absent rectangle keeps its own meaning here too: nothing resolves to
+  such an instance, so its tiles fall to the same-type fill they always used,
+  which is what keeps a restored V4 room removable rather than permanent."**
+  Since #559 a restored V4 room normally *does* resolve to its instance, so its
+  removal takes the instance path and #337's fix reaches it — which is strictly
+  better than the fallback the sentence describes. The fallback is still there
+  and still keeps a row no plane supports removable rather than permanent; it is
+  no longer what a V4 room gets.
 - **A room instance loses `capacity` and `objectCapabilities`.** This is what
   forces the bump: `capacity` was a *required* field, so removing it changes
   the shape. Both are now pure functions of (placed objects, room bounds, the
