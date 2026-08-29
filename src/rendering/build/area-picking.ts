@@ -1,4 +1,5 @@
 import { type TileRange, worldToTile } from '../tile-metrics';
+import type { WorldRenderView } from '../world/world-view';
 import type { WorldPoint } from './edge-picking';
 
 /**
@@ -151,6 +152,21 @@ export interface RoomToolPort {
   place(rect: TileRect): void;
   /** Live feedback for the panel's readout. `undefined` when nothing is targeted. */
   target?(rect: TileRect | undefined): void;
+  /**
+   * The scene's own read of the world, handed over once per rendered frame
+   * (issue #493).
+   *
+   * Not a gesture and not routed through `target`/`place`: this is what the
+   * tool needs to answer "is this rectangle's own perimeter walled in" for
+   * *any* rectangle it is asked about, including one the HUD's typed
+   * coordinates form produced with no drag and no frame of its own (#411's
+   * parity guarantee -- both producers of a rectangle must reach the same
+   * answer). `WorldRenderView` is already the renderer's read-only projection
+   * of the same edge layers `tile-layer.ts` paints walls from, so handing the
+   * reference costs nothing this scene was not already computing for its own
+   * repaint, and the tool never becomes stale by more than one rendered frame.
+   */
+  setWorld?(world: WorldRenderView): void;
 }
 
 /**

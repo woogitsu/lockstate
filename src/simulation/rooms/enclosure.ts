@@ -1,5 +1,4 @@
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
-import type { SparseWorld } from '../world/sparse-world';
 
 /**
  * Whether a zoned rectangle is walled in along its own boundary.
@@ -123,13 +122,43 @@ export interface RoomEnclosureResult {
 }
 
 /**
+ * The two reads this module needs from a world, named as a port rather than as
+ * `SparseWorld` (issue #493).
+ *
+ * `SparseWorld` still satisfies this structurally and every call site inside
+ * `src/simulation/**` keeps passing one -- nothing there changes. What this
+ * makes possible is a *second* implementation on the other side of the worker
+ * boundary: `src/rendering/world/world-view.ts`'s `WorldRenderView` is the
+ * renderer's own decoded, read-only projection of the same two edge layers,
+ * built for painting walls, and it satisfies this port with no adapter. A
+ * pending rectangle's own enclosure can therefore be classified from the
+ * *client* side of the boundary -- once, at the composition root that already
+ * knows both the world and the HUD's vocabulary -- against the identical
+ * function `RoomZoningService.zone` refuses by, rather than a second
+ * implementation of the same walk that could silently disagree with it. That
+ * is the discipline `WorldRenderView.isTileOwned`'s own comment already states
+ * for ownership (`isTileOwnedBy` is imported, not reimplemented, after #93
+ * found the two disagreeing); this is the same rule applied to enclosure.
+ *
+ * A concrete class typed as a parameter would refuse this, because a class
+ * with private fields is only assignable to *that* class -- `WorldRenderView`
+ * has its own private chunk map and could never satisfy `SparseWorld`
+ * structurally no matter which public methods it grew. An interface has no
+ * private side to fail to match, which is the whole reason this exists as one.
+ */
+export interface RoomEdgeReader {
+  getTopEdge(tile: TilePosition): number;
+  getLeftEdge(tile: TilePosition): number;
+}
+
+/**
  * Evaluates the perimeter of `rectangle` against the world's edge layers.
  *
  * A rectangle with a non-positive dimension has no perimeter to check and is
  * reported `'open'` with no gap: it is not a shape that could enclose
  * anything, and the caller has already refused it as an invalid area.
  */
-export function roomPerimeterEnclosure(world: SparseWorld, rectangle: TileRectangle): RoomEnclosureResult {
+export function roomPerimeterEnclosure(world: RoomEdgeReader, rectangle: TileRectangle): RoomEnclosureResult {
   if (rectangle.width < 1 || rectangle.height < 1) return { enclosure: 'open' };
 
   const left = rectangle.x;

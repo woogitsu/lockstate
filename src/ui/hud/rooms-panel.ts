@@ -171,6 +171,28 @@ export interface RoomsPanelOptions {
    * disagree would draw a removal preview for a designation gesture.
    */
   readonly onArm: (armed: boolean, options: { readonly roomId?: string; readonly removing: boolean }) => void;
+  /**
+   * Whether an arbitrary rectangle's own perimeter is walled in (issue #493).
+   *
+   * A **query**, not a report: everything else in this options bag is a
+   * fire-and-forget callback the panel calls once something has happened, and
+   * this is the one the panel calls to find out something *before* it decides
+   * what to paint. It exists because this panel may not import
+   * `src/simulation/**` at all and holds no edge data of its own -- the same
+   * gap `paintNote`'s own history already named as the reason the pre-confirm
+   * warning "cannot be built here". The host answers it from whichever tool
+   * knows the world, or `'open'` when there is none.
+   *
+   * Called for **both** producers of a pending rectangle: a finished world
+   * gesture arrives already classified (the host computed it before calling
+   * `setPendingArea`, since a drag has a scene to ask), but the
+   * typed-coordinates form below has no drag and no world of its own to
+   * consult, so it calls this directly. Both must reach the same verdict for
+   * the same four numbers, or #411's guarantee that "nothing downstream can
+   * tell which [producer] it was" would quietly stop being true the moment one
+   * producer got a warning the other could not.
+   */
+  readonly classifyArea: (area: RoomsPanelArea) => 'sealed' | 'open';
 }
 
 export interface RoomsPanel {
@@ -195,8 +217,16 @@ export interface RoomsPanel {
   isRemoving(): boolean;
   /** Live feedback from the world. `undefined` clears the readout and the pending rectangle. */
   setArea(area: RoomsPanelArea | undefined): void;
-  /** A finished gesture: the rectangle is now pending confirmation. */
-  setPendingArea(area: RoomsPanelArea | undefined): void;
+  /**
+   * A finished gesture: the rectangle is now pending confirmation.
+   *
+   * `enclosure` is the host's answer to `options.classifyArea` for this same
+   * rectangle, already computed before the call so the host's own
+   * `classifyArea` is asked exactly once per rectangle rather than once here
+   * and once again by the panel. Absent -- rather than asked for again -- when
+   * `area` is `undefined`, matching every other field this call clears.
+   */
+  setPendingArea(area: RoomsPanelArea | undefined, enclosure?: 'sealed' | 'open'): void;
   /** What the simulation said about the last room designated. */
   setZoningNotice(notice: HudZoningNoticeViewModel | undefined): void;
   /**
@@ -317,6 +347,17 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   let area: RoomsPanelArea | undefined;
   /** The finished rectangle awaiting a confirm. */
   let pending: RoomsPanelArea | undefined;
+  /**
+   * Whether `pending`'s own perimeter is walled in, or `undefined` while
+   * nothing is pending.
+   *
+   * Set alongside every assignment to `pending` rather than derived from it,
+   * because deriving it would mean calling `options.classifyArea` again from
+   * inside this module -- and `setPendingArea`'s own contract is that the host
+   * already asked once. Cleared everywhere `pending` is, so the two can never
+   * name different rectangles.
+   */
+  let pendingEnclosure: 'sealed' | 'open' | undefined;
   let notice: HudZoningNoticeViewModel | undefined;
   /** What the simulation last said the designated rooms are missing, or nothing asked yet. */
   let needs: HudRoomNeedsViewModel | undefined;
@@ -622,7 +663,12 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     // second one would argue with it about which route is the main one.
     label: t(HUD_MESSAGE_KEY.roomsCoordinatesSubmit),
     onActivate: () => {
-      adoptPendingArea({ x: coordX, y: coordY, width: coordWidth, height: coordHeight });
+      const next = { x: coordX, y: coordY, width: coordWidth, height: coordHeight };
+      // This producer has no world of its own to ask (#411's header explains
+      // why: it drags nothing), so it asks the host directly rather than
+      // relying on a caller to have classified it already, which is what
+      // keeps this route reaching the same warning a drag does.
+      adoptPendingArea(next, options.classifyArea(next));
     },
   });
   coordinatesSubmit.element.classList.add('hud-rooms__coordinates-submit');
@@ -766,6 +812,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       // here", and silently changing which would be the panel deciding
       // something the player did not say.
       pending = undefined;
+      pendingEnclosure = undefined;
       const wasArmed = armed;
       armed = removing || armed;
       // Arming to remove is arming, so it starts a drawing pass on the same
@@ -786,6 +833,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       if (rectangle === undefined) return;
       if (removing) {
         pending = undefined;
+        pendingEnclosure = undefined;
         paintActions();
         options.onRemove(rectangle);
         return;
@@ -796,6 +844,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       // `undefined` impossible rather than merely unlikely.
       if (roomId === undefined) return;
       pending = undefined;
+      pendingEnclosure = undefined;
       paintActions();
       options.onDesignate({ roomId, area: rectangle });
     },
@@ -806,6 +855,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     label: t(HUD_MESSAGE_KEY.roomsCancel),
     onActivate: () => {
       pending = undefined;
+      pendingEnclosure = undefined;
       paintActions();
     },
   });
@@ -833,12 +883,14 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * `hud.alert.refusal.zone.not-enclosed`.
    *
    * The precedence argument survives its own conclusion and is worth keeping:
-   * this line belongs to the rectangle the player is still holding. The warning
-   * this panel is now missing is the *pre-confirm* one -- telling them the drag
-   * will be refused before they press Confirm -- and it cannot be built here,
-   * because `src/ui/hud/**` may not import the simulation and the panel has no
-   * edge data. It needs the pending rectangle's enclosure carried across the
-   * worker boundary, which is a HUD-projection decision and not this one.
+   * this line belongs to the rectangle the player is still holding. **It has a
+   * third job again, since issue #493, and it is not the one the paragraph
+   * above described losing.** That one warned about a room already *accepted*
+   * as open; this one warns about the rectangle still pending, before the
+   * player has pressed anything -- the pre-confirm warning this comment used
+   * to say could not be built here, because the panel has no edge data of its
+   * own. It still does not: `options.classifyArea` is what changed, not this
+   * module's boundary, and the verdict it returns is all this line ever reads.
    */
   const note = eyebrowText(t(HUD_MESSAGE_KEY.roomsArmHint), 'hud-rooms__note');
 
@@ -855,13 +907,57 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     return pending.width < minimum.width || pending.height < minimum.height;
   }
 
+  /**
+   * True when the pending rectangle's own perimeter is open against a
+   * selected room type that requires one closed (issue #493).
+   *
+   * **Feeds the note only, never `confirmButton.setDisabled` (CI on #498
+   * found the version that did).** `pendingEnclosure` can be a false
+   * negative -- `classifyArea`'s answer is only as fresh as the render
+   * snapshot feed's own cadence, which can go stale for as long as the
+   * session stays paused -- and disabling on a possibly-stale `'open'`
+   * blocked a designation the simulation would have accepted, which is worse
+   * than the missing warning this panel exists to add. The warning itself
+   * carries no equivalent risk: shown when it need not have been, it costs
+   * confusion for one press and no more, because the control stays live and
+   * the real simulation still decides. See `paintActions`'s comment beside
+   * `confirmButton.setDisabled` for the full reasoning and the ADR for the
+   * options weighed.
+   *
+   * Reads `pendingEnclosure`, never `options.classifyArea` again: the host
+   * already answered once, when the rectangle became pending, and asking a
+   * second time here could disagree with it if the world moved in between --
+   * which would mean the note and the rectangle it describes had quietly
+   * stopped being the same measurement.
+   */
+  function pendingIsUnenclosed(): boolean {
+    if (pending === undefined || removing) return false;
+    if (pendingEnclosure !== 'open') return false;
+    return selectedRoom()?.enclosure === 'enclosed';
+  }
+
   function paintNote(): void {
     const minimum = selectedRoom()?.minimum;
+    // Too-small wins over everything, exactly as it always has: a rectangle
+    // can be both too small and open at once, and it is still the size that
+    // the player has to fix first -- growing it to the authored minimum can
+    // change which edges are even in play.
     if (pendingIsTooSmall() && minimum !== undefined) {
       note.textContent = t(HUD_MESSAGE_KEY.roomsTooSmall, {
         width: minimum.width,
         height: minimum.height,
       });
+      note.dataset['tone'] = 'warning';
+      return;
+    }
+    if (pendingIsUnenclosed()) {
+      // The same sentence the post-confirm readout already uses for an open
+      // room (`paintEnclosure` below) -- reused deliberately rather than
+      // drafted new, since a second, differently worded sentence for the
+      // identical fact is exactly the kind of drift `docs/LOCALIZATION.md`
+      // warns a message-key catalog invites. Naming *which* side is open
+      // would need new copy this change does not ship; see the ADR.
+      note.textContent = t(HUD_MESSAGE_KEY.roomsEnclosureOpen);
       note.dataset['tone'] = 'warning';
       return;
     }
@@ -1079,20 +1175,50 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     );
 
     if (pending !== undefined) {
-      // A rectangle under the authored minimum can be *held* but not
-      // confirmed. Disabled rather than absent: the rectangle is real and the
-      // player drew it, so the control that would designate it stays where it
-      // is and the note beside it says what is wrong. Removing the control
-      // would leave a pending rectangle with no visible reason for having no
-      // way forward.
+      // Only too-small disables. **Enclosure does not, and issue #493's own
+      // first design disabled on it too -- that was wrong, and CI on #498
+      // is why this comment says so rather than the reasoning it replaced.**
       //
-      // The simulation refuses the same case independently
-      // (`zone.below-minimum-size`), so this is a *report* and not the only
-      // guard: a `ZoneRoom` composed anywhere else is still refused. It is also
-      // why the disabled control produces no message: a press that does not
-      // dispatch is not a refusal, and the note beside it is already saying
-      // what is wrong -- so the "exactly one message per refusal" rule is not
-      // in play until a command is actually sent.
+      // Too-small is arithmetic on numbers the panel already holds outright:
+      // the pending rectangle's own width and height against the selected
+      // room's authored minimum, nothing about world state, so there is
+      // nothing for it to be stale about. Enclosure is not that. `pending
+      // Enclosure` is `classifyArea`'s answer against `WorldRenderView`,
+      // which is refreshed on the render-snapshot feed's own cadence
+      // (`SimulationSnapshotFeed`) -- up to a 30-second poll interval while
+      // the clock runs, and **not refreshed at all while it is paused**,
+      // with no final catch-up snapshot taken when it stops. A prison built
+      // its walls, ran the clock long enough for `data-queued` to empty, and
+      // paused again before the next periodic poll happened to land -- which
+      // is an ordinary sequence, not a contrived one -- left the client's
+      // world stale by exactly the tail of that window, still reporting
+      // `'open'` for a rectangle the simulation had already sealed. Disabling
+      // on that verdict blocked a designation `RoomZoningService.zone` would
+      // have accepted, with no way to recover but running the clock further
+      // or drawing a new rectangle -- worse than #493's original bug, which
+      // only cost a press. `'sealed'` carries no equivalent risk: a wall
+      // this view has already seen was really built (nothing un-builds one
+      // from underneath a pending rectangle), so a false *positive* from
+      // staleness cannot happen, only a false negative. That asymmetry is
+      // why only `'open'` is ever suspect and why the fix is to stop acting
+      // on it as ever certain, rather than to chase the staleness bound
+      // tighter. See the ADR for the options weighed and why this one.
+      //
+      // The note still warns on `pendingIsUnenclosed()` (below): a warning
+      // that turns out to be stale costs nothing but confusion, since the
+      // control is still live and the real simulation still accepts a
+      // rectangle it agrees is sealed. Disabled rather than absent for the
+      // too-small case that remains: the rectangle is real and the player
+      // drew it, so the control that would designate it stays where it is
+      // and the note beside it says what is wrong.
+      //
+      // The simulation refuses both cases independently
+      // (`zone.below-minimum-size`, `zone.not-enclosed`), so a disabled
+      // control is a *report* and not the only guard either way: a
+      // `ZoneRoom` composed anywhere else is still refused, and now so is
+      // one composed through this control on a rectangle that turns out to
+      // still be genuinely open -- the existing refusal line is what tells
+      // the player then, exactly as it did before this panel warned at all.
       confirmButton.setDisabled(pendingIsTooSmall());
     }
 
@@ -1113,9 +1239,16 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * rectangle" to the confirm control, the refusals it can earn and the
    * command the host composes. A second producer that set `pending` its own
    * way would be the parallel path #411's second acceptance criterion forbids.
+   *
+   * `enclosure` travels with `next` rather than being read separately, so the
+   * two can never fall out of step: a caller that supplied a rectangle without
+   * its classification would leave `pendingEnclosure` stale from whatever was
+   * pending before, which is exactly the kind of mismatch #411's guarantee
+   * forbids between the two producers.
    */
-  function adoptPendingArea(next: RoomsPanelArea | undefined): void {
+  function adoptPendingArea(next: RoomsPanelArea | undefined, enclosure?: 'sealed' | 'open'): void {
     pending = next;
+    pendingEnclosure = next === undefined ? undefined : enclosure;
     area = undefined;
     // A finished rectangle opens the panel, whatever was folded before it.
     // `drawing()` already ends the pass, which covers the fold this surface
@@ -1208,14 +1341,14 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       area = next;
       paintArea();
     },
-    setPendingArea(next: RoomsPanelArea | undefined): void {
+    setPendingArea(next: RoomsPanelArea | undefined, enclosure?: 'sealed' | 'open'): void {
       // The dragged rectangle is taken into the coordinate fields as well, so
       // the two routes hold one rectangle between them rather than two: a
       // player who drags 6x5 and wanted 6x6 can nudge the height instead of
       // dragging again, and a form that still showed 0,0,1,1 beside a pending
       // 12x9 would be a second, stale statement of the same thing.
       if (next !== undefined) showCoordinates(next);
-      adoptPendingArea(next);
+      adoptPendingArea(next, enclosure);
     },
     setZoningNotice(next: HudZoningNoticeViewModel | undefined): void {
       notice = next;
@@ -1236,6 +1369,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       // origin.
       if (!visible) {
         pending = undefined;
+        pendingEnclosure = undefined;
         area = undefined;
         // The readout is *pulled* while this tab is the one showing, so leaving
         // it stops the refresh -- and a readout nothing is refreshing goes

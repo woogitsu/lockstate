@@ -532,6 +532,14 @@ export class WorldScene extends Phaser.Scene {
     this.frameCameraOnFirstWorld(frame.world.loadedBounds);
     this.tiles?.update(frame, range);
     this.actors?.update(frame.actors, range, nowSeconds);
+    // Handed over every frame rather than read once: `frame.world` is replaced
+    // wholesale on every snapshot (`WorldRenderView.fromSnapshot`), and this is
+    // the one point in the scene that already holds the newest one. The room
+    // tool's own copy of it is then never more than one rendered frame behind
+    // whatever the walls on screen actually are (issue #493) -- no additional
+    // request to the worker, because this reference was already being read for
+    // the repaint above.
+    this.roomTool?.setWorld?.(frame.world);
   }
 
 
