@@ -58,21 +58,28 @@ to a derived name:
    compacting indices on load, pooling entities for actors temporarily off
    the map — silently renames the entire prison, in every existing save, on
    a build that changed nothing about naming.
-2. **Ids repeat.** The generation wraps at 4,096. After 4,096
-   destroy/spawn cycles at one index the id is identical to the one the
-   *first* occupant of that slot carried, so a derived name would hand the
-   4,097th occupant the first occupant's name. Prisons churn population;
-   this is a long session, not a hypothetical.
-   `tests/unit/actor-identity.test.ts` pins the wrap rather than asserting
-   it in prose.
-   That pin observes the arithmetic *period* and none of its consequences,
-   which are worse than a repeated name and are stated in
-   [ADR 0026](./0026-entity-id-lifetime.md): at the wrap `isAlive` reports a
-   stale handle as live, `destroy` through one kills the entity now in the
-   slot, and the three `EntityId`-keyed stores — including this registry —
-   stop missing and start inheriting. Which of the three available fixes is
-   taken is open there; one of them re-baselines the pin cited above, which
-   is named in that ADR rather than done.
+2. **Ids used to repeat.** The generation wrapped at 4,096: after 4,096
+   destroy/spawn cycles at one index the id was identical to the one the
+   *first* occupant of that slot carried, so a derived name would have handed
+   the 4,097th occupant the first occupant's name. Prisons churn population;
+   that was a long session, not a hypothetical.
+   `tests/unit/actor-identity.test.ts` pins the *arithmetic* rather than
+   asserting it in prose, and its consequences — worse than a repeated name —
+   are stated in [ADR 0026](./0026-entity-id-lifetime.md): at the wrap
+   `isAlive` reported a stale handle as live and `destroy` through one killed
+   the entity now in the slot.
+   **Correction, 2026-08-29 (#169): this is no longer true, and the argument
+   does not need it to be.** ADR 0026 question 1 is answered — `EntityStore`
+   now retires a slot that dies at its last generation instead of recycling
+   it, so an id genuinely cannot repeat any more, at any recycle count. Point
+   1 above (allocation policy) already carries this decision on its own, and
+   the very next test in `actor-identity.test.ts` — a prisoner and a staff
+   member sharing numeric id 0 across two different stores — is a case
+   retirement does nothing to prevent, so "a name cannot be derived from an
+   entity id" is unweakened. What changed is only that this specific
+   supporting fact is now the thing ADR 0026 fixed rather than the thing it
+   left open; `tests/unit/actor-identity.test.ts`'s pin was re-baselined to
+   match, in the same commit.
 3. **Ids are not unique across populations.** Prisoners live in
    `PrisonerOperationsRuntime`'s `EntityStore` and staff in `GuardRoster`'s
    own, separate one. Both hand out id `0`. A name derived from the id
@@ -208,8 +215,10 @@ no decision recorded here.
 ## Alternatives considered
 
 - **Derive the name from the entity id.** Rejected above: the id is a slot
-  handle that changes allocation policy, wraps every 4,096 recycles, and
-  collides across the two entity stores, and deriving forecloses renaming.
+  handle that changes with allocation policy and collides across the two
+  entity stores, and deriving forecloses renaming. (It also used to wrap
+  every 4,096 recycles; #169 closed that specific recurrence, and the
+  rejection does not depend on it — see the 2026-08-29 correction above.)
 - **Allocate a separate stable `personId` counter and derive the name from
   *that*.** This fixes the slot-handle problem — a monotonic per-session
   counter, snapshotted like `IncidentTriggerSystem.sequence`, is a fine

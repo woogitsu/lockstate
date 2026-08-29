@@ -2405,6 +2405,20 @@ one direction.
   tripwire's own coverage, measured"*). **No `src/` change**: none of options A,
   B or C was taken, so the three questions are exactly as open as before — what
   moved is that the tripwire now detects what it claims to.
+
+  **Question 1 is answered too now, 2026-08-29 (#169).** This entry's own
+  "Question 1 is not answered and is now reachable" is superseded, not
+  rewritten: option A is taken alongside the already-shipped option C.
+  `EntityStore.destroy` (`src/simulation/entity/entity-store.ts`) retires a
+  slot that dies at generation 4,095 instead of recycling it, so the tripwire
+  this entry describes was re-baselined rather than merely re-read — every
+  `DEFECT`-labelled case in `entity-generation-wrap.test.ts` and the wrap-period
+  pin in `actor-identity.test.ts` now assert the fixed behaviour, confirmed RED
+  against the pre-fix `destroy()` and GREEN restored by hand. ADR 0026 carries
+  the decision itself, dated, in *"Amendment, 2026-08-29 (#169): question 1 is
+  answered — option A taken, alongside the already-shipped option C"*. Only
+  question 3 (`submitIntake` re-intake) is now open of the three this file has
+  been tracking since #167.
 - **ADR 0012 — a retained topology is now evicted; the streaming policy is what
   is left.** This entry read "`chunkTopologies` is never evicted", re-verified at
   `4ed571f` on the ground that no `delete` existed on that map. **#324 closed

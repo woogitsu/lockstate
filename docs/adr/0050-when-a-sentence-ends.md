@@ -163,8 +163,10 @@ Two things make that list more than a list:
 having happened; rewriting it on a departure would falsify the record and change
 `buildDisciplinaryIndex`'s arithmetic for everyone else in that incident. That
 retention is safe because the log is only ever read *by id*, and a recycled index
-carries a new generation — which is safe until the generation wraps, i.e. until
-ADR 0026 question 1.
+carries a new generation — which used to be safe only until the generation
+wrapped, i.e. until ADR 0026 question 1 was answered. **It now is (2026-08-29,
+#169, option A):** a slot is retired rather than recycled past its last
+generation, so the generation this retention leans on can never repeat.
 
 **Release deliberately does not reset the component arrays.** Those are reset
 when an index is *allocated* (`admitPrisoner`, the #111 fix), and stating the
@@ -217,19 +219,18 @@ for the loop to be honest.
 
 ## What this does not decide
 
-- **ADR 0026 question 1 — generation exhaustion — stays open, and this change
-  makes it reachable.** Before #441 no index was recycled even once; now they are
-  recycled in ordinary play. The arithmetic is unchanged: 4,096 releases *of one
-  index* before that index's generation returns to a value it has issued before,
-  and 2,048 before an id would go negative if the `>>> 0` in `packEntityId` were
-  removed. Option A (retire an index past its last generation) is the fix ADR
-  0026 names, and taking it also re-baselines `actor-identity.test.ts`'s pin —
-  which ADR 0026 says is *"named as the specific thing a reviewer approving
-  option A is also approving"* and does not approve. It is not taken here, and
-  the blast radius is much smaller than it was: option C is now implemented, so
-  every `EntityId`-keyed store is emptied at release and there is no long-lived
-  holder of a stale prisoner id left for a wrap to reconnect. **This is the one
-  thing on this branch that a reviewer should decide next.**
+- ~~ADR 0026 question 1 — generation exhaustion — stays open, and this change
+  makes it reachable.~~ **Answered, 2026-08-29 (#169): option A is taken.**
+  This bullet used to record that this change made the wrap reachable in
+  ordinary play (true, and still the reason the decision could not wait) and
+  that option A was priced but not taken. It has since been taken:
+  `EntityStore.destroy` (`src/simulation/entity/entity-store.ts`) retires a
+  slot that dies at generation 4,095 instead of recycling it, so the
+  recurrence this bullet described can no longer happen at any recycle count,
+  and `actor-identity.test.ts`'s pin was re-baselined as this bullet said it
+  would need to be. See ADR 0026's own "Amendment, 2026-08-29" for the
+  argument and the RED/GREEN evidence. **This is no longer the one thing on
+  this branch a reviewer needs to decide.**
 - **ADR 0026 question 3 — may `submitIntake` be called for an already-admitted
   prisoner — stays open.** Release does not create a caller for it; the
   "one prisoner, two beds" state that question measured is now recoverable rather
@@ -311,16 +312,19 @@ for the loop to be honest.
 
 ## What would change my mind
 
-**The weakest claim in this document is that ADR 0026 question 1 can be left
-open.** It rests on an argument rather than a measurement: that with option C
-implemented, no stale prisoner id survives long enough for a wrap to reconnect
-it, because every store that could hold one is emptied at release. The holders I
-enumerated are the seven the reflection gate finds plus the navigation queue and
-the incident log; a holder I did not think of — a queued command carrying an
-`EntityId`, a projection cached across ticks, a future transfer record — would
-break that argument, and none exists today. **What would settle it: drive one
-index through 4,096 releases in a real session and report what the ninth store
-does.** That is a cheap experiment and it is not run here.
+~~**The weakest claim in this document is that ADR 0026 question 1 can be left
+open.**~~ **Settled, 2026-08-29 (#169), and by the stronger route.** This
+section used to rest an argument on option C alone — that no stale prisoner id
+survives long enough for a wrap to reconnect it, because every store that could
+hold one is emptied at release — and named the holder it could not enumerate
+(a queued command, a cached projection, a future transfer record) as the thing
+that would break it. Option A closes that gap structurally instead of by
+enumeration: `EntityStore.destroy` now retires a slot at generation 4,095
+rather than recycling it, so the id cannot repeat *at all*, which means no
+holder anywhere — enumerated or not — can ever collide with a later occupant's
+id. The cheap experiment this paragraph proposed (drive one index through
+4,096 releases and report what the ninth store does) is no longer the
+interesting question, because there is no tenth id to reconnect.
 
 Two smaller things would move me:
 

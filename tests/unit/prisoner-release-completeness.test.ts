@@ -125,9 +125,15 @@ function pathsMentioning(root: object, target: number): readonly Hit[] {
  * `ClassificationReviewSystem`'s evidence depend on who is still resident.
  *
  * That retention is safe **because the log is only ever read by id**: a
- * recycled index gets a new generation, so a later occupant's id misses. It
- * stops being safe at the 4,096th recycle of one index, which is ADR 0026
- * question 1 -- open, escalated by ADR 0050, and not answered by anything here.
+ * recycled index gets a new generation, so a later occupant's id misses.
+ * **This used to stop being safe at the 4,096th recycle of one index** --
+ * ADR 0026 question 1, left open by ADR 0050 -- because the generation
+ * wrapped back to a value it had issued before and a departed participant's
+ * old id could start matching the slot's new occupant. **Question 1 is now
+ * answered (#169, option A):** `EntityStore.destroy` retires a slot that
+ * dies at its last generation instead of recycling it, so that recurrence
+ * can no longer happen at all, at any recycle count. The retention here does
+ * not depend on release, on this test, or on anything but the store itself.
  *
  * **The log grew its second id-keyed container on
  * [ADR 0057](../../docs/adr/0057-what-a-riot-does-to-a-prisoners-day.md), and
