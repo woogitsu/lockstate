@@ -1,5 +1,9 @@
 import Phaser from 'phaser';
-import { resolveBrowserKeyValueStore } from './input';
+import {
+  loadAccessibilitySettings,
+  resolveBrowserKeyValueStore,
+  saveAccessibilitySettings,
+} from './input';
 import { IndexedDbLocalSaveStore, openLockstateDatabase } from './persistence/local/indexeddb-store';
 import { PrisonSaveRepository, type SaveResult } from './persistence/local/repository';
 import { LifecycleSaveHandler } from './persistence/session/lifecycle';
@@ -17,6 +21,7 @@ import { EMPTY_RENDER_FRAME, type RenderFeed } from './rendering/feed/render-fee
 import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-feed';
 import { WorldScene } from './rendering/scene/world-scene';
 import { VOID_COLOR } from './rendering/world/appearance';
+import { applyAccessibilitySettings, createDisplayScaleControl } from './ui/display-scale';
 import { SavePanel } from './ui/save-panel';
 import {
   EMPTY_HUD_VIEW_MODEL,
@@ -2571,6 +2576,72 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * `SavePanel`'s defaulted localizer still has to work around.
    */
   hud.brandSlot.append(createBrandBadge({ localizer }).element);
+
+  /*
+   * The interface scale, wired end to end (issue #545).
+   *
+   * `uiScale` has been a declared, range-checked, defaulted and persisted
+   * field of `AccessibilitySettings` since that record was written, and until
+   * this block existed no line in `src/` read it back. A player could not set
+   * it, and a value that reached the storage key some other way survived a
+   * reload and changed nothing on screen. These fifteen lines are the whole of
+   * the fix at the composition root; the mechanism is `--ui-scale` in
+   * `src/ui/tokens.css` and the steps are `UI_SCALE_STEPS` in
+   * `src/input/accessibility.ts`.
+   *
+   * **Applied before the control is built**, so the first paint is already at
+   * the player's scale rather than snapping to it a frame later.
+   *
+   * **Persisted before it is painted.** `saveAccessibilitySettings` swallows a
+   * refusal by design (`src/input/storage.ts`: losing a settings write is
+   * recoverable, crashing a control mid-session is not), so the write cannot
+   * fail the sequence -- but doing it first keeps the order honest for the day
+   * it reports one, and the control is deliberately *controlled*: it changes
+   * nothing until `setScale` is called, so the readout can never claim a scale
+   * the rest of the page is not at.
+   *
+   * `document.documentElement` is the element `:root` selects. Reading it here
+   * rather than inside `applyUiScale` is issue #199's lesson applied to a
+   * different global: a browser access belongs in the composition root, where
+   * it happens once and at a known time.
+   */
+  const settingsStore = resolveBrowserKeyValueStore();
+  let accessibility = loadAccessibilitySettings(settingsStore);
+  applyAccessibilitySettings(document.documentElement, accessibility);
+  const displayScale = createDisplayScaleControl({
+    localizer,
+    scale: accessibility.uiScale,
+    onSelect: (uiScale) => {
+      accessibility = { ...accessibility, uiScale };
+      saveAccessibilitySettings(settingsStore, accessibility);
+      applyAccessibilitySettings(document.documentElement, accessibility);
+      displayScale.setScale(uiScale);
+    },
+  });
+  /*
+   * The rail's aside slot, above the save panel -- and **not** the status
+   * strip, which is where two earlier drafts of this put it. The strip cannot
+   * afford a tap target at the viewport that binds, and the numbers are worth
+   * recording because they are not obvious:
+   *
+   *   - At 375x812 `hud.css` wraps the strip into three rows: the brand badge
+   *     (about 21px of type), the metrics, and the clock beside the transport.
+   *     A 44px control in the *brand* slot raises the first row from 21px to
+   *     44px -- the Rooms panel's arrival height went 451.1 -> 422.3, against a
+   *     number `app-shell.spec.ts` pins.
+   *   - Moving it to a new slot at the *end* of the strip was worse, not
+   *     better: the clock is `flex: 1` but its automatic minimum size is its
+   *     own content, measured at 179px, so clock + transport already fill the
+   *     359px row exactly and the control took a fourth row. 451.1 -> 405.
+   *
+   * `HudHandle.asideSlot` is documented as the host's own box in the rail,
+   * *not tab-scoped* -- "what sits here is available on every tab, which is
+   * the point" -- which is exactly what a display preference is. It costs the
+   * save panel below it 54px of visible height and costs the Build and Rooms
+   * panels nothing at all, because `.hud__aside` takes its height from the
+   * rail rather than from its contents (`hud.css`).
+   */
+  hud.asideSlot.append(displayScale.element);
 
   tool?.attachReadout((target) => hud?.setBuildTarget(target));
   return hud;
