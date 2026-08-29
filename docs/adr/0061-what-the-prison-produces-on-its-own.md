@@ -47,7 +47,7 @@ Verified on `3bfb799` before anything was written:
 ### What that cost, in the one number somebody had measured
 
 Issue #477, filed the same week: eight prisoners, eight furnished cells, no
-shower room and no yard, ten in-game days (24,000 ticks at `DAY_LENGTH_TICKS` 2,400; #477 and this line both said twenty until #443 checked the division).
+shower room and no yard, twenty in-game days.
 
 | guards | peak sector risk | riots |
 | --- | --- | --- |
