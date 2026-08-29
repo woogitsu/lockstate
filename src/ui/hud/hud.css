@@ -2105,11 +2105,74 @@
   letter-spacing: 0;
 }
 
-/* The authored rule and what the simulation found: three label lines and no
+/*
+ * The objects the named room is short, one line each (#529).
+ *
+ * **No `gap`**, and that is the whole reason this box exists rather than the
+ * lines being appended to `.hud-rooms__needs` directly. That block has a
+ * `--hud-rooms-gutter` gap, which is right between the header and the room line
+ * and wrong between one object and the next: those are a list, and a gutter per
+ * object would spend the panel's scarcest resource separating things that
+ * belong together. The shape `.hud-rooms__rule-block` already uses, for the same
+ * reason.
+ */
+.hud-rooms__needs-items {
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * One object line: "2 × Bench".
+ *
+ * `display: block` so it is a line's worth of space whatever it is saying --
+ * the rule `.hud-rooms__needs-line` above and `.hud-rooms__note` both follow.
+ * Toned with the block, which exists only when something is missing, so there
+ * is no state of it that is neutral news.
+ *
+ * `tabular-nums` for `.hud-rooms__needs-count`'s reason: these are figures a
+ * player reads *down a column*, and proportional digits make a stack of them
+ * ragged at exactly the place the eye is comparing them.
+ */
+.hud-rooms__needs-item {
+  display: block;
+  color: var(--status-warning);
+  font-variant-numeric: tabular-nums;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/*
+ * What the *selected room type* will need standing in it (#529).
+ *
+ * Inside `.hud-rooms__rule-block`, which is already a gapless column, so this
+ * box adds no height of its own and each object costs exactly one line. It is
+ * a box rather than fixed lines because the count is content's: `room.yard`
+ * authors no object requirement and `room.kitchen` authors three.
+ *
+ * Untoned, unlike `.hud-rooms__needs-item` above, and the difference is the
+ * point. These are the authored rule -- the same kind of statement as
+ * `.hud-rooms__rule`'s minimum size, true of a room type nobody has zoned --
+ * while the warning tone one block up means "your prison is short of this right
+ * now". Painting both in `--status-warning` would say a canteen is a problem
+ * before the player has drawn one.
+ */
+.hud-rooms__rule-objects {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The authored rule and what the simulation found: label lines and no
    controls. Last in the panel, because it is the block a player reads rather
    than presses -- and being last is what the browser suite's reachability
    sweep checks, since the last block is the one a floor that is too small
-   pushes out of the panel. */
+   pushes out of the panel.
+
+   The comment said "three label lines" until #529 gave the rule block a
+   variable number of object-requirement lines under its two fixed ones. The
+   `.hud-rooms > .ui-panel__body` min-height sum still budgets the three, which
+   is correct and is explained there: that floor is defensive rather than
+   binding, and the object lines are content-sized. */
 .hud-rooms__status {
   display: flex;
   flex-direction: column;

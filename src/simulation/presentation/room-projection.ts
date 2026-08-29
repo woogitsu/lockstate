@@ -159,6 +159,33 @@ export interface RoomRequirementViewModel {
   readonly objectId?: string;
   readonly objectNameKey?: string;
   readonly minQuantity?: number;
+  /**
+   * How many objects standing in this room satisfy this requirement (#529).
+   *
+   * `minQuantity` alone says what the room *asks for*; this is what it *has*,
+   * and the difference between them is the only number a player can act on. A
+   * canteen asking for four benches and holding three is short **one**, and a
+   * readout that could name only `minQuantity` would tell that player to build
+   * four -- confidently wrong rather than merely unhelpful, which is a worse
+   * outcome than the silence #529 measured.
+   *
+   * **Absent means nothing was counted, and it is not a zero.** It is present
+   * exactly when `RoomProjectionOptions.placedObjects` was supplied *and* the
+   * instance has a rectangle to attribute objects to. Without both, the status
+   * beside it came from the pre-#528 capability test, which ignores
+   * `minQuantity` entirely and therefore cannot support a subtraction. A
+   * consumer that defaulted this to `0` would turn "this projection was not
+   * told what is standing anywhere" into "this room is empty" -- the same
+   * invention `RoomOccupancyViewModel.utilization` refuses by being absent
+   * rather than zero for a room whose capacity is zero.
+   * `src/ui/simulation-room-needs.ts` carries the absence across the HUD
+   * boundary for that reason, and the Rooms panel renders an uncounted need
+   * with no numeral at all rather than with a guessed one.
+   *
+   * Only ever present on an `object` requirement: the other three kinds are
+   * `'not-evaluated'` and there is nothing to count.
+   */
+  readonly satisfyingQuantity?: number;
   readonly minWidth?: number;
   readonly minHeight?: number;
   readonly minTiles?: number;
@@ -354,23 +381,72 @@ function satisfyingObjectCount(
   return count;
 }
 
+/**
+ * The verdict on one requirement, and -- when there was anything to count --
+ * how many standing objects satisfied it.
+ *
+ * The count is carried beside the status rather than recomputed by the caller
+ * that wants it, because the two must not be able to disagree: a status of
+ * `'missing-capability'` sitting next to a count that meets `minQuantity` would
+ * be a contradiction rendered straight onto the screen. One function decides
+ * both, which is the same rule `unfinishedRoomIds` follows on the HUD side by
+ * reading `missingCapability` rather than re-deriving "unfinished".
+ */
+interface RequirementEvaluation {
+  readonly status: RoomRequirementStatus;
+  /** Absent when nothing was counted. See `RoomRequirementViewModel.satisfyingQuantity`. */
+  readonly satisfying?: number;
+}
+
+/**
+ * Evaluate one requirement, counting where a count is possible.
+ *
+ * **The order of the two guards below is deliberate and is not the order the
+ * status-only version used.** That one tested `definition === undefined` first
+ * and answered `'missing-capability'` for it whatever `contents` held; this one
+ * tests `contents === undefined` first, so that the "nothing was counted" state
+ * reports *no* count on every branch it owns -- including the unknown-object
+ * branch. The statuses are identical either way (both paths answered, and still
+ * answer, `'missing-capability'` for an object id the catalogue does not
+ * define); what changes is only whether a number is attached to them, and
+ * attaching `0` to a verdict reached without counting is exactly the invention
+ * `satisfyingQuantity` is documented not to make.
+ */
+function evaluateRequirement(
+  requirement: RoomRequirementDefinition,
+  instance: RoomInstance,
+  objects: ContentRegistry<ObjectDefinition>,
+  contents: readonly PlacedObject[] | undefined,
+): RequirementEvaluation {
+  if (requirement.type !== 'object') return { status: 'not-evaluated' };
+  const definition = objects.getById(requirement.objectId);
+  if (contents === undefined) {
+    // Nothing to count: answer from the instance's derived capability list, the
+    // pre-#528 test, which ignores `minQuantity`. See `RoomProjectionOptions.placedObjects`.
+    if (definition === undefined || definition.capabilities.length === 0) return { status: 'missing-capability' };
+    const present = definition.capabilities.every((capability) => instance.objectCapabilities.includes(capability));
+    return { status: present ? 'satisfied-by-capability' : 'missing-capability' };
+  }
+  // A requirement naming an object this build does not declare, or one that
+  // declares no capability, is satisfiable by nothing at all -- so zero is a
+  // counted answer here rather than an absent one.
+  if (definition === undefined || definition.capabilities.length === 0) {
+    return { status: 'missing-capability', satisfying: 0 };
+  }
+  const satisfying = satisfyingObjectCount(definition, contents, objects);
+  return {
+    status: satisfying >= requirement.minQuantity ? 'satisfied-by-capability' : 'missing-capability',
+    satisfying,
+  };
+}
+
 function requirementStatus(
   requirement: RoomRequirementDefinition,
   instance: RoomInstance,
   objects: ContentRegistry<ObjectDefinition>,
   contents: readonly PlacedObject[] | undefined,
 ): RoomRequirementStatus {
-  if (requirement.type !== 'object') return 'not-evaluated';
-  const definition = objects.getById(requirement.objectId);
-  if (definition === undefined || definition.capabilities.length === 0) return 'missing-capability';
-  if (contents === undefined) {
-    // Nothing to count: answer from the instance's derived capability list, the
-    // pre-#528 test, which ignores `minQuantity`. See `RoomProjectionOptions.placedObjects`.
-    const present = definition.capabilities.every((capability) => instance.objectCapabilities.includes(capability));
-    return present ? 'satisfied-by-capability' : 'missing-capability';
-  }
-  const satisfying = satisfyingObjectCount(definition, contents, objects);
-  return satisfying >= requirement.minQuantity ? 'satisfied-by-capability' : 'missing-capability';
+  return evaluateRequirement(requirement, instance, objects, contents).status;
 }
 
 function projectRequirement(
@@ -379,7 +455,7 @@ function projectRequirement(
   objects: ContentRegistry<ObjectDefinition>,
   contents: readonly PlacedObject[] | undefined,
 ): RoomRequirementViewModel {
-  const status = requirementStatus(requirement, instance, objects, contents);
+  const { status, satisfying } = evaluateRequirement(requirement, instance, objects, contents);
   if (requirement.type === 'object') {
     const nameKey = objects.getById(requirement.objectId)?.nameKey;
     return {
@@ -387,6 +463,10 @@ function projectRequirement(
       status,
       objectId: requirement.objectId,
       minQuantity: requirement.minQuantity,
+      // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
+      // is on, so "nothing was counted" has to be an absent property and not a
+      // present one holding nothing.
+      ...(satisfying === undefined ? {} : { satisfyingQuantity: satisfying }),
       ...(nameKey !== undefined ? { objectNameKey: nameKey } : {}),
     };
   }

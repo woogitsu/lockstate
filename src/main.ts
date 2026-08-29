@@ -69,10 +69,18 @@ import {
   occupiesTileEdge,
   type BuildableDefinition,
 } from './simulation/construction';
-// The one reader of the room catalogue's *area* requirements outside the
+// The one reader of the room catalogue's authored requirements outside the
 // simulation, and it is the composition root by design: three layers ask this
 // question and none may re-derive the answer. See `roomCatalogue()` below.
-import { enclosureRequirement, minimumSizeRequirement } from './simulation/rooms/requirements';
+//
+// This comment used to say "*area* requirements", and #529 widened it: the
+// Rooms catalogue now states what a room type will need standing in it as well
+// as how big it has to be, so `objectRequirements` is read here too.
+import {
+  enclosureRequirement,
+  minimumSizeRequirement,
+  objectRequirements,
+} from './simulation/rooms/requirements';
 import { MAX_PURCHASE_QUANTITY } from './simulation/economy';
 import { staffHireCostMinorUnits } from './simulation/staff';
 import { defaultStaffRoleRegistry } from './content/staff-role-catalog';
@@ -868,14 +876,22 @@ const ADMISSION_REQUEST = { priorIncidents: 0 } as const;
  * (`docs/DETERMINISM.md`). Grouping by category also puts the three housing
  * rooms together, which is the grouping a player is choosing between.
  *
- * The two *rules* -- the authored minimum size and the enclosure requirement --
- * are read through `src/simulation/rooms/requirements.ts` rather than by
- * looping over `definition.requirements` here. Three layers ask that same
- * question and none may re-derive the answer: the zoning service refuses a
- * rectangle below the minimum, the enclosure evaluation reports against the
- * `enclosed`/`outdoors` requirement, and this projection puts both on screen so
- * the player can read the rule before dragging. A copy of `requirements.find`
- * in each would be three places to forget a fifth requirement kind.
+ * The *rules* -- the authored minimum size, the enclosure requirement and,
+ * since #529, the objects the room will need -- are read through
+ * `src/simulation/rooms/requirements.ts` rather than by looping over
+ * `definition.requirements` here. Several layers ask those same questions and
+ * none may re-derive the answer: the zoning service refuses a rectangle below
+ * the minimum, the enclosure evaluation reports against the
+ * `enclosed`/`outdoors` requirement, `room-projection.ts` checks the object
+ * requirements against what is standing in a real room, and this projection
+ * puts all three on screen so the player can read the rule before dragging. A
+ * copy of `requirements.find` in each would be that many places to forget a
+ * fifth requirement kind.
+ *
+ * **This paragraph counted "two rules" and "three layers" until #529**, which
+ * is the count-shaped sentence `docs/AGENT_WORKFLOW.md` §4 warns rots first:
+ * adding the third rule did not touch the sentence saying there were two. It
+ * now names the subjects instead of tallying them.
  *
  * `tint` comes from `zoningTint`, the renderer's own table, so the catalogue
  * row and the designation painted on the map cannot disagree. That is a value
@@ -906,6 +922,32 @@ function roomCatalogue(): HudRoomsViewModel {
       // claiming a 1x1 floor nobody wrote.
       ...(minimum === undefined ? {} : { minimum: { width: minimum.minWidth, height: minimum.minHeight } }),
       enclosure: enclosureRequirement(definition),
+      /*
+       * What the room type will need standing in it, so the cost of a canteen
+       * is readable *before* the drag rather than only after it (#529).
+       *
+       * The object's name comes from `defaultObjectRegistry`, which is the same
+       * lookup `roomNeedsFromProjections` gets on the other side of the
+       * boundary via `RoomRequirementViewModel.objectNameKey` -- so the row a
+       * player reads before zoning and the line they read afterwards name the
+       * object with the same key and cannot drift into two different words for
+       * one thing.
+       *
+       * `labelKey` is spread rather than passed as `undefined` for the reason
+       * `minimum` above is. It is absent only for a room naming an object id
+       * this build does not declare, which `validateRoomObjectReferences`
+       * refuses at catalogue load -- so it is unreachable here and handled
+       * anyway, because a `getById` that can answer `undefined` is not made
+       * total by a validator in another module.
+       */
+      objectRequirements: objectRequirements(definition).map((requirement) => {
+        const labelKey = defaultObjectRegistry.getById(requirement.objectId)?.nameKey;
+        return {
+          objectId: requirement.objectId,
+          quantity: requirement.minQuantity,
+          ...(labelKey === undefined ? {} : { labelKey }),
+        };
+      }),
     });
   }
   return { rooms };
