@@ -632,3 +632,73 @@ test.describe('probe: what holds a command control between presses', () => {
     console.log(`[probe] distinct button positions seen: ${JSON.stringify(summary.distinctPositions)}`);
   });
 });
+
+/**
+ * The recovery path a mis-drag needs, with the mouse.
+ *
+ * `docs/research/README.md` records that a stray room drag was once
+ * unrecoverable for the whole session and that #312 fixed it with `UnzoneRoom`.
+ * No playtest has exercised the fix by dragging. This one does, and then takes
+ * a placed object back out with the Build panel's Remove.
+ */
+test.describe('playtest: taking it back', () => {
+  test('remove a room and remove an object, by dragging', async ({ page }) => {
+    test.setTimeout(600_000);
+    const consoleLines: string[] = [];
+    page.on('console', (m) => {
+      if (m.type() === 'debug') return;
+      const text = m.text();
+      if (text.startsWith('%cPhaser') || text.includes('WebGL')) return;
+      consoleLines.push(`[${m.type()}] ${text}`);
+    });
+    page.on('pageerror', (e) => consoleLines.push(`[pageerror] ${e.message}`));
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await installTee(page);
+    await openApp(page);
+
+    const origin = await buildAndPopulate(page, { beds: 1, admits: 0, guards: 0, label: 'D/remove' });
+    const log = (line: string) => console.log(`[D/remove] ${line}`);
+    log(`before removal: ${JSON.stringify(await latestCounts(page))}`);
+
+    // ---- take the room back out, by dragging across it -----------------
+    await tab(page, 'rooms').click();
+    const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
+    if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    log(`remove control label: ${JSON.stringify((await page.locator('.hud-rooms__remove').innerText()).trim())}`);
+    await page.locator('.hud-rooms__remove').click();
+    log(`panel in remove mode: ${JSON.stringify((await panelText(page, '.hud-rooms')).split('\n').slice(0, 8))}`);
+    await drag(page, centreOf(origin, 13, 13), centreOf(origin, 15, 15));
+    const pending = await panelText(page, '.hud-rooms');
+    log(`panel with a removal pending: ${JSON.stringify(pending.split('\n').slice(0, 10))}`);
+    const confirm = page.locator('.hud-rooms__confirm');
+    log(`confirm reads: ${JSON.stringify((await confirm.innerText()).trim())} enabled=${await confirm.isEnabled()}`);
+    await confirm.click();
+    await page.waitForTimeout(1500);
+    log(`after removal: ${JSON.stringify(await latestCounts(page))}`);
+    log(`refusal band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+
+    // ---- put it back ----------------------------------------------------
+    const again = await page.locator('.hud-rooms').getAttribute('data-collapsed');
+    if (again === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    const removeLabel = (await page.locator('.hud-rooms__remove').innerText()).trim().toLowerCase();
+    if (removeLabel.startsWith('stop')) await page.locator('.hud-rooms__remove').click();
+    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+    await page.locator('.hud-rooms__arm').click();
+    await drag(page, centreOf(origin, 12, 12), centreOf(origin, 17, 17));
+    await page.locator('.hud-rooms__confirm').click();
+    await page.waitForTimeout(1500);
+    log(`after re-zoning: ${JSON.stringify(await latestCounts(page))}`);
+
+    // ---- take the bed back out ------------------------------------------
+    await tab(page, 'build').click();
+    await page.locator('.hud-build__remove').click();
+    log(`build remove hint: ${JSON.stringify(await panelText(page, '.hud-build'))}`);
+    const bed = centreOf(origin, 12, 12);
+    log(`remove press at the bed tile: ${JSON.stringify(await press(page, bed.x, bed.y))}`);
+    await page.waitForTimeout(1500);
+    log(`after removing the bed: ${JSON.stringify(await latestCounts(page))}`);
+    log(`refusal band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+    console.log(`[D/remove] console: ${consoleLines.slice(0, 40).join('\n') || '(nothing)'}`);
+  });
+});
