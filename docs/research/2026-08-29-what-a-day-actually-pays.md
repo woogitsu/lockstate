@@ -466,6 +466,42 @@ different prison than the one the game builds.
   to make a claim about a real player: the same probe on real hardware with a
   GPU. Nothing in this repository can supply that.
 
+- **A run died and the cause was me, not the game — and the rule that would
+  have prevented it is narrower than the failure.** The removal scenario's
+  later steps hung on a `locator.click` until the 600-second test timeout.
+  Playwright's failure snapshot says what the page was:
+
+  ```
+  - generic [ref=e50]: "0"          <- Funds
+  - generic [ref=e57]: "0"          <- Earned today
+  - generic [ref=e64]: "--"         <- Day
+  - generic [ref=e66]: "--"         <- Through the day
+  - generic [ref=e81]: Speed 1x
+  - generic [ref=e94]: Minimap is not available yet
+  - button "New prison" [ref=e103]
+  - listitem: "New Prison (3 gen)"  <- the save this run had made
+  - region "Intake"                 <- the Overview tab, i.e. the initial tab
+  ```
+
+  Funds `0` on a prison that had 22,405 a moment earlier, a `--` clock, the
+  minimap unavailable and the Overview tab selected: that is the **arrival
+  screen of a freshly loaded page**, not a session in trouble. The page
+  reloaded and took the worker with it.
+
+  **Why.** `tests/browser/vite.config.ts` sets `root: repositoryRoot`, and the
+  dev server watches everything under it. This record was being edited, in
+  `docs/research/`, while that run was live. A markdown file no module imports
+  has no HMR boundary, so Vite falls back to a **full page reload** — the
+  session dies, and the death shows up minutes later as a control that will
+  never be clickable.
+
+  **`docs/AGENT_WORKFLOW.md` states this rule as "never edit a *source* file
+  while a Playwright run is live", and that is too narrow.** The browser
+  config's root is the repository root, so *any* file in the tree can do it —
+  including the very research note the run is being written into, which is the
+  file an agent is most likely to be editing at that moment. **Handed over
+  rather than edited:** `docs/AGENT_WORKFLOW.md` is not this pass's surface.
+
 ## 8b. Every player-facing string this pass read, and what is wrong with them
 
 Asked for explicitly, so the empty answers are stated as well as the full ones.
@@ -507,12 +543,12 @@ needs a cell before it can admit anyone. It does not need a free bed…"*
 - Save/load of *this* prison. `2026-08-29-mouse-playtest.md` §3 covers a
   mouse-built prison across a reload; nothing here re-derives it.
 - **Re-zoning the same rectangle after removing the room, and removing a
-  placed bed with the Build panel.** Both are steps 2 and 3 of the removal
-  scenario in the harness; the run had not returned them when this record was
-  written and **no claim is made about either**. Step 1 — the removal itself —
-  is §8 and is complete. Whoever picks this up should run
-  `-g "remove a room and remove an object"` and read the two lines after
-  `after removal:`.
+  placed bed with the Build panel.** Steps 2 and 3 of the removal scenario.
+  **No claim is made about either, and the reason is §8's last bullet: the run
+  was killed by the person running it.** Step 1 — the removal itself — is §8
+  and is complete. Whoever picks this up should run
+  `-g "remove a room and remove an object"`, change nothing in the tree while
+  it runs, and read the two lines after `after removal:`.
 
 ## Weakest claim, and the cheapest thing that would falsify it
 
