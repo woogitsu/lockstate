@@ -522,6 +522,50 @@ export const HUD_MESSAGE_KEY = {
   roomsRequirementOutdoors: 'hud.rooms.requirement-outdoors',
   roomsRequirementNone: 'hud.rooms.requirement-none',
   /*
+   * What a room type will need standing in it, read before the drag (#529,
+   * #535 decision 2).
+   *
+   * These two join `roomsMinimum` and `roomsRequirement*` in the rule block,
+   * in the same voice as `roomsMinimum` -- which already reads "Needs at least
+   * {width} x {height} tiles" -- so the block reads as one series of statements
+   * about the selected room type:
+   *
+   *     Needs at least 6 x 6 tiles
+   *     Must be enclosed
+   *     Needs 2 x Dining Table
+   *     Needs 4 x Bench
+   *
+   * That is why `roomsRequiresObject` repeats the verb rather than sitting
+   * under a "Requires:" heading. A heading would cost a line of a panel whose
+   * always-visible budget ADR 0022 measured at 7.9px, and would make the object
+   * lines read as a different kind of statement from the size line directly
+   * above them -- which they are not: all of them are the authored catalogue,
+   * true before a single tile is dragged.
+   *
+   * **They are `hud.rooms.requires-*` and not `hud.rooms.needs-*`, and the
+   * distance between those prefixes is load-bearing.** `needs-*` below is what
+   * a *particular zoned room* is short right now: instance state, pulled over
+   * the projection channel, revised as the player builds, and able to be
+   * uncountable. These are content -- what the *type* asks for, supplied once
+   * at mount, true of a room nobody has zoned. Two blocks, two prefixes, two
+   * verbs ("Needs ..." against "is missing"), so a player cannot read a
+   * statement about the catalogue as a statement about their prison.
+   *
+   * `roomsRequiresNone` exists for the reason `roomsMinimumNone` and
+   * `roomsRequirementNone` do: silence is ambiguous once its neighbours speak.
+   * `room.yard` authors no object requirement at all, and with every other room
+   * type listing its objects, a yard that simply said nothing would read as a
+   * panel that had failed rather than as a room that needs nothing.
+   *
+   * The object's name is substituted from the object catalogue's own `nameKey`
+   * and never authored here -- the rule `roomsNeedsObjectUnknown` below already
+   * states -- and that key is reused as the stand-in when the catalogue defines
+   * nothing under the id, rather than a second stand-in being drafted for the
+   * identical hole.
+   */
+  roomsRequiresObject: 'hud.rooms.requires-object',
+  roomsRequiresNone: 'hud.rooms.requires-none',
+  /*
    * The typed route to a rectangle (#411).
    *
    * Four numbers and the disclosure that holds them, so a rectangle can be
@@ -567,20 +611,48 @@ export const HUD_MESSAGE_KEY = {
    * figure right -- because it is the same kind of line: a readout of what the
    * simulation found, not a control.
    *
-   * `roomsNeedsOne` and `roomsNeedsMore` are the *one* detail line, in its two
-   * forms: what one unfinished room needs, and the same with a count of
-   * everything else that went unnamed. Two keys chosen in code rather than one
-   * with a nested plural, which is the split ADR 0011 names outright ("where a
-   * message genuinely needs nested selection, it is split into separate keys
-   * chosen in code").
+   * `roomsNeedsRoom` names the room the block is about and `roomsNeedsObject`
+   * is one line under it per object that room is short, with how many of it.
+   * `roomsNeedsObjectUncounted` is the same line for the state in which the
+   * simulation could not count (see below), and `roomsNeedsItemMore` closes the
+   * list when there are more lines than the panel may draw.
    *
-   * **One line and not a list**, and that is a measurement rather than a
-   * preference -- see `ROOM_NEEDS_NAMED_LIMIT` in `rooms-panel.ts` for the
-   * numbers. The panel's height at 900x600 is fixed by the rail and its
-   * catalogue list is already on its one-row floor there, so the whole readout
-   * has about 43px to live in. A three-row list measured 101.3px and pushed the
-   * rule readout 58px below the panel's fold, which is the #174 defect with a
-   * new cause.
+   * **This used to be `roomsNeedsOne` and `roomsNeedsMore`**, two forms of a
+   * single sentence: *"{room} at {x}, {y} needs {object}"* and the same *", and
+   * {count} more"*. Both are deleted rather than kept beside the new keys,
+   * because an unused key is an orphan and `docs/LOCALIZATION.md` treats that as
+   * a defect class -- a translator's work spent on a string nothing renders.
+   * What they said is recorded here because #529 is a measurement *of* them:
+   * "and 5 more" was the entire account of five unmet requirements, and there
+   * was no surface anywhere in the application that enumerated them.
+   *
+   * **A list and not one line**, which reverses the sentence this comment used
+   * to carry: *"**One line and not a list**, and that is a measurement rather
+   * than a preference ... the whole readout has about 43px to live in. A
+   * three-row list measured 101.3px and pushed the rule readout 58px below the
+   * panel's fold."* That budget was measured before ADR 0039 and #411 moved the
+   * coordinate form out of the panel body and into the catalogue scroller, and
+   * its "three rows" were three 44px `ListRow`s rather than the 13.2px eyebrow
+   * lines this block draws. `ROOM_NEEDS_NAMED_LIMIT` in `rooms-panel.ts` carries
+   * the re-measurement and both directions of the correction.
+   *
+   * The quantity is the **shortfall** and not the requirement: a canteen
+   * authored for four benches and holding three reads "1 x Bench", because one
+   * is what the player has to build. What the room type asks for in total is the
+   * `roomsRequires*` pair above, in the other block, in the other voice.
+   *
+   * `roomsNeedsObjectUncounted` is the one state that must not carry a numeral.
+   * The projection answers `satisfyingQuantity` only when it was handed the
+   * placed objects to count; without them the verdict beside it came from the
+   * pre-#528 capability test, which never consulted `minQuantity`. Rendering
+   * "1 x Bed" there would dress an uncounted answer as a counted one, which is
+   * the defect `RoomRequirementViewModel.satisfyingQuantity` is written to
+   * prevent one layer down. Two keys chosen in code rather than one with an
+   * optional placeholder, which is the split ADR 0011 names outright ("where a
+   * message genuinely needs nested selection, it is split into separate keys
+   * chosen in code"). No session a player runs reaches it -- the worker supplies
+   * the placed objects -- and it is a real key rather than a blank because
+   * "unreachable" and "handled" are different claims.
    *
    * `roomsNeedsObjectUnknown` stands in for the object's name when the object
    * catalogue defines nothing under the id the requirement names -- which is
@@ -596,8 +668,10 @@ export const HUD_MESSAGE_KEY = {
    */
   roomsNeeds: 'hud.rooms.needs',
   roomsNeedsCount: 'hud.rooms.needs-count',
-  roomsNeedsOne: 'hud.rooms.needs-one',
-  roomsNeedsMore: 'hud.rooms.needs-more',
+  roomsNeedsRoom: 'hud.rooms.needs-room',
+  roomsNeedsObject: 'hud.rooms.needs-object',
+  roomsNeedsObjectUncounted: 'hud.rooms.needs-object-uncounted',
+  roomsNeedsItemMore: 'hud.rooms.needs-item-more',
   roomsNeedsObjectUnknown: 'hud.rooms.needs-object-unknown',
 
   /*

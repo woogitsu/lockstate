@@ -1,6 +1,7 @@
 import { EntityStore, type EntityId } from '../entity/entity-store';
 import { ComponentBitset } from '../entity/component';
 import { EntityQuery } from '../entity/query';
+import type { SimulationEventLog } from '../events';
 import type { ActorIdentityLifecycle } from '../identity/actor-identity';
 import type { Kernel } from '../kernel/kernel';
 import { LocomotionStore, LocomotionSystem } from '../locomotion';
@@ -60,6 +61,17 @@ export type AdmitPrisonerOutcome =
 export interface PrisonerOperationsRuntimeOptions {
   readonly capacity: number;
   readonly navigation: NavigationSystem;
+  /**
+   * Where `PrisonerDischargeSystem` says that a sentence ended (issue #507).
+   *
+   * Required rather than optional, and it is the one option here that is a
+   * *sink* rather than a capability: a runtime handed no log discharges
+   * prisoners silently, and every fixture that steps this runtime past a
+   * sentence end would then be asserting against a prison that cannot say so.
+   * The two constructors in the repository -- `createNewSession` and
+   * `tests/helpers/prisoner-fixture.ts` -- each pass the session's own log.
+   */
+  readonly events: SimulationEventLog;
   readonly regimeSchedules?: readonly RegimeSchedule[];
   /**
    * What an open incident imposes on one prisoner's day in place of the
@@ -334,7 +346,7 @@ export class PrisonerOperationsRuntime {
       locomotion: this.locomotion,
       ...(options.contraband !== undefined ? { contraband: options.contraband } : {}),
     };
-    this.dischargeSystem = new PrisonerDischargeSystem(this.entityStore, this.query, this.records, this.releaseSurfaces);
+    this.dischargeSystem = new PrisonerDischargeSystem(this.entityStore, this.query, this.records, this.releaseSurfaces, options.events);
   }
 
   public registerOn(kernel: Kernel): void {

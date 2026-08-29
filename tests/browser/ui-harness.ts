@@ -314,6 +314,19 @@ const BASE_VIEW_MODEL: HudViewModel = {
  * The tints are the categories' own from `src/rendering/world/appearance.ts`,
  * because the panel puts them on screen and a wrong number here would make a
  * legend assertion pass against the wrong colour.
+ *
+ * **`objectRequirements` is copied from the real catalogue, and is exactly the
+ * kind of figure this harness must not be trusted for.** The three rooms happen
+ * to cover the three branches #529 added -- objects with a quantity above one
+ * (`room.canteen`: two dining tables, four benches), objects with a quantity of
+ * one (`room.cell`), and none at all (`room.yard`) -- and every one of those
+ * numbers is written out here by hand. A spec asserting "the canteen states 4 x
+ * Bench" against this fixture proves the *panel* renders what it is given and
+ * proves **nothing at all** about what `roomCatalogue()` in `src/main.ts`
+ * derives: both could be wrong in the same direction and every assertion here
+ * would stay green. That is precisely how a defect survives a full suite. The
+ * assertion that can actually fail is in `app-shell.spec.ts`, against the real
+ * projection; this one is a layout fixture and nothing more.
  */
 const ROOMS_MODEL: HudRoomsViewModel = {
   rooms: [
@@ -323,6 +336,10 @@ const ROOMS_MODEL: HudRoomsViewModel = {
       tint: 0x4f7fd0,
       minimum: { width: 2, height: 3 },
       enclosure: 'enclosed',
+      objectRequirements: [
+        { objectId: 'object.bed', labelKey: 'object.bed.name', quantity: 1 },
+        { objectId: 'object.toilet', labelKey: 'object.toilet.name', quantity: 1 },
+      ],
     },
     {
       roomId: 'room.canteen',
@@ -330,6 +347,10 @@ const ROOMS_MODEL: HudRoomsViewModel = {
       tint: 0xd0854f,
       minimum: { width: 6, height: 6 },
       enclosure: 'enclosed',
+      objectRequirements: [
+        { objectId: 'object.dining-table', labelKey: 'object.dining-table.name', quantity: 2 },
+        { objectId: 'object.bench', labelKey: 'object.bench.name', quantity: 4 },
+      ],
     },
     {
       roomId: 'room.yard',
@@ -337,6 +358,9 @@ const ROOMS_MODEL: HudRoomsViewModel = {
       tint: 0x76d04f,
       minimum: { width: 8, height: 8 },
       enclosure: 'outdoors',
+      // Authored with no object requirement at all, which is what makes the
+      // "no objects needed" line reachable from this harness.
+      objectRequirements: [],
     },
   ],
 };
@@ -1691,6 +1715,7 @@ window.lockstateUiHarness = {
       selected: roomsPanelSelection() ?? '',
       area: document.querySelector<HTMLElement>('.hud-rooms__area')?.dataset['area'] ?? '',
       areaText: document.querySelector<HTMLElement>('.hud-rooms__area-value')?.textContent?.trim() ?? '',
+      areaLaidOut: laidOut('.hud-rooms__area'),
       noteText: note?.textContent?.trim() ?? '',
       noteTone: note?.dataset['tone'] ?? '',
       ruleText: [...document.querySelectorAll<HTMLElement>('.hud-rooms__rule')].map(
@@ -1698,6 +1723,8 @@ window.lockstateUiHarness = {
       ),
       enclosureText:
         document.querySelector<HTMLElement>('.hud-rooms__enclosure-value')?.textContent?.trim() ?? '',
+      enclosureLaidOut: laidOut('.hud-rooms__enclosure'),
+      panelNeeds: panel?.dataset['needs'] ?? '',
       // Laid out, not merely present: `paintActions` uses `hidden`, so a control
       // that is not showing must have no box at all and be out of the tab order.
       armLaidOut: laidOut('.hud-rooms__arm'),
@@ -1749,6 +1776,18 @@ window.lockstateUiHarness = {
       // and the panel undoes that class's uppercasing, so reading the rendered
       // text would make this assertion depend on a CSS rule it is not about.
       needsLineText: document.querySelector<HTMLElement>('.hud-rooms__needs-line')?.textContent?.trim() ?? '',
+      /** One entry per object the named room is short, in the order drawn (#529). */
+      needsItemText: [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map(
+        (item) => item.textContent?.trim() ?? '',
+      ),
+      /**
+       * The readout's own height, so a spec can measure what the block costs the
+       * panel rather than asserting a line count and hoping.
+       * `ROOM_NEEDS_NAMED_LIMIT` is a budget in pixels, and this is what spends
+       * it.
+       */
+      needsHeight:
+        Math.round((document.querySelector('.hud-rooms__needs')?.getBoundingClientRect().height ?? 0) * 10) / 10,
     };
   },
 

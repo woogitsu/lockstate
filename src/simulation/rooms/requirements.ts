@@ -27,6 +27,25 @@ import type { RoomCatalogDefinition } from '../../content/room-catalog';
  * `minQuantity` is checkable yet, are questions for
  * `RoomCapacityResolver` and `room-projection.ts`.
  *
+ * **That paragraph is now half true, and issue #529 is what changed it.** The
+ * clause about *checking* still holds exactly as written: nothing here counts
+ * anything, and whether a room is short a bench remains `room-projection.ts`'s
+ * answer and no other module's. What has gone is the claim that this module
+ * never *reads* the `object` arm at all -- `objectRequirements` below reads it
+ * and returns what the catalogue authored, evaluating none of it. Both halves
+ * are marked rather than the sentence overwritten, because the reason it was
+ * written is still the reason `objectRequirements` returns definitions and not
+ * verdicts.
+ *
+ * The reading was added because the composition root needed the same list the
+ * projection loops over, and the alternative was a third `requirements.find`
+ * in `src/main.ts` -- the exact duplication the paragraph below says this
+ * module exists to prevent. #529 measured what its absence cost a player: the
+ * Rooms catalogue could state a room's minimum size and its enclosure rule
+ * before the drag and could not state a single object the room would need, so
+ * a player choosing between a canteen and a kitchen could not learn what
+ * either would cost them.
+ *
  * These live in their own module, and outside `RoomZoningService`, because
  * three layers ask the same question and none of them may re-derive the
  * answer: the zoning service refuses a rectangle below the authored minimum,
@@ -89,4 +108,40 @@ export function enclosureRequirement(definition: RoomCatalogDefinition): RoomEnc
     if (requirement.type === 'outdoors') return 'outdoors';
   }
   return 'none';
+}
+
+/** One authored `object` requirement: which object, and how many of it. */
+export interface RoomObjectRequirement {
+  readonly objectId: string;
+  readonly minQuantity: number;
+}
+
+/**
+ * Every `object` requirement the definition authors, in the authored order.
+ *
+ * **Authored order, not sorted**, for `enclosureRequirement`'s reason one
+ * function up: the answer stays a function of the order content was written in
+ * rather than of a comparison chosen here, and content that wants the bed named
+ * before the toilet says so by writing it first. `docs/DETERMINISM.md`'s
+ * objection is to an order nobody chose; this is one somebody did.
+ *
+ * **A list and not a map**, because the same object id may legitimately appear
+ * twice -- nothing in `roomRequirementSchema` forbids it -- and a map keyed by
+ * `objectId` would silently drop the second entry. No shipped room does that
+ * (all 18 name distinct ids), which is exactly why a shape that could not
+ * express it would go unnoticed.
+ *
+ * Returns the authored `minQuantity` untouched. This is the *requirement*, and
+ * a caller wanting the shortfall against a real room has to ask the projection
+ * (`RoomRequirementViewModel.satisfyingQuantity`) -- the two are different
+ * statements about different things, and the empty array below is a room type
+ * that needs no objects rather than a room that has them all.
+ */
+export function objectRequirements(definition: RoomCatalogDefinition): readonly RoomObjectRequirement[] {
+  const requirements: RoomObjectRequirement[] = [];
+  for (const requirement of definition.requirements) {
+    if (requirement.type !== 'object') continue;
+    requirements.push({ objectId: requirement.objectId, minQuantity: requirement.minQuantity });
+  }
+  return requirements;
 }

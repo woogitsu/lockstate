@@ -15,7 +15,11 @@ import {
   type MainToWorkerMessage,
   type WorkerToMainMessage,
 } from '../../src/simulation/protocol/types';
-import { ROOM_NEEDS_NAMED_LIMIT } from '../../src/ui/hud';
+import { compareStableIds } from '../../src/simulation/presentation/view-model';
+import { placedObjectAt } from '../../src/simulation/objects';
+import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { SCENARIO_SEED } from '../helpers/determinism-scenario';
+import { ROOM_NEEDS_ROOMS_LIMIT } from '../../src/ui/hud';
 import type { ProjectionMessageChannel } from '../../src/ui/simulation-projections';
 import {
   RoomNeedsReader,
@@ -59,14 +63,27 @@ function registryOf(...instances: readonly RoomInstance[]): { readonly roomInsta
   return { roomInstances };
 }
 
-/** The real list and the real detail for every instance in it, in the projection's own order. */
+/**
+ * The real list, and the real details for as many rooms as `RoomNeedsReader`
+ * would actually have asked about.
+ *
+ * The `slice` is `read()`'s own budget and not a convenience: that method spends
+ * at most `ROOM_NEEDS_ROOMS_LIMIT` detail requests, so handing
+ * `roomNeedsFromProjections` details for *every* unfinished room would test it
+ * against input the reader never produces. It is a helper mimicking a contract,
+ * which is only safe because the contract is asserted separately and against the
+ * real class -- "asks for the list with no window of its own, then for the
+ * unfinished room by id" below counts the messages the reader really sends.
+ * Without that test this helper would be a fixture agreeing with whatever the
+ * reader happened to do.
+ */
 function project(source: { readonly roomInstances: RoomInstanceRegistry }): {
   readonly list: RoomListViewModel;
   readonly details: readonly RoomDetailViewModel[];
 } {
   const list = projectRoomList(source);
   const details: RoomDetailViewModel[] = [];
-  for (const id of unfinishedRoomIds(list)) {
+  for (const id of unfinishedRoomIds(list).slice(0, ROOM_NEEDS_ROOMS_LIMIT)) {
     const detail = projectRoomDetail(source, id);
     if (detail !== undefined) details.push(detail);
   }
@@ -93,12 +110,33 @@ describe('what the interface is told a zoned room is missing', () => {
     expect(needs.unfinishedRooms).toBe(1);
     expect(needs.totalRooms).toBe(1);
     expect(needs.totalNeeds).toBe(2);
+    /*
+     * **Both objects**, where this asserted only the bed until #529. The readout
+     * named one thing for the whole prison and left "and {count} more" as the
+     * entire account of the rest -- and there was no surface anywhere in the
+     * application that enumerated them.
+     *
+     * Neither carries a `missingQuantity`, and that is the *uncounted* path
+     * rather than an omission: `project()` above passes no `placedObjects`, so
+     * the projection answers from the instance's derived capability list -- the
+     * pre-#528 test, which never consults `minQuantity` and so cannot support a
+     * subtraction. `toEqual` is exact about extra properties, so a quantity
+     * invented here fails this assertion. The counted path is a separate test
+     * below over a really furnished canteen, because a suite that only ever ran
+     * this path could not see a wrong quantity at all.
+     */
     expect(needs.needs).toEqual([
       {
         instanceId: 'room.cell:4:4',
         roomLabelKey: 'room.cell.name',
         tile: { x: 4, y: 4 },
         objectLabelKey: 'object.bed.name',
+      },
+      {
+        instanceId: 'room.cell:4:4',
+        roomLabelKey: 'room.cell.name',
+        tile: { x: 4, y: 4 },
+        objectLabelKey: 'object.toilet.name',
       },
     ]);
   });
@@ -123,7 +161,7 @@ describe('what the interface is told a zoned room is missing', () => {
     });
   });
 
-  it('counts every unfinished room and every unmet requirement, and names one of them', () => {
+  it('counts every unfinished room, and describes the one nearest to finished completely', () => {
     const source = registryOf(cell(2, 2, []), cell(4, 4, ['sleep-surface']), cell(6, 6, ['sleep-surface', 'sanitation']));
     const { list, details } = project(source);
 
@@ -133,25 +171,162 @@ describe('what the interface is told a zoned room is missing', () => {
     expect(needs.unfinishedRooms).toBe(2);
     expect(needs.totalRooms).toBe(3);
     expect(needs.totalNeeds).toBe(3);
-    // The panel names one -- what it can afford at 900x600 -- and the counts
-    // above are what tell the player the other two exist.
-    expect(needs.needs).toHaveLength(ROOM_NEEDS_NAMED_LIMIT);
-    expect(needs.needs[0]?.instanceId).toBe('room.cell:2:2');
+
+    /*
+     * **The cell at 4,4 and everything it is short**, which is one thing.
+     *
+     * Two assertions in one, and both are #529's:
+     *
+     * - `ROOM_NEEDS_ROOMS_LIMIT` rooms are described, not `ROOM_NEEDS_NAMED_LIMIT`
+     *   needs. Every entry belongs to a single room, so the panel can head the
+     *   list with that room and count its own remainder honestly instead of
+     *   subtracting from a prison-wide total.
+     * - The room is the one **nearest to finished** -- 4,4 already has its bed
+     *   and wants only a toilet -- and not 2,2, which is the lower instance id
+     *   and was what the old ascending-id order named. A player reading this is
+     *   trying to finish something, and 4,4 is one build away.
+     *
+     * The old assertion here was `toHaveLength(ROOM_NEEDS_NAMED_LIMIT)` with
+     * `needs[0]?.instanceId === 'room.cell:2:2'`, and it passed for both of the
+     * reasons this one refuses.
+     */
+    expect(needs.needs.map((need) => [need.instanceId, need.objectLabelKey])).toEqual([
+      ['room.cell:4:4', 'object.toilet.name'],
+    ]);
   });
 
-  it('picks the room to name in the projection canonical order, not in registration order', () => {
-    // Registered highest-id first. `collectRoomInstances` sorts by instance id,
-    // so which room gets named is a property of the projection rather than of
-    // the order the player happened to zone them in -- which is what makes the
-    // readout the same for the same prison however it was built.
-    const backwards = registryOf(cell(9, 9, []), cell(2, 2, []));
-    const forwards = registryOf(cell(2, 2, []), cell(9, 9, []));
+  it('names the room nearest to finished, and moves on when that room is finished', () => {
+    /*
+     * The behaviour the ordering exists for, over two prisons rather than one
+     * assertion about a sort. A player who builds the toilet in 4,4 should see
+     * the readout move to the next-cheapest room -- not sit on the same room, and
+     * not go back to the one they have been stuck on longest.
+     */
+    const before = registryOf(cell(2, 2, []), cell(4, 4, ['sleep-surface']));
+    const after = registryOf(cell(2, 2, []), cell(4, 4, ['sleep-surface', 'sanitation']));
     const named = (source: { readonly roomInstances: RoomInstanceRegistry }): string | undefined => {
       const { list, details } = project(source);
       return roomNeedsFromProjections(list, details).needs[0]?.instanceId;
     };
-    expect(named(backwards)).toBe('room.cell:2:2');
-    expect(named(forwards)).toBe('room.cell:2:2');
+    expect(named(before)).toBe('room.cell:4:4');
+    expect(named(after)).toBe('room.cell:2:2');
+  });
+
+  it('breaks a tie on the projection own comparator, not on registration order', () => {
+    /*
+     * Two equally unfinished rooms, registered highest-id first and lowest-id
+     * first. Which one is named must be a property of the projection rather than
+     * of the order the player happened to zone them in, so the readout is the
+     * same for the same prison however it was built.
+     *
+     * **The expected order is computed with the simulation's own
+     * `compareStableIds`**, which `unfinishedRoomIds` may not import -- this
+     * module is pinned `kind: 'type-only'` against the simulation tree in
+     * `ui-orchestration-boundaries.test.ts`, so it carries a second declaration
+     * of that comparator. A test is allowed to import both, which is what makes
+     * this the place the two are held together, exactly as `MAX_ROOM_SIDE_TILES`
+     * is held against `MAX_ZONE_DIMENSION_TILES` in
+     * `ui-hud-rooms-panel.test.ts`. The expectation is not a literal: it is the
+     * *other* implementation's answer, so the two cannot drift apart silently.
+     */
+    const backwards = registryOf(cell(9, 9, []), cell(2, 2, []));
+    const forwards = registryOf(cell(2, 2, []), cell(9, 9, []));
+    const expected = ['room.cell:9:9', 'room.cell:2:2'].sort(compareStableIds);
+    expect(expected).toEqual(['room.cell:2:2', 'room.cell:9:9']); // the premise, not the assertion
+    for (const source of [backwards, forwards]) {
+      expect(unfinishedRoomIds(projectRoomList(source))).toEqual(expected);
+    }
+  });
+
+  it('carries the shortfall, which is not the quantity the room asks for', () => {
+    /*
+     * **The test the rest of this file could not have failed.** Every other case
+     * here drives a projection with no `placedObjects`, so `satisfyingQuantity`
+     * is absent and no quantity is ever computed -- a wrong subtraction, or a
+     * `minQuantity` rendered where a shortfall belongs, is invisible to all of
+     * them. `docs/AGENT_WORKFLOW.md` §3: ask what a green suite could not see.
+     *
+     * The prison is #528's own: `room.canteen` authors two dining tables and
+     * four benches, and one of each is standing in it. So the two numbers a
+     * confusion could pick from are **different on both requirements**:
+     *
+     *     dining table   asks for 2, holds 1  ->  short 1
+     *     bench          asks for 4, holds 1  ->  short 3
+     *
+     * An implementation reporting `minQuantity` gives 2 and 4; one reporting the
+     * count gives 1 and 1; one that subtracts backwards gives -1 and -3. Only
+     * the shortfall gives 1 and 3, and it is what the player has to build.
+     *
+     * Real runtime, real `PlacedObject` rows, real catalogue -- nothing here
+     * hand-writes a projection.
+     */
+    const runtime = createNewSimulationRuntime(SCENARIO_SEED);
+    const anchor = { x: tileCoordinate(8), y: tileCoordinate(8) };
+    runtime.prisoners.roomInstances.register({
+      instanceId: 'room.canteen:8:8',
+      roomCatalogId: 'room.canteen',
+      anchorTile: anchor,
+      width: 6,
+      height: 6,
+      residentCapacity: 0,
+      concurrentUseCapacity: 0,
+      objectCapabilities: [],
+    });
+    for (const [objectId, x, y] of [
+      ['object.dining-table', 8, 8],
+      ['object.bench', 8, 11],
+    ] as const) {
+      const placed = runtime.placedObjects.place(
+        placedObjectAt(objectId, { x: tileCoordinate(x), y: tileCoordinate(y) }, 0),
+      );
+      if (!placed) throw new Error(`the fixture's ${objectId} at (${String(x)}, ${String(y)}) must be placeable`);
+    }
+    runtime.roomCapacity.resolveAll();
+
+    const options = { placedObjects: runtime.placedObjects };
+    const list = projectRoomList(runtime.prisoners, {}, options);
+    const detail = projectRoomDetail(runtime.prisoners, 'room.canteen:8:8', options);
+    if (detail === undefined) throw new Error('the fixture room must project a detail');
+
+    // The premise, asserted rather than assumed: the projection really counted,
+    // and the two figures really are the ones above.
+    expect(
+      detail.requirements
+        .filter((requirement) => requirement.type === 'object')
+        .map((requirement) => [requirement.objectId, requirement.minQuantity, requirement.satisfyingQuantity]),
+    ).toEqual([
+      ['object.dining-table', 2, 1],
+      ['object.bench', 4, 1],
+    ]);
+
+    const needs = roomNeedsFromProjections(list, [detail]);
+    expect(needs.needs.map((need) => [need.objectLabelKey, need.missingQuantity])).toEqual([
+      ['object.dining-table.name', 1],
+      ['object.bench.name', 3],
+    ]);
+  });
+
+  it('reports no quantity at all when the simulation was given nothing to count', () => {
+    /*
+     * The same canteen, projected without `placedObjects`. The projection then
+     * answers from the instance's derived capability list, which never consulted
+     * `minQuantity` -- so there is no subtraction to be made and the readout must
+     * carry no numeral rather than a plausible one.
+     *
+     * This is the state the panel renders with `roomsNeedsObjectUncounted`, and
+     * it is asserted here because "absent" and "1" are indistinguishable to a
+     * player once a number reaches the screen. `toEqual` on the whole entry is
+     * what makes an invented property fail.
+     */
+    const source = registryOf(cell(4, 4, []));
+    const list = projectRoomList(source);
+    const detail = projectRoomDetail(source, 'room.cell:4:4');
+    if (detail === undefined) throw new Error('the fixture room must project a detail');
+
+    expect(detail.requirements.every((requirement) => requirement.satisfyingQuantity === undefined)).toBe(true);
+    for (const need of roomNeedsFromProjections(list, [detail]).needs) {
+      expect(need).not.toHaveProperty('missingQuantity');
+    }
   });
 
   it('carries no object key for a requirement the object catalogue cannot name', () => {
@@ -280,12 +455,21 @@ describe('the reader that asks the worker what the rooms are missing', () => {
       unfinishedRooms: 1,
       totalRooms: 1,
       totalNeeds: 2,
+      // Both of the cell's unmet requirements come back from the one detail
+      // request, which is the point of the split between "rooms to ask about"
+      // and "lines to draw": one message, the room's whole shopping list.
       needs: [
         {
           instanceId: 'room.cell:4:4',
           roomLabelKey: 'room.cell.name',
           tile: { x: 4, y: 4 },
           objectLabelKey: 'object.bed.name',
+        },
+        {
+          instanceId: 'room.cell:4:4',
+          roomLabelKey: 'room.cell.name',
+          tile: { x: 4, y: 4 },
+          objectLabelKey: 'object.toilet.name',
         },
       ],
     });

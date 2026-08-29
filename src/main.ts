@@ -47,6 +47,7 @@ import {
 } from './ui/hud';
 import { hudClockFromWorkerMessage } from './ui/simulation-clock';
 import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from './ui/simulation-alerts';
+import { hudEventAlertsFromWorkerMessage, hudEventNoticeFromWorkerMessage } from './ui/simulation-events';
 import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { BuildQueueReader } from './ui/simulation-build-queue';
@@ -71,10 +72,18 @@ import {
   occupiesTileEdge,
   type BuildableDefinition,
 } from './simulation/construction';
-// The one reader of the room catalogue's *area* requirements outside the
+// The one reader of the room catalogue's authored requirements outside the
 // simulation, and it is the composition root by design: three layers ask this
 // question and none may re-derive the answer. See `roomCatalogue()` below.
-import { enclosureRequirement, minimumSizeRequirement } from './simulation/rooms/requirements';
+//
+// This comment used to say "*area* requirements", and #529 widened it: the
+// Rooms catalogue now states what a room type will need standing in it as well
+// as how big it has to be, so `objectRequirements` is read here too.
+import {
+  enclosureRequirement,
+  minimumSizeRequirement,
+  objectRequirements,
+} from './simulation/rooms/requirements';
 import { MAX_PURCHASE_QUANTITY } from './simulation/economy';
 import { staffHireCostMinorUnits } from './simulation/staff';
 import { defaultStaffRoleRegistry } from './content/staff-role-catalog';
@@ -870,14 +879,22 @@ const ADMISSION_REQUEST = { priorIncidents: 0 } as const;
  * (`docs/DETERMINISM.md`). Grouping by category also puts the three housing
  * rooms together, which is the grouping a player is choosing between.
  *
- * The two *rules* -- the authored minimum size and the enclosure requirement --
- * are read through `src/simulation/rooms/requirements.ts` rather than by
- * looping over `definition.requirements` here. Three layers ask that same
- * question and none may re-derive the answer: the zoning service refuses a
- * rectangle below the minimum, the enclosure evaluation reports against the
- * `enclosed`/`outdoors` requirement, and this projection puts both on screen so
- * the player can read the rule before dragging. A copy of `requirements.find`
- * in each would be three places to forget a fifth requirement kind.
+ * The *rules* -- the authored minimum size, the enclosure requirement and,
+ * since #529, the objects the room will need -- are read through
+ * `src/simulation/rooms/requirements.ts` rather than by looping over
+ * `definition.requirements` here. Several layers ask those same questions and
+ * none may re-derive the answer: the zoning service refuses a rectangle below
+ * the minimum, the enclosure evaluation reports against the
+ * `enclosed`/`outdoors` requirement, `room-projection.ts` checks the object
+ * requirements against what is standing in a real room, and this projection
+ * puts all three on screen so the player can read the rule before dragging. A
+ * copy of `requirements.find` in each would be that many places to forget a
+ * fifth requirement kind.
+ *
+ * **This paragraph counted "two rules" and "three layers" until #529**, which
+ * is the count-shaped sentence `docs/AGENT_WORKFLOW.md` §4 warns rots first:
+ * adding the third rule did not touch the sentence saying there were two. It
+ * now names the subjects instead of tallying them.
  *
  * `tint` comes from `zoningTint`, the renderer's own table, so the catalogue
  * row and the designation painted on the map cannot disagree. That is a value
@@ -908,6 +925,32 @@ function roomCatalogue(): HudRoomsViewModel {
       // claiming a 1x1 floor nobody wrote.
       ...(minimum === undefined ? {} : { minimum: { width: minimum.minWidth, height: minimum.minHeight } }),
       enclosure: enclosureRequirement(definition),
+      /*
+       * What the room type will need standing in it, so the cost of a canteen
+       * is readable *before* the drag rather than only after it (#529).
+       *
+       * The object's name comes from `defaultObjectRegistry`, which is the same
+       * lookup `roomNeedsFromProjections` gets on the other side of the
+       * boundary via `RoomRequirementViewModel.objectNameKey` -- so the row a
+       * player reads before zoning and the line they read afterwards name the
+       * object with the same key and cannot drift into two different words for
+       * one thing.
+       *
+       * `labelKey` is spread rather than passed as `undefined` for the reason
+       * `minimum` above is. It is absent only for a room naming an object id
+       * this build does not declare, which `validateRoomObjectReferences`
+       * refuses at catalogue load -- so it is unreachable here and handled
+       * anyway, because a `getById` that can answer `undefined` is not made
+       * total by a validator in another module.
+       */
+      objectRequirements: objectRequirements(definition).map((requirement) => {
+        const labelKey = defaultObjectRegistry.getById(requirement.objectId)?.nameKey;
+        return {
+          objectId: requirement.objectId,
+          quantity: requirement.minQuantity,
+          ...(labelKey === undefined ? {} : { labelKey }),
+        };
+      }),
     });
   }
   return { rooms };
@@ -1596,19 +1639,39 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     // open -- which the list is not, at any viewport (#220, and see
     // `hudRefusalFromWorkerMessage` for the split).
     const refusal = hudRefusalFromWorkerMessage(message);
+    /*
+     * The events channel (issue #507), read on the same two surfaces the
+     * refusal is and in the same order: the log first, then the notice.
+     *
+     * `alerts` above and `eventAlerts` here are two producers of one list, so
+     * this one is threaded through the *result* of that one rather than through
+     * `viewModel.alerts` -- otherwise a `simulation/stopped`, which both
+     * translate, would have the second overwrite the first's emptying with a
+     * list rebuilt from the stale field. `hudEventAlertsFromWorkerMessage`
+     * answers `undefined` for every message but `simulation/event`, so on all
+     * other messages this is exactly `alerts`.
+     */
+    const eventAlerts = hudEventAlertsFromWorkerMessage(message, alerts ?? viewModel.alerts);
+    // The same event, read a second time for the surface that is actually on
+    // screen. The list is the log; this is the notice, and it goes to a band
+    // laid out at every viewport with no section to open -- which the alerts
+    // list is not, at any viewport (#220).
+    const event = hudEventNoticeFromWorkerMessage(message);
+    const nextAlerts = eventAlerts ?? alerts;
     if (
       clock === undefined &&
       counts === undefined &&
-      alerts === undefined &&
+      nextAlerts === undefined &&
       zoning === undefined &&
-      refusal === undefined
+      refusal === undefined &&
+      event === undefined
     )
       return;
     viewModel = {
       ...viewModel,
       ...(clock === undefined ? {} : { clock }),
       ...(counts === undefined ? {} : { counts }),
-      ...(alerts === undefined ? {} : { alerts }),
+      ...(nextAlerts === undefined ? {} : { alerts: nextAlerts }),
       // Three states, not two, which is why the translator returns `'none'`
       // rather than `undefined` for "no room has been designated": `undefined`
       // means this message said nothing about zoning and the field must be left
@@ -1624,6 +1687,11 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       // itself. Optional, so clearing it deletes the key below rather than
       // writing `undefined` -- `exactOptionalPropertyTypes` is on.
       ...(refusal === undefined ? {} : refusal === 'none' ? {} : { refusal }),
+      // Three states, for the reason `zoning` and `refusal` each have three:
+      // `undefined` is a message that said nothing about an event, `'none'` is
+      // a session that has ended, and a notice is the event itself. Optional,
+      // so clearing it deletes the key below rather than writing `undefined`.
+      ...(event === undefined ? {} : event === 'none' ? {} : { event }),
     };
     if (zoning === 'none' && viewModel.zoning !== undefined) {
       const { zoning: _cleared, ...withoutZoning } = viewModel;
@@ -1632,6 +1700,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     if (refusal === 'none' && viewModel.refusal !== undefined) {
       const { refusal: _withdrawn, ...withoutRefusal } = viewModel;
       viewModel = withoutRefusal;
+    }
+    if (event === 'none' && viewModel.event !== undefined) {
+      const { event: _ended, ...withoutEvent } = viewModel;
+      viewModel = withoutEvent;
     }
     hud?.update(viewModel);
 

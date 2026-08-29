@@ -1350,6 +1350,16 @@ decision about what to build next.
     optional field, no version bump — so the exclusion is about what it would
     buy, and it is written down as such under "What is deliberately excluded
     from the payload" in `docs/PERSISTENCE.md`.
+    **`SimulationEventLog` (#507) joins them on the same terms**, and the
+    entry is worth reading beside `RefusalLog`'s rather than as a repetition:
+    both are excluded because they hold a *notice* rather than a condition, but
+    this one can say so more strongly. The conditions behind its events are
+    persisted separately — arrears in the payroll snapshot (ADR 0049), sentence
+    ticks in the prisoner components (ADR 0050) — so a restored prison
+    re-announces at its next failed payday and at the next sentence that ends,
+    and nothing a player would have been told is actually lost. It is recorded
+    in `docs/PERSISTENCE.md` under the same heading, and asserted in
+    `tests/integration/sentence-end-release.test.ts`.
 
 34. **A refusal cannot be dismissed by the player, and carries no location on
     the wire.** *Amended for issue #492 — the standing-until-another-refusal

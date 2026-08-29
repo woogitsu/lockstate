@@ -93,8 +93,56 @@ export interface ContrabandIntroductionPolicy {
  *
  * `RiskTier` is produced by `classifyPrisoner` from the `sentenceLengthTicks`
  * and `priorIncidents` the `AdmitPrisoner` command carries, and is revised
- * afterwards by `ClassificationReviewSystem` -- so this reads a number the
- * player influences twice over rather than a dice roll in a costume.
+ * afterwards by `ClassificationReviewSystem`.
+ *
+ * **This used to end *"-- so this reads a number the player influences twice
+ * over rather than a dice roll in a costume."* That is false, and it is false
+ * three times over.** Recorded rather than deleted, because the sentence
+ * describes what this policy is *for*, and the gap between that intent and the
+ * shipped game is the thing worth knowing:
+ *
+ *  1. **The player influences neither input.** `src/main.ts` is
+ *     `const ADMISSION_REQUEST = { priorIncidents: 0 } as const` -- pinned, and
+ *     held deliberately -- and since ADR 0069 the sentence is no longer sent
+ *     from there at all: it is *drawn inside the worker* from the
+ *     `prisoners.sentence` stream. Neither number is a player decision.
+ *  2. **The revision is a phase lottery, and for most sentences it is
+ *     impossible.** `ClassificationReviewSystem` is globally phased at
+ *     `intervalTicks - 1`, so it runs at every tick congruent to 23,999 modulo
+ *     24,000; eligibility is per prisoner, `tick - classifiedAt >= 24,000`,
+ *     where `classifiedAt` is derived from that prisoner's own record. So a
+ *     prisoner classified at `c` with sentence `s` is reviewed only if a
+ *     scheduled tick falls in `[c + 24,000, c + s]` -- a window of `s - 24,000`
+ *     ticks, and empty unless `s >= 24,000`.
+ *
+ *     `MIN_SENTENCE_DAYS` is 2 and `MAX_SENTENCE_DAYS` is 16, so the drawable
+ *     lengths are 4,800..38,400 in steps of `DAY_LENGTH_TICKS` (2,400).
+ *     **Eight of those fifteen -- 2 through 9 days -- are below 24,000 and can
+ *     never be reviewed at all**, whatever the phase. The other seven have a
+ *     window of 0 to 14,400 ticks and are reviewed only if the global schedule
+ *     happens to land inside it; at 10 days exactly the window is a single
+ *     tick.
+ *
+ *     **This paragraph said "the revision never happens" and that was wrong.**
+ *     It was true of the session's *first* prisoner -- classified near tick 0,
+ *     where the first eligible scheduled tick is 47,999 against a maximum
+ *     discharge at 38,400 -- and was generalised from that one case to every
+ *     prisoner. A prisoner classified at 20,000 with a 16-day sentence is
+ *     eligible at the 47,999 review and is discharged at about 58,400, so they
+ *     *are* reviewed. Corrected rather than deleted because the arithmetic that
+ *     produced the wrong answer is the arithmetic worth checking next time: a
+ *     schedule is global and eligibility is per record, and the two only
+ *     coincide for whoever arrives first.
+ *  3. **The sentence cannot move the tier even if it were chosen.**
+ *     `classifyPrisoner` reads it as
+ *     `sentenceLengthTicks >= LONG_SENTENCE_THRESHOLD_TICKS ? 1 : 0` with the
+ *     threshold at **200,000**, which is 5.2x the largest sentence the shipped
+ *     range can draw. That term is always 0.
+ *
+ * So `riskTier` is, today, exactly the dice roll this sentence said it was not:
+ * reachable tiers are `[0, 1]` and which one a prisoner gets is the draw alone.
+ * The policy below is still the right shape for the game this comment describes
+ * -- it is the reading of the *present tense* that was wrong.
  */
 export const DEFAULT_CONTRABAND_INTRODUCTION_POLICY: ContrabandIntroductionPolicy = {
   baseProbability: 0.1,

@@ -1,4 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_LOCALE } from '../../src/content/localization';
+import { SIMULATION_PROTOCOL_VERSION, workerToMainMessageSchema, type WorkerToMainMessage } from '../../src/simulation/protocol/types';
+import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
+import { hudEventNoticeFromWorkerMessage } from '../../src/ui/simulation-events';
 import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
@@ -215,6 +219,88 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     expect(runtime.refusals.count, 'the fixture must be able to afford the bricks it buys').toBe(0);
     return runtime;
   }
+
+  /**
+   * The question this asks is the player's: **the prison ran out of money --
+   * was I told, and was I told who is owed and how much?**
+   *
+   * Measured before this change, in a played prison at the moment it hit zero,
+   * the status strip read `0 Prisoners · 3 Staff · 0 Funds · 0 Earned today`
+   * and nothing else. `dailyWageBillMinorUnits` and `unpaidWagesMinorUnits`
+   * both cross the protocol and neither had a reader anywhere under `src/ui/`.
+   * ADR 0017's stated cost of its answer 3 is that *"degradation has to be
+   * authored and surfaced, or insolvency becomes the same invisible stall as
+   * #89"*, and this is the surfacing half.
+   *
+   * The fixture supplies none of what it measures: the day the prison first
+   * fails to make payroll is decided by the kernel out of real hires, a real
+   * purchase and a real income, and the test reads that day off the arrears
+   * rather than choosing it.
+   */
+  it('says so when payday cannot be met, and names what is owed', () => {
+    const runtime = overcommitted();
+
+    // Days 1-4 are met in full, so the prison has nothing to say about wages.
+    // Asserted before the failure, so a producer that announced every payday
+    // -- or every tick -- could not pass this.
+    stepTo(runtime, DAY_LENGTH_TICKS * 4);
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'four paydays must have been met for this test to mean anything').toBe(0);
+    expect(
+      runtime.events.since(0),
+      'a prison that has paid its staff every day has nothing to say about payday',
+    ).toEqual([]);
+
+    // Day 5 is the first it cannot meet.
+    stepTo(runtime, DAY_LENGTH_TICKS * 5);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(360);
+
+    const afterFirstMiss = runtime.events.since(0);
+    expect(afterFirstMiss.length, 'one missed payday is one thing to say').toBe(1);
+    // The figure the player is told is the arrears the save also carries, not
+    // the day's shortfall by some other arithmetic.
+    expect(afterFirstMiss[0]).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 360 });
+
+    const message = workerToMainMessageSchema.parse({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: '00000000-0000-4000-8000-000000000509',
+      kind: 'simulation/event',
+      payload: { tick: runtime.kernel.tick, event: afterFirstMiss[0]! },
+    }) as WorkerToMainMessage;
+    const notice = hudEventNoticeFromWorkerMessage(message);
+    if (notice === undefined || notice === 'none') throw new Error('the band must be given something to say');
+
+    /*
+     * `'warning'`, and it is the first `'warning'` in the repository that is
+     * not a refusal of something the player asked for -- nobody pressed
+     * anything, the prison ran out of money on its own.
+     *
+     * Not `'danger'`: ADR 0049 decided insolvency is a recoverable state
+     * rather than a loss condition, and this HUD says what `'danger'` means --
+     * "stop trusting what you are looking at".
+     */
+    expect(notice.severity).toBe('warning');
+
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const sentence = localizer.format(notice.labelKey, notice.labelParameters);
+    expect(sentence, 'the player must not be shown a raw message key').not.toContain('hud.alert.event');
+    expect(sentence, 'and the sentence must name what is owed').toContain('360');
+
+    /*
+     * **Once a day while it stays broke, not twice a second.** This is the
+     * volume rule, asserted against three more in-game days rather than
+     * described: `PayrollSystem`'s whole schedule is one tick a day, so the
+     * ceiling is a property of where the producer sits and not of a filter
+     * downstream.
+     */
+    stepTo(runtime, DAY_LENGTH_TICKS * 8);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_840);
+    const afterFourMisses = runtime.events.since(0);
+    expect(
+      afterFourMisses.length,
+      'a prison that stays broke says so once per payday -- four missed paydays, four sentences',
+    ).toBe(4);
+    expect(afterFourMisses.at(-1)).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 1_840 });
+  });
 
   it('empties the treasury, floors it at zero and starts owing wages instead of overdrawing', () => {
     const runtime = overcommitted();

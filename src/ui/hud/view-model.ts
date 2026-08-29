@@ -614,6 +614,63 @@ export interface HudRoomViewModel {
   /** Absent when the definition authors no minimum, which is content's statement and not a default. */
   readonly minimum?: HudRoomMinimumViewModel;
   readonly enclosure: HudRoomEnclosureRequirement;
+  /**
+   * What this room *type* requires standing in it, before any of it is zoned
+   * (#529 / #535 decision 2).
+   *
+   * **A statement about content, not about a prison**, and that is the whole
+   * reason it lives here beside `minimum` and `enclosure` rather than arriving
+   * with `HudRoomNeedsViewModel`. Those two are already exactly this kind of
+   * fact -- authored on the definition, read through
+   * `src/simulation/rooms/requirements.ts`, true before a single tile is
+   * dragged -- and the requirement list is the third of the same kind. What a
+   * *particular* canteen is still short is a different question with a
+   * different truth condition and a different answer shape: it can be
+   * uncountable (`HudRoomNeedViewModel.missingQuantity`), it changes as the
+   * player builds, and it arrives on a pull rather than at mount. The panel
+   * renders the two in separate blocks with separate wording for that reason.
+   *
+   * **Required, not optional**, and deliberately so. Every producer of a
+   * catalogue row must state this, including an empty array for `room.yard`,
+   * which authors no object requirement at all. An optional field would let a
+   * hand-written fixture stay silent, the panel draw nothing, and a green
+   * assertion mean only that the fixture agreed with it -- which is precisely
+   * how #529's defect survived a full suite. Empty is a real answer here: the
+   * panel says the room type needs no objects rather than saying nothing.
+   */
+  readonly objectRequirements: readonly HudRoomObjectRequirementViewModel[];
+}
+
+/**
+ * One object a room type requires, and how many of it (#529).
+ *
+ * `quantity` is the authored `minQuantity` and is always at least 1
+ * (`roomRequirementSchema` bounds it to 1..64), so there is no "requires zero"
+ * state to render -- a room that needs none of something authors no
+ * requirement for it and gets no entry.
+ *
+ * `labelKey` is the object's own `nameKey` from `src/content/object-catalog.ts`
+ * -- a key, never text (ADR 0011) -- and is **optional** for the same reason
+ * `HudRoomNeedViewModel.objectLabelKey` is: a room definition may name an
+ * object id the object catalogue does not define, and there is then no name for
+ * the line to print. The panel says so in its own words rather than being
+ * handed an invented key, reusing the same stand-in it already shows for the
+ * unfinished-room case. Unreachable with the shipped catalogues --
+ * `validateRoomObjectReferences` refuses a room naming an uncatalogued object
+ * at load time -- and written down because "unreachable" and "handled" are
+ * different claims.
+ *
+ * `objectId` travels alongside so a test and a `data-` attribute can read which
+ * requirement a line is about without parsing a localized sentence, the job
+ * `HudIntakeStageViewModel.stageId` does beside its own `labelKey`.
+ */
+export interface HudRoomObjectRequirementViewModel {
+  /** Stable simulation id (`object.bed`). Never rendered. */
+  readonly objectId: string;
+  /** The object type's `nameKey`. Absent when the object catalogue names none. */
+  readonly labelKey?: LocalizationKey;
+  /** The authored `minQuantity`. At least 1. */
+  readonly quantity: number;
 }
 
 /**
@@ -669,6 +726,32 @@ export interface HudRoomNeedViewModel {
   readonly tile: { readonly x: number; readonly y: number };
   /** The missing object's `nameKey`, absent when the object catalogue names none. */
   readonly objectLabelKey?: LocalizationKey;
+  /**
+   * How many **more** of that object the room needs (#529).
+   *
+   * The shortfall, not the requirement: a canteen authored for four benches and
+   * holding three reports `1` here, because one is what the player has to
+   * build. `HudRoomObjectRequirementViewModel.quantity` is the other number --
+   * what the room type asks for in total -- and the two are deliberately not
+   * the same field, because they are true of different things and diverge the
+   * moment a player builds anything at all.
+   *
+   * **Absent when the simulation could not count**, which is a real state and
+   * not a one. `RoomRequirementViewModel.satisfyingQuantity` is absent whenever
+   * the projection was handed nothing to attribute to the room -- a caller that
+   * supplied no placed objects, or an instance from a V4 save with no recorded
+   * rectangle -- and in that state the verdict beside it came from the pre-#528
+   * capability test, which never consulted `minQuantity` and therefore cannot
+   * support a subtraction. Carried across rather than defaulted, so the panel
+   * can render the object with no numeral instead of asserting a quantity
+   * nothing measured. No session a player runs takes that path: the worker
+   * supplies the placed objects (`worker/projection-catalog.ts`).
+   *
+   * At least 1 when present. A requirement the projection called unmet has a
+   * shortfall of at least one by definition, and
+   * `roomNeedsFromProjections` only ever reads `'missing-capability'` entries.
+   */
+  readonly missingQuantity?: number;
 }
 
 /**
@@ -874,10 +957,62 @@ export interface HudRefusalNoticeViewModel {
   readonly labelKey: LocalizationKey;
 }
 
+/**
+ * The most recent thing the prison did, for the events band (issue #507).
+ *
+ * ## Why this is a third band and not a second use of the refusal line
+ *
+ * `hud.ts` states the rule the two existing bands were built under: a band
+ * holds one *class* of sentence with one lifetime, and sharing one "would need
+ * a rule about which sentence wins". The two classes there are "whatever
+ * refused a player command" and "this page has no simulation". An event is
+ * neither. It is not a refusal -- nothing was refused, and in the
+ * `'info'` case nothing is even wrong -- and it does not belong to a control,
+ * so it cannot clear the way a refusal clears when the same action later
+ * succeeds. Putting a discharge notice on the refusal line would silently
+ * evict a refusal the player has not read yet, which is the eviction that rule
+ * exists to prevent.
+ *
+ * ## Why the band exists at all, when the alerts list already renders these
+ *
+ * Because the alerts list does not reach the player. `hud.css` drops
+ * `.hud__corner` entirely at 720px and below, and the alerts section inside it
+ * starts folded (`INITIAL_HUD_SHELL_STATE`), so a row appended there is
+ * `offsetParent === null` at *every* viewport until somebody opens it --
+ * measured in Chromium at 1280x800 and 375x812 for issue #220, which is the
+ * defect that gave the refusal its own band and then gave "no simulation" a
+ * second one. Routing `'info'` to the list alone would have been the third
+ * repetition of that defect and would have made the channel's first producers
+ * invisible in exactly the way the silent sentence-end already was.
+ *
+ * So the split is the one `src/ui/simulation-alerts.ts` already names for
+ * refusals: **the band is the notice and the list is the log**, and an event
+ * appears on both.
+ *
+ * `sequence` is the event's own 1-based ordinal from the session's
+ * `SimulationEventLog`, used to tell a re-render of the event already showing
+ * from a newer one -- the same job it does for a refusal, though the pressure
+ * is lower here because this channel does not republish.
+ *
+ * `severity` rather than a fixed tone, because this band is the first surface
+ * that carries more than one: a discharge is `'info'` and an unpaid payday is
+ * `'warning'`. `HudSeverity`'s `'info'` member had no producer anywhere in
+ * `src/` before this.
+ */
+export interface HudEventNoticeViewModel {
+  readonly sequence: number;
+  /** A message key, never text. */
+  readonly labelKey: LocalizationKey;
+  readonly labelParameters?: MessageParameters;
+  readonly severity: HudSeverity;
+}
+
 export interface HudViewModel {
   readonly counts: HudCountsViewModel;
   readonly clock: HudClockViewModel;
   readonly alerts: readonly HudAlertViewModel[];
+  /** Absent until this session has had something to say. See the interface. */
+  readonly event?: HudEventNoticeViewModel;
   /** Absent until this session has designated a room. Not zeroed -- see the interface. */
   readonly zoning?: HudZoningNoticeViewModel;
   /** Absent until this session has refused something. See the interface. */

@@ -136,13 +136,35 @@ const requiredNotDeclared = requiredCapabilities.filter((capability) => !declare
  */
 const UNGATED_BY_ANY_ACTION: Readonly<Record<string, string>> = {
   'delivery-access': "Declared by `object.loading-dock-door` and required by `room.delivery-bay`, so the containment join reads it; no action gates on it. `src/simulation/construction/definition.ts` states it directly -- the capability appears \"in no `DEFAULT_ACTIONS` entry and in no other room's requirements\" -- and names ADR 0017's procurement route as the system that would consume it. The same comment records that what a player places is \"a capability marker on three tiles, not a passage\": it gates nothing and `DoorRegistry` does not read it.",
-  'food-preparation': 'Declared by `object.stove` and `object.prep-counter`, both required by `room.kitchen`. No action prepares food: `DEFAULT_ACTIONS` has `action.eat-meal` gating on `dining` in a canteen, and nothing that cooks. A meal-production or kitchen-job system is what would gate on it, and neither exists.',
-  'food-storage': 'Declared by `object.fridge`, required by `room.kitchen`. Gated on by no action, for the same reason as `food-preparation`: nothing in the simulation produces or stores a meal as an object yet.',
+  // `food-preparation` left this list at #532 and its entry is removed rather
+  // than reworded, which is what the stale-entry gate below asks for. **Both
+  // directions, because the half of its reason that was not falsified is the
+  // half `food-storage` below still leans on.** Its read was: *"Declared by
+  // `object.stove` and `object.prep-counter`, both required by `room.kitchen`.
+  // No action prepares food: `DEFAULT_ACTIONS` has `action.eat-meal` gating on
+  // `dining` in a canteen, and nothing that cooks. A meal-production or
+  // kitchen-job system is what would gate on it, and neither exists."* The
+  // kitchen-job half is what arrived -- `action.kitchen-work` gates on this
+  // capability in `room.kitchen` -- and the meal-production half did not: the
+  // action gains `hunger` directly and no meal exists as an item.
+  'food-storage': 'Declared by `object.fridge`, required by `room.kitchen`. Gated on by no action, and no longer for the same reason as `food-preparation`, which `action.kitchen-work` now gates on (#532): that action names the two `food-preparation` objects and deliberately not the fridge, because one action consumes one capability (#326) and gating on a cold store would make it a work station. Nothing in the simulation produces or stores a meal as an object, which is the half of the old shared reason that is still true.',
   'item-storage': "Declared by `object.storage-rack`, required by `room.storage-room`. `src/simulation/construction/definition.ts` lists it among the capabilities that \"appear in no `DEFAULT_ACTIONS` entry and in no other room's requirements\", and names #99's salvage destination as what would consume it.",
   'medical-supply': 'Declared by `object.medicine-cabinet`, required by `room.infirmary`. No action treats or medicates a prisoner; the health/treatment system that would gate on it does not exist.',
   'medical-treatment': "Declared by `object.medical-bed`, required by `room.infirmary`. It is load-bearing in the containment join and `src/simulation/construction/definition.ts` explains the asymmetry it produces -- a plain `object.bed` cannot satisfy an infirmary's requirement while a medical bed can satisfy a cell's -- but no action names it, so nothing a prisoner does depends on it.",
   seating: "Declared by `object.chair` and `object.bench`. Not gated on by any action, and the near miss is recorded in `src/simulation/construction/definition.ts`: a bench declares `'seating'` and `'recreation'` and **not** `'dining'`, so a canteen's dining capacity comes from its tables and its benches bound nothing. Whether a bench should carry `'dining'` is left open there deliberately (#326) and is a content decision, not this gate's to make.",
-  shower: "Declared by `object.shower-head`. The action that would gate on it gates on `hygiene` instead -- `action.wash` names `hygiene`, which `object.sink` also declares -- so `'shower'` distinguishes a shower head from a sink for nothing that currently asks.",
+  // **This reason named an action that has never existed**, and the correction
+  // is kept in both directions per `docs/AGENT_WORKFLOW.md` section 4. It read:
+  // *"The action that would gate on it gates on `hygiene` instead --
+  // `action.wash` names `hygiene`, which `object.sink` also declares."* Every
+  // clause of that is true except the name: there is no `action.wash` anywhere
+  // in `src/`, and the entry gating on `'hygiene'` is `action.shower`
+  // (`src/simulation/prisoners/actions.ts`). Dated rather than merely noticed
+  // -- `git log -S` puts `id: 'action.shower'` in the tree at b270495
+  // (2026-08-23) and this sentence at bccdf58 (2026-08-27), and the first is an
+  // ancestor of the second -- so it is that section's other case: **a claim
+  // that was false the day it was written**, not one that rotted. Found while
+  // gating `room.kitchen` (#532) and corrected there rather than handed on.
+  shower: "Declared by `object.shower-head`. The action that would gate on it gates on `hygiene` instead -- `action.shower` names `hygiene`, which `object.sink` also declares -- so `'shower'` distinguishes a shower head from a sink for nothing that currently asks.",
   surveillance: "Declared by `object.security-console`, required by `room.security-office`. `src/simulation/construction/definition.ts` lists it among the ungated five and names a security-deployment system as what would consume it. It is also the capability that makes the desk/console asymmetry work, which that comment sets out in full.",
   'utility-control': "Declared by `object.utility-panel`, required by `room.utility-room`. Listed in `src/simulation/construction/definition.ts` among the capabilities gated by nothing, with a maintenance job system named as what would consume it.",
   'waste-disposal': "Declared by `object.waste-bin`, required by `room.garbage-room`. Listed in `src/simulation/construction/definition.ts` among the capabilities gated by nothing.",
@@ -167,7 +189,12 @@ describe('an object capability is declared and gated on, or it is accounted for'
       required: requiredCapabilities.length,
       declaredNotRequired: declaredNotRequired.length,
       requiredNotDeclared: requiredNotDeclared.length,
-    }).toEqual({ declared: 19, required: 7, declaredNotRequired: 12, requiredNotDeclared: 0 });
+      // `required` 7 -> 8 and `declaredNotRequired` 12 -> 11 at #532:
+      // `action.kitchen-work` is the first entry in `DEFAULT_ACTIONS` to
+      // require `'food-preparation'`, so one capability crosses from the
+      // declared-only side to the required side. `declared` does not move --
+      // no object gained or lost a capability.
+    }).toEqual({ declared: 19, required: 8, declaredNotRequired: 11, requiredNotDeclared: 0 });
   });
 
   it('cannot pass vacuously on an empty catalogue or an empty scan', () => {
@@ -408,7 +435,9 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // does not move and both unreachable counts rise by one: `contraband-state`
       // is one of the 33 namespaces waiting for a panel, and the new member
       // waits with the two beside it.
-      labels: 174,
+      // 175 at #532: `action.kitchen-work` is one label added to the existing
+      // `action` namespace, so `namespaces` does not move.
+      labels: 175,
       // 11 on `main` before issue #533, which itself moved this line from 10;
       // #533 gives `deployment-phase` its first call site, so it is 12. The
       // Staff panel's roster block labels what each staff member is doing, and
@@ -416,7 +445,9 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // hand-writing four strings. No namespace and no label was added, so
       // `namespaces` and `labels` do not move -- the four `deployment-phase.*`
       // labels simply stop waiting for a panel, which is the direction these
-      // two unreachable counts exist to record.
+      // two unreachable counts exist to record. So the two unreachable counts
+      // below are #532's numbers less #533's namespace and its four labels:
+      // 31 - 1 and 118 - 4.
       namespacesWithACallSite: 12,
       namespacesWithoutACallSite: 30,
       labelsWithoutACallSite: 114,

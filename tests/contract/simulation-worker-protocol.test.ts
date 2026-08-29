@@ -230,7 +230,12 @@ describe('simulation worker protocol', () => {
       {
         ...eventEnvelope,
         kind: 'simulation/event',
-        payload: { tick: 12, event: structuredPayload },
+        // A typed event rather than the opaque `versionedPayload` this kind
+        // used to carry: issue #507 gave the family its first producers and a
+        // closed, discriminated vocabulary in its place, so that a member
+        // added to it fails to compile until somebody has decided what it says
+        // to a player. See `simulationEventSchema` in `protocol/types.ts`.
+        payload: { tick: 12, event: { sequence: 1, tick: 11, type: 'prisoners.discharged', count: 2 } },
       },
       {
         ...responseEnvelope,

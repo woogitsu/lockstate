@@ -36,6 +36,7 @@ import {
   type HudBuildViewModel,
   type HudClockMode,
   type HudLocalizer,
+  type HudEventNoticeViewModel,
   type HudRefusalNoticeViewModel,
   type HudRoomsViewModel,
   type HudSpeed,
@@ -944,6 +945,76 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   refusal.hidden = true;
 
   /**
+   * Where the prison says what it just did (issue #507).
+   *
+   * A fourth grid row, immediately under the refusal line and above the
+   * middle, `hidden` -- and therefore costing exactly zero -- until this
+   * session has had something to say. The same shape the two bands above it
+   * take, and it is here rather than in the alerts list for the first two of
+   * the three reasons `.hud__refusal` gives:
+   *
+   *   - **It is there at every viewport.** `hud.css` drops `.hud__corner`
+   *     entirely at 720px and below, so an event routed only to the alerts
+   *     list would not exist on a phone.
+   *   - **It is there without being opened.** The alerts section starts folded
+   *     (`INITIAL_HUD_SHELL_STATE`), so a row appended to that list is a 0x0
+   *     box at every viewport until somebody opens it.
+   *
+   * Those two properties are why #207 gave refusals a band and #220 gave "no
+   * simulation" a second one, and an `'info'` producer that only reached the
+   * folded list would have repeated that defect a third time -- while
+   * *appearing* to have fixed the silent sentence-end, which is worse than
+   * leaving it silent.
+   *
+   * The third reason those two bands are separate applies here too and is why
+   * this is a third row rather than a reuse: a refusal is a fact about a
+   * control the player just used and clears when that action succeeds, and
+   * "this browser cannot start a worker" cannot stop being true while the page
+   * is loaded. An event is neither -- it belongs to no control, and it never
+   * stops being true. Three lifetimes, three bands, and no rule about which
+   * sentence wins is needed because no two of them ever compete for a line.
+   *
+   * **It carries a severity**, which neither band above it does: they are
+   * fixed red because everything they can say is bad, and this one says both
+   * "somebody went home" and "payday went unpaid". `hud.css` tones it on a
+   * `data-severity` attribute rather than by swapping class names, so the
+   * band's identity in the DOM does not change under a player mid-sentence.
+   *
+   * It does **not** auto-dismiss, for the reason the refusal band does not: a
+   * message that clears itself on a timer is a race against how fast the
+   * player reads. It is replaced by the next event or emptied when the session
+   * ends, and it is in the log either way.
+   */
+  const eventText = element('span', { className: 'hud-event__text' });
+  const eventNotice = element('div', {
+    className: 'hud__event',
+    // `role="status"` with `aria-live="polite"`, matching the two bands above.
+    // Polite rather than assertive even for the `'warning'` member: an unpaid
+    // payday is not worth interrupting whatever a screen reader is in the
+    // middle of, and ADR 0049 settled that insolvency is a recoverable state
+    // rather than an emergency.
+    attributes: { role: 'status', 'aria-live': 'polite' },
+    children: [eventText],
+  });
+  eventNotice.hidden = true;
+
+  /**
+   * The newest event is the one on the line.
+   *
+   * No arbitration and no source tracking, unlike `applySimulationRefusal`
+   * below: this band has exactly one producer, so whatever it replaces is
+   * always an older event rather than a sentence of another class. `undefined`
+   * means the view model says nothing yet; the field is absent until the
+   * session has had something to say and again once it has ended.
+   */
+  function applyEventNotice(notice: HudEventNoticeViewModel | undefined): void {
+    eventNotice.hidden = notice === undefined;
+    eventText.textContent = notice === undefined ? '' : t(notice.labelKey, notice.labelParameters);
+    if (notice === undefined) delete eventNotice.dataset['severity'];
+    else eventNotice.dataset['severity'] = notice.severity;
+  }
+
+  /**
    * The control that last asked for each command kind, so a report lands *on
    * the control that was pressed* rather than merely somewhere on screen.
    *
@@ -1578,7 +1649,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // DOM order matches grid order, so reading order and tab order agree with
     // what is painted: the standing "no simulation" band first, then the
     // refusal line about the last press, then the world's furniture.
-    children: [strip.element, unavailable, refusal, corner, rail, tabBar],
+    children: [strip.element, unavailable, refusal, eventNotice, corner, rail, tabBar],
   });
 
   // Only the controls that issue a *command* are disabled while one is in
@@ -1750,6 +1821,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // Last, so that a snapshot which both empties the alerts list and carries
     // a refusal leaves the band and the log agreeing about the same record.
     applySimulationRefusal(next.refusal);
+    // And what the prison just did, on the same terms and for the same reason
+    // it is last: a message that both empties the alerts list and carries an
+    // event must leave the band and the log agreeing about the same record.
+    applyEventNotice(next.event);
   };
 
   paintState();

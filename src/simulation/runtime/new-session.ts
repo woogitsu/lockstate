@@ -31,6 +31,7 @@ import {
   type SectorRiskSampler,
 } from '../incidents';
 import { PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury } from '../economy';
+import { SimulationEventLog } from '../events';
 import { RefusalLog } from '../refusals';
 import { StaffDismissalService, StaffHiringService } from '../staff';
 import { createSessionCommandHandler } from './session-commands';
@@ -173,6 +174,16 @@ export interface SimulationRuntime {
    * that failed before the save.
    */
   readonly refusals: RefusalLog;
+  /**
+   * What the prison has just done, for `simulation/event` to carry (#507).
+   *
+   * Not snapshotted, for the reason `refusals` above is not: see
+   * `SimulationEventLog`, which states it in full. The two logs are siblings
+   * in every respect except shape -- one holds the latest of a level, this
+   * holds a bounded queue of occurrences -- and the difference is a property
+   * of the channels they leave by, not of the sessions they belong to.
+   */
+  readonly events: SimulationEventLog;
   /**
    * Names for prisoners and staff (ADR 0015). Session-owned rather than
    * owned by either population, because it spans both `EntityStore`s --
@@ -446,9 +457,25 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    */
   const contraband = new ContrabandRegistry();
 
+  /*
+   * Issue #507's route out for what the prison did when nothing went wrong --
+   * the third of ADR 0003 decision 2's families to get a producer. Empty for a
+   * new session and for a restored one alike, exactly like `refusals` below and
+   * for the reason `SimulationEventLog` states: an event says something
+   * happened *now*, so replaying one from before a save would be a statement
+   * about a tick the player is not looking at.
+   *
+   * Constructed this far up because `PrisonerOperationsRuntime` needs it in the
+   * very next statement -- `PrisonerDischargeSystem` is one of its two
+   * producers -- while `refusals` is only needed at the command handler, six
+   * hundred lines below.
+   */
+  const events = new SimulationEventLog();
+
   const prisoners = new PrisonerOperationsRuntime({
     capacity: DEFAULT_PRISONER_CAPACITY,
     navigation,
+    events,
     identity: actorIdentity,
     disciplinaryEvidence,
     /*
@@ -672,7 +699,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * `GuardRoster` is the only staff store there is and this is where it exists;
    * registered below at order 130, immediately after `economy.state-income`.
    */
-  const payroll = new PayrollSystem(treasury, securityGuards);
+  const payroll = new PayrollSystem(treasury, securityGuards, events);
   const securitySchedules: DeploymentSchedule[] = [];
   /*
    * The fifth argument is the constructor's own default, restated (and skipped)
@@ -1033,6 +1060,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     stateIncome,
     payroll,
     refusals,
+    events,
     actorIdentity,
     topology,
     roomZoning,

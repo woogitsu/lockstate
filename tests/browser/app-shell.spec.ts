@@ -4079,6 +4079,158 @@ test.describe('the assembled application', () => {
   });
 
   /**
+   * The same fold, against **every room type in the real catalogue** (#529).
+   *
+   * ### What this measures that the test above does not
+   *
+   * That one leaves `room.cell` selected, which is the default. Since #529 the
+   * rule block's height is a function of the *selected* room type -- it carries
+   * one line per object that type requires -- so the deepest room is the one
+   * that can push the block past the fold, and `room.cell` is not it.
+   * Recomputed over `src/content/room-catalog.ts`: `room.kitchen` authors three
+   * object requirements (stove, prep counter, fridge) against `room.cell`'s two
+   * and `room.yard`'s none. The test above therefore measures a case one line
+   * short of the worst, and would stay green through a regression at the worst.
+   *
+   * ### Why it sweeps all eighteen rather than naming the kitchen
+   *
+   * Because "the kitchen is the deepest room" is a **count-shaped claim about
+   * content**, and `docs/AGENT_WORKFLOW.md` §4 is explicit that those rot first:
+   * balancing a room upward tomorrow does not touch a test that hard-codes
+   * today's answer. The sweep states the *property* -- no room type this
+   * catalogue can offer pushes the panel's last block below its fold -- so the
+   * day a room gains a fourth requirement this either stays green because it
+   * fits or fails with that room's own id in the message.
+   *
+   * That is what makes `ROOM_NEEDS_NAMED_LIMIT`'s cap a gate rather than a
+   * decoration: content is authored, `roomRequirementSchema` permits 32
+   * requirements on a room, and this is what notices.
+   *
+   * ### Why the real page and not the harness
+   *
+   * The reason the test above gives, unchanged: the harness leaves the rail's
+   * aside slot empty, `.hud__aside:empty { display: none }` hands the panel the
+   * whole rail, and this class of defect cannot be reproduced there. It is also
+   * the only place the catalogue is the real eighteen rather than a fixture's
+   * three -- `ui-shell.spec.ts` asserts the *wording* of these lines against
+   * `ROOMS_MODEL` and could not notice `roomCatalogue()` deriving a wrong
+   * quantity, because both sides of that comparison are hand-written.
+   */
+  test('no room type in the catalogue pushes the Rooms panel past its fold (#529)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await expect(page.locator('.hud-rooms')).toBeVisible();
+
+    const roomIds = await page
+      .locator('.hud-rooms__rows [data-room]')
+      .evaluateAll((rows) => rows.map((row) => (row as HTMLElement).dataset['room'] ?? ''));
+    // Vacuity guard: an empty sweep asserts nothing, and a selector that had
+    // stopped matching would produce exactly that.
+    expect(roomIds.length, 'the real catalogue should offer every shipped room type').toBeGreaterThanOrEqual(18);
+
+    /*
+     * Room outside, viewport inside, and that ordering is a cost decision.
+     *
+     * Selecting a room is a real click into a scroll container, so it costs a
+     * scroll-into-view; resizing the viewport costs a relayout. Eighteen rooms
+     * across five viewports is ninety measurements either way, but this nesting
+     * pays for eighteen clicks instead of ninety. The first shape of this test
+     * did it the other way round and timed out at sixty seconds.
+     */
+    const slack: { room: string; viewport: string; px: number; listSlack: number }[] = [];
+    for (const roomId of roomIds) {
+      // Activation and not a synthetic model push: this is the same
+      // `onActivate` a pointer press reaches, so the sweep measures the panel
+      // in a state a player really puts it in.
+      await page.locator(`.hud-rooms__rows [data-room="${roomId}"]`).click();
+
+      // Tightest viewports first, so a failure names the one that matters.
+      for (const [width, height] of [
+        [900, 600],
+        [375, 812],
+        [1024, 768],
+        [1280, 720],
+        [1440, 900],
+      ] as const) {
+        await page.setViewportSize({ width, height });
+
+        const geometry = await page.evaluate(() => {
+          const panel = document.querySelector('.hud-rooms');
+          const status = document.querySelector('.hud-rooms__status');
+          if (panel === null || status === null) return null;
+          const scrollTop = panel.scrollTop;
+          panel.scrollTop = 0;
+          const box = panel.getBoundingClientRect();
+          /*
+           * The catalogue list's slack above its own floor, which is what pays
+           * for the needs readout when a room is zoned (see
+           * `ROOM_NEEDS_NAMED_LIMIT`). It is reported rather than asserted for
+           * the reason the fold slack below is: it is the budget, and the budget
+           * moves whenever this panel is restyled. Recording it here is what
+           * stops the next reader inheriting a figure measured against a layout
+           * that has since changed -- which is exactly what happened to the
+           * "43px at 900x600" this replaces.
+           */
+          const list = document.querySelector('.hud-rooms__list');
+          const listFloor =
+            list === null
+              ? 0
+              : Number.parseFloat(getComputedStyle(list).minHeight.replace('px', '')) || 0;
+          return {
+            scrollTop,
+            panelHeight: Math.round(box.height),
+            statusBottom: status.getBoundingClientRect().bottom,
+            fold: box.top + panel.clientTop + panel.clientHeight,
+            ruleLines: document.querySelectorAll('.hud-rooms__rule').length,
+            listSlack: list === null ? 0 : list.getBoundingClientRect().height - listFloor,
+          };
+        });
+
+        expect(geometry, `the Rooms panel has no box at ${width}x${height}`).not.toBeNull();
+        if (geometry === null) continue;
+        expect(geometry.panelHeight, `the Rooms panel is not laid out at ${width}x${height}`).toBeGreaterThan(150);
+        expect(geometry.scrollTop, `something scrolled the Rooms panel at ${width}x${height}`).toBe(0);
+        /*
+         * The rule block really did grow with the selection: the two fixed lines
+         * plus one per object requirement, or plus the "no objects needed" line
+         * for `room.yard`. Without this the sweep would pass just as happily
+         * over a panel that had silently stopped rendering the object lines --
+         * a fold assertion is satisfied by drawing nothing at all.
+         */
+        expect(
+          geometry.ruleLines,
+          `the rule block for ${roomId} at ${width}x${height} is not drawing its lines`,
+        ).toBeGreaterThanOrEqual(3);
+        expect(
+          geometry.statusBottom,
+          `the Rooms panel's last block is below its fold with ${roomId} selected at ${width}x${height}: it ends at y=${Math.round(geometry.statusBottom)} in a panel clipped at y=${Math.round(geometry.fold)}`,
+        ).toBeLessThanOrEqual(geometry.fold);
+
+        slack.push({
+          room: roomId,
+          viewport: `${width}x${height}`,
+          px: geometry.fold - geometry.statusBottom,
+          listSlack: Math.round(geometry.listSlack * 10) / 10,
+        });
+      }
+    }
+
+    /*
+     * The measurement, printed rather than asserted. The assertion above is the
+     * gate; this is what tells the next reader how much room is left before it
+     * bites, which is exactly the figure `ROOM_NEEDS_NAMED_LIMIT`'s old comment
+     * recorded and then outlived. Pinning a slack number here would fail on any
+     * legitimate restyle of any block in this panel.
+     */
+    slack.sort((left, right) => left.px - right.px);
+    // eslint-disable-next-line no-console -- the measurement this test exists to produce
+    console.log('tightest Rooms-panel fold slack:', JSON.stringify(slack.slice(0, 6)));
+  });
+
+  /**
    * The world the Rooms panel is drawn on, measured in pixels at three
    * viewports (ADR 0022, amended).
    *
@@ -4312,6 +4464,8 @@ test.describe('the assembled application', () => {
       readonly unfinished: string;
       readonly needs: string;
       readonly line: string;
+      /** One entry per object the named room is short, in the order drawn (#529). */
+      readonly items: readonly string[];
       readonly text: string;
       readonly panelFold: number;
       readonly panelHeight: number;
@@ -4340,6 +4494,9 @@ test.describe('the assembled application', () => {
           unfinished: node?.dataset['unfinished'] ?? '',
           needs: node?.dataset['needs'] ?? '',
           line: document.querySelector<HTMLElement>('.hud-rooms__needs-line')?.innerText.trim() ?? '',
+          items: [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map((item) =>
+            item.innerText.trim(),
+          ),
           text: node?.innerText.trim() ?? '',
           panelFold:
             panel === null || panelRect === undefined
@@ -4508,11 +4665,18 @@ test.describe('the assembled application', () => {
       expect(shown.laidOut, `the readout has no box at ${width}x${height}`).toBe(true);
       expect(shown.offsetParent, `the readout has no offsetParent at ${width}x${height}`).toBe(true);
       expect(shown.width, `the readout is too narrow to read at ${width}x${height}`).toBeGreaterThan(200);
-      // Two lines and its own gutters: 30px is well under the 43px the tightest
-      // viewport can afford and well over a single collapsed line.
-      expect(shown.height, `the readout is too short to hold its two lines at ${width}x${height}`).toBeGreaterThan(
-        30,
-      );
+      /*
+       * Four lines and its own gutters since #529 -- the header, the room line
+       * and one per object the cell is short -- where this used to say "two
+       * lines ... 30px is well under the 43px the tightest viewport can
+       * afford". That 43px figure is withdrawn: it was measured before ADR 0039
+       * and #411 moved the coordinate form out of the panel body and into the
+       * catalogue scroller, and it counted 44px `ListRow`s rather than the
+       * 13.2px eyebrow lines this block actually draws. What bounds the block
+       * now is the fold assertion three steps down, which is a measurement of
+       * the real panel rather than a number carried forward.
+       */
+      expect(shown.height, `the readout is too short to hold its lines at ${width}x${height}`).toBeGreaterThan(50);
 
       // 3. And inside the panel's own unscrolled fold, which is the assertion
       // #174 and ADR 0022 both turn on: a block below the fold is present,
@@ -4522,30 +4686,48 @@ test.describe('the assembled application', () => {
         `the readout is below the unscrolled Rooms panel's fold at ${width}x${height}: it ends at y=${shown.bottom} in a panel clipped at y=${shown.panelFold}`,
       ).toBeLessThanOrEqual(shown.panelFold);
 
-      // 4. It says the whole sentence, and the sentence is the catalogue's.
-      //
-      // Built from the bundled default locale rather than typed here: ADR 0011
-      // puts the key on one side of that boundary and the text on the other, so
-      // a test that hard-coded "Cell at 6, 10 needs Bed, and 3 more" would be
-      // asserting against a copy and would stay green while the player read
-      // something else. The tile is the one part left as a pattern, because
-      // where the drag landed is not this test's claim.
-      //
-      // `needs-more` and not `needs-one`: two cells with nothing in them is four
-      // unmet requirements and the line names one, so it has to say how many it
-      // did not rather than dropping three of them in silence.
-      const expected = localeText('hud.rooms.needs-more')
-        .replace('{room}', localeText('room.cell.name'))
-        .replace('{object}', localeText('object.bed.name'))
-        .replace('{count}', '3');
-      expect(
-        shown.line,
-        `the readout does not say what the room needs at ${width}x${height}`,
-      ).toMatch(
+      /*
+       * 4. It names the room, and then **every object that room is short**,
+       *    with how many of each (#529).
+       *
+       * Built from the bundled default locale rather than typed here: ADR 0011
+       * puts the key on one side of that boundary and the text on the other, so
+       * a test that hard-coded "Cell at 6, 10 is missing" would be asserting
+       * against a copy and would stay green while the player read something
+       * else. The tile is the one part left as a pattern, because where the drag
+       * landed is not this test's claim.
+       *
+       * **This assertion used to be the defect.** It read
+       * `hud.rooms.needs-more` -- *"{room} at {x}, {y} needs {object}, and
+       * {count} more"* -- with `{object}` the bed and `{count}` three, and it
+       * passed. Two empty cells are four unmet requirements; the readout named
+       * one of them and said "and 3 more", and the other three were not
+       * enumerated on this screen or on any other. That is issue #529 in one
+       * line, green in this suite the whole time, because the assertion was
+       * written to the behaviour rather than to what a player could find out.
+       *
+       * `1 × Bed` and `1 × Toilet`, and the numeral is the **shortfall**:
+       * `room.cell` authors one of each and this cell holds neither. The two
+       * figures coincide here because the room is empty, which is why the case
+       * that separates them -- a canteen holding three of four benches -- is
+       * pinned in `tests/unit/ui-simulation-room-needs.test.ts` against the real
+       * projection instead of being simulated through the world here.
+       */
+      const expectedRoomLine = localeText('hud.rooms.needs-room').replace('{room}', localeText('room.cell.name'));
+      expect(shown.line, `the readout does not name the room at ${width}x${height}`).toMatch(
         new RegExp(
-          `^${expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace('\\{x\\}', '-?\\d+').replace('\\{y\\}', '-?\\d+')}$`,
+          `^${expectedRoomLine
+            .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            .replace('\\{x\\}', '-?\\d+')
+            .replace('\\{y\\}', '-?\\d+')}$`,
         ),
       );
+      const expectedItem = (objectKey: string, count: string): string =>
+        localeText('hud.rooms.needs-object').replace('{count}', count).replace('{object}', localeText(objectKey));
+      expect(shown.items, `the readout does not enumerate what the room needs at ${width}x${height}`).toEqual([
+        expectedItem('object.bed.name', '1'),
+        expectedItem('object.toilet.name', '1'),
+      ]);
       // The same figure as a number rather than as prose, so the count above is
       // not being read off the sentence it is meant to be checking.
       expect(shown.needs, `the readout does not report every unmet requirement at ${width}x${height}`).toBe('4');

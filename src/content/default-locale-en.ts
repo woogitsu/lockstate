@@ -408,6 +408,24 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.fault.shutting-down': 'A simulation request was refused — the session is shutting down.',
   'hud.alert.fault.internal-error': 'The simulation hit an internal error.',
 
+  // The events channel (issue #507). Namespaced `hud.alert.event.*` beside the
+  // refusal and fault families for the same reason those two are namespaced:
+  // all three are rendered by the alerts list and by a band, and the namespace
+  // is what keeps "the prison did something" from being read as "the prison
+  // refused something".
+  //
+  // Both sentences are written in the same voice as the refusals above -- what
+  // happened first, then why or how much after an em dash -- and neither names
+  // a control, because unlike a refusal neither is about anything the player
+  // just pressed.
+  //
+  // `{count}` and `{total}` are substituted from `HudAlertViewModel.
+  // labelParameters`, which these are the first producer of. `{total}` is a
+  // number of minor units formatted by the localizer, exactly as the Build and
+  // Staff panels format a price.
+  'hud.alert.event.prisoners.discharged': '{count} released — their sentences are served.',
+  'hud.alert.event.economy.wages-unpaid': 'Payday went unpaid — your staff are owed {total}.',
+
   // A browser that cannot start a Worker gets a page with no simulation
   // behind it. Saying so is the whole point: the failure was previously
   // reported to the console only, so the player saw an empty world and had
@@ -734,6 +752,18 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.rooms.requirement-enclosed': 'Must be enclosed',
   'hud.rooms.requirement-outdoors': 'Must be outdoors',
   'hud.rooms.requirement-none': 'No enclosure rule',
+  // What the selected room type will need standing in it, before anything is
+  // zoned (#529). Deliberately the same opening verb as `hud.rooms.minimum`
+  // above, and the same `×` between a count and a thing, so the rule block
+  // reads as one series rather than as two kinds of statement stacked. "Needs"
+  // and not "Requires": the size line already chose that word, and one block
+  // should not ask a player to hold two synonyms for one idea.
+  'hud.rooms.requires-object': 'Needs {count} × {object}',
+  // `room.yard` authors no object requirement at all. Said out loud for the
+  // reason `hud.rooms.minimum-none` is: once every other room type lists its
+  // objects, silence reads as a panel that failed rather than as a room that
+  // needs nothing.
+  'hud.rooms.requires-none': 'No objects needed',
   // The typed route to a rectangle (#411). The wording mirrors the Build
   // panel's own fallback deliberately: the same two sentences answer the same
   // two questions, and a player who has met one has met the other.
@@ -756,8 +786,25 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // job it was designated for.
   'hud.rooms.needs': 'Not ready',
   'hud.rooms.needs-count': '{unfinished} of {total}',
-  'hud.rooms.needs-one': '{room} at {x}, {y} needs {object}',
-  'hud.rooms.needs-more': '{room} at {x}, {y} needs {object}, and {count} more',
+  // Which room the lines under it are about. "is missing" and not "needs",
+  // which is `hud.rooms.requires-object`'s word for the room *type*: this is a
+  // statement about one rectangle the player actually drew, and the two blocks
+  // must not sound like the same claim.
+  'hud.rooms.needs-room': '{room} at {x}, {y} is missing',
+  // One line per object that room is short, and `{count}` is the SHORTFALL --
+  // what is left to build, not what the room asks for in total. A canteen
+  // authored for four benches and holding three says "1 × Bench".
+  'hud.rooms.needs-object': '{count} × {object}',
+  // The same line for the state where the simulation was handed nothing to
+  // count with, so no numeral may be shown. See `roomsNeedsObjectUncounted` in
+  // `src/ui/hud/messages.ts`: a number here would dress an uncounted answer as
+  // a counted one.
+  'hud.rooms.needs-object-uncounted': '{object}',
+  // Content authored deeper than the panel may draw. Unreachable with the
+  // shipped catalogue -- the deepest room is three object requirements -- and
+  // present so that a room balanced upward tomorrow truncates honestly instead
+  // of silently.
+  'hud.rooms.needs-item-more': 'and {count} more',
   // The object catalogue defines nothing under the id this requirement names,
   // which is why the requirement counts as unmet. Substituted where the
   // object's own name would go, so the sentence still ends somewhere.

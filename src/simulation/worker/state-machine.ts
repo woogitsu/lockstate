@@ -84,9 +84,17 @@ export const CLOCK_STATE_PUBLISH_INTERVAL_MS = 250;
  * place is occupied -- so once the prison holds anybody the skip stops firing
  * and the channel runs at its full two messages a second for the rest of the
  * session. The ceiling still bounds it, which is the reason this is acceptable
- * and the reason the cadence is expressed as one. It is not being paid yet:
- * nothing in `src/` can admit a prisoner, so the accrual is a constant zero
- * and the skip still applies. `docs/HUD_PROJECTIONS.md` records the trade
+ * and the reason the cadence is expressed as one.
+ *
+ * **This used to end "It is not being paid yet: nothing in `src/` can admit a
+ * prisoner, so the accrual is a constant zero and the skip still applies."
+ * That is false.** `src/main.ts` submits `AdmitPrisoner` from the Intake
+ * panel's control, and a playtest pressed it twelve times in one session. So
+ * the accrual does rise, the skip does stop firing, and this channel does run
+ * at its full two messages a second once a prison holds anybody -- which is
+ * the case the paragraph above describes and this sentence used to say could
+ * not arise. The ceiling is what makes that acceptable, exactly as stated;
+ * what is withdrawn is the claim that it is untested in practice. `docs/HUD_PROJECTIONS.md` records the trade
  * beside the paging contract it bears on.
  *
  * Wall-clock milliseconds rather than a count of ticks, for the same reason
@@ -242,6 +250,23 @@ export class SimulationWorkerStateMachine {
    * one gesture a player is most likely to repeat.
    */
   private _publishedZoningSequence = 0;
+  /**
+   * The `sequence` of the last event the main thread was told about, `0` for
+   * none (issue #507).
+   *
+   * A watermark on the *publisher* rather than a cursor inside
+   * `SimulationEventLog`, and that is what keeps publication a pure report:
+   * `tests/determinism/status-counts-publication.test.ts` pins the rule that
+   * publishing changes nothing the kernel can observe, and a `drain()` on the
+   * log would break it -- the tick loop would then depend on how often the
+   * wall clock let a publication run. The same reason the two sequences above
+   * live here.
+   *
+   * Unlike those two it gates nothing: events are posted on their own message
+   * and never fold into the counts payload, so there is no interval to open
+   * and no `statusCountsEqual` to bypass.
+   */
+  private _publishedEventSequence = 0;
   /** When the counts were last *projected*, which bounds the projection's cost as well as the message rate. */
   private _countsProjectedAtMs = Number.NEGATIVE_INFINITY;
   /**
@@ -308,6 +333,7 @@ export class SimulationWorkerStateMachine {
 
       this.publishClockState(now);
       this.publishStatusCounts(now);
+      this.publishEvents();
       this.publishRenderDelta(now);
     } catch (e) {
       this.fault('internal-error', e instanceof Error ? e.message : String(e));
@@ -587,6 +613,74 @@ export class SimulationWorkerStateMachine {
    * a wake that publishes nothing costs two comparisons. Only then does the
    * encoder walk the store.
    */
+  /**
+   * Tells the main thread what the prison just did, unprompted (issue #507).
+   *
+   * The third publication on the tick loop, and the one with **no rate gate at
+   * all** -- which is the difference between an event channel and the two
+   * above it, not an omission.
+   *
+   * `publishStatusCounts` and `publishRenderDelta` both carry *levels*: what
+   * the prison currently is, and where the actors currently are. A level
+   * tolerates being sampled, so both are gated to protect the frame budget and
+   * both are correct when a wake is skipped, because the next sample supersedes
+   * the missed one. An event has no next sample. "Two prisoners finished their
+   * sentences at tick 40,000" is not a value that can be re-read later, so a
+   * gate here would not delay a message, it would delete one -- and deleting
+   * it is the defect issue #507 exists to close, arrived at by a different
+   * route.
+   *
+   * **What bounds it instead is the producers.** `PrisonerDischargeSystem`
+   * emits at most one event per tick it runs and it runs on
+   * `DISCHARGE_CHECK_INTERVAL_TICKS`; `PayrollSystem` emits at most one per
+   * in-game day. So the ceiling is not "one per tick" but roughly "one per
+   * discharge check plus one per day", and both producers aggregate rather
+   * than emitting per subject -- a tick that discharges eleven prisoners posts
+   * one message carrying eleven, not eleven messages. `docs/HUD_PROJECTIONS.md`
+   * contract 5 is satisfied by each payload being four fields wide whatever
+   * the population, exactly as the counts payload is.
+   *
+   * One message per event rather than one carrying an array, because
+   * `eventMessageSchema` is a single event and the main thread folds them into
+   * its list one at a time either way; a batch would buy nothing and would make
+   * `payload.tick` ambiguous across the members.
+   *
+   * A read, start to finish: `since` does not drain and the watermark is this
+   * object's own, so a publication changes nothing the kernel can observe
+   * (`tests/determinism/status-counts-publication.test.ts`).
+   */
+  private publishEvents(): void {
+    if (this._kernel === null || this._runtime === null) return;
+
+    const pending = this._runtime.events.since(this._publishedEventSequence);
+    if (pending.length === 0) return;
+
+    const tick = this._kernel.tick;
+    for (const event of pending) {
+      this.post({
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: crypto.randomUUID(),
+        // No `replyTo`, and the schema has no slot for one: nobody asked. ADR
+        // 0003 decision 2's "asynchronous domain events", which is the family
+        // this message kind was declared for and had no producer for until now.
+        kind: 'simulation/event',
+        payload: {
+          // The tick this is being *published* at, which is not the tick the
+          // event happened on -- `event.tick` carries that. The same
+          // distinction `simulation/status-counts` draws around `refusal`, and
+          // it is wider here: an event recorded mid-budget is published after
+          // the whole five-tick budget has run.
+          tick,
+          event,
+        },
+      });
+      // Advanced per message rather than once after the loop, so a `post` that
+      // throws mid-batch leaves the events it did not send still pending
+      // instead of silently skipping them.
+      this._publishedEventSequence = event.sequence;
+    }
+  }
+
   private publishRenderDelta(nowMilliseconds: number): void {
     if (this._kernel === null || this._runtime === null) return;
 
