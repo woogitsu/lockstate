@@ -452,7 +452,8 @@ worth stating here:
   `src/content/room-catalog.ts` that requires no object --  so it is the one
   room whose ceiling comes from its rectangle, by derivation rather than by
   exemption: `floor(width * height / TILES_PER_OPEN_GROUND_PLACE)`, 16 tiles a
-  place, clamped below at 1 so no room that exists admits nobody.
+  place, clamped below at 1 so no room that exists admits nobody
+  ([ADR 0071](./adr/0071-what-bounds-a-room-whose-activity-consumes-no-object.md)).
   `action.common-room-recreation` and `action.classroom-education` named no
   capability and are *not* such rooms, so they now name the `'recreation'` and
   `'education'` their required benches and bookshelf already carried.
@@ -468,8 +469,10 @@ worth stating here:
   against 96 common-room ticks, and those 96 were the exact-zero-deficit tie,
   where the ascending-id tie-break takes the common room and both actions are
   worth nothing. With the ceiling: 5,872 against 1,248, and the yard is still
-  the larger share. The figure 16 is **a proposal for the owner's review**;
-  the mechanism is not.
+  the larger share. A 16x8 yard reproduces the unmodified tree to the tick
+  (7,208 / 336 either way), so a yard sized for its population costs nothing.
+  The figure 16 is data rather than architecture (ADR 0017 decision 5) and
+  stays open to re-measurement; the mechanism above it is not.
 - **`RoomInstance.concurrentUseCapacity` is still the all-objects total and is
   nothing's ceiling.** True about objects, false about people: 14 for a canteen
   that seats 6. A readout of concurrent use reads
