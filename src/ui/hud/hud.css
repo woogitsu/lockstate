@@ -319,14 +319,22 @@
   color: var(--status-warning);
 }
 
-/* No event carries `'danger'` today -- `EVENT_PRESENTATION` in
-   `src/ui/simulation-events.ts` is a closed `Record` over
-   `SimulationEventType` and its two members are `'info'` and `'warning'`.
-   The rule is here anyway because the failure without it is silent: a third
-   event type graded `'danger'` would inherit the `'info'` blue above and be
-   painted as good news, which is a worse outcome than an unstyled band and
-   is not something a type checker can catch. Written once here rather than
-   left for whoever adds that type to notice. */
+/* **This said "No event carries `'danger'` today", and issue #555 is the
+   change that made it false** -- kept beside the correction rather than
+   overwritten, because what it predicted is exactly what happened. It read:
+   `EVENT_PRESENTATION` is a closed `Record` over `SimulationEventType`, its
+   two members are `'info'` and `'warning'`, and "the rule is here anyway
+   because the failure without it is silent: a third event type graded
+   `'danger'` would inherit the `'info'` blue above and be painted as good
+   news, which is a worse outcome than an unstyled band and is not something a
+   type checker can catch. Written once here rather than left for whoever adds
+   that type to notice."
+
+   Three of the five incident events are that third type -- an opened riot, an
+   opened escape attempt and an opened gang retaliation -- and whoever added
+   them did not have to notice, which is the whole of what this rule bought.
+   `src/ui/simulation-events.ts` carries the argument for which incidents are
+   graded here and which are `'warning'` beside a missed payday. */
 .hud__event[data-severity='danger'] {
   background: var(--badge-danger-bg);
   border-bottom-color: var(--status-danger);

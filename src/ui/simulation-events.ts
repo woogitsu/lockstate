@@ -344,11 +344,17 @@ function eventAlertRow(event: SimulationEvent): HudAlertViewModel {
  * The numbers the sentence needs, keyed by the placeholder its message uses.
  *
  * `switch` over the discriminant rather than an index into a table, because
- * the two members carry *different* figures -- a count of people and a sum of
- * money -- and a shared `magnitude` field would have been a name that means
- * two things, which is the shape `src/simulation/protocol/types.ts` refuses
- * for `refusal` inside `counts`. Exhaustive over the union, so a third event
- * type does not compile until its parameters are decided.
+ * the members carry *different* figures -- a count of people, a sum of money,
+ * a count of rioters, and for four of them nothing at all -- and a shared
+ * `magnitude` field would have been a name that means several things, which is
+ * the shape `src/simulation/protocol/types.ts` refuses for `refusal` inside
+ * `counts`. Exhaustive over the union, so a further event type does not
+ * compile until its parameters are decided.
+ *
+ * **This said "the two members" and "a third event type"**, which was true of
+ * the two #507 shipped and stopped being true when #555 added five. The
+ * sentence is corrected rather than the tally re-typed, because a tally is the
+ * part that rots: see `docs/AGENT_WORKFLOW.md` section 4.
  *
  * Minor units are passed through unconverted, exactly as
  * `HudCountsViewModel.treasuryMinorUnits` is: the HUD formats money at the
