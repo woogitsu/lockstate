@@ -92,7 +92,30 @@ picking up nested `### Status of this amendment` blocks inside accepted ADRs.
 Twenty-one documents state `Proposed` under a `## Status` heading and two
 (0064, 0067) under a `- Status:` bullet. The index agrees: **twenty-three**
 rows opening `Proposed`, and **Next free number: 0070** — moved, where the
-previous anchor recorded it unmoved.
+previous anchor recorded it unmoved. **Twenty-three is twenty-six at this
+anchor**, six releases later — and the reading above is the first in this
+sequence that was taken **on the wrong tree**. It says so in its own words,
+*"Counted on disk at `85c1c29`"*, while the sentence around it says *"at this
+anchor"* and that anchor was `82ae630`. Both numbers are right about `85c1c29`
+and neither is right about the tree they warrant: measured at `82ae630` by the
+same method the answer is **twenty-five** on disk and twenty-five rows in the
+index, and **Next free number** was **0074** rather than the 0070 recorded. The
+two that fell in the gap are ADRs that pass's own merge list contains — 0071
+arrived at `fcd2a72`, the merge that account names as #554, and 0073 at
+`4a224f9`, *"Land ADR 0073: who orders a contraband search"*, a merge it does
+not name at all. The correction is left beside the claim rather than replacing
+it, because the failure is not arithmetic and re-adding would not have caught
+it: a count is warranted by the tree it was taken on, and naming that tree —
+which this sequence has always done — is the whole of what makes the mismatch
+findable. At `e1813b7` the count is **twenty-six**: 0070 (the staff-dismissal
+ADR, #533) arrived, `Proposed` with no §2 row like the eight before it. So the
+ratio moves to **two of twenty-six**, 0070 is the **ninth** consecutive
+outstanding ADR to skip §2 (0064, 0065, 0066, 0067, 0068, 0069, 0071, 0073, now
+0070 — the last three all landing after the sixth was counted) and the tenth
+overall since the rule was restated, against two that did (0056, 0059).
+Counted on disk at `e1813b7` this time, by the same method; the index agrees,
+twenty-six rows opening `Proposed`, and **Next free number: 0074** is unmoved,
+because 0070 is below the ceiling 0073 had already set.
 
 **Three of those twenty-three have a known expiry and are handed over rather
 than acted on here.** The owner decided on 2026-08-29 (issue #535, decision 8)
@@ -182,40 +205,109 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `82ae630` (**v0.0.195**) by the delta method this
+Re-anchored at `main` @ `e1813b7` (**v0.0.201**) by the delta method this
+header describes, from `82ae630` (v0.0.195). **Dispatched at six of the ten
+releases the budget allows, with three agents at work whose branches are
+expected to spend three more.** So this is the second pass in the series
+dispatched because a queue was about to spend the budget, and the first
+dispatched *before* that queue exists rather than once it has formed.
+`e1813b7` is `origin/main`'s tip at the time of writing and is itself the
+**v0.0.201 release commit**, named deliberately rather than the merge commit
+beneath it, for the reason every previous anchor gives.
+
+**The window is 80 files.** Six merges landed in it (#564, #533, #548, #549,
+#543 and #566, with their releases). The delta intersection against the **43**
+files §§3-6 cite is **eight**, and two of those are this file and the index,
+which are not in their own dependency sets -- so **six entries were re-read**.
+**The enumerated set grew from 41 to 43 with no commit deciding to grow it**:
+it is derived by scanning §§3-6 for rooted paths that exist on disk, so a
+citation added anywhere in those sections joins the dependency set silently.
+That is worth knowing before the next reader treats 41 as a fixed number, and
+it is the one respect in which this method is self-maintaining rather than
+carried.
+
+**Two entries had drifted, and one is the telemetry bullet in §5 for the second
+consecutive anchor.** Its `src/main.ts` anchors moved as before -- uniformly two
+lines through the import and doc-comment region, and 92 at the consent mount,
+which is the file's entire growth in this window -- and they are corrected in
+place below, in both directions. **The movement is not the finding.** The
+parenthesis reading *"the consent prompt is not mounted either
+(`src/main.ts:185-188`, and `:2598` ... both gate on `telemetry.enabled`)"*
+named two ranges, and at `82ae630` **neither of them was a gate**. `:185-188`
+was doc-comment prose four lines above the `const crashReporter =
+telemetry.enabled === false` expression, which was at `:194-197`; and `:2598`
+was a doc comment about `AutosaveScheduler` -- unrelated code, seventy-two lines
+above the `if (telemetry.enabled && appRoot !== null)` at `:2670`. That second
+number is the *mount span's* value from the anchor before last, left behind when
+the mount was renumbered and the gate beside it was not. So this citation did
+not go stale in this window: it was already naming the wrong code on the tree
+that wrote it, which is the class the header calls a claim already false when
+the window opened, found now for the third consecutive anchor. Both are
+re-derived by symbol here -- `src/main.ts:196-199` and `src/main.ts:2762` -- and
+the one anchor in that bullet which has still never moved,
+`src/ui/telemetry-consent-prompt.ts:8`, is the argument for citing by symbol
+rather than by line, made for the fifth time by the same bullet.
+
+**The second drift is the command union in §5, and it is an ordinary one.** It
+counted **thirteen** members and put the `simulationCommandSchema` declaration
+at `src/simulation/protocol/commands.ts:493`. #533 added `DismissStaff`, so the
+count is **fourteen** and the declaration is at `:542`;
+`grep -c "type: z.literal" src/simulation/protocol/commands.ts` returns 14. The
+fourteenth landed with its producer in the same change, so `AWAITING_PRODUCER`
+in `tests/foundation/unconsumed-command-contract.test.ts` is still empty --
+that declaration has moved from `:204` to `:224` and its gate comment from
+`:230` to `:250`, both re-derived by opening the file.
+
+**Four intersecting citations survived unchanged.** ADR 0025's withdrawn
+`3.9px` is still absent from every ADR, every `.css` file and all of `src/`;
+`src/ui/hud/messages.ts` and `src/ui/hud/projection.ts` still say ADR 0017 is
+Accepted and still name no currency; and `docs/HUD_PROJECTIONS.md` gap 13 still
+opens *"Object placement exists, and `minQuantity` is counted"*. **The entry
+that retired its line number in favour of the quotation is the one that needed
+no work at this anchor** -- gap 13 has moved to `:879` and nobody had to notice
+-- which is recommendation 1 at the foot of §6 paying for the second time.
+
+**The two live `verified at` claims were both re-run rather than carried.**
+Neither `supabase/migrations/` nor `.github/workflows/` appears anywhere in this
+window's 80 files. The migrations directory still holds twenty-three files; the
+retention grep still returns exactly one hit and it is still the comment rather
+than a mechanism; and all six SQL anchors (`:45`, `:71-73`, `:91`, `:150`,
+`:178`, `:188`) and all four workflow anchors (`:33`, `:34`, `:41`, `:65`) were
+opened and still land.
+
+**The four places that count §2 were swept and all four agree at five** -- this
+header's paragraph, the title (which states a subject and no count, and is
+therefore the only one that cannot rot this way), §2's own heading *"## 2. Five
+entries"*, and §5's preamble's *"FIVE at `07add3e`"*. No decision was filed or
+accepted in this window, so there was nothing to split them. An agreeing sweep
+is a weaker result than a catching one and is recorded because the paragraph
+naming the four places asks for it either way.
+
+**The recommendation this series has now made six times running is a scheduled
+read rather than a warning band, and it has now failed to be taken six times.**
+This window says something the last five could not. The previous pass was
+dispatched early and on purpose, with headroom, exactly as the recommendation
+asks -- and it still counted on the wrong tree, because **dispatching early does
+nothing about what gets re-read.** The delta method covers the citations; the
+counts in the header are not citations, nothing in the method reaches them, and
+no amount of scheduling would have.
+
+**The previous anchor's account, kept.** It read: *"Re-anchored at `main` @
+`82ae630` (**v0.0.195**) by the delta method this
 header describes, from `85c1c29` (v0.0.187). **Dispatched at eight of the ten
 releases the budget allows, with four pull requests already green and waiting**
 -- merging them would have reached ten and the release after that would have
 been eleven, so this pass is the first in the series dispatched *because a queue
-was about to spend the budget* rather than on a schedule or at the bound.
-`82ae630` is `origin/main`'s tip at the time of writing and is itself the
-**v0.0.195 release commit**, named deliberately rather than the merge commit
-beneath it, for the reason every previous anchor gives.
+was about to spend the budget* rather than on a schedule or at the bound."* Its
+window was the largest this file has measured, 70 files and eight merges, its
+delta intersection was ten of 41 and it re-read eight entries, and it reported
+**one** drifted entry -- the telemetry bullet -- and seven survivors. That
+tally stands as it was written: the second drift found here, the command union,
+was created by #533 *inside this* window and was not available to it, and the
+count error above is in the header rather than in §§3-6 and so is outside what
+its intersection could reach.
 
-**The window is the largest this file has measured: 70 files.** Eight merges
-landed in it (#546, #551, #554, #556, #558, #560 and their releases). The delta
-intersection against the 41 files §§3-6 cite is **ten**, and two of those are
-this file and the index, which are not in their own dependency sets -- so
-**eight entries were re-read**. That ratio is the method working: seventy files
-moved and eight citations had to be checked.
-
-**One entry had drifted, and it is the telemetry bullet in §5** -- three of its
-four `src/main.ts` anchors moved and are corrected in place below, in both
-directions. The other seven intersecting citations survived. **The two live
-`verified at` claims were both re-run rather than carried**: neither
-`supabase/migrations/` nor `.github/workflows/` appears anywhere in this
-window's 70 files, the migrations directory still holds twenty-three files, and
-the retention grep still returns exactly one hit which is still a comment rather
-than a mechanism.
-
-**The recommendation this series has now made five times running is a scheduled
-read rather than a warning band, and it has now failed to be taken five times.**
-This window is a sixth kind of evidence for it: not "the budget ran out" but
-"the budget was about to be spent by work that was already finished and
-correct". A queue of green pull requests is not an unusual state, and it is the
-state in which the anchor is least likely to be anybody's first thought.
-
-**The previous anchor's account, kept.** It read: *"Re-anchored at `main` @
+**The anchor before that, kept -- v0.0.187.** It read: *"Re-anchored at `main` @
 `85c1c29` (**v0.0.187**) by the delta method this
 header describes, from `4ace2da` (v0.0.177)."* **This is the first re-anchor
 dispatched at the bound rather than with headroom**, and the distinction is
@@ -2227,7 +2319,7 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `82ae630`, unchanged since the previous anchor,
+absences were re-verified at `e1813b7`, unchanged since the previous anchor,
 the one before it, the one before that, and the one before that — the
 directory has not moved across any of those windows and still holds
 twenty-three files — by grepping the
@@ -2402,7 +2494,7 @@ is recommendation 1 at the foot of §6 producing a measurable result rather than
 being restated: **three of the four citations into the fastest-moving document
 in the set survived an edit that moved every line of them.**
 
-The half of the decision that *is* in this repository stays verified at `82ae630`:
+The half of the decision that *is* in this repository stays verified at `e1813b7`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` (`:34`) with no
 `push:`, requires a typed `confirm_project_ref` (`:41`), and its apply job is
 environment-gated (`:65`) — all three re-read at this anchor and all three still
