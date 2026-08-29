@@ -6,6 +6,7 @@ import { createGradedDoor } from '../../src/simulation/security/sector';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { withoutDefaultSectorDeploymentDemand } from '../helpers/default-security-sector';
 import { hashFullRuntime } from '../helpers/determinism-state';
+import { useSearchPolicy } from '../helpers/search-policy';
 
 /**
  * `ReleaseGuardAssignment`, end to end through the real kernel
@@ -122,7 +123,7 @@ function buildRespondingPrison(guards = 6): SimulationRuntime {
 /** A prison with a search job staffed and running. */
 function buildSearchingPrison(guards = 2): SimulationRuntime {
   const runtime = buildPrison(guards);
-  runtime.searchPolicies.push({ ...SEARCH_POLICY });
+  useSearchPolicy(runtime, { ...SEARCH_POLICY });
   runtime.searchContainerLocations.set(CONTAINER_ID, { x: tileCoordinate(5), y: tileCoordinate(5) });
   runtime.searchSystem.submitOrder({ id: 'search-1', scope: 'delivery', targets: [{ holderKind: 'container', holderId: CONTAINER_ID }] });
   while (runtime.searchSystem.claimedGuardIds().length === 0) runtime.kernel.step();
@@ -267,7 +268,7 @@ describe('releasing a searcher tells the search job, not only the roster', () =>
     // The other direction, and the one that shows the release is per-guard rather
     // than per-job. A two-guard policy loses one guard and keeps going.
     const runtime = buildPrison(3);
-    runtime.searchPolicies.push({ ...SEARCH_POLICY, requiredGuardCount: 2 });
+    useSearchPolicy(runtime, { ...SEARCH_POLICY, requiredGuardCount: 2 });
     runtime.searchContainerLocations.set(CONTAINER_ID, { x: tileCoordinate(5), y: tileCoordinate(5) });
     runtime.searchSystem.submitOrder({ id: 'search-2', scope: 'delivery', targets: [{ holderKind: 'container', holderId: CONTAINER_ID }] });
     while (runtime.searchSystem.claimedGuardIds().length === 0) runtime.kernel.step();
@@ -294,7 +295,7 @@ describe('releasing a searcher tells the search job, not only the roster', () =>
      * and guessed would pass half of this test and fail the other half.
      */
     const runtime = buildRespondingPrison();
-    runtime.searchPolicies.push({ ...SEARCH_POLICY });
+    useSearchPolicy(runtime, { ...SEARCH_POLICY });
     runtime.searchContainerLocations.set(CONTAINER_ID, { x: tileCoordinate(5), y: tileCoordinate(5) });
     runtime.searchSystem.submitOrder({ id: 'search-3', scope: 'delivery', targets: [{ holderKind: 'container', holderId: CONTAINER_ID }] });
     while (runtime.searchSystem.claimedGuardIds().length === 0) runtime.kernel.step();

@@ -299,8 +299,16 @@ and what the projections publish cannot disagree.
 - **Lockdown's physical effect.** `doorIds` is empty, so `setControlState`
   moves a control state that cascades onto nothing. A perimeter is the one
   thing the derivation cannot know.
-- **Contraband search**, for a reason that was never a sector:
-  `SearchSystem.submitOrder` has no caller in `src/` at all.
+- **Contraband search used to be on this list and has left it** (issue #552,
+  [ADR 0073](adr/0073-who-orders-a-contraband-search.md)). The bullet read
+  *"for a reason that was never a sector: `SearchSystem.submitOrder` has no
+  caller in `src/` at all"*, and the reason it gives was right -- a sector was
+  never what search was missing. What it was missing, four policies and a
+  producer, now exists: a **staffed** sector orders a rotating sweep of its own
+  occupants every 600 ticks, walked by a guard the deployment requirement has
+  not already taken (`contraband.search-duty`). So a sector alone still does not
+  make searches happen; a sector with somebody standing it, and one guard spare,
+  does. `docs/CONTRABAND.md`, "Who orders a search", carries the rule.
 
 ## Readonly projections for UI
 

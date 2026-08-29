@@ -40,9 +40,17 @@ import { hashFullRuntime } from '../helpers/determinism-state';
  *
  * ## What is deliberately *not* claimed
  *
- * The last `describe` measures what is still inert and says why. Patrol and
- * contraband search do not come back with the sector, and pretending otherwise
- * would be the failure mode #396 itself corrects.
+ * The last `describe` measures what is still inert and says why. Patrol does not
+ * come back with the sector, and pretending otherwise would be the failure mode
+ * #396 itself corrects.
+ *
+ * **Contraband search was in that list and has left it** (issue #552,
+ * [ADR 0073](../../docs/adr/0073-who-orders-a-contraband-search.md)). It never
+ * was the sector's to bring back -- the case below said so at the time -- and
+ * what it was actually missing, four policies and a producer, now exists. The
+ * case that remains is about a prison with no guards, which is a different
+ * claim; `tests/integration/contraband-search-duty.test.ts` is where the
+ * counter is watched moving.
  */
 
 /** Distinct from every other seed in the suite, so a shared fixture cannot make these figures true by accident. */
@@ -569,15 +577,30 @@ describe('what a sector does not bring back, measured rather than assumed', () =
     expect(runtime.patrolSystem.getMetrics()).toEqual({ loopsCompletedOnTime: 0, loopsCompletedLate: 0, loopsMissed: 0 });
   });
 
-  it('leaves contraband search inert, for a reason that is not the sector at all', () => {
+  it('leaves contraband search inert in a prison with no guards, which since #552 is a staffing fact rather than a missing producer', () => {
+    /*
+     * **This case used to assert `expect(runtime.searchPolicies).toEqual([])`**
+     * and read *"two separate absences, and neither is a sector:
+     * `runtime.searchPolicies` is empty because nothing in `src/` authors one,
+     * and `SearchSystem.submitOrder` has no caller in `src/` at all -- there is
+     * no command for it."* Both halves were true when it was written and both
+     * are now false ([ADR 0073](../../docs/adr/0073-who-orders-a-contraband-search.md),
+     * issue #552): the session ships four policies and
+     * `SectorSearchDutySystem` is the caller. It is rewritten rather than
+     * deleted because what it was *for* survives -- this prison still finds
+     * nothing, and the reason it finds nothing is the thing worth pinning.
+     *
+     * `overcrowdedPrison` hires nobody. A sweep needs a sector that is actually
+     * staffed and a claimable guard to walk it, so an unguarded prison orders
+     * none: an empty prison does not search itself. The counterpart -- the same
+     * prison with guards, where the counter moves -- is
+     * `tests/integration/contraband-search-duty.test.ts`.
+     */
     const runtime = overcrowdedPrison();
     stepTo(runtime, 1_000);
 
-    // Two separate absences, and neither is a sector: `runtime.searchPolicies`
-    // is empty because nothing in `src/` authors one, and
-    // `SearchSystem.submitOrder` has no caller in `src/` at all -- there is no
-    // command for it. A sector was never what search was missing.
-    expect(runtime.searchPolicies).toEqual([]);
+    expect(runtime.securityGuards.allGuardIds()).toEqual([]);
+    expect(runtime.searchPolicies.map((policy) => policy.scope)).toEqual(['cell', 'delivery', 'person', 'sector']);
     expect(runtime.searchSystem.getMetrics()).toMatchObject({ searchesQueued: 0, searchesCompleted: 0, searchesCancelled: 0 });
     expect(runtime.confiscations.all()).toEqual([]);
   });

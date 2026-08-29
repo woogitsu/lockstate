@@ -12,6 +12,7 @@ import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { DEFAULT_SECURITY_SECTOR_ID } from '../../src/simulation/security/default-sector';
 import { withoutDefaultSectorDeploymentDemand } from '../helpers/default-security-sector';
 import { hashFullRuntime, toJsonValue } from '../helpers/determinism-state';
+import { useSearchPolicy } from '../helpers/search-policy';
 
 /**
  * Issue #352, as behaviour: **a save taken during an incident response must
@@ -738,7 +739,7 @@ describe('a search job’s guards are not a response’s to release', () => {
   } as const;
 
   function withSearchDuty(runtime: SimulationRuntime): SimulationRuntime {
-    runtime.searchPolicies.push({ ...SEARCH_POLICY });
+    useSearchPolicy(runtime, { ...SEARCH_POLICY });
     runtime.searchContainerLocations.set(CONTAINER_ID, { x: tileCoordinate(5), y: tileCoordinate(5) });
     return runtime;
   }

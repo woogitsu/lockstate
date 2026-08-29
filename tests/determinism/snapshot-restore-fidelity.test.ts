@@ -9,6 +9,7 @@ import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/si
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
 import { toJsonValue, carriedScopeState } from '../helpers/determinism-state';
+import { useSearchPolicy } from '../helpers/search-policy';
 
 /**
  * `snapshot() -> restore() -> run N ticks` must land on exactly the state
@@ -318,7 +319,7 @@ describe('subsystem snapshot / restore fidelity', () => {
     runtime.prisoners.roomInstances.register({ instanceId: 'cell-b', roomCatalogId: 'room.cell', anchorTile: tile, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: [] });
     runtime.contraband.introduce('item-a', 'contraband.phone', { kind: 'cell', id: 'cell-a' }, { sourceType: 'room-object', sourceId: 'workshop', introducedAtTick: 0 });
     runtime.contraband.introduce('item-b', 'contraband.phone', { kind: 'cell', id: 'cell-b' }, { sourceType: 'room-object', sourceId: 'workshop', introducedAtTick: 0 });
-    runtime.searchPolicies.push({ scope: 'cell', requiredGuardCount: 1, dwellTicksPerTarget: 5, baseDetectionProbability: 0.5, concealmentPenaltyPerPoint: 0, intelligenceConfidenceBonus: 0 });
+    useSearchPolicy(runtime, { scope: 'cell', requiredGuardCount: 1, dwellTicksPerTarget: 5, baseDetectionProbability: 0.5, concealmentPenaltyPerPoint: 0, intelligenceConfidenceBonus: 0 });
     /*
      * **Three guards for two one-guard jobs, and the third one is the point.**
      *
