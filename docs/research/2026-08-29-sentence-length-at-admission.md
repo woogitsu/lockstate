@@ -317,15 +317,32 @@ the class of finding that is a *question*, and it is left as one.
 
 ## ADR draft — *How long a prisoner is held for*
 
-**Unnumbered on purpose.** ADR numbers are assigned centrally after drafts
-return (`AGENTS.md`), and `docs/adr/README.md`'s **Next free number** line reads
-**0069** with 0068 the maximum on disk. `max + 1` recomputed off disk at commit
-time is therefore 0069 — but a higher number may be in flight on a branch this
-checkout cannot see, which is the failure mode 0065's and 0066's drafts each
-declined to guess at. This draft does the same. **If it is given a number it
-pre-commits to renumbering the file, its row in `docs/adr/README.md`, the
-`Next free number` line and every citation of it, in the same commit**, per
+**This draft has landed as
+[ADR 0069: How long a prisoner is held for](../adr/0069-how-long-a-prisoner-is-held-for.md),
+and the paragraph that used to stand here is kept below rather than deleted**,
+because what it recorded was a decision about method and the method worked.
+
+It read: *"Unnumbered on purpose. ADR numbers are assigned centrally after
+drafts return (`AGENTS.md`), and `docs/adr/README.md`'s **Next free number**
+line reads **0069** with 0068 the maximum on disk. `max + 1` recomputed off disk
+at commit time is therefore 0069 — but a higher number may be in flight on a
+branch this checkout cannot see, which is the failure mode 0065's and 0066's
+drafts each declined to guess at. This draft does the same."*
+
+**What happened next is the half a worktree cannot do for itself.** The
+integrator enumerated `docs/adr/` across every unmerged remote `agent/*` branch,
+found nothing above 0068, and assigned **0069**. `max + 1` was then recomputed
+off disk at commit time and gave 0069 again — so the guess would have been
+right, exactly as 0066's was, and that is the point rather than an argument
+against declining: which of the two cases you are in is a fact about branches,
+and a rule that only holds when you already know the answer is not a rule. The
+number, the file, its row in `docs/adr/README.md` and the `Next free number`
+line moving to **0070** all landed in one commit, per
 `tests/foundation/adr-numbering-contract.test.ts`.
+
+The sections below are the text that was reviewed. **The authoritative document
+is the ADR**; this is kept as the draft it was, which is what a research record
+is for.
 
 ### Status
 
