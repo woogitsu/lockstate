@@ -17,17 +17,24 @@ export interface ActionDefinition {
    * ceiling the room admits this action against**: the summed footprint width
    * of the objects in the room carrying this capability, and nothing else's.
    *
-   * **Absent means any instance of the target room type qualifies, and no
-   * object-derived ceiling applies** -- a stronger statement than it used to
-   * be, so a `room-catalog-id` action leaves this out only when the room really
-   * is unbounded by furniture. `room.yard` is the one such room in
-   * `src/content/room-catalog.ts`: it requires no object at all, and the
-   * previous rule read that as a ceiling of zero and admitted nobody to 64
-   * tiles of open ground. `action.common-room-recreation` and
-   * `action.classroom-education` had this absent for the same reason and were
-   * not unbounded at all -- `room.common-room` requires two benches and
-   * `room.classroom` a bookshelf and four chairs -- so they now name the
-   * capability those objects already carried.
+   * **Absent means any instance of the target room type qualifies, and the
+   * ceiling comes from the room's own ground rather than from its objects** --
+   * so a `room-catalog-id` action leaves this out only when the room really is
+   * bounded by space and not by furniture. `room.yard` is the one such room in
+   * `src/content/room-catalog.ts`: it requires no object at all.
+   * `action.common-room-recreation` and `action.classroom-education` had this
+   * absent too and were not such rooms -- `room.common-room` requires two
+   * benches and `room.classroom` a bookshelf and four chairs -- so they now
+   * name the capability those objects already carried.
+   *
+   * **Both previous readings of "absent" are kept rather than overwritten**,
+   * because each was right about what it denied. Before issue #326 the
+   * object-footprint rule applied to an objectless room and read as a ceiling
+   * of **zero**, admitting nobody to 64 tiles of open ground. #326 replaced
+   * that with **no ceiling at all**, and this docblock said so: *"no
+   * object-derived ceiling applies ... the room really is unbounded by
+   * furniture."* Still true of objects, and issue #532 measured what it meant
+   * for people -- see `RoomInstanceRegistry.concurrentUseCapacityFor`.
    */
   readonly requiredObjectCapability?: string;
   readonly minDurationTicks: number;
@@ -204,5 +211,69 @@ export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
   {
     id: 'action.laundry-work', category: 'work', target: { kind: 'room-catalog-id', roomCatalogId: 'room.laundry' },
     requiredObjectCapability: 'laundry', needEffectsPerTick: { hygiene: 1 }, minDurationTicks: 120,
+  },
+  /*
+   * The kitchen's first executable line, and the second member of `work`.
+   * **Appended, for the reason the paragraph above this array gives at
+   * length.**
+   *
+   * Issue #532 measured what `room.kitchen` was: a player could wall it, zone
+   * it, furnish it with a stove, a prep counter and a fridge, be told by the
+   * Rooms panel that every requirement was met, and nothing would ever happen
+   * in it. `tests/foundation/unconsumed-content-contract.test.ts` said the same
+   * thing from the other end -- *"Declared with no reader anywhere"* -- and a
+   * grep for the id returned the catalogue row, a locale string and a comment.
+   * This entry is the reader.
+   *
+   * **Every figure in it is `action.laundry-work`'s, applied to this room, and
+   * nothing here is a new number.** That is deliberate: the laundry entry
+   * argued each of its choices at length two comments up, and re-deciding them
+   * for a second room would be inventing a balance question rather than
+   * answering one.
+   *
+   * - **`room.kitchen`, and `'food-preparation'`.** The capability is already
+   *   declared by `object.stove` and `object.prep-counter` in
+   *   `src/content/object-catalog.ts`, and both are authored requirements of
+   *   this room, so the ceiling comes out of footprints this tree already
+   *   ships: each is 2 tiles wide, so `concurrentUse(kitchen,
+   *   'food-preparation')` is **4** at the room's catalogue minimum -- the same
+   *   arithmetic, and the same answer, as the furnished laundry's four workers.
+   *   `object.fridge`'s `'food-storage'` is deliberately *not* named: one
+   *   action consumes one capability (issue #326), and gating on the fridge
+   *   would make a cold store a work station.
+   * - **`hunger`, at 1 against `action.eat-meal`'s 4**, which is the
+   *   convention the catalogue already uses for a second route to a need
+   *   (`action.laundry-work` gains `hygiene` at 1 against `action.shower`'s 4;
+   *   `action.eat-in-cell` 3 against `action.eat-meal`'s 4). Hunger rather
+   *   than an invented need because `room.kitchen`'s own authored `category`
+   *   in the room catalogue is `'food'` -- exactly the reading that gave the
+   *   laundry `hygiene` from its authored `'hygiene'`. A prisoner on kitchen
+   *   duty eats a little of what passes through their hands; nothing is
+   *   produced, stored or delivered.
+   * - **It is a place to work, and explicitly *not* a supplier of the
+   *   canteen.** `action.eat-meal` gates on `'dining'` in `room.canteen` and
+   *   gains `hunger` directly; no meal exists as an item, no `item.food-ration`
+   *   moves, and `room.canteen` does not ask whether anybody cooked. Making
+   *   the kitchen feed the canteen means a production chain --
+   *   `docs/research/audit-2026-08-26/10-product-roadmap.md` scopes that as its
+   *   own "Food chain (kitchen -> cook -> ration -> canteen)" row at size L --
+   *   and it would be architecture decided inside a content module. This entry
+   *   deliberately leaves that row exactly where it is.
+   * - **120 ticks**, the same shift as `action.classroom-education` and
+   *   `action.laundry-work`, and for the reason the laundry entry states: the
+   *   three now share both work blocks, and an unequal duration would decide
+   *   which of them a block is mostly spent on for reasons unrelated to need.
+   *
+   * What it adds to a day, rather than what it plugs: the two work/education
+   * blocks (500-1,000 and 1,300-1,800 of `GENERAL_POPULATION_REGIME`) now offer
+   * three things instead of two, and a prisoner in a prison with all three
+   * takes whichever of boredom, grime and hunger is worst today. A player
+   * choosing between a classroom, a laundry and a kitchen is making a real
+   * choice between three needs rather than picking the only room that does
+   * anything.
+   */
+  {
+    id: 'action.kitchen-work', category: 'work', target: { kind: 'room-catalog-id', roomCatalogId: 'room.kitchen' },
+    requiredObjectCapability: 'food-preparation', needEffectsPerTick: { hunger: 1 }, minDurationTicks: 120,
   },
 ];

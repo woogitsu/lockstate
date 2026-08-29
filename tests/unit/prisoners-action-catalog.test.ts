@@ -53,7 +53,10 @@ import { buildRiotRegimeSchedule } from '../../src/simulation/incidents/riot-reg
  * `action.free-association` existed could name; index 8 is that entry, appended
  * rather than inserted, and appended is why 0–7 still read as they did. Index 9
  * is `action.laundry-work` ([ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)),
- * appended for the same reason and behind the same gate.
+ * appended for the same reason and behind the same gate. Index 10 is
+ * `action.kitchen-work` (#532), appended for the same reason again -- the
+ * third entry in a row to arrive at the end, which is what this table exists
+ * to keep true.
  *
  * Extending this list is what adding an action looks like: put the new id at
  * the **end**, next index, same commit. Editing any line above the last one is
@@ -71,6 +74,7 @@ const SAVED_ACTION_INDEX_MEANS: readonly (readonly [index: number, actionId: str
   [7, 'action.classroom-education'],
   [8, 'action.free-association'],
   [9, 'action.laundry-work'],
+  [10, 'action.kitchen-work'],
 ];
 
 describe('a saved actionIndex still names the action it named when it was written', () => {
@@ -124,11 +128,14 @@ describe('a saved actionIndex still names the action it named when it was writte
 
   it('put each new entry at the end rather than beside its category siblings', () => {
     // The instances, stated separately from the rule. `action.free-association`
-    // reads naturally next to the two recreation entries and `action.laundry-work`
-    // next to `action.shower`, whose need it shares -- and both are precisely
-    // where they must not go: indices 4, 5 and 6 already mean something on disk.
-    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 1]!.id).toBe('action.laundry-work');
-    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 2]!.id).toBe('action.free-association');
+    // reads naturally next to the two recreation entries, `action.laundry-work`
+    // next to `action.shower`, whose need it shares, and `action.kitchen-work`
+    // next to `action.eat-meal`, whose need it shares -- and all three are
+    // precisely where they must not go: indices 1, 4, 5 and 6 already mean
+    // something on disk.
+    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 1]!.id).toBe('action.kitchen-work');
+    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 2]!.id).toBe('action.laundry-work');
+    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 3]!.id).toBe('action.free-association');
   });
 });
 
@@ -313,9 +320,9 @@ describe('every action category a schedule can allow, measured against the catal
     /*
      * The vacuity guard for the assertion above, and it is not a formality:
      * if every action in the catalogue targeted `own-accommodation` the check
-     * would be unfailable and would still read as a strong statement. Five of
-     * the ten name a room, so the property being asserted is a real one about
-     * how the blocks are composed.
+     * would be unfailable and would still read as a strong statement. Six of
+     * the eleven name a room, so the property being asserted is a real one
+     * about how the blocks are composed.
      */
     const roomGated = DEFAULT_ACTIONS.filter((action) => action.target.kind === 'room-catalog-id');
     expect(roomGated.length).toBeGreaterThan(0);
@@ -331,9 +338,13 @@ describe('every action category a schedule can allow, measured against the catal
      * which is the "author it badly" ADR 0042 step 6 warned against.
      */
     const work = DEFAULT_ACTIONS.filter((action) => action.category === 'work');
-    expect(work.map((action) => action.id)).toEqual(['action.laundry-work']);
-    expect(work[0]!.target).toEqual({ kind: 'room-catalog-id', roomCatalogId: 'room.laundry' });
-    expect(work[0]!.requiredObjectCapability).toBe('laundry');
+    expect(work.map((action) => action.id)).toEqual(['action.laundry-work', 'action.kitchen-work']);
+    for (const entry of work) {
+      expect(entry.target.kind, `${entry.id} is a work action, so it must name a room`).toBe('room-catalog-id');
+      expect(entry.requiredObjectCapability, `${entry.id} must consume an object capability, or its room admits everyone`).toBeDefined();
+    }
+    expect(work.map((entry) => (entry.target as { readonly roomCatalogId: string }).roomCatalogId)).toEqual(['room.laundry', 'room.kitchen']);
+    expect(work.map((entry) => entry.requiredObjectCapability)).toEqual(['laundry', 'food-preparation']);
 
     const workOnlyBlocks = [...DEFAULT_REGIME_SCHEDULES, buildRiotRegimeSchedule('general-population')]
       .flatMap((schedule) => schedule.blocks)
@@ -354,5 +365,7 @@ describe('every action category a schedule can allow, measured against the catal
     expect(rateOf('action.eat-in-cell', 'hunger')).toBeLessThan(rateOf('action.eat-meal', 'hunger'));
     expect(rateOf('action.common-room-recreation', 'recreation')).toBeLessThan(rateOf('action.yard-recreation', 'recreation'));
     expect(rateOf('action.laundry-work', 'hygiene')).toBeLessThan(rateOf('action.shower', 'hygiene'));
+    expect(rateOf('action.kitchen-work', 'hunger')).toBeLessThan(rateOf('action.eat-meal', 'hunger'));
+    expect(rateOf('action.kitchen-work', 'hunger')).toBeLessThan(rateOf('action.eat-in-cell', 'hunger'));
   });
 });

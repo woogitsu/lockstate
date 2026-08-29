@@ -20,9 +20,15 @@ Per the issue's explicit scope, this is deliberately bounded:
   complete content set. It was eight for the whole of issue #24's life; the
   ninth is `action.free-association`, appended for
   [ADR 0042](./adr/0042-attaching-consequences-to-the-simulation-loop.md)
-  decision 1, and the tenth is `action.laundry-work`, appended for
+  decision 1, the tenth is `action.laundry-work`, appended for
   [ADR 0054](./adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)
-  decision 3 (see *Actions* below for why appending is the load-bearing word).
+  decision 3, and the eleventh is `action.kitchen-work`, appended for issue
+  #532 (see *Actions* below for why appending is the load-bearing word).
+  `action.kitchen-work` is `action.laundry-work`'s shape applied to
+  `room.kitchen` with no new figure in it: `'food-preparation'`, `hunger` at 1
+  against `action.eat-meal`'s 4, 120 ticks. It is a place to work and not a
+  supplier of the canteen -- no meal exists as an item and the canteen never
+  asks whether anybody cooked.
   **All seven `ACTION_CATEGORIES` now have content.**
   `tests/unit/prisoners-action-catalog.test.ts` carried the seventh, `work`,
   with the reason it did not until ADR 0054 authored it, and its
@@ -440,14 +446,33 @@ storage rack admitted **19** diners to tables that seat 6, and an empty 8x8 yard
 yard holding one three-tile loading-dock door admitted three. Two consequences
 worth stating here:
 
-- **An action naming no capability has no object-derived ceiling.** A rule that
-  sums object footprints has no domain for a use that consumes no object, and
-  `room.yard` is the one room type in `src/content/room-catalog.ts` that requires
-  no object -- so it is the one unbounded room, by derivation rather than by
-  exemption. `action.common-room-recreation` and `action.classroom-education`
-  named no capability and were *not* unbounded rooms, so they now name the
-  `'recreation'` and `'education'` their required benches and bookshelf already
-  carried.
+- **An action naming no capability is bounded by the room's ground instead of
+  by its objects.** A rule that sums object footprints has no domain for a use
+  that consumes no object, and `room.yard` is the one room type in
+  `src/content/room-catalog.ts` that requires no object --  so it is the one
+  room whose ceiling comes from its rectangle, by derivation rather than by
+  exemption: `floor(width * height / TILES_PER_OPEN_GROUND_PLACE)`, 16 tiles a
+  place, clamped below at 1 so no room that exists admits nobody
+  ([ADR 0071](./adr/0071-what-bounds-a-room-whose-activity-consumes-no-object.md)).
+  `action.common-room-recreation` and `action.classroom-education` named no
+  capability and are *not* such rooms, so they now name the `'recreation'` and
+  `'education'` their required benches and bookshelf already carried.
+
+  **This bullet read "so it is the one *unbounded* room" until issue #532**,
+  and the correction is a change in the code rather than in what the sentence
+  described. Unbounded was the honest reading of "no *object* ceiling" and it
+  is still true of objects -- nothing consults one. What it turned into in a
+  running prison is that the yard admitted every prisoner at once, for ever,
+  however small it was, so `action.common-room-recreation` -- which scores
+  below `action.yard-recreation` at every non-zero deficit -- had no state it
+  could win. Measured, six prisoners and five in-game days: 6,952 yard ticks
+  against 96 common-room ticks, and those 96 were the exact-zero-deficit tie,
+  where the ascending-id tie-break takes the common room and both actions are
+  worth nothing. With the ceiling: 5,872 against 1,248, and the yard is still
+  the larger share. A 16x8 yard reproduces the unmodified tree to the tick
+  (7,208 / 336 either way), so a yard sized for its population costs nothing.
+  The figure 16 is data rather than architecture (ADR 0017 decision 5) and
+  stays open to re-measurement; the mechanism above it is not.
 - **`RoomInstance.concurrentUseCapacity` is still the all-objects total and is
   nothing's ceiling.** True about objects, false about people: 14 for a canteen
   that seats 6. A readout of concurrent use reads
