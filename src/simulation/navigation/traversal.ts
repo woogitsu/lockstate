@@ -77,15 +77,20 @@ export function edgeStanding(world: SparseWorld, doors: DoorRegistry, from: Tile
  * corridor needs the second, and asking the first would make every walker's
  * step depend on a graph rebuild.
  *
- * **That ADR is drafted on this branch and is not numbered yet**, which is why
- * every citation of it -- here, in `navigation-system.ts`, `locomotion.ts`,
- * `action-system.ts`, `prisoner-operations-runtime.ts` and
- * `tests/helpers/open-ground.ts` -- names it by title rather than by number.
- * ADR numbers are assigned centrally after drafts return (`AGENTS.md`: *"A
- * number is not reserved until it appears in `docs/adr/README.md`"*), and two
- * agents on this repository have already taken the same number by each reading
- * "next free" off `main`. Grep the title to find them all when the number
- * lands.
+ * **That ADR is `docs/adr/0077-when-a-route-stops-being-valid.md`, and every
+ * citation of it in the code names it by title rather than by that number.**
+ * Deliberately: the number is provisional until the branch merges, because a
+ * branch nobody has merged is invisible from `docs/adr/README.md` and that
+ * index is the only thing that reserves a number (`AGENTS.md`: *"A number is
+ * not reserved until it appears in `docs/adr/README.md`"*). Two agents here
+ * have already taken the same number by each reading "next free" off `main`,
+ * and `max + 1` off disk said 0075 for this one while two higher numbers sat
+ * unmerged on another branch. So the ADR pre-commits to being renumbered, and
+ * citing it by title is what makes that a one-line edit instead of a hunt
+ * through five modules. `grep "When a route stops being valid"` finds them
+ * all: here, `navigation-system.ts`, `locomotion.ts`, `action-system.ts`,
+ * `prisoner-operations-runtime.ts`, `tests/helpers/open-ground.ts` and
+ * `docs/NAVIGATION.md`.
  */
 export function isEdgeTraversable(
   world: SparseWorld,

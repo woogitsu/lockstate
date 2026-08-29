@@ -384,7 +384,11 @@ been handed to a caller is no longer one of them, and no counter here can reach
 it.
 
 That gap was a shipped defect until the ADR *When a route stops being valid*
-(drafted on the `agent/sim-001-stale-routes` branch; number assigned at merge).
+([ADR 0077](./adr/0077-when-a-route-stops-being-valid.md) — cited by title
+here as well as by number, because the number is provisional until that branch
+merges and the ADR pre-commits to renumbering; the link is checked by
+`tests/foundation/adr-numbering-contract.test.ts`, so a renumber fails loudly
+here rather than rotting).
 `ActionSystem` resolved a route, `LocomotionStore.beginWalk` took its waypoints,
 and the walk then ran for as many ticks as the journey was long. `beginWalk`
 validated only the *shape* of that list — non-empty, one orthogonal tile per leg
