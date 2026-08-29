@@ -145,8 +145,12 @@ describe('one plank, cycled through three cells, against the same plank spent on
 
     // The prison the player actually built: one bed, one place.
     expect(placeReport(exploit)).toMatchObject({ objectsStanding: 1, residencyCapacity: 1 });
-    // And the prison the registry believes in.
+    // And the prison the registry believes in. **All three are still housed**,
+    // which is ADR 0028 decision 2 and is not what #585 changed: nobody is
+    // evicted, and `residentIds` still says so.
     expect(placeReport(exploit).assignedResidents).toBe(3);
+    // What changed is that two of the three are not places.
+    expect(exploit.prisoners.roomInstances.residentIdsWithExistingPlace()).toHaveLength(1);
   });
 
   it('REPRODUCTION (#585): pays for all three, three times the control', () => {
@@ -156,11 +160,15 @@ describe('one plank, cycled through three cells, against the same plank spent on
     // Both prisons have furnished exactly one place out of exactly one plank.
     expect(placeReport(exploit).residencyCapacity).toBe(placeReport(control).residencyCapacity);
 
-    // **This is the defect, asserted rather than described.** Both figures are
-    // measured on this tree at `05640b6` (v0.0.210); the fix moves the first
-    // pair to the second.
-    expect(placeReport(exploit).dayGrant).toBe(900);
-    expect(earnedOverOneDay(exploit)).toBe(900);
+    // **The defect, and what it now pays.** Measured at `05640b6` (v0.0.210)
+    // before the fix: the exploit's `dayGrant` and its one-day treasury delta
+    // were both **900**, three times the control's 300, off the same one plank
+    // and the same one furnished place. The control is untouched by the fix --
+    // that is the property that matters, because a change to the income line
+    // that also moved an honest prison's earnings would be a nerf and not a
+    // patch.
+    expect(placeReport(exploit).dayGrant).toBe(300);
+    expect(earnedOverOneDay(exploit)).toBe(300);
     expect(placeReport(control).dayGrant).toBe(300);
     expect(earnedOverOneDay(control)).toBe(300);
   });

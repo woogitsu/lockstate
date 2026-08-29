@@ -216,6 +216,50 @@ export const TILES_PER_OPEN_GROUND_PLACE = 16;
  * room, which is where a future action naming no capability would otherwise
  * find a silent zero.
  */
+/**
+ * Which of one instance's residents hold a place that **currently exists**:
+ * the first `residentCapacity` of `occupantsAscending`, and none at all when
+ * the room has furnished no residency capacity.
+ *
+ * The whole of issue #585's rule, extracted from
+ * `RoomInstanceRegistry.residentIdsWithExistingPlace` so that it can be tested
+ * as arithmetic rather than only through a registry -- which is what lets the
+ * three cases that matter (under, exactly at, and over capacity) be pinned
+ * without building a prison for each.
+ *
+ * **`occupantsAscending` must already be sorted**, because the caller has just
+ * sorted it (`occupantsOf`) and a second sort here would be a copy of an
+ * ordering rule that has to agree with `residentIds`. It takes an array and a
+ * number rather than an instance, so it cannot read anything the caller has
+ * not decided to hand it.
+ *
+ * `slice` and never the input array itself, even when every resident is
+ * backed. **A `residentCapacity >= occupantsAscending.length` fast path was
+ * written here first and taken out again**, and the reason is worth recording
+ * because it is what mutation testing is for: mutating its `>=` to `>` changed
+ * nothing any test could see, and nothing any test *could* have seen -- at
+ * exactly-equal length `slice` returns an array with identical contents, so
+ * the two branches differ only in whether the caller is handed the input array
+ * back by reference. That is an equivalent mutant, and the honest fix is to
+ * delete the branch rather than to write a test that pins an identity nobody
+ * should depend on. It also removes the aliasing: no caller can now reach
+ * `occupantsOf`'s array through this function's result.
+ *
+ * The `> 0` guard is not the same kind of line and is not dead. `slice(0, 0)`
+ * would answer `[]` on its own, but `slice(0, -1)` answers *every resident but
+ * the last* -- so a negative capacity would silently pay for a bedless cell.
+ * Nothing derives a negative `residentCapacity` today (`deriveRoomCapacity`
+ * sums footprint widths, and `objectFootprintSchema` bounds `width` below at
+ * 1), and this guard is the reason that stays a fact about the content rather
+ * than a dependency of the money.
+ */
+export function residentsWithExistingPlace(
+  occupantsAscending: readonly EntityId[],
+  residentCapacity: number,
+): readonly EntityId[] {
+  return residentCapacity > 0 ? occupantsAscending.slice(0, residentCapacity) : [];
+}
+
 function openGroundCapacityOf(instance: RoomInstance): number {
   const { width, height } = instance;
   if (width === undefined || height === undefined) return Number.POSITIVE_INFINITY;
@@ -581,6 +625,74 @@ export class RoomInstanceRegistry {
     const result: EntityId[] = [];
     for (const occupants of this.occupants.values()) {
       for (const entityId of occupants) result.push(entityId);
+    }
+    return result.sort((left, right) => left - right);
+  }
+
+  /**
+   * Who holds a residency place **that currently exists**: every entity
+   * assigned to an instance, minus those an instance is holding above its own
+   * `residentCapacity`, ascending by entity id.
+   *
+   * ## Why this is a second accessor and not a change to `residentIds`
+   *
+   * `residentIds` answers "who is assigned", and that answer is still the right
+   * one for the status strip's `roomOccupants` and for every caller asking what
+   * the prison is *holding*. ADR 0028 decision 2 is explicit that a removed bed
+   * evicts nobody -- the room stops accepting new occupants and the sitting
+   * resident stays -- so an assignment above capacity is a real state of the
+   * simulation and not a bookkeeping error to be swept up. What this accessor
+   * adds is the *other* question, which only the income line asks: how many of
+   * those assignments are backed by a place that is still standing.
+   *
+   * Issue #585 is the measurement that forced the two apart. One
+   * `item.wood-plank` bought one bed, `Undo` released the completed order's
+   * materials back into the container, and the plank went round again into the
+   * next cell -- leaving **three prisoners assigned, one bed standing, and a
+   * day's grant of 900 against a control's 300**. `residentIds` was right about
+   * all three prisoners being housed and wrong about all three being places.
+   *
+   * ## The over-capacity tie-break, which is observable and therefore pinned
+   *
+   * When an instance holds more residents than its `residentCapacity`, the
+   * lowest entity ids keep the places. That is not arbitrary in the sense of
+   * being unobservable: `StateIncomeSystem` pays each place at a rate that
+   * depends on its occupant's own unmet needs
+   * ([ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)),
+   * so *which* resident keeps the place changes the money. It is ascending
+   * entity id because that is the total order this registry already imposes
+   * everywhere a collection of occupants is handed out -- `occupantsOf`,
+   * `residentIds` -- so the tie-break adds no new ordering rule to
+   * `docs/DETERMINISM.md`'s contract and cannot fold the same prison two ways
+   * across a save.
+   *
+   * The walk is over `this.occupants` and not over `this.instances`, and that
+   * is the `docs/DETERMINISM.md` answer rather than a preference. `register`
+   * seeds an occupant set for every instance, so the two maps have identical
+   * key sets and either would visit the same rooms -- but `this.occupants` is
+   * an enumeration `tests/determinism/canonical-iteration-contract.test.ts`
+   * has already audited and justified, and walking `this.instances` would put
+   * a fourteenth expression on that allow-list to say the same thing a
+   * thirteenth already says. The unordered walk is safe here for the reason
+   * that list records: **the selection is per-instance-local**. Each
+   * instance's own ascending occupant list decides which of its residents keep
+   * places, and no instance's answer depends on when another was visited. The
+   * result is then sorted, so the order this method hands out is a function of
+   * the prison and not of its history.
+   *
+   * `O(P log P)` in housed prisoners with one array, the same cost class as
+   * `residentIds`, and paid on the same two paths: once per in-game day at the
+   * grant boundary and once per projection.
+   */
+  public residentIdsWithExistingPlace(): readonly EntityId[] {
+    const result: EntityId[] = [];
+    for (const [instanceId, occupants] of this.occupants) {
+      if (occupants.size === 0) continue;
+      const instance = this.instances.get(instanceId);
+      if (instance === undefined) continue;
+      for (const entityId of residentsWithExistingPlace(this.occupantsOf(instanceId), instance.residentCapacity)) {
+        result.push(entityId);
+      }
     }
     return result.sort((left, right) => left - right);
   }
