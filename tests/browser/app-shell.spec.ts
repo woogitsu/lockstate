@@ -801,7 +801,18 @@ interface RoomWorldGeometry {
   readonly bodyLaidOut: boolean;
   /** The side of the largest square of bare canvas, saturating at `BARE_WORLD_SCAN_MAX_PX`. */
   readonly largestBareSquare: number;
-  /** Strip to save panel, save panel to Rooms panel, Rooms panel to tab bar. */
+  /**
+   * Strip to the rail's first box, that box to the Rooms panel, Rooms panel to
+   * the tab bar.
+   *
+   * The first term used to name the *save panel* specifically, and #545 put
+   * something above it: the interface-scale row is the aside slot's first
+   * child now. The claim being pinned was never about which panel is first --
+   * it is the rail's rhythm, "the rail's contents start 8px under the strip"
+   * -- so the term reads the slot's first child and the pinned `[8, 16, 24]`
+   * is unchanged rather than re-recorded. Naming the panel would have turned a
+   * statement about spacing into a statement about composition.
+   */
   readonly gapsBetweenPanels: readonly number[];
   readonly pendingControls: readonly RoomControlHit[];
 }
@@ -840,11 +851,15 @@ async function roomWorldGeometry(page: Page): Promise<RoomWorldGeometry> {
     const round = (value: number): number => Math.round(value * 10) / 10;
 
     const panelRect = panel === null ? null : panel.getBoundingClientRect();
+    // The rail's first box, whatever it is. Before #545 that was always the
+    // save panel; the interface-scale row sits above it now. See
+    // `gapsBetweenPanels`.
+    const railFirst = document.querySelector<HTMLElement>('.hud__aside > *') ?? save;
     const gaps =
-      panelRect === null || strip === null || save === null || tabs === null
+      panelRect === null || strip === null || save === null || railFirst === null || tabs === null
         ? []
         : [
-            round(save.getBoundingClientRect().top - strip.getBoundingClientRect().bottom),
+            round(railFirst.getBoundingClientRect().top - strip.getBoundingClientRect().bottom),
             round(panelRect.top - save.getBoundingClientRect().bottom),
             round(tabs.getBoundingClientRect().top - panelRect.bottom),
           ];
