@@ -91,8 +91,61 @@ export class NavigationSystem implements SystemRegistration {
     this.results.delete(id);
   }
 
+  /**
+   * Drops a request whose owner has gone away, whichever half of the journey
+   * it had reached.
+   *
+   * ## Why one call and not two
+   *
+   * A request in flight lives in exactly one of two places, and which one is a
+   * race the caller cannot win: still `pending` in the queue, or already
+   * resolved and sitting in `results` waiting to be collected. A teardown that
+   * calls only `cancelRequest` misses the second; one that calls only
+   * `clearResult` misses the first. Both existing correct teardowns --
+   * `src/simulation/prisoners/release.ts` and `src/simulation/staff/dismissal.ts`
+   * -- discovered that and call both, and each says so in its own comment; five
+   * other teardown paths called neither and simply forgot the id.
+   *
+   * Measured before this method existed: releasing one of four riot responders
+   * mid-travel through the real `ReleaseGuardAssignment` command left
+   * `incidents.respond.incident-riot.1.2` in `results` for the rest of the
+   * session, while the three responders that were not released collected and
+   * cleared theirs. `SearchSystem`'s own comment asserted the opposite -- *"a
+   * result nothing collects is garbage the queue ages out"* -- and that is
+   * false in both halves: `PathRequestQueue`'s aging raises a waiting request's
+   * *effective priority* and never evicts it, and nothing at all expires a
+   * resolved result. So an abandoned request is searched at full cost and then
+   * retained for ever.
+   *
+   * So the question "which half is it in" is answered here, once, and a
+   * teardown cannot get it half right.
+   *
+   * `true` when something was actually dropped, so a caller that wants to count
+   * abandonments can; total, like the two calls it replaces -- an id nothing
+   * holds is a no-op rather than an error, because a teardown runs on paths
+   * where the request may legitimately have been consumed already.
+   */
+  public abandonRequest(id: string): boolean {
+    const cancelled = this.queue.cancel(id);
+    const hadResult = this.results.delete(id);
+    return cancelled || hadResult;
+  }
+
   public pendingCount(): number {
     return this.queue.size();
+  }
+
+  /**
+   * How many resolved routes are waiting to be collected.
+   *
+   * The counterpart to `pendingCount`, and it exists because the leak
+   * `abandonRequest` closes is invisible without it: a result nothing collects
+   * is indistinguishable from one that has not been collected *yet* unless a
+   * test can watch the number fail to come back down. `tests/integration/security-guard-release.test.ts`
+   * is what reads it.
+   */
+  public resultCount(): number {
+    return this.results.size;
   }
 
   public getQueueMetrics(): PathRequestQueueMetrics {

@@ -153,12 +153,15 @@ export class SearchSystem implements SystemRegistration {
    * `runDetectionForCurrentTarget` reads `job.guardIds[0]!` for the
    * `foundByGuardId` on every confiscation it records.
    *
-   * The path request the released guard had in flight is dropped rather than
-   * cleared on the navigation system, which is what every other abandoned
-   * request in this system does (`loadSnapshot` drops all of them) -- a result
-   * nothing collects is garbage the queue ages out, and `clearResult` on a
-   * request that may not have resolved yet is not a thing this system does
-   * anywhere.
+   * The path request the released guard had in flight is **given back**, both
+   * halves, through `NavigationSystem.abandonRequest`. This paragraph used to
+   * say the opposite -- that dropping the id was enough because *"a result
+   * nothing collects is garbage the queue ages out"* -- and both clauses were
+   * false: aging raises a waiting request's effective priority and never
+   * evicts it, and nothing expires a resolved result. `abandonRoutes` carries
+   * the measurement. `loadSnapshot` dropping all of them is still correct and
+   * is a different case: a restore rebuilds the navigation system empty, so
+   * there is nothing on the other side to give back to.
    *
    * Deterministic: ascending order id, so which job is inspected first is a
    * function of state rather than of insertion history, exactly as
@@ -173,6 +176,8 @@ export class SearchSystem implements SystemRegistration {
       const index = job.guardIds.indexOf(guardId);
       if (index === -1) continue;
       job.guardIds.splice(index, 1);
+      const requestId = job.pathRequestIdsByGuard.get(guardId);
+      if (requestId !== undefined) this.navigation.abandonRequest(requestId);
       job.pathRequestIdsByGuard.delete(guardId);
       if (job.guardIds.length === 0) {
         this.active.delete(job.id);
@@ -283,7 +288,31 @@ export class SearchSystem implements SystemRegistration {
   }
 
   private releaseGuards(job: SearchJobRecord): void {
+    // Routes first, roster second: `unassign` clears the roster's own
+    // `pathRequestId`, and this job's map is the only other place the id
+    // survives, so after both writes nothing knows what to give back.
+    this.abandonRoutes(job);
     for (const guardId of job.guardIds) this.guards.unassign(guardId);
+  }
+
+  /**
+   * Gives back every route this job still has in flight, and forgets the ids.
+   *
+   * Both halves, through `NavigationSystem.abandonRequest`, because which half
+   * a request is in on any given tick is a race this system cannot win. The
+   * comment on `releaseGuard` used to say the opposite about dropping the id --
+   * *"a result nothing collects is garbage the queue ages out"* -- and it was
+   * false in both of its clauses: `PathRequestQueue`'s aging raises a waiting
+   * request's *effective priority* and never evicts it, and nothing at all
+   * expires a resolved result (`NavigationSystem.clearResult`'s own comment
+   * says so: *"the system never expires results on its own"*). So an abandoned
+   * request was searched at full budget cost and then retained for the rest of
+   * the session. Measured on the sibling path in `IncidentResponseSystem`,
+   * where a released responder's result outlived it by 500 ticks and counting.
+   */
+  private abandonRoutes(job: SearchJobRecord): void {
+    for (const requestId of job.pathRequestIdsByGuard.values()) this.navigation.abandonRequest(requestId);
+    job.pathRequestIdsByGuard.clear();
   }
 
   private advanceJob(job: SearchJobRecord, context: SimulationContext): void {
@@ -336,7 +365,10 @@ export class SearchSystem implements SystemRegistration {
     }
     job.state = 'travelling';
     job.travelInFlight = false;
-    job.pathRequestIdsByGuard.clear();
+    // A guard whose result had not been collected when the job moved on still
+    // has one waiting; clearing the map alone left it in the navigation system
+    // for good.
+    this.abandonRoutes(job);
   }
 
   private maxIntelligenceConfidenceFor(target: SearchTarget): number {

@@ -55,6 +55,12 @@ function fixture(options: {
     guards,
     claimSource(options.searchIds ?? []),
     claimSource(options.responseIds ?? []),
+    // This file exercises `claimOf` and the projection over it; nothing here
+    // calls `release`, which is the only method that gives a route back. A
+    // throwing stub rather than a silent one, so a test added later that does
+    // call `release` fails loudly instead of quietly leaking the request the
+    // real service would have handed back.
+    { abandonRequest: () => { throw new Error('this fixture releases nothing; wire a real navigation surface'); } },
   );
   return { guards, claims };
 }
