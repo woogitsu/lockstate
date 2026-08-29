@@ -683,8 +683,25 @@ export interface RoomsProbe {
   readonly needsTotal: string;
   /** The figure beside the header eyebrow. */
   readonly needsCountText: string;
-  /** The one detail line: which room, where, and what it wants. */
+  /**
+   * The room line: which room the readout is about, and where.
+   *
+   * It named the room *and* one object it wanted until #529 ("Cell at 12, 4
+   * needs Bed"). The objects moved to `needsItemText` below when the readout
+   * began enumerating all of them, so this is now the heading over that list.
+   */
   readonly needsLineText: string;
+  /** One entry per object the named room is short, with its quantity, in the order drawn (#529). */
+  readonly needsItemText: readonly string[];
+  /**
+   * The whole block's laid-out height, in CSS pixels.
+   *
+   * What `ROOM_NEEDS_NAMED_LIMIT` is a budget *for*: that constant is a claim
+   * about how much of the rail this readout may spend, and a line count is not
+   * that claim -- a spec asserting "three lines are drawn" stays green over a
+   * block whose lines have been clipped to nothing.
+   */
+  readonly needsHeight: number;
 }
 
 /**

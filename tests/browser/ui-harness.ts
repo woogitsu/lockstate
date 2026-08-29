@@ -1773,6 +1773,18 @@ window.lockstateUiHarness = {
       // and the panel undoes that class's uppercasing, so reading the rendered
       // text would make this assertion depend on a CSS rule it is not about.
       needsLineText: document.querySelector<HTMLElement>('.hud-rooms__needs-line')?.textContent?.trim() ?? '',
+      /** One entry per object the named room is short, in the order drawn (#529). */
+      needsItemText: [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map(
+        (item) => item.textContent?.trim() ?? '',
+      ),
+      /**
+       * The readout's own height, so a spec can measure what the block costs the
+       * panel rather than asserting a line count and hoping.
+       * `ROOM_NEEDS_NAMED_LIMIT` is a budget in pixels, and this is what spends
+       * it.
+       */
+      needsHeight:
+        Math.round((document.querySelector('.hud-rooms__needs')?.getBoundingClientRect().height ?? 0) * 10) / 10,
     };
   },
 
