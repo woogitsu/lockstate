@@ -58,6 +58,30 @@ export const roomDefinitionSchema = z
     numericId: z.number().int().min(1).max(255), // zoning storage is a Uint8Array (see rooms/definition.ts)
     nameKey: identifierSchema,
     category: roomCategorySchema,
+    /**
+     * **An open area: a room whose activity is people spread over its ground
+     * rather than people at its furniture.**
+     *
+     * The owner's ruling of 2026-08-29 on issue #585, which amends
+     * [ADR 0071](../../docs/adr/0071-what-bounds-a-room-whose-activity-consumes-no-object.md):
+     * capacity derived from a room's own floor area applies *only* to room
+     * types tagged here, and the three tagged are `room.yard`,
+     * `room.holding-cell` and `room.delivery-bay`. Every other room type
+     * derives **0** for an action that consumes no object, rather than
+     * `max(1, floor(tiles / 16))`.
+     *
+     * Authored here and nowhere else, and read through `isOpenAreaRoom`.
+     * `RoomInstanceRegistry` may not import a catalogue (ADR 0071 decision 4:
+     * the rule "reads only the instance"), so the tag is carried onto the
+     * instance at registration -- `RoomInstance.openArea` -- rather than
+     * looked up where it is used.
+     *
+     * Optional, and absent means **not** an open area. "Explicitly tagged" is
+     * the owner's own word for the test, and a default of `true` would make
+     * every room type added in future an open area by omission -- which is the
+     * direction the ruling exists to close.
+     */
+    openArea: z.boolean().optional(),
     requirements: z.array(roomRequirementSchema).max(32),
   })
   .strict();
@@ -71,7 +95,7 @@ const rawRoomDefinitions: readonly RoomCatalogDefinition[] = [
     { type: 'object', objectId: 'object.bed', minQuantity: 1 },
     { type: 'object', objectId: 'object.toilet', minQuantity: 1 },
   ] },
-  { schemaVersion: 1, id: 'room.holding-cell', numericId: 2, nameKey: 'room.holding-cell.name', category: 'housing', requirements: [
+  { schemaVersion: 1, id: 'room.holding-cell', numericId: 2, nameKey: 'room.holding-cell.name', category: 'housing', openArea: true, requirements: [
     { type: 'enclosed' },
     { type: 'minimum-size', minWidth: 2, minHeight: 2, minTiles: 4 },
     { type: 'object', objectId: 'object.bench', minQuantity: 1 },
@@ -111,7 +135,7 @@ const rawRoomDefinitions: readonly RoomCatalogDefinition[] = [
     { type: 'minimum-size', minWidth: 3, minHeight: 3, minTiles: 9 },
     { type: 'object', objectId: 'object.washing-machine', minQuantity: 2 },
   ] },
-  { schemaVersion: 1, id: 'room.yard', numericId: 9, nameKey: 'room.yard.name', category: 'recreation', requirements: [
+  { schemaVersion: 1, id: 'room.yard', numericId: 9, nameKey: 'room.yard.name', category: 'recreation', openArea: true, requirements: [
     { type: 'outdoors' },
     { type: 'minimum-size', minWidth: 8, minHeight: 8, minTiles: 64 },
   ] },
@@ -148,7 +172,7 @@ const rawRoomDefinitions: readonly RoomCatalogDefinition[] = [
     { type: 'minimum-size', minWidth: 3, minHeight: 3, minTiles: 9 },
     { type: 'object', objectId: 'object.storage-rack', minQuantity: 2 },
   ] },
-  { schemaVersion: 1, id: 'room.delivery-bay', numericId: 16, nameKey: 'room.delivery-bay.name', category: 'logistics', requirements: [
+  { schemaVersion: 1, id: 'room.delivery-bay', numericId: 16, nameKey: 'room.delivery-bay.name', category: 'logistics', openArea: true, requirements: [
     { type: 'enclosed' },
     { type: 'minimum-size', minWidth: 4, minHeight: 4, minTiles: 16 },
     { type: 'object', objectId: 'object.loading-dock-door', minQuantity: 1 },
@@ -191,6 +215,23 @@ if (defaultRoomCatalog.errors.length > 0) {
 }
 
 export const defaultRoomContentRegistry = defaultRoomCatalog.registry;
+
+/**
+ * Whether `roomCatalogId` names a room type the owner tagged as an open area
+ * (see `roomDefinitionSchema.openArea`).
+ *
+ * One function rather than the same `?.openArea === true` at each registration
+ * site, so the two places that carry the tag onto a `RoomInstance` --
+ * `RoomZoningService.zone` for a live zoning and `restoreSessionSystems` for a
+ * save -- cannot come to disagree about what the tag means. An unknown id is
+ * not an open area, for the same reason an absent tag is not: a row that names
+ * a room type this build does not declare can only come from a save, and
+ * inventing floor-area capacity for one would be asserting a room nobody can
+ * see.
+ */
+export function isOpenAreaRoom(roomCatalogId: string): boolean {
+  return defaultRoomContentRegistry.getById(roomCatalogId)?.openArea === true;
+}
 
 /**
  * The cross-catalog half of the same import-time check, next to the registry

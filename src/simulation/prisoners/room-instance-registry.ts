@@ -117,6 +117,36 @@ export interface RoomInstance {
   readonly concurrentUseCapacityByCapability?: readonly (readonly [string, number])[];
   /** The union of the capabilities of the objects inside the rectangle, deduplicated, ascending by code unit. Derived. */
   readonly objectCapabilities: readonly string[];
+  /**
+   * Whether this instance's **room type** is tagged as an open area, and
+   * therefore whether `openGroundCapacityOf` has a domain here at all.
+   *
+   * The owner's ruling of 2026-08-29 on issue #585, amending ADR 0071: floor
+   * area bounds only the room types explicitly tagged in
+   * `src/content/room-catalog.ts` -- `room.yard`, `room.holding-cell`,
+   * `room.delivery-bay`. Everything else derives 0 for an action that consumes
+   * no object.
+   *
+   * **Carried onto the instance rather than looked up**, which is what keeps
+   * ADR 0071 decision 4 exactly true: that rule lives here *because* this
+   * module has no runtime imports at all and "reads only the instance". A
+   * catalogue import would falsify the sentence the decision rests on, so the
+   * two registration sites -- `RoomZoningService.zone` and
+   * `restoreSessionSystems`, both of which already read content -- resolve the
+   * tag through `isOpenAreaRoom` and hand the answer over.
+   *
+   * **Not persisted, and re-derived on every load.** It is a property of the
+   * room *type*, so a save that carried it could disagree with the build that
+   * read it back -- the same reason ADR 0028 phase 1 stopped persisting
+   * capacity. `PersistedRoomInstance` is built field by field against a
+   * `.strict()` schema, so no save format moves for this and
+   * `SAVE_SCHEMA_VERSION` is untouched.
+   *
+   * **Optional, and absent means not an open area.** A hand-built fixture that
+   * wants an open-ground ceiling has to say so, which is what "explicitly
+   * tagged" means.
+   */
+  readonly openArea?: boolean;
 }
 
 /**
@@ -261,6 +291,14 @@ export function residentsWithExistingPlace(
 }
 
 function openGroundCapacityOf(instance: RoomInstance): number {
+  // The owner's ruling of 2026-08-29 (issue #585), amending ADR 0071: floor
+  // area is a resource only a room *tagged* as an open area supplies, and it
+  // is checked before the rectangle rather than after, because a room that is
+  // not an open area has no open-ground answer whatever its size -- including
+  // the `POSITIVE_INFINITY` a missing rectangle would otherwise produce. A
+  // boundless non-open-area instance falling through to "unbounded" is exactly
+  // the shape the ruling exists to close.
+  if (instance.openArea !== true) return 0;
   const { width, height } = instance;
   if (width === undefined || height === undefined) return Number.POSITIVE_INFINITY;
   if (width < 1 || height < 1) return Number.POSITIVE_INFINITY;

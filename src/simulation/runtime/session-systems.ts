@@ -1,3 +1,4 @@
+import { isOpenAreaRoom } from '../../content/room-catalog';
 import type { PayrollSnapshot, ProcurementSnapshot, TreasurySnapshot } from '../economy';
 import type { ConfiscationEvent } from '../contraband/confiscation';
 import { applyDefaultSearchPolicies } from '../contraband/default-search-policies';
@@ -747,6 +748,14 @@ export function restoreSessionSystems(
       residentCapacity: 0,
       concurrentUseCapacity: 0,
       objectCapabilities: [],
+      // Re-derived from this build's catalogue, never read back from the save.
+      // `openArea` is a property of the room *type* (owner's ruling of
+      // 2026-08-29, issue #585, amending ADR 0071), so a persisted copy could
+      // disagree with the build that loads it -- which is the reason ADR 0028
+      // phase 1 stopped persisting capacity, applied to a tag. Nothing is
+      // written: `PersistedRoomInstance` is built field by field against a
+      // `.strict()` schema and carries no such field.
+      openArea: isOpenAreaRoom(instance.roomCatalogId),
     });
   }
 
