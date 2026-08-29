@@ -312,7 +312,30 @@ export class JobSystem implements SystemRegistration {
     else source.deposit(job.itemId, job.quantity);
   }
 
+  /**
+   * Gives back the leg's route, and forgets its id.
+   *
+   * **Latent rather than live, and fixed anyway.** `cancel` has no production
+   * caller today -- only tests -- and the `failJob` reached from
+   * `continueTravelling` has already collected and cleared the result one
+   * statement earlier, so neither path leaks on this tree. The other three
+   * `failJob` callers fire during `'performing'`, where there is no request to
+   * give back. What makes it worth two lines is the class: five sibling
+   * teardowns *were* leaking (SIM-002), each for the same reason -- an id
+   * deleted rather than handed back -- and `abandonRequest` is total, so the
+   * cost of closing the last two openings is a `Map` miss.
+   *
+   * `docs/NAVIGATION.md`, "Giving a request back when its owner goes away",
+   * carries why an abandoned id is not garbage-collected by anything.
+   */
+  private abandonRoute(job: CarryItemJob): void {
+    if (job.pathRequestId === undefined) return;
+    this.navigation.abandonRequest(job.pathRequestId);
+    job.pathRequestId = undefined;
+  }
+
   private failJob(job: CarryItemJob, reason: CarryJobFailReason | RouteFailureReason): void {
+    this.abandonRoute(job);
     this.compensateHeldStock(job, job.leg, job.state);
     this.performingSince.delete(job.id);
     if (job.assignedWorkerId !== undefined) this.workers.setBusy(job.assignedWorkerId, false);
@@ -335,6 +358,7 @@ export class JobSystem implements SystemRegistration {
     const stateBeforeCancel = job.state;
     const wasCancellable = this.board.cancel(jobId);
     if (!wasCancellable) return false;
+    this.abandonRoute(job);
     this.compensateHeldStock(job, legBeforeCancel, stateBeforeCancel);
     this.performingSince.delete(job.id);
     if (job.assignedWorkerId !== undefined) this.workers.setBusy(job.assignedWorkerId, false);

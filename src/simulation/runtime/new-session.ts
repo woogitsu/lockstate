@@ -1099,7 +1099,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // After both `'on-search'` claimants, because it reads each of them live: a
   // captured claim view would be exactly the mistake ADR 0033 decision 4
   // measured, one command later.
-  const guardRelease = new GuardReleaseService(securityGuards, searchSystem, incidentResponseSystem);
+  const guardRelease = new GuardReleaseService(securityGuards, searchSystem, incidentResponseSystem, navigation);
   /*
    * Issue #533's consumer. Every optional surface is supplied here and none is
    * omitted, which is the point of naming them one by one rather than passing

@@ -44,6 +44,21 @@ import type { TilePosition } from '../world/coordinates';
  * fifty entries. Beginning a walk allocates one entry and retains the route's
  * waypoint array, which the router had already built and `ActionSystem` used to
  * discard immediately.
+ *
+ * Since the ADR *When a route stops being valid* each of those entries also
+ * asks its owner whether the edge it is about to cross is still crossable --
+ * once per tile crossed, not once per tick, so at
+ * `DEFAULT_WALK_SUBTILE_UNITS_PER_TICK` it is one predicate call every second
+ * tick per walker and none for the standing population. It triggers no
+ * replanning of its own: a walker that is stopped simply stops, and its owner
+ * reconsiders on its own cadence, which is what keeps this off AGENTS.md
+ * boundary 9's budgeted pathfinding path.
+ *
+ * **Still no save-format field.** The re-validation is asked at the moment of
+ * crossing rather than carried as a validity token on the route, so a walk
+ * gains no state a snapshot would have to version -- the paragraph above stays
+ * true, and that is one of the reasons the traversal-time rule was chosen over
+ * a token.
  */
 
 /**
@@ -167,6 +182,17 @@ export class LocomotionStore {
    * Reused rather than allocated: this runs every tick.
    */
   private readonly arrived: number[] = [];
+  /**
+   * Keys whose next edge was closed under them this call, collected for the
+   * same reason `arrived` is: the walk they name is deleted after the loop,
+   * not inside it.
+   *
+   * Separate from `arrived` because the two mean opposite things to an owner
+   * -- one reached what it set out for, one did not -- and a walker that was
+   * stopped by a wall must never be reported as having arrived at a
+   * destination it is nowhere near. See `advance`.
+   */
+  private readonly blocked: number[] = [];
 
   public constructor(private readonly unitsPerTick: number = DEFAULT_WALK_SUBTILE_UNITS_PER_TICK) {
     if (!Number.isInteger(unitsPerTick) || unitsPerTick <= 0) {
@@ -252,14 +278,56 @@ export class LocomotionStore {
 
   /**
    * Advances every walk by `ticks` ticks, calling `writeTile` each time an
-   * actor's whole-tile position changes.
+   * actor's whole-tile position changes and `canCross` before each one.
    *
    * `writeTile` is how the owning population's position store stays the
    * authority on which tile an actor occupies: this class holds *where within*
    * the tile, and nothing else in the simulation has to know that it exists.
+   *
+   * ### Why `canCross` is asked here, and why it is not optional
+   *
+   * A route is a plan made against the world of the tick it was calculated on,
+   * and until the ADR *When a route stops being valid*
+   * nothing re-asked. `beginWalk` validates the *shape* of a waypoint list and
+   * retains no geometry version, no door version and no route-dependency token,
+   * so a wall a player finished halfway through a journey was crossed as if it
+   * were not there -- measured on `main` at v0.0.206, and the walk is deleted
+   * by no save, so it looked to a player exactly like a ghosting bug that goes
+   * away on reload. `tests/integration/wall-built-mid-walk.test.ts` carries the
+   * tick numbers.
+   *
+   * Navigation's own invalidation is correct and cannot reach this: by the time
+   * the waypoints are here the route has left the navigation subsystem and
+   * become locomotion state. So the question is asked **at the moment of
+   * crossing**, which is the only moment that is about the tick that matters,
+   * and it is asked once per crossing rather than once per tick -- at
+   * `DEFAULT_WALK_SUBTILE_UNITS_PER_TICK` that is one predicate call every two
+   * ticks per walker, and none at all for the standing population.
+   *
+   * **A required parameter, not an optional one.** A default of "always
+   * allowed" would restore the defect silently for the next population given a
+   * walk -- guards are the named candidate (ADR 0059 open question 4) -- and
+   * the whole finding is that nobody noticed the question was never asked.
+   *
+   * ### What a refusal does
+   *
+   * The actor stops on the tile it legitimately occupies, with its progress
+   * into the refused leg discarded, and its walk is dropped. It does **not**
+   * arrive: `onArrived` is the owner's signal that a destination was reached,
+   * and an actor stopped by a wall is nowhere near one. The owner sees
+   * `isWalking` answer `false` at its next reconsideration and replans, which
+   * for a prisoner is `ActionSystem.continueTravelling`'s existing "not
+   * walking, no outstanding request" exit -- so a stopped walker costs one
+   * reconsideration cycle and no new plumbing.
+   *
+   * Discarding the partial progress can move the actor back by up to one leg's
+   * worth of sub-tile units on the tick the edge closes -- half a tile at the
+   * default speed. That is a correction, and the alternative to it is the
+   * defect; the ADR *When a route stops being valid* records the cost rather than hiding it.
    */
   public advance(
     ticks: number,
+    canCross: (key: number, from: TilePosition, to: TilePosition) => boolean,
     writeTile: (key: number, tile: TilePosition) => void,
     onArrived: (keys: readonly number[]) => void = () => {},
   ): void {
@@ -268,15 +336,30 @@ export class LocomotionStore {
 
     for (const [key, walk] of this.walks) {
       walk.progress += step;
+      let stopped = false;
       while (walk.progress >= LOCOMOTION_SUBTILE_UNITS && walk.next < walk.waypoints.length) {
-        walk.progress -= LOCOMOTION_SUBTILE_UNITS;
         const reached = walk.waypoints[walk.next]!;
         const from = walk.waypoints[walk.next - 1]!;
+        if (!canCross(key, from, reached)) {
+          // Asked *before* the progress is spent and before `writeTile`, so an
+          // actor refused an edge has never been on the far side of it: no
+          // consumer of the position store, and no render publication, ever
+          // sees it there.
+          walk.progress = 0;
+          stopped = true;
+          break;
+        }
+        walk.progress -= LOCOMOTION_SUBTILE_UNITS;
         walk.headingX = headingComponent(reached.x - from.x);
         walk.headingY = headingComponent(reached.y - from.y);
         this.headings.set(key, { x: walk.headingX, y: walk.headingY });
         walk.next += 1;
         writeTile(key, reached);
+      }
+
+      if (stopped) {
+        this.blocked.push(key);
+        continue;
       }
 
       if (walk.next >= walk.waypoints.length) {
@@ -293,6 +376,15 @@ export class LocomotionStore {
       walk.headingX = headingComponent(to.x - from.x);
       walk.headingY = headingComponent(to.y - from.y);
       this.headings.set(key, { x: walk.headingX, y: walk.headingY });
+    }
+
+    // Dropped before `onArrived` runs, for the reason the arrivals are: a
+    // handler that starts the next journey must not have the walk it just
+    // started deleted by this loop. No handler is called for them -- see the
+    // class comment on `blocked`.
+    if (this.blocked.length > 0) {
+      for (const key of this.blocked) this.walks.delete(key);
+      this.blocked.length = 0;
     }
 
     if (this.arrived.length === 0) return;

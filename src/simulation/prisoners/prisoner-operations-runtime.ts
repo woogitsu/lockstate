@@ -322,6 +322,27 @@ export class PrisonerOperationsRuntime {
     this.locomotionSystem = new LocomotionSystem('prisoners.locomotion', (ticks, tick) =>
       this.locomotion.advance(
         ticks,
+        /*
+         * **The route is re-validated at the edge, not trusted from when it
+         * was planned** (the ADR *When a route stops being valid*).
+         *
+         * `options.navigation` is the same `NavigationSystem` the route was
+         * asked of, and `canTraverseEdge` is two chunk-cell reads and a `Map`
+         * lookup against the world as it stands on *this* tick -- no graph, no
+         * cache, no queue, and no replanning triggered from here. A walker
+         * whose next edge has been closed under it simply stops, and
+         * `ActionSystem.continueTravelling` picks that up at its next
+         * reconsideration exactly as it already picks up a canteen that was
+         * un-zoned mid-journey. That is what keeps the re-validation off
+         * AGENTS.md boundary 9's budgeted pathfinding path: the only actors
+         * that replan are the ones a new wall actually stopped.
+         *
+         * The context is `ActionSystem`'s, deliberately: the door this walker
+         * is about to cross must be judged against the same clearance the
+         * router judged it against when the route was planned, and
+         * `routeContextFor` is the one expression that says what that is.
+         */
+        (index, from, to) => options.navigation.canTraverseEdge(from, to, this.actionSystem.routeContextFor(index)),
         (index, tile) => {
           this.position.tileX[index] = tile.x;
           this.position.tileY[index] = tile.y;
