@@ -462,3 +462,441 @@ test.describe('playtest: the informed route', () => {
     console.log(consoleLines.join('\n') || '(nothing)');
   });
 });
+
+/**
+ * Save, reload, load -- after a prison built with the mouse.
+ *
+ * Issue #559 already records that a restored V4 save keeps an unbounded yard
+ * because V4 stores no room bounds. This asks what *else* a mouse-built
+ * prison loses across a real navigation.
+ */
+test.describe('playtest: save and reload a mouse-built prison', () => {
+  test('what survives a real navigation', async ({ page }) => {
+    test.setTimeout(300_000);
+    const consoleLines: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'debug') return;
+      const text = message.text();
+      if (text.startsWith('%cPhaser') || text.includes('WebGL')) return;
+      consoleLines.push(`[${message.type()}] ${text}`);
+    });
+    page.on('pageerror', (error) => consoleLines.push(`[pageerror] ${error.message}`));
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await installCommandTee(page);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await page.locator('.hud-minimap .ui-section__header').click();
+
+    await page.getByRole('button', { name: 'Build' }).click();
+    const origin = await calibrate(page);
+
+    await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+    await page.locator('.hud-build__buy-toggle').click();
+    await page.locator('.hud-build__buy .ui-number__input').fill('60');
+    await page.locator('.hud-build__buy-submit').click();
+    await page.getByRole('button', { name: 'Fast forward' }).click();
+    await page.waitForTimeout(4000);
+
+    await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+    const arm = await page.locator('.hud-build__arm').innerText();
+    if (arm.trim().toLowerCase().startsWith('place')) await page.locator('.hud-build__arm').click();
+    const northY = origin.originY + 12 * TILE;
+    const westX = origin.originX + 12 * TILE;
+    const eastX = origin.originX + 16 * TILE;
+    const southY = origin.originY + 16 * TILE;
+    for (const run of [
+      { a: { x: westX + TILE / 2, y: northY }, b: { x: eastX - TILE / 2, y: northY } },
+      { a: { x: westX + TILE / 2, y: southY }, b: { x: eastX - TILE / 2, y: southY } },
+      { a: { x: westX, y: northY + TILE / 2 }, b: { x: westX, y: southY - TILE / 2 } },
+      { a: { x: eastX, y: northY + TILE / 2 }, b: { x: eastX, y: southY - TILE / 2 } },
+    ]) {
+      await page.mouse.move(run.a.x, run.a.y);
+      await page.mouse.down({ button: 'left' });
+      await page.mouse.move((run.a.x + run.b.x) / 2, (run.a.y + run.b.y) / 2, { steps: 8 });
+      await page.mouse.move(run.b.x, run.b.y, { steps: 8 });
+      await page.mouse.up({ button: 'left' });
+      await page.waitForTimeout(150);
+    }
+    await page.waitForTimeout(25_000);
+
+    await page.getByRole('button', { name: 'Rooms' }).click();
+    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+    await page.locator('.hud-rooms__arm').click();
+    const from = centreOf(origin, 12, 12);
+    const to = centreOf(origin, 15, 15);
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down({ button: 'left' });
+    await page.mouse.move((from.x + to.x) / 2, (from.y + to.y) / 2, { steps: 6 });
+    await page.mouse.move(to.x, to.y, { steps: 6 });
+    await page.mouse.up({ button: 'left' });
+    await page.waitForTimeout(300);
+    await page.locator('.hud-rooms__confirm').click();
+    await page.waitForTimeout(800);
+
+    // Objects, inside the room this time.
+    await page.getByRole('button', { name: 'Build' }).click();
+    for (const [buildable, tx, ty] of [
+      ['bed-wooden', 13, 13],
+      ['toilet-brick', 15, 13],
+    ] as const) {
+      await page.locator(`.hud-build__list [data-buildable="${buildable}"]`).click();
+      const label = await page.locator('.hud-build__arm').innerText();
+      if (label.trim().toLowerCase().startsWith('place')) await page.locator('.hud-build__arm').click();
+      const point = centreOf(origin, tx, ty);
+      console.log(`place ${buildable} @ tile(${tx},${ty}): ${JSON.stringify(await press(page, point.x, point.y))}`);
+    }
+    await page.waitForTimeout(20_000);
+
+    const before = {
+      strip: (await panelText(page, '.hud-strip')).replace(/\n/g, ' | '),
+      rooms: await panelText(page, '.hud-rooms'),
+      alerts: await panelText(page, '.hud-alerts__list'),
+      queue: await panelText(page, '.hud-build__queue'),
+    };
+    console.log('=== BEFORE SAVE ===');
+    console.log(before.strip);
+    console.log(`alerts: ${JSON.stringify(before.alerts)}`);
+    console.log(`queue: ${JSON.stringify(before.queue)}`);
+
+    await page.getByRole('button', { name: 'Save now' }).click();
+    await expect(page.locator('.save-panel__status')).toContainText('Saved', { timeout: 15_000 });
+    console.log(`save status: ${await page.locator('.save-panel__status').innerText()}`);
+    console.log(`save row: ${await page.locator('.save-panel__item-label').first().innerText()}`);
+
+    // A real navigation.
+    await page.reload();
+    await openApp(page);
+    console.log('=== AFTER RELOAD, before Load ===');
+    console.log(`save row: ${await page.locator('.save-panel__item-label').first().innerText()}`);
+    console.log(`strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+
+    await page.getByRole('button', { name: 'Load' }).first().click();
+    await page.waitForTimeout(3000);
+    console.log('=== AFTER LOAD ===');
+    console.log(`strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+    await page.getByRole('button', { name: 'Rooms' }).click();
+    console.log(`rooms: ${await panelText(page, '.hud-rooms')}`);
+    await page.getByRole('button', { name: 'Build' }).click();
+    console.log(`queue: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+    console.log(`alerts: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+    console.log(`clock: day ${await page.locator('.hud-clock__day').innerText()} ${await page.locator('.hud-clock__day-progress').innerText()}`);
+    console.log('=== console ===');
+    console.log(consoleLines.join('\n') || '(nothing)');
+  });
+});
+
+/**
+ * What the build queue says while an order cannot start.
+ *
+ * A bed needs a plank; the walls needed bricks. A player who bought bricks and
+ * then ordered a bed has an order that can never start, and the panel's
+ * folded readout is "N waiting". This opens the queue and reads the row.
+ */
+test.describe('playtest: an order that cannot start', () => {
+  test('what the queue row says', async ({ page }) => {
+    test.setTimeout(240_000);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await installCommandTee(page);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await page.getByRole('button', { name: 'Build' }).click();
+    const origin = await calibrate(page);
+
+    // One wall order, with no bricks bought at all.
+    await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+    const arm = await page.locator('.hud-build__arm').innerText();
+    if (arm.trim().toLowerCase().startsWith('place')) await page.locator('.hud-build__arm').click();
+    await press(page, origin.originX + 12 * TILE + TILE / 2, origin.originY + 12 * TILE);
+    await page.getByRole('button', { name: 'Fast forward' }).click();
+    await page.waitForTimeout(6000);
+
+    console.log(`queue folded: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+    await page.locator('.hud-build__queue > .ui-section__header').click();
+    await page.waitForTimeout(300);
+    console.log(`queue opened: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+    console.log(
+      `rows: ${JSON.stringify(
+        await page.evaluate(() =>
+          [...document.querySelectorAll<HTMLElement>('.hud-build__queue-row:not([hidden])')].map((row) => row.innerText),
+        ),
+      )}`,
+    );
+    console.log(`alerts: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+    console.log(`strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+  });
+});
+
+/**
+ * Touch. Never exercised on the assembled page by any previous playtest.
+ */
+test.describe('playtest: touch and pinch on the real page', () => {
+  test.use({ hasTouch: true });
+
+  test('a prison built by tapping', async ({ page }) => {
+    test.setTimeout(240_000);
+    const consoleLines: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'debug') return;
+      const text = message.text();
+      if (text.startsWith('%cPhaser') || text.includes('WebGL')) return;
+      consoleLines.push(`[${message.type()}] ${text}`);
+    });
+    page.on('pageerror', (error) => consoleLines.push(`[pageerror] ${error.message}`));
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await installCommandTee(page);
+    await openApp(page);
+
+    await page.getByRole('button', { name: 'New prison' }).tap();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await page.getByRole('button', { name: 'Build' }).tap();
+
+    // A tap on the world, with the wall tool armed.
+    await page.locator('.hud-build__list [data-buildable="wall-brick"]').tap();
+    const arm = await page.locator('.hud-build__arm').innerText();
+    if (arm.trim().toLowerCase().startsWith('place')) await page.locator('.hud-build__arm').tap();
+
+    const before = (await sentCommands(page)).length;
+    await page.touchscreen.tap(700, 300);
+    await page.waitForTimeout(400);
+    console.log(`tap on world produced: ${JSON.stringify((await sentCommands(page)).slice(before))}`);
+
+    // Pinch to zoom, then tap the same screen point again. If the camera
+    // zoomed, the second tap must resolve to a different tile.
+    const client = await page.context().newCDPSession(page);
+    type TouchEventType = 'touchStart' | 'touchMove' | 'touchEnd' | 'touchCancel';
+    const dispatch = async (
+      type: TouchEventType,
+      fingers: readonly { id: number; x: number; y: number }[],
+    ): Promise<void> => {
+      await client.send('Input.dispatchTouchEvent', {
+        type,
+        touchPoints: fingers.map((f) => ({ x: f.x, y: f.y, id: f.id })),
+      });
+    };
+    const mid = { x: 720, y: 450 };
+    await dispatch('touchStart', [
+      { id: 0, x: mid.x - 60, y: mid.y },
+      { id: 1, x: mid.x + 60, y: mid.y },
+    ]);
+    for (let step = 1; step <= 6; step += 1) {
+      const gap = 120 + (240 * step) / 6;
+      await dispatch('touchMove', [
+        { id: 0, x: mid.x - gap / 2, y: mid.y },
+        { id: 1, x: mid.x + gap / 2, y: mid.y },
+      ]);
+    }
+    await dispatch('touchEnd', []);
+    await page.waitForTimeout(400);
+
+    const afterPinch = (await sentCommands(page)).length;
+    await page.touchscreen.tap(700, 300);
+    await page.waitForTimeout(400);
+    console.log(`tap after a pinch-out produced: ${JSON.stringify((await sentCommands(page)).slice(afterPinch))}`);
+    console.log(`pinch itself produced ${afterPinch - before - 1} extra command(s)`);
+
+    // One-finger drag on the world: does it pan, or lay a run?
+    const beforeDrag = (await sentCommands(page)).length;
+    await dispatch('touchStart', [{ id: 0, x: 600, y: 300 }]);
+    for (let step = 1; step <= 6; step += 1) await dispatch('touchMove', [{ id: 0, x: 600 + step * 20, y: 300 }]);
+    await dispatch('touchEnd', []);
+    await page.waitForTimeout(400);
+    console.log(`one-finger drag produced: ${JSON.stringify((await sentCommands(page)).slice(beforeDrag))}`);
+
+    console.log(`build panel: ${JSON.stringify(await panelText(page, '.hud-build__coordinates'))}`);
+    console.log('=== console ===');
+    console.log(consoleLines.join('\n') || '(nothing)');
+  });
+});
+
+/**
+ * Is the `AtlasLibrary` "Failed to fetch" seen at `page.reload()` the new
+ * page's loader failing, or the old page's in-flight request being aborted?
+ *
+ * The distinction matters: the first would mean a reloaded game has no actor
+ * art, the second is a browser tearing down a navigation and costs nothing.
+ * A page marker settles it -- the console handler is re-installed only after
+ * the reload has returned, so anything it records belongs to the new page.
+ */
+test.describe('playtest: the renderer warning at reload', () => {
+  test('which page emits it', async ({ page }) => {
+    test.setTimeout(180_000);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      const oldPageLines: string[] = [];
+      const onConsole = (message: { type(): string; text(): string }): void => {
+        if (message.type() === 'warning' || message.type() === 'error') oldPageLines.push(message.text());
+      };
+      page.on('console', onConsole as never);
+      await page.reload();
+      await page.waitForSelector('#game-root canvas');
+      await page.waitForTimeout(4000);
+      page.off('console', onConsole as never);
+      console.log(
+        `attempt ${attempt}: warnings seen across the navigation = ${JSON.stringify(
+          oldPageLines.filter((line) => line.includes('World renderer') || line.includes('atlas')),
+        )}`,
+      );
+      // Does the *current* page hold the art?
+      console.log(
+        `attempt ${attempt}: registry fetch from the loaded page -> ${JSON.stringify(
+          await page.evaluate(async () => {
+            try {
+              const response = await fetch('/assets/actors/asset-registry.json');
+              return { ok: response.ok, status: response.status };
+            } catch (error) {
+              return { error: error instanceof Error ? error.message : String(error) };
+            }
+          }),
+        )}`,
+      );
+      console.log(
+        `attempt ${attempt}: textures Phaser holds -> ${JSON.stringify(
+          await page.evaluate(() => {
+            const game = (globalThis as { Phaser?: { Game?: unknown } }).Phaser;
+            return game === undefined ? 'no Phaser global' : 'Phaser global present';
+          }),
+        )}`,
+      );
+    }
+  });
+});
+
+/**
+ * The arrival screen, in full: everything a new player can read before they
+ * have pressed anything, and everything they can press.
+ */
+test.describe('playtest: arrival', () => {
+  test('what a new player is told', async ({ page }) => {
+    test.setTimeout(180_000);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openApp(page);
+
+    const survey = async (label: string): Promise<void> => {
+      console.log(`=== ${label} ===`);
+      console.log(
+        await page.evaluate(() => {
+          const hud = document.querySelector<HTMLElement>('.hud');
+          const text = hud === null ? '(no hud)' : (hud.innerText ?? '').replace(/\n{2,}/g, '\n').trim();
+          const pressable = [...document.querySelectorAll<HTMLElement>('button')]
+            .filter((b) => b.getClientRects().length > 0)
+            .map((b) => (b.innerText || b.getAttribute('aria-label') || b.className).replace(/\n/g, ' ').trim());
+          return `${text}\n--- pressable controls (${pressable.length}) ---\n${pressable.join(' / ')}`;
+        }),
+      );
+    };
+
+    await survey('ARRIVAL, before any click (activeTab = overview)');
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await survey('AFTER "New prison", still on the Overview tab');
+
+    console.log(
+      `alerts header, folded: ${JSON.stringify(
+        await page.evaluate(() => {
+          const header = document.querySelector<HTMLElement>('.hud-minimap .ui-section__header');
+          if (header === null) return 'absent';
+          const section = header.closest('.ui-section') as HTMLElement | null;
+          return {
+            headerText: header.innerText,
+            ariaExpanded: header.getAttribute('aria-expanded'),
+            sectionCollapsed: section?.dataset['collapsed'],
+            childElementCount: header.childElementCount,
+            childClasses: [...header.children].map((c) => c.className),
+          };
+        }),
+      )}`,
+    );
+  });
+});
+
+/**
+ * The four requirement lines the Rooms panel prints for a Cell, and what each
+ * one actually does when the player presses Designate.
+ *
+ * They are rendered as one list in one block. This measures whether they
+ * behave as one kind of thing.
+ */
+test.describe('playtest: the four requirement lines', () => {
+  test('what each one does to the Designate button', async ({ page }) => {
+    test.setTimeout(240_000);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await installCommandTee(page);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await page.getByRole('button', { name: 'Build' }).click();
+    const origin = await calibrate(page);
+
+    await page.getByRole('button', { name: 'Rooms' }).click();
+    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+    console.log(`the requirement block a player reads: ${JSON.stringify(await panelText(page, '.hud-rooms__status'))}`);
+
+    const drag = async (x0: number, y0: number, x1: number, y1: number): Promise<void> => {
+      const a = centreOf(origin, x0, y0);
+      const b = centreOf(origin, x1, y1);
+      await page.mouse.move(a.x, a.y);
+      await page.mouse.down({ button: 'left' });
+      await page.mouse.move((a.x + b.x) / 2, (a.y + b.y) / 2, { steps: 4 });
+      await page.mouse.move(b.x, b.y, { steps: 4 });
+      await page.mouse.up({ button: 'left' });
+      await page.waitForTimeout(300);
+    };
+
+    for (const shape of [
+      { name: 'too small (1x1)', from: [20, 20], to: [20, 20] },
+      { name: 'big enough, open (4x4)', from: [17, 17], to: [20, 20] },
+    ] as const) {
+      // The panel folds itself on every arm (`rooms-panel.ts`, "starts folded
+      // on every arm"), so it has to be re-opened before anything in it can be
+      // read or pressed.
+      if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
+        await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+        await page.waitForTimeout(200);
+      }
+      const armLabel = await page.locator('.hud-rooms__arm').innerText();
+      if (armLabel.trim().toLowerCase().startsWith('draw')) await page.locator('.hud-rooms__arm').click();
+      await drag(shape.from[0], shape.from[1], shape.to[0], shape.to[1]);
+      if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
+        await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+        await page.waitForTimeout(200);
+      }
+      const confirm = page.locator('.hud-rooms__confirm');
+      const before = (await sentCommands(page)).length;
+      const enabled = await confirm.isEnabled();
+      console.log(`--- ${shape.name}`);
+      console.log(`    note the player reads: ${JSON.stringify(await panelText(page, '.hud-rooms__note'))}`);
+      console.log(`    status block: ${JSON.stringify(await panelText(page, '.hud-rooms__status'))}`);
+      console.log(`    Designate enabled: ${enabled}`);
+      if (enabled) {
+        await confirm.click();
+        await page.waitForTimeout(500);
+        console.log(`    commands the press produced: ${JSON.stringify((await sentCommands(page)).slice(before))}`);
+        console.log(`    ROOMS count: ${(await page.locator('.hud-strip').innerText()).replace(/\n/g, ' | ')}`);
+        console.log(`    alerts list laid out: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+        console.log(
+          `    alert rows present in the DOM: ${JSON.stringify(
+            await page.evaluate(() =>
+              [...document.querySelectorAll<HTMLElement>('.hud-alerts__list [data-alert]')].map((row) => ({
+                id: row.dataset['alert'],
+                text: row.innerText.replace(/\n/g, ' '),
+                boxWidth: Math.round(row.getBoundingClientRect().width),
+                boxHeight: Math.round(row.getBoundingClientRect().height),
+              })),
+            ),
+          )}`,
+        );
+      } else if (await page.locator('.hud-rooms__cancel').isVisible()) {
+        await page.locator('.hud-rooms__cancel').click();
+        await page.waitForTimeout(200);
+      }
+    }
+  });
+});
