@@ -107,6 +107,44 @@ describe('what the prison says when nothing went wrong', () => {
     });
   });
 
+  /**
+   * The grade of every incident event, and the line between the two bands
+   * (issue #555).
+   *
+   * **Not a restatement of `EVENT_PRESENTATION`.** The claim being pinned is
+   * the *shape* of the table rather than its five entries: an incident that
+   * can take the prison out of the player's hands is painted differently from
+   * one that cannot, and the simulation decides which is which. `assault` is
+   * the only kind capped below `IncidentResponsePolicy.lockdownSeverityThreshold`
+   * -- `ASSAULT_SEVERITY_CEILING` is 5, deliberately one under 6 -- so it is
+   * the only opening that is a warning, and a change that graded it alongside
+   * the others, or split one of the others away from them, has to come here
+   * and say so.
+   */
+  it('paints a fistfight and a riot differently, on the line the simulation already draws (#555)', () => {
+    const severityOf = (type: keyof typeof SAMPLE): string => {
+      const notice = hudEventNoticeFromWorkerMessage(publication(SAMPLE[type](1)));
+      if (notice === undefined || notice === 'none') throw new Error(`${type} produced no notice`);
+      return notice.severity;
+    };
+
+    // The three that keep the full 0-10 severity range and can therefore lock
+    // a sector down. The riot is the strongest: `riot-regime.ts` overrides
+    // what its participants do, so while it is open the HUD's own account of
+    // the prisoners' day is not what is happening.
+    expect(severityOf('incidents.riot-opened')).toBe('danger');
+    expect(severityOf('incidents.escape-attempt-opened')).toBe('danger');
+    expect(severityOf('incidents.gang-retaliation-opened')).toBe('danger');
+
+    // The one that cannot, by construction.
+    expect(severityOf('incidents.assault-opened')).toBe('warning');
+
+    // And the sentence that ends them. Nothing on this channel is retracted,
+    // so without an `'info'` counterpart the three rows above would leave the
+    // band red over a prison that is calm again.
+    expect(severityOf('incidents.all-clear')).toBe('info');
+  });
+
   it('puts the numbers the sentence needs where the sentence can reach them', () => {
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
     const discharged = hudEventNoticeFromWorkerMessage(publication(SAMPLE['prisoners.discharged'](1)));
@@ -119,6 +157,22 @@ describe('what the prison says when nothing went wrong', () => {
     // never substituted them.
     expect(localizer.format(discharged.labelKey, discharged.labelParameters)).toContain('2');
     expect(localizer.format(unpaid.labelKey, unpaid.labelParameters)).toContain('360');
+
+    /*
+     * The riot's participant count is the only figure the incident events
+     * carry, and it must reach the finished sentence too. The four others
+     * carry none, and each of their sentences must still be a whole sentence
+     * rather than one with a hole where a placeholder went unsubstituted --
+     * which is what a `{count}` left in an unparameterised message looks like.
+     */
+    const riot = hudEventNoticeFromWorkerMessage(publication(SAMPLE['incidents.riot-opened'](1)));
+    if (riot === undefined || riot === 'none') throw new Error('a riot must produce a notice');
+    expect(localizer.format(riot.labelKey, riot.labelParameters)).toContain('12');
+    for (const type of ['incidents.assault-opened', 'incidents.escape-attempt-opened', 'incidents.gang-retaliation-opened', 'incidents.all-clear'] as const) {
+      const notice = hudEventNoticeFromWorkerMessage(publication(SAMPLE[type](1)));
+      if (notice === undefined || notice === 'none') throw new Error(`${type} must produce a notice`);
+      expect(localizer.format(notice.labelKey, notice.labelParameters), `${type} must not leave a placeholder on screen`).not.toContain('{');
+    }
   });
 });
 
