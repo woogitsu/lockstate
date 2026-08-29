@@ -105,6 +105,23 @@ export const HUD_MESSAGE_KEY = {
   buildTargetNone: 'hud.build.target-none',
   buildTargetValue: 'hud.build.target-value',
   buildTargetRun: 'hud.build.target-run',
+  /*
+   * The readout for an aim that is on a *tile* rather than on a tile edge
+   * (#550).
+   *
+   * A fourth key rather than reusing `buildTargetValue` with an empty `{edge}`:
+   * that template is `{x}, {y} · {edge}` and an object has no edge at all, so a
+   * blank interpolation would leave a dangling separator on the one line in the
+   * panel that says where the player is aiming. Reusing it would also make the
+   * separator content's problem to remove, in every locale, rather than this
+   * layer's problem to not print.
+   *
+   * It is the readout for both halves of the object tool -- placing and
+   * removing -- because both are one press on one tile and the tile is the
+   * whole of what "where" means for either. What is *standing* on that tile is
+   * the simulation's to know and the ghost's to draw.
+   */
+  buildTargetTile: 'hud.build.target-tile',
   buildCoordinates: 'hud.build.coordinates',
   buildCoordinatesHint: 'hud.build.coordinates-hint',
   /*

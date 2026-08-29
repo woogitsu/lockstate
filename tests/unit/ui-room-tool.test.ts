@@ -210,6 +210,26 @@ describe('RoomTool routes a gesture without knowing what a command is', () => {
     expect(areas).toEqual([{ x: 3, y: 4, width: 6, height: 6 }, undefined]);
   });
 
+  it('withdraws its aim when it is disarmed, rather than leaving the last one on the panel', () => {
+    // Issue #550, found on the Build panel and swept here: the readout is a
+    // claim about where the pointer is aimed, and a disarmed tool has handed
+    // the pointer back to the camera. Leaving the last rectangle on the "Area"
+    // line would keep a control asserting something false -- and nothing else
+    // clears it, because pressing "Draw on map" a second time neither hides the
+    // panel (which does clear it) nor produces a rectangle of its own.
+    const areas: (HudRoomArea | undefined)[] = [];
+    const tool = new RoomTool();
+    tool.attachReadout((area) => areas.push(area));
+    tool.setArmed(true, { roomId: 'room.cell', removing: false });
+
+    tool.target({ tileX: 3, tileY: 4, width: 6, height: 6 });
+    expect(areas.at(-1)).toEqual({ x: 3, y: 4, width: 6, height: 6 });
+
+    tool.setArmed(false, { roomId: 'room.cell', removing: false });
+
+    expect(areas.at(-1), 'a disarmed tool is aimed at nothing').toBeUndefined();
+  });
+
   it('drops a gesture when nothing is attached, which is a page with a world and no interface', () => {
     const tool = new RoomTool();
     tool.setArmed(true, { roomId: 'room.cell', removing: false });

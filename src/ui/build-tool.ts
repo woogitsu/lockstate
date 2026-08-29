@@ -116,6 +116,23 @@ export class BuildTool implements BuildToolPort, EditHistoryPort, HudWorldBuildS
   public setArmed(armed: boolean, definitionId?: string): void {
     this.definitionId = definitionId ?? this.definitionId;
     this.armed = armed && this.definitionId !== undefined;
+    // A tool that is not armed is aimed at nothing, and says so (#550).
+    //
+    // Without this the panel's one live readout kept naming the last edge this
+    // tool reported, for as long as the *next* tool held the pointer: the
+    // composition root disarms this one and arms the object tool in the same
+    // call, so a player who laid a wall at 20,16 and then pressed "Remove" was
+    // told their deletion was landing on 20,16 wherever they aimed it. The
+    // panel could not have caught it -- a tool armed to remove is armed, so its
+    // own `if (!armed) setTarget(undefined)` never fires -- and the scene could
+    // not either: its disarm sweep routes through `cancelBuild`, which returns
+    // immediately when no pointer is down, which is every hover.
+    //
+    // So the withdrawal belongs to whoever made the claim. Published on the
+    // way *out* rather than filtered on the way in, because the three tools
+    // publish into one line and nothing downstream knows which of them is
+    // currently allowed to.
+    if (!this.armed) this.readout?.(undefined);
   }
 
   public setDefinition(definitionId: string): void {
