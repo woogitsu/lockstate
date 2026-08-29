@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type CDPSession, type Page } from '@playwright/test';
 
 /**
  * Real-browser verification for the keyboard listeners `WorldScene` registers on
@@ -558,5 +558,344 @@ test.describe('the world scene pointer inventory (#209)', () => {
     // rather than as an assertion, because "one spare" is a statement about
     // `src/input/gestures.ts`, and the assertion that holds *it* belongs
     // beside that file, not here.
+  });
+});
+
+/**
+ * Recovery for a pointer gesture whose release never arrives (#202's `blur`
+ * precedent, extended to the three pointer state machines by issue #516).
+ *
+ * `commitBuild`/`commitArea`/`commitObject` only ever run from Phaser's
+ * `'pointerup'`/`'pointerupoutside'`. Before this fix, nothing else ever
+ * reached `buildPointerId`/`areaPointerId`/`objectPointerId` once one of them
+ * was set -- exactly the gap #202 closed for a key held across a `blur`, left
+ * open on the three pointer fields it did not touch. `world-scene.ts`'s
+ * `cancelBuild`/`cancelArea`/`cancelObject` already existed as the one place a
+ * gesture is abandoned without placing anything (`Escape`, a second touch
+ * finger); this issue is only about *what else* reaches them, not about a new
+ * way to abandon a gesture.
+ *
+ * Two triggers, both exercised below, for the two different ways a release
+ * can go missing:
+ *
+ * - **`blur`**: focus leaves the page and no `mouseup` ever follows, the same
+ *   shape #202 measured for the keyboard. `world-scene.ts`'s existing `blur`
+ *   listener now also calls `cancelAllGestures()`.
+ * - **A hover move reporting no button held (`buttons === 0`), with no
+ *   `pointerup`/`pointerupoutside` ever dispatched.** Focus never has to
+ *   leave the page for this: a driver or the OS can drop the up-event while
+ *   the window stays focused throughout, which is the case `blur` cannot see.
+ *   `extendBuild`/`extendArea`/`extendObject` each check this on every move
+ *   they're asked to extend (`releaseMissed`), and cancel their own gesture
+ *   the moment it is observed.
+ *
+ * `Escape` already covered committing nothing after a *known* cancel
+ * (`world-scene-input.spec.ts`'s `'cancels a pending wall run on Escape'`
+ * above); what was never covered is either of the two triggers here putting
+ * the scene into that same cancelled state on their own, for any of the three
+ * gestures -- which is the gap this issue is about.
+ *
+ * All three gestures are covered here, not only the build gesture the issue
+ * reproduced by hand: `beginArea`/`extendArea`/`commitArea`/`cancelArea` and
+ * `beginObject`/`extendObject`/`commitObject`/`cancelObject` are the same
+ * shape as their build counterparts (`world-scene.ts:806-914`), so the harness
+ * now wires a room-tool and an object-tool double beside the existing
+ * build-tool one and the specs below drive all three through both triggers --
+ * this *is* the independent verification the issue asked for rather than an
+ * argument from symmetry alone.
+ */
+test.describe('the world scene pointer gesture recovery (#516)', () => {
+  /**
+   * The CDP session Playwright's own `page.mouse` API cannot substitute for.
+   *
+   * `page.mouse.up()` would dispatch the very `pointerup` this defect is
+   * about the *absence* of, and it would also mark Playwright's own tracked
+   * button state released -- neither of which is the scenario under test.
+   * `Input.dispatchMouseEvent`'s `buttons` field is an explicit bitmask,
+   * independent of that tracking, so a `'mouseMoved'` can report `buttons: 0`
+   * while Playwright still believes (correctly, as far as it knows) that the
+   * button it pressed with `page.mouse.down()` is held. That is exactly the
+   * shape #516's own reproduction used -- "a `mouseMoved` carrying
+   * `buttons: 0`, with no `mouseup` or `pointerup` ever dispatched" -- so this
+   * is a faithful replay of that evidence rather than a new scenario invented
+   * for the test.
+   *
+   * What this does **not** establish, and is not claimed to: whether a real
+   * desktop browser/OS ever produces exactly this sequence on its own is
+   * engine- and OS-dependent (#516 says so explicitly), and the literal
+   * "alt-tab away and release over another window" case has no OS focus for
+   * Playwright's virtual mouse to leave. What this *does* establish is the
+   * half that does not need an OS to be true: once such a move arrives, by
+   * whatever means, `WorldScene` now recovers from it, where before nothing
+   * would have.
+   */
+  async function missedRelease(client: CDPSession, at: { readonly x: number; readonly y: number }): Promise<void> {
+    await client.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: at.x, y: at.y, buttons: 0 });
+  }
+
+  /** Two animation frames, matching this file's own `settle` above but local to this block for the same reason `world-scene-touch.spec.ts` keeps its own copy: no shared harness module exists to import it from. */
+  async function settle(page: Page): Promise<void> {
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+        }),
+    );
+  }
+
+  async function canvasCentre(page: Page): Promise<{ readonly x: number; readonly y: number }> {
+    const canvas = page.locator('canvas');
+    await expect(canvas).toBeVisible();
+    const box = (await canvas.boundingBox())!;
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  }
+
+  test('cancels a pending wall run when the window loses focus mid-drag, and the run does not commit (#516)', async ({
+    page,
+  }) => {
+    await openHarness(page);
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.armBuildTool(true));
+    const centre = await canvasCentre(page);
+
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.down({ button: 'left' });
+    await page.mouse.move(centre.x + 200, centre.y, { steps: 10 });
+
+    // Positive control: a run really is in progress, spanning more than the
+    // one segment a bare press would leave targeted.
+    const during = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun());
+    expect(during, 'no run was in progress, so blur cancelling it proves nothing').toBeDefined();
+    expect(during!.length).toBeGreaterThan(1);
+
+    // The alt-tab shape #202 measured for the keyboard: focus leaves and no
+    // `mouseup` ever follows.
+    await page.evaluate(() => window.dispatchEvent(new FocusEvent('blur')));
+    await settle(page);
+
+    expect(
+      await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun()),
+      'blur left the run targeted, which is the gap #516 found for the pointer state machines',
+    ).toBeUndefined();
+
+    // The button was never actually released as far as the page is
+    // concerned; the eventual `mouseup` must not place what `blur` already
+    // abandoned. Dispatched for hygiene (it is the real button state) and
+    // asserted because a second, separate path to `commitBuild` running after
+    // `cancelBuild` already ran would be its own defect.
+    await page.mouse.up({ button: 'left' });
+    await settle(page);
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.placedRuns())).toEqual([]);
+  });
+
+  test('cancels a pending room rectangle when the window loses focus mid-drag (#516)', async ({ page }) => {
+    // The same claim as the build spec above, for the area gesture -- proving
+    // the symmetry #516 argued for rather than assuming it from the shared
+    // shape of the code.
+    await openHarness(page);
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.armRoomTool(true));
+    const centre = await canvasCentre(page);
+
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.down({ button: 'left' });
+    await page.mouse.move(centre.x + 200, centre.y, { steps: 10 });
+
+    const during = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedArea());
+    expect(during, 'no rectangle was in progress, so blur cancelling it proves nothing').toBeDefined();
+    expect(during!.width, 'the drag never actually spanned more than one tile').toBeGreaterThan(1);
+
+    await page.evaluate(() => window.dispatchEvent(new FocusEvent('blur')));
+    await settle(page);
+
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedArea())).toBeUndefined();
+
+    await page.mouse.up({ button: 'left' });
+    await settle(page);
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.placedAreas())).toEqual([]);
+  });
+
+  test('cancels a pending object placement when the window loses focus mid-drag (#516)', async ({ page }) => {
+    // The same claim again, for the third gesture. The object tool has no
+    // second corner to drag -- `beginObject`'s own comment says why -- so the
+    // positive control here is that the drag actually moved the pending tile,
+    // not that it grew a rectangle.
+    await openHarness(page);
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.armObjectTool(true));
+    const centre = await canvasCentre(page);
+
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.down({ button: 'left' });
+    const atPress = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedObject());
+    expect(atPress, 'the press itself placed no pending tile, so a drag proves nothing further').toBeDefined();
+
+    await page.mouse.move(centre.x + 200, centre.y, { steps: 10 });
+    const during = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedObject());
+    expect(during, 'no placement was in progress, so blur cancelling it proves nothing').toBeDefined();
+    expect(during!.tileX, 'the drag never actually moved onto a different tile').not.toBe(atPress!.tileX);
+
+    await page.evaluate(() => window.dispatchEvent(new FocusEvent('blur')));
+    await settle(page);
+
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedObject())).toBeUndefined();
+
+    await page.mouse.up({ button: 'left' });
+    await settle(page);
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.placedObjects())).toEqual([]);
+  });
+
+  test('replaces a stale multi-segment wall run with a fresh single-edge hover ghost when a hover move reports no button held and no release was ever dispatched, and a fresh drag afterwards still places one wall (#516)', async ({
+    page,
+  }) => {
+    await openHarness(page);
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.armBuildTool(true));
+    const centre = await canvasCentre(page);
+    const client = await page.context().newCDPSession(page);
+
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.down({ button: 'left' });
+    await page.mouse.move(centre.x + 200, centre.y, { steps: 10 });
+
+    const during = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun());
+    expect(during, 'no run was in progress, so the recovery below proves nothing').toBeDefined();
+    expect(during!.length).toBeGreaterThan(1);
+
+    // #516's own reproduction, replayed: a move reporting no button down, with
+    // no `mouseup`/`pointerup` ever sent. The load-bearing claim is not that
+    // the readout goes blank -- an armed tool that shows nothing under the
+    // cursor is its own kind of broken -- it is that the recompute stops
+    // being anchored to the stale press point. `edgeRunFromDrag(buildPress,
+    // current)` against a press 220px behind the cursor would still be a
+    // multi-segment run (the pre-fix behaviour this reproduces); a single
+    // edge is what a plain, un-anchored hover always paints
+    // (`previewHover`/`pickEdgeAtWorld`), which is only reachable once
+    // `buildPointerId` has actually been cleared.
+    await missedRelease(client, { x: centre.x + 220, y: centre.y });
+    await settle(page);
+    const afterMissedRelease = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun());
+    expect(afterMissedRelease, 'the armed tool should still show a hover ghost, just not the stale one').toBeDefined();
+    expect(
+      afterMissedRelease!.length,
+      'still a multi-segment run anchored to the original press, which is the defect #516 measured',
+    ).toBe(1);
+
+    // Two further no-button moves, matching #516's evidence exactly ("the
+    // ghost stayed frozen through two further no-button moves" was the
+    // *unfixed* behaviour; here each is an ordinary single-edge hover, never a
+    // multi-segment run reappearing).
+    for (const dx of [30, 60]) {
+      await missedRelease(client, { x: centre.x + 220 + dx, y: centre.y });
+      await settle(page);
+      expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun())).toHaveLength(1);
+    }
+
+    // The half that matters most, and the one #516 itself named as the risk
+    // of leaving this open: whatever a *real*, if delayed, release finally
+    // does must not place the stale run. Dispatched for hygiene (matching the
+    // real button state) and asserted because a release reaching
+    // `commitBuild` after `cancelBuild` already ran on the same pointer id
+    // would be its own defect.
+    await page.mouse.up({ button: 'left' });
+    await settle(page);
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.placedRuns())).toEqual([]);
+
+    // The recovery is a cancel, not a mute: a fresh press-and-drag-and-release
+    // afterwards still places exactly one run, matching #516's own evidence
+    // ("a subsequent fresh press-and-release built exactly one new wall").
+    await page.mouse.move(centre.x - 150, centre.y - 100);
+    await page.mouse.down({ button: 'left' });
+    await page.mouse.move(centre.x - 150 + 150, centre.y - 100, { steps: 10 });
+    await page.mouse.up({ button: 'left' });
+    await settle(page);
+
+    const runs = await page.evaluate(() => window.lockstateWorldSceneHarness!.placedRuns());
+    expect(runs.length).toBe(1);
+    expect(runs[0]!.length).toBeGreaterThan(1);
+  });
+
+  test('replaces a stale multi-tile room rectangle with a fresh single-tile hover mark when a hover move reports no button held and no release was ever dispatched (#516)', async ({
+    page,
+  }) => {
+    // The area gesture's own gap, independently verified -- not inferred from
+    // the build spec above. `tileRectFromDrag(areaPress, current)` is the same
+    // anchored-recompute shape as `edgeRunFromDrag`, so the same distinguishing
+    // signal applies: a rectangle wider than one tile is the stale drag: a
+    // bare 1x1 is the fresh, un-anchored hover mark `previewAreaHover` paints.
+    await openHarness(page);
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.armRoomTool(true));
+    const centre = await canvasCentre(page);
+    const client = await page.context().newCDPSession(page);
+
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.down({ button: 'left' });
+    await page.mouse.move(centre.x + 200, centre.y, { steps: 10 });
+
+    const during = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedArea());
+    expect(during, 'no rectangle was in progress, so the recovery below proves nothing').toBeDefined();
+    expect(during!.width).toBeGreaterThan(1);
+
+    await missedRelease(client, { x: centre.x + 220, y: centre.y });
+    await settle(page);
+    const afterMissedRelease = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedArea());
+    expect(afterMissedRelease, 'the armed tool should still show a hover mark, just not the stale one').toBeDefined();
+    expect(
+      afterMissedRelease!.width,
+      'still a multi-tile rectangle anchored to the original press, which is the defect #516 measured',
+    ).toBe(1);
+    expect(afterMissedRelease!.height).toBe(1);
+
+    // The load-bearing check: the eventual real release must designate
+    // nothing, because the stale drag it would have committed is gone.
+    await page.mouse.up({ button: 'left' });
+    await settle(page);
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.placedAreas())).toEqual([]);
+  });
+
+  test('clears a pending object placement so an unrelated later release commits nothing, when a hover move reports no button held and no release was ever dispatched (#516)', async ({
+    page,
+  }) => {
+    /*
+     * The object gesture's own gap, independently verified -- and shaped
+     * differently from the two specs above, which is worth recording rather
+     * than glossing. `extendObject` -> `footprintUnder` never reads a
+     * retained press point at all (`beginObject`'s own comment: "there is no
+     * second corner for a drag to move"), so it recomputes correctly from the
+     * *current* pointer whether or not `releaseMissed` fires -- the ghost
+     * never visibly freezes for this gesture, before or after the fix, and a
+     * spec asserting the readout changed would be measuring nothing.
+     *
+     * What the fix changes is invisible and exactly what #516 is actually
+     * about: whether `objectPointerId` keeps this pointer "claimed" after the
+     * release goes missing. Left claimed, an unrelated later release -- one
+     * the player never intended as a placement, because as far as they know
+     * no button is down -- reaches `commitObject` and places whatever tile
+     * the cursor happens to be over. That is the assertion below, and it is
+     * the same one the build and room specs make at the point that matters
+     * most; it just has to carry the whole claim here on its own.
+     */
+    await openHarness(page);
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.armObjectTool(true));
+    const centre = await canvasCentre(page);
+    const client = await page.context().newCDPSession(page);
+
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.down({ button: 'left' });
+    const atPress = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedObject());
+    expect(atPress, 'the press itself placed no pending tile, so a drag proves nothing further').toBeDefined();
+
+    await page.mouse.move(centre.x + 200, centre.y, { steps: 10 });
+    const during = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedObject());
+    expect(during, 'no placement was in progress, so the recovery below proves nothing').toBeDefined();
+    expect(during!.tileX, 'the drag never actually moved onto a different tile').not.toBe(atPress!.tileX);
+
+    await missedRelease(client, { x: centre.x + 220, y: centre.y });
+    await settle(page);
+
+    // An unrelated later release: the player believes no button is down and
+    // is not trying to place anything, so this must place nothing.
+    await page.mouse.up({ button: 'left' });
+    await settle(page);
+    expect(
+      await page.evaluate(() => window.lockstateWorldSceneHarness!.placedObjects()),
+      'a release the player never intended as a placement placed one anyway, which is the risk #516 named',
+    ).toEqual([]);
   });
 });
