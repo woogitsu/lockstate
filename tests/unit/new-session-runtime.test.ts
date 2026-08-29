@@ -2,6 +2,7 @@ import { expect, test } from 'vitest';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { constantDeploymentSchedule, createGradedDoor } from '../../src/simulation/security';
+import { useSearchPolicy } from '../helpers/search-policy';
 import {
   chunkCoordinate,
   tileCoordinate,
@@ -78,7 +79,7 @@ test('new-session runtime wires contraband, intelligence and search through the 
 
   runtime.prisoners.roomInstances.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: { x: tileCoordinate(5), y: tileCoordinate(5) }, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: [] });
   runtime.contraband.introduce('item-1', 'contraband.phone', { kind: 'cell', id: 'cell-1' }, { sourceType: 'room-object', sourceId: 'workshop', introducedAtTick: 0 });
-  runtime.searchPolicies.push({ scope: 'cell', requiredGuardCount: 1, dwellTicksPerTarget: 5, baseDetectionProbability: 1, concealmentPenaltyPerPoint: 0, intelligenceConfidenceBonus: 0 });
+  useSearchPolicy(runtime, { scope: 'cell', requiredGuardCount: 1, dwellTicksPerTarget: 5, baseDetectionProbability: 1, concealmentPenaltyPerPoint: 0, intelligenceConfidenceBonus: 0 });
   // Two guards for a one-guard search, because the derived default sector takes
   // the first (ADR 0036): `DeploymentSystem` runs at order 270 and
   // `SearchSystem` at 295, both drawing from `unassignedGuardIds()`, so a single
@@ -127,7 +128,39 @@ test('new-session runtime starts with no fabricated incident, gang or contraband
   expect(runtime.tunnels.all()).toEqual([]);
   expect(runtime.contraband.all()).toEqual([]);
   expect(runtime.intelligence.all()).toEqual([]);
-  expect(runtime.searchPolicies).toEqual([]);
+});
+
+/**
+ * The second exception to the rule above, beside the derived sector below
+ * ([ADR 0073](../../docs/adr/0073-who-orders-a-contraband-search.md) Part 1,
+ * issue #552).
+ *
+ * **This assertion used to read `expect(runtime.searchPolicies).toEqual([])`**,
+ * and it is replaced rather than deleted because the sentence it stood for was
+ * wrong in a way worth recording: an empty policy list is not "no fabricated
+ * content", it is `SearchSystem.findPolicy` throwing
+ * `No search policy defined for scope "..."` on the first search anything
+ * ordered. A policy is tuning for a mechanism that exists, not authored content
+ * with a `nameKey`, which is why ADR 0073 records shipping the four as not
+ * optional under any of its options.
+ *
+ * The values are asserted as a floor and a shape rather than pinned, because
+ * they are explicitly directional: pinning `dwellTicksPerTarget: 40` here would
+ * make a balance pass a test edit. What must not regress is that they are
+ * *usable* -- four scopes, one policy each, and no zero that would make a
+ * search either free or impossible.
+ */
+test('new-session runtime ships one usable search policy per scope, because an empty list would throw', () => {
+  const runtime = createNewSimulationRuntime();
+
+  expect(runtime.searchPolicies.map((policy) => policy.scope)).toEqual(['cell', 'delivery', 'person', 'sector']);
+  for (const policy of runtime.searchPolicies) {
+    expect(policy.requiredGuardCount, `${policy.scope} must be staffable`).toBeGreaterThanOrEqual(1);
+    expect(policy.dwellTicksPerTarget, `${policy.scope} must cost time`).toBeGreaterThan(0);
+    expect(policy.baseDetectionProbability, `${policy.scope} must be able to find something`).toBeGreaterThan(0);
+    expect(policy.baseDetectionProbability, `${policy.scope} must not be certain`).toBeLessThanOrEqual(1);
+    expect(policy.concealmentPenaltyPerPoint, `${policy.scope} must let concealment matter`).toBeGreaterThan(0);
+  }
 });
 
 /**

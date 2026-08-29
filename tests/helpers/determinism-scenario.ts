@@ -4,6 +4,7 @@ import { Container } from '../../src/simulation/operations/inventory';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { constantDeploymentSchedule, createGradedDoor } from '../../src/simulation/security';
 import { tileCoordinate, type TilePosition } from '../../src/simulation/world/coordinates';
+import { useSearchPolicy } from './search-policy';
 
 /**
  * One scenario, built identically every time, that touches every
@@ -204,7 +205,9 @@ export function buildDeterminismScenario(masterSeed: number = SCENARIO_SEED, opt
   ])) {
     runtime.contraband.introduce(item.id, item.categoryId, { kind: 'cell', id: item.holderId }, { sourceType: 'room-object', sourceId: item.sourceId, introducedAtTick: 0 });
   }
-  runtime.searchPolicies.push({ scope: 'cell', requiredGuardCount: 1, dwellTicksPerTarget: 5, baseDetectionProbability: 0.5, concealmentPenaltyPerPoint: 0, intelligenceConfidenceBonus: 0.2 });
+  // Replaces the session's default `'cell'` policy rather than appending a
+  // second one, so this scenario's tuning is genuinely the one in force (#552).
+  useSearchPolicy(runtime, { scope: 'cell', requiredGuardCount: 1, dwellTicksPerTarget: 5, baseDetectionProbability: 0.5, concealmentPenaltyPerPoint: 0, intelligenceConfidenceBonus: 0.2 });
 
   // Mints sequential `intel.<n>` ids, so report order is recorded input.
   runtime.intelligence.report('cell', 'cell-1', 0.7, 'informant', 0);

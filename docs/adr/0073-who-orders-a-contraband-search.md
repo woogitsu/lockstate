@@ -20,6 +20,35 @@
 
 **Proposed, 2026-08-29. Not self-approved.**
 
+> **Implemented, 2026-08-29, on `agent/552-contraband-search`** -- Part 1 and
+> Part 2 Option A, on the owner's instruction to implement under this document.
+> **The status line above is deliberately left where it is:** implementing a
+> proposal does not accept it, and moving that line is the owner's, not the
+> implementing agent's (`AGENTS.md`: never self-approve an ADR). Option B is not
+> built, exactly as the recommendation below asks.
+>
+> Two things the implementation found, recorded here because a reader of the
+> Decision would otherwise take them on trust:
+>
+> 1. **Option A's wording is not implementable as written.** *"Guards on post
+>    search their own sector"* -- `SearchSystem.assignQueuedOrders` staffs a job
+>    from `claimableGuardIds`, the **unassigned** post-eligible pool (ADR 0053),
+>    never from a guard already standing a post. An order given in a prison
+>    whose every guard is posted would sit in the queue for ever, growing the
+>    payload and moving nothing. What shipped is therefore *a **staffed** sector
+>    orders sweeps and a **spare** guard walks them*, which preserves the
+>    argument the Consequences section makes -- the duty costs a guard, and a
+>    prison that hires exactly its posted requirement still finds nothing --
+>    while taking nobody off a wall.
+> 2. **The Context's account of intelligence is optimistic.**
+>    `intelligenceConfidenceBonus` is not merely hard to judge; it is `0` in
+>    every session a player can start. `IntelligenceLedger.report`'s only caller
+>    in `src/` is `reportInformantTip`, which has no caller at all, and
+>    `new-session.ts`'s own comment claiming a `contraband.observation` system
+>    writes the ledger names a system that does not exist (corrected in that
+>    file). So Option A's stated cost -- that it makes the intelligence bonus
+>    decorative -- is real, and it is not this change that made it so.
+
 It answers [issue #552](https://github.com/matmaxalez/lockstate/issues/552),
 which reports that the status strip's **Contraband** figure can never move in a
 player's game. The decision this document asks for is a **gameplay direction**,

@@ -187,6 +187,22 @@ export class SearchSystem implements SystemRegistration {
     return this.queue.some((order) => order.id === orderId);
   }
 
+  /**
+   * Every order this system is holding: queued ones in queue order, then active
+   * ones in canonical (ascending id) order.
+   *
+   * The read a *producer* needs, and it exists because `isQueued` and
+   * `getJobState` both answer about an id the caller already knows.
+   * `SectorSearchDutySystem` has to ask the opposite question -- "is a sweep of
+   * this sector outstanding, whatever it is called" -- and answering it from
+   * `getSnapshot()` would copy the whole queue and every job's target list to
+   * read the keys. Nothing here exposes a target or a guard, so a caller cannot
+   * learn from it what `projectContraband` deliberately does not publish.
+   */
+  public orderIds(): readonly string[] {
+    return [...this.queue.map((order) => order.id), ...this.activeJobsInCanonicalOrder().map((job) => job.id)];
+  }
+
   /** Enqueues a search -- stays queued (observably) until enough unassigned guards exist to staff it, per "searches create jobs and consume staff/time rather than resolving instantly." */
   public submitOrder(input: SearchOrderInput): void {
     if (this.queue.some((existing) => existing.id === input.id) || this.active.has(input.id)) {

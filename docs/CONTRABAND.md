@@ -108,11 +108,59 @@ optional injected port, exactly as it already takes `ActorIdentityMinter`.
   Contraband introduced there would be unreachable by the system built to find
   it.
 
-**What the prison cannot yet do about it is order a search.** `SearchSystem` is
-complete and `submitOrder` has no production caller, `searchPolicies` is empty
-in every session, and there is no command type. So a prison now holds
-contraband it has no way to look for, and that half is the owner's — ADR 0061
-open question 1. What contraband *does* do meanwhile is feed the two incident
+## Who orders a search
+
+**This section read *"What the prison cannot yet do about it is order a search.
+`SearchSystem` is complete and `submitOrder` has no production caller,
+`searchPolicies` is empty in every session, and there is no command type. So a
+prison now holds contraband it has no way to look for, and that half is the
+owner's — ADR 0061 open question 1."*** Every sentence of that was true and the
+first two are now false, which is why it is marked rather than overwritten:
+issue #552 reported the visible consequence — the status strip's **Contraband**
+figure reads `getMetrics().itemsDiscovered`, so it was structurally pinned at 0
+— and [ADR 0073](adr/0073-who-orders-a-contraband-search.md) answers it in two
+parts.
+
+**Four default policies, always** (ADR 0073 Part 1). `default-search-policies.ts`
+authors one policy per `SearchScope` as an exhaustive `Record` over the union,
+and `applyDefaultSearchPolicies` fills only the scopes a list lacks. It runs in
+`createNewSimulationRuntime` *and* after the payload in `restoreSessionSystems`,
+exactly like `applyDefaultSecuritySector` and for its reason: every save written
+before ADR 0073 carries `searchPolicies: []` and would otherwise be the one place
+`findPolicy` still throws. **No save-schema bump and no migration** — the
+payload already carries the array, and absence is honoured with a value.
+
+**A standing sector duty, not a player command** (ADR 0073 Part 2, Option A).
+`SectorSearchDutySystem` (`contraband.search-duty`, order 288) submits one
+sweep per **staffed** sector every `DEFAULT_SECTOR_SEARCH_INTERVAL_TICKS` (600,
+a quarter of an in-game day), over a window of at most four of that sector's
+occupants that rotates by a whole window each sweep, so every prisoner is
+reached in `ceil(population / 4)` sweeps rather than the same few for ever. It
+holds no state: "is a sweep outstanding" is a prefix scan of
+`SearchSystem.orderIds()` and the window is derived from the tick, so nothing
+new enters the payload.
+
+**Two conditions, and they are the cost.** A sector orders nothing unless (1)
+a guard is assigned to it and (2) the claimable pool can staff the order.
+ADR 0073's Option A says *"guards on post search their own sector"*; taken
+literally that is not implementable, because `assignQueuedOrders` staffs from
+`claimableGuardIds` — the unassigned, post-eligible pool (ADR 0053) — never
+from a posted guard, so an order in a fully-posted prison would queue for ever.
+So the duty is *a staffed sector runs sweeps and a **spare** guard walks them*:
+a prison that hires exactly its posted requirement finds nothing, and the first
+hire past it is what makes contraband findable. Measured through the real
+command path (twelve admissions, three guards, sixteen in-game days): 63 sweeps
+completed, both introduced items found, none queued and none cancelled — against
+0/0/0 on the same prison and seed before ADR 0073
+(`tests/integration/contraband-search-duty.test.ts`).
+
+**What is still the owner's** is ADR 0073's Option B, the targeted search
+control: search *this* cell, *this* person, sweep *that* sector. The ADR
+recommends not building it until a standing duty has been played, because its
+whole value is letting a player spend guards deliberately and nobody yet knows
+what a search costs.
+
+What contraband *does* beyond being found is feed the two incident
 producers ADR 0061 added: it is a term in the assault score and a precondition
 of an escape attempt (`docs/INCIDENTS.md`, "Three producers").
 
@@ -230,12 +278,16 @@ resuming and completing correctly after a full restore.
 ## Wiring into `SimulationRuntime`
 
 `createNewSimulationRuntime` constructs an empty `ContrabandRegistry`,
-`IntelligenceLedger`, `InformantRegistry`, `ConfiscationLedger`, an empty
-mutable `searchPolicies` array and an empty `searchContainerLocations` map
-(no fabricated contraband, intelligence, informants or policies -- the
+`IntelligenceLedger`, `InformantRegistry`, `ConfiscationLedger`, a
+`searchPolicies` array and an empty `searchContainerLocations` map
+(no fabricated contraband, intelligence or informants -- the
 same convention every prior issue's wiring follows; see "How contraband gets
-in" above for what that convention does and does not now mean), registers
-`IntelligenceSystem` and `SearchSystem` on the kernel, and pre-registers
+in" above for what that convention does and does not now mean). **The policy
+array is no longer among the empty ones**: `applyDefaultSearchPolicies` fills
+it before anything can order a search, because an empty list makes
+`findPolicy` throw rather than making a subsystem inert (ADR 0073 Part 1, and
+"Who orders a search" above). It registers
+`IntelligenceSystem`, `SectorSearchDutySystem` and `SearchSystem` on the kernel, and pre-registers
 all three named RNG streams -- `contraband.detection`,
 `contraband.intelligence` and, since ADR 0061, `contraband.introduction`.
 The third is separate from the other two for the reason they are separate

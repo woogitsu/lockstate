@@ -376,6 +376,7 @@ describe('kernel system ordering', () => {
       { id: 'security.deployment', order: 270 },
       { id: 'security.patrol', order: 280 },
       { id: 'incidents.trigger', order: 285 },
+      { id: 'contraband.search-duty', order: 288 },
       { id: 'contraband.search', order: 290 },
       { id: 'incidents.response', order: 295 },
       { id: 'prisoners.sanctions', order: 300 },

@@ -1,5 +1,6 @@
 import type { PayrollSnapshot, ProcurementSnapshot, TreasurySnapshot } from '../economy';
 import type { ConfiscationEvent } from '../contraband/confiscation';
+import { applyDefaultSearchPolicies } from '../contraband/default-search-policies';
 import type { InformantRecord } from '../contraband/informants';
 import type { IntelligenceLedger } from '../contraband/intelligence';
 import type { ContrabandRegistry } from '../contraband/item';
@@ -855,4 +856,26 @@ export function restoreSessionSystems(
     schedules: runtime.securitySchedules,
     watchedSectorIds: runtime.incidentSectorIds,
   });
+
+  /*
+   * 9. The four default search policies, re-applied after the payload
+   *    ([ADR 0073](../../../docs/adr/0073-who-orders-a-contraband-search.md)
+   *    Part 1, issue #552), and for exactly the reason above.
+   *
+   *    Step 6 cleared and refilled `searchPolicies` from the payload, because
+   *    `SearchSystem` reads that array live. **Every save written before ADR
+   *    0073 carries it empty** -- nothing in `src/` had ever pushed to it -- so
+   *    without this line a restored prison would be the one place
+   *    `SearchSystem.findPolicy` still throws, on the first sweep
+   *    `SectorSearchDutySystem` orders. The saves that condition reaches are
+   *    the ones players already have, which is the same argument ADR 0036 made
+   *    for the sector.
+   *
+   *    `applyDefaultSearchPolicies` is idempotent and payload-wins: a save that
+   *    carries a policy for a scope keeps its own, and one that carries none
+   *    gets the default. So no persisted field is added, `SAVE_SCHEMA_VERSION`
+   *    does not move, and there is no migration -- absence is honoured with a
+   *    value rather than a throw (ADR 0038 §1).
+   */
+  applyDefaultSearchPolicies(runtime.searchPolicies);
 }
