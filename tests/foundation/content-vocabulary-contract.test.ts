@@ -136,8 +136,18 @@ const requiredNotDeclared = requiredCapabilities.filter((capability) => !declare
  */
 const UNGATED_BY_ANY_ACTION: Readonly<Record<string, string>> = {
   'delivery-access': "Declared by `object.loading-dock-door` and required by `room.delivery-bay`, so the containment join reads it; no action gates on it. `src/simulation/construction/definition.ts` states it directly -- the capability appears \"in no `DEFAULT_ACTIONS` entry and in no other room's requirements\" -- and names ADR 0017's procurement route as the system that would consume it. The same comment records that what a player places is \"a capability marker on three tiles, not a passage\": it gates nothing and `DoorRegistry` does not read it.",
-  'food-preparation': 'Declared by `object.stove` and `object.prep-counter`, both required by `room.kitchen`. No action prepares food: `DEFAULT_ACTIONS` has `action.eat-meal` gating on `dining` in a canteen, and nothing that cooks. A meal-production or kitchen-job system is what would gate on it, and neither exists.',
-  'food-storage': 'Declared by `object.fridge`, required by `room.kitchen`. Gated on by no action, for the same reason as `food-preparation`: nothing in the simulation produces or stores a meal as an object yet.',
+  // `food-preparation` left this list at #532 and its entry is removed rather
+  // than reworded, which is what the stale-entry gate below asks for. **Both
+  // directions, because the half of its reason that was not falsified is the
+  // half `food-storage` below still leans on.** Its read was: *"Declared by
+  // `object.stove` and `object.prep-counter`, both required by `room.kitchen`.
+  // No action prepares food: `DEFAULT_ACTIONS` has `action.eat-meal` gating on
+  // `dining` in a canteen, and nothing that cooks. A meal-production or
+  // kitchen-job system is what would gate on it, and neither exists."* The
+  // kitchen-job half is what arrived -- `action.kitchen-work` gates on this
+  // capability in `room.kitchen` -- and the meal-production half did not: the
+  // action gains `hunger` directly and no meal exists as an item.
+  'food-storage': 'Declared by `object.fridge`, required by `room.kitchen`. Gated on by no action, and no longer for the same reason as `food-preparation`, which `action.kitchen-work` now gates on (#532): that action names the two `food-preparation` objects and deliberately not the fridge, because one action consumes one capability (#326) and gating on a cold store would make it a work station. Nothing in the simulation produces or stores a meal as an object, which is the half of the old shared reason that is still true.',
   'item-storage': "Declared by `object.storage-rack`, required by `room.storage-room`. `src/simulation/construction/definition.ts` lists it among the capabilities that \"appear in no `DEFAULT_ACTIONS` entry and in no other room's requirements\", and names #99's salvage destination as what would consume it.",
   'medical-supply': 'Declared by `object.medicine-cabinet`, required by `room.infirmary`. No action treats or medicates a prisoner; the health/treatment system that would gate on it does not exist.',
   'medical-treatment': "Declared by `object.medical-bed`, required by `room.infirmary`. It is load-bearing in the containment join and `src/simulation/construction/definition.ts` explains the asymmetry it produces -- a plain `object.bed` cannot satisfy an infirmary's requirement while a medical bed can satisfy a cell's -- but no action names it, so nothing a prisoner does depends on it.",
@@ -167,7 +177,12 @@ describe('an object capability is declared and gated on, or it is accounted for'
       required: requiredCapabilities.length,
       declaredNotRequired: declaredNotRequired.length,
       requiredNotDeclared: requiredNotDeclared.length,
-    }).toEqual({ declared: 19, required: 7, declaredNotRequired: 12, requiredNotDeclared: 0 });
+      // `required` 7 -> 8 and `declaredNotRequired` 12 -> 11 at #532:
+      // `action.kitchen-work` is the first entry in `DEFAULT_ACTIONS` to
+      // require `'food-preparation'`, so one capability crosses from the
+      // declared-only side to the required side. `declared` does not move --
+      // no object gained or lost a capability.
+    }).toEqual({ declared: 19, required: 8, declaredNotRequired: 11, requiredNotDeclared: 0 });
   });
 
   it('cannot pass vacuously on an empty catalogue or an empty scan', () => {
@@ -408,7 +423,9 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // does not move and both unreachable counts rise by one: `contraband-state`
       // is one of the 33 namespaces waiting for a panel, and the new member
       // waits with the two beside it.
-      labels: 174,
+      // 175 at #532: `action.kitchen-work` is one label added to the existing
+      // `action` namespace, so `namespaces` does not move.
+      labels: 175,
       namespacesWithACallSite: 11,
       namespacesWithoutACallSite: 31,
       labelsWithoutACallSite: 118,
