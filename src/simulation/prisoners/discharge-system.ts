@@ -1,5 +1,6 @@
 import type { EntityId, EntityStore } from '../entity/entity-store';
 import type { EntityQuery } from '../entity/query';
+import type { SimulationEventLog } from '../events';
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import { classifiedAtTickOf } from './classification-review-system';
 import { type IntakeStage, intakeStageFromIndex, type PrisonerRecordComponent } from './components';
@@ -119,11 +120,21 @@ export class PrisonerDischargeSystem implements SystemRegistration {
 
   private dischargedCount = 0;
 
+  /**
+   * `events` is the session's `SimulationEventLog`. Required rather than
+   * optional, for the reason `PayrollSystem`'s is: a discharge system with no
+   * sink releases prisoners silently, which is the state ADR 0050 §5 recorded
+   * as acceptable ("no new UI is added, and none is needed for the loop to be
+   * honest") and issue #507 decision 1 overruled -- the population count
+   * falling is a level the player can read, but nothing *said* a sentence had
+   * ended, and a level nobody was watching at that moment is not a sentence.
+   */
   public constructor(
     private readonly store: EntityStore,
     private readonly query: EntityQuery,
     private readonly records: PrisonerRecordComponent,
     private readonly surfaces: PrisonerReleaseSurfaces,
+    private readonly events: SimulationEventLog,
   ) {}
 
   public getMetrics(): PrisonerDischargeMetrics {
@@ -168,8 +179,28 @@ export class PrisonerDischargeSystem implements SystemRegistration {
   }
 
   public update(context: SimulationContext): void {
+    let discharged = 0;
     for (const entityId of this.due(context.tick)) {
-      if (releasePrisoner(this.surfaces, entityId, context.tick)) this.dischargedCount += 1;
+      if (releasePrisoner(this.surfaces, entityId, context.tick)) discharged += 1;
     }
+    this.dischargedCount += discharged;
+    /*
+     * One event for the tick, carrying how many left, rather than one per
+     * prisoner.
+     *
+     * `due()` returns everybody whose sentence has ended by this tick, so a
+     * prison whose intake arrived together discharges together --
+     * `ADMISSION_REQUEST` in `src/main.ts` asks for the same
+     * `sentenceLengthTicks` every time, which ADR 0050 flagged, so that is the
+     * ordinary case rather than the corner one. A row per prisoner would put a
+     * burst of identical sentences on the channel for what a player reads as
+     * one occurrence, and the burst would be worst exactly when the prison is
+     * busiest.
+     *
+     * `recordDischarge` ignores a count below 1, so a tick on which nobody was
+     * due -- every tick but a handful -- records nothing without this needing a
+     * guard of its own.
+     */
+    this.events.recordDischarge(discharged, context.tick);
   }
 }

@@ -1,4 +1,5 @@
 import type { ActorIdentityLifecycle } from '../../src/simulation/identity/actor-identity';
+import { SimulationEventLog } from '../../src/simulation/events';
 import type { Kernel } from '../../src/simulation/kernel/kernel';
 import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
 import { PrisonerOperationsRuntime } from '../../src/simulation/prisoners/prisoner-operations-runtime';
@@ -9,6 +10,8 @@ import { buildCellBlockFixture } from './navigation-fixture';
 export interface PrisonerScenarioFixture {
   readonly navigation: NavigationSystem;
   readonly prisoners: PrisonerOperationsRuntime;
+  /** The session's event log, so a scenario can assert what the prison said and not only what it became (issue #507). */
+  readonly events: SimulationEventLog;
   readonly generalCellTiles: readonly RoomInstance['anchorTile'][];
   readonly solitaryCellTiles: readonly RoomInstance['anchorTile'][];
   readonly originTile: RoomInstance['anchorTile'];
@@ -50,9 +53,16 @@ export function buildPrisonerScenarioFixture(options: {
   );
   navigation.setLoadedChunks(cellBlock.chunkPositions);
 
+  // The session's event log, exposed on the fixture so a scenario that steps
+  // past a sentence end can assert what the prison *said* rather than only
+  // that the population fell -- which is the whole distinction issue #507
+  // draws, and the one a fixture that swallowed the log could not express.
+  const events = new SimulationEventLog();
+
   const prisoners = new PrisonerOperationsRuntime({
     capacity: options.capacity,
     navigation,
+    events,
     ...(options.identity !== undefined ? { identity: options.identity } : {}),
     ...(options.sanctionPolicy !== undefined ? { sanctionPolicy: options.sanctionPolicy } : {}),
   });
@@ -93,6 +103,7 @@ export function buildPrisonerScenarioFixture(options: {
   return {
     navigation,
     prisoners,
+    events,
     generalCellTiles,
     solitaryCellTiles,
     originTile: canteenTile,

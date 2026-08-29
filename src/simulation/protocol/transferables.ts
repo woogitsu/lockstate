@@ -25,8 +25,6 @@ export function collectProtocolTransferables(
       return collectPayloadBuffer(message.payload.delta);
     case 'simulation/snapshot':
       return collectPayloadBuffer(message.payload.snapshot);
-    case 'simulation/event':
-      return collectPayloadBuffer(message.payload.event);
     // A projection reply carries an optional `versionedPayload`, so it may in
     // principle be an `ArrayBuffer` -- the same treatment `simulation/delta`
     // and `simulation/snapshot` get. Nothing in the *projection catalogue*
@@ -46,6 +44,13 @@ export function collectProtocolTransferables(
     // no buffer here to transfer, and ADR 0003's transferable policy reserves
     // ownership transfer for payloads profiling shows need it.
     case 'simulation/request-projection':
+    // A sequence, a tick, a type from a closed vocabulary and one integer
+    // beside it. This used to unwrap an `ArrayBuffer`, because the payload
+    // used to be an opaque `versionedPayload`; issue #507 gave the family its
+    // first producers and a typed union in its place (`simulationEventSchema`
+    // in `./types` says why), and a discriminated union of plain integers has
+    // no buffer to transfer at any event count.
+    case 'simulation/event':
     case 'simulation/shutdown':
     case 'protocol/handshake-accepted':
     case 'protocol/pong':

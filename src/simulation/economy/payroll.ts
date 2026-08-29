@@ -2,6 +2,7 @@ import type { ContentRegistry } from '../../content/registry';
 import type { StaffRoleDefinition } from '../../content/staff-role-catalog';
 import { defaultStaffRoleRegistry } from '../../content/staff-role-catalog';
 import type { EntityId } from '../entity/entity-store';
+import type { SimulationEventLog } from '../events';
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import { DAY_LENGTH_TICKS } from '../prisoners/regime';
 import type { Treasury } from './treasury';
@@ -170,9 +171,24 @@ export class PayrollSystem implements SystemRegistration {
 
   private unpaid = 0;
 
+  /**
+   * `events` is the session's `SimulationEventLog`, and it is a constructor
+   * dependency for the reason `RefusalLog` is one on the command handlers: the
+   * fact that a payday went unpaid is known *here*, at the tick it happened,
+   * and nowhere else. A watcher polling `unpaidWagesMinorUnits` from outside
+   * could see the figure rise but could not tell a failed payday from a
+   * restore that loaded arrears, which is the one distinction the event exists
+   * to draw.
+   *
+   * Declared before the defaulted `staffRoles` because TypeScript forbids a
+   * required parameter after an optional one, and this one is required on
+   * purpose: a `PayrollSystem` with no sink would go on billing silently,
+   * which is the defect issue #507 exists to close.
+   */
   public constructor(
     private readonly treasury: Treasury,
     private readonly staff: PayrollStaffSource,
+    private readonly events: SimulationEventLog,
     private readonly staffRoles: ContentRegistry<StaffRoleDefinition> = defaultStaffRoleRegistry,
   ) {}
 
@@ -187,7 +203,6 @@ export class PayrollSystem implements SystemRegistration {
   }
 
   public update(context: SimulationContext): void {
-    void context;
     const accrued = this.unpaid + this.dailyWageBillMinorUnits();
     /*
      * Saturating rather than throwing, and it is a guard against a *file*
@@ -218,6 +233,24 @@ export class PayrollSystem implements SystemRegistration {
     // a refusal leaves the whole bill owed instead of silently vanishing.
     const paid = payable > 0 && this.treasury.spend(payable) ? payable : 0;
     this.unpaid = due - paid;
+    /*
+     * The event is the *payday*, not the condition. ADR 0049 decided
+     * insolvency is a state rather than a loss condition, and a state belongs
+     * on a readout; what belongs on the events channel is the moment it bit.
+     *
+     * So this fires on the day the bill was not met in full, and it fires
+     * again on the next such day -- once per in-game day at most, because that
+     * is this system's whole schedule. A prison that stays broke therefore
+     * says so once a day rather than twice a second, which is the volume
+     * property the channel needs and gets here for free rather than from a
+     * filter downstream.
+     *
+     * `this.unpaid` and not `due - payable`: what the player is told is what
+     * they now owe, which is the same figure the save carries and the same one
+     * `unpaidWagesMinorUnits` reports. A payday met in full leaves it at 0 and
+     * `recordUnpaidWages` then records nothing.
+     */
+    this.events.recordUnpaidWages(this.unpaid, context.tick);
   }
 
   public snapshot(): PayrollSnapshot {

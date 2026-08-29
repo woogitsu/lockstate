@@ -1126,6 +1126,137 @@ const snapshotMessageSchema = z
   })
   .strict();
 
+/**
+ * What the prison has to say for itself when nothing went wrong.
+ *
+ * The closed vocabulary of `simulation/event`, and the third of the three
+ * ADR 0003 decision 2 families to get a producer -- "asynchronous domain
+ * events" was named there and had none until issue #507. `simulation/delta`
+ * carries where the actors are and `simulation/status-counts` carries what
+ * the prison currently *is*; this carries what it just *did*.
+ *
+ * ## Why this is not a `versionedPayload`, which is what it used to be
+ *
+ * The envelope shipped with `event: versionedPayloadSchema` -- an opaque
+ * `data` blob under a `schemaId` -- and nothing ever constructed one
+ * (`tests/foundation/message-kind-reachability-contract.test.ts` recorded it
+ * as sent by nobody and read by nobody for as long as it had existed). An
+ * opaque payload was the right shape while the family was a placeholder and
+ * is the wrong one now that it has producers, for the reason
+ * `REFUSAL_LABEL_KEYS` and `PROTOCOL_FAULT_LABEL_KEYS` are `Record`s over
+ * closed unions rather than lookups with a fallback: a member added here must
+ * **fail to compile** until somebody has decided what it says to a player.
+ * A `versionedPayload` cannot have that property -- its `data` is `unknown`
+ * to the boundary by construction -- so an event type added under it would
+ * have reached the HUD as a blob nothing had a sentence for. Narrowing an
+ * unused message is free: there is no older peer that ever sent one.
+ *
+ * ## Why an event and not a fourth sibling of `counts`
+ *
+ * `refusal` and `zoning` ride `simulation/status-counts` as *snapshots* --
+ * "the last refusal was X", republished with every later readout so a
+ * listener that starts late reads the same state as one that was there all
+ * along. That works because each is a level: exactly one is current, and
+ * re-asserting it is not a lie. It does not work for these. "Two prisoners
+ * finished their sentences" is true **once**, at a tick; republishing it on
+ * the counts cadence twice a second would tell the player it had happened
+ * again, and a third and fourth sibling is the case-by-case handling issue
+ * #507 exists to stop. That channel says so about itself, at length, above
+ * `refusalSchema`: it is rate-limited and skippable, so a queue on it could
+ * not be told from one that was never sent. This message is neither -- it is
+ * posted once per event and nothing coalesces it -- so a queue is honest
+ * here in exactly the way it is not honest there.
+ *
+ * `sequence` is 1-based and increments once per event across the whole
+ * channel rather than per type, so it is both this event's ordinal and how
+ * many the session has emitted. The main thread keys its row on it
+ * (`HudAlertViewModel.id`) and the publisher uses it as a watermark, exactly
+ * as `refusal.sequence` serves both purposes.
+ *
+ * `tick` is the tick the event *happened* on, which is not the `tick` on the
+ * envelope around it: the publication reports it on the next tick-loop wake,
+ * and the distinction is the same one `refusalSchema` draws.
+ */
+export const SIMULATION_EVENT_TYPES = [
+  'economy.wages-unpaid',
+  'prisoners.discharged',
+] as const;
+
+export type SimulationEventType = (typeof SIMULATION_EVENT_TYPES)[number];
+
+/**
+ * The two fields every event carries, spread into each member so the union
+ * discriminates on a top-level `type` rather than nesting a `detail` object.
+ * The same shape `requestEnvelopeFields` is spread with, one level down.
+ */
+const simulationEventEnvelopeFields = {
+  sequence: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+  tick: tickSchema,
+};
+
+/**
+ * Prisoners whose sentences ended left the prison on this tick (ADR 0050).
+ *
+ * **A count, not an identity, and one event per tick rather than one per
+ * prisoner.** `PrisonerDischargeSystem.update` releases everybody `due()`
+ * returns in a single pass, so a prison whose intake arrived together
+ * discharges together; one event per prisoner would put a burst of identical
+ * rows on the channel for what a player reads as one occurrence. The count
+ * is therefore the aggregate for the tick, and it is `min(1)` because an
+ * event is only emitted when somebody actually left -- "zero prisoners were
+ * discharged" is not an event, it is every other tick.
+ *
+ * No entity id and no name. ADR 0011 keeps text off the wire, and an id
+ * would be an identity for a prisoner who no longer exists by the time the
+ * main thread reads it -- `releasePrisoner` has already dropped them from
+ * every store, which is exactly what `projectPrisonerDetail` answers
+ * `undefined` for. A roster row the player could click does not survive the
+ * event that reports it.
+ */
+const dischargedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('prisoners.discharged'),
+    count: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+  })
+  .strict();
+
+/**
+ * Payday came and the treasury could not cover the wage bill (ADR 0049).
+ *
+ * Carries the arrears *after* the payday it reports -- the same figure
+ * `PayrollSystem.unpaidWagesMinorUnits` exposes and the save persists -- in
+ * minor units, because ADR 0017 keeps money integral all the way to the DOM
+ * and the HUD formats it at the last moment.
+ *
+ * **The event is the payday, not the condition.** ADR 0049 decided
+ * insolvency is a state rather than a loss condition, and a state belongs on
+ * a readout; what belongs here is the moment it bit. `PayrollSystem` runs
+ * once per in-game day, so this is bounded at one event per day however deep
+ * the hole is, and a prison that stays broke says so once a day rather than
+ * twice a second. That also means it needs nothing persisted of its own: the
+ * arrears are already in the save (ADR 0049, "arrears are *history*"), so a
+ * restored session re-announces at its next failed payday rather than
+ * replaying one the player has already read.
+ *
+ * `min(1)` for the reason the discharge count is: a payday that was met in
+ * full emits nothing.
+ */
+const wagesUnpaidEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('economy.wages-unpaid'),
+    unpaidWagesMinorUnits: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+  })
+  .strict();
+
+const simulationEventSchema = z.discriminatedUnion('type', [
+  wagesUnpaidEventSchema,
+  dischargedEventSchema,
+]);
+
+export type SimulationEvent = DeepReadonly<z.infer<typeof simulationEventSchema>>;
+
 const eventMessageSchema = z
   .object({
     ...requestEnvelopeFields,
@@ -1133,7 +1264,7 @@ const eventMessageSchema = z
     payload: z
       .object({
         tick: tickSchema,
-        event: versionedPayloadSchema,
+        event: simulationEventSchema,
       })
       .strict(),
   })
