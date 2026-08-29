@@ -118,9 +118,10 @@ and the next boundary is 3600 again. **Twelve paid places gross 3,600 a day,
 not 720.** #601's floor argument bounds the answer below by 720 and the real
 answer is five times that, for the reason §3 gives: the floor is not reached.
 
-Across three prisons and five boundaries, every credit is `300 x residents`
-exactly — 900, 900, 660 (= 900 - 240 wages), 3600, 3600 — and
-`unmetNeeds` was 0 every time.
+Across **four prison builds and eight day boundaries** — the three-bed prison
+run twice, the twelve-bed prison, and the guarded prison — every credit is
+`300 x residents` exactly: 900, 900, 900, 900, 3600, 3600, and 660 twice
+(= 900 less 240 of wages). `unmetNeeds` was 0 at every one.
 
 ## 3. Which reading is true
 
@@ -139,9 +140,17 @@ exactly — `unmetNeeds` was **0** at both boundaries, after the residents had
 lived in the cell for the better part of two in-game days. A housed prisoner
 sleeps, and their needs stay above `STATE_INCOME_UNMET_NEED_LEVEL` (51,
 `income.ts:226`). The nine who are *not* housed have needs that do decay — and
-they contribute nothing either way, because they are not residents. **There is
-no reachable state in which twelve people on the roster earn 12 x 60.** The
-withholding schedule is not tight in this session; it is inert.
+they contribute nothing either way, because they are not residents.
+
+**Said as strongly as the evidence allows and no stronger:** the withholding
+schedule did not fire at any of the eight boundaries measured, across four
+prisons and up to about two in-game days of residency each. That is not a proof
+that it *cannot* fire — hygiene is the need with no object in these cells, and
+a longer session is exactly what would test it (see "weakest claim" below).
+What it does establish is that the state #601 reasons from, twelve residents at
+the 60 floor, is not the state a prison of that shape is in after two days;
+and that a prisoner who is not a resident contributes 0 rather than 60, so the
+roster and the payroll are not the same twelve people at all.
 
 **Reading 3 — "150 was a mid-day reading of the prorated accrual" — is true
 about the number, and is the only reading that produces 150 in a real
@@ -382,9 +391,11 @@ different prison than the one the game builds.
   establishes that the tier changes neither what the state pays nor what the
   prison spends.
 
-- **Each press of Admit took about two seconds before the next one could be
-  made.** Measured, twelve consecutive presses on the Intake panel, each timed
-  from the start of the press to the moment the click completed:
+- **A press of Admit took about two seconds here — and the cause turned out to
+  be the container, not the game.** Kept in full because the shape of the
+  investigation is the useful part. Measured first, twelve consecutive presses
+  on the Intake panel, each timed from the start of the press to the moment the
+  click completed:
 
   ```
   admit press durations (ms): [2283,2220,2576,1793,1770,2043,2354,1916,2197,2304,2260,1850]
