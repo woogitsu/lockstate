@@ -129,21 +129,37 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `01974e5` (**v0.0.163**) by the delta method this
-header describes, from `07add3e` (v0.0.152). **This is the first re-anchor
-the gate itself refused to pass**: eleven releases since the previous anchor
-against a budget of ten, failing
-`tests/foundation/adr-status-queue-anchor-contract.test.ts` with *"11 releases
-of history that no entry in that file has been read against"* — the exact
-failure mode the previous three anchors were each dispatched to pre-empt and
-the fourth did not arrive in time to. `01974e5` is `origin/main`'s tip at the
-time of writing and is itself the **v0.0.163 release commit** — named
-deliberately rather than the merge commit beneath it, for the reason the
-previous anchor gives: this release commit is cut *after* the last merge in
-the window (#500, `1f3b227`), contains every sentence below, and is the exact
-tree every citation here was re-derived from.
+Re-anchored at `main` @ `33510df` (**v0.0.170**) by the delta method this
+header describes, from `01974e5` (v0.0.163). **This is the first re-anchor
+dispatched deliberately with the gate green and headroom to spare** — seven of
+the ten releases the budget allows — rather than in response to a fail or
+right at the bound; the previous anchor's own recommendation was a scheduled
+read rather than a warning band, and this pass is that recommendation taken a
+second time. `33510df` is `origin/main`'s tip at the time of writing and is
+itself the **v0.0.170 release commit** — named deliberately rather than the
+merge commit beneath it, for the reason every previous anchor gives: this
+release commit is cut *after* the last merge in the window (#509, `795ba81`),
+contains every sentence below, and is the exact tree every citation here was
+re-derived from. One commit in the window, `15a8df6` (#501), is the previous
+anchor's own re-anchoring pass — it wrote the paragraph this one now
+supersedes and is not separately re-read as new drift, because its content
+*is* the previous anchor's account, already kept below.
 
 **The previous anchor's account, kept.** It read: *"Re-anchored at `main` @
+`01974e5` (**v0.0.163**) by the delta method this header describes, from
+`07add3e` (v0.0.152). This is the first re-anchor the gate itself refused to
+pass: eleven releases since the previous anchor against a budget of ten,
+failing `tests/foundation/adr-status-queue-anchor-contract.test.ts` with "11
+releases of history that no entry in that file has been read against" — the
+exact failure mode the previous three anchors were each dispatched to
+pre-empt and the fourth did not arrive in time to. `01974e5` is `origin/main`'s
+tip at the time of writing and is itself the v0.0.163 release commit — named
+deliberately rather than the merge commit beneath it, for the reason the
+previous anchor gives: this release commit is cut after the last merge in the
+window (#500, `1f3b227`), contains every sentence below, and is the exact tree
+every citation here was re-derived from."*
+
+**The anchor before that one, kept.** It read: *"Re-anchored at `main` @
 `07add3e` (**v0.0.152**) by the delta method this header describes, from
 `c00b641` (v0.0.143). This is the first re-anchor taken while the gate was
 green — 0.0.152 against an anchor at v0.0.143 is nine of the ten releases the
@@ -680,7 +696,13 @@ The set, in full:
   these are the four that joined; none of the four has a §2 row. 0029 changed
   in this window too — #491 appended a dated amendment measuring two new
   counters ADR 0041 made countable — and its Status line, `:5`, is unmoved:
-  still `Accepted, 2026-08-26`.
+  still `Accepted, 2026-08-26`. **Added at this anchor, for the same reason and
+  by the same rule**: **0068** — §3's opening, §5's first bullet and §6's
+  `income.ts` bullet now enumerate twenty-two `Proposed` documents and this is
+  the one that joined; it has no §2 row. 0015, 0026 and 0050 changed in this
+  window too — #505's entity-retirement work amended ADR 0026 (question 1
+  answered), corrected ADR 0015's now-false "ids repeat" claim in place, and
+  updated a cross-reference in ADR 0050; all three were opened and re-read.
 - Files under `src/` — sixteen until 2026-08-28, when the omissions were counted:
   `ui/hud/messages.ts`, `ui/hud/projection.ts`,
   `ui/hud/hud.ts`, `ui/hud/build-panel.ts`, `content/procurement-catalog.ts`,
@@ -706,7 +728,14 @@ The set, in full:
   line), and the three `.css` files §5's 900x600 entry counts —
   `ui/tokens.css`, `ui/brand.css` and `ui/primitives/primitives.css` — together
   with `ui/primitives/**`, which §5's `ui-hud-messages.test.ts` citation is a
-  claim about.
+  claim about. **Missing until this anchor, found by this pass's derivation
+  rather than added when the citing sentence landed**: `entity/entity-store.ts`
+  — #505 added the sentence citing it (`src/simulation/entity/entity-store.ts`
+  retiring a slot at generation 4,095) to §5's ADR 0026 entry in the same
+  commit that answered question 1, and did not add the file here, which is
+  exactly the omission this subsection's own rule exists to prevent. No `:N` is
+  cited, so no line-drift risk was hidden by the gap, but the rule is about the
+  citation existing, not about what it risks.
 - Under `tests/`: `foundation/adr-status-reference-contract.test.ts`,
   `foundation/unconsumed-command-contract.test.ts`,
   `unit/ui-hud-messages.test.ts`, `unit/objects-room-capacity.test.ts`,
@@ -825,21 +854,107 @@ at `:5` is untouched; and `docs/research/README.md` gained one table row,
 which the *"deliberately left"* bullet's citation does not depend on the
 contents of.
 
-**The four-place queue sweep, run again and finding nothing this time — not
-because the mechanism improved, but because nothing was filed to drift.** §2
-gained **zero** entries in this window: all four Proposed ADRs that landed
-today (0064, 0065, 0066, 0067) are, like fifteen before them, decisions with
-no queue row. So the heading, the title, this paragraph and §5's preamble all
-still read "five" / name the same five entries, in agreement, for the third
-consecutive anchor — but unlike the previous two anchors (#467's fourth entry
-and #485's fifth, each of which moved §2's heading and this paragraph while
-leaving §5's preamble behind for nine releases), **the split this file has
-found twice did not recur, because there was no third filing for it to lag
-behind.** The abandonment continues at a higher rate than ever — four more in
-one window, none obeying the rule — while the drift this file specifically
-watches for stayed dormant, which is worth stating plainly rather than reading
-as improvement: nineteen became twenty-three (recorded above) in the same
-window that produced zero four-place splits.
+**The four-place queue sweep for the `01974e5` anchor, kept as a record.** It
+found nothing that window — not because the mechanism improved, but because
+nothing was filed to drift. §2 gained **zero** entries in that window: all four
+Proposed ADRs that landed then (0064, 0065, 0066, 0067) were, like fifteen
+before them, decisions with no queue row. So the heading, the title, that
+paragraph and §5's preamble all still read "five" / name the same five
+entries, in agreement, for the third consecutive anchor at that time — but
+unlike the two anchors before it (#467's fourth entry and #485's fifth, each
+of which moved §2's heading and the header paragraph while leaving §5's
+preamble behind for nine releases), the split this file had found twice did not
+recur, because there was no third filing for it to lag behind. The abandonment
+continued at a higher rate than ever — four more in that window, none obeying
+the rule — while the drift this file specifically watches for stayed dormant.
+
+**The delta note for this anchor, `01974e5..33510df`, stated so a reader can
+re-run it.** The diff is `git diff --name-only 01974e5..origin/main`,
+**61 files**, across seven releases carrying **six** merged pull requests:
+#498, #502, #504, #505, #508 and #509, read off
+`git log --oneline --first-parent 01974e5..origin/main` (excluding the release
+commits and `15a8df6`/#501, the previous anchor's own writing commit, already
+accounted for above). Intersected with the set as it stood *before* this
+commit extended it, it is **fourteen**: `package.json` is not among them, by
+the same convention as every anchor before this one — but
+`docs/HUD_PROJECTIONS.md`, `docs/adr/0015-actor-identity-allocation.md`,
+`docs/adr/0026-entity-id-lifetime.md`, `docs/adr/0050-when-a-sentence-ends.md`,
+`docs/adr/README.md`, `docs/research/README.md`,
+`src/simulation/protocol/types.ts`, `src/simulation/worker/state-machine.ts`,
+`src/ui/hud/hud.ts`, `src/ui/hud/messages.ts`, `src/ui/hud/projection.ts`,
+`tests/unit/actor-identity.test.ts`, `tests/unit/entity-generation-wrap.test.ts`
+and `tests/unit/ui-hud-messages.test.ts` are. **No file under
+`supabase/migrations/` changed** — the directory still holds twenty-three, so
+§3's table needed no re-derivation. **Intersected with the one member this
+commit adds — ADR 0068 — it is one more**, read for its `Status` line and,
+because it is new rather than merely re-read, for its full text. Fifteen
+files read. **Forty-seven of the sixty-one changed files are outside the set
+and outside it correctly** — guard rendering (#502, ADR 0040 slice 2), the
+client-side room-enclosure classifier (#498, ADR 0068's own implementation),
+the Regime roster's discharge wording (#508), the status strip's incident-kind
+badge (#509) and the rejected canteen-walk hypothesis (#504, a new
+`docs/research/` entry with no ADR and no code change to any file §§3-6 cite)
+all touch rendering, presentation and roster surfaces §§3-6 make no claim
+about; checked by grepping each PR's subject and touched files against every
+citation in §§3-6 rather than assumed, and nothing found.
+
+**What the fourteen cost.** Three ADRs were corrected in place rather than
+moved by a diff: #505 answered ADR 0026 question 1 (entity-generation-wrap.test.ts
+and prisoners-intake-system.test.ts's `DEFECT`-pinning became fixed-behaviour
+pinning, RED/GREEN by hand, recorded in the same commit) and, in the same
+commit, corrected ADR 0015's now-false "ids repeat" claim and cross-referenced
+it from ADR 0050 — all read and confirmed still true on disk, and one §6
+bullet describing the old `entity-generation-wrap.test.ts` comment was stale
+and is corrected above. Nine `file:line` citations moved, all in one cluster:
+`src/simulation/worker/state-machine.ts`'s four `transition()` sites (a uniform
++1, from #505's one-line insertion above `EntityStore.destroy`'s call site)
+and its three handshake-receiver anchors (the same +1); `src/simulation/protocol/types.ts`'s
+four handshake-schema anchors and its `protocolVersion` literal (a uniform +5,
+from #498's and #502's insertions ahead of the schema). `src/ui/hud/hud.ts`
+moved four anchors by a uniform +25 (`HudIntent`'s open, close,
+`HudUnavailableNotice` and the `arm-build-tool`/`arm-room-tool`/`cancel-build-order`
+member positions) while its **eighteen**-member count, three-room-member count
+and `HudRoomGesture`'s `:154` all held; `tests/unit/ui-hud-messages.test.ts`
+moved one anchor by +5 (new test above it). **Four declared members changed
+without moving a single citation this pass depends on**:
+`docs/HUD_PROJECTIONS.md` (gap 13's wording, quoted rather than lined, still
+verbatim), `docs/adr/README.md` (gained a `0068` row and moved **Next free
+number** from 0068 to 0069 — recorded above), `docs/research/README.md` (gained one
+table row, the guards research entry, which the *"deliberately left"* bullet's
+citation does not depend on the contents of), and
+`src/simulation/worker/state-machine.ts`'s `WorkerState` union specifically,
+one of five anchors into that same file — it stayed at `:34-40` despite the
+file changing around it and despite its other four anchors (the
+`transition()` sites and the handshake receivers) all moving. `package.json`
+changed too, as it does every release, and is read for its version rather
+than diffed, per this note's own opening convention. **One correction this
+pass made was to itself**: an
+intermediate draft of the Proposed-ADR retally wrongly counted ADR 0022 as a
+twenty-third `Proposed` document by trusting a bare `grep -l '^\*\*Proposed'`
+hit, which was actually its nested amendment's `### Status of this amendment`
+marker and not the ADR's own `## Status` line (`Accepted, 2026-08-25 — as
+amended`, matching the index); caught before landing rather than after, by
+reading the heading above the hit — the exact discipline this task's own
+brief named as the trap and the reason to name it here rather than silently
+fix it.
+
+**The four-place queue sweep for this anchor, run again and finding nothing
+new — not because the mechanism improved, but because nothing was filed to
+drift.** §2 gained **zero** entries in this window: the one Proposed ADR that
+landed (0068) is, like nineteen before it, a decision with no queue row. So
+the heading, the title, the header paragraph and §5's preamble all still read
+"five" / name the same five entries, in agreement, for the fourth consecutive
+anchor now. The abandonment continues — one more decision with no row, seven
+releases after the last one — while the specific four-place drift this file
+watches for stayed dormant for a second consecutive anchor: twenty became
+twenty-two (recorded above) in the same window that produced zero four-place
+splits. **Both halves of the question this pass was asked to check, stated
+together because they cut opposite ways**: the four-place split itself has not
+recurred in two anchors running, but the rule the split is a symptom of — "any
+commit that adds an outstanding ADR adds an entry here" — was abandoned once
+more, for the sixth time since it was restated, at the same rate as every
+anchor since `01974e5`. The mechanism is quiet because nothing has been filed
+to disagree about, not because the underlying practice improved.
 
 **The previous anchor's delta note, kept as a record.** The diff was
 `git diff --name-only bb3a01e..c00b641`, **82 files**. Intersected with the set
@@ -1662,9 +1777,9 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `01974e5`, unchanged since the previous anchor
-and the one before it — the directory has not moved across either window —
-by grepping the
+absences were re-verified at `33510df`, unchanged since the previous anchor,
+the one before it, and the one before that — the directory has not moved
+across any of those windows — by grepping the
 whole `supabase/migrations/` tree for a total-bytes, retention or pruning
 mechanism (`total_bytes`, `retention`, `prune`, `268435456`, `max_revisions`).
 **That grep
@@ -1828,7 +1943,7 @@ is recommendation 1 at the foot of §6 producing a measurable result rather than
 being restated: **three of the four citations into the fastest-moving document
 in the set survived an edit that moved every line of them.**
 
-The half of the decision that *is* in this repository stays verified at `01974e5`:
+The half of the decision that *is* in this repository stays verified at `33510df`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` (`:34`) with no
 `push:`, requires a typed `confirm_project_ref` (`:41`), and its apply job is
 environment-gated (`:65`) — all three re-read at this anchor and all three still
