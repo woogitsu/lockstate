@@ -426,6 +426,33 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.event.prisoners.discharged': '{count} released — their sentences are served.',
   'hud.alert.event.economy.wages-unpaid': 'Payday went unpaid — your staff are owed {total}.',
 
+  // The incident sentences (issue #555). Same family, same voice, written
+  // against two constraints the two above did not have.
+  //
+  // **They must not repeat the status strip.** Issue #506 finding 2 already
+  // put the open incident's *kind* on the strip's badge -- "Riot", "Assault",
+  // "Escape Attempt", "Gang Retaliation", the `incident-type.*.name` labels
+  // reused as-is -- so a sentence here whose whole content was the kind would
+  // be the same word twice on one screen. Each of these says what a badge
+  // cannot: that it started *just now*, and what it means for the prison.
+  //
+  // **They must not promise a response.** Whether guards reach an incident
+  // depends on how many are free, whether a route exists, and whether the
+  // deadline passes first -- `IncidentResponseSystem` can and does let one
+  // lapse -- so "guards are on their way" would be exactly the promise the
+  // code does not keep that `AGENTS.md` reserves to the owner. None of these
+  // says what happens next.
+  //
+  // `{count}` is a riot's participant count and the only figure in the five,
+  // because it is the only one always at least two
+  // (`DEFAULT_MINIMUM_RIOT_PARTICIPANTS`) -- this localizer has no plural
+  // rules, so a figure that can be 1 would read "1 prisoners".
+  'hud.alert.event.incidents.riot-opened': 'A riot has broken out — {count} prisoners have stopped taking orders.',
+  'hud.alert.event.incidents.assault-opened': 'A fight has broken out between two prisoners.',
+  'hud.alert.event.incidents.escape-attempt-opened': 'A prisoner is trying to break out.',
+  'hud.alert.event.incidents.gang-retaliation-opened': 'Two gangs are settling a score.',
+  'hud.alert.event.incidents.all-clear': 'The prison is under control again — no incident is still open.',
+
   // A browser that cannot start a Worker gets a page with no simulation
   // behind it. Saying so is the whole point: the failure was previously
   // reported to the console only, so the player saw an empty world and had

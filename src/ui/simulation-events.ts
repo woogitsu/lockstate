@@ -41,11 +41,83 @@ import type { HudAlertViewModel, HudEventNoticeViewModel, HudSeverity } from './
  *   recoverable, and `'danger'` is reserved for the one thing this HUD says
  *   it means, "stop trusting what you are looking at"
  *   (`simulation-alerts.ts`, the `protocol/error` branch).
+ *
+ * ## `'danger'`, and what finally cleared that bar (issue #555)
+ *
+ * The paragraph above is what `hud.css` was written against: its
+ * `.hud__event[data-severity='danger']` rule carries a comment saying no event
+ * carried `'danger'` and that the rule existed anyway, because a third event
+ * graded `'danger'` would otherwise *"inherit the `'info'` blue above and be
+ * painted as good news"*. These five rows are that third event.
+ *
+ * **The bar, restated for a domain event.** "Stop trusting what you are
+ * looking at" is a sentence about a protocol fault, and read *only* as a
+ * sentence about the HUD's own machinery no simulation event could ever clear
+ * it -- which would leave the member producerless for ever and make the CSS
+ * comment's own premise unreachable. The reading actually available is the one
+ * the rest of this HUD already takes: the status strip has painted
+ * `tone: 'danger'` on the incidents badge for **any** open incident since
+ * before #507 (`src/ui/hud/projection.ts`, `badge: hasIncidents ? { tone:
+ * 'danger', ... }`), so a `'warning'` band about the same incident would put
+ * two different colours on one fact.
+ *
+ * **The line between the two bands is measured, and it is the simulation's
+ * own.** `IncidentResponsePolicy.lockdownSeverityThreshold` is 6: at or above
+ * it the response system locks every door in the sector, and the prison stops
+ * doing what the player told it to. Three incident types keep the full 0-10
+ * severity range and can cross it. The fourth cannot, by construction:
+ * `ASSAULT_SEVERITY_CEILING` (`src/simulation/incidents/flashpoint.ts`) caps
+ * an assault at 5, *"one below the lockdown threshold"*, and says why at
+ * length -- scoring a fistfight on the riot's scale *"says two things about a
+ * fistfight that are not true"*.
+ *
+ * - **`incidents.riot-opened` is `'danger'`**, and it is the strongest of the
+ *   three. A riot does not merely reach the lockdown threshold; it suspends
+ *   the prison's control over the people in it. `IncidentLog` keeps
+ *   `isOpenRiotParticipant` for exactly one type -- *"Only `'riot'` is
+ *   indexed"* -- and `riot-regime.ts` overrides action selection for every
+ *   participant while it is open, so the jobs, the routine and the schedule
+ *   the HUD is showing are not what those prisoners are doing. That is "stop
+ *   trusting what you are looking at", said about the prison rather than about
+ *   the renderer.
+ * - **`incidents.escape-attempt-opened` is `'danger'`.** It is the one
+ *   incident whose failure is irreversible: ADR 0061 decision 5 makes a lapsed
+ *   escape attempt a prisoner who is *gone*, and `IncidentResponseSystem`
+ *   releases them. Nothing about that is recoverable, which is the test ADR
+ *   0049 set for unpaid wages and this one fails.
+ * - **`incidents.gang-retaliation-opened` is `'danger'`.** It keeps the full
+ *   severity range and can lock the sector down, which is the line above. It
+ *   is graded on that rather than on anything measured in play, because
+ *   nothing in `src/` seeds a gang -- `GangRegistry.addMember` is reached only
+ *   from `loadSnapshot` -- so no session a player can start opens one today.
+ *   The grade is what the code would do if one did, and it is here so that
+ *   seeding gangs is not also a copy decision.
+ * - **`incidents.assault-opened` is `'warning'`**, the same band as unpaid
+ *   wages and for a compatible reason: two prisoners, contained by two or
+ *   three guards, and by `ASSAULT_SEVERITY_CEILING` it can never reach the
+ *   threshold that seals a door. It is bad, and the prison is still the
+ *   player's.
+ * - **`incidents.all-clear` is `'info'`.** Nothing is wrong any more, which is
+ *   the same thing `prisoners.discharged` says about a served sentence. It is
+ *   also what stops a `'danger'` band standing over a calm prison for the rest
+ *   of a session; see the schema's own comment in
+ *   `src/simulation/protocol/types.ts`.
  */
 const EVENT_PRESENTATION: Readonly<
   Record<SimulationEventType, { readonly labelKey: LocalizationKey; readonly severity: HudSeverity }>
 > = {
   'economy.wages-unpaid': { labelKey: 'hud.alert.event.economy.wages-unpaid', severity: 'warning' },
+  'incidents.all-clear': { labelKey: 'hud.alert.event.incidents.all-clear', severity: 'info' },
+  'incidents.assault-opened': { labelKey: 'hud.alert.event.incidents.assault-opened', severity: 'warning' },
+  'incidents.escape-attempt-opened': {
+    labelKey: 'hud.alert.event.incidents.escape-attempt-opened',
+    severity: 'danger',
+  },
+  'incidents.gang-retaliation-opened': {
+    labelKey: 'hud.alert.event.incidents.gang-retaliation-opened',
+    severity: 'danger',
+  },
+  'incidents.riot-opened': { labelKey: 'hud.alert.event.incidents.riot-opened', severity: 'danger' },
   'prisoners.discharged': { labelKey: 'hud.alert.event.prisoners.discharged', severity: 'info' },
 };
 
@@ -70,7 +142,10 @@ const EVENT_ROW_PREFIX = 'event-';
  * cap has to do rather than a producer.** The producers are already bounded
  * where they are written -- `PrisonerDischargeSystem` emits at most one event
  * per discharge check and aggregates the tick's releases into a single
- * `count`, and `PayrollSystem` emits at most one per in-game day -- so a
+ * `count`, `PayrollSystem` emits at most one per in-game day, and the two
+ * incident producers of #555 are bounded by the quiet period the trigger
+ * system already keeps (`IncidentTriggerSystem.openIncident`) and by the
+ * return-to-calm rule (`IncidentResponseSystem.reportAllClearIfCalm`) -- so a
  * *burst* is impossible by construction. What is not bounded by construction
  * is the **session**: a prison left running discharges regularly, and every
  * discharge is a row that is still true, so an uncapped list grows without
@@ -117,6 +192,26 @@ const EVENT_ROW_PREFIX = 'event-';
  * history, and `tests/unit/ui-simulation-events.test.ts` pins the cap by
  * driving more events than that through the translator rather than by
  * asserting the constant against itself.
+ *
+ * **The incident producers are the fastest thing on this channel, and the
+ * arithmetic still lands inside the cap (#555).** Their pace is not a guess
+ * either: `IncidentTriggerSystem` will not open a second incident of the same
+ * kind in the same sector inside a quiet period, and those periods are
+ * `DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT` 4,800 ticks for a riot and a
+ * gang-retaliation, `..._AFTER_ASSAULT` 2,400 and `..._AFTER_ESCAPE_ATTEMPT`
+ * 12,000. One sector is registered in a shipped session (ADR 0036), an in-game
+ * day is 2,400 ticks, and every opening has at most one "all clear" after it,
+ * so the ceiling is four kinds pacing themselves independently: 2 + 1 + 1 + 0.4
+ * openings per two days, doubled, is about **nine rows per two in-game days**
+ * at an absolute worst case where every kind fires on cooldown for ever.
+ *
+ * Measured play is far below that: issue #555's twelve-prisoner playtest saw
+ * one incident every two in-game days, which is two rows -- one opening, one
+ * all-clear -- per two days, alongside at most one payday row per day. Eight
+ * rows is therefore about four days of a prison in trouble and much longer for
+ * one that is not, which is the "scrolls back a little" the paragraph above
+ * asks for. The reason it does not need to be larger is the band: an incident
+ * the player must act on *now* is on the line above the list, not in it.
  */
 export const MAX_EVENT_ALERT_ROWS = 8;
 
@@ -266,5 +361,19 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
       return { total: event.unpaidWagesMinorUnits };
     case 'prisoners.discharged':
       return { count: event.count };
+    case 'incidents.riot-opened':
+      return { count: event.participantCount };
+    // Four members with nothing to substitute, and an empty object rather than
+    // `undefined`: a `switch` that sometimes returned nothing would make an
+    // absent `labelParameters` mean two different things at the two call
+    // sites. Why none of these four carries a figure -- an assault is always
+    // two prisoners, an escape attempt always one, a retaliation's count has
+    // no plural rule to render it with, and "all clear" is the absence of one
+    // -- is argued in the schemas in `src/simulation/protocol/types.ts`.
+    case 'incidents.gang-retaliation-opened':
+    case 'incidents.assault-opened':
+    case 'incidents.escape-attempt-opened':
+    case 'incidents.all-clear':
+      return {};
   }
 }
