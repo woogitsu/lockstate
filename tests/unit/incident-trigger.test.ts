@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { SimulationEventLog } from '../../src/simulation/events';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { GangRegistry } from '../../src/simulation/incidents/gangs';
 import { IncidentLog } from '../../src/simulation/incidents/incident';
@@ -39,6 +40,7 @@ function buildHarness(options: {
   readonly sampleFlashpoints?: PrisonerFlashpointSampler;
 }) {
   const incidents = new IncidentLog();
+  const events = new SimulationEventLog();
   const risk = new SectorRiskTracker(DEFAULT_SECTOR_RISK_POLICY);
   const gangs = options.gangs ?? new GangRegistry();
   const trigger = new IncidentTriggerSystem(
@@ -48,6 +50,7 @@ function buildHarness(options: {
     options.sectorIds,
     options.sampleFor,
     options.occupants ?? TWO_OCCUPANTS,
+    events,
     undefined,
     options.quietTicksAfterIncident,
     undefined,
@@ -55,7 +58,7 @@ function buildHarness(options: {
   );
   const kernel = new Kernel();
   kernel.registerSystem(trigger);
-  return { incidents, risk, gangs, trigger, kernel };
+  return { incidents, events, risk, gangs, trigger, kernel };
 }
 
 /** The trigger system samples every 50 ticks, so one "sampling point" is 50 kernel ticks. */
@@ -282,7 +285,7 @@ describe('IncidentTriggerSystem: gang retaliation feeds the same pipeline', () =
     const restoredRisk = new SectorRiskTracker(DEFAULT_SECTOR_RISK_POLICY);
     // Occupants and a zero quiet period for the same reasons `buildHarness`
     // supplies them: this file is about the id sequence, not about either gate.
-    const restoredTrigger = new IncidentTriggerSystem(restoredIncidents, restoredRisk, new GangRegistry(), ['block-a'], () => HOT, TWO_OCCUPANTS, undefined, 0);
+    const restoredTrigger = new IncidentTriggerSystem(restoredIncidents, restoredRisk, new GangRegistry(), ['block-a'], () => HOT, TWO_OCCUPANTS, new SimulationEventLog(), undefined, 0);
     restoredTrigger.loadSnapshot(trigger.getSnapshot());
 
     expect(restoredTrigger.getMetrics()).toEqual(trigger.getMetrics());
