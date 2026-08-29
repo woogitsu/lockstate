@@ -656,6 +656,36 @@ written to be triggered by a player noticing something the game does not show
 them. **A revisit condition anchored on a surface that does not exist is not a
 condition.** Stated here so the next one is anchored on a measurement instead.
 
+> **Amended 2026-08-29 (#535 decision 6). No decision changes. The surface the
+> bullet above says does not exist now does, so the trigger it calls unfireable
+> can fire.** Marked rather than rewritten: "the readout does not exist" is the
+> premise a reader would carry forward, and the *shape* of the failure it
+> records — a condition anchored on a surface nobody built — is worth keeping
+> whatever the surface's state today.
+>
+> The bullet rotted in **two** steps, and neither was wrong when written:
+>
+> 1. *"the only prisoner projection the HUD consumes is
+>    `projectPrisonerPopulationCounts`"* became false at `f8393f0` (#459,
+>    2026-08-28), which gave `src/ui/simulation-prisoner-roster.ts` the
+>    `hud/prisoner-roster` channel. `git merge-base --is-ancestor f8393f0
+>    068dbb5` **fails**, so this paragraph (`068dbb5`, 2026-08-26) predates it
+>    and was accurate on the day. What stayed true through that merge is the
+>    sentence that matters here: the roster deliberately dropped `lowestNeed`,
+>    so nothing yet reported a need.
+> 2. *"a prisoner's hunger can sit at 0 for the length of a session with no
+>    surface in the game reporting it"* became false today. Each Regime roster
+>    row draws that prisoner's worst need as a bar, with the need's word beside
+>    it and `data-need-permille` on the row.
+>
+> `hud/prisoner-detail` is still consumed by nothing under `src/ui/`, so that
+> half of the bullet stands unchanged.
+>
+> **What this does not do is take decision 5's revisit.** It removes the reason
+> the revisit could not be triggered; whether the starvation measured below now
+> warrants the stated ordering decision 5 asks for is that revisit's question,
+> and it is not answered here.
+
 ### The measurement decision 5 deferred, taken
 
 Decision 5 accepts the unfairness in terms it chose carefully — *"nothing in
