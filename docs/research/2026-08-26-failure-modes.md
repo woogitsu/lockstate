@@ -139,6 +139,18 @@ barrel export in `presentation/index.ts`. Issue #287 records this class of
 finding under the name "two finished capabilities have no caller"; the incident
 tree is a third and larger instance of it.
 
+**Marked rather than rewritten, 2026-08-29 (issue #555).** Three of those
+claims have since been acted on and are no longer true of `main`, and the
+paragraph above is left standing because it is what the grep found on
+2026-08-26. `toIncidentAlert` was **deleted** rather than given a caller — it
+was superseded by `incident-projection.ts`, and the argument is in
+`src/simulation/incidents/incident-summary.ts`, the file that was `alerts.ts`.
+`incident-projection.ts` is no longer reached only by a barrel: `projectIncidents`
+and `projectIncidentDetail` are served on the `hud/incidents` route by
+`src/simulation/worker/projection-catalog.ts`. `GangRegistry.addMember` is
+still reached only by its own snapshot loader, which is why no session a
+player can start opens a gang-retaliation incident.
+
 ### 0.6 "the queue is currently empty, so a row you add is the only one" — **false**
 
 `docs/adr/STATUS-QUEUE.md`'s own heading reads *"One decision is awaiting

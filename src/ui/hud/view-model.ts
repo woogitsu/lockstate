@@ -1014,9 +1014,11 @@ export interface HudRefusalNoticeViewModel {
  * is lower here because this channel does not republish.
  *
  * `severity` rather than a fixed tone, because this band is the first surface
- * that carries more than one: a discharge is `'info'` and an unpaid payday is
- * `'warning'`. `HudSeverity`'s `'info'` member had no producer anywhere in
- * `src/` before this.
+ * that carries more than one: a discharge is `'info'`, an unpaid payday is
+ * `'warning'`, and since issue #555 an opened riot is `'danger'`.
+ * `HudSeverity`'s `'info'` member had no producer anywhere in `src/` before
+ * this band, and its `'danger'` member had none outside an unrecoverable
+ * protocol fault until the incident events joined it.
  */
 export interface HudEventNoticeViewModel {
   readonly sequence: number;

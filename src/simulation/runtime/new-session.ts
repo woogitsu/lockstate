@@ -960,6 +960,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     incidentSectorIds,
     sampleSectorRisk,
     resolveOccupants,
+    events,
     undefined,
     undefined,
     undefined,
@@ -968,8 +969,11 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
 
 
   // The policy and the route-context resolver are the constructor's own
-  // defaults, restated (and skipped) only so the seventh argument can be
-  // supplied: the live view of which guards `SearchSystem` is holding on the
+  // defaults, restated (and skipped) only so the eighth argument can be
+  // supplied -- **the seventh until #555 put the required `events` sink ahead
+  // of them**, and the ordinal is corrected rather than dropped because it is
+  // the only thing that says why two arguments are being restated at all:
+  // the live view of which guards `SearchSystem` is holding on the
   // shared `'on-search'` phase, which is what lets a restored session hand
   // back the responders a save interrupted without disturbing a search job
   // (issue #352). `undefined` takes the emergency-override resolver the
@@ -980,6 +984,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     securitySectors,
     securityGuards,
     navigation,
+    events,
     DEFAULT_INCIDENT_RESPONSE_POLICY,
     undefined,
     () => searchSystem.claimedGuardIds(),

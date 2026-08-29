@@ -1,4 +1,5 @@
 import type { EntityId } from '../entity/entity-store';
+import type { SimulationEventLog } from '../events';
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { NavigationSystem } from '../navigation/navigation-system';
 import type { RouteContext } from '../navigation/route-context';
@@ -86,6 +87,18 @@ export class IncidentResponseSystem implements SystemRegistration {
     private readonly sectors: SecuritySectorRegistry,
     private readonly guards: GuardRoster,
     private readonly navigation: NavigationSystem,
+    /**
+     * The session's `SimulationEventLog`. Required rather than defaulted, for
+     * the reason `IncidentTriggerSystem`'s is: this system owns the only two
+     * places an incident becomes terminal, so it is the only thing that can
+     * say the prison is calm again, and one constructed without a sink would
+     * leave a `'danger'` band standing over a prison that is (#555).
+     *
+     * Declared before `policy` because TypeScript forbids a required
+     * parameter after an optional one; there are three call sites in the
+     * repository and each is a reviewed edit.
+     */
+    private readonly events: SimulationEventLog,
     private readonly policy: IncidentResponsePolicy = DEFAULT_INCIDENT_RESPONSE_POLICY,
     /**
      * Responders route with `emergencyOverride` -- #21's `checkDoorAccess`
@@ -169,6 +182,36 @@ export class IncidentResponseSystem implements SystemRegistration {
      */
     private readonly onAssaultAdjudicated: (entityId: EntityId, tick: number) => void = () => {},
   ) {}
+
+  /**
+   * Says the prison is under control again, if this transition is what made it
+   * true (#555).
+   *
+   * Called from the same two places `adjudicateAssaultIfAny` is, and *after*
+   * the `transition` in both, which is what makes the check readable at all:
+   * `transition` is the call that drops a terminal incident out of `openIds`,
+   * so asking before it would always find at least this one still open.
+   *
+   * **"All clear", not "that incident ended", and the guard is the whole
+   * design.** Two properties fall out of asking `openIncidentCount === 0`
+   * rather than emitting per closure. Two incidents that close on the same
+   * tick produce one line rather than two, because only the second leaves the
+   * count at zero -- which is also the only honest sentence, since after the
+   * first the prison is still not calm. And the number of these events is
+   * bounded above by the number of openings in any session whatever, so this
+   * producer cannot outpace the one in `IncidentTriggerSystem` that it exists
+   * to close off.
+   *
+   * It is also the only true thing to say after a **lapse**. An incident that
+   * ran its course was not "resolved" -- participants were injured, and an
+   * escape attempt means somebody is gone -- but the prison does have nothing
+   * open, and that is all this claims. What it cost is `IncidentOutcome`, which
+   * the `hud/incidents` projection renders per incident.
+   */
+  private reportAllClearIfCalm(tick: number): void {
+    if (this.incidents.openIncidentCount > 0) return;
+    this.events.recordIncidentsAllClear(tick);
+  }
 
   /** The one thing both terminal transitions below do identically, so the two call sites cannot drift about which incidents earn a sanction or which participant it lands on. */
   private adjudicateAssaultIfAny(incident: IncidentRecord, tick: number): void {
@@ -499,6 +542,7 @@ export class IncidentResponseSystem implements SystemRegistration {
     }
 
     this.adjudicateAssaultIfAny(incident, tick);
+    this.reportAllClearIfCalm(tick);
 
     // The one close `releaseResponse` cannot serve, because there is no record
     // for it to read: an incident whose response was interrupted by a save
@@ -679,6 +723,7 @@ export class IncidentResponseSystem implements SystemRegistration {
     this.incidents.transition(incident.id, 'resolved', tick, outcome);
     this.incidentsResolved += 1;
     this.adjudicateAssaultIfAny(incident, tick);
+    this.reportAllClearIfCalm(tick);
   }
 
   public getSnapshot(): { readonly metrics: IncidentResponseMetrics } {

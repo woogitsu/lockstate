@@ -218,9 +218,14 @@ Two projections deliberately drop state they can see:
   suspected, uncertainty intact) reach the HUD, matching
   `docs/CONTRABAND.md`.
 - **Incidents.** `IncidentRecord.causeFactors` and the `SectorRiskTracker`
-  score are withheld, exactly as `incidents/alerts.ts` already withholds
-  them from `IncidentAlert`. The timeline is not hidden: it records what
-  visibly happened.
+  score are withheld by `incident-projection.ts`. The timeline is not
+  hidden: it records what visibly happened.
+  This sentence used to end *"exactly as `incidents/alerts.ts` already
+  withholds them from `IncidentAlert`"*, and both that module and that
+  projection are gone — deleted in issue #555 as superseded by this one,
+  with the argument kept in `src/simulation/incidents/incident-summary.ts`,
+  the file that was `alerts.ts`. The rule has not changed; only the number
+  of places applying it has, from two to one.
 
 ### 7. The clock, and the first route of its own
 

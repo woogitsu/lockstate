@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { IncidentLog, INCIDENT_RECORD_SCHEMA_VERSION, isLegalIncidentTransition, type IncidentState } from '../../src/simulation/incidents/incident';
-import { summarizeIncidents, toIncidentAlert } from '../../src/simulation/incidents/alerts';
+import { summarizeIncidents } from '../../src/simulation/incidents/incident-summary';
 
 function openOne(log: IncidentLog, id = 'incident-1'): void {
   log.open({ id, type: 'assault', sectorId: 'block-a', participantIds: [3, 1], severity: 4, causeFactors: [{ kind: 'gang-grudge', value: 0.7 }] }, 10);
@@ -205,16 +205,16 @@ describe('IncidentLog: how long a sector has been quiet *of one kind of incident
   });
 });
 
-describe('incident alerts and summary: player-visible projections only', () => {
-  it('an alert withholds the raw cause factors that produced the incident', () => {
-    const log = new IncidentLog();
-    openOne(log);
-    const alert = toIncidentAlert(log.get('incident-1')!);
-
-    expect(alert).toEqual({ incidentId: 'incident-1', type: 'assault', sectorId: 'block-a', state: 'active', severity: 4, participantCount: 2, startedAtTick: 10 });
-    expect(Object.keys(alert)).not.toContain('causeFactors');
-  });
-
+/*
+ * **The `toIncidentAlert` case that stood here was deleted with the function
+ * it covered** (issue #555, and see `incident-summary.ts` for the argument).
+ * The property it asserted -- that a player-visible projection withholds the
+ * raw cause factors -- is not lost: `tests/unit/hud-projections.test.ts`,
+ * "never exposes the hidden cause factors that produced an incident", asserts
+ * it over `projectIncidents` and `projectIncidentDetail`, which are the
+ * projections a session actually serves.
+ */
+describe('incident summary: player-visible projections only', () => {
   it('summarizes resolved/lapsed/open incidents with aggregate outcomes', () => {
     const log = new IncidentLog();
     openOne(log, 'incident-a');

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { SimulationEventLog } from '../../src/simulation/events';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
 import { buildCellBlockFixture } from '../helpers/navigation-fixture';
@@ -20,13 +21,14 @@ function buildHarness(policy: IncidentResponsePolicy = DEFAULT_INCIDENT_RESPONSE
 
   const guards = new GuardRoster(64);
   const incidents = new IncidentLog();
-  const response = new IncidentResponseSystem(incidents, sectors, guards, navigation, policy);
+  const events = new SimulationEventLog();
+  const response = new IncidentResponseSystem(incidents, sectors, guards, navigation, events, policy);
 
   const kernel = new Kernel();
   kernel.registerSystem(navigation);
   kernel.registerSystem(response);
 
-  return { cellBlock, navigation, sectors, guards, incidents, response, kernel };
+  return { cellBlock, navigation, sectors, guards, incidents, events, response, kernel };
 }
 
 describe('IncidentResponseSystem: real guards, real routes, real lockdown', () => {
@@ -191,6 +193,49 @@ describe('IncidentResponseSystem: real guards, real routes, real lockdown', () =
     expect(incident.outcome).toEqual({ injuredEntityIds: [2, 4], propertyDamage: 6, escaped: false }); // sorted participants, damage = severity
     expect(response.getMetrics().incidentsLapsed).toBe(1);
     expect(response.getMetrics().incidentsResolved).toBe(0);
+  });
+
+  /**
+   * **The prison must not announce that it is under control while it is not**
+   * (issue #555).
+   *
+   * `reportAllClearIfCalm` is called on every terminal transition, and what
+   * makes it "one sentence per return to calm" rather than "one per incident
+   * that ended" is its `openIncidentCount` guard. No prison a player can start
+   * can show that: `new-session.ts` registers one sector (ADR 0036) and
+   * `IncidentTriggerSystem` opens at most one incident per sector per sampling
+   * point, so the integration test's neglected prison never has two open at
+   * once and passes with the guard deleted -- measured, which is why this case
+   * exists rather than a note saying the mutation survived.
+   *
+   * Two incidents, opened 200 ticks apart and therefore lapsing 200 ticks
+   * apart, with nobody hired to contain either. The player is told once, when
+   * the second one ends.
+   */
+  it('does not say the prison is under control while a second incident is still running (#555)', () => {
+    const { incidents, events, response, kernel } = buildHarness({ ...DEFAULT_INCIDENT_RESPONSE_POLICY, responseDeadlineTicks: 100 });
+    incidents.open({ id: 'incident-first', type: 'assault', sectorId: 'block-a', participantIds: [1, 2], severity: 4, causeFactors: [] }, 0);
+
+    for (let tick = 0; tick < 200; tick += 1) kernel.step();
+    expect(response.getMetrics().incidentsLapsed, 'the first must have ended before the second opens').toBe(1);
+    expect(
+      events.since(0).filter((event) => event.type === 'incidents.all-clear'),
+      'one incident ending is a return to calm, and the prison may say so',
+    ).toHaveLength(1);
+
+    incidents.open({ id: 'incident-second', type: 'riot', sectorId: 'block-a', participantIds: [3, 4], severity: 4, causeFactors: [] }, kernel.tick);
+    // A third, opened on the same tick, so that when the two of them end the
+    // guard has something to be right about: the earlier of the two closures
+    // leaves one still open.
+    incidents.open({ id: 'incident-third', type: 'assault', sectorId: 'block-a', participantIds: [5, 6], severity: 4, causeFactors: [] }, kernel.tick);
+
+    for (let tick = 0; tick < 400 && incidents.openIncidentCount > 0; tick += 1) kernel.step();
+    expect(response.getMetrics().incidentsLapsed, 'all three must have ended for this to be measuring anything').toBe(3);
+
+    expect(
+      events.since(0).filter((event) => event.type === 'incidents.all-clear'),
+      'three incidents ended and the prison became calm twice, so it says so twice -- not three times',
+    ).toHaveLength(2);
   });
 
   it('an un-responded escape attempt lapses with escaped: true', () => {

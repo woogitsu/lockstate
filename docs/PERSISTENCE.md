@@ -593,6 +593,19 @@ work are not.**
   sentence ticks are carried in the prisoner component arrays, so a sentence
   that ends after a load is announced when it ends. The log is therefore
   derivable-forward rather than lost.
+  **The incident events of issue #555 are the one member of the channel this
+  argument holds less neatly for, and it is worth stating rather than
+  discovering.** `IncidentLog` *is* persisted, so an incident that was open
+  when the save was taken is open again on load — but its
+  `incidents.riot-opened` was not, and nothing re-announces an opening that
+  already happened. What the restored player has is the status strip's
+  incidents badge, which names the kind (issue #506 finding 2) and is a level
+  rather than an occurrence, so it does carry across a save; and, when the
+  restored incident reaches a terminal state, `incidents.all-clear`. So the
+  sequence a restored session shows is the end of an incident it never
+  announced the start of. That is a smaller version of the same shape the
+  arrears case has, and the same reasoning covers it: the *condition* is on
+  screen throughout, and only the sentence marking the moment is missing.
   Asserted rather than described: `tests/integration/sentence-end-release.test.ts`
   saves a prison that has just released somebody and requires the restored one
   to announce nothing. Also recorded in `docs/HUD_PROJECTIONS.md` gap 33.

@@ -347,6 +347,24 @@ export class IncidentLog {
     return record === undefined ? undefined : toRecord(id, record);
   }
 
+  /**
+   * How many incidents are open right now.
+   *
+   * The same question `openIncidents().length` answers, without the answer:
+   * that method allocates a sorted array and rebuilds a fresh `IncidentRecord`
+   * per open incident, and every caller that only wants to know *whether* the
+   * prison is calm was paying for records it then threw away. `.size` on the
+   * index that already exists costs nothing.
+   *
+   * Added for `IncidentResponseSystem.reportAllClearIfCalm` (#555), which asks
+   * on every terminal transition, and it is the reason that producer can be
+   * "one event per return to calm" rather than "one per incident": two
+   * incidents closing on the same tick leave this at zero exactly once.
+   */
+  public get openIncidentCount(): number {
+    return this.openIds.size;
+  }
+
   /** Deterministic: sorted by id. Indexed -- never a scan of terminal incidents. */
   public openIncidents(): readonly IncidentRecord[] {
     return [...this.openIds].sort().map((id) => toRecord(id, this.require(id)));

@@ -1,4 +1,5 @@
 import type { EntityId } from '../entity/entity-store';
+import type { SimulationEventLog } from '../events';
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import {
   ASSAULT_PARTICIPANT_COUNT,
@@ -14,7 +15,7 @@ import {
   type PrisonerFlashpoint,
 } from './flashpoint';
 import { GangRegistry, resolveRetaliationRisk } from './gangs';
-import { IncidentLog, type IncidentCauseFactor, type IncidentType } from './incident';
+import { IncidentLog, type IncidentCauseFactor, type IncidentType, type OpenIncidentInput } from './incident';
 import { SectorRiskTracker, type SectorRiskSample } from './sector-risk';
 
 /**
@@ -229,6 +230,21 @@ export class IncidentTriggerSystem implements SystemRegistration {
     private readonly sectorIds: readonly string[],
     private readonly sampleRisk: SectorRiskSampler,
     private readonly resolveOccupants: SectorOccupantResolver,
+    /**
+     * The session's `SimulationEventLog`, and required rather than defaulted
+     * for the reason `PayrollSystem` states about its own: *"a `PayrollSystem`
+     * with no sink would go on billing silently, which is the defect issue
+     * #507 exists to close."* This system is the only thing in `src/` that
+     * opens an incident, so a trigger system with no sink is precisely issue
+     * #555 -- a riot happening and the Alerts section reading "No active
+     * alerts".
+     *
+     * Declared here, before the eight defaulted parameters below, because
+     * TypeScript forbids a required parameter after an optional one. Every
+     * call site is a reviewed edit rather than a silent widening: there are
+     * four in the repository.
+     */
+    private readonly events: SimulationEventLog,
     /** Retaliation risk at/above which a gang-retaliation incident fires. Directional default, not a balance decision. */
     private readonly retaliationThreshold: number = 0.6,
     /** How long after an incident opens this sector may not open another. See `DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT`. */
@@ -335,7 +351,7 @@ export class IncidentTriggerSystem implements SystemRegistration {
     if (candidate.score < this.escapePolicy.threshold) return false;
 
     const source = candidates.find((flashpoint) => flashpoint.entityId === candidate.entityId)!;
-    this.incidents.open(
+    this.openIncident(
       {
         id: this.nextIncidentId('escape-attempt'),
         type: 'escape-attempt',
@@ -404,7 +420,7 @@ export class IncidentTriggerSystem implements SystemRegistration {
 
     const participants = ranked.slice(0, ASSAULT_PARTICIPANT_COUNT);
     const source = flashpoints.find((flashpoint) => flashpoint.entityId === worst.entityId)!;
-    this.incidents.open(
+    this.openIncident(
       {
         id: this.nextIncidentId('assault'),
         type: 'assault',
@@ -432,6 +448,37 @@ export class IncidentTriggerSystem implements SystemRegistration {
     return true;
   }
 
+  /**
+   * Opens the incident **and** tells the player it opened -- the one door all
+   * four producers below go through (#555).
+   *
+   * A wrapper rather than four `recordIncidentOpened` calls beside four
+   * `this.incidents.open` calls, for the reason `adjudicateAssaultIfAny` is
+   * one in `IncidentResponseSystem`: *"so the two call sites cannot drift
+   * about which incidents earn a sanction"*. There are four here, and a fifth
+   * producer added later inherits the announcement instead of having to
+   * remember it -- which is exactly what did not happen to the deleted
+   * `toIncidentAlert` (`incident-summary.ts` has that story).
+   *
+   * **This is where the volume is bounded, not at `MAX_EVENT_ALERT_ROWS`.**
+   * Every caller below has already passed `isQuiet` for its own `(sector,
+   * kind)` pair before reaching this, so the pace is the quiet period rather
+   * than the sampling cadence: at most one riot or gang-retaliation event per
+   * sector per `DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT` (4,800 ticks, two
+   * in-game days), one assault per 2,400 and one escape attempt per 12,000.
+   * Nothing downstream has to filter, which is the property `PayrollSystem`
+   * describes as getting *"for free rather than from a filter downstream"*.
+   *
+   * `participantIds.length` is the count, read off the input this system just
+   * built rather than off the record it just wrote: `IncidentLog.open` copies
+   * the list and changes nothing about it, so the two are the same number, and
+   * reading the input needs no `get` round trip.
+   */
+  private openIncident(input: OpenIncidentInput, tick: number): void {
+    this.incidents.open(input, tick);
+    this.events.recordIncidentOpened(input.type, input.participantIds.length, tick);
+  }
+
   private nextIncidentId(type: IncidentType): string {
     this.sequence += 1;
     return `incident.${type}.${this.sequence}`;
@@ -444,7 +491,7 @@ export class IncidentTriggerSystem implements SystemRegistration {
       { kind: 'staffing-shortfall', value: sample.staffingShortfall },
       { kind: 'contraband-pressure', value: sample.contrabandPressure },
     ];
-    this.incidents.open(
+    this.openIncident(
       {
         id: this.nextIncidentId('riot'),
         type: 'riot',
@@ -469,7 +516,7 @@ export class IncidentTriggerSystem implements SystemRegistration {
         if (risk < this.retaliationThreshold) continue;
 
         const participants = [...this.gangs.membersOf(offended), ...this.gangs.membersOf(offending)].sort((a, b) => a - b);
-        this.incidents.open(
+        this.openIncident(
           {
             id: this.nextIncidentId('gang-retaliation'),
             type: 'gang-retaliation',

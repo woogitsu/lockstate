@@ -1,3 +1,4 @@
+import type { IncidentType } from '../incidents/incident';
 import type { SimulationEvent } from '../protocol/types';
 
 /**
@@ -136,6 +137,62 @@ export class SimulationEventLog {
       type: 'economy.wages-unpaid',
       unpaidWagesMinorUnits,
     });
+  }
+
+  /**
+   * Records that an incident opened (issue #555).
+   *
+   * **A `switch` over `IncidentType` rather than a lookup**, because the
+   * union's members do not all carry the same figure -- see the schemas in
+   * `src/simulation/protocol/types.ts` for why only the riot carries
+   * `participantCount` -- and because exhaustiveness here is what
+   * matters: a fifth `IncidentType` fails to compile in this method until
+   * somebody has decided
+   * what the prison says when it opens, which is the same guarantee
+   * `EVENT_PRESENTATION` gives on the other side of the wire.
+   *
+   * `IncidentType` is imported for its type only, so this module still runs no
+   * incident code; `src/simulation/protocol/types.ts` re-declares the same
+   * vocabulary locally and holds the two together with `AssertSame`.
+   *
+   * @param participantCount How many prisoners are in it. Guarded like
+   * `recordDischarge` and for the same reason, and guarded for all four types
+   * even though only the riot carries the figure onto the wire: an incident
+   * nobody is in is not something the prison has to say, whatever its kind,
+   * and a guard that applied to one member would be an invitation to add the
+   * fifth type to the unguarded half.
+   */
+  public recordIncidentOpened(type: IncidentType, participantCount: number, tick: number): void {
+    if (!Number.isSafeInteger(participantCount) || participantCount < 1) return;
+    const sequence = this._sequence + 1;
+    switch (type) {
+      case 'riot':
+        this.append({ sequence, tick, type: 'incidents.riot-opened', participantCount });
+        return;
+      case 'gang-retaliation':
+        this.append({ sequence, tick, type: 'incidents.gang-retaliation-opened' });
+        return;
+      case 'assault':
+        this.append({ sequence, tick, type: 'incidents.assault-opened' });
+        return;
+      case 'escape-attempt':
+        this.append({ sequence, tick, type: 'incidents.escape-attempt-opened' });
+        return;
+    }
+  }
+
+  /**
+   * Records that the prison has nothing open any more (issue #555).
+   *
+   * Unguarded, because there is no figure to guard: what makes this at most
+   * one event per return to calm is the caller, which records it only on a
+   * terminal transition that leaves `IncidentLog.openIncidentCount` at zero.
+   * Deliberately not re-checked here -- this class knows nothing about
+   * incidents, and a second, weaker copy of the rule is how the two would come
+   * to disagree.
+   */
+  public recordIncidentsAllClear(tick: number): void {
+    this.append({ sequence: this._sequence + 1, tick, type: 'incidents.all-clear' });
   }
 
   /**

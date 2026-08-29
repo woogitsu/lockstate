@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { SimulationEventLog } from '../../src/simulation/events';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { GangRegistry } from '../../src/simulation/incidents/gangs';
 import { IncidentLog } from '../../src/simulation/incidents/incident';
@@ -39,6 +40,7 @@ function buildHarness(options: {
   readonly sampleFlashpoints?: PrisonerFlashpointSampler;
 }) {
   const incidents = new IncidentLog();
+  const events = new SimulationEventLog();
   const risk = new SectorRiskTracker(DEFAULT_SECTOR_RISK_POLICY);
   const gangs = options.gangs ?? new GangRegistry();
   const trigger = new IncidentTriggerSystem(
@@ -48,6 +50,7 @@ function buildHarness(options: {
     options.sectorIds,
     options.sampleFor,
     options.occupants ?? TWO_OCCUPANTS,
+    events,
     undefined,
     options.quietTicksAfterIncident,
     undefined,
@@ -55,7 +58,7 @@ function buildHarness(options: {
   );
   const kernel = new Kernel();
   kernel.registerSystem(trigger);
-  return { incidents, risk, gangs, trigger, kernel };
+  return { incidents, events, risk, gangs, trigger, kernel };
 }
 
 /** The trigger system samples every 50 ticks, so one "sampling point" is 50 kernel ticks. */
@@ -109,6 +112,44 @@ describe('IncidentTriggerSystem: sustained conditions, never a one-sample spike'
     expect(riot.severity).toBe(10); // fully hot
     expect(riot.causeFactors.map((factor) => factor.kind)).toEqual(['sustained-sector-risk', 'needs-pressure', 'staffing-shortfall', 'contraband-pressure']);
     expect(trigger.getMetrics()).toEqual({ incidentsTriggered: 1, riotsTriggered: 1, retaliationsTriggered: 0 });
+  });
+
+  /**
+   * **The riot the prison announces is the riot it opened** (issue #555).
+   *
+   * `participantCount` is the one figure the incident events carry onto the
+   * wire, and it is the whole of what the sentence says beyond the kind -- so
+   * a producer that sent a constant, or the wrong list's length, would read
+   * plausibly and be wrong. Three occupants here rather than the harness's
+   * default two, because two is `DEFAULT_MINIMUM_RIOT_PARTICIPANTS` and a
+   * fixture sitting on the floor cannot tell a count from the floor itself:
+   * measured, a constant `2` passes every assertion in
+   * `tests/integration/incident-events-loop.test.ts`, whose neglected prison
+   * holds exactly two prisoners.
+   *
+   * Read against `riot.participantIds`, which the case above independently
+   * pins to `[3, 5, 7]`, rather than against the literal the harness was given
+   * -- the claim is that the two logs agree, not that either matches a number
+   * written here twice.
+   */
+  it('tells the player how many prisoners are in the riot it just opened (#555)', () => {
+    const { incidents, events, kernel } = buildHarness({
+      sectorIds: ['block-a'],
+      sampleFor: () => HOT,
+      occupants: () => [7, 3, 5],
+    });
+
+    // Nothing is said while the sector is merely heating up. One sample short
+    // of the sustained window, so a producer keyed on the sample rather than
+    // on the opening fails here.
+    stepSamples(kernel, DEFAULT_SECTOR_RISK_POLICY.sustainedSamplesRequired - 1);
+    expect(events.since(0), 'a sector that is hot but has not rioted has nothing to announce').toEqual([]);
+
+    stepSamples(kernel, 1);
+    const riot = incidents.all()[0]!;
+    expect(events.since(0)).toEqual([
+      { sequence: 1, tick: riot.startedAtTick, type: 'incidents.riot-opened', participantCount: riot.participantIds.length },
+    ]);
   });
 
   it('does not open a second incident in a sector that already has one open', () => {
@@ -282,7 +323,7 @@ describe('IncidentTriggerSystem: gang retaliation feeds the same pipeline', () =
     const restoredRisk = new SectorRiskTracker(DEFAULT_SECTOR_RISK_POLICY);
     // Occupants and a zero quiet period for the same reasons `buildHarness`
     // supplies them: this file is about the id sequence, not about either gate.
-    const restoredTrigger = new IncidentTriggerSystem(restoredIncidents, restoredRisk, new GangRegistry(), ['block-a'], () => HOT, TWO_OCCUPANTS, undefined, 0);
+    const restoredTrigger = new IncidentTriggerSystem(restoredIncidents, restoredRisk, new GangRegistry(), ['block-a'], () => HOT, TWO_OCCUPANTS, new SimulationEventLog(), undefined, 0);
     restoredTrigger.loadSnapshot(trigger.getSnapshot());
 
     expect(restoredTrigger.getMetrics()).toEqual(trigger.getMetrics());
