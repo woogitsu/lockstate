@@ -7,6 +7,8 @@ import {
   IntelligenceSystem,
   InformantRegistry,
   SearchSystem,
+  SectorSearchDutySystem,
+  applyDefaultSearchPolicies,
   introduceContrabandOnIntake,
   type CategoryConcealmentResolver,
   type SearchPolicyDefinition,
@@ -739,16 +741,36 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    *   still holds none, so the convention this comment names is intact -- what
    *   changed is that "a session introduces them" now has a producer inside
    *   `src/` instead of waiting for a scenario format that does not exist.
-   * - **Intelligence**: written by `contraband.observation` below, as decaying
-   *   sector-scoped suspicion derived from those instances. That is
+   * - **Intelligence**: this bullet read *"written by `contraband.observation`
+   *   below, as decaying sector-scoped suspicion derived from those
+   *   instances ... the something is now here"*, and **it is false** -- marked
+   *   in both directions rather than overwritten, because it is the claim a
+   *   reader would otherwise take on trust. There is no `contraband.observation`
+   *   system in this repository: `grep -rn "observation" src/` finds the
+   *   `IntelligenceSourceType` member of that name, its label, a staff skill id
+   *   and prose -- no `SystemRegistration`, and `grep -rn "\.report(" src/`
+   *   finds exactly one line, inside `reportInformantTip`, which itself has no
+   *   caller at all. `IntelligenceSystem` below decays a ledger nothing writes to. So
    *   [ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md) open
-   *   question 5's *"the term is structurally zero until something calls"* --
-   *   the something is now here.
-   * - **Informants and search policies are still empty**, and still for the
-   *   original reason. Recruiting an informant is a relationship model (#39)
-   *   and a search policy is a player order nothing can give (ADR 0061 open
-   *   question 1) -- both are content decisions with no producer, and
-   *   fabricating either would be exactly what this convention forbids.
+   *   question 5's *"the term is structurally zero until something calls"* is
+   *   still open, `DEFAULT_SECTOR_RISK_POLICY.contrabandPressureWeight` is
+   *   still structurally zero -- which `src/simulation/incidents/sector-risk.ts`
+   *   says in its own docblock -- and every search below runs with an
+   *   `intelligenceConfidenceBonus` term of 0.
+   * - **Search policies are no longer empty**
+   *   ([ADR 0073](../../../docs/adr/0073-who-orders-a-contraband-search.md)
+   *   Part 1, issue #552), and this is the second deliberate exception to the
+   *   convention above rather than a drift. `SearchSystem.findPolicy` *throws*
+   *   on an empty list, so "no fabricated default content" was not leaving a
+   *   subsystem inert here; it was leaving a documented public method unable to
+   *   be called at all. The four are directional defaults in
+   *   `default-search-policies.ts`, applied by the same idempotent,
+   *   payload-wins function the derived sector uses, for the same reason: a
+   *   save written before them gains them on load with no migration.
+   * - **Informants are still empty**, and still for the original reason.
+   *   Recruiting an informant is a relationship model (#39) -- a content
+   *   decision with no producer, and fabricating one would be exactly what this
+   *   convention forbids.
    *
    * `locateSearchTarget` resolves a search target's tile from the *real*
    * registries already constructed above (prisoner positions, room-instance
@@ -762,6 +784,15 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const intelligence = new IntelligenceLedger();
   const informants = new InformantRegistry();
   const searchPolicies: SearchPolicyDefinition[] = [];
+  /*
+   * The four policies, before anything can order a search
+   * ([ADR 0073](../../../docs/adr/0073-who-orders-a-contraband-search.md)
+   * Part 1). Here rather than in the array literal above so that this call and
+   * the one at the end of `restoreSessionSystems` are visibly the same call:
+   * `applyDefaultSearchPolicies` fills only the scopes the list lacks, so a
+   * restored payload's own policies win and a scenario's do too.
+   */
+  applyDefaultSearchPolicies(searchPolicies);
   const searchContainerLocations = new Map<string, TilePosition>();
   const intelligenceSystem = new IntelligenceSystem(intelligence);
 
@@ -847,6 +878,27 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     const sector = securitySectors.getDefinition(sectorId);
     return sector === undefined ? [] : resolveSectorOccupants(sector, world, prisoners);
   };
+
+  /*
+   * The producer `SearchSystem.submitOrder` never had
+   * ([ADR 0073](../../../docs/adr/0073-who-orders-a-contraband-search.md)
+   * Part 2 Option A, issue #552): a staffed sector orders a rotating sweep of
+   * its own occupants on a cadence, and a *spare* guard walks it.
+   *
+   * Constructed here rather than beside `searchSystem` above because it needs
+   * `resolveOccupants`, which needs the sector registry the derivation fills --
+   * the same ordering constraint `applyDefaultSecuritySector` has. It is handed
+   * `resolveSectorOccupants`'s answer through that resolver rather than reading
+   * positions itself, so ADR 0048's containment rule stays in the one module
+   * that owns it.
+   */
+  const sectorSearchDuty = new SectorSearchDutySystem(
+    securitySectors,
+    securityGuards,
+    searchSystem,
+    searchPolicies,
+    (sector) => resolveOccupants(sector.id),
+  );
 
   /**
    * One prisoner's mean unmet-need deficit over `NEED_IDS`, 0-1.
@@ -1044,6 +1096,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(deploymentSystem);
   kernel.registerSystem(patrolSystem);
   kernel.registerSystem(incidentTriggerSystem);
+  kernel.registerSystem(sectorSearchDuty);
   kernel.registerSystem(searchSystem);
   kernel.registerSystem(incidentResponseSystem);
   kernel.setCommandHandler(
