@@ -623,6 +623,16 @@ export interface RoomsProbe {
   /** `data-area` on the readout block: `x,y,width,height`, or empty for none. */
   readonly area: string;
   readonly areaText: string;
+  /**
+   * Whether the area readout has a box at all.
+   *
+   * Laid out and not merely present, for `armLaidOut`'s reason and one more:
+   * the block folds when there is no rectangle to report, and `hud.css` gives
+   * it an author `display: flex` behind a `:not([hidden])` guard -- so a probe
+   * that read the attribute would agree with a rule that had lost its guard and
+   * was painting the placeholder anyway.
+   */
+  readonly areaLaidOut: boolean;
   /** The one note line: the arm hint, the removal hint, the too-small warning or the enclosure warning. */
   readonly noteText: string;
   /** `data-tone`, so a warning is distinguishable from a hint without matching prose. */
@@ -630,6 +640,10 @@ export interface RoomsProbe {
   /** The two rule lines: the authored minimum, and the enclosure requirement. */
   readonly ruleText: readonly string[];
   readonly enclosureText: string;
+  /** Whether the enclosure readout has a box, for `areaLaidOut`'s reason: it folds until a room has been evaluated. */
+  readonly enclosureLaidOut: boolean;
+  /** `data-needs` on the panel: the total the readout was told about, or empty when it has no box. */
+  readonly panelNeeds: string;
   readonly armLaidOut: boolean;
   readonly removeLaidOut: boolean;
   readonly confirmLaidOut: boolean;
@@ -683,8 +697,25 @@ export interface RoomsProbe {
   readonly needsTotal: string;
   /** The figure beside the header eyebrow. */
   readonly needsCountText: string;
-  /** The one detail line: which room, where, and what it wants. */
+  /**
+   * The room line: which room the readout is about, and where.
+   *
+   * It named the room *and* one object it wanted until #529 ("Cell at 12, 4
+   * needs Bed"). The objects moved to `needsItemText` below when the readout
+   * began enumerating all of them, so this is now the heading over that list.
+   */
   readonly needsLineText: string;
+  /** One entry per object the named room is short, with its quantity, in the order drawn (#529). */
+  readonly needsItemText: readonly string[];
+  /**
+   * The whole block's laid-out height, in CSS pixels.
+   *
+   * What `ROOM_NEEDS_NAMED_LIMIT` is a budget *for*: that constant is a claim
+   * about how much of the rail this readout may spend, and a line count is not
+   * that claim -- a spec asserting "three lines are drawn" stays green over a
+   * block whose lines have been clipped to nothing.
+   */
+  readonly needsHeight: number;
 }
 
 /**

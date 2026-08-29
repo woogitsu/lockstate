@@ -1,5 +1,5 @@
 import type { RoomDetailViewModel, RoomListViewModel } from '../simulation/presentation/room-projection';
-import { ROOM_NEEDS_NAMED_LIMIT, type HudRoomNeedViewModel, type HudRoomNeedsViewModel } from './hud';
+import { ROOM_NEEDS_ROOMS_LIMIT, type HudRoomNeedViewModel, type HudRoomNeedsViewModel } from './hud';
 import {
   SimulationProjectionRequester,
   type ProjectionMessageChannel,
@@ -56,24 +56,83 @@ import {
  */
 
 /**
- * The rooms the projection says are missing something, in its own order.
+ * The rooms the projection says are missing something, nearest to finished
+ * first.
  *
  * `requirementSummary.missingCapability` is the verdict, read and not
- * recomputed: this predicate is `> 0` and nothing else. Deriving "unfinished"
+ * recomputed: the predicate is `> 0` and nothing else. Deriving "unfinished"
  * here from `objectCapabilities` -- which the same row carries -- would put a
  * second definition of the rule on the main thread, and the second definition
  * is the one that drifts.
  *
- * The order is `RoomListViewModel.rooms.rows`'s own, which is ascending
- * instance id (`tests/determinism/projection-ordering.test.ts` pins it). That
- * matters because it decides which rooms get named when there are more than
- * there is room for: the choice is the projection's canonical order rather than
- * whatever order a map iterated in.
+ * ## Why this is sorted at all, and why by this
+ *
+ * **It used to be `rows`'s own order**, ascending instance id, and the comment
+ * here said that mattered "because it decides which rooms get named when there
+ * are more than there is room for". That reason is still exactly right and the
+ * order it chose is not, which is what #529 measured: the panel names one room,
+ * so ascending instance id means it names *the oldest unfinished room*, which
+ * is the one the player zoned first and has been stuck on longest. A prison
+ * with three empty cells and a kitchen one stove short showed a cell.
+ *
+ * A player reading this readout is trying to **finish something**, not to audit
+ * everything -- there is no surface in this application that audits, and #529
+ * says so. The cheapest available completion is the room with the fewest unmet
+ * requirements, so that is what gets named, and finishing it moves the readout
+ * to the next-cheapest rather than back to the same stuck room. Ties break on
+ * `instanceId`, so the order is total and deterministic
+ * (`docs/DETERMINISM.md`): two rooms short of one thing each are named in the
+ * projection's own canonical order, which is what
+ * `tests/determinism/projection-ordering.test.ts` pins `rows` to.
+ *
+ * **What this sorts by is requirements, not objects, and the difference is
+ * visible.** A cell short of a bed and a canteen short of four benches both
+ * report `missingCapability === 1`, so they tie here and the older is named
+ * first -- even though one is a single build and the other is four. The
+ * object-level shortfall lives on `RoomDetailViewModel.requirements`, which
+ * costs one message *per room*; sorting by it would make an `O(rooms)` read out
+ * of a readout that runs on a cadence, which is the unbounded-in-the-prison
+ * cost `RoomNeedsReader.read`'s bound exists to refuse. A tie broken slightly
+ * wrong is worth a great deal less than that, and it is written down rather
+ * than left for a reader to discover.
+ *
+ * The array is a copy: `rows` is `readonly` and belongs to the reply.
  */
 export function unfinishedRoomIds(list: RoomListViewModel): readonly string[] {
   return list.rooms.rows
     .filter((row) => row.requirementSummary.missingCapability > 0)
+    .slice()
+    .sort(
+      (left, right) =>
+        left.requirementSummary.missingCapability - right.requirementSummary.missingCapability ||
+        compareInstanceIds(left.instanceId, right.instanceId),
+    )
     .map((row) => row.instanceId);
+}
+
+/**
+ * The tie-break: `rows`'s own ordering, not a second opinion about it.
+ *
+ * A second declaration of `compareStableIds`
+ * (`src/simulation/presentation/view-model.ts`), and it has to be one. This
+ * module is pinned `kind: 'type-only'` against the simulation tree in
+ * `tests/unit/ui-orchestration-boundaries.test.ts`, whose recorded reason says
+ * what a value import here would mean -- "the readout had started projecting
+ * rooms on the main thread from state it does not own" -- and importing a
+ * three-line comparator would flip that gate for a trivial gain. The gate is
+ * worth more than the deduplication.
+ *
+ * Two declarations of one rule drift, so `tests/unit/ui-simulation-room-needs.test.ts`
+ * imports both and holds them together -- the shape `MAX_ROOM_SIDE_TILES` and
+ * `HUD_BUILD_EDGES` already use for exactly this trade.
+ *
+ * Why it must be that comparator and not merely *a* total order: `rows` is
+ * published sorted by `compareStableIds`, so resolving a tie the same way means
+ * equal-cost rooms come out in the order the projection published them, and the
+ * sort above is stable in the only sense that matters here.
+ */
+function compareInstanceIds(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 /**
@@ -98,6 +157,43 @@ export function unfinishedRoomIds(list: RoomListViewModel): readonly string[] {
  * room still counts in `unfinishedRooms`, which comes from the list rather than
  * from the details.
  */
+/**
+ * How many more of the object the room needs, when the projection counted (#529).
+ *
+ * **The subtraction happens here and nowhere else**, and it is the only
+ * arithmetic this module does on the simulation's numbers. `minQuantity` is
+ * what the room asks for and `satisfyingQuantity` is what it holds; neither
+ * alone is actionable, and the projection deliberately publishes both rather
+ * than the difference, because the difference is a statement about a *readout*
+ * -- "build this many" -- while the two figures are statements about the room.
+ *
+ * Returns a spreadable object rather than `number | undefined` because
+ * `exactOptionalPropertyTypes` is on: "the simulation could not count" must be
+ * an absent property on `HudRoomNeedViewModel`, not a present one holding
+ * nothing, and building it here keeps that decision in one place instead of at
+ * every call site.
+ *
+ * **Three ways to get nothing, and all three are the same statement**: the
+ * requirement is not an `object` one (so it carries neither figure), the
+ * projection was handed nothing to attribute to the room (so
+ * `satisfyingQuantity` is absent -- see its own comment), or the subtraction
+ * does not come out positive. That last is not reachable through
+ * `roomNeedsFromProjections`, which reads only `'missing-capability'` entries,
+ * and a `'missing-capability'` verdict is *defined* as holding fewer than
+ * `minQuantity` -- so it is a guard against the two figures contradicting the
+ * status beside them rather than a case. It answers with no numeral rather than
+ * with a zero or a negative, because a line reading "0 x Bed" would be a
+ * rendering bug wearing the clothes of a fact.
+ */
+function missingQuantityOf(
+  requirement: RoomDetailViewModel['requirements'][number],
+): { readonly missingQuantity?: number } {
+  const { minQuantity, satisfyingQuantity } = requirement;
+  if (minQuantity === undefined || satisfyingQuantity === undefined) return {};
+  const missing = minQuantity - satisfyingQuantity;
+  return missing > 0 ? { missingQuantity: missing } : {};
+}
+
 export function roomNeedsFromProjections(
   list: RoomListViewModel,
   details: readonly RoomDetailViewModel[],
@@ -112,12 +208,34 @@ export function roomNeedsFromProjections(
     totalNeeds += missing;
   }
 
+  /*
+   * Every unmet requirement of every room that was asked about, and **no cap
+   * here**.
+   *
+   * This loop used to stop at `ROOM_NEEDS_NAMED_LIMIT`, and that was the same
+   * conflation `RoomNeedsReader.read`'s budget carried: one constant standing
+   * for "how many rooms to ask about" and "how many lines the panel draws"
+   * while both were 1. Truncating *here* is the worse half of it, because the
+   * panel then cannot say how many it did not show -- the remainder was
+   * subtracted from the prison-wide `totalNeeds`, which is how
+   * "Cell at 2, 2 needs Bed, and 5 more" came to attach five other rooms'
+   * requirements to a sentence about one cell.
+   *
+   * `ROOM_NEEDS_NAMED_LIMIT`'s own comment states the division this restores:
+   * "The boundary carries the answer; the panel decides how much of it fits."
+   * So the answer crosses whole and `rooms-panel.ts` slices it, which is what
+   * lets it count its own remainder honestly.
+   *
+   * Bounded by content rather than by a number chosen here:
+   * `ROOM_NEEDS_ROOMS_LIMIT` rooms were asked about, and
+   * `roomRequirementSchema` caps a room at 32 requirements. The deepest shipped
+   * room has three object requirements.
+   */
   const needs: HudRoomNeedViewModel[] = [];
   for (const detail of details) {
     if (detail.roomNameKey === undefined) continue;
     for (const requirement of detail.requirements) {
       if (requirement.status !== 'missing-capability') continue;
-      if (needs.length >= ROOM_NEEDS_NAMED_LIMIT) break;
       needs.push({
         instanceId: detail.instanceId,
         roomLabelKey: detail.roomNameKey,
@@ -126,9 +244,9 @@ export function roomNeedsFromProjections(
         // is on, so "the catalogue names no object" has to be an absent
         // property and not a present one holding nothing.
         ...(requirement.objectNameKey === undefined ? {} : { objectLabelKey: requirement.objectNameKey }),
+        ...missingQuantityOf(requirement),
       });
     }
-    if (needs.length >= ROOM_NEEDS_NAMED_LIMIT) break;
   }
 
   return { unfinishedRooms, totalRooms: list.totals.instances, totalNeeds, needs };
@@ -144,15 +262,23 @@ export class RoomNeedsReader {
   }
 
   /**
-   * One list read, then one detail read per unfinished room until the panel's
-   * rows are full.
+   * One list read, then one detail read per unfinished room until the panel has
+   * as many rooms as it can draw.
    *
-   * **At most `1 + ROOM_NEEDS_NAMED_LIMIT` messages**, which today is two, and
-   * that is now a bound on *requests* rather than on needs named. The loop stops
-   * on the panel's naming budget rather than on the room count, so the cost is
+   * **At most `1 + ROOM_NEEDS_ROOMS_LIMIT` messages**, which today is two, and
+   * that is a bound on *requests* rather than on needs named. The loop stops
+   * on the panel's room budget rather than on the room count, so the cost is
    * bounded by what the panel can show and not by how many rooms are unfinished
    * -- and the header's counts come from the list, which is one message however
    * large the prison is.
+   *
+   * **The budget used to be `ROOM_NEEDS_NAMED_LIMIT` and #529 split the two
+   * apart.** One constant served as both "how many rooms to ask about" and "how
+   * many lines to draw" only because both were 1; once the panel began naming
+   * every object a room is short, they became different quantities -- a single
+   * detail reply now yields up to three lines. Reusing the item budget as the
+   * request budget after that change would have asked the worker for three
+   * rooms to fill lines the first room already filled.
    *
    * The sentence was **false as written**: the budget it named was spent in
    * needs, and a detail that answered with no `view` named none, so the loop
@@ -201,7 +327,7 @@ export class RoomNeedsReader {
       // moved, and the header's counts come from that list either way.
       let asked = 0;
       for (const instanceId of unfinishedRoomIds(list.view)) {
-        if (asked >= ROOM_NEEDS_NAMED_LIMIT) break;
+        if (asked >= ROOM_NEEDS_ROOMS_LIMIT) break;
         asked += 1;
         const reply = await this.requester.request<RoomDetailViewModel>('hud/room-detail', {
           target: { kind: 'id', id: instanceId },

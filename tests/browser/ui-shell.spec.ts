@@ -2383,7 +2383,25 @@ test.describe('the Rooms panel', () => {
     // The rule is readable *before* the drag, which is the whole reason the
     // catalogue comes first: a player choosing a canteen should not learn its
     // 6x6 floor from the refusal after dragging 2x2.
-    expect(probe.ruleText).toEqual(['Needs at least 2 × 3 tiles', 'Must be enclosed']);
+    /*
+     * **The objects joined that rule in #529.** The block stated how big a cell
+     * must be and whether it must be enclosed, and named not one of the things a
+     * cell needs standing in it -- so a player choosing between a canteen and a
+     * kitchen could not learn what either would cost them. One block, one voice,
+     * one series, which is why they share `.hud-rooms__rule` and this probe.
+     *
+     * These figures are this suite's own `ROOMS_MODEL` fixture, so what they
+     * assert is the *panel*. That `roomCatalogue()` in `src/main.ts` really
+     * derives them from the shipped catalogue is a different claim, asserted
+     * against the real registry in `app-shell.spec.ts`; see `ROOMS_MODEL`'s
+     * comment in `ui-harness.ts` for why one cannot stand in for the other.
+     */
+    expect(probe.ruleText).toEqual([
+      'Needs at least 2 × 3 tiles',
+      'Must be enclosed',
+      'Needs 1 × Bed',
+      'Needs 1 × Toilet',
+    ]);
     expect(probe.areaText, 'nothing is selected yet').toBe('Nothing selected');
     expect(probe.enclosureText, 'nothing has been designated yet').toBe('Not evaluated yet');
     await expectLaidOut(page, '.hud-rooms__list [data-room]', "the panel's room rows");
@@ -2394,9 +2412,17 @@ test.describe('the Rooms panel', () => {
 
     const probe = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
     expect(probe.selected).toBe('room.yard');
-    // The one room in the shipped catalogue that is not `enclosed`. A panel
-    // rendering a constant would pass every other assertion in this file.
-    expect(probe.ruleText).toEqual(['Needs at least 8 × 8 tiles', 'Must be outdoors']);
+    /*
+     * The one room in the shipped catalogue that is not `enclosed`. A panel
+     * rendering a constant would pass every other assertion in this file.
+     *
+     * It is also the one room that authors **no object requirement at all**, and
+     * the third line is why `roomsRequiresNone` exists rather than the block
+     * simply falling silent: once every other room type lists its objects, a
+     * yard that said nothing would read as a panel that had failed. The same
+     * reason `Needs at least ...` has a `No minimum size` counterpart.
+     */
+    expect(probe.ruleText).toEqual(['Needs at least 8 × 8 tiles', 'Must be outdoors', 'No objects needed']);
   });
 
   test('shows the removal control beside the arm control, without folding it away', async ({ page }) => {
@@ -3203,7 +3229,7 @@ test.describe('the Rooms panel', () => {
     // cannot make (#220): the panel's rendered text must not mention it.
     expect(await page.locator('.hud-rooms').innerText()).not.toContain('Not ready');
 
-    // 3. One room, one thing missing: the sentence with no tail.
+    // 3. One room, one thing missing: the room named, then what it is short.
     await page.evaluate(() =>
       window.lockstateUiHarness.reportRoomNeeds({
         unfinishedRooms: 1,
@@ -3215,6 +3241,7 @@ test.describe('the Rooms panel', () => {
             roomLabelKey: 'room.cell.name',
             tile: { x: 12, y: 4 },
             objectLabelKey: 'object.bed.name',
+            missingQuantity: 1,
           },
         ],
       }),
@@ -3224,51 +3251,129 @@ test.describe('the Rooms panel', () => {
     expect(one.needsUnfinished).toBe('1');
     expect(one.needsTotal).toBe('1');
     expect(one.needsCountText).toBe('1 of 4');
-    expect(one.needsLineText).toBe('Cell at 12, 4 needs Bed');
+    expect(one.needsLineText).toBe('Cell at 12, 4 is missing');
+    expect(one.needsItemText).toEqual(['1 × Bed']);
     await expectLaidOut(page, '.hud-rooms__needs', 'the room readout');
 
-    // 4. More than the one line can name: the tail counts what it did not say
-    // rather than dropping it. Three unmet requirements, one named, two counted.
+    /*
+     * 4. **Every object the room is short, each with how many** -- the case
+     *    #529 exists for, and the deepest one the shipped catalogue can
+     *    produce.
+     *
+     * `room.kitchen` authors three object requirements, which is the most of
+     * any of the eighteen; the quantities here are deliberately *not* all one,
+     * because a panel that rendered the object and dropped the numeral would
+     * pass an all-ones assertion. This is what the old readout could only say
+     * as "Kitchen at 11, 10 needs Stove, and 2 more", with the other two
+     * enumerated on no surface in the application.
+     *
+     * `totalNeeds` is 5 against three lines drawn: the header's figure is over
+     * the whole prison and the lines are one room's, which is the separation
+     * the old "and {count} more" collapsed -- it subtracted a prison-wide
+     * remainder inside a sentence about a single room.
+     */
     await page.evaluate(() =>
       window.lockstateUiHarness.reportRoomNeeds({
         unfinishedRooms: 2,
         totalRooms: 4,
-        totalNeeds: 3,
+        totalNeeds: 5,
         needs: [
           {
-            instanceId: 'room.cell:12:4',
-            roomLabelKey: 'room.cell.name',
-            tile: { x: 12, y: 4 },
-            objectLabelKey: 'object.toilet.name',
+            instanceId: 'room.kitchen:11:10',
+            roomLabelKey: 'room.kitchen.name',
+            tile: { x: 11, y: 10 },
+            objectLabelKey: 'object.stove.name',
+            missingQuantity: 1,
+          },
+          {
+            instanceId: 'room.kitchen:11:10',
+            roomLabelKey: 'room.kitchen.name',
+            tile: { x: 11, y: 10 },
+            objectLabelKey: 'object.prep-counter.name',
+            missingQuantity: 2,
+          },
+          {
+            instanceId: 'room.kitchen:11:10',
+            roomLabelKey: 'room.kitchen.name',
+            tile: { x: 11, y: 10 },
+            objectLabelKey: 'object.fridge.name',
+            missingQuantity: 3,
           },
         ],
       }),
     );
     const many = await probe();
     expect(many.needsCountText).toBe('2 of 4');
-    expect(many.needsLineText).toBe('Cell at 12, 4 needs Toilet, and 2 more');
+    expect(many.needsTotal).toBe('5');
+    expect(many.needsLineText).toBe('Kitchen at 11, 10 is missing');
+    expect(many.needsItemText).toEqual(['1 × Stove', '2 × Prep Counter', '3 × Fridge']);
+    /*
+     * The block at its deepest draws all four of its lines rather than clipping
+     * them: **measured at 100px** for the header, the room line and three object
+     * lines. The floor asserted is well under that on purpose -- what this
+     * guards is a block that has collapsed to nothing, not the exact figure,
+     * which legitimately moves with any restyle of the lines inside it.
+     *
+     * Whether 100px *fits the rail* is a different question and is not this
+     * suite's to answer: the harness leaves the rail's aside slot empty, so
+     * `.hud__aside:empty { display: none }` hands the panel the whole rail and a
+     * fold measured here would be measured against a rail no player has.
+     * `app-shell.spec.ts` answers that one, on the real page.
+     */
+    expect(many.needsHeight, 'the readout is too short to hold its four lines').toBeGreaterThan(60);
 
-    // 5. A requirement whose object the catalogue does not define -- which is
-    // *why* the projection can never call it satisfied. The sentence still ends
-    // somewhere rather than trailing off into a blank.
+    /*
+     * 5. **A shortfall the simulation could not count.** `missingQuantity` is
+     *    absent whenever the projection was handed no placed objects to count,
+     *    and the line must then carry no numeral at all rather than a plausible
+     *    "1 ×". A number here would dress an uncounted answer as a counted one,
+     *    on the same line, in the same words, with nothing to tell them apart.
+     */
     await page.evaluate(() =>
       window.lockstateUiHarness.reportRoomNeeds({
         unfinishedRooms: 1,
         totalRooms: 1,
         totalNeeds: 1,
-        needs: [{ instanceId: 'room.cell:0:0', roomLabelKey: 'room.cell.name', tile: { x: 0, y: 0 } }],
+        needs: [
+          {
+            instanceId: 'room.cell:0:0',
+            roomLabelKey: 'room.cell.name',
+            tile: { x: 0, y: 0 },
+            objectLabelKey: 'object.bed.name',
+          },
+        ],
       }),
     );
-    expect((await probe()).needsLineText).toBe('Cell at 0, 0 needs something this build cannot name');
+    const uncounted = await probe();
+    expect(uncounted.needsLineText).toBe('Cell at 0, 0 is missing');
+    expect(uncounted.needsItemText).toEqual(['Bed']);
 
-    // 6. And it goes away again when the answer changes back, rather than
+    // 6. A requirement whose object the catalogue does not define -- which is
+    // *why* the projection can never call it satisfied. The line still says
+    // something rather than trailing off into a blank.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 1,
+        totalRooms: 1,
+        totalNeeds: 1,
+        needs: [
+          { instanceId: 'room.cell:0:0', roomLabelKey: 'room.cell.name', tile: { x: 0, y: 0 }, missingQuantity: 1 },
+        ],
+      }),
+    );
+    expect((await probe()).needsItemText).toEqual(['1 × something this build cannot name']);
+
+    // 7. And it goes away again when the answer changes back, rather than
     // leaving the last sentence standing over a prison it no longer describes.
+    // The item lines go with it: they are rebuilt from the model on every paint,
+    // so a stale one left behind would be a readout describing a finished room.
     await page.evaluate(() =>
       window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 1, totalNeeds: 0, needs: [] }),
     );
     const cleared = await probe();
     expect(cleared.needsLaidOut).toBe(false);
     expect(cleared.needsLineText).toBe('');
+    expect(cleared.needsItemText).toEqual([]);
     expect(cleared.needsUnfinished).toBe('');
   });
 
@@ -3289,10 +3394,109 @@ test.describe('the Rooms panel', () => {
 
     const hovering = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
     expect(hovering.areaText).toBe('6 × 6 tiles at 1, 2');
+    expect(hovering.areaLaidOut, 'the area readout has no box while it has a rectangle to report').toBe(true);
     expect(hovering.confirmLaidOut, 'a hover is not a finished gesture').toBe(false);
 
     await page.evaluate(() => window.lockstateUiHarness.hoverWorldRoom(undefined));
-    expect((await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).areaText).toBe('Nothing selected');
+    const idle = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(idle.areaText).toBe('Nothing selected');
+    // And it folds, which is the half the sentence above cannot state.
+    expect(idle.areaLaidOut, 'the area readout keeps a box with nothing to report').toBe(false);
+  });
+
+  /**
+   * The two readouts that have nothing to say fold, and the panel says so on
+   * itself when the needs readout has a box (#529, the layout half).
+   *
+   * ### What was wrong
+   *
+   * `Area / Nothing selected` and `Enclosure / Not evaluated yet` are 20px and
+   * 14.3px of placeholder, and they were drawn in every state including the one
+   * where the panel has something real to say. Measured on the assembled
+   * application at 900x600, Rooms tab, two unfinished cells: the panel body was
+   * **54px past its own box** and `app-shell.spec.ts`'s #331 test failed on it
+   * in CI. `rooms-panel.ts` had already recorded what that panel had to spend --
+   * *"the panel body affords 32px at 1280x720 and 0px at 900x600"* -- so nothing
+   * could be added to it at all until something was given back.
+   *
+   * ### Why it is asserted here and measured there
+   *
+   * The pixels are a property of the assembled page: this harness hands the
+   * panel 128.7px more rail than the application ever does, so a fold assertion
+   * written here would pass over a panel that was 54px over in the real thing.
+   * `app-shell.spec.ts` owns the measurement -- it is the test that caught this
+   * -- and what this file owns is the *behaviour* the measurement depends on:
+   * which of the two blocks has a box in which state, and that the panel
+   * publishes `data-needs` for the stylesheet to spend the catalogue's floor on.
+   *
+   * A `laidOut` probe rather than the attribute, deliberately: `hud.css` gives
+   * both blocks an author `display: flex` behind a `:not([hidden])` guard, and
+   * an author declaration beats the `display: none` a user agent gives
+   * `[hidden]`. A test that read `.hidden` would agree with a stylesheet whose
+   * guard had been dropped and which was painting the placeholder anyway --
+   * which is exactly what the first attempt at this change did, and what
+   * measuring the box instead of the attribute caught.
+   */
+  test('the readouts with nothing to report fold, and the panel says when the needs block has a box', async ({
+    page,
+  }) => {
+    const probe = async () => page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+
+    // 1. On arrival: no rectangle drawn and no room evaluated, so neither
+    //    readout has a box -- and both still carry their honest sentence, so
+    //    the block reads correctly the instant it comes back.
+    const fresh = await probe();
+    expect(fresh.areaLaidOut, 'the area readout has a box before anything is drawn').toBe(false);
+    expect(fresh.areaText).toBe('Nothing selected');
+    expect(fresh.enclosureLaidOut, 'the enclosure readout has a box before anything is evaluated').toBe(false);
+    expect(fresh.enclosureText).toBe('Not evaluated yet');
+    expect(fresh.panelNeeds, 'the panel claims a needs readout before one arrived').toBe('');
+
+    // 2. A rectangle brings the area readout back and leaves the enclosure one
+    //    folded: drawing a rectangle is not the simulation evaluating it.
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 3, y: 4, width: 5, height: 5 }));
+    const drawn = await probe();
+    expect(drawn.areaLaidOut).toBe(true);
+    expect(drawn.areaText).toBe('5 × 5 tiles at 3, 4');
+    expect(drawn.enclosureLaidOut, 'a drawn rectangle is not an evaluated room').toBe(false);
+
+    // 3. And a verdict brings the enclosure readout back.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportZoning({ sequence: 1, enclosure: 'sealed', requirement: 'enclosed' }),
+    );
+    const evaluated = await probe();
+    expect(evaluated.enclosureLaidOut).toBe(true);
+    expect(evaluated.enclosureText).toBe('Walled in on every side');
+
+    // 4. `data-needs` follows the readout and carries the figure, so the
+    //    stylesheet spends the catalogue's floor on a block that is really
+    //    there rather than on one that was there a paint ago.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 2,
+        totalRooms: 2,
+        totalNeeds: 4,
+        needs: [
+          {
+            instanceId: 'room.cell:12:4',
+            roomLabelKey: 'room.cell.name',
+            tile: { x: 12, y: 4 },
+            objectLabelKey: 'object.bed.name',
+            missingQuantity: 1,
+          },
+        ],
+      }),
+    );
+    expect((await probe()).panelNeeds, 'the panel does not carry the needs total the readout was given').toBe(
+      '4',
+    );
+
+    // A prison with nothing missing draws no readout, so it must donate
+    // nothing either -- the catalogue's row comes back with the last cell.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 2, totalNeeds: 0, needs: [] }),
+    );
+    expect((await probe()).panelNeeds, 'a finished prison still spends the catalogue floor').toBe('');
   });
 
   test('renders no unresolved message key anywhere in the panel', async ({ page }) => {

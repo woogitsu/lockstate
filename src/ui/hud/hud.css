@@ -1872,6 +1872,60 @@
    adds no specificity of its own. */
 .hud-rooms > .ui-panel__body > * { flex: 0 0 auto; }
 
+/*
+ * What the needs readout costs, and the block it takes it from -- the same
+ * trade `.hud-build[data-queued]` makes, for the same reason, spent through the
+ * same kind of token.
+ *
+ * **The measurement, on the assembled application, Rooms tab, two unfinished
+ * cells and `room.cell` selected** -- the state `app-shell.spec.ts`'s #331 test
+ * leaves the panel in. Since #529 the readout names every object each room is
+ * short instead of one and a remainder, and the rule block states the selected
+ * type's object requirements, which between them is four more lines than the
+ * panel used to draw. `rooms-panel.ts` had already recorded what that panel had
+ * to spend: *"the panel body affords 32px at 1280x720 and 0px at 900x600"*.
+ * Nothing, at the viewport that matters. So the block went 54px past its own
+ * box and CI failed on the assertion that no box in this chain is ever shorter
+ * than its own content -- correctly, and on the real application rather than on
+ * a harness.
+ *
+ * Three things pay for it, measured one at a time rather than applied together
+ * and hoped for:
+ *
+ *   20px  folding `Area / Nothing selected` when no rectangle is drawn
+ *         (`.hud-rooms__area`, which also folds `Enclosure / Not evaluated yet`
+ *         until a room has been designated).
+ *   13px  the objects a room is short sharing a line instead of taking one
+ *         each (`.hud-rooms__needs-items`).
+ *   17px  this rule.
+ *
+ * **`--space-4` and not less, because less buys nothing.** Measured at 44px
+ * (the shipped floor), 24, 20, 16 and 12: the panel is 17px over its box at 44,
+ * clears it at 24 with 3.1px of fold slack, reaches 7.1px at 20 and **7.9px at
+ * 16** -- which is exactly the gap this panel has at every other viewport, and
+ * is where it stops moving. 12px is identical to 16px, so 16 is the point at
+ * which the donation is sufficient and no further.
+ *
+ * **It donates nothing where nothing is needed**, which is the whole reason
+ * this is a floor and not a height: a flex item shrinks only under pressure,
+ * and at 1280x720 and 375x812 there is none. Measured at all three: the fold
+ * slack is 7.9px with this rule and 7.9px without it at both, and the catalogue
+ * keeps its full row. Only 900x600 spends it, and only while a room is
+ * unfinished -- it comes back the moment the last one is furnished, exactly as
+ * the Build panel's comes back when the queue drains.
+ *
+ * **Against the token's own argument**, which says one row because "one row
+ * plus a scrollbar is a legitimate list here ... the scrollbar is not a sign
+ * that something was squeezed out, it is the list saying there are seventeen
+ * more". That reading survives: at 900x600 with a room unfinished the list is a
+ * part-row over eighteen types and still says the same thing. What it would not
+ * survive is the alternative -- a readout naming what the player's prison is
+ * short of, painted 54px below the fold of a panel nothing tells them scrolls,
+ * which is #174 for the fourth time and on the one block #529 exists to make
+ * reachable.
+ */
+.hud-rooms[data-needs] { --hud-rooms-catalogue-floor: var(--space-4); }
+
 .hud-rooms > .ui-panel__body > .hud-rooms__catalogue {
   display: flex;
   flex-direction: column;
@@ -2022,7 +2076,25 @@
    the controls under it: the area line goes from "Nothing selected" to
    "64 x 64 tiles at 128, 128" as the player drags, and a block that grew with
    the text would shift the confirm button under their finger mid-gesture. */
-.hud-rooms__area {
+/*
+ * Folded when there is no rectangle to report, which is most of the time.
+ *
+ * `:not([hidden])` because this rule's own `display: flex` is an author
+ * declaration and beats the `display: none` a user agent gives `[hidden]` --
+ * the trap `.hud-build__buy:not([hidden])` and the catalogue body rule exist
+ * to close, and one this block fell into on the first attempt at this change.
+ *
+ * **Why it folds at all**, measured on the assembled page with two unfinished
+ * cells and `room.cell` selected: `Area / Nothing selected` costs 20px and
+ * `Enclosure / Not evaluated yet` costs 14.3px, and the panel body has **zero**
+ * spare pixels at 900x600 -- `rooms-panel.ts` recorded that as "the panel body
+ * affords 32px at 1280x720 and 0px at 900x600" before either block grew. So
+ * two placeholders that have nothing to say were holding 42px of a panel that
+ * had none, in the exact state the needs readout is read in. Folding them is
+ * what pays for #529, and it is the same idiom `.hud-rooms__needs` already
+ * uses: a prison with nothing missing earns no block at all.
+ */
+.hud-rooms__area:not([hidden]) {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -2105,11 +2177,90 @@
   letter-spacing: 0;
 }
 
-/* The authored rule and what the simulation found: three label lines and no
+/*
+ * The objects the named room is short, one line each (#529).
+ *
+ * **No `gap`**, and that is the whole reason this box exists rather than the
+ * lines being appended to `.hud-rooms__needs` directly. That block has a
+ * `--hud-rooms-gutter` gap, which is right between the header and the room line
+ * and wrong between one object and the next: those are a list, and a gutter per
+ * object would spend the panel's scarcest resource separating things that
+ * belong together. The shape `.hud-rooms__rule-block` already uses, for the same
+ * reason.
+ */
+.hud-rooms__needs-items {
+  display: flex;
+  /*
+   * **A wrapping row, not a column, and it is a measurement rather than a
+   * taste.** One line per object put the panel 54px over its own box at
+   * 900x600 with two unfinished cells -- the assertion in
+   * `app-shell.spec.ts` that no box in this chain is shorter than its own
+   * content, failing on the real application. Folding the two placeholder
+   * readouts (see `.hud-rooms__area`) bought 42px of that back and left 12,
+   * and this is where the last of it comes from: `1 x Bed` and `1 x Toilet`
+   * share a line at every viewport the suite visits, and a room short of more
+   * than fits wraps onto a second rather than pushing the panel out.
+   *
+   * The entries stay whole -- `column-gap` separates them and `row-gap` is the
+   * gutter between wrapped lines -- so nothing here reflows a quantity away
+   * from the object it counts.
+   */
+  flex-wrap: wrap;
+  column-gap: var(--space-2);
+}
+
+/*
+ * One object line: "2 × Bench".
+ *
+ * `display: block` so it is a line's worth of space whatever it is saying --
+ * the rule `.hud-rooms__needs-line` above and `.hud-rooms__note` both follow.
+ * Toned with the block, which exists only when something is missing, so there
+ * is no state of it that is neutral news.
+ *
+ * `tabular-nums` for `.hud-rooms__needs-count`'s reason: these are figures a
+ * player reads *down a column*, and proportional digits make a stack of them
+ * ragged at exactly the place the eye is comparing them.
+ */
+.hud-rooms__needs-item {
+  display: block;
+  color: var(--status-warning);
+  font-variant-numeric: tabular-nums;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/*
+ * What the *selected room type* will need standing in it (#529).
+ *
+ * Inside `.hud-rooms__rule-block`, which is already a gapless column, so this
+ * box adds no height of its own and each object costs exactly one line. It is
+ * a box rather than fixed lines because the count is content's: `room.yard`
+ * authors no object requirement and `room.kitchen` authors three.
+ *
+ * Untoned, unlike `.hud-rooms__needs-item` above, and the difference is the
+ * point. These are the authored rule -- the same kind of statement as
+ * `.hud-rooms__rule`'s minimum size, true of a room type nobody has zoned --
+ * while the warning tone one block up means "your prison is short of this right
+ * now". Painting both in `--status-warning` would say a canteen is a problem
+ * before the player has drawn one.
+ */
+.hud-rooms__rule-objects {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The authored rule and what the simulation found: label lines and no
    controls. Last in the panel, because it is the block a player reads rather
    than presses -- and being last is what the browser suite's reachability
    sweep checks, since the last block is the one a floor that is too small
-   pushes out of the panel. */
+   pushes out of the panel.
+
+   The comment said "three label lines" until #529 gave the rule block a
+   variable number of object-requirement lines under its two fixed ones. The
+   `.hud-rooms > .ui-panel__body` min-height sum still budgets the three, which
+   is correct and is explained there: that floor is defensive rather than
+   binding, and the object lines are content-sized. */
 .hud-rooms__status {
   display: flex;
   flex-direction: column;
@@ -2123,7 +2274,9 @@
   flex-direction: column;
 }
 
-.hud-rooms__enclosure {
+/* Folded until the simulation has evaluated a room, for the reason and with
+   the `:not([hidden])` guard `.hud-rooms__area` above gives in full. */
+.hud-rooms__enclosure:not([hidden]) {
   display: flex;
   align-items: baseline;
   justify-content: space-between;

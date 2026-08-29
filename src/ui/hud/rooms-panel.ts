@@ -245,33 +245,156 @@ export interface RoomsPanel {
 /**
  * How many unmet requirements the readout names by name.
  *
- * **One, and it is a measurement rather than an opinion.** The panel's own
- * height is fixed by the rail and not by its content -- measured on the
- * assembled page, a block added to `.ui-panel__body` shrinks
+ * ## What this said, and what replaced it
+ *
+ * **It was `1`, and the comment called that "a measurement rather than an
+ * opinion".** In full, so the correction can be checked against it: *"The
+ * panel's own height is fixed by the rail and not by its content -- measured on
+ * the assembled page, a block added to `.ui-panel__body` shrinks
  * `.hud-rooms__list` and leaves `.hud-rooms` at 480.1px at 1280x800, 451.1px at
  * 375x812 and 338.1px at 900x600 -- so what this readout actually spends is the
  * catalogue list's slack, and that list stops shrinking at its one-row floor of
- * 44px.
+ * 44px. At 900x600 the list is **already on that floor** with the readout
+ * hidden. The measurement: a header line and three rows came to 101.3px there
+ * and put the panel 58px into overflow ... The slack there is about 43px, which
+ * buys a header line and one more."*
  *
- * At 900x600 the list is **already on that floor** with the readout hidden. The
- * measurement: a header line and three rows came to 101.3px there and put the
- * panel 58px into overflow, ending the readout itself 4.5px below the panel's
- * unscrolled fold and the rule readout 58px below it -- #174's defect with a
- * new cause, and the exact thing ADR 0022 and
- * `tests/browser/app-shell.spec.ts`'s fold assertion exist to catch. The slack
- * there is about 43px, which buys a header line and one more.
+ * **Two things about it were true and one was already false when #529 read
+ * it.** The mechanism is still exactly right: the panel's height is the rail's,
+ * a block here spends the catalogue list's slack, and the list floors at one
+ * row. The 43px is not, and the reason is dated rather than guessed -- ADR 0039
+ * and #411 moved the coordinate form *into* `.hud-rooms__list`, and
+ * `hud.css`'s own `.hud-rooms > .ui-panel__body` comment records the state
+ * after that move: *"at all five viewports the browser suite visits, the rail
+ * today has room for the panel's whole content, so nothing is being squeezed
+ * and the floor is not what decides the layout."* A budget measured while a
+ * 44px form still sat in the panel body was spent before this readout ever
+ * asked for it.
  *
- * So the readout names one thing and counts the rest: `roomsNeedsMore` carries
- * "and {count} more", and the header's figure is over every room in the
- * requested page. The player fixing that one thing sees the line move to the
- * next -- which is the order they would work in anyway.
+ * The other half of the old sentence was a misreading of its own units: *three
+ * rows* were three 44px `ListRow`s. This readout does not draw rows. It draws
+ * eyebrow lines at 13.2px, which is what `.hud-rooms__rule-block` already
+ * stacks two of for 30.4px including its gutters -- so "a header line and one
+ * more" was never the ceiling that 101.3px established.
  *
- * `HudRoomNeedsViewModel.needs` stays a *list* despite this being one, and that
- * is the point of the number living here rather than there: it is a fact about
- * how much of the rail this panel can spend, not about what the simulation
- * found. The boundary carries the answer; the panel decides how much of it fits.
+ * ## The number, re-measured
+ *
+ * Measured on the assembled page, every one of the five viewports the browser
+ * suite visits, with every one of the eighteen room types selected in turn
+ * (`app-shell.spec.ts`, "no room type in the catalogue pushes the Rooms panel
+ * past its fold"). Slack before the panel's last block crosses its fold, and
+ * the catalogue list's own slack above its one-row floor, which is what a block
+ * added here spends:
+ *
+ * | viewport | fold slack | catalogue-list slack |
+ * | --- | --- | --- |
+ * | 900x600, `room.staff-room` | 7.89px | 51.2px |
+ * | 900x600, `room.classroom` | 7.89px | 51.2px |
+ * | 375x812 | 7.89px | 140.2px |
+ * | 1024x768 | 7.89px | 145.2px |
+ * | 1280x720 | 7.89px | 109.2px |
+ * | 1440x900 | 7.89px | 244.2px |
+ *
+ * **This table was re-measured and it moved, so both readings are kept.** It
+ * said, when this constant was raised:
+ *
+ * > | 900x600, `room.kitchen` | **3.58px** | **0.0px** |
+ * > | 900x600, `room.staff-room` | 7.89px | 8.9px |
+ * > | 375x812 | 7.89px | 89.9px |
+ *
+ * and concluded that *"a fourth object requirement on any room is now a layout
+ * change as well as a balance change"*. **That conclusion is withdrawn**, and
+ * not because it was wrong -- it was right about the panel it measured. The
+ * panel changed underneath it: `.hud-rooms__area` and `.hud-rooms__enclosure`
+ * now fold when they have nothing to report, which is 34.3px of placeholder
+ * this panel used to draw in every state, and `.hud-rooms[data-needs]` donates
+ * the catalogue's floor while a room is unfinished. `room.kitchen` is no longer
+ * in the tightest six at any viewport, and the deepest room the catalogue can
+ * offer now leaves the **same 7.89px** as every other -- which is this panel's
+ * designed gap rather than a margin that happens to be positive.
+ *
+ * **900x600 is still the binding viewport and the phone is still not**, which
+ * remains the reversal of the assumption this constant was raised under: the
+ * Rooms panel gets 451.1px of rail at 375x812 against 338.1px at 900x600, and
+ * that is the whole of the difference. What changed is how much of it is spent,
+ * not which viewport is tightest. The catalogue-list slack at 900x600 went from
+ * 8.9px to 51.2px, so the figure a block added here spends is no longer
+ * within one line of nothing.
+ *
+ * The readout itself, at the deepest shape the shipped catalogue can produce --
+ * header, room line and three object lines -- **measures 100px**
+ * (`ui-shell.spec.ts`, case 4).
+ *
+ * ## So what this number is, exactly
+ *
+ * **Four: one more than the deepest shipped room, and it is a bound on future
+ * content rather than a fact about the rail.** That distinction matters, and
+ * the old comment's shape invited getting it wrong. Changing this constant
+ * changes nothing a player sees today, because no room authors more than three
+ * object requirements -- what renders is bounded by *content*, not by this. Its
+ * only job is to decide what happens when content grows past what the panel was
+ * measured against, and the choice is between truncating with `roomsNeedsItemMore`
+ * and drawing every line.
+ *
+ * Four rather than three, so a room given a fourth requirement is *drawn* and
+ * the fold assertion **fails naming that room**, rather than being quietly
+ * truncated to three and passing. #535 decision 2 is "show every missing item";
+ * a silent truncation is that decision being undone by a constant, and a loud
+ * failure is the owner finding out that the panel cannot take a fourth. The
+ * truncation still exists above four, for the pathological case
+ * `roomRequirementSchema` permits -- 32 requirements on one room would draw 34
+ * lines and destroy the panel -- and that is what a cap is for.
+ *
+ * ## Why a cap at all, when content cannot reach it
+ *
+ * No shipped room can: the deepest is `room.kitchen` at **three** object
+ * requirements (stove, prep counter, fridge), and the most *items* is
+ * `room.canteen` at six -- which is two lines, because quantities are what buy
+ * the compression (`2 x Dining Table`, `4 x Bench`). Issue #529 said "a cell
+ * needs 6 items; a kitchen 7"; both figures were a misreading of its own
+ * transcript, where `and 5 more` is the prison-wide remainder across three
+ * cells and `1 of 7` is `roomsNeedsCount`'s unfinished-of-total-*rooms*.
+ * Recomputed over all 18 definitions in `src/content/room-catalog.ts`.
+ *
+ * The cap exists because `roomRequirementSchema` permits 32 requirements on a
+ * room and content is authored, not fixed: a room balanced upward tomorrow must
+ * not silently push the rule readout below the panel's fold, which is #174's
+ * defect and what `tests/browser/app-shell.spec.ts`'s fold assertion catches.
+ * `roomsNeedsItemMore` carries the overflow, and it is a guard rather than a
+ * state any player reaches today.
+ *
+ * `HudRoomNeedsViewModel.needs` stays a list whatever this is, which is the
+ * point of the number living here rather than there: it is a fact about how
+ * much of the rail this panel can spend, not about what the simulation found.
+ * The boundary carries the answer; the panel decides how much of it fits.
  */
-export const ROOM_NEEDS_NAMED_LIMIT = 1;
+export const ROOM_NEEDS_NAMED_LIMIT = 4;
+
+/**
+ * How many *rooms* the readout describes at once, and therefore how many detail
+ * projections one `read()` asks for.
+ *
+ * **One, and it is a judgement about what a player is doing rather than a
+ * height measurement.** A player reading this block is trying to finish
+ * something; there is no surface in this application that audits everything,
+ * and #529's finding is that there was none that enumerated even one room. So
+ * the block names one room *completely* -- every object it is short, with how
+ * many of each -- rather than one line each from several rooms, which is the
+ * shape that produced "Cell at 2, 2 needs Bed, and 5 more" and told a player
+ * nothing they could act on.
+ *
+ * Which room is `unfinishedRoomIds`' decision and is documented there: the one
+ * nearest to finished, so the readout offers the cheapest completion available
+ * and moves on when it is taken.
+ *
+ * It is also the request budget, which is why it is a constant and not a
+ * literal: `RoomNeedsReader.read` spends at most `1 + ROOM_NEEDS_ROOMS_LIMIT`
+ * messages, so the worker's cost stays flat as a prison grows. Raising this to
+ * show a second room would double the per-tick message count for a block that
+ * would then have to fit twice the lines -- both of the things this panel is
+ * short of.
+ */
+export const ROOM_NEEDS_ROOMS_LIMIT = 1;
 
 /**
  * The largest side a *typed* rectangle may name, per axis.
@@ -731,9 +854,32 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    */
   const ruleMinimum = eyebrowText(t(HUD_MESSAGE_KEY.roomsMinimumNone), 'hud-rooms__rule');
   const ruleEnclosure = eyebrowText(t(HUD_MESSAGE_KEY.roomsRequirementNone), 'hud-rooms__rule');
+  /*
+   * The third rule: what the room type will need standing in it (#529).
+   *
+   * A box rather than a fixed line, because unlike the two above it there are
+   * *n* of them -- and `n` is a fact about content, not about this panel:
+   * `room.yard` authors none, `room.kitchen` three. Same shape as
+   * `.hud-rooms__needs-items` one block down, and it sits inside
+   * `.hud-rooms__rule-block`, which stacks its lines with no gap, so each object
+   * costs one 13.2px line and nothing else.
+   *
+   * **Here and not on the catalogue rows themselves**, which was the other
+   * reading of #535's "the catalogue row shows requirements before the player
+   * zones". The rows are `role="radio"` members of a `radiogroup` with a roving
+   * tabindex (#411, #524): they are *one choice*, and a row carrying three
+   * extra lines would be eighteen rows carrying up to three extra lines each,
+   * in the one box in this panel that already always scrolls. This block is the
+   * panel's existing answer to "state the rule for the selected type" -- issue
+   * #529 cites `paintRule` by name when it says the catalogue carries only
+   * minimum size and enclosure -- so extending it adds no tab stop, touches no
+   * ARIA, and states the requirements for exactly the room the player is
+   * looking at.
+   */
+  const ruleObjects = element('div', { className: 'hud-rooms__rule-objects' });
   const ruleBlock = element('div', {
     className: 'hud-rooms__rule-block',
-    children: [ruleMinimum, ruleEnclosure],
+    children: [ruleMinimum, ruleEnclosure, ruleObjects],
   });
 
   function paintRule(): void {
@@ -744,6 +890,45 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
         ? t(HUD_MESSAGE_KEY.roomsMinimumNone)
         : t(HUD_MESSAGE_KEY.roomsMinimum, { width: minimum.width, height: minimum.height });
     ruleEnclosure.textContent = t(requirementLabelKey(room?.enclosure ?? 'none'));
+
+    /*
+     * Rebuilt rather than reconciled, for `paintNeeds`' reason: the list is a
+     * function of the selected room type and has no identity to carry across a
+     * change of selection.
+     *
+     * **No room selected draws nothing at all**, which is not the same as a room
+     * that needs no objects. The two lines above answer "no minimum size" and
+     * "no enclosure rule" in that state because those are statements this panel
+     * can make about *nothing selected*; "no objects needed" is not -- it would
+     * be a claim about a room type the player has not chosen. That asymmetry is
+     * inherited: `selectedRoom()` is `undefined` before the first press, and
+     * `roomsMinimumNone` was already the answer for it.
+     */
+    ruleObjects.replaceChildren();
+    if (room === undefined) return;
+    if (room.objectRequirements.length === 0) {
+      ruleObjects.append(eyebrowText(t(HUD_MESSAGE_KEY.roomsRequiresNone), 'hud-rooms__rule'));
+      return;
+    }
+    for (const requirement of room.objectRequirements) {
+      // The object's own name, or the stand-in the needs readout already uses
+      // for one the catalogue does not define -- reused rather than a second
+      // stand-in drafted for the identical hole. A key either way: nothing here
+      // interpolates text this layer authored (ADR 0011).
+      const line = eyebrowText(
+        t(HUD_MESSAGE_KEY.roomsRequiresObject, {
+          count: requirement.quantity,
+          object: t(requirement.labelKey ?? HUD_MESSAGE_KEY.roomsNeedsObjectUnknown),
+        }),
+        'hud-rooms__rule',
+      );
+      // Which requirement the line is about, as data, so a test reads an id
+      // rather than parsing a localized sentence -- the job `data-room` does on
+      // the catalogue rows.
+      line.dataset['object'] = requirement.objectId;
+      line.dataset['quantity'] = String(requirement.quantity);
+      ruleObjects.append(line);
+    }
   }
 
   // ---- the map route -----------------------------------------------
@@ -1052,10 +1237,15 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
 
   function paintEnclosure(): void {
     if (notice === undefined) {
+      // Folded for `paintArea`'s reason and with the same `:not([hidden])`
+      // guard behind it: until a room has been designated this reads
+      // `Enclosure / Not evaluated yet`, which is 14.3px spent saying nothing.
       enclosureValue.textContent = t(HUD_MESSAGE_KEY.roomsEnclosureNone);
+      enclosureBlock.hidden = true;
       delete enclosureBlock.dataset['enclosure'];
       return;
     }
+    enclosureBlock.hidden = false;
     enclosureValue.textContent = t(
       notice.enclosure === 'sealed'
         ? HUD_MESSAGE_KEY.roomsEnclosureSealed
@@ -1108,6 +1298,18 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    */
   const needsCount = valueText('', 'hud-rooms__needs-count');
   const needsLine = eyebrowText('', 'hud-rooms__needs-line');
+  /*
+   * The object lines, in a box of their own with no gap between them.
+   *
+   * A box rather than appending straight to `.hud-rooms__needs`, because that
+   * block is a flex column with a `--hud-rooms-gutter` gap and the gap is right
+   * *between* the header and the detail and wrong between one object and the
+   * next: the lines under "Cell at 2, 2 is missing" are one list, and a gutter
+   * between each would spend a gutter per object to say so. The same shape and
+   * the same reason as `.hud-rooms__rule-block`, which stacks its two lines with
+   * no gap at all inside a block that has one.
+   */
+  const needsItems = element('div', { className: 'hud-rooms__needs-items' });
   const needsBlock = element('div', {
     className: 'hud-rooms__needs',
     children: [
@@ -1116,6 +1318,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
         children: [eyebrowText(t(HUD_MESSAGE_KEY.roomsNeeds)), needsCount],
       }),
       needsLine,
+      needsItems,
     ],
   });
   /*
@@ -1135,9 +1338,19 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
      */
     const shown = needs !== undefined && needs.unfinishedRooms > 0 ? needs : undefined;
     needsBlock.hidden = shown === undefined;
+    /*
+     * The block's presence, on the panel, because a stylesheet cannot ask
+     * whether a descendant has a box -- and `hud.css` has to, to donate the
+     * catalogue's floor to this readout exactly as `.hud-build[data-queued]`
+     * donates to the build queue. See that rule for the argument; the numbers
+     * for this one are in `.hud-rooms[data-needs]`.
+     */
+    if (shown === undefined) delete panel.element.dataset['needs'];
+    else panel.element.dataset['needs'] = String(shown.totalNeeds);
     if (shown === undefined) {
       needsCount.textContent = '';
       needsLine.textContent = '';
+      needsItems.replaceChildren();
       delete needsBlock.dataset['unfinished'];
       delete needsBlock.dataset['needs'];
       return;
@@ -1153,6 +1366,17 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     needsBlock.dataset['unfinished'] = String(shown.unfinishedRooms);
     needsBlock.dataset['needs'] = String(shown.totalNeeds);
 
+    /*
+     * Every line is rebuilt from `shown`, and the previous ones are dropped
+     * first. This block is republished on the counts cadence, so a paint that
+     * appended would grow without bound, and one that reused rows would have to
+     * decide what a row *is* -- the readout is about a different room the moment
+     * the player finishes this one, so there is no identity to preserve across
+     * paints. `HudRoomNeedViewModel.instanceId` is the identity that matters and
+     * it goes onto the line as data, which is what a test reads.
+     */
+    needsItems.replaceChildren();
+
     const named = shown.needs.slice(0, ROOM_NEEDS_NAMED_LIMIT);
     const first = named[0];
     if (first === undefined) {
@@ -1165,21 +1389,73 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       return;
     }
 
-    // The object's own name, or the stand-in for one the catalogue does not
-    // define. A key either way: nothing here interpolates text this layer
-    // authored (ADR 0011).
-    const object = t(first.objectLabelKey ?? HUD_MESSAGE_KEY.roomsNeedsObjectUnknown);
-    const unlisted = Math.max(0, shown.totalNeeds - named.length);
-    needsLine.textContent =
-      unlisted === 0
-        ? t(HUD_MESSAGE_KEY.roomsNeedsOne, { room: t(first.roomLabelKey), x: first.tile.x, y: first.tile.y, object })
-        : t(HUD_MESSAGE_KEY.roomsNeedsMore, {
-            room: t(first.roomLabelKey),
-            x: first.tile.x,
-            y: first.tile.y,
-            object,
-            count: unlisted,
-          });
+    /*
+     * One room named, then everything it is short.
+     *
+     * `ROOM_NEEDS_ROOMS_LIMIT` is 1, so every entry in `needs` describes the
+     * same room and the room line can be taken from the first. That is an
+     * assumption about the reader, not a property of the view model -- the
+     * boundary type carries an `instanceId` per need precisely so it does not
+     * have to be one -- so the loop below skips any entry that belongs to a
+     * different room rather than printing its objects under this room's
+     * heading. Reachable only by raising that constant, which is the moment the
+     * silent version would have started lying.
+     */
+    needsLine.textContent = t(HUD_MESSAGE_KEY.roomsNeedsRoom, {
+      room: t(first.roomLabelKey),
+      x: first.tile.x,
+      y: first.tile.y,
+    });
+
+    let drawn = 0;
+    for (const need of named) {
+      if (need.instanceId !== first.instanceId) continue;
+      // The object's own name, or the stand-in for one the catalogue does not
+      // define. A key either way: nothing here interpolates text this layer
+      // authored (ADR 0011).
+      const object = t(need.objectLabelKey ?? HUD_MESSAGE_KEY.roomsNeedsObjectUnknown);
+      /*
+       * The numeral, or deliberately none.
+       *
+       * `missingQuantity` is absent exactly when the projection was handed
+       * nothing to count with, and the sentence then has to be the one without a
+       * figure in it. Choosing between two keys rather than substituting an
+       * invented `1` is the whole point: the alternative dresses an uncounted
+       * answer as a counted one, on the same line, in the same words, where
+       * nothing distinguishes them.
+       */
+      const line = eyebrowText(
+        need.missingQuantity === undefined
+          ? t(HUD_MESSAGE_KEY.roomsNeedsObjectUncounted, { object })
+          : t(HUD_MESSAGE_KEY.roomsNeedsObject, { count: need.missingQuantity, object }),
+        'hud-rooms__needs-item',
+      );
+      line.dataset['room'] = need.instanceId;
+      // The figure as data as well as as text, for the header's reason. Absent
+      // rather than `0` when nothing was counted, so a test can tell the two
+      // states apart exactly as the view model does.
+      if (need.missingQuantity !== undefined) line.dataset['missing'] = String(need.missingQuantity);
+      needsItems.append(line);
+      drawn += 1;
+    }
+
+    /*
+     * Content deeper than the panel may draw.
+     *
+     * Counted over *this room's* needs and not the prison's, which is the
+     * correction #529 exists for: the old line's "and 5 more" was a prison-wide
+     * remainder attached to a sentence about one room, so a player reading
+     * "Cell at 2, 2 needs Bed, and 5 more" could reasonably have believed that
+     * cell needed six things. How many other rooms are unfinished is the
+     * header's figure, and it is a different sentence in a different place.
+     *
+     * Unreachable with the shipped catalogue -- see `ROOM_NEEDS_NAMED_LIMIT`.
+     */
+    const roomNeeds = shown.needs.filter((need) => need.instanceId === first.instanceId).length;
+    const unlisted = Math.max(0, roomNeeds - drawn);
+    if (unlisted > 0) {
+      needsItems.append(eyebrowText(t(HUD_MESSAGE_KEY.roomsNeedsItemMore, { count: unlisted }), 'hud-rooms__needs-item'));
+    }
   }
 
   /**
@@ -1323,10 +1599,23 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   function paintArea(): void {
     const shown = pending ?? area;
     if (shown === undefined) {
+      /*
+       * Folded, not blanked: `Area / Nothing selected` is 20px of a panel that
+       * has none to spare at 900x600, and it is a placeholder for a figure the
+       * player has not asked for yet. The sentence is kept rather than removed
+       * so the block reads correctly the instant it comes back, and so a test
+       * that reads the text without a rectangle still gets the honest answer.
+       *
+       * `hud.css` gives this block an author `display: flex` behind a
+       * `:not([hidden])` guard, without which this line would do nothing at
+       * all -- the same trap the catalogue body's rule documents.
+       */
       areaValue.textContent = t(HUD_MESSAGE_KEY.roomsAreaNone);
+      areaBlock.hidden = true;
       delete areaBlock.dataset['area'];
       return;
     }
+    areaBlock.hidden = false;
     areaValue.textContent = t(HUD_MESSAGE_KEY.roomsAreaValue, {
       width: shown.width,
       height: shown.height,
