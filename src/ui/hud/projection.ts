@@ -186,8 +186,20 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       // Colour is never the only signal: the badge states the condition in
       // words, so the strip still reads correctly in monochrome, to a
       // colour-blind player and to a screen reader.
+      //
+      // **The word itself now names the kind when one is nameable**
+      // (issue #506 finding 2): `activeIncidentTypeLabelKey` is one of the
+      // `incident-type.*.name` labels `src/content/simulation-message-keys.ts`
+      // already authors -- "Assault", "Riot", "Escape Attempt", "Gang
+      // Retaliation" -- reused as-is rather than new copy. It falls back to
+      // the generic "Active" this strip has always shown whenever the worker
+      // could not name exactly one kind: nothing is open, or (unreachable with
+      // the shipped single-sector topology, ADR 0061 decision 6) more than one
+      // distinct kind is open across several sectors at once. Either way the
+      // fallback is a sentence this codebase already ships, never a guess at
+      // one it does not.
       badge: hasIncidents
-        ? { tone: 'danger', textKey: HUD_MESSAGE_KEY.incidentsActive }
+        ? { tone: 'danger', textKey: counts.activeIncidentTypeLabelKey ?? HUD_MESSAGE_KEY.incidentsActive }
         : { tone: 'success', textKey: HUD_MESSAGE_KEY.incidentsClear },
     },
     {

@@ -238,6 +238,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
   },
   {
     file: 'src/ui/simulation-counts.ts',
+    tree: 'content',
+    kind: 'value',
+    reason:
+      "Value: `deriveSimulationMessageKey` from `src/content/simulation-message-keys`, to label the open incident's kind (issue #506 finding 2). The same reason every other `value`-content entry in this manifest gives, `simulation-intake.ts`'s first: the alternative is a hand-written table of four `incident-type.*.name` strings, which is exactly the drift that module's derivation rule exists to prevent -- a member added to `IncidentType` renames or adds its key in one edit rather than two staying in sync by hand. The function composes a string from a namespace and an id; it reads no catalogue, resolves no text and holds no state, so calling it runs no content logic in the sense this manifest measures.",
+  },
+  {
+    file: 'src/ui/simulation-counts.ts',
     tree: 'simulation',
     kind: 'type-only',
     reason:

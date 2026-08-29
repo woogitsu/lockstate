@@ -2,6 +2,7 @@ import type { ContentRegistry } from '../../content/registry';
 import type { RoomCatalogDefinition } from '../../content/room-catalog';
 import { defaultRoomContentRegistry } from '../../content/room-catalog';
 import type { ClockControl } from '../clock/fixed-step-clock';
+import type { IncidentType } from '../incidents/incident';
 import {
   DEFAULT_ACCOMMODATION_POLICY,
   resolveAccommodationTargets,
@@ -29,7 +30,7 @@ import {
 } from './view-model';
 
 export interface StatusStripIncidentSource {
-  openIncidents(): readonly { readonly id: string; readonly severity: number }[];
+  openIncidents(): readonly { readonly id: string; readonly type: IncidentType; readonly severity: number }[];
 }
 
 export interface StatusStripSource {
@@ -179,6 +180,57 @@ export interface StatusStripViewModel {
     readonly accommodationCapacity: number;
     readonly roomOccupants: number;
     readonly activeIncidents: number;
+    /**
+     * The kind of the incident driving `activeIncidents` above, when the
+     * strip can name one -- issue #506 finding 2.
+     *
+     * **Why a bare count could never say this.** `activeIncidents` is
+     * `openIncidents().length`, and `IncidentTriggerSystem.tryOpen*` admits at
+     * most one open incident per sector (`trigger-system.ts`, "One open
+     * incident per sector at a time"). ADR 0061 decision 6 states the
+     * consequence for the shipped topology outright: with the single derived
+     * security sector `deriveDefaultSecuritySector` authors, the whole prison
+     * can only ever have 0 or 1 incidents open, so a player watching the tile
+     * go `0 -> 1 -> 0` had no way to tell an assault from a riot from an
+     * escape attempt -- the count was the only signal and a count cannot
+     * carry a kind.
+     *
+     * **What this field adds, and what it deliberately still cannot say.**
+     * When every currently open incident shares one `IncidentType`, that type
+     * is reported here -- true today for any session running the shipped
+     * one-sector topology, and for a multi-sector one wherever its sectors
+     * happen to agree. When two open incidents name *different* types --
+     * unreachable with one sector, reachable with several -- this is
+     * `undefined` rather than an arbitrary pick of one of them, because
+     * naming one would claim a single kind for a tile that is not
+     * describing one. The strip's badge falls back to its existing generic
+     * "Active" wording in that case (`src/ui/hud/projection.ts`), which is a
+     * sentence this codebase already ships and not new copy.
+     *
+     * **Not new copy at all, in the case this issue actually measured.**
+     * `assault` / `escape-attempt` / `riot` / `gang-retaliation` already have
+     * authored labels in `src/content/simulation-message-keys.ts`'s
+     * `incident-type` namespace and are used nowhere on screen; this
+     * publishes the stable id so the HUD-side translator
+     * (`src/ui/simulation-counts.ts`, which the HUD may not reach past --
+     * `AGENTS.md` boundary 1) can turn it into one of those existing keys.
+     * The type crosses as a stable id and never as text, exactly as every
+     * other enum ADR 0011 governs.
+     *
+     * **Absent, not present-and-`undefined`, when there is no kind to name**
+     * -- the same convention `outcome`/`instigatorId` on `IncidentRecord`
+     * itself already follow, and required here rather than merely stylistic:
+     * this view model is also published, whole, over the *pulled*
+     * `hud/status-strip` projection route (`projection-catalog.ts`), where it
+     * is validated by the generic `jsonValueSchema` rather than by
+     * `statusCountsSchema`'s per-field union -- and `isJsonValue`
+     * (`src/shared/json.ts`) accepts `null` and omission but not an explicit
+     * `undefined` *value*, so a required key holding `undefined` would make
+     * every quiet tick's pull reply fail to decode. An optional key that is
+     * only ever set, never assigned `undefined`, is what keeps both channels
+     * honest about the same fact.
+     */
+    readonly activeIncidentType?: IncidentType;
     /** Cumulative items found by searches this session. Read from the search system's own counter, not from the drainable confiscation ledger. */
     readonly contrabandDiscovered: number;
     /** The treasury balance in minor units (#96). `0` when no treasury was supplied. */
@@ -377,6 +429,16 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
 
   const schedules = source.regimeSchedules ?? DEFAULT_REGIME_SCHEDULES;
 
+  // One call, reused for both the count and the kind below -- `openIncidents`
+  // allocates a sorted array and a fresh record per open incident
+  // (`IncidentLog.openIncidents`'s own comment), so a second call would pay
+  // that cost twice for the same tick's answer.
+  const openIncidents = source.incidents?.openIncidents() ?? [];
+  const distinctOpenIncidentTypes = new Set(openIncidents.map((incident) => incident.type));
+  // Exactly one shared kind names it; zero or several leave it `undefined` --
+  // see the field's own doc comment for why "several" is not an arbitrary pick.
+  const activeIncidentType = distinctOpenIncidentTypes.size === 1 ? openIncidents[0]!.type : undefined;
+
   return {
     schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
     clock: clockViewModel(source.tick, source.clockControl),
@@ -404,7 +466,8 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       roomCapacity,
       accommodationCapacity,
       roomOccupants,
-      activeIncidents: source.incidents?.openIncidents().length ?? 0,
+      activeIncidents: openIncidents.length,
+      ...(activeIncidentType !== undefined ? { activeIncidentType } : {}),
       contrabandDiscovered: source.searchSystem?.getMetrics().itemsDiscovered ?? 0,
       treasuryMinorUnits: source.treasury?.balanceMinorUnits ?? 0,
       // The registry's own total, not `roomOccupants` above: that count is

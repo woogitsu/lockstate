@@ -211,6 +211,77 @@ describe('status strip', () => {
   });
 
   /**
+   * Issue #506 finding 2: a bare count cannot say which kind of incident is
+   * open. Driven through `IncidentLog`'s own `open` -- the real producer
+   * `runtime.incidents` is, and the same shortcut
+   * `tests/integration/incident-consequence-loop.test.ts`'s `lapsedRiot`
+   * already takes for the same reason its own comment gives (a trigger needs
+   * a watched sector and a risk sample over threshold, neither of which this
+   * is measuring) -- rather than a hand-built `StatusStripIncidentSource`
+   * that would only prove this projection agrees with a view model this test
+   * itself invented (#375).
+   */
+  it('names the open incident kind when every open incident agrees, and only then', () => {
+    // A fresh runtime rather than `runScenario()`'s driven determinism
+    // scenario: that scenario runs a real prison for `TICKS` ticks and
+    // already opens its own incidents along the way (measured: it does), so
+    // asserting "nothing open" against it would be asserting a fact about
+    // this scenario's seed rather than about the projection. `new-session.ts`
+    // is still the real `IncidentLog` production code depends on -- it is
+    // simply not yet stepped, the same starting point
+    // `tests/integration/incident-consequence-loop.test.ts`'s `housedPrisoner`
+    // uses for the identical reason.
+    const runtime = createNewSimulationRuntime(SCENARIO_SEED);
+    const strip = (): ReturnType<typeof projectStatusStrip> =>
+      projectStatusStrip({
+        tick: runtime.kernel.tick,
+        prisoners: runtime.prisoners,
+        rooms: runtime.prisoners,
+        staff: runtime.securityGuards,
+        incidents: runtime.incidents,
+        searchSystem: runtime.searchSystem,
+      });
+
+    // Nothing open yet: no single kind to report.
+    expect(strip().counts.activeIncidents).toBe(0);
+    expect(strip().counts.activeIncidentType).toBeUndefined();
+
+    runtime.incidents.open(
+      { id: 'incident-type-test-1', type: 'assault', sectorId: 'sector.wing-a', participantIds: [], severity: 3, causeFactors: [] },
+      runtime.kernel.tick,
+    );
+    const oneOpen = strip();
+    expect(oneOpen.counts.activeIncidents).toBe(1);
+    expect(oneOpen.counts.activeIncidentType).toBe('assault');
+
+    // A second sector, a different kind (ADR 0061 decision 6: one open
+    // incident per *sector*, so this is a shape one derived sector can never
+    // produce, but the projection must still answer it honestly rather than
+    // pick one of the two).
+    runtime.incidents.open(
+      { id: 'incident-type-test-2', type: 'riot', sectorId: 'sector.wing-b', participantIds: [], severity: 6, causeFactors: [] },
+      runtime.kernel.tick,
+    );
+    const twoOpenMixed = strip();
+    expect(twoOpenMixed.counts.activeIncidents).toBe(2);
+    expect(twoOpenMixed.counts.activeIncidentType).toBeUndefined();
+
+    // Ending the riot leaves one open incident of one kind again. `'lapsed'`
+    // rather than `'resolved'`, because `'active' -> 'resolved'` is not a
+    // legal transition (`isLegalIncidentTransition`) -- an incident is
+    // notified and responded to before it can be contained; lapsing is the
+    // other terminal state and reachable straight from `'active'`.
+    runtime.incidents.transition('incident-type-test-2', 'lapsed', runtime.kernel.tick, {
+      injuredEntityIds: [],
+      propertyDamage: 0,
+      escaped: false,
+    });
+    const backToOne = strip();
+    expect(backToOne.counts.activeIncidents).toBe(1);
+    expect(backToOne.counts.activeIncidentType).toBe('assault');
+  });
+
+  /**
    * A prison built to tell `roomCapacity` and `accommodationCapacity` apart.
    *
    * Not `buildDeterminismScenario`: every capacity-bearing room in that one is

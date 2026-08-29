@@ -197,6 +197,11 @@ describe('message keys live in one registry', () => {
       staff: 1,
       rooms: 1,
       activeIncidents: 1,
+      // No `activeIncidentTypeLabelKey` here on purpose: the label this test
+      // walks against is the HUD's own closed registry, and a real
+      // `incident-type.*.name` key (issue #506 finding 2) lives in the
+      // simulation content catalogue's registry instead -- a different, and
+      // correctly not-this, contract.
       contrabandFound: 1,
       treasuryMinorUnits: 0,
       stateIncomeAccruedTodayMinorUnits: 0,

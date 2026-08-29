@@ -149,6 +149,28 @@ describe('status strip: tone and badges', () => {
     expect(active?.tone).toBe('danger');
   });
 
+  it('names the open incident kind on the badge when the worker could name one (issue #506 finding 2)', () => {
+    // The whole point of this fix: a player can now tell a riot from an
+    // assault from the badge word itself, not only from the count going 0 to
+    // 1. `'incident-type.riot.name'` is the exact shape
+    // `deriveSimulationMessageKey('incident-type', 'riot')` produces
+    // (`src/content/simulation-message-keys.ts`), reused here as a plain
+    // string so this file stays in `environment: 'node'` with no simulation
+    // import.
+    const riot = projectStatusMetrics(
+      counts({ activeIncidents: 1, activeIncidentTypeLabelKey: 'incident-type.riot.name' }),
+    )[3];
+    expect(riot?.badge).toEqual({ tone: 'danger', textKey: 'incident-type.riot.name' });
+    expect(riot?.tone).toBe('danger');
+
+    // The count alone still cannot say more than one sector's worth of
+    // incidents agree on a kind (ADR 0061 decision 6), and that case is
+    // `activeIncidentTypeLabelKey` absent -- the strip falls back to the
+    // generic wording the case above already covers, rather than guessing.
+    const mixed = projectStatusMetrics(counts({ activeIncidents: 2 }))[3];
+    expect(mixed?.badge).toEqual({ tone: 'danger', textKey: HUD_MESSAGE_KEY.incidentsActive });
+  });
+
   it('marks confiscated contraband as a warning only once there is some', () => {
     expect(projectStatusMetrics(counts({ contrabandFound: 0 }))[4]?.tone).toBeUndefined();
     expect(projectStatusMetrics(counts({ contrabandFound: 1 }))[4]?.tone).toBe('warning');

@@ -616,11 +616,15 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // the size bound below a bound: the refusal field is optional, and a
       // measurement taken without it would understate every publication that
       // carries one (#261). The longest declared reason is used for the same
-      // reason.
+      // reason -- and, since issue #506 finding 2, so is the longest
+      // `IncidentType` spelling for `activeIncidentType`: this scenario may or
+      // may not have an incident open, but the size bound has to hold for the
+      // publication that does, so the worst case is forced here rather than
+      // measured from whatever this run happened to produce.
       const payload = {
         tick: runtime.kernel.tick,
         schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
-        counts,
+        counts: { ...counts, activeIncidentType: 'gang-retaliation' as const },
         refusal: {
           sequence: Number.MAX_SAFE_INTEGER,
           tick: runtime.kernel.tick,
@@ -634,22 +638,34 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       expect(counts.prisoners).toBe(actorCount);
       expect(counts.rooms).toBe(CELL_COUNT);
       expect(counts.staff).toBe(GUARD_COUNT);
-      // Fifteen integers, whatever the population. It was ten until the
-      // treasury balance joined them (#96), eleven until #29's
-      // "earned today" accrual did, twelve until `accommodationCapacity`
-      // gave the strip's occupancy bar a denominator, and thirteen until
-      // payroll (ADR 0042 step 3) added the wage bill and the arrears
-      // together -- two fields rather than one because the balance cannot go
-      // negative, so what the prison owes cannot be read off what it holds;
-      // the exact count is
-      // pinned rather than bounded so that a *list* arriving here -- the thing
-      // this channel is shaped to exclude -- cannot slip in as "one more
-      // field". A scalar being added is a one-line, visible edit; that is the
-      // point.
+      // Fifteen scalars always present, whatever the population, plus one
+      // conditional sixteenth. It was ten until the treasury balance joined
+      // them (#96), eleven until #29's "earned today" accrual did, twelve
+      // until `accommodationCapacity` gave the strip's occupancy bar a
+      // denominator, and thirteen until payroll (ADR 0042 step 3) added the
+      // wage bill and the arrears together -- two fields rather than one
+      // because the balance cannot go negative, so what the prison owes
+      // cannot be read off what it holds.
+      //
+      // **The fifteenth is `activeIncidentType`, and it is the one key here
+      // that is not always present** (issue #506 finding 2): a stable id when
+      // the worker can name exactly one open incident's kind, *omitted* --
+      // never present-and-`undefined` -- otherwise, for the reason
+      // `StatusStripViewModel.counts.activeIncidentType`'s own doc comment
+      // gives (the pulled `hud/status-strip` route validates this same
+      // object with `jsonValueSchema`, which accepts a missing key but not an
+      // explicit `undefined` value). This scenario opens no incident, so it
+      // is absent here and the count is 15; a session with one open reads 16.
+      // The exact count is still pinned rather than bounded so that a *list*
+      // arriving here -- the thing this channel is shaped to exclude --
+      // cannot slip in as "one more field". A scalar being added is a
+      // one-line, visible edit; that is the point, and it holds exactly the
+      // same whether the added scalar's key is always present or
+      // conditional.
       //
       // This is what a status-counts
       // payload is, and why it needs no paging.
-      expect(Object.keys(counts)).toHaveLength(15);
+      expect(Object.keys(counts)).toHaveLength(counts.activeIncidentType === undefined ? 15 : 16);
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a
       // field that *stayed* one key and became a list, and the size bound
@@ -659,7 +675,20 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // Added with the thirteenth count, because that field moved the size
       // bound and a relaxed bound needs the property it was standing in for to
       // be asserted somewhere it cannot be relaxed.
+      //
+      // `activeIncidentType` is named explicitly rather than silently
+      // exempted: a *second* non-scalar field arriving later still fails this
+      // loop until it, too, is named here, which is what keeps "a list cannot
+      // slip in" true of the whole payload and not only of the fifteen
+      // fields that predate this one.
       for (const [key, value] of Object.entries(counts)) {
+        if (key === 'activeIncidentType') {
+          expect(
+            typeof value === 'string' || value === undefined,
+            `counts.${key} is not a stable id or undefined`,
+          ).toBe(true);
+          continue;
+        }
         expect(typeof value, `counts.${key} is not a scalar`).toBe('number');
         expect(Number.isInteger(value), `counts.${key} is not an integer`).toBe(true);
       }
@@ -668,21 +697,25 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // (`RefusalLog`). A queue would put the one growing thing this channel
       // is designed to exclude right next to the counts.
       expect(Object.keys(payload.refusal)).toHaveLength(3);
-      // 493 and not 436, and the raise is derived from a run rather than
-      // chosen -- the same way 436 replaced 400, and for the same reason: the
-      // 436 was set so that "a fourteenth count with a name as long as the
-      // thirteenth breaches this bound too", and payroll (ADR 0042 step 3)
-      // added a fourteenth and a fifteenth. Re-measured on this tree with
-      // both: `payloadJsonBytes=473` at 250 actors and `475` at 1,000, 2,500
-      // and 5,000 -- flat in the population exactly as before. 475 + 18 =
-      // **493**, which leaves the same 18 bytes of head room every previous
-      // bound was set to leave, so a *sixteenth* count breaches this one too
-      // and the channel's soft limit goes on being felt one field at a time.
+      // 533 and not 493, and the raise is derived from a run rather than
+      // chosen -- the same way 493 replaced 436. Issue #506 finding 2 added
+      // `activeIncidentType`, sized here at its worst case
+      // (`'gang-retaliation'`, the longest `IncidentType` spelling, forced
+      // into `payload.counts` above exactly as the longest refusal reason is
+      // forced into `payload.refusal`). Re-measured on this tree with it:
+      // `payloadJsonBytes=513` at 250 actors and `515` at 1,000, 2,500 and
+      // 5,000 -- flat in the population exactly as before, which is the
+      // property this bound exists to protect: `activeIncidentType` is one
+      // field regardless of how many prisoners or sectors the session holds.
+      // 515 + 18 = **533**, which leaves the same 18 bytes of head room every
+      // previous bound was set to leave, so a *seventeenth* count breaches
+      // this one too and the channel's soft limit goes on being felt one
+      // field at a time.
       //
       // The bound is not what stops a list arriving -- the scalar assertion
       // above is, at any length, which is why that was added the last time
       // this bound was relaxed.
-      expect(JSON.stringify(payload).length).toBeLessThan(493);
+      expect(JSON.stringify(payload).length).toBeLessThan(533);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(

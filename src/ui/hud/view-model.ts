@@ -116,6 +116,33 @@ export interface HudCountsViewModel {
   readonly staff: number;
   readonly rooms: number;
   readonly activeIncidents: number;
+  /**
+   * A message key naming the kind of the incident `activeIncidents` counts,
+   * when the worker could name exactly one -- issue #506 finding 2.
+   *
+   * **Absent, not present-and-`undefined`**, both when nothing is open and
+   * when more than one distinct kind is open at once (unreachable with the
+   * shipped single-sector topology, ADR 0061 decision 6; possible with
+   * several sectors open on different kinds). Both are "cannot name one
+   * kind", which is one fact, not two, so this field does not distinguish
+   * them -- the strip's badge already has `activeIncidents` beside it to say
+   * whether anything is open at all. Optional rather than a required
+   * `LocalizationKey | undefined`, matching the same field one layer down
+   * (`StatusStripViewModel.counts.activeIncidentType`,
+   * `src/simulation/presentation/status-strip-projection.ts`) and for the
+   * same reason: that field crosses a channel where a present-but-`undefined`
+   * value fails to decode, and a translator that turned "absent" into
+   * "present and `undefined`" here would be reintroducing the shape that
+   * channel refuses, one hop later.
+   *
+   * Computed in `src/ui/simulation-counts.ts` from the worker's stable
+   * `activeIncidentType` id via `deriveSimulationMessageKey('incident-type',
+   * ...)`, never here: the HUD may not import `src/simulation/**`
+   * (`AGENTS.md` boundary 1) and resolves no text of its own, so this is
+   * already the finished message key, exactly the shape every other
+   * `*LabelKey` field in this file takes.
+   */
+  readonly activeIncidentTypeLabelKey?: LocalizationKey;
   readonly contrabandFound: number;
   /**
    * The treasury balance in minor units (#96).
@@ -1045,6 +1072,9 @@ export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {
     staff: 0,
     rooms: 0,
     activeIncidents: 0,
+    // No key at all -- an empty prison has nothing to name (issue #506
+    // finding 2), and this field's own doc comment says why `undefined` is
+    // never assigned to it explicitly.
     contrabandFound: 0,
     treasuryMinorUnits: 0,
     stateIncomeAccruedTodayMinorUnits: 0,
