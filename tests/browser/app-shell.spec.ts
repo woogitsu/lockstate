@@ -5027,12 +5027,29 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud-staff')).toBeVisible();
     await tabTo(page, 'a staff role row', { selector: '.hud-staff__list [data-staff-role]' });
     await page.keyboard.press('Enter');
-    // A vacuity guard rather than a claim: *Hire* is disabled until a role is
-    // chosen (`src/ui/hud/staff-panel.ts`), so an unchosen row would make the
-    // press below a press on a disabled control and the record meaningless.
+    // A vacuity guard rather than a claim, and the reason it gives is not the
+    // one written here first.
+    //
+    // This comment said "*Hire* is disabled until a role is chosen
+    // (`src/ui/hud/staff-panel.ts`), so an unchosen row would make the press
+    // below a press on a disabled control." **That is false**, and it was
+    // false when written: `staff-panel.ts` opens with
+    // `let selectedId = model.roles[0]?.staffRoleId`, so the first role is
+    // already chosen before anything is pressed, and `HIREABLE_STAFF_ROLE_IDS`
+    // holds exactly one id (`src/main.ts`) -- so there is no state in this
+    // build where the list has a row and *Hire* is disabled. Measured by
+    // playing: the control arrives reading `Hire Guard · 80` with
+    // `disabled: false`, before any row is clicked.
+    //
+    // The guard is kept, because what it actually rules out is the case the
+    // press above failed to reach a row at all -- `tabTo` landing somewhere
+    // else, or the catalogue rendering empty -- which would leave the record
+    // below describing a press on a control the test never found. That is a
+    // different vacuity from the one the old sentence named, and it is the
+    // one this assertion can see.
     await expect(
       page.locator('.hud-staff__list [data-selected="true"]'),
-      'no staff role was chosen, so Hire was never live',
+      'no staff role was chosen, so the Hire press below has no subject',
     ).toHaveCount(1);
     const hire: FocusTarget = { selector: '.hud-staff__hire' };
     await tabTo(page, 'the Hire control', hire);
