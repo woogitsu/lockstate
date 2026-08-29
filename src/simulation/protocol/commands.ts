@@ -483,8 +483,9 @@ export const releaseGuardAssignmentSchema = z.object({
 }).strict();
 
 /**
- * Dismiss one staff member (issue #533, the owner's decision on issue #535
- * decision 4).
+ * Dismiss one staff member
+ * ([ADR 0070](../../../docs/adr/0070-dismissing-a-staff-member.md) decision 2,
+ * issue #533, the owner's decision on issue #535 decision 4).
  *
  * ## Why this is a separate command from `ReleaseGuardAssignment`
  *

@@ -29,8 +29,9 @@ import { DEFAULT_SECURITY_SECTOR_ID, DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUN
  * guard per `DEFAULT_SECTOR_PRISONERS_PER_GUARD` occupants**, and:
  *
  * - **An empty sector requires nobody — where the occupant count is a complete
- *   measure of who is in it.** Issue #533; the owner's decision on issue #535
- *   decision 4. This is the one direction in which occupancy *lowers* the
+ *   measure of who is in it.**
+ *   [ADR 0070](../../../docs/adr/0070-dismissing-a-staff-member.md) decision 1,
+ *   issue #533; the owner's decision on issue #535 decision 4. This is the one direction in which occupancy *lowers* the
  *   answer, and the bullet below said it never did — see "What changed, and
  *   what the old sentence got right" further down, which is the correction
  *   rather than an overwrite. The qualification is load-bearing and

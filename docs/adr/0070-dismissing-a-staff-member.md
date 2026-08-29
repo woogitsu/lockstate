@@ -1,30 +1,34 @@
-# ADR draft (unnumbered): Dismissing a staff member, and what an empty sector asks for
+# ADR 0070: Dismissing a staff member, and what an empty sector asks for
 
-> **This draft deliberately carries no number.** `AGENTS.md`: *"A number is not
-> reserved until it appears in `docs/adr/README.md`."* At the time of writing,
-> `docs/adr/` on `origin/main` (`a6b262e`, v0.0.186) holds **0068** as its
-> highest number and the index's **Next free number** line reads **0069** — so
-> `max + 1` computed off disk is 0069. The integrator's brief said ADR 0069 had
-> already landed; it has not landed on `origin/main`, and a branch that has not
-> merged is invisible from the index, which is exactly the condition
-> ADR 0065's and ADR 0066's drafts declined a number under.
+> **0070 was assigned centrally**, after this draft returned, which is the
+> practice `AGENTS.md` records so that two agents drafting at once cannot take
+> one number. The draft carried **no** number while it waited, and was filed
+> under `docs/research/` rather than here, because
+> `tests/foundation/adr-numbering-contract.test.ts` admits no unnumbered ADR in
+> this directory: a placeholder id fails the filename check and a numbered file
+> with no index row fails the other two. There is no such thing as an
+> unnumbered ADR draft in `docs/adr/`, so a draft that refuses to guess has to
+> live somewhere else.
 >
-> It is filed here rather than in `docs/adr/` because
-> `tests/foundation/adr-numbering-contract.test.ts` requires the file, its row
-> in `docs/adr/README.md` and a moved **Next free number** line **in one
-> commit**; a placeholder id fails the filename check and a numbered file with
-> no row fails the other two. So there is no such thing as an unnumbered ADR
-> draft in `docs/adr/`, and this is the shape a draft can take.
+> **The arithmetic was re-derived from disk at the moment of writing rather
+> than taken on trust**, which is what this README's own history says catches
+> this class of mistake. When the draft returned, `main` was `a6b262e`
+> (v0.0.186), `docs/adr/` held **0068** as its highest number, and the
+> integrator's brief said 0069 had already landed — it had not landed on
+> `origin/main`, and a branch that has not merged is invisible from the index,
+> which is exactly the condition ADR 0065's and ADR 0066's drafts declined a
+> number under. By the time the number was assigned, `main` was `feefbc4`
+> (v0.0.189) and **0069 had landed**, so `max + 1` off disk is **0070** — which
+> agreed with the number assigned. That agreement is the point of recomputing:
+> it was checkable, and it was checked.
 >
-> **This document pre-commits to renumbering without argument.** On being given
-> a number it moves to `docs/adr/NNNN-...md` with its row and the index line in
-> the same commit, `max + 1` re-derived from disk at that moment rather than
-> taken from this paragraph, and every citation added by
+> **This document pre-commits to renumbering without argument** if an unmerged
+> branch turns out to hold 0070, and every citation of "ADR 0070" added by
 > `agent/533-dismiss-staff` moves with it.
 
 ## Status
 
-**Draft, 2026-08-29.** Decided under the owner's standing mandate (`AGENTS.md`,
+**Proposed, 2026-08-29.** Decided under the owner's standing mandate (`AGENTS.md`,
 "The owner's standing mandate"), and directed by the owner's decision on issue
 #535 decision 4 and issue #533 — which asked for **both** halves explicitly and
 rejected either alone. The implementation landed on `agent/533-dismiss-staff`
@@ -189,7 +193,7 @@ round-trips at the same index under the same id.
   ADR 0038's rule is that a build refuses *a value it cannot interpret*, and a
   dead slot with a bumped generation is a value every build since the store was
   written interprets — and has interpreted for prisoners since #441.
-  [ADR 0065](../adr/0065-what-happens-to-a-save-this-build-cannot-read.md)
+  [ADR 0065](./0065-what-happens-to-a-save-this-build-cannot-read.md)
   governs what happens when an older build *does* refuse a newer save; nothing
   here adds a refusal for that machinery to catch, which is the check that
   matters rather than a claim that quarantine would cope.

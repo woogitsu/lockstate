@@ -3,8 +3,9 @@ import type { GuardClaimKind, GuardReleaseService } from '../security/guard-rele
 import type { GuardRoster } from '../security/guard-roster';
 
 /**
- * Dismissing a staff member: the `DismissStaff` consumer (issue #533, the
- * owner's decision on issue #535 decision 4).
+ * Dismissing a staff member: the `DismissStaff` consumer
+ * ([ADR 0070](../../../docs/adr/0070-dismissing-a-staff-member.md), issue #533,
+ * the owner's decision on issue #535 decision 4).
  *
  * ## What this closes
  *

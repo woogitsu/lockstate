@@ -102,7 +102,9 @@ export class GuardRoster {
 
   /**
    * Drops one staff member's record and destroys their entity -- the one roster
-   * write a dismissal performs (issue #533).
+   * write a dismissal performs
+   * ([ADR 0070](../../../docs/adr/0070-dismissing-a-staff-member.md) decision 2,
+   * issue #533).
    *
    * **Deliberately not called `dismiss`, and deliberately not the whole of one.**
    * A dismissal has to give back a claim through its claimant, cancel a route,
