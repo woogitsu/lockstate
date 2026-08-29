@@ -30,7 +30,7 @@ Nothing here is of that kind, so the mapping is stated once:
   repository that was opened and read.
 - **SEARCH-SUMMARY** and **FROM MEMORY** do not occur. No external page was
   consulted and no figure is carried on belief.
-- **UNKNOWN** is marked inline, in §5 and §6.
+- **UNKNOWN** is marked inline, in §5.
 
 ## 0. Calibration, re-derived rather than carried
 
@@ -211,17 +211,27 @@ in this same session; the change contemplated here is neither of those.
 
 ## 6. Two things about the strip's own arithmetic, stated as observations
 
-- **The occupancy bar has a capacity of 3 and a value of 12.** `occupancyTone`
+- **"12 of 3" is spoken and not shown.** `occupancyTone`
   (`src/ui/hud/projection.ts:133`) returns `'danger'` above ratio 1, and the
-  segmented bar's `valueText` is `"{value} of {capacity}"`
-  (`src/content/default-locale-en.ts:175`), so *"12 of 3"* is authored. It did
-  not appear in the strip's `innerText` at any sample — the strip read
-  `12 | PRISONERS` throughout. **UNKNOWN whether it is visually present**: this
-  pass read `innerText` and did not read the segmented bar's own DOM or its
-  computed styles. Cheapest falsification, written down rather than named:
-  print `.hud-strip` `outerHTML` for the prisoners chip at a moment when
-  `prisoners > capacity`, and read the bar's label node and its
-  `getBoundingClientRect`.
+  status strip hands the segmented bar a `valueText` of `"{value} of
+  {capacity}"` (`src/content/default-locale-en.ts:175`,
+  `src/ui/hud/status-strip.ts:202-206`). The strip's `innerText` read
+  `12 | PRISONERS` at every sample, and reading
+  `src/ui/primitives/segmented-bar.ts:90-112` says why: the bar's children are
+  ten empty `<span class="ui-bar__segment">` cells, and `valueText` is written
+  to **`aria-valuetext`** only. There is no text node.
+
+  So for a screen-reader player the prison says *"Cell occupancy, 12 of 3"*,
+  and for a sighted player it says a full ten-segment bar in the danger tone
+  and nothing else — `filledSegments(12, 3)` takes the `value >= max` branch,
+  so a prison four times over capacity draws exactly like one exactly at it.
+  **Two things keep this mild and both are real:** bar *fullness* is a
+  non-colour signal, and the Intake panel does say it in words —
+  *"9 waiting with no bed to sleep in"*, measured. What is worth noting is only
+  that `src/ui/hud/projection.ts` states the principle *"Colour is never the
+  only signal: the badge states the condition in words"* about the incidents
+  chip, and the prisoners chip is the one metric on the strip that carries a
+  tone with `badge: undefined`. No cause and no impact are claimed.
 - **The accrual chip is honest and unlabelled as partial.** EARNED TODAY is
   `stateIncomeAccruedTodayMinorUnits` and its own doc comment
   (`status-strip-projection.ts:473-491`) says why it must be derived from the
@@ -230,7 +240,65 @@ in this same session; the change contemplated here is neither of those.
   it as the second. No cause and no impact are claimed; it is a product
   question.
 
-## 7. The other half of the loop — TO BE FILLED
+## 7. The other half of the loop, and it does not close tightly
+
+The brief's second clause — *"while three guards cost 240/day"* — is **exactly
+right**, and it is the only half of the sentence that is. Measured, on a second
+prison built the same way with three beds, three prisoners and three guards
+hired from the Security tab with the mouse:
+
+```
+hire control reads: "Hire Guard · 80"
+after hiring 3: staff=3 dailyWageBill=240 funds=22335
+```
+
+`staff-role.guard`'s `wageBand.minPerDay` is 80
+(`src/content/staff-role-catalog.ts:150`), `staffDailyWageMinorUnits` returns
+that field (`src/simulation/economy/wages.ts:45`), and the hire charge is one
+day of it, so three guards cost 240 to hire and 240 a day thereafter. Both
+figures are on screen.
+
+Then the day boundary, pasted:
+
+```
+=== DAY BOUNDARY at tick 7199 ===
+last sample before:  {"tick":7173,"prisoners":3,"prisonersInIntake":0,"rooms":1,
+                      "roomCapacity":3,"accommodationCapacity":3,"roomOccupants":3,
+                      "treasuryMinorUnits":22335,"stateIncomeAccruedTodayMinorUnits":890,
+                      "dailyWageBillMinorUnits":240,"unpaidWagesMinorUnits":0,"staff":3}
+first sample at/after:{"tick":7214,...,"treasuryMinorUnits":22995,
+                      "stateIncomeAccruedTodayMinorUnits":5,...}
+treasury delta across the boundary = 660 | accrual just before = 890 | roster = 3 | residents = 3
+```
+
+and the next boundary is the same:
+
+```
+=== DAY BOUNDARY at tick 9599 ===
+treasury delta across the boundary = 660 | accrual just before = 893 | roster = 3 | residents = 3
+```
+
+**900 in, 240 out, +660 a day net**, twice, with `unpaidWagesMinorUnits` at 0 —
+the payroll met in full.
+
+So the brief's conclusion is the thing that breaks. It read *150 in against 240
+out*, which is **-90 a day** and would indeed close tightly, in the sense of
+closing on the player's throat. What a prison of that shape actually does is
+**+660 a day**. The sign is wrong and the magnitude is wrong by 750.
+
+This is reading 2 of #601, run deliberately: a window that includes hiring. It
+produces 660, not 150, and it is 660 because a hire is a *one-off* 240 charged
+at the press and a *recurring* 240 charged at the boundary — the treasury moved
+25,000 → 22,275 (materials) → 22,335 (a 300 day boundary less the 240 hire
+charge) → 22,995 (900 in, 240 out). Nothing in that ledger passes near 150
+except the EARNED TODAY chip, which read **141** on this prison at 16% of the
+day.
+
+**What this does not establish.** Whether the economy *should* be tight is a
+balance question with an owner, and this record does not answer it. What it
+establishes is that no document should keep saying the loop closes tightly on
+the strength of the brief's arithmetic, because the arithmetic was of a
+different prison than the one the game builds.
 
 ## 8. Smaller things this pass measured while playing
 
@@ -275,7 +343,6 @@ in this same session; the change contemplated here is neither of those.
 - Any viewport other than 1440x900.
 - Save/load of *this* prison. `2026-08-29-mouse-playtest.md` §3 covers a
   mouse-built prison across a reload; nothing here re-derives it.
-- Whether the segmented bar's "12 of 3" is on screen (§6).
 
 ## Weakest claim, and the cheapest thing that would falsify it
 

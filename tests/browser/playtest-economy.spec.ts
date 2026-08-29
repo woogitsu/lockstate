@@ -67,6 +67,7 @@ interface CountsSample {
   readonly tick: number;
   readonly prisoners: number;
   readonly prisonersInIntake: number;
+  readonly prisonersHighRisk: number;
   readonly rooms: number;
   readonly roomCapacity: number;
   readonly accommodationCapacity: number;
@@ -89,6 +90,7 @@ async function countsSeries(page: Page): Promise<readonly CountsSample[]> {
           tick: payload.tick,
           prisoners: payload.counts['prisoners'] ?? -1,
           prisonersInIntake: payload.counts['prisonersInIntake'] ?? -1,
+          prisonersHighRisk: payload.counts['prisonersHighRisk'] ?? -1,
           rooms: payload.counts['rooms'] ?? -1,
           roomCapacity: payload.counts['roomCapacity'] ?? -1,
           accommodationCapacity: payload.counts['accommodationCapacity'] ?? -1,
@@ -402,7 +404,13 @@ async function buildAndPopulate(page: Page, options: PrisonOptions): Promise<{ o
 
   if (options.guards > 0) {
     await tab(page, 'security').click();
-    await page.locator('.hud-staff__list [data-staff-role="staff.guard"]').click();
+    // `staff-role.guard`, not `staff.guard`: the catalogue ids are
+    // `staff-role.*` (`src/content/staff-role-catalog.ts:148`). The row is
+    // clicked only if it is there -- the panel already selects Guard on
+    // arrival, so a missing row must not stop the hire.
+    const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
+    if ((await guardRow.count()) > 0) await guardRow.first().click();
+    else log(`no [data-staff-role] rows: ${JSON.stringify(await panelText(page, '.hud-staff__list'))}`);
     log(`hire control reads: ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);
     for (let index = 0; index < options.guards; index += 1) {
       await page.locator('.hud-staff__hire').click();
@@ -464,7 +472,7 @@ test.describe('playtest: what a day actually pays (#601)', () => {
     console.log('[A/12-beds] === FULL SERIES (tick, roster, residents, capacity, accrued, treasury) ===');
     for (const s of series) {
       console.log(
-        `[A/12-beds] t=${s.tick} roster=${s.prisoners} inIntake=${s.prisonersInIntake} residents=${s.roomOccupants} cap=${s.accommodationCapacity} accrued=${s.stateIncomeAccruedTodayMinorUnits} funds=${s.treasuryMinorUnits}`,
+        `[A/12-beds] t=${s.tick} roster=${s.prisoners} inIntake=${s.prisonersInIntake} highRisk=${s.prisonersHighRisk} residents=${s.roomOccupants} cap=${s.accommodationCapacity} accrued=${s.stateIncomeAccruedTodayMinorUnits} funds=${s.treasuryMinorUnits}`,
       );
     }
     console.log(`[A/12-beds] console: ${consoleLines.slice(0, 40).join('\n') || '(nothing)'}`);
@@ -501,7 +509,7 @@ test.describe('playtest: what a day actually pays (#601)', () => {
     console.log('[B/3-beds] === FULL SERIES ===');
     for (const s of series) {
       console.log(
-        `[B/3-beds] t=${s.tick} roster=${s.prisoners} inIntake=${s.prisonersInIntake} residents=${s.roomOccupants} cap=${s.accommodationCapacity} accrued=${s.stateIncomeAccruedTodayMinorUnits} funds=${s.treasuryMinorUnits}`,
+        `[B/3-beds] t=${s.tick} roster=${s.prisoners} inIntake=${s.prisonersInIntake} highRisk=${s.prisonersHighRisk} residents=${s.roomOccupants} cap=${s.accommodationCapacity} accrued=${s.stateIncomeAccruedTodayMinorUnits} funds=${s.treasuryMinorUnits}`,
       );
     }
     console.log(`[B/3-beds] console: ${consoleLines.slice(0, 40).join('\n') || '(nothing)'}`);
@@ -538,7 +546,7 @@ test.describe('playtest: what a day actually pays (#601)', () => {
     console.log('[C/guards] === FULL SERIES ===');
     for (const s of series) {
       console.log(
-        `[C/guards] t=${s.tick} roster=${s.prisoners} inIntake=${s.prisonersInIntake} residents=${s.roomOccupants} cap=${s.accommodationCapacity} accrued=${s.stateIncomeAccruedTodayMinorUnits} funds=${s.treasuryMinorUnits}`,
+        `[C/guards] t=${s.tick} roster=${s.prisoners} inIntake=${s.prisonersInIntake} highRisk=${s.prisonersHighRisk} residents=${s.roomOccupants} cap=${s.accommodationCapacity} accrued=${s.stateIncomeAccruedTodayMinorUnits} funds=${s.treasuryMinorUnits}`,
       );
     }
     console.log(`[C/guards] console: ${consoleLines.slice(0, 40).join('\n') || '(nothing)'}`);
