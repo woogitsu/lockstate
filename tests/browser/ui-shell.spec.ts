@@ -3394,10 +3394,109 @@ test.describe('the Rooms panel', () => {
 
     const hovering = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
     expect(hovering.areaText).toBe('6 × 6 tiles at 1, 2');
+    expect(hovering.areaLaidOut, 'the area readout has no box while it has a rectangle to report').toBe(true);
     expect(hovering.confirmLaidOut, 'a hover is not a finished gesture').toBe(false);
 
     await page.evaluate(() => window.lockstateUiHarness.hoverWorldRoom(undefined));
-    expect((await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).areaText).toBe('Nothing selected');
+    const idle = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(idle.areaText).toBe('Nothing selected');
+    // And it folds, which is the half the sentence above cannot state.
+    expect(idle.areaLaidOut, 'the area readout keeps a box with nothing to report').toBe(false);
+  });
+
+  /**
+   * The two readouts that have nothing to say fold, and the panel says so on
+   * itself when the needs readout has a box (#529, the layout half).
+   *
+   * ### What was wrong
+   *
+   * `Area / Nothing selected` and `Enclosure / Not evaluated yet` are 20px and
+   * 14.3px of placeholder, and they were drawn in every state including the one
+   * where the panel has something real to say. Measured on the assembled
+   * application at 900x600, Rooms tab, two unfinished cells: the panel body was
+   * **54px past its own box** and `app-shell.spec.ts`'s #331 test failed on it
+   * in CI. `rooms-panel.ts` had already recorded what that panel had to spend --
+   * *"the panel body affords 32px at 1280x720 and 0px at 900x600"* -- so nothing
+   * could be added to it at all until something was given back.
+   *
+   * ### Why it is asserted here and measured there
+   *
+   * The pixels are a property of the assembled page: this harness hands the
+   * panel 128.7px more rail than the application ever does, so a fold assertion
+   * written here would pass over a panel that was 54px over in the real thing.
+   * `app-shell.spec.ts` owns the measurement -- it is the test that caught this
+   * -- and what this file owns is the *behaviour* the measurement depends on:
+   * which of the two blocks has a box in which state, and that the panel
+   * publishes `data-needs` for the stylesheet to spend the catalogue's floor on.
+   *
+   * A `laidOut` probe rather than the attribute, deliberately: `hud.css` gives
+   * both blocks an author `display: flex` behind a `:not([hidden])` guard, and
+   * an author declaration beats the `display: none` a user agent gives
+   * `[hidden]`. A test that read `.hidden` would agree with a stylesheet whose
+   * guard had been dropped and which was painting the placeholder anyway --
+   * which is exactly what the first attempt at this change did, and what
+   * measuring the box instead of the attribute caught.
+   */
+  test('the readouts with nothing to report fold, and the panel says when the needs block has a box', async ({
+    page,
+  }) => {
+    const probe = async () => page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+
+    // 1. On arrival: no rectangle drawn and no room evaluated, so neither
+    //    readout has a box -- and both still carry their honest sentence, so
+    //    the block reads correctly the instant it comes back.
+    const fresh = await probe();
+    expect(fresh.areaLaidOut, 'the area readout has a box before anything is drawn').toBe(false);
+    expect(fresh.areaText).toBe('Nothing selected');
+    expect(fresh.enclosureLaidOut, 'the enclosure readout has a box before anything is evaluated').toBe(false);
+    expect(fresh.enclosureText).toBe('Not evaluated yet');
+    expect(fresh.panelNeeds, 'the panel claims a needs readout before one arrived').toBe('');
+
+    // 2. A rectangle brings the area readout back and leaves the enclosure one
+    //    folded: drawing a rectangle is not the simulation evaluating it.
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 3, y: 4, width: 5, height: 5 }));
+    const drawn = await probe();
+    expect(drawn.areaLaidOut).toBe(true);
+    expect(drawn.areaText).toBe('5 × 5 tiles at 3, 4');
+    expect(drawn.enclosureLaidOut, 'a drawn rectangle is not an evaluated room').toBe(false);
+
+    // 3. And a verdict brings the enclosure readout back.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportZoning({ sequence: 1, enclosure: 'sealed', requirement: 'enclosed' }),
+    );
+    const evaluated = await probe();
+    expect(evaluated.enclosureLaidOut).toBe(true);
+    expect(evaluated.enclosureText).toBe('Walled in on every side');
+
+    // 4. `data-needs` follows the readout and carries the figure, so the
+    //    stylesheet spends the catalogue's floor on a block that is really
+    //    there rather than on one that was there a paint ago.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 2,
+        totalRooms: 2,
+        totalNeeds: 4,
+        needs: [
+          {
+            instanceId: 'room.cell:12:4',
+            roomLabelKey: 'room.cell.name',
+            tile: { x: 12, y: 4 },
+            objectLabelKey: 'object.bed.name',
+            missingQuantity: 1,
+          },
+        ],
+      }),
+    );
+    expect((await probe()).panelNeeds, 'the panel does not carry the needs total the readout was given').toBe(
+      '4',
+    );
+
+    // A prison with nothing missing draws no readout, so it must donate
+    // nothing either -- the catalogue's row comes back with the last cell.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 2, totalNeeds: 0, needs: [] }),
+    );
+    expect((await probe()).panelNeeds, 'a finished prison still spends the catalogue floor').toBe('');
   });
 
   test('renders no unresolved message key anywhere in the panel', async ({ page }) => {

@@ -1715,6 +1715,7 @@ window.lockstateUiHarness = {
       selected: roomsPanelSelection() ?? '',
       area: document.querySelector<HTMLElement>('.hud-rooms__area')?.dataset['area'] ?? '',
       areaText: document.querySelector<HTMLElement>('.hud-rooms__area-value')?.textContent?.trim() ?? '',
+      areaLaidOut: laidOut('.hud-rooms__area'),
       noteText: note?.textContent?.trim() ?? '',
       noteTone: note?.dataset['tone'] ?? '',
       ruleText: [...document.querySelectorAll<HTMLElement>('.hud-rooms__rule')].map(
@@ -1722,6 +1723,8 @@ window.lockstateUiHarness = {
       ),
       enclosureText:
         document.querySelector<HTMLElement>('.hud-rooms__enclosure-value')?.textContent?.trim() ?? '',
+      enclosureLaidOut: laidOut('.hud-rooms__enclosure'),
+      panelNeeds: panel?.dataset['needs'] ?? '',
       // Laid out, not merely present: `paintActions` uses `hidden`, so a control
       // that is not showing must have no box at all and be out of the tab order.
       armLaidOut: laidOut('.hud-rooms__arm'),
