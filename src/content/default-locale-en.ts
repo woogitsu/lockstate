@@ -1033,6 +1033,23 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // are `aria-hidden`, because "PRE-ALPHA", "v0.0.7" and seven hex characters
   // read out in sequence name nothing.
   'brand.description': 'Lockstate, {stage} build, version {version}, commit {commit}.',
+
+  // The interface-scale control in the status strip (`src/ui/display-scale.ts`,
+  // #545). Page chrome like the brand badge above, hence `display.` and not
+  // `hud.`: it changes a browser preference, not anything the simulation has an
+  // opinion about.
+  //
+  // Two entries and no third. What the control shows is the scale itself, and
+  // a percentage is a number -- it goes through `formatNumber` with
+  // `style: 'percent'`, so the sign, its spacing and the digits follow the
+  // player's locale instead of being assembled from an English literal here.
+  //
+  // "Interface", explicitly, in both. This game also has a camera zoom bound
+  // to `+`/`-`, so a name that said only "scale" or "zoom" would leave a
+  // player -- and a screen reader -- unable to tell which of the two a control
+  // in the status strip changes.
+  'display.scale.region': 'Interface scale',
+  'display.scale.cycle': 'Change the interface scale',
 };
 
 /**

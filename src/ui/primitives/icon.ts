@@ -28,6 +28,7 @@ export const ICON_IDS = [
   'regime',
   'check',
   'brand',
+  'ui-scale',
 ] as const;
 
 export type IconId = (typeof ICON_IDS)[number];
@@ -56,6 +57,16 @@ const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
   security: ['M12 3.75 19.75 6.5v5.75c0 4-3.1 6.9-7.75 8.1-4.65-1.2-7.75-4.1-7.75-8.1V6.5z'],
   regime: ['M3.75 6.25h16.5v13.5H3.75z', 'M3.75 10.5h16.5', 'M8.5 3.75v4.5', 'M15.5 3.75v4.5'],
   check: ['M5.25 12.5 10 17.25 18.75 6.75'],
+  // Interface scale (#545): a large letterform beside a small one, which is
+  // the glyph a player already reads as "text size" everywhere else. Strokes
+  // only, like every other entry -- two strokes per letter, the stem pair and
+  // the crossbar, so it stays legible at 16px.
+  'ui-scale': [
+    'M3.25 18.75 8 5.25l4.75 13.5',
+    'M4.9 14.25h6.2',
+    'M14.75 18.75 17.75 10l3 8.75',
+    'M15.8 16.1h3.9',
+  ],
   // The wordmark's mark: a padlock, shackle above a body, with a keyway. The
   // same 24x24 stroke-only rule as every other entry, so the brand mark scales
   // and recolours with the text beside it instead of being a bitmap that has to

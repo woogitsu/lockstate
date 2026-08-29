@@ -278,7 +278,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
-  min-width: 72px;
+  min-width: calc(72px * var(--ui-scale));
   min-height: var(--tap-target);
   padding: var(--space-2) var(--space-3);
   background: transparent;
