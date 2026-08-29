@@ -151,12 +151,6 @@ export function occupancyTone(prisoners: number, capacity: number): BadgeTone | 
 }
 
 /**
- * The top strip, left to right.
- *
- * Order is part of the contract: a HUD whose metrics move between builds is
- * one a player has to re-read every time.
- */
-/**
  * The worst rung anybody is standing on, as a tone (issue #588).
  *
  * Three steps for one metric, in `occupancyTone`'s shape and for
@@ -196,6 +190,12 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
   };
 }
 
+/**
+ * The top strip, left to right.
+ *
+ * Order is part of the contract: a HUD whose metrics move between builds is
+ * one a player has to re-read every time.
+ */
 export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMetricDescriptor[] {
   const hasIncidents = counts.activeIncidents > 0;
   const capacity = counts.prisonerCapacity > 0 ? counts.prisonerCapacity : undefined;
