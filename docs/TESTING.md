@@ -213,6 +213,31 @@ nobody deployed. It also needs the Git LFS runtime art for the same reason
 `pnpm test:browser` does — the renderer decodes every atlas — which is one more
 reason it runs inside the `browser` job, where the art has already been pulled.
 
+**The two suites share `tests/browser/` and must not share its specs.**
+`tests/browser/playwright.config.ts` matches `*.spec.ts` across that directory,
+so it collected `production-artifact.spec.ts` too and drove it against the dev
+server. Measured, CI run 33271621137, job `browser`, step "Run the real-browser
+suite" (`Running 255 tests using 1 worker`):
+
+```
+✘  80 tests/browser/production-artifact.spec.ts:128:3 ... (951ms)
+   Error: A Worker was constructed from
+   "/src/simulation/worker/worker.ts?worker_file&type=module", which is not a
+   fingerprinted chunk under /assets/.
+✓  81 tests/browser/production-artifact.spec.ts:249:3 ... (4.1s)
+```
+
+`?worker_file` is Vite's **dev-server** worker URL; the production build was
+never wrong, and the artefact suite proper never ran in that job because the
+job died before reaching it. Both lines are this layer's own failure mode: test
+80 red about a subject it was not looking at, and test 81 green for the wrong
+reason — a full worker round trip asserted in "the built client" with no
+`dist/` involved at all. `playwright.config.ts` now carries the `testIgnore`
+that is the mirror image of `playwright.artifact.config.ts`'s `testMatch`, and
+`tests/foundation/browser-suite-partition-contract.test.ts` fails — in
+`pnpm test`, with no browser and no build — when any spec in that directory is
+claimed by both configs or by neither.
+
 ## Naming and placement
 
 - Use `*.test.ts` for executable Vitest files.

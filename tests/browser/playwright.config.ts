@@ -90,6 +90,44 @@ const explicitExecutablePath = process.env['LOCKSTATE_CHROMIUM_PATH'];
 export default defineConfig({
   testDir: fileURLToPath(new URL('.', import.meta.url)),
   testMatch: /.*\.spec\.ts$/,
+  /*
+   * ONE SPEC IN THIS DIRECTORY IS NOT ABOUT THIS SERVER, AND LEAVING IT IN
+   * REPORTED ON THE WRONG SUBJECT ENTIRELY.
+   *
+   * `production-artifact.spec.ts` runs the built client out of `dist/`, served
+   * by workerd through `tests/browser/playwright.artifact.config.ts`. Its whole
+   * contract is the difference between the bundle and the sources. The
+   * `testMatch` above is `*.spec.ts` across this directory, so it collected
+   * that spec too and drove it against the **dev server** -- which serves
+   * `src/**` and answers `/src/simulation/worker/worker.ts?worker_file&type=module`
+   * for the worker, exactly the bare module URL that spec exists to forbid.
+   *
+   * Measured, on CI run 33271621137 (job `browser`, step "Run the real-browser
+   * suite", `Running 255 tests using 1 worker`):
+   *
+   *   ✘  80 tests/browser/production-artifact.spec.ts:128:3 ... (951ms)
+   *      Error: A Worker was constructed from
+   *      "/src/simulation/worker/worker.ts?worker_file&type=module", which is
+   *      not a fingerprinted chunk under /assets/.
+   *   ✓  81 tests/browser/production-artifact.spec.ts:249:3 ... (4.1s)
+   *
+   * The production build was never wrong: the same commit emits
+   * `new Worker(`/assets/worker-<hash>.js`)` and no `?worker_file` anywhere in
+   * `dist/`. Both halves of that run are the failure this layer exists to
+   * prevent: test 80 red on a subject it was not looking at, and test 81
+   * **green for the wrong reason** -- it passed against the dev server without
+   * a `dist/` being involved at all, which is precisely the vacuous pass
+   * `reuseExistingServer: false` below was set to make loud.
+   *
+   * The artefact config already carried the mirror image of this exclusion --
+   * "the dev-server config matches `*.spec.ts` repository-wide" -- and only one
+   * of the two directions was ever written down. This is the other.
+   *
+   * `tests/foundation/browser-suite-partition-contract.test.ts` is what keeps
+   * the pair honest from here: it fails when any spec in this directory would
+   * be collected by both configs or by neither.
+   */
+  testIgnore: /production-artifact\.spec\.ts$/,
   fullyParallel: false,
   workers: 1,
   forbidOnly: process.env['CI'] !== undefined,
