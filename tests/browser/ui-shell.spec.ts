@@ -3307,11 +3307,20 @@ test.describe('the Rooms panel', () => {
     expect(many.needsTotal).toBe('5');
     expect(many.needsLineText).toBe('Kitchen at 11, 10 is missing');
     expect(many.needsItemText).toEqual(['1 × Stove', '2 × Prep Counter', '3 × Fridge']);
-    // The block at its deepest still fits the panel, at the tightest viewport
-    // this suite visits. The *fold* is measured on the real page in
-    // `app-shell.spec.ts`, where the rail is not empty; what is measured here is
-    // that the block draws all of its lines rather than clipping them.
-    expect(many.needsHeight, 'the readout is too short to hold four lines').toBeGreaterThan(50);
+    /*
+     * The block at its deepest draws all four of its lines rather than clipping
+     * them: **measured at 100px** for the header, the room line and three object
+     * lines. The floor asserted is well under that on purpose -- what this
+     * guards is a block that has collapsed to nothing, not the exact figure,
+     * which legitimately moves with any restyle of the lines inside it.
+     *
+     * Whether 100px *fits the rail* is a different question and is not this
+     * suite's to answer: the harness leaves the rail's aside slot empty, so
+     * `.hud__aside:empty { display: none }` hands the panel the whole rail and a
+     * fold measured here would be measured against a rail no player has.
+     * `app-shell.spec.ts` answers that one, on the real page.
+     */
+    expect(many.needsHeight, 'the readout is too short to hold its four lines').toBeGreaterThan(60);
 
     /*
      * 5. **A shortfall the simulation could not count.** `missingQuantity` is

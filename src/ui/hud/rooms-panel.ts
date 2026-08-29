@@ -279,7 +279,51 @@ export interface RoomsPanel {
  *
  * ## The number, re-measured
  *
- * MEASURED_LIMIT_PLACEHOLDER
+ * Measured on the assembled page, every one of the five viewports the browser
+ * suite visits, with every one of the eighteen room types selected in turn
+ * (`app-shell.spec.ts`, "no room type in the catalogue pushes the Rooms panel
+ * past its fold"). Slack before the panel's last block crosses its fold, and
+ * the catalogue list's own slack above its one-row floor, which is what a block
+ * added here spends:
+ *
+ * | viewport | fold slack | catalogue-list slack |
+ * | --- | --- | --- |
+ * | 900x600, `room.kitchen` | **3.58px** | **0.0px** |
+ * | 900x600, `room.staff-room` | 7.89px | 8.9px |
+ * | 375x812 | 7.89px | 89.9px |
+ * | 1024x768 | 7.89px | 94.9px |
+ * | 1280x720 | 7.89px | 58.9px |
+ * | 1440x900 | 7.89px | 193.9px |
+ *
+ * **900x600 is the binding viewport and the phone is not**, which reverses the
+ * assumption this constant was raised under: at 375x812 the catalogue list has
+ * 89.9px to give and at 900x600 it has 8.9px, falling to nothing under the
+ * deepest room. The Rooms panel gets 451.1px of rail at 375x812 against 338.1px
+ * at 900x600, and that is the whole of the difference.
+ *
+ * The readout itself, at the deepest shape the shipped catalogue can produce --
+ * header, room line and three object lines -- **measures 100px**
+ * (`ui-shell.spec.ts`, case 4).
+ *
+ * ## So what this number is, exactly
+ *
+ * **Four: one more than the deepest shipped room, and it is a bound on future
+ * content rather than a fact about the rail.** That distinction matters, and
+ * the old comment's shape invited getting it wrong. Changing this constant
+ * changes nothing a player sees today, because no room authors more than three
+ * object requirements -- what renders is bounded by *content*, not by this. Its
+ * only job is to decide what happens when content grows past what the panel was
+ * measured against, and the choice is between truncating with `roomsNeedsItemMore`
+ * and drawing every line.
+ *
+ * Four rather than three, so a room given a fourth requirement is *drawn* and
+ * the fold assertion **fails naming that room**, rather than being quietly
+ * truncated to three and passing. #535 decision 2 is "show every missing item";
+ * a silent truncation is that decision being undone by a constant, and a loud
+ * failure is the owner finding out that the panel cannot take a fourth. The
+ * truncation still exists above four, for the pathological case
+ * `roomRequirementSchema` permits -- 32 requirements on one room would draw 34
+ * lines and destroy the panel -- and that is what a cap is for.
  *
  * ## Why a cap at all, when content cannot reach it
  *
