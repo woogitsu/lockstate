@@ -140,15 +140,52 @@ export const RENDER_ACTORS_WORD_BYTES = 4;
  * The population an actor belongs to, in the low byte of the packed-fields
  * word.
  *
- * One member today. Guards are the other population whose tiles the
- * simulation already holds, and ADR 0040 puts them in their own slice with
- * their own asset choice; the ordinal exists now so that adding them is a
- * value and not a layout change.
+ * `RENDER_ACTOR_POPULATION_GUARD` is the "later slice" this comment used to
+ * point at (ADR 0040 slice 2, landed alongside this sentence): guards are the
+ * second member, decoded in `actors-from-snapshot.ts` and encoded here in
+ * `render-actors-keyframe.ts`, with `actor.guard.base` as their asset id.
  */
 export const RENDER_ACTOR_POPULATION_PRISONER = 0;
 
+/**
+ * The guard population ordinal (ADR 0040 slice 2). Guards do not walk
+ * continuously the way ADR 0059 gave prisoners -- `patrol-system.ts` still
+ * moves a `GuardRecord.tileX`/`tileY` only on arrival -- so a guard record
+ * always carries zero velocity and zero heading; see
+ * `render-actors-keyframe.ts` for where that is written and
+ * `docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md`'s open
+ * question 4 for why that is a deliberate, separate decision from whether to
+ * draw them at all (`docs/research/2026-08-28-drawing-guards.md`).
+ */
+export const RENDER_ACTOR_POPULATION_GUARD = 1;
+
 /** The low byte of the packed-fields word. Bits 8-11 hold the heading; the remaining 20 bits are reserved and are written as zero. */
 export const RENDER_ACTOR_POPULATION_MASK = 0xff;
+
+/**
+ * A render-space actor id that cannot collide across populations.
+ *
+ * `packEntityId` uses the full 32 bits of a `u32` (20 index bits, 12
+ * generation bits) inside *one* `EntityStore`, and prisoners and guards are
+ * two different stores that both start handing out index 0 at generation 0
+ * (`src/simulation/runtime/new-session.ts`'s `actorIdentity` comment states
+ * the same fact for names: "`prisoners` and `securityGuards` each hand out id
+ * `0`"). So the raw wire/`GuardRecord` entity id is only unique *within* a
+ * population, and `ActorLayer` pools sprites in one `Map<number, …>` keyed by
+ * `RenderActor.id` across all of them. Composing the population into the id
+ * here -- rather than leaving two actors from different populations able to
+ * share a key -- is what stops a guard and a prisoner at index 0 from
+ * silently taking over one another's pooled sprite.
+ *
+ * `population * 2**32 + entityId` keeps every prisoner id exactly what it
+ * already was (`RENDER_ACTOR_POPULATION_PRISONER` is `0`, so the multiply is a
+ * no-op) and puts every other population in its own disjoint band above
+ * `2**32`, still a safe integer at these sizes and nowhere near
+ * `Number.MAX_SAFE_INTEGER`.
+ */
+export function composeRenderActorId(population: number, entityId: number): number {
+  return population * 2 ** 32 + entityId;
+}
 
 /**
  * The heading, as two biased two-bit signs in bits 8-9 and 10-11 of the

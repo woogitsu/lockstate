@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
-import { PRISONER_ACTOR_ASSET_ID } from '../../src/rendering/feed/actors-from-snapshot';
+import { GUARD_ACTOR_ASSET_ID, PRISONER_ACTOR_ASSET_ID } from '../../src/rendering/feed/actors-from-snapshot';
 import { SimulationSnapshotFeed } from '../../src/rendering/feed/simulation-snapshot-feed';
 import { WorldScene } from '../../src/rendering/scene/world-scene';
 import type { BuildToolPort, EditHistoryPort } from '../../src/rendering/build/edge-picking';
 import { LOCOMOTION_SUBTILE_UNITS } from '../../src/simulation/locomotion';
 import {
   packRenderActorFields,
+  RENDER_ACTOR_POPULATION_GUARD,
   RENDER_ACTOR_POPULATION_PRISONER,
   RENDER_ACTORS_CONTENT_TYPE,
   RENDER_ACTORS_SCHEMA_ID,
@@ -57,6 +58,8 @@ const CANVAS_PARENT_ID = 'actor-motion-harness-root';
 
 /** The entity id every published record carries. One actor is enough and makes the readback unambiguous. */
 const ACTOR_ENTITY_ID = 7;
+/** A distinct raw entity id for the guard record `publishGuard` writes. */
+const GUARD_ENTITY_ID = 70;
 
 function memoryStore(): KeyValueStore {
   const entries = new Map<string, string>();
@@ -192,9 +195,17 @@ requestAnimationFrame(countFrame);
 const ready = new Promise<void>((resolve) => {
   const poll = (): void => {
     const active = scene.sys?.isActive() === true;
-    if (active && scene.textures.getTextureKeys().some((key) => key.includes('actor.prisoner.base'))) {
-      resolve();
-      return;
+    // Both populations' atlases: `loadActorAtlases` registers every asset the
+    // generated registry names in one batch, so waiting on both rather than
+    // only the prisoner marker is a statement about that batch having finished
+    // rather than a new requirement `WorldScene` has to satisfy. `scene.textures`
+    // does not exist before `active`, so it is read only once `active` is true.
+    if (active) {
+      const keys = scene.textures.getTextureKeys();
+      if (keys.some((key) => key.includes(PRISONER_ACTOR_ASSET_ID)) && keys.some((key) => key.includes(GUARD_ACTOR_ASSET_ID))) {
+        resolve();
+        return;
+      }
     }
     requestAnimationFrame(poll);
   };
@@ -205,14 +216,45 @@ const ready = new Promise<void>((resolve) => {
 const ACTOR_TEXTURE_MARKER = PRISONER_ACTOR_ASSET_ID;
 
 function actorSprites(): readonly SpritePosition[] {
+  return spritesWithAsset(ACTOR_TEXTURE_MARKER);
+}
+
+/**
+ * Every drawn sprite whose texture key names `assetId` -- the atlas image URL
+ * `AtlasLibrary` resolves is `${basePath}/${assetId}.<clip>.png`
+ * (`atlas-library.ts`), so the asset id is always a substring of it, exactly
+ * like `ACTOR_TEXTURE_MARKER` already relies on for prisoners.
+ */
+function spritesWithAsset(assetId: string): readonly SpritePosition[] {
   const found: SpritePosition[] = [];
   for (const child of scene.children?.list ?? []) {
     const image = child as Phaser.GameObjects.Image;
-    if (typeof image.texture?.key !== 'string' || !image.texture.key.includes(ACTOR_TEXTURE_MARKER)) continue;
+    if (typeof image.texture?.key !== 'string' || !image.texture.key.includes(assetId)) continue;
     if (image.visible !== true) continue;
     found.push({ x: image.x, y: image.y });
   }
   return found;
+}
+
+/** Wraps one keyframe buffer in the envelope `publishActor`/`publishGuard` both send, so neither repeats it. */
+function emitKeyframe(tick: number, data: ArrayBuffer): void {
+  emit({
+    protocolVersion: SIMULATION_PROTOCOL_VERSION,
+    messageId: `delta-${String(tick)}`,
+    kind: 'simulation/delta',
+    payload: {
+      baseTick: tick - 1,
+      tick,
+      delta: {
+        schemaId: RENDER_ACTORS_SCHEMA_ID,
+        schemaVersion: RENDER_ACTORS_SCHEMA_VERSION,
+        transport: 'array-buffer',
+        contentType: RENDER_ACTORS_CONTENT_TYPE,
+        byteLength: data.byteLength,
+        data,
+      },
+    },
+  } as unknown as WorkerToMainMessage);
 }
 
 const harness: LockstateActorMotionHarness = {
@@ -227,24 +269,22 @@ const harness: LockstateActorMotionHarness = {
       Math.round(tilesPerSecond.x * LOCOMOTION_SUBTILE_UNITS),
       Math.round(tilesPerSecond.y * LOCOMOTION_SUBTILE_UNITS),
     );
-    const data = writer.finish();
-    emit({
-      protocolVersion: SIMULATION_PROTOCOL_VERSION,
-      messageId: `delta-${String(tick)}`,
-      kind: 'simulation/delta',
-      payload: {
-        baseTick: tick - 1,
-        tick,
-        delta: {
-          schemaId: RENDER_ACTORS_SCHEMA_ID,
-          schemaVersion: RENDER_ACTORS_SCHEMA_VERSION,
-          transport: 'array-buffer',
-          contentType: RENDER_ACTORS_CONTENT_TYPE,
-          byteLength: data.byteLength,
-          data,
-        },
-      },
-    } as unknown as WorkerToMainMessage);
+    emitKeyframe(tick, writer.finish());
+  },
+  publishGuard: (tick, tile) => {
+    // Zero heading, zero velocity: exactly what `render-actors-keyframe.ts`
+    // writes for a real `GuardRoster` entry, because a `GuardRecord` tile
+    // updates only on arrival (ADR 0059).
+    const writer = new RenderActorsKeyframeWriter(1);
+    writer.writeRecord(
+      GUARD_ENTITY_ID,
+      packRenderActorFields(RENDER_ACTOR_POPULATION_GUARD, 0, 0),
+      Math.round(tile.x * LOCOMOTION_SUBTILE_UNITS),
+      Math.round(tile.y * LOCOMOTION_SUBTILE_UNITS),
+      0,
+      0,
+    );
+    emitKeyframe(tick, writer.finish());
   },
   publishClock: (tick, mode) => {
     emit({
@@ -270,6 +310,8 @@ const harness: LockstateActorMotionHarness = {
   },
   publicationCount: () => publications,
   actorSprites,
+  spritesWithAsset,
+  unresolvedActorCount: () => scene.rendererStats.unresolvedActors,
   motionSamples: () => [...samples],
   resetSamples: () => {
     samples.length = 0;

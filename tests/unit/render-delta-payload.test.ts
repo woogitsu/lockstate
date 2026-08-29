@@ -4,12 +4,13 @@ import { describe, expect, it } from 'vitest';
 import {
   decodeRenderActorsPayload,
   packRenderActorFields,
+  RENDER_ACTOR_POPULATION_GUARD,
   RENDER_ACTOR_POPULATION_PRISONER,
   RenderActorsKeyframeWriter,
 } from '../../src/simulation/protocol/render-actors-payload';
-import { encodeRenderActorsKeyframe } from '../../src/simulation/worker/render-actors-keyframe';
+import { encodeRenderActorsKeyframe, type RenderGuardSource } from '../../src/simulation/worker/render-actors-keyframe';
 import { actorsFromDelta } from '../../src/rendering/feed/actors-from-delta';
-import { PRISONER_ACTOR_ASSET_ID } from '../../src/rendering/feed/actors-from-snapshot';
+import { GUARD_ACTOR_ASSET_ID, PRISONER_ACTOR_ASSET_ID } from '../../src/rendering/feed/actors-from-snapshot';
 import { LOCOMOTION_SUBTILE_UNITS, type WalkReading } from '../../src/simulation/locomotion';
 import { readRenderActorsPayload, writeRenderActorsPayload } from '../helpers/render-actors-reader';
 
@@ -82,6 +83,19 @@ function sourceOf(
 /** Twenty ticks a wall-clock second: the kernel's 50 ms step at speed 1. */
 const TICKS_PER_SECOND = 20;
 const SUB = LOCOMOTION_SUBTILE_UNITS;
+
+/** A stand-in `GuardRoster`, so the encoder's guard pass can be driven with literal tiles. */
+function guardSourceOf(guards: readonly { readonly id: number; readonly x: number; readonly y: number }[]): RenderGuardSource {
+  const byId = new Map(guards.map((guard) => [guard.id, guard]));
+  return {
+    allGuardIds: () => guards.map((guard) => guard.id),
+    getTile: (entityId: number) => {
+      const guard = byId.get(entityId);
+      if (guard === undefined) throw new Error(`No such guard ${String(entityId)}.`);
+      return { x: guard.x, y: guard.y };
+    },
+  };
+}
 
 describe('the render delta payload matches the layout ADR 0040 specifies', () => {
   it('keeps the hand-written reader independent of the module it checks', () => {
@@ -310,15 +324,73 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
         flags: 1,
         records: [
           { entityId: 5, packedFields: (0b0101 << 8) | 0, subX: SUB, subY: SUB, velocitySubX: 0, velocitySubY: 0 },
-          { entityId: 6, packedFields: (0b0101 << 8) | 1, subX: 2 * SUB, subY: 2 * SUB, velocitySubX: 0, velocitySubY: 0 },
+          // Population 2: no ADR reserves a meaning for it yet, unlike 0 (prisoner)
+          // and 1 (guard, ADR 0040 slice 2), which this build now recognises.
+          { entityId: 6, packedFields: (0b0101 << 8) | 2, subX: 2 * SUB, subY: 2 * SUB, velocitySubX: 0, velocitySubY: 0 },
         ],
         removed: [],
       }),
     );
 
-    // Population 1 is the ordinal ADR 0040 reserves for guards, whose asset
-    // choice is its own slice. Drawing them as prisoners would be the wrong art
-    // on screen with nothing reporting it.
+    // A population this build has no art for is dropped rather than drawn as a
+    // prisoner or made to blank the whole payload -- see actors-from-delta.ts's
+    // "Why an unknown population is dropped rather than drawn".
     expect(actorsFromDelta(decoded).map((actor) => actor.id)).toEqual([5]);
+  });
+
+  it('decodes population 1 as a guard, with its own asset id and its own id band (ADR 0040 slice 2)', () => {
+    const decoded = decodeRenderActorsPayload(
+      writeRenderActorsPayload({
+        layoutVersion: 2,
+        flags: 1,
+        records: [
+          { entityId: 5, packedFields: (0b0101 << 8) | RENDER_ACTOR_POPULATION_PRISONER, subX: SUB, subY: SUB, velocitySubX: 0, velocitySubY: 0 },
+          // Same raw entity id as the prisoner above: a guard and a prisoner
+          // each come from their own `EntityStore` and can share a raw id.
+          { entityId: 5, packedFields: (0b0101 << 8) | RENDER_ACTOR_POPULATION_GUARD, subX: 9 * SUB, subY: 4 * SUB, velocitySubX: 0, velocitySubY: 0 },
+        ],
+        removed: [],
+      }),
+    );
+
+    const actors = actorsFromDelta(decoded);
+    expect(actors).toHaveLength(2);
+    expect(actors[0]).toMatchObject({ assetId: PRISONER_ACTOR_ASSET_ID, tileX: 1, tileY: 1 });
+    expect(actors[1]).toMatchObject({ assetId: GUARD_ACTOR_ASSET_ID, tileX: 9, tileY: 4 });
+    // The whole point of composing the id: sharing a raw entity id must not
+    // collide into one pooled sprite in `ActorLayer`'s `Map<number, …>`.
+    expect(actors[0]!.id).not.toBe(actors[1]!.id);
+  });
+
+  it("encodes a guard roster's tiles onto the same keyframe, at the guard population ordinal", () => {
+    const buffer = encodeRenderActorsKeyframe(
+      sourceOf([{ id: 1, x: 0, y: 0 }]),
+      TICKS_PER_SECOND,
+      guardSourceOf([
+        { id: 10, x: 6, y: 2 },
+        { id: 11, x: 1, y: 8 },
+      ]),
+    );
+
+    const read = readRenderActorsPayload(buffer);
+    expect(read.recordCount).toBe(3);
+    const guardRecords = read.records.slice(1);
+    expect(guardRecords.map((record) => record.entityId)).toEqual([10, 11]);
+    expect(guardRecords.map((record) => record.packedFields & 0xff)).toEqual([
+      RENDER_ACTOR_POPULATION_GUARD,
+      RENDER_ACTOR_POPULATION_GUARD,
+    ]);
+    expect(guardRecords.map((record) => [record.subX, record.subY])).toEqual([
+      [6 * SUB, 2 * SUB],
+      [1 * SUB, 8 * SUB],
+    ]);
+    // A guard's tile updates only on arrival (no `LocomotionStore` reading for
+    // guards, ADR 0059), so every guard record is motionless on the wire.
+    expect(guardRecords.every((record) => record.velocitySubX === 0 && record.velocitySubY === 0)).toBe(true);
+  });
+
+  it('omits the guards entirely when the caller passes none, exactly as it did before slice 2', () => {
+    const buffer = encodeRenderActorsKeyframe(sourceOf([{ id: 1, x: 0, y: 0 }]), TICKS_PER_SECOND);
+    expect(readRenderActorsPayload(buffer).recordCount).toBe(1);
   });
 });

@@ -24,6 +24,16 @@ export interface LockstateActorMotionHarness {
    * as tiles and are converted to the payload's sub-tile units in the page.
    */
   publishActor(tick: number, tile: { readonly x: number; readonly y: number }, tilesPerSecond: { readonly x: number; readonly y: number }): void;
+  /**
+   * Publishes one guard record on the same `simulation/delta` channel
+   * (ADR 0040 slice 2), at the guard population ordinal, motionless -- exactly
+   * what `render-actors-keyframe.ts` writes for a real `GuardRoster` entry.
+   *
+   * The one thing a headless test cannot show: whether `actor.guard.base`'s
+   * git-LFS atlas actually decodes and whether `ActorLayer` actually places a
+   * sprite from it, as opposed to counting the record `unresolved`.
+   */
+  publishGuard(tick: number, tile: { readonly x: number; readonly y: number }): void;
   /** Tells the feed the clock is running or paused, as an unsolicited `simulation/clock-state` would. */
   publishClock(tick: number, mode: 'running' | 'paused'): void;
   /**
@@ -46,6 +56,15 @@ export interface LockstateActorMotionHarness {
   publicationCount(): number;
   /** Every actor sprite currently on the display list, in the order Phaser holds them. */
   actorSprites(): readonly SpritePosition[];
+  /**
+   * Every currently-drawn sprite whose texture key names this logical asset
+   * id -- the generic form `actorSprites()` cannot be, since that reads the
+   * prisoner marker specifically. Used to tell a guard sprite from a prisoner
+   * sprite on the same display list.
+   */
+  spritesWithAsset(assetId: string): readonly SpritePosition[];
+  /** `ActorLayer.stats.unresolved`: records this build could not find art for. Zero is the claim a drawn guard needs. */
+  unresolvedActorCount(): number;
   /**
    * Where the first actor sprite was on every frame drawn since `resetSamples`,
    * captured **in the page**.

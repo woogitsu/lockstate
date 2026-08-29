@@ -9,7 +9,8 @@ import {
   captureSessionSnapshot,
   type SessionSnapshotBundle,
 } from '../../src/simulation/runtime/restore-session';
-import { PRISONER_ACTOR_ASSET_ID, actorsFromSnapshot } from '../../src/rendering/feed/actors-from-snapshot';
+import { GUARD_ACTOR_ASSET_ID, PRISONER_ACTOR_ASSET_ID, actorsFromSnapshot } from '../../src/rendering/feed/actors-from-snapshot';
+import { constantDeploymentSchedule, createGradedDoor } from '../../src/simulation/security';
 import { DemoActorFeed, isDemoActorsRequested } from '../../src/rendering/feed/demo-actor-feed';
 import { EMPTY_RENDER_FRAME, type RenderFeed } from '../../src/rendering/feed/render-feed';
 import {
@@ -1045,5 +1046,80 @@ describe('actors from a session snapshot', () => {
       readFileSync(new URL('../../public/assets/actors/asset-registry.json', import.meta.url), 'utf8'),
     ) as { readonly assets: readonly { readonly assetId: string }[] };
     expect(registry.assets.map((asset) => asset.assetId)).toContain(PRISONER_ACTOR_ASSET_ID);
+  });
+});
+
+/**
+ * ADR 0040 slice 2, issue #414's surviving half: guards decoded off the real
+ * hiring and posting path, not off a hand-built `GuardRecord` (#375 -- a
+ * fixture that supplies the very state the test then measures proves nothing).
+ * Every prison below hires through `GuardRoster.hire`, the real production
+ * entry point `StaffHiringService` also calls, and reaches its post by
+ * stepping the real `DeploymentSystem`/`PatrolSystem`/navigation stack, exactly
+ * as `tests/unit/new-session-runtime.test.ts`'s own security test does.
+ */
+describe('guards from a session snapshot (ADR 0040 slice 2)', () => {
+  function prisonWithAGuardOnPost(): { runtime: SimulationRuntime; guardId: number; postTile: { x: number; y: number } } {
+    const runtime = createNewSimulationRuntime(11);
+    const doorPosition = { x: tileCoordinate(2), y: tileCoordinate(1) };
+    runtime.navigation.doors.register(createGradedDoor('door-1', doorPosition, 'left', 'open', 'grade.general'));
+    const postTile = { x: tileCoordinate(3), y: tileCoordinate(1) };
+    runtime.securitySectors.register({ id: 'sector-1', gradeId: 'grade.general', doorIds: ['door-1'], postTile });
+    runtime.securitySchedules.push(constantDeploymentSchedule('sector-1', 1));
+
+    const guardId = runtime.securityGuards.hire('staff-role.guard', { x: tileCoordinate(0), y: tileCoordinate(0) });
+    for (let i = 0; i < 200 && runtime.securityGuards.getDeploymentPhase(guardId) !== 'on-post'; i += 1) {
+      runtime.kernel.step();
+    }
+    expect(runtime.securityGuards.getDeploymentPhase(guardId)).toBe('on-post');
+    return { runtime, guardId, postTile: { x: postTile.x, y: postTile.y } };
+  }
+
+  it('draws a hired, posted guard at the tile the real deployment stack actually walked it to', () => {
+    const { runtime, postTile } = prisonWithAGuardOnPost();
+    const bundle = captureSessionSnapshot(runtime);
+    const actors = actorsFromSnapshot(bundle.simulation, bundle.entities);
+
+    // The derived default sector (ADR 0036) also wants a guard and gets none,
+    // so exactly one guard actor is on the frame -- this test's own hire.
+    const guards = actors.filter((actor) => actor.assetId === GUARD_ACTOR_ASSET_ID);
+    expect(guards).toHaveLength(1);
+    expect(guards[0]).toMatchObject({ tileX: postTile.x, tileY: postTile.y, deltaX: 0, deltaY: 0 });
+    expect(Object.hasOwn(guards[0]!, 'facing')).toBe(false);
+  });
+
+  it('draws a prisoner and a posted guard on the same frame, each with its own art', () => {
+    const { runtime } = prisonWithAGuardOnPost();
+    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 900, priorIncidents: 0 }, { x: tileCoordinate(6), y: tileCoordinate(6) });
+
+    const bundle = captureSessionSnapshot(runtime);
+    const actors = actorsFromSnapshot(bundle.simulation, bundle.entities);
+
+    expect(actors.map((actor) => actor.assetId).sort()).toEqual([GUARD_ACTOR_ASSET_ID, PRISONER_ACTOR_ASSET_ID]);
+  });
+
+  it("gives the guard and the prisoner different ids even though each population's own EntityStore starts at index 0", () => {
+    const { runtime } = prisonWithAGuardOnPost();
+    // The prisoner admitted here is index 0 of `prisoners.entityStore`, exactly
+    // like the guard hired in `prisonWithAGuardOnPost` is index 0 of
+    // `securityGuards.entityStore` -- the collision `composeRenderActorId`
+    // exists to prevent (`render-actors-payload.ts`).
+    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 900, priorIncidents: 0 }, { x: tileCoordinate(6), y: tileCoordinate(6) });
+
+    const bundle = captureSessionSnapshot(runtime);
+    const actors = actorsFromSnapshot(bundle.simulation, bundle.entities);
+    const ids = actors.map((actor) => actor.id);
+
+    expect(new Set(ids).size).toBe(ids.length);
+    // `ActorLayer` pools sprites in one `Map<number, …>` keyed by this id, so a
+    // collision here would mean one sprite silently jumping between the two.
+  });
+
+  it('draws guard art the shipped atlas batch actually publishes', () => {
+    expect(GUARD_ACTOR_ASSET_ID).toBe('actor.guard.base');
+    const registry = JSON.parse(
+      readFileSync(new URL('../../public/assets/actors/asset-registry.json', import.meta.url), 'utf8'),
+    ) as { readonly assets: readonly { readonly assetId: string }[] };
+    expect(registry.assets.map((asset) => asset.assetId)).toContain(GUARD_ACTOR_ASSET_ID);
   });
 });

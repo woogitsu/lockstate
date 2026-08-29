@@ -22,8 +22,9 @@ import { readRenderActorsPayload } from '../helpers/render-actors-reader';
  * ADR 0009 makes deterministic replay a product guarantee: a seed plus a
  * command stream *is* the run. This channel is a new thing that happens inside
  * the worker that owns the kernel, on a wall-clock timer, up to ten times a
- * second, and it reaches into the entity store's liveness ledger and the
- * prisoner position SoA to do its work. If any of that walked state
+ * second, and it reaches into the entity store's liveness ledger, the
+ * prisoner position SoA and the live `GuardRoster` (ADR 0040 slice 2) to do
+ * its work. If any of that walked state
  * destructively -- an accessor that advanced a generation, a lazily rebuilt
  * index that is not equivalent -- then the mere act of *showing the player
  * where their prisoners are* would change the simulation, and it would do so
@@ -174,9 +175,11 @@ describe('publishing a render delta cannot change the simulation', () => {
     // cadence permits rather than whatever the timing happened to allow.
     expect(published.publications()).toHaveLength(WAKES);
     // And each publication really carried the population, so the reads under
-    // test were actually performed. `buildDeterminismScenario` admits four.
+    // test were actually performed. `buildDeterminismScenario` admits four
+    // prisoners and hires five guards (ADR 0040 slice 2 puts both on this
+    // channel), so every keyframe carries nine records throughout the run.
     for (const publication of published.publications()) {
-      expect(readRenderActorsPayload(publication.payload.delta.data).recordCount).toBe(4);
+      expect(readRenderActorsPayload(publication.payload.delta.data).recordCount).toBe(9);
     }
 
     expect(hashOf(publishedEnd)).toBe(hashOf(bare));

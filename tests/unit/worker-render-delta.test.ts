@@ -24,7 +24,12 @@ import {
 } from '../../src/simulation/worker/state-machine';
 import { buildDeterminismScenario, SCENARIO_SEED } from '../helpers/determinism-scenario';
 import { createWalkReading, LOCOMOTION_SUBTILE_UNITS } from '../../src/simulation/locomotion';
-import { packRenderActorFields, RENDER_ACTOR_POPULATION_PRISONER } from '../../src/simulation/protocol/render-actors-payload';
+import {
+  packRenderActorFields,
+  RENDER_ACTOR_POPULATION_GUARD,
+  RENDER_ACTOR_POPULATION_PRISONER,
+  RENDER_ACTORS_SUBTILE_UNITS,
+} from '../../src/simulation/protocol/render-actors-payload';
 import { readRenderActorsPayload, type ReadRenderActorRecord } from '../helpers/render-actors-reader';
 
 /**
@@ -137,6 +142,21 @@ function scenarioActors(runtime: SimulationRuntime): readonly ReadRenderActorRec
       velocitySubY: reading.velocitySubY * TICKS_PER_WALL_SECOND,
     });
   }
+  // Guards, after every prisoner: `encodeRenderActorsKeyframe` writes the
+  // prisoner pass then the guard pass (ADR 0040 slice 2), and a guard's tile
+  // updates only on arrival, so it is read straight off the roster rather
+  // than through `LocomotionStore`.
+  for (const guardId of runtime.securityGuards.allGuardIds()) {
+    const tile = runtime.securityGuards.getTile(guardId);
+    actors.push({
+      entityId: guardId,
+      packedFields: packRenderActorFields(RENDER_ACTOR_POPULATION_GUARD, 0, 0),
+      subX: tile.x * RENDER_ACTORS_SUBTILE_UNITS,
+      subY: tile.y * RENDER_ACTORS_SUBTILE_UNITS,
+      velocitySubX: 0,
+      velocitySubY: 0,
+    });
+  }
   return actors;
 }
 
@@ -169,15 +189,27 @@ describe('the worker publishes a render delta', () => {
 
     // And a literal, so the comparison above cannot be satisfied by two empty
     // sets or by the same wrong tile read twice. `buildDeterminismScenario`
-    // admits four prisoners, at these origins.
-    expect(read.recordCount).toBe(4);
+    // admits four prisoners, at these origins, and hires five guards
+    // (`tests/helpers/determinism-scenario.ts`) who stay unassigned at the
+    // origin for this harness's short run -- ADR 0040 slice 2 puts them on the
+    // same keyframe, after every prisoner.
+    expect(read.recordCount).toBe(9);
     // In sub-tile units, which is what layout 2 carries.
     expect(read.records.map((record) => [record.subX / LOCOMOTION_SUBTILE_UNITS, record.subY / LOCOMOTION_SUBTILE_UNITS])).toEqual([
       [1, 1],
       [2, 1],
       [3, 1],
       [1, 2],
+      [0, 0],
+      [0, 0],
+      [0, 0],
+      [0, 0],
+      [0, 0],
     ]);
+    // The population byte tells the two apart on the wire, since their tiles
+    // alone would not: the low byte is 0 (prisoner) for the first four records
+    // and 1 (guard) for the five that follow.
+    expect(read.records.map((record) => record.packedFields & 0xff)).toEqual([0, 0, 0, 0, 1, 1, 1, 1, 1]);
   });
 
   it('sends an envelope that the main thread decoder accepts', () => {

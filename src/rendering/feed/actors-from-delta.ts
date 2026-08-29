@@ -1,4 +1,6 @@
 import {
+  composeRenderActorId,
+  RENDER_ACTOR_POPULATION_GUARD,
   RENDER_ACTOR_POPULATION_PRISONER,
   RENDER_ACTORS_SUBTILE_UNITS,
   renderActorHeadingX,
@@ -7,8 +9,14 @@ import {
   type RenderActorsPayload,
 } from '../../simulation/protocol/render-actors-payload';
 import { DEFAULT_FACING, directionFromMovement } from '../assets/direction';
-import { PRISONER_ACTOR_ASSET_ID } from './actors-from-snapshot';
+import { GUARD_ACTOR_ASSET_ID, PRISONER_ACTOR_ASSET_ID } from './actors-from-snapshot';
 import type { MutableRenderActor } from './render-feed';
+
+/** Every population ordinal this build has authored art for, and the asset id it draws with. */
+const KNOWN_POPULATION_ASSETS: ReadonlyMap<number, string> = new Map([
+  [RENDER_ACTOR_POPULATION_PRISONER, PRISONER_ACTOR_ASSET_ID],
+  [RENDER_ACTOR_POPULATION_GUARD, GUARD_ACTOR_ASSET_ID],
+]);
 
 /**
  * The renderer's view of a `simulation/delta` keyframe.
@@ -53,22 +61,36 @@ import type { MutableRenderActor } from './render-feed';
  *
  * ### Why an unknown population is dropped rather than drawn
  *
- * ADR 0040 reserves the packed-fields word's low byte for the population and
- * puts guards in a later slice. A build that has not learned an ordinal has no
- * asset for it, and the alternatives to dropping are both worse: drawing it as
- * a prisoner would put the wrong art on screen with nothing reporting it, and
+ * ADR 0040 reserves the packed-fields word's low byte for the population.
+ * This paragraph used to say ADR 0040 "puts guards in a later slice", and this
+ * function recognised only the prisoner ordinal accordingly. ADR 0040 slice 2
+ * is that later slice, and `RENDER_ACTOR_POPULATION_GUARD` is now in
+ * `KNOWN_POPULATION_ASSETS` beside the prisoner ordinal. **The refusal this
+ * paragraph states is unchanged by adding a second known ordinal** -- it was
+ * never "every population but the first is dropped", it was "a population
+ * this build has no asset for is dropped", and a third, fourth or later
+ * population still falls through `KNOWN_POPULATION_ASSETS` the same way the
+ * second used to: a build that has not learned an ordinal has no asset for
+ * it, and the alternatives to dropping are both worse: drawing it as a
+ * prisoner would put the wrong art on screen with nothing reporting it, and
  * refusing the whole payload would blank a prison over one unknown record.
  */
 export function actorsFromDelta(payload: RenderActorsPayload): MutableRenderActor[] {
   const actors: MutableRenderActor[] = [];
   for (let record = 0; record < payload.recordCount; record += 1) {
     const packedFields = payload.packedFields[record]!;
-    if (renderActorPopulation(packedFields) !== RENDER_ACTOR_POPULATION_PRISONER) continue;
+    const population = renderActorPopulation(packedFields);
+    const assetId = KNOWN_POPULATION_ASSETS.get(population);
+    if (assetId === undefined) continue;
     const headingX = renderActorHeadingX(packedFields);
     const headingY = renderActorHeadingY(packedFields);
     actors.push({
-      id: payload.entityIds[record]!,
-      assetId: PRISONER_ACTOR_ASSET_ID,
+      // `composeRenderActorId` folds the population into the id: the wire's
+      // entity id is only unique *within* one population's `EntityStore`, and
+      // prisoners and guards are two different stores that both start at
+      // index 0 -- see its own comment in `render-actors-payload.ts`.
+      id: composeRenderActorId(population, payload.entityIds[record]!),
+      assetId,
       tileX: payload.subX[record]! / RENDER_ACTORS_SUBTILE_UNITS,
       tileY: payload.subY[record]! / RENDER_ACTORS_SUBTILE_UNITS,
       deltaX: payload.velocitySubX[record]! / RENDER_ACTORS_SUBTILE_UNITS,
