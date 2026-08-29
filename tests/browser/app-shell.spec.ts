@@ -6743,6 +6743,14 @@ test.describe('the assembled application', () => {
    * `occupiesEdge: false` for this row and agreed with the composition root
    * while both were wrong.
    *
+   * **This file has no fixture and never had one**, which is the point of it.
+   * `occupiesEdge` appears in this spec only inside this sentence and the one
+   * above; the row shapes come from `src/main.ts` at boot. The two browser
+   * specs are therefore not interchangeable, and a reader deciding where to add
+   * the next assertion about a catalogue row wants that distinction: pin what
+   * the *panel* does with a shape in `ui-shell.spec.ts`, and what the
+   * *application* claims the shape is here.
+   *
    * A wall first, deliberately. The panel retains one edge across selections,
    * so choosing *West* on a wall and then selecting the door is exactly the
    * sequence that used to submit a west door with nothing on screen saying so.
