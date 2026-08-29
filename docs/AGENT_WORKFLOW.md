@@ -160,6 +160,30 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   tests flake under contention and this repository has measured it: identical
   clean trees gave 9, 5 and 5 failures, every one a `Test timed out in 5000ms`.
   A cheap grep now beats a contended measurement.
+- **A `beforeEach` that times out loading the page is arithmetic, not a
+  judgement call.** On 2026-08-29 a `main` run failed
+  `ui-shell.spec.ts` at `page.waitForFunction(() => 'lockstateUiHarness' in window)`
+  after 60 s -- `1 failed, 245 passed`. The merged change had edited
+  `tests/browser/ui-harness.ts`, so "the harness is broken" was the obvious
+  reading and it was wrong: **if that module threw at load, the global would
+  never appear and all 246 tests in the file would fail, not one.** The count
+  settles it without a re-run and without an argument. Apply the same shape to
+  any failure in shared setup: ask what the blast radius of the suspected cause
+  would be, and compare it to the blast radius you actually see.
+- **Merge one pull request at a time, and let its `main` CI run finish before
+  merging the next.** Two merges two minutes apart start two `main` runs, which
+  execute **two full browser suites simultaneously** across the two self-hosted
+  runners; the second suite's page boot then exceeds the 60 s test timeout. That
+  is what produced the false red above. Nothing enforces this -- it is a habit,
+  and four minutes of waiting is much cheaper than a root-cause pass on a red
+  `main`, which also stops publication (`deploy.yml` fires on CI completion).
+- **Never edit a source file while a Playwright run is live.** Vite serves
+  `src/**` with HMR, so the edit is pushed into the running page: a keyboard
+  walk loses focus mid-test and the run dies somewhere unrelated to both the old
+  code and the new. This is the *active* form of the baseline rule two bullets
+  up -- that one is about reading your edits, this one is about the browser
+  reacting to them. A ten-minute run was lost to it on 2026-08-29 and the
+  failure was briefly mistaken for a real one.
 - **A change that breaks fixtures breaks them wherever they live.** ADR 0045's
   refusal turned about 104 tests red in 16 files; the agent fixed those and
   missed `tests/browser/app-shell.spec.ts`, because it could not run the browser
