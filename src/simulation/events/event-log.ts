@@ -145,9 +145,9 @@ export class SimulationEventLog {
    * **A `switch` over `IncidentType` rather than a lookup**, because the
    * union's members do not all carry the same figure -- see the schemas in
    * `src/simulation/protocol/types.ts` for why only the riot carries
-   * `participantCount` -- and because exhaustiveness here is what matters: a
-   * fifth
-   * `IncidentType` fails to compile in this method until somebody has decided
+   * `participantCount` -- and because exhaustiveness here is what
+   * matters: a fifth `IncidentType` fails to compile in this method until
+   * somebody has decided
    * what the prison says when it opens, which is the same guarantee
    * `EVENT_PRESENTATION` gives on the other side of the wire.
    *
