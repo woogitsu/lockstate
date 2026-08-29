@@ -152,7 +152,19 @@ const UNGATED_BY_ANY_ACTION: Readonly<Record<string, string>> = {
   'medical-supply': 'Declared by `object.medicine-cabinet`, required by `room.infirmary`. No action treats or medicates a prisoner; the health/treatment system that would gate on it does not exist.',
   'medical-treatment': "Declared by `object.medical-bed`, required by `room.infirmary`. It is load-bearing in the containment join and `src/simulation/construction/definition.ts` explains the asymmetry it produces -- a plain `object.bed` cannot satisfy an infirmary's requirement while a medical bed can satisfy a cell's -- but no action names it, so nothing a prisoner does depends on it.",
   seating: "Declared by `object.chair` and `object.bench`. Not gated on by any action, and the near miss is recorded in `src/simulation/construction/definition.ts`: a bench declares `'seating'` and `'recreation'` and **not** `'dining'`, so a canteen's dining capacity comes from its tables and its benches bound nothing. Whether a bench should carry `'dining'` is left open there deliberately (#326) and is a content decision, not this gate's to make.",
-  shower: "Declared by `object.shower-head`. The action that would gate on it gates on `hygiene` instead -- `action.wash` names `hygiene`, which `object.sink` also declares -- so `'shower'` distinguishes a shower head from a sink for nothing that currently asks.",
+  // **This reason named an action that has never existed**, and the correction
+  // is kept in both directions per `docs/AGENT_WORKFLOW.md` section 4. It read:
+  // *"The action that would gate on it gates on `hygiene` instead --
+  // `action.wash` names `hygiene`, which `object.sink` also declares."* Every
+  // clause of that is true except the name: there is no `action.wash` anywhere
+  // in `src/`, and the entry gating on `'hygiene'` is `action.shower`
+  // (`src/simulation/prisoners/actions.ts`). Dated rather than merely noticed
+  // -- `git log -S` puts `id: 'action.shower'` in the tree at b270495
+  // (2026-08-23) and this sentence at bccdf58 (2026-08-27), and the first is an
+  // ancestor of the second -- so it is that section's other case: **a claim
+  // that was false the day it was written**, not one that rotted. Found while
+  // gating `room.kitchen` (#532) and corrected there rather than handed on.
+  shower: "Declared by `object.shower-head`. The action that would gate on it gates on `hygiene` instead -- `action.shower` names `hygiene`, which `object.sink` also declares -- so `'shower'` distinguishes a shower head from a sink for nothing that currently asks.",
   surveillance: "Declared by `object.security-console`, required by `room.security-office`. `src/simulation/construction/definition.ts` lists it among the ungated five and names a security-deployment system as what would consume it. It is also the capability that makes the desk/console asymmetry work, which that comment sets out in full.",
   'utility-control': "Declared by `object.utility-panel`, required by `room.utility-room`. Listed in `src/simulation/construction/definition.ts` among the capabilities gated by nothing, with a maintenance job system named as what would consume it.",
   'waste-disposal': "Declared by `object.waste-bin`, required by `room.garbage-room`. Listed in `src/simulation/construction/definition.ts` among the capabilities gated by nothing.",
