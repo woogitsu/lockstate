@@ -72,8 +72,37 @@ export interface ActionDefinition {
  */
 export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
   {
+    /*
+     * **`safety` is no longer one of this action's effects** (issue #588, the
+     * owner's ruling on issue #599). It carried `safety: 0.2` -- twenty times
+     * the decay rate of the day -- which made a bed, and not a guard, the
+     * thing that kept a prisoner safe. Two consequences were measured before
+     * it was removed:
+     *
+     * - Any prisoner with a furnished cell sat at 237 or above for ever
+     *   (`tests/integration/room-gated-needs.test.ts`), so the state's
+     *   40-per-unmet-need withholding never once fired on `safety` in a prison
+     *   that had built cells. The ruling's own reading of the old numbers --
+     *   40 permanently withheld and no play able to move it -- has the sign
+     *   the wrong way round; see `NEED_DECAY_PER_TICK` in `./needs.ts`.
+     * - `sampleSectorRisk` already records the same fact from the other side:
+     *   its `needsPressure` term *"used to be the `safety` deficit alone,
+     *   which `action.sleep` restores twenty times faster than it decays, so
+     *   the term was pinned near zero for anybody with a bed"*
+     *   (`src/simulation/incidents/sector-risk.ts`). It measured homelessness.
+     *
+     * The ruling makes coverage the instrument for `safety`, and an
+     * instrument that a bed overrides twenty to one is not one. Sleeping still
+     * restores `sleep`; being guarded restores `safety`
+     * (`SafetyCoverageSystem`).
+     *
+     * **This is a change to an existing entry's effects and not an insertion**,
+     * so no index in this array moves and the paragraph above this array about
+     * appending does not apply: every in-flight action in every existing save
+     * still decodes to the action it was.
+     */
     id: 'action.sleep', category: 'sleep', target: { kind: 'own-accommodation' },
-    requiredObjectCapability: 'sleep-surface', needEffectsPerTick: { sleep: 2, safety: 0.2 }, minDurationTicks: 200,
+    requiredObjectCapability: 'sleep-surface', needEffectsPerTick: { sleep: 2 }, minDurationTicks: 200,
   },
   {
     id: 'action.eat-meal', category: 'meal', target: { kind: 'room-catalog-id', roomCatalogId: 'room.canteen' },
@@ -92,6 +121,25 @@ export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
     requiredObjectCapability: 'hygiene', needEffectsPerTick: { hygiene: 4 }, minDurationTicks: 30,
   },
   {
+    /*
+     * **`safety: 0.1` stays**, and the asymmetry with `action.sleep` above is
+     * deliberate rather than an oversight (issue #588). Two reasons, and the
+     * second is the load-bearing one:
+     *
+     * - It is dominated rather than dominant. A yard session is about 212
+     *   ticks of an in-game day (`tests/integration/room-gated-needs.test.ts`
+     *   measures 2,116 over ten days), so it returns about 21 levels a day
+     *   against the 120 `safety` now loses -- a top-up a prison that built a
+     *   yard gets, not an override of what coverage decides.
+     * - It is what orders this action above `action.common-room-recreation`
+     *   for a prisoner whose `recreation` is already full.
+     *   `tests/integration/yard-and-common-room.test.ts` drives both scores
+     *   over the whole grid of `recreation` x `safety` levels and pins the
+     *   yard at or above the common room everywhere, with equality **only**
+     *   where both deficits are zero. Dropping the term would make the two
+     *   actions tie wherever `recreation` alone is full, which is a change to
+     *   what a prisoner does rather than to what a need means.
+     */
     id: 'action.yard-recreation', category: 'recreation', target: { kind: 'room-catalog-id', roomCatalogId: 'room.yard' },
     needEffectsPerTick: { recreation: 3, safety: 0.1 }, minDurationTicks: 100,
   },
