@@ -49,7 +49,58 @@ tile (16,16) = `NEW_PRISON_ORIGIN_TILE` (`src/main.ts:606`). The `(-224,-512)`
 carried in the previous brief is that same rule at a 1600x1024 viewport, so it
 was right and not portable.
 
-## 1. The route dead-ends, and the game does not say so
+## 1. The route dead-ends -- and **the game does say so**
+
+> **CORRECTED 2026-08-29, hours after this record was first written, by the
+> author.** The heading of this section read *"and the game does not say so"*
+> and the section concluded that the refusal never reaches the player. **That
+> conclusion was false when it was written.** Both directions are kept below
+> rather than overwritten, because what this record is worth is mostly the
+> shape of the mistake.
+>
+> The refusal reaches a full-width band directly under the status strip.
+> Measured on unmodified `origin/main` at `4c18bc4`, same gesture, in a
+> worktree cut for the check:
+>
+>     BAND: {"hiddenAttr":false,"offsetParentNull":false,
+>            "box":{"w":1440,"h":32,"x":0,"y":48},
+>            "text":"The room was not zoned — this room type must be enclosed,
+>                    and the area you drew is open on at least one side.",
+>            "role":"status"}
+>     WHOLE HUD innerText contains the sentence? true
+>
+> and at the binding 900x600 viewport, `{"box":{"w":900,"h":32,"x":0,"y":48}}`,
+> same sentence, same answer. `.hud__refusal` carries `role="status"` and
+> `aria-live="polite"` and does **not** auto-dismiss (`src/ui/hud/hud.ts`: "a
+> message that clears itself on a timer is a race against how fast the player
+> reads").
+>
+> Everything measured below is still true. The 0x0 alerts row is real; so is
+> the badge-less folded header. What is false is the inference drawn from
+> them, and it is false because **both were already known and the band is the
+> fix for them**. `tests/browser/ui-shell.spec.ts`'s #220 block says so in its
+> own words: "#220 measured the alerts list and found it invisible in two
+> independent ways -- `hud.css` drops `.hud__corner` at 720px and below, and
+> the alerts section starts folded (`INITIAL_HUD_SHELL_STATE`) so the row is
+> `offsetParent === null` with a 0x0 box even at 1280x800 -- and moved exactly
+> one sentence out of it."
+>
+> **The mechanical reason it was missed, which is the transferable part.** The
+> playtest sampled the HUD region by region -- `.hud-strip`, `.hud-rooms`,
+> `.hud-build`, `.hud-minimap`, `.hud-alerts__list` -- and never printed
+> `.hud` itself at the moment of a refusal. `.hud__refusal` is a direct child
+> of `.hud` and belongs to none of those regions, so it fell outside every
+> selector while standing 32 pixels tall across the whole screen. A survey
+> that enumerates known regions cannot find a message in a region it did not
+> know about: **print the container, not the parts, at least once at the
+> instant the thing under test happens.**
+>
+> `agent/569-alerts-badge` carries a badge implementation and its full revert;
+> the branch is a no-op against `main` and exists only so the attempt and the
+> retraction are both in history.
+
+### What was originally claimed, kept for the record
+
 
 Rooms tab -> Cell -> "Draw on map" -> drag a 4x4 rectangle -> "Designate 4 × 4".
 
@@ -87,9 +138,15 @@ Zero by zero. Three facts explain it, and none of them is a mistake on its own:
 3. Nothing un-folds it. The only `set-panel-collapsed` for `'alerts'` anywhere
    in `src/` is the header's own toggle (`src/ui/hud/hud.ts:1244`).
 
-So the whole refusal channel -- exactly forty reasons in `REFUSAL_LABEL_KEYS`,
-`src/ui/simulation-alerts.ts:33-73` -- is dark for a player who has not
+So the whole refusal *list* -- exactly forty reasons in `REFUSAL_LABEL_KEYS`,
+`src/ui/simulation-alerts.ts:33-73` -- is folded for a player who has not
 happened to open a box that never asks to be opened.
+
+**This paragraph originally said the refusal *channel* was "dark", and that is
+the false sentence the correction above retracts.** The list is folded; the
+channel is not the list. Every refusal also reaches `.hud__refusal`, which is
+on screen at every viewport without being opened, and that band is precisely
+what #220 added after measuring this same 0x0 row.
 
 **What would establish the cause:** the three lines above are the mechanism and
 are opened; nothing further is needed for *why the row is 0x0*.
@@ -212,12 +269,37 @@ An empty category, and the numbers above are what establish it.
 
 ## Weakest claim, and what would change my mind
 
-The weakest is §1's *impact*: that the folded Alerts box is why the owner could
-not build a prison. What I measured is that the explanation is 0x0 pixels and
-that no affordance points at it. What I did not measure is the owner's actual
-session -- they may have opened Alerts and read the sentence and been stopped by
-something else entirely.
+**The original weakest claim was §1's impact, and it is the one that broke.**
+Kept verbatim, because being right about which claim was weakest and wrong
+anyway is the useful part:
 
-What would change my mind: the owner saying they had the Alerts box open, or a
-second player getting through the zone step unaided with it still folded. Either
-would move §1 from "this is the wall" to "this is a wall".
+> The weakest is §1's *impact*: that the folded Alerts box is why the owner
+> could not build a prison. What I measured is that the explanation is 0x0
+> pixels and that no affordance points at it. What I did not measure is the
+> owner's actual session -- they may have opened Alerts and read the sentence
+> and been stopped by something else entirely.
+>
+> What would change my mind: the owner saying they had the Alerts box open, or
+> a second player getting through the zone step unaided with it still folded.
+> Either would move §1 from "this is the wall" to "this is a wall".
+
+What actually changed it was neither of those. It was reading one more
+selector -- `.hud`, the container -- and finding a 1440x32 band that had been
+on screen the whole time. **Naming the weakest claim correctly did not save
+the claim, because the check that would have settled it was one I had not
+thought to run.** Naming it is not the same as testing it; the discipline
+worth taking from this is to write down, beside the weakest claim, the single
+cheapest measurement that would falsify it, and then run that one first.
+
+## Weakest claim now
+
+That the **ordering** -- walls must be built and paid for before a room can be
+zoned -- is what actually stopped the owner. §2 establishes that the informed
+order works and that nothing states it, and §6 establishes that a wall order
+with no bricks bought reads "Awaiting Materials" only inside a queue that is
+folded on arrival. Neither establishes that this is what stopped anybody.
+
+What would change my mind: the owner saying they read the band and understood
+it, or a second player getting from a new prison to a zoned cell unaided. The
+cheapest falsifying measurement, written down this time: watch one unaided
+player and record the first thing they press after the band appears.
