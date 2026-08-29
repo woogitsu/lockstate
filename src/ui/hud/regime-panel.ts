@@ -122,6 +122,31 @@ import type {
  * exactly this many, so the constant bounds the *message* as well as the
  * layout, and it is one edit if the measurement says otherwise.
  *
+ * **The measurement exists now, and it says four still fits.** Taken on
+ * 2026-08-29 when the worst-need bar was added (#535 decision 6), which is the
+ * change that could have spent the headroom this paragraph was estimating.
+ * Four rows of the browser suite's own `ROSTER` fixture, row border-box
+ * heights, at all five viewports that suite visits:
+ *
+ * | viewport | row heights | the activity line wrapped |
+ * | --- | --- | --- |
+ * | 1280x720 | 44.7, 27.5, 27.5, 44.7 | rows 1 and 4 |
+ * | 1440x900 | 44.7, 27.5, 27.5, 44.7 | rows 1 and 4 |
+ * | 1024x768 | 44.7, 27.5, 27.5, 44.7 | rows 1 and 4 |
+ * | 900x600 | 44.7, 27.5, 27.5, 44.7 | rows 1 and 4 |
+ * | 375x812 | 27.5, 27.5, 27.5, 27.5 | none |
+ *
+ * **44.7px against the 54.75px the arithmetic allows**, so the inherited bound
+ * holds rather than merely being assumed to. The two tall rows are the ones
+ * carrying the longest activity words -- "Heading to Showering" and "Free
+ * Association" -- whose line wraps to put the need pair underneath; they wrap
+ * on the *desktop* viewports and not at 375x812 because the side rail is
+ * narrower than the mobile panel, which is the degradation
+ * `.hud-regime__roster-line`'s `flex-wrap` exists for. The assertion that
+ * actually guards this is `tests/browser/ui-shell.spec.ts`'s *"keeps the last
+ * line of the roster inside the panel's fold at every viewport"*; the table is
+ * here so the next change to a roster row knows what it is spending.
+ *
  * It is a **window on the population, not a list of it.** A prison holds up to
  * `DEFAULT_PRISONER_CAPACITY` (5,000) and `MAX_PROJECTION_PAGE_LIMIT` is 500,
  * so no panel and no single reply could carry a full roster whatever height it
