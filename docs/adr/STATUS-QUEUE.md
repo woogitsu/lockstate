@@ -3078,6 +3078,20 @@ never recorded before this round:
 - `tests/unit/entity-generation-wrap.test.ts` — *"ADR 0026 states all three at
   Proposed"*. 0026 is Accepted as the framing and the tripwire, and leaves all
   three open, which is what the file needed to say. The tests are untouched.
+  **Corrected, 2026-08-29 (#169, #505): the comment this bullet describes no
+  longer exists, and the fact it stated no longer holds.** #505 rewrote the
+  file "from `DEFECT`-pinning to fixed-behaviour pinning" — its own commit's
+  words — replacing the paragraph this bullet quoted with one headed *"The
+  decision taken (#169, ADR 0026 question 1, option A)"* (`:31`), which cites
+  no `Proposed` status at all. And the fact side is falsified independently of
+  the wording: ADR 0026's three questions are no longer all open. Question 2
+  (recycling) was answered as option C before this anchor; question 1
+  (exhaustion) is answered now, as option A, dated in ADR 0026's own
+  *"Amendment, 2026-08-29 (#169)"*; only question 3 (`submitIntake` re-intake)
+  remains, which is exactly what the next bullet already says about
+  `prisoners-intake-system.test.ts`. So this bullet's subject — a stale
+  comment calling an Accepted ADR `Proposed` — is retired rather than merely
+  re-read: the class of defect it recorded is gone from this file, not moved.
 - `tests/unit/prisoners-intake-system.test.ts` — *"it is stated at Proposed
   in ADR 0026 rather than settled here"*, on the re-intake case. Now names it as
   0026's question 3, left open by an Accepted ADR: *"it is ADR 0026's question 3
