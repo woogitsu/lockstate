@@ -175,33 +175,87 @@ describe('the bar the panel drives lights what the projection counted', () => {
  * agree.
  */
 describe('the projected flag is the same line the treasury is charged against', () => {
+  /**
+   * The four levels this file drives every prisoner's `safety` to, and why
+   * these four.
+   *
+   * A freshly built scenario is **no use on its own here**, and that is a
+   * measurement rather than an assumption: `buildDeterminismScenario` at tick 0
+   * gives four prisoners whose every need is `NEED_MAX`, so the roster projects
+   * `permille: 1000, unmetForStateIncome: false` four times and
+   * `unmetNeedCount` is `0` four times. An assertion looping over that compares
+   * `false` with `false` and holds for any implementation of the flag,
+   * including one that returns a constant. The first draft of this file did
+   * exactly that and passed; the levels below are what stopped it being
+   * vacuous, and the `atLeastOne`/`atLeastOneNot` guards at the bottom are what
+   * would catch it happening again.
+   *
+   * Straddling the line rather than sampling far from it: `LEVEL` is the
+   * threshold itself and `LEVEL + 1` the very next level a need can hold, so a
+   * comparison mutated from `<=` to `<` -- a shift of one level out of 256 --
+   * changes one of these two and fails.
+   */
+  const DRIVEN_LEVELS: readonly number[] = [
+    0,
+    STATE_INCOME_UNMET_NEED_LEVEL,
+    STATE_INCOME_UNMET_NEED_LEVEL + 1,
+    NEED_MAX,
+  ];
+
   it('marks the worst need unmet exactly when the prisoner has at least one unmet need', () => {
     const runtime = buildDeterminismScenario(SCENARIO_SEED);
     const rows = projectPrisonerRoster(runtime.prisoners).rows;
-    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.length).toBe(DRIVEN_LEVELS.length);
 
-    for (const row of rows) {
+    // One driven level per prisoner, written into `safety` -- which is enough
+    // to make it the lowest need for three of the four, every other need being
+    // at `NEED_MAX`.
+    rows.forEach((row, position) => {
+      runtime.prisoners.needs.set(runtime.prisoners.entityStore.getIndex(row.entityId), 'safety', DRIVEN_LEVELS[position]!);
+    });
+
+    const projected = projectPrisonerRoster(runtime.prisoners).rows;
+    let atLeastOne = false;
+    let atLeastOneNot = false;
+
+    for (const row of projected) {
       const index = runtime.prisoners.entityStore.getIndex(row.entityId);
       // The equivalence the panel's `data-need-unmet` relies on: no need can be
       // lower than the lowest, so the worst need being unmet is exactly "this
       // prisoner is costing the prison grant income".
       expect(row.lowestNeed.unmetForStateIncome).toBe(unmetNeedCount(runtime.prisoners.needs, index) > 0);
+      if (row.lowestNeed.unmetForStateIncome) atLeastOne = true;
+      else atLeastOneNot = true;
     }
+
+    // Both sides of the comparison were actually reached. Without this the
+    // loop above passes on an all-false roster, which is the state a fresh
+    // scenario is in.
+    expect({ atLeastOne, atLeastOneNot }).toEqual({ atLeastOne: true, atLeastOneNot: true });
   });
 
   it('reports every need against the same predicate the count sums', () => {
     const runtime = buildDeterminismScenario(SCENARIO_SEED);
     const entityId = projectPrisonerRoster(runtime.prisoners).rows[0]!.entityId;
-    const detail = projectPrisonerDetail(runtime.prisoners, entityId)!;
     const index = runtime.prisoners.entityStore.getIndex(entityId);
 
+    // A different driven level per need, so the six flags are not all the same
+    // answer and the per-need mapping cannot pass by returning a constant.
+    NEED_IDS.forEach((needId, position) => {
+      runtime.prisoners.needs.set(index, needId, DRIVEN_LEVELS[position % DRIVEN_LEVELS.length]!);
+    });
+
+    const detail = projectPrisonerDetail(runtime.prisoners, entityId)!;
     expect(detail.needs.map((need) => need.needId)).toEqual([...NEED_IDS]);
     for (const need of detail.needs) {
       expect(need.unmetForStateIncome).toBe(isNeedUnmetForStateIncome(runtime.prisoners.needs.get(index, need.needId)));
     }
-    expect(detail.needs.filter((need) => need.unmetForStateIncome).length).toBe(
-      unmetNeedCount(runtime.prisoners.needs, index),
-    );
+    // The count the treasury is charged from is exactly the flags the panel
+    // would draw, summed -- the two cannot be different rules.
+    const flagged = detail.needs.filter((need) => need.unmetForStateIncome).length;
+    expect(flagged).toBe(unmetNeedCount(runtime.prisoners.needs, index));
+    expect(flagged).toBeGreaterThan(0);
+    expect(flagged).toBeLessThan(NEED_IDS.length);
   });
 
   /**
