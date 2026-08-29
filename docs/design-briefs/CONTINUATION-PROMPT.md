@@ -1,6 +1,6 @@
 # Continuation prompt — paste this whole file into a fresh session
 
-Written 2026-08-29 at v0.0.208, with `main` red and five pull requests open. It assumes no access to the conversation that produced it.
+Written 2026-08-29, reading `main` at `cfab558` (v0.0.208), with `main` red and five pull requests open. It assumes no access to the conversation that produced it.
 
 ---
 
@@ -57,7 +57,7 @@ Three independent reasons it is probably contention rather than a defect:
 
 ## 2. Re-anchor `docs/adr/STATUS-QUEUE.md` before merging anything
 
-The anchor is at **v0.0.201** and `main` ships **v0.0.208** — **7 of a budget of 10**. `tests/foundation/adr-status-queue-anchor-contract.test.ts` turns `main` red at 11, and a red `main` stops publication because `deploy.yml` fires on CI completion. **The five open pull requests would take it to 12.**
+The anchor is at `e1813b7` (**v0.0.201**) and `main` was at `cfab558` (**v0.0.208**) when this was written — **7 of a budget of 10**. Recompute it against a fresh `git show origin/main:package.json` rather than trusting that arithmetic; it is stale the moment anything merges. `tests/foundation/adr-status-queue-anchor-contract.test.ts` turns `main` red at 11, and a red `main` stops publication because `deploy.yml` fires on CI completion. **The five open pull requests would take it to 12.**
 
 **Never raise `ANCHOR_STALENESS_BUDGET_RELEASES`.** The test's own message says so: *"do not raise it to make this pass, because the number is what the budget is for."*
 
