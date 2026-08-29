@@ -454,6 +454,24 @@ they were written.
   and rail assertions are measured to the pixel at five viewports. The old
   reason is quoted in the constant's comment so the change is visible rather than
   silent.
+
+  **Amended by issue #533 (2026-08-29): every clause of the bullet above except
+  its first sentence is now false, and it is left standing rather than rewritten
+  so the correction is visible.** The sweep *does* press `.hud-staff__hire` — three
+  times at every viewport, so that the `Dismiss` control #533 puts on the roster is
+  measured rather than exempted — and the press recovers **none** of the three
+  `Release` rows rather than one. The estimate of one was right about the derived
+  requirement and wrong about when it is met: `assignUnassignedGuards` is reached
+  only from `DeploymentSystem.update`, and that sweep runs with the clock paused,
+  so ADR 0051's paused drain lands the `HireStaff` command without any system ever
+  looking at the new guard. All three hires stay `'unassigned'`, so the exemption
+  survives with a *stronger* reason than this ADR left it with, not a weaker one.
+  The pixel objection was half right and is answered by measurement rather than by
+  avoidance: the Staff panel's box does grow at two of the five viewports (by
+  88.4px and 19.9px) and never overflows the rail — but the panels in `.hud__side`
+  swap by tab, so `.hud-staff` has no box at all while those box-chain and rail
+  assertions are taken. The ten measurements are on the constant's comment in
+  `tests/browser/app-shell.spec.ts`.
 - **Determinism is unaffected.** The derivation draws no RNG, reads no clock,
   sorts its one input with `compareChunkPositions` rather than trusting a `Set`,
   and runs once at composition. Two runs of one seed are hash-identical through
