@@ -40,23 +40,40 @@ function loneStream(seed: number): Xoshiro128StarStar {
 // ---------------------------------------------------------------------------
 
 describe('why a name cannot be derived from an entity id', () => {
-  it('pins that EntityStore hands the same id back after 4,096 destroy/spawn cycles at one index', () => {
-    // `destroy()` bumps a 12-bit generation, so index 0's id cycles. A name
-    // computed as f(entityId) would therefore hand the 4,097th occupant of a
-    // slot the *first* occupant's name. This is the fact the stored decision
-    // rests on, so it is pinned rather than left in a comment.
+  it('pins that EntityStore retires index 0 rather than handing its id back after 4,096 destroy/spawn cycles (#169, ADR 0026 option A)', () => {
+    // `destroy()` bumps a 12-bit generation, so an index's id used to cycle
+    // back to its starting value after 4,096 destroy/spawn cycles -- which is
+    // exactly the fact this pin used to assert, because a name computed as
+    // f(entityId) would then hand the 4,097th occupant of a slot the *first*
+    // occupant's name.
+    //
+    // That specific recurrence is now closed: `EntityStore.destroy` retires a
+    // slot that dies at its last generation instead of recycling it (#169,
+    // ADR 0026 question 1, option A), so index 0's very first id can never be
+    // reissued. This is the re-baseline ADR 0026 named as option A's cost --
+    // "the id genuinely no longer comes back" -- and the decision this
+    // `describe` block is about does not weaken for it: derivation is still
+    // rejected on the allocation-policy ground alone (point 1 in ADR 0015),
+    // and this file's very next case shows a prisoner and a staff member
+    // sharing id 0 across two different stores, which retirement does
+    // nothing to prevent either.
     const store = new EntityStore(4);
     const first = store.spawn();
 
     let latest = first;
-    for (let cycle = 0; cycle < 4_096; cycle += 1) {
+    for (let cycle = 0; cycle < 4_095; cycle += 1) {
       store.destroy(latest);
       latest = store.spawn();
-      expect(store.getIndex(latest)).toBe(0); // the freed index is recycled immediately
-      if (cycle < 4_095) expect(latest).not.toBe(first);
+      expect(store.getIndex(latest)).toBe(0); // the freed index recycles for its first 4,095 lives
+      expect(latest).not.toBe(first);
     }
 
-    expect(latest).toBe(first);
+    // The 4,096th destroy is on a slot at its last generation: retirement,
+    // not recycling. The next spawn takes a different index entirely.
+    store.destroy(latest);
+    const afterRetirement = store.spawn();
+    expect(store.getIndex(afterRetirement)).not.toBe(0);
+    expect(store.isIndexAlive(0)).toBe(false);
   });
 
   it('keeps a prisoner and a staff member with the same numeric id apart', () => {

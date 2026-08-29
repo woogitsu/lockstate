@@ -17,6 +17,13 @@ export const GENERATION_MASK = 0xFFF00000; // 12 bits
 export const GENERATION_SHIFT = 20;
 
 /**
+ * The last generation a slot may be recycled into. `destroy()` retires a slot
+ * that dies at this generation instead of handing it a 4,096th life --
+ * see `destroy()`'s doc comment and ADR 0026 (question 1, option A / #169).
+ */
+export const MAX_GENERATION = 0xFFF; // 4,095
+
+/**
  * Why every packed id ends in `>>> 0`.
  *
  * The two fields fill the whole word -- 20 index bits and 12 generation bits
@@ -63,8 +70,12 @@ export const GENERATION_SHIFT = 20;
  * reaching generation 2,048 at one index needs 2,048 releases *of that index*,
  * and the free list is LIFO over every freed slot -- so a prison would have to
  * churn a multiple of that through a single slot before an id went negative.
- * That is a long-running prison rather than an impossible one, which is why
- * ADR 0026 question 1 is escalated by ADR 0050 rather than closed by it.
+ * That is a long-running prison rather than an impossible one.
+ *
+ * **ADR 0026 question 1 is now answered (#169): a slot is retired rather than
+ * recycled past generation 4,095**, so a single index still cannot go negative
+ * either -- `destroy` never assigns it another generation once 4,095 is used,
+ * so it never reaches 2,048 a second time. See `destroy()` below.
  *
  * Exported because the id format has a second reader outside this class:
  * `src/rendering/feed/actors-from-snapshot.ts` rebuilds ids from a *snapshot*
@@ -148,6 +159,53 @@ export class EntityStore {
    * `tests/unit/entity.test.ts`'s "prevents double destroy"
    * has pinned that tolerance since the store was written, and ADR 0005
    * describes generation mismatches as "safely caught" rather than raised.
+   *
+   * ## Retirement at the last generation (ADR 0026 question 1, option A / #169)
+   *
+   * A slot dying at generation {@link MAX_GENERATION} (4,095) is **retired**
+   * rather than recycled: it is marked dead but never pushed back onto
+   * `freeIndices`, so `spawn()` can never hand its index out again. Every
+   * other slot still gets 4,096 lives, same as before; this one slot simply
+   * does not get a 4,097th, which is what stops that life's `EntityId` --
+   * identical to the slot's very first id, `packEntityId(index, 0)` -- from
+   * ever being reissued.
+   *
+   * That one word, "retired", is the entire fix. Before it, this method did
+   * `generations[index] = (generations[index] + 1) & 0xFFF` unconditionally
+   * and always freed the index, so a slot's 4,096th death wrapped its
+   * generation back to the value its first life carried and the index went
+   * straight back on the free list -- the next `spawn()` at that index
+   * produced an id indistinguishable from a name a caller might still be
+   * holding from 4,096 lives ago. `isAlive` on that stale handle read `true`
+   * (nothing in the store disagreed: right index, right generation), and
+   * `destroy` on it killed whichever *live* entity now held the slot. Both
+   * are demonstrated, mechanically, in
+   * `tests/unit/entity-generation-wrap.test.ts` before this change and are
+   * what retirement closes: the id genuinely does
+   * not come back, so there is no stale handle left to confuse with a live
+   * one.
+   *
+   * The cost is exactly what ADR 0026 named for option A: a retired slot is
+   * gone for the rest of the session, so a single index driven through 4,096
+   * releases costs this store one unit of capacity rather than corrupting a
+   * lookup. `canSpawn` and every caller that checks it (`admitPrisoner`'s
+   * `population-full` refusal) already treat "no free index and none left
+   * ahead" as an ordinary, handled outcome -- retirement only makes that
+   * outcome reachable slightly sooner in the pathological case of one index
+   * churned thousands of times, not a new failure mode.
+   *
+   * No save format change follows from this. `generations` already stores
+   * values up to 4,095 in a `Uint16Array`, and a retired index is simply
+   * absent from the snapshotted `freeIndices` prefix -- `loadSnapshot`
+   * reproduces that absence on restore with no new field to carry.
+   *
+   * This is option A alone; option C (clearing the three `EntityId`-keyed
+   * stores on release, so no orphaned entry survives even for an id that will
+   * never come back) already shipped with #441's release path. ADR 0026 says
+   * the two are complements, not alternatives, because C alone still leaves
+   * `isAlive`/`destroy` themselves lying at the wrap, and A alone still leaves
+   * an orphaned entry in a store nobody remembered to clear (harmless once
+   * the id can never recur, but a leak). Both are now taken.
    */
   public destroy(id: EntityId): void {
     const index = id & INDEX_MASK;
@@ -171,10 +229,16 @@ export class EntityStore {
       return; // Stale id: this slot has since been recycled
     }
 
-    // Increment generation, wrapping at 12 bits
-    this.generations[index] = (this.generations[index]! + 1) & 0xFFF;
     this.alive[index] = 0;
-    
+
+    if (this.generations[index] === MAX_GENERATION) {
+      // This slot's last generation. Retire it: leave the generation at
+      // 4,095 and never push the index back onto the free list, so this
+      // exact id can never be reissued. See the method doc above.
+      return;
+    }
+
+    this.generations[index] = this.generations[index]! + 1;
     this.freeIndices[this.freeCount++] = index;
   }
 
