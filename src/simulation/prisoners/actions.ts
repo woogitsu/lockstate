@@ -122,26 +122,36 @@ export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
   },
   {
     /*
-     * **`safety: 0.1` stays**, and the asymmetry with `action.sleep` above is
-     * deliberate rather than an oversight (issue #588). Two reasons, and the
-     * second is the load-bearing one:
+     * **`safety: 0.1` is gone too** (issue #588). It was kept for one draft on
+     * the grounds that it is dominated rather than dominant -- a yard session
+     * returns about 6% of what `safety` now loses in a day, so it is nowhere
+     * near a substitute for a guard -- and that argument is still true and was
+     * still the wrong one, because the term's real effect is not on the need
+     * at all. It is on **what the prisoner chooses**.
      *
-     * - It is dominated rather than dominant. A yard session is about 212
-     *   ticks of an in-game day (`tests/integration/room-gated-needs.test.ts`
-     *   measures 2,116 over ten days), so it returns about 21 levels a day
-     *   against the 120 `safety` now loses -- a top-up a prison that built a
-     *   yard gets, not an override of what coverage decides.
-     * - It is what orders this action above `action.common-room-recreation`
-     *   for a prisoner whose `recreation` is already full.
-     *   `tests/integration/yard-and-common-room.test.ts` drives both scores
-     *   over the whole grid of `recreation` x `safety` levels and pins the
-     *   yard at or above the common room everywhere, with equality **only**
-     *   where both deficits are zero. Dropping the term would make the two
-     *   actions tie wherever `recreation` alone is full, which is a change to
-     *   what a prisoner does rather than to what a need means.
+     * `scoreAction` is deficit x effect summed
+     * (`./utility-ai.ts`), so a term worth `d_safety * 0.1` grows with the
+     * deficit, and since the ruling on issue #599 an unguarded prison drives
+     * that deficit to the top of its range. Measured on
+     * `tests/integration/yard-and-common-room.test.ts`'s six-prisoner fixture
+     * over ten in-game days, with the term still in: yard time went from
+     * **5,872 to 8,588** performing ticks in the minimum yard and **7,208 to
+     * 13,120** in the enlarged one -- the yard climbing over meals, showers
+     * and sleep in the ranking, for a need standing in it barely moves. A
+     * prisoner skipping lunch because they feel unsafe and the yard helps a
+     * little is not a mechanic anybody chose.
+     *
+     * What it costs to remove is real and is recorded rather than hidden: the
+     * yard and the common room now tie wherever `recreation` alone is full,
+     * instead of only where `recreation` *and* `safety` are both full, so the
+     * common room wins the ascending-id tie-break in eight of that file's
+     * sixty-four sampled states rather than in one. Both are the same state --
+     * a prisoner who wants nothing, choosing between two things worth nothing
+     * -- and #532's ceiling, not this term, is what makes the common room
+     * reachable on merit.
      */
     id: 'action.yard-recreation', category: 'recreation', target: { kind: 'room-catalog-id', roomCatalogId: 'room.yard' },
-    needEffectsPerTick: { recreation: 3, safety: 0.1 }, minDurationTicks: 100,
+    needEffectsPerTick: { recreation: 3 }, minDurationTicks: 100,
   },
   {
     id: 'action.common-room-recreation', category: 'recreation', target: { kind: 'room-catalog-id', roomCatalogId: 'room.common-room' },
