@@ -201,6 +201,16 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.minimap.placeholder': 'Minimap is not available yet',
   'hud.alerts.title': 'Alerts',
   'hud.alerts.empty': 'No active alerts',
+  // The badge on the folded alerts header (issue #569). Deliberately the same
+  // word as `hud.alerts.empty` one line up -- that row says "No active
+  // alerts" of the very list this counts, so "1 active" and "No active
+  // alerts" are one vocabulary rather than two. It promises nothing the code
+  // does not keep: "active" here means "in the list", which is exactly what
+  // the empty row already means by it.
+  //
+  // `{count}` is formatted by the localizer, not concatenated, so a locale
+  // that puts the numeral elsewhere can.
+  'hud.alerts.count': '{count} active',
 
   // What the simulation refused, in the alerts list (issue #261).
   //

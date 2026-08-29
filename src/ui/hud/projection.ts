@@ -2,7 +2,7 @@ import type { LocalizationKey } from '../../content/localization';
 import type { IconId } from '../primitives/icon';
 import type { BadgeTone } from '../primitives/status-badge';
 import { HUD_MESSAGE_KEY } from './messages';
-import type { HudClockViewModel, HudCountsViewModel, HudSeverity, HudSpeed } from './view-model';
+import type { HudAlertViewModel, HudClockViewModel, HudCountsViewModel, HudSeverity, HudSpeed } from './view-model';
 
 /**
  * Pure view-model → display-descriptor mapping.
@@ -297,6 +297,79 @@ export function severityTone(severity: HudSeverity): BadgeTone {
 /** The word that accompanies a severity colour, so the colour never stands alone. */
 export function severityLabelKey(severity: HudSeverity): LocalizationKey {
   return SEVERITY_LABEL_KEYS[severity];
+}
+
+/**
+ * How severe each severity is, for picking one out of a list.
+ *
+ * A `Record` over the closed union rather than an array, so a fourth member of
+ * `HudSeverity` fails to compile here until somebody says where it ranks --
+ * the property `SEVERITY_TONES` above is written for and the reason neither is
+ * a lookup with a fallback.
+ */
+const SEVERITY_RANK: Readonly<Record<HudSeverity, number>> = {
+  info: 0,
+  warning: 1,
+  danger: 2,
+};
+
+/**
+ * What a *folded* alerts section has to say for itself (issue #569).
+ *
+ * ## Why anything is owed here at all
+ *
+ * The alerts list is where every refusal the simulation reports is written --
+ * forty reasons, `REFUSAL_LABEL_KEYS` in `src/ui/simulation-alerts.ts` -- and
+ * `INITIAL_HUD_SHELL_STATE` folds that section on arrival, deliberately and
+ * for a good reason: "a list that is empty most of the time should not hold
+ * open a rectangle over the prison to say so".
+ *
+ * Both of those are right, and together they were a dead end. Measured on the
+ * assembled page: a designation refused `zone.not-enclosed` put its sentence
+ * in the DOM at `boxWidth: 0, boxHeight: 0`, under a header reading `ALERTS`
+ * and nothing else, and the press looked to the player exactly like a press
+ * that had done nothing. Two other decisions had leaned on that channel
+ * without anyone noticing it was folded: `src/simulation/rooms/zoning.ts`
+ * deleted the Rooms panel's own post-confirm warning because "the sentence it
+ * carried is now `hud.alert.refusal.zone.not-enclosed`, said at the moment the
+ * player can still act on it", and `src/ui/hud/rooms-panel.ts` leaves the
+ * Designate control live over an open rectangle because "the real simulation
+ * still decides".
+ *
+ * So the fold stays and the header stops being silent, which is the idiom the
+ * Build panel's queue already uses one module over (`build-panel.ts`, the
+ * `trailing: queueCount` on a section that is *also* collapsed when it
+ * appears).
+ *
+ * ## Why a count and a tone rather than a dot
+ *
+ * `createStatusBadge` states the rule this obeys: "The tone is an *addition*
+ * to the text, never a replacement for it: a badge always carries a word, so a
+ * red-green colour-blind player, a monochrome display and a screen reader all
+ * get the same information." A coloured dot on the header would have been
+ * cheaper and is not available.
+ *
+ * `undefined` for an empty list, and that is the half that keeps the original
+ * decision intact: a prison with nothing to report shows no badge at all, so
+ * the corner is exactly as quiet as it was before this existed.
+ *
+ * The severity is the **highest** present rather than the newest. A list
+ * holding one `danger` and four `info` rows is a list a player should open,
+ * and a badge that took the last row's tone would say `Info` for it.
+ */
+export interface HudAlertsSummary {
+  readonly count: number;
+  readonly severity: HudSeverity;
+  readonly tone: BadgeTone;
+}
+
+export function summariseAlerts(alerts: readonly HudAlertViewModel[]): HudAlertsSummary | undefined {
+  let worst: HudSeverity | undefined;
+  for (const alert of alerts) {
+    if (worst === undefined || SEVERITY_RANK[alert.severity] > SEVERITY_RANK[worst]) worst = alert.severity;
+  }
+  if (worst === undefined) return undefined;
+  return { count: alerts.length, severity: worst, tone: severityTone(worst) };
 }
 
 /**
