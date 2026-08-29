@@ -106,12 +106,33 @@ export interface ContrabandIntroductionPolicy {
  *     held deliberately -- and since ADR 0069 the sentence is no longer sent
  *     from there at all: it is *drawn inside the worker* from the
  *     `prisoners.sentence` stream. Neither number is a player decision.
- *  2. **The revision never happens.** This system is globally phased at
- *     `intervalTicks - 1`, so it runs at ticks 23,999 and 47,999, while
- *     eligibility is `tick - classifiedAt >= 24,000` -- nobody qualifies at
- *     23,999, so the first reachable review is **47,999**. The drawn sentence
- *     is at most `MAX_SENTENCE_DAYS` (16) x `DAY_LENGTH_TICKS` (2,400) =
- *     **38,400 ticks**. Every prisoner is discharged before any review runs.
+ *  2. **The revision is a phase lottery, and for most sentences it is
+ *     impossible.** `ClassificationReviewSystem` is globally phased at
+ *     `intervalTicks - 1`, so it runs at every tick congruent to 23,999 modulo
+ *     24,000; eligibility is per prisoner, `tick - classifiedAt >= 24,000`,
+ *     where `classifiedAt` is derived from that prisoner's own record. So a
+ *     prisoner classified at `c` with sentence `s` is reviewed only if a
+ *     scheduled tick falls in `[c + 24,000, c + s]` -- a window of `s - 24,000`
+ *     ticks, and empty unless `s >= 24,000`.
+ *
+ *     `MIN_SENTENCE_DAYS` is 2 and `MAX_SENTENCE_DAYS` is 16, so the drawable
+ *     lengths are 4,800..38,400 in steps of `DAY_LENGTH_TICKS` (2,400).
+ *     **Eight of those fifteen -- 2 through 9 days -- are below 24,000 and can
+ *     never be reviewed at all**, whatever the phase. The other seven have a
+ *     window of 0 to 14,400 ticks and are reviewed only if the global schedule
+ *     happens to land inside it; at 10 days exactly the window is a single
+ *     tick.
+ *
+ *     **This paragraph said "the revision never happens" and that was wrong.**
+ *     It was true of the session's *first* prisoner -- classified near tick 0,
+ *     where the first eligible scheduled tick is 47,999 against a maximum
+ *     discharge at 38,400 -- and was generalised from that one case to every
+ *     prisoner. A prisoner classified at 20,000 with a 16-day sentence is
+ *     eligible at the 47,999 review and is discharged at about 58,400, so they
+ *     *are* reviewed. Corrected rather than deleted because the arithmetic that
+ *     produced the wrong answer is the arithmetic worth checking next time: a
+ *     schedule is global and eligibility is per record, and the two only
+ *     coincide for whoever arrives first.
  *  3. **The sentence cannot move the tier even if it were chosen.**
  *     `classifyPrisoner` reads it as
  *     `sentenceLengthTicks >= LONG_SENTENCE_THRESHOLD_TICKS ? 1 : 0` with the

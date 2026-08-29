@@ -387,10 +387,22 @@ export class RoomInstanceRegistry {
    * ceiling made it exactly that.
    *
    * **Without `capability`, every claim, whatever it consumes** -- which is
-   * `claimCountOf`'s question ("is anybody holding this instance at all") and
-   * not a question any ceiling is compared against. A claim taken for an action
-   * that names no capability is counted here and bounded by nothing; see
-   * `concurrentUseCapacityFor`.
+   * `claimCountOf`'s question ("is anybody holding this instance at all").
+   *
+   * **It is now a question a ceiling *is* compared against, and this sentence
+   * used to say the opposite.** It read *"A claim taken for an action that
+   * names no capability is counted here and **bounded by nothing**"*, which was
+   * true until #532 gave `concurrentUseCapacityFor` case 1 a real answer:
+   * `max(1, floor(width * height / TILES_PER_OPEN_GROUND_PLACE))`, the
+   * instance's own ground. `claimUse` compares this count against it like any
+   * other, so an open-ground action -- the yard's recreation being the one that
+   * matters -- now fills up.
+   *
+   * **One exception, and it is the shape of the old sentence surviving in a
+   * corner:** a V4 instance restored from a save has no `width`/`height` to
+   * derive from and still answers `POSITIVE_INFINITY` (ADR 0071 records that
+   * the format does not carry bounds). So a legacy save keeps the unbounded
+   * behaviour this paragraph used to describe of every instance.
    *
    * A linear walk of the claim map when scoped, rather than a second index per
    * capability: the map holds one entry per actor *currently performing in this
@@ -898,9 +910,15 @@ export class RoomInstanceRegistry {
    * diner honestly nor let the toilet be used while lunch was on.
    *
    * A claim for an action naming no capability is stored with `undefined` and
-   * bounded by nothing -- see `concurrentUseCapacityFor` case 1. It is still
-   * recorded, because `releaseUse`, `claimCountOf` and `totalUseClaims` all
-   * need to know the actor is in there.
+   * bounded by the instance's own ground -- `concurrentUseCapacityFor` case 1,
+   * which since #532 answers
+   * `max(1, floor(width * height / TILES_PER_OPEN_GROUND_PLACE))` rather than
+   * `Infinity`. **This said "bounded by nothing"**, which was true of that case
+   * before #532 and is now true only of a **V4 instance restored from a save**,
+   * which has no stored bounds to derive from.
+   *
+   * It is recorded either way, because `releaseUse`, `claimCountOf` and
+   * `totalUseClaims` all need to know the actor is in there.
    */
   public claimUse(instanceId: string, entityId: EntityId, capability?: string): boolean {
     const instance = this.instances.get(instanceId);

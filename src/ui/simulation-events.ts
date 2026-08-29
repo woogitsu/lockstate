@@ -84,9 +84,17 @@ const EVENT_ROW_PREFIX = 'event-';
  * carries the one that matters right now. The oldest is dropped rather than
  * the newest for the reason `SimulationEventLog` drops the oldest.
  *
- * Measured rather than guessed. `ADMISSION_REQUEST` in `src/main.ts` asks for
- * `sentenceLengthTicks: 10_000`, which ADR 0050 records as about four in-game
- * days; `DISCHARGE_CHECK_INTERVAL_TICKS` is how often anybody can leave. A
+ * Measured rather than guessed -- **and the measurement has been re-based,
+ * because the figure it rested on is gone.** This read *"`ADMISSION_REQUEST` in
+ * `src/main.ts` asks for `sentenceLengthTicks: 10_000`, which ADR 0050 records
+ * as about four in-game days"*. Since ADR 0069 that constant is
+ * `{ priorIncidents: 0 }` and carries no sentence at all: the length is drawn
+ * **inside the worker**, uniformly over whole in-game days in `[2, 16]`, so
+ * 4,800..38,400 ticks with a mean of 21,600 -- nine days rather than four.
+ *
+ * The conclusion is unchanged and the wider spread strengthens it: cohorts
+ * leave *further* apart than the old fixed sentence implied, not closer
+ * together. `DISCHARGE_CHECK_INTERVAL_TICKS` is how often anybody can leave. A
  * prison admitting steadily therefore produces discharge events on the order
  * of one per admission cohort rather than one per prisoner -- the aggregation
  * above is what makes that true -- so eight rows is several cohorts of
