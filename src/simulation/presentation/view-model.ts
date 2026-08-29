@@ -84,9 +84,21 @@ export const BOUNDED_VALUE_PERMILLE_MAX = 1_000;
  * then be a rendering bug rather than a simulation change.
  *
  * Semantics are "how full", not "how bad": a need at `permille: 0` is a
- * starving prisoner, not a satisfied one. The simulation defines no
- * warning/critical thresholds for needs, so this type carries no severity
- * band -- inventing one would be a balance decision, not a projection.
+ * starving prisoner, not a satisfied one. This type carries no severity band --
+ * inventing one would be a balance decision, not a projection.
+ *
+ * **Narrowed 2026-08-29, and the sentence it replaces is kept rather than
+ * overwritten** (`docs/AGENT_WORKFLOW.md` §4). This comment used to justify the
+ * absent band with *"the simulation defines no warning/critical thresholds for
+ * needs"*, and that is no longer true as stated: `STATE_INCOME_UNMET_NEED_LEVEL`
+ * (#488) is a line the simulation acts on, and
+ * `PrisonerNeedViewModel.unmetForStateIncome` now reports it. The band still
+ * does not belong *here*, for a reason that survived the correction and is the
+ * better one: that threshold says what the state declines to pay for, `BoundedValue`
+ * is shared by incidents, rooms and occupancy that it means nothing about, and
+ * the player-facing "what is bad" line remains the owner's
+ * (`docs/HUD_PROJECTIONS.md` gap 7). A severity band that applied to needs would
+ * be a field on the need, not on every bounded value in the HUD.
  */
 export interface BoundedValue {
   readonly permille: number;

@@ -54,10 +54,24 @@ const t = (key: string, parameters?: Readonly<Record<string, string | number | b
 /**
  * A projected roster row with every field a real one carries.
  *
- * The fields this module drops -- `tile`, `accommodation`, `lowestNeed` -- are
- * present and populated rather than omitted, so a mapping that started
- * forwarding one of them would show up in the `toEqual` assertions below
- * instead of being invisible.
+ * The fields this module drops -- `tile` and `accommodation` -- are present and
+ * populated rather than omitted, so a mapping that started forwarding one of
+ * them would show up in the `toEqual` assertions below instead of being
+ * invisible.
+ *
+ * **`lowestNeed` was in that list until issue #535 decision 6 and is now
+ * forwarded**, so the `toEqual` assertions below assert its mapped shape rather
+ * than its absence. The bullet is corrected rather than deleted because the
+ * mechanism it describes is the one that made the change visible: this fixture
+ * populated `lowestNeed` on a row nothing read, and the day the mapping started
+ * reading it, the pinned `toEqual` went red and named the new field. That is
+ * the fixture doing its job in the direction it was built for.
+ *
+ * The row is built as a `Record<string, unknown>` and cast, which is what lets
+ * an override delete a key -- and it is also why a *new required field on
+ * `PrisonerRosterRowViewModel`* does not fail the compiler here. It failed as a
+ * runtime `undefined` in the assertion instead. Anything added to that
+ * interface has to be added here by hand; the type will not ask.
  */
 /**
  * An override set to `undefined` means **the key is absent**, not present and
@@ -85,7 +99,7 @@ function projectedRow(overrides: RowOverrides = {}): PrisonerRosterRowViewModel 
     actionPhase: 'performing',
     currentActionId: 'action.shower',
     accommodation: { instanceId: 'room.cell:4:6', roomCatalogId: 'room.cell', roomNameKey: 'room.cell.name' },
-    lowestNeed: { needId: 'safety', level: { permille: 120, filled: 2, segments: 10 } },
+    lowestNeed: { needId: 'safety', level: { permille: 120, filled: 2, segments: 10 }, unmetForStateIncome: true },
     ...overrides,
   };
   for (const [key, value] of Object.entries(overrides)) {
@@ -126,6 +140,12 @@ describe('the mapping turns ids into keys and drops what it cannot render', () =
           standingLabelKey: 'risk-tier.1.name',
           classificationGroupId: 'general-population',
           riskTier: 1,
+          lowestNeed: {
+            needId: 'safety',
+            labelKey: 'need.safety.name',
+            permille: 120,
+            unmetForStateIncome: true,
+          },
         },
       ],
     });
@@ -377,6 +397,12 @@ describe('the reader asks for the rows the panel can draw and no more', () => {
           standingLabelKey: 'risk-tier.1.name',
           classificationGroupId: 'general-population',
           riskTier: 1,
+          lowestNeed: {
+            needId: 'safety',
+            labelKey: 'need.safety.name',
+            permille: 120,
+            unmetForStateIncome: true,
+          },
         },
       ],
     });

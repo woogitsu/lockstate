@@ -1,6 +1,7 @@
 import type { ContentRegistry } from '../../content/registry';
 import type { RoomCatalogDefinition } from '../../content/room-catalog';
 import { defaultRoomContentRegistry } from '../../content/room-catalog';
+import { isNeedUnmetForStateIncome } from '../economy/income';
 import type { EntityId } from '../entity/entity-store';
 import type { ActorIdentitySource } from '../identity/actor-identity';
 import { DEFAULT_ACTIONS } from '../prisoners/actions';
@@ -103,6 +104,27 @@ export interface PrisonerNeedViewModel {
   readonly needId: NeedId;
   /** `permille: 0` is a fully unmet need; `1000` is fully satisfied. */
   readonly level: BoundedValue;
+  /**
+   * Whether the state withholds part of this prisoner's day of the operating
+   * grant because of this need -- `isNeedUnmetForStateIncome`, the same
+   * predicate `unmetNeedCount` sums to compute the money.
+   *
+   * **A fact about what the state pays, not a claim about what a player should
+   * be alarmed by**, and the two are deliberately separate:
+   * `STATE_INCOME_UNMET_NEED_LEVEL`'s own comment says so, and
+   * `docs/HUD_PROJECTIONS.md` gap 7 keeps the player-facing warning threshold
+   * with the owner. A consumer may draw this; what it may not do is relabel it
+   * "critical".
+   *
+   * Projected rather than left to the reader because the alternative is a HUD
+   * module importing `src/simulation/economy/income.ts` to re-run the
+   * comparison, which `AGENTS.md` boundary 1 forbids outright -- and because a
+   * threshold the panel recomputed would be a second copy of a balance number
+   * on the thread that owns none. `regime-panel.ts` predicted exactly this
+   * shape: *"what would make one is a projected threshold ... and both are
+   * projection changes rather than panel ones."*
+   */
+  readonly unmetForStateIncome: boolean;
 }
 
 export interface PrisonerActionViewModel {
@@ -198,8 +220,20 @@ function roomRef(
   };
 }
 
+/**
+ * One need, from the whole level `NeedsComponent.get` reports.
+ *
+ * The level is read **once** and both fields are derived from that one read:
+ * `toBoundedValue` for how full it is and `isNeedUnmetForStateIncome` for
+ * whether the state withholds for it. A second `needs.get` would let a bar and
+ * its own threshold flag describe two different ticks.
+ */
+function toNeedViewModel(needId: NeedId, level: number): PrisonerNeedViewModel {
+  return { needId, level: toBoundedValue(level, NEED_MAX), unmetForStateIncome: isNeedUnmetForStateIncome(level) };
+}
+
 function needViewModel(needs: NeedsComponent, index: number, needId: NeedId): PrisonerNeedViewModel {
-  return { needId, level: toBoundedValue(needs.get(index, needId), NEED_MAX) };
+  return toNeedViewModel(needId, needs.get(index, needId));
 }
 
 /** Scans the six needs in declared order, so a tie resolves to the earlier `NEED_IDS` entry rather than to iteration luck. */
@@ -213,7 +247,7 @@ function lowestNeed(needs: NeedsComponent, index: number): PrisonerNeedViewModel
       lowestId = needId;
     }
   }
-  return { needId: lowestId, level: toBoundedValue(lowestLevel, NEED_MAX) };
+  return toNeedViewModel(lowestId, lowestLevel);
 }
 
 function isClassified(stage: IntakeStage): boolean {

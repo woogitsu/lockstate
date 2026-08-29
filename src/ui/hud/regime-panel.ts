@@ -2,6 +2,7 @@ import type { LocalizationKey } from '../../content/localization';
 import type { MessageParameters } from '../../services/localization/format';
 import { element, eyebrowText, valueText } from '../primitives/dom';
 import { createPanel } from '../primitives/panel';
+import { createSegmentedBar, type SegmentedBar } from '../primitives/segmented-bar';
 import { createStatusBadge, type BadgeTone, type StatusBadge } from '../primitives/status-badge';
 import { HUD_MESSAGE_KEY } from './messages';
 import type {
@@ -45,16 +46,50 @@ import type {
  * the projection's, and the window is whatever the host asked for -- a panel
  * that counted its own rows would report the window as the population.
  *
- * ### What it deliberately does not show
+ * ### The need bar, and the decision it reverses
  *
- * **No need bars.** `PrisonerRosterRowViewModel` carries `lowestNeed`, the most
- * depleted of the six, and it is not rendered: `docs/HUD_PROJECTIONS.md` gap 7
- * records that the simulation defines no warning or critical threshold for any
- * need, so a bar here could show a level and could not say whether it was bad.
- * A column of unbanded bars in a four-row window of a prison that holds up to
- * `DEFAULT_PRISONER_CAPACITY` is not a way to find the starving prisoner; what
- * would make one is a projected threshold or a projected worst-off ordering,
- * and both are projection changes rather than panel ones.
+ * Each row now draws that prisoner's **worst** need as a bar (issue #535,
+ * decision 6). This block used to be headed "What it deliberately does not
+ * show" and its first entry refused exactly that, in these words:
+ *
+ * > **No need bars.** `PrisonerRosterRowViewModel` carries `lowestNeed`, the
+ * > most depleted of the six, and it is not rendered: `docs/HUD_PROJECTIONS.md`
+ * > gap 7 records that the simulation defines no warning or critical threshold
+ * > for any need, so a bar here could show a level and could not say whether it
+ * > was bad. A column of unbanded bars in a four-row window of a prison that
+ * > holds up to `DEFAULT_PRISONER_CAPACITY` is not a way to find the starving
+ * > prisoner; what would make one is a projected threshold or a projected
+ * > worst-off ordering, and both are projection changes rather than panel ones.
+ *
+ * It is quoted rather than deleted because it was right, and because what
+ * changed is a *fact it depended on* rather than the owner's mind
+ * (`docs/AGENT_WORKFLOW.md` §4: mark both directions).
+ *
+ * **The premise expired.** "The simulation defines no warning or critical
+ * threshold for any need" was true when it was written and stopped being true
+ * at `d1b6b5c` (#488), which added `STATE_INCOME_UNMET_NEED_LEVEL` -- the level
+ * at or below which the state withholds part of that prisoner's day of the
+ * operating grant. `docs/HUD_PROJECTIONS.md` gap 7 records the same correction
+ * against itself: *"Narrowed, not closed, by #443 ... it is the fact this gap
+ * was waiting for."*
+ *
+ * **Its remedy is what shipped.** The old text named two things that would make
+ * a bar worth drawing -- "a projected threshold or a projected worst-off
+ * ordering" -- and said both were projection changes. Both halves are now true
+ * of this panel: `lowestNeed` was already the worst-off *per row*, and
+ * `PrisonerNeedViewModel.unmetForStateIncome` is the projected threshold, added
+ * for this. The panel compares nothing; it reads a flag. So this is the
+ * refusal's own condition being met, not the refusal being overridden.
+ *
+ * **What stayed refused.** Gap 7's remaining half -- the player-facing "your
+ * prisoners are unhappy" line -- is the owner's, and nothing here invents one.
+ * The bar's `warning` tone means *the state is withholding for this need*,
+ * which is a promise the code keeps (`stateIncomeForPrisonerDay` really does
+ * pay less), and it is the shipped constant rather than a number chosen here.
+ * If the owner wants a different line, `STATE_INCOME_UNMET_NEED_LEVEL` is the
+ * single edit and `describePrisonerNeed` is the single reader of the flag.
+ *
+ * ### What it still deliberately does not show
  *
  * **No tile, and no cell.** The two spatial fields on the row are a tile and an
  * accommodation, and neither answers "where is this person". `ActionSystem`
@@ -153,6 +188,92 @@ export function describePrisonerRow(row: HudPrisonerRowViewModel): PrisonerRowRe
     tone: row.classificationGroupId === 'high-risk' ? 'warning' : 'neutral',
     badgeKey: row.standingLabelKey,
   };
+}
+
+/**
+ * The maximum a need's `permille` can reach, and the `max` the bar is driven
+ * against.
+ *
+ * `1000` is `BoundedValue`'s own scale, not a number chosen here. The bar is
+ * given `(permille, 1000)` rather than the need's raw level and raw maximum
+ * because the projection deliberately withholds both -- `BoundedValue`'s header
+ * says exposing them "would guarantee a HUD somewhere hard-codes `255`" -- and
+ * per-mille is the figure it publishes instead.
+ *
+ * That substitution has a documented hazard and it is pinned rather than
+ * argued. `toBoundedValue` warns that deriving a fill from `permille` "quantizes
+ * twice", so `filledSegments(permille, 1000)` could in principle light a
+ * different number of segments than the projection's own `filled` did from
+ * `(level, NEED_MAX)`. It does not, for any of the 256 levels a need can hold,
+ * and `tests/unit/regime-need-bar.test.ts` drives all 256 through both to say
+ * so -- the same guard `tests/unit/segment-fill-agreement.test.ts` puts on the
+ * two fill implementations.
+ */
+export const NEED_BAR_MAX_PERMILLE = 1000;
+
+/**
+ * What one prisoner's worst-need bar says and what colour it says it in.
+ *
+ * Pure and exported for `describePrisonerRow`'s reason, which is the whole
+ * reason this function exists rather than four lines inside `paintRoster`:
+ * `vitest.config.ts` is `environment: 'node'` with no jsdom, so nothing
+ * headless can call `createRegimePanel`, and a tone rule written inside the DOM
+ * builder would be unreachable from `pnpm test` rather than merely untested --
+ * a mutation there survives because nothing can observe it.
+ *
+ * ### The tone is the state's line, and it is the only line drawn
+ *
+ * `warning` when the state is withholding part of this prisoner's day of the
+ * operating grant over this need, `neutral` otherwise. Three things about that
+ * choice are deliberate:
+ *
+ * - **The threshold is not decided here and is not a number here.** The panel
+ *   receives `unmetForStateIncome`, a flag the projection computed from
+ *   `STATE_INCOME_UNMET_NEED_LEVEL` via the same predicate `unmetNeedCount`
+ *   sums to compute the money. There is no comparison and no constant on this
+ *   thread to drift.
+ * - **`warning` and not `danger`.** Nothing in the simulation calls an unmet
+ *   need critical, and `docs/HUD_PROJECTIONS.md` gap 7 keeps the player-facing
+ *   "this is bad" threshold with the owner. `warning` says the prison is losing
+ *   money over this, which is true and is the strongest claim the code can keep.
+ * - **The colour never stands alone.** The row renders the need's *word* beside
+ *   the bar and the bar carries `aria-valuetext`, so a colour-blind player and a
+ *   screen reader both get the fact without the hue -- the rule
+ *   `describePrisonerRow` states for the badge, applied to the bar.
+ */
+export interface PrisonerNeedReadout {
+  readonly tone: BadgeTone;
+  /** The need's word: `need.hunger.name` and its five siblings, authored in `simulation-message-keys.ts`. */
+  readonly labelKey: LocalizationKey;
+  /** How full, on `BoundedValue`'s per-mille scale. */
+  readonly permille: number;
+}
+
+export function describePrisonerNeed(row: HudPrisonerRowViewModel): PrisonerNeedReadout {
+  const need = row.lowestNeed;
+  return {
+    tone: need.unmetForStateIncome ? 'warning' : 'neutral',
+    labelKey: need.labelKey,
+    permille: need.permille,
+  };
+}
+
+/**
+ * The bar's spoken value: the need's fullness as a percentage.
+ *
+ * A formatted *number* and not a sentence, which is the whole reason it is
+ * allowed to exist without an owner decision -- `AGENTS.md`'s fourth exclusion
+ * covers new player-facing copy, and this authors none. The form is the one
+ * `status-strip.ts` already uses for the day-progress readout:
+ * `formatNumber(fraction, { style: 'percent' })`, so the percent sign, its
+ * spacing and the digits are the locale's rather than this panel's.
+ *
+ * `maximumFractionDigits: 0` because a bar of ten segments cannot show a
+ * fraction of a percent, and a spoken value more precise than the thing it
+ * describes invites a player to trust a digit the readout did not draw.
+ */
+export function formatNeedValueText(localizer: HudLocalizer, permille: number): string {
+  return localizer.formatNumber(permille / NEED_BAR_MAX_PERMILLE, { style: 'percent', maximumFractionDigits: 0 });
 }
 
 /**
@@ -294,7 +415,29 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
     readonly element: HTMLElement;
     readonly name: HTMLSpanElement;
     readonly activity: HTMLSpanElement;
+    readonly needName: HTMLSpanElement;
+    readonly needBar: SegmentedBar;
     readonly badge: StatusBadge;
+  }
+
+  /**
+   * Everything a row asserts about *a particular prisoner*, removed together.
+   *
+   * One helper and not two copies, because the two callers below -- a roster
+   * that went away entirely, and a pooled row the current reply is too short to
+   * fill -- have to clear exactly the same set, and the previous shape (the
+   * same three `delete`s written twice) is the shape that silently keeps a
+   * fourth attribute in one place and not the other. A hidden row carrying a
+   * stale `data-need` would answer a probe with the last prisoner who occupied
+   * that slot.
+   */
+  function clearRowData(row: HTMLElement): void {
+    delete row.dataset['prisoner'];
+    delete row.dataset['classificationGroup'];
+    delete row.dataset['riskTier'];
+    delete row.dataset['need'];
+    delete row.dataset['needPermille'];
+    delete row.dataset['needUnmet'];
   }
 
   const rosterList = element('div', { className: 'hud-regime__roster-list' });
@@ -302,17 +445,36 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
   const rosterRows: readonly RosterRow[] = Array.from({ length: PRISONER_ROSTER_ROW_LIMIT }, (): RosterRow => {
     const name = valueText('', 'hud-regime__roster-name');
     const activity = eyebrowText('', 'hud-regime__roster-activity');
+    const needName = eyebrowText('', 'hud-regime__roster-need-name');
+    // Named empty and renamed on every paint. A pooled row's worst need
+    // changes between ticks, so the name that matters is the one `update`
+    // sets -- see `SegmentedBarState.label`.
+    const needBar = createSegmentedBar({ label: '' });
+    // The need's word and its bar share one line, and the line sits *beside*
+    // the activity rather than under it. Under it would make the row three
+    // lines deep, and `PRISONER_ROSTER_ROW_LIMIT`'s own derivation above puts
+    // the whole four-row budget inside 219.0px on the tightest viewport the
+    // browser suite visits -- a third line spends headroom that arithmetic
+    // does not have to give. Beside it the pair wraps only when the row is
+    // genuinely too narrow, which `hud.css` lets it do.
+    const need = element('div', {
+      className: 'hud-regime__roster-need',
+      children: [needName, needBar.element],
+    });
     const badge = createStatusBadge({ tone: 'neutral', text: '' });
     const row = element('div', {
       className: 'hud-regime__roster-row',
       children: [
-        element('div', { className: 'hud-regime__roster-text', children: [name, activity] }),
+        element('div', {
+          className: 'hud-regime__roster-text',
+          children: [name, element('div', { className: 'hud-regime__roster-line', children: [activity, need] })],
+        }),
         badge.element,
       ],
     });
     row.hidden = true;
     rosterList.append(row);
-    return { element: row, name, activity, badge };
+    return { element: row, name, activity, needName, needBar, badge };
   });
 
   const rosterCount = valueText('', 'hud-regime__roster-count');
@@ -342,9 +504,7 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
       delete rosterBlock.dataset['everAdmitted'];
       for (const row of rosterRows) {
         row.element.hidden = true;
-        delete row.element.dataset['prisoner'];
-        delete row.element.dataset['classificationGroup'];
-        delete row.element.dataset['riskTier'];
+        clearRowData(row.element);
       }
       rosterList.hidden = true;
       rosterEmpty.hidden = true;
@@ -368,15 +528,26 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
       const prisoner = shown[index];
       if (prisoner === undefined) {
         row.element.hidden = true;
-        delete row.element.dataset['prisoner'];
-        delete row.element.dataset['classificationGroup'];
-        delete row.element.dataset['riskTier'];
+        clearRowData(row.element);
         return;
       }
       const readout = describePrisonerRow(prisoner);
+      const need = describePrisonerNeed(prisoner);
+      const needWord = t(need.labelKey);
       row.name.textContent = formatPrisonerName(t, prisoner);
       row.activity.textContent = formatPrisonerActivity(t, prisoner);
       row.badge.update({ tone: readout.tone, text: t(readout.badgeKey) });
+      row.needName.textContent = needWord;
+      // `label` on every update, not just the first: the row is pooled and the
+      // *subject* of this bar changes with the prisoner and with which of their
+      // six needs is now lowest.
+      row.needBar.update({
+        value: need.permille,
+        max: NEED_BAR_MAX_PERMILLE,
+        valueText: formatNeedValueText(localizer, need.permille),
+        tone: need.tone,
+        label: needWord,
+      });
       row.element.hidden = false;
       // The row's identity for a browser probe, and the two fields the badge
       // renders as a word and a colour. The rows are pooled, so "the second
@@ -387,6 +558,32 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
       else row.element.dataset['classificationGroup'] = prisoner.classificationGroupId;
       if (prisoner.riskTier === undefined) delete row.element.dataset['riskTier'];
       else row.element.dataset['riskTier'] = String(prisoner.riskTier);
+      // The need as data, and this is the half of the change that makes it a
+      // measurement surface rather than a nicety.
+      //
+      // A bar's value lives in a CSS width and a count of lit `<span>`s, and
+      // neither is a number a script can read without re-deriving the panel's
+      // own quantization. These three are read directly:
+      //
+      // - `data-need` -- *which* need, as the stable simulation id, so a probe
+      //   does not have to recognise a translated word.
+      // - `data-need-permille` -- how full, `0`..`1000`, unrounded and
+      //   unquantized. This is the field that finally tells "the need was
+      //   served" from "the need decayed but not far enough": before it, both
+      //   read as a prisoner on the roster with no number attached.
+      // - `data-need-unmet` -- whether the state is withholding grant over it.
+      //   The worst need being unmet is exactly `unmetNeedCount >= 1`, because
+      //   no other need can be lower, so this attribute answers "is this
+      //   prisoner costing the prison income at all" -- the question
+      //   `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` has been
+      //   unconfirmable in ordinary play for want of any readout at all.
+      //
+      // On the row rather than on the bar for `data-prisoner`'s reason: the
+      // rows are pooled, so a probe keys everything about one prisoner off the
+      // one element that names them.
+      row.element.dataset['need'] = prisoner.lowestNeed.needId;
+      row.element.dataset['needPermille'] = String(need.permille);
+      row.element.dataset['needUnmet'] = String(prisoner.lowestNeed.unmetForStateIncome);
     });
 
     rosterList.hidden = shown.length === 0;

@@ -3463,6 +3463,25 @@ test.describe('the Regime panel (issue #451)', () => {
    * tier -- and the third is the one the raw-key check below needs: it is the
    * only row whose badge word comes out of `intake-stage` and whose name comes
    * out of `hud.regime.roster-unnamed`.
+   *
+   * ### The four `lowestNeed` values are four branches of the bar, not filler
+   *
+   * `permille: 200` is the level the state's line sits on exactly
+   * (`STATE_INCOME_UNMET_NEED_LEVEL` is 51 of `NEED_MAX` 255, and 51/255 is
+   * a fifth to the digit), and rows 1 and 3 straddle it: 200 with
+   * `unmetForStateIncome: true` and 204 -- the very next level, 52 -- with
+   * `false`. A panel that drew the tone off the wrong side of the comparison
+   * would repaint one of the two and be caught. Row 2 is the floor a need with
+   * no route at all falls to, and row 4 is a fully served one.
+   *
+   * **These flags are supplied, not derived, and that is the limit of what this
+   * file can prove.** `HudPrisonerRosterViewModel` is what the panel is *told*;
+   * whether the flag agrees with the money is a question about
+   * `prisonerRosterFromProjection` and `projectPrisonerRoster`, and it is asked
+   * where those can be run -- `tests/unit/regime-need-bar.test.ts` and
+   * `tests/integration/prisoner-roster-readout.test.ts`. What this file proves
+   * is that the panel renders the flag it was given, which is the half that
+   * needs a browser.
    */
   const ROSTER: HudPrisonerRosterViewModel = {
     total: 9,
@@ -3476,6 +3495,7 @@ test.describe('the Regime panel (issue #451)', () => {
         standingLabelKey: 'risk-tier.1.name',
         classificationGroupId: 'general-population',
         riskTier: 1,
+        lowestNeed: { needId: 'hunger', labelKey: 'need.hunger.name', permille: 200, unmetForStateIncome: true },
       },
       {
         entityId: 5,
@@ -3485,12 +3505,14 @@ test.describe('the Regime panel (issue #451)', () => {
         standingLabelKey: 'risk-tier.3.name',
         classificationGroupId: 'high-risk',
         riskTier: 3,
+        lowestNeed: { needId: 'hygiene', labelKey: 'need.hygiene.name', permille: 0, unmetForStateIncome: true },
       },
       {
         entityId: 8,
         activityLabelKey: 'action-phase.idle.name',
         travelling: false,
         standingLabelKey: 'intake-stage.classification.name',
+        lowestNeed: { needId: 'bladder', labelKey: 'need.bladder.name', permille: 204, unmetForStateIncome: false },
       },
       {
         entityId: 11,
@@ -3500,6 +3522,7 @@ test.describe('the Regime panel (issue #451)', () => {
         standingLabelKey: 'risk-tier.0.name',
         classificationGroupId: 'general-population',
         riskTier: 0,
+        lowestNeed: { needId: 'recreation', labelKey: 'need.recreation.name', permille: 1000, unmetForStateIncome: false },
       },
     ],
   };

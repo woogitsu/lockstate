@@ -63,6 +63,20 @@ export interface SegmentedBarState {
   /** Spoken form, e.g. "142 of 180". Colour and length never carry this alone. */
   readonly valueText: string;
   readonly tone?: BadgeTone;
+  /**
+   * Renames the bar, for a pooled bar whose *subject* changes between repaints
+   * rather than only its value.
+   *
+   * The Regime panel's roster rows are pooled and each draws that prisoner's
+   * **worst** need, so one bar is "Hunger" on one tick and "Bladder" on the
+   * next. `options.label` is fixed at construction and cannot say that; a bar
+   * left with the stale name would announce the wrong need with the right
+   * number, which is worse than announcing nothing.
+   *
+   * Omitted leaves the name alone, so the status strip's occupancy bar -- whose
+   * subject never changes -- passes nothing and is unaffected.
+   */
+  readonly label?: string;
 }
 
 export interface SegmentedBar {
@@ -94,6 +108,7 @@ export function createSegmentedBar(options: SegmentedBarOptions): SegmentedBar {
     root.setAttribute('aria-valuemax', String(Math.max(0, state.max)));
     root.setAttribute('aria-valuenow', String(Math.max(0, state.value)));
     root.setAttribute('aria-valuetext', state.valueText);
+    if (state.label !== undefined) root.setAttribute('aria-label', state.label);
   };
 
   return { element: root, update };

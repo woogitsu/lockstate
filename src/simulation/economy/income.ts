@@ -271,6 +271,27 @@ function floorDiv(numerator: number, denominator: number): number {
 }
 
 /**
+ * Whether one need's **whole level** is at or below
+ * `STATE_INCOME_UNMET_NEED_LEVEL` -- that is, whether the state withholds for
+ * it when it settles the day.
+ *
+ * Extracted from `unmetNeedCount`'s loop rather than written beside it, and the
+ * reason is drift: `src/simulation/presentation/prisoner-projection.ts` now
+ * reports this same fact per need so a panel can draw it, and a second `<=`
+ * against the same constant is two copies of one rule that must agree. This is
+ * the one copy. `unmetNeedCount` below calls it, so the predicate a projection
+ * shows and the predicate the money is computed from are the same function --
+ * not merely the same number -- and a change to the comparison cannot reach the
+ * treasury without reaching the readout.
+ *
+ * Takes a level rather than a `NeedsComponent`: the caller has already read it,
+ * and a predicate that re-read it would invite the two reads to disagree.
+ */
+export function isNeedUnmetForStateIncome(level: number): boolean {
+  return level <= STATE_INCOME_UNMET_NEED_LEVEL;
+}
+
+/**
  * How many of `NEED_IDS` this prisoner has at or below
  * `STATE_INCOME_UNMET_NEED_LEVEL`.
  *
@@ -287,7 +308,7 @@ function floorDiv(numerator: number, denominator: number): number {
 export function unmetNeedCount(needs: NeedsComponent, index: number): number {
   let unmet = 0;
   for (const needId of NEED_IDS) {
-    if (needs.get(index, needId) <= STATE_INCOME_UNMET_NEED_LEVEL) unmet += 1;
+    if (isNeedUnmetForStateIncome(needs.get(index, needId))) unmet += 1;
   }
   return unmet;
 }
