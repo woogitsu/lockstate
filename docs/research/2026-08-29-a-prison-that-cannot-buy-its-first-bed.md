@@ -205,17 +205,28 @@ than a second mechanism.
 
 ## 5. ADR draft — what a prison that cannot afford its first bed is owed
 
-> **Superseded by the owner's ruling of 2026-08-29 and kept unchanged below.**
-> This section is a set of options with a recommendation; the owner was shown
-> them and **chose three of them together** — a recurring grant, ADR 0017's
-> degradation ladder, and sell-back at a loss — leaving out the starting plank
-> grant. So
+> **Superseded by the owner's rulings of 2026-08-29 and kept unchanged below.**
+> This section is a set of six options with a recommendation. The owner was shown
+> them and **chose three together, then changed the shape of one and refused a
+> fourth thing outright**, so
 > [ADR 0075](../adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
-> is three decisions in build order, not a choice, and it is the document to
-> cite. This draft is kept as the record of what was known and recommended
-> *before* the ruling, per this directory's rule that a record is read-only
-> history: the recommendation below (option 3 now, option 2 next) was **not**
-> what was taken, and marking that is more useful than overwriting it.
+> is three decisions in build order and is the document to cite:
+>
+> 1. **Not the recurring grant this draft describes.** The owner proposed a shape
+>    the option list did not contain — **development grants at population
+>    thresholds**, one-off per threshold, thresholds continuing indefinitely,
+>    first threshold very low. It pays for growth rather than for existing, which
+>    is why it escapes what ADR 0017 decision 1 rejected by name.
+> 2. **The ladder, with no bankruptcy.** Asked whether bankruptcy should follow
+>    N days in the red, they refused — *"Bez bankructwa, tylko minus i pożyczki"*
+>    — which is a decision **not** to overturn ADR 0017 decision 8. Loans are the
+>    exit, and the ADR records that they are load-bearing rather than optional.
+> 3. Sell-back at a loss, as below.
+>
+> The starting plank grant this draft recommends first was **not** taken; §2's
+> payroll measurement is why. Kept unchanged per this directory's rule that a
+> record is read-only history — what was recommended is not what was chosen, and
+> marking that is more useful than overwriting it.
 
 **Unnumbered. Renumber the file, its row in `docs/adr/README.md` and every
 citation of it when a number is assigned.**
@@ -281,17 +292,24 @@ product call and it is the owner's.
 
 ## 6. ADR draft — what happens to a resident whose bed is taken away, and what a finished object un-builds into
 
-> **Question B superseded by the owner's ruling of 2026-08-29; question A stands
-> as proposed. Kept unchanged below.** On B the owner chose **B3, full materials
-> by both routes** — `RemoveObject` starts refunding — with the cost that
-> dismantling becomes free put in front of them and accepted. This draft
-> recommends *no* option on B and records the disagreement instead; that was the
-> right call before a ruling and is not what the ruling says.
+> **Both questions superseded by the owner's rulings of 2026-08-29. Kept
+> unchanged below.** On **B** they chose full materials by both routes —
+> `RemoveObject` starts refunding — with the cost that dismantling becomes free
+> put in front of them and accepted; this draft recommends *no* option on B and
+> records the disagreement instead, which was the right call before a ruling and
+> is not what the ruling says. On **A** they chose **relocate**, where this draft
+> recommends revalidating the payment first.
+>
+> **The two are not alternatives and
 > [ADR 0076](../adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
-> is the decided form. Question A was **not** put to the owner, so §6's A2-then-A1
-> recommendation is carried into the ADR unchanged — and the ADR adds the
-> ordering constraint this draft could not have known: **B without A makes the
-> recycling one press instead of two.**
+> writes them as one decision in two parts** — relocation is the *behaviour*, and
+> `min(occupancy, residentCapacity)` is the *invariant* that holds when
+> relocation cannot. The draft's argument for the payment fix is not overturned
+> by the ruling; it is the reason the invariant cannot be dropped, because
+> relocation's correctness rests entirely on the `'no-vacancy'` branch and the
+> exploit lives in exactly that branch. The ADR adds two things this draft could
+> not have known: **B without A makes the recycling one press instead of two**,
+> and **A(i) without A(ii) is the same mistake one layer down.**
 
 **Unnumbered.** Same renumbering commitment as §5. **This ADR amends ADR 0028
 decision 2**, which decided that a removal evicts nobody, and it should be read
@@ -405,11 +423,13 @@ holds.
 ### Entry — ADR 0075's price for a prison that cannot afford its first bed
 
 **What it decides.** Three things, ruled on by the owner on 2026-08-29 with the
-measurements in front of them: a **recurring grant** (ADR 0017 decision 3's
-already-accepted secondary income line), the **ADR 0017 degradation ladder**,
-and **sell-back at a loss** — in that build order. It is not a choice between
-remedies. Only the recurring grant closes the class on its own, because it is
-the only one that defends the payroll route.
+measurements in front of them, in build order: **(1) development grants at
+population thresholds** — the owner's own shape, one-off per threshold,
+thresholds continuing indefinitely, first threshold very low; **(2) a balance
+that may go negative with ADR 0017's degradation ladder running on it and loans
+as the way out, and explicitly no bankruptcy** — *"Bez bankructwa, tylko minus i
+pożyczki"*, which is a decision **not** to overturn ADR 0017 decision 8; and
+**(3) sell-back at a loss**. It is not a choice between remedies.
 
 **The evidence.** `tests/integration/economy-liquidity-hard-lock.test.ts`, six
 cases through the real kernel. 625 `item.brick` at 40 spends exactly the opening
@@ -419,16 +439,29 @@ leaves 40 and the same trap. A prison reaches the same state with **no such
 press at all**: 616 bricks, one guard hired, three in-game days of payroll at 80,
 balance 40 and falling.
 
-**What settling it commits the project to.** Decision 1 commits to a grant rate
-(#29's, per ADR 0017 decision 5). Decision 2 commits to **letting the balance go
-negative** — ADR 0017 names that precondition itself, *"`Treasury.spend` refuses
-rather than overdrawing, so there is no negative balance for a degradation
-ladder to respond to"* — which overturns `Treasury`'s own argument that its
-non-negative validators are load-bearing *for* decision 8, and requires the save
-schema's balance validator to be confirmed to admit a negative. Decision 3
-commits to a `SellMaterials` command, a refusal reason from an exhaustive
-`Record`, a HUD control, **a player-facing string** and a loss ratio. Decisions
-2 and 3 each add player-facing copy, which is the owner's under `AGENTS.md`.
+**What settling it commits the project to.** Decision 1 commits to a threshold
+sequence and its amounts (#29's, per ADR 0017 decision 5) and to **persisting the
+crossed-threshold set**, or a reload re-pays every grant already collected — the
+milking loop the one-off rule exists to prevent, reintroduced through the save.
+Decision 2 commits to **letting the balance go negative** — ADR 0017 names that
+precondition itself, *"`Treasury.spend` refuses rather than overdrawing, so there
+is no negative balance for a degradation ladder to respond to"* — which
+supersedes `Treasury`'s own argument that its non-negative validators are
+load-bearing *for* decision 8 (**a correction, not a deletion**: they defended it
+by preventing the debt, and it is now defended by the loan instead), requires the
+save schema's balance validator to be confirmed to admit a negative, and requires
+a home for outstanding loan principal or a player reloads out of their debt.
+Decision 3 commits to a `SellMaterials` command, a refusal reason from an
+exhaustive `Record`, a HUD control, **a player-facing string** and a loss ratio.
+Decisions 2 and 3 each add player-facing copy, which is the owner's under
+`AGENTS.md`.
+
+**The accepted risk to carry into the acceptance conversation.** With no floor
+and no terminal state, a prison can reach a position from which recovery is
+arithmetically impossible — a hard-lock again, only slower. That was put to the
+owner and accepted, on the basis that borrowing is the exit. **Whoever sets the
+loan terms and the first threshold owns whether the class is really closed**, and
+that is the same shape as the ADR's own weakest claim.
 
 **The exact line that would replace the status:** `**Accepted, <date>.**` in
 `docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md` and in
@@ -437,14 +470,14 @@ this entry in the same commit.**
 
 ### Entry — ADR 0076's price for a resident whose bed is taken away
 
-**What it decides.** Two questions that arrived differently. **B, the owner's,
-ruled 2026-08-29:** a finished object un-builds into its **full materials by
-either route** — `RemoveObject` starts refunding — with the cost that
-dismantling becomes free and early material pressure goes put in front of them
-and accepted. **A, not put to the owner and proposed:** pay
-`min(occupancy, residentCapacity)` now, and relocate the excess through
-`relocateResidentsOutOf` once the `'no-vacancy'` branch has an owner; refusing
-the removal is rejected for #478's reason.
+**What it decides.** Two questions, both ruled on by the owner on 2026-08-29.
+**B:** a finished object un-builds into its **full materials by either route** —
+`RemoveObject` starts refunding — with the cost that dismantling becomes free and
+early material pressure goes put in front of them and accepted. **A: relocate**,
+written in the ADR as one decision in two parts — **A(i)** the behaviour, giving
+`relocateResidentsOutOf` its second caller, and **A(ii)** the invariant, paying
+`min(occupancy, residentCapacity)` when relocation cannot. Refusing the removal
+is rejected for #478's reason.
 
 **It amends [ADR 0028](../adr/0028-object-placement-and-derived-room-capacity.md)
 decision 2**, whose *"Nobody is evicted"* and *"Removing the last bed from an
@@ -458,16 +491,21 @@ three times, ending on one standing bed. And a false paragraph in the tree,
 never exceed the capacity the prison has actually furnished"* while the same
 system pays for occupancy 1 against capacity 0.
 
-**What settling it commits the project to, and the constraint that must not be
-lost.** **B without A makes the recycling one press instead of two**, so the two
-cannot be accepted separately in that order — B is a good decision provided the
-residency half is closed and a bad one on its own. B's named implementation
+**What settling it commits the project to, and the two constraints that must not
+be lost.** **B without A makes the recycling one press instead of two**, so the
+two cannot be accepted separately in that order — B is a good decision provided
+the residency half is closed and a bad one on its own. **And A(i) without A(ii)
+is the same mistake one layer down**: relocation looks like it closes the loop
+and does not, because its correctness rests entirely on the `'no-vacancy'` branch
+and a player exploiting the loop has no spare furnished bed by construction. All
+three parts ship in the same release. B's named implementation
 hazard is that `RemoveObject` does not clear `materialsAllocated`, so a refund
 that leaves it populated is refunded a second time by a later `Undo`; the gate
-is a conservation test over `Remove` → `Undo` and `Undo` → `Remove`. A2 turns
-`tests/integration/object-removal-loop.test.ts` red at *"the state still pays for
-the place they occupy"* and B turns the same file red at *"does not refund a
-built object"* — both correct, both sentences that have to be rewritten by hand.
+is a conservation test over `Remove` → `Undo` and `Undo` → `Remove`. Three assertions in
+`tests/integration/object-removal-loop.test.ts` go red — *"the state still pays
+for the place they occupy"* (A(ii)), the two that keep the prisoner in the
+bedless cell (A(i)), and *"does not refund a built object"* (B) — each correct,
+each a sentence that has to be rewritten by hand.
 A determinism fingerprint moves for prisons in the affected state and no pinned
 fingerprint is re-baselined. No save format moves and no player-facing string is
 added by any decision taken.
