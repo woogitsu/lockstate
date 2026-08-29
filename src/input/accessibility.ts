@@ -121,6 +121,31 @@ export function nextUiScaleStep(value: number): number {
   return UI_SCALE_STEPS[(index + 1) % UI_SCALE_STEPS.length] as number;
 }
 
+/**
+ * Whether a scale is above the one the layout was designed at.
+ *
+ * A pure predicate rather than a comparison written at a call site, because it
+ * is a *layout* decision and it has to be the same one in two places -- the
+ * attribute the composition root stamps on `:root` and the rule in `hud.css`
+ * that reads it.
+ *
+ * What it is for, in one measurement: the HUD's tab bar is allowed to wrap to
+ * a second row, and it must be, or at 375x812 and 150 % the five tabs cannot
+ * shrink below their `min-width` floors and `.hud-tabs__inner`'s own
+ * `overflow: hidden` clips two of them away silently. But a flex line breaks on
+ * the items' *max-content* widths, before any shrinking is considered -- so a
+ * bar allowed to wrap wraps at 375x812 at **100 %** too, where shrinking would
+ * have fitted it, and that cost the Rooms panel 70.2px of arrival height at a
+ * viewport nobody asked to change. Measured: `app-shell.spec.ts` pins that
+ * height and reported 380.9 against 451.1.
+ *
+ * So the wrap is gated on the player having actually asked for a larger
+ * interface. At 75 % and 100 % the bar is exactly what it always was.
+ */
+export function isUiScaleEnlarged(value: number): boolean {
+  return snapUiScaleToStep(value) > DEFAULT_ACCESSIBILITY_SETTINGS.uiScale;
+}
+
 export function decodeAccessibilitySettings(input: unknown): AccessibilitySettings | undefined {
   if (typeof input !== 'object' || input === null || Array.isArray(input)) return undefined;
   const record = input as Record<string, unknown>;

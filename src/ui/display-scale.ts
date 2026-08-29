@@ -1,7 +1,12 @@
 import type { LocalizationKey } from '../content/localization';
-import { type AccessibilitySettings, nextUiScaleStep, snapUiScaleToStep } from '../input/accessibility';
+import {
+  type AccessibilitySettings,
+  isUiScaleEnlarged,
+  nextUiScaleStep,
+  snapUiScaleToStep,
+} from '../input/accessibility';
 import type { MessageParameters } from '../services/localization/format';
-import { element } from './primitives/dom';
+import { element, eyebrowText } from './primitives/dom';
 import { createIcon } from './primitives/icon';
 import { DISPLAY_SCALE_MESSAGE_KEY } from './display-scale-messages';
 
@@ -27,7 +32,7 @@ import { DISPLAY_SCALE_MESSAGE_KEY } from './display-scale-messages';
  * **The steps are fixed and they live in `src/input/accessibility.ts`**, beside
  * the range a persisted record is checked against, because which values are
  * legal is a property of the record and not of this control. This module never
- * invents a scale: every value it reports has come out of `stepUiScale`.
+ * invents a scale: every value it reports has come out of `nextUiScaleStep`.
  *
  * The control is **controlled**, in the sense `createChoiceGroup` and
  * `createNumberField` already use here: pressing a step reports the value that
@@ -77,7 +82,26 @@ export interface DisplayScaleControl {
  * different vocabularies.
  */
 export function applyUiScale(root: HTMLElement, scale: number): void {
-  root.style.setProperty('--ui-scale', String(snapUiScaleToStep(scale)));
+  const step = snapUiScaleToStep(scale);
+  root.style.setProperty('--ui-scale', String(step));
+  /*
+   * And one attribute beside it, for the single rule a multiplier cannot
+   * express.
+   *
+   * `hud.css` lets the tab bar wrap to a second row, which it has to above
+   * 100 % or the tabs are clipped away by their own `overflow: hidden`. But a
+   * flex line breaks on max-content and never on the shrunk size, so a bar
+   * that is *allowed* to wrap also wraps at 375x812 at 100 %, where shrinking
+   * fitted it perfectly well -- and that is a 55px band taken out of the world
+   * at the default scale, which no player asked for. CSS has no way to say
+   * "wrap only if you would otherwise clip", so the condition that is actually
+   * meant -- the player asked for a bigger interface -- is stated instead.
+   *
+   * `isUiScaleEnlarged` and not `step > 1` here: it is a layout decision, it
+   * is made in two places, and only one of them is testable in `node`.
+   */
+  if (isUiScaleEnlarged(step)) root.dataset['uiScaleEnlarged'] = 'true';
+  else delete root.dataset['uiScaleEnlarged'];
 }
 
 /**
@@ -147,21 +171,30 @@ export function createDisplayScaleControl(options: DisplayScaleControlOptions): 
     options.onSelect(nextUiScaleStep(current));
   });
 
+  const legend = eyebrowText(t(DISPLAY_SCALE_MESSAGE_KEY.region), 'display-scale__legend');
+  legend.setAttribute('aria-hidden', 'true');
+
   const root = element('div', {
     className: 'display-scale',
     attributes: {
       role: 'group',
       // Names the control "interface scale" rather than leaving a bare
-      // percentage beside a game that also has a camera zoom.
+      // percentage beside a game that also has a camera zoom. The same words
+      // are on screen in the legend below, so this is a machine-readable copy
+      // of a visible label rather than the only place the meaning exists.
       'aria-label': t(DISPLAY_SCALE_MESSAGE_KEY.region),
     },
     children: [
       // Two letters at two sizes: the glyph a player already reads as "text
-      // size" everywhere else, and the only visible thing distinguishing this
-      // from the world's zoom for someone not using a screen reader.
-      // `createIcon` marks every glyph `aria-hidden`, so it adds nothing to
-      // the name.
+      // size" everywhere else. `createIcon` marks every glyph `aria-hidden`,
+      // so it adds nothing to the name.
       createIcon('ui-scale', 'sm'),
+      // A *visible* legend, which the strip had no room for and the rail does.
+      // Without it the row is a percentage beside a glyph, in a game whose
+      // camera also zooms on `+`/`-`; `aria-hidden` because the group above
+      // already carries the same words as its name and a screen reader would
+      // otherwise read them twice.
+      legend,
       button,
     ],
   });

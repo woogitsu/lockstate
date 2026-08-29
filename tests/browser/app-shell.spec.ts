@@ -732,11 +732,45 @@ const ROOM_DRAG_DELTAS_PX = [192, 128] as const;
  * the fold landed -- identical in both, which is the claim. The panel is the
  * rail's flexible member, so its height is where any change to the save panel,
  * the strip, the tab bar or either panel's floor would show up.
+ *
+ * **`375x812` moved from 451.1 to 441 in #545, and the 10.1px is the strip's,
+ * not this panel's.** The number is a change *detector*, so a change to it has
+ * to come with the measurement that caused it; this one is a defect being paid
+ * off rather than a budget being spent, and it was found by this assertion
+ * going red.
+ *
+ * `.hud-strip` used to be `height: var(--hud-strip-height)` -- a *fixed*
+ * height. At 375px the strip wraps to three rows, and measured on `origin/main`
+ * (ec10451, second worktree, this page and this prison) those rows are
+ * 100.5px of content inside an 88px box:
+ *
+ *     .hud-strip__brand      225.1x19   @8,-6.7
+ *     .hud-strip__metrics    359x29.5   @8,16.3
+ *     .hud-strip__clock      179x16     @8,63.8
+ *     .hud-strip__transport  172x44     @195,49.8
+ *
+ * `align-content: center` splits the 12.5px overflow between the two ends, so
+ * **the brand badge is laid out at y = -6.7, above the strip's own background
+ * band**, and the transport row's last 5.8px is drawn over the rail beneath.
+ * The strip was borrowing 12.5px it had never been given, and this panel was
+ * one of the things lending it.
+ *
+ * #545 needed the strip to be able to grow -- at 125 % and above it wraps at
+ * every width, and a fixed height would have spilled whole rows over the rail
+ * -- so it is `min-height` now. The box then contains its own rows (101.5 for
+ * 100.5 at 375x812) and the borrowed pixels go back to the rail, where the
+ * aside slot's `min-height: 25%` turns 12.5px of rail into 10.1px off this
+ * panel. `every interface scale step keeps the HUD inside the viewport it is
+ * drawn in (#545)` asserts the containment directly, so the fix is guarded
+ * rather than merely recorded here.
+ *
+ * The other two viewports are unchanged: the strip does not wrap at 900px or
+ * 1280px, so it never overflowed there.
  */
 const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
   '1280x720': 420.1,
   '900x600': 338.1,
-  '375x812': 451.1,
+  '375x812': 441,
 };
 
 /**
@@ -8061,10 +8095,37 @@ test.describe('the assembled application', () => {
               ? 0
               : Math.round((strip.getBoundingClientRect().bottom - minimapRect.top) * 10) / 10;
 
+          /*
+           * The status strip contains its own rows.
+           *
+           * It used to be a *fixed* height, and at 375px -- where it wraps to
+           * three rows -- that was 100.5px of content in an 88px box on
+           * `origin/main`, with `align-content: center` laying the brand badge
+           * at y = -6.7 and the transport row's last 5.8px over the rail. #545
+           * made it `min-height`, because a scaled strip wraps at every width
+           * and a fixed height would have spilled whole rows. This is the
+           * assertion that keeps it honest, at every step: a box measured
+           * against the content it is holding, rather than a declaration
+           * repeated back.
+           */
+          const stripRows = strip === null ? [] : [...strip.children].map((child) => child.getBoundingClientRect());
+          const stripRect = strip?.getBoundingClientRect();
+          const stripOverflow =
+            strip === null || stripRect === undefined || stripRows.length === 0
+              ? 0
+              : Math.round(
+                  Math.max(
+                    0,
+                    stripRect.top - Math.min(...stripRows.map((r) => r.top)),
+                    Math.max(...stripRows.map((r) => r.bottom)) - stripRect.bottom,
+                  ) * 10,
+                ) / 10;
+
           const rail = document.querySelector<HTMLElement>('.hud__rail');
           return {
             outside,
             unreachable,
+            stripOverflow,
             minimapOverStrip: Math.max(0, overlap),
             // The rail is not the scroll container; its panels are. That is
             // the second half of the #88 fix and it must survive every scale.
@@ -8078,6 +8139,10 @@ test.describe('the assembled application', () => {
         expect(
           report.minimapOverStrip,
           `the minimap frame is drawn over the status strip at ${width}x${height} and ${scale * 100}%`,
+        ).toBe(0);
+        expect(
+          report.stripOverflow,
+          `the status strip lays its own rows outside its box at ${width}x${height} and ${scale * 100}%`,
         ).toBe(0);
       }
     }

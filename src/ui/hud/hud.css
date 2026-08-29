@@ -151,6 +151,7 @@
   row-gap: var(--space-1);
 }
 
+
 .hud-strip__metrics {
   display: flex;
   align-items: center;
@@ -1814,7 +1815,6 @@
    * `justify-content: center` so a short second row sits under the middle of
    * the first rather than hanging off its left edge.
    */
-  flex-wrap: wrap;
   justify-content: center;
   gap: 0;
   max-width: 100%;
@@ -1825,6 +1825,16 @@
 }
 
 .hud__tabs { max-width: 100%; box-sizing: border-box; }
+
+/*
+ * The wrap itself, gated on the player having asked for a larger interface
+ * (#545). `src/ui/display-scale.ts` stamps the attribute in the same call that
+ * writes `--ui-scale`, and its comment carries the measurement: a flex line
+ * breaks on max-content, so a bar that may wrap wraps at 375x812 at 100 % as
+ * well -- where the tabs shrink and fit, and where the second row cost the
+ * Rooms panel 70.2px of arrival height.
+ */
+:root[data-ui-scale-enlarged='true'] .hud-tabs__inner { flex-wrap: wrap; }
 
 .hud-tabs__inner > .ui-tab + .ui-tab {
   border-left: var(--hairline) solid var(--border-hairline);

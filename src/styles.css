@@ -285,45 +285,71 @@ canvas {
  *
  * Host chrome, not a HUD projection, so it lives here beside the save panel
  * and the consent card rather than in `src/ui/hud/hud.css` -- the same split
- * `src/ui/brand.css` makes for the badge that shares its slot. `src/main.ts`
- * mounts it into `StatusStrip.brandSlot`, which the HUD documents as "a box at
- * the left end of the strip, for the host to mount page chrome into": the HUD
- * gives it a place in the flex row and knows nothing else about it.
+ * `src/ui/brand.css` makes for the badge. `src/main.ts` mounts it into
+ * `HudHandle.asideSlot`, the host's own box at the top of the HUD's right
+ * rail, which the HUD documents as *not tab-scoped*: "what sits here is
+ * available on every tab, which is the point". A display preference is
+ * exactly that.
  *
- * **Why the strip and not a panel in the rail.** The rail is fully subscribed
- * at 900x600 -- measured on the assembled page, `.hud__aside` pinned at its
- * 120.7px floor with a save panel wanting 210px, and the Build panel at 336px
- * of box for 336px of content. There is nothing there to spend. The strip is
- * the one place a `flex: none` island costs a *scroll container*
- * (`.hud-strip__metrics`) rather than a fixed budget.
+ * **Why not the status strip**, which two earlier drafts used: it cannot
+ * afford a tap target at 375x812. `src/main.ts` carries both measurements --
+ * the brand slot costs 23px of strip height and the Rooms panel 28.8px of
+ * arrival height, and a slot at the far end costs a whole fourth row because
+ * the clock's automatic minimum size already fills the one it shares with the
+ * transport. Neither is a cost this feature is allowed to impose on a viewport
+ * nobody asked to change.
  *
- * **Why one button and not a `-`/`+` pair.** Measured, at the viewport that
- * binds -- and it is the phone here rather than 900x600. The strip's first row
- * at 375px has 134px left beside the brand badge; the pair is 127px before any
- * label, so it fits with 7px to spare against a badge that grows every time
- * the patch version gains a digit. Shipped, it pushed the brand slot onto a
- * second row, the strip from 126.5px to 149.5px, and the Build panel to 362px
- * of box for 375px of content -- which `app-shell.spec.ts` fails on, correctly.
- * One button is 76px, the strip stays 126.5px and the Build panel is 379/379
- * exactly as it was before this control existed.
+ * **What it costs here, measured**: `.hud__aside` takes its height from the
+ * rail and not from its contents, so this row comes out of the *save panel's*
+ * visible box and out of nothing else -- the Build and Rooms panels are
+ * untouched at every viewport. The save panel is already a scroll container at
+ * the short ones, which is why that is affordable and why the fourth Import
+ * button was affordable before it (`src/ui/save-panel.ts`).
  *
- * Every length here is a token, so the control scales with the interface it
- * scales -- which is the honest behaviour: a control that stayed 44px while
- * everything around it grew would be the one thing a player at 200 % could not
- * hit.
+ * Every length is a token, so the control scales with the interface it scales.
+ * A control that stayed 44px while everything around it grew would be the one
+ * thing a player at 200 % could not hit.
  */
 .display-scale {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
   flex: none;
+  width: var(--hud-rail-panel-width);
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-bottom: var(--space-2);
+  padding: 0 var(--space-1) 0 var(--space-3);
+  background: var(--surface-raised);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
   color: var(--text-subtle);
+}
+
+/* The same breakpoint and the same reason as `.save-panel` directly above:
+   the rail stops being a fixed-width column, so its contents stop being one. */
+@media (max-width: 720px) {
+  .display-scale {
+    width: 100%;
+  }
+}
+
+/* Takes the row and pushes the button to the end, and truncates rather than
+   wrapping: this is a legend, and a legend that wraps makes the row two tap
+   targets tall for no gain. */
+.display-scale__legend {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .display-scale__cycle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: none;
   min-width: var(--tap-target);
   min-height: var(--tap-target);
   padding: 0 var(--space-2);

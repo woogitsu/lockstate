@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTION_REGISTRY, DEFAULT_ACCESSIBILITY_SETTINGS, MAX_UI_SCALE, MIN_UI_SCALE, UI_SCALE_STEPS, nextUiScaleStep, snapUiScaleToStep, DEFAULT_INPUT_SETTINGS, DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, type KeyValueStore, PointerInputAdapter, TouchGestureTracker, decodeAccessibilitySettings, decodeInputSettings, findBindingConflicts, loadAccessibilitySettings, loadInputSettings, remapAndPersistKeyboardBinding, remapKeyboardBinding, isTextEntryFocused, resolveBrowserKeyValueStore, resolveKeyboardLabel, saveAccessibilitySettings, saveInputSettings, validateInputSettings } from '../../src/input';
+import { ACTION_REGISTRY, DEFAULT_ACCESSIBILITY_SETTINGS, MAX_UI_SCALE, MIN_UI_SCALE, UI_SCALE_STEPS, isUiScaleEnlarged, nextUiScaleStep, snapUiScaleToStep, DEFAULT_INPUT_SETTINGS, DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, type KeyValueStore, PointerInputAdapter, TouchGestureTracker, decodeAccessibilitySettings, decodeInputSettings, findBindingConflicts, loadAccessibilitySettings, loadInputSettings, remapAndPersistKeyboardBinding, remapKeyboardBinding, isTextEntryFocused, resolveBrowserKeyValueStore, resolveKeyboardLabel, saveAccessibilitySettings, saveInputSettings, validateInputSettings } from '../../src/input';
 
 class MemoryStore implements KeyValueStore {
   private readonly values = new Map<string, string>();
@@ -225,6 +225,28 @@ describe('semantic input', () => {
     // that makes the interface smaller.
     expect(nextUiScaleStep(0.9)).toBe(1.25);
     expect(nextUiScaleStep(0.8)).toBe(1);
+  });
+
+  it('knows which steps are larger than the one the layout was designed at', () => {
+    // A layout decision, and the only one a multiplier cannot express in CSS:
+    // the HUD's tab bar may wrap to a second row, and must above 100 % or its
+    // own `overflow: hidden` clips tabs away -- but a flex line breaks on
+    // max-content, so a bar that *may* wrap also wraps at 375x812 at 100 %,
+    // where the tabs shrink and fit. Measured, that second row cost the Rooms
+    // panel 70.2px of arrival height at a viewport nobody asked to change.
+    expect(isUiScaleEnlarged(0.75)).toBe(false);
+    expect(isUiScaleEnlarged(1)).toBe(false);
+    expect(isUiScaleEnlarged(1.25)).toBe(true);
+    expect(isUiScaleEnlarged(2)).toBe(true);
+
+    // It answers about the *step*, not the raw number, so a value restored
+    // from a build that allowed any number is classified as what it will
+    // actually be rendered at. 1.2 renders at 1.25 and is therefore enlarged;
+    // 1.1 and 0.9 both render at 1 and are not -- which is the answer the
+    // first draft of this test got wrong, having assumed 1.1 rounds up.
+    expect(isUiScaleEnlarged(1.2)).toBe(true);
+    expect(isUiScaleEnlarged(1.1)).toBe(false);
+    expect(isUiScaleEnlarged(0.9)).toBe(false);
   });
 
   it('snaps a persisted scale that is no longer a legal step, and still refuses one out of range', () => {

@@ -2618,7 +2618,30 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       displayScale.setScale(uiScale);
     },
   });
-  hud.brandSlot.append(displayScale.element);
+  /*
+   * The rail's aside slot, above the save panel -- and **not** the status
+   * strip, which is where two earlier drafts of this put it. The strip cannot
+   * afford a tap target at the viewport that binds, and the numbers are worth
+   * recording because they are not obvious:
+   *
+   *   - At 375x812 `hud.css` wraps the strip into three rows: the brand badge
+   *     (about 21px of type), the metrics, and the clock beside the transport.
+   *     A 44px control in the *brand* slot raises the first row from 21px to
+   *     44px -- the Rooms panel's arrival height went 451.1 -> 422.3, against a
+   *     number `app-shell.spec.ts` pins.
+   *   - Moving it to a new slot at the *end* of the strip was worse, not
+   *     better: the clock is `flex: 1` but its automatic minimum size is its
+   *     own content, measured at 179px, so clock + transport already fill the
+   *     359px row exactly and the control took a fourth row. 451.1 -> 405.
+   *
+   * `HudHandle.asideSlot` is documented as the host's own box in the rail,
+   * *not tab-scoped* -- "what sits here is available on every tab, which is
+   * the point" -- which is exactly what a display preference is. It costs the
+   * save panel below it 54px of visible height and costs the Build and Rooms
+   * panels nothing at all, because `.hud__aside` takes its height from the
+   * rail rather than from its contents (`hud.css`).
+   */
+  hud.asideSlot.append(displayScale.element);
 
   tool?.attachReadout((target) => hud?.setBuildTarget(target));
   return hud;

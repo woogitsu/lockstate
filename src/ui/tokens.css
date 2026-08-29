@@ -21,6 +21,143 @@
  * background step, and from nothing else.
  */
 
+/*
+ * The scaled tokens are *registered*, and that is not decoration (#545).
+ *
+ * A plain custom property is a token stream, not a value. Substitution happens
+ * but nothing else does, so once `--tap-target` became
+ * `calc(44px * var(--ui-scale))`,
+ * `getComputedStyle(root).getPropertyValue('--tap-target')` answered the string
+ * `"calc(44px * 1)"` -- and every reader that had been treating a token as a
+ * length got `NaN`. That is not hypothetical: it turned
+ * `app-shell.spec.ts`'s *"the Rooms panel yields the world it is drawn on"*
+ * red, where the tap-target check reads this very token rather than typing 44
+ * (its own comment says why), and `Number.isFinite(NaN)` then reported two
+ * perfectly good 44px controls as too small.
+ *
+ * `@property` fixes it at the source rather than at each reader. A registered
+ * property has a syntax, so its value is computed at computed-value time and
+ * `calc()` is resolved: the same call now answers `"44px"`, or `"55px"` at
+ * 125 %. Every consumer -- a stylesheet, a test, a future one nobody has
+ * written -- gets a length back from something declared to be a length.
+ *
+ * All seventeen scaled tokens are registered and not only the one a test
+ * happened to read, because "a token is a value you can read" should be true
+ * of the whole layer or of none of it; the next reader picks a different token.
+ *
+ * `inherits: true` matches what a custom property does by default. The
+ * `initial-value`s are the 100 % values, which is what a page gets if the
+ * cascade ever fails to supply one -- the same fallback the `--ui-scale: 1`
+ * default below expresses for the multiplier.
+ */
+@property --ui-scale {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+@property --space-1 {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 4px;
+}
+
+@property --space-2 {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 8px;
+}
+
+@property --space-3 {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 12px;
+}
+
+@property --space-4 {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 16px;
+}
+
+@property --space-5 {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 20px;
+}
+
+@property --space-6 {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 24px;
+}
+
+@property --radius-sm {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 4px;
+}
+
+@property --radius-md {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 6px;
+}
+
+@property --text-size-value {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 13px;
+}
+
+@property --text-size-body {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 13px;
+}
+
+@property --text-size-label {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 11px;
+}
+
+@property --icon-size-sm {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 16px;
+}
+
+@property --icon-size-md {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 18px;
+}
+
+@property --icon-size-lg {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 20px;
+}
+
+@property --tap-target {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 44px;
+}
+
+@property --hud-strip-height {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 48px;
+}
+
+@property --hud-rail-panel-width {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 264px;
+}
+
 :root {
   /* ---------------------------------------------------------------- */
   /* Layer 1: raw ramps                                               */
