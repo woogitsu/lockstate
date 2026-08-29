@@ -228,6 +228,37 @@ function collectTypeScriptFiles(directory: string): readonly string[] {
   return files;
 }
 
+/**
+ * Files that enumerate content ids **in order to say nothing uses them**, and
+ * therefore cannot count as a consumer of the ids they list.
+ *
+ * This file has always excluded itself, one line down, for exactly this reason.
+ * It became a list when `room-routing-contract.test.ts` arrived: that file asks
+ * the sibling question -- which catalogue rooms a *prisoner* can be routed into
+ * -- and its allowlist necessarily names every room with no route, which is a
+ * superset of the room ids this file lists. Scanned as an ordinary consumer, it
+ * turned all five surviving room entries stale in one go
+ * (`room.delivery-bay`, `room.storage-room`, `room.garbage-room`,
+ * `room.staff-room`, `room.utility-room`), and the stale-entry gate below then
+ * demanded their deletion.
+ *
+ * **That would have been a false graduation in the shape #188 already fixed
+ * once.** There, a *comment* saying an id was wired nowhere counted as wiring
+ * it, and the answer was to strip comments rather than to accept the reading.
+ * Here the sentence is a `Record` key rather than a comment, so stripping
+ * cannot see it, and the answer is the same in substance: the intended exit
+ * from these lists is what this file's docblock says it is -- something starts
+ * *using* the id -- and a file whose subject is the absence is not something
+ * using it.
+ *
+ * Matched by suffix, not by path, so moving either file between directories
+ * does not silently re-admit it.
+ */
+const SELF_DESCRIBING_ALLOWLISTS: readonly string[] = [
+  'unconsumed-content-contract.test.ts',
+  'room-routing-contract.test.ts',
+];
+
 const consumerSources = [...collectTypeScriptFiles(join(ROOT, 'src')), ...collectTypeScriptFiles(join(ROOT, 'tests'))]
   // Comments are stripped so an id discussed in prose does not read as a
   // reference. `stripComments` is the shared one: it removes a trailing `//`
@@ -235,10 +266,15 @@ const consumerSources = [...collectTypeScriptFiles(join(ROOT, 'src')), ...collec
   // comment saying an id is *not* wired anywhere used to count as wiring it
   // (#188).
   .map((path) => ({ where: relative(ROOT, path), text: stripComments(readFileSync(path, 'utf8')) }))
-  // The catalogs declare the ids; they cannot be their own consumers. This
-  // file is excluded for the same reason -- its allowlists name every id it
-  // is asserting about, so leaving it in would make every entry consumed.
-  .filter((source) => !source.where.startsWith(join('src', 'content')) && !source.where.endsWith('unconsumed-content-contract.test.ts'));
+  // The catalogs declare the ids; they cannot be their own consumers. A file
+  // whose *subject* is which ids nothing uses is excluded for the same reason:
+  // its allowlist names every id it asserts about, so leaving it in would make
+  // every entry consumed.
+  .filter(
+    (source) =>
+      !source.where.startsWith(join('src', 'content')) &&
+      !SELF_DESCRIBING_ALLOWLISTS.some((name) => source.where.endsWith(name)),
+  );
 
 const declaredIds = CATALOGS.flatMap((catalog) => catalog.registry.all().map((entry) => entry.id));
 const unconsumedIds = declaredIds.filter((id) => !consumerSources.some((source) => source.text.includes(`'${id}'`)));
