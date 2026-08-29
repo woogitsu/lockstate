@@ -2512,7 +2512,47 @@ each document's `## Status` heading: `0042`, `0043`, `0046`, `0047`, `0048`,
 `0049`, `0050`, `0051`, `0052`, `0053`, `0054`, `0056`, `0057`, `0059`, `0061`,
 `0062`, `0063`, `0064`, `0065`, `0066`, `0067`, `0068` — twenty-two, none of
 0064-0067 accepted in the interval, all four still `Proposed` on disk, plus
-0068 joining them. **`0022` was checked and is not a member of this tally at
+0068 joining them.
+
+**Twenty-seven at `cfab558`, and the sentence above spent four anchors saying
+twenty-two while the header said otherwise.** Five more have arrived since
+`4ace2da` — **0069** (how long a prisoner is held for, #541), **0070** (the
+staff-dismissal ADR, #533), **0071** (what bounds a room whose activity
+consumes no object), **0073** (who orders a contraband search) and **0074**
+(what a restored room that recorded no rectangle is, #571) — so the count has
+been zero, nine, thirteen, seventeen, twenty-one, twenty-two and twenty-seven
+across **eighty-seven** releases — the span is measured from `54418b6`
+(v0.0.121), where the zero was read, to `cfab558` (v0.0.208), which is the
+same base the *"forty-nine releases"* above is measured from. The sentence saying twenty-two is corrected in
+place beside the ones saying twenty-one, seventeen, thirteen, nine and one,
+for the same reason every earlier one was.
+
+**The lag is the finding rather than the arithmetic, and it is dated.**
+Twenty-two was correct on the tree it was written against, `4ace2da`
+(v0.0.177); it went false when 0069 landed at **#541**, inside the
+`4ace2da..85c1c29` window. Three re-anchors have passed since, each moving
+the header's copy of this number and none moving this one — and the
+`85c1c29` pass wrote into the derivation subsection above that *"§3's
+opening, §5's first bullet and §6's `income.ts` bullet now enumerate
+**twenty-three** `Proposed` documents"*, which was **false on the tree that
+wrote it**: all three said twenty-two. So this is the same shape as the four
+places that count §2, in a different set of places, and nothing in this file
+had named it. A next editor who greps for a count in this file should expect
+**seven** places rather than four: the four that count §2, and these three
+that count `Proposed`.
+
+Counted on disk at `cfab558` by the method every reading in this sequence has
+used — the first non-blank line under each document's own status statement,
+`## Status` heading or `- Status:` bullet alike, 0064 and 0067 still being the
+two in bullet form: `0042`, `0043`, `0046`, `0047`, `0048`, `0049`, `0050`,
+`0051`, `0052`, `0053`, `0054`, `0056`, `0057`, `0059`, `0061`, `0062`,
+`0063`, `0064`, `0065`, `0066`, `0067`, `0068`, `0069`, `0070`, `0071`,
+`0073`, `0074` — twenty-seven. `0022` is still checked and still excluded, by
+the nested-amendment reading recorded below. `docs/adr/README.md` agrees:
+twenty-seven rows opening `Proposed` out of 68, and **Next free number:
+0075**. **0072 is not on disk at all** — it is held for the events-persistence
+decision, which the index's own next-free paragraph states — so a reader
+re-deriving this list should expect a gap there and not a miscount. **`0022` was checked and is not a member of this tally at
 all**, despite a bare `grep -l '^\*\*Proposed'` over `docs/adr/` matching its
 file: that hit is `### Status of this amendment` — a dated amendment's own
 approval marker, nested below the ADR's top-level `## Status` heading, which
@@ -2972,6 +3012,59 @@ one direction.
   self-approved` while its code is merged and live**, unchanged across three
   anchors now and named again for the same reason.
 
+  **TWENTY-SEVEN at `cfab558`, and the ratio moved *with* the count for the
+  first time since `07add3e`.** Five more arrived in the thirty-one releases
+  since the paragraph above was written — **0069** (how long a prisoner is
+  held for, #541), **0070** (dismissing a staff member, #533), **0071** (what
+  bounds a room whose activity consumes no object), **0073** (who orders a
+  contraband search) and **0074** (what a restored room that recorded no
+  rectangle is, #571) — so the directory holds **0042, 0043, 0046, 0047, 0048,
+  0049, 0050, 0051, 0052, 0053, 0054, 0056, 0057, 0059, 0061, 0062, 0063,
+  0064, 0065, 0066, 0067, 0068, 0069, 0070, 0071, 0073 and 0074**, plus 0013's
+  split. **0072 is held rather than missing** — the index's next-free
+  paragraph reserves it for the events-persistence decision — so the gap in
+  that list is deliberate. §2 gained **one** entry across those five arrivals,
+  0074's, and its heading now reads *"## 2. Six entries"*: so the ratio is
+  **three of twenty-seven**, and **the abandonment streak is broken** at nine
+  — 0064, 0065, 0066, 0067, 0068, 0069, 0071, 0073 and 0070 all arrived with
+  no row, and 0074 arrived with one. Counted on disk at `cfab558` by reading
+  the first non-blank line under each document's own status statement, `##
+  Status` heading or `- Status:` bullet alike (`0022` still checked and still
+  excluded, by the nested-amendment reading recorded above);
+  `docs/adr/README.md` reports the same twenty-seven, checked row against
+  document, out of 68 rows. **Twenty-four decisions are now outstanding with
+  no entry giving the owner the evidence, what settling one commits the
+  project to, or the line that would replace the status** — up from twenty,
+  and still filed here rather than in §2 for the same reason: writing
+  twenty-four entries is a change to §2 and §2 is not what a re-anchor is for.
+  **ADR 0054 remains `Proposed, not self-approved` while its code is merged
+  and live**, re-read on disk at this anchor rather than carried, and now
+  unchanged across five anchors.
+
+  **How 0074 got its row is the part worth reading, because it is not
+  obedience to the rule as stated.** §2's rule is *"any commit that adds an
+  outstanding ADR adds an entry here in the same commit"*, and #571 — the
+  commit that added ADR 0074 — did not. It left this file alone on the ADR
+  0032/0033/0059 precedent and put the entry verbatim in its pull request
+  body; `9f0096c` (#574), three merges later, filed it. So the streak breaks
+  on a **handover honoured**, not on the rule being obeyed, and the
+  distinction matters because the handover is the thing
+  `docs/AGENT_WORKFLOW.md`'s *"Handovers between parallel agents"* says falls
+  through the gap. It did not this time. That is one instance and not a
+  pattern, and the preamble above records the other half of it: the same
+  separate-hand filing is why all four §2 counts moved together.
+
+  **And the paragraph above was four anchors stale when this one was
+  written.** *"TWENTY-TWO at this anchor"* was correct at `4ace2da`
+  (v0.0.177) and went false when 0069 landed at **#541**, inside the
+  `4ace2da..85c1c29` window. The three anchors between then and now each
+  moved the header's copy of this count and none moved this one, and the
+  `85c1c29` pass asserted in the derivation subsection that this bullet *"now
+  enumerate[s] **twenty-three** `Proposed` documents"* while it enumerated
+  twenty-two. Left standing above rather than overwritten, because a count
+  that lagged for four anchors inside the one bullet whose entire subject is
+  counts lagging is the record.
+
   **THIRTEEN at `c00b641`, and the second half of that heading is no longer
   true.** Four more arrived in the eleven releases since — **0053** (who may
   stand a security post), **0054** (what a prisoner's day is made of when the
@@ -3009,6 +3102,14 @@ one direction.
   outstanding decisions keeps climbing and the count with a §2 row stays at
   two — 0056 and 0059, both filed before either of the last two anchors, and
   nothing since.
+
+  **Twenty-four at `cfab558`, and the exceptions are three — the first time
+  this number has moved since `07add3e`.** Five more decisions arrived in the
+  thirty-one releases since (0069, 0070, 0071, 0073, 0074) and one of the five
+  got a row, so the gap between decisions and entries widened by four while
+  the count of entries moved for the first time in four anchors. The three are
+  0056, 0059 and 0074. The sentence saying twenty is left above rather than
+  overwritten, for the reason every earlier restatement of this number is.
 
   **What it is evidence *of* is the structural finding §2 already made and has
   now been handed at nine times the scale.** §2 says the rule is *"unsatisfiable
@@ -4246,6 +4347,32 @@ never recorded before this round:
   `income.ts` is untouched in this window — not among the sixty-one files the
   diff reports — so this reading is on the same tree as the previous one, and
   it still carries no count, re-verified by grep rather than assumed.
+
+  **FALSIFIED a tenth time, at `cfab558`, in the same direction, thirty-one
+  releases later: it is twenty-seven.** 0069, 0070, 0071, 0073 and 0074 joined
+  the twenty-two, derived the same way. **So the count has now been nine, one,
+  one, none, nine, thirteen, seventeen, twenty-one, twenty-two and
+  twenty-seven — ten readings of one sentence in one file, across eight
+  anchors.** The live consequence in §5's first bullet has moved with it:
+  twenty-seven outstanding decisions and **three** §2 rows, the first time
+  that second number has moved since `07add3e`. `income.ts` is untouched in
+  this window too — not among the fifty-three files the diff reports — and it
+  still carries no count, re-grepped rather than assumed.
+
+  **And the ninth reading stood here for three anchors after it stopped being
+  true, which is the sharpest thing this bullet has ever had to say about its
+  own subject.** *"It is twenty-two"* was correct at `4ace2da` (v0.0.177) and
+  went false when 0069 landed at **#541**; three re-anchors passed, each
+  moving the header's copy of the number, and none moved this one. The
+  `85c1c29` pass went further and asserted, in the derivation subsection near
+  the top of this file, that this bullet *"now enumerate[s] **twenty-three**
+  `Proposed` documents"* — a claim about a sentence three thousand lines away
+  that was false on the tree it was written against, and that no diff of any
+  window could have raised, because nothing in this bullet had changed. **This
+  is the argument this bullet exists to make, arriving from inside the
+  bullet:** a count of documents in a status is something the index already
+  computes, and prose that restates it goes stale in a place nobody is
+  looking. The reading is left standing above rather than overwritten.
 
   **Found at this anchor (`4ace2da`), and it is the same class of defect as
   the title/§2 split recorded near the top of this file: this bullet had been
