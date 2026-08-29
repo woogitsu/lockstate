@@ -108,8 +108,37 @@ async function latestCounts(page: Page): Promise<CountsSample | undefined> {
   return series[series.length - 1];
 }
 
+/**
+ * The tick, read from `simulation/clock-state`.
+ *
+ * **Not from `simulation/status-counts`**, and that is a finding rather than a
+ * detail: the worker skips a counts publication whose payload equals the last
+ * one (`statusCountsEqual`, `src/simulation/worker/status-counts.ts`), and the
+ * `tick` lives in the envelope beside `counts` rather than in it -- so an empty
+ * prison publishes counts once and then never again, however long it runs. The
+ * first version of this harness polled that tick and concluded the simulation
+ * was frozen at 0 while construction was visibly progressing.
+ */
 async function currentTick(page: Page): Promise<number> {
-  return (await latestCounts(page))?.tick ?? -1;
+  return page.evaluate(() => {
+    const messages = (window as unknown as TeeWindow).lockstateFromWorker ?? [];
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      const message = messages[index] as { kind?: string; payload?: { tick?: number } };
+      if (message.kind === 'simulation/clock-state') return message.payload?.tick ?? -1;
+    }
+    return -1;
+  });
+}
+
+async function currentClock(page: Page): Promise<unknown> {
+  return page.evaluate(() => {
+    const messages = (window as unknown as TeeWindow).lockstateFromWorker ?? [];
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      const message = messages[index] as { kind?: string; payload?: { clock?: unknown } };
+      if (message.kind === 'simulation/clock-state') return message.payload?.clock ?? null;
+    }
+    return null;
+  });
 }
 
 async function openApp(page: Page): Promise<void> {
@@ -203,6 +232,23 @@ async function buy(page: Page, buildableId: string, quantity: number): Promise<v
   await page.waitForTimeout(200);
 }
 
+/**
+ * Polls the Build panel's queue readout until it says nothing is left, and
+ * answers the page-clock time at which it said so.
+ */
+async function waitForQueueEmpty(page: Page, timeoutMs = 240_000): Promise<number> {
+  const started = Date.now();
+  await page.getByRole('button', { name: 'Build' }).click();
+  for (;;) {
+    const text = await panelText(page, '.hud-build__queue');
+    if (/0 waiting . 0 being built/.test(text) || text.includes('not laid out') || text.includes('ABSENT')) {
+      return Date.now() - started;
+    }
+    if (Date.now() - started > timeoutMs) throw new Error(`the build queue never emptied: ${text}`);
+    await page.waitForTimeout(1000);
+  }
+}
+
 /** Runs the clock forward until the worker reports a tick at or past `target`. */
 async function runUntilTick(page: Page, target: number, timeoutMs = 180_000): Promise<void> {
   const started = Date.now();
@@ -249,6 +295,7 @@ async function buildAndPopulate(page: Page, options: PrisonOptions): Promise<{ o
 
   await fastForwardToMax(page);
   await page.waitForTimeout(3000);
+  log(`clock after two Fast forward presses: ${JSON.stringify(await currentClock(page))} at tick ${await currentTick(page)}`);
   log(`deliveries after running: ${JSON.stringify(await panelText(page, '.hud-build__deliveries'))}`);
 
   // Four wall runs around tiles 12..17.
@@ -257,26 +304,52 @@ async function buildAndPopulate(page: Page, options: PrisonOptions): Promise<{ o
   const eastX = origin.originX + 18 * TILE;
   const northY = origin.originY + 12 * TILE;
   const southY = origin.originY + 18 * TILE;
-  await drag(page, { x: westX + TILE / 2, y: northY }, { x: eastX - TILE / 2, y: northY });
-  await drag(page, { x: westX + TILE / 2, y: southY }, { x: eastX - TILE / 2, y: southY });
-  await drag(page, { x: westX, y: northY + TILE / 2 }, { x: westX, y: southY - TILE / 2 });
-  await drag(page, { x: eastX, y: northY + TILE / 2 }, { x: eastX, y: southY - TILE / 2 });
-  log(`queue right after the wall runs: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+  for (const run of [
+    { name: 'north', a: { x: westX + TILE / 2, y: northY }, b: { x: eastX - TILE / 2, y: northY } },
+    { name: 'south', a: { x: westX + TILE / 2, y: southY }, b: { x: eastX - TILE / 2, y: southY } },
+    { name: 'west', a: { x: westX, y: northY + TILE / 2 }, b: { x: westX, y: southY - TILE / 2 } },
+    { name: 'east', a: { x: eastX, y: northY + TILE / 2 }, b: { x: eastX, y: southY - TILE / 2 } },
+  ]) {
+    const before = (await sentCommands(page)).length;
+    await drag(page, run.a, run.b);
+    const produced = (await sentCommands(page)).slice(before);
+    log(`wall run ${run.name}: ${produced.length} command(s) -> ${JSON.stringify(produced.map((c) => `${String(c['x'])},${String(c['y'])} ${String(c['edge'])}`))}`);
+  }
+  log(`queue right after the wall runs (tick ${await currentTick(page)}): ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
 
-  // 24 walls x 50 work at 10 per scheduled tick, one order at a time = 1,200 ticks.
-  await runUntilTick(page, 1400);
-  log(`queue at tick ${await currentTick(page)}: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+  // Wait for the Build panel to say every wall is up, the way a player does.
+  const queueEmptyAt = await waitForQueueEmpty(page);
+  log(`Build panel says the queue is empty at page t=${queueEmptyAt}ms, tick ${await currentTick(page)}`);
 
-  // Zone it.
-  await page.getByRole('button', { name: 'Rooms' }).click();
-  await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
-  await page.locator('.hud-rooms__arm').click();
-  await drag(page, centreOf(origin, 12, 12), centreOf(origin, 17, 17));
-  await page.locator('.hud-rooms__confirm').click();
-  await page.waitForTimeout(600);
+  // Zone it -- retrying, because the Rooms panel's enclosure verdict is read
+  // off a world view a *snapshot* replaces and a completed wall does not mark
+  // dirty (2026-08-29-playtest-ordering-and-the-second-room.md §7). How many
+  // attempts this takes is itself the measurement.
+  const zoneStarted = Date.now();
+  let attempts = 0;
+  for (;;) {
+    attempts += 1;
+    await page.getByRole('button', { name: 'Rooms' }).click();
+    const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
+    if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+    await page.locator('.hud-rooms__arm').click();
+    await drag(page, centreOf(origin, 12, 12), centreOf(origin, 17, 17));
+    const note = await panelText(page, '.hud-rooms');
+    await page.locator('.hud-rooms__confirm').click();
+    await page.waitForTimeout(800);
+    const counts = await latestCounts(page);
+    log(
+      `designate attempt ${attempts} at t+${Date.now() - zoneStarted}ms: rooms=${counts?.rooms}` +
+        ` | panel said ${JSON.stringify(note.split('\n').filter((l) => /OPEN|ENCLOS/i.test(l)))}` +
+        ` | band ${JSON.stringify(await panelText(page, '.hud__refusal'))}`,
+    );
+    if ((counts?.rooms ?? 0) > 0) break;
+    if (attempts >= 12) throw new Error('the rectangle was never accepted as a room');
+    await page.waitForTimeout(5000);
+  }
   const zoned = await latestCounts(page);
-  log(`after zoning: rooms=${zoned?.rooms} accommodationCapacity=${zoned?.accommodationCapacity}`);
-  log(`refusal band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  log(`zoned after ${attempts} attempt(s), ${Date.now() - zoneStarted}ms after the queue emptied: rooms=${zoned?.rooms} accommodationCapacity=${zoned?.accommodationCapacity}`);
 
   // Beds and a toilet, inside.
   await page.getByRole('button', { name: 'Build' }).click();
@@ -294,8 +367,8 @@ async function buildAndPopulate(page: Page, options: PrisonOptions): Promise<{ o
   await press(page, centreOf(origin, 12, 16).x, centreOf(origin, 12, 16).y);
   log(`${placed} bed order(s) + 1 toilet placed`);
 
-  // 13 objects x 30 work = 390 ticks, plus whatever wall work is left.
-  await runUntilTick(page, 2100);
+  await waitForQueueEmpty(page);
+  await page.waitForTimeout(2000);
   const built = await latestCounts(page);
   log(`at tick ${built?.tick}: rooms=${built?.rooms} roomCapacity=${built?.roomCapacity} accommodationCapacity=${built?.accommodationCapacity}`);
   log(`queue: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
@@ -349,10 +422,15 @@ test.describe('playtest: what a day actually pays (#601)', () => {
 
     await buildAndPopulate(page, { beds: 12, admits: 12, label: 'A/12-beds' });
 
-    await runUntilTick(page, 2450);
-    reportBoundary('A/12-beds', await countsSeries(page), 2399);
-    await runUntilTick(page, 4850);
-    reportBoundary('A/12-beds', await countsSeries(page), 4799);
+    // The boundaries that come *after* the prison was populated, computed from
+    // where the clock actually is rather than assumed to be day 1's.
+    const populatedAt = await currentTick(page);
+    console.log(`[A/12-beds] populated at tick ${populatedAt}`);
+    for (let day = Math.floor(populatedAt / 2400) + 1; day <= Math.floor(populatedAt / 2400) + 2; day += 1) {
+      const boundary = day * 2400 - 1;
+      await runUntilTick(page, boundary + 60);
+      reportBoundary('A/12-beds', await countsSeries(page), boundary);
+    }
 
     const series = await countsSeries(page);
     console.log('[A/12-beds] === FULL SERIES (tick, roster, residents, capacity, accrued, treasury) ===');
@@ -381,10 +459,15 @@ test.describe('playtest: what a day actually pays (#601)', () => {
 
     await buildAndPopulate(page, { beds: 3, admits: 12, label: 'B/3-beds' });
 
-    await runUntilTick(page, 2450);
-    reportBoundary('B/3-beds', await countsSeries(page), 2399);
-    await runUntilTick(page, 4850);
-    reportBoundary('B/3-beds', await countsSeries(page), 4799);
+    // The boundaries that come *after* the prison was populated, computed from
+    // where the clock actually is rather than assumed to be day 1's.
+    const populatedAt = await currentTick(page);
+    console.log(`[B/3-beds] populated at tick ${populatedAt}`);
+    for (let day = Math.floor(populatedAt / 2400) + 1; day <= Math.floor(populatedAt / 2400) + 2; day += 1) {
+      const boundary = day * 2400 - 1;
+      await runUntilTick(page, boundary + 60);
+      reportBoundary('B/3-beds', await countsSeries(page), boundary);
+    }
 
     const series = await countsSeries(page);
     console.log('[B/3-beds] === FULL SERIES ===');
