@@ -108,13 +108,30 @@ export interface BuildPanelPurchaseIntent {
   readonly quantity: number;
 }
 
-/** Where the pointer is currently aimed, for the panel's readout. */
+/**
+ * Where the pointer is currently aimed, for the panel's readout.
+ *
+ * **Two shapes, because two tools aim through this one line (#550).** A wall is
+ * laid on a tile *edge* and a drag along it covers a run, so an edge aim carries
+ * both. An object is placed on -- or taken off -- a *tile*: there is no edge to
+ * name and no run to count, so a tile aim carries neither and the readout says
+ * the tile alone.
+ *
+ * Optional fields rather than a discriminated union, deliberately. The union
+ * would have `tsc` decide which arm a reader is holding, which is this tree's
+ * usual preference (`HudObjectGesture`) -- but it would also rename the shape
+ * every existing producer already builds, including one in `tests/browser/`,
+ * to gain a check that `edge === undefined` already makes. The absent edge *is*
+ * the discriminant, and `exactOptionalPropertyTypes` is on, so a producer
+ * cannot pass `edge: undefined` and pretend otherwise.
+ */
 export interface BuildPanelTarget {
   readonly x: number;
   readonly y: number;
-  readonly edge: HudBuildEdge;
-  /** How many edges the pending gesture covers. `1` for a tap. */
-  readonly segments: number;
+  /** The edge a wall would go on, or absent because this aim is at a tile. */
+  readonly edge?: HudBuildEdge;
+  /** How many edges the pending gesture covers. `1` for a tap, absent for a tile aim. */
+  readonly segments?: number;
 }
 
 export interface BuildPanelOptions {
@@ -476,14 +493,19 @@ export function buildCatalogueFocusRing(
  */
 export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | undefined): string {
   if (target === undefined) return t(HUD_MESSAGE_KEY.buildTargetNone);
-  return target.segments > 1
+  // An aim with no edge is an aim at a tile, which is what the object tool
+  // reports for both of its modes (#550). It gets its own template rather than
+  // the edge one with a blank `{edge}`: see `buildTargetTile`.
+  if (target.edge === undefined) return t(HUD_MESSAGE_KEY.buildTargetTile, { x: target.x, y: target.y });
+  const edge = target.edge;
+  return (target.segments ?? 1) > 1
     ? t(HUD_MESSAGE_KEY.buildTargetRun, {
         x: target.x,
         y: target.y,
-        edge: t(edgeLabelKey(target.edge)),
-        count: target.segments,
+        edge: t(edgeLabelKey(edge)),
+        count: target.segments ?? 1,
       })
-    : t(HUD_MESSAGE_KEY.buildTargetValue, { x: target.x, y: target.y, edge: t(edgeLabelKey(target.edge)) });
+    : t(HUD_MESSAGE_KEY.buildTargetValue, { x: target.x, y: target.y, edge: t(edgeLabelKey(edge)) });
 }
 
 /**
@@ -1062,6 +1084,17 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     // -- the one case where the numeric route works with nothing selected.
     submit.setDisabled(!removing && selectedId === undefined);
 
+    // Disarmed entirely, the panel clears its own readout -- and it is the only
+    // thing that can, on a host with no world tools at all (every harness in
+    // `tests/browser/`).
+    //
+    // It is deliberately **not** the clear that fixes #550. A tool armed to
+    // remove, or armed to place an object, is armed, so this line never fires
+    // on the switch that used to leave the wall tool's last tile standing under
+    // a bed. What fixes that is on the other side of the seam: a tool whose
+    // `setArmed` leaves it disarmed withdraws its own aim, so whichever of the
+    // three loses the pointer takes its coordinates with it, whatever the panel
+    // believes about arming. See `BuildTool.setArmed`.
     if (!armed) setTarget(undefined);
   }
 
@@ -1798,7 +1831,13 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       delete targetBlock.dataset['target'];
       return;
     }
-    targetBlock.dataset['target'] = `${target.x},${target.y},${target.edge},${target.segments}`;
+    // A tile aim writes the two numbers it has and no more (#550). Writing
+    // `undefined,undefined` after them would put the string "undefined" on an
+    // attribute a browser test reads as the panel's own account of the aim.
+    targetBlock.dataset['target'] =
+      target.edge === undefined
+        ? `${target.x},${target.y}`
+        : `${target.x},${target.y},${target.edge},${target.segments ?? 1}`;
   }
 
   return {

@@ -472,6 +472,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.target-none': 'Point at the world',
   'hud.build.target-value': '{x}, {y} · {edge}',
   'hud.build.target-run': '{count} × {edge} from {x}, {y}',
+  'hud.build.target-tile': '{x}, {y}',
   'hud.build.coordinates': 'Enter coordinates',
   'hud.build.coordinates-hint': 'The keyboard route. Pointing at the map is quicker.',
   'hud.build.buy': 'Buy',
