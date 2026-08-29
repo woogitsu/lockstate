@@ -226,8 +226,16 @@ describe('an incident has a consequence for the prisoner who was in it', () => {
     /*
      * `NEED_IDS` order: hunger, sleep, hygiene, bladder, safety, recreation.
      * Measured at tick 70,000: the reclassified prisoner reads
-     * **[973, 1000, 0, 965, 1000, 0]** and the clean one
-     * **[867, 1000, 0, 847, 1000, 0]**.
+     * **[973, 1000, 0, 965, 0, 0]** and the clean one
+     * **[867, 1000, 0, 847, 0, 0]**.
+     *
+     * **The fifth entry was 1,000 for both until issue #588**, and it is now 0
+     * for both. `safety` is provisioned by guard coverage since the owner's
+     * ruling on issue #599; this fixture hires nobody, so an `unguarded` sector
+     * provisions nothing and the need falls to the floor in both arms. It is
+     * pinned below beside `hygiene` and `recreation` for exactly that reason --
+     * a need neither timetable can serve must not be where the divergence
+     * comes from.
      *
      * **This block used to read [0, 0, 0, 369, 141, 0] against
      * [0, 1000, 0, 86, 1000, 0], and asserted `hardSleep === 0` as the

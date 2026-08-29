@@ -194,6 +194,19 @@ outside the action table, the utility scorer and the HUD projection is
 `NEED_DECAY_PER_TICK.safety` of `0.01`
 (`src/simulation/prisoners/needs.ts:56`) — the 20× surplus is exact.
 
+> **Every fact in the paragraph above has since been changed deliberately, and
+> the finding it records is what changed them.** Marked here rather than
+> rewritten, because this ADR is a record of what was true when it was
+> accepted. `sampleSectorRisk` stopped reading `safety` alone with
+> [ADR 0048](./0048-what-a-sectors-occupants-are.md) decision 2; `action.sleep`
+> stopped restoring `safety` at all, and `NEED_DECAY_PER_TICK.safety` became
+> `0.05`, with [#588](https://github.com/matmaxalez/lockstate/issues/588) under
+> the owner's ruling on
+> [#599](https://github.com/matmaxalez/lockstate/issues/599), which makes guard
+> coverage the need's provisioner. The 20× surplus is gone, which is the point:
+> the sentence under this one calls the consequence surface of the needs model
+> "nothing at all", and coverage is the instrument that answers it.
+
 **Understated:** the issue says the entire consequence surface of the needs
 model is that one term. Given the paragraph above, that term is multiplied by
 `needsPressure`, which is zero in any prison that houses anybody. So the
