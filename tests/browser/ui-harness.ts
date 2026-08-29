@@ -633,6 +633,7 @@ function regimeProbe(): RegimeProbe {
     ),
     rosterLaidOut: drawn(roster),
     total: roster?.dataset['total'] ?? null,
+    everAdmitted: roster?.dataset['everAdmitted'] ?? null,
     countText: textOf(roster?.querySelector('.hud-regime__roster-count')),
     rows: rows.map((row): RegimeRosterRowProbe => {
       const badge = row.querySelector<HTMLElement>('.ui-badge');

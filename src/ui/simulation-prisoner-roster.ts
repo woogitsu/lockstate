@@ -1,6 +1,5 @@
 import { deriveSimulationMessageKey } from '../content/simulation-message-keys';
-import type { PrisonerRosterRowViewModel } from '../simulation/presentation/prisoner-projection';
-import type { ViewModelPage } from '../simulation/presentation/view-model';
+import type { PrisonerRosterPage, PrisonerRosterRowViewModel } from '../simulation/presentation/prisoner-projection';
 import { PRISONER_ROSTER_ROW_LIMIT, type HudPrisonerRosterViewModel, type HudPrisonerRowViewModel } from './hud';
 import {
   SimulationProjectionRequester,
@@ -139,10 +138,8 @@ function prisonerRow(row: PrisonerRosterRowViewModel): HudPrisonerRowViewModel {
  * are not sortable by an arbitrary column there either, and that the answer is
  * an indexed accessor in the prisoner runtime rather than a sort anywhere.
  */
-export function prisonerRosterFromProjection(
-  view: ViewModelPage<PrisonerRosterRowViewModel>,
-): HudPrisonerRosterViewModel {
-  return { total: view.total, rows: view.rows.map(prisonerRow) };
+export function prisonerRosterFromProjection(view: PrisonerRosterPage): HudPrisonerRosterViewModel {
+  return { total: view.total, rows: view.rows.map(prisonerRow), everAdmitted: view.everAdmitted };
 }
 
 export class PrisonerRosterReader {
@@ -184,7 +181,7 @@ export class PrisonerRosterReader {
     if (this.reading) return undefined;
     this.reading = true;
     try {
-      const reply = await this.requester.request<ViewModelPage<PrisonerRosterRowViewModel>>('hud/prisoner-roster', {
+      const reply = await this.requester.request<PrisonerRosterPage>('hud/prisoner-roster', {
         limit: PRISONER_ROSTER_ROW_LIMIT,
       });
       if (reply.view === undefined) return undefined;

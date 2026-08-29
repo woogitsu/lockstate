@@ -473,6 +473,14 @@ export interface RegimeProbe {
   readonly rosterLaidOut: boolean;
   /** `data-total`: the population the projection reported, not the window's length. */
   readonly total: string | null;
+  /**
+   * `data-ever-admitted`: whether `admittedCount` is nonzero (issue #506).
+   * `null` while the roster block itself has not been drawn -- the same
+   * absent-vs-`"false"` distinction `total` draws, and for the same reason:
+   * "nothing answered yet" and "answered, and nobody has ever been admitted"
+   * are different facts.
+   */
+  readonly everAdmitted: string | null;
   /** The "N of M" figure beside the roster header. */
   readonly countText: string;
   /** Only the rows a player can see -- see `RegimeRosterRowProbe`. */
@@ -1042,8 +1050,11 @@ export interface LockstateUiHarness {
    *
    * Spread rather than passed as `undefined`, so "nothing has been asked" is an
    * absent property: `exactOptionalPropertyTypes` is on, and the panel branches
-   * on the field being there at all -- absent draws no block, and `total: 0`
-   * draws the sentence about an empty prison.
+   * on the field being there at all -- absent draws no block, and a present
+   * roster with `total: 0` draws the sentence about an empty prison only when
+   * `everAdmitted` is also false. A `total: 0` roster with `everAdmitted: true`
+   * -- everybody admitted has since left -- draws neither sentence (issue
+   * #506; see `regime-panel.ts`'s `paintRoster`).
    */
   reportRegime(regime: HudRegimeViewModel | undefined, roster?: HudPrisonerRosterViewModel): void;
   roomsProbe(): RoomsProbe;

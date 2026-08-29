@@ -3347,6 +3347,7 @@ test.describe('the Regime panel (issue #451)', () => {
    */
   const ROSTER: HudPrisonerRosterViewModel = {
     total: 9,
+    everAdmitted: true,
     rows: [
       {
         entityId: 3,
@@ -3384,14 +3385,26 @@ test.describe('the Regime panel (issue #451)', () => {
     ],
   };
 
-  /** The prison a new game starts in: asked, and holding nobody. */
-  const EMPTY_ROSTER: HudPrisonerRosterViewModel = { total: 0, rows: [] };
+  /** The prison a new game starts in: asked, and holding nobody, and nobody ever has been. */
+  const EMPTY_ROSTER: HudPrisonerRosterViewModel = { total: 0, everAdmitted: false, rows: [] };
+
+  /**
+   * Issue #506: the same shape `EMPTY_ROSTER` has -- `total: 0` -- but a
+   * different history. `projectPrisonerRoster` sets `everAdmitted` from
+   * `admittedCount`, which every real admission increments and nothing ever
+   * decrements (`prisoner-projection.ts`), so this is the state a live
+   * session reaches after a batch of prisoners is admitted together and
+   * later discharged together (`ADMISSION_REQUEST`'s fixed
+   * `sentenceLengthTicks`, ADR 0050 "What this does not decide") -- not a
+   * state this file invents for the panel to react to.
+   */
+  const DISCHARGED_ROSTER: HudPrisonerRosterViewModel = { total: 0, everAdmitted: true, rows: [] };
 
   /**
    * The same prison after eight of the nine have gone: one row, and three
    * pooled rows that must stop showing the people who were in them.
    */
-  const SOLO_ROSTER: HudPrisonerRosterViewModel = { total: 1, rows: ROSTER.rows.slice(0, 1) };
+  const SOLO_ROSTER: HudPrisonerRosterViewModel = { total: 1, everAdmitted: true, rows: ROSTER.rows.slice(0, 1) };
 
   /**
    * Every message namespace the panel can paint a raw key out of.
@@ -3470,6 +3483,39 @@ test.describe('the Regime panel (issue #451)', () => {
     // fact about the regime and not about the roster.
     expect(probe.blocksLaidOut).toBe(true);
     expect(probe.blocks.map((block) => block.group)).toEqual(['general-population', 'high-risk']);
+    expect(probe.text, `an unresolved message key is on screen: ${probe.text}`).not.toMatch(RAW_KEY);
+    expect(probe.everAdmitted, 'this is the true "nobody yet" state').toBe('false');
+  });
+
+  test('a prison everybody has left draws no false sentence about non-admission (issue #506)', async ({ page }) => {
+    // Same `total: 0` as the test above, and the opposite history: five
+    // prisoners were admitted, served the fixed sentence `ADMISSION_REQUEST`
+    // gives every one of them, and were discharged within the same window
+    // (ADR 0050, "What this does not decide") -- so the population is back to
+    // zero, and "Nobody has been admitted yet" would be false of it. There is
+    // no shipped sentence that says the true thing instead (searched
+    // `default-locale-en.ts`; see `regime-panel.ts`'s `paintRoster` comment),
+    // so the panel is required to draw *neither* box rather than the wrong
+    // one.
+    await page.evaluate(
+      ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
+      [TIMETABLE, DISCHARGED_ROSTER] as const,
+    );
+    const probe = await page.evaluate(() => window.lockstateUiHarness.regimeProbe());
+
+    expect(probe.rosterLaidOut).toBe(true);
+    expect(probe.total).toBe('0');
+    expect(probe.everAdmitted).toBe('true');
+    expect(probe.rows).toEqual([]);
+    // The one assertion this whole test exists for: no box asserting
+    // non-admission over a prison that was, in fact, fully used.
+    expect(probe.emptyLaidOut, 'drew the false "Nobody has been admitted yet" box').toBe(false);
+    expect(probe.text).not.toContain('Nobody has been admitted yet');
+    // Not being withheld either: a `total: 0` roster has nothing to page past.
+    expect(probe.moreLaidOut).toBe(false);
+    // The header still reads "0 of 0" -- a true statement about the present,
+    // not a claim about history, and not what this test is about.
+    expect(probe.countText).toBe('0 of 0');
     expect(probe.text, `an unresolved message key is on screen: ${probe.text}`).not.toMatch(RAW_KEY);
   });
 

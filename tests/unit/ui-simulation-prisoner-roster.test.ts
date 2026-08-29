@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
-import type { PrisonerRosterRowViewModel } from '../../src/simulation/presentation/prisoner-projection';
-import type { ViewModelPage } from '../../src/simulation/presentation/view-model';
+import type { PrisonerRosterPage, PrisonerRosterRowViewModel } from '../../src/simulation/presentation/prisoner-projection';
 import {
   SIMULATION_PROTOCOL_VERSION,
   type MainToWorkerMessage,
@@ -95,14 +94,29 @@ function projectedRow(overrides: RowOverrides = {}): PrisonerRosterRowViewModel 
   return row as unknown as PrisonerRosterRowViewModel;
 }
 
-function page(rows: readonly PrisonerRosterRowViewModel[], total = rows.length): ViewModelPage<PrisonerRosterRowViewModel> {
-  return { total, offset: 0, limit: PRISONER_ROSTER_ROW_LIMIT, rows };
+/**
+ * `everAdmitted` defaults to `true`: every case in this file below the first
+ * describe block is about *what a row becomes*, not about the "nobody has
+ * ever been admitted" state, and a roster fixture that carries rows is never
+ * the state `everAdmitted: false` describes (`admittedCount` cannot be zero
+ * once a row exists). The one place `false` matters --
+ * `prisonerRosterFromProjection` passing the flag through unchanged, whatever
+ * its value -- is exercised on its own below, with an empty roster on both
+ * sides of it, which is the only shape that state can actually take.
+ */
+function page(
+  rows: readonly PrisonerRosterRowViewModel[],
+  total = rows.length,
+  everAdmitted = true,
+): PrisonerRosterPage {
+  return { total, offset: 0, limit: PRISONER_ROSTER_ROW_LIMIT, rows, everAdmitted };
 }
 
 describe('the mapping turns ids into keys and drops what it cannot render', () => {
   it('carries a performing prisoner as their action, their tier and their group', () => {
     expect(prisonerRosterFromProjection(page([projectedRow()]))).toEqual({
       total: 1,
+      everAdmitted: true,
       rows: [
         {
           entityId: 7,
@@ -174,6 +188,14 @@ describe('the mapping turns ids into keys and drops what it cannot render', () =
     const model = prisonerRosterFromProjection(page([projectedRow(), projectedRow({ entityId: 8 })], 512));
     expect(model.total).toBe(512);
     expect(model.rows).toHaveLength(2);
+  });
+
+  it('carries `everAdmitted` through unchanged, in both directions (issue #506)', () => {
+    // Nothing here is computed by this module -- it is not this translator's
+    // fact to decide, only to forward. `projectPrisonerRoster` is what reads
+    // `admittedCount`; see `tests/unit/hud-projections.test.ts` for that half.
+    expect(prisonerRosterFromProjection(page([], 0, true)).everAdmitted).toBe(true);
+    expect(prisonerRosterFromProjection(page([], 0, false)).everAdmitted).toBe(false);
   });
 });
 
@@ -289,7 +311,7 @@ class FakeChannel implements ProjectionMessageChannel {
     this.sent.push(message);
   }
 
-  public reply(index: number, view: ViewModelPage<PrisonerRosterRowViewModel> | undefined): void {
+  public reply(index: number, view: PrisonerRosterPage | undefined): void {
     if (this.handler === undefined) throw new Error('The reader registered no listener.');
     const replyTo = (this.sent[index] as { messageId: string }).messageId;
     this.handler({
@@ -345,6 +367,7 @@ describe('the reader asks for the rows the panel can draw and no more', () => {
     channel.reply(0, page([projectedRow()], 31));
     await expect(pending).resolves.toEqual({
       total: 31,
+      everAdmitted: true,
       rows: [
         {
           entityId: 7,
@@ -373,7 +396,7 @@ describe('the reader asks for the rows the panel can draw and no more', () => {
     expect(channel.sent).toHaveLength(1);
 
     channel.reply(0, page([], 0));
-    await expect(first).resolves.toEqual({ total: 0, rows: [] });
+    await expect(first).resolves.toEqual({ total: 0, everAdmitted: true, rows: [] });
 
     // And it is a latch rather than a one-shot: the next cadence asks again.
     const third = reader.read().catch(() => undefined);

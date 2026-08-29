@@ -203,6 +203,37 @@ export class PrisonerOperationsRuntime {
   public readonly dischargeSystem: PrisonerDischargeSystem;
   public readonly sanctionSystem: SanctionSystem;
 
+  /**
+   * How many prisoners `admitPrisoner` has allocated this session, counting
+   * every admission whatever became of it afterwards -- served their
+   * sentence, escaped, or still inside. Issue #506: the roster projection
+   * carries only the *live* population, and a live count of zero cannot say
+   * whether nobody has ever been admitted or whether everybody has since
+   * left -- which is exactly the false "Nobody has been admitted yet" the
+   * Regime panel kept showing after a batch of sentences all ended within
+   * the same window (ADR 0050, "What this does not decide"). This is the
+   * fact that tells the two states apart: `projectPrisonerRoster`'s
+   * `everAdmitted` is `admittedCount > 0`, read at every departure door --
+   * `PrisonerDischargeSystem`'s scheduled release and `releasePrisoner`'s
+   * unguarded one (an escape, ADR 0061 decision 5) both only ever remove
+   * from a population this counter already added to, so neither exit path
+   * needs a matching decrement here.
+   *
+   * Observability only, and **not persisted** -- the same standing shape
+   * `PrisonerDischargeSystem.dischargedCount` and `IntakeMetrics` already
+   * have (see `dischargedCount`'s own comment, and
+   * `docs/HUD_PROJECTIONS.md` gap 33). Safe to reset on restore because
+   * nothing reads it back into simulation state: this runtime's behaviour
+   * depends on `entityStore`'s liveness, never on this counter. The one
+   * case this resets wrongly is a save whose prison was populated and then
+   * fully emptied *before* the save was taken -- a session restored from it
+   * shows "Nobody has been admitted yet" once more, for exactly as long as
+   * it takes to admit and discharge again. That is the same window gap 33
+   * already names for every other session-scoped metric here, not a new
+   * one.
+   */
+  public admittedCount = 0;
+
   /** Issue #80's solitary-sanction term. Not a constructor parameter default read twice: `imposeSolitarySanction` and `sanctionSystem` both need the one policy, so it is resolved once here. */
   private readonly sanctionPolicy: SanctionPolicy;
 
@@ -665,6 +696,11 @@ export class PrisonerOperationsRuntime {
   public admitPrisoner(input: ClassificationInput, originTile: { readonly x: number; readonly y: number }): EntityId {
     const entityId = this.entityStore.spawn();
     const index = this.entityStore.getIndex(entityId);
+    // Counted at the one door every admission passes through, before
+    // anything below can throw or refuse -- see `admittedCount`'s own
+    // comment for why this is the fact `everAdmitted` reads instead of a
+    // release-side tally.
+    this.admittedCount += 1;
     // `EntityStore.spawn` recycles freed indices, and nothing clears a
     // component array when an entity is destroyed, so an index can arrive
     // here still holding the previous occupant's needs, classification and
