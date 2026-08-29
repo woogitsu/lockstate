@@ -11,13 +11,12 @@ import { ClassificationReviewSystem } from './classification-review-system';
 import type { DisciplinaryEvidenceSource } from './disciplinary-record';
 import { ACTION_PHASES, CurrentActionComponent, PositionComponent, PrisonerColdState, PrisonerRecordComponent } from './components';
 import { PrisonerDischargeSystem } from './discharge-system';
-import { DEFAULT_ACCOMMODATION_POLICY, type AccommodationPolicy, IntakeSystem, type IntakeContrabandIntroducer } from './intake-system';
+import { DEFAULT_ACCOMMODATION_POLICY, type AccommodationPolicy, IntakeSystem } from './intake-system';
 import {
   releasePrisoner,
   type PrisonerGangReleasePort,
   type PrisonerReleaseSurfaces,
   type PrisonerWorkerReleasePort,
-  type PrisonerContrabandReleasePort,
 } from './release';
 import { NeedsComponent } from './needs';
 import { NeedsDecaySystem } from './needs-system';
@@ -108,20 +107,6 @@ export interface PrisonerOperationsRuntimeOptions {
    * prisoner left in it is a job assigned to a slot somebody else now occupies.
    */
   readonly jobWorkers?: PrisonerWorkerReleasePort;
-  /**
-   * The contraband ground truth (`src/simulation/contraband/item.ts`). Same
-   * ownership and optionality as `gangs`: it is session state, and a prisoner
-   * who has left the prison is not concealing anything inside it any more
-   * ([ADR 0061](../../../docs/adr/0061-what-the-prison-produces-on-its-own.md)).
-   */
-  readonly contraband?: PrisonerContrabandReleasePort;
-  /**
-   * What an arrival brings in with them, called by `IntakeSystem` at the
-   * classification stage. Absent, intake introduces nothing and draws nothing.
-   */
-  readonly contrabandIntroducer?: IntakeContrabandIntroducer;
-  /** The named stream `contrabandIntroducer` draws from. Only read when one is supplied. */
-  readonly contrabandRngStreamName?: string;
 }
 
 /**
@@ -206,8 +191,6 @@ export class PrisonerOperationsRuntime {
       undefined,
       options.identity,
       options.identityRngStreamName,
-      options.contrabandIntroducer,
-      options.contrabandRngStreamName,
     );
     this.needsDecaySystem = new NeedsDecaySystem(this.entityStore, this.query, this.needs);
     this.classificationReviewSystem = new ClassificationReviewSystem(
@@ -256,7 +239,6 @@ export class PrisonerOperationsRuntime {
       ...(options.gangs !== undefined ? { gangs: options.gangs } : {}),
       ...(options.jobWorkers !== undefined ? { jobWorkers: options.jobWorkers } : {}),
       locomotion: this.locomotion,
-      ...(options.contraband !== undefined ? { contraband: options.contraband } : {}),
     };
     this.dischargeSystem = new PrisonerDischargeSystem(this.entityStore, this.query, this.records, this.releaseSurfaces);
   }
@@ -281,8 +263,8 @@ export class PrisonerOperationsRuntime {
    * transfer/parole path needs one door into release rather than its own copy
    * of the teardown -- which is precisely how #111 happened one layer down.
    */
-  public releasePrisoner(entityId: EntityId, atTick = 0): boolean {
-    return releasePrisoner(this.releaseSurfaces, entityId, atTick);
+  public releasePrisoner(entityId: EntityId): boolean {
+    return releasePrisoner(this.releaseSurfaces, entityId);
   }
 
   /**

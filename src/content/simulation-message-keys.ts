@@ -389,7 +389,7 @@ export const SIMULATION_ENUM_GROUPS = [
     sourceFile: 'src/simulation/contraband/item.ts',
     declaration: 'ContrabandState',
     form: 'string-union',
-    labels: { concealed: 'Concealed', confiscated: 'Confiscated', departed: 'Left With Holder' },
+    labels: { concealed: 'Concealed', confiscated: 'Confiscated' },
   },
   {
     namespace: 'intelligence-target',

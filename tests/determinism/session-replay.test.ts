@@ -113,7 +113,7 @@ describe('deterministic replay of a seeded session', () => {
     const runtime = runScenario();
     const streams = runtime.kernel.snapshot().rngStates;
 
-    expect(streams.map((entry) => entry.name)).toEqual(['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification']);
+    expect(streams.map((entry) => entry.name)).toEqual(['contraband.detection', 'contraband.intelligence', 'identity.actor-name', 'prisoners.classification']);
     for (const stream of streams) {
       expect(stream.state.algorithm).toBe('xoshiro128**');
       expect(stream.state.words).toHaveLength(4);

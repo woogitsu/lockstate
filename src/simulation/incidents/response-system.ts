@@ -127,28 +127,6 @@ export class IncidentResponseSystem implements SystemRegistration {
      * producer of the phase.
      */
     private readonly guardsClaimedByOtherSystems: () => readonly EntityId[] = () => [],
-    /**
-     * What happens to a prisoner who gets out
-     * ([ADR 0061](../../../docs/adr/0061-what-the-prison-produces-on-its-own.md)
-     * decision 5).
-     *
-     * `lapse` has always written `escaped: incident.type === 'escape-attempt'`,
-     * and until ADR 0061 nothing could produce an `'escape-attempt'`, so the
-     * flag had never been true in a running prison. The moment there is a
-     * producer it can be -- and a HUD row reading *escaped: yes* beside a
-     * prisoner still asleep in their cell is precisely the class of defect
-     * `AGENTS.md` reserves to the owner: a promise the code does not keep. So
-     * the producer and the departure ship together, and this port is the
-     * departure.
-     *
-     * A narrow injected callback rather than the prisoner runtime, for the
-     * reason `DisciplinaryEvidenceSource` is a port one module over:
-     * `PrisonerOperationsRuntime` is constructed *before* this system in
-     * `new-session.ts`, so a hard dependency would invert the order. Defaults
-     * to doing nothing, which is right for a fixture with no prisoner slice --
-     * and means every existing test of this system is unchanged.
-     */
-    private readonly onPrisonerEscaped: (entityId: EntityId, tick: number) => void = () => {},
   ) {}
 
   /**
@@ -460,19 +438,6 @@ export class IncidentResponseSystem implements SystemRegistration {
     this.releaseResponse(incident.id, incident.sectorId);
     this.incidents.transition(incident.id, 'lapsed', tick, outcome);
     this.incidentsLapsed += 1;
-
-    // The one outcome that removes somebody from the prison. After the
-    // transition, never before: the record is what says they escaped, and the
-    // departure is a consequence of the record rather than a condition of it --
-    // so a reader of the log sees a terminal incident naming a participant who
-    // has left, exactly as it would for a prisoner discharged the same tick.
-    // The participant list is what it is scanned over rather than
-    // `injuredEntityIds`: the two are the same list here, and the first is the
-    // one that means "was in this incident".
-    if (outcome.escaped) {
-      for (const entityId of incident.participantIds) this.onPrisonerEscaped(entityId, tick);
-    }
-
 
     // The one close `releaseResponse` cannot serve, because there is no record
     // for it to read: an incident whose response was interrupted by a save

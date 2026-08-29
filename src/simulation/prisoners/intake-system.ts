@@ -2,7 +2,6 @@ import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { EntityId, EntityStore } from '../entity/entity-store';
 import { EntityQuery } from '../entity/query';
 import { ACTOR_IDENTITY_RNG_STREAM, type ActorIdentityMinter } from '../identity/actor-identity';
-import type { Xoshiro128StarStar } from '../rng/xoshiro128starstar';
 import { rateCellSharing, type CellSharingView } from './cell-sharing';
 import { classifyPrisoner, type ClassificationInput } from './classification';
 import {
@@ -15,25 +14,6 @@ import {
   intakeStageIndex,
 } from './components';
 import type { RoomInstanceRegistry } from './room-instance-registry';
-
-/**
- * The one thing intake tells the contraband substrate: an arrival has just been
- * classified, and may be concealing something
- * ([ADR 0061](../../../docs/adr/0061-what-the-prison-produces-on-its-own.md)).
- *
- * A narrow injected port, exactly like `ActorIdentityMinter` above it and for
- * the same two reasons. `ContrabandRegistry` is **session** state -- it outlives
- * the prisoner slice and is snapshotted beside it, not inside it -- so this
- * module may not own one; and a fixture that stands up prisoners alone has no
- * contraband registry to hand over, so the collaborator is optional and intake
- * draws nothing at all without it. `NamedRngStreams.get` throws for a stream a
- * session never registered, which is what makes "optional" load-bearing rather
- * than tidy.
- */
-export interface IntakeContrabandIntroducer {
-  /** Called once per arrival, at the tick their `riskTier` is written and from the stage that writes it. */
-  introduce(entityId: EntityId, riskTier: number, tick: number, rng: Xoshiro128StarStar): void;
-}
 
 export interface IntakeMetrics {
   readonly completedCount: number;
@@ -186,14 +166,6 @@ export class IntakeSystem implements SystemRegistration {
      */
     private readonly identity?: ActorIdentityMinter,
     private readonly identityRngStreamName: string = ACTOR_IDENTITY_RNG_STREAM,
-    /**
-     * Optional contraband introduction (`src/simulation/contraband/introduction.ts`).
-     * Left out entirely, intake behaves exactly as it did before ADR 0061 and
-     * draws nothing on the contraband stream -- so a session that never
-     * registers `contraband.introduction` is not obliged to.
-     */
-    private readonly contrabandIntroducer?: IntakeContrabandIntroducer,
-    private readonly contrabandRngStreamName: string = 'contraband.introduction',
   ) {}
 
   public submitIntake(entityId: EntityId, input: ClassificationInput): void {
@@ -394,17 +366,6 @@ export class IntakeSystem implements SystemRegistration {
         this.records.riskTier[index] = result.riskTier;
         this.records.classificationGroupIndex[index] = classificationGroupIndex(result.classificationGroupId);
         this.records.sentenceEndTick[index] = context.tick + this.records.sentenceLengthTicks[index]!;
-
-        // Here rather than at `'reception'`, because the tier is what decides
-        // both halves of the introduction and it does not exist one line
-        // earlier. Inside `EntityQuery.execute()`'s ascending-entity-id walk
-        // like the name minting above, so the order draws are made in is a
-        // function of state; and after the record writes, so a reader of the
-        // registry sees an arrival whose classification is already complete.
-        if (this.contrabandIntroducer !== undefined) {
-          this.contrabandIntroducer.introduce(entityId, result.riskTier, context.tick, context.rng.get(this.contrabandRngStreamName));
-        }
-
         this.records.intakeStage[index] = intakeStageIndex('accommodation-assignment');
         continue;
       }
