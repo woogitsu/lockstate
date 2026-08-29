@@ -187,6 +187,54 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   the moment it becomes plausible that an agent will need one. Two agents that
   each read "next free" off `main` will both write 0050.
 
+### Nothing may exist only in the container
+
+**Added 2026-08-29, after the owner named the failure mode this prevents.**
+
+A session runs in an ephemeral container. It can be cut off by a usage limit
+**with no warning** -- no signal, no wind-down, the turn simply stops -- and
+everything not pushed dies with it. The owner may not look for hours, so the
+loss is discovered long after it is recoverable.
+
+That makes the count of parallel agents a *risk* multiplier and not only a
+throughput one: three agents that each hold two hours of unpushed work are
+three times the exposure. The right response is not fewer agents. It is that
+**no work may exist only in the container**.
+
+Three rules, in the order they matter:
+
+1. **Every agent commits and pushes after its first coherent chunk**, not at
+   the end. An unfinished pushed branch is recoverable by anyone; a finished
+   unpushed one is not. Put the *reasoning* in the commit message too, not only
+   in the final report -- if the report never arrives, the commit message is
+   what survives. Say plainly in the message when a commit is a work-in-progress
+   checkpoint and what is still missing.
+2. **Agents report incrementally.** A finding the coordinator has is worth more
+   than a better-organised finding it never receives.
+3. **The coordinator does not rely on either of the above.** On 2026-08-29 an
+   agent committed and stopped without pushing; its work survived only because
+   the coordinator noticed and pushed it by hand. Compliance is not a mechanism.
+
+`scripts/wip-sweep.sh` is the mechanism. Run it in the background for the life
+of a session. Every three minutes it pushes each agent worktree's committed
+work to its own branch, and snapshots **uncommitted** work to `wip/<branch>`.
+
+Two properties are what make it safe to run beside live agents, and both are
+deliberate:
+
+- It uses `git stash create`, which writes a commit object and touches
+  **neither the index nor the working tree**. It therefore cannot race an
+  agent's own `git add` or `git commit`. Verified against a live agent: the
+  snapshot reached the remote while the agent's twelve modified files stayed
+  exactly as they were.
+- Uncommitted work goes to a **separate `wip/` ref**, never to the agent's own
+  branch, so a sweep can never land on a branch an agent is about to push to
+  itself or turn a clean push into a conflict.
+
+The effect is a bounded loss window -- three minutes -- that does not depend on
+how many agents are running or on any of them behaving correctly. `wip/` refs
+are scratch: delete them once the branch they shadow has merged.
+
 ### Handovers between parallel agents
 
 An agent that finds a defect outside its own surface cannot fix it, and the
