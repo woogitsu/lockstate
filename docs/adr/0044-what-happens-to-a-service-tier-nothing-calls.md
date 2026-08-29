@@ -193,7 +193,7 @@ survived three inventories.
 
 | tree | what it is waiting on | what would make it dead |
 | --- | --- | --- |
-| `src/persistence/cloud/` | A signed-in account, which does not exist in `src/` at all (#34 is the account/save-slot UX). Server half live in CI. | The owner deciding cloud save is out of scope — which deletes `supabase/` and every pgTAP assertion with it (321 at the time of writing), not 481 lines. |
+| `src/persistence/cloud/` | A signed-in account. As of 2026-08-27 the *reducer* for that exists (`src/ui/account/account-session.ts`, #34 phase 1) and says outright it "does not talk to Supabase"; the effectful caller — actually calling `signInAnonymously`/`linkIdentity` — still does not exist in `src/` at all. Server half live in CI. | The owner deciding cloud save is out of scope — which deletes `supabase/` and every pgTAP assertion with it (321 at the time of writing), not 481 lines. |
 | `src/services/challenges/` | ADR 0009's gate list, which its own Status refuses to discharge: `Accepted — implementation gated`. Server half live in CI. | A decision that there will be no public ranking, superseding ADR 0009. |
 | `src/services/entitlements/` | A payment provider, which #36's own Out of scope requires a commercial and legal review to choose; and, for the free-tier half, cloud save, since the slots counted are cloud slots. Server half live in CI. | A decision that there will be no paid tier. |
 | ~~`src/services/telemetry/`~~ **— discharged 2026-08-27** | It was waiting on an ingestion endpoint nobody had chosen and a consent surface no module in `src/ui/` provided. Open question 2 below went to the owner and came back *yes*, so both were built: [ADR 0046](./0046-shipping-the-telemetry-pipeline.md). The tree has left `tests/foundation/trusted-tier-reachability-contract.test.ts`'s `PARKED_TREES` for its `WIRED_TREES`, and the "deliberately empty" I/O allow-list named below now holds exactly one entry. | n/a — it is wired. What would make it dead is unchanged in kind: a decision that Lockstate collects no telemetry. |
@@ -313,6 +313,27 @@ the follow-up starts from a list rather than a re-measurement.
    `src/simulation/entity/prototype.ts`; `src/simulation/protocol/transferables.ts`;
    `src/simulation/rooms/definition.ts` (already recorded in `docs/CONTENT.md`
    and asserted by the content gate). Eleven of the fourteen are barrels.
+
+   > **Correction, 2026-08-29 (#378 re-measurement).** `src/simulation/protocol/transferables.ts`
+   > is no longer in this list — `src/simulation/worker/state-machine.ts` now
+   > imports `collectProtocolTransferables` from it directly (`a3b9b1c`), so the
+   > walk reaches it by value. Thirteen remain, not fourteen. Kept as a
+   > correction rather than silently fixed, per this repository's own rule that
+   > a count in prose rots fastest while the thing it counts is under active
+   > work — which thirteen more unrelated commits landing under `src/simulation/`
+   > in the same two days confirms.
+   >
+   > The same re-measurement found a *new* unreachable, non-barrel tree that did
+   > not exist when this list was written: `src/ui/account/` (4 modules,
+   > `fee6115`, #34 phase 1). It is not added here as a fifteenth entry, because
+   > it is not a barrel someone has to explain — it is the same shape as the four
+   > trees this ADR already decided about, and it is now tracked the same way:
+   > `tests/foundation/trusted-tier-reachability-contract.test.ts` added it to
+   > `SCANNED_ROOTS` and `PARKED_TREES` directly (2026-08-29), rather than
+   > waiting for this open question's wider widening. See that file's own "One
+   > more tree" comment for the reasoning and `docs/CLOUD_SAVE.md`'s "What has
+   > and has not been executed" for the one line of this document's own prose it
+   > has since made imprecise.
 5. **The rule that `src/simulation/**` must not import `src/persistence/**`** is true today —
    measured, zero such imports — and **no test holds it.** The services-layer
    gate holds the simulation-must-not-import-services direction and this one has
