@@ -1,7 +1,17 @@
 import { expect, test, type Page } from '@playwright/test';
 
 /**
- * A *playtest*, not a regression suite.
+ * A *playtest*, not a regression suite. **This file is deliberately not
+ * merged, and must not become a CI gate.**
+ *
+ * It carries 11 `expect` calls against 118 `console.log` calls: it reproduces
+ * issue #569 for whoever fixes it, and it would pass whether or not #569 is
+ * ever fixed. Running it costs a browser suite several minutes and buys no
+ * guard. The findings live in `docs/research/2026-08-29-mouse-playtest.md` on
+ * `agent/playtest-research-note`; the guard for the fix belongs beside the fix.
+ *
+ * If you are fixing #569: `-g "what each one does"` is the shortest path to
+ * the defect, and `-g "the mouse-only route"` is the whole naive walk.
  *
  * The owner's complaint is that a prison could not be built by playing:
  * "znajdz bugi i bledy grajac, bo ja nie moglem postawic wiezienia itp grajac
