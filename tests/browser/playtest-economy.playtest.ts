@@ -3,6 +3,20 @@ import { expect, test, type Page } from '@playwright/test';
 /**
  * A *playtest*, not a regression suite, and **deliberately not a CI gate**.
  *
+ * **Which is why this file is `.playtest.ts` and not `.spec.ts`.** It was
+ * written as `playtest-economy.spec.ts`, and that name contradicted this
+ * sentence: `tests/browser/playwright.config.ts` collects on
+ * `testMatch: /.*\.spec\.ts$/`, so the suite would have picked it up and run
+ * ~700 lines of mouse-driven play in every CI run of a job that already takes
+ * six minutes. A file declaring it is not a gate while being named into one is
+ * the same defect PR #578 landed a partition contract against, one directory
+ * along.
+ *
+ * **Nothing collects it now, and that is the deliberate consequence.** To run
+ * it, point a config's `testMatch` at `.playtest.ts`; none does today. It is
+ * kept because a reproduction that only exists in a merged branch is a
+ * reproduction that the branch cleanup deletes.
+ *
  * It answers issue #601 -- what "a neglected twelve-prisoner prison earns
  * about 150/day" was actually measuring -- by playing: build a prison with
  * the mouse, admit prisoners, run past a day boundary, and read the roster
