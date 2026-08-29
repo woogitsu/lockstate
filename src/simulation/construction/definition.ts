@@ -483,7 +483,10 @@ export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
    *     (`'workstation'` is there) while a desk standing in a security office
    *     does **not** satisfy its console requirement (`'surveillance'` is not).
    *     The asymmetry is the containment rule doing its job, not an accident of
-   *     these rows.
+   *     these rows. Since #528 it is also what a *count* counts: the room needs
+   *     `minQuantity` objects that each cover the required one, so two consoles
+   *     satisfy a two-desk requirement and two desks satisfy no part of a
+   *     console requirement at all.
    *   - `object.medical-bed` carries `'sleep-surface'` *and*
    *     `'medical-treatment'`, so a plain `object.bed` cannot satisfy an
    *     infirmary's requirement, while a medical bed can satisfy a cell's. That
@@ -507,11 +510,23 @@ export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
   /*
    * The cheapest and quickest row in the registry, and the one required in the
    * largest quantity: `room.classroom` wants four and `room.reception` and
-   * `room.staff-room` two each. `minQuantity` is still not checked anywhere
+   * `room.staff-room` two each.
+   *
+   * **Those quantities are now counted, and this comment said they were not.**
+   * It read: *"`minQuantity` is still not checked anywhere
    * (`docs/HUD_PROJECTIONS.md` gap 13), so one chair satisfies all three
-   * requirements today -- ADR 0028 phase 4 notes that decision 1 makes the
-   * check *possible* for the first time, and building it is a mechanism rather
-   * than a row, so it is not in this phase.
+   * requirements today -- ADR 0028 phase 4 notes that decision 1 makes the check
+   * *possible* for the first time, and building it is a mechanism rather than a
+   * row, so it is not in this phase."* Every word of that was true of phase 4,
+   * which is the phase this row shipped in; the mechanism it deferred is #528,
+   * and `requirementStatus` in
+   * `src/simulation/presentation/room-projection.ts` now counts the objects
+   * standing in the room against the authored `minQuantity`. So a classroom
+   * wants four chairs and gets no credit for one.
+   *
+   * Four *seats*, strictly: the containment rule below counts any object whose
+   * capabilities cover a chair's, and `object.bench` is one. That is the same
+   * rule as the desk/console asymmetry two blocks up, applied to a quantity.
    */
   ['chair-wooden', {
     id: 'chair-wooden',

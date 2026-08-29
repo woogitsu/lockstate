@@ -814,8 +814,8 @@ decision about what to build next.
 
 ### Rooms
 
-13. **Object placement exists, and `minQuantity` is still unchecked** *—
-    the first half of this gap is closed and the second is not.*
+13. **Object placement exists, and `minQuantity` is counted** *— both
+    halves of this gap are now closed, the second at #528.*
 
     It read "object placement does not exist. No system tracks which objects
     are physically in which room; `RoomInstance.objectCapabilities` is
@@ -830,16 +830,51 @@ decision about what to build next.
     reads `0`, which is the same true state it always was. What a player sees
     is in that ADR's phase 1 section.
 
-    **`minQuantity` is still uncheckable, and the reason has changed.**
-    Objects are individuated, so counting the beds in a cell is possible for
-    the first time; what is missing is that `room-projection.ts` is not handed
-    the placed objects, only the instance's derived capability list. Wiring
-    that is phase 4's, which is when a second object type makes a *quantity*
-    mean something. Until then an `object` requirement still reads
+    **`minQuantity` is read, and the paragraph that stood here said it was
+    not.** What it said: *"`minQuantity` is still uncheckable, and the reason
+    has changed. Objects are individuated, so counting the beds in a cell is
+    possible for the first time; what is missing is that `room-projection.ts`
+    is not handed the placed objects, only the instance's derived capability
+    list. Wiring that is phase 4's, which is when a second object type makes a
+    quantity mean something. Until then an `object` requirement still reads
     `'satisfied-by-capability'` or `'missing-capability'` and never a count —
     so a cell with a bed and no toilet reads `'missing-capability'` on the
-    toilet, which is exactly why ADR 0028 names phase 2 as the milestone
-    rather than phase 1.
+    toilet, which is exactly why ADR 0028 names phase 2 as the milestone rather
+    than phase 1."*
+
+    **What is true.** Phase 4 landed at `b097e70` on 2026-08-26 (#384) and did
+    not wire it. That commit's own ADR section says so — *"gap 13 stayed
+    half-answerable rather than becoming answered: `requirementStatus` still
+    compares capabilities and never counts objects, so one chair still
+    satisfies a classroom's requirement for four"*, calling the counting *"a
+    mechanism, not a row"* — so the deferral above named a phase that had
+    already shipped without it, and the sentence was **false from `b097e70`
+    onwards** rather than merely stale. Issue #528 is what a player then saw:
+    `room.canteen` asks for two dining tables and four benches, and one of each
+    read the room finished, while the room's footprint-derived `'dining'`
+    ceiling seated three diners rather than six.
+
+    `RoomProjectionOptions.placedObjects` is that wiring, supplied by
+    `src/simulation/worker/projection-catalog.ts` on both `hud/room-list` and
+    `hud/room-detail`. An `object` requirement is satisfied when the room holds
+    at least `minQuantity` objects whose own catalogue capabilities cover the
+    required object's — the containment rule
+    `src/simulation/construction/definition.ts` already states about the
+    buildable rows, so a security console counts toward a desk requirement and
+    a desk does not count toward a console requirement. The last clause above
+    is unchanged: a cell with a bed and no toilet reads `'missing-capability'`
+    on the toilet, which is why ADR 0028 names phase 2 as the milestone rather
+    than phase 1.
+
+    **The capability test survives where there is nothing to count**, and only
+    there: an instance with no recorded rectangle (a V4 save; gap 11) contains
+    nothing this projection can attribute to it, and a caller that supplies no
+    `placedObjects` — every test that registers `objectCapabilities` by hand —
+    has handed it nothing to attribute. Both answer from the instance's
+    capability list and ignore `minQuantity`, exactly as before #528, because
+    reporting a furnished room as empty would be worse than the weaker answer.
+    That is the same shape and the same reason as
+    `RoomInstanceRegistry.concurrentUseCapacityFor`'s third case.
 
     **Phase 2 has landed and both of `room.cell`'s `object` requirements can
     now read `'satisfied-by-capability'`** — measured in
@@ -864,8 +899,16 @@ decision about what to build next.
     capacity", which `RoomOccupancyViewModel` still cannot express because
     `free` clamps at zero and `utilization` clamps at 1. Only the first has
     landed. The other two are changes to what the projection publishes, not to
-    what the panel asks for. The per-requirement quantity above is unchanged
-    too: the readout says a cell needs a toilet, never how many.
+    what the panel asks for.
+
+    The per-requirement quantity is now *evaluated* but still not *read out*,
+    and the sentence that stood here denied both halves — it read *"The
+    per-requirement quantity above is unchanged too: the readout says a cell
+    needs a toilet, never how many."* The second clause is still exactly true
+    and is the one a player feels: since #528 the projection knows a canteen is
+    two dining tables short, and the panel still says only that it needs a
+    dining table. Naming the number is a new player-facing sentence and
+    therefore the owner's (`AGENTS.md`, fourth exclusion); it is issue #529.
 
     The readout counts unfinished rooms and names one unmet requirement, because
     a single line is what the panel's height budget affords at 900×600 —
