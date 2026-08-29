@@ -33,6 +33,7 @@ import type { HudAlertViewModel, HudRefusalNoticeViewModel } from './hud/view-mo
 const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
   'admit.no-accommodation': 'hud.alert.refusal.admit.no-accommodation',
   'admit.population-full': 'hud.alert.refusal.admit.population-full',
+  'build.duplicate-order': 'hud.alert.refusal.build.duplicate-order',
   'build.out-of-bounds': 'hud.alert.refusal.build.out-of-bounds',
   'build.unbuildable': 'hud.alert.refusal.build.unbuildable',
   'build.unbuildable-terrain': 'hud.alert.refusal.build.unbuildable-terrain',

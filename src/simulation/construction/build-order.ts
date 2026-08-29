@@ -70,29 +70,45 @@ export function resolveBuildEdge(order: { readonly edge?: BuildEdge }): BuildEdg
  * for a reason `SUBMISSION_FAIL_REASONS` does not name; three more are that
  * table's entries and one is the out-of-bounds check that runs before it.
  *
- * `'unknown-buildable'` is the odd one out and the only member that is not
- * about a *tile*: it is what `submitOrder` writes when `definitionId` names no
- * row in `BUILDABLE_REGISTRY`. It is spelled exactly like
- * `PlaceObjectRefusalReason`'s member of the same name because it is the same
- * fact about the same registry reached by a different command, and it is
- * namespaced apart from it on the wire for the reason every other collision in
- * `REFUSAL_REASONS` is. Before it existed the id was never checked: the order
- * was approved, stored, and `ConstructionSystem.update`'s unconditional
- * `getBuildableDefinition` then threw out of a scheduled system update on every
- * subsequent tick, for every order, and `snapshot()` carried the offending
- * order into the save -- so the prison could never build anything again and
- * reloading reproduced it.
+ * `'unknown-buildable'` is the odd one out among the original six and the
+ * only member that is not about a *tile*: it is what `submitOrder` writes
+ * when `definitionId` names no row in `BUILDABLE_REGISTRY`. It is spelled
+ * exactly like `PlaceObjectRefusalReason`'s member of the same name because it
+ * is the same fact about the same registry reached by a different command,
+ * and it is namespaced apart from it on the wire for the reason every other
+ * collision in `REFUSAL_REASONS` is. Before it existed the id was never
+ * checked: the order was approved, stored, and `ConstructionSystem.update`'s
+ * unconditional `getBuildableDefinition` then threw out of a scheduled system
+ * update on every subsequent tick, for every order, and `snapshot()` carried
+ * the offending order into the save -- so the prison could never build
+ * anything again and reloading reproduced it.
+ *
+ * `'duplicate-order'` is the seventh (issue #514) and, like
+ * `'unknown-buildable'`, not about a tile: it is what `submitOrder` writes
+ * when another order it is still honouring -- see `isCancellable` --
+ * already names the identical `definitionId`, tile and edge. Before it
+ * existed, *Place order* pressed several times for the same wall queued one
+ * order per press, each approved, each allocating and consuming its own
+ * materials once the crew reached it, for a tile that can only ever hold one
+ * wall -- an unrefunded loss for every press past the first, not merely
+ * queue noise. It is spelled exactly like `PlaceObjectRefusalReason`'s and
+ * `PurchaseRefusalReason`'s members of the same name because "a request just
+ * like one already standing" is the same fact reached by three different
+ * commands, and namespaced apart from both on the wire for the reason every
+ * other collision in `REFUSAL_REASONS` is -- a player who pressed *Place
+ * order* must not read that materials were not ordered.
  *
  * Persisted: `save-schema.ts` validates `failReason` as an optional string, so
  * a save written by an older build can carry any of these and no migration is
  * needed. It stays a `z.string()` there deliberately -- a save is data that
  * already exists, and narrowing the *reader* would turn an unrecognised
  * historical value into an unloadable prison rather than an order that reads
- * as failed. The same property is what lets this member be *added* without a
+ * as failed. The same property is what lets a member be *added* without a
  * save bump: an order failed for it is written by a build that has the value,
  * and read back by any build at all.
  */
 export const BUILD_ORDER_FAIL_REASONS = [
+  'duplicate-order',
   'out-of-bounds',
   'unbuildable',
   'unbuildable-terrain',

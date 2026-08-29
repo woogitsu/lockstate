@@ -469,15 +469,24 @@ describe('taking an order back removes the geometry it wrote', () => {
   });
 
   it('does not delete a second order\'s wall standing on the same edge', () => {
+    // Two orders claiming one edge can no longer arise through a live
+    // `submitOrder` call -- issue #514 refuses the second `wall-brick` at an
+    // edge the first already claims, as `duplicate-order` -- but a save
+    // written before that fix could already hold exactly this pair, and
+    // `restore()` does not re-run `submitOrder`'s checks (`system.ts`'s own
+    // `restore` doc says so: it is the schema-validated boundary, not a
+    // second submission). Cancelling one of a restored pair must still not
+    // silently erase the wall the geometry layer credits to the other.
     const world = loadedWorld();
     const construction = new ConstructionSystem(world);
-    const kernel = new Kernel();
-    kernel.registerSystem(construction);
-    // Nothing rejects two orders claiming one edge, so cancelling one must
-    // not silently erase the other's wall.
-    construction.submitOrder(createBuildOrder('wall-a', 'wall-brick', tile(4, 6), 'north'));
-    construction.submitOrder(createBuildOrder('wall-b', 'wall-brick', tile(4, 6), 'north'));
-    runToCompletion(kernel);
+    construction.restore({
+      orders: [
+        { id: 'wall-a', definitionId: 'wall-brick', location: tile(4, 6), edge: 'north', state: 'completed', progress: 50, materialsAllocated: [] },
+        { id: 'wall-b', definitionId: 'wall-brick', location: tile(4, 6), edge: 'north', state: 'completed', progress: 50, materialsAllocated: [] },
+      ],
+      undoStack: [],
+      redoStack: [],
+    });
     expect(construction.getOrder('wall-a')?.state).toBe('completed');
     expect(construction.getOrder('wall-b')?.state).toBe('completed');
 
