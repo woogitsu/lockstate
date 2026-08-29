@@ -2523,6 +2523,16 @@ test.describe('the Rooms panel', () => {
     expect(probe.noteText).toBe('Too small — this room needs at least 6 × 6 tiles.');
     await expectLaidOut(page, '.hud-rooms__note', 'the too-small warning');
 
+    // Laid out is not the same as reachable. A keyboard-only playtest found a
+    // player arriving at a disabled Confirm and being told "disabled" and
+    // nothing else: the sentence saying *why* was on screen beside the
+    // control and tied to nothing. `aria-describedby` is what ties them, and
+    // it is asserted here rather than in the note's own test because the
+    // relationship belongs to the control.
+    expect(probe.confirmDescribedBy, 'the disabled confirm is not described by its own note').toEqual([
+      'note',
+    ]);
+
     // Exactly one message: the note. A press that does not dispatch is not a
     // refusal, so the refusal line must stay down and no second sentence may
     // appear anywhere.
@@ -2537,6 +2547,67 @@ test.describe('the Rooms panel', () => {
     const legal = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
     expect(legal.confirmDisabled).toBe(false);
     expect(legal.noteTone).toBe('');
+  });
+
+  test('a refusal joins the note on the confirm control rather than replacing it', async ({ page }) => {
+    /*
+     * `aria-describedby` is a list, and two writers share it: this panel
+     * describes Confirm with the note beside it, and the HUD's refusal band
+     * marks whichever control was pressed (`hud.ts`, `markControl`). While
+     * both called `setAttribute`, the second writer erased the first -- and
+     * the erasure is invisible to sighted testing, because the note stays
+     * exactly where it was on screen and only stops being reachable.
+     *
+     * The comment above `commandControls` in `hud.ts` predicted this the day
+     * the mark was written: "the controls registered here carry no
+     * `aria-describedby` of their own; one that gained one would need this to
+     * merge rather than replace." Confirm is now one that gained one.
+     */
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 0, y: 0, width: 4, height: 4 }));
+
+    const armed = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(armed.confirmDescribedBy, 'the note does not describe the control it explains').toEqual(['note']);
+
+    await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('confirm'));
+
+    await expect
+      .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().visible), {
+        message: 'the refusal never reached the player',
+      })
+      .toBe(true);
+
+    // Both, in the order a screen reader reads them: the standing explanation
+    // of the control first, then what just happened to it.
+    const refused = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(refused.confirmDescribedBy, 'the refusal replaced the note instead of joining it').toEqual([
+      'note',
+      'refusal',
+    ]);
+    // And the refusal band's own contract still holds -- every marked control
+    // points at the line. Asserted together, because "the note survived" and
+    // "the refusal landed" are two claims and a merge that dropped either
+    // would satisfy exactly one of them.
+    expect(
+      (await page.evaluate(() => window.lockstateUiHarness.refusalProbe())).describedByRefusal,
+      'the merge dropped the refusal id it was merging in',
+    ).toBe(true);
+
+    // Clearing takes back only what the band put there. A `removeAttribute`
+    // here would leave the control with no description at all, which is the
+    // same defect one press later.
+    await page.evaluate(() => window.lockstateUiHarness.failIntents(false));
+    // A fresh rectangle, because the refused press consumed the pending one:
+    // the control is only laid out while there is something to confirm, and a
+    // press with nothing pending dispatches nothing and so clears nothing.
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 0, y: 0, width: 4, height: 4 }));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('confirm'));
+
+    await expect
+      .poll(() => page.evaluate(() => window.lockstateUiHarness.roomsProbe().confirmDescribedBy), {
+        message: 'clearing the refusal took the panel\'s own note with it',
+      })
+      .toEqual(['note']);
   });
 
   /**
