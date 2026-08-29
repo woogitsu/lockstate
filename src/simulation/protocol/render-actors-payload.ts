@@ -1,5 +1,3 @@
-import { LOCOMOTION_SUBTILE_UNITS } from '../locomotion';
-
 /**
  * The bytes a `simulation/delta` carries, and the only definition of them.
  *
@@ -30,30 +28,14 @@ import { LOCOMOTION_SUBTILE_UNITS } from '../locomotion';
  * | `u32[1]` | flags; bit 0 set = keyframe (the record list is the complete live set) |
  * | `u32[2]` | `recordCount` |
  * | `u32[3]` | `removedCount` |
- * | then `recordCount` x 5 words | `u32` entity id, `u32` packed fields, `i32` x, `i32` y, `i16` velocity x + `i16` velocity y |
+ * | then `recordCount` x 4 words | `u32` entity id, `u32` packed fields, `i32` tileX, `i32` tileY |
  * | then `removedCount` x 1 word | `u32` entity id no longer live |
  *
- * Twenty bytes per actor. `packEntityId` returns `>>> 0`
- * (`src/simulation/entity/entity-store.ts`), so an id is exactly one `u32`.
- *
- * **Position is in sub-tile units, not tiles**, and velocity is in sub-tile
- * units per wall-clock second. `RENDER_ACTORS_SUBTILE_UNITS` is
- * `LOCOMOTION_SUBTILE_UNITS` re-exported rather than a scale of this format's
- * own: an actor's position between two tiles is exactly what
- * `LocomotionStore` holds, and converting it here would be inventing a
- * precision the simulation does not have. That is the same rule
- * `src/rendering/feed/actors-from-snapshot.ts` sets for this data, applied to
- * a quantity that now exists.
- *
- * ### Why velocity is per wall-clock second and not per tick
- *
- * The receiver uses it to advance a published position across the gap between
- * two publications, and that gap is measured in wall-clock milliseconds by a
- * requestAnimationFrame loop. A per-tick velocity would make the renderer
- * responsible for knowing the kernel's step duration *and* the player's
- * current speed multiplier -- two facts it would have to track from
- * `simulation/clock-state` and would get wrong for one frame after every speed
- * change. The worker knows both, so it does the multiplication.
+ * Sixteen bytes per actor. `packEntityId` returns `>>> 0`
+ * (`src/simulation/entity/entity-store.ts`), so an id is exactly one `u32`,
+ * and tile coordinates are plain `i32` because that is exactly what
+ * `PositionComponent` holds -- nothing here is invented, which is the rule
+ * `src/rendering/feed/actors-from-snapshot.ts` already sets for this data.
  *
  * ### Endianness is written out rather than inherited
  *
@@ -63,25 +45,15 @@ import { LOCOMOTION_SUBTILE_UNITS } from '../locomotion';
  * property of the reader rather than of the bytes. The measured cost of the
  * explicit form is recorded in `docs/RENDERING.md` beside the payload size.
  *
- * ### What layout 1 did not carry, and why layout 2 does
+ * ### What slice 1 does not carry
  *
- * > This section read: *"No motion and no facing. The simulation updates an
- * > actor's position only on arrival at a resolved route's destination
- * > (`components.ts`, `action-system.ts`), so there is no velocity to publish;
- * > a channel at any cadence delivers fresher teleports, not walking."* Every
- * > word of that was true of the simulation it described, and
- * > [ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)
- * > is the decision that stopped it being true: an actor covers the tiles
- * > between two rooms at a fixed speed, so there is a position between tiles
- * > and a velocity, and both are simulation state rather than something this
- * > layer differenced out of two publications. The refusal the paragraph
- * > states still stands for anything the simulation does *not* say -- see
- * > `actors-from-delta.ts` for what the receiver still declines to invent.
- *
- * Still not carried: an animation clip, an animation phase, or any statement
- * about which artwork draws a population. Those are renderer decisions
- * (ADR 0014) and the payload names a population *ordinal*.
- *
+ * No motion and no facing. The simulation updates an actor's position only on
+ * arrival at a resolved route's destination
+ * (`src/simulation/prisoners/components.ts`, `action-system.ts`), so there is
+ * no velocity to publish; a channel at any cadence delivers fresher teleports,
+ * not walking. Differencing publications on the main thread to produce one
+ * would be a renderer-side movement model, which `AGENTS.md` boundary 1
+ * forbids and which `actors-from-snapshot.ts` already refuses for snapshots.
  * The `flags` word and the removal list are in the layout from the start so
  * that the changed-only messages ADR 0040 puts in a later slice need no
  * version bump.
@@ -97,22 +69,13 @@ export const RENDER_ACTORS_SCHEMA_ID = 'lockstate.render-actors';
  * than in the envelope, so adding a motion vector and a facing ordinal to the
  * record is a bump here and no protocol change at all.
  */
-export const RENDER_ACTORS_SCHEMA_VERSION = 2;
+export const RENDER_ACTORS_SCHEMA_VERSION = 1;
 
 /** The payload's `contentType`. Names the bytes, so a wrong body is refused rather than misread. */
 export const RENDER_ACTORS_CONTENT_TYPE = 'application/x-lockstate-render-actors';
 
-/**
- * `u32[0]`. Redundant with `RENDER_ACTORS_SCHEMA_VERSION` on purpose: a reader
- * that has the buffer and not the envelope can still tell what it is holding.
- *
- * **1 until ADR 0059, 2 since.** Layout 1 carried a whole-tile `i32` position
- * and nothing else, because the simulation had no motion to publish; layout 2
- * carries a sub-tile position, a velocity and a heading, because it does. ADR
- * 0003 decision 5 puts the read model's version inside the payload for exactly
- * this, so the bump costs no protocol change and no envelope change.
- */
-export const RENDER_ACTORS_LAYOUT_VERSION = 2;
+/** `u32[0]`. Redundant with `RENDER_ACTORS_SCHEMA_VERSION` on purpose: a reader that has the buffer and not the envelope can still tell what it is holding. */
+export const RENDER_ACTORS_LAYOUT_VERSION = 1;
 
 /** `u32[1]` bit 0: the record list is the complete live set rather than the actors that changed. */
 export const RENDER_ACTORS_KEYFRAME_FLAG = 1;
@@ -120,18 +83,8 @@ export const RENDER_ACTORS_KEYFRAME_FLAG = 1;
 /** Words before the first record. */
 export const RENDER_ACTORS_HEADER_WORDS = 4;
 
-/** Words per record: entity id, packed fields, x, y, and the two packed velocity halves. */
-export const RENDER_ACTORS_RECORD_WORDS = 5;
-
-/**
- * Sub-tile units in one tile: the fixed-point scale a position and a velocity
- * in this payload are expressed in.
- *
- * Re-exported from `src/simulation/locomotion` rather than declared, so the
- * two cannot drift and so a reader can see that the wire carries the
- * simulation's own precision unconverted.
- */
-export const RENDER_ACTORS_SUBTILE_UNITS = LOCOMOTION_SUBTILE_UNITS;
+/** Words per record: entity id, packed fields, tileX, tileY. */
+export const RENDER_ACTORS_RECORD_WORDS = 4;
 
 /** Bytes per word. Every field in this layout is exactly one word wide. */
 export const RENDER_ACTORS_WORD_BYTES = 4;
@@ -147,45 +100,15 @@ export const RENDER_ACTORS_WORD_BYTES = 4;
  */
 export const RENDER_ACTOR_POPULATION_PRISONER = 0;
 
-/** The low byte of the packed-fields word. Bits 8-11 hold the heading; the remaining 20 bits are reserved and are written as zero. */
+/** The low byte of the packed-fields word. The remaining 24 bits are reserved and are written as zero. */
 export const RENDER_ACTOR_POPULATION_MASK = 0xff;
 
-/**
- * The heading, as two biased two-bit signs in bits 8-9 and 10-11 of the
- * packed-fields word: `-1`, `0` or `1` per axis, stored as the value plus one.
- *
- * A heading rather than a direction ordinal, because which of the eight
- * authored sprite directions a sign pair maps to is a *rendering* decision --
- * `src/rendering/assets/direction.ts` owns it, reads the contract's
- * `+x` east / `+y` south frame, and is the single place that interpretation
- * lives. Putting an ordinal on the wire would make the worker the second place.
- *
- * Two bits an axis rather than a byte because it costs nothing: the word had
- * 24 reserved bits and now has 20.
- */
-const HEADING_BIAS = 1;
-const HEADING_MASK = 0b11;
-const HEADING_X_SHIFT = 8;
-const HEADING_Y_SHIFT = 10;
-
-export function packRenderActorFields(population: number, headingX = 0, headingY = 0): number {
-  return (
-    (population & RENDER_ACTOR_POPULATION_MASK) |
-    (((headingX + HEADING_BIAS) & HEADING_MASK) << HEADING_X_SHIFT) |
-    (((headingY + HEADING_BIAS) & HEADING_MASK) << HEADING_Y_SHIFT)
-  );
+export function packRenderActorFields(population: number): number {
+  return population & RENDER_ACTOR_POPULATION_MASK;
 }
 
 export function renderActorPopulation(packedFields: number): number {
   return packedFields & RENDER_ACTOR_POPULATION_MASK;
-}
-
-export function renderActorHeadingX(packedFields: number): number {
-  return ((packedFields >>> HEADING_X_SHIFT) & HEADING_MASK) - HEADING_BIAS;
-}
-
-export function renderActorHeadingY(packedFields: number): number {
-  return ((packedFields >>> HEADING_Y_SHIFT) & HEADING_MASK) - HEADING_BIAS;
 }
 
 /**
@@ -202,12 +125,8 @@ export interface RenderActorsPayload {
   readonly recordCount: number;
   readonly entityIds: Uint32Array;
   readonly packedFields: Uint32Array;
-  /** Position in sub-tile units: `tile * RENDER_ACTORS_SUBTILE_UNITS + offset`. */
-  readonly subX: Int32Array;
-  readonly subY: Int32Array;
-  /** Velocity in sub-tile units per wall-clock second. Zero on both axes for an actor standing still. */
-  readonly velocitySubX: Int16Array;
-  readonly velocitySubY: Int16Array;
+  readonly tileX: Int32Array;
+  readonly tileY: Int32Array;
   readonly removed: Uint32Array;
 }
 
@@ -250,14 +169,7 @@ export class RenderActorsKeyframeWriter {
     this.view.setUint32(3 * RENDER_ACTORS_WORD_BYTES, 0, true);
   }
 
-  public writeRecord(
-    entityId: number,
-    packedFields: number,
-    subX: number,
-    subY: number,
-    velocitySubX: number,
-    velocitySubY: number,
-  ): void {
+  public writeRecord(entityId: number, packedFields: number, tileX: number, tileY: number): void {
     if (this.written >= this.recordCount) {
       throw new Error(`A render-actors keyframe sized for ${String(this.recordCount)} records was handed another.`);
     }
@@ -265,16 +177,8 @@ export class RenderActorsKeyframeWriter {
       (RENDER_ACTORS_HEADER_WORDS + this.written * RENDER_ACTORS_RECORD_WORDS) * RENDER_ACTORS_WORD_BYTES;
     this.view.setUint32(offset, entityId, true);
     this.view.setUint32(offset + RENDER_ACTORS_WORD_BYTES, packedFields, true);
-    this.view.setInt32(offset + 2 * RENDER_ACTORS_WORD_BYTES, subX, true);
-    this.view.setInt32(offset + 3 * RENDER_ACTORS_WORD_BYTES, subY, true);
-    // Two `i16` in the fifth word. A velocity is bounded by the walking speed
-    // and the speed ladder's ceiling -- 128 sub-tile units a tick at x4 is
-    // 10,240 a second -- so sixteen bits is still room to spare (a third of the
-    // range), and a whole word an axis would be four bytes an actor for
-    // nothing. A speed ladder reaching x16, or a walk three times this one,
-    // would be the thing that overflows it.
-    this.view.setInt16(offset + 4 * RENDER_ACTORS_WORD_BYTES, velocitySubX, true);
-    this.view.setInt16(offset + 4 * RENDER_ACTORS_WORD_BYTES + 2, velocitySubY, true);
+    this.view.setInt32(offset + 2 * RENDER_ACTORS_WORD_BYTES, tileX, true);
+    this.view.setInt32(offset + 3 * RENDER_ACTORS_WORD_BYTES, tileY, true);
     this.written += 1;
   }
 
@@ -327,18 +231,14 @@ export function decodeRenderActorsPayload(buffer: ArrayBuffer): RenderActorsPayl
 
   const entityIds = new Uint32Array(recordCount);
   const packedFields = new Uint32Array(recordCount);
-  const subX = new Int32Array(recordCount);
-  const subY = new Int32Array(recordCount);
-  const velocitySubX = new Int16Array(recordCount);
-  const velocitySubY = new Int16Array(recordCount);
+  const tileX = new Int32Array(recordCount);
+  const tileY = new Int32Array(recordCount);
   for (let record = 0; record < recordCount; record += 1) {
     const offset = (RENDER_ACTORS_HEADER_WORDS + record * RENDER_ACTORS_RECORD_WORDS) * RENDER_ACTORS_WORD_BYTES;
     entityIds[record] = view.getUint32(offset, true);
     packedFields[record] = view.getUint32(offset + RENDER_ACTORS_WORD_BYTES, true);
-    subX[record] = view.getInt32(offset + 2 * RENDER_ACTORS_WORD_BYTES, true);
-    subY[record] = view.getInt32(offset + 3 * RENDER_ACTORS_WORD_BYTES, true);
-    velocitySubX[record] = view.getInt16(offset + 4 * RENDER_ACTORS_WORD_BYTES, true);
-    velocitySubY[record] = view.getInt16(offset + 4 * RENDER_ACTORS_WORD_BYTES + 2, true);
+    tileX[record] = view.getInt32(offset + 2 * RENDER_ACTORS_WORD_BYTES, true);
+    tileY[record] = view.getInt32(offset + 3 * RENDER_ACTORS_WORD_BYTES, true);
   }
 
   const removed = new Uint32Array(removedCount);
@@ -354,10 +254,8 @@ export function decodeRenderActorsPayload(buffer: ArrayBuffer): RenderActorsPayl
     recordCount,
     entityIds,
     packedFields,
-    subX,
-    subY,
-    velocitySubX,
-    velocitySubY,
+    tileX,
+    tileY,
     removed,
   };
 }

@@ -252,21 +252,13 @@ describe('six prisoners and a canteen that seats three', () => {
      * subject is untouched: the riot opens long after the meal blocks this
      * file is about have been contended eight days running.
      */
-    /*
-     * **Re-measured for [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md).**
-     * A prisoner walks to the canteen now, so the ticks a journey costs come out
-     * of the association that fills the rest of the day, and the split between
-     * the two meals moves with who reaches a seat first. **What the file is
-     * about is unchanged and is asserted below rather than here**: all six eat
-     * both meals, the losers eat in their cell, and nobody starves.
-     */
     expect(run.perPrisoner).toEqual([
-      { 'action.sleep': 3_000, 'action.eat-meal': 224, 'action.eat-in-cell': 220, 'action.use-toilet': 616, 'action.free-association': 4_064 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 308, 'action.eat-in-cell': 208, 'action.use-toilet': 604, 'action.free-association': 4_088 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 240, 'action.eat-in-cell': 240, 'action.use-toilet': 632, 'action.free-association': 4_068 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 104, 'action.eat-in-cell': 416, 'action.use-toilet': 632, 'action.free-association': 4_072 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 336, 'action.eat-in-cell': 224, 'action.use-toilet': 612, 'action.free-association': 4_104 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 336, 'action.eat-in-cell': 224, 'action.use-toilet': 612, 'action.free-association': 4_104 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 360, 'action.eat-in-cell': 200, 'action.use-toilet': 820, 'action.free-association': 4_360 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 360, 'action.eat-in-cell': 200, 'action.use-toilet': 820, 'action.free-association': 4_360 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 360, 'action.eat-in-cell': 200, 'action.use-toilet': 820, 'action.free-association': 4_360 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 400, 'action.eat-in-cell': 200, 'action.use-toilet': 800, 'action.free-association': 4_320 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 400, 'action.eat-in-cell': 200, 'action.use-toilet': 800, 'action.free-association': 4_320 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 400, 'action.eat-in-cell': 200, 'action.use-toilet': 800, 'action.free-association': 4_320 },
     ]);
 
     // Stated as properties as well as counts, so the intent survives a
@@ -307,31 +299,8 @@ describe('six prisoners and a canteen that seats three', () => {
      * it is that no prisoner is systematically served two cadences later than
      * another for a reason that has nothing to do with how hungry they are.
      */
-    /*
-     * > **This read `[177.5, 177.5, 177.5, 177.5, 177.5, 177.5]` with
-     * > `expect(new Set(run.lowestHunger).size).toBe(1)` beside it, and the
-     * > exact equality did not survive
-     * > [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md).**
-     * > It could not: equality was a property of six prisoners who *arrived
-     * > together*, and six cells at six different distances from the canteen
-     * > now put them through six different days. The floors sit inside three
-     * > levels of one another instead.
-     * >
-     * > **What #434 was about is untouched, and is asserted rather than
-     * > implied below.** The defect was that scan *position* decided who ate:
-     * > the head of an ascending-index walk was served two levels later than
-     * > the tail, every day, for a reason that had nothing to do with how
-     * > hungry anybody was. The spread that is left does not track position at
-     * > all -- prisoner 5, last in that order, holds the **best** floor of the
-     * > six -- and it is a third of the size of the one #434 removed.
-     */
-    expect(run.lowestHunger).toEqual([174.5, 173.5, 174.5, 173.5, 173.5, 176.5]);
-    const spread = Math.max(...run.lowestHunger) - Math.min(...run.lowestHunger);
-    expect(spread, 'the hunger floors have spread out again, which is what #434 removed').toBeLessThanOrEqual(3);
-    expect(
-      run.lowestHunger[5],
-      'the last prisoner in the old ascending-index scan is worst off again, which is the #434 defect returning',
-    ).toBe(Math.max(...run.lowestHunger));
+    expect(run.lowestHunger).toEqual([177.5, 177.5, 177.5, 177.5, 177.5, 177.5]);
+    expect(new Set(run.lowestHunger).size, 'scan position no longer costs anybody two levels of hunger (#434)').toBe(1);
     for (const [n, hunger] of run.lowestHunger.entries()) {
       expect(hunger, `prisoner ${n} was starved to the floor`).toBeGreaterThan(0);
     }
@@ -353,19 +322,9 @@ describe('six prisoners and a canteen that seats three', () => {
     // same reason it appears there. What this assertion is *for* is unchanged
     // and is the line below it: with six seats for six prisoners,
     // `action.eat-in-cell` is absent from every row.
-    // Re-measured for ADR 0059, like the one-table run. **Six rows rather than
-    // one repeated**, because a walk to the canteen is a different length from
-    // each of the six cells and the prisoners no longer spend identical days.
-    // The line under it is what this assertion is for: with six seats for six
-    // prisoners, `action.eat-in-cell` is absent from every row.
-    expect(control.perPrisoner).toEqual([
-      { 'action.sleep': 3_000, 'action.eat-meal': 444, 'action.use-toilet': 580, 'action.free-association': 4_060 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 516, 'action.use-toilet': 580, 'action.free-association': 4_080 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 480, 'action.use-toilet': 600, 'action.free-association': 4_080 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 516, 'action.use-toilet': 580, 'action.free-association': 4_080 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 552, 'action.use-toilet': 600, 'action.free-association': 4_100 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 552, 'action.use-toilet': 600, 'action.free-association': 4_100 },
-    ]);
+    expect(control.perPrisoner).toEqual(
+      Array.from({ length: PRISONERS }, () => ({ 'action.sleep': 3_000, 'action.eat-meal': 560, 'action.use-toilet': 820, 'action.free-association': 4_360 })),
+    );
     for (const [n, counts] of control.perPrisoner.entries()) {
       expect(counts['action.eat-in-cell'], `prisoner ${n} fell back to a cell meal with a seat free`).toBeUndefined();
     }

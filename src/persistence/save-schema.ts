@@ -702,25 +702,7 @@ const contrabandSectionSchema = z
             categoryId: z.string().min(1),
             provenance: contrabandProvenanceSchema,
             holder: contrabandHolderSchema,
-            /*
-             * `'departed'` is the third member, added with ADR 0061's intake
-             * introduction route: a prisoner who leaves takes what they were
-             * concealing with them, and the record stays for the audit trail.
-             *
-             * **A widening, and `SAVE_SCHEMA_VERSION` is not bumped**, on
-             * ADR 0038 §1's conditions checked rather than assumed: every save
-             * written before this change still validates, because no older
-             * payload can contain a value this enum did not have; absence of
-             * the value has exactly one meaning (no holder of that item has
-             * ever left); and no existing member changed meaning. It carries
-             * §4's one stated cost, the same one `intelligenceSequence` above
-             * carries: this section is `.strict()` and the enum is closed, so
-             * an *older* build reading a save that has recorded a departure
-             * refuses it as `invalid-shape` where a bump would have said
-             * `unsupported-version` -- a label on a refusal both builds make
-             * either way.
-             */
-            state: z.enum(['concealed', 'confiscated', 'departed']),
+            state: z.enum(['concealed', 'confiscated']),
             movementLog: z.array(z.object({ holder: contrabandHolderSchema, atTick: tickSchema }).strict()),
           })
           .strict(),

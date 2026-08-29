@@ -92,24 +92,9 @@ What release now does is `releasePrisoner`
 It frees room-instance residency and any concurrent-use claim, cancels an
 in-flight path request, drops the cold state, releases the actor identity
 (ADR 0015), drops the gang membership, unregisters the prisoner from the job
-labour pool, **takes whatever contraband they were concealing out of the prison
-with them**, clears the `ComponentBitset` bit and destroys the entity -- in that
-order, for the reasons that function records. See
-[ADR 0050](adr/0050-when-a-sentence-ends.md) and
-[ADR 0061](adr/0061-what-the-prison-produces-on-its-own.md).
-
-The contraband step is the one on that list an executable gate cannot see, and
-`release.ts` says so at length rather than leaving it to be rediscovered:
-`tests/unit/prisoner-release-completeness.test.ts` walks the session's object
-graph looking for the departing prisoner's numeric `EntityId`, and
-`ContrabandHolder.id` is that id *as a string*. The next store keyed by a
-stringified id will have the same hole.
-
-**A sentence ending is no longer the only way out.** Since ADR 0061 decision 5
-an escape attempt nobody contained reaches the same function, for the same
-reason it has to: `IncidentResponseSystem.lapse` records `escaped: true`, and a
-panel saying so beside a prisoner still asleep in their cell would be a promise
-the code does not keep.
+labour pool, clears the `ComponentBitset` bit and destroys the entity -- in
+that order, for the reasons that function records. See
+[ADR 0050](adr/0050-when-a-sentence-ends.md).
 
 It deliberately does **not** reset the component arrays. That stays where
 `admitPrisoner` does it, so the defaults are stated once; a freed slot therefore
@@ -976,25 +961,12 @@ counts the unmet cycle, which is the convention `continuePerforming` already
 followed for the same two conditions.
 `tests/integration/unzoned-target-mid-journey.test.ts` is the run.
 
-**A prisoner walks the route, one tile at a time**
-([ADR 0059](./adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)).
-`ActionSystem` hands the resolved route's waypoints to `LocomotionStore` and
-`LocomotionSystem` advances them every tick at one tile per two kernel ticks;
-`arrive` -- the room check and the seat claim, unchanged -- runs when the walk
-ends. Sub-tile progress lives in that store and **no save carries it**, for the
-same reason no save carries the path request: a restored session rebuilds the
-navigation queue empty and drops a traveller to `idle`.
-
-> **This paragraph said the opposite until ADR 0059, and it was right about the
-> code it described:** *"Abstracted arrival, by explicit design. On a resolved
-> route, a prisoner's tile position updates directly to the destination -- there
-> is no tile-by-tile locomotion simulation. This mirrors #21/#22's own explicit
-> scope boundary ('actor movement/rendering... out of scope for both');
-> implementing real per-tick locomotion belongs to a future rendering/movement
-> system, not this issue."* The future system is `src/simulation/locomotion/`
-> and it is a *simulation* system rather than a rendering one, which is the one
-> word of that sentence that turned out to be wrong: a position the renderer
-> invented would have been a renderer-side movement model.
+**Abstracted arrival, by explicit design.** On a resolved route, a
+prisoner's tile position updates directly to the destination -- there is
+no tile-by-tile locomotion simulation. This mirrors #21/#22's own explicit
+scope boundary ("actor movement/rendering... out of scope for both");
+implementing real per-tick locomotion belongs to a future
+rendering/movement system, not this issue.
 
 ## Snapshot/restore
 
@@ -1066,14 +1038,8 @@ re-benchmark navigation throughput at scale -- see
 ## What is out of scope here
 
 Full violence/gangs/contraband/rehabilitation systems (#27/#28/#30); final
-personality/trait depth (#39); advanced crowd steering; the complete final
-need/action catalog and balance;
-**"tile-by-tile locomotion/rendering" was listed here as out of scope and is
-removed, because it shipped**:
-[ADR 0059](./adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md) makes a
-prisoner walk the route, and the body of this document says so above. Crowd
-steering stays out: a walk here follows one route's waypoints and no actor
-avoids another;
+personality/trait depth (#39); advanced crowd steering; tile-by-tile
+locomotion/rendering; the complete final need/action catalog and balance;
 **"real object-placement tracking" was listed here as out of scope and is
 removed, because it shipped**: `PlacedObjectRegistry` and `RemoveObject` are
 described by this same document at `:178-180` and `:315-325`, so the exclusion

@@ -29,27 +29,3 @@ export interface RouteFailure {
 }
 
 export type RouteResult = { readonly ok: true; readonly route: Route } | { readonly ok: false; readonly failure: RouteFailure };
-
-/**
- * A route's tiles, origin first and destination last, with the region
- * boundaries flattened away.
- *
- * `sliceIntoSegments` (`router.ts`) puts every waypoint in exactly one
- * segment -- a segment break is a change of region, not a repeated tile -- so
- * concatenating the segments reproduces the `origin..destination inclusive`
- * list `boundedLocalSearch` returned before it was sliced. That is the only
- * form a walker can use: `LocomotionStore.beginWalk` steps one tile at a time
- * and has no notion of a region.
- *
- * Written here rather than in the walker because the segment shape is this
- * module's, and a reader that flattened it by hand would be a second place
- * that has to know a segment does not repeat its predecessor's last tile.
- */
-export function routeWaypoints(route: Route): readonly TilePosition[] {
-  if (route.segments.length === 1) return route.segments[0]!.waypoints;
-  const waypoints: TilePosition[] = [];
-  for (const segment of route.segments) {
-    for (const waypoint of segment.waypoints) waypoints.push(waypoint);
-  }
-  return waypoints;
-}

@@ -208,21 +208,12 @@ describe('a prison with a furnished laundry', () => {
      * command order, no RNG on this path -- and a measurement of the loop
      * rather than a bound.
      */
-    /*
-     * **Re-measured for [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md).**
-     * A prisoner now walks the tiles between one room and the next instead of
-     * being written onto the destination anchor in the tick their route
-     * resolved, so every count here loses the ticks spent in transit. The
-     * counts this replaces are named beside each entry; what the assertion is
-     * *for* -- that the room-gated actions were reached at all -- is the
-     * property loop below it and is unchanged.
-     */
     expect(withMachines.performingTicks).toEqual({
-      'action.sleep': 3_000, // unchanged
-      'action.eat-in-cell': 560, // 640
-      'action.use-toilet': 740, // 880
-      'action.laundry-work': 2_756, // 2,420
-      'action.free-association': 1_140, // 1,740
+      'action.sleep': 3_000,
+      'action.eat-in-cell': 640,
+      'action.use-toilet': 880,
+      'action.laundry-work': 2_420,
+      'action.free-association': 1_740,
     });
 
     /*
@@ -236,12 +227,7 @@ describe('a prison with a furnished laundry', () => {
      * there, which is where every cell-only prison sat before this change.
      */
     expect(withMachines.hygieneEverRose, 'a hygiene level that rises is a shift that happened').toBe(true);
-    // 254.8, not 254.4, since ADR 0059: the prisoner walks to the laundry, and
-    // at the shipped speed the reshuffled day happens to leave hygiene a
-    // fraction *higher* rather than lower. The claim this
-    // supports -- hygiene *rises* where no shower stands -- is the assertion
-    // beside it and is unchanged.
-    expect(withMachines.finalHygiene).toBe(254.8);
+    expect(withMachines.finalHygiene).toBe(254.4);
 
     const control = watch(prisonWithLaundry(0));
     expect(control.runtime.prisoners.roomInstances.findAvailableForUse('room.laundry', 'laundry')).toBeUndefined();
@@ -320,11 +306,6 @@ describe('a prison of cells and nothing else', () => {
      * `unmetDemandCycles` above is the figure with no such floor in it, and it
      * is zero.
      */
-    // Unmoved by ADR 0059 at the shipped walking speed, and it is worth saying
-    // so: this prison is one cell, so a prisoner has nowhere to walk to and the
-    // ticks the floor is made of are the reconsideration cadence, which no walk
-    // shortens. It read 1,238 at an earlier, slower speed, where the one short
-    // walk inside the cell still cost nineteen ticks of standing.
     expect(run.idleWorkBlockTicks).toBe(1_257);
     expect(run.idleWorkBlockTicks, 'a work/education block with no classroom and no laundry is still mostly spent standing still').toBeLessThan(DAY_LENGTH_TICKS);
     expect(run.performingTicks['action.free-association'] ?? 0).toBeGreaterThan(0);

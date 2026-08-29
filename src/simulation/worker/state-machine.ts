@@ -596,13 +596,7 @@ export class SimulationWorkerStateMachine {
     if (tick <= this._publishedDeltaTick) return;
     if (nowMilliseconds - this._deltaPublishedAtMs < RENDER_DELTA_PUBLISH_INTERVAL_MS) return;
 
-    // Sub-tile units a tick become sub-tile units a wall-clock second inside
-    // the encoder, and this is the rate: the kernel's step duration and the
-    // player's current speed multiplier, both of which live here and neither
-    // of which the main thread should have to track (ADR 0059).
-    const control = this._clock.control;
-    const ticksPerWallSecond = (1_000 / this._clock.stepMilliseconds) * (control.mode === 'running' ? control.speed : 1);
-    const data = encodeRenderActorsKeyframe(this._runtime.prisoners, ticksPerWallSecond);
+    const data = encodeRenderActorsKeyframe(this._runtime.prisoners);
     const message: WorkerToMainMessage = {
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
       messageId: crypto.randomUUID(),
