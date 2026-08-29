@@ -74,7 +74,7 @@ the four gates the control — `confirmButton.setDisabled(pendingIsTooSmall())`,
 `src/ui/hud/rooms-panel.ts:1567` — and the comment immediately above it
 (`:1540-1566`) says why the enclosure case deliberately does not.
 
-## 3. The reachable world shrinks fast, and 900x600 leaves 6x9 tiles
+## 3. How much world the mouse can reach, at four viewports and at two zooms
 
 **MEASURED.** On a fresh prison, Build tab, no panels folded, hit-testing the
 centre pixel of every tile in a 34x34 block around the camera and asking whether
