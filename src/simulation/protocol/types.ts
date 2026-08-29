@@ -689,6 +689,27 @@ export const statusCountsSchema = z
      * counts every prisoner in existence including an arrival still in
      * transit. Nothing here should be derived by subtraction from that count.
      *
+     * **And that set is not the set the 40s are actually charged on**, which
+     * is worth stating here because these counts exist to make the 40s
+     * attributable and the gap between the two is a real prison state rather
+     * than a rounding error. `StateIncomeSystem` charges per *occupied place*
+     * -- a unit of a room instance's `residentCapacity` that a prisoner holds
+     * -- while `SafetyCoverageSystem` provisions, and counts, every prisoner
+     * the sector covers. An over-capacity prison's unhoused prisoner is in the
+     * sector and in these counts, and is on nobody's income line at all. So a
+     * strip reading `2 unguarded` can correspond to fewer than two withheld
+     * 40s, and the difference is exactly the population the prison has not
+     * housed -- which the `prisoners` and `accommodationCapacity` counts beside
+     * these already let a player see.
+     *
+     * That asymmetry is deliberate and it is the honest direction: a prisoner
+     * with no bed is still somebody the guards are or are not guarding, so
+     * provisioning them is right even though the state pays nothing for them.
+     * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+     * decision A(ii) sharpens the income side of it further -- the state pays
+     * `min(occupancy, residentCapacity)` per instance -- which widens this gap
+     * without changing what these three counts mean.
+     *
      * `SafetyCoverageSystem.getCensus` produces them on the same walk that
      * provisions the need, so the readout cannot disagree with what was
      * provisioned. It is at most nine ticks stale, and reads all zeroes for
