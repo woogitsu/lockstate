@@ -30,7 +30,7 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * cancel, a zone, a purchase or an undo, and no other module built a
  * command object at all.
  *
- * ## What it reads today: thirteen of thirteen
+ * ## What it reads today: fourteen of fourteen
  *
  * `Undo` and `Redo` gained producers with #261's step 6, and their entries came
  * out of the list below in the same change -- which is the direction this file
@@ -152,7 +152,27 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * because `'on-search'` is a shared phase and a row saying so cannot say which
  * claimant holds the guard.
  *
- * The count is measured, not carried: **thirteen producers, all in `src/main.ts`,
+ * `DismissStaff` is the fourteenth (issue #533, the owner's decision on issue
+ * #535 decision 4) and it landed the same way the last seven did -- with its
+ * producer, in one change -- and it is worth naming separately for what it makes
+ * reachable, which is the mirror image of `ReleaseGuardAssignment`'s. That
+ * command's own schema comment says it is *"Not a dismissal ... firing destroys
+ * an entity, which is ADR 0026's subject and needs its own decision about id
+ * reuse"*, and until #533 no such command existed: `staff/hiring.ts` stated in
+ * its own words that *"nothing in `src/` ever removes a staff member from"* the
+ * roster, and `PayrollSystem` bills every id the roster holds at every in-game
+ * day boundary. So a hire was a standing charge no session could end, measured
+ * at a prison spent from 25,000 down to 0 by three guards it had no use for.
+ *
+ * The blocker was this file's own subject twice over again, and the *read model*
+ * half is the interesting one: a staff id did already reach this thread, on
+ * `hud/held-guards` -- and it was the wrong set of staff ids. That projection
+ * carries the *held* subset, and the guards a trapped player most needs rid of
+ * are the ones nothing is holding. `src/ui/simulation-staff-roster.ts` is the
+ * piece that had actually been missing, and it reads `hud/staff` -- catalogued
+ * since #104 and, for rows, unread until now.
+ *
+ * The count is measured, not carried: **fourteen producers, all in `src/main.ts`,
  * and no command with none.**
  *
  * ## What counts as a producer
@@ -279,7 +299,7 @@ describe('every declared simulation command either has a producer or is accounte
     // where it is -- all eleven in `src/main.ts`, which is the composition root
     // and the only place in `src/` that builds a command object.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(13);
+    expect(COMMAND_TYPES.length).toBe(14);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
@@ -313,6 +333,10 @@ describe('every declared simulation command either has a producer or is accounte
     // `GuardRoster.unassign` in `src/` was inside the system that had made the
     // claim, so a claim whose owner had lost track of it was permanent.
     expect(producersOf('ReleaseGuardAssignment')).toEqual(['src/main.ts']);
+    // And the fourteenth, which made an unreachable *departure* reachable: no
+    // path in `src/` had ever removed a staff member from `GuardRoster`, so the
+    // wage bill a hire started could not be ended (#533).
+    expect(producersOf('DismissStaff')).toEqual(['src/main.ts']);
     const main = producerSources.find((source) => source.where === 'src/main.ts');
     expect(main, 'the production producers of a simulation command are no longer where this gate looks for them').toBeDefined();
     expect(main!.text).toContain(`type: 'PlaceBuildOrder'`);
@@ -396,7 +420,7 @@ describe('every declared simulation command either has a producer or is accounte
     ).toEqual([]);
   });
 
-  it('measures thirteen produced and none unproduced, which this file has now been able to say three times', () => {
+  it('measures fourteen produced and none unproduced, which this file has now been able to say four times', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
@@ -421,12 +445,16 @@ describe('every declared simulation command either has a producer or is accounte
     // finally put a caller in `src/` in front of `ProcurementSystem.cancel`, and
     // **zero and thirteen** once `ReleaseGuardAssignment` arrived the same way
     // and put the first caller in `src/` in front of `GuardRoster.unassign` for a
-    // guard something is *holding* (ADR 0034).
+    // guard something is *holding* (ADR 0034), and **zero and fourteen** once
+    // `DismissStaff` arrived the same way and put the first caller in `src/` in
+    // front of anything that removes a staff member from the roster at all
+    // (#533) -- which, unlike the three before it, was not an unreachable
+    // existing path but a path that did not exist.
     // Both numbers move in the same change as a producer, which is the point of
     // asserting the count as well as the list: neither can be edited alone and
-    // stay green. Note the denominator moves too, so a fourteenth command added
+    // stay green. Note the denominator moves too, so a fifteenth command added
     // with no producer fails here as well as failing the accounting above.
     expect(unproducedTypes.length).toBe(0);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(13);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(14);
   });
 });

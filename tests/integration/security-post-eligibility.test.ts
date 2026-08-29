@@ -208,7 +208,20 @@ describe('a hire the prison has no duty for is refused, and the player is told w
     expect(runtime.securityGuards.allGuardIds()).toEqual([0]);
     expect(runtime.securityGuards.getStaffRoleId(0)).toBe(GUARD);
     expect(runtime.refusals.count).toBe(0);
-    expect(phases(runtime)).toEqual(['on-post']);
+    /*
+     * `'unassigned'`, and this line read `'on-post'` until issue #533.
+     *
+     * Nothing about the department gate changed. What changed is the sector's
+     * demand: `resolveOccupancyScaledGuardCount` answers `0` for a sector
+     * holding nobody, and this fixture's prison holds nobody, so
+     * `DeploymentSystem` has no shortage to fill and the hire stays in the pool
+     * `IncidentResponseSystem` and `SearchSystem` claim from. `'unassigned'` is
+     * therefore the *stronger* reading of this case's own subject -- the hire
+     * was accepted and is a claimable guard -- where `'on-post'` was a fact
+     * about a requirement this file never set out to measure. The three
+     * assertions above are what carry the subject either way.
+     */
+    expect(phases(runtime)).toEqual(['unassigned']);
   });
 });
 

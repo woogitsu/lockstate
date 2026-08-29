@@ -6,7 +6,7 @@ import { procurableMaterial } from '../../src/content/procurement-catalog';
 import { SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
 import { defaultMessageCatalogEn, formatNumber } from '../../src/services/localization';
 import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
-import { HUD_TAB_IDS } from '../../src/ui/hud';
+import { HUD_TAB_IDS, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
 
 /**
  * Real-browser verification for the *assembled application* — `index.html`
@@ -1653,34 +1653,97 @@ const INTERACTIVE_SELECTOR =
  * assertion below, and that is worth being exact about rather than glossing:
  * these three rows are still never laid out, for a *weaker* reason than before.
  *
- * ## The reason now
+ * **That last clause held for two days and no longer does** -- issue #533 made
+ * the reason stronger again rather than weaker, and the next section is where
+ * that is argued. It is left standing because the ADR-0036 paragraph above is
+ * what it is a correction to, and deleting it would leave that paragraph reading
+ * as though nothing had been conceded.
  *
- * **This sweep never hires anybody.** It presses no `.hud-staff__hire`, and the
- * held-guards block has no box until `hud/held-guards` reports a held guard, so
- * the three `Release` rows keep their place in the inventory and never get a
- * rectangle. The claim this exemption makes has therefore shrunk from "the game
- * cannot reach this state" to "this test does not drive it", which is a weaker
- * claim and a worse one.
+ * ## The reason now, and the reason it had until issue #533
+ *
+ * This section read:
+ *
+ * > **This sweep never hires anybody.** It presses no `.hud-staff__hire`, and
+ * > the held-guards block has no box until `hud/held-guards` reports a held
+ * > guard, so the three `Release` rows keep their place in the inventory and
+ * > never get a rectangle. The claim this exemption makes has therefore shrunk
+ * > from "the game cannot reach this state" to "this test does not drive it",
+ * > which is a weaker claim and a worse one.
+ *
+ * **The first sentence is now false and the last one is obsolete with it.** The
+ * sweep hires three guards at every viewport and dismisses all three again --
+ * "Somebody on the payroll (#533)" below -- because issue #533 put a `Dismiss`
+ * control on that roster and a sweep that exempted the control the change is
+ * about would have certified nothing about it.
+ *
+ * The middle sentence still holds, and it is the whole reason these three rows
+ * stay here while the four the roster adds do not. **Hiring is not what holds a
+ * guard.** `DeploymentSystem.assignUnassignedGuards` is called from that
+ * system's `update` and from nowhere else
+ * (`src/simulation/security/deployment-system.ts:130`); the sweep pauses the
+ * clock before its viewport loop and never restarts it; and ADR 0051's paused
+ * drain dispatches the `HireStaff` command *without* running a tick. So three
+ * guards are hired, no system ever looks at them, all three stay `'unassigned'`,
+ * nothing claims them and `hud/held-guards` reports none -- which is exactly the
+ * state issue #533 was measured in. The claim this exemption makes is therefore
+ * back to being the stronger one: with the clock this sweep runs under, the game
+ * cannot reach the state these three rows need.
  *
  * ## What would remove it, and how much
  *
- * One press of `.hud-staff__hire` on the security tab, before the loop. It would
- * make **one** of these three rows reachable and no more: the derived sector's
- * requirement is one guard (ADR 0036), so a second and third hire stay
- * `'unassigned'` and nothing holds them -- `HELD_GUARD_ROW_LIMIT` is 3 and only
- * a riot or a contraband search claims more than one guard, and neither has a
- * player gesture. It is not done here because a held-guards block changes the
- * Staff panel's height, and the box-chain assertions above and the rail
- * invariants below are measured to the pixel in the arrival state at five
- * viewports; re-measuring all of them is its own change with its own numbers,
- * not a line added to this one.
+ * This section read:
  *
- * The two rows that would remain are the honest residue of what is still inert:
- * ADR 0036's own "what a sector does not bring back" measurements.
- * `SearchSystem.submitOrder` still has no caller in `src/` at all and
- * `runtime.searchPolicies` is still only populated from a save, so there is no
- * `'search'` claim; and an `'incident-response'` claim needs a riot, which needs
- * fifteen thousand ticks of a deliberately overcrowded prison.
+ * > One press of `.hud-staff__hire` on the security tab, before the loop. It
+ * > would make **one** of these three rows reachable and no more [...] It is not
+ * > done here because a held-guards block changes the Staff panel's height, and
+ * > the box-chain assertions above and the rail invariants below are measured to
+ * > the pixel in the arrival state at five viewports; re-measuring all of them is
+ * > its own change with its own numbers, not a line added to this one.
+ *
+ * Both halves need correcting, and in opposite directions.
+ *
+ * **The press happens now, and it removes nothing.** The estimate of *one* row
+ * was right about the derived sector's requirement (ADR 0036: one guard) and
+ * wrong about when the requirement is met -- it is met by a system update, and
+ * this sweep runs with the clock stopped, so the answer here is none rather than
+ * one. That is a correction to the number, not a reason to relax the entry: a
+ * change that made a hire hold a guard off-tick would lay a `Release` row out,
+ * and the accounting assertion at the foot of the sweep would fail and name it.
+ *
+ * **The pixel objection was real about the panel and wrong about the reach.**
+ * Measured on the assembled page, `.hud-staff`'s border box in the arrival state
+ * against the same box with three hired and the roster open: 420.1px -> 420.1px
+ * at 1280x720, 466.7 -> 555.1 at 1440x900, 456.1 -> 456.1 at 1024x768, 338.1 ->
+ * 338.1 at 900x600 and 431.2 -> 451.1 at 375x812. So the panel really does grow
+ * at two of the five, by 88.4px and 19.9px, and the save panel above it gives up
+ * exactly that much (227 -> 183.7 and 175.6 -> 155.7). At the other three the box
+ * does not move at all, because the panel is already a scroll container there --
+ * `.ui-panel.hud-staff` is `overflow-y: auto` (`hud.css`) -- and the roster's
+ * 206.2px to 231.4px of content lands inside it: `scrollHeight - clientHeight`
+ * goes 47 -> 278, 0 -> 143, 11 -> 242, 62 -> 269 and 0 -> 212. `.hud__rail`'s own
+ * overflow is 0 in every one of those ten states, which is what the sweep asserts
+ * for itself with `railIntegrity` while the payroll is open.
+ *
+ * **And none of that could have reached the assertions anyway**, which is the
+ * half the old sentence got wrong rather than merely imprecise. The Staff panel
+ * shares `.hud__side` with the Build panel by *swapping* with it -- `hud.ts`
+ * calls `staffPanel.setVisible(activeTab === 'security')`, which sets `hidden`,
+ * and `primitives.css` gives `.ui-panel[hidden]` `display: none`. Every
+ * arrival-state measurement in this loop is taken on the **build** tab, where
+ * `.hud-staff` has no box at all; measured from the security tab, the same is
+ * true in the other direction, `.hud-build` at 0px. So the five viewports of
+ * pixel assertions never see the Staff panel, hired or not, and re-measuring
+ * them was never the price of the press. The presses are still placed after all
+ * of them, because that costs nothing and needs no argument to stay safe.
+ *
+ * The residue paragraph below is untouched by any of this, because none of it is
+ * about a claim a hire can make. The two rows that would remain even with a
+ * guard held are the honest residue of what is still inert: ADR 0036's own "what
+ * a sector does not bring back" measurements. `SearchSystem.submitOrder` still
+ * has no caller in `src/` at all and `runtime.searchPolicies` is still only
+ * populated from a save, so there is no `'search'` claim; and an
+ * `'incident-response'` claim needs a riot, which needs fifteen thousand ticks
+ * of a deliberately overcrowded prison.
  */
 const NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD = [
   'hud > hud__rail > hud__side > ui-panel hud-staff > ui-panel__body > hud-staff__held > ' +
@@ -2782,6 +2845,142 @@ test.describe('the assembled application', () => {
 
       // Discarded, so the next viewport starts from the state this one did.
       await page.locator('.hud-rooms__cancel').click();
+
+      /*
+       * Somebody on the payroll (#533), which is the Staff panel's equivalent of
+       * the buy row and the queue fold above and is here for the identical
+       * reason: the roster section's own header and its three `Dismiss` controls
+       * exist in the DOM at every moment -- the rows are pooled, so the HUD's
+       * busy group, which has `add` and no `remove`, cannot grow over a session
+       * -- and are laid out in none of the states above, because nothing above
+       * hires anybody. Without this state the accounting assertion at the foot of
+       * the sweep fails and names all four, which is the gate doing its job.
+       *
+       * **Driven rather than exempted, and that is the point of it.** `Dismiss`
+       * is the control issue #533 adds; putting it on
+       * `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD` would have certified every control
+       * on this page except the one the change is about. It is reachable by a
+       * gesture this sweep can make -- somebody has to be *hired*, which is one
+       * press -- where the three `Release` rows on that constant need a guard to
+       * be *held*, which nothing here can arrange. That difference is the whole
+       * of why those three stay exempt and these four do not, and the constant's
+       * comment carries the measurement.
+       *
+       * **Last in the viewport's body rather than first.** Every pixel assertion
+       * in this loop is measured in the arrival state, and a hired roster adds a
+       * section to a panel that shares `.hud__side` with the ones being measured.
+       * So the hires happen after all of them and the dismissals below put the
+       * panel back before the next viewport measures anything. That ordering is
+       * belt and braces rather than the thing that makes it safe: the panels in
+       * `.hud__side` swap by tab, so the Staff panel has no box at all while
+       * those assertions are taken. `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD` above
+       * carries the ten measurements.
+       *
+       * **The clock is paused, from before the loop, and both halves of this
+       * block rest on it.** ADR 0051's paused drain dispatches a command given
+       * against a stopped clock immediately, so the hires and the dismissals land
+       * with no tick; and because no tick runs, `DeploymentSystem`'s
+       * `assignUnassignedGuards` -- called only from its `update`
+       * (`src/simulation/security/deployment-system.ts:130`) -- never claims any
+       * of them, so all three stay `'unassigned'` and not one becomes a held
+       * guard. That is exactly the state issue #533 was measured in, and it is
+       * why hiring here does not shorten the constant below.
+       */
+      await page.locator('.ui-tab[data-tab="security"]').click();
+      const staffMetric = page.locator('[data-metric="staff"] .ui-stat__value');
+      await expect(staffMetric, `the prison already has staff at ${width}x${height}`).toHaveText('0');
+      // Enabled on arrival, because `createStaffPanel` preselects
+      // `model.roles[0]` -- so this is one press and not a two-step gesture.
+      // Asserted rather than assumed: a Hire button that arrived disabled would
+      // otherwise reach the loop below as three silent no-ops.
+      const hireStaff = page.locator('.hud-staff__hire');
+      await expect(hireStaff, `the Hire control is not pressable at ${width}x${height}`).toBeEnabled();
+      for (let hired = 1; hired <= STAFF_ROSTER_ROW_LIMIT; hired += 1) {
+        await hireStaff.click();
+        // The metric after every press, so a *refused* hire fails here and says
+        // so. Insufficient funds is the only reason this panel can provoke and
+        // the balance is nowhere near it, but a refusal that went unasserted
+        // would arrive at the reachability call below as a roster one row short
+        // -- i.e. as a control reported never laid out, which is the same red
+        // for a different reason and would read as a layout defect.
+        await expect(
+          staffMetric,
+          `hire ${hired} of ${STAFF_ROSTER_ROW_LIMIT} did not reach the payroll at ${width}x${height}`,
+        ).toHaveText(String(hired));
+      }
+
+      // The section is created `collapsed: true`, so its body has no box until
+      // the player opens it. The same `aria-expanded` handshake the Rooms
+      // panel's typed route above uses, and read rather than toggled blind
+      // because the flag survives the section being hidden between viewports.
+      const rosterFold = page.locator('.hud-staff__roster > .ui-section__header');
+      await expect(rosterFold, `the roster fold is missing at ${width}x${height}`).toBeVisible();
+      if ((await rosterFold.getAttribute('aria-expanded')) === 'false') await rosterFold.click();
+      // `[data-staff]` and not `:not([hidden])`: it is the attribute the panel
+      // writes when a row actually names somebody, so this waits for the
+      // projection to have answered rather than for the row to have a box.
+      const rosterRows = page.locator('.hud-staff__roster .hud-staff__held-row[data-staff]');
+      await expect(rosterRows, `the open roster drew no rows at ${width}x${height}`).toHaveCount(
+        STAFF_ROSTER_ROW_LIMIT,
+      );
+
+
+      const payroll = await controlReachability(page);
+      inventory = payroll.controls;
+      for (const index of payroll.measured) everMeasured.add(index);
+      expect(
+        payroll.unreachable,
+        `controls covered by something else with the payroll open at ${width}x${height}`,
+      ).toEqual([]);
+      // The rail still holds with a section the arrival state does not have. The
+      // Staff panel is `overflow-y: auto` (`hud.css`, `.ui-panel.hud-staff`), so
+      // the excess is the panel's own to scroll and never the rail's to hang off
+      // its edge -- which is the claim that makes the placement above safe, so it
+      // is asserted here rather than argued in the comment.
+      expect(
+        railInvariants(await railIntegrity(page)),
+        `the rail with the payroll open at ${width}x${height}`,
+      ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
+
+      /*
+       * Emptied again, so the next viewport starts from the state this one did
+       * -- and pressing `Dismiss` is the only way to empty it, which makes the
+       * restoration and the proof that the control does what it says the same
+       * three presses.
+       *
+       * The *first* row every time rather than one row each: the rows are pooled
+       * and republished, so "the second row" is not a stable name for a person --
+       * `staff-panel.ts` says so where it writes `data-staff`. Both the metric
+       * and the row count are waited for between presses, and the second is not
+       * redundant: the metric moves on the counts publication while the rows move
+       * on the projection read that publication triggers, so a press timed
+       * between the two would name somebody already dismissed and be refused as
+       * `dismiss.unknown-staff`.
+       */
+      for (let remaining = STAFF_ROSTER_ROW_LIMIT - 1; remaining >= 0; remaining -= 1) {
+        await rosterRows.first().locator('.ui-action').click();
+        await expect(
+          staffMetric,
+          `a dismissal did not take somebody off the payroll at ${width}x${height}`,
+        ).toHaveText(String(remaining));
+        await expect(
+          rosterRows,
+          `the roster still names ${remaining + 1} people after a dismissal at ${width}x${height}`,
+        ).toHaveCount(remaining);
+      }
+      // And with nobody hired the section is gone entirely, which is what the
+      // arrival state is: `paintRoster` hides it on `roster.hired === 0` rather
+      // than leave a header promising a list that cannot exist. Asserted, because
+      // it is the state every pixel assertion at the next viewport is measured
+      // against -- and it is also why the fold is not clicked shut again. A
+      // hidden section has no box, so its `aria-expanded` flag is not a state
+      // anything in this loop can measure, and it cannot be clicked shut while
+      // hidden; the read above reopens it at the next viewport either way.
+      await expect(
+        page.locator('.hud-staff__roster'),
+        `the roster section outlived the last dismissal at ${width}x${height}`,
+      ).toBeHidden();
+
       await page.locator('.ui-tab[data-tab="build"]').click();
 
       // Nothing got a free pass by never being laid out. At desktop widths the
@@ -2793,11 +2992,15 @@ test.describe('the assembled application', () => {
       // one: it is the honest limit of what this test can claim about a phone.
       //
       // `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD` is added at *every* viewport, and
-      // for a different kind of reason: not a responsive decision but a gesture
-      // this sweep does not make, measured and recorded on that constant --
-      // which since ADR 0036 is a weaker claim than the simulation gap it used
-      // to record. Sorted together because the assertion compares the sweep's
-      // document order.
+      // for a different kind of reason: not a responsive decision but a state
+      // this sweep cannot put the simulation into, measured and recorded on that
+      // constant. Those three sentences used to read "a gesture this sweep does
+      // not make [...] which since ADR 0036 is a weaker claim than the
+      // simulation gap it used to record", and both halves are now wrong: the
+      // sweep does make the hiring gesture (see "Somebody on the payroll (#533)"
+      // above), and what those rows need is not a gesture but a *tick*, which is
+      // the stronger claim again. Sorted together because the assertion compares
+      // the sweep's document order.
       const exempt = [
         ...(width <= 720 ? NEVER_LAID_OUT_BELOW_720 : []),
         ...NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD,
@@ -6907,6 +7110,108 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud-alerts__list')).not.toContainText(
       localeText('hud.alert.refusal.purchase.insufficient-funds'),
     );
+  });
+
+  /*
+   * Issue #548, performed as a hand performs it: type, then press, with
+   * nothing in between.
+   *
+   * **What the player did and what it cost.** Build tab, Buy, triple-click the
+   * quantity, type `33`, click Buy. No Tab and no Enter. The control read
+   * `Buy 2 x Brick - 80` at the instant it was pressed and took 1,320, and
+   * only *then* repainted itself to say `Buy 33 x Brick - 1,320`. The label was
+   * correct about every purchase except the one it was on screen for.
+   *
+   * **Why no other suite can hold this.** `NumberField` used to report on
+   * `change` alone, and a browser fires `change` when a field is *left* -- so
+   * the click on Buy was itself the blur. The report and the activation
+   * therefore arrived in one event turn, in that order, and the ordering *is*
+   * the defect. Nothing but a real pointer on a real focused field produces
+   * that ordering: `vitest.config.ts` runs `environment: 'node'` with no jsdom,
+   * `field.fill()` in the harness dispatches its own events without a focus to
+   * lose, and every existing buy test here presses Enter first, which settles
+   * the entry and hides the whole thing.
+   *
+   * **The assertion is a comparison of two independently produced numbers**,
+   * not a fixture agreeing with itself. The count comes out of the label
+   * `paintBuyTotal` wrote; the quantity comes out of the `PurchaseMaterials`
+   * that `buySubmit`'s activation posted from a different closure. Before the
+   * fix they are 2 and 33. The literal strings below are here as well so that a
+   * future change which makes both wrong in the same direction is still caught.
+   */
+  test('the Buy control charges the quantity its label was showing when it was pressed (#548)', async ({ page }) => {
+    await installCommandTee(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    // A real prison: `submit` throws until a snapshot has baselined the
+    // command sequence, so a purchase before this sends nothing at all.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    const funds = page.locator('[data-metric="funds"] .ui-stat__value');
+    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+
+    await openBuyRow(page);
+    const field = page.locator('.hud-build__buy .ui-number__input');
+    const buy = page.locator('.hud-build__buy-submit');
+
+    // The arithmetic this test rests on, read out of the catalog the page
+    // itself prices against rather than asserted twice from the same literal.
+    const unitPrice = unitPriceOf('item.brick');
+    const typed = 33;
+    expect(2 * unitPrice).toBe(80);
+    expect(typed * unitPrice).toBe(1_320);
+    expect(typed * unitPrice).toBeLessThan(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+
+    // The arrival state: one wall's worth of brick, which is where the defect
+    // report starts.
+    await expect(buy).toHaveText(`Buy 2 × Brick · ${fundsText(2 * unitPrice)}`);
+
+    // ---- the gesture -------------------------------------------------------
+    // Triple-click selects what is in the box and the keystrokes replace it.
+    // `keyboard.type` and not `fill`: `fill` sets the value and dispatches its
+    // own events, which is not the same thing as a field that has focus and
+    // has not lost it yet.
+    await field.click({ clickCount: 3 });
+    await page.keyboard.type(String(typed));
+    await expect(field).toHaveValue(String(typed));
+    // Still the field's, so no `change` has fired and none can have.
+    await expect(field).toBeFocused();
+
+    /*
+     * Read once and without retrying. "What the label said" is a fact about
+     * this instant, and `toHaveText` would poll until a later repaint agreed
+     * with it -- which is exactly the repaint the defect performs after taking
+     * the money.
+     */
+    const shown = await buy.textContent();
+    expect(shown, 'the Buy control did not repaint for a quantity the player had already typed').toBe(
+      `Buy ${typed} × Brick · ${fundsText(typed * unitPrice)}`,
+    );
+    const shownCount = Number.parseInt(/Buy (\d+) /.exec(shown ?? '')?.[1] ?? '', 10);
+    expect(shownCount, 'the label carried no count to compare the charge against').toBe(typed);
+
+    // ---- the press ---------------------------------------------------------
+    await buy.click();
+    await expect
+      .poll(async () => (await purchasesSent(page)).length, {
+        message: 'pressing Buy sent no PurchaseMaterials command at all',
+      })
+      .toBe(1);
+    await expect(page.locator('.hud__refusal')).toBeHidden();
+
+    // The number the player read, against the number they were charged.
+    expect(await purchasesSent(page)).toEqual([{ itemId: 'item.brick', quantity: shownCount }]);
+
+    // And in money, which is the form the defect was reported in: 25,000 down
+    // to 23,680, not to 24,920.
+    await expect
+      .poll(async () => funds.textContent(), {
+        message: 'the purchase never reached the treasury, so what it charged cannot be read off the strip',
+        timeout: 20_000,
+      })
+      .toBe(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - shownCount * unitPrice));
   });
 
   /**

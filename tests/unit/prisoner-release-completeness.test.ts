@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { pathsMentioning, type Hit } from '../helpers/entity-graph-walk';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
@@ -39,8 +40,13 @@ const SEED = 441;
 const ARRIVAL = { x: 16, y: 16 };
 const CELL = { x: 4, y: 6, width: 2, height: 3 } as const;
 
-/** How many containers in a session hold a *matching-value* hit we deliberately keep. See `HISTORICAL_PATHS`. */
-type Hit = string;
+/**
+ * The graph walk this gate is built on lives in
+ * `tests/helpers/entity-graph-walk.ts` since issue #533, which needed the same
+ * gate for the staff roster's new departure path. Nothing about it changed in
+ * the move; it is shared so that a container family either departure learns
+ * about is taught once.
+ */
 
 function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<typeof packCommand>): void {
   runtime.kernel.submitCommand(id, runtime.kernel.expectedSequence, runtime.kernel.tick, payload);
@@ -49,68 +55,6 @@ function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<type
 
 function step(runtime: SimulationRuntime, ticks: number): void {
   for (let i = 0; i < ticks; i += 1) runtime.kernel.step();
-}
-
-/**
- * Every path in `root`'s object graph at which `target` appears, as a `Map`
- * key, a `Set` member, an array element or a numeric property.
- *
- * Deliberately blunt. It descends into plain objects, arrays, `Map`s and
- * `Set`s, and it does **not** know what any of them are for -- which is the
- * only way it can notice a store nobody told it about. Typed arrays are the one
- * family it skips, and they are skipped because they are index-keyed rather
- * than id-keyed: `PrisonerRecordComponent`'s six arrays are reset when an index
- * is *allocated* (the #111 fix) and deliberately not on release, so a residual
- * value in a freed slot is the documented behaviour rather than a leak. They
- * also cannot hold an `EntityId` above `0xffff` in a `Uint8Array` at all.
- */
-function pathsMentioning(root: object, target: number): readonly Hit[] {
-  const hits: Hit[] = [];
-  const seen = new WeakSet<object>();
-
-  const walk = (node: unknown, path: string, depth: number): void => {
-    if (depth > 10 || node === null || typeof node !== 'object') return;
-    if (ArrayBuffer.isView(node)) return;
-    if (seen.has(node)) return;
-    seen.add(node);
-
-    if (node instanceof Map) {
-      for (const [key, value] of node) {
-        if (key === target) hits.push(`${path}{key ${String(key)}}`);
-        if (value === target) hits.push(`${path}{value at ${String(key)}}`);
-        walk(value, `${path}.get(${String(key)})`, depth + 1);
-      }
-      return;
-    }
-
-    if (node instanceof Set) {
-      for (const member of node) {
-        if (member === target) hits.push(`${path}{member}`);
-        else walk(member, `${path}<member>`, depth + 1);
-      }
-      return;
-    }
-
-    if (Array.isArray(node)) {
-      node.forEach((element, index) => {
-        if (element === target) hits.push(`${path}[${index}]`);
-        else walk(element, `${path}[${index}]`, depth + 1);
-      });
-      return;
-    }
-
-    // Sorted rather than in insertion order, so the path a store is reported
-    // at is a function of the graph and not of construction order: the first
-    // route to a shared object wins, and `seen` blocks the rest.
-    for (const [key, value] of Object.entries(node).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
-      if (typeof value === 'function') continue;
-      if (value === target) hits.push(`${path}.${key}`);
-      else walk(value, `${path}.${key}`, depth + 1);
-    }
-  };
-
-  walk(root, '', 0);
-  return hits.sort();
 }
 
 /**

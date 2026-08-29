@@ -5,6 +5,7 @@ import { REFUSAL_REASONS, type RefusalReason } from '../../src/simulation/protoc
 import {
   ADMIT_REFUSAL_REASONS,
   BUILD_REFUSAL_REASONS,
+  DISMISS_STAFF_REFUSAL_REASONS,
   HIRE_REFUSAL_REASONS,
   PLACE_OBJECT_REFUSAL_REASONS,
   PURCHASE_CANCEL_REFUSAL_REASONS,
@@ -106,11 +107,12 @@ describe('RefusalLog: the snapshot shape a cadence channel can carry', () => {
   });
 });
 
-describe('the wire vocabulary is exactly what the ten domains can produce', () => {
-  it('maps every admission, build, hiring, placement, object removal, purchase, cancellation, guard release and zoning refusal onto a declared reason', () => {
+describe('the wire vocabulary is exactly what the eleven domains can produce', () => {
+  it('maps every admission, build, hiring, dismissal, placement, object removal, purchase, cancellation, guard release and zoning refusal onto a declared reason', () => {
     const produced = [
       ...Object.values(ADMIT_REFUSAL_REASONS),
       ...Object.values(BUILD_REFUSAL_REASONS),
+      ...Object.values(DISMISS_STAFF_REFUSAL_REASONS),
       ...Object.values(HIRE_REFUSAL_REASONS),
       ...Object.values(PLACE_OBJECT_REFUSAL_REASONS),
       ...Object.values(PURCHASE_CANCEL_REFUSAL_REASONS),
@@ -164,6 +166,13 @@ describe('the wire vocabulary is exactly what the ten domains can produce', () =
       'unowned-land': 'build.unowned-land',
       'water-blocked': 'build.water-blocked',
     });
+    // Issue #533. One member, transcribed here like the other ten tables --
+    // and a one-member table is exactly the case where a pairing test earns its
+    // keep, because there is no set-size check anywhere that could notice
+    // `dismiss.unknown-staff` being written as `hire.unknown-staff`.
+    expect(DISMISS_STAFF_REFUSAL_REASONS).toEqual({
+      'unknown-staff': 'dismiss.unknown-staff',
+    });
     expect(HIRE_REFUSAL_REASONS).toEqual({
       'insufficient-funds': 'hire.insufficient-funds',
       // ADR 0053. `no-duty-for-role` and `unknown-role` are two different
@@ -215,13 +224,20 @@ describe('the wire vocabulary is exactly what the ten domains can produce', () =
       'unowned-land': 'zone.unowned-land',
     });
 
-    // Every declared wire id is paired above, exactly once. Without this an
-    // eleventh table -- or an eleventh member of an existing one -- could be
-    // added with no pair written here and the ten assertions would still be
-    // about whatever they were about before.
+    // Every declared wire id is paired above, exactly once. Without this a
+    // twelfth table -- or a further member of an existing one -- could be
+    // added with no pair written here and the eleven assertions would still be
+    // about whatever they were about before. **This is the check the eleventh
+    // table actually tripped**, which is worth recording: adding
+    // `DISMISS_STAFF_REFUSAL_REASONS` to the set comparison above and to the
+    // pairing block left this list one short, and the failure named the count
+    // rather than the table -- exactly the "an eleventh table could be added
+    // with no pair written here" case this comment predicted, caught by the
+    // sentence that predicted it.
     const paired = [
       ...Object.values(ADMIT_REFUSAL_REASONS),
       ...Object.values(BUILD_REFUSAL_REASONS),
+      ...Object.values(DISMISS_STAFF_REFUSAL_REASONS),
       ...Object.values(HIRE_REFUSAL_REASONS),
       ...Object.values(PLACE_OBJECT_REFUSAL_REASONS),
       ...Object.values(PURCHASE_CANCEL_REFUSAL_REASONS),
@@ -250,7 +266,7 @@ describe('the wire vocabulary is exactly what the ten domains can produce', () =
     expect([...REFUSAL_REASONS]).toEqual([...REFUSAL_REASONS].sort());
   });
 
-  it('names the ten commands it can answer, so the vocabularies cannot collide', () => {
+  it('names the eleven commands it can answer, so the vocabularies cannot collide', () => {
     // `unzone` is its own namespace and not more members of `zone`'s, because
     // `invalid-area` is the same *condition* for both and a different
     // *sentence*: a player told "the room was not zoned" after asking to remove
@@ -279,11 +295,18 @@ describe('the wire vocabulary is exactly what the ten domains can produce', () =
     // meaning -- "the simulation has no such thing" -- and it is about a person
     // rather than a catalogue entry, and it answers the opposite gesture on the
     // same roster hiring writes to.
+    // `dismiss` is the eleventh (#533) and it is the seventh demonstration, and
+    // the sharpest: its `unknown-staff` sits between `hire.unknown-role` and
+    // `release-guard.unknown-guard` -- the same roster, the same absence -- and
+    // all three answer different gestures. A release that failed leaves a guard
+    // employed and assigned; a dismissal that failed leaves them employed and
+    // being paid.
     const prefixes = new Set(REFUSAL_REASONS.map((reason) => reason.split('.')[0]));
     expect([...prefixes].sort()).toEqual([
       'admit',
       'build',
       'cancel-purchase',
+      'dismiss',
       'hire',
       'place-object',
       'purchase',

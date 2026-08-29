@@ -314,6 +314,20 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       "Type-only: `StaffViewModel` from `src/simulation/presentation/staff-projection`. The tenth of the translators outside `src/ui/hud/` and the sixth that reads a *pulled* read model, so it is `simulation-held-guards.ts`'s entry above one projection over: it names the view-model shape `hud/staff` answers with and turns its `totals` into `HudStaffCoverageViewModel`. Erased, so no simulation code runs on its account -- the projection executes in the worker, and it has to, because how many guards a sector requires is `DeploymentSystem.requiredGuardCountFor`'s answer over occupancy and an authored schedule (ADR 0048 decision 3), neither of which this thread holds. A `value` import here would mean the main thread had started deciding *how many guards this prison needs*, which is a second definition of a rule the deployment system enforces -- so the panel would eventually warn about a requirement nothing was acting on. It imports no `src/content/**` at all, unlike the two readers above it: the block renders three integers and the HUD's own message keys, so there is no content name to resolve.",
   },
   {
+    file: 'src/ui/simulation-staff-roster.ts',
+    tree: 'content',
+    kind: 'value',
+    reason:
+      "Value: `deriveSimulationMessageKey` from `src/content/simulation-message-keys`, to label what a staff member is doing -- plus the erased `LocalizationKey`, which types the `StaffRoleLabelLookup` the composition root hands it. The **fourth** `value` content dependency in this manifest, and it earns its place for the reason the three before it give: the alternative is a hand-written table of four `deployment-phase.*.name` strings, which is the drift that module's derivation rule exists to prevent. `'deployment-phase'` and **not** `'guard-claim'`, which is the namespace `simulation-held-guards.ts` derives one entry up, and the difference is the whole reason these are two readers: a claim answers *which system is holding this guard* and its resolution needs both `'on-search'` claimants asked live inside the simulation (ADR 0033 decision 4), while a phase is a field the roster already carries. Deriving a claim here would be the main thread guessing; deriving a phase is naming something the projection sent (#533).",
+  },
+  {
+    file: 'src/ui/simulation-staff-roster.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      "Type-only: `StaffViewModel` from `src/simulation/presentation/staff-projection`. The eleventh of the translators outside `src/ui/hud/` and the seventh that reads a *pulled* read model, and it is the **second** reader of `hud/staff` -- beside `simulation-staff-coverage.ts` above, which asks the same projection with `limit: 0` for totals and no rows. Two readers on one projection because they ask for different things, not because one was forgotten: merging them would tie a warning readout's cadence to a control list's and publish a window one of them cannot use. Erased, so no simulation code runs on its account -- the projection executes in the worker. A `value` import here would be the sharpest violation in this manifest alongside `simulation-held-guards.ts`'s: it would mean the main thread had started deciding *who is employed* from a roster it does not own, and every row it produced carries a staff id that a press **destroys** (#533).",
+  },
+  {
     file: 'src/ui/simulation-prisoner-roster.ts',
     tree: 'content',
     kind: 'value',
@@ -501,6 +515,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-regime.ts',
       'src/ui/simulation-room-needs.ts',
       'src/ui/simulation-staff-coverage.ts',
+      'src/ui/simulation-staff-roster.ts',
       'src/ui/simulation-zoning.ts',
       'src/ui/telemetry-consent-prompt.ts',
     ]);

@@ -182,8 +182,42 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `85c1c29` (**v0.0.187**) by the delta method this
-header describes, from `4ace2da` (v0.0.177). **This is the first re-anchor
+Re-anchored at `main` @ `82ae630` (**v0.0.195**) by the delta method this
+header describes, from `85c1c29` (v0.0.187). **Dispatched at eight of the ten
+releases the budget allows, with four pull requests already green and waiting**
+-- merging them would have reached ten and the release after that would have
+been eleven, so this pass is the first in the series dispatched *because a queue
+was about to spend the budget* rather than on a schedule or at the bound.
+`82ae630` is `origin/main`'s tip at the time of writing and is itself the
+**v0.0.195 release commit**, named deliberately rather than the merge commit
+beneath it, for the reason every previous anchor gives.
+
+**The window is the largest this file has measured: 70 files.** Eight merges
+landed in it (#546, #551, #554, #556, #558, #560 and their releases). The delta
+intersection against the 41 files §§3-6 cite is **ten**, and two of those are
+this file and the index, which are not in their own dependency sets -- so
+**eight entries were re-read**. That ratio is the method working: seventy files
+moved and eight citations had to be checked.
+
+**One entry had drifted, and it is the telemetry bullet in §5** -- three of its
+four `src/main.ts` anchors moved and are corrected in place below, in both
+directions. The other seven intersecting citations survived. **The two live
+`verified at` claims were both re-run rather than carried**: neither
+`supabase/migrations/` nor `.github/workflows/` appears anywhere in this
+window's 70 files, the migrations directory still holds twenty-three files, and
+the retention grep still returns exactly one hit which is still a comment rather
+than a mechanism.
+
+**The recommendation this series has now made five times running is a scheduled
+read rather than a warning band, and it has now failed to be taken five times.**
+This window is a sixth kind of evidence for it: not "the budget ran out" but
+"the budget was about to be spent by work that was already finished and
+correct". A queue of green pull requests is not an unusual state, and it is the
+state in which the anchor is least likely to be anybody's first thought.
+
+**The previous anchor's account, kept.** It read: *"Re-anchored at `main` @
+`85c1c29` (**v0.0.187**) by the delta method this
+header describes, from `4ace2da` (v0.0.177)."* **This is the first re-anchor
 dispatched at the bound rather than with headroom**, and the distinction is
 the finding rather than the arithmetic: ten of the ten releases the budget
 allows, so
@@ -2193,7 +2227,7 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `85c1c29`, unchanged since the previous anchor,
+absences were re-verified at `82ae630`, unchanged since the previous anchor,
 the one before it, the one before that, and the one before that — the
 directory has not moved across any of those windows and still holds
 twenty-three files — by grepping the
@@ -2368,7 +2402,7 @@ is recommendation 1 at the foot of §6 producing a measurable result rather than
 being restated: **three of the four citations into the fastest-moving document
 in the set survived an edit that moved every line of them.**
 
-The half of the decision that *is* in this repository stays verified at `85c1c29`:
+The half of the decision that *is* in this repository stays verified at `82ae630`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` (`:34`) with no
 `push:`, requires a typed `confirm_project_ref` (`:41`), and its apply job is
 environment-gated (`:65`) — all three re-read at this anchor and all three still
@@ -3094,26 +3128,32 @@ one direction.
 
   **Re-run at `bb3a01e`, the same grep is not clean and the conclusion inverts.**
   `grep -rn "services/telemetry" src/ --include=*.ts` outside the directory
-  returns `src/main.ts:87-89` (`createTelemetryPipeline`, `createCrashReporter`,
+  returns `src/main.ts:96-98` (`createTelemetryPipeline`, `createCrashReporter`,
   and a `CancelScheduledPump` type import) and
-  `src/ui/telemetry-consent-prompt.ts:8`. `src/main.ts:159-200` builds the
+  `src/ui/telemetry-consent-prompt.ts:8`. `src/main.ts:156-197` builds the
   pipeline as the first thing after `GAME_VERSION` and registers `error` and
   `unhandledrejection` listeners that call `crashReporter.reportUnhandledError`;
-  `src/main.ts:2598-2603` mounts the consent prompt (**this read `:2494-2499`;
+  `src/main.ts:2674-2679` mounts the consent prompt (**this read `:2494-2499`;
   #468's save-import work moved it twelve lines and it was re-anchored to
   `:2506-2511` at `c00b641`, then held through `07add3e`, then #500's
   `generateMasterSeed` function — inserted above it for the determinism reason
-  its own doc comment gives — pushed it down 39 lines more to `:2545-2550`, and
-  at this anchor #534's door-edge work and #541's sentence draw pushed it 53
-  further**). **The import span moved too and this is the first anchor at which
-  it has**: `:82-84` had held across four anchors and is `:87-89` here, five
-  lines down, because #541 added `createTelemetryConsentPrompt` to the import
-  block above it. `src/ui/telemetry-consent-prompt.ts:8` is the one anchor in
-  this bullet that has never moved, on a file no window has touched.
+  its own doc comment gives — pushed it down 39 lines more to `:2545-2550`,
+  then #534's door-edge work and #541's sentence draw pushed it 53 further to
+  `:2598-2603`, and at this anchor it moved **76 more** — the largest single
+  jump in the run — because #546's requirements work and #551's event channel
+  both landed above it**). **The import span moved for the second consecutive
+  anchor**, having held across the four before that: `:82-84`, then `:87-89`,
+  and `:96-98` here — nine lines down, because #551 added the event channel's
+  imports to the block above it. `src/ui/telemetry-consent-prompt.ts:8` is the
+  one anchor in this bullet that has **still** never moved, on a file no window
+  has touched.
   **Two hits this sentence has never named, recorded because the next reader
-  will run the grep and count four**: `src/main.ts:163` and
+  will run the grep and count six**: `src/main.ts:172` and
   `src/ui/telemetry-consent-prompt.ts:17` are prose inside doc comments, not
-  imports. They were there at `bb3a01e` too, so the sentence has always been
+  imports. **The count in this sentence was `four` until this anchor and it was
+  right then**; the import span gaining a third line (`CancelScheduledPump`) is
+  what makes it six, and the `src/main.ts` prose hit moved with the rest, from
+  `:163` to `:172`. The two named here are still the only two that are prose. They were there at `bb3a01e` too, so the sentence has always been
   about the import sites rather than about the raw hit count; it is left saying
   what it means and the difference is written down here instead.
   So **the sentence this entry

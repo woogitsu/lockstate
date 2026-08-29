@@ -482,6 +482,55 @@ export const releaseGuardAssignmentSchema = z.object({
   guardId: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
 }).strict();
 
+/**
+ * Dismiss one staff member
+ * ([ADR 0070](../../../docs/adr/0070-dismissing-a-staff-member.md) decision 2,
+ * issue #533, the owner's decision on issue #535 decision 4).
+ *
+ * ## Why this is a separate command from `ReleaseGuardAssignment`
+ *
+ * Because `ReleaseGuardAssignment`'s own comment says it has to be: *"Not a
+ * dismissal. The guard stays hired. What is released is the claim, not the
+ * employment -- firing destroys an entity, which is ADR 0026's subject and
+ * needs its own decision about id reuse. `ReleaseGuardAssignment` rather than
+ * `DismissGuard` for exactly that reason: ADR 0033's open question 3 asks for a
+ * dismiss/fire command and the narrower half of it is the half that closes the
+ * defect."* This is the other half, and the two are complements rather than
+ * alternatives -- a release hands a guard back to the pool and
+ * `DeploymentSystem` may post them again on its next cycle, which is a
+ * re-shuffle; this ends the employment, and with it the payroll line
+ * `PayrollSystem` bills at every in-game day boundary.
+ *
+ * ## What it carries
+ *
+ * `staffId`, and nothing else. A staff `EntityId`, so `z.number().int()` rather
+ * than `identifierSchema` -- the id space is `EntityStore`'s, not a content
+ * catalogue's -- with exactly the bounds `ReleaseGuardAssignment.guardId`
+ * carries, because it is the same id read from the same roster.
+ *
+ * `staffId` rather than `guardId`, and the difference is not cosmetic: a
+ * dismissal applies to every role `GuardRoster` holds, including the ones
+ * ADR 0053 refuses a *post* to, while `ReleaseGuardAssignment` is about a
+ * security claim and its parameter is named for what it releases. A prison that
+ * hired an administrator before ADR 0053's gate existed can carry one in a
+ * save, and this is the command that gets rid of them.
+ *
+ * **No role id, no sector, no "and refund" and no severance figure.** The role
+ * is a property of the record this id already reaches, and would be a second
+ * thing the wire could get wrong. Money is deliberately absent rather than set
+ * to zero: `src/simulation/staff/dismissal.ts` explains why a dismissal moves
+ * no money and why the amount, if there is ever to be one, is the owner's.
+ *
+ * No `transactionId`, for `HireStaff`'s reason: a dismissal writes no
+ * construction order, and whether hiring and firing should be undoable at all
+ * is the question ADR 0025 left open for hiring and ADR 0022 left open for
+ * zoning. It should be answered once for all three rather than three times.
+ */
+export const dismissStaffSchema = z.object({
+  type: z.literal('DismissStaff'),
+  staffId: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
+}).strict();
+
 export const undoCommandSchema = z.object({
   type: z.literal('Undo'),
 }).strict();
@@ -502,6 +551,7 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
   placeObjectSchema,
   removeObjectSchema,
   releaseGuardAssignmentSchema,
+  dismissStaffSchema,
   undoCommandSchema,
   redoCommandSchema,
 ]);
@@ -589,6 +639,9 @@ function commandJson(command: SimulationCommand): JsonValue {
 
     case 'ReleaseGuardAssignment':
       return { type: command.type, guardId: command.guardId };
+
+    case 'DismissStaff':
+      return { type: command.type, staffId: command.staffId };
 
     case 'Undo':
     case 'Redo':

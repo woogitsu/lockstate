@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { defaultLocaleEnCatalog } from '../../src/content/default-locale-en';
 import { canonicalJson } from '../../src/simulation/determinism/canonical';
 import { NEED_IDS, NEED_MAX } from '../../src/simulation/prisoners/needs';
+import { classificationGroupIndex, intakeStageIndex } from '../../src/simulation/prisoners/components';
 import {
   BOUNDED_VALUE_SEGMENTS,
   projectContraband,
@@ -379,6 +380,119 @@ describe('status strip', () => {
     // are not written into the projection (`AGENTS.md` boundary 6): a rule that
     // hard-coded them would answer 3 to both of these.
     expect(scoped.counts.accommodationCapacity).toBe(2);
+  });
+
+  /**
+   * Puts `count` arrivals into `accommodation-assignment` in `group`, without
+   * running intake.
+   *
+   * The classification a prisoner receives is a `prisoners.classification` draw
+   * made two stages after the admission, and the panel's own admission scores
+   * `general-population` with certainty (`IntakeSystem.hasAccommodationTarget`
+   * measured 2,000 of 2,000 seeds), so a *high-risk* arrival cannot be arranged
+   * by pressing Admit. What is being measured here is the projection's
+   * arithmetic over a state the stage machine can be in, and
+   * `tests/integration/over-admission-signal.test.ts` is what establishes that
+   * the ordinary state is reachable by playing.
+   */
+  function waitAtAccommodationAssignment(runtime: SimulationRuntime, group: string, count: number): void {
+    for (let arrival = 0; arrival < count; arrival += 1) {
+      const entityId = runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 10_000, priorIncidents: 0 }, { x: 16, y: 16 });
+      const index = runtime.prisoners.entityStore.getIndex(entityId);
+      runtime.prisoners.records.intakeStage[index] = intakeStageIndex('accommodation-assignment');
+      runtime.prisoners.records.classificationGroupIndex[index] = classificationGroupIndex(group);
+    }
+  }
+
+  describe('who the prison has no bed for (issue #549)', () => {
+    it('counts nobody as bedless while the prison still has a free place for them', () => {
+      // Two ordinary cell beds, two arrivals holding out for one. Both are at
+      // Cell Assignment, which is the figure a naive warning would read -- and
+      // both have somewhere to go.
+      const runtime = buildAccommodationPrison();
+      waitAtAccommodationAssignment(runtime, 'general-population', 2);
+
+      const counts = projectPrisonerPopulationCounts(runtime.prisoners);
+      expect(counts.byIntakeStage.find((entry) => entry.intakeStage === 'accommodation-assignment')?.count).toBe(2);
+      expect(counts.waitingWithoutPlace).toBe(0);
+    });
+
+    it('counts the arrivals past the last free bed, and only those', () => {
+      const runtime = buildAccommodationPrison();
+      waitAtAccommodationAssignment(runtime, 'general-population', 5);
+
+      // Two beds these arrivals may be housed in -- `room.cell` is
+      // `general-population`'s first target and the prison holds instances of it,
+      // so the solitary cell's bed is never reached and the infirmary's two never
+      // were places at all. Five waiting, three with nowhere.
+      expect(projectPrisonerPopulationCounts(runtime.prisoners).waitingWithoutPlace).toBe(3);
+    });
+
+    it('subtracts the occupants, so a bed somebody is already in is not a free place', () => {
+      const runtime = buildAccommodationPrison();
+      waitAtAccommodationAssignment(runtime, 'general-population', 2);
+      // With both cell beds empty this prison houses both of them -- the case
+      // above. One resident housed by hand takes one bed, and the same two
+      // arrivals are now one short. A count built from capacity alone reads 0.
+      const resident = runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 10_000, priorIncidents: 0 }, { x: 16, y: 16 });
+      expect(runtime.prisoners.roomInstances.assign('cell-1', resident)).toBe(true);
+
+      expect(projectPrisonerPopulationCounts(runtime.prisoners).waitingWithoutPlace).toBe(1);
+    });
+
+    it('does not house a high-risk arrival in an ordinary cell it is not held for', () => {
+      // The case a single prison-wide total of free places gets wrong, and it is
+      // wrong in the direction that matters: it would report nobody waiting while
+      // somebody genuinely has nowhere to go.
+      //
+      // `DEFAULT_ACCOMMODATION_POLICY` sends a high-risk arrival to
+      // `room.solitary-cell` and falls back to `room.cell` only for a prison
+      // holding *no* solitary cell at all -- a full one is waited on, never
+      // fallen back from (`IntakeSystem.resolveExistingTarget`). This prison
+      // holds one solitary cell with one bed, so a second high-risk arrival has
+      // nowhere, however many ordinary cells stand empty beside it.
+      const runtime = buildAccommodationPrison();
+      waitAtAccommodationAssignment(runtime, 'high-risk', 2);
+
+      const counts = projectPrisonerPopulationCounts(runtime.prisoners);
+      expect(counts.byIntakeStage.find((entry) => entry.intakeStage === 'accommodation-assignment')?.count).toBe(2);
+      // Two free ordinary cells stand right there, and they are not this
+      // arrival's to take.
+      expect(counts.waitingWithoutPlace).toBe(1);
+    });
+
+    it('leaves an arrival with no room type at all to the terminal stage rather than counting them twice', () => {
+      // A prison with nowhere for anybody: the arrivals here reach `'failed'` on
+      // the next intake tick and `byIntakeStage` reports them there. Counting
+      // them as bedless as well would put one person into two sentences that mean
+      // opposite things -- "a bed would fix this" and "nothing will".
+      const runtime = createNewSimulationRuntime(SCENARIO_SEED);
+      waitAtAccommodationAssignment(runtime, 'general-population', 3);
+
+      expect(projectPrisonerPopulationCounts(runtime.prisoners).waitingWithoutPlace).toBe(0);
+    });
+
+    it('scopes the free places to the policy, never to a room id of its own', () => {
+      // The same reading `accommodationCapacity` is held to (`AGENTS.md` boundary
+      // 6): which room types house a resident is content, and a projection may
+      // not name one in a condition of its own.
+      //
+      // Two prisons out of one. Under the shipped policy these three arrivals are
+      // held for the two ordinary cell beds and one is left over; under a policy
+      // that houses everybody in solitary they are held for that room's single
+      // bed and two are. A rule with `room.cell` written into it answers 1 to
+      // both.
+      const runtime = buildAccommodationPrison();
+      waitAtAccommodationAssignment(runtime, 'general-population', 3);
+      const solitaryOnly: AccommodationPolicy = {
+        resolveTargets: () => [{ roomCatalogId: 'room.solitary-cell', requiredObjectCapability: 'sleep-surface' }],
+      };
+
+      expect(projectPrisonerPopulationCounts(runtime.prisoners).waitingWithoutPlace).toBe(1);
+      expect(
+        projectPrisonerPopulationCounts({ ...runtime.prisoners, accommodationPolicy: solitaryOnly }).waitingWithoutPlace,
+      ).toBe(2);
+    });
   });
 
   it('reports no accommodation for a prison with no room source at all', () => {

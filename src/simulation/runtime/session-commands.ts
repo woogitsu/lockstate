@@ -4,6 +4,7 @@ import type { CommandHandler } from '../kernel/kernel';
 import { unpackCommand } from '../protocol/commands';
 import {
   ADMIT_REFUSAL_REASONS,
+  DISMISS_STAFF_REFUSAL_REASONS,
   HIRE_REFUSAL_REASONS,
   PLACE_OBJECT_REFUSAL_REASONS,
   PURCHASE_CANCEL_REFUSAL_REASONS,
@@ -13,6 +14,7 @@ import {
   UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
   admitSupersessionKey,
+  dismissStaffSupersessionKey,
   hireSupersessionKey,
   placeObjectSupersessionKey,
   purchaseCancelSupersessionKey,
@@ -28,6 +30,7 @@ import type { ObjectPlacementService } from '../objects';
 import type { PrisonerOperationsRuntime } from '../prisoners/prisoner-operations-runtime';
 import type { RoomZoningService } from '../rooms/zoning';
 import type { GuardReleaseService } from '../security/guard-release';
+import type { StaffDismissalService } from '../staff/dismissal';
 import type { StaffHiringService } from '../staff/hiring';
 import { tileCoordinate } from '../world/coordinates';
 
@@ -108,6 +111,7 @@ export function createSessionCommandHandler(
   runtimePrisoners: PrisonerOperationsRuntime,
   objectPlacement: ObjectPlacementService,
   guardRelease: GuardReleaseService,
+  staffDismissal: StaffDismissalService,
   refusals: RefusalLog,
 ): CommandHandler {
   const constructionCommands = createConstructionCommandHandler(construction, refusals);
@@ -568,6 +572,52 @@ export function createSessionCommandHandler(
         // Issue #492: the guard id. Releasing a different guard must not
         // silence a standing refusal about this one.
         refusals.supersede(releaseKey);
+      }
+      return;
+    }
+
+    if (simCommand !== null && simCommand.type === 'DismissStaff') {
+      /*
+       * The way out of the roster (issue #533, the owner's decision on issue
+       * #535 decision 4).
+       *
+       * **Routed beside `ReleaseGuardAssignment` rather than beside
+       * `HireStaff`**, and the reasoning above about the ninth route inverts
+       * here. `ReleaseGuardAssignment` is *not* the roster's other half -- that
+       * comment says so -- and this is: hiring puts somebody on the roster and
+       * this takes them off, so the pair `UnzoneRoom`/`ZoneRoom` establishes is
+       * the pair these two make. It sits here anyway because the service it
+       * reaches *delegates to* `guardRelease`, and a reader following the claim
+       * teardown should not have to jump back four hundred lines to find where
+       * it is done from.
+       *
+       * **`StaffDismissalService.dismiss`, not `GuardRoster.forget`.** The same
+       * difference ADR 0034 draws between `GuardReleaseService.release` and
+       * `GuardRoster.unassign`, one step further: the roster write alone would
+       * leave a search job routing somebody who no longer exists, a navigation
+       * request nothing will ever resolve, and a name the registry would hand to
+       * whoever lands in that slot next.
+       *
+       * **No pre-check on the main thread**, for `CancelBuildOrder`'s,
+       * `CancelMaterialPurchase`'s and `ReleaseGuardAssignment`'s reason:
+       * whether the roster still holds this id is not something this thread's
+       * cadence-stale copy may decide. So this line is the only route a refused
+       * dismissal reaches the player by.
+       *
+       * **The tick is passed and matters.** `dismiss` writes a contraband
+       * movement-log entry for anything the departing staff member was carrying,
+       * and an entry stamped with a tick the departure did not happen on makes
+       * the audit trail wrong rather than absent -- `releasePrisoner` takes one
+       * for the same reason and says so.
+       */
+      const outcome = staffDismissal.dismiss(simCommand.staffId, context.tick);
+      const dismissKey = dismissStaffSupersessionKey(simCommand.staffId);
+      if (outcome.kind === 'refused') {
+        refusals.record(DISMISS_STAFF_REFUSAL_REASONS[outcome.reason], context.tick, dismissKey);
+      } else {
+        // Issue #492: the staff id. Dismissing somebody else must not silence a
+        // standing refusal about this one.
+        refusals.supersede(dismissKey);
       }
       return;
     }

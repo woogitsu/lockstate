@@ -1193,11 +1193,20 @@ test.describe('HUD shell', () => {
       expect(probe.admitLaidOut).toBe(true);
       expect(probe.admitLabel).toBe('Admit a prisoner');
       expect(probe.admitDisabled).toBe(false);
-      // The sentence that says why an admission can be refused, on screen
-      // before the player presses anything rather than only after. ADR 0011:
-      // an unresolved key renders as itself, so a raw `hud.` prefix here is a
-      // missing catalog entry.
-      expect(probe.hint).toContain('room to hold them');
+      // The sentence that says what an admission needs, on screen before the
+      // player presses anything rather than only after. ADR 0011: an unresolved
+      // key renders as itself, so a raw `hud.` prefix here is a missing catalog
+      // entry.
+      //
+      // It used to read "A prisoner can only be admitted into a prison that has
+      // a room to hold them", and this assertion used to require that phrase.
+      // The sentence was false about the shipped game -- a one-bed cell took
+      // twelve admissions (issue #549) -- so what is required now is that the
+      // note states both halves of what the control really does, and that it no
+      // longer denies the half that was measured.
+      expect(probe.hint).toContain('needs a cell before it can admit anyone');
+      expect(probe.hint).toContain('It does not need a free bed');
+      expect(probe.hint).not.toContain('can only be admitted');
       expect(probe.hint.startsWith('hud.')).toBe(false);
     });
 
@@ -1296,6 +1305,197 @@ test.describe('HUD shell', () => {
       expect(probe.failedControls).toEqual(['Admit a prisoner']);
       expect(probe.describedByRefusal).toBe(true);
       expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
+    });
+
+    /**
+     * **The over-admission warning** (issue #549).
+     *
+     * The defect was that the panel's standing note denied a state the shipped
+     * game reaches by ordinary play: twelve presses of Admit into a cell with
+     * one bed in it were all accepted, eleven arrivals sat at Cell Assignment,
+     * and the only sentence on screen that mentioned accommodation said that
+     * could not happen. `tests/integration/over-admission-signal.test.ts` drives
+     * the prison that produces the figure; this is the half only a browser can
+     * settle -- whether the line has a **box**, what colour it computes to, and
+     * whether the panel can afford it.
+     *
+     * ### Why the box and not the attribute
+     *
+     * `.hud-intake__no-place` carries an author `display`, and an author
+     * `display` beats the `display: none` a user agent gives `[hidden]`. So a
+     * stylesheet that lost its `:not([hidden])` guard paints the line at full
+     * height with `hidden` still set, and a spec reading `.hidden` would agree
+     * with it. `IntakeProbe.noPlaceBox` is `null` only for a node that is
+     * genuinely not laid out.
+     *
+     * ### What the panel had to spend
+     *
+     * Measured on this tree, at the three viewports below, by growing the
+     * readout one line at a time until a box in the chain went shorter than its
+     * own content. The Intake panel is bottom-anchored and alone in
+     * `.hud__side` on the Overview tab -- `paintState` shows exactly one of the
+     * five rail panels -- so it grows *upward* into an otherwise empty rail
+     * rather than competing with a catalogue for a fixed body:
+     *
+     * | viewport | panel ceiling | fullest real readout | spare |
+     * |---|---|---|---|
+     * | 1280x720 | 579px | 275px | 304px |
+     * | 900x600  | 467px | 275px | 192px |
+     * | 375x812  | 623px | 260px | 363px |
+     *
+     * "Fullest real readout" is all four non-terminal stage lines, the terminal
+     * line and this warning together, which is the most the panel can ever be
+     * asked to draw: `INTAKE_STAGES` holds six and two of them are terminal.
+     * The warning itself measured **13px**. So no catalogue floor is donated
+     * here and none is needed -- the idiom `.hud-build[data-queued]` and
+     * `.hud-rooms[data-needs]` use exists because those panels had 0px and
+     * 12.2px at 900x600, and this one has 192px.
+     */
+    test.describe('the over-admission warning (issue #549)', () => {
+      /** Twelve admissions into a one-bed cell, as the projection reports them. */
+      const OVER_ADMITTED = {
+        waiting: 11,
+        failed: 0,
+        total: 12,
+        waitingWithoutPlace: 11,
+        stages: [
+          { stageId: 'accommodation-assignment', labelKey: 'intake-stage.accommodation-assignment.name', count: 11 },
+        ],
+      } as const;
+
+      /** The same eleven at Cell Assignment, in a prison that has beds for them. */
+      const WAITING_BUT_HOUSED = { ...OVER_ADMITTED, waitingWithoutPlace: 0 } as const;
+
+      test('says nothing at all until the prison runs out of beds', async ({ page }) => {
+        await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+        // Nothing has answered for this prison yet.
+        expect((await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).noPlaceBox).toBeNull();
+
+        // Eleven at Cell Assignment and beds for all of them. The readout draws
+        // -- there is something to report -- and the warning does not. This is
+        // the assertion an implementation keyed on the stage count fails: every
+        // arrival passes through that stage, including every one the prison
+        // houses without trouble.
+        await page.evaluate((p) => window.lockstateUiHarness.reportIntakePipeline(p), WAITING_BUT_HOUSED);
+        const quiet = await page.evaluate(() => window.lockstateUiHarness.intakeProbe());
+        expect(quiet.pipelineBox, 'the readout must be drawn, so this is not a panel that says nothing').not.toBeNull();
+        expect(quiet.pipelineStages).toEqual([{ stage: 'accommodation-assignment', text: '11 at Cell Assignment' }]);
+        expect(quiet.noPlaceBox, 'no warning while every arrival has somewhere to go').toBeNull();
+        expect(quiet.noPlaceText).toBe('');
+        expect(quiet.text).not.toContain('no bed to sleep in');
+      });
+
+      test('tells the player how many people have nowhere to sleep, beside the control that admitted them', async ({
+        page,
+      }) => {
+        await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+        await page.evaluate((p) => window.lockstateUiHarness.reportIntakePipeline(p), OVER_ADMITTED);
+
+        const probe = await page.evaluate(() => window.lockstateUiHarness.intakeProbe());
+        const admit = await page.locator('.hud-intake__admit').boundingBox();
+
+        expect(probe.noPlaceBox, 'the warning must have a real box, not merely a text node').not.toBeNull();
+        expect(probe.noPlaceText).toBe('11 waiting with no bed to sleep in');
+        expect(probe.noPlaceCount).toBe('11');
+        // ADR 0011: an unresolved key renders as itself.
+        expect(probe.noPlaceText.startsWith('hud.')).toBe(false);
+
+        // Beside the control, which is the whole placement decision: it sits
+        // under the admit button and above the standing note, not at the bottom
+        // of a readout a player who is pressing Admit is not reading.
+        expect(admit).not.toBeNull();
+        expect(probe.noPlaceBox!.y).toBeGreaterThan(admit!.y + admit!.height - 1);
+        expect(probe.noPlaceBox!.y, 'the warning is above the pipeline readout').toBeLessThan(probe.pipelineBox!.y);
+
+        // Toned, and computed rather than declared: this is the one line on the
+        // panel that is a warning rather than a readout, and a rule that never
+        // reached the element would leave it the body colour.
+        const stageColor = await page.evaluate(
+          () => window.getComputedStyle(document.querySelector('.hud-intake__pipeline-stage')!).color,
+        );
+        expect(probe.noPlaceColor).not.toBe(stageColor);
+        expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
+      });
+
+      test('takes the warning away again when the prison finds beds, rather than leaving it standing', async ({
+        page,
+      }) => {
+        await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+        await page.evaluate((p) => window.lockstateUiHarness.reportIntakePipeline(p), OVER_ADMITTED);
+        expect((await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).noPlaceBox).not.toBeNull();
+
+        await page.evaluate((p) => window.lockstateUiHarness.reportIntakePipeline(p), WAITING_BUT_HOUSED);
+        const after = await page.evaluate(() => window.lockstateUiHarness.intakeProbe());
+        expect(after.noPlaceBox).toBeNull();
+        expect(after.noPlaceCount).toBeNull();
+
+        // And a session that stops answering takes it away too, for the reason
+        // the readout comes off: a sentence about people with nowhere to sleep,
+        // with nothing still answering for them, is the class of lie this layer
+        // exists to avoid.
+        await page.evaluate((p) => window.lockstateUiHarness.reportIntakePipeline(p), OVER_ADMITTED);
+        expect((await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).noPlaceBox).not.toBeNull();
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('overview'));
+        expect((await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).noPlaceBox).toBeNull();
+      });
+
+      test('is a line the panel can afford at every viewport, 900x600 included', async ({ page }) => {
+        // The recurring defect class this change sits in: a HUD panel given
+        // content it has no height for. The Rooms panel had 0px of spare body
+        // at 900x600 and a four-line addition put it 54px outside its own box.
+        // So the fullest readout this panel can ever be asked to draw is
+        // measured here at all three viewports, with the warning on -- the box
+        // chain, not a screenshot.
+        const FULLEST = {
+          waiting: 12,
+          failed: 3,
+          total: 20,
+          waitingWithoutPlace: 11,
+          stages: [
+            { stageId: 'queued', labelKey: 'intake-stage.queued.name', count: 3 },
+            { stageId: 'reception', labelKey: 'intake-stage.reception.name', count: 3 },
+            { stageId: 'classification', labelKey: 'intake-stage.classification.name', count: 3 },
+            { stageId: 'accommodation-assignment', labelKey: 'intake-stage.accommodation-assignment.name', count: 3 },
+          ],
+        } as const;
+
+        for (const [width, height] of [
+          [1280, 720],
+          [900, 600],
+          [375, 812],
+        ] as const) {
+          await page.setViewportSize({ width, height });
+          await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+          await page.evaluate((p) => window.lockstateUiHarness.reportIntakePipeline(p), FULLEST);
+
+          const probe = await page.evaluate(() => window.lockstateUiHarness.intakeProbe());
+          const chain = await page.evaluate(() =>
+            ['.hud-intake', '.hud-intake .ui-panel__body', '.hud__side', '.hud__rail']
+              .map((selector) => {
+                const box = document.querySelector(selector);
+                if (box === null) return `${selector} is not on the page`;
+                const shortfall = box.scrollHeight - box.clientHeight;
+                return shortfall === 0 ? null : `${selector} is ${String(shortfall)}px shorter than its own content`;
+              })
+              .filter((entry): entry is string => entry !== null),
+          );
+
+          expect(chain, `boxes in the Intake panel shorter than their own content at ${width}x${height}`).toEqual([]);
+          expect(probe.panelOverflow).toBe(0);
+          expect(probe.bodyOverflow).toBe(0);
+          // Drawn, not merely unclipped: a warning scrolled out of a panel a
+          // player never scrolls is a warning nobody reads.
+          expect(probe.noPlaceBox, `the warning has no box at ${width}x${height}`).not.toBeNull();
+          expect(
+            probe.noPlaceBox!.bottom,
+            `the warning is below the fold of its own panel at ${width}x${height}`,
+          ).toBeLessThanOrEqual(probe.panelBox!.bottom);
+          expect(probe.noPlaceBox!.y, `the warning is above the top of the viewport at ${width}x${height}`)
+            .toBeGreaterThanOrEqual(0);
+        }
+      });
     });
   });
 
@@ -2900,6 +3100,53 @@ test.describe('the Rooms panel', () => {
     // holds is what it would send.
     expect(await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).toMatchObject({
       area: `-40,4096,${MAX_ROOM_SIDE_TILES},1`,
+    });
+  });
+
+  /*
+   * ...and it takes that clamp without rewriting a number still being typed
+   * (#548).
+   *
+   * The test above drives the fields the way the harness always has: it sets
+   * `input.value` and dispatches `change`, which is what a browser does when a
+   * *finished* entry loses focus. That is one keystroke's worth of the story.
+   * Since #548 the field also reports on `input`, which fires on every
+   * keystroke -- and a keystroke is where clamping and typing can fight.
+   *
+   * `MAX_ROOM_SIDE_TILES` is 64, so `152` is over the ceiling; but it is also
+   * what the box says on the way to `15` becoming something else, and on the
+   * way *through* `152` to anything longer. The owner is told 64 immediately,
+   * because that is the value a control pressed right now would act on -- and
+   * the box is left saying `152`, because an owner that answered a keystroke by
+   * writing its clamped value back would move the caret to the end of the field
+   * and delete what the player was halfway through. The two reconcile on the
+   * way out, which is the third assertion.
+   *
+   * Real keystrokes and not `fill`: `fill` sets a value and dispatches its own
+   * events without a focus to lose, so it cannot tell a field that reports
+   * while focused from one that reports on blur.
+   */
+  test('a bounded field takes its clamp without rewriting what is still being typed (#548)', async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates'));
+
+    const width = page.locator('.hud-rooms__coord-width .ui-number__input');
+    await width.click({ clickCount: 3 });
+    await page.keyboard.type('152');
+
+    // Nothing has left the field, so no `change` has fired and none can have.
+    await expect(width, 'the field lost focus, so what follows is not a claim about typing').toBeFocused();
+    await expect(width, 'the clamp overwrote a number the player was still typing').toHaveValue('152');
+
+    // Out of the field, and now the owner's value is the one on screen.
+    await page.keyboard.press('Tab');
+    await expect(width, 'leaving the field did not reconcile the box with the value the panel holds').toHaveValue(
+      String(MAX_ROOM_SIDE_TILES),
+    );
+
+    // And the clamp is the rectangle's rather than only the box's.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates-submit'));
+    expect(await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).toMatchObject({
+      area: `0,0,${MAX_ROOM_SIDE_TILES},1`,
     });
   });
 

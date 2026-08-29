@@ -263,6 +263,14 @@ const PAINTERS = [
   'simulation-regime.ts',
   'simulation-room-needs.ts',
   'simulation-staff-coverage.ts',
+  // Issue #533. The **second** reader of `hud/staff`, beside
+  // `simulation-staff-coverage.ts` above, and it is named here for the reason
+  // this list gives: named individually so a reader renamed or moved out of
+  // `src/ui/` fails here rather than silently leaving the surface -- which
+  // matters more for a second reader of one id than for a first, because the
+  // per-id check below would still find the *other* one and report the id as
+  // read.
+  'simulation-staff-roster.ts',
 ] as const;
 
 const catalogSource = read(CATALOG_FILE);

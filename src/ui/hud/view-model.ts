@@ -528,6 +528,41 @@ export interface HudHeldGuardsViewModel {
   readonly guards: readonly HudHeldGuardViewModel[];
 }
 
+export interface HudStaffRosterRowViewModel {
+  readonly entityId: number;
+  /** What this staff member is doing right now -- the same `guard-claim` vocabulary the held rows use, plus "off duty". */
+  readonly statusLabelKey: LocalizationKey;
+  /** Absent when the host names no role for this staff member. */
+  readonly roleLabelKey?: LocalizationKey;
+}
+
+/**
+ * Who is on the payroll, and the control that ends it (issue #533).
+ *
+ * **Not `HudHeldGuardsViewModel` with a different button**, and the difference
+ * is the whole reason this type exists rather than a flag on that one. That
+ * model is the *held subset* -- guards a claimant is holding -- and the state a
+ * player most needs to get out of is the opposite one: three guards hired into
+ * a prison that requires none, every one of them `'unassigned'` and therefore
+ * on no held row at all, each billed at every in-game day boundary. A dismiss
+ * control hung off the held list would have been a control that could not reach
+ * the case it exists for.
+ *
+ * Session state on a **pull**, on `HudHeldGuardsViewModel`'s three terms:
+ * `O(staff)` to walk, nobody reads it from another tab, and absent is a real
+ * state -- "nothing has asked" and "nobody is hired" must not render the same,
+ * because only the second is a statement about the prison.
+ *
+ * `hired` is summed over the whole roster rather than over the window, so a
+ * prison with more staff than rows is still told how many it has.
+ */
+export interface HudStaffRosterViewModel {
+  /** Everybody on the payroll, however many rows there was room to carry. */
+  readonly hired: number;
+  /** The window, in ascending entity id. */
+  readonly staff: readonly HudStaffRosterRowViewModel[];
+}
+
 /**
  * The authored floor on a room's area, as the panel reads it.
  *
@@ -810,6 +845,25 @@ export interface HudIntakePipelineViewModel {
   readonly total: number;
   /** The stages that hold somebody, in the pipeline's own order. A stage holding nobody is absent, not zero. */
   readonly stages: readonly HudIntakeStageViewModel[];
+  /**
+   * Arrivals the prison has **no free place for right now** -- issue #549.
+   *
+   * A subset of `waiting`, and never the same question as the
+   * `accommodation-assignment` line in `stages`. An arrival sits at that stage
+   * for one scheduled intake interval before anybody looks for a bed for them,
+   * so in a prison with a free cell the stage line counts somebody who was
+   * never stuck. This counts nobody until the beds actually run out.
+   *
+   * It is the only figure on this panel that is a warning rather than a
+   * readout, and it is what a player pressing Admit into a full prison gets
+   * told: the admission is accepted, the money arrives, and there is nowhere
+   * for the person to sleep.
+   *
+   * `0` is the ordinary state and draws nothing. It is a statement about the
+   * prison *now* and not a forecast -- an arrival counted here is housed the
+   * moment a place exists.
+   */
+  readonly waitingWithoutPlace: number;
 }
 
 /**
@@ -1018,6 +1072,11 @@ export interface HudViewModel {
    * `hud/held-guards` reply, which is a different fact from "no guard is held".
    */
   readonly heldGuards?: HudHeldGuardsViewModel;
+  /**
+   * Who is on the payroll, or absent because nothing asked (issue #533). Same
+   * pull terms as `heldGuards` above and read from the same panel.
+   */
+  readonly staffRoster?: HudStaffRosterViewModel;
   /**
    * How many guards the prison asks for against how many it has assigned, or
    * absent because nothing asked
