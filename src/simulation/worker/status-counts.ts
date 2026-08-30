@@ -52,6 +52,11 @@ export function projectStatusCounts(runtime: SimulationRuntime, tick: number): S
     // housing rule disagree about which rooms are accommodation.
     accommodationPolicy: runtime.prisoners.accommodationPolicy,
     staff: runtime.securityGuards,
+    // The system itself, for `payroll`'s reason below: the census is a live
+    // read of the last provisioning walk, so a hire that changes a sector's
+    // rung reaches the strip on the next publication without anything here
+    // having to notice.
+    coverage: runtime.safetyCoverage,
     incidents: runtime.incidents,
     searchSystem: runtime.searchSystem,
     treasury: runtime.treasury,

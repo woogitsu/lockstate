@@ -63,8 +63,38 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
          * `counts.roomCapacity`.
          */
         prisonerCapacity: counts.accommodationCapacity,
+        /**
+         * Straight through, for `accommodationCapacity`'s reason above, and
+         * it is the figure the `PRISONERS` chip's *"N with no bed"* badge is
+         * built out of (issue #609).
+         *
+         * **`counts.roomOccupants` is on this payload and is deliberately not
+         * read.** That field is residency -- who the prison has assigned
+         * somewhere -- and ADR 0028 decision 2 keeps a resident where they
+         * are when the bed under them is taken away, so it reports a prisoner
+         * as housed whose bed no longer exists. `occupiedPlaces` is
+         * `residentIdsWithExistingPlace().length`, the places that currently
+         * exist, which is what the income line pays for
+         * (`src/simulation/economy/income.ts`,
+         * `stateIncomeForCompletedDay`). A badge fed from `roomOccupants`
+         * would read *"0 with no bed"* for a prison the state has already
+         * stopped paying for.
+         *
+         * Issue #609's own second correction is the measurement: a 3x3
+         * `room.cell` with two beds and two prisoners housed, one bed then
+         * removed, publishes `roomOccupants` 2 and `occupiedPlaces` 1
+         * (`tests/integration/economy-occupied-place-exists.test.ts`).
+         */
+        occupiedPlaces: counts.occupiedPlaces,
         staff: counts.staff,
         rooms: counts.rooms,
+        // Straight through, all three, for `accommodationCapacity`'s reason:
+        // the HUD may not derive a simulation figure, and these are the rungs
+        // `SafetyCoverageSystem` counted the population onto on the same walk
+        // that provisioned its `safety` (issue #588).
+        prisonersCovered: counts.prisonersCovered,
+        prisonersUnderstaffed: counts.prisonersUnderstaffed,
+        prisonersUnguarded: counts.prisonersUnguarded,
         activeIncidents: counts.activeIncidents,
         /**
          * The one label this module derives rather than reads straight
@@ -88,6 +118,18 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
         contrabandFound: counts.contrabandDiscovered,
         treasuryMinorUnits: counts.treasuryMinorUnits,
         stateIncomeAccruedTodayMinorUnits: counts.stateIncomeAccruedTodayMinorUnits,
+        /**
+         * Straight through, for `accommodationCapacity`'s reason above, and it
+         * is the figure the collapsed `On the payroll` header states (issue
+         * #639 ruling 2).
+         *
+         * **It has crossed the protocol since ADR 0042 step 3 and until this
+         * line nothing in `src/ui/` read it** -- `grep -rn
+         * 'dailyWageBillMinorUnits' src/ui/` returned nothing. The prison's
+         * whole standing cost was computed, published twice a second and shown
+         * to nobody, which is issue #629's class rather than a missing feature.
+         */
+        dailyWageBillMinorUnits: counts.dailyWageBillMinorUnits,
       };
     }
 

@@ -9,6 +9,7 @@ pnpm typecheck
 pnpm test
 pnpm test:watch
 pnpm test:browser
+pnpm test:artifact
 pnpm verify
 pnpm verify:assets
 pnpm verify:deployment
@@ -16,6 +17,10 @@ pnpm verify:sql
 ```
 
 `pnpm test` runs the complete Vitest suite once and fails when no test is discovered. `pnpm verify` typechecks test and production sources, runs the test suite and builds the production Cloudflare package.
+
+`pnpm typecheck` runs **two** TypeScript projects, and the second one is the newer half. `tsconfig.json` covers `src/`, `tests/` and the two Vite configs under the full strict set. `tsconfig.tools.json` covers `benchmarks/`, `scripts/` and `tooling/` — about 3,600 lines of `.mjs` that build the product, deploy it and gate its performance — with `allowJs` and `checkJs`, inheriting that strict set and dropping exactly two flags: `noImplicitAny`, because annotating 181 glue parameters buys nothing about how a call into `src/` is checked, and `noUncheckedIndexedAccess`, because JavaScript has no non-null assertion operator so the only way to satisfy it in a `.mjs` file is a JSDoc cast at every index. `tests/foundation/typecheck-coverage-contract.test.ts` asserts that every tracked module file falls inside one of the two, that the two do not overlap, and that `pnpm typecheck` actually runs both — enumerated from `git ls-files` rather than from a list of directory names, so a *fourth* untypechecked directory fails it too.
+
+Why the second project exists at all is worth stating, because the obvious version of it does nothing. Until #602 those three directories were outside every `include`, so a production signature change was invisible to `pnpm typecheck` **and** to `pnpm test`; PR #581 inserted a required parameter *second* into `LocomotionStore.advance` and `benchmarks/scenarios/actor-render-publication.mjs` kept calling it with three arguments, which passed `writeTile` as the predicate and refused every walker its first edge. But turning on `checkJs` over those files, on its own, still reports nothing: every production symbol reaches a benchmark through `benchmarks/production-modules.mjs`, which imports by `import()` of a computed URL string, and TypeScript resolves no non-literal dynamic import — so the whole production surface arrives as `any`. What makes the gate bite is the derived `@returns` types on that file's five loaders, written as `Pick<typeof import('../src/…'), 'X'>` so they follow the production signature rather than restating it. Measured both ways: with the loaders untyped the reintroduced three-argument call produced zero errors; with them typed it produces `Argument of type '(key: any, tile: any) => void' is not assignable to parameter of type '(key: number, from: TilePosition, to: TilePosition) => boolean'`.
 
 `pnpm verify:sql` is separate from `pnpm verify` because it needs a PostgreSQL server: it applies every migration in `supabase/migrations/` and runs every pgTAP suite in `supabase/tests/` against a scratch database, using the compatibility harness in `scripts/sql/`. It is the check that can run when the Supabase local stack's container images are unreachable; it proves the SQL, not the hosted platform around it (see `docs/CLOUD_SAVE.md` for the cloud-save schema and `docs/TRUSTED_SERVICES.md` for the entitlement/challenge schema). **Four of the eleven suites assert no behaviour at all** — `003`, `005`, `007` and `008` — and each is a rule over a system catalog rather than a list. Measured rather than counted: those four are the ones with no `throws_ok`, no `lives_ok`, no `set local role` and no `INSERT` into a `public` table (007 and 008 insert only into their own temporary declaration tables). `003_data_api_grants` pins the whole privilege surface for all three Supabase roles. `005_function_security_declarations` pins the function *declarations* — `prosecdef` and the pinned `search_path` — read back from `pg_proc`, because a suite that pinned privileges exhaustively and never read those two columns let a dropped `search_path` pass every assertion (#105 finding 5). `007_column_bound_coverage` enumerates every `text`/`jsonb`/`json`/`bytea` column in `public` from `pg_attribute` and requires each to name the mechanism that bounds it — a length check, an anchored regex, a closed value set, a BEFORE-row trigger, or a generated column — and requires that mechanism's catalog object to exist and to constrain that column (#189). `008_scalar_column_constraint_coverage` does the same for the numeric and timestamp columns, with one difference that matters: a scalar column may legitimately be unconstrained, so it has an allow-list — and an entry there must carry a real reason and **fails if the column later gains a constraint**, so acting on a finding forces the entry to be reclassified rather than left saying the state is unconstrained (#191). That rule reads constraints and nothing else, which let the other half of those reasons rot: two entries kept saying `CLIENT-WRITABLE … Open finding #194` after `20260824140000` revoked exactly the grants they named, and the suite stayed green because a column had *lost a grant* rather than *gained a constraint*. Each entry now also declares client-writability as a boolean checked against `has_column_privilege` for `anon` and `authenticated`, failing in both directions (#194, #260). `009_rls_policy_surface`, `010_constraint_inventory` and `011_trigger_inventory` carry catalog rules of the same kind, but they are **not** in the four: each pairs its rule with a probe that exercises it, which is why they sit on the behavioural side of the split. 009 runs reachability and isolation probes as real roles; 010 ends in a `throws_ok(… insert into public.prisons …, '23505', …)` driven as `authenticated`; 011 plants `2020-01-01` in three tables and reads the stamp back. A suite doing both is the shape to copy, not an exception to the rule — a rule that nothing drives is a rule nobody has watched fail. **This split has now been wrong in both directions, and both are recorded here rather than overwritten, because a correction is no more durable than the claim it corrected.** `849c6e5` wrote "Four of the eight suites assert no behaviour at all" and "The other four suites do assert behaviour" — true of the four it named, and arithmetically sound at 4+4=8. The total then moved from eight suites to eleven at `9b17e1a` (#382) without either half moving, so the paragraph accounted for eight of eleven. `e9af6a9` resolved that arithmetic **in the wrong direction**: it changed the first half from four to seven and left "four" standing on the second, inverting a claim that had been correct. The truthful resolution was to leave the first half at **four** and take the second half to **seven**, which is what the two sentences now say. Check it rather than trusting it: the four are the suites with no `throws_ok`, no `lives_ok`, no `set local role` and no `INSERT` into a `public` table. All four, and the catalog halves of 009, 010 and 011, are rules for the same reason: a list cannot notice a column, function or grant added tomorrow, and something added with no protection must **fail** rather than be merely un-asserted. One further gate lives on the TypeScript side rather than in pgTAP (this said "a ninth", an ordinal counted from the stale total above): `tests/foundation/rpc-status-vocabulary-contract.test.ts` asserts that every status each `SECURITY DEFINER` RPC can return is exactly the set the cloud client's row type names, in both directions — a status the database can return and the client does not name falls through an exhaustive `switch` silently, returning `undefined` at runtime with no compile error (#192). It checks the return path only, and says so: the request half needs a running PostgREST. `003_data_api_grants` also carries a rule of the same shape: no column whose default is `now()` may be written by a client role unless an allow-list entry gives a reason, because the four columns #194 found client-writable were found by an inventory rather than by a failing test — that suite pins what the grants *are*, not what they *ought to be* (#194). The remaining **seven** suites do assert behaviour — `001`, `002`, `004`, `006`, `009`, `010` and `011` — and wherever one of them drives a bound it drives it in **both** directions: refusing a value past the ceiling *and* admitting one exactly at it, because a database that refuses what the TypeScript contract permits is a defect rather than hardening (#105 finding 4). That is stated as a rule about bounds rather than as a count of suites, because the count is the part that keeps rotting. Separate from `pnpm verify` does **not** mean optional: it is a required CI step (see "Database provisioning" below). `pnpm test:browser` runs the Chromium project (`tests/browser/`) and is deliberately **not** part of `pnpm test` or `pnpm verify` — the ordinary suite stays fast, headless and browser-free. Separate is not optional: CI runs it as a required `browser` job, which provisions its own Chromium (see "Browser provisioning" below).
 
@@ -132,6 +137,24 @@ It also carries the two environment-specific facts observed on Ubuntu 26.04 unde
 
 CI runs that script in the `browser` job and then `pnpm test:browser`, so the layer that found the adapter defect in `docs/PERSISTENCE.md` and the two HUD layout defects above runs on every pull request instead of when a human remembers. The job is ordered after `assets` for two reasons, neither a data dependency: a browser run is a couple of minutes on a single self-hosted runner and there is no point spending it on a tree that does not build; and `assets` has already materialised the runtime atlases into the shared workspace, so the job's own path-scoped `git lfs pull` transfers nothing. That pull stays regardless, because the job has to be correct on a cold workspace — `app-shell.spec.ts` asks a real browser to decode the art, and a pointer-only checkout is exactly what it exists to catch. The job also fails if the suite skipped its way to green: `playwright test` already errors when no test matches and `forbidOnly` is on under CI, but neither covers a suite that ran and skipped.
 
+## The one condition under which the browser suites retry (#616, #652)
+
+Both Playwright configs set `retries: 0` and that is still the default. Neither `pnpm test:browser` nor `pnpm test:artifact` runs `playwright test` directly, though: each runs `tests/browser/run-suite.ts` with a `--suite` name, and that wrapper runs the suite once and retries it **only** when every failing test observed `net::ERR_NETWORK_CHANGED` while it was running.
+
+That error is Chromium aborting in-flight requests because the operating system's network configuration changed underneath it. Issue #616 diagnosed it from a retained trace after three earlier investigations had failed to, and it has turned `main` red five times in four different-looking ways — a harness global that never appears, a `page.evaluate` returning `undefined` in 229 ms, and a simulation worker whose module graph was truncated so a correctly-written panel stayed pending until the test's own expectation gave up. One cause; the symptom depends only on which modules were in the aborted set. It is not a product defect: production is a built bundle over one origin, not several hundred dev-server module requests.
+
+The owner ruled on 2026-08-30 that this class, and nothing adjacent to it, may be retried. Three properties are what make that safe rather than a permission to be green, and each is pinned by `tests/foundation/browser-network-changed-retry-contract.test.ts` or `tests/foundation/browser-network-changed-signature.test.ts`:
+
+- **The evidence covers the whole test.** #616's fifth occurrence measured the aborts spread across ~52 seconds, so anything that samples console errors at one instant could miss the window or be tripped by it. `tests/browser/network-changed-fixture.ts` holds `requestfailed` and `console` listeners on the browser **context** for the lifetime of every test — context, because the fifth occurrence aborted the *simulation worker's* module graph rather than the page's — and appends each observation to a file as it happens, so a 60-second timeout that never reaches fixture teardown still leaves the evidence behind.
+- **It retries on nothing else.** The matcher takes one exact error, anchored on the right. `net::ERR_INTERNET_DISCONNECTED`, `net::ERR_NETWORK_IO_SUSPENDED` and `net::ERR_ABORTED` are all refused, and one failing test without evidence refuses the whole retry rather than narrowing it.
+- **It is loud and countable.** A retry writes `LOCKSTATE_BROWSER_SUITE_RETRY` to stdout, a refusal writes `LOCKSTATE_BROWSER_SUITE_NO_RETRY`, and each observing test writes `LOCKSTATE_NETWORK_CHANGED_OBSERVED` carrying the error text. CI tees all of it into `browser-suite.log` for the dev-server gate; the artefact step captures its output into a shell variable and prints it, because `tests/foundation/ci-configuration-contract.test.ts` requires that job to have exactly one `tee` target, so those lines land in the job log rather than in the uploaded file. That last line is the direct answer to what made this class invisible for three investigations: `grep -c ERR_NETWORK_CHANGED browser-suite.log` returned **0** on every one of the five occurrences, because the evidence existed only inside a retained trace.
+
+Every spec in `tests/browser/` therefore imports its `test` object from `./network-changed-fixture` rather than from `@playwright/test`, and the contract test fails in both directions if one ever does otherwise — a spec written by copying a pre-#616 header would run with no listeners attached and be silently absent from the evidence.
+
+**Both gates, since #652, and for one merge it was only one.** `pnpm test:artifact` invoked `playwright test` directly until then, so the artefact gate recorded no evidence and nothing decided a retry for it — while `production-artifact.spec.ts` imported the fixture like every other spec, which is what made the gap read as covered from every file involved: the listeners really did attach, and `appendEvidence` returned at its first line because nothing set `LOCKSTATE_NETWORK_CHANGED_EVIDENCE`. The owner ruled on 2026-08-30 to route the second gate through the same wrapper rather than write the exception down, so the decision exists once. `tests/browser/browser-suites.ts` is the registry of what the wrapper can drive, and the contract test now fails if a `playwright*.config.ts` appears that is neither driven nor recorded there as deliberately excluded — `playwright.playtest.config.ts` is the one exclusion, because it is not a gate.
+
+Measured on this branch rather than argued: with the signature fabricated through the page console (nothing in Playwright or CDP can make Chromium genuinely emit it), the artefact gate goes `1 failed, 2 passed` → `LOCKSTATE_BROWSER_SUITE_RETRY suite=artifact` → `1 passed` → exit 0, and the same command run the old way on the same fabricated abort exits 1 with no retry line at all. An ordinary wrong expectation in the same suite gets `LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact failures=1 withSignature=0` and stays red.
+
 ## Test layers
 
 | Layer | Purpose | Normal location |
@@ -142,10 +165,130 @@ CI runs that script in the `browser` job and then `pnpm test:browser`, so the la
 | Determinism | Same initial state and command stream produce identical state/hash | `tests/determinism/` |
 | Migration | Versioned fixture upgrades and forward-only save compatibility | `tests/migrations/` |
 | Browser E2E | Real browser storage/durability, real `DOMException` names, real quota exhaustion, save migration off real storage, whether a real DOM lifecycle event reaches its handler, agreement between a pure transform and a real Phaser camera, what a two-finger touch gesture does to a real camera, and the assembled page: canvas sizing, hit-testing, image decode, a second session in a second real `Worker` | `tests/browser/`, via `pnpm test:browser` (own command, required CI job) |
+| Production artefact | The built client, served from `dist/` through workerd: that the bundle boots, that its emitted worker chunk is reachable and parses, that compile-time `define`s survived, and that one command and one persistence round trip complete | `tests/browser/production-artifact.spec.ts`, via `pnpm test:artifact` (run inside the `browser` CI job) |
 | Measurement | Reported size/timing evidence with no timing assertions | `tests/perf/`, opt-in via its own Vitest config |
 | Benchmark | Repeatable performance evidence, never correctness by elapsed time | `benchmarks/` and `docs/BENCHMARKING.md` |
 
 Use the lowest layer that proves the behavior. Do not use a browser test to cover logic that can be proven by a fast headless unit or contract test.
+
+### Comments are not executed, and one shape of them is now gated
+
+`tests/foundation/comment-symbol-existence-contract.test.ts` reads every
+backticked **member path** (`Foo.bar`) and **three-segment screaming constant**
+(`STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`) in every comment under
+`src/` and `tests/`, and fails when the name resolves to nothing in the
+repository's code. Issue #543 is the reason: a comment in module A stating a
+fact about module B has no test tying the two together, and this repository has
+paid for it repeatedly — a comment that was false for 51 releases sent two
+agents hunting a fixed defect.
+
+**It gates the vocabulary half of that class, not the behavioural half**, and
+the distinction is worth knowing before reaching for it. It catches
+`WorkerStateMachine.publishEvents` when the class is
+`SimulationWorkerStateMachine`, and a docblock naming an assertion helper that
+does not exist. It cannot catch *"nothing debits the treasury on a schedule"*
+going false when `PayrollSystem` lands, because that sentence names no symbol;
+nor `RoomInstanceRegistry.residentIds` when the caller moved to
+`residentIdsWithExistingPlace`, because both accessors are real. Those stay the
+discipline.
+
+**A comment may still name something that is gone — it just has to say so.**
+A deletion record whose prose carries *"used to"*, *"no longer"*, *"deleted"*,
+*"there is no"* or one of the other markers, within about two wrapped lines of
+the name, is exempt. That is a convention with teeth rather than a hole: this
+tree already writes deletion records that way, every one of the six in it
+passed before the gate existed, and the marker window is deliberately narrow
+because the first version read markers over the whole comment block and a
+hundred-line docblock's unrelated *"there is no ..."* exempted a real defect.
+
+### The production artefact layer, and the hole it closes
+
+`pnpm test:browser` and `pnpm test:artifact` both drive Chromium and they are
+not the same test. The first runs a **Vite dev server over `src/**`** using
+`tests/browser/vite.config.ts`, which says of itself that it "loads no
+Cloudflare plugin and never participates in `pnpm build`". Everything it proves
+is a statement about the sources. The second runs `vite preview` over `dist/`
+with the production `vite.config.ts`, so the page under test is workerd serving
+the built client with `public/_headers` applied exactly as production applies
+them.
+
+Until `pnpm test:artifact` existed, **nothing in this repository had ever
+executed the artefact a player downloads.** That is not a gap between two
+similar checks; it is a gap with three existing checks stacked either side of
+it, each of which stops one step short:
+
+- `pnpm build` proves the bundle compiles and emits, and `vite.config.ts`'s
+  `assertContentValidationIsShipped` plugin reads one marker out of the emitted
+  chunk. It runs no code.
+- `scripts/verify-cloudflare-build.mjs` reads the generated Wrangler config and
+  the emitted files. It runs no code.
+- `scripts/verify-deployment-preview.mjs` serves `dist/` through workerd and
+  asserts the response headers — and names the hole itself: *"What it CANNOT
+  check is that the policy still lets the renderer run, because it never opens
+  a browser. ... A Phaser upgrade that started needing `'unsafe-eval'`, a
+  cross-origin CDN or a `blob:` worker would pass every check in this
+  repository and break the page."*
+
+Two defect classes were **measured** slipping through all of them, and each is
+now an assertion in `tests/browser/production-artifact.spec.ts`:
+
+1. **A `define` that reaches the dev server and not the artefact.** Deleting
+   `buildIdentityDefines()` from `vite.config.ts` — the *production* config —
+   leaves `tsc` clean, `pnpm build` green, `verify-cloudflare-build.mjs` green,
+   and `app-shell.spec.ts`'s own build-badge test green, because
+   `tests/browser/vite.config.ts` carries an independent copy of the same
+   resolver. Measured: that mutation shipped `lockstate-unknown-unknown` to
+   every player with the badge test passing in 2.6 s.
+2. **A worker chunk that is served as something other than JavaScript.**
+   `wrangler.jsonc` sets `assets.not_found_handling:
+   "single-page-application"` in every environment, and that fallback covers
+   `/assets/*` too — so a chunk hash the deployment does not have is not a 404
+   but **HTTP 200 with the index.html body**, cached `immutable`. `new Worker()`
+   on that constructs, fails to parse, never posts `simulation/ready`, and the
+   session times out after 15 s. No `requestfailed` listener sees it, because
+   the request succeeds. The media type of the chunk the page actually loaded is
+   asserted for exactly this.
+
+**It is deliberately two tests and not a second copy of `app-shell.spec.ts`.**
+The sources are the same sources; what differs between a dev server and a
+bundle is the small set above plus tree shaking, chunking and the shipped CSP.
+Measured cost is ~14 s per CI run — a 3.3 s production build and a 10.9 s
+suite — inside a `browser` job that already takes about five minutes. Keep it
+that shape: behaviour belongs in the layers below, and a duplicate suite here
+would be paid for on every pull request for ever.
+
+`dist/` is an **input** to this suite, not something it builds.
+`tests/browser/playwright.artifact.config.ts` fails with a message naming
+`pnpm build` when `dist/index.html` is absent, deliberately rather than
+building one itself: a suite that builds its own subject can pass on a tree
+nobody deployed. It also needs the Git LFS runtime art for the same reason
+`pnpm test:browser` does — the renderer decodes every atlas — which is one more
+reason it runs inside the `browser` job, where the art has already been pulled.
+
+**The two suites share `tests/browser/` and must not share its specs.**
+`tests/browser/playwright.config.ts` matches `*.spec.ts` across that directory,
+so it collected `production-artifact.spec.ts` too and drove it against the dev
+server. Measured, CI run 33271621137, job `browser`, step "Run the real-browser
+suite" (`Running 255 tests using 1 worker`):
+
+```
+✘  80 tests/browser/production-artifact.spec.ts:128:3 ... (951ms)
+   Error: A Worker was constructed from
+   "/src/simulation/worker/worker.ts?worker_file&type=module", which is not a
+   fingerprinted chunk under /assets/.
+✓  81 tests/browser/production-artifact.spec.ts:249:3 ... (4.1s)
+```
+
+`?worker_file` is Vite's **dev-server** worker URL; the production build was
+never wrong, and the artefact suite proper never ran in that job because the
+job died before reaching it. Both lines are this layer's own failure mode: test
+80 red about a subject it was not looking at, and test 81 green for the wrong
+reason — a full worker round trip asserted in "the built client" with no
+`dist/` involved at all. `playwright.config.ts` now carries the `testIgnore`
+that is the mirror image of `playwright.artifact.config.ts`'s `testMatch`, and
+`tests/foundation/browser-suite-partition-contract.test.ts` fails — in
+`pnpm test`, with no browser and no build — when any spec in that directory is
+claimed by both configs or by neither.
 
 ## Naming and placement
 
@@ -301,7 +444,7 @@ The second is about how the file cites code at all. Nine of its citations were l
 
 `tests/foundation/art-catalog-generator-contract.test.ts` guards the one generator in this repository whose output is committed. Issue #141 found `tooling/build-source-art-catalog.mjs` invoked by nothing at all — not `package.json`, not a workflow, not another script — so editing an input silently did not regenerate the committed catalog. It is now `pnpm content:source-art`, and the test asserts it stays reachable, stays documented with the command an operator types, and refuses git-lfs pointer inputs **before** it deletes the published output. The generator itself still cannot be run in a pointer-only checkout without destroying 23 tracked images — measured with the guard removed: it exits 0, reports success, and republishes 132-byte pointer files under content-addressed names.
 
-The refusal is therefore **executed** and only the ordering is read. It used to be read too: the whole guard was asserted as source order, that `pointers.push(` and `pointers.length > 0` appeared before `rm(outputDir`, and issue #264 measured the gap — `if (pointers.length > 0 && false)` leaves every searched substring in place and in the same order, so the refusal became unreachable with the gate green, and `tooling/` is outside `tsconfig`'s `include`, so `tsc` never saw it either. The scan and the refusal now live in `tooling/source-art-lfs-guard.mjs` with their reading injected, so a test drives them with a fixture in either state — pointer heads and PNG heads — and asserts the throw, its count, the offending filename and the `git lfs pull` remedy. What stays textual is the one thing that still cannot be executed here: that the generator **awaits** that guard before its `rm`. This is the same pattern as `tooling/validate-runtime-atlas.mjs`, whose hand-written `.d.mts` lets `pnpm test` drive the implementation CI runs rather than a second copy of the rules.
+The refusal is therefore **executed** and only the ordering is read. It used to be read too: the whole guard was asserted as source order, that `pointers.push(` and `pointers.length > 0` appeared before `rm(outputDir`, and issue #264 measured the gap — `if (pointers.length > 0 && false)` leaves every searched substring in place and in the same order, so the refusal became unreachable with the gate green, and `tooling/` was outside `tsconfig`'s `include`, so `tsc` never saw it either (it is inside `tsconfig.tools.json` since #602; the guard's own test is still what proves the refusal runs, because a typechecker cannot see `&& false`). The scan and the refusal now live in `tooling/source-art-lfs-guard.mjs` with their reading injected, so a test drives them with a fixture in either state — pointer heads and PNG heads — and asserts the throw, its count, the offending filename and the `git lfs pull` remedy. What stays textual is the one thing that still cannot be executed here: that the generator **awaits** that guard before its `rm`. This is the same pattern as `tooling/validate-runtime-atlas.mjs`, whose hand-written `.d.mts` lets `pnpm test` drive the implementation CI runs rather than a second copy of the rules.
 
 `tests/foundation/documentation-claims-contract.test.ts` asserts documentation claims against the code, for the subset of them that is mechanically checkable (issue #121). `docs/ARCHITECTURE.md` declares its contracts binding, so a false sentence in it is a defect: it once listed "compressed immutable save versions" and "Supabase cloud sync" among things the app has, when nothing compresses anything and no module in `src/` can reach the cloud client at all — which sent one agent looking for a compression ratio and another for a wiring bug. Both claims are now asserted, in the direction that matters: the test fails when the *code* makes the sentence false, so the sentence gets rewritten in the same change instead of quietly becoming a lie. `docs/ROADMAP.md`'s Phase 0 claims about a linter and a pull-request template are asserted the same way, in both directions. Comments are stripped with `canonical-iteration.ts`'s shared stripper rather than a local copy of that rule (#188), and that is load-bearing: with the stripper replaced by an identity function, `src/persistence/size.ts` -- which explains in prose that its estimate exists so a *future* backend can decide when compression is worth it -- reads as a module that compresses, and the gate fails on a sentence that is true.
 

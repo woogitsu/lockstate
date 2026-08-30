@@ -32,16 +32,25 @@ import {
   type SectorOccupantResolver,
   type SectorRiskSampler,
 } from '../incidents';
-import { PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury } from '../economy';
+import { JustInTimeMaterialsService, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury } from '../economy';
 import { SimulationEventLog } from '../events';
-import { RefusalLog } from '../refusals';
+import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
+import { RefusalLog, materialsFundingSupersessionKey } from '../refusals';
 import { StaffDismissalService, StaffHiringService } from '../staff';
 import { createSessionCommandHandler } from './session-commands';
 import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
 import { Kernel } from '../kernel';
 import { NavigationSystem, type NavigationSystemOptions } from '../navigation';
 import { Container, ContainerMaterialsProvider, ContainerRegistry, JobBoard, JobSystem, JobWorkerPool, UtilityNetwork } from '../operations';
-import { NEED_IDS, NEED_MAX, PRISONER_SENTENCE_RNG_STREAM, PrisonerJobWorkerAdapter, PrisonerOperationsRuntime, type DisciplinaryEvidenceSource } from '../prisoners';
+import {
+  NEED_IDS,
+  NEED_MAX,
+  PRISONER_SENTENCE_RNG_STREAM,
+  PrisonerJobWorkerAdapter,
+  PrisonerOperationsRuntime,
+  SafetyCoverageSystem,
+  type DisciplinaryEvidenceSource,
+} from '../prisoners';
 import { ObjectPlacementService, PlacedObjectRegistry, RoomCapacityResolver } from '../objects';
 import { TopologyManager } from '../rooms/topology';
 import { RoomZoningService } from '../rooms/zoning';
@@ -145,6 +154,17 @@ export interface SimulationRuntime {
    */
   readonly treasury: Treasury;
   readonly procurement: ProcurementSystem;
+  /**
+   * What the build queue could not buy for itself, and what it bought (#627).
+   *
+   * On the runtime rather than reachable only through `construction` because
+   * it is the observable half of ADR 0017 decision 2 -- *"a purchase that
+   * cannot be afforded must be refusable"* -- for purchases nobody pressed a
+   * button for. `ConstructionSystem` is handed it as an opaque
+   * `ConstructionProcurementSink` and can read nothing back off it; the
+   * projection layer and the save-independent tests read it here.
+   */
+  readonly justInTimeMaterials: JustInTimeMaterialsService;
   readonly stateIncome: StateIncomeSystem;
   /**
    * Wages, once per in-game day, for everyone on the roster
@@ -280,6 +300,16 @@ export interface SimulationRuntime {
    */
   readonly securitySchedules: DeploymentSchedule[];
   readonly deploymentSystem: DeploymentSystem;
+  /**
+   * The reader that turns guard coverage into the `safety` need (issue #588).
+   *
+   * Exposed on the runtime for the reason `deploymentSystem` is: the status
+   * strip reads its census (`Covered N / Understaffed N / Unguarded N`) through
+   * `src/simulation/worker/status-counts.ts`, and a test measuring what
+   * coverage does to a prisoner's `safety` needs the system rather than the
+   * kernel it is registered on.
+   */
+  readonly safetyCoverage: SafetyCoverageSystem;
   readonly patrolSystem: PatrolSystem;
   readonly contraband: ContrabandRegistry;
   readonly intelligence: IntelligenceLedger;
@@ -578,6 +608,53 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * a parallel door model that saves nothing and routes nobody.
    */
   const doorConstruction = new DoorConstructionService(navigation.doors);
+  /*
+   * Issue #96's money-first resource model, and the half of its loop that
+   * exists (#89). A purchase spends now and delivers later; the delivery
+   * lands in the container construction draws from.
+   *
+   * **Directly, and that is scaffolding.** #96 describes the materials
+   * arriving at `room.delivery-bay` and being carried to the site. No session
+   * instantiates that room: a `ZoneRoom` command can zone one since #261, and
+   * nothing in the application sends that command (`room.delivery-bay` is
+   * still content with no reader, #141) -- so there is no bay to deliver to,
+   * and inventing one would mean deciding where a new prison's bay sits and
+   * when a carry job is raised. Recorded on #96 rather than left to be
+   * discovered from the absence.
+   *
+   * **Constructed before `ConstructionSystem` rather than after it**, which is
+   * where these two lines used to sit. `JustInTimeMaterialsService` is the
+   * construction system's fifth constructor argument (issue #627), so it has to
+   * exist first, and it needs the procurement system, which needs the treasury.
+   * Nothing between the old position and this one reads either, so the move
+   * changes no behaviour -- and the alternative, the late-bound closure
+   * `objectPlacement` uses a few lines down, buys nothing here because there is
+   * no cycle to break: procurement does not know construction.
+   *
+   * `JustInTimeMaterialsService` is ADR 0017 decision 7 -- *"materials are
+   * just-in-time by default; holding is permitted, never required"* -- made
+   * true rather than merely written down. It is handed the same
+   * `constructionMaterials` container `ContainerMaterialsProvider` draws from,
+   * because the deficit it computes is against exactly the stock the next
+   * allocation attempt will see; a second container would have it buying
+   * against a shelf nobody builds from.
+   */
+  // Issue #261's route out for a command the simulation accepts and then
+  // refuses on its content. Empty for a new session and for a restored one
+  // alike -- it is not snapshotted.
+  //
+  // **Constructed here rather than below `stateIncome`, which is where it used
+  // to sit** (#640): the construction system's sixth argument withdraws a
+  // standing materials shortfall on the scheduled tick, so this has to exist
+  // before that system does. It takes no arguments and nothing between the old
+  // position and this one reads it, so the move changes no behaviour -- the
+  // same reasoning the treasury/procurement pair below carries for its own
+  // move under #627.
+  const refusals = new RefusalLog();
+
+  const treasury = new Treasury();
+  const procurement = new ProcurementSystem(treasury, constructionMaterials);
+  const justInTimeMaterials = new JustInTimeMaterialsService(procurement, constructionMaterials);
   const construction = new ConstructionSystem(
     world,
     new ContainerMaterialsProvider(constructionMaterials),
@@ -586,6 +663,41 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
       onOrderReverted: (objectId, anchor) => objectPlacement?.onOrderReverted(objectId, anchor) ?? false,
     },
     doorConstruction,
+    justInTimeMaterials,
+    /*
+     * The scheduled pass's report, and the one thing a session does with it:
+     * **withdraw a shortfall that has stopped being true** (#640).
+     *
+     * `reportMaterialsFunding` is deliberately NOT called here, and the
+     * asymmetry is the decision rather than an omission. That function both
+     * withdraws and records; recording on every scheduled tick would call
+     * `RefusalLog.record`, which increments `sequence` monotonically -- and
+     * `sequence` is the alert row's identity on the main thread
+     * (`src/ui/simulation-alerts.ts`, `id: ${REFUSAL_ROW_PREFIX}${sequence}`).
+     * A queue that genuinely cannot be paid for would then mint a new alert
+     * row every scheduled tick and drive `refusals.count` up without bound,
+     * for a condition that has not changed.
+     *
+     * **What this leaves undone, stated rather than left to be discovered:** a
+     * shortfall that *arises* on a scheduled tick with no press -- payroll
+     * draining the treasury under a standing queue -- is still silent. Whether
+     * a refusal here is an event caused by a press or a condition of the
+     * prison is a decision that outgrew this change; it is filed as its own
+     * issue and is not settled here. Making `RefusalLog.record` idempotent
+     * under an unchanged key is the shape that would settle it, and it changes
+     * that class's core contract, so it needs an ADR and not a line in a
+     * composition root.
+     *
+     * The queue's *read model* has no such gap: `projectBuildQueue` recomputes
+     * `materialsFunding` from `JustInTimeMaterialsService.lastReport`, which
+     * every pass rewrites, so the Build panel's own line follows the scheduled
+     * tick in both directions whatever the alert band is doing.
+     */
+    (report) => {
+      if (report !== undefined && report.unfunded.length === 0) {
+        refusals.supersede(materialsFundingSupersessionKey());
+      }
+    },
   );
   objectPlacement = new ObjectPlacementService(
     world,
@@ -593,22 +705,39 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     placedObjects,
     roomCapacity,
     construction,
+    defaultRoomContentRegistry,
+    // ADR 0076 decision A(i), and the second wiring of the same idea `roomZoning`
+    // above takes: a removal that drops a room's `residentCapacity` below its
+    // occupancy relocates the residents it can no longer sleep, through
+    // `PrisonerOperationsRuntime.relocateExcessResidentsOf`. The catalog is
+    // named explicitly only because it sits between the two -- it is the same
+    // default the parameter already had.
+    prisoners,
+    /*
+     * And what the player is told about it, which ADR 0076's Status reserved
+     * to the owner and PR #637 shipped relocation without: *"a prisoner who
+     * changes cell unasked is something the player should be told, flagged
+     * rather than decided"*. The wording was approved on 2026-08-30 and lives
+     * in `src/content/default-locale-en.ts`; nothing in the simulation holds a
+     * sentence.
+     *
+     * This is the only place that holds all four things one needs -- the
+     * identity registry, the room catalog, the events channel and the tick --
+     * which is why the adapter is composed here rather than in either module
+     * it sits between.
+     */
+    createResidentRelocationNotice({
+      identity: actorIdentity,
+      roomInstances: prisoners.roomInstances,
+      rooms: defaultRoomContentRegistry,
+      events,
+      // `kernel.tick`, read at announcement time, for the reason
+      // `ResidentRelocationNoticeSources.tick` gives: the `Undo` route is
+      // handed no tick and threading one to it would edit the construction
+      // system to serve a notice.
+      tick: () => kernel.tick,
+    }),
   );
-
-  // Issue #96's money-first resource model, and the half of its loop that
-  // exists (#89). A purchase spends now and delivers later; the delivery
-  // lands in the container construction draws from.
-  //
-  // **Directly, and that is scaffolding.** #96 describes the materials
-  // arriving at `room.delivery-bay` and being carried to the site. No session
-  // instantiates that room: a `ZoneRoom` command can zone one since #261, and
-  // nothing in the application sends that command (`room.delivery-bay` is
-  // still content with no reader, #141)
-  // -- so there is no bay to deliver to, and inventing one would mean
-  // deciding where a new prison's bay sits and when a carry job is raised.
-  // Recorded on #96 rather than left to be discovered from the absence.
-  const treasury = new Treasury();
-  const procurement = new ProcurementSystem(treasury, constructionMaterials);
 
   // ADR 0017 decision 3's income line, on decision 6's basis: the state pays
   // per prisoner-day, accrued per occupied place, at the end of each in-game
@@ -624,11 +753,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // `PrisonerDayGrantSource` structurally, the same way it already satisfies
   // both of `projectStatusStrip`'s source shapes.
   const stateIncome = new StateIncomeSystem(treasury, prisoners);
-
-  // Issue #261's route out for a command the simulation accepts and then
-  // refuses on its content. Empty for a new session and for a restored one
-  // alike -- it is not snapshotted.
-  const refusals = new RefusalLog();
 
   const jobs = new JobBoard();
   const jobWorkerAdapter = new PrisonerJobWorkerAdapter(prisoners);
@@ -900,6 +1024,20 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     (sector) => resolveOccupants(sector.id),
   );
 
+  /*
+   * **Coverage provisions the `safety` need** (issue #588, the owner's ruling
+   * on issue #599). The wiring and none of the rule: which prisoners a sector
+   * holds is `resolveOccupants` above -- ADR 0048 decision 1's containment
+   * rule, in the module that owns it -- and what that sector's coverage is
+   * comes from `DeploymentSystem.getCoverageReport` through
+   * `resolveSectorCoverageState`, which is the Staff panel's own three-rung
+   * ladder. `SafetyCoverageSystem` argues the mechanic and the ordering.
+   *
+   * Constructed here for `sectorSearchDuty`'s reason: it needs
+   * `resolveOccupants`, which needs the sector registry the derivation fills.
+   */
+  const safetyCoverage = new SafetyCoverageSystem(deploymentSystem, resolveOccupants, prisoners.entityStore, prisoners.needs);
+
   /**
    * One prisoner's mean unmet-need deficit over `NEED_IDS`, 0-1.
    *
@@ -1067,7 +1205,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // After both `'on-search'` claimants, because it reads each of them live: a
   // captured claim view would be exactly the mistake ADR 0033 decision 4
   // measured, one command later.
-  const guardRelease = new GuardReleaseService(securityGuards, searchSystem, incidentResponseSystem);
+  const guardRelease = new GuardReleaseService(securityGuards, searchSystem, incidentResponseSystem, navigation);
   /*
    * Issue #533's consumer. Every optional surface is supplied here and none is
    * omitted, which is the point of naming them one by one rather than passing
@@ -1099,6 +1237,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(jobSystem);
   kernel.registerSystem(intelligenceSystem);
   kernel.registerSystem(deploymentSystem);
+  kernel.registerSystem(safetyCoverage);
   kernel.registerSystem(patrolSystem);
   kernel.registerSystem(incidentTriggerSystem);
   kernel.registerSystem(sectorSearchDuty);
@@ -1115,6 +1254,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     construction,
     treasury,
     procurement,
+    justInTimeMaterials,
     stateIncome,
     payroll,
     refusals,
@@ -1138,6 +1278,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     staffHiring,
     securitySchedules,
     deploymentSystem,
+    safetyCoverage,
     patrolSystem,
     contraband,
     intelligence,

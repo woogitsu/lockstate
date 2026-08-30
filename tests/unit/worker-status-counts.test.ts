@@ -209,6 +209,14 @@ describe('publishing the status counts', () => {
       prisonersHighRisk: 0,
       staff: 5,
       staffUnassigned: 5,
+      // All four prisoners in this scenario are still in intake and none of
+      // them is standing in a sector yet, so no rung holds anybody. Three
+      // zeroes here is a real state -- "nobody is in a sector" -- and not a
+      // missing reading; `tests/unit/prisoners-safety-coverage-system.test.ts`
+      // is where each rung is watched counting somebody (issue #588).
+      prisonersCovered: 0,
+      prisonersUnderstaffed: 0,
+      prisonersUnguarded: 0,
       // The starting balance, unspent: this scenario buys nothing, so the
       // number is `TREASURY_STARTING_BALANCE_MINOR_UNITS` and reads as one
       // rather than as an arbitrary constant (#96).
@@ -234,6 +242,13 @@ describe('publishing the status counts', () => {
       // would read 0 in this payload.
       accommodationCapacity: 4,
       roomOccupants: 0,
+      // Zero for the same reason `roomOccupants` is, and **not** because the
+      // two are the same number: this scenario's four prisoners are all still
+      // in intake, so nobody holds an assignment and nobody holds a place.
+      // They come apart when a place stops existing under a sitting resident,
+      // which is `tests/integration/economy-occupied-place-exists.test.ts`'s
+      // subject rather than this fixture's (issue #585).
+      occupiedPlaces: 0,
       activeIncidents: 0,
       contrabandDiscovered: 0,
       // Zero, and not because the day has just started: this scenario's four
@@ -655,7 +670,10 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // gives (the pulled `hud/status-strip` route validates this same
       // object with `jsonValueSchema`, which accepts a missing key but not an
       // explicit `undefined` value). This scenario opens no incident, so it
-      // is absent here and the count is 15; a session with one open reads 16.
+      // is absent here and the count is 19; a session with one open reads 20.
+      // It was 18 and 19 until issue #585's `occupiedPlaces` -- the residency
+      // places that currently exist, published beside `roomOccupants` because
+      // the two stopped being the same number.
       // The exact count is still pinned rather than bounded so that a *list*
       // arriving here -- the thing this channel is shaped to exclude --
       // cannot slip in as "one more field". A scalar being added is a
@@ -665,7 +683,7 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       //
       // This is what a status-counts
       // payload is, and why it needs no paging.
-      expect(Object.keys(counts)).toHaveLength(counts.activeIncidentType === undefined ? 15 : 16);
+      expect(Object.keys(counts)).toHaveLength(counts.activeIncidentType === undefined ? 19 : 20);
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a
       // field that *stayed* one key and became a list, and the size bound
@@ -680,7 +698,9 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // exempted: a *second* non-scalar field arriving later still fails this
       // loop until it, too, is named here, which is what keeps "a list cannot
       // slip in" true of the whole payload and not only of the fifteen
-      // fields that predate this one.
+      // fields that predate this one. Eighteen since issue #588 added the
+      // three guard-coverage rungs the population is standing on, nineteen
+      // since issue #585 added `occupiedPlaces`.
       for (const [key, value] of Object.entries(counts)) {
         if (key === 'activeIncidentType') {
           expect(
@@ -697,25 +717,31 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // (`RefusalLog`). A queue would put the one growing thing this channel
       // is designed to exclude right next to the counts.
       expect(Object.keys(payload.refusal)).toHaveLength(3);
-      // 533 and not 493, and the raise is derived from a run rather than
-      // chosen -- the same way 493 replaced 436. Issue #506 finding 2 added
-      // `activeIncidentType`, sized here at its worst case
-      // (`'gang-retaliation'`, the longest `IncidentType` spelling, forced
-      // into `payload.counts` above exactly as the longest refusal reason is
-      // forced into `payload.refusal`). Re-measured on this tree with it:
-      // `payloadJsonBytes=513` at 250 actors and `515` at 1,000, 2,500 and
-      // 5,000 -- flat in the population exactly as before, which is the
-      // property this bound exists to protect: `activeIncidentType` is one
-      // field regardless of how many prisoners or sectors the session holds.
-      // 515 + 18 = **533**, which leaves the same 18 bytes of head room every
-      // previous bound was set to leave, so a *seventeenth* count breaches
-      // this one too and the channel's soft limit goes on being felt one
-      // field at a time.
+      // 622 and not 603, and the raise is derived from a run rather than
+      // chosen -- the same way 603 replaced 533, 533 replaced 493 and 493
+      // replaced 436. **The bound it replaces predicted this raise in as many
+      // words**: it said a *nineteenth* count would breach it "and the
+      // channel's soft limit goes on being felt one field at a time". Issue
+      // #585 added the nineteenth, `occupiedPlaces` -- the residency places
+      // that currently exist, which is what the state actually pays for and
+      // which nothing published. Re-measured on this tree with it, at the same
+      // worst case every previous raise used (`activeIncidentType` forced to
+      // `'gang-retaliation'`, the longest `IncidentType` spelling, and the
+      // longest refusal reason forced into `payload.refusal`):
+      // `payloadJsonBytes=602` at 250 actors and `604` at 1,000, 2,500 and
+      // 5,000 -- still flat in the population, which is the property this
+      // bound exists to protect and the one the new field had to keep: a count
+      // of occupied places is one integer whether the prison holds four
+      // prisoners or five thousand. The two-byte spread between the tiers is
+      // the same digit-count spread the 583/585 pair had, not growth.
+      // 604 + 18 = **622**, which leaves the same 18 bytes of head room every
+      // previous bound was set to leave, so a *twentieth* count breaches this
+      // one too and the soft limit goes on being felt one field at a time.
       //
       // The bound is not what stops a list arriving -- the scalar assertion
       // above is, at any length, which is why that was added the last time
       // this bound was relaxed.
-      expect(JSON.stringify(payload).length).toBeLessThan(533);
+      expect(JSON.stringify(payload).length).toBeLessThan(622);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(

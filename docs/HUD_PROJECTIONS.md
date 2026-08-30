@@ -136,9 +136,13 @@ per-prisoner object at all, so the always-visible strip is safe to
 re-project every frame at the stretch tier.
 
 The always-visible counts have no rows at all, which is what makes them
-publishable on a timer: `simulation/status-counts` (section 8) carries fifteen
+publishable on a timer: `simulation/status-counts` (section 8) carries nineteen
 integers and at most one three-field refusal record, so there is nothing here
-for this contract to bound. A projection that carries rows must be paged
+for this contract to bound. *(Eighteen until issue #585 added `occupiedPlaces`,
+the residency places that currently exist — a tally in a sentence, so it is
+worth saying that the property being claimed is "a fixed set of scalars", not
+the number. `tests/unit/worker-status-counts.test.ts` pins the exact count and
+the bytes, which is where the number is actually enforced.)* A projection that carries rows must be paged
 before it may be published on a cadence — a per-send cost that grows with the
 prison is exactly the failure that cadence was chosen to avoid.
 
@@ -1283,6 +1287,98 @@ decision about what to build next.
     never showed up as a failure. Whether a fresh prison should *start* with
     materials, or earn them, is a session/economy decision and still unmade;
     what is no longer true is that the wall never comes.
+
+    **Amended 2026-08-30 (#627): the sentence above about the player having to
+    buy first is now false, and the paragraph is kept rather than rewritten
+    because the sequence it describes is what the defect was.** It read *"a
+    build order in the running app reaches `materials-pending` and then
+    *leaves* it, once the player has bought what it needs"*, and that "once
+    the player has bought" was a **requirement the game never stated**. The
+    owner met it live: forty wall orders, 25,000 untouched, nothing built, and
+    the word *material* appearing nowhere on the visible HUD. ADR 0017
+    decision 7 had already ruled the other way — *"materials are just-in-time
+    by default; holding is permitted, never required"* — so the code and an
+    accepted decision had disagreed since #249.
+
+    A build order now **buys what it needs**, at the press, from the treasury,
+    at catalogue price (`JustInTimeMaterialsService`,
+    `ConstructionProcurementSink`). A player who pre-buys sees no change: the
+    deficit nets off both stock held and deliveries already paid for. What a
+    fresh prison *starts* with is still unmade and still a session/economy
+    decision; what changed is that starting with nothing is no longer a dead
+    end.
+
+32b. **`hud/build-queue` says whether the queue is stalled on money** —
+    `BuildQueueViewModel.materialsFunding`, added with #627. It carries
+    `unfunded`, a `shortfallMinorUnits` total, and the per-item quantities and
+    costs behind it, all in ascending item id.
+
+    **Not derivable from the rows, which is the whole reason it exists.**
+    Since a build order procures for itself, `'materials-pending'` means two
+    different things that a player cannot separate: *the lorry is on its way*,
+    which resolves itself in ten scheduled ticks, and *the prison could not
+    pay*, which resolves itself never. Both draw the identical row.
+
+    It answers the standing directive in
+    [#629](https://github.com/matmaxalez/lockstate/issues/629) — *"a mechanic
+    the player must discover in order to proceed is a defect"* — at the level
+    this document owns, which is the payload. **What is owed above it is a
+    player-facing sentence, and that is the owner's** (`AGENTS.md`): the
+    shortfall reaches the alert band today only as
+    `purchase.insufficient-funds`, *"The materials were not ordered — there
+    are not enough funds."* — true, shipped, and authored by nobody for this
+    route. A `build.*`-namespaced sentence could name the wall as well as the
+    money, and would need a new `RefusalReason` member, a new
+    `hud.alert.refusal.build.*` key and its English text.
+
+    **Amended 2026-08-30: the payload now reaches the main thread, and the
+    paragraph above described only half of where it stopped.** It said what is
+    owed is a sentence, which is true and is still true — but between the
+    projection and any sentence there was a second break nobody had recorded.
+    `buildQueueFromProjection` mapped the rows and the two counts and dropped
+    `materialsFunding` on the floor: `HudBuildQueueViewModel` had no member to
+    receive it, so the figure crossed the worker boundary inside the
+    projection's JSON and was discarded on arrival. Found by playing, on the
+    branch that added it — #640's playtest, PR #655, section *"The shortfall
+    figure exists on the wire and reaches no pixel"*. Cited by title rather
+    than by path: that research document is on the playtest's own branch and
+    not yet on this one.
+
+    `HudBuildQueueViewModel.materialsFunding` now carries `unfunded` and
+    `shortfallMinorUnits` — the projection's `items` list is deliberately not
+    carried, because naming an item needs the catalogue lookup
+    `HudPendingDeliveryViewModel.labelKey` needs and nothing asks for it yet.
+
+    **Amended again, the same day, and the sentence directly above this one was
+    true for about an hour.** It said *"Nothing renders it… the sentence is the
+    owner's"*, and both halves have been overtaken rather than one: the owner
+    wrote the sentence, and the panel now draws it. It is
+    `hud.build.queue-shortfall`, **authored by the owner and used verbatim** —
+    *"Waiting for {total} to buy materials."* — and `{total}` is
+    `shortfallMinorUnits` through `localizer.formatNumber`, in the same minor
+    units as `hud.status.funds`, which is the comparison this figure was
+    computed for.
+
+    Two things about *where* it draws, because both were decided by a defect
+    this document already records:
+
+    - **Outside the fold.** It is appended to the Build panel's body after the
+      queue section, not to the section's body. `queueSection` opens collapsed,
+      and #625 is the record of what putting a requirement inside it costs —
+      *"Awaiting Materials"* was there and reached nobody. Asserted at all six
+      viewports in `tests/browser/ui-build-queue.spec.ts` with the fold shut and
+      never toggled.
+    - **Kept off screen entirely when the queue is paid for**, box and all.
+      `.hud-build__note` carries an author `display: -webkit-box`, which beats
+      the user agent's `[hidden] { display: none }`, so the line needs
+      `.hud-build__queue-shortfall[hidden]` in `hud.css` or a solvent prison
+      gets a permanent empty line under its queue — the same trap
+      `.hud-build__queue-more[hidden]` already closes.
+
+    **The wording settled one open question in passing, and it is worth recording
+    that it did.** The sentence names no material, so the two scalars above are
+    the right width and `items` stays uncarried — which had been reported as the
+    weakest claim of the change that added them.
 
 32. **Build costs are material quantities, and that part is real**:
     `BuildableDefinition.materialsRequired` is `{itemId, quantity}` and

@@ -18,7 +18,16 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * ### The measurement this file exists to make
  *
  * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` has been in the tree since
- * ADR 0064 and, from the Intake panel, had **no reachable case at all**. Two of
+ * ADR 0064 and, from the Intake panel, had **no reachable case at all**.
+ *
+ * **Since the owner's 2026-08-30 ruling on
+ * [#593](https://github.com/matmaxalez/lockstate/issues/593) the reachable case
+ * is the only case.** The range is 14 to 90 in-game days, so the shortest
+ * drawable sentence (33,600 ticks) outlasts both boundaries below by more than
+ * eight in-game days and the withholding schedule fires for every neglected
+ * prisoner rather than for a lucky draw. The paragraph below is kept as
+ * written, because it is what the fixture was built to demonstrate and because
+ * the boundaries themselves have not moved. Two of
  * the six needs are room-gated (ADR 0054 decision 1): a prison with no shower
  * room and no laundry cannot serve `hygiene`, and one with no yard, common room
  * or classroom cannot serve `recreation`. Stepping the real `NeedsComponent`
@@ -62,6 +71,22 @@ function neglectfulPrison(cells = 1, seed: number = SEED): SimulationRuntime {
     wallRoomPerimeter(runtime.world, rectangle, { doors: runtime.navigation.doors });
     submit(runtime, `zone-${index}`, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...rectangle }));
   }
+  /*
+   * **One guard, hired for what this prison is *not* neglectful about**
+   * (issue #588). The subject of this file is the two room-gated needs and the
+   * boundaries a sentence has to outlast to be charged for them; since
+   * coverage became the provisioner of `safety`, an unstaffed prison also
+   * crosses that need's line -- 4,080 ticks after admission, well before
+   * hygiene's 10,180 -- and the day-4 row below would then read 260 for a
+   * reason this file is not about.
+   *
+   * Hiring is the honest fix rather than raising the expectation: the prison
+   * is meant to be neglectful about *rooms*, and a guard changes nothing else.
+   * It is submitted before the admission so the sector is covered from the
+   * first tick the prisoner is in it.
+   */
+  submit(runtime, 'hire-guard', packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ARRIVAL }));
+
   const instances = runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell');
   expect(instances.length, 'every cell must have been zoned for this fixture to mean anything').toBe(cells);
   for (const instance of instances) {
@@ -101,7 +126,7 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
 }
 
 describe('a sentence drawn at admission (#535 decision 5)', () => {
-  it('lands on a whole number of in-game days inside the proposed range', () => {
+  it('lands on a whole number of in-game days inside the range the owner ruled', () => {
     const runtime = neglectfulPrison();
     const entityId = admit(runtime, 'admit');
     // The draw happens at the `classification` stage, which is two scheduled
@@ -113,8 +138,11 @@ describe('a sentence drawn at admission (#535 decision 5)', () => {
 
     const sentence = sentenceOf(runtime, entityId);
     expect(sentence % 2_400).toBe(0);
-    expect(sentence).toBeGreaterThanOrEqual(4_800);
-    expect(sentence).toBeLessThanOrEqual(38_400);
+    // 14 to 90 in-game days since the owner's 2026-08-30 ruling on #593; this
+    // file read 4,800 and 38,400 until then. Literals rather than the exported
+    // bounds, for the reason `tests/unit/prisoners-sentence.test.ts` gives.
+    expect(sentence).toBeGreaterThanOrEqual(33_600);
+    expect(sentence).toBeLessThanOrEqual(216_000);
     // `sentenceEndTick` is the sum of the drawn length and the tick it was
     // drawn at, which is what `PrisonerDischargeSystem` compares -- so the
     // drawn number really is the one that decides when this prisoner leaves.
@@ -135,7 +163,7 @@ describe('a sentence drawn at admission (#535 decision 5)', () => {
     // the whole of what the owner asked for and the assertion that fails if the
     // draw is replaced by any constant.
     expect(new Set(first).size).toBeGreaterThan(1);
-    expect(first.every((sentence) => sentence % 2_400 === 0 && sentence >= 4_800 && sentence <= 38_400)).toBe(true);
+    expect(first.every((sentence) => sentence % 2_400 === 0 && sentence >= 33_600 && sentence <= 216_000)).toBe(true);
 
     // Same seed, same sentences -- the draw is inside the worker and reads no
     // clock, so this is `docs/DETERMINISM.md`'s guarantee and not luck.
@@ -191,6 +219,56 @@ describe('a sentence drawn at admission (#535 decision 5)', () => {
     expect(wordsOf(named, 'prisoners.sentence')).toEqual(sentenceBefore);
   });
 
+  it('lets a drawn sentence decide a risk tier, which no drawn sentence could before (#593)', () => {
+    // The mechanic the owner's 2026-08-30 ruling bought, proved by holding
+    // everything except the sentence still.
+    //
+    // Two prisons on seed 558. The first leaves the length to the simulation
+    // and draws 208,800 ticks -- 87 in-game days, over the 200,000-tick
+    // `LONG_SENTENCE_THRESHOLD_TICKS`. The second names a length below it. `prisoners.sentence` and `prisoners.classification` are
+    // separate streams, so the screening draw is the *same value* in both
+    // prisons; the only difference between the two recorded tiers is
+    // `classifyPrisoner`'s sentence term.
+    //
+    // This case could not have been written before the ruling at all: no
+    // drawable length reached the threshold, so the two prisons would have been
+    // identical whatever they drew.
+    //
+    // The seed is chosen so the screening draw is `+1` rather than `-1`. That
+    // is not tuning the result: `clampTier` floors at 0, so at a screening draw
+    // of `-1` a score of 1 and a score of 0 both clamp to tier 0 and the
+    // sentence term is invisible *by design*. A seed that hid the term would
+    // have made this case pass for the wrong reason.
+    const LONG_SENTENCE_THRESHOLD_TICKS = 200_000;
+    const BELOW_THRESHOLD = 100_000;
+
+    const drawnRuntime = neglectfulPrison(1, 558);
+    const drawnId = admit(drawnRuntime, 'admit');
+    stepTo(drawnRuntime, 40);
+    const drawnSentence = sentenceOf(drawnRuntime, drawnId);
+    expect(drawnSentence, 'seed 558 draws 208,800 ticks -- 87 in-game days').toBe(208_800);
+    expect(drawnSentence).toBeGreaterThan(LONG_SENTENCE_THRESHOLD_TICKS);
+
+    const namedRuntime = neglectfulPrison(1, 558);
+    const namedId = admit(namedRuntime, 'admit', BELOW_THRESHOLD);
+    stepTo(namedRuntime, 40);
+    expect(sentenceOf(namedRuntime, namedId)).toBe(BELOW_THRESHOLD);
+
+    const tierOf = (runtime: SimulationRuntime, entityId: number): number =>
+      runtime.prisoners.records.riskTier[runtime.prisoners.entityStore.getIndex(entityId)]!;
+    // One tier apart, and the literals are written out so that a change to
+    // either the threshold or the screening draw fails here rather than
+    // cancelling out inside a subtraction.
+    expect(tierOf(drawnRuntime, drawnId)).toBe(2);
+    expect(tierOf(namedRuntime, namedId)).toBe(1);
+
+    // And the review reads the same term, so the tier a panel would explain is
+    // built from a named factor rather than from the intake draw alone.
+    const assessment = drawnRuntime.prisoners.classificationReviewSystem.assess(drawnId, drawnRuntime.kernel.tick);
+    expect(assessment?.factors.sentence).toBe(1);
+    expect(namedRuntime.prisoners.classificationReviewSystem.assess(namedId, namedRuntime.kernel.tick)?.factors.sentence).toBe(0);
+  });
+
   it('is what makes the state withhold a grant for a neglected prisoner, which the old fixed sentence never could', () => {
     // The boundaries the two room-gated needs cross, derived in this file's
     // header and written out rather than computed here.
@@ -201,7 +279,11 @@ describe('a sentence drawn at admission (#535 decision 5)', () => {
     const entityId = admit(runtime, 'admit');
     stepTo(runtime, 40);
     const sentence = sentenceOf(runtime, entityId);
-    expect(sentence, 'this case needs a sentence that outlasts both boundaries; seed 535 draws 19,200').toBeGreaterThan(RECREATION_BOUNDARY);
+    // Seed 535 drew 19,200 under the old 2-16 day range and draws 163,200 under
+    // the 14-90 range the owner ruled on #593. The assertion is the same one
+    // either way, and it is now guaranteed by the range rather than by the seed:
+    // `MIN_SENTENCE_LENGTH_TICKS` is 33,600, which is past both boundaries.
+    expect(sentence, 'this case needs a sentence that outlasts both boundaries; seed 535 draws 163,200').toBeGreaterThan(RECREATION_BOUNDARY);
 
     const grantAt = (tick: number): number => {
       stepTo(runtime, tick);

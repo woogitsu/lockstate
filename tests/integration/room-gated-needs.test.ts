@@ -234,9 +234,30 @@ function watch(runtime: SimulationRuntime): WatchedPrisoner {
   return { runtime, everRose, lowest, performingTicks, peakRisk };
 }
 
-/** The two ADR 0054 decision 1 rules room-gated, and the four it does not. */
+/** The two ADR 0054 decision 1 rules room-gated, and the three the cell serves. */
 const ROOM_GATED: readonly NeedId[] = ['hygiene', 'recreation'];
-const CELL_SERVED: readonly NeedId[] = ['hunger', 'sleep', 'bladder', 'safety'];
+/**
+ * **`safety` left this list with issue #588 and it is a fourth category, not a
+ * demotion to `ROOM_GATED`.**
+ *
+ * It was here because `action.sleep` carried `safety: 0.2`, so a bed served it
+ * along with `sleep`. Under the owner's ruling on issue #599 the provisioner is
+ * **guard coverage** (`SafetyCoverageSystem`), and every prison in this file
+ * has one guard on post -- so `safety` in these runs is not "served", it is
+ * *held at the ceiling*: the covered rung provisions 0.08 a tick against a
+ * decay of 0.05, and the surplus is clamped away every tick.
+ *
+ * That distinction is why it cannot simply move to `ROOM_GATED` either. A
+ * room-gated need is pinned at **zero** and never rises; this one is pinned at
+ * `NEED_MAX` and never falls. Both fail an `everRose` check and they are
+ * opposite facts, so `safety` is asserted on its **level** rather than on its
+ * movement -- `expect(watched.lowest.safety).toBe(NEED_MAX)`, beside an
+ * explicit `everRose.safety` of `false`, in each case below. (This paragraph
+ * named a `SAFETY_HELD_BY_COVERAGE` constant to sit beside `ROOM_GATED` and
+ * `CELL_SERVED`; it has never existed. `safety` is one need rather than a
+ * list, so it is asserted directly and there is no name to grep for.)
+ */
+const CELL_SERVED: readonly NeedId[] = ['hunger', 'sleep', 'bladder'];
 
 describe('a prison of cells and nothing else, ten in-game days', () => {
   it('serves four of the six needs and cannot serve the other two', () => {
@@ -268,7 +289,18 @@ describe('a prison of cells and nothing else, ten in-game days', () => {
     for (const need of CELL_SERVED) {
       expect(watched.everRose[need], `${need} is served from the prisoner's own cell and must rise`).toBe(true);
     }
-    expect(watched.lowest).toMatchObject({ hunger: 178.5, sleep: 201.3, bladder: 100.6, safety: 237.1 });
+    expect(watched.lowest).toMatchObject({ hunger: 178.5, sleep: 201.3, bladder: 100.6 });
+
+    /*
+     * And `safety`, which this prison's one guard holds at the ceiling for the
+     * whole window (issue #588). It never rises because it never has anywhere
+     * to rise from: the covered rung out-provisions the decay every tick and
+     * the surplus is clamped. `237.1` stood here until `action.sleep` stopped
+     * carrying `safety: 0.2` -- a bed kept a prisoner safe and a guard did
+     * not, which is the defect the ruling on issue #599 names.
+     */
+    expect(watched.everRose.safety).toBe(false);
+    expect(watched.lowest.safety).toBe(NEED_MAX);
 
     /*
      * Nobody stands still, which is ADR 0054 decision 2 and the half that is
@@ -328,9 +360,11 @@ describe('zoning the room is the whole of the escape', () => {
     const watched = watch(build({ prisoners: 1, guards: 1, shower: true, yard: true }));
 
     for (const need of NEED_IDS) {
+      if (need === 'safety') continue; // Held at the ceiling by the guard, never served from a room -- see `CELL_SERVED`.
       expect(watched.everRose[need], `${need} must be served in a prison that has built every room serving it`).toBe(true);
       expect(watched.lowest[need]).toBeGreaterThan(0);
     }
+    expect(watched.lowest.safety).toBe(NEED_MAX);
   });
 });
 
@@ -351,11 +385,17 @@ describe('what the neglect costs, and how much of it is the staffing term', () =
   it('two needs on the floor reach 0.4824 of a 0.65 threshold, so a staffed prison never riots', () => {
     const watched = watch(build({ ...BOTH_FLOORED, guards: 1 }));
 
-    // 0.4824 is `needsPressure` alone: `staffingShortfall` is 0 and
+    // 0.4742 is `needsPressure` alone: `staffingShortfall` is 0 and
     // `contrabandPressure` is structurally 0, so the score *is* the mean
     // deficit. `DEFAULT_SECTOR_RISK_POLICY.hotThreshold` is 0.65 and this never
     // reaches it, in ten in-game days of a prison nobody improves.
-    expect(watched.peakRisk).toBeCloseTo(0.4824, 4);
+    //
+    // **0.4824 until issue #588**, and the eighty ten-thousandths it lost are
+    // the sixth of the mean that `safety` contributes: this prison's one guard
+    // covers the sector, so `safety` sits at `NEED_MAX` for the whole window
+    // instead of the 237-248 a bed used to hold it at. A staffed prison got
+    // *quieter*, which is the direction the change had to move it in.
+    expect(watched.peakRisk).toBeCloseTo(0.4742, 4);
     expect(watched.runtime.deploymentSystem.getCoverageReport(watched.runtime.kernel.tick)).toEqual([
       { sectorId: SECTOR, required: 1, assigned: 1, shortage: 0 },
     ]);
@@ -368,20 +408,34 @@ describe('what the neglect costs, and how much of it is the staffing term', () =
     expect(watched.everRose.recreation).toBe(false);
   });
 
-  it('and the same prison unguarded riots three times, which is the whole of the difference', () => {
+  it('and the same prison unguarded riots four times, which is the whole of the difference', () => {
     const watched = watch(build({ ...BOTH_FLOORED, guards: 0 }));
 
     // `staffingShortfallWeight` is 0.3 and the shortfall is 1, so the same
-    // neglect now scores 0.7979 and clears the threshold. `sustainedSamplesRequired`
-    // 12 and `DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT` are why it is three
-    // riots in twenty days rather than one every window.
-    // 0.7981 since ADR 0059, and the two ten-thousandths are the prisoners
-    // spending part of the day walking. Well clear of the 0.65 threshold in
-    // both readings, which is what the sentence above is about.
-    expect(watched.peakRisk).toBeCloseTo(0.7981, 4);
+    // neglect clears the threshold. `sustainedSamplesRequired` 12 and
+    // `DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT` are why it is a few riots in
+    // ten days rather than one every window.
+    //
+    // **The figure has moved twice and both are worth keeping.** It was 0.7979
+    // when ADR 0048 set the weights, 0.7981 after ADR 0059 -- two
+    // ten-thousandths, the prisoners spending part of the day walking -- and
+    // **0.9661 since issue #588**. That last step is not drift: with nobody on
+    // post, `safety` is now provisioned by nothing and falls to zero, so this
+    // prison has *three* needs on the floor where it had two, and the mean
+    // deficit rises by a sixth accordingly.
+    //
+    // The gap between this row and the guarded one above is the whole of what
+    // the change bought: 0.0142 of risk separated a covered prison from an
+    // unguarded one before, and 0.4919 separates them now.
+    expect(watched.peakRisk).toBeCloseTo(0.9661, 4);
     expect(watched.runtime.deploymentSystem.getCoverageReport(watched.runtime.kernel.tick)).toEqual([
       { sectorId: SECTOR, required: 1, assigned: 0, shortage: 1 },
     ]);
-    expect(watched.runtime.incidentTriggerSystem.getMetrics().riotsTriggered).toBe(3);
+    // Three until issue #588; four now, for the reason the peak above moved:
+    // an unguarded sector no longer provisions `safety`, so the prison spends
+    // more of the window over the line and re-arms sooner after each quiet
+    // period. The claim this case makes is unchanged and stronger -- one hire
+    // is still the whole of the difference between this row and zero.
+    expect(watched.runtime.incidentTriggerSystem.getMetrics().riotsTriggered).toBe(4);
   });
 });

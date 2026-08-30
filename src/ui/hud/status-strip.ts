@@ -87,8 +87,12 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
   for (const descriptor of projectStatusMetrics({
     prisoners: 0,
     prisonerCapacity: 0,
+    occupiedPlaces: 0,
     staff: 0,
     rooms: 0,
+    prisonersCovered: 0,
+    prisonersUnderstaffed: 0,
+    prisonersUnguarded: 0,
     activeIncidents: 0,
     contrabandFound: 0,
     treasuryMinorUnits: 0,
@@ -181,7 +185,15 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
         parts.badge?.element.remove();
         parts.badge = undefined;
       } else {
-        const next = { tone: descriptor.badge.tone, text: t(descriptor.badge.textKey) };
+        // `parameters` is present only for a badge that states a quantity
+        // (issue #588's coverage chip). Passed through `t`'s two-argument form
+        // rather than always calling it with an object, so a key with no
+        // placeholders is formatted exactly as it was before this field
+        // existed.
+        const next = {
+          tone: descriptor.badge.tone,
+          text: t(descriptor.badge.textKey, descriptor.badge.parameters),
+        };
         if (parts.badge === undefined) {
           parts.badge = createStatusBadge(next);
           parts.trailing.append(parts.badge.element);

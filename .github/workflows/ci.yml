@@ -614,6 +614,80 @@ jobs:
             exit 1
           fi
 
+      # THE ARTEFACT A PLAYER ACTUALLY RECEIVES, EXECUTED.
+      #
+      # Everything above this point runs a Vite **dev server** over `src/**`.
+      # `tests/browser/vite.config.ts` says so of itself -- it "loads no
+      # Cloudflare plugin and never participates in `pnpm build`" -- so this
+      # job and the `verify` job's `pnpm build` between them could both be
+      # green while the bundle a player downloads had never been executed
+      # once. `scripts/verify-cloudflare-build.mjs` reads the emitted files and
+      # `scripts/verify-deployment-preview.mjs` asserts the served headers, and
+      # the latter's own header names what neither can do: "What it CANNOT
+      # check is that the policy still lets the renderer run, because it never
+      # opens a browser."
+      #
+      # WHY IT IS TWO STEPS IN THIS JOB RATHER THAN A JOB OF ITS OWN. This job
+      # has already paid for everything the artefact suite needs and a separate
+      # job would pay for all of it again: a checkout, `git lfs pull` of the
+      # runtime art on metered bandwidth, `pnpm install`, and Chromium
+      # provisioning. Measured on a developer machine, the marginal cost here
+      # is about 14 seconds -- `node scripts/cloudflare-task.mjs build
+      # production` in 3.3 s and the suite in 10.9 s including its preview
+      # server's startup -- against a job that takes roughly five minutes. A
+      # separate job would be minutes, for the same two tests.
+      #
+      # ORDERED AFTER the dev-server suite, not before, although failing in
+      # fourteen seconds rather than after five minutes would be nicer. The
+      # failure-evidence upload below is contract-bound to collect exactly
+      # `test-results/` and `browser-suite.log`
+      # (`tests/foundation/ci-configuration-contract.test.ts`), and Playwright
+      # clears `test-results/` at the start of every run: with the artefact
+      # suite first, its evidence would be deleted by the dev-server suite that
+      # followed. Nothing is lost by waiting, because the `verify` job builds
+      # the same artefact in parallel and would already be red if the build
+      # itself were broken.
+      #
+      # `pnpm build` is deliberately NOT used: it is `pnpm typecheck && node
+      # scripts/cloudflare-task.mjs build production`, and the `verify` job
+      # already runs that typecheck. The task script alone produces the
+      # byte-identical artefact and the type gate is not weakened, only not
+      # paid for twice.
+      - name: Build the production client
+        run: node scripts/cloudflare-task.mjs build production
+
+      # A FREE PORT, for the same reason the step above asks for one: this
+      # runner shares its host with active development, and the artefact
+      # config refuses to reuse a server it did not start -- attaching to one
+      # means reporting on a `dist/` this run did not build.
+      #
+      # NO `tee` HERE, and that is load-bearing rather than an oversight.
+      # `tests/foundation/ci-configuration-contract.test.ts` requires this job
+      # to pipe its suite output through `tee` to exactly one file, because
+      # that file is half of what the upload below collects. A second `tee`
+      # would make that contract fail. The vacuity guards this step still needs
+      # -- a suite cannot pass by running nothing, or by skipping its way to
+      # green -- are therefore applied to a captured variable instead, which
+      # costs only the streaming of fifteen seconds of output.
+      - name: Run the built client in a browser
+        run: |
+          set -uo pipefail
+          port="$(node -e 'const s = require("net").createServer(); s.listen(0, "127.0.0.1", () => { process.stdout.write(String(s.address().port)); s.close(); });')"
+          echo "artefact preview server port: $port"
+          output="$(LOCKSTATE_ARTIFACT_TEST_PORT="$port" pnpm test:artifact 2>&1)" && status=0 || status=$?
+          printf '%s\n' "$output"
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          if ! printf '%s' "$output" | grep -qE '[0-9]+ passed'; then
+            echo "::error::the production-artefact suite reported no passing tests"
+            exit 1
+          fi
+          if printf '%s' "$output" | grep -qE '[0-9]+ (skipped|did not run)'; then
+            echo "::error::the production-artefact suite skipped tests; running the built client is the entire point of it"
+            exit 1
+          fi
+
       # THE EVIDENCE, WHICH THIS JOB USED TO THROW AWAY.
       #
       # This job has failed twice on a 60-second page-load timeout inside a

@@ -9,4 +9,5 @@ export * from './route';
 export * from './route-cache';
 export * from './route-context';
 export * from './route-dependencies';
+export * from './traversal';
 export * from './router';

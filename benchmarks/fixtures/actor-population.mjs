@@ -89,6 +89,15 @@ const ARRIVING_WALKER_DENOMINATOR = 8;
 const SHORT_ROUTE_LEGS = 1;
 const LONG_ROUTE_LEGS = 2;
 
+/**
+ * Keyed by live population. Typed off `createActorPopulation` rather than left
+ * bare: an untyped `Map.get` returns `any`, and `any` on the cache-hit branch
+ * of `buildActorPopulation` would make the *whole* function's inferred return
+ * type `any` -- which is how a fixture silently un-typechecks every scenario
+ * that reads it (#602).
+ *
+ * @type {Map<number, ReturnType<typeof createActorPopulation>>}
+ */
 const populationCache = new Map();
 
 /**
@@ -99,6 +108,19 @@ export function buildActorPopulation(modules, population) {
   const cached = populationCache.get(population);
   if (cached !== undefined) return cached;
 
+  const fixture = createActorPopulation(modules, population);
+  populationCache.set(population, fixture);
+  return fixture;
+}
+
+/**
+ * The uncached builder. Split out of `buildActorPopulation` only so the cache
+ * above can be typed by its return value; nothing else calls it.
+ *
+ * @param {import('../production-modules.mjs').ActorPublicationModules} modules
+ * @param {number} population
+ */
+function createActorPopulation(modules, population) {
   const allocatedSlots = Math.round((population * SLOTS_PER_FREED_SLOT) / (SLOTS_PER_FREED_SLOT - 1));
 
   const entityStore = new modules.EntityStore(allocatedSlots);
@@ -184,6 +206,5 @@ export function buildActorPopulation(modules, population) {
     },
   });
 
-  populationCache.set(population, fixture);
   return fixture;
 }

@@ -17,9 +17,66 @@ import type { LocalizationKey } from '../../content/localization';
 export const HUD_MESSAGE_KEY = {
   statusRegion: 'hud.status.title',
   prisoners: 'hud.status.prisoners',
+  /**
+   * How many prisoners have no bed, as a badge under the `PRISONERS` chip
+   * (issue #609).
+   *
+   * **The wording is the owner's and was signed off before it was built**:
+   * *"N with no bed"*. It counts what is **missing** rather than what is
+   * fine -- "N housed" was the rejected alternative -- and it deliberately
+   * echoes the Intake panel's existing sentence, `hud.intake.no-place`
+   * (*"{count} waiting with no bed to sleep in"*), so a player meets the same
+   * fact in the same words in two places and connects them.
+   *
+   * The two counts are siblings rather than the same number, and the shorter
+   * wording is what says so. The Intake panel's is *arrivals a bed would
+   * house right now* -- prisoners standing at `accommodation-assignment` with
+   * no free place. This one is *every prisoner without a bed*, which also
+   * covers the prisoner whose bed was taken out from under them (ADR 0028
+   * decision 2). In the prison issue #609 measured -- twelve admitted into
+   * three beds -- both read 9.
+   *
+   * **Not rendered when it is zero**, which is why it is a badge that comes
+   * and goes rather than a permanent chip: `coverageTone` records the reason
+   * and it applies to a "0 with no bed" as much as to a green badge -- *"a
+   * status strip where several things are always amber teaches players to
+   * ignore amber"*.
+   */
+  prisonersWithoutBed: 'hud.status.prisoners-without-bed',
   staff: 'hud.status.staff',
   rooms: 'hud.status.rooms',
   incidents: 'hud.status.incidents',
+  /**
+   * The guard-coverage chip (issue #588).
+   *
+   * "Coverage" rather than "Guards", because the chip beside it already counts
+   * guards: `staff` is how many the prison employs and this is how many
+   * *prisoners* those guards are covering, which is the number the state's
+   * withholding now depends on. Naming it for the headcount would put two
+   * chips on one fact and leave the fact that matters unnamed.
+   *
+   * The same word the Staff panel's own badge uses for the top rung
+   * (`securityCoverageMet`, "Covered"), in its noun form, so the strip and the
+   * panel are recognisably about one thing.
+   */
+  coverage: 'hud.status.coverage',
+  /**
+   * The two rungs that are *not* covered, as a sentence under the chip.
+   *
+   * The chip's own value is how many prisoners are covered; this names the
+   * remainder and splits it, which is what issue #588 asks the strip for --
+   * `Covered N / Understaffed N / Unguarded N`, *"so the 40s are
+   * attributable"*. A player whose prisoner-day grant is short of the headline
+   * 300 can read off this line how much of the population is paying the
+   * `safety` withholding and which of the two reasons each part of it is
+   * paying for.
+   *
+   * Not rendered when both are zero: the badge falls back to
+   * `securityCoverageMet` ("Covered"), which is a sentence this repository
+   * already ships and which an all-covered prison should read as. A line of
+   * two zeroes would be noise on the one strip a player glances at.
+   */
+  coverageDetail: 'hud.status.coverage-detail',
   contraband: 'hud.status.contraband',
   /**
    * The treasury balance chip (#96).
@@ -189,6 +246,15 @@ export const HUD_MESSAGE_KEY = {
    * `BUILD_QUEUE_ROW_LIMIT`: the list is the crew's schedule, so the rows are
    * the orders that are about to happen, and taking a whole run back is what
    * `Undo` is for.
+   *
+   * `buildQueueShortfall` is the queue's one sentence about **money**, and it
+   * is the only member of this group that is not a fact about rows (#627,
+   * #629, #640). It is drawn outside the fold, unlike everything above it: the
+   * queue section starts collapsed, and #625 is the record of what that costs
+   * -- *"Awaiting Materials"* lived inside it and reached nobody. `{total}` is
+   * `HudBuildQueueMaterialsFundingViewModel.shortfallMinorUnits`, in the same
+   * minor units as the status strip's Funds chip, which is the comparison the
+   * projection says the figure exists for.
    */
   buildQueue: 'hud.build.queue',
   buildQueueCount: 'hud.build.queue-count',
@@ -196,6 +262,7 @@ export const HUD_MESSAGE_KEY = {
   buildQueueCancel: 'hud.build.queue-cancel',
   buildQueueUnnamed: 'hud.build.queue-unnamed',
   buildQueueMore: 'hud.build.queue-more',
+  buildQueueShortfall: 'hud.build.queue-shortfall',
   /**
    * What has been bought and has not arrived, inside the buy disclosure (#285).
    *
@@ -246,6 +313,21 @@ export const HUD_MESSAGE_KEY = {
    * decided money is the primary resource and named no currency, so the
    * figure is rendered as the plain minor units the treasury, the procurement
    * catalogue and the staff-role catalogue's wage bands are all quoted in.
+   *
+   * `securityStaffHint` is the sentence under the action, and since issue #639
+   * ruling 2 it carries **two** figures rather than none: what one press spends
+   * and what the same person bills at every in-game day boundary afterwards. It
+   * said *"Taken from the treasury on hire"* until then, which read as a fee
+   * paid once while `PayrollSystem` charged the same figure every day -- the
+   * player-visible promise the code does not keep that `AGENTS.md` reserves to
+   * the owner, whose replacement sentence it now holds verbatim.
+   *
+   * **It is the one key on this panel that names the money word**, and that is
+   * deliberate rather than an exception to the paragraph above: "wages" is a
+   * category, not a currency, and it is here so that a player meets the word
+   * once with a price attached and again on the `securityRosterTitle` header,
+   * which since the same ruling carries the standing daily bill as a trailing
+   * figure.
    */
   securityStaffTitle: 'hud.security.staff',
   securityStaffRoles: 'hud.security.roles',
@@ -253,6 +335,20 @@ export const HUD_MESSAGE_KEY = {
   securityStaffSelected: 'hud.security.selected',
   securityStaffHire: 'hud.security.hire',
   securityStaffHint: 'hud.security.hire-hint',
+  /**
+   * And what the press gets you, which is a guard and not yet a post.
+   *
+   * `securityStaffUnassigned` is the second half of the sentence
+   * `securityStaffHint` used to be, restored as a key of its own when the
+   * owner's approved replacement took the whole of that value (issue #639
+   * ruling 2, approved 2026-08-30). Two keys rather than one string with two
+   * sentences because the panel has to render them as two elements: the short
+   * viewport clamp in `hud.css` cuts a two-line note to one line, and the
+   * clause a player needs -- that the new guard is posted nowhere -- is the one
+   * that would be cut. Only the second element is exempted from that clamp, so
+   * splitting the key is what makes the exemption addressable at all.
+   */
+  securityStaffUnassigned: 'hud.security.hire-unassigned',
 
   /**
    * The Staff panel's held-guards list
@@ -300,6 +396,22 @@ export const HUD_MESSAGE_KEY = {
    * how many did not fit.
    */
   securityRosterTitle: 'hud.security.roster',
+  /**
+   * The standing daily wage bill, as the collapsed header states it.
+   *
+   * `securityRosterWageBill` is the *sentence* around the figure, not the
+   * figure: `'{total} a day'`. The badge is a trailing element on a section
+   * that starts shut, so it is all a player sees of the payroll until they open
+   * it -- and beside a header that names people, the figure alone reads as a
+   * headcount. `buildQueueCount` is the same mechanism one panel over and has
+   * never been bare for the same reason.
+   *
+   * It is the second key in this registry whose *name* carries a money word,
+   * and `tests/unit/ui-hud-messages.test.ts` has to allow it by name: that gate
+   * refuses a label for a flow nothing renders, and the flow this one names is
+   * rendered by the block that owns this key.
+   */
+  securityRosterWageBill: 'hud.security.roster-wage-bill',
   securityRosterDismiss: 'hud.security.roster-dismiss',
   securityRosterHint: 'hud.security.roster-hint',
 

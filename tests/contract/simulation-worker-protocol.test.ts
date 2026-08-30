@@ -180,18 +180,39 @@ describe('simulation worker protocol', () => {
             // decoder that read the wrong one apart from a correct one.
             accommodationCapacity: 150,
             roomOccupants: 3,
+            // Deliberately **not** 3, for `accommodationCapacity`'s reason one
+            // field up. `roomOccupants` is assignments and this is the
+            // residency places that currently exist (issue #585); a bed taken
+            // out from under a sitting resident separates them, and a fixture
+            // that gave both the same figure could not tell a decoder reading
+            // the wrong one apart from a correct one.
+            occupiedPlaces: 2,
+            // Three distinct figures summing to 4, which is this payload's own
+            // `prisoners` -- so a decoder reading the wrong one of the three,
+            // or deriving any of them from another field, cannot pass. They
+            // are the guard-coverage rungs the population is standing on
+            // (issue #588).
+            prisonersCovered: 1,
+            prisonersUnderstaffed: 2,
+            prisonersUnguarded: 1,
             activeIncidents: 0,
             // Agrees with `activeIncidents: 0` above -- nothing open, nothing
             // to name (issue #506 finding 2).
             activeIncidentType: undefined,
             contrabandDiscovered: 7,
             treasuryMinorUnits: 24_920,
-            // Derived from this payload's own `tick` and `roomOccupants`
-            // rather than picked: three occupied places, thirteen ticks of the
-            // day served, `floor(300 x 3 x 13 / 2400)` = 4 (#29). A fixture
+            // Derived from this payload's own `tick` and `occupiedPlaces`
+            // rather than picked: two occupied places, thirteen ticks of the
+            // day served, `floor(300 x 2 x 13 / 2400)` = 3 (#29). A fixture
             // that claimed a rounder figure would be asserting a state no tick
             // in this envelope could produce.
-            stateIncomeAccruedTodayMinorUnits: 4,
+            //
+            // **It was 4 and derived from `roomOccupants`**, which was right
+            // while the two counts were the same number by construction. Issue
+            // #585 made the state pay per place rather than per assignment, so
+            // an accrual derived from the assignment count now describes a
+            // prison this payload does not hold.
+            stateIncomeAccruedTodayMinorUnits: 3,
             // Five guards on this payload's own roster at the catalogue's
             // 80-a-day guard band: 5 x 80 = 400 (ADR 0042 step 3). Chosen to
             // agree with `staff: 5` above rather than picked, for the reason
@@ -406,6 +427,10 @@ describe('simulation worker protocol', () => {
       // there.
       accommodationCapacity: 150,
       roomOccupants: 3,
+      // Present for the same reason every count in this local copy is, and
+      // carrying the same figure as the fixture at the top of this file for
+      // the same reason it carries it there (issue #585).
+      occupiedPlaces: 2,
       activeIncidents: 0,
       activeIncidentType: undefined,
       contrabandDiscovered: 7,
@@ -421,7 +446,7 @@ describe('simulation worker protocol', () => {
       // refusal would pass while proving nothing about the thing it names
       // (#29 added this field to the projection). Same figure as the fixture
       // at the top of this file, for the same reason it is that figure there.
-      stateIncomeAccruedTodayMinorUnits: 4,
+      stateIncomeAccruedTodayMinorUnits: 3,
       // The same reason a fourth and a fifth time, and the reason this local
       // copy exists at all: ADR 0042 step 3 added two counts to the projection,
       // and until they were added here every payload below was invalid for two
@@ -510,6 +535,14 @@ describe('simulation worker protocol', () => {
       roomCapacity: 0,
       accommodationCapacity: 0,
       roomOccupants: 0,
+      // A prison at tick 0 has furnished nothing and houses nobody, so it
+      // holds no place either (issue #585).
+      occupiedPlaces: 0,
+      // A prison at tick 0 has nobody in a sector, so no rung holds anybody
+      // (issue #588). Zero for the same reason every count above is.
+      prisonersCovered: 0,
+      prisonersUnderstaffed: 0,
+      prisonersUnguarded: 0,
       activeIncidents: 0,
       activeIncidentType: undefined,
       contrabandDiscovered: 0,

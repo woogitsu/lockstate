@@ -76,8 +76,33 @@
   grid-area: strip;
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  height: var(--hud-strip-height);
+  /*
+   * Wraps at every width, and `min-height` rather than `height` (#545).
+   *
+   * The strip is a single row of items that mostly cannot shrink -- the brand
+   * slot is `flex: none`, the clock is its own width and the three transport
+   * buttons are three whole tap targets -- with `.hud-strip__metrics` the only
+   * flexible one. That is fine while the tap target is 44px, and it stops
+   * being fine the moment the player scales the interface up: at 200 % the
+   * transport alone is 264px and the fixed items together want more than a
+   * 900px viewport has. Without a wrap they do not overflow *visibly*, they
+   * push the transport controls off the right edge of the screen, which is
+   * the same "present, reachable by nothing" failure issue #88 measured in
+   * the rail.
+   *
+   * `min-height` is what lets a wrapped strip be two rows tall instead of two
+   * rows laid inside a one-row box. Below 720px the strip has always wrapped
+   * and this is the same declaration it already made there, hoisted: the rule
+   * in the `@media` block now only raises the floor.
+   *
+   * At 100 % nothing here wraps at any viewport the browser suite visits, so
+   * this changes no measurement that exists today -- it decides what happens
+   * at the scales that did not exist before.
+   */
+  flex-wrap: wrap;
+  align-content: center;
+  gap: var(--space-1) var(--space-4);
+  min-height: var(--hud-strip-height);
   padding: 0 var(--space-3);
   box-sizing: border-box;
   min-width: 0;
@@ -102,7 +127,30 @@
   align-items: center;
   min-width: 0;
   flex: none;
+  /*
+   * The slot wraps its own contents, and is bounded by the strip (#545).
+   *
+   * `flex: none` above is what stops the metrics squeezing the badge, and it
+   * is kept -- but on its own it also means the slot is exactly as wide as
+   * whatever the host mounts, however wide that is. With two things in it (the
+   * badge and the interface-scale control) that was 389px at the 375px phone
+   * width, so the control was laid *outside the viewport* with nothing saying
+   * so: measured 233,0..389,44 of 375x812 at 100 %, and 637..909 of 900x600 at
+   * 175 %. Present, and unreachable, which is the failure mode issue #88
+   * measured in the rail.
+   *
+   * `max-width: 100%` bounds the slot by the strip's content box without
+   * making it shrinkable by its neighbours -- the two are different
+   * properties, and only the second is what `flex: none` is protecting. The
+   * wrap is then what the bound is *for*: the slot's contents stack instead of
+   * being pushed off the edge. The cost is one row of strip height at the
+   * viewports where it triggers, and it is paid only there.
+   */
+  flex-wrap: wrap;
+  max-width: 100%;
+  row-gap: var(--space-1);
 }
+
 
 .hud-strip__metrics {
   display: flex;
@@ -166,9 +214,44 @@
   justify-self: start;
   align-self: end;
   padding: var(--space-3);
+  /*
+   * And never taller than the row it sits in (#545).
+   *
+   * `.hud-minimap__surface` is `aspect-ratio: 1 / 1` off the frame's width, so
+   * the corner's height is a *function of its width* -- and both scale. At
+   * 175 % on a 900x600 window that is 392px of square in a 280px middle row,
+   * and a grid item taller than a `minmax(0, 1fr)` row overflows it rather
+   * than growing it. `align-self: end` then sends the overflow **upward, over
+   * the status strip**: measured, `elementFromPoint` at the centre of each
+   * interface-scale button returned `.hud-minimap__surface`, so the two
+   * controls were on screen, laid out, and could not be pressed.
+   *
+   * That is a property of the corner and not of the scale -- a tall enough
+   * frame in a short enough row does it at 100 % too -- so the fix is the
+   * bound rather than a rule about scales. A flex column with a definite
+   * `max-height` plus `min-height: 0` down the chain is what lets the square
+   * *shrink* instead of overflowing; the frame stops being square before it
+   * stops being on screen, which is the right way round for a placeholder
+   * whose whole content is one centred line of text.
+   */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  max-height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
 }
 
-.hud-minimap { width: 224px; background: var(--surface-raised); }
+/* Both `min-height: 0`s are the shrink the block above depends on: a flex
+   item's automatic minimum size is its content, which is exactly what would
+   keep the square square and the corner too tall. */
+.hud-minimap { min-height: 0; }
+.hud-minimap__surface { min-height: 0; }
+
+/* The frame scales with the rest of the interface (#545): it is a HUD panel
+   like any other, and a minimap that stayed 224px while the type inside it
+   grew would be the one island the scale did not reach. */
+.hud-minimap { width: calc(224px * var(--ui-scale)); background: var(--surface-raised); }
 
 .hud-minimap__surface {
   display: flex;
@@ -1010,6 +1093,18 @@
 
 .hud-staff__held-more[hidden] { display: none; }
 
+/* The standing daily wage bill, in the `On the payroll` header (issue #639
+   ruling 2). Exactly `.hud-build__queue-count`'s treatment one panel over, and
+   for its reasons: the header is the only part of a collapsed section a player
+   sees, and `tabular-nums` stops the figure jittering as guards are hired and
+   dismissed. No `margin-left: auto` -- the queue count sits beside its eyebrow
+   rather than at the panel edge, and two section headers in one rail that
+   placed their figures differently would read as two designs. */
+.hud-staff__roster-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-subtle);
+}
+
 .hud-build__coords {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1110,15 +1205,31 @@
 
 .hud-build__buy > .ui-action { width: 100%; }
 
-/* Armed is a state, not a moment: the control has to keep saying so while the
-   player's attention is out on the world. */
-.hud-build .ui-action[data-armed='true'] {
+/*
+ * Armed is a state, not a moment: the control has to keep saying so while the
+ * player's attention is out on the world.
+ *
+ * **The Rooms panel was named here only from #684**, and it had set
+ * `data-armed` on its own arm control since the day it shipped -- the attribute
+ * was written and no stylesheet in this repository read it, so the two panels
+ * carried the identical DOM contract and only one of them looked any different
+ * armed. Both are named now rather than the selector being widened to
+ * `.hud .ui-action`, because what earns the tint is a control that hands the
+ * pointer to the world, not any toggle that happens to use the attribute.
+ *
+ * The label is what *says* the state -- "Stop drawing", "Stop placing" -- and
+ * `aria-pressed` is what announces it; this is the half a player reads without
+ * reading, which is the half that was missing.
+ */
+.hud-build .ui-action[data-armed='true'],
+.hud-rooms .ui-action[data-armed='true'] {
   background: var(--accent-soft);
   border-color: var(--accent);
   color: var(--accent);
 }
 
-.hud-build .ui-action[data-armed='true']:hover {
+.hud-build .ui-action[data-armed='true']:hover,
+.hud-rooms .ui-action[data-armed='true']:hover {
   background: var(--surface-active);
   color: var(--text-heading);
 }
@@ -1269,6 +1380,13 @@
    `.hud-build__buy:not([hidden])`, closed from the other side because the class
    being beaten is shared. */
 .hud-build__queue-more[hidden] { display: none; }
+
+/* The same trap, closed the same way, for the money line below the block. This
+   one is hidden far more often than it is shown -- a solvent prison never sees
+   it -- so an author `display` winning over `[hidden]` would put a permanent
+   empty line under the queue at every short viewport, which is the height this
+   panel has least of. */
+.hud-build__queue-shortfall[hidden] { display: none; }
 
 /*
  * What has been bought and has not arrived (#285), inside the buy disclosure.
@@ -1713,12 +1831,45 @@
 .hud-tabs__inner {
   display: flex;
   align-items: stretch;
+  /*
+   * Wraps (#545). `justify-self: center` on `.hud__tabs` sizes the bar to
+   * `fit-content` of the grid column, so a row of tabs wider than the viewport
+   * is squeezed into a box it does not fit -- and this element's own
+   * `overflow: hidden`, which is what keeps the tabs inside the rounded
+   * corners, then *clips* the ones that do not fit. Every tab carries a
+   * `min-width` floor, so they cannot shrink their way out of it either.
+   *
+   * At 100 % the five tabs fit every viewport the browser suite visits, so
+   * this rule is inert there. It decides what happens at the scales #545
+   * adds: the bar is a multiple of `--tap-target` and `--text-size-label`
+   * wide, so it grows with the scale while the viewport does not, and the
+   * clip above is silent. Wrapping turns "two tabs are off the bar and
+   * nothing says so" into "the bar is two rows tall", which costs the world a
+   * band and loses no control.
+   *
+   * `justify-content: center` so a short second row sits under the middle of
+   * the first rather than hanging off its left edge.
+   */
+  justify-content: center;
   gap: 0;
+  max-width: 100%;
   background: var(--surface-raised);
   border: var(--hairline) solid var(--border);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
+
+.hud__tabs { max-width: 100%; box-sizing: border-box; }
+
+/*
+ * The wrap itself, gated on the player having asked for a larger interface
+ * (#545). `src/ui/display-scale.ts` stamps the attribute in the same call that
+ * writes `--ui-scale`, and its comment carries the measurement: a flex line
+ * breaks on max-content, so a bar that may wrap wraps at 375x812 at 100 % as
+ * well -- where the tabs shrink and fit, and where the second row cost the
+ * Rooms panel 70.2px of arrival height.
+ */
+:root[data-ui-scale-enlarged='true'] .hud-tabs__inner { flex-wrap: wrap; }
 
 .hud-tabs__inner > .ui-tab + .ui-tab {
   border-left: var(--hairline) solid var(--border-hairline);
@@ -1836,6 +1987,37 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
     overflow: hidden;
+  }
+
+  /* The one `.hud-staff__note` that is not clamped (#639, the owner's ruling of
+     2026-08-30). The shape is PR #647's, which exempts `.hud-build__order-note`
+     from this same block for the same kind of sentence -- that branch is not
+     merged as this is written, so the selector it adds is not in this file yet
+     and the citation is to the pull request rather than to a rule below.
+     `hud.security.hire-unassigned` -- "A new guard
+     starts unassigned." -- is the half of the old hire hint the approved
+     wording displaced, and the measurement that displaced it is why it comes
+     back as its own element rather than as a second sentence: run on after
+     "Costs {total} now and {wage} a day in wages." the note delivered
+     `scrollHeight` 26 against `clientHeight` 13 at 900x600, and the clause that
+     was cut was this one.
+
+     The clamp's own reason is the rail's height budget (#174), and this panel
+     pays it in the currency it has: `.ui-panel.hud-staff` is `overflow-y: auto`,
+     so one more line of `--font-size-eyebrow` moves the scroll threshold and
+     loses nothing. The notes that stay clamped are the ones a clipped line
+     still leaves usable -- a coverage hint reads as an instruction with its
+     tail cut. This one is a whole clause or nothing.
+
+     `.hud-staff__note[hidden]` above still wins over this rule -- it is a class
+     and an attribute against one class -- so the guard that keeps a hidden note
+     hidden under the author `display` this block sets is not weakened here.
+     This note is never hidden in any case: it quotes no figure, so there is no
+     state in which it is unsafe to say. */
+  .hud-staff__hire-unassigned {
+    display: block;
+    -webkit-line-clamp: none;
+    overflow: visible;
   }
 
   /* The Regime panel's own note, on the same terms and for the same
@@ -2405,7 +2587,7 @@
 @media (max-width: 720px) {
   :root {
     /* The strip wraps to two rows here. */
-    --hud-strip-height: 88px;
+    --hud-strip-height: calc(88px * var(--ui-scale));
   }
 
   /* The minimap would collide with the tab bar; the bar wins, because it is
@@ -2466,5 +2648,5 @@
     border-left: 0;
   }
 
-  .ui-tab { min-width: 64px; padding: var(--space-2); }
+  .ui-tab { min-width: calc(64px * var(--ui-scale)); padding: var(--space-2); }
 }

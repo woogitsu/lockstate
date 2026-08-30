@@ -85,7 +85,20 @@ export interface IncidentResponseClaimSource {
 export interface GuardReleaseRosterSource {
   allGuardIds(): readonly EntityId[];
   getDeploymentPhase(entityId: EntityId): DeploymentPhase;
+  /** Read *before* `unassign`, which clears it: see `release`. */
+  getPathRequestId(entityId: EntityId): string | undefined;
   unassign(entityId: EntityId): void;
+}
+
+/**
+ * The one thing a release has to give back to navigation.
+ *
+ * Narrowed to a single method for the reason `StaffDismissalSurfaces` narrows
+ * its own: this service must not be able to ask navigation for a route, only
+ * to hand one back. `NavigationSystem` satisfies it structurally.
+ */
+export interface GuardReleaseNavigationSurface {
+  abandonRequest(id: string): boolean;
 }
 
 /**
@@ -172,6 +185,7 @@ export class GuardReleaseService {
     private readonly guards: GuardReleaseRosterSource,
     private readonly search: SearchClaimSource,
     private readonly response: IncidentResponseClaimSource,
+    private readonly navigation: GuardReleaseNavigationSurface,
   ) {}
 
   /**
@@ -204,6 +218,28 @@ export class GuardReleaseService {
     // records consistent whether or not the drop found anything.
     if (claim === 'incident-response') this.response.releaseResponder(guardId);
     if (claim === 'search') this.search.releaseGuard(guardId);
+
+    /*
+     * **The route the guard was walking is given back before the roster
+     * forgets it.**
+     *
+     * `unassign` sets `pathRequestId` to `undefined`, so reading it afterwards
+     * is reading nothing -- which is exactly how this leaked: a `'deployment'`
+     * claim released mid-`'travelling'` dropped the id and left the request
+     * with `NavigationSystem`, where a queued request is searched at full
+     * budget cost and a resolved one is retained for the life of the session
+     * (nothing there expires a result, and the queue's aging raises priority
+     * rather than evicting). The two `'on-search'` claimants give back their
+     * own ids above, because the id lives in *their* bookkeeping and not on the
+     * roster; this is the roster's own.
+     *
+     * Unconditional rather than gated on the claim kind: a guard can hold a
+     * roster `pathRequestId` under any phase that travels, and
+     * `abandonRequest` is total, so asking costs one `Map` miss for a guard
+     * that had none.
+     */
+    const pathRequestId = this.guards.getPathRequestId(guardId);
+    if (pathRequestId !== undefined) this.navigation.abandonRequest(pathRequestId);
 
     this.guards.unassign(guardId);
     return { kind: 'released', releasedFrom: claim };

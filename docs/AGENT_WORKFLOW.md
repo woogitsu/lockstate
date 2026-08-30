@@ -92,6 +92,26 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
     `node_modules` at all, and every import then fails to resolve in a way that
     looks like the branch is broken. Make it yourself, first thing:
     `ln -sfn /workspace/lockstate/node_modules <worktree>/node_modules`.
+  - **`git worktree add` does not run the Git LFS smudge filter either, and
+    this one does not announce itself.** A worktree gets LFS *pointer files*
+    where the main checkout has images:
+    `file public/assets/actors/actor.guard.base.idle.png` returns `ASCII text`
+    in a worktree and `PNG image data, 260 x 3104` in `/workspace/lockstate`.
+    Fix it first thing, beside the symlink: **`git lfs checkout`** in the
+    worktree (62 objects, 93 MB).
+    - **The session-start hook does not cover you.** It reports *"Git LFS
+      content looks present"*, which is true of the checkout it looked at and
+      false of every worktree made from it.
+    - **Why it is worse than the symlink trap, which fails loudly:** a browser
+      run in a worktree loses *every actor sprite* — ten atlases fail with
+      `Failed to process file: image "…"` and
+      `InvalidStateError: The source image could not be decoded` — **and
+      passes anyway**, because the simulation lives in the worker and does not
+      care whether anything was drawn. Measured on 2026-08-30 by a playtest
+      that ran green with no actors on screen
+      (`docs/research/2026-08-30-does-a-prison-survive-being-reopened.md`).
+      Anything you conclude about rendering from a worktree run is worthless
+      and will not tell you so.
   - The same pre-run check used to break the **browser** suite from a worktree,
     invisibly. `tests/browser/playwright.config.ts` started its web server with
     `pnpm exec vite`; pnpm shelled out to `pnpm install`; the install refused;

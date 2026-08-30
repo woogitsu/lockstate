@@ -650,12 +650,35 @@ export const statusCountsSchema = z
      * any session.
      *
      * **A sibling of `roomCapacity` rather than a replacement for it**,
-     * because the two are different true facts and each has a reader. A
-     * furnished infirmary raises `roomCapacity` -- `object.medical-bed`
-     * declares `'sleep-surface'` -- and raises nothing here, because no
-     * classification group's `AccommodationPolicy` names `room.infirmary`.
-     * Collapsing them would either overstate the prisoner denominator by every
-     * medical bed or understate the Rooms readout by every one.
+     * because the two are different true facts. A furnished infirmary raises
+     * `roomCapacity` -- `object.medical-bed` declares `'sleep-surface'` -- and
+     * raises nothing here, because no classification group's
+     * `AccommodationPolicy` names `room.infirmary`. Collapsing them would
+     * either overstate the prisoner denominator by every medical bed or
+     * understate the Rooms readout by every one.
+     *
+     * **That sentence read "the two are different true facts and each has a
+     * reader", and the second clause has never been true.** It was written
+     * here at `b20d116`, in the commit that added this field -- at which point
+     * `src/ui/simulation-counts.ts` still returned the literal
+     * `prisonerCapacity: 0`, so *neither* count had a reader. One commit later
+     * `50ca715` gave **this** field one (`prisonerCapacity:
+     * counts.accommodationCapacity`, `src/ui/simulation-counts.ts`), and
+     * `roomCapacity` has never acquired one: grep it across `src/ui/` and the
+     * only occurrences are the three lines of prose in that same file
+     * explaining why the mapping is *not* `counts.roomCapacity`.
+     * `docs/HUD_PROJECTIONS.md` has said so from the same day and still does
+     * -- *"`roomCapacity` stays exactly what it was: the Rooms readout's
+     * total, with no reader in `src/ui/` yet"* -- so this comment and that
+     * document have disagreed since they were written.
+     *
+     * The argument above is unaffected and is why the clause is corrected
+     * rather than the field withdrawn: `roomCapacity` is published and pinned
+     * by `tests/unit/hud-projections.test.ts`, which builds a prison
+     * specifically to tell the two apart, and the "Rooms readout" it is the
+     * total of is a panel nobody has built. A count with a test and no panel
+     * is a different thing from a count with a reader, and saying so is the
+     * point.
      *
      * `countSchema`'s floor of `0` is its own invariant: it is a sum of
      * `residentCapacity`, which `deriveRoomCapacity` builds from footprint
@@ -668,7 +691,175 @@ export const statusCountsSchema = z
      * too.
      */
     accommodationCapacity: countSchema,
+    /**
+     * How many prisoners hold a **residency assignment** in a room the room
+     * catalog declares: the summed `occupancyOf` of the instances
+     * `collectRoomInstances` reaches
+     * (`src/simulation/presentation/status-strip-projection.ts`), which is the
+     * catalog fan-out and therefore carries `docs/HUD_PROJECTIONS.md` gap 15.
+     *
+     * **An assignment is no longer the same thing as an occupied place, and
+     * this field is the assignment.** ADR 0028 decision 2 keeps a resident
+     * where they are when the bed under them is taken away, so an assignment
+     * outlives its place; `StateIncomeSystem` pays per *place*, through
+     * `RoomInstanceRegistry.residentIdsWithExistingPlace`, which clamps each
+     * instance's residents to that instance's own `residentCapacity`
+     * ([ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+     * decision A(ii), issue #585). Before that clamp the two were the same
+     * number by construction and the income line read this one -- which is
+     * exactly why the name still reads like the income count and is not it.
+     *
+     * **Measured through real commands rather than argued.** A 3x3 `room.cell`
+     * with two beds and two prisoners housed in it, with one bed then taken
+     * out by `RemoveObject`, publishes **`roomOccupants` 2 against
+     * `roomCapacity` 1, one occupied place and a 300 day**
+     * (`tests/integration/economy-occupied-place-exists.test.ts`, *"two
+     * residents over one remaining bed, in one cell"*, which asserts both
+     * figures off the one prison state). A payout derived from this field
+     * would pay 600 for one bed, which is the shape #585 exists to remove.
+     *
+     * `roomCapacity` above is the summed `residentCapacity` of the same
+     * instances, so this count standing above it is the over-capacity state
+     * ADR 0028 decision 2 names rather than an inconsistency. Whether a player
+     * should be shown the two figures side by side is a copy decision and the
+     * owner's, in the same way `prisonersUnguarded` below leaves *"6 here, 2
+     * paid"* open rather than settling it in a schema comment.
+     */
     roomOccupants: countSchema,
+    /**
+     * How many residency places a prisoner is holding **that currently
+     * exist**: `RoomInstanceRegistry.residentIdsWithExistingPlace().length`,
+     * which is `min(occupancy, residentCapacity)` summed over every registered
+     * instance ([ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+     * decision A(ii), issue #585).
+     *
+     * **This is the number the state pays on**, and until now nothing
+     * published it. `StateIncomeSystem` credits
+     * `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS` per unit of it at each day
+     * boundary, less what ADR 0064 withholds per unmet need, and
+     * `stateIncomeAccruedTodayMinorUnits` below is that same day prorated by
+     * the tick. A player could see the money and could not see the count the
+     * money is a multiple of.
+     *
+     * ## Beside `roomOccupants`, never instead of it
+     *
+     * The two answer different questions and both are true. `roomOccupants` is
+     * **assignments** -- who the prison is holding -- and ADR 0028 decision 2
+     * keeps an assignment alive when the bed under it is taken away, which is
+     * the decision that makes an over-capacity room a legal state rather than
+     * a defect. This field is **places**, and it is what the treasury reads.
+     * Collapsing them either stops the strip reporting a prisoner the prison
+     * is genuinely holding, or pays for a bed that is not there; #585 is the
+     * measurement of the second.
+     *
+     * They diverge in exactly two ways, and only the first is reachable by
+     * playing:
+     *
+     * 1. **A place stops existing under a sitting resident.** Measured through
+     *    real commands: a 3x3 `room.cell` with two beds and two prisoners
+     *    housed, one bed then taken out with `RemoveObject`, publishes
+     *    `roomOccupants` 2, `roomCapacity` 1 and `occupiedPlaces` **1**, and
+     *    the day is worth 300 rather than 600
+     *    (`tests/integration/economy-occupied-place-exists.test.ts`, *"two
+     *    residents over one remaining bed, in one cell"*).
+     * 2. **An instance registered under a room-catalog id this build does not
+     *    declare.** `roomOccupants` is built by fanning out over catalog ids
+     *    (`docs/HUD_PROJECTIONS.md` gap 15) and cannot see one; this field
+     *    walks the registry and does. `RoomZoningService` only ever registers
+     *    a catalog-defined id, so no `ZoneRoom` reaches it -- it is named
+     *    because it is the direction the two counts differ *structurally*,
+     *    which no measurement of case 1 would reveal.
+     *
+     * **It is never a plain over-admission signal.** A prisoner the prison has
+     * nowhere to put holds no assignment either, so both counts omit them
+     * equally; the gap between `prisoners` and `accommodationCapacity` above is
+     * where over-admission shows, and `prisonersUnguarded` below already says
+     * so at length. This field moves only when a place a prisoner *holds*
+     * stops existing.
+     *
+     * **No extra walk.** `projectStatusStrip` asks the registry once and folds
+     * the same list into the accrual chip through
+     * `stateIncomeForOccupiedPlaces`, so publishing this costs a `length` and
+     * not a second `O(P log P)` sort at the 5,000-actor tier.
+     *
+     * **Not a save concern.** Status counts are published, never persisted:
+     * they are a `WorkerToMainMessage` payload and no field of them reaches
+     * `src/persistence/save-schema.ts`, so `SAVE_SCHEMA_VERSION` is untouched
+     * and nothing migrates. **`HUD_VIEW_MODEL_SCHEMA_VERSION` is deliberately
+     * not bumped** either, for the reason `accommodationCapacity` above gives:
+     * one constant covers every projection in
+     * `src/simulation/presentation/`, so raising it because the status strip
+     * gained a field would assert that the other three changed too.
+     */
+    occupiedPlaces: countSchema,
+    /**
+     * **How many prisoners are standing in a sector on each rung of the guard
+     * coverage ladder** (issue #588): `covered` has all the guards it asks
+     * for, `understaffed` has some of them, `unguarded` has none.
+     *
+     * Three counts rather than one ratio, because the strip's job here is that
+     * *"the 40s are attributable"*: since ADR 0064 the state withholds
+     * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` of the prisoner-day
+     * grant per unmet need, and `SafetyCoverageSystem` is what decides whether
+     * `safety` is one of them. A player looking at a grant smaller than the
+     * headline rate has to be able to see how much of the population is paying
+     * that particular 40, and a single percentage cannot say which rung the
+     * missing ones are on.
+     *
+     * They sum to the population **standing in a sector**, which in the
+     * shipped single-sector topology is every living prisoner on owned land
+     * (ADR 0048 decision 1) -- not necessarily to `prisoners` above, which
+     * counts every prisoner in existence including an arrival still in
+     * transit. Nothing here should be derived by subtraction from that count.
+     *
+     * **And that set is not the set the 40s are actually charged on**, which
+     * is worth stating here because these counts exist to make the 40s
+     * attributable and the gap between the two is a real prison state rather
+     * than a rounding error. `StateIncomeSystem` charges per *occupied place*
+     * -- a unit of a room instance's `residentCapacity` that a prisoner holds
+     * -- while `SafetyCoverageSystem` provisions, and counts, every prisoner
+     * the sector covers. An over-capacity prison's unhoused prisoner is in the
+     * sector and in these counts, and is on nobody's income line at all.
+     *
+     * **Measured on the tree this paragraph was written against**, rather than
+     * argued: six prisoners admitted into a two-bed prison with nobody on post
+     * read `covered 0 / understaffed 0 / unguarded 6` here, while
+     * `RoomInstanceRegistry.residentIdsWithExistingPlace()` -- the accessor
+     * #610 made the income line's -- answers **two**. Both are right about
+     * their own question, and a player who read "6 unguarded" as six withheld
+     * 40s would be wrong by four of them. The difference is exactly the
+     * population the prison has not housed, which the `prisoners` and
+     * `accommodationCapacity` counts beside these already let them see.
+     *
+     * That asymmetry is deliberate and it is the honest direction: a prisoner
+     * with no bed is still somebody the guards are or are not guarding, so
+     * provisioning them is right even though the state pays nothing for them.
+     * The alternative -- counting only paid places here -- would make the chip
+     * silent about exactly the prisoners a player most needs to see, since an
+     * unhoused population is what drives a sector hot in the first place
+     * ([ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md)).
+     * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+     * decision A(ii) and #610 both sharpen the income side further -- an
+     * occupied place is now a bed that currently exists -- which widens this
+     * gap without changing what these three counts mean.
+     *
+     * **Nothing in the shipped interface states the two figures side by side**,
+     * so the mis-inference above is available rather than presented; whether
+     * the chip should say "6 here, 2 paid" is a copy decision and the owner's,
+     * not something to settle in a schema comment.
+     *
+     * `SafetyCoverageSystem.getCensus` produces them on the same walk that
+     * provisions the need, so the readout cannot disagree with what was
+     * provisioned. It is at most nine ticks stale, and reads all zeroes for
+     * the first ten ticks after a load, which is the ordinary staleness of
+     * every ten-tick cadence in the kernel rather than a missing value.
+     *
+     * **`HUD_VIEW_MODEL_SCHEMA_VERSION` is deliberately not bumped**, for the
+     * reason `accommodationCapacity` above gives.
+     */
+    prisonersCovered: countSchema,
+    prisonersUnderstaffed: countSchema,
+    prisonersUnguarded: countSchema,
     activeIncidents: countSchema,
     /**
      * The kind of the incident `activeIncidents` above counts, when the
@@ -784,7 +975,7 @@ export type SimulationStatusCounts = DeepReadonly<
  * `simulation/command-result`'s `rejected` form both describe a command that
  * never reached the kernel; these describe a command that was accepted,
  * ordered, dispatched at its tick -- and then refused on its *content* by the
- * system that ran it. `WorkerStateMachine.handleSubmitCommand` has already
+ * system that ran it. `SimulationWorkerStateMachine.handleSubmitCommand` has already
  * answered `status: 'queued'` by then, and ADR 0003 decision 9 is explicit
  * that the queued acknowledgement "never reports a command as applied": this
  * vocabulary is what the simulation says instead.
@@ -1199,6 +1390,7 @@ export const SIMULATION_EVENT_TYPES = [
   'incidents.gang-retaliation-opened',
   'incidents.riot-opened',
   'prisoners.discharged',
+  'prisoners.relocated',
 ] as const;
 
 export type SimulationEventType = (typeof SIMULATION_EVENT_TYPES)[number];
@@ -1237,6 +1429,61 @@ const dischargedEventSchema = z
     ...simulationEventEnvelopeFields,
     type: z.literal('prisoners.discharged'),
     count: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+  })
+  .strict();
+
+/**
+ * A resident whose bed was taken away has been moved into accommodation that
+ * exists ([ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+ * decision A(i)).
+ *
+ * **One event per resident, where `prisoners.discharged` is one per tick, and
+ * the difference is what the sentence says.** A discharge is reported as a
+ * count because a player reads a cohort leaving as one occurrence; this
+ * sentence names *one prisoner* and *one room*, so a removal that rehouses two
+ * residents is two of these. That grain is the owner's, not this schema's: the
+ * approved wording is "{name} had nowhere to sleep and moved to {room}.", and
+ * a per-removal aggregate could not fill either placeholder.
+ *
+ * ## Why this one carries an identity when the channel's own comment says none do
+ *
+ * `SimulationEventLog`'s class comment reads *"It carries no identity. No
+ * entity id, no name, no tile"*, and gives `prisoners.discharged`'s reason:
+ * *"the subject of a discharge event does not exist by the time the main
+ * thread reads it"*. **That reason is the whole of the rule, and it is false
+ * of this event** -- the subject is alive, housed, and already on the roster
+ * projection under this very `entityId`, with these very two name halves
+ * (`PrisonerRosterRowViewModel.name`). So the sentence is narrowed where it
+ * stands rather than deleted: identity stays off this channel wherever the
+ * subject may be gone, and this member is the exception that says why.
+ *
+ * **ADR 0011 is not bent by it either.** What that decision keeps off the wire
+ * is *translated text*: a name is player-facing **state**, minted from
+ * `identity.actor-name` and identical in every locale
+ * (`src/simulation/identity/actor-identity.ts`), and `roomNameKey` is a
+ * *message key* -- the same field, resolved from the same catalog, that
+ * `PrisonerRoomRefViewModel.roomNameKey` already carries to the roster panel.
+ * No sentence crosses here; the main thread still assembles one.
+ *
+ * `name` is optional for the reason `PrisonerRosterRowViewModel.name` is: a
+ * session wired without an identity registry mints nobody, and the HUD names
+ * such a prisoner by entity id (`hud.regime.roster-unnamed`) rather than
+ * saying nothing at all.
+ */
+const residentRelocatedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('prisoners.relocated'),
+    entityId: sequenceSchema,
+    name: z
+      .object({
+        givenName: z.string().min(1).max(128),
+        familyName: z.string().min(1).max(128),
+      })
+      .strict()
+      .optional(),
+    /** The room they now live in, as the catalog's own `nameKey`. */
+    roomNameKey: identifierSchema,
   })
   .strict();
 
@@ -1387,6 +1634,7 @@ const incidentsAllClearEventSchema = z
 const simulationEventSchema = z.discriminatedUnion('type', [
   wagesUnpaidEventSchema,
   dischargedEventSchema,
+  residentRelocatedEventSchema,
   riotOpenedEventSchema,
   gangRetaliationOpenedEventSchema,
   assaultOpenedEventSchema,

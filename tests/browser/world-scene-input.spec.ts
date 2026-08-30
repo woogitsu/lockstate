@@ -1,4 +1,4 @@
-import { expect, test, type CDPSession, type Page } from '@playwright/test';
+import { expect, test, type CDPSession, type Page } from './network-changed-fixture';
 
 /**
  * Real-browser verification for the keyboard listeners `WorldScene` registers on

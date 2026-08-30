@@ -313,7 +313,7 @@ describe('an incident is triggered, responded to and closed, in a session starte
    * The measured tick a riot opens at, for this seed and this fixture.
    *
    * Written out rather than searched for: it is a fact about `NEED_DECAY_PER_TICK`
-   * (all six of them, not `safety`'s 0.01 alone), `DEFAULT_SECTOR_RISK_POLICY`
+   * (all six of them, not `safety`'s rate alone), `DEFAULT_SECTOR_RISK_POLICY`
    * (needs weighted 1, staffing 0.3, hot at 0.65, twelve consecutive samples) and
    * `IncidentTriggerSystem`'s 50-tick cadence. `needsPressure` crosses 0.35 --
    * the level that, with a shortfall of 1, first puts the score over the
@@ -326,8 +326,19 @@ describe('an incident is triggered, responded to and closed, in a session starte
    * a side effect: `bladder` falls at 0.08 a tick and `hunger` at 0.05, so a
    * prisoner with nowhere to go is in a bad way in a day and a half instead of
    * in six and a half.
+   *
+   * **4,000 until issue #588, and 3,450 since.** This prison hires nobody, so
+   * its sector is `unguarded` and `SafetyCoverageSystem` provisions nothing --
+   * and `safety` itself now falls at 0.05 rather than 0.01, five times faster.
+   * So the sixth of `needsPressure` that need contributes rises five times
+   * sooner and the twelfth consecutive hot sample lands 550 ticks earlier.
+   * That is the mechanic doing exactly what the owner's ruling on issue #599
+   * asked for, read from the other end: a prison nobody guards reaches the
+   * threshold faster than it used to, and the same prison with a guard on post
+   * never reaches it at all
+   * (`tests/integration/room-gated-needs.test.ts`).
    */
-  const RIOT_TICK = 4_000;
+  const RIOT_TICK = 3_450;
 
   it('opens a riot in the derived sector from real needs and real understaffing', () => {
     const runtime = overcrowdedPrison();
@@ -389,7 +400,14 @@ describe('an incident is triggered, responded to and closed, in a session starte
      * with the same participants, which is what the bound around this number
      * is for.
      */
-    expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'needs-pressure')?.value).toBeCloseTo(0.3898, 4);
+    /*
+     * **0.4427 since issue #588**, and the 0.0529 it gained is `safety`
+     * joining the needs this prison leaves unmet: nobody is on post, so the
+     * sector is `unguarded`, nothing provisions the need and it falls at
+     * 0.05 a tick along with `hunger`. The riot fires 550 ticks sooner for
+     * exactly that reason -- see `RIOT_TICK` above.
+     */
+    expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'needs-pressure')?.value).toBeCloseTo(0.4427, 4);
     expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'contraband-pressure')?.value).toBe(0);
   });
 

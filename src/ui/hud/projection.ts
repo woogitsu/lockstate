@@ -1,4 +1,5 @@
 import type { LocalizationKey } from '../../content/localization';
+import type { MessageParameters } from '../../services/localization/format';
 import type { IconId } from '../primitives/icon';
 import type { BadgeTone } from '../primitives/status-badge';
 import { HUD_MESSAGE_KEY } from './messages';
@@ -104,11 +105,22 @@ export function transportPressedStates(clock: HudClockViewModel): TransportPress
   return { pause: false, play: !fast, fastForward: fast };
 }
 
-export type HudMetricId = 'prisoners' | 'staff' | 'rooms' | 'incidents' | 'contraband' | 'funds' | 'earned-today';
+export type HudMetricId = 'prisoners' | 'staff' | 'coverage' | 'rooms' | 'incidents' | 'contraband' | 'funds' | 'earned-today';
 
 export interface HudMetricBadge {
   readonly tone: BadgeTone;
   readonly textKey: LocalizationKey;
+  /**
+   * Placeholders for `textKey`, when the badge states a quantity rather than a
+   * condition (issue #588's `Covered N / Understaffed N / Unguarded N`).
+   *
+   * Absent for every badge that names a state in one word, which is what a
+   * badge was for until the coverage chip: a key with no placeholders and an
+   * empty parameter object are the same rendered string, so "absent" carries
+   * the distinction rather than an empty literal. `status-strip.ts` formats
+   * with them only when they are present, so no existing badge changes call.
+   */
+  readonly parameters?: MessageParameters;
 }
 
 export interface HudMetricDescriptor {
@@ -139,6 +151,125 @@ export function occupancyTone(prisoners: number, capacity: number): BadgeTone | 
 }
 
 /**
+ * How many prisoners have no bed: the population, less the prisoners holding
+ * a residency place that currently exists (issue #609).
+ *
+ * ## Why this is presentation and not a derived simulation figure
+ *
+ * `src/ui/simulation-counts.ts` states the rule this has to answer to: **the
+ * HUD may not derive a simulation figure** (`AGENTS.md` boundary 1, enforced
+ * by `tests/unit/ui-hud-messages.test.ts`). What that forbids is the HUD
+ * becoming a *second authority* on a fact -- recomputing something the
+ * simulation also computes, from inputs the simulation would weigh
+ * differently, so that the two can disagree. `occupancyTone` below is the
+ * standing precedent for what it does *not* forbid: it divides two published
+ * counts to choose a colour, and has never been derivation.
+ *
+ * This subtraction is on that same side, and for a stronger reason than
+ * precedent. Both operands are counts of **the same set of prisoners**,
+ * published in the same payload from the same projection walk:
+ * `occupiedPlaces` is the length of
+ * `RoomInstanceRegistry.residentIdsWithExistingPlace()`, whose every entry is
+ * the entity id of a prisoner `prisoners` has already counted. So the
+ * difference is the size of a complement -- an arithmetic identity over two
+ * published counts -- and not a second computation of either. It resolves no
+ * catalogue, applies no policy and remembers nothing between messages, which
+ * is the same test `simulation-counts.ts` applies to
+ * `activeIncidentTypeLabelKey`.
+ *
+ * **The derivation this must not be is available and named**, which is what
+ * makes the line real rather than a matter of taste: `prisoners -
+ * accommodationCapacity`. Issue #609's second correction measured why that
+ * one is *wrong* as well as forbidden -- two cells of two beds with four
+ * prisoners all assigned into cell A gives a capacity of 4 and a difference
+ * of **0**, while cell A holds `min(4, 2) = 2` places and two prisoners have
+ * nowhere to sleep. That subtraction silently assumes capacity is fungible
+ * across instances, which is a *simulation* rule
+ * (`firstAvailableAccommodationTarget` spends each target's own budget), so
+ * a HUD doing it really would be deciding a simulation question. Subtracting
+ * a count of prisoners from a count of prisoners assumes nothing.
+ *
+ * **Clamped at zero.** `assign` does not release a prisoner from a previous
+ * instance, and `residentIdsWithExistingPlace` does not de-duplicate, so
+ * `occupiedPlaces > prisoners` is not something this layer can prove
+ * impossible from the other side of a message channel. A negative badge would
+ * be a nonsense sentence on screen; `Math.max` makes the worst case a badge
+ * that does not appear.
+ */
+function prisonersWithoutBed(counts: HudCountsViewModel): number {
+  return Math.max(0, counts.prisoners - counts.occupiedPlaces);
+}
+
+/**
+ * The sentence under the `PRISONERS` chip when somebody has nowhere to sleep,
+ * and nothing at all when everybody does (issue #609).
+ *
+ * **`undefined` rather than a badge reading "0 with no bed"**, which is
+ * `coverageTone`'s reasoning applied to a chip that has been badge-less until
+ * now: *"a status strip where several things are always amber teaches players
+ * to ignore amber"*, and that note already extends it to green. A permanent
+ * badge on the busiest chip on the strip is the same failure in the shape of
+ * reassurance -- eight chips compete for one glance, and a line that is
+ * present in every screenshot is a line nobody reads in the one screenshot it
+ * matters in.
+ *
+ * `warning` and not `danger`. The chip's own `tone` is already the escalation
+ * channel for this chip -- `occupancyTone` turns it red the moment the prison
+ * is past its accommodation capacity -- and painting the badge red as well
+ * would state one fact twice in one colour, leaving nothing louder for the
+ * state that really is worse. The badge's job here is to put the *number* on
+ * screen, which is what issue #609 measured as missing and what issue #629
+ * requires of a mechanic a player would otherwise have to discover: the
+ * money stops for every prisoner counted here, and until now nothing on the
+ * strip said how many there were.
+ */
+function prisonersWithoutBedBadge(counts: HudCountsViewModel): HudMetricBadge | undefined {
+  const withoutBed = prisonersWithoutBed(counts);
+  if (withoutBed <= 0) return undefined;
+  return { tone: 'warning', textKey: HUD_MESSAGE_KEY.prisonersWithoutBed, parameters: { count: withoutBed } };
+}
+
+/**
+ * The worst rung anybody is standing on, as a tone (issue #588).
+ *
+ * Three steps for one metric, in `occupancyTone`'s shape and for
+ * `describeStaffCoverage`'s reason: a prison with somebody unguarded is not a
+ * worse version of an understaffed one, it is the rung where the cheapest
+ * possible action changes the outcome. `undefined` -- not `success` -- when
+ * nobody is on either lower rung, because this is a strip of eight chips
+ * competing for one glance and *"a status strip where several things are
+ * always amber teaches players to ignore amber"* applies to green as well;
+ * the badge still says "Covered" in words, so the state is never carried by
+ * colour alone.
+ */
+function coverageTone(counts: HudCountsViewModel): BadgeTone | undefined {
+  if (counts.prisonersUnguarded > 0) return 'danger';
+  if (counts.prisonersUnderstaffed > 0) return 'warning';
+  return undefined;
+}
+
+/**
+ * The sentence under the coverage chip: the two rungs that are not covered,
+ * with their counts, or the one word an all-covered prison should read.
+ *
+ * The fallback is `securityCoverageMet` -- "Covered", the Staff panel's own
+ * word for the top rung -- rather than a second copy of it, so the panel and
+ * the strip cannot come to disagree about what the top rung is called. It is
+ * also what an *empty* prison reads, which is correct for the same reason it
+ * is correct on the panel: a prison with nobody in a sector has all the
+ * coverage it needs.
+ */
+function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
+  const tone = coverageTone(counts);
+  if (tone === undefined) return { tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet };
+  return {
+    tone,
+    textKey: HUD_MESSAGE_KEY.coverageDetail,
+    parameters: { understaffed: counts.prisonersUnderstaffed, unguarded: counts.prisonersUnguarded },
+  };
+}
+
+/**
  * The top strip, left to right.
  *
  * Order is part of the contract: a HUD whose metrics move between builds is
@@ -156,7 +287,25 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       value: counts.prisoners,
       capacity,
       tone: occupancyTone(counts.prisoners, counts.prisonerCapacity),
-      badge: undefined,
+      /**
+       * **How many of the prisoners this chip counts have no bed** (issue
+       * #609), or nothing when they all do.
+       *
+       * The chip keeps its raw value -- the roster is what a player asks this
+       * chip for -- and the badge names the part of it the prison is not
+       * being paid for. `occupiedPlaces` is the number the state grants
+       * against, so the gap is exactly the population earning nothing, which
+       * is the confusion issue #609 was found by having: twelve prisoners in
+       * a three-bed prison paying like a three-prisoner one, with the number
+       * that separates them computed, transmitted and thrown away at this
+       * boundary.
+       *
+       * The bar beside it answers a different question and both are needed.
+       * The bar is population against *accommodation capacity* -- how full
+       * the prison is -- and it cannot see a bed that was removed under a
+       * sleeping prisoner in a room that still has spare places elsewhere.
+       */
+      badge: prisonersWithoutBedBadge(counts),
     },
     {
       id: 'staff',
@@ -166,6 +315,42 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       capacity: undefined,
       tone: undefined,
       badge: undefined,
+    },
+    {
+      /**
+       * **How many prisoners the prison's guards are actually covering**
+       * (issue #588).
+       *
+       * The value is the top rung; the badge splits the remainder into the
+       * other two. Together they are the `Covered N / Understaffed N /
+       * Unguarded N` the issue asks the strip for, *"so the 40s are
+       * attributable"* -- since ADR 0064 the state withholds part of the
+       * prisoner-day grant per unmet need, and `SafetyCoverageSystem` is what
+       * decides whether `safety` is one of them for a given prisoner.
+       *
+       * **Placed beside `staff` rather than appended after `earned-today`**,
+       * which is the convention the `earned-today` descriptor below records
+       * ("a new chip at the end adds a column without moving one"). That
+       * convention is about not moving a column a player has learned, and this
+       * chip is a *staffing* readout whose only remedy is the control the chip
+       * to its left counts: reading "5 staff, 12 covered, 4 unguarded" left to
+       * right is the whole decision. The four chips it displaces move one
+       * column right, once, in an interface no player has learned yet.
+       *
+       * **`counts.prisoners` is deliberately not the denominator and no
+       * capacity is set.** The three rungs sum to the prisoners standing in a
+       * sector, and a prisoner still in transit is in none of them, so a bar
+       * reading "12 of 16" would be false at exactly the moments intake is
+       * busy. The badge states the remainder instead, which is true whatever
+       * the population is doing.
+       */
+      id: 'coverage',
+      icon: 'security',
+      labelKey: HUD_MESSAGE_KEY.coverage,
+      value: counts.prisonersCovered,
+      capacity: undefined,
+      tone: coverageTone(counts),
+      badge: coverageBadge(counts),
     },
     {
       id: 'rooms',
@@ -236,20 +421,46 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       value: counts.treasuryMinorUnits,
       capacity: undefined,
       // No tone. "Low on money" is a threshold, and a threshold is a balance
-      // decision -- the same reason `BoundedValue` carries no severity band.
-      // There is still nothing to be low *for* on a schedule, but the reason
-      // inverted with #29 rather than going away: the state now pays in once a
-      // day and nothing at all is charged, so a warning here would describe a
-      // slope that runs the wrong way.
+      // decision -- the same reason `BoundedValue` carries no severity band,
+      // and ADR 0017 decision 5 reserves every such value to #29. That half is
+      // unchanged and is still the whole reason this field is `undefined`.
       //
-      // Worth recording, because this comment used to say the opposite. Until
-      // #29 it had to carry the qualifier "on a schedule" -- the unqualified
-      // form was false from the day `ProcurementSystem.cancel` landed, and
+      // **The reason that used to follow it is false, and both directions are
+      // kept rather than one overwritten.** It argued that the slope ran the
+      // wrong way for a warning: that #29 had inverted the situation, since
+      // the state now pays in once a day while the treasury had, in its words,
+      // no outgoing side at all. That was true when it was written -- `4f711d5`
+      // (#311, 2026-08-25) -- and it has since been falsified twice, once in
+      // each of the two ways money leaves a treasury:
+      //
+      // - **A charge the player cannot decline.** `916ac46` (#455) made wages
+      //   recurring: `PayrollSystem` bills every employee's
+      //   `wageBand.minPerDay` at each in-game day boundary.
+      // - **A charge the player makes without meaning to.** `a87b0d3` (#640)
+      //   made a `PlaceBuildOrder` buy its own materials at the press, so one
+      //   drag along a tile edge takes 80 a segment out of this very number.
+      //
+      // `git merge-base --is-ancestor 4f711d5 916ac46` holds, so the sentence
+      // predated the first thing that falsified it by three days rather than
+      // having been wrong when written.
+      //
+      // **So: this chip carries no tone because nobody has chosen the number,
+      // not because there is no slope for a number to sit on.** Choosing it is
+      // #29's, and `docs/research/2026-08-30-playing-into-the-lock.md` measured
+      // what its absence costs -- a wall drag takes the balance from 25,000 to
+      // 40 with this chip looking identical at both ends.
+      //
+      // Worth recording, because this comment used to say the opposite about
+      // the *income* side. Until #29 it had to carry the qualifier "on a
+      // schedule" -- the unqualified form was false from the day
+      // `ProcurementSystem.cancel` landed, and
       // `tests/foundation/documentation-claims-contract.test.ts` was written
       // for exactly that defect. A scheduled credit now exists, so the claim
       // this comment once made is simply untrue and is gone rather than
-      // qualified. The phrase itself is deliberately not spelled out here: that
-      // check reads comments, so quoting the thing it hunts for would trip it.
+      // qualified. That file now gates the outgoing direction as well, and the
+      // paragraph above was one of the two sites it found. Neither phrase is
+      // spelled out here: those checks read comments, so quoting what they hunt
+      // for would trip them.
       tone: undefined,
       badge: undefined,
     },

@@ -79,6 +79,9 @@ function sortedAscending(values) {
  * previous repeat into the one being timed.
  */
 function measurePerTickMinimums(build, repeats) {
+  // `= null` alone infers the type `null`; every later assignment then fails
+  // and every read degrades to `never` (#602).
+  /** @type {number[] | null} */
   let perTickMinimums = null;
   for (let repeat = 0; repeat < repeats + WARMUP_REPEATS; repeat += 1) {
     const stepOnce = build();

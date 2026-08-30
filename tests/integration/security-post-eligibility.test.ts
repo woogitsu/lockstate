@@ -312,8 +312,21 @@ function theRiot(runtime: SimulationRuntime) {
 }
 
 describe('a riot is answered by guards, and only by guards', () => {
-  /** The measured tick the fixture's riot opens at, unchanged from `security-default-sector.test.ts`. */
-  const RIOT_TICK = 4_000;
+  /**
+   * The measured tick the fixture's riot opens at, unchanged from
+   * `security-default-sector.test.ts` -- which is the point of stating it
+   * twice: the two files build the same prison and must agree about when it
+   * riots.
+   *
+   * **4,000 until issue #588, and 3,450 since**, in both files. Nobody
+   * post-eligible is on duty here, so the sector is `unguarded`,
+   * `SafetyCoverageSystem` provisions nothing and `safety` falls at 0.05 a
+   * tick instead of 0.01 -- which is what pulls the twelfth consecutive hot
+   * sample 550 ticks forward. That reinforces this file's own claim rather
+   * than disturbing it: hiring an administrator, a nurse and a cook still
+   * changes nothing about either number.
+   */
+  const RIOT_TICK = 3_450;
 
   it('still riots with a prison full of non-security staff, because they are not coverage', () => {
     const runtime = overcrowdedPrison();

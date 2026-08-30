@@ -151,6 +151,19 @@ There are **three** deliberate exceptions, and none is a transfer:
   today at the cost of being location-blind: a wall 400 tiles away spends the
   same global stock as one next door.
 
+  **This exception carries much more traffic since #627, and no new call
+  site.** ADR 0017 decision 7 -- *"materials are just-in-time by default"* --
+  is now implemented, so **every** build order the queue cannot cover raises a
+  purchase of its own (`JustInTimeMaterialsService`), where before a purchase
+  happened only when a player pressed *Buy*. Nothing new calls `deposit`: the
+  goods still arrive through this same `ProcurementSystem.update`, so the list
+  of exceptions is unchanged and this one is not a fourth. What changed is how
+  much of the prison's building now depends on it, which makes the missing
+  physical route -- ADR 0017 §4's bay and dock door -- a larger debt than it
+  was rather than a different one. The location-blindness in the sentence above
+  is the part that grows: a dragged wall run 400 tiles from anywhere summons
+  its bricks out of nothing, at the site, on the press.
+
 - **`JobSystem.compensateHeldStock` returns a dying job's carried quantity to
   the container it came from**, when a job on the **dropoff** leg is cancelled or
   fails. It is not a transfer either: the goods go back to the one container they

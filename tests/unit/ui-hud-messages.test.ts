@@ -144,12 +144,20 @@ describe('every HUD message key resolves in the bundled default locale', () => {
      * denied it. The payroll half stopped being true with ADR 0042 step 3,
      * which bills every employee's wage at every in-game day boundary.
      *
-     * So what this gate now guards is a **narrower and real** thing: the
-     * simulation publishes a daily wage bill and an arrears figure, and no
-     * panel renders either, so no key may exist for them yet. A label authored
-     * before something renders the figure it names is `AGENTS.md`'s fourth
-     * exclusion. When the panel lands, the key lands with it and this list
-     * grows in the same change.
+     * So what this gate now guards is a **narrower and real** thing: a label
+     * authored before something renders the figure it names is `AGENTS.md`'s
+     * fourth exclusion, so a key may name one of these flows only in the change
+     * that puts the flow on screen.
+     *
+     * **The paragraph above used to end "the simulation publishes a daily wage
+     * bill and an arrears figure, and no panel renders either, so no key may
+     * exist for them yet ... when the panel lands, the key lands with it and
+     * this list grows in the same change."** The panel landed (#639 ruling 2):
+     * the Staff panel's collapsed `On the payroll` header states
+     * `dailyWageBillMinorUnits`, so `hud.security.roster-wage-bill` is the key
+     * that arrived with it and the list has grown exactly as that sentence
+     * asked. The arrears figure still has no reader and no key, and that half
+     * of the old sentence is still in force.
      *
      * So the refused words stay exactly as they were, for a reason that has
      * moved twice rather than disappearing. `income`, `wage` and `salary` name
@@ -162,7 +170,7 @@ describe('every HUD message key resolves in the bundled default locale', () => {
      * (`hud.build.buy-submit`), which is a statement about the button that is
      * about to be pressed, not a price list the HUD keeps.
      */
-    const ALLOWED_MONEY_KEYS = new Set(['hud.status.funds']);
+    const ALLOWED_MONEY_KEYS = new Set(['hud.status.funds', 'hud.security.roster-wage-bill']);
 
     for (const key of HUD_MESSAGE_KEYS) {
       if (ALLOWED_MONEY_KEYS.has(key)) continue;
@@ -194,8 +202,20 @@ describe('message keys live in one registry', () => {
     for (const metric of projectStatusMetrics({
       prisoners: 1,
       prisonerCapacity: 2,
+      // One prisoner and no place, so the `PRISONERS` chip takes its
+      // `prisonersWithoutBed` branch (issue #609) rather than the no-badge
+      // one: this case walks every label the strip can render, and a fixture
+      // where everybody was housed would leave the new one unwalked.
+      occupiedPlaces: 0,
       staff: 1,
       rooms: 1,
+      // Non-zero on both lower rungs, so the coverage chip takes its
+      // `coverageDetail` branch rather than the `securityCoverageMet`
+      // fallback: this case walks every label the strip can render, and a
+      // fixture that never left the fallback would leave one unwalked.
+      prisonersCovered: 1,
+      prisonersUnderstaffed: 1,
+      prisonersUnguarded: 1,
       activeIncidents: 1,
       // No `activeIncidentTypeLabelKey` here on purpose: the label this test
       // walks against is the HUD's own closed registry, and a real

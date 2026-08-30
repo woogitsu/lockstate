@@ -1,4 +1,4 @@
-import { type Page, expect, test } from '@playwright/test';
+import { type Page, expect, test } from './network-changed-fixture';
 import type { HudPrisonerRosterViewModel, HudRegimeViewModel, HudViewModel } from '../../src/ui/hud';
 import { MAX_ROOM_SIDE_TILES } from '../../src/ui/hud/rooms-panel';
 import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global augmentation
@@ -351,6 +351,10 @@ test.describe('HUD shell', () => {
     expect(probe.metricIds).toEqual([
       'prisoners',
       'staff',
+      // Issue #588's guard-coverage chip, placed beside `staff` rather than
+      // appended: it is a staffing readout whose only remedy is the control
+      // the chip to its left counts. `src/ui/hud/projection.ts` argues it.
+      'coverage',
       'rooms',
       'incidents',
       'contraband',
@@ -363,7 +367,10 @@ test.describe('HUD shell', () => {
     // units and the same treatment, and it is the accrual this fixture's own
     // clock and population imply rather than a round number (#29) -- so a chip
     // that reformatted or rescaled either figure is visible here.
-    expect(probe.metricValues).toEqual(['142', '27', '61', '0', '4', '24,920', '10,667']);
+    // `100` is `BASE_VIEW_MODEL.counts.prisonersCovered` -- the top rung of the
+    // coverage chip, with the other two rungs in its badge rather than in a
+    // value of their own (issue #588).
+    expect(probe.metricValues).toEqual(['142', '27', '100', '61', '0', '4', '24,920', '10,667']);
     expect(probe.activeTab).toBe('overview');
     // Paused on day 3, a quarter of the way through it: exactly one transport
     // control is pressed, and the clock reads the simulation's own units.
@@ -429,8 +436,15 @@ test.describe('HUD shell', () => {
         counts: {
           prisoners: 179,
           prisonerCapacity: 180,
+          // Everybody housed: this case is about the transport controls and
+          // the clock, and an unhoused population would add #609's badge to
+          // the chip it reads `metricValues[0]` off.
+          occupiedPlaces: 179,
           staff: 27,
           rooms: 61,
+          prisonersCovered: 140,
+          prisonersUnderstaffed: 27,
+          prisonersUnguarded: 12,
           activeIncidents: 2,
           contrabandFound: 4,
           treasuryMinorUnits: 0,
@@ -825,8 +839,12 @@ test.describe('HUD shell', () => {
       counts: {
         prisoners: 0,
         prisonerCapacity: 0,
+        occupiedPlaces: 0,
         staff: 0,
         rooms: 0,
+        prisonersCovered: 0,
+        prisonersUnderstaffed: 0,
+        prisonersUnguarded: 0,
         activeIncidents: 0,
         contrabandFound: 0,
         treasuryMinorUnits: 0,
@@ -1037,8 +1055,12 @@ test.describe('HUD shell', () => {
       counts: {
         prisoners: 142,
         prisonerCapacity: 180,
+        occupiedPlaces: 142,
         staff: 27,
         rooms: 61,
+        prisonersCovered: 100,
+        prisonersUnderstaffed: 30,
+        prisonersUnguarded: 12,
         activeIncidents: 0,
         contrabandFound: 4,
         treasuryMinorUnits: 24_920,
@@ -2673,16 +2695,120 @@ test.describe('the Rooms panel', () => {
       JSON.stringify({ kind: 'zone-room', roomId: 'room.cell', area: { x: 4, y: 6, width: 2, height: 3 } }),
     ]);
     const after = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
-    // The confirm pair is gone, so the row is back to holding the arm pair --
-    // and the panel is back to being folded, because the tool is still armed and
-    // there is nothing left to confirm. That is the loop: draw, confirm, draw
-    // again, with the panel out of the way for the parts that happen on the
-    // world. The arm control is inside the folded body and so is not laid out,
-    // which is why this reads the pair rather than the button.
+    /*
+     * The confirm pair is gone, so the row is back to holding the arm pair.
+     *
+     * **The three lines under that used to assert the opposite of what they
+     * assert now**, and the reasoning they carried is kept because it was the
+     * design until #684: *"the panel is back to being folded, because the tool
+     * is still armed and there is nothing left to confirm. That is the loop:
+     * draw, confirm, draw again, with the panel out of the way for the parts
+     * that happen on the world. The arm control is inside the folded body and
+     * so is not laid out, which is why this reads the pair rather than the
+     * button."* Every sentence of that was true of the code it described.
+     *
+     * What it did not account for is that the loop it names is invisible: the
+     * only control that reports the tool's state is the one the fold takes off
+     * the screen, on the same press. A player coming back for a second room
+     * opened the panel and pressed the control that starts drawing -- which at
+     * that moment reads "Stop drawing", measured, so the surface was telling
+     * the truth to anyone who stopped to read it -- and that press disarmed.
+     * So the confirm now stands the tool down, the drawing
+     * pass ends with it, and the panel comes back saying "Draw on map" --
+     * `rooms-panel.ts`'s `standDownAfterConfirm` carries the full reasoning and
+     * the option that was rejected. The test below owns the new rule; these
+     * three lines are the same three, pointed the other way.
+     */
     expect(after.confirmLaidOut, 'the panel returns to its arm state').toBe(false);
     expect(after.cancelLaidOut).toBe(false);
-    expect(after.folded, 'confirming did not resume the drawing pass').toBe('true');
-    expect(after.armLaidOut, 'the arm control is inside the folded body').toBe(false);
+    expect(after.folded, 'confirming did not end the drawing pass').toBe('false');
+    expect(after.armLaidOut, 'the arm control did not come back with the panel').toBe(true);
+  });
+
+  /**
+   * Issue #684: the second room, and the press that used to undo the first.
+   *
+   * The reproduction is four ordinary steps -- arm, drag, designate, arm again
+   * -- and it cost a playtest agent a whole run on `main`, which is the honest
+   * measure of how discoverable the old state was. Three things are asserted
+   * here rather than one, because they are three different promises and only
+   * the first of them is about this panel's own paint:
+   *
+   *  1. **The world tool is told.** `arm-room-tool` is what reaches
+   *     `RoomTool.setArmed` in the assembled application, so a panel that
+   *     repainted its button and never sent it would leave the pointer captured
+   *     by a tool the interface says is off. That is the intent stream, not the
+   *     DOM.
+   *  2. **The panel says so where the player is looking.** The label,
+   *     `aria-pressed`, and -- the half the old behaviour lost -- the control
+   *     having a box at all.
+   *  3. **The next press arms.** This is the whole of the defect: the same
+   *     gesture that used to disarm now does what its label says.
+   *
+   * `armText` and `armPressed` are read together deliberately. The label has
+   * always been honest -- "Stop drawing" while armed -- so this test would pass
+   * on the old code if it only read the label after a *press*; what it pins is
+   * the state at the moment the confirm lands.
+   */
+  test('a designation stands the tool down, so the next press of the arm control arms it (#684)', async ({
+    page,
+  }) => {
+    const probe = async () => page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    /**
+     * Every `arm-room-tool` intent, in order, as the host received it.
+     *
+     * The counterpart of `roomCommands` above, which filters these *out*: there
+     * they are chrome and here they are the subject.
+     */
+    const armIntents = async (): Promise<readonly string[]> => {
+      const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+      return intents.filter((intent) => intent.includes('"arm-room-tool"'));
+    };
+    const armedIntent = (armed: boolean): string =>
+      JSON.stringify({ kind: 'arm-room-tool', armed, roomId: 'room.cell', removing: false });
+
+    // ---- step 1: the player arms, and the panel gets out of the way ----
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
+    expect(await armIntents(), 'the arm press never reached the world tool').toEqual([armedIntent(true)]);
+    const drawing = await probe();
+    expect(drawing.armPressed, 'the armed control does not report itself pressed').toBe('true');
+    expect(drawing.armText).toBe('Stop drawing');
+    expect(drawing.folded, 'arming did not fold the panel').toBe('true');
+
+    // ---- steps 2 and 3: the drag, and the designation ----
+    expect(
+      await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 4, y: 6, width: 2, height: 3 })),
+      'the HUD registered no room-gesture sink',
+    ).toBe(true);
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('confirm'));
+    expect(await roomCommands(page), 'the confirm designated nothing').toEqual([
+      JSON.stringify({ kind: 'zone-room', roomId: 'room.cell', area: { x: 4, y: 6, width: 2, height: 3 } }),
+    ]);
+
+    // 1. The world tool is stood down, and by the same press that designated.
+    expect(await armIntents(), 'the designation left the world tool armed').toEqual([
+      armedIntent(true),
+      armedIntent(false),
+    ]);
+
+    // 2. And the panel says so, on screen, where the next press is aimed.
+    const after = await probe();
+    expect(after.armPressed, 'the control still reports itself pressed').toBe('false');
+    expect(after.armText, 'the control still offers to stop something').toBe('Draw on map');
+    expect(after.armLaidOut, 'the control that says so has no box to say it in').toBe(true);
+    expect(after.folded, 'the panel folded over the control that reports the state').toBe('false');
+
+    // ---- step 4: the press that used to be the defect ----
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
+    expect(await armIntents(), 'pressing the arm control disarmed the tool instead').toEqual([
+      armedIntent(true),
+      armedIntent(false),
+      armedIntent(true),
+    ]);
+    const second = await probe();
+    expect(second.armPressed, 'the second room never armed the tool').toBe('true');
+    expect(second.armText).toBe('Stop drawing');
+    expect(second.folded, 'the second drawing pass did not fold the panel').toBe('true');
   });
 
   /**
@@ -3000,6 +3126,16 @@ test.describe('the Rooms panel', () => {
     expect(await roomCommands(page), 'a removal carries no room id').toEqual([
       JSON.stringify({ kind: 'unzone-room', area: { x: 7, y: 7, width: 1, height: 1 } }),
     ]);
+
+    // And the confirm stands the removal down too (#684), for the reason it
+    // stands a designation down: the press said "remove this room", not "keep
+    // removing". The mode goes with the arming rather than outliving it,
+    // because a control reading "Stop removing" with nothing being removed is
+    // the same hidden state one row over.
+    const after = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(after.removePressed, 'the removal mode outlived the removal').toBe('false');
+    expect(after.armPressed, 'the tool stayed armed after the removal').toBe('false');
+    expect(after.folded, 'the panel stayed folded after the removal').toBe('false');
   });
 
   /**

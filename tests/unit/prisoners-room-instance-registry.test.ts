@@ -110,8 +110,16 @@ describe('RoomInstanceRegistry', () => {
         objectCapabilities: ['dining', 'seating'],
       });
 
-      expect(registry.findAvailableForUse('room.canteen')?.instanceId).toBe('canteen-1');
       expect(registry.findAvailableForUse('room.canteen', 'dining')?.instanceId).toBe('canteen-1');
+      // **Asked with no capability at all, the canteen offers nothing**, and
+      // this line used to answer `'canteen-1'`. Since the owner's ruling of
+      // 2026-08-29 (#585) a no-capability question is answered from floor area
+      // and floor area is a resource only a room type tagged as an open area
+      // supplies. `room.canteen` is not tagged, so it derives 0 -- and that is
+      // the point of the ruling rather than a loss: a canteen seats diners at
+      // its tables, and it has never been somewhere a prisoner does something
+      // that consumes no object.
+      expect(registry.findAvailableForUse('room.canteen')).toBeUndefined();
       // The same instance, asked the residency question, is not available at
       // all: `residentCapacity` is 0 and `0 >= 0` refuses.
       expect(registry.findAvailableResidence('room.canteen')).toBeUndefined();
@@ -262,6 +270,11 @@ describe('RoomInstanceRegistry', () => {
         instanceId: 'yard-1',
         roomCatalogId: 'room.yard',
         anchorTile: TILE,
+        // Explicitly tagged, because since the owner's ruling of 2026-08-29
+        // (#585) that is what gives floor area a domain here at all --
+        // `RoomZoningService.zone` reads the tag off `room.yard`'s catalogue
+        // entry, and a hand-registered instance has to carry it too.
+        openArea: true,
         width: 8,
         height: 8,
         residentCapacity: 0,
@@ -294,6 +307,7 @@ describe('RoomInstanceRegistry', () => {
         instanceId: 'yard-2',
         roomCatalogId: 'room.yard',
         anchorTile: { x: tileCoordinate(96), y: TILE.y },
+        openArea: true,
         width: 16,
         height: 16,
         residentCapacity: 0,
@@ -340,6 +354,7 @@ describe('RoomInstanceRegistry', () => {
         instanceId: 'yard-v4',
         roomCatalogId: 'room.yard',
         anchorTile: TILE,
+        openArea: true,
         residentCapacity: 0,
         concurrentUseCapacity: 0,
         concurrentUseCapacityByCapability: [],
@@ -353,21 +368,31 @@ describe('RoomInstanceRegistry', () => {
       expect(registry.totalUseClaims).toBe(64);
     });
 
-    it('never derives zero for a room that has a rectangle, which is the defect #326 removed', () => {
+    it('never derives zero for an OPEN-AREA room that has a rectangle, which is the defect #326 removed', () => {
       /*
-       * The clamp, stated as the property rather than as a rounding note.
-       * `floor(6 / 16)` is 0, so a 2x3 cell -- the smallest room the catalogue
-       * permits -- would admit nobody without it, and "a room that exists and
-       * admits nobody" is precisely what an object-footprint ceiling on an
-       * objectless room used to produce. No legal `room.yard` reaches the
-       * clamp; every smaller room type does.
+       * ADR 0071 decision 3's clamp, **as scoped by the owner's ruling of
+       * 2026-08-29** (#585): it is a floor under the open-ground arithmetic,
+       * and the arithmetic now runs only for a room type tagged as an open
+       * area. `floor(4 / 16)` is 0, so a 2x2 holding cell would admit nobody
+       * without it, and "a room that exists and admits nobody" is precisely
+       * what an object-footprint ceiling on an objectless room used to
+       * produce.
+       *
+       * **This case used to be hypothetical and is now real, which is the one
+       * thing the ruling improved here.** It was written over `room.cell`
+       * rectangles -- 1x1, 2x3, 3x3 -- with the note that "no legal
+       * `room.yard` reaches the clamp; every smaller room type does". That
+       * note is now false in the useful direction: a cell derives 0 because it
+       * is not an open area, and `room.holding-cell`'s authored minimum of
+       * 2x2 is a legal, zonable, tagged room that lands on the clamp.
        */
       const registry = new RoomInstanceRegistry();
-      for (const [instanceId, width, height] of [['tiny-1', 1, 1], ['cell-1', 2, 3], ['laundry-1', 3, 3]] as const) {
+      for (const [instanceId, width, height] of [['holding-min', 2, 2], ['holding-3x3', 3, 3]] as const) {
         registry.register({
           instanceId,
-          roomCatalogId: 'room.cell',
+          roomCatalogId: 'room.holding-cell',
           anchorTile: { x: TILE.x, y: TILE.y },
+          openArea: true,
           width,
           height,
           residentCapacity: 0,
@@ -383,6 +408,96 @@ describe('RoomInstanceRegistry', () => {
         expect(registry.claimUse(instanceId, 1 as never)).toBe(true);
         expect(registry.claimUse(instanceId, 2 as never), 'and only one').toBe(false);
       }
+    });
+
+    /**
+     * **The owner's ruling of 2026-08-29 (issue #585), which amends
+     * [ADR 0071](../../docs/adr/0071-what-bounds-a-room-whose-activity-consumes-no-object.md):
+     * capacity derived from a room's own ground applies only to room types
+     * explicitly tagged as open areas.**
+     *
+     * The tag is authored in `src/content/room-catalog.ts` on `room.yard`,
+     * `room.holding-cell` and `room.delivery-bay`, and carried onto the
+     * instance at registration. What is asserted here is the rule, not the
+     * list: the list is `content-catalogs.test.ts`'s, and a rule tested
+     * against the same catalogue it is read from would agree with any tagging.
+     */
+    describe('floor area bounds only a room tagged as an open area (#585)', () => {
+      /** One instance of `roomCatalogId`, `width` x `height`, tagged or not, with no objects in it. */
+      function bareRoom(roomCatalogId: string, openArea: boolean, width = 8, height = 8): RoomInstanceRegistry {
+        const registry = new RoomInstanceRegistry();
+        registry.register({
+          instanceId: 'room-1',
+          roomCatalogId,
+          anchorTile: TILE,
+          ...(openArea ? { openArea: true } : {}),
+          width,
+          height,
+          residentCapacity: 0,
+          concurrentUseCapacity: 0,
+          concurrentUseCapacityByCapability: [],
+          objectCapabilities: [],
+        });
+        return registry;
+      }
+
+      it('derives nothing for an untagged room, however much ground it has', () => {
+        // 32x32 is 1,024 tiles -- 64 open-ground places under the arithmetic --
+        // so this fails on any implementation that still reads the rectangle
+        // for an untagged room, and it cannot be satisfied by a clamp or a
+        // rounding accident.
+        const registry = bareRoom('room.cell', false, 32, 32);
+        const cell = registry.getById('room-1')!;
+        expect(Math.floor((32 * 32) / TILES_PER_OPEN_GROUND_PLACE), 'the arithmetic this room does not get to use').toBe(64);
+        expect(registry.concurrentUseCapacityFor(cell, undefined)).toBe(0);
+        expect(registry.claimUse('room-1', 1 as never), 'and admits nobody at all').toBe(false);
+        expect(registry.hasPlaceForUse('room.cell')).toBe(false);
+        expect(registry.findAvailableForUse('room.cell')).toBeUndefined();
+      });
+
+      it('derives nothing for an untagged room that records no rectangle either, rather than falling through to unbounded', () => {
+        // The order of the two tests inside `openGroundCapacityOf` is the
+        // subject: a missing rectangle answers `POSITIVE_INFINITY`, so an
+        // implementation that asked about the rectangle first would hand an
+        // untagged room the *unbounded* answer -- the exact behaviour the
+        // ruling exists to remove, reached through the back door.
+        const registry = new RoomInstanceRegistry();
+        registry.register({
+          instanceId: 'room-1', roomCatalogId: 'room.cell', anchorTile: TILE,
+          residentCapacity: 0, concurrentUseCapacity: 0, concurrentUseCapacityByCapability: [], objectCapabilities: [],
+        });
+        const cell = registry.getById('room-1')!;
+        expect(cell.width, 'this case is only interesting with no rectangle').toBeUndefined();
+        expect(registry.concurrentUseCapacityFor(cell, undefined)).toBe(0);
+      });
+
+      it('derives the same ground for a tagged room as it always did', () => {
+        // The other half, and the reason this is a scoping and not a nerf:
+        // nothing a tagged room derives moves.
+        const registry = bareRoom('room.yard', true, 8, 8);
+        expect(registry.concurrentUseCapacityFor(registry.getById('room-1')!, undefined)).toBe(
+          Math.floor((8 * 8) / TILES_PER_OPEN_GROUND_PLACE),
+        );
+      });
+
+      it('leaves the capability-scoped ceiling alone in both directions', () => {
+        // The ruling is about the *no-capability* case only. A room's objects
+        // still bound what they bound, tagged or untagged -- otherwise this
+        // would have taken the dining ceiling off every canteen.
+        for (const openArea of [true, false]) {
+          const registry = new RoomInstanceRegistry();
+          registry.register({
+            instanceId: 'canteen-1', roomCatalogId: 'room.canteen', anchorTile: TILE,
+            ...(openArea ? { openArea: true } : {}),
+            width: 6, height: 6,
+            residentCapacity: 0, concurrentUseCapacity: 6,
+            concurrentUseCapacityByCapability: [['dining', 6]],
+            objectCapabilities: ['dining'],
+          });
+          expect(registry.concurrentUseCapacityFor(registry.getById('canteen-1')!, 'dining')).toBe(6);
+          expect(registry.concurrentUseCapacityFor(registry.getById('canteen-1')!, 'hygiene')).toBe(0);
+        }
+      });
     });
 
     it('is idempotent for a claim already held against the same capability', () => {

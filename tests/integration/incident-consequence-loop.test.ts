@@ -226,8 +226,16 @@ describe('an incident has a consequence for the prisoner who was in it', () => {
     /*
      * `NEED_IDS` order: hunger, sleep, hygiene, bladder, safety, recreation.
      * Measured at tick 70,000: the reclassified prisoner reads
-     * **[973, 1000, 0, 965, 1000, 0]** and the clean one
-     * **[867, 1000, 0, 847, 1000, 0]**.
+     * **[973, 1000, 0, 965, 0, 0]** and the clean one
+     * **[867, 1000, 0, 847, 0, 0]**.
+     *
+     * **The fifth entry was 1,000 for both until issue #588**, and it is now 0
+     * for both. `safety` is provisioned by guard coverage since the owner's
+     * ruling on issue #599; this fixture hires nobody, so an `unguarded` sector
+     * provisions nothing and the need falls to the floor in both arms. It is
+     * pinned below beside `hygiene` and `recreation` for exactly that reason --
+     * a need neither timetable can serve must not be where the divergence
+     * comes from.
      *
      * **This block used to read [0, 0, 0, 369, 141, 0] against
      * [0, 1000, 0, 86, 1000, 0], and asserted `hardSleep === 0` as the
@@ -271,7 +279,6 @@ describe('an incident has a consequence for the prisoner who was in it', () => {
     // resolves through `own-accommodation` on either timetable.
     expect(hardSleep).toBe(1_000);
     expect(cleanSleep).toBe(1_000);
-    expect(hardSafety).toBe(1_000);
     // Neither prisoner can reach hygiene or recreation at all: this prison
     // zones no shower room, no yard and no common room, and no action targeting
     // those has an `own-accommodation` sibling to fall back to (ADR 0041
@@ -279,6 +286,21 @@ describe('an incident has a consequence for the prisoner who was in it', () => {
     // divergence above cannot be credited to a need neither prisoner can serve.
     expect(hardHygiene).toBe(0);
     expect(hardRecreation).toBe(0);
+    /*
+     * **`safety` joined those two with issue #588, and it used to sit with
+     * `sleep` above at 1,000.** It was full because `action.sleep` carried
+     * `safety: 0.2` -- a bed kept a prisoner safe. Under the owner's ruling on
+     * issue #599 the provisioner is guard coverage, this fixture hires nobody,
+     * and an `unguarded` sector provisions nothing -- so the need falls at 0.05
+     * a tick with nothing opposing it and reaches the floor inside the window.
+     *
+     * It is pinned here for the same reason hygiene and recreation are: a need
+     * neither timetable can serve must not be where the divergence above comes
+     * from. Hiring a guard would put it back at 1,000 and would change nothing
+     * else this file asserts; it is left unhired because an unguarded prison is
+     * what a fixture about incidents should be.
+     */
+    expect(hardSafety).toBe(0);
   });
 
   it('brings them back down as clean time accrues, so the loop does not only ratchet one way', () => {

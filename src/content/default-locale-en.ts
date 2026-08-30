@@ -156,9 +156,20 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // ---------------------------------------------------------------
   'hud.status.title': 'Prison status',
   'hud.status.prisoners': 'Prisoners',
+  // How many prisoners have no bed (#609). The owner's wording, approved
+  // before it was built, and it counts what is missing rather than what is
+  // fine: "9 housed" was the rejected alternative, because a player reads
+  // past a number that is already fine. It is the short form of the Intake
+  // panel's `hud.intake.no-place` below -- "{count} waiting with no bed to
+  // sleep in" -- on purpose, so the same fact reads the same way in both
+  // places; the strip's is the wider count of the two, since a prisoner whose
+  // bed was removed under them is not waiting for anything.
+  'hud.status.prisoners-without-bed': '{count} with no bed',
   'hud.status.staff': 'Staff',
   'hud.status.rooms': 'Rooms',
   'hud.status.incidents': 'Incidents',
+  'hud.status.coverage': 'Coverage',
+  'hud.status.coverage-detail': '{understaffed} understaffed · {unguarded} unguarded',
   'hud.status.contraband': 'Contraband',
   // The treasury balance (#96). "Funds" names no currency on purpose: #96
   // settled that money is primary and did not name a unit, and the number is
@@ -426,6 +437,29 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.event.prisoners.discharged': '{count} released — their sentences are served.',
   'hud.alert.event.economy.wages-unpaid': 'Payday went unpaid — your staff are owed {total}.',
 
+  // ADR 0076 decision A(i)'s notice: a prisoner whose bed was taken away has
+  // been moved to one that exists.
+  //
+  // **This sentence is the owner's, approved on 2026-08-30, and is reproduced
+  // exactly.** ADR 0076's Status reserved it -- *"a prisoner who changes cell
+  // unasked is something the player should be told, flagged rather than
+  // decided"*, and *"whoever implements relocation must put the question
+  // rather than invent the string"* -- so the question was put and this is the
+  // answer that came back. It is deliberately *not* edited into the em-dash
+  // voice the two above share.
+  //
+  // Both placeholders are filled by `HudMessageParameterViewModel`s rather
+  // than by plain `labelParameters`, because both are text only a localizer
+  // can produce: `{room}` is the room catalog's own `nameKey`, and `{name}` is
+  // two halves of state assembled through `hud.regime.roster-name`, whose
+  // order is a locale decision. See `eventParameterMessages` in
+  // `src/ui/simulation-events.ts`.
+  //
+  // There is no sentence for the other half of decision A(i) -- a resident the
+  // prison had nowhere to move -- and there must not be one until the owner
+  // writes it.
+  'hud.alert.event.prisoners.relocated': '{name} had nowhere to sleep and moved to {room}.',
+
   // The incident sentences (issue #555). Same family, same voice, written
   // against two constraints the two above did not have.
   //
@@ -524,6 +558,21 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * `queue-more` says what is behind the last row and deliberately offers no way
    * to reach it: those orders are not the ones about to happen, and taking a
    * whole run back is Undo's job.
+   *
+   * `queue-shortfall` is the queue's only sentence about money, and the one
+   * thing on this surface a player must be told rather than discover (#629).
+   * Since a build order buys its own materials (ADR 0017 decision 7),
+   * *"Awaiting Materials"* means two things a row cannot separate -- the lorry
+   * is coming, or the prison could not pay -- and only the second needs the
+   * player to do something. `{total}` is what the queue could not buy, in the
+   * same minor units as `hud.status.funds`, so the two numbers on screen read
+   * against each other with nobody having chosen a currency.
+   *
+   * **Authored by the owner, 2026-08-30, and verbatim.** The words on this line
+   * are not an agent's: the sentence #640 needed did not exist, the gap was
+   * reported rather than filled, and this is the answer that came back. It
+   * names no material on purpose, which is why the view model that feeds it
+   * carries two scalars and not the projection's per-item list.
    */
   'hud.build.queue': 'Queued',
   'hud.build.queue-count': '{count} waiting · {started} being built',
@@ -531,6 +580,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.queue-cancel': 'Cancel',
   'hud.build.queue-unnamed': 'Unnamed order',
   'hud.build.queue-more': 'and {count} more behind these — undo takes back a whole run.',
+  'hud.build.queue-shortfall': 'Waiting for {total} to buy materials.',
   /*
    * What has been bought and has not arrived (#285), inside the buy disclosure
    * and beside the control that spent the money.
@@ -628,7 +678,72 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.security.roles-empty': 'Nobody can be hired yet.',
   'hud.security.selected': 'Selected',
   'hud.security.hire': 'Hire {role} · {total}',
-  'hud.security.hire-hint': 'Taken from the treasury on hire. A new guard starts unassigned.',
+  /*
+   * What a hire costs, both halves of it (issue #639 ruling 2, the owner's
+   * approved wording).
+   *
+   * **This key used to say *"Taken from the treasury on hire. A new guard
+   * starts unassigned."* and the first sentence was false.** `PayrollSystem`
+   * bills the same figure again at every in-game day boundary the guard is on
+   * the roster for (`src/simulation/economy/payroll.ts`), so a player reading
+   * *on hire* was told a recurring charge was a one-off fee. Measured while
+   * playing (#636): `25,000 -> 24,920 -> 24,840 -> 24,760`, with `/wage/i`,
+   * `/per day/i` and `/daily/i` all false across the whole HUD at every
+   * observation. `AGENTS.md` reserves *"any player-visible promise the code
+   * does not keep"* to the owner, and this is that category met head-on, so
+   * the replacement sentence is theirs and is reproduced verbatim.
+   *
+   * **Both figures are placeholders, and that is the point.** A hard-coded
+   * `80` in a locale string would be a second authority on a price, which
+   * ADR 0017 decision 5 puts with #29 -- and it would be a *silent* one, since
+   * moving `wageBand.minPerDay` would move the button, the button's charge and
+   * the payroll while leaving this sentence quoting the old number. `{total}`
+   * is the same value the `hud.security.hire` button above renders, and
+   * `{wage}` is `staffDailyWageMinorUnits` for the same role. They are two
+   * parameters rather than one because they answer two questions; that they
+   * hold one number today is `src/simulation/economy/wages.ts`'s doing and is
+   * that module's to change.
+   *
+   * **"wages" is the word the payroll block uses**, and it is here so a player
+   * meets the category once with a price on it and again on the `On the
+   * payroll` header, rather than meeting two vocabularies for one thing.
+   *
+   * **What this no longer says**: *"A new guard starts unassigned."* It was
+   * displaced rather than judged unwanted -- and `.hud-staff__note` is clamped
+   * to a single line at any viewport 700px tall or shorter
+   * (`src/ui/hud/hud.css`), which is why the two sentences could not simply be
+   * run together.
+   *
+   * **That paragraph used to end "see the report on #639" for the displaced
+   * sentence's fate, and the fate is now settled**: the owner ruled on
+   * 2026-08-30 that it returns as a line of its own, and it is
+   * `hud.security.hire-unassigned` immediately below. The clamp sentence above
+   * is left standing because it is still why the two are two keys.
+   */
+  'hud.security.hire-hint': 'Costs {total} now and {wage} a day in wages.',
+  /*
+   * The half of the old hint that the owner's approved sentence displaced, back
+   * as a key and a line of its own (issue #639 ruling 2, approved 2026-08-30).
+   *
+   * **It is a restoration, not a new string.** `hud.security.hire-hint` read
+   * *"Taken from the treasury on hire. A new guard starts unassigned."* until
+   * the ruling above replaced its first sentence, which was false; the second
+   * sentence was never wrong and was never judged unwanted. It could not simply
+   * be run on after the replacement, because `.hud-staff__note` is clamped to a
+   * single line at any viewport 700px tall or shorter -- run together, the two
+   * sentences measured `scrollHeight` 26 against `clientHeight` 13 at 900x600
+   * and the player read half of them. So it returns as its own note, exempted
+   * from that clamp in `src/ui/hud/hud.css`, which is what
+   * `hud.build.note` does one panel over for the same reason.
+   *
+   * It quotes no figure and takes no parameter: what a hire spends is the
+   * sentence above's job, and this one says what a player gets for it -- a
+   * guard who is hired and posted nowhere, which is the state
+   * `deployment-phase.unassigned.name` names on the roster and the reason
+   * `hud.security.coverage` can still read *"Unguarded"* the tick after a
+   * successful hire.
+   */
+  'hud.security.hire-unassigned': 'A new guard starts unassigned.',
 
   // The Staff panel's held-guards list (ADR 0034). `hud.security.held-row` says
   // who and what is holding them in one line, so the claim is a statement about
@@ -658,12 +773,52 @@ const authoredMessages: Readonly<Record<string, string>> = {
    *
    * `hud.security.roster-hint` says the consequence rather than the mechanism,
    * and it says the *money* half because that is the half a player pressing this
-   * is acting on: `hud.security.hire-hint` two blocks up already told them the
-   * wage is taken on hire, and `PayrollSystem` goes on taking it every in-game
-   * day until this control is pressed. It deliberately does not promise a refund
-   * or a severance, because there is neither.
+   * is acting on: `hud.security.hire-hint` two blocks up already priced the
+   * wage, and `PayrollSystem` goes on taking it every in-game day until this
+   * control is pressed. It deliberately does not promise a refund or a
+   * severance, because there is neither.
+   *
+   * **That sentence used to end "already told them the wage is taken on hire",
+   * and it was describing a hint that was wrong** -- *"Taken from the treasury
+   * on hire"* said once and the system charged daily, which is the defect issue
+   * #639 ruling 2 corrected. Both directions are marked rather than
+   * overwritten, because the reason this hint says the money half has not
+   * changed; only the sentence it leans on has.
+   *
+   * Since the same ruling, `hud.security.roster` is also a header with a figure
+   * beside it: the whole roster's standing daily bill, as a trailing element on
+   * the section, which is collapsed.
+   *
+   * **That figure was bare for one revision and this paragraph used to say so**
+   * -- it called the shared word *wage* "what ties that bare figure to a
+   * category the player has already met with a price on it". It is not bare any
+   * more: `hud.security.roster-wage-bill` below states the period on the badge
+   * itself, because a bare number beside a header naming people reads as a
+   * headcount. The shared vocabulary still matters; it is no longer the only
+   * thing carrying the figure's meaning.
    */
   'hud.security.roster': 'On the payroll',
+  /*
+   * The figure beside that header, with the word that says what kind of figure
+   * it is (issue #639 ruling 2, the owner's approved wording, 2026-08-30).
+   *
+   * **The badge shipped for one revision as a bare `4,800`, and that was the
+   * gap this key closes.** Beside a header naming *people*, a bare number reads
+   * as a headcount as readily as as money, and no test can tell the two
+   * readings apart -- they render identical characters. The Build panel's own
+   * collapsed-header badge was never bare for this reason:
+   * `hud.build.queue-count` is *"{count} waiting · {started} being built"*.
+   *
+   * `{total}` and no currency, on `hud.security.hire`'s terms: #96 named no
+   * currency and the figure is the treasury's own minor units. The word is
+   * carried here rather than concatenated at the call site so a locale can move
+   * it -- "a day" precedes the figure in more languages than it follows it.
+   *
+   * *"a day"* rather than *"per day"* or *"daily"* because it is the phrasing
+   * the hire hint two blocks up already uses for the same period, and one
+   * vocabulary for one thing is the point of the pair.
+   */
+  'hud.security.roster-wage-bill': '{total} a day',
   'hud.security.roster-dismiss': 'Dismiss',
   'hud.security.roster-hint': 'A dismissed staff member leaves the prison for good, and their wage stops.',
 
@@ -1033,6 +1188,23 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // are `aria-hidden`, because "PRE-ALPHA", "v0.0.7" and seven hex characters
   // read out in sequence name nothing.
   'brand.description': 'Lockstate, {stage} build, version {version}, commit {commit}.',
+
+  // The interface-scale control in the status strip (`src/ui/display-scale.ts`,
+  // #545). Page chrome like the brand badge above, hence `display.` and not
+  // `hud.`: it changes a browser preference, not anything the simulation has an
+  // opinion about.
+  //
+  // Two entries and no third. What the control shows is the scale itself, and
+  // a percentage is a number -- it goes through `formatNumber` with
+  // `style: 'percent'`, so the sign, its spacing and the digits follow the
+  // player's locale instead of being assembled from an English literal here.
+  //
+  // "Interface", explicitly, in both. This game also has a camera zoom bound
+  // to `+`/`-`, so a name that said only "scale" or "zoom" would leave a
+  // player -- and a screen reader -- unable to tell which of the two a control
+  // in the status strip changes.
+  'display.scale.region': 'Interface scale',
+  'display.scale.cycle': 'Change the interface scale',
 };
 
 /**

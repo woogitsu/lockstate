@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import { mkdir, rm } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -28,12 +29,72 @@ if (
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const verifyBuildScript = path.join(repositoryRoot, 'scripts', 'verify-cloudflare-build.mjs');
-const pnpmCommand = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+
+/**
+ * Every task below used to shell out through `pnpm exec <tool>`. That works in
+ * a normal checkout and **aborts in a git worktree**, which is how this
+ * repository's agents are required to work (`docs/AGENT_WORKFLOW.md` §2: "Every
+ * implementing agent gets its own git worktree as its first action").
+ *
+ * The mechanism, which the symptom hides: pnpm 11 runs a dependency-status
+ * check before `exec`, decides the tree is out of date, and shells out to
+ * `pnpm install`; the install then refuses with
+ *
+ *   [ERR_PNPM_UNSAFE_MODULES_DIR] Refusing to remove the modules directory at
+ *   ".../node_modules" because its resolved target is not a strict
+ *   subdirectory of the project root at ".../<worktree>".
+ *
+ * -- because a worktree's `node_modules` is a symlink to the main checkout's.
+ * `node scripts/cloudflare-task.mjs build production` therefore failed for a
+ * reason that has nothing to do with the build, on the one command a CI job
+ * and three docs tell an agent to run to produce the artefact.
+ *
+ * `tests/browser/playwright.config.ts` already carries this fix and the same
+ * explanation for its own web server; this is the same fix applied to the
+ * other place in the repository that spawns a packaged binary. Resolve the
+ * tool's bin out of its own `package.json` -- the bin paths are not in the
+ * `exports` map, so `require.resolve` on the subpath throws
+ * `ERR_PACKAGE_PATH_NOT_EXPORTED` and the `bin` field is the supported way in
+ * -- and run it on this process's own Node. One process instead of three, no
+ * opinion about whether `node_modules` is a symlink, identical behaviour in a
+ * plain checkout and in a worktree.
+ */
+const requireFromHere = createRequire(import.meta.url);
+
+function binaryOf(packageName) {
+  const manifestPath = requireFromHere.resolve(`${packageName}/package.json`);
+  const manifest = requireFromHere(`${packageName}/package.json`);
+  const bin = typeof manifest.bin === 'string' ? manifest.bin : manifest.bin?.[packageName];
+
+  if (typeof bin !== 'string') {
+    throw new Error(
+      `${packageName} declares no \`bin.${packageName}\` in its package.json, so this script cannot run it without a package manager. Check the installed version.`,
+    );
+  }
+
+  return path.resolve(path.dirname(manifestPath), bin);
+}
+
+/**
+ * The one service `pnpm exec` performed that resolving a bin does not: it put
+ * `node_modules/.bin` on the child's `PATH`. A tool that shells out to a
+ * sibling binary by name would otherwise stop finding it, and that failure
+ * would arrive far from this change.
+ */
+const binDirectory = path.join(repositoryRoot, 'node_modules', '.bin');
 const cloudflareEnvironment = {
   ...process.env,
   CLOUDFLARE_ENV: environment,
+  PATH: `${binDirectory}${path.delimiter}${process.env.PATH ?? ''}`,
 };
 
+/**
+ * `new Promise` with no type argument infers `Promise<unknown>`, whose
+ * `resolve` cannot be called with no argument. The contextual return type
+ * below is what supplies it (#602).
+ *
+ * @returns {Promise<void>}
+ */
 function run(command, args, env = process.env) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
@@ -61,8 +122,8 @@ function run(command, args, env = process.env) {
 
 async function build() {
   await run(
-    pnpmCommand,
-    ['exec', 'vite', 'build', '--mode', environment],
+    process.execPath,
+    [binaryOf('vite'), 'build', '--mode', environment],
     cloudflareEnvironment,
   );
   await run(process.execPath, [verifyBuildScript, environment], cloudflareEnvironment);
@@ -76,7 +137,7 @@ try {
   }
 
   if (task === 'preview') {
-    await run(pnpmCommand, ['exec', 'vite', 'preview'], cloudflareEnvironment);
+    await run(process.execPath, [binaryOf('vite'), 'preview'], cloudflareEnvironment);
     process.exit(0);
   }
 
@@ -85,14 +146,14 @@ try {
     await rm(outdir, { recursive: true, force: true });
     await mkdir(outdir, { recursive: true });
     await run(
-      pnpmCommand,
-      ['exec', 'wrangler', 'deploy', '--dry-run', '--outdir', outdir, '--strict'],
+      process.execPath,
+      [binaryOf('wrangler'), 'deploy', '--dry-run', '--outdir', outdir, '--strict'],
       cloudflareEnvironment,
     );
     process.exit(0);
   }
 
-  await run(pnpmCommand, ['exec', 'wrangler', 'deploy', '--strict'], cloudflareEnvironment);
+  await run(process.execPath, [binaryOf('wrangler'), 'deploy', '--strict'], cloudflareEnvironment);
 } catch (error) {
   console.error(error instanceof Error ? error.stack : error);
   process.exit(1);

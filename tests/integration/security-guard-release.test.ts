@@ -467,3 +467,102 @@ describe('releasing is deterministic', () => {
     expect(first.securityGuards.unassignedGuardIds()).toEqual([0, 1, 2, 3, 4, 5]);
   });
 });
+
+/**
+ * **SIM-002: a claim teardown that forgets the route the claim was walking.**
+ *
+ * A read-only simulation audit of `4c18bc4` reported *"claim teardown can
+ * orphan navigation requests/results indefinitely"* and added the clause that
+ * makes it worth acting on: *the same ownership pattern appears elsewhere*.
+ * It does. Six systems in `src/` call `NavigationSystem.requestRoute` and
+ * store the id somewhere of their own; two teardown paths gave it back
+ * (`prisoners/release.ts`, `staff/dismissal.ts`, each having discovered the
+ * hazard independently and each saying so in its own comment) and five simply
+ * deleted the id:
+ *
+ * - `IncidentResponseSystem.releaseResponder` and `releaseResponse`,
+ * - `SearchSystem.releaseGuard` and the target-advance that cleared the whole
+ *   map,
+ * - `GuardReleaseService.release`, whose `unassign` clears the roster's own
+ *   `pathRequestId` -- which `staff/dismissal.ts` had already written down as
+ *   *"`GuardRoster.unassign` drops the request id without telling
+ *   navigation"*, from the other side of the same hole.
+ *
+ * ## Why a forgotten id is not harmless
+ *
+ * `SearchSystem`'s comment asserted it was: *"a result nothing collects is
+ * garbage the queue ages out"*. Both clauses are false. `PathRequestQueue`'s
+ * aging raises a waiting request's **effective priority** and never evicts it,
+ * so an abandoned request is searched at full budget cost; and nothing expires
+ * a resolved result at all -- `NavigationSystem.clearResult`'s own comment
+ * says *"the system never expires results on its own"*. So the entry is
+ * retained for the life of the session.
+ *
+ * Measured before the fix, on this file's own `buildRespondingPrison`:
+ * releasing one of four riot responders mid-travel left
+ * `incidents.respond.incident-riot.1.2` in the result map, still there 500
+ * ticks later, while the three responders that were **not** released collected
+ * and cleared theirs. That contrast is what makes it a leak rather than a
+ * slow drain: the same run disposes of three and keeps one, and the one it
+ * keeps is the one the player acted on.
+ */
+describe('a released claim gives back the route it was walking', () => {
+  it('leaves nothing waiting in navigation after a responder is released mid-travel', () => {
+    const runtime = buildRespondingPrison();
+
+    // Non-vacuity: there is something to lose. The four responders are
+    // `'travelling'` with route requests in flight, so a release that forgot
+    // one would have one to forget.
+    const inFlight = runtime.navigation.pendingCount() + runtime.navigation.resultCount();
+    expect(inFlight, 'no responder had a route in flight, so this run could not have leaked one').toBeGreaterThan(0);
+    expect(runtime.incidentResponseSystem.claimedGuardIds()).toContain(1);
+
+    submitRelease(runtime, 0, 1);
+    step(runtime, 500);
+
+    // **The assertion the defect fails**, with `1` before the fix: the released
+    // guard's resolved route. The other three are disposed of by the response
+    // itself, which is why a count is a fair question to ask here at all.
+    expect(runtime.navigation.resultCount(), 'a released responder left its resolved route behind').toBe(0);
+    expect(runtime.navigation.pendingCount(), 'a released responder left a request queued').toBe(0);
+  });
+
+  it('leaves nothing waiting in navigation after a searcher is released mid-travel', () => {
+    const runtime = buildSearchingPrison();
+
+    const inFlight = runtime.navigation.pendingCount() + runtime.navigation.resultCount();
+    expect(inFlight, 'no searcher had a route in flight, so this run could not have leaked one').toBeGreaterThan(0);
+    const claimed = runtime.searchSystem.claimedGuardIds();
+    expect(claimed.length).toBeGreaterThan(0);
+
+    submitRelease(runtime, 0, claimed[0]!);
+    step(runtime, 500);
+
+    expect(runtime.navigation.resultCount(), 'a released searcher left its resolved route behind').toBe(0);
+    expect(runtime.navigation.pendingCount(), 'a released searcher left a request queued').toBe(0);
+  });
+
+  it('leaves nothing waiting in navigation after a deployed guard is released mid-travel', () => {
+    // The third claimant, and the one whose id lives on the *roster* rather
+    // than in a claimant's own bookkeeping -- `GuardRoster.unassign` clears it,
+    // so `release` has to read it first or it is gone.
+    const runtime = buildPrison(2);
+    runtime.securitySectors.register({ id: 'sector-2', gradeId: 'grade.general', doorIds: [DOOR_ID], postTile: { x: tileCoordinate(9), y: tileCoordinate(9) } });
+    runtime.securitySchedules.push({ sectorId: 'sector-2', blocks: [{ startTickOfDay: 0, endTickOfDay: DAY_LENGTH_TICKS, requiredGuardCount: 1 }] });
+
+    let travelling: number | undefined;
+    for (let n = 0; n < 200 && travelling === undefined; n += 1) {
+      runtime.kernel.step();
+      travelling = runtime.securityGuards.allGuardIds().find((id) => runtime.securityGuards.getPathRequestId(id) !== undefined);
+    }
+    expect(travelling, 'no guard was ever sent to the new post, so this run could not have leaked a route').toBeDefined();
+
+    submitRelease(runtime, 0, travelling!);
+    // Not stepped on afterwards: `DeploymentSystem` re-assigns a released guard
+    // on its next cycle (ADR 0034 records that as a limit of this command), so
+    // the question has to be asked about the release itself rather than about
+    // the prison a second later.
+    expect(runtime.navigation.resultCount(), 'a released deployment left its resolved route behind').toBe(0);
+    expect(runtime.navigation.pendingCount(), 'a released deployment left a request queued').toBe(0);
+  });
+});

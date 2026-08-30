@@ -278,6 +278,34 @@ Two things fell out of that run that are worth recording:
   object" and is now qualified in the file, because `residentIds` allocates one
   array that scales with the population.
 
+> **Correction, 2026-08-30 (#543): both bullets above name `residentIds`, and
+> the income line has not walked that accessor since `7161779` (#610).** It
+> walks `RoomInstanceRegistry.residentIdsWithExistingPlace`, which clamps each
+> instance to the beds that currently exist —
+> `src/simulation/economy/income.ts`: *"The sort is
+> `residentIdsWithExistingPlace`'s"*, and `stateIncomeForCompletedDay` passes
+> `source.roomInstances.residentIdsWithExistingPlace()`. The name is corrected
+> here rather than in the bullets because this ADR's text is the record of what
+> was decided on 2026-08-28, when `residentIds` was the accessor and the
+> sentence was true.
+>
+> **Nothing this section decides moves.** There is still no RNG stream; the
+> walk is still sorted ascending by entity id — `residentIdsWithExistingPlace`
+> adds a tie-break within that order rather than a second ordering rule, and
+> says so at `src/simulation/prisoners/room-instance-registry.ts`; and the cost
+> class is unchanged at `O(P log P)` in housed prisoners with one array
+> allocated. What was wrong was only the name, and a reader chasing it would
+> land on an accessor the income line no longer reads.
+>
+> **This is the third place the same rename had to be corrected**, which is why
+> it is worth recording rather than quietly fixing:
+> `src/simulation/presentation/status-strip-projection.ts` carries the same
+> correction about its own paragraph, and `src/simulation/protocol/types.ts`
+> names the new accessor in three places. A citation that survives a rename in
+> two files and not in a third is the shape `docs/AGENT_WORKFLOW.md` §4 warns
+> about — cite code by `file:line` because grep checks it, and nothing greps an
+> ADR.
+
 ## What the player must be told for this to be fair
 
 **This ADR does not decide it, and must not.** A need's warning threshold is a

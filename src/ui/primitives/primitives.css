@@ -151,6 +151,14 @@
 
 .ui-bar__segment {
   display: block;
+  /*
+   * `border-box` so the over-capacity hairlines below cost no geometry. A bar
+   * that changed size when the prison went over capacity would be a layout
+   * change fired by a game state, on a strip of eight chips at the binding
+   * 900x600 viewport; `tests/browser/ui-occupancy-overflow.spec.ts` measures
+   * both dimensions across four occupancy states for exactly that reason.
+   */
+  box-sizing: border-box;
   width: var(--space-1);
   height: var(--space-3);
   background: var(--border);
@@ -160,6 +168,52 @@
 .ui-bar[data-tone='success'] .ui-bar__segment[data-filled='true'] { background: var(--status-success); }
 .ui-bar[data-tone='warning'] .ui-bar__segment[data-filled='true'] { background: var(--status-warning); }
 .ui-bar[data-tone='danger']  .ui-bar__segment[data-filled='true'] { background: var(--status-danger); }
+
+/*
+ * The second lap, for a value past its own maximum (issue #609).
+ *
+ * A HAIRLINE RATHER THAN A COLOUR OR A PATTERN, and the vocabulary was not a
+ * choice. `tests/unit/ui-design-tokens.test.ts` asserts that every stylesheet
+ * under `src/ui/` matches no `gradient(`, no `box-shadow`, no `text-shadow`,
+ * no `backdrop-filter` and no `filter`, with the reason stated beside it:
+ * *"Separation comes from a 1px hairline and a background step, and from
+ * nothing else."*
+ *
+ * The first version of this rule was a `repeating-linear-gradient` hatch, on
+ * the argument that a pattern at a fixed pitch is not a gradient in the sense
+ * that rule forbids. **The gate disagreed and the gate is the authority** --
+ * it went red on `no gradients`, and weakening an assertion to fit a design is
+ * the one move this repository's contract forbids outright. So the hatch
+ * became two hairlines in the strip's own background colour
+ * (`--surface-raised`, `hud.css:109`), which reads as the segment being
+ * notched -- shorter than its neighbours at the same colour.
+ *
+ * WHY NOT A SECOND COLOUR. Any over-capacity value already sets
+ * `data-tone='danger'`, so these segments are red before this rule runs. What
+ * red cannot say is HOW FAR over: 4-of-3 and 12-of-3 are both ten red
+ * segments. A different red would be the same channel again, and this
+ * repository's rule -- stated on the coverage badge and again on the occupancy
+ * tone -- is that a state is never carried by colour alone. Shape is a second
+ * channel; it composes with the red rather than competing with it.
+ *
+ * WHY THE SELECTOR IS THIS LONG. The three tone rules above use the
+ * `background` SHORTHAND and sit at (0,3,0). Qualifying by the bar's own
+ * `data-over-capacity` takes this rule to (0,4,0), above them, and it reads as
+ * what it is: the notch belongs to a bar that is over capacity.
+ *
+ * A NOTE FOR WHOEVER READS THIS AFTER A FAILING TEST. The very first version
+ * used `var(--surface)`, which does not exist -- the tokens are
+ * `--surface-base`, `--surface-raised`, `--surface-sunken`, `--surface-overlay`
+ * and `--surface-active`. An undefined custom property invalidates the whole
+ * declaration at computed-value time, so it silently fell back to nothing with
+ * every attribute set correctly on the right cells. It was found by asserting
+ * the COMPUTED style in a browser rather than the attribute, which is why that
+ * spec reads `getComputedStyle` and not `dataset`.
+ */
+.ui-bar[data-over-capacity='true'] .ui-bar__segment[data-overflow='true'] {
+  border-top: 1px solid var(--surface-raised);
+  border-bottom: 1px solid var(--surface-raised);
+}
 
 /* ------------------------------------------------------------------ */
 /* Stat chip                                                           */
@@ -278,7 +332,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
-  min-width: 72px;
+  min-width: calc(72px * var(--ui-scale));
   min-height: var(--tap-target);
   padding: var(--space-2) var(--space-3);
   background: transparent;

@@ -77,7 +77,6 @@ const ROOT = join(__dirname, '../..');
  * only thing standing between them and a sweep.
  */
 const PROTECTED_BY_DECISION: Readonly<Record<string, string>> = {
-  'room.delivery-bay': 'ADR 0017 names it the intended physical route for material procurement; #141 flags it explicitly as not to be removed as dead content.',
   'room.storage-room': 'ADR 0017 (destination for procured materials) and #99 (destination for dismantle salvage) both depend on it; #141 flags it explicitly.',
 };
 
@@ -460,7 +459,27 @@ describe('every unconsumed content id is accounted for', () => {
       // reason one paragraph up. `action.kitchen-work` names `room.kitchen` in
       // `src/simulation/prisoners/actions.ts`, so the second room a player
       // could zone and furnish to no effect now puts prisoners to work.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 5, unconsumedBySrcOnly: 29 });
+      //
+      // 4, not 5: `room.delivery-bay` gained a test consumer in
+      // `tests/unit/content-catalogs.test.ts`, which names all three room types
+      // the owner's ruling of 2026-08-29 (#585) tags as open areas so that a
+      // *fourth* acquiring the tag fails. Its entry is removed from the list
+      // above rather than kept with a new reason, which is what this file's
+      // stale-entry gate asks for -- and the reason it carried is worth keeping
+      // visible because nothing about it has been falsified: *"ADR 0017 names
+      // it the intended physical route for material procurement; #141 flags it
+      // explicitly as not to be removed as dead content."* Still true. Nothing
+      // routes a delivery through it. What changed is that something *names*
+      // it, which is the same graduation `object.sink` made through
+      // `environment-art.ts` and the same caveat: this gate measures a
+      // single-quoted literal, not a use.
+      //
+      // `unconsumedBySrcOnly` does not move, and `room.yard` and
+      // `room.holding-cell` do not move at all: neither had an entry (both are
+      // named in `src/`), and no `src/` file gained a `'room.delivery-bay'`
+      // literal -- `isOpenAreaRoom` reads an authored field off whatever id it
+      // is handed and writes no id of its own.
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 4, unconsumedBySrcOnly: 29 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

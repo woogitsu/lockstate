@@ -7,6 +7,7 @@ import type { PrisonSlotMetadata } from '../../src/persistence/local/store';
 import {
   type SaveMessage,
   describeActionFailure,
+  describeFailureDetail,
   describeImportResult,
   describeLoadFailure,
   describeRestoredScope,
@@ -15,6 +16,7 @@ import {
   parseImportedSave,
 } from '../../src/ui/save-panel';
 import { SAVE_PANEL_MESSAGE_KEY, SAVE_PANEL_MESSAGE_KEYS } from '../../src/ui/save-panel-messages';
+import { PROTOCOL_FAULT_CODES } from '../../src/simulation/protocol/types';
 import { CURRENT_SAVE_RESTORED_SCOPE } from '../../src/simulation/runtime/restore-session';
 
 /**
@@ -143,14 +145,94 @@ describe('save panel message keys (issue #208)', () => {
 
   it('names one failure key per action, and a fallback for one it does not know', () => {
     const keys = (['create', 'save', 'load', 'delete', 'export', 'import'] as const).map(
-      (actionId) => describeActionFailure({ actionId, error: new Error('boom') }).messageKey,
+      (actionId) => describeActionFailure({ actionId, error: new Error('boom') }, localizer).messageKey,
     );
     expect(new Set(keys).size, 'each action must fail in its own words').toBe(keys.length);
     // `AsyncActionFailure.actionId` is a plain string, so an id this panel
     // does not own can reach it. It must still say something.
-    const unknown = describeActionFailure({ actionId: 'not-an-action', error: new Error('boom') });
+    const unknown = describeActionFailure({ actionId: 'not-an-action', error: new Error('boom') }, localizer);
     expect(unknown.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.failureUnknown);
     expect(resolve(unknown)).toContain('boom');
+  });
+});
+
+/**
+ * Issue #680, the reporting half: a failure that declares a protocol fault
+ * code is told to the player in the sentence the catalogue already ships for
+ * that code, not in the engine's own English.
+ *
+ * The pseudo-locale sweep recorded on issue #680 measured what the player
+ * actually read -- `Could not create a prison: Simulation worker fault
+ * (already-initialized): Kernel is already initialized.` -- and named the
+ * reason it is a defect rather than a judgement call: `src/content/default-locale-en.ts` has carried
+ * `hud.alert.fault.already-initialized` all along, and the HUD one panel over
+ * renders that class of failure from a key.
+ *
+ * These assertions resolve through the real bundled catalogue, so they fail
+ * both when the routing is removed and when the key stops existing.
+ */
+describe('a failure that named a protocol fault is reported from the catalogue (#680)', () => {
+  /** The shape `WorkerSessionHost.WorkerFaultError` presents, without importing the persistence seam. */
+  function workerFault(code: string, detail: string): Error & { code: string } {
+    const error = new Error(`Simulation worker fault (${code}): ${detail}`) as Error & { code: string };
+    error.code = code;
+    return error;
+  }
+
+  it('replaces the engine sentence the player used to read', () => {
+    const status = describeActionFailure(
+      { actionId: 'create', error: workerFault('already-initialized', 'Kernel is already initialized.') },
+      localizer,
+    );
+
+    expect(resolve(status)).toBe(
+      'Creating the prison failed: A simulation request was refused — this session already has a prison loaded.',
+    );
+    // The exact string the sweep found on screen, asserted absent rather than
+    // inferred from the sentence above: a template that stopped interpolating
+    // at all would satisfy the assertion above and not this one.
+    expect(resolve(status)).not.toContain('Simulation worker fault');
+    expect(resolve(status)).not.toContain('already-initialized');
+  });
+
+  it('finds the code through the wrappers the session layer raises', () => {
+    // `startFromSnapshot` re-raises a worker fault as `SnapshotRestoreRejectedError`
+    // with the original as `cause`, and `WorkerPerSessionHost.beginSession`
+    // wraps a worker it could not construct the same way. Reading only the
+    // outermost value would lose the code on exactly those paths.
+    const wrapped = new Error('The snapshot was refused.', {
+      cause: workerFault('snapshot-incompatible', 'Snapshot could not be restored: nope.'),
+    });
+
+    expect(describeFailureDetail(wrapped, localizer)).toBe(
+      localizer.format('hud.alert.fault.snapshot-incompatible'),
+    );
+  });
+
+  it('keeps the thrown message when nothing declared a fault code', () => {
+    // A reply timeout, a storage `DOMException`, a file the browser would not
+    // read. There is no shipped sentence for these and authoring one is not
+    // this module's to do, so the detail that names what went wrong survives.
+    expect(describeFailureDetail(new Error('did not reply within 15000ms'), localizer)).toBe(
+      'did not reply within 15000ms',
+    );
+    // An object whose `code` is not a protocol fault must not be mistaken for
+    // one: the closed vocabulary is what makes the duck-typed check safe.
+    const notAFault = new Error('nothing here') as Error & { code: string };
+    notAFault.code = 'not-found';
+    expect(describeFailureDetail(notAFault, localizer)).toBe('nothing here');
+  });
+
+  it('has a real sentence for every code the protocol can raise', () => {
+    // The map behind this is exhaustive over `ProtocolFaultCode` by
+    // construction, so this asserts the other half: that each key resolves to
+    // authored text rather than rendering as its own dotted name.
+    for (const code of PROTOCOL_FAULT_CODES) {
+      const detail = describeFailureDetail(workerFault(code, 'diagnostic English'), localizer);
+      expect(detail, code).not.toContain('diagnostic English');
+      expect(detail, code).not.toMatch(/^hud\.alert\.fault\./);
+      expect(detail.length, code).toBeGreaterThan(10);
+    }
   });
 });
 
@@ -175,6 +257,8 @@ describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () =
     'brand-badge.ts',
     'brand-messages.ts',
     'build-tool.ts',
+    'display-scale-messages.ts',
+    'display-scale.ts',
     'object-tool.ts',
     'room-tool.ts',
     'save-panel.ts',

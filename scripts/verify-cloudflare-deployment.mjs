@@ -7,6 +7,13 @@ const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url))
 const taskScript = path.join(repositoryRoot, 'scripts', 'cloudflare-task.mjs');
 const previewScript = path.join(repositoryRoot, 'scripts', 'verify-deployment-preview.mjs');
 
+/**
+ * Same reason as `scripts/cloudflare-task.mjs`'s `run`: without a contextual
+ * return type `new Promise` infers `Promise<unknown>` and `resolve()` with no
+ * argument is an error (#602).
+ *
+ * @returns {Promise<void>}
+ */
 function runNode(args) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, args, {

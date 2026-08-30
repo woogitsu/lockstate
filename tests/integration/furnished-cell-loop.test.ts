@@ -289,8 +289,19 @@ describe('what the toilet does and does not change in the running prison', () =>
       expect(runtime.prisoners.roomInstances.occupancyOf(cellInstanceId)).toBe(1);
       expect(runtime.prisoners.intakeSystem.getMetrics()).toMatchObject({ completedCount: 1, failedCount: 0 });
       // 25,000 less one plank at 65 and one brick at 40, plus two days of state
-      // income at 300 a day for one occupied place.
-      expect(runtime.treasury.balanceMinorUnits).toBe(25_000 - 65 - 40 + 600);
+      // income at 300 a day for one occupied place -- **less one 40**, which
+      // is one unmet need on the second day's settlement (ADR 0064).
+      //
+      // The 40 is `safety`, and it arrived with issue #588. Neither prison
+      // here hires anybody, so the derived sector is `unguarded` from the
+      // first admission and provisions nothing; `safety` falls at 0.05 a tick
+      // and crosses `STATE_INCOME_UNMET_NEED_LEVEL` 4,080 ticks after
+      // admission, which is before tick 4,799 and after tick 2,399 -- so day
+      // one pays in full and day two does not. It is written as
+      // `600 - 40` rather than as `560` so that the two facts stay separate: a
+      // prison of one occupied place earns 600 over two days, and this one is
+      // charged for one unmet need on one of them.
+      expect(runtime.treasury.balanceMinorUnits).toBe(25_000 - 65 - 40 + 600 - 40);
     }
 
     // **The measurement that keeps this phase honest.** `action.use-toilet`

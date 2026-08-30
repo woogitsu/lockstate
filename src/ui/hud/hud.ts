@@ -43,6 +43,7 @@ import {
   type HudStaffViewModel,
   type HudViewModel,
 } from './view-model';
+import { resolveHudLabelParameters } from './label-parameters';
 
 /**
  * The persistent HUD shell.
@@ -1023,7 +1024,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    */
   function applyEventNotice(notice: HudEventNoticeViewModel | undefined): void {
     eventNotice.hidden = notice === undefined;
-    eventText.textContent = notice === undefined ? '' : t(notice.labelKey, notice.labelParameters);
+    eventText.textContent = notice === undefined ? '' : t(notice.labelKey, resolveHudLabelParameters(t, notice));
     if (notice === undefined) delete eventNotice.dataset['severity'];
     else eventNotice.dataset['severity'] = notice.severity;
   }
@@ -1741,7 +1742,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     const seen = new Set<string>();
     for (const [index, alert] of viewModel.alerts.entries()) {
       seen.add(alert.id);
-      const text = t(alert.labelKey, alert.labelParameters);
+      const text = t(alert.labelKey, resolveHudLabelParameters(t, alert));
       const badge = { tone: severityTone(alert.severity), text: t(severityLabelKey(alert.severity)) };
       const existing = alertRows.get(alert.id);
       let row = existing;
@@ -1832,6 +1833,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // `GuardRoster`'s, the projection windowed it, the panel decides the
     // sentences, and this line decides nothing.
     staffPanel.setStaffRoster(next.staffRoster);
+    // And what that roster costs every in-game day (issue #639 ruling 2). The
+    // figure is `PayrollSystem`'s own `dailyWageBillMinorUnits`, published on
+    // the counts stream since ADR 0042 step 3 and read by nothing in `src/ui/`
+    // until this line; the panel decides whether a shut fold states it, and
+    // this line decides nothing.
+    staffPanel.setDailyWageBill(next.counts.dailyWageBillMinorUnits);
     // And where the arrivals are, on identical terms: pulled, absent when
     // nothing asked, and passed straight through. The projection decided how
     // many are at each stage and which stage is terminal; the panel decides the

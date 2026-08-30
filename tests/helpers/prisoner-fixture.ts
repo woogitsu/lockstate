@@ -95,7 +95,11 @@ export function buildPrisonerScenarioFixture(options: {
   }
 
   prisoners.roomInstances.register({ instanceId: 'canteen-0', roomCatalogId: 'room.canteen', anchorTile: canteenTile, residentCapacity: 40, concurrentUseCapacity: 40, objectCapabilities: ['dining'] });
-  prisoners.roomInstances.register({ instanceId: 'yard-0', roomCatalogId: 'room.yard', anchorTile: yardTile, residentCapacity: 60, concurrentUseCapacity: 60, objectCapabilities: [] });
+  // `openArea: true` because `room.yard` is one: since the owner's ruling of
+  // 2026-08-29 (#585) floor-area capacity is derived only for a room type
+  // explicitly tagged in `src/content/room-catalog.ts`, and a hand-registered
+  // instance has to carry the tag the zoning path would have put on it.
+  prisoners.roomInstances.register({ instanceId: 'yard-0', roomCatalogId: 'room.yard', anchorTile: yardTile, residentCapacity: 60, concurrentUseCapacity: 60, objectCapabilities: [], openArea: true });
   prisoners.roomInstances.register({ instanceId: 'shower-room-0', roomCatalogId: 'room.shower-room', anchorTile: showerTile, residentCapacity: 8, concurrentUseCapacity: 8, objectCapabilities: ['hygiene'] });
   prisoners.roomInstances.register({ instanceId: 'common-room-0', roomCatalogId: 'room.common-room', anchorTile: commonRoomTile, residentCapacity: 30, concurrentUseCapacity: 30, objectCapabilities: [] });
   prisoners.roomInstances.register({ instanceId: 'classroom-0', roomCatalogId: 'room.classroom', anchorTile: classroomTile, residentCapacity: 20, concurrentUseCapacity: 20, objectCapabilities: [] });
