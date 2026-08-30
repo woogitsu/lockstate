@@ -780,3 +780,60 @@ ESCAPE_RESOLUTION
    construction; what is unmeasured is whether this game draws it once per
    prisoner as intended, and `tests/unit/prisoners-sentence.test.ts` is where
    that lives rather than here.
+
+## 8. The one thing this proposes, and the four it hands over
+
+`docs/AGENT_WORKFLOW.md` §5 asks for proposals the owner can say yes or no to,
+kept separate from the reporting. There is exactly one here, because every
+other route out of what this pass found needs a sentence addressed to a player,
+and `AGENTS.md`'s fourth exclusion reserves those.
+
+### The proposal: narrow ADR 0079's occupancy consequence, marking rather than overwriting
+
+**Decision in one sentence.** ADR 0079's *"Steady-state occupancy rises for a
+given admission rate […] a factor of **5.8**"* should gain a sentence recording
+that the factor is a ratio of **times in system**, that this game has **no
+arrival rate** for it to multiply, and that the population the economy reads —
+`occupiedPlaces` — is `min(roster, furnished capacity)` and is therefore not
+multiplied by it at all.
+
+**What the code does today**, with `file:line`: §1.1, §1.2 and §1.3 above; the
+load-bearing three are `src/main.ts:2522` (the only `AdmitPrisoner`),
+`src/simulation/prisoners/prisoner-operations-runtime.ts:902-906` (the two
+refusals, neither of them "the beds are full") and
+`src/simulation/economy/income.ts:418` (income over
+`residentIdsWithExistingPlace()`).
+
+**Options and their real costs.**
+
+1. **Leave it.** Costs nothing now and costs the next economy pass the same
+   half-day: the sentence reads as an instruction to cost against a prison
+   5.8× larger, and two pull requests are in flight against it.
+2. **Add a marked amendment** — a paragraph under the existing bullet, in the
+   form this repository already uses for a correction that must not erase what
+   it corrects. Cheap, and it is one file.
+3. **Rewrite the bullet.** Refused for the reason `docs/AGENT_WORKFLOW.md` §4
+   gives: *"A correction is no more durable than the claim it corrected […]
+   Mark both directions rather than overwriting."* The original arithmetic is
+   right and the reason it was written is still good.
+
+**Recommendation: option 2**, and **not by this pass** — ADR 0079 landed today
+as `9a25700` and the amendment belongs with whoever owns that surface, with this
+record cited. That is the handover, not a request for permission.
+
+**What would change my mind.** A session in which `occupiedPlaces` exceeds the
+number of furnished beds, or one in which the state credits anything other than
+`occupiedPlaces × 300` less withholding. Neither occurred in 129 samples.
+
+### Four handovers, none of them mine to close
+
+1. **A sentence, anywhere, that says how long a prisoner is staying** (§2).
+   The surface is the roster row, the shape is
+   `PrisonerRosterRowViewModel`, the channel is `hud/prisoner-roster` — and the
+   words are the owner's.
+2. **Anything at all that tells a player a review happened** (§3). The
+   simulation has no event type for it and the HUD has no row for it.
+3. **#640** (§5.1), still open, still the earliest thing a new player meets.
+4. **The Rooms arm control for a second room** (§5.2). Not a copy question —
+   the label is already honest — so this one is a design question about the
+   fold, and it belongs with whoever owns `src/ui/hud/rooms-panel.ts`.
