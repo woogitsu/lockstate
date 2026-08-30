@@ -42,6 +42,7 @@ function counts(overrides: Partial<HudCountsViewModel> = {}): HudCountsViewModel
   return {
     prisoners: 0,
     prisonerCapacity: 0,
+    occupiedPlaces: 0,
     staff: 0,
     rooms: 0,
     prisonersCovered: 0,
@@ -265,6 +266,115 @@ describe('status strip: tone and badges', () => {
   it('omits the occupancy bar when capacity is unknown rather than guessing one', () => {
     expect(projectStatusMetrics(counts({ prisoners: 10, prisonerCapacity: 0 }))[0]?.capacity).toBeUndefined();
     expect(projectStatusMetrics(counts({ prisoners: 10, prisonerCapacity: 40 }))[0]?.capacity).toBe(40);
+  });
+});
+
+describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
+  /*
+   * The number that was computed, put on the wire and thrown away at the HUD
+   * boundary. A player who admits twelve prisoners into a three-bed prison
+   * saw `12` and nothing else, while the state paid for three -- and the
+   * session that found this measured four prisons and eight day boundaries
+   * to work out why a twelve-prisoner prison paid like a three-prisoner one.
+   *
+   * The chip keeps its raw value. The badge is the part of that value the
+   * prison earns nothing for.
+   */
+
+  it('states the shortfall on the badge and leaves the chip reading the roster', () => {
+    // Issue #609's own prison, and the figures are deliberately not multiples
+    // of one another: a badge that read the wrong field would still print a
+    // plausible small number.
+    const chip = metric(counts({ prisoners: 12, occupiedPlaces: 3, prisonerCapacity: 3 }), 'prisoners');
+
+    expect(chip.value, 'the chip must still answer "how many prisoners are there"').toBe(12);
+    expect(chip.badge).toEqual({
+      tone: 'warning',
+      textKey: HUD_MESSAGE_KEY.prisonersWithoutBed,
+      parameters: { count: 9 },
+    });
+    // The same 9 the Intake panel already says out loud in this prison --
+    // "9 waiting with no bed to sleep in" -- which is why the strip uses the
+    // owner's matching wording rather than a second phrasing for one fact.
+  });
+
+  it('draws no badge at all when everybody has a bed, rather than a permanent "0 with no bed"', () => {
+    // `coverageTone`'s rule, applied to a chip that had no badge until now:
+    // a status strip where several things are always on teaches players to
+    // ignore the one that matters, and that note already extends it past
+    // amber. A reassuring line in every screenshot is the same failure.
+    expect(metric(counts({ prisoners: 8, occupiedPlaces: 8, prisonerCapacity: 12 }), 'prisoners').badge).toBeUndefined();
+
+    // The empty prison, which is every session before its first admission.
+    expect(metric(counts(), 'prisoners').badge).toBeUndefined();
+
+    // And a prison with one prisoner and no bed is the smallest state that
+    // must show it, so "absent below the threshold" cannot be off by one.
+    expect(metric(counts({ prisoners: 1, occupiedPlaces: 0 }), 'prisoners').badge).toEqual({
+      tone: 'warning',
+      textKey: HUD_MESSAGE_KEY.prisonersWithoutBed,
+      parameters: { count: 1 },
+    });
+  });
+
+  it('is still right after a bed is taken out from under a resident, which is the case it exists for', () => {
+    /*
+     * **The case that chose `occupiedPlaces` over `roomOccupants`.**
+     *
+     * `tests/integration/economy-occupied-place-exists.test.ts` measures the
+     * prison through real commands: a 3x3 `room.cell`, two beds, two
+     * prisoners housed, one bed then taken out with `RemoveObject`. The
+     * projection publishes `roomOccupants` **2** -- ADR 0028 decision 2,
+     * *"Nobody is evicted"*, keeps both assignments alive -- against
+     * `roomCapacity` 1 and `occupiedPlaces` **1**, and the day is worth 300
+     * rather than 600.
+     *
+     * So residency says everybody is housed and the treasury says one of
+     * them is not. The badge has to follow the treasury, because that is the
+     * fact the player cannot otherwise see.
+     */
+    const afterRemoval = metric(counts({ prisoners: 2, occupiedPlaces: 1, prisonerCapacity: 1 }), 'prisoners');
+
+    expect(afterRemoval.badge).toEqual({
+      tone: 'warning',
+      textKey: HUD_MESSAGE_KEY.prisonersWithoutBed,
+      parameters: { count: 1 },
+    });
+
+    // What the rejected field would have produced from the same prison:
+    // `roomOccupants` is 2 there, so a badge fed from it reads "nobody" for a
+    // prison the state has already stopped paying half of. This is the
+    // silence the badge exists to break, asserted rather than described.
+    expect(
+      metric(counts({ prisoners: 2, occupiedPlaces: 2, prisonerCapacity: 1 }), 'prisoners').badge,
+      'a residency count says everybody is housed in the one prison where that is false',
+    ).toBeUndefined();
+  });
+
+  it('leaves the chip tone and the occupancy bar to occupancyTone, and does not double up on either', () => {
+    // The badge is a *count*; the chip's tone is the escalation. Two red
+    // things on one chip for one fact would leave nothing louder for the
+    // state that is genuinely worse.
+    const overCapacity = metric(counts({ prisoners: 12, occupiedPlaces: 3, prisonerCapacity: 3 }), 'prisoners');
+    expect(overCapacity.tone, 'past capacity is where the chip itself goes red').toBe('danger');
+    expect(overCapacity.badge?.tone, 'the badge states the number; the chip states the severity').toBe('warning');
+    expect(overCapacity.capacity, 'the bar still measures the population against the beds').toBe(3);
+
+    // The badge does not need a capacity to exist, which is the half of this
+    // an occupancy bar cannot cover: a prison with beds to spare somewhere
+    // else still has a prisoner whose own bed was removed.
+    const spareBeds = metric(counts({ prisoners: 4, occupiedPlaces: 2, prisonerCapacity: 8 }), 'prisoners');
+    expect(spareBeds.tone, 'four prisoners in a prison with eight beds is nowhere near capacity').toBeUndefined();
+    expect(spareBeds.badge?.parameters, 'and two of them still have nowhere to sleep').toEqual({ count: 2 });
+  });
+
+  it('never prints a negative shortfall, however the two counts arrive', () => {
+    // `assign` does not release a prisoner from a previous instance and
+    // `residentIdsWithExistingPlace` does not de-duplicate, so this layer
+    // cannot prove `occupiedPlaces <= prisoners` from the far side of a
+    // message channel. "-2 with no bed" is a sentence no player should ever
+    // read; a badge that does not appear is the right worst case.
+    expect(metric(counts({ prisoners: 3, occupiedPlaces: 5 }), 'prisoners').badge).toBeUndefined();
   });
 });
 

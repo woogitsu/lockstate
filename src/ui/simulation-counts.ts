@@ -63,6 +63,29 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
          * `counts.roomCapacity`.
          */
         prisonerCapacity: counts.accommodationCapacity,
+        /**
+         * Straight through, for `accommodationCapacity`'s reason above, and
+         * it is the figure the `PRISONERS` chip's *"N with no bed"* badge is
+         * built out of (issue #609).
+         *
+         * **`counts.roomOccupants` is on this payload and is deliberately not
+         * read.** That field is residency -- who the prison has assigned
+         * somewhere -- and ADR 0028 decision 2 keeps a resident where they
+         * are when the bed under them is taken away, so it reports a prisoner
+         * as housed whose bed no longer exists. `occupiedPlaces` is
+         * `residentIdsWithExistingPlace().length`, the places that currently
+         * exist, which is what the income line pays for
+         * (`src/simulation/economy/income.ts`,
+         * `stateIncomeForCompletedDay`). A badge fed from `roomOccupants`
+         * would read *"0 with no bed"* for a prison the state has already
+         * stopped paying for.
+         *
+         * Issue #609's own second correction is the measurement: a 3x3
+         * `room.cell` with two beds and two prisoners housed, one bed then
+         * removed, publishes `roomOccupants` 2 and `occupiedPlaces` 1
+         * (`tests/integration/economy-occupied-place-exists.test.ts`).
+         */
+        occupiedPlaces: counts.occupiedPlaces,
         staff: counts.staff,
         rooms: counts.rooms,
         // Straight through, all three, for `accommodationCapacity`'s reason:

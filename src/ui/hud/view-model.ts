@@ -113,6 +113,29 @@ export interface HudCountsViewModel {
    * guessed -- which is the honest reading of a prison with no bed in it.
    */
   readonly prisonerCapacity: number;
+  /**
+   * How many prisoners are holding a residency place **that currently
+   * exists** -- the count the state pays on, and the one the `PRISONERS`
+   * chip's *"N with no bed"* badge is subtracted from (issue #609).
+   *
+   * Published, never derived here: it is `counts.occupiedPlaces`
+   * (`src/ui/simulation-counts.ts`), which the projection fills from
+   * `RoomInstanceRegistry.residentIdsWithExistingPlace().length` and
+   * `StateIncomeSystem` grants against on the same list.
+   *
+   * **Not `roomOccupants`, and the difference is the whole reason this field
+   * is here.** `roomOccupants` is *assignments*, and ADR 0028 decision 2
+   * keeps an assignment alive when the bed under it is taken away
+   * (*"Nobody is evicted"*), so a prisoner whose bed was removed still counts
+   * as housed there. This field is *places*, so that prisoner stops counting
+   * the moment the bed does -- which is the moment the money stops and the
+   * moment a player most needs to be told.
+   *
+   * `0` is a real state, not "unknown": it is every prison before its first
+   * prisoner is housed, and every prison whose last bed has been taken out
+   * from under somebody.
+   */
+  readonly occupiedPlaces: number;
   readonly staff: number;
   readonly rooms: number;
   /**
@@ -1362,6 +1385,7 @@ export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {
   counts: {
     prisoners: 0,
     prisonerCapacity: 0,
+    occupiedPlaces: 0,
     staff: 0,
     rooms: 0,
     prisonersCovered: 0,
