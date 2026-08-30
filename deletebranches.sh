@@ -69,9 +69,41 @@ if [ -z "${GITHUB_TOKEN:-}" ]; then
 fi
 
 repository="${GITHUB_REPOSITORY:-matmaxalez/lockstate}"
-open_heads="$(
+# THE LOOKUP AND ITS FAILURE ARE SEPARATED ON PURPOSE.
+#
+# These used to be one pipeline, and on 2026-08-30 that cost a diagnosis. The
+# workflow's `permissions:` block granted `contents: write` and nothing else,
+# which sets every other scope to `none`; this repository is private, so the
+# call below could only return 403. What the run's log showed was `curl: (22)`
+# followed by twelve lines of Python traceback ending in
+# `json.decoder.JSONDecodeError: Expecting value` -- an error about parsing,
+# raised by the second half of a pipeline whose first half had already
+# failed, naming neither the permission nor the URL.
+#
+# So `curl` is run on its own and its exit is inspected before anything reads
+# the body. The abort is unchanged and deliberate: this list protects the head
+# branch of every open pull request, and a run that cannot fetch it must stop
+# rather than proceed with an empty one. The `-z "${GITHUB_TOKEN:-}"` check
+# above guards a MISSING token; this guards a token that is present and
+# powerless, which is a different failure and was the one that happened.
+open_pulls_json=""
+if ! open_pulls_json="$(
   curl -fsS -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Accept: application/vnd.github+json" \
-    "https://api.github.com/repos/${repository}/pulls?state=open&per_page=100" \
+    "https://api.github.com/repos/${repository}/pulls?state=open&per_page=100"
+)"; then
+  echo "error: could not read open pull requests for ${repository}." >&2
+  echo "       GET /repos/${repository}/pulls?state=open failed." >&2
+  echo "       A 403 here with a token present means the token lacks the" >&2
+  echo "       'pull-requests: read' scope -- a workflow that declares any" >&2
+  echo "       permissions: block sets every scope it omits to none, and this" >&2
+  echo "       repository is private, so that read is not public." >&2
+  echo "       Refusing to continue: without this list, every open pull" >&2
+  echo "       request's head branch would be unprotected." >&2
+  exit 1
+fi
+
+open_heads="$(
+  printf '%s' "$open_pulls_json" \
   | python3 -c 'import sys, json; [print(p["head"]["ref"]) for p in json.load(sys.stdin)]'
 )"
 
