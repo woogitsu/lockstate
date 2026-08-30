@@ -394,9 +394,22 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
      * every risk tier every seed has ever produced, in a game whose challenge
      * verification is deterministic replay (ADR 0009). Isolation is what
      * `docs/DETERMINISM.md` asks these streams for and this is the case it asks
-     * for it in: with the drawn range entirely below
+     * for it in.
+     *
+     * **This paragraph used to end *"with the drawn range entirely below
      * `LONG_SENTENCE_THRESHOLD_TICKS`, adding this stream leaves every
-     * classification outcome of every existing seed bit-identical.
+     * classification outcome of every existing seed bit-identical"*, and the
+     * owner's 2026-08-30 ruling on
+     * [#593](https://github.com/matmaxalez/lockstate/issues/593)
+     * ([ADR 0079](../../../docs/adr/0079-a-sentence-long-enough-to-be-a-history.md))
+     * spent that property deliberately.** The range is 14 to 90 in-game days,
+     * so the seven drawable lengths at 84 days and up cross the 200,000-tick
+     * threshold and change the tier they score. Marked rather than overwritten,
+     * because the *reason for the separate stream* is untouched by it and is
+     * the durable half: a shared stream would have shifted
+     * `prisoners.classification` by one draw per admission, which is a
+     * different and much larger break than a threshold the range now crosses on
+     * purpose.
      *
      * Adding it is **not** a save-format change (ADR 0038 §2, #415): a bundle that
      * predates it restores with the stream seeded from its own `masterSeed`, which
