@@ -41,10 +41,10 @@ export interface SavePanelLocalizer {
  * the game in any language read
  * `Could not create a prison: Simulation worker fault (already-initialized):
  * Kernel is already initialized.` -- engine English inside a localised
- * template, which no translation can ever reach (#680; measured under the
- * pseudo-locale in
- * issue #680, whose §"What the sweep also found about how it is reported"
- * names seven splice sites in this file and quotes what the player reads).
+ * template, which no translation can ever reach. The pseudo-locale sweep
+ * behind issue #680 measured it on the real page, under
+ * §"What the sweep also found about how it is reported", and named seven
+ * splice sites in this file.
  *
  * The catalogue already ships a sentence for every one of the twelve protocol
  * fault codes, and the HUD one panel over already renders them: `hud.ts`'s
@@ -53,17 +53,24 @@ export interface SavePanelLocalizer {
  * hands the *resolved sentence* to the template, exactly as `{restored}` and
  * `{notCarried}` are resolved before being joined (#226).
  *
- * ## What is deliberately left as it was
+ * ## What is deliberately left as it was, and why that is the whole design
  *
- * An error that declares no protocol fault code still contributes its raw
- * message, and that is the honest answer rather than a gap. A storage
- * `DOMException`, a reply timeout ("did not reply within 15000ms" -- issue
- * #65's own example) and a file the browser would not read carry no code, so
- * there is no shipped sentence to resolve; inventing one would be authoring
- * player-facing copy, which is the owner's. The comment at
+ * **`{detail}` is not removed and no sentence is authored here.** That is not
+ * caution, it is the reason the sweep marked this "not fixed here": it judged
+ * that every route out produces player-facing copy, and new player-facing
+ * copy is the owner's (`AGENTS.md`, exclusion 4). This route produces none.
+ * It resolves a key that has shipped since #283 for a code the protocol
+ * already declares; the catalogue file is untouched, and so is every
+ * template.
+ *
+ * So an error that declares no protocol fault code still contributes its raw
+ * message, exactly as before. A storage `DOMException`, a reply timeout
+ * ("did not reply within 15000ms" -- issue #65's own example) and a file the
+ * browser would not read carry no code, so there is no shipped sentence to
+ * resolve and nothing changes for them. The comment at
  * `describeActionFailure` has said since #65 that hiding the detail costs the
- * player the one thing that names what went wrong, and that argument is
- * untouched by this change: it now applies only where nothing better exists.
+ * player the one thing that names what went wrong; that argument is untouched
+ * and now applies exactly where nothing better exists.
  */
 export function describeFailureDetail(error: unknown, localizer: SavePanelLocalizer): string {
   const key = protocolFaultMessageKeyOf(error);
