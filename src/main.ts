@@ -89,7 +89,7 @@ import {
   minimumSizeRequirement,
   objectRequirements,
 } from './simulation/rooms/requirements';
-import { MAX_PURCHASE_QUANTITY } from './simulation/economy';
+import { MAX_PURCHASE_QUANTITY, staffDailyWageMinorUnits } from './simulation/economy';
 import { staffHireCostMinorUnits } from './simulation/staff';
 import { defaultStaffRoleRegistry } from './content/staff-role-catalog';
 import { defaultItemRegistry } from './content/item-catalog';
@@ -800,8 +800,20 @@ function staffRoster(): HudStaffViewModel {
   for (const staffRoleId of HIREABLE_STAFF_ROLE_IDS) {
     const role = defaultStaffRoleRegistry.getById(staffRoleId);
     const hireChargeMinorUnits = staffHireCostMinorUnits(staffRoleId);
-    if (role === undefined || hireChargeMinorUnits === undefined) continue;
-    roles.push({ staffRoleId, labelKey: role.nameKey, hireChargeMinorUnits });
+    /*
+     * The second figure the hire hint quotes (issue #639 ruling 2), read
+     * through the simulation's own `staffDailyWageMinorUnits` rather than
+     * assumed equal to the charge above. The two are equal today because
+     * `src/simulation/economy/wages.ts` makes them equal -- both delegate to
+     * `staffDailyWageForRole` -- and that is a simulation fact this line
+     * passes on rather than a coincidence the HUD is entitled to rely on.
+     * `undefined` for a role the registry does not declare, on the same terms
+     * the charge is: a role with no price is omitted rather than rendered
+     * without one.
+     */
+    const dailyWageMinorUnits = staffDailyWageMinorUnits(staffRoleId);
+    if (role === undefined || hireChargeMinorUnits === undefined || dailyWageMinorUnits === undefined) continue;
+    roles.push({ staffRoleId, labelKey: role.nameKey, hireChargeMinorUnits, dailyWageMinorUnits });
   }
   return { roles };
 }

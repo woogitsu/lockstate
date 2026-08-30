@@ -207,6 +207,28 @@ export interface HudCountsViewModel {
    * what the prison has earned.
    */
   readonly stateIncomeAccruedTodayMinorUnits: number;
+  /**
+   * What one in-game day of the current roster will cost, in the same minor
+   * units -- or **absent because nothing has published counts yet** (issue
+   * #639 ruling 2).
+   *
+   * The counterweight to `stateIncomeAccruedTodayMinorUnits` above, and the
+   * first standing *cost* this view model can carry: until payroll existed
+   * every debit was a purchase the player chose, so there was no rate to show.
+   * It is published, never computed here, for that field's reason -- which end
+   * of an authored wage band is money owed is a simulation fact
+   * (`src/simulation/economy/wages.ts`), and a HUD that decided it again would
+   * be a second definition of the charge.
+   *
+   * **Optional, and the absence is a real state rather than a defensive
+   * default.** Absent is "no session has said anything", which is what
+   * `EMPTY_HUD_VIEW_MODEL` and a first paint hold; a published `0` is a prison
+   * that employs nobody. The Staff panel draws those two differently, on the
+   * same terms `setHeldGuards`, `setCoverage` and `setStaffRoster` already
+   * draw them, and a required field defaulted to `0` would have collapsed the
+   * distinction at the one moment it matters.
+   */
+  readonly dailyWageBillMinorUnits?: number;
 }
 
 export type HudSeverity = 'info' | 'warning' | 'danger';
@@ -958,6 +980,20 @@ export interface HudStaffRoleViewModel {
    * the player can compare them without a conversion nobody has chosen.
    */
   readonly hireChargeMinorUnits: number;
+  /**
+   * What the same guard costs at every in-game day boundary afterwards, in the
+   * same minor units (issue #639 ruling 2).
+   *
+   * A second figure and not a copy of the first, even though `wages.ts` makes
+   * the two equal today. `staffHireCostMinorUnits` answers *what does one press
+   * spend* and `staffDailyWageMinorUnits` answers *what does keeping this
+   * person cost*, and both delegate to `staffDailyWageForRole` -- so "the hire
+   * charge is one day of the wage the payroll bills" is true by construction on
+   * the simulation's side and is not re-asserted here. A panel that rendered
+   * `hireChargeMinorUnits` twice would be the HUD deciding that, and would go
+   * on saying it silently the day ADR 0025 decision 2 was revised.
+   */
+  readonly dailyWageMinorUnits: number;
 }
 
 /**

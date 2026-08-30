@@ -467,7 +467,21 @@ const BUILD_MODEL: HudBuildViewModel = {
  * `tests/browser/app-shell.spec.ts` is where the real projection is driven.
  */
 const STAFF_MODEL: HudStaffViewModel = {
-  roles: [{ staffRoleId: 'staff-role.guard', labelKey: 'staff-role.guard.name', hireChargeMinorUnits: 80 }],
+  // Both figures are the shipped guard's, which `staff-role-catalog.ts` authors
+  // as `wageBand: { minPerDay: 80 }` and both `staffHireCostMinorUnits` and
+  // `staffDailyWageMinorUnits` read -- so they are equal here because they are
+  // equal in content, not because one was copied from the other. That they
+  // come from two *fields* is proven where a fixture can make them differ:
+  // `tests/unit/ui-staff-hire-charge.test.ts`, over the pure
+  // `describeHireCharge`.
+  roles: [
+    {
+      staffRoleId: 'staff-role.guard',
+      labelKey: 'staff-role.guard.name',
+      hireChargeMinorUnits: 80,
+      dailyWageMinorUnits: 80,
+    },
+  ],
 };
 
 /**

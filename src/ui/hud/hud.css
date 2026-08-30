@@ -1093,6 +1093,18 @@
 
 .hud-staff__held-more[hidden] { display: none; }
 
+/* The standing daily wage bill, in the `On the payroll` header (issue #639
+   ruling 2). Exactly `.hud-build__queue-count`'s treatment one panel over, and
+   for its reasons: the header is the only part of a collapsed section a player
+   sees, and `tabular-nums` stops the figure jittering as guards are hired and
+   dismissed. No `margin-left: auto` -- the queue count sits beside its eyebrow
+   rather than at the panel edge, and two section headers in one rail that
+   placed their figures differently would read as two designs. */
+.hud-staff__roster-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-subtle);
+}
+
 .hud-build__coords {
   display: grid;
   grid-template-columns: 1fr 1fr;

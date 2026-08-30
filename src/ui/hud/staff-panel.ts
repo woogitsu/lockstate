@@ -12,6 +12,7 @@ import type {
   HudHeldGuardsViewModel,
   HudLocalizer,
   HudStaffCoverageViewModel,
+  HudStaffRoleViewModel,
   HudStaffRosterRowViewModel,
   HudStaffRosterViewModel,
   HudStaffViewModel,
@@ -302,6 +303,84 @@ export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): Staf
 }
 
 /**
+ * The two figures the hire hint quotes, or `undefined` where no role is
+ * selected and there is nothing to quote (issue #639 ruling 2).
+ *
+ * ## Why this is a function at all
+ *
+ * Because `vitest.config.ts` is `environment: 'node'` with no jsdom, so nothing
+ * headless can call `createStaffPanel` and the sentence the panel assembles is
+ * unreachable from `pnpm test`. `describeStaffCoverage` above exists for the
+ * same reason and this follows it: the decision is proven here, and that the
+ * DOM around it is really built is proven in
+ * `tests/browser/ui-staff-wage.spec.ts`.
+ *
+ * ## Why it does not derive the second number from the first
+ *
+ * `hud.security.hire-hint` reads *"Costs {total} now and {wage} a day in
+ * wages."* Both come off the role the host published, and `{wage}` is a field
+ * of its own rather than `hireChargeMinorUnits` a second time. That the two
+ * hold one number today is `src/simulation/economy/wages.ts`'s doing --
+ * `staffHireCostMinorUnits` and `staffDailyWageMinorUnits` both delegate to
+ * `staffDailyWageForRole`, which is the one expression in `src/` that says
+ * which end of an authored band is money owed. Re-asserting it here would put
+ * a second authority on a price in the HUD, which ADR 0017 decision 5 puts
+ * with issue #29, and it would keep saying it after that module stopped being
+ * true.
+ *
+ * `undefined` rather than a pair of zeros when nothing is selected: the hire
+ * control is disabled in that state and a sentence quoting `0` would be a
+ * price the prison does not charge.
+ */
+export interface StaffHireChargeReadout {
+  /** What one press spends now -- the same figure the button's `· N` renders. */
+  readonly hireChargeMinorUnits: number;
+  /** What the payroll bills for the same person at every day boundary after that. */
+  readonly dailyWageMinorUnits: number;
+}
+
+export function describeHireCharge(role: HudStaffRoleViewModel | undefined): StaffHireChargeReadout | undefined {
+  if (role === undefined) return undefined;
+  return { hireChargeMinorUnits: role.hireChargeMinorUnits, dailyWageMinorUnits: role.dailyWageMinorUnits };
+}
+
+/**
+ * The standing daily wage bill the collapsed `On the payroll` header states, or
+ * `undefined` where there is nothing to state (issue #639 ruling 2).
+ *
+ * ## What it is for
+ *
+ * `dailyWageBillMinorUnits` has crossed the protocol since ADR 0042 step 3 and
+ * had **no reader in `src/ui/`** until this block. The section it goes on is
+ * `collapsed: true`, so a prison of sixty guards billing 4,800 a day showed the
+ * player a shut fold and a coverage block reading *"Covered / This prison has
+ * the guards it asks for"* while the balance fell. A trailing badge on a shut
+ * header is the one place a figure survives the fold, which is the mechanism
+ * the Build panel's queue header already uses.
+ *
+ * ## The two absences, which are different facts
+ *
+ * - **No roster, or nobody on it.** There is no payroll, so there is no bill,
+ *   and the section itself has no box either (`paintRoster`).
+ * - **A roster, and no counts published yet.** The prison employs somebody and
+ *   this thread has not been told what they cost. A `0` here would say the
+ *   payroll is free, which is the class of claim issue #639 exists to stop.
+ *
+ * A published `0` with somebody hired is **not** an absence: it is a real state
+ * -- a save written against a catalogue that has since dropped a role bills
+ * nothing for that role (`dailyWageBillMinorUnits` in
+ * `src/simulation/economy/payroll.ts` contributes `0` rather than guessing) --
+ * and stating it is how a player finds out.
+ */
+export function describeDailyWageBill(
+  roster: HudStaffRosterViewModel | undefined,
+  dailyWageBillMinorUnits: number | undefined,
+): number | undefined {
+  if (roster === undefined || roster.hired === 0) return undefined;
+  return dailyWageBillMinorUnits;
+}
+
+/**
  * What one roster row says: who, and what they are doing.
  *
  * Pure and exported for `formatHeldGuardText`'s reason -- nothing headless can
@@ -387,6 +466,18 @@ export interface StaffPanel {
    * dismiss.
    */
   setStaffRoster(roster: HudStaffRosterViewModel | undefined): void;
+  /**
+   * Repaint the roster header's standing daily wage bill, from the last
+   * `simulation/status-counts` publication (issue #639 ruling 2).
+   *
+   * `undefined` states nothing, and it is a different fact from `0` on the same
+   * terms every setter above draws: nothing has published counts yet, against a
+   * prison whose payroll really does bill nothing. Separate from
+   * `setStaffRoster` because the two figures arrive on different channels --
+   * one pulled over `hud/staff`, one published on the counts stream -- and a
+   * single setter would have to invent whichever half had not arrived.
+   */
+  setDailyWageBill(dailyWageBillMinorUnits: number | undefined): void;
   setVisible(visible: boolean): void;
 }
 
@@ -522,10 +613,34 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
   });
   hire.element.classList.add('hud-staff__hire');
 
+  /*
+   * The sentence under the button, and it is **painted** rather than set once
+   * at mount (issue #639 ruling 2).
+   *
+   * It used to be a constant -- `eyebrowText(t(HUD_MESSAGE_KEY.securityStaffHint))`
+   * built inline in the `panel.body.append` below -- because it quoted no
+   * figure. It quotes two now, and both belong to whichever role is selected,
+   * so it repaints on exactly the occasions the button's own label does. A
+   * hint that kept the first role's price while the button showed the second's
+   * would be the same defect one line lower.
+   *
+   * Its own class beside `.hud-staff__note`, for `.hud-staff__held-more`'s
+   * reason: the panel has several notes and a spec needs to name this one
+   * without depending on document order.
+   */
+  const hireNote = eyebrowText('', 'hud-staff__note hud-staff__hire-note');
+
   function paintHire(): void {
     const role = selectedRole();
     hire.setDisabled(role === undefined);
-    if (role === undefined) return;
+    // Hidden rather than emptied, and hidden together with the figures it
+    // quotes: `hud.security.hire-hint` is a sentence about a price, so with no
+    // role selected there is no price and no sentence. `.hud-staff__note[hidden]`
+    // in `hud.css` is what makes the attribute stick under the short-viewport
+    // clamp -- the trap `heldEmpty` records one block down.
+    const charge = describeHireCharge(role);
+    hireNote.hidden = charge === undefined;
+    if (role === undefined || charge === undefined) return;
     hire.setLabel(
       t(HUD_MESSAGE_KEY.securityStaffHire, {
         role: t(role.labelKey),
@@ -533,9 +648,15 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
         // wage bands, the material prices and the balance on the status strip
         // are all quoted in the same units -- so this is the number the player
         // compares against what they have.
-        total: localizer.formatNumber(role.hireChargeMinorUnits),
+        total: localizer.formatNumber(charge.hireChargeMinorUnits),
       }),
     );
+    hireNote.textContent = t(HUD_MESSAGE_KEY.securityStaffHint, {
+      // The same value, formatted the same way, in the same repaint as the
+      // button above: the two lines cannot disagree about what a press costs.
+      total: localizer.formatNumber(charge.hireChargeMinorUnits),
+      wage: localizer.formatNumber(charge.dailyWageMinorUnits),
+    });
   }
 
   // ---- who is held, and the control that frees them (ADR 0034) ---------
@@ -704,6 +825,24 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
   const rosterMore = eyebrowText('', 'hud-staff__note hud-staff__held-more');
 
   /*
+   * What the prison pays every in-game day, in the header, so it survives the
+   * fold (issue #639 ruling 2).
+   *
+   * `valueText` with a class of its own, which is `queueCount`'s shape in the
+   * Build panel one panel over and is copied deliberately: `.ui-value` is what
+   * carries this repository's tabular-figures rule, and a figure that jitters
+   * as guards are hired and dismissed is the thing `.hud-build__queue-count`
+   * already solved.
+   *
+   * **It carries the formatted figure and no word of its own.** The vocabulary
+   * for it -- "wages" -- is on the hire hint two blocks up, and any sentence
+   * here would be a second player-facing string, which stays the owner's
+   * (`AGENTS.md`, and issue #636's own "copy owed to the owner" list names this
+   * badge). What that costs is reported on #639 rather than papered over here.
+   */
+  const rosterWageBill = valueText('', 'hud-staff__roster-count');
+
+  /*
    * Collapsible, and **collapsed** -- see `STAFF_ROSTER_ROW_LIMIT` for the
    * measurement this stands in for. `roles` above is the panel's other
    * collapsible section and uses the same `onToggle` -> `setCollapsed`
@@ -713,12 +852,24 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
   const rosterSection: CollapsibleSection = createCollapsibleSection({
     eyebrow: t(HUD_MESSAGE_KEY.securityRosterTitle),
     collapsed: true,
+    trailing: rosterWageBill,
     onToggle: (collapsed) => rosterSection.setCollapsed(collapsed),
   });
   rosterSection.element.classList.add('hud-staff__roster');
   rosterSection.body.append(rosterList, rosterMore, eyebrowText(t(HUD_MESSAGE_KEY.securityRosterHint), 'hud-staff__note'));
 
   let roster: HudStaffRosterViewModel | undefined;
+  /**
+   * What one in-game day of this roster costs, as the last status-counts
+   * publication reported it -- `undefined` while none has arrived.
+   *
+   * Held beside `roster` rather than folded into it because the two arrive on
+   * different channels: the roster is *pulled* over `hud/staff` and the bill is
+   * *published* on `simulation/status-counts`. Keeping them separate is what
+   * lets `describeDailyWageBill` tell "nobody is employed" from "nobody has
+   * said what they cost".
+   */
+  let dailyWageBillMinorUnits: number | undefined;
 
   function paintRoster(): void {
     // Hidden while nothing has asked *and* while nobody is hired. The second is
@@ -726,6 +877,14 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     // prison with no staff is a header promising a list that cannot exist, and
     // the panel already has a "Who to hire" section saying what to do about it.
     rosterSection.element.hidden = roster === undefined || roster.hired === 0;
+
+    // The header's figure, decided by the pure `describeDailyWageBill` and
+    // rendered here. Emptied rather than left standing when it answers
+    // `undefined`: the section survives a repaint, so a badge that was never
+    // cleared would state the last prison's payroll on the next one.
+    const bill = describeDailyWageBill(roster, dailyWageBillMinorUnits);
+    rosterWageBill.textContent = bill === undefined ? '' : localizer.formatNumber(bill);
+
     if (roster === undefined) {
       // Every pooled row emptied as well as hidden, so a press that somehow
       // reached a hidden button cannot name somebody from the last publication.
@@ -779,7 +938,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     roles.element,
     element('div', {
       className: 'hud-staff__actions',
-      children: [hire.element, eyebrowText(t(HUD_MESSAGE_KEY.securityStaffHint), 'hud-staff__note')],
+      children: [hire.element, hireNote],
     }),
     heldBlock,
     rosterSection.element,
@@ -812,6 +971,10 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     },
     setStaffRoster(next: HudStaffRosterViewModel | undefined): void {
       roster = next;
+      paintRoster();
+    },
+    setDailyWageBill(next: number | undefined): void {
+      dailyWageBillMinorUnits = next;
       paintRoster();
     },
     setVisible(visible: boolean): void {

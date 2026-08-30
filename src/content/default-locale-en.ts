@@ -639,7 +639,43 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.security.roles-empty': 'Nobody can be hired yet.',
   'hud.security.selected': 'Selected',
   'hud.security.hire': 'Hire {role} · {total}',
-  'hud.security.hire-hint': 'Taken from the treasury on hire. A new guard starts unassigned.',
+  /*
+   * What a hire costs, both halves of it (issue #639 ruling 2, the owner's
+   * approved wording).
+   *
+   * **This key used to say *"Taken from the treasury on hire. A new guard
+   * starts unassigned."* and the first sentence was false.** `PayrollSystem`
+   * bills the same figure again at every in-game day boundary the guard is on
+   * the roster for (`src/simulation/economy/payroll.ts`), so a player reading
+   * *on hire* was told a recurring charge was a one-off fee. Measured while
+   * playing (#636): `25,000 -> 24,920 -> 24,840 -> 24,760`, with `/wage/i`,
+   * `/per day/i` and `/daily/i` all false across the whole HUD at every
+   * observation. `AGENTS.md` reserves *"any player-visible promise the code
+   * does not keep"* to the owner, and this is that category met head-on, so
+   * the replacement sentence is theirs and is reproduced verbatim.
+   *
+   * **Both figures are placeholders, and that is the point.** A hard-coded
+   * `80` in a locale string would be a second authority on a price, which
+   * ADR 0017 decision 5 puts with #29 -- and it would be a *silent* one, since
+   * moving `wageBand.minPerDay` would move the button, the button's charge and
+   * the payroll while leaving this sentence quoting the old number. `{total}`
+   * is the same value the `hud.security.hire` button above renders, and
+   * `{wage}` is `staffDailyWageMinorUnits` for the same role. They are two
+   * parameters rather than one because they answer two questions; that they
+   * hold one number today is `src/simulation/economy/wages.ts`'s doing and is
+   * that module's to change.
+   *
+   * **"wages" is the word the payroll block uses**, and it is here so a player
+   * meets the category once with a price on it and again on the `On the
+   * payroll` header, rather than meeting two vocabularies for one thing.
+   *
+   * **What this no longer says**: *"A new guard starts unassigned."* It was
+   * displaced rather than judged unwanted -- see the report on #639 -- and
+   * `.hud-staff__note` is clamped to a single line at any viewport 700px tall
+   * or shorter (`src/ui/hud/hud.css`), which is why the two sentences could
+   * not simply be run together.
+   */
+  'hud.security.hire-hint': 'Costs {total} now and {wage} a day in wages.',
 
   // The Staff panel's held-guards list (ADR 0034). `hud.security.held-row` says
   // who and what is holding them in one line, so the claim is a statement about
