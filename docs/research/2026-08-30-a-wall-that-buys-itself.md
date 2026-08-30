@@ -203,10 +203,11 @@ is a very long time.
 
 **This finding was written the other way round first, and both directions are
 kept rather than one overwritten**, because the wrong version was a plausible,
-well-evidenced reading of four runs and the next person to probe this surface
+well-evidenced reading of five runs and the next person to probe this surface
 will start where it started.
 
-**What was measured first, and it reproduces in every run:** *On the way* — the
+**What was measured first, and it reproduced in all five runs that carried the
+probe:** *On the way* — the
 Build panel block that names bought-and-not-yet-arrived material — read `not
 laid out` for the whole twelve seconds after a wall run, sampled four times a
 second, while six just-in-time deliveries of two `item.brick` were in flight.
@@ -269,9 +270,10 @@ So the honest statement, and it is sharper than the one it replaces:
 
 > **The purchase the game makes on the player's behalf is announced only inside
 > the procurement fold — the exact fold #627 exists so that the player never has
-> to find.** Act 1 never opened it and never saw a row, in six runs of a probe
-> sampling four times a second for twelve seconds; the control opened it and saw
-> the row in 267–759 ms, in three.
+> to find.** Act 1 never opened it and never saw a row, in **five** runs of a
+> probe sampling four times a second for twelve seconds (B, C, D, E, F — run A
+> predates the probe); the control opened it and saw the row in 267–759 ms, in
+> **four** (C, D, E, F).
 
 That is the #629 shape one layer along from where #627 removed it: the
 requirement to visit the fold is gone, and the *report* of what happened instead
