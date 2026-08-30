@@ -375,8 +375,16 @@ row**: `standingLabelKey` is `deriveSimulationMessageKey('risk-tier', riskTier)`
 once `classified` is true (`src/ui/simulation-prisoner-roster.ts:133-136`), and
 the tier words are `Minimal | Low | Medium | High`
 (`src/content/simulation-message-keys.ts:225`). A promotion changes one word on
-one row — for at most four prisoners, silently, between two 500 ms repaints,
-with no history and no notification.
+one row — for at most four prisoners, with no history and no notification.
+
+**And only while the player is looking at that tab.**
+`refreshPrisonerRoster` begins
+`if (prisonerRosterReader === undefined || activeTab !== 'regime') return;`
+(`src/main.ts:1547`), and leaving the tab calls `applyPrisonerRoster(undefined)`
+(`:1896-1897`). So the roster is not merely the *only* surface a review can move —
+it is a surface that does not exist unless the Regime tab is the active one. A
+player on Overview, Build, Rooms or Security cannot see a review at any moment,
+in principle.
 
 ADR 0079 measures what #659 turned on: a first review goes from **14.00% to
 97.27%** of prisoners and a second from **0% to 85.06%**, with mean reviews per
@@ -387,8 +395,11 @@ one of the four rows the roster draws.
 
 ### What that looked like in play
 
-**VERIFIED, Run A, act 3.** Twelve prisoners were classified at about tick
-7,150. `ClassificationReviewSystem` is scheduled at
+**VERIFIED, Run A, act 3.** Twelve prisoners were admitted by tick 7,142 — the
+tick after the twelfth press — and classified about ten ticks after each of
+them. (Run B's per-admission reconstruction shows how wide that "by" is: its
+twelve presses landed at ticks 6,147 to 8,524, a spread of 2,377 ticks, very
+nearly one whole in-game day.) `ClassificationReviewSystem` is scheduled at
 `intervalTicks: 24,000, phaseTicks: 23,999`, so the first scheduled tick that
 falls inside their eligibility window is **47,999**. The roster block either
 side of it, pasted, with nothing else changed:
