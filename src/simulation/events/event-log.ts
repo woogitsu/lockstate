@@ -58,7 +58,8 @@ export const MAX_BUFFERED_SIMULATION_EVENTS = 64;
  * wall-clock time, so a tick that behaved differently because a publication
  * had happened would make the simulation depend on how fast the machine ran.
  * A `drain()` would be exactly that. So the watermark lives on the publisher
- * -- `WorkerStateMachine._publishedEventSequence`, beside the refusal and
+ * -- `SimulationWorkerStateMachine._publishedEventSequence`, beside the
+ * refusal and
  * zoning sequences it already keeps for the same purpose -- and this class is
  * append-and-read only.
  *

@@ -12,7 +12,7 @@ export interface TunnelRecord {
   readonly id: string;
   readonly startTile: TilePosition;
   readonly targetTile: TilePosition;
-  /** 0-1. Reaches 1 only through explicit `advanceTunnel` calls -- no implicit per-tick digging in this slice. */
+  /** 0-1. Reaches 1 only through explicit `TunnelRegistry.advance` calls -- no implicit per-tick digging in this slice. */
   readonly progress: number;
 }
 
