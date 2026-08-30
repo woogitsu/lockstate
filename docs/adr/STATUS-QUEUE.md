@@ -294,8 +294,8 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `0637ab1` (**v0.0.225**) by the delta method this
-header describes, from the v0.0.215 anchor described below. **Dispatched at
+Re-anchored at `main` @ `104d078` (**v0.0.234**) by the delta method this
+header describes, from the v0.0.225 anchor described below. **Dispatched at
 ten of the ten releases the budget allows -- the first pass in this series
 dispatched with no headroom left at all.** Every previous anchor was moved
 with between four and seven releases still spendable; this one was moved
@@ -319,17 +319,64 @@ actually help: the count is derivable from `package.json` and this file's own
 anchor line, so a check that *warns* at seven rather than failing at eleven
 would put the signal where the merging happens. That is not done here.
 
-`0637ab1` is `origin/main`'s tip at the time of writing and is itself the
-**v0.0.225 release commit**, named deliberately rather than the merge commit
+`104d078` is `origin/main`'s tip at the time of writing and is itself the
+**v0.0.234 release commit**, named deliberately rather than the merge commit
 beneath it, for the reason every previous anchor gives: it is cut after the
-last merge in the window (#619, `3e7954c`), contains every sentence below, and
+last merge in the window (#633, `36dcdf3`), contains every sentence below, and
 is the exact tree every citation here was re-derived from.
 
-**The previous anchor's line named `53e1405` and **v0.0.215**, coming from
-`cfab558` (v0.0.208), with six open pull requests listed -- #578, #605, #606,
-#610, #611 and #612. The one before it named `cfab558` and **v0.0.208**,
-coming from `e1813b7` (v0.0.201), with five listed -- #577, #578, #579, #580
-and #581.** It is described rather than quoted, and that is not style:
+**The delta note for `104d078`.** `git diff --name-only 0637ab1..104d078` is
+**46 files**, of which **eight are members**: `docs/AGENT_WORKFLOW.md`,
+`docs/HUD_PROJECTIONS.md`, `docs/research/README.md`, `package.json`,
+`src/simulation/economy/income.ts`, `src/simulation/protocol/types.ts`,
+`src/simulation/worker/state-machine.ts` and ADR **0003**. Nothing under
+`supabase/migrations/`, `src/services/telemetry/**` or `src/ui/primitives/**`
+changed.
+
+**Nothing structural moved, and that is the result rather than an absence of
+one.** The `Proposed` count is **unchanged at twenty-nine** — no ADR was added
+and no status flipped in nine releases, which has not happened since this
+sequence began tracking it. `docs/adr/README.md` agrees at twenty-nine,
+counted independently. So §3's enumeration, §5's first bullet and §6's
+`income.ts` bullet are all still correct and none was edited; a pass that
+changes nothing is reported as such rather than padded.
+
+**§5's handshake claim was re-run, because both its files changed again.**
+Still **nine hits, still split 4 / 2 / 3**, all receivers or declarations.
+`types.ts` is unmoved at `:12`, `:23`, `:223`, `:442` and `transferables.ts`
+at `:39`, `:55`; `state-machine.ts` moved from `:794`, `:824`, `:833` to
+**`:796`, `:826`, `:835`** — a uniform +2. That is the third consecutive
+anchor at which this one claim needed re-running, and the second at which only
+`state-machine.ts` moved.
+
+**`income.ts` changed again** — #626 gave it `stateIncomeForOccupiedPlaces` —
+so §6's absence is re-established rather than inherited for the second anchor
+running: `grep -c "Proposed" src/simulation/economy/income.ts` returns **0**
+against the edited file.
+
+**Both derivation scans were re-run over §§3-6, and neither returned a member
+the list has never named — the seventh anchor running at which that is true.**
+The path scan returned **79** distinct backticked spans ending in a known
+extension; its entire residue is the documented one, and it is **17 `git` and
+`grep` command lines that carry a slash without being paths** — `git show
+cfab558:src/ui/primitives/icon.ts`, `grep -rn "services/telemetry" src/
+--include=*.ts`, and fourteen more of that shape. Every span that is a path
+exists on disk.
+
+The number scan returned **65** tokens, of which **61 name an ADR that exists**.
+The four that do not are **0030**, **0055**, **0058** — the next-free residue
+this subsection already enumerates — and **0072**, which is held and unwritten
+for the events-persistence decision and which this file has recorded as *"not a
+member and not missing"* for six anchors. **The residue did not grow this
+time**, which is the first anchor since `53e1405` where it held: that pass added
+0078 to it, and 0078 has since left by becoming a real citation, so the count
+is back where it was.
+
+**The previous anchor's line named `0637ab1` and **v0.0.225**, coming from
+`53e1405` (v0.0.215), and was dispatched at ten of ten -- the only pass in
+this series moved with no headroom at all. The one before it named `53e1405`
+and **v0.0.215**, coming from `cfab558` (v0.0.208), with six open pull
+requests listed -- #578, #605, #606, #610, #611 and #612.** It is described rather than quoted, and that is not style:
 `tests/foundation/adr-status-queue-anchor-contract.test.ts` counts every span
 matching *"Re-anchored at `main` @ `<sha>` (v<version>)"* and requires exactly
 **one**, so a verbatim quotation of a superseded anchor line fails the gate as
@@ -3383,7 +3430,7 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `0637ab1`, unchanged since the previous anchor,
+absences were re-verified at `104d078`, unchanged since the previous anchor,
 the one before it, the one before that, the one before that, and the one
 before that — the directory has not moved across any of those windows and
 still holds twenty-three files, counted again here (`ls
@@ -3559,7 +3606,7 @@ is recommendation 1 at the foot of §6 producing a measurable result rather than
 being restated: **three of the four citations into the fastest-moving document
 in the set survived an edit that moved every line of them.**
 
-The half of the decision that *is* in this repository stays verified at `0637ab1`:
+The half of the decision that *is* in this repository stays verified at `104d078`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` (`:34`) with no
 `push:`, requires a typed `confirm_project_ref` (`:41`), and its apply job is
 environment-gated (`:65`) — all three re-read at this anchor and all three still
