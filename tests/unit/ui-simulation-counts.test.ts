@@ -29,6 +29,15 @@ const COUNTS = {
   // stand in rooms intake will house somebody in.
   accommodationCapacity: 44,
   roomOccupants: 31,
+  // The places that currently exist, and deliberately **smaller than
+  // `roomOccupants` above** rather than equal to it: after ADR 0028 decision
+  // 2 an assignment outlives the bed under it, so a prison can hold 31
+  // residents over 28 remaining beds. Read this fixture as three beds having
+  // been taken out from under sleeping prisoners. A mapping that reached for
+  // `roomOccupants` -- the field this badge was nearly built on (issue #609)
+  // -- would land on 31 and look entirely plausible, which is why the two
+  // differ here at all.
+  occupiedPlaces: 28,
   // The three guard-coverage rungs (issue #588). Three distinct figures, none
   // of them a fraction of another and none of them equal to `prisoners` above
   // -- they sum to 42, this fixture's population, so a mapping that read the
@@ -68,6 +77,11 @@ describe('the HUD counts are read from the worker', () => {
       // The accommodation capacity, not the room capacity beside it -- see
       // the case below for which is which and why it took a new field.
       prisonerCapacity: 44,
+      // Straight through, and it is `occupiedPlaces` rather than
+      // `roomOccupants: 31` beside it: the strip's "N with no bed" badge is
+      // this figure subtracted from the population, and residency outlives
+      // the bed under it (ADR 0028 decision 2, issue #609).
+      occupiedPlaces: 28,
       staff: 11,
       rooms: 9,
       // Straight through, all three: the HUD may not derive a simulation

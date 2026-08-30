@@ -88,6 +88,13 @@ const cloudflareEnvironment = {
   PATH: `${binDirectory}${path.delimiter}${process.env.PATH ?? ''}`,
 };
 
+/**
+ * `new Promise` with no type argument infers `Promise<unknown>`, whose
+ * `resolve` cannot be called with no argument. The contextual return type
+ * below is what supplies it (#602).
+ *
+ * @returns {Promise<void>}
+ */
 function run(command, args, env = process.env) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {

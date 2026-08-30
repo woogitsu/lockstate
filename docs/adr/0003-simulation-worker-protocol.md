@@ -187,10 +187,21 @@ the byte figure never moving off 380-382 -- which is exactly why
 `docs/BENCHMARKING.md` keeps this evidence reported rather than gated, and why
 the byte figure is the half of it worth quoting.
 
-What the test *asserts* is the shape and not any of these numbers -- eighteen
+What the test *asserts* is the shape and not any of these numbers -- nineteen
 integers of counts, every one of them an integer scalar rather than a list, a
-refusal of exactly three scalars, and a serialized payload under 493 bytes -- because the shape is the
+refusal of exactly three scalars, and a serialized payload under a byte
+ceiling -- because the shape is the
 property that makes the cadence safe, and the population cannot move it.
+
+*(The tally reads nineteen since issue #585 added `occupiedPlaces`, the
+residency places that currently exist. It has been corrected on this line
+every time a count landed, which is why the sentence now names the ceiling
+rather than quoting it: the byte figure has been raised from 436 to 493 to 533
+to 603 to 622 while this paragraph quoted one of them, and
+`tests/unit/worker-status-counts.test.ts` is where both numbers are actually
+enforced. `tests/foundation/documentation-claims-contract.test.ts` checks the
+word against the projection's own schema, which is why this line cannot drift
+again.)*
 
 **The thirteenth count arrived, and the paragraph that predicted it read:**
 *"The 400-byte assertion now has 18 bytes of head room rather than 56: a

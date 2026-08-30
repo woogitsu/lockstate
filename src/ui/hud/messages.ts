@@ -17,6 +17,32 @@ import type { LocalizationKey } from '../../content/localization';
 export const HUD_MESSAGE_KEY = {
   statusRegion: 'hud.status.title',
   prisoners: 'hud.status.prisoners',
+  /**
+   * How many prisoners have no bed, as a badge under the `PRISONERS` chip
+   * (issue #609).
+   *
+   * **The wording is the owner's and was signed off before it was built**:
+   * *"N with no bed"*. It counts what is **missing** rather than what is
+   * fine -- "N housed" was the rejected alternative -- and it deliberately
+   * echoes the Intake panel's existing sentence, `hud.intake.no-place`
+   * (*"{count} waiting with no bed to sleep in"*), so a player meets the same
+   * fact in the same words in two places and connects them.
+   *
+   * The two counts are siblings rather than the same number, and the shorter
+   * wording is what says so. The Intake panel's is *arrivals a bed would
+   * house right now* -- prisoners standing at `accommodation-assignment` with
+   * no free place. This one is *every prisoner without a bed*, which also
+   * covers the prisoner whose bed was taken out from under them (ADR 0028
+   * decision 2). In the prison issue #609 measured -- twelve admitted into
+   * three beds -- both read 9.
+   *
+   * **Not rendered when it is zero**, which is why it is a badge that comes
+   * and goes rather than a permanent chip: `coverageTone` records the reason
+   * and it applies to a "0 with no bed" as much as to a green badge -- *"a
+   * status strip where several things are always amber teaches players to
+   * ignore amber"*.
+   */
+  prisonersWithoutBed: 'hud.status.prisoners-without-bed',
   staff: 'hud.status.staff',
   rooms: 'hud.status.rooms',
   incidents: 'hud.status.incidents',

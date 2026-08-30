@@ -194,6 +194,11 @@ describe('message keys live in one registry', () => {
     for (const metric of projectStatusMetrics({
       prisoners: 1,
       prisonerCapacity: 2,
+      // One prisoner and no place, so the `PRISONERS` chip takes its
+      // `prisonersWithoutBed` branch (issue #609) rather than the no-badge
+      // one: this case walks every label the strip can render, and a fixture
+      // where everybody was housed would leave the new one unwalked.
+      occupiedPlaces: 0,
       staff: 1,
       rooms: 1,
       // Non-zero on both lower rungs, so the coverage chip takes its

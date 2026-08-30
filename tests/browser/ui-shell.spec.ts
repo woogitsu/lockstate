@@ -436,6 +436,10 @@ test.describe('HUD shell', () => {
         counts: {
           prisoners: 179,
           prisonerCapacity: 180,
+          // Everybody housed: this case is about the transport controls and
+          // the clock, and an unhoused population would add #609's badge to
+          // the chip it reads `metricValues[0]` off.
+          occupiedPlaces: 179,
           staff: 27,
           rooms: 61,
           prisonersCovered: 140,
@@ -835,6 +839,7 @@ test.describe('HUD shell', () => {
       counts: {
         prisoners: 0,
         prisonerCapacity: 0,
+        occupiedPlaces: 0,
         staff: 0,
         rooms: 0,
         prisonersCovered: 0,
@@ -1050,6 +1055,7 @@ test.describe('HUD shell', () => {
       counts: {
         prisoners: 142,
         prisonerCapacity: 180,
+        occupiedPlaces: 142,
         staff: 27,
         rooms: 61,
         prisonersCovered: 100,

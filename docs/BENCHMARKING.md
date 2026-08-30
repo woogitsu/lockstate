@@ -86,6 +86,23 @@ type stripping refuses. No build step and no new dependency. Running the
 harness without the flag fails with one actionable line rather than a syntax
 error from inside a production file.
 
+**And how a `.mjs` benchmark is typechecked against that `.ts`.** It is not the
+`registerHooks` resolver, which is a runtime arrangement TypeScript never sees.
+Until #602 those calls were checked by nothing at all: `benchmarks/` was outside
+every `tsconfig` `include`, so PR #581's fourth parameter, inserted *second*
+into `LocomotionStore.advance`, left `actor-render-publication.mjs` calling it
+with three arguments and neither `pnpm typecheck` nor `pnpm test` could see it.
+`tsconfig.tools.json` now covers `benchmarks/`, `scripts/` and `tooling/` with
+`checkJs` — but that alone reports nothing here, because each loader below
+imports by `import()` of a **computed** URL string and TypeScript resolves no
+non-literal dynamic import, so every production symbol would arrive as `any`.
+The five loaders therefore carry `@returns` types written as
+`Pick<typeof import('../src/…'), 'X'>`: derived from production, so they follow
+a signature that changes and fail to compile against a symbol that disappears.
+What that does **not** check is the wiring — that the key `LocomotionStore` is
+assigned `locomotion.LocomotionStore` and not something else — which runs
+through `any` and only a benchmark run would notice.
+
 Loading the production graph costs roughly 500 ms once per process (most of it
 `runtime/new-session.ts`, imported so the work budget is *read* rather than
 copied). `actors.production.render-publication` loads a second graph for the

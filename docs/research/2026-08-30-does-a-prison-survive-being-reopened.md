@@ -35,6 +35,33 @@ prisoner count, the right rooms and the right funds, and then quietly **stops
 earning**, because a residency edge is exactly the kind of derived link a
 restore can drop while every count still reads right.
 
+> **Correction, 2026-08-30, and it strengthens this record rather than
+> weakening it.** The paragraph above names the wrong method.
+> `stateIncomeForCompletedDay` walks
+> **`roomInstances.residentIdsWithExistingPlace()`**
+> (`src/simulation/economy/income.ts:407`), not `residentIds()`. Found by an
+> independent read-only audit of `origin/main`; the line was opened and
+> confirmed before this correction was written.
+>
+> The paragraph is kept above rather than edited, per this corpus's convention,
+> because what it got wrong is worth seeing. **What it got right is the part the
+> measurement rests on**: payment is per *occupied place*, walked as a list of
+> entity ids, and a restore that dropped those edges would still show the right
+> counts. The correction makes the paying source **stricter** than this record
+> assumed. `OccupiedPlaceSource` (`income.ts:229`) declares
+> `residentIdsWithExistingPlace` as its **only** member, and the comment above
+> it records that `totalOccupancy` was deliberately removed because issue #585
+> broke the identity between a resident count and an occupied place: *"a prison
+> holding three prisoners above one bed has a `totalOccupancy` of 3 and one
+> occupied place."*
+>
+> So the 1,120-before / 1,120-after result was measured against a source that
+> checks the bed still exists, which is a harder thing to survive a reload than
+> the one described. **No number in this record changes.** The prison was built
+> with four beds for four prisoners, so the two notions coincide for it — which
+> is also the limit, and it is promoted to a named UNKNOWN below.
+
+
 So the last act is not an assertion about the load screen. It runs the restored
 prison **past an in-game day boundary** and reads what was actually credited.
 
@@ -176,6 +203,17 @@ the still-unexplained difficulty: *"nothing on screen states that order"*. A
 prison built some other way might carry state this one does not. What would
 settle it: the same measurement on a prison built by the naive route, once that
 route is known to work at all.
+
+**UNKNOWN, promoted here by the correction above: whether a prison whose
+occupied places and residents DISAGREE survives a reload.** Payment walks
+`residentIdsWithExistingPlace()`; the status strip's `roomOccupants` counts
+something else, and reaches nobody (issue #609). This playtest used four beds
+for four prisoners, so every notion of "occupant" coincided and nothing could
+have come apart. What would settle it: the same day-boundary measurement on a
+prison with more residents than beds — admit twelve against three beds, save,
+reload, and read what is credited. If a restore rebuilds residency from the
+world but not the bed check, such a prison pays the exploit rate after a reload
+and the correct rate before it, and no count on screen would say so.
 
 Also not reached: more than one room; prisons with unmet needs at the boundary
 (`stateIncomeAccruedTodayMinorUnits` never fell below the 300/prisoner rate

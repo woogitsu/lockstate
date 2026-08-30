@@ -33,7 +33,21 @@ export const PRODUCTION_CHUNK_SIZE = 32;
 const CELL_WIDTH = 3;
 const CELL_HEIGHT = 3;
 
-const layoutCache = new Map();
+/*
+ * One cache per layout shape rather than one shared `Map` (#602). An untyped
+ * `Map.get` returns `any`, and `any` on a cache-hit branch makes the whole
+ * builder's inferred return type `any` -- so every scenario reading
+ * `layout.world` or `layout.graph` stops being typechecked, silently. Typing
+ * each cache off its own uncached creator is what keeps that from happening,
+ * and two creators cannot share one typed cache without a union that no
+ * caller could narrow.
+ */
+
+/** @type {Map<string, Awaited<ReturnType<typeof createPrisonBlockLayout>>>} */
+const prisonBlockLayoutCache = new Map();
+
+/** @type {Map<string, Awaited<ReturnType<typeof createOpenRegionLayout>>>} */
+const openRegionLayoutCache = new Map();
 
 function loadChunks(nav, world, tileWidth, tileHeight) {
   const chunkColumns = Math.ceil(tileWidth / PRODUCTION_CHUNK_SIZE);
@@ -85,9 +99,16 @@ function buildGraph(nav, world, doors, chunkPositions) {
  */
 export async function buildPrisonBlockLayout(cellCount, canteenWidth) {
   const key = `prison:${cellCount}:${canteenWidth}`;
-  const cached = layoutCache.get(key);
+  const cached = prisonBlockLayoutCache.get(key);
   if (cached !== undefined) return cached;
 
+  const layout = await createPrisonBlockLayout(cellCount, canteenWidth);
+  prisonBlockLayoutCache.set(key, layout);
+  return layout;
+}
+
+/** The uncached builder; split out only so the cache above can be typed by it. */
+async function createPrisonBlockLayout(cellCount, canteenWidth) {
   const nav = await loadNavigationModules();
   const t = (x, y) => ({ x: nav.tileCoordinate(x), y: nav.tileCoordinate(y) });
 
@@ -185,7 +206,6 @@ export async function buildPrisonBlockLayout(cellCount, canteenWidth) {
     regionCount: graph.regionTiles.size,
   });
 
-  layoutCache.set(key, layout);
   return layout;
 }
 
@@ -203,9 +223,16 @@ export async function buildPrisonBlockLayout(cellCount, canteenWidth) {
  */
 export async function buildOpenRegionLayout(side) {
   const key = `open:${side}`;
-  const cached = layoutCache.get(key);
+  const cached = openRegionLayoutCache.get(key);
   if (cached !== undefined) return cached;
 
+  const layout = await createOpenRegionLayout(side);
+  openRegionLayoutCache.set(key, layout);
+  return layout;
+}
+
+/** The uncached builder; split out only so the cache above can be typed by it. */
+async function createOpenRegionLayout(side) {
   const nav = await loadNavigationModules();
   const t = (x, y) => ({ x: nav.tileCoordinate(x), y: nav.tileCoordinate(y) });
 
@@ -230,6 +257,5 @@ export async function buildOpenRegionLayout(side) {
     regionCount: graph.regionTiles.size,
   });
 
-  layoutCache.set(key, layout);
   return layout;
 }

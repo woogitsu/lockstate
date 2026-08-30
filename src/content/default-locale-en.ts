@@ -156,6 +156,15 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // ---------------------------------------------------------------
   'hud.status.title': 'Prison status',
   'hud.status.prisoners': 'Prisoners',
+  // How many prisoners have no bed (#609). The owner's wording, approved
+  // before it was built, and it counts what is missing rather than what is
+  // fine: "9 housed" was the rejected alternative, because a player reads
+  // past a number that is already fine. It is the short form of the Intake
+  // panel's `hud.intake.no-place` below -- "{count} waiting with no bed to
+  // sleep in" -- on purpose, so the same fact reads the same way in both
+  // places; the strip's is the wider count of the two, since a prisoner whose
+  // bed was removed under them is not waiting for anything.
+  'hud.status.prisoners-without-bed': '{count} with no bed',
   'hud.status.staff': 'Staff',
   'hud.status.rooms': 'Rooms',
   'hud.status.incidents': 'Incidents',
