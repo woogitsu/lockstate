@@ -190,10 +190,23 @@ afford one at all. Those are measurements A produces and B needs.
   `save-schema.ts:797` array, which already carries them. **No format change and
   no migration** — a restored prison keeps the policies it was saved with, which
   is also how a future re-tuning reaches only new prisons.
-- Nothing here widens the reachable contraband set. Drugs need risk tier 2 and
-  weapons tier 3, and `src/main.ts` pins `priorIncidents: 0`, so tiers `[0,1]`
-  and therefore currency, phone and tool remain the whole reachable catalogue.
-  That is a separate question and this document does not touch it.
+- Nothing here widens the reachable contraband set, and **the reason this
+  bullet gave for that is now wrong.** It said drugs need risk tier 2 and
+  weapons tier 3, that `src/main.ts` pins `priorIncidents: 0`, and therefore
+  *"tiers `[0,1]` and therefore currency, phone and tool remain the whole
+  reachable catalogue"*. That was true when written and stopped being true on
+  2026-08-30: [#659](https://github.com/matmaxalez/lockstate/pull/659) widened
+  sentences to 14-90 in-game days, which crosses
+  `LONG_SENTENCE_THRESHOLD_TICKS`, so a sentence of 84 days or more carries a
+  point and an ordinary admission now reaches **tier 2**. **Drugs are
+  reachable.** Weapons are not: `priorIncidents` is still 0, one sentence point
+  plus a screening draw of at most `+1` clamps at 2, and tier 3 has no producer.
+  **This is corrected rather than deleted because the premise is load-bearing
+  and this ADR is still `Proposed`** -- a decision taken against "no drugs can
+  enter" is a different decision from one taken against "drugs can enter and
+  weapons cannot", and the owner should be ruling on the second. The conclusion
+  survives unchanged: this document still widens nothing. Whether tier 3 should
+  have a producer is [#540](https://github.com/matmaxalez/lockstate/issues/540).
 
 ## Options considered and not taken
 
