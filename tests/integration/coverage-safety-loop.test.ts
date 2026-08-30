@@ -27,7 +27,7 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *    shape the brief's claim was made about -- one holding twice the
  *    prisoners it has beds for.
  * 3. No new money term. `StateIncomeSystem` already withholds
- *    `STATE_INCOME_UNMET_NEED_WITHHOLDING_MINOR_UNITS` per unmet need and
+ *    `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` per unmet need and
  *    nothing in #588 changes the schedule, so the third case reads the grant
  *    itself rather than trusting that.
  *

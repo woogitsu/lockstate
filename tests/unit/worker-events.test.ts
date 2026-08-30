@@ -16,7 +16,8 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *
  * `tests/unit/ui-simulation-events.test.ts` proves the translation and
  * `tests/integration/sentence-end-release.test.ts` proves a real session
- * records the event; neither can see `WorkerStateMachine.publishEvents`, which
+ * records the event; neither can see
+ * `SimulationWorkerStateMachine.publishEvents`, which
  * is the piece between them and the one with a rule of its own to get wrong.
  *
  * **This file exists because a mutation survived without it.** Deleting
