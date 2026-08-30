@@ -25,7 +25,7 @@ to those pointers on the *deploy* path, which is a real gap independent of this 
 | OPS-03 | A fork pull request skips every gate and presents as green | Medium | CONFIRMED (condition) / SUSPECTED (merge effect) | `.github/workflows/ci.yml:28`, `:156`, `:283` |
 | OPS-04 | 12 of 23 migrations are not re-appliable; idempotency attempted but uneven, untested | Medium | CONFIRMED (executed) | `supabase/migrations/20260822190000_create_profiles.sql:17` +11 others |
 | OPS-05 | No dependency-update or vulnerability mechanism, though the policy names one | Medium | CONFIRMED | `.github/` (no dependabot/renovate), `docs/DEPENDENCY_POLICY.md:38` |
-| OPS-06 | 3,617 lines of `.mjs` + 920 of shell sit outside `tsconfig` and outside any linter | Medium | CONFIRMED | `tsconfig.json:20` |
+| OPS-06 | 3,617 lines of `.mjs` + 920 of shell sit outside `tsconfig` and outside any linter | Medium | CONFIRMED — `.mjs` half fixed 2026-08-30 (#602), shell half open | `tsconfig.json:20` |
 | OPS-07 | One self-hosted WSL2 runner is the entire pipeline, and it hosts active development | Medium | CONFIRMED | `ci.yml:29`, `version.yml:107`, `ci.yml:378` |
 | OPS-08 | No post-deploy verification; a partial deploy is undetectable | Medium | CONFIRMED | `deploy.yml:81`, `deploy.yml:236`, `deploy.yml:338` |
 | OPS-09 | Supabase CLI installed from an unverified tarball, then handed DB credentials | Medium | CONFIRMED | `scripts/provision-supabase-cli.sh:44` |
@@ -267,6 +267,20 @@ observed throughout); a missing `checkJs` over `scripts/` and `tooling/` costs i
 `scripts/`, `tooling/`, `benchmarks/` — referenced from `tsc -b` so `pnpm typecheck` covers it, and
 `shellcheck scripts/*.sh .claude/hooks/*.sh` as one step in the `verify` job. Both are additive and
 neither needs a style debate.
+
+**Amended 2026-08-30 (#602).** The TypeScript half is done, in exactly this shape and under this
+filename: `tsconfig.tools.json` over those three directories, run from `pnpm typecheck` after the base
+project, with `tests/foundation/typecheck-coverage-contract.test.ts` holding the coverage open. Two
+things this finding did not anticipate are worth recording beside it. First, `checkJs` over those
+files catches nothing on its own — benchmarks reach production through `import()` of a computed URL
+string, which TypeScript will not resolve, so the surface is `any` until
+`benchmarks/production-modules.mjs` carries derived `@returns` types; the gate that finally went red
+on the reintroduced defect was those types, not the `include`. Second, turning the project on
+produced 81 pre-existing errors, of which two were real drift of the same class as #602's:
+`benchmarks/scenarios/navigation-production.mjs` and `scripts/report-navigation-cost-model.mjs` both
+called `NavigationSystem.update({ tick })` against a `SimulationContext` that requires `rng`. They ran
+because `update` happens to read only `tick`. **The shell half is untouched**: there is still no
+shellcheck step and still no static checking of `scripts/*.sh` or `.claude/hooks/`.
 
 ### OPS-07 — One self-hosted runner is the whole pipeline, and it is a development host · Medium · CONFIRMED
 

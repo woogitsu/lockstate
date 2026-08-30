@@ -11,9 +11,13 @@ import './ui-harness-api';
  * there, and `vitest.config.ts` is `environment: 'node'` with no jsdom, so the
  * DOM around it is unreachable from `pnpm test` **at all**:
  *
- * 1. **That the hatch reaches the segments.** The rule writes
- *    `data-overflow`; a stylesheet turns that into a visible pattern. Only a
- *    browser resolves whether `background-image` actually computed.
+ * 1. **That the notch reaches the segments.** The rule writes
+ *    `data-overflow`; a stylesheet turns that into two 1px hairlines. Only a
+ *    browser resolves whether the borders actually computed -- which is what
+ *    `readBar` reads, and it reads them rather than the attribute for a
+ *    measured reason: a first version had every attribute set correctly on
+ *    the right cells and drew nothing, because it named a custom property
+ *    that does not exist.
  * 2. **That the bar does not change width when it overflows** -- which is the
  *    constraint that chose this design. The rejected alternative was extra
  *    segments appended past the ten, and it was rejected because this bar
@@ -50,6 +54,13 @@ async function setOccupancy(page: Page, prisoners: number, prisonerCapacity: num
         counts: {
           prisoners: value as number,
           prisonerCapacity: capacity as number,
+          // The places a prison of this shape could actually have: a place is
+          // a bed that exists, so it is bounded by the accommodation capacity
+          // this bar is drawn against. The over-capacity cases therefore also
+          // carry #609's "N with no bed" badge on the same chip -- which is
+          // deliberate here, because the width assertions below are what prove
+          // that badge does not move the bar it sits beside.
+          occupiedPlaces: Math.min(value as number, capacity as number),
           staff: 27,
           rooms: 61,
           prisonersCovered: 0,

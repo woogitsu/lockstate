@@ -186,7 +186,7 @@ async function reportTickDecomposition(repeats, unitMicroseconds) {
   console.log('## 3. The tick: `NavigationSystem.update`, timed per tick\n');
 
   const options = await loadProductionNavigationOptions();
-  const { Xoshiro128StarStar, deriveXoshiroState } = await loadSimulationRng();
+  const { Xoshiro128StarStar, deriveXoshiroState, NamedRngStreams } = await loadSimulationRng();
   const side = 64;
 
   console.log(
@@ -197,7 +197,12 @@ async function reportTickDecomposition(repeats, unitMicroseconds) {
   );
 
   for (const pending of TICK_POPULATIONS) {
+    // Annotated because `= null` alone infers the type `null`, and every
+    // later assignment and every read then fails or silently degrades to
+    // `never` (#602).
+    /** @type {number[] | null} */
     let perTickMinimums = null;
+    /** @type {number[] | null} */
     let expansionsPerTick = null;
 
     for (let repeat = 0; repeat < repeats + WARMUP_REPEATS; repeat += 1) {
@@ -207,6 +212,10 @@ async function reportTickDecomposition(repeats, unitMicroseconds) {
 
       const rng = new Xoshiro128StarStar(deriveXoshiroState(0x59524344, 'navigation.cost-model.tick').words);
       const context = { role: 'stub-actor', securityClearance: 0 };
+      // `SimulationContext` is `{ tick, rng }`; this passed `{ tick }` alone
+      // until #602 put the call under a typechecker. `NavigationSystem.update`
+      // reads only `tick`, so the numbers this script reports do not move.
+      const tickRng = new NamedRngStreams([]);
       const tile = (x, y) => ({ x: layout.nav.tileCoordinate(x), y: layout.nav.tileCoordinate(y) });
       const idWidth = String(pending - 1).length;
       for (let index = 0; index < pending; index += 1) {
@@ -221,7 +230,7 @@ async function reportTickDecomposition(repeats, unitMicroseconds) {
       while (system.pendingCount() > 0) {
         const before = system.getQueueMetrics().totalExpansions;
         const startedAt = performance.now();
-        system.update({ tick });
+        system.update({ tick, rng: tickRng });
         samplesMs.push(performance.now() - startedAt);
         samplesExpansions.push(system.getQueueMetrics().totalExpansions - before);
         tick += 1;
@@ -237,6 +246,9 @@ async function reportTickDecomposition(repeats, unitMicroseconds) {
     // that is only queue work, and is what "steady" means here. The worst tick
     // is taken from tick 1 onwards for the same reason -- otherwise it is
     // always tick 0 and reports the graph rebuild a second time.
+    if (perTickMinimums === null || expansionsPerTick === null) {
+      throw new Error(`navigation cost model: side ${String(side)} produced no measured repeat.`);
+    }
     const first = perTickMinimums[0];
     const steady = perTickMinimums[1];
     const steadyExpansions = expansionsPerTick[1];

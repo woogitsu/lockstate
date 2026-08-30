@@ -62,6 +62,9 @@ const blenderScripts = path.join(repositoryRoot, 'tooling', 'blender');
 const contractPath = path.join(repositoryRoot, 'assets', 'contracts', 'character-8-direction.contract.json');
 
 function parseArguments(argv) {
+  // Written out because the literal below infers `work: undefined` from its
+  // own initialiser, and `--work` then cannot assign a path to it (#602).
+  /** @type {{ mode: string, assetId: string, runs: number, blender: string, work: string | undefined, keep: boolean, help?: boolean }} */
   const options = {
     mode: 'full',
     assetId: 'actor.prisoner.base',
@@ -93,6 +96,14 @@ function parseArguments(argv) {
   return options;
 }
 
+/**
+ * Written out because `scriptArguments = []` infers `never[]`, which makes
+ * every call site below an error about `never` rather than about Blender
+ * (#602).
+ *
+ * @param {string} blender
+ * @param {{ blend?: string, script: string, scriptArguments?: readonly string[], label: string }} options
+ */
 function runBlender(blender, { blend, script, scriptArguments = [], label }) {
   const argv = ['--background', '--factory-startup', '--python-exit-code', '1'];
   if (blend !== undefined) argv.push(blend);

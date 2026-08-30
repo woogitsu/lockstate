@@ -151,6 +151,85 @@ export function occupancyTone(prisoners: number, capacity: number): BadgeTone | 
 }
 
 /**
+ * How many prisoners have no bed: the population, less the prisoners holding
+ * a residency place that currently exists (issue #609).
+ *
+ * ## Why this is presentation and not a derived simulation figure
+ *
+ * `src/ui/simulation-counts.ts` states the rule this has to answer to: **the
+ * HUD may not derive a simulation figure** (`AGENTS.md` boundary 1, enforced
+ * by `tests/unit/ui-hud-messages.test.ts`). What that forbids is the HUD
+ * becoming a *second authority* on a fact -- recomputing something the
+ * simulation also computes, from inputs the simulation would weigh
+ * differently, so that the two can disagree. `occupancyTone` below is the
+ * standing precedent for what it does *not* forbid: it divides two published
+ * counts to choose a colour, and has never been derivation.
+ *
+ * This subtraction is on that same side, and for a stronger reason than
+ * precedent. Both operands are counts of **the same set of prisoners**,
+ * published in the same payload from the same projection walk:
+ * `occupiedPlaces` is the length of
+ * `RoomInstanceRegistry.residentIdsWithExistingPlace()`, whose every entry is
+ * the entity id of a prisoner `prisoners` has already counted. So the
+ * difference is the size of a complement -- an arithmetic identity over two
+ * published counts -- and not a second computation of either. It resolves no
+ * catalogue, applies no policy and remembers nothing between messages, which
+ * is the same test `simulation-counts.ts` applies to
+ * `activeIncidentTypeLabelKey`.
+ *
+ * **The derivation this must not be is available and named**, which is what
+ * makes the line real rather than a matter of taste: `prisoners -
+ * accommodationCapacity`. Issue #609's second correction measured why that
+ * one is *wrong* as well as forbidden -- two cells of two beds with four
+ * prisoners all assigned into cell A gives a capacity of 4 and a difference
+ * of **0**, while cell A holds `min(4, 2) = 2` places and two prisoners have
+ * nowhere to sleep. That subtraction silently assumes capacity is fungible
+ * across instances, which is a *simulation* rule
+ * (`firstAvailableAccommodationTarget` spends each target's own budget), so
+ * a HUD doing it really would be deciding a simulation question. Subtracting
+ * a count of prisoners from a count of prisoners assumes nothing.
+ *
+ * **Clamped at zero.** `assign` does not release a prisoner from a previous
+ * instance, and `residentIdsWithExistingPlace` does not de-duplicate, so
+ * `occupiedPlaces > prisoners` is not something this layer can prove
+ * impossible from the other side of a message channel. A negative badge would
+ * be a nonsense sentence on screen; `Math.max` makes the worst case a badge
+ * that does not appear.
+ */
+function prisonersWithoutBed(counts: HudCountsViewModel): number {
+  return Math.max(0, counts.prisoners - counts.occupiedPlaces);
+}
+
+/**
+ * The sentence under the `PRISONERS` chip when somebody has nowhere to sleep,
+ * and nothing at all when everybody does (issue #609).
+ *
+ * **`undefined` rather than a badge reading "0 with no bed"**, which is
+ * `coverageTone`'s reasoning applied to a chip that has been badge-less until
+ * now: *"a status strip where several things are always amber teaches players
+ * to ignore amber"*, and that note already extends it to green. A permanent
+ * badge on the busiest chip on the strip is the same failure in the shape of
+ * reassurance -- eight chips compete for one glance, and a line that is
+ * present in every screenshot is a line nobody reads in the one screenshot it
+ * matters in.
+ *
+ * `warning` and not `danger`. The chip's own `tone` is already the escalation
+ * channel for this chip -- `occupancyTone` turns it red the moment the prison
+ * is past its accommodation capacity -- and painting the badge red as well
+ * would state one fact twice in one colour, leaving nothing louder for the
+ * state that really is worse. The badge's job here is to put the *number* on
+ * screen, which is what issue #609 measured as missing and what issue #629
+ * requires of a mechanic a player would otherwise have to discover: the
+ * money stops for every prisoner counted here, and until now nothing on the
+ * strip said how many there were.
+ */
+function prisonersWithoutBedBadge(counts: HudCountsViewModel): HudMetricBadge | undefined {
+  const withoutBed = prisonersWithoutBed(counts);
+  if (withoutBed <= 0) return undefined;
+  return { tone: 'warning', textKey: HUD_MESSAGE_KEY.prisonersWithoutBed, parameters: { count: withoutBed } };
+}
+
+/**
  * The worst rung anybody is standing on, as a tone (issue #588).
  *
  * Three steps for one metric, in `occupancyTone`'s shape and for
@@ -208,7 +287,25 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       value: counts.prisoners,
       capacity,
       tone: occupancyTone(counts.prisoners, counts.prisonerCapacity),
-      badge: undefined,
+      /**
+       * **How many of the prisoners this chip counts have no bed** (issue
+       * #609), or nothing when they all do.
+       *
+       * The chip keeps its raw value -- the roster is what a player asks this
+       * chip for -- and the badge names the part of it the prison is not
+       * being paid for. `occupiedPlaces` is the number the state grants
+       * against, so the gap is exactly the population earning nothing, which
+       * is the confusion issue #609 was found by having: twelve prisoners in
+       * a three-bed prison paying like a three-prisoner one, with the number
+       * that separates them computed, transmitted and thrown away at this
+       * boundary.
+       *
+       * The bar beside it answers a different question and both are needed.
+       * The bar is population against *accommodation capacity* -- how full
+       * the prison is -- and it cannot see a bed that was removed under a
+       * sleeping prisoner in a room that still has spare places elsewhere.
+       */
+      badge: prisonersWithoutBedBadge(counts),
     },
     {
       id: 'staff',
