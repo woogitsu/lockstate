@@ -2359,15 +2359,29 @@ test.describe('the assembled application', () => {
     const setupBuy = page.locator('.hud-build__buy-submit');
     await expect(setupBuy).toBeVisible();
     for (let press = 0; press < 3; press += 1) await setupBuy.click();
-    // `data-pending` rather than a box: the block is inside a disclosure whose
-    // own state this setup is about to change back, and the attribute is what the
-    // panel writes when the projection answers with a non-empty list.
+    /*
+     * **Nine, and it was three until #627.** `data-pending` counts every
+     * delivery on its way, and since ADR 0017 decision 7 was implemented a
+     * build order buys its own materials: the six orders queued above each
+     * bought their two bricks the moment the clock let their command dispatch,
+     * which is six lorries before this setup pressed Buy at all. Three presses
+     * of a control that buys two bricks a press make nine.
+     *
+     * Written out rather than read off the panel and added to, because a
+     * relative count would pass on a build where the orders bought nothing --
+     * which is precisely the state #627 is about. If this figure ever reads
+     * three again, a wall has stopped paying for itself.
+     *
+     * `data-pending` rather than a box: the block is inside a disclosure whose
+     * own state this setup is about to change back, and the attribute is what
+     * the panel writes when the projection answers with a non-empty list.
+     */
     await expect
       .poll(async () => page.locator('.hud-build__deliveries').getAttribute('data-pending'), {
-        message: 'three purchases never reached the Build panel as pending deliveries',
+        message: 'the six queued orders and three purchases never reached the Build panel as pending deliveries',
         timeout: 20_000,
       })
-      .toBe('3');
+      .toBe('9');
     await setupBuyToggle.click();
     await expect(page.locator('.hud-build__buy')).toBeHidden();
 

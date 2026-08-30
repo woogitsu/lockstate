@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PROCURABLE_MATERIALS } from '../../src/content/procurement-catalog';
+import { PROCUREMENT_DELIVERY_DELAY_TICKS, PROCURABLE_MATERIALS } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
 import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
@@ -244,13 +244,36 @@ function createSession(seed = 7) {
 }
 
 describe('money is conserved across build orders and undo (#285)', () => {
-  it('placing a build order debits nothing, so there is no payment for an undo to strand', () => {
+  it('placing a build order buys exactly what it needs, and undoing it credits nothing', () => {
     /*
-     * The corrected form of #285's reproduction. It is a real guard rather
-     * than a restatement: if a build order is ever given a price without a
-     * refund path being wired in the same change, this fails first and names
-     * the reason, which is the defect #285 describes rather than the one it
-     * measured.
+     * **This case has changed direction, and the old direction is kept in the
+     * assertion message rather than deleted.** It used to read *"placing a
+     * build order debits nothing, so there is no payment for an undo to
+     * strand"*, and it carried its own tripwire: *"a build order now costs
+     * money; whatever refunds it must be wired and asserted here"*. That
+     * tripwire fired, on purpose, on the change that implemented ADR 0017
+     * decision 7 (#627) -- a build order does now cost money, at the press,
+     * because *"materials are just-in-time by default; holding is permitted,
+     * never required"* and the code required holding.
+     *
+     * So this is that assertion answered rather than relaxed. The two halves
+     * it demanded are both here:
+     *
+     * - **What it costs is exactly the catalogue price of what the order
+     *   needs**, written as a literal product rather than read back off the
+     *   purchase, so a wall that quietly started charging for three bricks
+     *   fails here.
+     * - **What refunds it is nothing, and that is the decision.** The money
+     *   became bricks; `cancelOrder` gives the *bricks* back, not the money,
+     *   and `Treasury.credit` is still never called on this route.
+     *   `prisonValueMinorUnits` is what makes that a conservation statement
+     *   rather than an excuse: the 80 has moved from `balance` to
+     *   `paidMinorUnits` on a delivery in flight, and the total is unmoved.
+     *
+     * The undo lands **while the delivery is still in flight**, which is the
+     * scenario the file header calls the only one that catches mutation M1 --
+     * an undo that cancels a purchase it never made. It is now the ordinary
+     * shape of an undo rather than a constructed one.
      */
     const session = createSession();
     session.conserved('session start');
@@ -258,17 +281,57 @@ describe('money is conserved across build orders and undo (#285)', () => {
 
     session.place('order-wall-1', WALL, 4, 6, 'build-1', 'after PlaceBuildOrder');
 
+    const wallCost = UNIT_PRICE.get(WALL_REQUIREMENT.itemId)! * WALL_REQUIREMENT.quantity;
+    expect(wallCost, 'the fixture is written from 2 bricks at 40').toBe(80);
     expect(
       session.runtime.treasury.balanceMinorUnits,
-      'a build order now costs money; whatever refunds it must be wired and asserted here',
-    ).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+      'a build order costs the price of its materials, and nothing else',
+    ).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost);
     expect(session.stateOf('order-wall-1')).toBe('materials-pending');
-    expect(session.runtime.procurement.pendingDeliveries, 'placing an order must not buy anything').toHaveLength(0);
+    expect(
+      session.runtime.procurement.pendingDeliveries.map((delivery) => [delivery.itemId, delivery.quantity, delivery.paidMinorUnits]),
+      'placing an order buys the shortfall and nothing more',
+    ).toEqual([[WALL_REQUIREMENT.itemId, WALL_REQUIREMENT.quantity, wallCost]]);
 
     session.undo('after Undo');
     expect(session.stateOf('order-wall-1')).toBe('cancelled');
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
-    expect(session.creditSpy, 'undoing an order that cost nothing must not credit anything').not.toHaveBeenCalled();
+    expect(
+      session.runtime.treasury.balanceMinorUnits,
+      'the money bought bricks; undoing the wall does not un-buy them',
+    ).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost);
+    expect(session.creditSpy, 'undoing a build order must not credit anything').not.toHaveBeenCalled();
+
+    // And the bricks really do arrive and stay the prison's, which is what
+    // makes "no refund" a conservation statement and not a loss: `conserved`
+    // ran on every tick inside `run`.
+    session.run(PROCUREMENT_DELIVERY_DELAY_TICKS + 1, 'the cancelled order\'s delivery still lands');
+    expect(session.stock(WALL_REQUIREMENT.itemId)).toBe(WALL_REQUIREMENT.quantity);
+  });
+
+  it('buys nothing for an order whose materials the player already holds', () => {
+    /*
+     * ADR 0017 decision 7's other half -- *"holding is permitted"* -- as a
+     * measurement rather than a sentence. A player who pre-buys must see the
+     * behaviour they had before #627: one purchase, at their own press, and
+     * the order draws on it.
+     *
+     * The mutation that this catches and the case above does not: dropping the
+     * `alreadyPaidForAndInFlight` term from the deficit, which double-buys
+     * every order whose delivery has not landed yet.
+     */
+    const session = createSession();
+    session.buy('order-buy-1', WALL_REQUIREMENT.itemId, WALL_REQUIREMENT.quantity, 'after PurchaseMaterials');
+    const afterPurchase = session.runtime.treasury.balanceMinorUnits;
+
+    session.place('order-wall-1', WALL, 4, 6, 'build-1', 'after PlaceBuildOrder');
+    expect(session.runtime.treasury.balanceMinorUnits, 'the player already paid for these bricks').toBe(afterPurchase);
+    expect(session.runtime.procurement.pendingDeliveries, 'and no second lorry was sent').toHaveLength(1);
+
+    // Past the delivery and several construction ticks past it, because the
+    // double-buy this guards against is a *repeat* on every scheduled tick.
+    session.buildUntilComplete(['order-wall-1'], 'delivery and build');
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(afterPurchase);
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'the bricks are in the wall, not on the shelf').toBe(0);
   });
 
   it('undo, redo and undo again move the same bricks and never credit twice', () => {

@@ -574,6 +574,7 @@ function layoutBoxOf(node: Element | null): LayoutBox | null {
 function buildQueueProbe(): BuildQueueProbe {
   const section = document.querySelector<HTMLElement>('.hud-build__queue');
   const header = section?.querySelector<HTMLButtonElement>('.ui-section__header') ?? null;
+  const shortfall = document.querySelector<HTMLElement>('.hud-build__queue-shortfall');
   const rows = [...document.querySelectorAll<HTMLElement>('.hud-build__queue-row')].filter(
     // Laid out, not merely present: the rows are pooled, so the ones with no
     // order in them are `hidden` and still in the DOM. A probe that reported
@@ -603,6 +604,14 @@ function buildQueueProbe(): BuildQueueProbe {
         .filter((line) => line.getClientRects().length > 0)
         .map((line) => (line.textContent ?? '').trim())
         .find((text) => text.length > 0) ?? '',
+    // Queried from the document and not from `section`, deliberately: the node
+    // is a sibling of the block rather than a child of it, so that a collapsed
+    // fold cannot hide it. A probe that looked inside `section` would report
+    // this line as absent while it was on screen.
+    shortfallText: shortfall?.textContent?.trim() ?? '',
+    shortfallLaidOut: shortfall !== null && shortfall.getClientRects().length > 0,
+    shortfallHasOffsetParent: shortfall !== null && shortfall.offsetParent !== null,
+    shortfallBox: layoutBoxOf(shortfall),
   };
 }
 

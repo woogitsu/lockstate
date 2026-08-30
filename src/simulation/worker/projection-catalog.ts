@@ -228,7 +228,7 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     paged: true,
     target: 'none',
     project: (runtime, _tick, request) => {
-      const view = projectBuildQueue(runtime.construction, pageRequest(request));
+      const view = projectBuildQueue(runtime.construction, pageRequest(request), runtime.justInTimeMaterials);
       return { view: view as unknown as JsonValue, page: pageOfView(view.orders) };
     },
   },

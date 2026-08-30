@@ -4,6 +4,7 @@ import {
   type BuildOrder,
   type BuildOrderLifecycleState,
 } from '../construction/build-order';
+import type { MaterialsProcurementReport } from '../construction/materials-procurement';
 import {
   compareStableIds,
   HUD_VIEW_MODEL_SCHEMA_VERSION,
@@ -102,6 +103,63 @@ export interface BuildOrderSource {
   allOrders(): readonly BuildOrder[];
 }
 
+/**
+ * Read-only slice of `JustInTimeMaterialsService` -- what the queue's last
+ * material purchase did (#627).
+ *
+ * A second source rather than a second method on `BuildOrderSource`, because
+ * the two are different objects in the composition root and the funding one is
+ * optional: a runtime with no economy has orders and no purchases, and that is
+ * not the same fact as "the purchases all succeeded".
+ */
+export interface BuildQueueFundingSource {
+  readonly lastReport: MaterialsProcurementReport;
+}
+
+/**
+ * Why the queue is not moving, when the reason is money.
+ *
+ * ## The distinction this exists to draw, and why a boolean is not enough
+ *
+ * Issue #627: forty walls sat in `'materials-pending'` and every channel that
+ * could have said why was shut. Issue #629 turns that into a standing rule --
+ * *"a mechanic the player must discover in order to proceed is a defect"* --
+ * and the specific thing it outlaws is a state that is representable and
+ * reaches nobody.
+ *
+ * Since ADR 0017 decision 7 was implemented (#627), `'materials-pending'`
+ * means two different things and the player cannot tell them apart from the
+ * state alone: **the lorry is on its way**, which needs no action and resolves
+ * itself in ten scheduled ticks, or **the prison could not pay for the
+ * materials**, which resolves itself never until money arrives. This block is
+ * the difference, on the protocol, so a surface can say which -- and a test
+ * can assert which without reading pixels.
+ *
+ * `shortfallMinorUnits` is the actionable half and the reason this is not a
+ * boolean: the answer to "you cannot afford it" is a number the player can
+ * compare against the balance on the strip. It is the sum of `items`.
+ */
+export interface BuildQueueMaterialsFundingViewModel {
+  /**
+   * `false` when the last purchase attempt bought everything the queue wanted,
+   * or wanted nothing, or when no funding source was supplied at all.
+   *
+   * The last of those three is deliberately folded in rather than reported as
+   * a third state: a projection over a runtime with no economy is describing a
+   * prison that cannot be short of money, and "unknown" would be a value every
+   * consumer had to decide what to do with.
+   */
+  readonly unfunded: boolean;
+  /** What the queue could not buy, in minor units. `0` whenever `unfunded` is `false`. */
+  readonly shortfallMinorUnits: number;
+  /** Per item, ascending item id. Empty whenever `unfunded` is `false`. */
+  readonly items: readonly {
+    readonly itemId: string;
+    readonly quantity: number;
+    readonly costMinorUnits: number;
+  }[];
+}
+
 export interface BuildQueueOrderViewModel {
   /**
    * The order's own id, and the whole point of this read model.
@@ -139,6 +197,19 @@ export interface BuildQueueViewModel {
    * reason `RoomListViewModel.totals` is not derivable from its page.
    */
   readonly started: number;
+  /**
+   * Whether the queue is stalled on money, and by how much (#627, #629).
+   *
+   * **Not derivable from `orders`, and that is the whole reason it is here.**
+   * Every order in this list reads `'materials-pending'` whether its materials
+   * are on a lorry or were never bought, so a consumer reading the rows alone
+   * cannot tell a wait that ends by itself from one that does not. See
+   * `BuildQueueMaterialsFundingViewModel`.
+   *
+   * Always present, never optional: absent would mean "this build cannot
+   * answer", and every build that carries this field can.
+   */
+  readonly materialsFunding: BuildQueueMaterialsFundingViewModel;
 }
 
 /**
@@ -160,7 +231,11 @@ export interface BuildQueueViewModel {
  * gesture replayed, which is why every row carries its tile and its edge. A
  * player aims at a wall by where it is, never by how far down the list it sits.
  */
-export function projectBuildQueue(source: BuildOrderSource, request: PageRequest = {}): BuildQueueViewModel {
+export function projectBuildQueue(
+  source: BuildOrderSource,
+  request: PageRequest = {},
+  funding?: BuildQueueFundingSource,
+): BuildQueueViewModel {
   const pending = source
     .allOrders()
     .filter((order) => isPendingBuildOrderState(order.state))
@@ -175,9 +250,20 @@ export function projectBuildQueue(source: BuildOrderSource, request: PageRequest
     )
     .sort((left, right) => compareStableIds(left.orderId, right.orderId));
 
+  const unfundedItems = (funding?.lastReport.unfunded ?? []).map((item) => ({
+    itemId: item.itemId,
+    quantity: item.quantity,
+    costMinorUnits: item.costMinorUnits,
+  }));
+
   return {
     schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
     orders: pageOf(pending, request),
     started: pending.reduce((count, order) => (order.state === 'in-progress' ? count + 1 : count), 0),
+    materialsFunding: {
+      unfunded: unfundedItems.length > 0,
+      shortfallMinorUnits: unfundedItems.reduce((total, item) => total + item.costMinorUnits, 0),
+      items: unfundedItems,
+    },
   };
 }

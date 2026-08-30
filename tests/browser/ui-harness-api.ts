@@ -264,6 +264,30 @@ export interface BuildQueueProbe {
   readonly rows: readonly BuildQueueRowProbe[];
   /** The "and N more" line, empty when every queued order has a row. */
   readonly moreText: string;
+  /**
+   * The money line below the block (#627, #629, #640): what the queue could not
+   * buy, as a rendered sentence with the figure substituted.
+   *
+   * Empty whenever the queue is paid for, which is every session that never
+   * runs out. Read from outside `.hud-build__queue`, because that is where the
+   * node is: the fold starts collapsed and #625 is the record of what putting a
+   * requirement inside it costs.
+   */
+  readonly shortfallText: string;
+  /**
+   * Whether the browser laid that line out, and whether it has an
+   * `offsetParent`.
+   *
+   * Both, for the reason `cancelBox`/`cancelHasOffsetParent` below are both:
+   * `offsetParent` is `null` inside a `display: none` ancestor, and a node can
+   * have one and still be 0x0. `.hud-build__note` carries an author `display`
+   * that beats `[hidden]`, so "the attribute says hidden" is exactly the claim
+   * that must not be trusted here.
+   */
+  readonly shortfallLaidOut: boolean;
+  readonly shortfallHasOffsetParent: boolean;
+  /** Its box, so a spec can say it is inside the panel's visible one rather than below the fold (#220). */
+  readonly shortfallBox: LayoutBox | null;
 }
 
 export interface BuildQueueRowProbe {

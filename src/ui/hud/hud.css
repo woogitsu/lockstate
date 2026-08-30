@@ -1353,6 +1353,13 @@
    being beaten is shared. */
 .hud-build__queue-more[hidden] { display: none; }
 
+/* The same trap, closed the same way, for the money line below the block. This
+   one is hidden far more often than it is shown -- a solvent prison never sees
+   it -- so an author `display` winning over `[hidden]` would put a permanent
+   empty line under the queue at every short viewport, which is the height this
+   panel has least of. */
+.hud-build__queue-shortfall[hidden] { display: none; }
+
 /*
  * What has been bought and has not arrived (#285), inside the buy disclosure.
  *

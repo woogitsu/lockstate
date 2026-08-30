@@ -558,6 +558,21 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * `queue-more` says what is behind the last row and deliberately offers no way
    * to reach it: those orders are not the ones about to happen, and taking a
    * whole run back is Undo's job.
+   *
+   * `queue-shortfall` is the queue's only sentence about money, and the one
+   * thing on this surface a player must be told rather than discover (#629).
+   * Since a build order buys its own materials (ADR 0017 decision 7),
+   * *"Awaiting Materials"* means two things a row cannot separate -- the lorry
+   * is coming, or the prison could not pay -- and only the second needs the
+   * player to do something. `{total}` is what the queue could not buy, in the
+   * same minor units as `hud.status.funds`, so the two numbers on screen read
+   * against each other with nobody having chosen a currency.
+   *
+   * **Authored by the owner, 2026-08-30, and verbatim.** The words on this line
+   * are not an agent's: the sentence #640 needed did not exist, the gap was
+   * reported rather than filled, and this is the answer that came back. It
+   * names no material on purpose, which is why the view model that feeds it
+   * carries two scalars and not the projection's per-item list.
    */
   'hud.build.queue': 'Queued',
   'hud.build.queue-count': '{count} waiting · {started} being built',
@@ -565,6 +580,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.queue-cancel': 'Cancel',
   'hud.build.queue-unnamed': 'Unnamed order',
   'hud.build.queue-more': 'and {count} more behind these — undo takes back a whole run.',
+  'hud.build.queue-shortfall': 'Waiting for {total} to buy materials.',
   /*
    * What has been bought and has not arrived (#285), inside the buy disclosure
    * and beside the control that spent the money.
