@@ -247,6 +247,27 @@ describe('ClassificationReviewSystem', () => {
     expect(f.records.riskTier[index]).toBe(0);
   });
 
+  it('cannot review anybody on its first scheduled run, whatever tick they were classified at', () => {
+    // The `schedule` comment used to justify `phaseTicks: 23,999` as avoiding
+    // an empty first run. It does not: eligibility needs
+    // `tick - classifiedAt >= 24,000` and `classifiedAtTickOf` never returns a
+    // negative, so at tick 23,999 the largest tenure anybody can hold is
+    // 23,999. The extremal case is a prisoner classified at tick 0, who holds
+    // exactly that -- if any classification tick could be reviewed on the first
+    // run, this is the one, and it is not.
+    const f = fixture();
+    const entityId = f.admit({ riskTier: 3, classifiedAtTick: 0 });
+
+    stepTo(f.kernel, CLASSIFICATION_REVIEW_INTERVAL_TICKS);
+    expect(f.system.getMetrics().reviewsCompleted, 'the run at 23,999 is empty by arithmetic, not by circumstance').toBe(0);
+    expect(f.records.riskTier[f.store.getIndex(entityId)]).toBe(3);
+
+    // One tick of tenure short is the whole of it: the next scheduled run does
+    // review them, so this is a claim about the phase and not about the record.
+    stepTo(f.kernel, 2 * CLASSIFICATION_REVIEW_INTERVAL_TICKS);
+    expect(f.system.getMetrics().reviewsCompleted).toBe(1);
+  });
+
   it('reviews a prisoner whose elapsed time is exactly one period, not one tick more', () => {
     // The boundary the `<` in `update` decides, and it was unguarded until
     // #593's re-range made a review something most prisoners actually reach.
