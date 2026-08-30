@@ -1348,11 +1348,37 @@ decision about what to build next.
     `shortfallMinorUnits` — the projection's `items` list is deliberately not
     carried, because naming an item needs the catalogue lookup
     `HudPendingDeliveryViewModel.labelKey` needs and nothing asks for it yet.
-    **Nothing renders it**, and that is the same gap as before rather than a
-    new one: `src/ui/hud/build-panel.ts` has no line it could put the number
-    on without a sentence, and the sentence is the owner's. What changed is
-    that writing that sentence is now a change to one panel and one locale
-    key, rather than a change that also has to cross a boundary.
+
+    **Amended again, the same day, and the sentence directly above this one was
+    true for about an hour.** It said *"Nothing renders it… the sentence is the
+    owner's"*, and both halves have been overtaken rather than one: the owner
+    wrote the sentence, and the panel now draws it. It is
+    `hud.build.queue-shortfall`, **authored by the owner and used verbatim** —
+    *"Waiting for {total} to buy materials."* — and `{total}` is
+    `shortfallMinorUnits` through `localizer.formatNumber`, in the same minor
+    units as `hud.status.funds`, which is the comparison this figure was
+    computed for.
+
+    Two things about *where* it draws, because both were decided by a defect
+    this document already records:
+
+    - **Outside the fold.** It is appended to the Build panel's body after the
+      queue section, not to the section's body. `queueSection` opens collapsed,
+      and #625 is the record of what putting a requirement inside it costs —
+      *"Awaiting Materials"* was there and reached nobody. Asserted at all six
+      viewports in `tests/browser/ui-build-queue.spec.ts` with the fold shut and
+      never toggled.
+    - **Kept off screen entirely when the queue is paid for**, box and all.
+      `.hud-build__note` carries an author `display: -webkit-box`, which beats
+      the user agent's `[hidden] { display: none }`, so the line needs
+      `.hud-build__queue-shortfall[hidden]` in `hud.css` or a solvent prison
+      gets a permanent empty line under its queue — the same trap
+      `.hud-build__queue-more[hidden]` already closes.
+
+    **The wording settled one open question in passing, and it is worth recording
+    that it did.** The sentence names no material, so the two scalars above are
+    the right width and `items` stays uncarried — which had been reported as the
+    weakest claim of the change that added them.
 
 32. **Build costs are material quantities, and that part is real**:
     `BuildableDefinition.materialsRequired` is `{itemId, quantity}` and

@@ -254,6 +254,35 @@ export class ConstructionSystem implements SystemRegistration {
      * `ConstructionProcurementSink`.
      */
     private readonly materialsProcurement?: ConstructionProcurementSink,
+    /**
+     * What the **scheduled** purchase pass bought, and what it could not
+     * (issues #627, #629, #640).
+     *
+     * Sixth and optional, on exactly the terms the fifth is: every existing
+     * caller constructs the system as before, and absent, `update` behaves
+     * precisely as it did -- the report is computed and dropped, which is what
+     * it did on this line until now.
+     *
+     * **Why a callback and not a `RefusalLog` held here.** This system owns no
+     * refusal log and must not start owning one: `RefusalLog`'s own class
+     * comment argues at length that it is a notice about something the player
+     * just did, which is why it is not snapshotted, and a scheduled system is
+     * the wrong place to reason about that. So the report is *handed out* and
+     * the composition root decides what a session does with it -- the same
+     * shape `ObjectPlacementSink` and `DoorPlacementSink` already use for
+     * "something outside construction has to hear about this".
+     *
+     * **Only the press paths reported before, and that was the defect.**
+     * `reportMaterialsFunding` had exactly two callers --
+     * `construction/handler.ts` and `runtime/session-commands.ts`, both on a
+     * press -- so a shortfall announced at the press was never revisited by
+     * the retry that followed it. Measured on this branch: a prison spent down
+     * to 40 against a wall costing 80 refuses, is then refunded to 25,000, and
+     * builds the wall from the scheduled pass alone -- and `refusals.last` is
+     * still the `purchase.insufficient-funds` recorded at tick 1, standing
+     * over a solvent prison with the wall up.
+     */
+    private readonly onMaterialsProcured?: (report: MaterialsProcurementReport | undefined, tick: number) => void,
   ) {}
 
   /**
@@ -695,8 +724,11 @@ export class ConstructionSystem implements SystemRegistration {
      * in flight, which is the entire cost of this line for a player who
      * pre-buys -- and it is also why this call is not a second purchase on top
      * of the one the `PlaceBuildOrder` handler already made at this tick.
+     *
+     * **The report is handed to `onMaterialsProcured` rather than discarded**,
+     * which is the whole of #640's second finding. See that parameter.
      */
-    this.procureQueuedMaterials(context.tick);
+    this.onMaterialsProcured?.(this.procureQueuedMaterials(context.tick), context.tick);
 
     for (const order of orders) {
       // A terminal order needs no definition, so it is not asked for one. This

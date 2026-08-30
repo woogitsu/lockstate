@@ -34,7 +34,7 @@ import {
 } from '../incidents';
 import { JustInTimeMaterialsService, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury } from '../economy';
 import { SimulationEventLog } from '../events';
-import { RefusalLog } from '../refusals';
+import { RefusalLog, materialsFundingSupersessionKey } from '../refusals';
 import { StaffDismissalService, StaffHiringService } from '../staff';
 import { createSessionCommandHandler } from './session-commands';
 import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
@@ -638,6 +638,19 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * allocation attempt will see; a second container would have it buying
    * against a shelf nobody builds from.
    */
+  // Issue #261's route out for a command the simulation accepts and then
+  // refuses on its content. Empty for a new session and for a restored one
+  // alike -- it is not snapshotted.
+  //
+  // **Constructed here rather than below `stateIncome`, which is where it used
+  // to sit** (#640): the construction system's sixth argument withdraws a
+  // standing materials shortfall on the scheduled tick, so this has to exist
+  // before that system does. It takes no arguments and nothing between the old
+  // position and this one reads it, so the move changes no behaviour -- the
+  // same reasoning the treasury/procurement pair below carries for its own
+  // move under #627.
+  const refusals = new RefusalLog();
+
   const treasury = new Treasury();
   const procurement = new ProcurementSystem(treasury, constructionMaterials);
   const justInTimeMaterials = new JustInTimeMaterialsService(procurement, constructionMaterials);
@@ -650,6 +663,40 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     },
     doorConstruction,
     justInTimeMaterials,
+    /*
+     * The scheduled pass's report, and the one thing a session does with it:
+     * **withdraw a shortfall that has stopped being true** (#640).
+     *
+     * `reportMaterialsFunding` is deliberately NOT called here, and the
+     * asymmetry is the decision rather than an omission. That function both
+     * withdraws and records; recording on every scheduled tick would call
+     * `RefusalLog.record`, which increments `sequence` monotonically -- and
+     * `sequence` is the alert row's identity on the main thread
+     * (`src/ui/simulation-alerts.ts`, `id: ${REFUSAL_ROW_PREFIX}${sequence}`).
+     * A queue that genuinely cannot be paid for would then mint a new alert
+     * row every scheduled tick and drive `refusals.count` up without bound,
+     * for a condition that has not changed.
+     *
+     * **What this leaves undone, stated rather than left to be discovered:** a
+     * shortfall that *arises* on a scheduled tick with no press -- payroll
+     * draining the treasury under a standing queue -- is still silent. Whether
+     * a refusal here is an event caused by a press or a condition of the
+     * prison is a decision that outgrew this change; it is filed as its own
+     * issue and is not settled here. Making `RefusalLog.record` idempotent
+     * under an unchanged key is the shape that would settle it, and it changes
+     * that class's core contract, so it needs an ADR and not a line in a
+     * composition root.
+     *
+     * The queue's *read model* has no such gap: `projectBuildQueue` recomputes
+     * `materialsFunding` from `JustInTimeMaterialsService.lastReport`, which
+     * every pass rewrites, so the Build panel's own line follows the scheduled
+     * tick in both directions whatever the alert band is doing.
+     */
+    (report) => {
+      if (report !== undefined && report.unfunded.length === 0) {
+        refusals.supersede(materialsFundingSupersessionKey());
+      }
+    },
   );
   objectPlacement = new ObjectPlacementService(
     world,
@@ -673,11 +720,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // `PrisonerDayGrantSource` structurally, the same way it already satisfies
   // both of `projectStatusStrip`'s source shapes.
   const stateIncome = new StateIncomeSystem(treasury, prisoners);
-
-  // Issue #261's route out for a command the simulation accepts and then
-  // refuses on its content. Empty for a new session and for a restored one
-  // alike -- it is not snapshotted.
-  const refusals = new RefusalLog();
 
   const jobs = new JobBoard();
   const jobWorkerAdapter = new PrisonerJobWorkerAdapter(prisoners);

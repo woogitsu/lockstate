@@ -272,6 +272,23 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
     expect(view.orders.rows.map((row) => row.state), 'and the state alone would have said nothing').toEqual([
       'materials-pending',
     ]);
+
+    /*
+     * 5. And twenty ticks of scheduled retries have NOT taken the notice down.
+     *
+     * The counterpart of the withdrawal case below, and it is here because a
+     * withdrawal that fires unconditionally passes that one: #640 wires the
+     * scheduled report to `refusals.supersede` only when the pass funded
+     * everything, and without the guard a prison that still cannot pay would
+     * clear its own warning on the next construction tick and go back to
+     * looking like an idle crew -- which is #627's original defect exactly.
+     * Measured: dropping the guard leaves every other test in this repository
+     * green.
+     */
+    expect(runtime.refusals.last?.reason, 'the retries withdrew a shortfall that is still true').toBe(
+      'purchase.insufficient-funds',
+    );
+    expect(runtime.refusals.count, 'and the retries did not re-record it either').toBe(1);
   });
 
   it('hands the main thread the number the prison is short by, instead of dropping it at the boundary', () => {
@@ -360,6 +377,51 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
       shortfallMinorUnits: 0,
       items: [],
     });
+  });
+
+  it('takes the notice down on the scheduled tick, with nothing pressed after the money came back (#640)', () => {
+    /*
+     * The second half of #640's playtest, and it is worse than that pass could
+     * see from outside. It measured the band saying *"The materials were not
+     * ordered — there are not enough funds."* unchanged for four minutes while
+     * eighty-one walls went up behind it, and named the cause:
+     * `ConstructionSystem.update` called `procureQueuedMaterials` and threw the
+     * report away, so only the two press paths -- `construction/handler.ts` and
+     * `runtime/session-commands.ts` -- ever reached `reportMaterialsFunding`.
+     *
+     * In that run the sentence was at least still *true*: 312 of 313 segments
+     * were funded and the last never would be. This case is the direction where
+     * it is false. The treasury is refunded in full, the scheduled pass buys the
+     * bricks and the crew finishes the wall -- and before this change
+     * `refusals.last` was still the `purchase.insufficient-funds` recorded at
+     * tick 1, standing over a solvent prison with the wall up. No press had
+     * happened since, and none ever would: the only route to a withdrawal was a
+     * press.
+     *
+     * **What this does NOT assert, deliberately.** Nothing here says a shortfall
+     * that *arises* on a scheduled tick is announced -- payroll draining the
+     * treasury under a standing queue is still silent. That is the open
+     * question this change refused to settle: whether a refusal is an event
+     * caused by a press or a condition of the prison. It is filed as its own
+     * issue, and the withdraw-only asymmetry in `createNewSimulationRuntime` is
+     * where the reasoning lives.
+     */
+    const runtime = prisonWith(40);
+    send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 });
+    expect(runtime.refusals.last?.reason, 'the press is what announced it').toBe('purchase.insufficient-funds');
+
+    send(runtime, { type: 'CancelMaterialPurchase', orderId: 'order-buy' });
+    expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
+
+    // The last command this session receives. Everything below is the clock.
+    step(runtime, 4_000);
+    expect(runtime.construction.getOrder('order-a')?.state, 'the wall the notice is about').toBe('completed');
+
+    expect(runtime.refusals.last, 'the notice outlived the condition it describes').toBeUndefined();
+    // Withdrawn, not un-happened: `count` is a historical tally and `supersede`
+    // does not touch it. A fix that cleared this would be hiding the refusal
+    // rather than withdrawing it.
+    expect(runtime.refusals.count, 'the refusal happened, and the count still says so').toBe(1);
   });
 
   it('withdraws the standing refusal when the same purchase later succeeds', () => {
