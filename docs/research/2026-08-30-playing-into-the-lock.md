@@ -392,3 +392,129 @@ just-in-time pass netted them off demand
 could not be funded became one that could. **The queue heals itself, one
 cancellation at a time, and the only sign of it is a number in a sentence about
 waiting.**
+
+## 6. Escape C — `Undo`: takes the wall back, keeps the money
+
+**MEASURED**, run B, five presses:
+
+```
+[L1 +369.0s]   ESCAPE C undo 1: treasury=40 header="QUEUED 208 waiting · 1 being built" ...
+[L1 +380.0s]   ESCAPE C undo 5: treasury=40 header="QUEUED 205 waiting · 1 being built" ...
+[L1 +384.4s] ESCAPE C RESULT: five Undo presses; treasury 40 -> 40
+```
+
+Undo works — the queue falls — and the balance does not move, because
+`undo()` delegates to the same `cancelOrder`
+(`src/simulation/construction/system.ts:537-552`). **VERIFIED, read**:
+`src/input/bindings.ts:64` binds `KeyZ` to `edit.undo` with no modifier, in the
+`world` and `construction` contexts only, which is why the world has to hold
+focus for it to mean anything.
+
+**A harness correction, kept because it is a trap.** Run A lost the whole of
+act 2 here. `page.locator('#game-root canvas').click()` fails Playwright's
+actionability check — the strip, the rail and the tab bar are absolutely
+positioned over the canvas, so the point it aims at is covered and the click
+waits for a hit target that never frees. Every gesture in this file now goes
+through `page.mouse`, as the shared harness's own `press` and `drag` already
+did.
+
+## 7. Escape D — the Remove tool cannot see a wall, and the one sentence about refunds is about objects
+
+**MEASURED.** The hint under the Remove control, verbatim:
+
+```
+[L1 +386.7s] ESCAPE D: the Remove hint reads "Press any tile of an object to take it away. One still being built is cancelled and its materials come back; a finished one is not refunded."
+```
+
+Pressed on three tiles the descent had walled:
+
+```
+[L1 +388.2s]   ESCAPE D press at tile (12,12): commands=["RemoveObject"] band="The build order failed — that order already exists."
+[L1 +389.6s]   ESCAPE D press at tile (13,12): commands=["RemoveObject"] band="Nothing was removed — there is no object on that tile, and none being built there."
+[L1 +395.5s] ESCAPE D RESULT: three Remove presses on walled tiles; treasury 40 -> 40
+```
+
+*"there is no object on that tile"* — on a tile with a wall on it. That is
+correct and deliberate: **VERIFIED, read**, `src/main.ts:1936` says so in as
+many words — *"There is no wall removal behind this and the control does not
+claim one … Taking a **wall** down is `Undo` for a finished one, and … a press
+on its row for one that is still queued."*
+
+**The consequence is the finding, not the refusal.** `hud.build.remove-hint`
+(`src/content/default-locale-en.ts:529`) is the **only** shipped sentence that
+tells a player what happens to materials when they take something back — *"its
+materials come back; a finished one is not refunded"* — and it is attached to
+the one tool that cannot touch a wall. A player who spent 24,960 on walls and
+wants to know whether any of it is recoverable is reading a sentence about beds.
+
+## 8. Escape E — buying a plank: refused, and the refusal says less than the code knows
+
+**MEASURED.** The fold, opened, and the press:
+
+```
+[L1 +399.4s] ESCAPE E: the procurement fold, open, reads "QUANTITY | − | + | Buy 1 × Wood Plank · 65 | Arrives while the clock runs, into the stock a build draws from."
+[L1 +399.8s] ESCAPE E: ON THE WAY reads ".hud-build__deliveries: not laid out"; 0 refundable row(s) laid out
+[L1 +403.1s] ESCAPE E RESULT: bought 1 plank at 65 from 40; treasury -> 40; band="Nothing was bought — the purchase was refused and no money was spent."
+```
+
+The control names the price — `Buy 1 × Wood Plank · 65` — beside a strip
+reading 40, which is the comparison
+`BuildQueueMaterialsFundingViewModel` says it exists for, and it is a genuinely
+good screen. **What the refusal says is the problem.**
+
+`hud.refusal.purchase-materials` is *"Nothing was bought — the purchase was
+refused and no money was spent."* (`src/content/default-locale-en.ts:796`). It
+does not mention money, the price, the balance or the shortfall. **The exact
+diagnosis exists and goes to the console:**
+
+```
+[console.warn] HUD action failed {"actionId":"purchase-materials","error":{"message":"The last reported balance of 40 cannot cover 65."}}
+```
+
+**VERIFIED, read**, `src/main.ts:2396-2399`: the main thread pre-checks
+`total > viewModel.counts.treasuryMinorUnits` and throws with both numbers in
+it, and the HUD's gated-action handler turns any throw into that one generic
+sentence. The docblock above it explains why the pre-check exists and is right
+— without it the press *"would be the exact failure #82 and #207 are about — a
+button that reports success and does nothing"* — and names the other path:
+*"The `throw` below and that alert row sit on opposite sides of `sender.submit`,
+so a press produces exactly one of them and never both."*
+
+**So the pre-check shadows the better sentence.** The worker's own refusal is
+`purchase.insufficient-funds` — *"The materials were not ordered — there are not
+enough funds."* — and it cannot fire on this press, because the throw happens
+first. The player asking the game directly whether they can afford a plank is
+the one player who is not told it is about money. **Reported, not fixed: the
+remedy is a sentence, and copy is the owner's under `AGENTS.md`.** §10 carries
+the proposal.
+
+## 9. Escape F — placing a bed anyway: refused for a reason that is not money
+
+**MEASURED.**
+
+```
+[L1 +408.5s] ESCAPE F: placing a bed produced ["PlaceObject"]; treasury 40 -> 40; accommodation=0; band="The object was not placed — it has to stand in a room you have zoned."; shortfall="Waiting for 80 to buy materials."
+```
+
+Correct, and worth recording because it changes what the player believes. At the
+bottom of the treasury, the game's answer to *"put a bed here"* is a lesson
+about zoning. Nothing on that screen suggests the bed was also unaffordable.
+
+## 10. Escape G — running the clock: 5,100 ticks, and nothing moves
+
+**MEASURED**, at ×4, past two in-game day boundaries — the cadence
+`StateIncomeSystem` pays on and `PayrollSystem` bills on:
+
+```
+[L1 +411.4s] ESCAPE G: fast-forwarding from tick 7923; clock={"mode":"running","speed":4}
+[L1 +475.1s] ESCAPE G RESULT: ran to tick 13023; treasury=40 accommodation=0 prisoners=0
+```
+
+`40 → 40`. With no occupied place there is nothing to be paid for and with no
+staff there is nothing to bill, which is exactly ADR 0075's terminality
+argument, observed rather than reasoned.
+
+**So: seven escapes, six of them nothing.** Wait, cancel, undo, remove, buy,
+place, run — the balance is 40 at the end of every one of them. The seventh is
+§11, and it is the only place this pass found anything the ADR's table does not
+have.
