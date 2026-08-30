@@ -1070,12 +1070,16 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    *
    * `drawing()` is true the instant the rectangle clears, so the panel folds
    * itself to its header on the same press -- and the one control that reports
-   * the tool's state, this row's arm button, folds away with it. A player
-   * coming back for a second room therefore opens the panel and presses the
-   * control that looks like the way in, and that press *disarms*. The next drag
-   * does nothing, and the third press arms again, so pressing repeatedly
-   * eventually works and never teaches what happened. Measured by playing
-   * `main`: it cost a playtest run outright (issue #684, and
+   * the tool's state, this row's arm button, folds away with it. Measured on
+   * the mounted HUD before this change, reading the panel at each step: after
+   * the confirm the host had been sent one `arm-room-tool` and it said
+   * `armed: true`, the panel was `data-collapsed="true"`, and the arm control
+   * had **no box at all**. A player coming back for a second room therefore
+   * opens the panel and presses the control that starts drawing, and that press
+   * sends `armed: false`. The next drag does nothing -- `RoomTool.place`
+   * returns on a disarmed tool -- and the third press arms again, so pressing
+   * repeatedly eventually works and never teaches what happened. It cost a
+   * playtest run outright on `main` (issue #684, and
    * `docs/research/2026-08-29-playtest-ordering-and-the-second-room.md` reached
    * the same state from the other direction).
    *
