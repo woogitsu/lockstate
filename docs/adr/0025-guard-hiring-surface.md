@@ -86,6 +86,50 @@ on it** — see decision 1 below, whose point is that the Build panel and this
 panel are never laid out together, so the budget is not a constraint on this
 surface at any value.
 
+**Correction, 2026-08-30: the last clause of that sentence is false, and the
+class it belongs to is what to take from this.** `src/ui/primitives/icon.ts:68`
+holds
+
+```ts
+'M15.8 16.1h3.9',
+```
+
+— the fourth stroke of the `ui-scale` glyph, SVG path data and nothing whatever
+to do with a headroom figure. It arrived at `2a00f98` (#579, v0.0.212) on
+2026-08-29 with the interface-scale control; `git show
+cfab558:src/ui/primitives/icon.ts` returns no `3.9` at all, and `git log -S
+'h3.9' -- src/ui/primitives/icon.ts` names that one commit.
+
+**The sentence is kept above rather than reworded**, for the reason that makes
+this worth more than a re-grep. It makes three absence claims. Two are bounded
+by something — *no other ADR*, *no `.css` file* — and hold: the four `.css`
+files under `src/ui/` record no such figure (still four, counted again here),
+and no other ADR records one. **The third is bounded by nothing.** *"Nowhere in
+`src/`"* is not a claim about a headroom budget at all; it is a claim about a
+two-character sequence, and character sequences recur — in a path command, a
+version fragment, a coordinate. Re-wording it to exclude `icon.ts` would produce
+a clause that breaks again the next time anybody draws a glyph, so it is not
+re-worded.
+
+**And the bounded halves were never grep-clean either, which is the sharper
+half of the finding.** ADR 0022 line 588 reads *"÷ 12.2 is 23.9"* — a different
+number, and a raw `grep '3\.9' docs/adr/` has always returned it. That line
+entered at `84e1c61` on 2026-08-25, **two days before this withdrawal paragraph
+was written at `b573000`**. So the sentence was never the output of the grep it
+invites, in any of its three clauses: it was always the result of someone
+reading the hits and judging them, which is the right thing to have done. What
+the unbounded clause changed was only that the misreading became available to a
+reader who counts instead.
+
+**None of this touches the argument.** The figure stays withdrawn, no
+replacement is invented, and decision 1's point — that the Build panel and this
+panel are never laid out together, so the budget constrains this surface at no
+value — is untouched by whether some file somewhere contains those two
+characters. Recorded because `docs/adr/STATUS-QUEUE.md` §6 caught the
+falsification at the v0.0.215 re-anchor and handed the fix here explicitly, and
+because #579 falsified three documented claims in one change; the other two,
+in `docs/INPUT.md`, were corrected in #607.
+
 *A guess at where it came from, offered as a guess:* `hud.css` continues,
 *"Roughly 4px of whichever it was had never been space at all: it was the
 catalogue laying its own gutter over the map block's hairline"*, and
