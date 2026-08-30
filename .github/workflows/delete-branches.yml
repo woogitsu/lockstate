@@ -4,7 +4,34 @@ on:
   workflow_dispatch:
 
 permissions:
+  # `contents: write` is what `git push --delete` needs, and it was the whole
+  # of this block until run 2 on 2026-08-30.
+  #
+  # WHY A SECOND SCOPE HAD TO BE NAMED. Declaring a `permissions:` block at all
+  # sets every scope it does not list to `none` -- that is the point of
+  # declaring one -- so `contents: write` alone meant `pull-requests: none`.
+  # `deletebranches.sh` reads `GET /repos/{owner}/{repo}/pulls?state=open` to
+  # protect the head branch of every open pull request, and this repository is
+  # private, so that read is not public and the token could only be refused:
+  #
+  #     curl: (22) The requested URL returned error: 403
+  #
+  # THE SCRIPT FAILED CORRECTLY AND THAT IS WORTH RECORDING RATHER THAN JUST
+  # FIXING. The 403 stopped the run before a single branch was deleted, because
+  # the script treats the open-pull-request list as a precondition rather than
+  # as an optimisation: it runs under `set -euo pipefail` and the list feeds a
+  # `grep -qxF` guard, so losing it aborts instead of quietly protecting
+  # nothing. The alternative shape -- carry on with an empty list -- would have
+  # deleted the head branches of both open pull requests on the first
+  # successful dispatch in this repository's history. The `if [ -z
+  # "${GITHUB_TOKEN:-}" ]` check at the top of the script is the same
+  # reasoning; this is the case that check does not cover, because the token
+  # was present and merely powerless.
+  #
+  # `read`, not `write`. Nothing here opens, closes, comments on or edits a
+  # pull request; the list is consulted and thrown away.
   contents: write
+  pull-requests: read
 
 jobs:
   delete-branches:
@@ -14,6 +41,17 @@ jobs:
     # that was never provisioned -- and that version.yml failed identically in
     # the same four seconds until `adb6b01` moved it to this label. That is the
     # precedent, and this is the change the header said it was waiting for.
+    #
+    # MEASURED ON 2026-08-30, AND THE LABEL CHANGE WORKED. Run 2 (the first
+    # dispatch after that change) reached this runner, checked out, fetched and
+    # entered `deletebranches.sh`, and its log names the steps it ran. It still
+    # failed -- so "HAS NEVER SUCCEEDED" above stays literally true and is kept
+    # rather than softened -- but it failed at the open-pull-request lookup,
+    # after 13 seconds and inside the script, for the token-scope reason the
+    # `permissions:` block above now records. What that run retires is the
+    # DIAGNOSIS, not the tally: the four-second no-step-no-log signature is
+    # gone, and with it the last reason to suspect the runner. Everything from
+    # `runs-on:` to the script is now known to work on this label.
     runs-on: [self-hosted, Linux, X64, wsl2]
     steps:
       # PINNED TO A COMMIT RATHER THAN A TAG, AND THIS IS THE WORKFLOW WHERE
