@@ -136,9 +136,13 @@ per-prisoner object at all, so the always-visible strip is safe to
 re-project every frame at the stretch tier.
 
 The always-visible counts have no rows at all, which is what makes them
-publishable on a timer: `simulation/status-counts` (section 8) carries eighteen
+publishable on a timer: `simulation/status-counts` (section 8) carries nineteen
 integers and at most one three-field refusal record, so there is nothing here
-for this contract to bound. A projection that carries rows must be paged
+for this contract to bound. *(Eighteen until issue #585 added `occupiedPlaces`,
+the residency places that currently exist — a tally in a sentence, so it is
+worth saying that the property being claimed is "a fixed set of scalars", not
+the number. `tests/unit/worker-status-counts.test.ts` pins the exact count and
+the bytes, which is where the number is actually enforced.)* A projection that carries rows must be paged
 before it may be published on a cadence — a per-send cost that grows with the
 prison is exactly the failure that cadence was chosen to avoid.
 

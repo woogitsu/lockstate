@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { stateIncomeForCompletedDay } from '../../src/simulation/economy';
+import { stateIncomeAccruedByTick, stateIncomeForCompletedDay } from '../../src/simulation/economy';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -257,7 +257,7 @@ describe('two residents over one remaining bed, in one cell', () => {
     expect(earnedOverOneDay(runtime), 'and the treasury is credited what the walk says').toBe(300);
   });
 
-  it('publishes two occupants beside the one place the state pays for', () => {
+  it('publishes two occupants and one occupied place off the same prison state', () => {
     const runtime = twoResidentsAndOneBedLeft();
     const counts = projectStatusCounts(runtime, runtime.kernel.tick);
 
@@ -266,7 +266,20 @@ describe('two residents over one remaining bed, in one cell', () => {
     // question, which is the whole of what this asserts.
     expect(counts.roomOccupants, 'the strip publishes assignments').toBe(2);
     expect(counts.roomCapacity, 'against the places the prison has furnished').toBe(1);
-    expect(runtime.prisoners.roomInstances.residentIdsWithExistingPlace().length, 'and the state pays for the places').toBe(1);
-    expect(counts.roomOccupants).not.toBe(runtime.prisoners.roomInstances.residentIdsWithExistingPlace().length);
+
+    // The count the money is a multiple of, published beside the other one
+    // rather than instead of it (issue #585). Asserted against the registry as
+    // well as against the literal, so a projection that started reporting the
+    // assignment count would fail here even if somebody moved the literal.
+    expect(counts.occupiedPlaces, 'and the places the state actually pays for').toBe(1);
+    expect(counts.occupiedPlaces).toBe(runtime.prisoners.roomInstances.residentIdsWithExistingPlace().length);
+    expect(counts.occupiedPlaces, 'which is not the assignment count').not.toBe(counts.roomOccupants);
+
+    // And the accrual chip is folded from the same walk, so the published
+    // count and the published money cannot describe two different prisons:
+    // one place, 300 a day, prorated by how much of the day has been served.
+    expect(counts.stateIncomeAccruedTodayMinorUnits).toBe(
+      stateIncomeAccruedByTick(stateIncomeForCompletedDay(runtime.prisoners), runtime.kernel.tick),
+    );
   });
 });

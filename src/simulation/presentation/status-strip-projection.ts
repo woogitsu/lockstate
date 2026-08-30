@@ -2,6 +2,7 @@ import type { ContentRegistry } from '../../content/registry';
 import type { RoomCatalogDefinition } from '../../content/room-catalog';
 import { defaultRoomContentRegistry } from '../../content/room-catalog';
 import type { ClockControl } from '../clock/fixed-step-clock';
+import type { EntityId } from '../entity/entity-store';
 import type { IncidentType } from '../incidents/incident';
 import {
   DEFAULT_ACCOMMODATION_POLICY,
@@ -15,7 +16,7 @@ import {
   type ActionCategory,
   type RegimeSchedule,
 } from '../prisoners/regime';
-import { stateIncomeAccruedByTick, stateIncomeForCompletedDay } from '../economy/income';
+import { stateIncomeAccruedByTick, stateIncomeForOccupiedPlaces } from '../economy/income';
 import { EMPTY_SAFETY_COVERAGE_CENSUS, type SafetyCoverageCensus } from '../prisoners/safety-coverage-system';
 import { projectClockPosition } from './clock-projection';
 import type { ContrabandSearchSource } from './contraband-projection';
@@ -199,6 +200,14 @@ export interface StatusStripViewModel {
      */
     readonly accommodationCapacity: number;
     readonly roomOccupants: number;
+    /**
+     * How many residency places a prisoner is holding that **currently
+     * exist** -- the count `StateIncomeSystem` pays for, and the sibling of
+     * `roomOccupants` above rather than a correction to it. See
+     * `statusCountsSchema` in `src/simulation/protocol/types.ts` for the full
+     * argument for publishing both.
+     */
+    readonly occupiedPlaces: number;
     /**
      * Where the population is standing on the guard coverage ladder (issue
      * #588) -- see `statusCountsSchema` in `src/simulation/protocol/types.ts`
@@ -427,6 +436,15 @@ function accommodationCapacityOf(source: RoomProjectionSource, policy: Accommoda
  * name, and a reader chasing it would have landed on an accessor the income
  * line no longer reads.
  */
+/**
+ * The empty places list a session with no rooms reports, allocated once.
+ *
+ * A module constant rather than a `[]` in the expression, because the branch
+ * it serves runs on every projection of every roomless session and the two
+ * readings it feeds -- a `length` and a fold -- both treat it as read-only.
+ */
+const EMPTY_OCCUPIED_PLACES: readonly EntityId[] = [];
+
 export function projectStatusStrip(source: StatusStripSource, options: StatusStripOptions = {}): StatusStripViewModel {
   const rooms = options.rooms ?? defaultRoomContentRegistry;
   const population = projectPrisonerPopulationCounts(source.prisoners);
@@ -467,6 +485,22 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       if (source.staff.getDeploymentPhase(entityId) === 'unassigned') staffUnassigned += 1;
     }
   }
+
+  // One walk, read here and folded into the accrual chip below through
+  // `stateIncomeForOccupiedPlaces`. Going through `stateIncomeForCompletedDay`
+  // for the money and asking the registry again for the count would be two
+  // arrays and two `O(P log P)` sorts per projection, which the **Cost** note
+  // above names as the one allocation here that scales with the population.
+  //
+  // Guarded on `source.rooms` and not on `source.prisoners.roomInstances`,
+  // matching the accrual chip: `source.rooms === undefined` is the *session's*
+  // statement that it has no rooms, and a session that says so reports 0 for
+  // the same reason the absent treasury does. The two are the same registry in
+  // every real runtime (`src/simulation/worker/status-counts.ts` hands
+  // `runtime.prisoners` to both), so this cannot report places for a session
+  // that reports no rooms.
+  const occupiedPlaceIds =
+    source.rooms === undefined ? EMPTY_OCCUPIED_PLACES : source.prisoners.roomInstances.residentIdsWithExistingPlace();
 
   const schedules = source.regimeSchedules ?? DEFAULT_REGIME_SCHEDULES;
 
@@ -509,6 +543,7 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       roomCapacity,
       accommodationCapacity,
       roomOccupants,
+      occupiedPlaces: occupiedPlaceIds.length,
       prisonersCovered: coverageCensus.covered,
       prisonersUnderstaffed: coverageCensus.understaffed,
       prisonersUnguarded: coverageCensus.unguarded,
@@ -533,8 +568,10 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       // `PrisonerDayGrantSource`. The `source.rooms === undefined` guard is
       // kept because it is the *session's* statement that it has no rooms, and
       // it reports 0 for the same reason the treasury's absent case does.
-      stateIncomeAccruedTodayMinorUnits:
-        source.rooms === undefined ? 0 : stateIncomeAccruedByTick(stateIncomeForCompletedDay(source.prisoners), source.tick),
+      stateIncomeAccruedTodayMinorUnits: stateIncomeAccruedByTick(
+        stateIncomeForOccupiedPlaces(source.prisoners, occupiedPlaceIds),
+        source.tick,
+      ),
       dailyWageBillMinorUnits: source.payroll?.dailyWageBillMinorUnits() ?? 0,
       unpaidWagesMinorUnits: source.payroll?.unpaidWagesMinorUnits ?? 0,
     },
