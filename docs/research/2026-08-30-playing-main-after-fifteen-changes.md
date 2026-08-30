@@ -77,7 +77,7 @@ so the simulation, the HUD and every balance value in both runs are `898a16a`'s.
 ADR 0079's sentence is quoted at the top of this record. Taken apart, it makes
 three separate claims, and they do not stand or fall together.
 
-### 1.1 As a ratio of *times in system* it is right, and the intake overhead that could have spoilt it is nine ticks
+### 1.1 As a ratio of *times in system* it is right, and the intake overhead that could have spoilt it is ten ticks
 
 **VERIFIED, code.** Little's law is `L = λ·W`. `W` here is not the sentence: it
 is admission-to-departure, which is the intake pipeline plus the sentence.
@@ -196,7 +196,9 @@ beds and one toilet, one guard hired, then ×4 for twenty-five wall minutes.
 | 118,613 | 50 | 3 | 3 | **3** | 6 | 74,320 |
 
 **`occupiedPlaces` is `min(roster, 6)` at every single one of the 129 samples
-this run took.** While the roster stood at 12 it read 6 and would not rise,
+this run took** — checked over the whole `every sample` array the run printed,
+not over the twelve rows above: zero samples where
+`occupiedPlaces !== min(prisoners, 6)`. While the roster stood at 12 it read 6 and would not rise,
 however many people were waiting; each time somebody left while the roster was
 still above 6 it stayed at 6, because the bed was refilled from the queue inside
 one ten-second sample; and only once the roster fell *below* the bed count did
@@ -264,7 +266,7 @@ The ceiling for that prison is `6 × 300 − 80 = 1,720`
 80 is the `dailyWageBill` the run logged at hire). The 566 short is
 `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 40` (`income.ts:335`) times
 about **2.4 unmet needs per resident per day** — which is what a cell-and-toilet
-prison is: ADR 0054 decision 2 states that *"a prison with no shower room and no
+prison is: ADR 0054 decision 3 states that *"a prison with no shower room and no
 laundry still has no hygiene at all"*, and the roster's own worst-need column
 read `Hygiene` for every visible prisoner from tick 28,575 onward.
 
