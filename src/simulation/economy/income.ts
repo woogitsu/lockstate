@@ -91,7 +91,18 @@ import type { Treasury } from './treasury';
  * cost of that choice, stated so it is not later mistaken for an oversight: at
  * 300 with no operating costs at all, a standalone cell pays back in 3.7
  * in-game days rather than 5.5, so expansion is cheaper than the record
- * intended for exactly as long as nothing charges the prison anything.
+ * intended for exactly as long as the prison has no outgoing side.
+ *
+ * **That condition has expired, and the clause is corrected here rather than
+ * left standing.** It read "for exactly as long as" precisely so that it would
+ * stop being true, and it did, twice: `916ac46` (#455) made wages recurring, so
+ * `PayrollSystem` bills `wageBand.minPerDay` at every in-game day boundary; and
+ * `a87b0d3` (#640) made a `PlaceBuildOrder` buy its own materials at the press,
+ * at 80 a wall segment. So the 3.7-day payback above is the figure for a
+ * prison with no staff, and a real one is slower by whatever its wage bill is.
+ * **The rate is not re-opened by this note** -- 300 is the owner's figure and
+ * every value here is #29's under ADR 0017 decision 5. What is corrected is a
+ * sentence that would otherwise read as a standing fact about the game.
  *
  * An integer, and not a formatting preference: it multiplies into a balance a
  * save carries and a determinism fingerprint hashes, and `docs/DETERMINISM.md`

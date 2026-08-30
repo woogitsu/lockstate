@@ -568,8 +568,24 @@ test('acts 1 and 2: the descent from 25,000, and every escape a mouse can reach 
    * it back at all.
    */
   const beforeUndo = afterCancels;
+  /*
+   * **The world is focused with a raw mouse press, not with
+   * `locator('#game-root canvas').click()`, and run A measured why.** That
+   * locator click fails Playwright's actionability check: the HUD strip, the
+   * rail and the tab bar are absolutely positioned over the canvas, so the
+   * point it aims at is covered and the click waits for a hit target that will
+   * never be free. Run A lost act 2 there, after escape B and before this
+   * escape ever ran. `press()` drives `page.mouse` directly, which is what
+   * every other gesture in this file already does and what a player's hand
+   * does.
+   *
+   * `KeyZ` and nothing else: `src/input/bindings.ts:64` binds it to
+   * `edit.undo` in the `world` and `construction` contexts, with no modifier,
+   * which is why the world has to hold focus for the key to mean anything.
+   */
   for (let attempt = 0; attempt < 5; attempt += 1) {
-    await page.locator('#game-root canvas').click({ position: { x: 40, y: 40 } });
+    const focusTarget = centreOf(descent.origin, 8, 12);
+    await press(page, focusTarget.x, focusTarget.y);
     await page.keyboard.press('KeyZ');
     await page.waitForTimeout(700);
     const counts = await latestCounts(page);
@@ -715,11 +731,30 @@ async function drawWing(
    */
   const bounds = visibleTileWindow(origin);
   const uncovered = await drawableTileWindow(page, origin);
-  const x0 = bounds.firstColumn;
-  const x1 = bounds.lastColumn;
-  const y0 = bounds.firstRow;
-  const y1 = bounds.lastRow;
-  log(act, `${label}: rectangle (${x0},${y0}) .. (${x1},${y1}) from the viewport window; the box the HUD leaves uncovered is ${uncovered.freeBox}, columns ${uncovered.firstColumn}..${uncovered.lastColumn}, rows ${uncovered.firstRow}..${uncovered.lastRow}`);
+  /*
+   * **Clamped to the owned world, which run A discovered the hard way.**
+   * `createNewSimulationRuntime` builds `new SparseWorld(32)` and loads and
+   * owns exactly one chunk (`src/simulation/runtime/new-session.ts:385-387`),
+   * so the buildable world is tiles 0..31 in both axes. Run A panned east
+   * between wings without clamping, walked off that edge, and spent wing 3
+   * drawing on ground that does not exist: sixteen consecutive runs answered
+   * *"The build order failed — that tile is outside the map."* and cost 480 of
+   * an intended 7,200.
+   *
+   * A player would have stopped at the first of those sentences, so a wing
+   * drawn past the edge measures the harness rather than the game. Clamping is
+   * how this act keeps measuring the game.
+   */
+  const clamp = (value: number): number => Math.min(WORLD_LAST_TILE, Math.max(0, value));
+  const x0 = clamp(bounds.firstColumn);
+  const x1 = clamp(bounds.lastColumn);
+  const y0 = clamp(bounds.firstRow);
+  const y1 = clamp(bounds.lastRow);
+  if (x1 - x0 < 4 || y1 - y0 < 4) {
+    log(act, `${label}: SKIPPED -- the clamped rectangle (${x0},${y0})..(${x1},${y1}) is too small to be a wing`);
+    return;
+  }
+  log(act, `${label}: rectangle (${x0},${y0}) .. (${x1},${y1}), clamped to the owned world 0..${WORLD_LAST_TILE}; the viewport window was columns ${bounds.firstColumn}..${bounds.lastColumn}, rows ${bounds.firstRow}..${bounds.lastRow}; the box the HUD leaves uncovered is ${uncovered.freeBox}`);
 
   const edgeX = (tx: number) => origin.originX + tx * TILE;
   const edgeY = (ty: number) => origin.originY + ty * TILE;
@@ -748,20 +783,32 @@ async function drawWing(
 
   const corridorY = Math.floor((y0 + y1) / 2);
   await run('corridor', { x: midX(x0 + 1), y: edgeY(corridorY) }, { x: midX(x1 - 1), y: edgeY(corridorY) });
-  for (let column = x0 + 3; column < x1 - 1; column += 3) {
+  for (let column = x0 + 3; column < x1 - 1 && column <= WORLD_LAST_TILE; column += 3) {
     await run(`cells north at column ${column}`, { x: edgeX(column), y: midY(y0 + 1) }, { x: edgeX(column), y: midY(corridorY - 1) });
     await run(`cells south at column ${column}`, { x: edgeX(column), y: midY(corridorY + 1) }, { x: edgeX(column), y: midY(y1 - 1) });
   }
 }
 
+/**
+ * The last buildable tile index in either axis.
+ *
+ * **VERIFIED, read**: `src/simulation/runtime/new-session.ts:385-387` is
+ * `new SparseWorld(32)` followed by `world.load(initialChunk)` and
+ * `world.setOwned(initialChunk, true)` for the single chunk at (0,0). So the
+ * whole owned world of a new session is 32 x 32 tiles, and everything else is
+ * `build.out-of-bounds`.
+ */
+const WORLD_LAST_TILE = 31;
+
 /** Pans the camera with the middle button and re-measures the origin. */
 async function panAndRecalibrate(
   page: import('@playwright/test').Page,
   act: string,
+  delta: { dx: number; dy: number },
 ): Promise<{ originX: number; originY: number }> {
-  await page.mouse.move(1000, 500);
+  await page.mouse.move(700, 450);
   await page.mouse.down({ button: 'middle' });
-  await page.mouse.move(200, 300, { steps: 12 });
+  await page.mouse.move(700 + delta.dx, 450 + delta.dy, { steps: 12 });
   await page.mouse.up({ button: 'middle' });
   await page.waitForTimeout(400);
   const origin = await calibrate(page);
@@ -808,8 +855,22 @@ test('act 3: three wings of an ambitious prison, drawn without once trying to ru
    */
   const state = { ordered: 0 };
   const wings: { label: string; segments: number; treasury: number }[] = [];
+  /*
+   * **Where each wing goes, on a 32 x 32 world.** The opening camera shows
+   * roughly columns 6..26 and rows 10..22, which is most of the middle of the
+   * map. Wing 2 is drawn after panning the view **up and left** (the world
+   * moves down-right under the cursor) so it lands on the top-left quarter,
+   * and wing 3 after panning **down**, onto the bottom. Both pans move the
+   * camera *into* the owned chunk rather than off it, which is run A's
+   * correction.
+   */
+  const PANS: readonly { dx: number; dy: number }[] = [
+    { dx: 0, dy: 0 },
+    { dx: 420, dy: 380 },
+    { dx: 0, dy: -700 },
+  ];
   for (let wing = 1; wing <= 3; wing += 1) {
-    if (wing > 1) origin = await panAndRecalibrate(page, act);
+    if (wing > 1) origin = await panAndRecalibrate(page, act, PANS[wing - 1]!);
     const before = state.ordered;
     await drawWing(page, act, origin, `wing ${wing}`, state);
     const counts = await latestCounts(page);
@@ -873,7 +934,7 @@ test('act 3: three wings of an ambitious prison, drawn without once trying to ru
   const afterRegret = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
   log(act, `CHANGED THEIR MIND: ${regretCancels} order(s) cancelled; treasury ${beforeRegret} -> ${afterRegret}`);
 
-  origin = await panAndRecalibrate(page, act);
+  origin = await panAndRecalibrate(page, act, { dx: 260, dy: 260 });
   const clean = await drawableTileWindow(page, origin);
   const redrawRow = clean.firstRow + 1;
   const beforeRedraw = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
@@ -975,4 +1036,32 @@ test('act 4: the same wall run with the clock never started, and what that does 
   const afterCancel = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
   log(act, `ACT 4 RESULT: ${cancelled} delivery cancellation(s) with the clock stopped; treasury ${beforeCancel} -> ${afterCancel} (recovered ${afterCancel - beforeCancel} of the ${25_000 - beforeCancel} spent)`);
   await observe(page, act, 'after cancelling every delivery the fold offered');
+
+  /*
+   * **Does the refund survive the clock being started?** It should not, and
+   * saying so from the code alone would be a diagnosis rather than a
+   * measurement. `ConstructionSystem.update` calls
+   * `procureForPendingOrders` on **every** scheduled construction tick
+   * (`src/simulation/construction/system.ts:852`), and the build orders those
+   * deliveries were bought for are still queued and still `materials-pending`
+   * -- so the first tick after Play should buy them all over again and take
+   * the money straight back out.
+   *
+   * If it does, the refund is not an escape at all unless the player cancels
+   * the *orders* as well as the deliveries, and the fold says nothing about
+   * that. This measures which.
+   */
+  const beforePlay = afterCancel;
+  log(act, `THE REFUND, ABOUT TO MEET THE CLOCK: treasury=${beforePlay}, queue=${JSON.stringify((await hudDump(page)).queue.headerText)}`);
+  await pressPlay(page, act);
+  await page.waitForTimeout(6000);
+  const afterPlay = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
+  const afterPlayDump = await hudDump(page);
+  log(
+    act,
+    `ACT 4 ADDENDUM: six seconds after pressing Play, treasury ${beforePlay} -> ${afterPlay}` +
+      ` (${beforePlay - afterPlay} taken back out); queue=${JSON.stringify(afterPlayDump.queue.headerText)}` +
+      ` deliveries=${JSON.stringify((await panelText(page, '.hud-build__deliveries')).replace(/\n+/g, ' | '))}`,
+  );
+  await observe(page, act, 'the refund, six seconds after the clock was started');
 });

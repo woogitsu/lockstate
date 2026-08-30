@@ -10,8 +10,31 @@
 `LOCKSTATE_BROWSER_TEST_PORT=5189 ./node_modules/.bin/playwright test -c tests/browser/playwright.playtest.config.ts tests/browser/playtest-into-the-lock.playtest.ts`.
 Nothing in CI collects `.playtest.ts`.
 
-*(sections below are filled from the runs; this file is written incrementally
-so that nothing exists only in the container)*
+**The question, and what is deliberately not re-litigated.**
+[`2026-08-30-a-wall-that-buys-itself.md`](./2026-08-30-a-wall-that-buys-itself.md)
+§4 already measured the arithmetic of the wall route to the segment — 312
+funded, the 313th refused, **40 left** — and already refuted issue
+[#641](https://github.com/matmaxalez/lockstate/issues/641)'s *"a single
+sustained drag reaches it"*: one drag is at most 20 segments, one screenful is
+116, and reaching the floor took 24 drags. **Both reproduce here** (§1) and
+neither is this pass's contribution. What this pass asks is what that record
+left open: what the player is *told* on the way down, what a mouse can do at the
+bottom, and whether ambition arrives there without aiming.
+
+**Contention.** Run A was taken on a machine whose load average had fallen to
+3.1 from the 8–14 of earlier in the day, with one other agent's `vitest` run
+alongside (issue [#667](https://github.com/matmaxalez/lockstate/issues/667)).
+**Every figure this document rests on is a tick, a treasury value or panel text
+— all of which come from the simulation and are identical across runs — and not
+a wall-clock millisecond.** Where a duration is quoted it is labelled and is not
+part of any claim; §1 uses one such duration to *correct* a wall-clock figure in
+an earlier record, and marks it as the weakest thing here.
+
+**LFS.** `git lfs checkout` was run in the worktree before any browser work:
+`file public/assets/actors/actor.guard.base.idle.png` → `PNG image data, 260 x
+3104`. Nothing below is a claim about rendering, but a worktree that had skipped
+it would have run green with no art and said nothing
+(`docs/AGENT_WORKFLOW.md`, §2).
 
 ## Claim tiers
 
@@ -119,3 +142,26 @@ is Part B's subject.
 only make the lock reachable by a gesture, it moved the illiquidity from the
 container into the world. Decision 3 was written for money in the wrong shape
 *in a warehouse*; the wall route puts it in the wrong shape *in the map*.
+
+---
+
+# Part A — what the player sees between 25,000 and 40
+
+## 0. The instrument this section needed, and the first one it tried
+
+**MEASURED, and it is recorded because the first reading was useless in the
+flattering direction.** The obvious probe — "does anything on the visible HUD
+match a money word" — answers **true on the very first drag of a fresh session
+and on every drag after it**, because two pieces of furniture are permanently on
+screen:
+
+```
+[L1] BASELINE lines that already match a money word (furniture, present at every balance): ["Funds","Buy"]
+```
+
+`Funds` is the status strip's label beside the balance; `Buy` is the Build
+panel's procurement disclosure toggle. Both are identical at 25,000 and at 40.
+A probe that counts them cannot tell a warning from a wall, so the descent
+captures the visible-line set at the moment the wall tool is armed and reports
+only the lines that were **not** in it, discarding the bare-number line so that
+the counter counting does not read as the game speaking.
