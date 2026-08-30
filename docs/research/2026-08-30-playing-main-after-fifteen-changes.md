@@ -176,3 +176,78 @@ one of the four rows the roster draws.
 
 **Reported, not fixed**, for §2's reason: the missing thing is a sentence
 addressed to a player, and that is the owner's.
+
+## 5. What stopped a player, in the order they meet it
+
+### 5.1 The first wall a new player orders still parks, and the word "material" is nowhere on screen
+
+**VERIFIED, Run A, act 1.** The just-in-time materials fix
+([#640](https://github.com/matmaxalez/lockstate/issues/640)) is **not on
+`main`**, and the confirmation the brief asked for is this. New prison, Build
+tab, arm Brick wall, drag one six-tile run, buy nothing, run at ×4 and watch:
+
+```
+[act1] queue right after one wall run: "QUEUED\n6 waiting · 0 being built"
+[act1] after 23.604s of x4, tick 465: queue "QUEUED\n6 waiting · 0 being built"
+[act1] after 44.41s of x4, tick 2138: queue "QUEUED\n6 waiting · 0 being built"
+[act1] after 80.5s of x4, tick 5020: queue "QUEUED\n6 waiting · 0 being built"
+```
+
+Tick 5,020 is in-game day 3. Nothing has moved and nothing will. What the whole
+visible HUD says about why, with nothing unfolded by hand:
+
+```
+[act1]   /awaiting materials/i in the visible HUD? false
+[act1]   /material/i in the visible HUD? false
+[act1]   /brick/i in the visible HUD? true
+[act1]   /buy/i in the visible HUD? true
+[act1]   /stock/i in the visible HUD? false
+[act1]   /purchase/i in the visible HUD? false
+```
+
+`/brick/i` and `/buy/i` are true because the Build catalogue lists "Brick wall"
+and the panel has a "Buy" control — neither is a sentence about *these* orders.
+The reason is one press away and it is a press nobody is told to make:
+
+```
+[act1] queue data-collapsed before unfolding: true
+[act1] queue data-collapsed after the header press: false
+[act1] queue after unfolding: "QUEUED\n6 waiting · 0 being built\nBrick wall · 14, 12 · North\nAwaiting Materials\nCancel\n…"
+[act1]   /awaiting materials/i once the queue is unfolded? true
+```
+
+This reproduces `docs/research/2026-08-30-the-naive-route.md` rather than
+extending it, and it is here because the brief asked for it to be confirmed on
+today's `main` rather than assumed. **It is the earliest thing a player meets and
+it is still live at `898a16a`.**
+
+### 5.2 The control that looks like "start drawing" is the one that stops it, for a second room
+
+**VERIFIED, Run A, act 2, from the failure rather than from the pass.** After
+one room has been designated the Rooms tool **stays armed** — deliberately, so a
+second rectangle can be dragged without touching the panel — and the panel
+**folds itself** on the way (`drawingFolded`, `src/ui/hud/rooms-panel.ts:439-465`,
+*"a panel that covers the thing it operates on is not a panel the player can
+draw on"*). So a player coming back to the Rooms tab for a second room sees:
+
+```
+[act2] designate south: panel data-collapsed=true catalogue data-collapsed=false
+```
+
+A folded panel. Opening it and pressing the control that starts drawing —
+`armButton`, which toggles: `armed = !armed`, `rooms-panel.ts:958` — **turns
+drawing off**. The drag then draws nothing, no pending rectangle exists, and
+Designate is never rendered. Playwright's page snapshot at the moment the run
+died shows exactly that state: the panel expanded, `radio "Cell Selected"
+[checked]`, no Designate control anywhere, and the arm button reading
+**"Draw on map"** — which is `hud.rooms.arm`, the *disarmed* label
+(`src/content/default-locale-en.ts:803-804`; the armed one is "Stop drawing").
+
+**The label does tell the truth, and that is the whole of the mitigation**: a
+player who opens the panel and reads the button before pressing it is told the
+tool is already armed. The panel is folded on arrival, so that reading costs a
+press first — and the fold is there for a good measured reason, which is why
+this is a report and not a proposed change.
+
+**It cost this pass a run**, which is the honest way to say how discoverable it
+is: the script did the obvious thing and lost ten minutes to it.
