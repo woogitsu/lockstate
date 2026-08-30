@@ -522,9 +522,10 @@ function eventParameterMessages(
     case 'incidents.escape-succeeded':
       return { name: prisonerName(event.entityId, event.name) };
     // Every sentence whose parameters are figures or nothing at all.
-    // `eventParameters` above is where those are decided; listing them here
-    // rather than falling through a `default` is what makes the next event
-    // type fail to compile until somebody has answered this question too.
+    // `eventParameters` above is where those are decided; they are listed
+    // one by one rather than left to the `default` so that the decision is
+    // visible for each, and so the `default` below is reached only by a type
+    // nobody has considered.
     case 'economy.wages-unpaid':
     case 'prisoners.discharged':
     case 'incidents.riot-opened':
@@ -533,6 +534,24 @@ function eventParameterMessages(
     case 'incidents.escape-attempt-opened':
     case 'incidents.all-clear':
       return undefined;
+    default: {
+      // **This branch is the exhaustiveness, and it is here because the
+      // obvious version does not work.** `eventParameters` above needs no
+      // `default`: it returns an object, so a missing case makes the function
+      // fall off the end and TypeScript rejects it with TS2366. This one may
+      // legitimately return `undefined`, so falling off the end is *valid* --
+      // a new event type would silently take the `undefined` branch and its
+      // `{name}` would reach a player as the literal placeholder. Measured
+      // rather than assumed: with the `incidents.escape-succeeded` case
+      // deleted and no `default`, `tsc -b` exits 0.
+      //
+      // `never` is what restores the guarantee, in the idiom
+      // `SessionController` uses for snapshot refusal reasons. The throw is
+      // unreachable while the union and this `switch` agree, which is the
+      // point of it.
+      const unhandled: never = event;
+      throw new Error(`Unhandled simulation event type "${String((unhandled as { type: string }).type)}".`);
+    }
   }
 }
 

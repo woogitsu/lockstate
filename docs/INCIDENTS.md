@@ -147,7 +147,12 @@ them is that neither is a weaker riot:
   `escaped: incident.type === 'escape-attempt'` since #28 and it had never once
   been true in a running prison; the moment it can be, a panel saying *escaped:
   yes* beside a prisoner still in their bed would be a promise the code does not
-  keep.
+  keep. **`lapse` is also the only route to that flag** — the other and only
+  other terminal transition, `advanceResponse`'s `'resolved'` branch, writes
+  `false` — which is what lets the sentence #683 authored say *why* nobody was
+  stopped and not merely that somebody left. A second route to `escaped: true`
+  would make that sentence a claim the code does not keep, and the write site
+  carries that warning where a change would meet it.
 
 What none of them can do is be **found**: a player cannot order a search, so the
 contraband both new producers read is real, hidden and unanswerable. That is
@@ -305,12 +310,21 @@ paragraph is corrected by the same change. Both readings are kept rather than
 overwritten (`docs/AGENT_WORKFLOW.md` section 4), because the field list above
 is accurate and it is the verb that was wrong.
 
-What that costs is measured at
+What that costs was measured at
 [#683](https://github.com/matmaxalez/lockstate/issues/683): `outcome.escaped` —
-the one field that says a prisoner got out rather than was stopped — reaches no
+the one field that says a prisoner got out rather than was stopped — reached no
 pixel, so a successful escape and a contained attempt put the same two rows on
 the events channel. See `docs/research/2026-08-30-what-an-escape-says.md` and
 `tests/integration/escape-outcome-visibility.test.ts`.
+
+**Half of that is now false and the other half is not, so both are kept**
+(`docs/AGENT_WORKFLOW.md` section 4). The escape reaches a pixel: #683's ruling
+added `incidents.escape-succeeded` to the events channel, and the band names
+the escapee at the moment they get out. What is unchanged is the sentence this
+paragraph sits under — **`projectIncidents` still has no reader**. The band is
+the moment; the panel is the aftermath, and it is the aftermath that is still
+unbuilt. `outcome.escaped` per incident, `summary.escapes` for the session and
+everything else in that projection remain unpainted.
 
 The incident's
 `causeFactors` — the raw risk and grudge scores that produced it — are
@@ -335,12 +349,28 @@ one closes; those are occurrences and are pushed once, where everything
 above is a projection the HUD pulls. See `src/ui/simulation-events.ts` for
 which kind is graded `'danger'` and why.
 
-**Every member of that set is about an incident *starting*, except the one that
-says the prison is calm again.** No event on the channel reports an outcome, so
-the two ways an escape attempt can end reach the player as the same pair of
-rows — the opening, then the all-clear. What the outcome is worth, and where a
-distinguishing event would go if one is authored, is measured in
-`docs/research/2026-08-30-what-an-escape-says.md`.
+**This read "Every member of that set is about an incident *starting*, except
+the one that says the prison is calm again", and #683 is what ended it.** It
+went on: *"No event on the channel reports an outcome, so the two ways an escape
+attempt can end reach the player as the same pair of rows — the opening, then
+the all-clear."* That was true and is not any more.
+
+`incidents.escape-succeeded` is the one member about an **outcome**, recorded in
+`IncidentResponseSystem.lapse` at the moment a participant actually leaves,
+graded `danger`, and carrying the escapee's entity id and name so the sentence
+can say who. It is a distinct event kind rather than a field on one that exists,
+for a reason the research settled and the schemas restate: the opening event is
+published before an outcome exists and this channel never amends a published
+event, and `incidents.all-clear` refuses per-incident figures in its own comment
+and fires only when nothing is open anywhere.
+
+The counting rule that survives all of it is not "every member is an opening"
+but the one that was doing the work underneath: **an event on this channel is an
+occurrence at a tick, and the incident members are one per transition worth
+telling the player about** — an opening, this one departure, and the return to
+calm. Why the outcome is worth a row, and what the alternatives cost, is in
+`docs/research/2026-08-30-what-an-escape-says.md`; what the player reads is
+measured in `tests/integration/escape-outcome-visibility.test.ts`.
 
 ## Snapshot/restore
 

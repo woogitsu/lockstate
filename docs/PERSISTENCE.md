@@ -609,7 +609,9 @@ work are not.**
   already happened. What the restored player has is the status strip's
   incidents badge, which names the kind (issue #506 finding 2) and is a level
   rather than an occurrence, so it does carry across a save; and, when the
-  restored incident reaches a terminal state, `incidents.all-clear`. So the
+  restored incident reaches a terminal state, `incidents.all-clear` — and, if
+  that terminal state is a lapsed escape attempt,
+  `incidents.escape-succeeded` naming the prisoner who got out (#683). So the
   sequence a restored session shows is the end of an incident it never
   announced the start of. That is a smaller version of the same shape the
   arrears case has, and the same reasoning covers it: the *condition* is on

@@ -35,6 +35,30 @@ the layer where it belongs, and the other layer has only one shape open to it.
 **Nothing under `src/` is changed by this branch and no sentence is authored.**
 A prototype was built, measured and reverted; its cost is in §3.4.
 
+---
+
+**What happened after this record — added when the sentence shipped, on this
+same branch.** The owner ruled on 2026-08-30 (#683's owner-ruling comment) and
+the sentence is `{name} broke out — no guard reached them in time.` The shape
+this record recommended is what was built: `incidents.escape-succeeded`, a
+distinct event kind carrying `entityId` and the two name halves, band `danger`,
+produced in `IncidentResponseSystem.lapse`, protocol version unmoved. The
+record is left standing as it was written, with the corrections below marked in
+place, because it is the argument that settled the shape rather than a
+description of the result.
+
+**Every load-bearing claim in it was re-read against the code and survived**,
+with two exceptions, both marked where they occur:
+
+- §3.2's site table is complete but **not the whole cost**. It measures what a
+  new event type forces and says the protocol version does not move, both of
+  which held. What it does not name is the one thing the sentence itself
+  forces: the escapee's *name*, which is legible only until `releasePrisoner`
+  releases it. See §3.4's amendment.
+- §3.2's *"one line in a module"* estimate of the `eventParameterMessages`
+  handover was low, and the reason it was low is worth more than the number.
+  See §3.2's amendment.
+
 **Gates on the branch as it stands:** `./node_modules/.bin/tsc -b --pretty false`
 exit 0, and the vitest suite `350 passed (350)` files / `3970 passed | 1 skipped
 (3971)` tests, exit 0, on the committed tree. Another agent's suite was running
@@ -353,6 +377,30 @@ non-empty, and only the relocation-specific test asserts `not.toContain('{')`.
 whoever implements the sentence, and it is exactly the handover
 `docs/AGENT_WORKFLOW.md` §2 says the integrator owns.
 
+> **Amended when the handover was taken up.** The finding held exactly:
+> `tsc -b` exited 0 with the new type wired into all four forced sites and this
+> one left alone, and the sentence rendered as the literal
+> `{name} broke out — no guard reached them in time.` through the real HUD
+> reader. Watched red on three assertions in two files, then green.
+>
+> **"One line" was wrong, and the correction is a general one.** Adding a
+> second early return would have re-created the hazard for the *third* event
+> type, so the fix is the shape `eventParameters` beside it already has: a
+> `switch` over the discriminant. That alone is still not enough here, and the
+> difference is worth writing down because it is not obvious from reading the
+> two functions side by side — `eventParameters` returns an object, so a
+> missing case falls off the end and TypeScript rejects it (TS2366);
+> `eventParameterMessages` may legitimately return `undefined`, so a missing
+> case is *valid* and falls silently through to it. **Measured: with the
+> `switch` in place and the new case deleted, `tsc -b` still exited 0.** It
+> takes a `default` branch with `const unhandled: never = event` to force it,
+> which is now there.
+>
+> The test half is a class fix rather than an instance one:
+> `tests/unit/ui-simulation-events.test.ts`'s per-type loop now asserts no
+> rendered sentence contains `{`, for every event type at once, where before
+> only the relocation-specific test asserted it for one.
+
 The three sites that are exhaustive over `IncidentType` rather than over the
 event type are unaffected by a new event kind and are listed so a reader does
 not go looking: `SimulationEventLog.recordIncidentOpened`'s `switch`
@@ -413,6 +461,28 @@ returned `13 passed (13) / 173 passed (173)`.
 **Everything was reverted; `git status` is clean apart from the new test file
 and this record.** The prototype is quoted here as a cost measurement, not
 offered as a change.
+
+> **Amended by the change that shipped, and the shortfall is instructive.** The
+> prototype reused the existing authored key and so carried no `{name}`; the
+> owner's sentence does, and a name is readable only while the prisoner exists
+> — `releasePrisoner` calls `identity.release('prisoner', entityId)` on its way
+> through. So a producer call *beside* `onPrisonerEscaped`, which is what this
+> section and §5.2 both describe, is not sufficient on its own: something has
+> to read the name first, and `IncidentResponseSystem` holds no identity
+> registry.
+>
+> What shipped keeps the system ignorant of identity, as
+> `ObjectPlacementService` is: the `onPrisonerEscaped` port now *answers* with
+> who left, so the one piece of code permitted to read the name is the one that
+> destroys it and the ordering cannot be got wrong. `undefined` means nobody
+> left, and then the prison says nothing.
+>
+> That ordering is the one thing in this change no type protects, and it was
+> measured: with the two statements in `new-session.ts` transposed, all 61
+> integration files still passed. It is pinned now in
+> `tests/integration/incident-trigger-reachability.test.ts`, the one file that
+> loses prisoners out of a prison built from player commands, by requiring each
+> announced escape to carry name halves drawn from the shipped pool.
 
 **The finding inside that green suite is worth stating on its own.** The
 existing gates force the new type to resolve to *some* sentence in the shipped
