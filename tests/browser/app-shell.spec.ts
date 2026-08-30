@@ -8209,6 +8209,54 @@ test.describe('the assembled application', () => {
     }
   });
 
+  /**
+   * Issue #680: the first thing a player does, after the other first thing a
+   * player does.
+   *
+   * The game's opening interaction is "click around, then start", and clicking
+   * around used to cost the start: one press on any `.ui-tab` before the first
+   * **New prison** made that press fail with
+   * `Could not create a prison: Simulation worker fault (already-initialized):
+   * Kernel is already initialized.`, and only a second press worked.
+   *
+   * Why it needs a browser. Every layer of the cause is composition:
+   * `src/main.ts` builds the panel readers over the *channel* at boot rather
+   * than over a session (#149), the `select-tab` intent fires their
+   * `refresh*()` reads on the first tab press, and the worker they read from
+   * is the **boot worker** the channel keeps for the first session. Only the
+   * assembled page has all three. The unit and integration halves live in
+   * `tests/unit/worker-state-machine.test.ts` and
+   * `tests/integration/session-first-create-after-a-panel-read.test.ts`; what
+   * they stand in for is a real `Worker`, which is exactly what this file
+   * exists for.
+   *
+   * Every tab, from `HUD_TAB_IDS` rather than a copy of it, for the reason the
+   * reachability sweep above reads the same list: the sweep found it on five
+   * of five, and a sixth tab must not be able to reintroduce it unseen.
+   */
+  for (const tab of HUD_TAB_IDS) {
+    test(`the first New prison works after one press on the ${tab} tab (#680)`, async ({ page }) => {
+      await openApp(page);
+
+      await page.locator(`.ui-tab[data-tab="${tab}"]`).click();
+      await page.getByRole('button', { name: localeText('save.action.create') }).click();
+
+      // The status line, not the prison list: a create that faulted still
+      // writes and then deletes its slot row (`discardFailedCreation`), so an
+      // empty list and a failed create look alike for a moment. The status is
+      // what the player reads and what the sweep measured.
+      const status = page.locator('.save-panel__status');
+      // The catalogue's own sentence up to its first parameter, so this
+      // pins what the player reads without pinning the generation id.
+      await expect(status).toContainText(localeText('save.status.saved').split('{')[0]!.trim());
+      // Named separately so a regression says which half broke, and asserted
+      // as an absence because that is the shape the defect had: the first
+      // press produced a sentence, it was just the wrong one.
+      await expect(status).not.toContainText('already');
+      await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+      await waitForSession(page);
+    });
+  }
 });
 
 interface CentreHitCounters {
