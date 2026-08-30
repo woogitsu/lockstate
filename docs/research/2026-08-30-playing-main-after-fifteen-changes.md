@@ -678,7 +678,12 @@ to open a folded panel to read it before touching the control that looks like
 the way in.
 
 **It cost this pass a run**, which is the honest way to say how discoverable it
-is: the script did the obvious thing and lost ten minutes to it.
+is. The script did the obvious thing — open the panel, pick Cell, press the
+control that starts drawing — and then waited on a `Designate` that was never
+going to be rendered. In run A that wait ended as a `TimeoutError:
+locator.click: Timeout 30000ms exceeded` and the act failed; in the run before
+it, with no action timeout set, the same wait would have run to the 900-second
+test timeout, and the run was abandoned by hand instead.
 
 ## 6. The vocabulary sweep
 
