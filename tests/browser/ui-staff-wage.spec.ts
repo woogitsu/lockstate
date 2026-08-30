@@ -38,6 +38,26 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  *
  * 900x600 is the binding viewport this repository argues every layout decision
  * against, and it is the tightest one `HELD_GUARD_ROW_LIMIT` was fixed at.
+ *
+ * ## What was watched going red
+ *
+ * Six mutations of the production code, each restored by hand before the next.
+ * Baseline: `5 passed (9.3s)`.
+ *
+ * | mutation | result |
+ * | --- | --- |
+ * | `trailing: rosterWageBill` removed from the roster section | 3 failed, 2 passed |
+ * | the badge written but never cleared (`if (bill !== undefined)`) | 1 failed, 4 passed |
+ * | `hud.ts` forwards `undefined` instead of the published bill | 2 failed, 3 passed |
+ * | the hint rendered with no parameters at all | 2 failed, 3 passed -- *"an unfilled placeholder is on screen"* |
+ * | `{wage}` filled from `hireChargeMinorUnits` | 1 failed, 4 passed |
+ * | the displaced sentence run on after the owner's | 1 failed -- *"the hire sentence is being clipped at 900x600"* |
+ *
+ * **The last one is the measurement, not just a gate.** With the expectation
+ * adjusted to the two-sentence text so the clamp assertion could be reached,
+ * *"Costs 80 now and 55 a day in wages. A new guard starts unassigned."* is
+ * clipped at 900x600 -- which is why the hire hint carries the owner's one
+ * sentence and the displaced one is reported rather than appended.
  */
 
 const HARNESS_URL = '/tests/browser/ui-harness.html';

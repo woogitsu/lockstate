@@ -46,6 +46,19 @@ import {
  * supplying both sides of the comparison, which `docs/TESTING.md` forbids. So
  * the role below charges 80 to hire and bills 55 a day: numbers no catalogue
  * authors, chosen so that one standing in for the other is a visible failure.
+ *
+ * ## What was watched going red
+ *
+ * Three mutations, each restored by hand. Baseline: `10 passed`.
+ *
+ * | mutation | result |
+ * | --- | --- |
+ * | `describeHireCharge` returns `hireChargeMinorUnits` for both fields | 2 failed, 8 passed |
+ * | `describeDailyWageBill` drops its `roster.hired === 0` branch | 1 failed, 9 passed |
+ * | the catalog hard-codes `80` in place of `{wage}` | 2 failed, 8 passed |
+ *
+ * A fourth, in `src/ui/simulation-counts.ts` -- the passthrough deleted --
+ * takes `tests/unit/ui-simulation-counts.test.ts` to `2 failed, 4 passed`.
  */
 
 /** A role whose two figures cannot be mistaken for each other. */
