@@ -1,5 +1,6 @@
 import type { LocalizationKey } from '../../content/localization';
 import type { MessageParameters } from '../../services/localization/format';
+import type { HudLabelParametersViewModel } from './label-parameters';
 
 /**
  * What the HUD needs in order to draw itself -- and nothing else.
@@ -227,12 +228,11 @@ export interface HudCountsViewModel {
 
 export type HudSeverity = 'info' | 'warning' | 'danger';
 
-export interface HudAlertViewModel {
+export interface HudAlertViewModel extends HudLabelParametersViewModel {
   /** Stable identity for the row, so a list update is not a full rebuild. */
   readonly id: string;
   /** A message key, never text. */
   readonly labelKey: LocalizationKey;
-  readonly labelParameters?: MessageParameters;
   readonly severity: HudSeverity;
 }
 
@@ -1077,11 +1077,10 @@ export interface HudRefusalNoticeViewModel {
  * this band, and its `'danger'` member had none outside an unrecoverable
  * protocol fault until the incident events joined it.
  */
-export interface HudEventNoticeViewModel {
+export interface HudEventNoticeViewModel extends HudLabelParametersViewModel {
   readonly sequence: number;
   /** A message key, never text. */
   readonly labelKey: LocalizationKey;
-  readonly labelParameters?: MessageParameters;
   readonly severity: HudSeverity;
 }
 

@@ -1390,6 +1390,7 @@ export const SIMULATION_EVENT_TYPES = [
   'incidents.gang-retaliation-opened',
   'incidents.riot-opened',
   'prisoners.discharged',
+  'prisoners.relocated',
 ] as const;
 
 export type SimulationEventType = (typeof SIMULATION_EVENT_TYPES)[number];
@@ -1428,6 +1429,61 @@ const dischargedEventSchema = z
     ...simulationEventEnvelopeFields,
     type: z.literal('prisoners.discharged'),
     count: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+  })
+  .strict();
+
+/**
+ * A resident whose bed was taken away has been moved into accommodation that
+ * exists ([ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+ * decision A(i)).
+ *
+ * **One event per resident, where `prisoners.discharged` is one per tick, and
+ * the difference is what the sentence says.** A discharge is reported as a
+ * count because a player reads a cohort leaving as one occurrence; this
+ * sentence names *one prisoner* and *one room*, so a removal that rehouses two
+ * residents is two of these. That grain is the owner's, not this schema's: the
+ * approved wording is "{name} had nowhere to sleep and moved to {room}.", and
+ * a per-removal aggregate could not fill either placeholder.
+ *
+ * ## Why this one carries an identity when the channel's own comment says none do
+ *
+ * `SimulationEventLog`'s class comment reads *"It carries no identity. No
+ * entity id, no name, no tile"*, and gives `prisoners.discharged`'s reason:
+ * *"the subject of a discharge event does not exist by the time the main
+ * thread reads it"*. **That reason is the whole of the rule, and it is false
+ * of this event** -- the subject is alive, housed, and already on the roster
+ * projection under this very `entityId`, with these very two name halves
+ * (`PrisonerRosterRowViewModel.name`). So the sentence is narrowed where it
+ * stands rather than deleted: identity stays off this channel wherever the
+ * subject may be gone, and this member is the exception that says why.
+ *
+ * **ADR 0011 is not bent by it either.** What that decision keeps off the wire
+ * is *translated text*: a name is player-facing **state**, minted from
+ * `identity.actor-name` and identical in every locale
+ * (`src/simulation/identity/actor-identity.ts`), and `roomNameKey` is a
+ * *message key* -- the same field, resolved from the same catalog, that
+ * `PrisonerRoomRefViewModel.roomNameKey` already carries to the roster panel.
+ * No sentence crosses here; the main thread still assembles one.
+ *
+ * `name` is optional for the reason `PrisonerRosterRowViewModel.name` is: a
+ * session wired without an identity registry mints nobody, and the HUD names
+ * such a prisoner by entity id (`hud.regime.roster-unnamed`) rather than
+ * saying nothing at all.
+ */
+const residentRelocatedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('prisoners.relocated'),
+    entityId: sequenceSchema,
+    name: z
+      .object({
+        givenName: z.string().min(1).max(128),
+        familyName: z.string().min(1).max(128),
+      })
+      .strict()
+      .optional(),
+    /** The room they now live in, as the catalog's own `nameKey`. */
+    roomNameKey: identifierSchema,
   })
   .strict();
 
@@ -1578,6 +1634,7 @@ const incidentsAllClearEventSchema = z
 const simulationEventSchema = z.discriminatedUnion('type', [
   wagesUnpaidEventSchema,
   dischargedEventSchema,
+  residentRelocatedEventSchema,
   riotOpenedEventSchema,
   gangRetaliationOpenedEventSchema,
   assaultOpenedEventSchema,

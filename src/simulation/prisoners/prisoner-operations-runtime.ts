@@ -71,13 +71,46 @@ export type AdmitPrisonerOutcome =
  * out of the day's grant. Both are ascending by entity id, and `stranded`
  * empty is the ordinary case for any prison with a spare furnished bed.
  *
+ * **`relocated` is what the player is told about and `stranded` is not**, and
+ * that asymmetry is a gap rather than a decision. ADR 0076 decision A(i)'s
+ * notice reaches the player once per entry in `relocated`
+ * (`SimulationEventLog.recordResidentRelocated`); the owner has approved no
+ * wording for a resident left sleeping in a room with no bed in it, and this
+ * repository does not write player-facing copy. So a stranded resident is
+ * still silent -- visible in the room's own occupancy readout and in the
+ * income A(ii) withholds, and nowhere else.
+ *
  * Nothing on the wire and nothing in a snapshot: the caller is a command
  * dispatch, and the state this reports is already carried by residency and
  * cold-state accommodation.
  */
 export interface ExcessRelocationOutcome {
-  readonly relocated: readonly EntityId[];
+  readonly relocated: readonly ExcessResidentRelocation[];
   readonly stranded: readonly EntityId[];
+}
+
+/**
+ * One resident who moved, and the instance they moved **into**.
+ *
+ * **`relocated` was `readonly EntityId[]` until the notice ADR 0076 owed was
+ * built, and this is the re-reading that PR #637 said its own weakest claim
+ * would need.** That claim was that a per-resident split is the right *shape*
+ * and not merely the convenient one, resting on there being no consumer for an
+ * all-or-nothing verdict -- and it named the condition that would settle it:
+ * *"If that notice wants one verdict per removal rather than a per-resident
+ * split, `{relocated, stranded}` is at the wrong grain."*
+ *
+ * The wording the owner approved is **"{name} had nowhere to sleep and moved
+ * to {room}."** It names one prisoner and one room, so the grain was right and
+ * the *fields* were short by one: an entity id says who moved and cannot say
+ * where to, and the destination is knowable only here, inside the walk that
+ * chose it. Reading it back off `coldState` afterwards would have been a
+ * second answer to a question this method already had.
+ */
+export interface ExcessResidentRelocation {
+  readonly entityId: EntityId;
+  /** The room instance they now live in -- `findBestAvailable`'s choice, not a re-derivation of it. */
+  readonly toInstanceId: string;
 }
 
 export interface PrisonerOperationsRuntimeOptions {
@@ -680,7 +713,7 @@ export class PrisonerOperationsRuntime {
     // `instanceId`s and the sort is total -- the sibling's argument, unchanged.
     pending.sort((a, b) => a.entityId - b.entityId);
 
-    const relocated: EntityId[] = [];
+    const relocated: ExcessResidentRelocation[] = [];
     const stranded: EntityId[] = [];
     for (const { entityId, fromInstanceId } of pending) {
       const index = this.entityStore.getIndex(entityId);
@@ -708,7 +741,7 @@ export class PrisonerOperationsRuntime {
       this.roomInstances.release(fromInstanceId, entityId);
       this.roomInstances.assign(instance.instanceId, entityId);
       this.coldState.setAccommodation(entityId, instance.instanceId);
-      relocated.push(entityId);
+      relocated.push({ entityId, toInstanceId: instance.instanceId });
     }
 
     return { relocated, stranded };
