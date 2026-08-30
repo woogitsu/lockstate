@@ -1,4 +1,4 @@
-import { createConstructionCommandHandler } from '../construction';
+import { createConstructionCommandHandler, reportMaterialsFunding } from '../construction';
 import type { ProcurementSystem } from '../economy';
 import type { CommandHandler } from '../kernel/kernel';
 import { unpackCommand } from '../protocol/commands';
@@ -492,6 +492,20 @@ export function createSessionCommandHandler(
         // Issue #492: the buildable and the tile, not the order id -- see the
         // key module's section comment.
         refusals.supersede(placeKey);
+        /*
+         * The same just-in-time purchase a `PlaceBuildOrder` makes (#627), for
+         * the same reason and through the same report.
+         *
+         * A placed object *is* a build order from here on -- that is ADR 0028
+         * decision 4's whole mechanism -- so a bed placed against an empty
+         * container would otherwise wait on the scheduled construction tick to
+         * be paid for, and a bed that could not be paid for at all would say so
+         * up to ten ticks after the press instead of on it. Both are the
+         * asymmetry the comment above this branch already refuses to have: a
+         * player told why a wall could not be bought and left guessing about a
+         * bed is reading two interfaces.
+         */
+        reportMaterialsFunding(construction.procureQueuedMaterials(context.tick), refusals, context.tick);
       }
       return;
     }

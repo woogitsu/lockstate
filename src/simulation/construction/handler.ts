@@ -166,8 +166,13 @@ export function createConstructionCommandHandler(
  *
  * `undefined` means no sink was wired -- a bare `ConstructionSystem` rather
  * than a session -- and is deliberately not read as "everything is funded".
+ *
+ * Exported because `PlaceObject` reaches the same construction queue by a
+ * different door (`runtime/session-commands.ts`, ADR 0028 decision 4) and a
+ * player who is told why a wall could not be paid for must not be left
+ * guessing why a bed could not.
  */
-function reportMaterialsFunding(
+export function reportMaterialsFunding(
   report: MaterialsProcurementReport | undefined,
   refusals: RefusalLog,
   tick: number,
