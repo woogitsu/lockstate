@@ -404,6 +404,26 @@ same class of defect as iterating a `Map`.
   mechanic**, because this tree's `own-accommodation` path already behaves that
   way by accident. The accident is now a decision.
 
+**Narrowed on 2026-08-30 by [ADR 0076](./0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+decision A(i), which that ADR requires to be written in here rather than left
+to be discovered from the code.** Both bold sentences above survive and neither
+is withdrawn. *"Nobody is evicted"* stays true in the sense it was decided:
+nobody is put on the street, and a resident the prison has nowhere else to put
+stays exactly where this decision left them, sleeping in a cell with no bed in
+it. What changes is that a resident the prison **can** rehouse is *moved*
+rather than left -- `ObjectPlacementService` asks
+`PrisonerOperationsRuntime.relocateExcessResidentsOf` after the capacity has
+been re-derived, on both routes that take a standing object out of a room
+(`RemoveObject` and the `Undo` of a completed object order), and only the
+residents holding no place that still exists are offered somewhere else. The
+removal itself is never refused, which is this decision's own reason (#478).
+So *"occupancy above capacity is a legal, named state"* stays true too, and
+becomes the no-vacancy branch's state specifically rather than the general
+outcome -- and it is the branch ADR 0076 decision A(ii) makes the state stop
+paying for. The third bullet's reading of the research sample is untouched: a
+prison with nowhere to move anybody still degrades visibly rather than
+hard-failing.
+
 The projection already tolerates the state: `free` is
 `Math.max(0, capacity - current)` and `utilization` goes through
 `toBoundedValue`, which clamps (`src/simulation/presentation/room-projection.ts:220-225`,
