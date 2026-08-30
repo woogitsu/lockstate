@@ -96,7 +96,7 @@ function runTo(runtime: SimulationRuntime, tick: number): void {
 }
 
 const queue = (runtime: SimulationRuntime, request = {}): BuildQueueViewModel =>
-  projectBuildQueue(runtime.construction, request);
+  projectBuildQueue(runtime.construction, request, runtime.justInTimeMaterials);
 
 const idsOf = (view: BuildQueueViewModel): readonly string[] => view.orders.rows.map((row) => row.orderId);
 
@@ -357,6 +357,75 @@ describe('cancelling one order by id, which is the command this read model exist
     runTo(runtime, runtime.kernel.tick + 1);
 
     expect(idsOf(queue(runtime))).toEqual(['order-a', 'order-b']);
+  });
+
+  it('says nothing about funding for a queue that is paid for, and says it as a shape rather than an absence', () => {
+    /*
+     * The default reading of the block #627 added. Every case above runs
+     * against `session()`, which deposits 500 bricks, so nothing here is ever
+     * short -- and the projection has to *say* that rather than omit the key,
+     * because a consumer that had to treat "absent" as "fine" would treat a
+     * build with no funding source the same way as a prison that is broke.
+     */
+    const runtime = session();
+    orderWall(runtime, 'order-a', 3, 3);
+    runTo(runtime, 30);
+
+    expect(queue(runtime).materialsFunding).toEqual({ unfunded: false, shortfallMinorUnits: 0, items: [] });
+  });
+
+  it('reads `unfunded` for a queue the prison cannot pay for, which `state` alone cannot say', () => {
+    /*
+     * The distinction issue #629 exists to force. Both of these orders read
+     * `'materials-pending'`; one is waiting for a lorry and the other is
+     * waiting for money that is not coming, and a surface reading the rows
+     * alone could not tell them apart. That is the shape of #627 itself:
+     * *"Awaiting Materials"* was present the whole time and said nothing
+     * actionable.
+     *
+     * The prison here is spent down to 40 on planks -- which no wall can use --
+     * so a wall's 2 bricks at 40 is 80 against 40 in the bank.
+     */
+    const runtime = createNewSimulationRuntime(SEED);
+    // Both at tick 0 and neither stepped in between, because `orderWall`
+    // schedules at tick 0 and the kernel refuses a command dated in the past.
+    // The kernel dispatches them in sequence order, so the money is gone before
+    // the wall is placed.
+    runtime.kernel.submitCommand(
+      'cmd-buy',
+      runtime.kernel.expectedSequence,
+      0,
+      packCommand({ type: 'PurchaseMaterials', orderId: 'order-buy', itemId: 'item.wood-plank', quantity: 384 }),
+    );
+    orderWall(runtime, 'order-a', 3, 3);
+    runTo(runtime, 30);
+    expect(runtime.treasury.balanceMinorUnits, '25,000 - 384 x 65, and the wall bought nothing').toBe(40);
+
+    const view = queue(runtime);
+    expect(view.orders.rows.map((row) => row.state)).toEqual(['materials-pending']);
+    expect(view.materialsFunding).toEqual({
+      unfunded: true,
+      shortfallMinorUnits: 80,
+      items: [{ itemId: 'item.brick', quantity: 2, costMinorUnits: 80 }],
+    });
+  });
+
+  it('reports nothing unfunded when no funding source is supplied at all', () => {
+    /*
+     * The two-argument call every caller made before #627, kept working. A
+     * runtime with no economy is describing a prison that cannot be short of
+     * money, so `false` is the honest answer and not a default standing in for
+     * "unknown" -- which is argued at the field's own declaration.
+     */
+    const runtime = session();
+    orderWall(runtime, 'order-a', 3, 3);
+    runTo(runtime, 30);
+
+    expect(projectBuildQueue(runtime.construction).materialsFunding).toEqual({
+      unfunded: false,
+      shortfallMinorUnits: 0,
+      items: [],
+    });
   });
 
   it('gives the materials back, so cancelling the third of a run is not a way to lose bricks', () => {

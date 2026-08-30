@@ -148,7 +148,17 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
     const unfunded: UnfundedMaterial[] = [];
     const unprocurable: UnprocurableMaterial[] = [];
 
-    for (const requirement of demand) {
+    /*
+     * Re-sorted here rather than trusted, exactly as
+     * `ConstructionSystem.orderedOrders` and `projectBuildQueue` re-sort what
+     * they are handed and for the same reason (`docs/DETERMINISM.md`,
+     * "Canonical iteration order"). The order decides *which* material an
+     * insufficient balance buys and which it refuses, so it is a fact about
+     * money and not about presentation -- and a caller that changed its mind
+     * about ordering would otherwise change what a prison owns without
+     * touching a line of this file.
+     */
+    for (const requirement of [...demand].sort((left, right) => (left.itemId < right.itemId ? -1 : left.itemId > right.itemId ? 1 : 0))) {
       const inFlight = this.inFlightOf(requirement.itemId);
       const deficit = requirement.quantity - this.stock.availableOf(requirement.itemId) - inFlight;
       if (deficit <= 0) continue;

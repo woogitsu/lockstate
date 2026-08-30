@@ -15,6 +15,7 @@ export {
   buildSupersessionKey,
   dismissStaffSupersessionKey,
   hireSupersessionKey,
+  materialsFundingSupersessionKey,
   placeObjectSupersessionKey,
   purchaseCancelSupersessionKey,
   purchaseSupersessionKey,

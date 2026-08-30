@@ -101,7 +101,9 @@ export const EMPTY_MATERIALS_PROCUREMENT_REPORT: MaterialsProcurementReport = Ob
  * ## The contract
  *
  * - `demand` is the total requirement of every order in `'approved'` or
- *   `'materials-pending'`, summed per item id, in ascending item id.
+ *   `'materials-pending'`, summed per item id, in ascending item id. An
+ *   implementation re-sorts it rather than trusting it, because which item is
+ *   bought first is what an insufficient balance decides between.
  * - It is called on **every** scheduled construction tick, including with an
  *   empty `demand`, so the record of what could not be funded has a defined
  *   moment to be cleared. A queue that drains must stop reporting a shortfall.

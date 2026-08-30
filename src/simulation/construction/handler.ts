@@ -4,7 +4,7 @@ import {
   BUILD_REFUSAL_REASONS,
   PURCHASE_REFUSAL_REASONS,
   buildSupersessionKey,
-  purchaseSupersessionKey,
+  materialsFundingSupersessionKey,
   type RefusalLog,
 } from '../refusals';
 import { tileCoordinate } from '../world/coordinates';
@@ -150,12 +150,15 @@ export function createConstructionCommandHandler(
  *
  * ## The supersession key
  *
- * `purchaseSupersessionKey(itemId, quantity)` -- the same key
- * `session-commands.ts` uses for the same reason on the `PurchaseMaterials`
- * route, so the two routes cannot disagree about what withdraws what. A
- * just-in-time purchase that *succeeds* withdraws a standing refusal about the
- * identical item and quantity, which is what happens when the state pays and
- * the queue that was unaffordable a moment ago is funded.
+ * `materialsFundingSupersessionKey()`, which is domain-wide -- see its own
+ * comment for why `purchaseSupersessionKey(itemId, quantity)` is the wrong
+ * width here, and for the measurement that says so.
+ *
+ * A pass that funded everything withdraws a standing shortfall
+ * unconditionally, rather than only when it bought something: "the queue is
+ * paid for" is equally true of a pass that had nothing to buy, and a player
+ * who fixed the shortfall by pressing *Buy* themselves would otherwise be left
+ * reading a notice about it.
  *
  * Only the **first** unfunded item is recorded, because `RefusalLog` holds one
  * refusal: it replaces rather than accumulates, so recording several would
@@ -178,14 +181,10 @@ export function reportMaterialsFunding(
   tick: number,
 ): void {
   if (report === undefined) return;
-  for (const bought of report.purchased) {
-    refusals.supersede(purchaseSupersessionKey(bought.itemId, bought.quantity));
-  }
   const unfunded = report.unfunded[0];
-  if (unfunded === undefined) return;
-  refusals.record(
-    PURCHASE_REFUSAL_REASONS['insufficient-funds'],
-    tick,
-    purchaseSupersessionKey(unfunded.itemId, unfunded.quantity),
-  );
+  if (unfunded === undefined) {
+    refusals.supersede(materialsFundingSupersessionKey());
+    return;
+  }
+  refusals.record(PURCHASE_REFUSAL_REASONS['insufficient-funds'], tick, materialsFundingSupersessionKey());
 }
