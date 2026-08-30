@@ -32,7 +32,7 @@ import {
   type SectorOccupantResolver,
   type SectorRiskSampler,
 } from '../incidents';
-import { PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury } from '../economy';
+import { JustInTimeMaterialsService, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury } from '../economy';
 import { SimulationEventLog } from '../events';
 import { RefusalLog } from '../refusals';
 import { StaffDismissalService, StaffHiringService } from '../staff';
@@ -153,6 +153,17 @@ export interface SimulationRuntime {
    */
   readonly treasury: Treasury;
   readonly procurement: ProcurementSystem;
+  /**
+   * What the build queue could not buy for itself, and what it bought (#627).
+   *
+   * On the runtime rather than reachable only through `construction` because
+   * it is the observable half of ADR 0017 decision 2 -- *"a purchase that
+   * cannot be afforded must be refusable"* -- for purchases nobody pressed a
+   * button for. `ConstructionSystem` is handed it as an opaque
+   * `ConstructionProcurementSink` and can read nothing back off it; the
+   * projection layer and the save-independent tests read it here.
+   */
+  readonly justInTimeMaterials: JustInTimeMaterialsService;
   readonly stateIncome: StateIncomeSystem;
   /**
    * Wages, once per in-game day, for everyone on the roster
@@ -596,6 +607,40 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * a parallel door model that saves nothing and routes nobody.
    */
   const doorConstruction = new DoorConstructionService(navigation.doors);
+  /*
+   * Issue #96's money-first resource model, and the half of its loop that
+   * exists (#89). A purchase spends now and delivers later; the delivery
+   * lands in the container construction draws from.
+   *
+   * **Directly, and that is scaffolding.** #96 describes the materials
+   * arriving at `room.delivery-bay` and being carried to the site. No session
+   * instantiates that room: a `ZoneRoom` command can zone one since #261, and
+   * nothing in the application sends that command (`room.delivery-bay` is
+   * still content with no reader, #141) -- so there is no bay to deliver to,
+   * and inventing one would mean deciding where a new prison's bay sits and
+   * when a carry job is raised. Recorded on #96 rather than left to be
+   * discovered from the absence.
+   *
+   * **Constructed before `ConstructionSystem` rather than after it**, which is
+   * where these two lines used to sit. `JustInTimeMaterialsService` is the
+   * construction system's fifth constructor argument (issue #627), so it has to
+   * exist first, and it needs the procurement system, which needs the treasury.
+   * Nothing between the old position and this one reads either, so the move
+   * changes no behaviour -- and the alternative, the late-bound closure
+   * `objectPlacement` uses a few lines down, buys nothing here because there is
+   * no cycle to break: procurement does not know construction.
+   *
+   * `JustInTimeMaterialsService` is ADR 0017 decision 7 -- *"materials are
+   * just-in-time by default; holding is permitted, never required"* -- made
+   * true rather than merely written down. It is handed the same
+   * `constructionMaterials` container `ContainerMaterialsProvider` draws from,
+   * because the deficit it computes is against exactly the stock the next
+   * allocation attempt will see; a second container would have it buying
+   * against a shelf nobody builds from.
+   */
+  const treasury = new Treasury();
+  const procurement = new ProcurementSystem(treasury, constructionMaterials);
+  const justInTimeMaterials = new JustInTimeMaterialsService(procurement, constructionMaterials);
   const construction = new ConstructionSystem(
     world,
     new ContainerMaterialsProvider(constructionMaterials),
@@ -604,6 +649,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
       onOrderReverted: (objectId, anchor) => objectPlacement?.onOrderReverted(objectId, anchor) ?? false,
     },
     doorConstruction,
+    justInTimeMaterials,
   );
   objectPlacement = new ObjectPlacementService(
     world,
@@ -612,21 +658,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     roomCapacity,
     construction,
   );
-
-  // Issue #96's money-first resource model, and the half of its loop that
-  // exists (#89). A purchase spends now and delivers later; the delivery
-  // lands in the container construction draws from.
-  //
-  // **Directly, and that is scaffolding.** #96 describes the materials
-  // arriving at `room.delivery-bay` and being carried to the site. No session
-  // instantiates that room: a `ZoneRoom` command can zone one since #261, and
-  // nothing in the application sends that command (`room.delivery-bay` is
-  // still content with no reader, #141)
-  // -- so there is no bay to deliver to, and inventing one would mean
-  // deciding where a new prison's bay sits and when a carry job is raised.
-  // Recorded on #96 rather than left to be discovered from the absence.
-  const treasury = new Treasury();
-  const procurement = new ProcurementSystem(treasury, constructionMaterials);
 
   // ADR 0017 decision 3's income line, on decision 6's basis: the state pays
   // per prisoner-day, accrued per occupied place, at the end of each in-game
@@ -1148,6 +1179,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     construction,
     treasury,
     procurement,
+    justInTimeMaterials,
     stateIncome,
     payroll,
     refusals,

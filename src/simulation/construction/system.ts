@@ -1,7 +1,8 @@
 import { type SystemRegistration, type SimulationContext } from '../kernel/system';
 import { type BuildEdge, type BuildOrder, type BuildOrderFailReason, resolveBuildEdge } from './build-order';
-import { BUILDABLE_REGISTRY, type BuildableDefinition, edgeNumericIdFor, getBuildableDefinition, occupiesTileEdge } from './definition';
+import { BUILDABLE_REGISTRY, type BuildableDefinition, type MaterialRequirement, edgeNumericIdFor, getBuildableDefinition, occupiesTileEdge } from './definition';
 import { type ConstructionMaterialsProvider, UNLIMITED_MATERIALS_PROVIDER } from './materials-provider';
+import { type ConstructionProcurementSink, type MaterialsProcurementReport } from './materials-procurement';
 import { SnapshotRefusedError } from '../runtime/restore-refusal';
 import { SparseWorld } from '../world/sparse-world';
 import { type BuildabilityRequirement, canBuildAt } from '../world/buildability';
@@ -238,6 +239,21 @@ export class ConstructionSystem implements SystemRegistration {
      * production caller passes a sink. See `DoorPlacementSink`.
      */
     private readonly doorPlacement?: DoorPlacementSink,
+    /**
+     * Where the queue's unmet material demand is bought
+     * ([ADR 0017](../../../docs/adr/0017-money-primary-resource-model.md)
+     * decision 7, issue #627).
+     *
+     * Fifth and optional, so every existing caller -- `createNewSimulationRuntime`
+     * aside -- constructs the system exactly as before. Absent, this system
+     * behaves precisely as it did before #627: an order placed against an
+     * empty container parks in `'materials-pending'` and is retried for ever.
+     * That is still right for a bare `ConstructionSystem` wired to
+     * `UNLIMITED_MATERIALS_PROVIDER`, or to a container something else fills
+     * -- the determinism scenario's carry jobs, for one. See
+     * `ConstructionProcurementSink`.
+     */
+    private readonly materialsProcurement?: ConstructionProcurementSink,
   ) {}
 
   /**
@@ -664,6 +680,24 @@ export class ConstructionSystem implements SystemRegistration {
     // read as one busy crew here rather than being paused.
     let crewBusy = orders.some((candidate) => candidate.state === 'in-progress');
 
+    /*
+     * **Buy what the queue needs before asking whether it can be allocated**
+     * (issue #627, ADR 0017 decision 7).
+     *
+     * Before the walk rather than inside it, and once rather than per order,
+     * for the reason `ConstructionProcurementSink` sets out at length.
+     *
+     * **Unconditionally, including with nothing queued.** The sink records
+     * what it could not afford, and a record with no moment to be cleared goes
+     * stale the instant the queue drains. This call is that moment.
+     *
+     * It buys nothing when the prison already holds the materials or has them
+     * in flight, which is the entire cost of this line for a player who
+     * pre-buys -- and it is also why this call is not a second purchase on top
+     * of the one the `PlaceBuildOrder` handler already made at this tick.
+     */
+    this.procureQueuedMaterials(context.tick);
+
     for (const order of orders) {
       // A terminal order needs no definition, so it is not asked for one. This
       // used to be a `case` at the bottom of the switch, below an
@@ -721,6 +755,14 @@ export class ConstructionSystem implements SystemRegistration {
           // UNLIMITED_MATERIALS_PROVIDER (the default) preserves #16's
           // original always-available behavior for every caller that
           // hasn't opted into a real materials substrate.
+          //
+          // **This is still a wait, and issue #627 did not make it not one.**
+          // The purchase above spends now and the goods arrive
+          // `PROCUREMENT_DELIVERY_DELAY_TICKS` later, so an order whose
+          // materials were bought this tick sits here for ten more scheduled
+          // ticks before this line answers `true`. What changed is what the
+          // wait is *on*: a delivery that is coming, rather than a purchase
+          // nothing in the game had told the player to make.
           const satisfied = this.materialsProvider.tryAllocate(def.materialsRequired);
           if (!satisfied) break; // stays materials-pending, retried next scheduled tick
           order.materialsAllocated = def.materialsRequired.map((req) => ({ itemId: req.itemId, quantity: req.quantity }));
@@ -752,6 +794,80 @@ export class ConstructionSystem implements SystemRegistration {
           break;
       }
     }
+  }
+
+  /**
+   * Buys whatever the queue still needs, and answers what happened.
+   *
+   * Public because two callers need it and they need it at different moments.
+   * `update` calls it on every scheduled construction tick, which is the
+   * safety net; `createConstructionCommandHandler` calls it on the
+   * `PlaceBuildOrder` that created the demand, which is what makes the money
+   * leave at the press and what puts a shortfall in front of the player while
+   * they can still act on it (#627, #629).
+   *
+   * `undefined` when no sink was wired, which is a bare `ConstructionSystem`
+   * rather than a session: there is nothing to report because nothing was
+   * asked, and a caller must not read that as "everything is funded".
+   *
+   * It never throws -- the sink's own contract forbids it, for the reason
+   * `ObjectPlacementSink`'s methods do not throw -- and it never changes an
+   * order's state. An order stays exactly where it was whatever this answers;
+   * a purchase only ever changes what the *container* will hold ten seconds
+   * from now.
+   */
+  public procureQueuedMaterials(tick: number): MaterialsProcurementReport | undefined {
+    return this.materialsProcurement?.procureForPendingOrders(
+      this.pendingMaterialDemand(this.orderedOrders()),
+      tick,
+    );
+  }
+
+  /**
+   * What every order still waiting for materials will ask the container for,
+   * summed per item.
+   *
+   * **`'approved'` counts as well as `'materials-pending'`**, because the two
+   * are one tick apart -- `update` promotes `approved` to `materials-pending`
+   * in the very walk this feeds -- and counting only the second would delay
+   * every purchase by a scheduled tick for no reason a player could name.
+   *
+   * **`'planned'` does not count.** `submitOrder` never leaves an order there
+   * (it writes `'approved'` or `'failed'`) and `update`'s switch has no case
+   * for it, so an order in that state -- reachable only from a hand-written
+   * or hostile save -- never allocates. Buying for it would spend the
+   * treasury on materials nothing will ever consume.
+   *
+   * **Allocated material is in neither term.** An order past
+   * `'materials-pending'` has already had its requirement *withdrawn* from the
+   * container by `tryAllocate`, so it is not demand here and it is not stock
+   * there; that is what makes the sink's subtraction of one from the other
+   * meaningful.
+   *
+   * Ascending item id, and the walk that feeds it is already ascending order
+   * id, so the result is a function of the order book and not of iteration
+   * order (`docs/DETERMINISM.md`, "Canonical iteration order"). This writes
+   * simulation state -- it decides what money is spent on -- so that is a
+   * requirement rather than tidiness.
+   *
+   * An order naming a row `BUILDABLE_REGISTRY` does not hold contributes
+   * nothing and is left for the walk to fail, which is where the reason the
+   * player is told is decided.
+   */
+  private pendingMaterialDemand(orders: readonly BuildOrder[]): readonly MaterialRequirement[] {
+    const demand = new Map<string, number>();
+    for (const order of orders) {
+      if (order.state !== 'approved' && order.state !== 'materials-pending') continue;
+      const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+      if (definition === undefined) continue;
+      for (const requirement of definition.materialsRequired) {
+        if (requirement.quantity <= 0) continue;
+        demand.set(requirement.itemId, (demand.get(requirement.itemId) ?? 0) + requirement.quantity);
+      }
+    }
+    return [...demand.keys()]
+      .sort()
+      .map((itemId) => ({ itemId, quantity: demand.get(itemId)! }));
   }
 
   /**

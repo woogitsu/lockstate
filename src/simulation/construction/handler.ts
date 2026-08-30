@@ -1,8 +1,15 @@
 import type { CommandHandler } from '../kernel/kernel';
 import { unpackCommand } from '../protocol/commands';
-import { BUILD_REFUSAL_REASONS, buildSupersessionKey, type RefusalLog } from '../refusals';
+import {
+  BUILD_REFUSAL_REASONS,
+  PURCHASE_REFUSAL_REASONS,
+  buildSupersessionKey,
+  purchaseSupersessionKey,
+  type RefusalLog,
+} from '../refusals';
 import { tileCoordinate } from '../world/coordinates';
 import { createBuildOrder, resolveBuildEdge } from './build-order';
+import type { MaterialsProcurementReport } from './materials-procurement';
 import type { ConstructionSystem } from './system';
 
 /**
@@ -65,6 +72,7 @@ export function createConstructionCommandHandler(
           // time. A wall placed elsewhere must not silence a standing
           // refusal about this one.
           refusals.supersede(buildKey);
+          reportMaterialsFunding(constructionSystem.procureQueuedMaterials(context.tick), refusals, context.tick);
         }
         constructionSystem.registerTransactionOrder(order.id, simCommand.transactionId);
         break;
@@ -94,4 +102,85 @@ export function createConstructionCommandHandler(
       // the accurate shape: this handler consumes construction commands only.
     }
   };
+}
+
+/**
+ * Tells the player what the order they just placed could not buy for itself
+ * (issues #627 and #629).
+ *
+ * ## Why this exists at all
+ *
+ * ADR 0017 decision 7 is what `ConstructionSystem.procureQueuedMaterials`
+ * implements -- materials are just-in-time, holding is never required -- and
+ * **decision 2 of the same ADR rides with it**: *"a purchase that cannot be
+ * afforded must be refusable."* A purchase nobody pressed a button for still
+ * has to be refusable, and a refusal nobody can observe is not one. This is
+ * where it becomes observable, on the press that caused it.
+ *
+ * Issue #629 is why it is not enough to leave it on a projection. The whole of
+ * #627 is a fact that *was* representable -- the build queue's *"Awaiting
+ * Materials"* row -- and lived inside a fold that starts shut, so it reached
+ * nobody. The owner's directive is that a mechanic the player must discover in
+ * order to proceed is a defect. The alert band is the channel that does not
+ * have to be opened.
+ *
+ * ## Why `purchase.insufficient-funds` and not a new refusal id
+ *
+ * **Because it is exactly that refusal, produced by exactly that code.**
+ * `ProcurementSystem.purchase` returned `{ ok: false, reason:
+ * 'insufficient-funds' }` and `Treasury.spend` refused, the same two calls a
+ * `PurchaseMaterials` command reaches; the only difference is who asked. The
+ * shipped sentence -- *"The materials were not ordered — there are not enough
+ * funds."* -- is true word for word of what happened, and reusing it means
+ * this change authors **no player-facing string**, which `AGENTS.md` reserves
+ * to the owner.
+ *
+ * The namespace argument in `src/simulation/protocol/types.ts` is what makes
+ * that sound rather than convenient: the namespaces exist so that "somebody who
+ * pressed Cancel on a delivery must not read that the materials were not
+ * ordered". Here the materials genuinely were not ordered, and for genuinely
+ * that reason.
+ *
+ * **What is owed, and it is the owner's:** a `build.*`-namespaced sentence
+ * would say more, because it could name the wall as well as the money -- and
+ * it would need a new `RefusalReason` member, a new
+ * `hud.alert.refusal.build.*` key and its English text. That is new copy and
+ * it is not this change's to write. Reported on #627 rather than guessed at
+ * here.
+ *
+ * ## The supersession key
+ *
+ * `purchaseSupersessionKey(itemId, quantity)` -- the same key
+ * `session-commands.ts` uses for the same reason on the `PurchaseMaterials`
+ * route, so the two routes cannot disagree about what withdraws what. A
+ * just-in-time purchase that *succeeds* withdraws a standing refusal about the
+ * identical item and quantity, which is what happens when the state pays and
+ * the queue that was unaffordable a moment ago is funded.
+ *
+ * Only the **first** unfunded item is recorded, because `RefusalLog` holds one
+ * refusal: it replaces rather than accumulates, so recording several would
+ * report only the last while counting all of them. Ascending item id makes
+ * *which* one a property of the catalogue rather than of iteration order, and
+ * in every session this repository can produce there is exactly one, because
+ * no buildable requires two materials.
+ *
+ * `undefined` means no sink was wired -- a bare `ConstructionSystem` rather
+ * than a session -- and is deliberately not read as "everything is funded".
+ */
+function reportMaterialsFunding(
+  report: MaterialsProcurementReport | undefined,
+  refusals: RefusalLog,
+  tick: number,
+): void {
+  if (report === undefined) return;
+  for (const bought of report.purchased) {
+    refusals.supersede(purchaseSupersessionKey(bought.itemId, bought.quantity));
+  }
+  const unfunded = report.unfunded[0];
+  if (unfunded === undefined) return;
+  refusals.record(
+    PURCHASE_REFUSAL_REASONS['insufficient-funds'],
+    tick,
+    purchaseSupersessionKey(unfunded.itemId, unfunded.quantity),
+  );
 }

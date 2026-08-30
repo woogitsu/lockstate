@@ -17,6 +17,11 @@ export {
   type PayrollSnapshot,
   type PayrollStaffSource,
 } from './payroll';
+export {
+  JUST_IN_TIME_ORDER_ID_PREFIX,
+  JustInTimeMaterialsService,
+  justInTimePurchaseOrderId,
+} from './just-in-time-materials';
 export { Treasury, TREASURY_STARTING_BALANCE_MINOR_UNITS, type TreasurySnapshot } from './treasury';
 export { staffDailyWageMinorUnits } from './wages';
 export {

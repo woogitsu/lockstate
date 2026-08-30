@@ -23,6 +23,11 @@ import type { ProjectionMessageChannel } from '../../src/ui/simulation-projectio
 const projection = (overrides: Partial<BuildQueueViewModel> = {}): BuildQueueViewModel => ({
   schemaVersion: 1,
   started: 1,
+  // A queue that is not short of money, which is what every case in this file
+  // is about: the reader's job is the window and the ids, and #627's funding
+  // block is asserted where it is produced
+  // (`tests/unit/construction-build-queue-projection.test.ts`).
+  materialsFunding: { unfunded: false, shortfallMinorUnits: 0, items: [] },
   orders: {
     total: 12,
     offset: 0,
