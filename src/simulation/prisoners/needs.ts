@@ -1,3 +1,5 @@
+import { SECTOR_COVERAGE_STATES, type SectorCoverageState } from '../security/coverage-state';
+
 /**
  * Core, representative need set (issue #24): hunger, sleep, hygiene,
  * bladder, safety and recreation. Each is a 0-255 level -- 0 critical,
@@ -47,13 +49,60 @@ export const NEED_SCALE = 200;
 export const NEED_MIN_SCALED = NEED_MIN * NEED_SCALE;
 export const NEED_MAX_SCALED = NEED_MAX * NEED_SCALE;
 
+/**
+ * **Why `safety` decays at 0.05 and not at 0.01.**
+ * "What keeps a prisoner safe" (the ADR of that title) decision 2, issue #588,
+ * and the owner's ruling on issue #599.
+ *
+ * The ruling separates `safety` from the other two needs a normal sentence
+ * cannot finish: *"Safety is a bug. Guards exist, sectors exist, the HUD
+ * already reads `Unguarded` -> `Understaffed` -> `Covered`."* What follows
+ * mechanically is that coverage becomes the provisioner
+ * (`safetyProvisionScaledPerTick` below, `SafetyCoverageSystem`) and that
+ * **"the 20,400-tick safety requirement is discarded, or demoted to a
+ * long-stay accumulator"**.
+ *
+ * 20,400 is `204 / 0.01`: the ticks a need falling at the old rate takes to
+ * cross `STATE_INCOME_UNMET_NEED_LEVEL` (51) from `NEED_MAX`
+ * (`docs/research/2026-08-29-sentence-length-at-admission.md` measures the
+ * batching-and-rounding correction at 20,360). Sentences are drawn from 2 to
+ * 16 in-game days -- 4,800 to 38,400 ticks
+ * (`src/simulation/prisoners/sentence.ts`) -- so at 0.01 more than half the
+ * population leaves before an *entirely unguarded* prison could have cost them
+ * anything, and coverage would be an instrument with nothing on the other end
+ * of it.
+ *
+ * 0.05 is `hunger`'s rate, which is this module's existing statement of "a
+ * need a prison has to attend to about daily": 4,080 ticks, one and seven
+ * tenths of an in-game day, from full to unmet. Every sentence outlasts it,
+ * so an unguarded prison starts paying for it on the second day of every
+ * prisoner's stay rather than never.
+ *
+ * **What did not change, deliberately.** `hygiene`'s 0.02 (10,200 ticks) and
+ * `recreation`'s 0.015 (13,600) stand exactly as they were. That is the other
+ * half of the same ruling and it is quoted in it: *"If you make all six needs
+ * finishable in a few thousand ticks, every prisoner is the same again."*
+ *
+ * **A finding the ruling was not given, recorded here because this is where
+ * anybody would look for it.** The issues describe the old 0.01 as making
+ * *"40 of the withholding a permanent constant that no play can move"*.
+ * Measured on the tree this changed, it was a permanent **zero** rather than a
+ * permanent 40: `action.sleep` carried `safety: 0.2`, twenty times the decay,
+ * so any prisoner with a bed sat at 237 or above for ever
+ * (`tests/integration/room-gated-needs.test.ts` pinned `safety: 237.1` over
+ * ten in-game days) and the state withheld nothing for `safety` in any prison
+ * that had furnished a cell. Both readings agree on the conclusion the ruling
+ * drew -- the number was a constant and no play moved it -- and disagree about
+ * its sign, which is why the bed's contribution had to go for coverage to
+ * become the instrument. See `DEFAULT_ACTIONS` in `./actions.ts`.
+ */
 /** Level lost per tick while a need is not being actively fulfilled -- data, not an if-chain per need. Authored in whole levels; `NEED_DECAY_SCALED_PER_TICK` is the form the arithmetic uses. */
 export const NEED_DECAY_PER_TICK: Readonly<Record<NeedId, number>> = {
   hunger: 0.05,
   sleep: 0.03,
   hygiene: 0.02,
   bladder: 0.08,
-  safety: 0.01,
+  safety: 0.05,
   recreation: 0.015,
 };
 
@@ -66,6 +115,77 @@ export const NEED_DECAY_PER_TICK: Readonly<Record<NeedId, number>> = {
  */
 export const NEED_DECAY_SCALED_PER_TICK: Readonly<Record<NeedId, number>> = Object.freeze(
   Object.fromEntries(NEED_IDS.map((needId) => [needId, Math.round(NEED_DECAY_PER_TICK[needId] * NEED_SCALE)])) as Record<NeedId, number>,
+);
+
+/**
+ * **What a fully covered sector puts back into `safety`, per tick** (issue
+ * #588).
+ *
+ * 0.08 whole levels, against a decay of 0.05, and the three rungs of
+ * `SECTOR_COVERAGE_STATES` take it at full, half and nothing
+ * (`SAFETY_COVERAGE_PROVISION_MULTIPLIER`). The **net** rate is the thing
+ * worth reading, because it is what a player experiences:
+ *
+ * | coverage | provision | net per tick | full to unmet |
+ * | --- | --- | --- | --- |
+ * | `covered` | 0.08 | **+0.03** | never; 1,700 ticks back *out* of the unmet band, 8,500 from empty to full |
+ * | `understaffed` | 0.04 | **-0.01** | **20,400 ticks** |
+ * | `unguarded` | 0 | **-0.05** | 4,080 ticks |
+ *
+ * That middle row is the decision this constant records, and it is why 0.08
+ * rather than a rounder number. The owner's ruling on issue #599 offered two
+ * dispositions for the 20,400-tick figure -- *"discarded, or demoted to a
+ * long-stay accumulator"* -- and at these rates it is **both, on different
+ * rungs**: discarded for the unguarded prison, which now pays inside every
+ * sentence; and preserved exactly, to the tick, as the long-stay accumulator
+ * for the understaffed one, where only a prisoner held more than eight and a
+ * half in-game days ever crosses the line. A prison that is short of guards
+ * does not stop being safe; it stops being safe *for its long-stayers*.
+ *
+ * **The bracket, so a later balance pass can see what it is moving inside
+ * of.** Three rungs stay three distinct outcomes only while
+ * `provision / 2 < decay < provision` -- below the lower bound `understaffed`
+ * recovers and stops costing anything, above the upper `covered` drains and
+ * the instrument reads backwards. With `safety` decaying at 0.05 and
+ * `NEED_SCALE` admitting only multiples of 0.005 (and the *half* rate having
+ * to be representable too, which restricts this constant to multiples of
+ * 0.01), the whole of the available range is 0.06, 0.07, 0.08 and 0.09.
+ * Their long-stay accumulators are 10,200, 13,600, 20,400 and 40,800 ticks;
+ * the last is past the 38,400-tick maximum sentence, so it is an accumulator
+ * that never accumulates, and the first two are `hygiene`'s and
+ * `recreation`'s numbers, which would read as a coincidence rather than a
+ * decision.
+ *
+ * A **directional default, not a committed balance decision**, in the sense
+ * `DEFAULT_SECTOR_RISK_POLICY` uses the phrase.
+ */
+export const SAFETY_COVERAGE_PROVISION_PER_TICK = 0.08;
+
+/**
+ * The share of `SAFETY_COVERAGE_PROVISION_PER_TICK` each rung provisions --
+ * issue #588's mechanic in three numbers: *"`Covered` at full rate,
+ * `Understaffed` at half, `Unguarded` at nothing."*
+ *
+ * Authored as multipliers rather than as three rates so that "half" is a fact
+ * about the ladder and cannot drift into "half, roughly": the scaled table
+ * below is derived from these, and `tests/unit/prisoners-needs.test.ts`
+ * asserts every entry of it is a whole number at `NEED_SCALE` for the same
+ * reason it asserts it of the decay table.
+ */
+export const SAFETY_COVERAGE_PROVISION_MULTIPLIER: Readonly<Record<SectorCoverageState, number>> = Object.freeze({
+  covered: 1,
+  understaffed: 0.5,
+  unguarded: 0,
+});
+
+/** `SAFETY_COVERAGE_PROVISION_PER_TICK` times each multiplier, in the stored units the arithmetic uses. Derived, never authored twice. */
+export const SAFETY_COVERAGE_PROVISION_SCALED_PER_TICK: Readonly<Record<SectorCoverageState, number>> = Object.freeze(
+  Object.fromEntries(
+    SECTOR_COVERAGE_STATES.map((state) => [
+      state,
+      Math.round(SAFETY_COVERAGE_PROVISION_PER_TICK * SAFETY_COVERAGE_PROVISION_MULTIPLIER[state] * NEED_SCALE),
+    ]),
+  ) as Record<SectorCoverageState, number>,
 );
 
 function clampScaled(scaledValue: number): number {
@@ -161,4 +281,29 @@ export class NeedsComponent {
  */
 export function decayNeed(currentScaledLevel: number, needId: NeedId, ticksElapsed: number): number {
   return clampScaled(currentScaledLevel - NEED_DECAY_SCALED_PER_TICK[needId] * ticksElapsed);
+}
+
+/**
+ * Deterministic **provision** of one prisoner's `safety` over `ticksElapsed`
+ * whole ticks at the coverage `state` of the sector they spent them in, in the
+ * stored units `NeedsComponent` holds (issue #588).
+ *
+ * The counterpart of `decayNeed` and it is written to the same contract:
+ * integer arithmetic on whole ticks, exactly linear in `ticksElapsed`, so a
+ * scenario provisions identically no matter how the same total of ticks is
+ * split across calls. `SafetyCoverageSystem`'s `intervalTicks` is therefore a
+ * scheduling choice and not a balance one, exactly as `NeedsDecaySystem`'s is.
+ *
+ * **Provision only, never drain.** `unguarded` adds zero rather than
+ * subtracting: what makes an unguarded prisoner unsafe is
+ * `NEED_DECAY_SCALED_PER_TICK.safety` continuing unopposed, which is already
+ * charged by `NeedsDecaySystem`. This is the same refinement the corpus's C22
+ * carried into issue #588 -- the premium is *suspended* and never made
+ * negative, so a security lapse cannot manufacture a debt -- and it is what
+ * keeps the two systems' arithmetic independent of the order they run in.
+ *
+ * No RNG and no clock, so it takes no stream (`docs/DETERMINISM.md`).
+ */
+export function provisionSafety(currentScaledLevel: number, state: SectorCoverageState, ticksElapsed: number): number {
+  return clampScaled(currentScaledLevel + SAFETY_COVERAGE_PROVISION_SCALED_PER_TICK[state] * ticksElapsed);
 }

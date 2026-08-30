@@ -290,6 +290,13 @@ const BASE_VIEW_MODEL: HudViewModel = {
     prisonerCapacity: 180,
     staff: 27,
     rooms: 61,
+    // The three coverage rungs sum to 142, this fixture's own population, and
+    // no two of them are equal -- so a strip that read the wrong one, or
+    // derived one by subtraction, renders a number this fixture never gave it
+    // (issue #588).
+    prisonersCovered: 100,
+    prisonersUnderstaffed: 30,
+    prisonersUnguarded: 12,
     activeIncidents: 0,
     contrabandFound: 4,
     treasuryMinorUnits: 24_920,

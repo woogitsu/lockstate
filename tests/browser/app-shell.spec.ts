@@ -341,6 +341,21 @@ const INJECTED_STATUS_COUNTS = {
       // bar, so they are unaffected.
       accommodationCapacity: 40,
       roomOccupants: 30,
+      // Required for the same reason `accommodationCapacity` above is: the
+      // counts payload is `.strict()`, so a fixture missing one of these three
+      // is dropped whole by `decodeWorkerToMainMessage` and every assertion
+      // after the injection fails on a strip that was never updated. That is
+      // exactly how this test failed when issue #588 added them.
+      //
+      // Three distinct figures summing to 37, this payload's own `prisoners`,
+      // so a chip that read the wrong rung -- or derived one by subtracting the
+      // others from the population -- renders a number this fixture never gave
+      // it. 4 unguarded makes the chip's tone `danger` and its badge the
+      // `hud.status.coverage-detail` sentence rather than the "Covered"
+      // fallback, which is the branch worth exercising in a real DOM.
+      prisonersCovered: 25,
+      prisonersUnderstaffed: 8,
+      prisonersUnguarded: 4,
       activeIncidents: 2,
       contrabandDiscovered: 5,
       treasuryMinorUnits: 31_500,
@@ -732,11 +747,45 @@ const ROOM_DRAG_DELTAS_PX = [192, 128] as const;
  * the fold landed -- identical in both, which is the claim. The panel is the
  * rail's flexible member, so its height is where any change to the save panel,
  * the strip, the tab bar or either panel's floor would show up.
+ *
+ * **`375x812` moved from 451.1 to 441 in #545, and the 10.1px is the strip's,
+ * not this panel's.** The number is a change *detector*, so a change to it has
+ * to come with the measurement that caused it; this one is a defect being paid
+ * off rather than a budget being spent, and it was found by this assertion
+ * going red.
+ *
+ * `.hud-strip` used to be `height: var(--hud-strip-height)` -- a *fixed*
+ * height. At 375px the strip wraps to three rows, and measured on `origin/main`
+ * (ec10451, second worktree, this page and this prison) those rows are
+ * 100.5px of content inside an 88px box:
+ *
+ *     .hud-strip__brand      225.1x19   @8,-6.7
+ *     .hud-strip__metrics    359x29.5   @8,16.3
+ *     .hud-strip__clock      179x16     @8,63.8
+ *     .hud-strip__transport  172x44     @195,49.8
+ *
+ * `align-content: center` splits the 12.5px overflow between the two ends, so
+ * **the brand badge is laid out at y = -6.7, above the strip's own background
+ * band**, and the transport row's last 5.8px is drawn over the rail beneath.
+ * The strip was borrowing 12.5px it had never been given, and this panel was
+ * one of the things lending it.
+ *
+ * #545 needed the strip to be able to grow -- at 125 % and above it wraps at
+ * every width, and a fixed height would have spilled whole rows over the rail
+ * -- so it is `min-height` now. The box then contains its own rows (101.5 for
+ * 100.5 at 375x812) and the borrowed pixels go back to the rail, where the
+ * aside slot's `min-height: 25%` turns 12.5px of rail into 10.1px off this
+ * panel. `every interface scale step keeps the HUD inside the viewport it is
+ * drawn in (#545)` asserts the containment directly, so the fix is guarded
+ * rather than merely recorded here.
+ *
+ * The other two viewports are unchanged: the strip does not wrap at 900px or
+ * 1280px, so it never overflowed there.
  */
 const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
   '1280x720': 420.1,
   '900x600': 338.1,
-  '375x812': 451.1,
+  '375x812': 441,
 };
 
 /**
@@ -767,7 +816,18 @@ interface RoomWorldGeometry {
   readonly bodyLaidOut: boolean;
   /** The side of the largest square of bare canvas, saturating at `BARE_WORLD_SCAN_MAX_PX`. */
   readonly largestBareSquare: number;
-  /** Strip to save panel, save panel to Rooms panel, Rooms panel to tab bar. */
+  /**
+   * Strip to the rail's first box, that box to the Rooms panel, Rooms panel to
+   * the tab bar.
+   *
+   * The first term used to name the *save panel* specifically, and #545 put
+   * something above it: the interface-scale row is the aside slot's first
+   * child now. The claim being pinned was never about which panel is first --
+   * it is the rail's rhythm, "the rail's contents start 8px under the strip"
+   * -- so the term reads the slot's first child and the pinned `[8, 16, 24]`
+   * is unchanged rather than re-recorded. Naming the panel would have turned a
+   * statement about spacing into a statement about composition.
+   */
   readonly gapsBetweenPanels: readonly number[];
   readonly pendingControls: readonly RoomControlHit[];
 }
@@ -806,11 +866,15 @@ async function roomWorldGeometry(page: Page): Promise<RoomWorldGeometry> {
     const round = (value: number): number => Math.round(value * 10) / 10;
 
     const panelRect = panel === null ? null : panel.getBoundingClientRect();
+    // The rail's first box, whatever it is. Before #545 that was always the
+    // save panel; the interface-scale row sits above it now. See
+    // `gapsBetweenPanels`.
+    const railFirst = document.querySelector<HTMLElement>('.hud__aside > *') ?? save;
     const gaps =
-      panelRect === null || strip === null || save === null || tabs === null
+      panelRect === null || strip === null || save === null || railFirst === null || tabs === null
         ? []
         : [
-            round(save.getBoundingClientRect().top - strip.getBoundingClientRect().bottom),
+            round(railFirst.getBoundingClientRect().top - strip.getBoundingClientRect().bottom),
             round(panelRect.top - save.getBoundingClientRect().bottom),
             round(tabs.getBoundingClientRect().top - panelRect.bottom),
           ];
@@ -7802,6 +7866,318 @@ test.describe('the assembled application', () => {
     // not deliver, since it never reaches the parse.
     await expect(page.locator('canvas')).toBeVisible();
   });
+
+  /**
+   * The interface scale, end to end (issue #545).
+   *
+   * `uiScale` was a declared, range-checked, defaulted and *persisted* field
+   * of `AccessibilitySettings` that nothing in `src/` read back: no control
+   * set it, no consumer applied it, no stylesheet had a hook for it. A value
+   * could survive a reload and change nothing on screen.
+   *
+   * Four claims live here and not one of them is provable a layer down.
+   * `vitest.config.ts` runs `environment: 'node'` with no jsdom, so the whole
+   * of `src/ui/display-scale.ts`'s DOM half is unreachable from the unit suite
+   * -- and a computed length, a real `getBoundingClientRect` and a real
+   * `elementFromPoint` are exactly what a token test cannot produce
+   * (`docs/TESTING.md`, and the reason claim 5 of this file's own header
+   * exists):
+   *
+   * 1. **A press changes a box**, not an attribute. The mechanism is one
+   *    custom property on `:root` that every length token multiplies, so what
+   *    has to be true is that a real element is a different size afterwards.
+   *    Asserting `--ui-scale` alone would pass with `tokens.css` reverted.
+   * 2. **It survives a reload**, which is the half of #545 that was already
+   *    working and had nothing to work on.
+   * 3. **A stored value that is not one of the six steps arrives snapped**,
+   *    and one outside the legal band still falls back to the default. That is
+   *    the persistence decision this issue forced, and only a real page load
+   *    runs `loadAccessibilitySettings` against a real `localStorage`.
+   * 4. **Nothing is laid outside its box at any step.** A UI scale makes every
+   *    panel's content grow inside a viewport that does not, so the steps are
+   *    only shippable if they are measured at the binding viewport. 900x600 is
+   *    that viewport for the rail (`hud.css`) and 375x812 is the one that
+   *    binds the status strip -- both are walked, at all six steps.
+   */
+  test('the interface scale is applied, cycles through its six steps and survives a reload (#545)', async ({ page }) => {
+    // 1440x900 rather than 900x600, and the reason is a measurement: the
+    // status strip *wraps to two rows* at 125 % on a 900px-wide window, so its
+    // height there is not a multiple of anything and it is the wrong ruler.
+    // What every step does to the panels at the viewports that bind is the
+    // next test's subject; this one is about the mechanism.
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openApp(page);
+
+    const control = page.locator('.display-scale__cycle');
+    const readout = page.locator('.display-scale__value');
+    await expect(control).toBeVisible();
+
+    /*
+     * Three boxes, not one, and they are chosen to be driven by *different*
+     * tokens -- which the first draft of this test was not, and a mutation
+     * proved it: reverting `--tap-target` to a literal 44px left it green,
+     * because a tab's height at 100 % comes from its padding, icon and label
+     * rather than from its `min-height` floor.
+     *
+     *   - a tab, whose height is `--space-2`, `--icon-size-md` and
+     *     `--text-size-label` summed;
+     *   - the scale button itself, whose height *is* `--tap-target` (one line
+     *     of body type inside a 44px floor);
+     *   - the status strip, whose height is `--hud-strip-height`.
+     *
+     * All three must move together, because "the interface scales" is a claim
+     * about the whole token layer and not about whichever length a test
+     * happened to reach.
+     */
+    const boxes = async (): Promise<Record<string, number>> =>
+      page.evaluate(() => ({
+        tab: document.querySelector('.ui-tab')?.getBoundingClientRect().height ?? 0,
+        button: document.querySelector('.display-scale__cycle')?.getBoundingClientRect().height ?? 0,
+        strip: document.querySelector('.hud-strip')?.getBoundingClientRect().height ?? 0,
+      }));
+
+    const atDefault = await boxes();
+    // Not asserted as literals: what matters is that they *move*, and by about
+    // the ratio the step asks for. Literals here would be a second copy of the
+    // token file inside a test.
+    for (const [name, value] of Object.entries(atDefault)) expect(value, name).toBeGreaterThan(0);
+    await expect(readout).toHaveText('100%');
+
+    // One press: 100 -> 125. The boxes grow, and they grow by the step.
+    //
+    // A band rather than an exact 1.25, because two of these three boxes are
+    // sums that include lengths which deliberately do **not** scale -- the 1px
+    // hairline and a tab's 2px active rule are device affordances, and
+    // `tokens.css` says so. Measured, a tab is 57.2px at 100 % and 70.5px at
+    // 125 %, a ratio of 1.2325. The band is wide enough for that and nowhere
+    // near wide enough for a token that stopped scaling, which lands at 1.0.
+    await control.click();
+    await expect(readout).toHaveText('125%');
+    const at125 = await boxes();
+    for (const [name, value] of Object.entries(at125)) {
+      const ratio = value / (atDefault[name] ?? 1);
+      expect(ratio, `${name} grew by ${ratio.toFixed(3)} for a step of 1.25`).toBeGreaterThan(1.2);
+      expect(ratio, `${name} grew by ${ratio.toFixed(3)} for a step of 1.25`).toBeLessThan(1.3);
+    }
+
+    // The rest of the ring, and the wrap at the top. Six presses from any step
+    // return to it, which is what makes one button enough for six values --
+    // and 200 -> 75 is the press a control that merely clamped would refuse.
+    for (const expected of ['150%', '175%', '200%', '75%', '100%']) {
+      await control.click();
+      await expect(readout).toHaveText(expected);
+    }
+    await control.click();
+    await expect(readout).toHaveText('125%');
+    // Still 125 % after a full lap, measured rather than assumed: a readout
+    // that had drifted from the property would show the same text over a
+    // different box.
+    expect(await boxes()).toEqual(at125);
+
+    // It survives a reload -- through the real storage key, not through this
+    // page's memory.
+    await page.reload();
+    await page.waitForSelector('.display-scale__value');
+    await expect(page.locator('.display-scale__value')).toHaveText('125%');
+    expect(await boxes()).toEqual(at125);
+    expect(
+      await page.evaluate(() => window.localStorage.getItem('lockstate.settings.accessibility')),
+    ).toBe(JSON.stringify({ version: 1, reducedMotion: false, uiScale: 1.25 }));
+  });
+
+  test('a stored scale that is not a legal step is snapped, and one out of range is refused (#545)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 900, height: 600 });
+
+    // 0.9 was a legal stored value before the steps existed: in range, and not
+    // a step. It arrives as the nearest step rather than taking the whole
+    // record down with it -- `reducedMotion` is set here precisely so that the
+    // "the record survived" half is observable, since a rejected record would
+    // lose it.
+    await page.addInitScript(() => {
+      window.localStorage.setItem(
+        'lockstate.settings.accessibility',
+        JSON.stringify({ version: 1, reducedMotion: true, uiScale: 0.9 }),
+      );
+    });
+    await openApp(page);
+    await expect(page.locator('.display-scale__value')).toHaveText('100%');
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--ui-scale').trim())).toBe('1');
+
+    // 0.63 is outside [0.75, 2] and is refused exactly as it always was, so
+    // the whole record falls back to the defaults. A clamp would have answered
+    // 75 % here, and it does not.
+    await page.addInitScript(() => {
+      window.localStorage.setItem(
+        'lockstate.settings.accessibility',
+        JSON.stringify({ version: 1, reducedMotion: true, uiScale: 0.63 }),
+      );
+    });
+    await openApp(page);
+    await expect(page.locator('.display-scale__value')).toHaveText('100%');
+  });
+
+  test('every interface scale step keeps the HUD inside the viewport it is drawn in (#545)', async ({ page }) => {
+    /*
+     * The measurement #545's own defect class demands. A scale control makes
+     * the "panel that cannot afford its content" failure worse in both
+     * directions: at 125 % every panel's content grows inside a box that did
+     * not. So the steps are walked at the two viewports that bind -- 900x600,
+     * where `hud.css` records the rail pinned at its floor, and 375x812, where
+     * the status strip has 359px of row and the brand badge takes 225 of it.
+     *
+     * What is asserted is *not* that nothing scrolls. A panel that scrolls is
+     * the honest outcome and this file already documents it for the expanded
+     * numeric fallback. What must hold at every step is the pair that is never
+     * honest: nothing laid outside the viewport, and no control that cannot be
+     * pressed. Both are the failure mode issue #88 measured -- present,
+     * reachable by nothing -- and both were really reachable here before the
+     * two layout bounds this change adds: the scale control itself was laid at
+     * x=233..389 of a 375px viewport, and at 175 % on 900x600 the minimap's
+     * square overflowed its grid row upward and covered it.
+     */
+    for (const [width, height] of [
+      [900, 600],
+      [375, 812],
+    ] as const) {
+      for (const scale of [0.75, 1, 1.25, 1.5, 1.75, 2] as const) {
+        await page.addInitScript((value) => {
+          window.localStorage.setItem(
+            'lockstate.settings.accessibility',
+            JSON.stringify({ version: 1, reducedMotion: false, uiScale: value }),
+          );
+        }, scale);
+        await page.setViewportSize({ width, height });
+        await openApp(page);
+        await page.locator('.ui-tab[data-tab="build"]').click();
+
+        const report = await page.evaluate(() => {
+          const outside: string[] = [];
+          const unreachable: string[] = [];
+          const selectors = [
+            '.hud-strip',
+            '.brand',
+            '.display-scale',
+            '.hud-tabs__inner',
+            '.save-panel',
+            '.hud-build',
+          ];
+          for (const selector of selectors) {
+            const element = document.querySelector<HTMLElement>(selector);
+            if (element === null) {
+              outside.push(`${selector} is not on the page`);
+              continue;
+            }
+            const rect = element.getBoundingClientRect();
+            if (
+              rect.top < -0.5 ||
+              rect.bottom > window.innerHeight + 0.5 ||
+              rect.left < -0.5 ||
+              rect.right > window.innerWidth + 0.5
+            ) {
+              outside.push(
+                `${selector} spans ${Math.round(rect.left)},${Math.round(rect.top)}..${Math.round(rect.right)},${Math.round(rect.bottom)} of ${window.innerWidth}x${window.innerHeight}`,
+              );
+            }
+          }
+          // Presence is not reachability. Only a real hit test says whether
+          // the pixel at a control's centre belongs to that control.
+          for (const control of document.querySelectorAll<HTMLElement>('.ui-tab, .display-scale__cycle')) {
+            const rect = control.getBoundingClientRect();
+            const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+            if (hit === null || !control.contains(hit)) {
+              unreachable.push(
+                `${control.className} at ${Math.round(rect.x + rect.width / 2)},${Math.round(rect.y + rect.height / 2)} is covered by ${hit === null ? 'nothing' : `${hit.tagName.toLowerCase()}.${hit.className}`}`,
+              );
+            }
+          }
+          /*
+           * The minimap frame stays under the strip.
+           *
+           * `.hud__corner` is a grid item in a `minmax(0, 1fr)` row with
+           * `align-self: end`, and `.hud-minimap__surface` is `aspect-ratio:
+           * 1 / 1` off a *scaled* width -- so the corner's height is a
+           * function of its width, and a frame taller than the row overflows
+           * it upward, over the status strip. Measured at 175 % on 900x600
+           * before the corner was bounded: `elementFromPoint` at a strip
+           * control's centre returned `.hud-minimap__surface`.
+           *
+           * Asserted as a *box* rather than through the hit test above,
+           * because whether the overflow happens to cover a control depends on
+           * how tall the strip's first row is -- which is a coincidence, and
+           * the coincidence went the other way once already. The rule is that
+           * the HUD frames the world and never covers itself.
+           */
+          const strip = document.querySelector<HTMLElement>('.hud-strip');
+          const minimap = document.querySelector<HTMLElement>('.hud-minimap');
+          const minimapRect = minimap?.getBoundingClientRect();
+          // The box, not the attribute, and not the element's own computed
+          // `display` either: `hud.css` drops `.hud__corner` at 720px and
+          // under, and a child of a `display: none` parent still computes its
+          // *own* `display` as authored -- so the frame is laid out nowhere
+          // and reports a 0x0 rect at the origin. Reading that as "the minimap
+          // is at y=0" is exactly the `[hidden]`-versus-the-box mistake this
+          // suite has made before.
+          const drawn = minimapRect !== undefined && (minimapRect.width > 0 || minimapRect.height > 0);
+          const overlap =
+            strip === null || !drawn || minimapRect === undefined
+              ? 0
+              : Math.round((strip.getBoundingClientRect().bottom - minimapRect.top) * 10) / 10;
+
+          /*
+           * The status strip contains its own rows.
+           *
+           * It used to be a *fixed* height, and at 375px -- where it wraps to
+           * three rows -- that was 100.5px of content in an 88px box on
+           * `origin/main`, with `align-content: center` laying the brand badge
+           * at y = -6.7 and the transport row's last 5.8px over the rail. #545
+           * made it `min-height`, because a scaled strip wraps at every width
+           * and a fixed height would have spilled whole rows. This is the
+           * assertion that keeps it honest, at every step: a box measured
+           * against the content it is holding, rather than a declaration
+           * repeated back.
+           */
+          const stripRows = strip === null ? [] : [...strip.children].map((child) => child.getBoundingClientRect());
+          const stripRect = strip?.getBoundingClientRect();
+          const stripOverflow =
+            strip === null || stripRect === undefined || stripRows.length === 0
+              ? 0
+              : Math.round(
+                  Math.max(
+                    0,
+                    stripRect.top - Math.min(...stripRows.map((r) => r.top)),
+                    Math.max(...stripRows.map((r) => r.bottom)) - stripRect.bottom,
+                  ) * 10,
+                ) / 10;
+
+          const rail = document.querySelector<HTMLElement>('.hud__rail');
+          return {
+            outside,
+            unreachable,
+            stripOverflow,
+            minimapOverStrip: Math.max(0, overlap),
+            // The rail is not the scroll container; its panels are. That is
+            // the second half of the #88 fix and it must survive every scale.
+            railOverflow: rail === null ? -1 : rail.scrollHeight - rail.clientHeight,
+          };
+        });
+
+        expect(report.outside, `laid outside the viewport at ${width}x${height} and ${scale * 100}%`).toEqual([]);
+        expect(report.unreachable, `covered by something else at ${width}x${height} and ${scale * 100}%`).toEqual([]);
+        expect(report.railOverflow, `the rail scrolls at ${width}x${height} and ${scale * 100}%`).toBe(0);
+        expect(
+          report.minimapOverStrip,
+          `the minimap frame is drawn over the status strip at ${width}x${height} and ${scale * 100}%`,
+        ).toBe(0);
+        expect(
+          report.stripOverflow,
+          `the status strip lays its own rows outside its box at ${width}x${height} and ${scale * 100}%`,
+        ).toBe(0);
+      }
+    }
+  });
+
 });
 
 interface CentreHitCounters {

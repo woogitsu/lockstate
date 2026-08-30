@@ -106,15 +106,11 @@ export const STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS = 300;
  * Where "occupied place" comes from.
  *
  * **The exact definition, because ADR 0017 says *per occupied place* and not
- * *per prisoner in existence*:** an occupied place is one unit of a registered
- * room instance's declared capacity that a prisoner currently holds -- an
- * occupancy slot in `RoomInstanceRegistry`. `RoomInstanceRegistry.assign`
- * refuses past `residentCapacity` -- the summed footprint width of the sleep
- * surfaces standing in the room since ADR 0028 phase 1 -- so the count can
- * never exceed the capacity the prison has actually *furnished*, which is a
- * stronger statement than it used to be: before object placement the ceiling
- * was a field somebody could have authored, and it is now a fact about what is
- * in the room. It counts neither of the two things the ADR rules out:
+ * *per prisoner in existence*:** an occupied place is a prisoner holding a
+ * unit of residency capacity **that currently exists**, read at the day
+ * boundary -- `RoomInstanceRegistry.residentIdsWithExistingPlace`. It counts
+ * neither of the two things the ADR rules out, nor the third that issue #585
+ * added:
  *
  * - **not empty capacity** -- an unoccupied cell contributes nothing, which is
  *   what makes "per occupied place" different from "per place";
@@ -122,7 +118,10 @@ export const STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS = 300;
  *   in classification, waiting on a full cell (`accommodationBacklogTicks`) or
  *   `'failed'` for want of any instance of its room type holds no slot and is
  *   not paid for. Only `IntakeSystem`'s successful accommodation assignment
- *   creates one.
+ *   creates one;
+ * - **not an assignment whose place has gone** -- a prisoner still living in a
+ *   cell whose bed was taken away is housed and is not a place. See the
+ *   paragraph below for what that used to cost.
  *
  * **Not `DeploymentSystem.getCoverageReport`**, whose `required`/`assigned`/
  * `shortage` triple reads like the right shape and is about something else
@@ -133,8 +132,58 @@ export const STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS = 300;
  * Named here because the resemblance is close enough to be worth ruling out
  * once, in writing.
  *
- * `totalOccupancy` rather than the status strip's `roomOccupants`: that count
- * is built by fanning out over catalog room ids
+ * **"that currently exists" is the half issue #585 added, and the sentence it
+ * replaced is worth keeping because it was right about the wrong thing.** This
+ * paragraph read: *"`RoomInstanceRegistry.assign` refuses past
+ * `residentCapacity` ... so the count can never exceed the capacity the prison
+ * has actually furnished, which is a stronger statement than it used to be:
+ * before object placement the ceiling was a field somebody could have
+ * authored, and it is now a fact about what is in the room."* Every clause of
+ * that is true **at the moment of assignment** and none of it survives the bed
+ * being taken away afterwards. ADR 0028 decision 2 decides that a removed bed
+ * evicts nobody -- the room stops accepting new occupants and the sitting
+ * resident stays -- so an assignment can and does outlive the place under it,
+ * and `assign`'s gate says nothing about any later tick.
+ *
+ * What that cost, measured on the real command router at `05640b6` (v0.0.210)
+ * and reproduced by `tests/integration/economy-occupied-place-exists.test.ts`:
+ * one `item.wood-plank` bought one bed; `Undo` cancelled the completed order
+ * and released its `materialsAllocated` back into the construction container;
+ * the plank went round again into the next cell. Three prisoners assigned, one
+ * bed standing, **900 minor units a day against a control's 300** for the same
+ * single furnished place.
+ *
+ * **[ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+ * decision A(ii) is this rule, and it was reached twice independently.** That
+ * ADR, written on another branch from an economy audit's ECON-003 while this
+ * was being implemented from #585, states it as *"`StateIncomeSystem` pays for
+ * `min(occupancy, residentCapacity)` per room instance"* and calls it "the
+ * backstop": its decision A(i) relocates the excess resident where there is
+ * somewhere to put them, and A(ii) is what makes the branch where there is
+ * **not** -- a full prison, a one-cell prison, and every prison running the
+ * recycling loop by construction -- cost the state nothing. A(i) is not
+ * implemented here and is a separate change; nothing in this module needs it.
+ *
+ * **`min(occupancy, residentCapacity)` is a count, and since
+ * [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md) a
+ * count cannot answer what a day is worth.** Two residents over one bed pay
+ * differently depending on which of them holds the place, so the rule needs a
+ * *which* as well as a *how many*, and
+ * `RoomInstanceRegistry.residentIdsWithExistingPlace` supplies it: the lowest
+ * entity ids keep the places, in the total order that registry already imposes
+ * everywhere. That is a refinement of A(ii) rather than a departure from it,
+ * and it is recorded because the ADR's own arithmetic does not reach it.
+ *
+ * So the count is taken at the boundary from the capacity standing *then*,
+ * which is the only reading under which "a place" means something the prison
+ * still has. It costs nothing at the moment of assignment -- a prisoner housed
+ * in a furnished cell is backed by definition -- and it is the difference in
+ * every tick afterwards. The state declines to pay for a bed that is not
+ * there; nobody is evicted, because eviction is ADR 0028's decision and not
+ * this line's.
+ *
+ * The registry rather than the status strip's `roomOccupants`: that count is
+ * built by fanning out over catalog room ids
  * (`presentation/room-projection.ts`), so an instance registered under an id
  * the catalog does not define is invisible to it (`docs/HUD_PROJECTIONS.md`
  * gap 15). Income must be paid on what the registry holds, not on what a
@@ -153,23 +202,31 @@ export const STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS = 300;
  * [ADR 0029](../../../docs/adr/0029-concurrent-room-use-claims.md) is the
  * narrowing this paragraph asked for: a concurrent-use claim is held in its own
  * collection in `RoomInstanceRegistry`, counted by `totalUseClaims`, and
- * `totalOccupancy` still counts residency and nothing else. So `ActionSystem`
+ * residency counts residency and nothing else. So `ActionSystem`
  * now assigns and releases a place for the duration of an action and **this
  * system did not change and pays no differently**: a prisoner eating lunch
  * still earns one prisoner-day, in the cell they live in. Nothing here needs to
  * know that concurrent use exists, which is the property the narrowing was for.
  */
 export interface OccupiedPlaceSource {
-  readonly totalOccupancy: number;
   /**
-   * Who holds those places, ascending by entity id -- `length` is
-   * `totalOccupancy`.
+   * Who holds a place backed by residency capacity that currently exists,
+   * ascending by entity id.
    *
-   * Needed because the rate is no longer flat: what one place pays depends on
-   * the conditions its occupant is held in, so the count alone cannot answer
-   * what a day is worth. See `stateIncomeForPrisonerDay`.
+   * **One member, and `totalOccupancy` is deliberately not the other one.**
+   * This interface used to require `totalOccupancy` beside `residentIds`, with
+   * the second documented as "`length` is `totalOccupancy`" -- an identity that
+   * issue #585 broke: a prison holding three prisoners above one bed has a
+   * `totalOccupancy` of 3 and one occupied place. Keeping a member named for
+   * the total on an interface named `OccupiedPlaceSource` would leave the next
+   * reader one field away from paying for the exploit again, and nothing in
+   * this module ever read it.
+   *
+   * A list and not a count, because the rate is not flat: what one place pays
+   * depends on the conditions its occupant is held in, so the count alone
+   * cannot answer what a day is worth. See `stateIncomeForPrisonerDay`.
    */
-  residentIds(): readonly EntityId[];
+  residentIdsWithExistingPlace(): readonly EntityId[];
 }
 
 /**
@@ -341,13 +398,13 @@ export function stateIncomeForPrisonerDay(unmetNeeds: number): number {
  * this function replaced.
  *
  * **`O(P log P)` in housed prisoners, once per in-game day.** The sort is
- * `residentIds`'s and the six-need scan is `unmetNeedCount`'s; at the
+ * `residentIdsWithExistingPlace`'s and the six-need scan is `unmetNeedCount`'s; at the
  * 200-prisoner reference tier that is one 200-element sort and 1,200 typed
  * array reads every 2,400 ticks.
  */
 export function stateIncomeForCompletedDay(source: PrisonerDayGrantSource): number {
   let total = 0;
-  for (const entityId of source.roomInstances.residentIds()) {
+  for (const entityId of source.roomInstances.residentIdsWithExistingPlace()) {
     total += stateIncomeForPrisonerDay(unmetNeedCount(source.needs, source.entityStore.getIndex(entityId)));
   }
   return total;

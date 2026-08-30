@@ -8,7 +8,13 @@ permissions:
 
 jobs:
   delete-branches:
-    runs-on: ubuntu-latest
+    # `[self-hosted, Linux, X64, wsl2]`, not `ubuntu-latest`. The header above
+    # records that this workflow HAS NEVER SUCCEEDED -- one run, failed after
+    # four seconds with no step recorded and no log, the signature of a runner
+    # that was never provisioned -- and that version.yml failed identically in
+    # the same four seconds until `adb6b01` moved it to this label. That is the
+    # precedent, and this is the change the header said it was waiting for.
+    runs-on: [self-hosted, Linux, X64, wsl2]
     steps:
       # PINNED TO A COMMIT RATHER THAN A TAG, AND THIS IS THE WORKFLOW WHERE
       # THAT MATTERS MOST.
@@ -66,8 +72,21 @@ jobs:
       # names this workflow in that section as the precedent it had wrongly
       # relied on.
       #
-      # So the state of this job is: pinned, explicit about its credential, and
-      # still not runnable as written. That is recorded here rather than fixed
+      # **That paragraph's conclusion is now out of date and is corrected here
+      # rather than overwritten, because it is what asked for this change.** It
+      # read: "the state of this job is: pinned, explicit about its credential,
+      # and still not runnable as written", and it deferred the fix on the
+      # ground that moving a `git push --delete` onto a runner that will
+      # actually execute it "is a decision about deleting branches, not a
+      # decision about pinning an action... It deserves its own change and its
+      # own reasoning." This is that change. The owner asked for the merged
+      # branches to go on 2026-08-29, against 344 remote branches of which 106
+      # were fully merged into `main`; the label moved, and
+      # `deletebranches.sh` stopped being a frozen list. The reasoning is in
+      # that script's header and in the two steps at the end of this file.
+      #
+      # The superseded paragraph, left standing above so a reader who greps for
+      # it finds the record and not a live claim:
       # in passing, because moving a workflow that runs `git push origin
       # --delete` onto a runner that will actually execute it is a decision
       # about deleting branches, not a decision about pinning an action -- and
@@ -104,16 +123,34 @@ jobs:
       - name: Fetch branches
         run: git fetch --prune
 
-      - name: Verify branches to delete
-        run: |
-          echo "Branches that will be deleted:"
-          git branch -r --merged origin/main | grep -E "(claude|codex|foundation)" || echo "No branches found"
-
-      - name: Run delete script
+      # A DRY RUN OF THE SAME SCRIPT THAT DELETES, rather than a separate
+      # calculation. The step that used to stand here computed the set with
+      # `git branch -r --merged origin/main | grep -E "(claude|codex|foundation)"`
+      # and then handed control to a script that ignored that result entirely.
+      # So this log described one set and the delete acted on another, and the
+      # description was the more convincing of the two because it was derived.
+      #
+      # The grep is gone with it. Those three prefixes predate the `agent/*`
+      # convention every agent branch has used since, so the pattern had
+      # stopped naming what actually accumulates.
+      - name: Show what would be deleted
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: bash deletebranches.sh
+
+      # `--apply` is explicit because the script's default is now a dry run.
+      # The previous version deleted the moment it was invoked, which is the
+      # wrong default for an irreversible operation on a shared remote.
+      - name: Delete merged branches
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash deletebranches.sh --apply
 
       - name: Verify deletion
         run: |
-          echo "Remaining branches with claude/codex/foundation:"
           git fetch --prune
-          git branch -r | grep -E "(claude|codex|foundation)" | wc -l
+          echo "Remaining remote branches: $(git branch -r | grep -vc 'origin/HEAD')"
+          echo "Merged into main and still present (protected refs only, so 0 or wip/ leftovers):"
+          git branch -r --merged origin/main \
+            | grep -vE 'origin/(HEAD|main)$' \
+            | grep -vc 'origin/wip/' || true

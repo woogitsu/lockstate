@@ -4,6 +4,7 @@ import { ComponentBitset } from '../../src/simulation/entity/component';
 import { EntityStore } from '../../src/simulation/entity/entity-store';
 import { EntityQuery } from '../../src/simulation/entity/query';
 import { LocomotionStore, LocomotionSystem } from '../../src/simulation/locomotion';
+import { OPEN_GROUND } from '../helpers/open-ground';
 import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { NamedRngStreams } from '../../src/simulation/rng/streams';
@@ -35,7 +36,7 @@ function registerLocomotion(kernel: Kernel, position: PositionComponent): Locomo
   const locomotion = new LocomotionStore();
   kernel.registerSystem(
     new LocomotionSystem('prisoners.locomotion', (ticks) =>
-      locomotion.advance(ticks, (index, tile) => {
+      locomotion.advance(ticks, OPEN_GROUND, (index, tile) => {
         position.tileX[index] = tile.x;
         position.tileY[index] = tile.y;
       }),
@@ -150,6 +151,9 @@ function buildAssociationFixture(options: {
     roomInstances.register({
       instanceId: 'yard-0',
       roomCatalogId: 'room.yard',
+      // The open-area tag `RoomZoningService.zone` would have carried onto a
+      // real yard (owner's ruling of 2026-08-29, #585).
+      openArea: true,
       anchorTile: cellBlock.canteenTiles[0]!,
       residentCapacity: 0,
       concurrentUseCapacity: 8,

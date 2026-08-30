@@ -301,6 +301,31 @@ export class IncidentResponseSystem implements SystemRegistration {
    *
    * Deterministic: sorted incident ids, no RNG draw.
    */
+  /**
+   * Gives back the route one responder had in flight, and forgets the id.
+   *
+   * Both halves, through `NavigationSystem.abandonRequest`: the request may be
+   * still queued or already resolved and waiting, and which one it is on any
+   * given tick is a race this system cannot win. Dropping the id alone --
+   * which is what this line used to be -- leaves the resolved route in the
+   * navigation system's result map for the rest of the session, because
+   * nothing there expires a result and the queue's aging raises priority
+   * rather than evicting. Measured through the real `ReleaseGuardAssignment`
+   * command: `incidents.respond.incident-riot.1.2` outlived its guard's
+   * release by 500 ticks and every tick after that.
+   */
+  private abandonRoute(record: ResponseRecord, guardId: EntityId): void {
+    const requestId = record.pathRequestIdsByGuard.get(guardId);
+    if (requestId !== undefined) this.navigation.abandonRequest(requestId);
+    record.pathRequestIdsByGuard.delete(guardId);
+  }
+
+  /** The same, for every responder still named by a record that is about to be discarded. */
+  private abandonResponseRoutes(record: ResponseRecord): void {
+    for (const requestId of record.pathRequestIdsByGuard.values()) this.navigation.abandonRequest(requestId);
+    record.pathRequestIdsByGuard.clear();
+  }
+
   public releaseResponder(guardId: EntityId): boolean {
     for (const incidentId of [...this.responses.keys()].sort()) {
       const record = this.responses.get(incidentId)!;
@@ -308,7 +333,8 @@ export class IncidentResponseSystem implements SystemRegistration {
       if (index === -1) continue;
       record.guardIds.splice(index, 1);
       record.arrivedGuardIds.delete(guardId);
-      record.pathRequestIdsByGuard.delete(guardId);
+      this.abandonRoute(record, guardId);
+      if (record.guardIds.length === 0) this.abandonResponseRoutes(record);
       if (record.guardIds.length === 0) this.responses.delete(incidentId);
       return true;
     }
@@ -650,6 +676,10 @@ export class IncidentResponseSystem implements SystemRegistration {
   private releaseResponse(incidentId: string, sectorId: string): void {
     const record = this.responses.get(incidentId);
     if (record === undefined) return;
+    // Before the roster writes, because `unassign` clears the roster's own
+    // `pathRequestId` and this record's map is the only other place the id
+    // survives; after both, nothing knows what to give back.
+    this.abandonResponseRoutes(record);
     for (const guardId of record.guardIds) this.guards.unassign(guardId);
     if (record.lockdownApplied && this.incidents.openIncidentsInSector(sectorId).every((open) => open.id === incidentId)) {
       this.sectors.setControlState(sectorId, 'normal');

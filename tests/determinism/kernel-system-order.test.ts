@@ -374,6 +374,18 @@ describe('kernel system ordering', () => {
       { id: 'operations.jobs', order: 260 },
       { id: 'contraband.intelligence', order: 265 },
       { id: 'security.deployment', order: 270 },
+      /*
+       * **Inserted between deployment (270) and patrol (280) rather than
+       * appended** (issue #588), which is the one place in this list where a
+       * new system is not at the end -- and it moves nothing, because it takes
+       * a number nothing else declared. The position is argued, not available:
+       * `SafetyCoverageSystem` reads `DeploymentSystem.getCoverageReport`, so
+       * it has to run after the assignments this tick made or it provisions
+       * from last tick's coverage; and `IncidentTriggerSystem` (285) samples
+       * `needsPressure` over the `safety` level this system has just moved,
+       * which is how coverage comes to suppress incidents at all.
+       */
+      { id: 'prisoners.safety-coverage', order: 275 },
       { id: 'security.patrol', order: 280 },
       { id: 'incidents.trigger', order: 285 },
       { id: 'contraband.search-duty', order: 288 },

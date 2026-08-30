@@ -301,7 +301,7 @@ describe('a prison that serves every need is paid exactly what it was paid befor
 });
 
 describe('the riot model is untouched, which is the point of putting the cost on the income line', () => {
-  it('leaves #477`s staffed row exactly where it was: peak 0.4824, no riot, no incident', () => {
+  it('leaves #477`s staffed row where the coverage reader put it: peak 0.4742, no riot, no incident', () => {
     const { runtime, peakRisk } = run(NEGLECTED);
 
     /*
@@ -313,7 +313,15 @@ describe('the riot model is untouched, which is the point of putting the cost on
      * the riot easier. ADR 0061 declined to feed `contrabandPressure` into the
      * score for exactly this reason.
      */
-    expect(peakRisk).toBeCloseTo(0.4824, 4);
+    /*
+     * **0.4824 until issue #588, and the move is downward**, which is the
+     * direction that keeps the hazard this case guards against unrealised. The
+     * sixth of the mean that `safety` contributes went to zero: this prison's
+     * one guard covers its sector, so `SafetyCoverageSystem` holds `safety` at
+     * `NEED_MAX` where a bed used to hold it around 240. A staffed prison got
+     * quieter, not easier to riot.
+     */
+    expect(peakRisk).toBeCloseTo(0.4742, 4);
     expect(runtime.incidents.all()).toEqual([]);
     expect(runtime.incidentTriggerSystem.getMetrics().riotsTriggered).toBe(0);
     expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)).toEqual([

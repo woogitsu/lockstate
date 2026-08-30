@@ -41,7 +41,15 @@ import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
 import { Kernel } from '../kernel';
 import { NavigationSystem, type NavigationSystemOptions } from '../navigation';
 import { Container, ContainerMaterialsProvider, ContainerRegistry, JobBoard, JobSystem, JobWorkerPool, UtilityNetwork } from '../operations';
-import { NEED_IDS, NEED_MAX, PRISONER_SENTENCE_RNG_STREAM, PrisonerJobWorkerAdapter, PrisonerOperationsRuntime, type DisciplinaryEvidenceSource } from '../prisoners';
+import {
+  NEED_IDS,
+  NEED_MAX,
+  PRISONER_SENTENCE_RNG_STREAM,
+  PrisonerJobWorkerAdapter,
+  PrisonerOperationsRuntime,
+  SafetyCoverageSystem,
+  type DisciplinaryEvidenceSource,
+} from '../prisoners';
 import { ObjectPlacementService, PlacedObjectRegistry, RoomCapacityResolver } from '../objects';
 import { TopologyManager } from '../rooms/topology';
 import { RoomZoningService } from '../rooms/zoning';
@@ -280,6 +288,16 @@ export interface SimulationRuntime {
    */
   readonly securitySchedules: DeploymentSchedule[];
   readonly deploymentSystem: DeploymentSystem;
+  /**
+   * The reader that turns guard coverage into the `safety` need (issue #588).
+   *
+   * Exposed on the runtime for the reason `deploymentSystem` is: the status
+   * strip reads its census (`Covered N / Understaffed N / Unguarded N`) through
+   * `src/simulation/worker/status-counts.ts`, and a test measuring what
+   * coverage does to a prisoner's `safety` needs the system rather than the
+   * kernel it is registered on.
+   */
+  readonly safetyCoverage: SafetyCoverageSystem;
   readonly patrolSystem: PatrolSystem;
   readonly contraband: ContrabandRegistry;
   readonly intelligence: IntelligenceLedger;
@@ -900,6 +918,20 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     (sector) => resolveOccupants(sector.id),
   );
 
+  /*
+   * **Coverage provisions the `safety` need** (issue #588, the owner's ruling
+   * on issue #599). The wiring and none of the rule: which prisoners a sector
+   * holds is `resolveOccupants` above -- ADR 0048 decision 1's containment
+   * rule, in the module that owns it -- and what that sector's coverage is
+   * comes from `DeploymentSystem.getCoverageReport` through
+   * `resolveSectorCoverageState`, which is the Staff panel's own three-rung
+   * ladder. `SafetyCoverageSystem` argues the mechanic and the ordering.
+   *
+   * Constructed here for `sectorSearchDuty`'s reason: it needs
+   * `resolveOccupants`, which needs the sector registry the derivation fills.
+   */
+  const safetyCoverage = new SafetyCoverageSystem(deploymentSystem, resolveOccupants, prisoners.entityStore, prisoners.needs);
+
   /**
    * One prisoner's mean unmet-need deficit over `NEED_IDS`, 0-1.
    *
@@ -1067,7 +1099,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // After both `'on-search'` claimants, because it reads each of them live: a
   // captured claim view would be exactly the mistake ADR 0033 decision 4
   // measured, one command later.
-  const guardRelease = new GuardReleaseService(securityGuards, searchSystem, incidentResponseSystem);
+  const guardRelease = new GuardReleaseService(securityGuards, searchSystem, incidentResponseSystem, navigation);
   /*
    * Issue #533's consumer. Every optional surface is supplied here and none is
    * omitted, which is the point of naming them one by one rather than passing
@@ -1099,6 +1131,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(jobSystem);
   kernel.registerSystem(intelligenceSystem);
   kernel.registerSystem(deploymentSystem);
+  kernel.registerSystem(safetyCoverage);
   kernel.registerSystem(patrolSystem);
   kernel.registerSystem(incidentTriggerSystem);
   kernel.registerSystem(sectorSearchDuty);
@@ -1138,6 +1171,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     staffHiring,
     securitySchedules,
     deploymentSystem,
+    safetyCoverage,
     patrolSystem,
     contraband,
     intelligence,

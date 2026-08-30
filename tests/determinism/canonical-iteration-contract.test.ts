@@ -108,6 +108,18 @@ const ALLOWED: readonly CanonicalIterationExemption[] = [
       '`decayAll` subtracts the same fixed amount from every record and deletes the ones that fall to the floor. Each record is independent of the others, so the set of survivors and their confidences are identical in any order. Reads of the ledger go through `all()`/`getSnapshot()`, which sort.',
   },
   {
+    file: 'src/simulation/contraband/search-system.ts',
+    expression: 'job.pathRequestIdsByGuard.values()',
+    reason:
+      "`abandonRoutes` hands every route the job still has in flight back to `NavigationSystem.abandonRequest` and then clears the map (SIM-002). A keyed delete from the request queue and from the result map commutes -- each id names a different request, no walk step reads or folds in another, and the method returns nothing the caller reads -- so every walk order leaves navigation holding exactly the same set. The map itself never reaches a snapshot: `getSnapshot` writes the job's guard ids and target index, and `loadSnapshot` rebuilds every in-flight request empty because a restored session's `NavigationSystem` is a fresh one.",
+  },
+  {
+    file: 'src/simulation/incidents/response-system.ts',
+    expression: 'record.pathRequestIdsByGuard.values()',
+    reason:
+      "`abandonResponseRoutes`, the sibling of `SearchSystem.abandonRoutes` above and commutative for the identical reason: it gives every responder's outstanding route back to `NavigationSystem.abandonRequest` and clears the map, and a keyed delete from two maps has the same effect wherever in the walk it happens. Nothing is folded across guards and nothing is returned. `ResponseRecord` is not persisted at all -- ADR 0033 rebuilds an interrupted response from the incident rather than from a saved record -- so no walk order here can reach a save or a determinism hash.",
+  },
+  {
     file: 'src/simulation/prisoners/room-instance-registry.ts',
     expression: 'this.occupants.values()',
     reason:

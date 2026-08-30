@@ -25,7 +25,7 @@ const TICKS = 200;
  * test that derives its expectation from the same constant it is checking
  * agrees with any value that constant takes, including a wrong one. These
  * numbers are `255 - rate * 200` -- hunger 255-10, sleep 255-6, hygiene
- * 255-4, bladder 255-16, safety 255-2, recreation 255-3 -- and were measured
+ * 255-4, bladder 255-16, safety 255-10, recreation 255-3 -- and were measured
  * against the live runtime, identical across five classification seeds
  * because no RNG-driven behaviour touches a need this early.
  *
@@ -41,7 +41,12 @@ const EXPECTED_AFTER_TICKS: Readonly<Record<NeedId, { readonly level: number; re
   sleep: { level: 249, scaled: 49_800 },
   hygiene: { level: 251, scaled: 50_200 },
   bladder: { level: 239, scaled: 47_800 },
-  safety: { level: 253, scaled: 50_600 },
+  // 255-10, the same step as `hunger`, since issue #588 raised
+  // `NEED_DECAY_PER_TICK.safety` from 0.01 to 0.05. It was 255-2 -- a need
+  // that took 20,400 ticks to reach the state's unmet line, longer than most
+  // sentences, which is what made guard coverage unable to cost a prison
+  // anything through it.
+  safety: { level: 245, scaled: 49_000 },
   recreation: { level: 252, scaled: 50_400 },
 };
 

@@ -169,6 +169,21 @@ not an if-chain. `NeedsDecaySystem` (`needs-system.ts`) is a
 `SystemRegistration` scheduled every 10 ticks, decaying every prisoner's
 every need by exactly that batch's elapsed ticks in one call.
 
+**One need is provisioned by something other than an action.** `safety` is
+restored by **guard coverage** rather than by anything in `DEFAULT_ACTIONS`
+([ADR 0078](./adr/0078-what-keeps-a-prisoner-safe.md),
+[#588](https://github.com/matmaxalez/lockstate/issues/588), under the owner's
+ruling on [#599](https://github.com/matmaxalez/lockstate/issues/599)):
+`SafetyCoverageSystem` walks each security sector's occupants every ten ticks
+and adds `SAFETY_COVERAGE_PROVISION_PER_TICK` for a `covered` sector, half of it
+for an `understaffed` one and nothing for an `unguarded` one, on top of the
+decay every need pays. So a prison keeps its prisoners safe by *staffing*, and
+`action.sleep` — which carried `safety: 0.2` until then, twenty times the decay
+of the day — no longer touches it. The rung comes from
+`resolveSectorCoverageState`, the same three-step ladder the Staff panel names
+`Covered` / `Understaffed` / `Unguarded`, and the status strip's `Coverage` chip
+reports how many prisoners are standing on each.
+
 Levels are **stored scaled** by `NEED_SCALE` (200) rather than as whole
 0-255 levels, and `decayNeed` works in those stored units. Every rate is a
 whole number of stored units per tick at that scale, so decay is exactly
@@ -1086,8 +1101,19 @@ consumers, all already wired:
   kernel in `tests/integration/incident-consequence-loop.test.ts`: two
   identical prisons, identical seed, identical commands, differing only in
   one riot record, have equal need levels at tick 40,000; by tick 70,000 the
-  reclassified prisoner's `sleep` need reads 0 against 1,000 and their
-  `safety` need 141 against 1,000.
+  reclassified prisoner's `hunger` reads 973 against the clean prisoner's 867
+  and their `bladder` 965 against 847 -- the restricted timetable spends more
+  of the day in categories a cell can answer, so the two needs a cell serves
+  end *higher*.
+
+  **That sentence read "`sleep` reads 0 against 1,000 and `safety` 141 against
+  1,000" and both halves have been withdrawn, in two separate corrections.**
+  The `sleep` zero was ADR 0041's fallback defect read as a consequence -- a
+  prisoner who never started an action, not a prisoner kept awake -- and
+  `tests/integration/incident-consequence-loop.test.ts` carries that correction
+  in full. The `safety` figure went with issue #588: guard coverage is that
+  need's provisioner now, this fixture hires nobody, and the need reads 0 in
+  **both** arms rather than separating them.
 - **Placement**, through `rateCellSharing`. Its one term is the worst
   classification distance across a cell's live occupants, so a sitting
   prisoner's tier moving changes where the *next* arrival is housed. ADR 0027

@@ -441,7 +441,12 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
       sleep: NEED_MAX_SCALED - 60,
       hygiene: NEED_MAX_SCALED - 40,
       bladder: NEED_MAX_SCALED - 160,
-      safety: NEED_MAX_SCALED - 20,
+      // Same step as `hunger` since issue #588 raised
+      // `NEED_DECAY_PER_TICK.safety` to 0.05. Nothing provisions it here: the
+      // derived sector asks for a guard the moment it holds anybody and this
+      // fixture hires none, so the sector is `unguarded` and
+      // `SafetyCoverageSystem` adds nothing.
+      safety: NEED_MAX_SCALED - 100,
       recreation: NEED_MAX_SCALED - 30,
     });
     expect(wholeNeeds(runtime, index)).toEqual({
@@ -459,7 +464,7 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
       sleep: NEED_MAX_SCALED - 1_200,
       hygiene: NEED_MAX_SCALED - 800,
       bladder: NEED_MAX_SCALED - 3_200,
-      safety: NEED_MAX_SCALED - 400,
+      safety: NEED_MAX_SCALED - 2_000,
       recreation: NEED_MAX_SCALED - 600,
     });
     expect(wholeNeeds(runtime, index)).toEqual({
@@ -467,7 +472,7 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
       sleep: 249,
       hygiene: 251,
       bladder: 239,
-      safety: 253,
+      safety: 245,
       recreation: 252,
     });
 
@@ -480,7 +485,7 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
       sleep: 183,
       hygiene: 207,
       bladder: 63,
-      safety: 231,
+      safety: 135,
       recreation: 219,
     });
     for (const needId of NEED_IDS) {

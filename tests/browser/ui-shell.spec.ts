@@ -351,6 +351,10 @@ test.describe('HUD shell', () => {
     expect(probe.metricIds).toEqual([
       'prisoners',
       'staff',
+      // Issue #588's guard-coverage chip, placed beside `staff` rather than
+      // appended: it is a staffing readout whose only remedy is the control
+      // the chip to its left counts. `src/ui/hud/projection.ts` argues it.
+      'coverage',
       'rooms',
       'incidents',
       'contraband',
@@ -363,7 +367,10 @@ test.describe('HUD shell', () => {
     // units and the same treatment, and it is the accrual this fixture's own
     // clock and population imply rather than a round number (#29) -- so a chip
     // that reformatted or rescaled either figure is visible here.
-    expect(probe.metricValues).toEqual(['142', '27', '61', '0', '4', '24,920', '10,667']);
+    // `100` is `BASE_VIEW_MODEL.counts.prisonersCovered` -- the top rung of the
+    // coverage chip, with the other two rungs in its badge rather than in a
+    // value of their own (issue #588).
+    expect(probe.metricValues).toEqual(['142', '27', '100', '61', '0', '4', '24,920', '10,667']);
     expect(probe.activeTab).toBe('overview');
     // Paused on day 3, a quarter of the way through it: exactly one transport
     // control is pressed, and the clock reads the simulation's own units.
@@ -431,6 +438,9 @@ test.describe('HUD shell', () => {
           prisonerCapacity: 180,
           staff: 27,
           rooms: 61,
+          prisonersCovered: 140,
+          prisonersUnderstaffed: 27,
+          prisonersUnguarded: 12,
           activeIncidents: 2,
           contrabandFound: 4,
           treasuryMinorUnits: 0,
@@ -827,6 +837,9 @@ test.describe('HUD shell', () => {
         prisonerCapacity: 0,
         staff: 0,
         rooms: 0,
+        prisonersCovered: 0,
+        prisonersUnderstaffed: 0,
+        prisonersUnguarded: 0,
         activeIncidents: 0,
         contrabandFound: 0,
         treasuryMinorUnits: 0,
@@ -1039,6 +1052,9 @@ test.describe('HUD shell', () => {
         prisonerCapacity: 180,
         staff: 27,
         rooms: 61,
+        prisonersCovered: 100,
+        prisonersUnderstaffed: 30,
+        prisonersUnguarded: 12,
         activeIncidents: 0,
         contrabandFound: 4,
         treasuryMinorUnits: 24_920,

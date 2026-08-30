@@ -146,6 +146,39 @@ function prison(tables: number): SimulationRuntime {
 
 /** The whole population in one tick, which is what makes the twenty-four identical. */
 function admitAll(runtime: SimulationRuntime): void {
+  /*
+   * **Guards, hired for what this fixture is *not* about** (issue #588).
+   * Coverage now provisions the `safety` need, so an unstaffed prison of this
+   * size loses it at 0.05 a tick with nothing opposing -- which drives
+   * `needsPressure` over `hotThreshold` and opens riots, and a riot regime
+   * takes the meal block away from the prisoners whose meals this file counts.
+   *
+   * `DEFAULT_SECTOR_PRISONERS_PER_GUARD` is 8, so `ceil(PRISONERS / 8)` is what
+   * the derived sector asks for. They are hired into `GuardRoster`, which is a
+   * different entity store from `runtime.prisoners.entityStore` -- so
+   * `indexOfNthAdmission` below still resolves the nth *prisoner* and no index
+   * in this file moves.
+   *
+   * **Every figure in this file moved, and the hire is what moved them --
+   * verified, not assumed.** Applying exactly these three `HireStaff` commands
+   * to the *unmodified* tree, in a second worktree at 05640b6, reproduces the
+   * new arrays exactly: `11 / 9 / 0` canteen entries, `185` control
+   * substitutions, `268` unbuilt substitutions. So what these numbers record
+   * is that a guard walking to and standing on the arrival tile changes how
+   * this population reaches its canteen, which is true on `main` today and has
+   * nothing to do with issue #588's need. The alternative -- leaving the
+   * prison unstaffed -- was measured too: two assaults and four riots inside
+   * the window, with the riot regime taking the meal block away from the
+   * prisoners whose meals this file counts.
+   */
+  for (let n = 0; n < Math.ceil(PRISONERS / 8); n += 1) {
+    runtime.kernel.submitCommand(
+      `hire-guard-${n}`,
+      runtime.kernel.expectedSequence,
+      runtime.kernel.tick,
+      packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ARRIVAL }),
+    );
+  }
   for (let n = 0; n < PRISONERS; n += 1) {
     runtime.kernel.submitCommand(
       `admit-${n}`,
@@ -236,11 +269,28 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
 
     /*
      * **What the independent watcher sees**: a caste. Six prisoners eat in the
-     * canteen eight times across the twelve days, six eat six times, and the
-     * remaining twelve eat three times each. This is the array ADR 0062 had to
-     * build a test-only per-prisoner counter to obtain.
+     * canteen eleven times across the twelve days, six eat nine times, and the
+     * remaining twelve never sit down in it at all. This is the array ADR 0062
+     * had to build a test-only per-prisoner counter to obtain.
+     *
+     * **It read `8 / 6 / 3` until issue #588, and the caste has hardened.**
+     * `action.sleep` stopped carrying `safety: 0.2` (the owner's ruling on
+     * issue #599 makes guard coverage the provisioner of that need), so a
+     * sleeping prisoner's score no longer includes a term that grew all night
+     * -- which moves when each prisoner reconsiders and therefore who is at
+     * the canteen door first. **The total is unchanged**: `6x11 + 6x9` is 120
+     * and `6x8 + 6x6 + 12x3` was 120 too, so the same number of canteen meals
+     * is served and distributed more unequally. This prison is fully staffed
+     * (see `admitAll`), so no riot is involved.
+     *
+     * That is a real regression in canteen fairness and it is recorded rather
+     * than smoothed over. ADR 0029 decision 5's rotation, and the fix #434
+     * made for it, are about the **shower** room -- `contended-shower-fairness.test.ts`
+     * still shows its last-scanned prisoner winning and losing days in turn --
+     * and no equivalent applies to dining claims. Whether it should is not this
+     * issue's to decide.
      */
-    expect(run.canteenEntries).toEqual([...repeated(8, 6), ...repeated(6, 6), ...repeated(3, 12)]);
+    expect(run.canteenEntries).toEqual([...repeated(11, 6), ...repeated(9, 6), ...repeated(0, 12)]);
 
     /*
      * **And what the production counter sees, with no watcher at all: the same
@@ -249,7 +299,8 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      * -- and prisoners 12 to 23 carry six or seven of them each against one or
      * three for the twelve who eat more often.
      */
-    expect(run.contendedSubstitutionCycles).toEqual([...repeated(3, 6), ...repeated(1, 6), ...repeated(7, 6), ...repeated(6, 6)]);
+    // 3 / 1 / 7 / 6 until issue #588, for the reason the array above gives.
+    expect(run.contendedSubstitutionCycles).toEqual([...repeated(0, 6), ...repeated(1, 6), ...repeated(11, 12)]);
 
     /*
      * The claim stated as a *separation* rather than as the literal above, so
@@ -275,7 +326,8 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
     const metrics = run.runtime.prisoners.actionSystem.getMetrics();
     expect(metrics.substitutionCycles).toBe(run.substitutionCycles.reduce((total, count) => total + count, 0));
     expect(metrics.contendedSubstitutionCycles).toBe(run.contendedSubstitutionCycles.reduce((total, count) => total + count, 0));
-    expect(metrics).toMatchObject({ substitutionCycles: 4_782, contendedSubstitutionCycles: 102, routeFailures: 0 });
+    // 4,782 / 102 until issue #588.
+    expect(metrics).toMatchObject({ substitutionCycles: 4_818, contendedSubstitutionCycles: 138, routeFailures: 0 });
     expect(metrics.substitutionsCountedSinceTick, 'never restored, so the window is the whole session').toBe(0);
 
     /*
@@ -289,9 +341,30 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      * choosing, and what a downgrade *costs* is a need level, which the save
      * already carries.
      */
-    expect(run.substitutionCycles).toEqual([...repeated(197, 6), ...repeated(194, 6), ...repeated(203, 12)]);
-    expect(run.lowestHunger).toEqual([...repeated(12_100, 6), ...repeated(3_500, 6), ...repeated(4_300, 12)]);
-    expect(Math.min(...run.lowestHunger) / NEED_SCALE, 'the contended canteen genuinely starves this prison').toBeLessThan(20);
+    // 197 / 194 / 203 until issue #588.
+    expect(run.substitutionCycles).toEqual([...repeated(194, 6), ...repeated(197, 6), ...repeated(206, 12)]);
+    /*
+     * **12,100 / 3,500 / 4,300 until the hire, and the claim under it has
+     * inverted.** The line here used to read *"the contended canteen genuinely
+     * starves this prison"*, asserting the worst hunger floor was under 20
+     * whole levels. It is now 136.5, and the hire is what did it -- the same
+     * three `HireStaff` commands reproduce this on the unmodified tree.
+     * The twelve who never win a seat now fall back to `action.eat-in-cell`
+     * promptly (ADR 0041 decision 1) instead of queueing for a room they will
+     * be refused from, and eating in a cell restores 3 hunger a tick against
+     * the canteen's 4.
+     *
+     * So the starvation is **not** a property of the contended canteen; it was
+     * a property of this fixture's unstaffed prison. The assertion is replaced
+     * by what is actually true and still separates the arms -- the caste is
+     * visible in the hunger floor as well as in the seat count -- rather than
+     * being deleted or relaxed to a bound that would pass for anything.
+     */
+    expect(run.lowestHunger).toEqual([...repeated(27_500, 12), ...repeated(27_300, 12)]);
+    expect(
+      run.lowestHunger[0]! - run.lowestHunger[PRISONERS - 1]!,
+      'the twelve who never sit down still finish measurably hungrier than the twelve who do',
+    ).toBe(200);
   });
 
   it('reads exactly zero the moment the canteen seats everybody, so it is counting refusals and not meals', () => {
@@ -315,7 +388,8 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
     // Still downgraded constantly -- for the recreation and education blocks
     // this prison has no room for -- which is what makes the zero above a
     // statement about *contention* rather than about the counter being asleep.
-    expect(control.substitutionCycles).toEqual(repeated(174, PRISONERS));
+    // 174 until issue #588.
+    expect(control.substitutionCycles).toEqual(repeated(185, PRISONERS));
   });
 
   it('separates a room that is full from a room nobody built, which `unmetDemandCycles` reads as 0 either way', () => {
@@ -330,7 +404,8 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      * canteen is chosen and refused every time -- and **none of it is
      * contention**, because there is no canteen to be refused by.
      */
-    expect(unbuilt.substitutionCycles).toEqual(repeated(261, PRISONERS));
+    // 261 until issue #588.
+    expect(unbuilt.substitutionCycles).toEqual(repeated(268, PRISONERS));
     expect(unbuilt.contendedSubstitutionCycles).toEqual(repeated(0, PRISONERS));
 
     /*
@@ -340,7 +415,8 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      * for a meal at all.
      */
     expect(unbuilt.runtime.prisoners.actionSystem.getMetrics()).toMatchObject({
-      substitutionCycles: 6_264,
+      // 6,264 until the hire (see `admitAll`).
+      substitutionCycles: 6_432,
       contendedSubstitutionCycles: 0,
       unmetDemandCycles: 0,
     });

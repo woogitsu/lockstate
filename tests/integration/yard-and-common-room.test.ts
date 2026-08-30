@@ -27,18 +27,29 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *
  * `scoreAction` is deficit x effect summed
  * (`src/simulation/prisoners/utility-ai.ts:16-24`) and `rankActions` sorts
- * descending. `action.yard-recreation` gives `recreation: 3` and
- * `safety: 0.1`; `action.common-room-recreation` gives `recreation: 2`. So
+ * descending. `action.yard-recreation` gives `recreation: 3`;
+ * `action.common-room-recreation` gives `recreation: 2`. So
  *
- *     score(yard) - score(common) = d_recreation * 1 + d_safety * 0.1
+ *     score(yard) - score(common) = d_recreation * 1
  *
  * and a deficit is `NEED_MAX - level`, which is never negative. **The yard
  * therefore scores at least as high as the common room in every state a
- * prisoner can be in**, with equality only when *both* deficits are exactly
- * zero -- and at that tie `rankActions` breaks by ascending action id, which
- * puts `action.common-room-recreation` first. The common room was reachable
- * on merit in exactly one state: the one where it is worth nothing. The 96
- * ticks above are that state, not a near miss.
+ * prisoner can be in**, with equality only when the `recreation` deficit is
+ * exactly zero -- and at that tie `rankActions` breaks by ascending action id,
+ * which puts `action.common-room-recreation` first. The common room was
+ * reachable on merit only where it is worth nothing. The 96 ticks above are
+ * that state, not a near miss.
+ *
+ * **The yard also gave `safety: 0.1` until issue #588**, so the difference
+ * above carried a `+ d_safety * 0.1` term and the tie needed *both* deficits
+ * at zero. That term was removed when the owner's ruling on issue #599 made
+ * guard coverage the provisioner of `safety`: with an unguarded prison now
+ * driving `d_safety` to the top of its range, a term scaled by it lifted the
+ * yard over meals, showers and sleep in the ranking -- measured on this
+ * fixture, 5,872 performing ticks became 8,588 -- for a need standing in the
+ * yard barely moved. `src/simulation/prisoners/actions.ts` carries the
+ * argument beside the entry. Nothing about *this* file's claim changes except
+ * the width of the tie.
  *
  * That is why no edit to the numbers fixes this. Keeping the yard ahead
  * changes nothing; putting the common room ahead makes the *yard* the room
@@ -165,6 +176,13 @@ describe('what a prisoner wants, which no ceiling changes', () => {
      * `recreation` and `safety` across the whole range each can take, and
      * asserts separately that the sweep contains states with a real deficit --
      * without which the "equal only at zero" clause below would be vacuous.
+     *
+     * **`safety` is still swept even though neither action scores it any
+     * more** (issue #588), and the sweep is what turns that from a claim into
+     * a measurement: every assertion below has to hold at `safety` 0 exactly
+     * as it does at `safety` 255, which is only true while no term in either
+     * action reads the need. Dropping the axis would make the file agree with
+     * a catalogue that quietly put the term back.
      */
     const needs = new NeedsComponent(1);
     const yard = DEFAULT_ACTIONS.find((action) => action.id === 'action.yard-recreation')!;
@@ -182,7 +200,9 @@ describe('what a prisoner wants, which no ceiling changes', () => {
 
         const yardScore = scoreAction(needs, 0, yard);
         const commonScore = scoreAction(needs, 0, common);
-        const bothSatisfied = recreation === NEED_MAX && safety === NEED_MAX;
+        // `recreation` alone since issue #588 -- see the header. Named for
+        // what it now is: the state where the *scored* deficit is zero.
+        const bothSatisfied = recreation === NEED_MAX;
         if (!bothSatisfied) statesWithADeficit += 1;
 
         expect(yardScore, `recreation ${recreation}, safety ${safety}`).toBeGreaterThanOrEqual(commonScore);
@@ -197,17 +217,35 @@ describe('what a prisoner wants, which no ceiling changes', () => {
 
     // The two vacuity guards. Without the first, every assertion above could
     // have been made about a prisoner with nothing to want.
-    expect(statesWithADeficit, 'the sweep must contain states with a real deficit').toBe(levels.length * levels.length - 1);
+    // Seven of the eight `recreation` levels carry a deficit, at each of the
+    // eight `safety` levels: 56 of the 64 sampled states. It was 63 while the
+    // yard scored `safety` as well.
+    expect(statesWithADeficit, 'the sweep must contain states with a real deficit').toBe((levels.length - 1) * levels.length);
     /*
-     * And the one state the common room does win on merit is the one where
+     * And the states the common room does win on merit are the ones where
      * winning is worth nothing: both scores are 0, and `rankActions` breaks the
      * tie by ascending action id, which `action.common-room-recreation` takes
      * from `action.yard-recreation` alphabetically. That is the whole of the
      * common room's pre-#532 reachability, and it is why the fix is not a
      * number.
+     *
+     * **Eight rather than one since issue #588**, and the eight are one state
+     * counted eight times: full `recreation` at each of the eight `safety`
+     * levels the sweep visits. The yard stopped scoring `safety`, so the tie
+     * no longer needs that need to be full as well -- which is the same
+     * "a prisoner who wants nothing" state, widened, and not the common room
+     * winning anything new.
      */
-    expect(statesWhereTheCommonRoomRanksFirst).toBe(1);
+    expect(statesWhereTheCommonRoomRanksFirst).toBe(levels.length);
     for (const needId of NEED_IDS) needs.set(0, needId, NEED_MAX);
+    expect(scoreAction(needs, 0, yard)).toBe(0);
+    expect(scoreAction(needs, 0, common)).toBe(0);
+
+    // And neither action reads `safety` at all any more, stated directly
+    // rather than only as a property of the sweep: a prisoner at zero
+    // `safety` and full `recreation` scores both at zero, where the yard used
+    // to score 25.5.
+    needs.set(0, 'safety', 0);
     expect(scoreAction(needs, 0, yard)).toBe(0);
     expect(scoreAction(needs, 0, common)).toBe(0);
   });
@@ -239,8 +277,24 @@ describe('a prison with a minimum yard and a common room', () => {
      * Before: yard 6,952, common room 96, six of six prisoners in the yard at
      * once. After: the yard holds its four and the other two go indoors.
      */
-    expect(run.performingTicks['action.yard-recreation']).toBe(5_872);
-    expect(run.performingTicks['action.common-room-recreation']).toBe(1_248);
+    // 5,872 / 1,248 until issue #588. Two separate movements, and the second
+    // is the larger:
+    //
+    // - The yard's 4% is the rest of the day reshuffling around a `safety`
+    //   need that now falls five times faster.
+    // - The common room's 1,248 -> 4,208 is the tie widening. The yard stopped
+    //   scoring `safety`, so the two actions now tie wherever `recreation`
+    //   alone is full instead of only where `recreation` *and* `safety` are,
+    //   and the ascending-id tie-break sends a prisoner who wants no
+    //   recreation indoors instead of outdoors. Both are the "worth nothing"
+    //   state the first test in this file isolates; what changed is how often
+    //   a prison is in it, not what the common room is worth.
+    //
+    // The split this case is about -- yard bounded by its ground, common room
+    // taking the overflow -- is unchanged, and the two assertions after these
+    // are what say so.
+    expect(run.performingTicks['action.yard-recreation']).toBe(6_120);
+    expect(run.performingTicks['action.common-room-recreation']).toBe(4_208);
     expect(run.peakYardOccupancy).toBe(run.yardCapacity);
 
     /*
@@ -292,8 +346,11 @@ describe('a prison with a minimum yard and a common room', () => {
      * prisoner who wants nothing, choosing between two things worth nothing.
      */
     expect(enlarged.peakYardOccupancy).toBe(PRISONERS);
-    expect(enlarged.performingTicks['action.yard-recreation']).toBe(7_208);
-    expect(enlarged.performingTicks['action.common-room-recreation']).toBe(336);
+    // 7,208 / 336 until issue #588, for the two reasons the row above gives.
+    // The enlarged yard still cuts the common room's share by more than half
+    // against the minimum one, which is the comparison this case makes.
+    expect(enlarged.performingTicks['action.yard-recreation']).toBe(7_424);
+    expect(enlarged.performingTicks['action.common-room-recreation']).toBe(2_196);
     expect(enlarged.performingTicks['action.yard-recreation']!).toBeGreaterThan(minimum.performingTicks['action.yard-recreation']!);
     expect(enlarged.performingTicks['action.common-room-recreation'] ?? 0).toBeLessThan(minimum.performingTicks['action.common-room-recreation']!);
   });

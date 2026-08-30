@@ -29,6 +29,15 @@ const COUNTS = {
   // stand in rooms intake will house somebody in.
   accommodationCapacity: 44,
   roomOccupants: 31,
+  // The three guard-coverage rungs (issue #588). Three distinct figures, none
+  // of them a fraction of another and none of them equal to `prisoners` above
+  // -- they sum to 42, this fixture's population, so a mapping that read the
+  // wrong one of the three, or derived one by subtracting the others from the
+  // population, would still land on a plausible-looking number and has to be
+  // caught by the value rather than by the shape.
+  prisonersCovered: 25,
+  prisonersUnderstaffed: 13,
+  prisonersUnguarded: 4,
   activeIncidents: 1,
   // Agrees with `activeIncidents: 1` above -- one incident open, one kind to
   // name (issue #506 finding 2). `'riot'` rather than a lower-severity type on
@@ -61,6 +70,11 @@ describe('the HUD counts are read from the worker', () => {
       prisonerCapacity: 44,
       staff: 11,
       rooms: 9,
+      // Straight through, all three: the HUD may not derive a simulation
+      // figure, and the rungs are what `SafetyCoverageSystem` counted.
+      prisonersCovered: 25,
+      prisonersUnderstaffed: 13,
+      prisonersUnguarded: 4,
       activeIncidents: 1,
       // Derived, not read straight through: `deriveSimulationMessageKey`
       // composed from the worker's stable `'riot'` id (issue #506 finding 2).

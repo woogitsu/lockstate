@@ -110,16 +110,26 @@ describe('an assault sanctions its instigator, not both participants, and follow
     const runtime = buildPrison();
 
     // Measured: the first terminal, adjudicated assault in this exact fixture
-    // opens at tick 13,200 and lapses (no guard responds in time -- the one
-    // hire is elsewhere) at tick 13,810, naming participants [2, 7] and
+    // opens at tick 13,650 and lapses (no guard responds in time -- the one
+    // hire is elsewhere) at tick 14,260, naming participants [2, 7] and
     // instigator 2.
+    //
+    // **13,200 / 13,810 until issue #588**, and 450 ticks *later* rather than
+    // earlier, which is worth reading because every riot fixture in this suite
+    // moved the other way. An assault comes from ADR 0061's per-prisoner
+    // flashpoint sampler, not from the sector score, and its candidate
+    // ordering is over the whole flashpoint vector -- so a `safety` deficit
+    // that now grows five times faster reorders which prisoner is hottest at
+    // which sample, and this pair's turn comes round one 450-tick stretch
+    // later. The participants and the instigator are unchanged, which is what
+    // this case is actually about.
     const { incidentId, instigatorId } = stepUntilAdjudicatedAssault(runtime, 60_000);
     const incident = runtime.incidents.get(incidentId)!;
     expect(incident.type).toBe('assault');
     expect(incident.participantIds).toEqual([2, 7]);
     expect(incident.state).toBe('lapsed');
-    expect(incident.startedAtTick).toBe(13_200);
-    expect(incident.timeline.at(-1)).toEqual({ state: 'lapsed', atTick: 13_810 });
+    expect(incident.startedAtTick).toBe(13_650);
+    expect(incident.timeline.at(-1)).toEqual({ state: 'lapsed', atTick: 14_260 });
     // The instigator is one of the two participants -- the sanction is not
     // charging a third party -- and the *other* participant is named nowhere
     // as an instigator: this is decision 1's asymmetry, read off the record
@@ -137,12 +147,14 @@ describe('an assault sanctions its instigator, not both participants, and follow
     // not run yet -- so the recorded field is what this instant asserts.
     const index = runtime.prisoners.entityStore.getIndex(instigatorId);
     const endTick = runtime.prisoners.records.solitarySanctionEndTick[index]!;
-    // `max(0, 13_810 or 13_811) + solitaryTermTicks (3 * 2_400 = 7_200)`.
+    // `max(0, 14_260 or 14_261) + solitaryTermTicks (3 * 2_400 = 7_200)`.
     // The observed tick at the moment of the check runs one past the
-    // timeline's own `13_810` (the kernel's tick counter has already moved on
+    // timeline's own `14_260` (the kernel's tick counter has already moved on
     // to the next scheduled tick by the time `stepUntilAdjudicatedAssault`
-    // reads it back), so the end tick this file measured is 21,010.
-    expect(endTick).toBe(21_010);
+    // reads it back), so the end tick this file measured is 21,460. It was
+    // 21,010 while the assault opened at 13,200 -- the derivation is unchanged
+    // and only its input moved.
+    expect(endTick).toBe(21_460);
     expect(runtime.prisoners.records.solitarySanctionEndTick[runtime.prisoners.entityStore.getIndex(target)]).toBe(0);
 
     // Physically relocated within a handful of ticks -- the solitary cell
@@ -190,8 +202,8 @@ describe('an assault sanctions its instigator, not both participants, and follow
    * `recreation` have not yet recovered is, for a while, the same kind of
    * flashpoint that earned them the first sanction. Measured on this exact
    * fixture and seed: entity 2 -- the same instigator -- is named the
-   * instigator of a *second* assault at tick 22,350, roughly half an in-game
-   * day after their first release, and it extends their sanction rather than
+   * instigator of a *second* assault at tick 22,800 (22,350 until issue #588),
+   * roughly half an in-game day after their first release, and it extends their sanction rather than
    * starting a fresh one (`Math.max(existingEnd, tick) + solitaryTermTicks`).
    * This is not asserted as a defect; it is asserted because a reader of this
    * mechanism should not have to discover it by running the game, and because
@@ -211,8 +223,12 @@ describe('an assault sanctions its instigator, not both participants, and follow
       .all()
       .find((incident) => incident.type === 'assault' && incident.id !== 'incident.assault.1' && incident.instigatorId === instigatorId);
     expect(secondAssault, 'the same prisoner is named instigator a second time in this fixture').toBeDefined();
-    expect(secondAssault!.startedAtTick).toBe(22_350);
-    expect(runtime.prisoners.records.solitarySanctionEndTick[index]).toBe(30_160);
+    // 22,350 until issue #588, for the reason the first assault's own tick
+    // gives: the flashpoint ordering moved, not the sanction rule.
+    expect(secondAssault!.startedAtTick).toBe(22_800);
+    // `22_960 + 7_200`, the extension rather than a fresh term. 30,160 while
+    // the second assault opened at 22,350; the rule is unchanged.
+    expect(runtime.prisoners.records.solitarySanctionEndTick[index]).toBe(30_610);
     expect(runtime.prisoners.isServingSolitarySanction(instigatorId)).toBe(true);
     expect(accommodationCatalogIdOf(runtime, instigatorId)).toBe('room.solitary-cell');
   });

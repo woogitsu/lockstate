@@ -138,6 +138,83 @@ export default defineConfig({
   use: {
     baseURL,
     browserName: 'chromium',
+    /**
+     * A trace, kept only for a test that failed, and deliberately the
+     * cheapest trace Playwright can record.
+     *
+     * ## Why this exists
+     *
+     * Three runs of this suite on `main` in one afternoon -- 829, 842 and 847
+     * -- each failed with exactly one test of the 253 timing out at 60 s
+     * while every other test passed. All three timed out waiting for the page
+     * to come up: two on `page.waitForFunction(() => '<harness global>' in
+     * window)`, one on `page.waitForSelector('#game-root canvas')`. The test
+     * immediately before and the test immediately after each failure passed in
+     * under six seconds, so nothing was degrading -- one page load, and only
+     * one, never finished.
+     *
+     * The uploaded evidence could not settle why, and that is the point. All
+     * run 847's `error-context.md` holds is the accessibility snapshot
+     *
+     *     - generic [active]:
+     *       - main "Lockstate game application"
+     *
+     * which is `index.html` and nothing else: the static `<main id="app">` is
+     * there and no part of `/src/main.ts` has run. That is equally consistent
+     * with a module request the dev server never answered and with a throw on
+     * the first line of boot, and those have opposite owners -- the first is
+     * this harness, the second is the game. **Nothing in the artifact
+     * distinguishes them**, and an integrator who guesses between two causes
+     * with the same symptom is the failure `docs/AGENT_WORKFLOW.md` §3 is
+     * about.
+     *
+     * A trace holds the network log and the console, so it names which one on
+     * the next occurrence.
+     *
+     * ## Why `snapshots: true`, which is not the cheap setting
+     *
+     * The first version of this line read `snapshots: false`, on the reasoning
+     * that DOM snapshots are the expensive part and the question here is about
+     * the network. **That configuration produces a `0-trace.network` of
+     * exactly zero bytes**, measured rather than assumed: a run of a
+     * deliberately failing spec under `snapshots: false` emitted
+     *
+     *     0  0-trace.network
+     *
+     * and under `snapshots: true` emitted 342,951 bytes carrying the request
+     * URLs. Playwright gates resource recording on the same flag as DOM
+     * snapshots. So the cheap setting records a trace that cannot answer the
+     * only question the trace is here for -- a gate nothing can make fail --
+     * and the fact that this was caught by opening the artifact rather than by
+     * reading the option's name is the reason it is written down here.
+     *
+     * `screenshots` and `sources` stay off: neither distinguishes a stalled
+     * module request from a throw, and both cost.
+     *
+     * `retain-on-failure` and not `on-first-retry`, because `retries` is 0
+     * above -- `on-first-retry` would record nothing, ever. It does mean the
+     * trace is recorded for every test and discarded when it passes, so the
+     * cost lands on the whole suite and not only on the failure.
+     *
+     * ## What that costs, and why no ratio is quoted here
+     *
+     * **This paragraph first said a ratio could not be taken here at all**,
+     * and it is corrected rather than overwritten because the correction is
+     * the useful part. The control finished after that sentence was written:
+     * `world-scene-input.spec.ts`, 24 tests, **130 s with tracing against
+     * 115 s without**, or about **13%**. Both runs contended with seven
+     * agents on the same cores, so treat 13% as an order of magnitude and not
+     * a figure -- but "roughly a seventh" is a far more useful thing to hold
+     * than "unmeasurable", and on this suite's 5.8 min it is about 45 s.
+     *
+     * **The measurement that matters is still free and still arrives by
+     * itself**:
+     * this suite's browser job has run eleven times on `main` in a single
+     * afternoon in a 5.5-6.0 min band, so the first run carrying this change
+     * reports its own overhead against that baseline. If it leaves the band,
+     * reconsider this block rather than defending it.
+     */
+    trace: { mode: 'retain-on-failure', screenshots: false, snapshots: true, sources: false },
     ...(explicitExecutablePath === undefined ? {} : { launchOptions: { executablePath: explicitExecutablePath } }),
   },
   webServer: {
@@ -160,6 +237,21 @@ export default defineConfig({
      * way out.
      */
     reuseExistingServer: false,
+    /**
+     * Playwright pipes a web server's stderr by default and **ignores its
+     * stdout**, and Vite says the interesting things on stdout: a
+     * re-optimization of dependencies, the full reload it forces, a
+     * pre-transform error. Run 847's captured log contains zero lines from
+     * this server -- checked, `grep -c WebServer` over the uploaded
+     * `browser-suite.log` returns 0 -- so a page that never finished loading
+     * left no record on the serving side at all.
+     *
+     * Piping stdout costs nothing on a passing run beyond the lines
+     * themselves, and it is the half of the picture the trace above does not
+     * have: the trace says what the browser asked for, this says what the
+     * server thought it was doing.
+     */
+    stdout: 'pipe',
     timeout: 120_000,
   },
 });

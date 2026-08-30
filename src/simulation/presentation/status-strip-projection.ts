@@ -16,6 +16,7 @@ import {
   type RegimeSchedule,
 } from '../prisoners/regime';
 import { stateIncomeAccruedByTick, stateIncomeForCompletedDay } from '../economy/income';
+import { EMPTY_SAFETY_COVERAGE_CENSUS, type SafetyCoverageCensus } from '../prisoners/safety-coverage-system';
 import { projectClockPosition } from './clock-projection';
 import type { ContrabandSearchSource } from './contraband-projection';
 import { projectPrisonerPopulationCounts, type PrisonerProjectionSource } from './prisoner-projection';
@@ -76,6 +77,25 @@ export interface StatusStripSource {
     dailyWageBillMinorUnits(): number;
     readonly unpaidWagesMinorUnits: number;
   };
+  /**
+   * Where the population is standing on the guard coverage ladder (issue
+   * #588) -- `SafetyCoverageSystem.getCensus`, which produces it on the same
+   * walk that provisions the `safety` need.
+   *
+   * Optional, and absent reports three zeroes, which is what a session with
+   * no security tier genuinely has: nobody is covered, and nobody is
+   * *un*covered either, because there is no sector to be in. It is not a
+   * guess and it is not "unknown" -- an absent source has no prisoners in a
+   * sector to report on.
+   *
+   * The census rather than the coverage report, and the difference is the
+   * whole point of the field: `DeploymentSystem.getCoverageReport` counts
+   * *guards* against a schedule, and what the strip has to attribute a
+   * withheld 40 to is *prisoners*. Deriving one from the other here would
+   * mean this projection resolving sector containment, which
+   * `src/simulation/security/sector-occupancy.ts` owns.
+   */
+  readonly coverage?: { getCensus(): SafetyCoverageCensus };
   /** Defaults to the shipped schedules; a session running custom regimes passes its own. */
   readonly regimeSchedules?: readonly RegimeSchedule[];
   /**
@@ -179,6 +199,19 @@ export interface StatusStripViewModel {
      */
     readonly accommodationCapacity: number;
     readonly roomOccupants: number;
+    /**
+     * Where the population is standing on the guard coverage ladder (issue
+     * #588) -- see `statusCountsSchema` in `src/simulation/protocol/types.ts`
+     * for the full argument for three counts rather than a ratio.
+     *
+     * They sum to the prisoners standing in a sector, not to `prisoners`
+     * above, and the difference is a real one: a prisoner still in transit is
+     * in neither. Nothing downstream should derive one of these by
+     * subtraction.
+     */
+    readonly prisonersCovered: number;
+    readonly prisonersUnderstaffed: number;
+    readonly prisonersUnguarded: number;
     readonly activeIncidents: number;
     /**
      * The kind of the incident driving `activeIncidents` above, when the
@@ -433,6 +466,8 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
   // allocates a sorted array and a fresh record per open incident
   // (`IncidentLog.openIncidents`'s own comment), so a second call would pay
   // that cost twice for the same tick's answer.
+  const coverageCensus = source.coverage?.getCensus() ?? EMPTY_SAFETY_COVERAGE_CENSUS;
+
   const openIncidents = source.incidents?.openIncidents() ?? [];
   const distinctOpenIncidentTypes = new Set(openIncidents.map((incident) => incident.type));
   // Exactly one shared kind names it; zero or several leave it `undefined` --
@@ -466,6 +501,9 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       roomCapacity,
       accommodationCapacity,
       roomOccupants,
+      prisonersCovered: coverageCensus.covered,
+      prisonersUnderstaffed: coverageCensus.understaffed,
+      prisonersUnguarded: coverageCensus.unguarded,
       activeIncidents: openIncidents.length,
       ...(activeIncidentType !== undefined ? { activeIncidentType } : {}),
       contrabandDiscovered: source.searchSystem?.getMetrics().itemsDiscovered ?? 0,

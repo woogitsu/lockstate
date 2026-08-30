@@ -23,6 +23,37 @@ describe('default content catalogs load cleanly (imported at module scope; a fai
     }
   });
 
+  /**
+   * **The owner's ruling of 2026-08-29 (issue #585), which amends
+   * [ADR 0071](../../docs/adr/0071-what-bounds-a-room-whose-activity-consumes-no-object.md):**
+   * capacity derived from a room's own floor area applies only to room types
+   * explicitly tagged as open areas, and the three the owner named are
+   * `room.yard`, `room.holding-cell` and `room.delivery-bay`.
+   *
+   * Pinned as the whole set and not as three memberships, because the failure
+   * this guards is a **fourth** room quietly acquiring the tag: adding
+   * `openArea: true` to `room.cell` is one word, it turns a bedless cell back
+   * into somewhere prisoners can be, and nothing else in the tree would say
+   * so. `RoomInstanceRegistry` reads the tag off the instance and can no more
+   * tell a correct tagging from an incorrect one than the arithmetic can.
+   *
+   * The behaviour the tag produces is `prisoners-room-instance-registry.test.ts`'s
+   * and is deliberately not asserted here against this same list -- a rule
+   * checked against the catalogue it is read from would agree with any tagging.
+   */
+  it('tags exactly the three room types the owner ruled are open areas', () => {
+    expect(defaultRoomContentRegistry.all().filter((room) => room.openArea === true).map((room) => room.id).sort()).toEqual([
+      'room.delivery-bay',
+      'room.holding-cell',
+      'room.yard',
+    ]);
+    // Absent rather than `false` on the other fifteen: "explicitly tagged" is
+    // the owner's own test, and an authored `openArea: false` would be a
+    // second way of saying the default, which is how a list like this comes to
+    // disagree with itself.
+    expect(defaultRoomContentRegistry.all().filter((room) => room.openArea === false)).toEqual([]);
+  });
+
   it('loads a representative object catalog', () => {
     expect(defaultObjectRegistry.size()).toBeGreaterThanOrEqual(10);
   });
