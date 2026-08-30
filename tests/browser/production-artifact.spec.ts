@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './network-changed-fixture';
 import { SAVE_PANEL_MESSAGE_KEY } from '../../src/ui/save-panel-messages';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud';
 import { defaultMessageCatalogEn } from '../../src/services/localization';

@@ -18,7 +18,7 @@
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:browser": "playwright test --config tests/browser/playwright.config.ts",
+    "test:browser": "node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts",
     "test:artifact": "playwright test --config tests/browser/playwright.artifact.config.ts",
     "benchmark": "node --experimental-transform-types --disable-warning=ExperimentalWarning scripts/run-benchmarks.mjs --profile full",
     "benchmark:smoke": "node --experimental-transform-types --disable-warning=ExperimentalWarning scripts/run-benchmarks.mjs --profile smoke --output benchmark-results/smoke.json",

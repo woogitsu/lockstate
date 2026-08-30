@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './network-changed-fixture';
 import './camera-harness-api'; // pulls in the `Window.lockstateCameraHarness` global augmentation
 
 /**
