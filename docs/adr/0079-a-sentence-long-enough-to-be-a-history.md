@@ -270,8 +270,13 @@ No price, no starting treasury, no income rate, no need decay rate, no wage.
 
 The instruction was that `tests/determinism/` would fail and must be
 re-baselined deliberately in the same commit. **It did not fail. Nothing in it
-moved, and nothing in it could have.** Measured: the full suite is 340 files,
-3,867 tests, green, with the sentence range changed.
+moved, and nothing in it could have.** Measured at the moment the range
+changed and before any test was updated: 340 test files, **2 failed and 338
+passed**, and the two were `tests/unit/prisoners-sentence.test.ts` and
+`tests/integration/sentence-length-variation.test.ts` -- the two files that
+assert the bounds as literals. Not one file under `tests/determinism/` was
+among them. The finished branch is 340 files, 3,868 passed, 1 skipped, green,
+with typecheck and the production build clean.
 
 The reason is that **every admission in `tests/determinism/` names its own
 `sentenceLengthTicks`** — `tests/helpers/determinism-scenario.ts:158-161`
