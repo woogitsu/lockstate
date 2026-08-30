@@ -152,28 +152,6 @@ for the derived sector *"counts the whole prison"*
 (`src/simulation/security/deployment-system.ts:107-113`). **A prisoner with no
 bed raises the guard bill and pays nothing.**
 
-### 1.5 So what should #653 and #668 be costed against?
-
-**Not a prison 5.8× larger.** The three statements that follow from §1.1–§1.4,
-separated because they need separate evidence:
-
-1. **The ratio of times in system is 5.78.** Arithmetic on two constants, and
-   ADR 0079 is right about it.
-2. **`occupiedPlaces` is what the state pays for, and it is capped by furnished
-   capacity** — measured pinned at 6 while the roster was 12 and while the
-   roster fell to a smaller number. Longer sentences raise *average* occupancy
-   toward that cap; they cannot raise it past the cap, so the largest effect a
-   sentence change can have on income is bounded by
-   `capacity / previous average occupancy`, and is 5.8 only for a prison that
-   was 5.8× under-occupied.
-3. **The guard bill is not capped that way.** It scales on the whole roster
-   (§1.3), so the population that grows with sentence length is the population
-   that costs and does not pay.
-
-**What would change my mind on 2:** a session in which `occupiedPlaces` exceeds
-the number of furnished beds, or an income credit that is not
-`occupiedPlaces × 300` less withholding. Neither appeared in either run.
-
 ### 1.4 What a batch of twelve into six beds actually did
 
 **VERIFIED, Run A, act 3.** Twelve `Admit` presses into a 6×6 cell with six
@@ -248,14 +226,14 @@ question attached*, not a finding:
   `Xoshiro128StarStar.nextInt` rejects the unrepresentable tail before taking
   the modulus (`src/simulation/rng/xoshiro128starstar.ts:41-51`).
 - **The candidate this pass can name is that a fall in `prisoners` is not
-  necessarily a discharge** — see §7 — and four of these nine fell after the
+  necessarily a discharge** — see §7 — and **eight of these nine** fell after the
   reviews at tick 47,999 put the population at the tier that opens the escape
   gate.
 - **What settles it** is the `simulation/event` stream, which names
   `prisoners.discharged` and `incidents.escape-attempt-opened` separately. Run
   A did not record it; run B does.
 
-### 1.4b What the day boundary actually paid, and why it is below the ceiling
+### 1.5 What the day boundary actually paid, and why it is below the ceiling
 
 **VERIFIED, Run A, act 3.** From tick 8,409 (treasury 23,720) to tick 89,620
 (62,960) is **39,240 minor units over 34 day boundaries** — an average of
@@ -276,6 +254,28 @@ range the withholding schedule fired *"for a lucky draw"* and under the new one
 outlasts the hygiene and recreation crossings *"by more than eight in-game
 days"*. A third of this prison's gross income was withheld, every day, for the
 whole run.
+
+### 1.6 So what should #653 and #668 be costed against?
+
+**Not a prison 5.8× larger.** The three statements that follow from §1.1–§1.5,
+separated because they need separate evidence:
+
+1. **The ratio of times in system is 5.78.** Arithmetic on two constants, and
+   ADR 0079 is right about it.
+2. **`occupiedPlaces` is what the state pays for, and it is capped by furnished
+   capacity** — measured pinned at 6 while the roster was 12 and while the
+   roster fell to a smaller number. Longer sentences raise *average* occupancy
+   toward that cap; they cannot raise it past the cap, so the largest effect a
+   sentence change can have on income is bounded by
+   `capacity / previous average occupancy`, and is 5.8 only for a prison that
+   was 5.8× under-occupied.
+3. **The guard bill is not capped that way.** It scales on the whole roster
+   (§1.3), so the population that grows with sentence length is the population
+   that costs and does not pay.
+
+**What would change my mind on 2:** a session in which `occupiedPlaces` exceeds
+the number of furnished beds, or an income credit that is not
+`occupiedPlaces × 300` less withholding. Neither appeared in either run.
 
 ## 2. Nothing on screen says how long a prisoner is staying, and nothing ever did
 
