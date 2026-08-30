@@ -36,7 +36,7 @@ Following `docs/research/README.md`:
   measurement wins and the disagreement is written out.
 - **UNKNOWN** — could not be established.
 
-The harness is **§12 of this file, in a fenced block**, not a tracked `.ts`.
+The harness is **§13 of this file, in a fenced block**, not a tracked `.ts`.
 §9 says how to run it and §9.1 says why it is inline — the first attempt at this
 record committed it beside this file and the repository's own foundation gate
 refused it, correctly.
@@ -461,7 +461,7 @@ reach. Each row is measured or enumerated, not argued.
 
 ## 9. Reproducing this
 
-The harness is **§12**, inline. Copy it to `probe/reachability.test.ts` at the
+The harness is **§13**, inline. Copy it to `probe/reachability.test.ts` at the
 repository root — the relative imports assume that depth — and run it under a
 config of its own:
 
@@ -489,10 +489,15 @@ than one batch at tick 1,000.
 
 ### 9.1 Why the harness is a code block and not a file — VERIFIED
 
-This record's first commit shipped the harness as
-`docs/research/2026-08-30-what-a-classification-can-reach.probe.ts`, reasoning
-that a dated artefact wants the same read-only standing the record has. The
-repository refused it, and the refusal is better than the reasoning was:
+This record's first commit shipped the harness as a `.probe.ts` sitting beside
+this file — the name is in the assertion below and is deliberately **not**
+written as a path citation here, because the file does not exist and
+`tests/foundation/documentation-links-contract.test.ts` checks every rooted path
+a code span in this directory names. The reasoning was that a dated artefact
+wants the same read-only standing the record has. Two separate gates refused it,
+and both refusals are better than the reasoning was.
+
+**The first**, on the tracked file list:
 
 ```
 FAIL tests/foundation/typecheck-coverage-contract.test.ts > typecheck coverage contract
@@ -521,6 +526,15 @@ existing precedent in `docs/AGENT_WORKFLOW.md` amounts to — *"the reproduction
 stays unmerged on `agent/playtest-mouse-2`; it is a harness, not a gate"* —
 made durable instead of depending on a branch nobody deletes.
 
+**The second gate caught the fix for the first.** Deleting the file left this
+section citing it in a code span, and
+`tests/foundation/documentation-links-contract.test.ts` reported
+`these documented paths name a file that does not exist`. That is why the
+opening paragraph above names the harness in prose rather than in backticks:
+the gate reads code spans only, and a deleted file has no business being written
+as though it were still a path. Both gates are green as of the run in §11, and
+neither was weakened, allowlisted or skipped to get there.
+
 ## 10. Deliberately not done
 
 - **No threshold, range or balance value changed**, per the brief and ADR 0017
@@ -540,7 +554,30 @@ made durable instead of depending on a branch nobody deletes.
 
 ---
 
-## 11. The weakest claim, and what would change my mind
+## 11. Verification
+
+Run on this branch at `03cd8a8` + this section's commit, on an idle machine
+(`ps -eo etime,args | grep -E "[p]laywright/test/cli|[v]itest"` empty first, as
+`docs/AGENT_WORKFLOW.md` §2 requires before any claim about a suite).
+
+```
+$ ./node_modules/.bin/tsc --noEmit -p tsconfig.json
+--- exit 0 ---
+```
+
+```
+$ ./node_modules/.bin/vitest run tests/foundation/ tests/unit/ tests/integration/ tests/determinism/
+ Test Files  323 passed (323)
+      Tests  3687 passed | 1 skipped (3688)
+```
+
+No determinism fingerprint moved; nothing in `tests/determinism/` was touched,
+and no file under `src/` was modified on this branch at all.
+
+**Two foundation gates went red during this pass and both are recorded rather
+than quietly fixed** — §9.1. Neither was weakened, allowlisted or skipped.
+
+## 12. The weakest claim, and what would change my mind
 
 **The weakest claim in this record is §8.1 row 8 — that `escape-attempt` is
 unreachable from the HUD.** It is the only row where the measurement and the
@@ -579,7 +616,7 @@ space — and should be trusted further than the run-based ones.
 
 ---
 
-## 12. The harness
+## 13. The harness
 
 Copy to `probe/reachability.test.ts` at the repository root and run it as §9
 says. It asserts almost nothing — it measures and prints. Written against
