@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { IncidentRecord, IncidentType } from '../../src/simulation/incidents/incident';
+import { PLACEHOLDER_ACTOR_NAME_POOL } from '../../src/simulation/identity/name-pool';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { wallRoomPerimeter } from '../helpers/room-walls';
@@ -476,6 +477,43 @@ describe('who the prison agreed to take is a decision too, and an unguarded pris
     const departed = runtime.contraband.all().filter((item) => item.state === 'departed');
     expect(departed.length).toBe(escaped.length);
     for (const item of departed) expect(escaped.map(String)).toContain(item.holder.id);
+
+    /*
+     * **And the prison says so, naming them
+     * ([#683](https://github.com/matmaxalez/lockstate/issues/683)).** One
+     * `incidents.escape-succeeded` per person, carrying the id and the name the
+     * sentence `hud.alert.event.incidents.escape-succeeded` renders. Which
+     * sentence, in which band, is measured against the shipped catalogue in
+     * `tests/integration/escape-outcome-visibility.test.ts`; what is measured
+     * *here*, and can only be measured here, is that a **real session** fills
+     * it -- that file injects its own departure port, and this one runs the one
+     * `createNewSimulationRuntime` wires.
+     *
+     * **The `name` assertion is the whole reason this block exists, and it is
+     * an ordering test wearing a data test's clothes.** The port reads the name
+     * and *then* releases, because `releasePrisoner` calls
+     * `identity.release('prisoner', entityId)`: swap those two lines and
+     * `getName` answers `undefined`, the payload loses its name, and the band
+     * silently degrades from "Ada Bell broke out" to "Prisoner 7 broke out" --
+     * a defect no type and no other test in this repository catches. Measured:
+     * with the two statements transposed, all 61 integration files still
+     * passed.
+     *
+     * Non-vacuous because the halves are checked against the pool they can only
+     * have come from. Asserting merely that `name !== undefined` would pass for
+     * a port that invented one, and asserting a literal "Ada Bell" would be the
+     * fixture supplying both sides of its own comparison.
+     */
+    const announced = runtime.events.since(0).filter((event) => event.type === 'incidents.escape-succeeded');
+    expect(announced.map((event) => (event as { entityId: number }).entityId).sort((a, b) => a - b)).toEqual(
+      [...escaped].sort((a, b) => a - b),
+    );
+    for (const event of announced) {
+      const { name } = event as { name?: { givenName: string; familyName: string } };
+      expect(name, 'the name is read before the departure releases it').toBeDefined();
+      expect(PLACEHOLDER_ACTOR_NAME_POOL.givenNames).toContain(name?.givenName);
+      expect(PLACEHOLDER_ACTOR_NAME_POOL.familyNames).toContain(name?.familyName);
+    }
   });
 
   it('and loses none of them for one hire, which is the whole of the difference', () => {

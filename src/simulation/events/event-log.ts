@@ -96,6 +96,19 @@ export const MAX_BUFFERED_SIMULATION_EVENTS = 64;
  *   Both directions are marked here rather than overwritten
  *   (`docs/AGENT_WORKFLOW.md` section 4).
  *
+ *   **And the second half of that narrowed sentence did not survive
+ *   `recordEscapeSucceeded` below**, which names a subject who is emphatically
+ *   gone -- `releasePrisoner` destroys the entity and releases the name before
+ *   the main thread reads the event. Marked rather than overwritten, again,
+ *   because the rule's *reason* is what moved: what a departed subject cannot
+ *   support is a **lookup**, and neither of these two events looks anything
+ *   up. Both carry the halves in the payload, so the sentence renders from
+ *   what was true when it was recorded. The rule that survives all three
+ *   readings is therefore: **this channel may name a subject whose name it
+ *   carries, and may never carry an id a reader is invited to resolve.**
+ *   `prisoners.discharged` still carries neither, and its schema still gives
+ *   the original reason.
+ *
  * Writing to it is deterministic: it is written only from scheduled system
  * updates, at the tick the thing happened, from values those systems decided.
  * Two runs of the same session record the same events in the same order.
@@ -171,6 +184,47 @@ export class SimulationEventLog {
       entityId: relocation.entityId,
       ...(relocation.name === undefined ? {} : { name: { ...relocation.name } }),
       roomNameKey: relocation.roomNameKey,
+    });
+  }
+
+  /**
+   * Records that a prisoner got out
+   * ([#683](https://github.com/matmaxalez/lockstate/issues/683)).
+   *
+   * **One call per escapee**, like `recordResidentRelocated` above and unlike
+   * `recordDischarge`, and decided the same way: the owner's approved sentence
+   * names one prisoner. An escape attempt has exactly one participant
+   * (`IncidentTriggerSystem.tryOpenEscapeAttempt`), so today that grain and
+   * the incident's are the same; if an incident type ever lost more than one
+   * person at once, this would say so once per person rather than aggregate
+   * them behind a count the sentence has no placeholder for.
+   *
+   * **Unguarded, because there is no figure to guard, and the caller is what
+   * bounds it.** `IncidentResponseSystem.lapse` records this only for a
+   * participant its departure port confirms actually left -- the same shape
+   * `recordIncidentsAllClear` below relies on, and for the same reason: a
+   * second, weaker copy of the caller's rule here is how the two would come to
+   * disagree.
+   *
+   * @param escape Who left. `name` is absent only in a session wired without
+   * an identity registry, exactly as it is for a relocation; the HUD then
+   * names them by entity id. The name must be read **before** the departure --
+   * `releasePrisoner` releases it -- which is why the caller is handed it by
+   * the port that performs the departure rather than looking it up here.
+   */
+  public recordEscapeSucceeded(
+    escape: {
+      readonly entityId: number;
+      readonly name?: { readonly givenName: string; readonly familyName: string };
+    },
+    tick: number,
+  ): void {
+    this.append({
+      sequence: this._sequence + 1,
+      tick,
+      type: 'incidents.escape-succeeded',
+      entityId: escape.entityId,
+      ...(escape.name === undefined ? {} : { name: { ...escape.name } }),
     });
   }
 
