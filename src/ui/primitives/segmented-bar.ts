@@ -168,11 +168,20 @@ export function createSegmentedBar(options: SegmentedBarOptions): SegmentedBar {
      *
      * So the second lap is drawn *over* the first: cells carry
      * `data-overflow` for the portion of the second lap they represent, and
-     * the stylesheet gives that a hatch rather than a second colour. Colour
-     * is already spoken for -- `data-tone` is `danger` for any over-capacity
-     * value -- and this repository's own rule is that a state is never
-     * carried by colour alone. A hatch is a second channel, and it composes
-     * with the red rather than competing with it.
+     * the stylesheet gives that a **notch** -- two 1px hairlines in the
+     * strip's own background colour -- rather than a second colour. Colour is
+     * already spoken for: `data-tone` is `danger` for any over-capacity
+     * value, and this repository's own rule is that a state is never carried
+     * by colour alone. Shape is a second channel, and it composes with the
+     * red rather than competing with it.
+     *
+     * **This paragraph said "hatch" until an audit caught it.** The first
+     * implementation was a `repeating-linear-gradient`, and
+     * `tests/unit/ui-design-tokens.test.ts` rejected it -- that gate forbids
+     * `gradient(` in every stylesheet under `src/ui/`, because "separation
+     * comes from a 1px hairline and a background step, and from nothing
+     * else". The CSS was rewritten and this comment was not, so for one
+     * commit the module described a rendering the stylesheet forbids.
      *
      * `overflow` is 0 for every value at or under capacity, so a bounded
      * metric writes `data-overflow="false"` on all ten cells forever and
