@@ -133,6 +133,24 @@ Two open pull requests, [#653](https://github.com/matmaxalez/lockstate/pull/653)
 and [#668](https://github.com/matmaxalez/lockstate/pull/668), cost the economy
 against a prison that may be 5.8× too small. This pass was asked to measure it.
 
+### Three things in the brief this pass was given that did not survive reading
+
+Stated here rather than buried, because a brief is a hypothesis and a refutation
+is worth more than a confirmation:
+
+1. **"Two open pull requests costed the economy against a prison that may be
+   5.8× too small."** #668 does not read population at all and #653 already
+   costs per *place-day*. **§1.7.**
+2. **"#640 … is still live on `main`, and you should confirm that rather than
+   assume it."** It was live on the commit played and was closed by `a87b0d3`
+   partway through this pass; the confirmation stands as history and the
+   successor measurement already existed. **§5.1.**
+3. **"Does the ×5.8 occupancy prediction hold? Run a prison long enough to
+   approach a steady state and count."** A steady state is not reachable in a
+   browser at all — four mean sentences is 104 wall minutes at the fastest clock
+   *before* a prison is built — and, more to the point, the prediction is about
+   a quantity the game has no producer for. **§1.2 and §7.**
+
 ## Claim tiers
 
 `docs/research/README.md` labels every claim. Everything below is **VERIFIED**,
