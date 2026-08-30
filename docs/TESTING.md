@@ -153,6 +153,36 @@ CI runs that script in the `browser` job and then `pnpm test:browser`, so the la
 
 Use the lowest layer that proves the behavior. Do not use a browser test to cover logic that can be proven by a fast headless unit or contract test.
 
+### Comments are not executed, and one shape of them is now gated
+
+`tests/foundation/comment-symbol-existence-contract.test.ts` reads every
+backticked **member path** (`Foo.bar`) and **three-segment screaming constant**
+(`STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`) in every comment under
+`src/` and `tests/`, and fails when the name resolves to nothing in the
+repository's code. Issue #543 is the reason: a comment in module A stating a
+fact about module B has no test tying the two together, and this repository has
+paid for it repeatedly — a comment that was false for 51 releases sent two
+agents hunting a fixed defect.
+
+**It gates the vocabulary half of that class, not the behavioural half**, and
+the distinction is worth knowing before reaching for it. It catches
+`WorkerStateMachine.publishEvents` when the class is
+`SimulationWorkerStateMachine`, and a docblock naming an assertion helper that
+does not exist. It cannot catch *"nothing debits the treasury on a schedule"*
+going false when `PayrollSystem` lands, because that sentence names no symbol;
+nor `RoomInstanceRegistry.residentIds` when the caller moved to
+`residentIdsWithExistingPlace`, because both accessors are real. Those stay the
+discipline.
+
+**A comment may still name something that is gone — it just has to say so.**
+A deletion record whose prose carries *"used to"*, *"no longer"*, *"deleted"*,
+*"there is no"* or one of the other markers, within about two wrapped lines of
+the name, is exempt. That is a convention with teeth rather than a hole: this
+tree already writes deletion records that way, every one of the six in it
+passed before the gate existed, and the marker window is deliberately narrow
+because the first version read markers over the whole comment block and a
+hundred-line docblock's unrelated *"there is no ..."* exempted a real defect.
+
 ### The production artefact layer, and the hole it closes
 
 `pnpm test:browser` and `pnpm test:artifact` both drive Chromium and they are
