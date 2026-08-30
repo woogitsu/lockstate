@@ -442,6 +442,29 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.event.prisoners.discharged': '{count} released — their sentences are served.',
   'hud.alert.event.economy.wages-unpaid': 'Payday went unpaid — your staff are owed {total}.',
 
+  // ADR 0076 decision A(i)'s notice: a prisoner whose bed was taken away has
+  // been moved to one that exists.
+  //
+  // **This sentence is the owner's, approved on 2026-08-30, and is reproduced
+  // exactly.** ADR 0076's Status reserved it -- *"a prisoner who changes cell
+  // unasked is something the player should be told, flagged rather than
+  // decided"*, and *"whoever implements relocation must put the question
+  // rather than invent the string"* -- so the question was put and this is the
+  // answer that came back. It is deliberately *not* edited into the em-dash
+  // voice the two above share.
+  //
+  // Both placeholders are filled by `HudMessageParameterViewModel`s rather
+  // than by plain `labelParameters`, because both are text only a localizer
+  // can produce: `{room}` is the room catalog's own `nameKey`, and `{name}` is
+  // two halves of state assembled through `hud.regime.roster-name`, whose
+  // order is a locale decision. See `eventParameterMessages` in
+  // `src/ui/simulation-events.ts`.
+  //
+  // There is no sentence for the other half of decision A(i) -- a resident the
+  // prison had nowhere to move -- and there must not be one until the owner
+  // writes it.
+  'hud.alert.event.prisoners.relocated': '{name} had nowhere to sleep and moved to {room}.',
+
   // The incident sentences (issue #555). Same family, same voice, written
   // against two constraints the two above did not have.
   //

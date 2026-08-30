@@ -14,6 +14,7 @@ import {
   hudEventNoticeFromWorkerMessage,
 } from '../../src/ui/simulation-events';
 import type { HudAlertViewModel } from '../../src/ui/hud/view-model';
+import { resolveHudLabelParameters } from '../../src/ui/hud/label-parameters';
 
 /**
  * The main thread's event translation: the channel that gave `HudSeverity`'s
@@ -46,6 +47,14 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   'incidents.escape-attempt-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.escape-attempt-opened' }),
   'incidents.gang-retaliation-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.gang-retaliation-opened' }),
   'incidents.all-clear': (sequence) => ({ sequence, tick: 100, type: 'incidents.all-clear' }),
+  'prisoners.relocated': (sequence) => ({
+    sequence,
+    tick: 100,
+    type: 'prisoners.relocated',
+    entityId: 3,
+    name: { givenName: 'Ada', familyName: 'Bell' },
+    roomNameKey: 'room.cell.name',
+  }),
 };
 
 /**
@@ -87,11 +96,45 @@ describe('what the prison says when nothing went wrong', () => {
     for (const type of SIMULATION_EVENT_TYPES) {
       const notice = hudEventNoticeFromWorkerMessage(publication(SAMPLE[type](1)));
       if (notice === undefined || notice === 'none') throw new Error(`${type} produced no notice`);
-      const sentence = localizer.format(notice.labelKey, notice.labelParameters);
+      // Through `resolveHudLabelParameters`, which is what `hud.ts` renders
+      // with: since ADR 0076's relocation notice a sentence's parameters are
+      // not all plain values, and formatting from `labelParameters` alone
+      // would leave `{name}` and `{room}` on screen while this test passed.
+      const sentence = localizer.format(
+        notice.labelKey,
+        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+      );
       expect(sentence, `${type} reaches the player as its own key`).not.toContain('hud.alert.event');
       expect(sentence.trim().length, `${type} says nothing at all`).toBeGreaterThan(0);
     }
     expect(missing, 'every event key must be in the catalog that ships').toEqual([]);
+  });
+
+  it('names a prisoner the prison never named by their entity id, rather than saying nothing (ADR 0076)', () => {
+    /*
+     * The relocation notice's `name` is optional on the wire, exactly as
+     * `PrisonerRosterRowViewModel.name` is, and for the same reason: a session
+     * wired without an identity registry mints nobody. No path in `src/` can
+     * produce that -- `createNewSimulationRuntime` always wires one -- which is
+     * why this is pinned here rather than in
+     * `tests/integration/relocation-notice-loop.test.ts`.
+     *
+     * The fallback reuses `hud.regime.roster-unnamed`, which is what
+     * `formatPrisonerName` shows for an unnamed roster row. **No new copy is
+     * authored for it**, and the alternative -- dropping the notice -- is the
+     * silence issue #629 outlaws.
+     */
+    const anonymous = { ...SAMPLE['prisoners.relocated'](1) } as Record<string, unknown>;
+    delete anonymous['name'];
+    const notice = hudEventNoticeFromWorkerMessage(publication(anonymous as never));
+    if (notice === undefined || notice === 'none') throw new Error('an unnamed prisoner still moved');
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const sentence = localizer.format(
+      notice.labelKey,
+      resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+    );
+    expect(sentence).toBe('Prisoner 3 had nowhere to sleep and moved to Cell.');
+    expect(sentence, 'and no placeholder survives the fallback').not.toContain('{');
   });
 
   it('carries a severity that says whether anything is wrong, which is the whole point of #507', () => {
