@@ -57,10 +57,18 @@ repository that was opened and read. **SEARCH-SUMMARY and FROM MEMORY do not
 occur.** Where something could not be established it is marked **UNKNOWN**
 inline, with what would settle it.
 
-Two runs of the same script on the same commit, both pasted:
+Two runs, both pasted. **Both play the same game**: the branch this record is on
+changes nothing under `src/` — `git diff --stat origin/main -- src/` is empty —
+so the simulation, the HUD and every balance value in both runs are `898a16a`'s.
 
 - **Run A**, 2026-08-30 16:46 UTC.
-- **Run B**, later the same evening.
+- **Run B**, 2026-08-30 17:16 UTC, with three instrumentation changes run A paid
+  for and one act it re-attempts. **They are changes to what was *recorded*, not
+  to what was played**, and each is named where its result is used: the alerts
+  list is opened and read (§1.4, §7), every `simulation/event` the worker
+  published is dumped (§7), and the tick of each individual admission is
+  reconstructed from the counts publications (§1.4). Act 2 failed in run A for a
+  reason that is itself a finding (§5.2) and succeeds in run B.
 
 ---
 
