@@ -558,6 +558,32 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
     await fastForwardToMax(page);
     log(`clock: ${JSON.stringify(await currentClock(page))}`);
 
+    /*
+     * **Open the ALERTS fold once, and keep it open for the rest of the run.**
+     *
+     * A fall in `prisoners` is *not* proof of a discharge, and run A of this
+     * file could not tell the two apart. `releasePrisoner` has two callers in
+     * `src/`: `PrisonerDischargeSystem` for a sentence that ended
+     * (`discharge-system.ts:184`) and the incident runtime's escape handler for
+     * a prisoner who got out (`new-session.ts:1118`, *"A prisoner who got out is
+     * gone (ADR 0061 decision 5)"*). Both destroy the entity and both free the
+     * bed, so the counts publication reads identically.
+     *
+     * `.hud__event` cannot settle it either, because it holds only the **last**
+     * event: run A observed five falls and the release sentence was still on
+     * the band for only three of them -- twice an incident had overwritten it
+     * within the same 10 s sampling window.
+     *
+     * The alerts list is the durable record: it keeps `MAX_EVENT_ALERT_ROWS`
+     * = 8 rows (`src/ui/simulation-events.ts:252`) and drops only the oldest.
+     * It starts folded (`collapsedPanels: ['alerts']`), so this opens it --
+     * which is itself worth recording as the cost of finding out.
+     */
+    const alertsHeader = page.locator('.hud-minimap .ui-section__header').first();
+    if ((await alertsHeader.count()) > 0) await alertsHeader.click();
+    await page.waitForTimeout(500);
+    log(`alerts list, opened by hand for the rest of the run: ${JSON.stringify(await alerts(page))}`);
+
     // The run. Sample every 10 s of wall time; dump the roster every 2 minutes.
     const budgetMs = 25 * 60 * 1_000;
     const samples: Sample[] = [];
@@ -582,6 +608,7 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
             ` | that is ${((now.tick - admittedAt) / DAY_LENGTH_TICKS).toFixed(1)} in-game days after admission` +
             ` | event band: ${JSON.stringify(await eventBand(page))}`,
         );
+        log(`    alerts list: ${JSON.stringify(await alerts(page))}`);
         log(`    chips: ${await allChips(page)}`);
       }
       if (now.wallMs - lastRosterMs >= 120_000) {
