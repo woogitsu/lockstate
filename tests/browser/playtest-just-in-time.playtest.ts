@@ -336,6 +336,38 @@ test('act 1 and 2: a wall, then everything after it, with no procurement press',
   const northSegments = await wallRun(page, act, origin, 'north', { x: westX + TILE / 2, y: northY }, { x: eastX - TILE / 2, y: northY });
   const treasuryAfterWall = await settledTreasury(page, act, treasuryBeforeWall);
   log(act, `TREASURY AT THE PRESS: ${treasuryBeforeWall} -> ${treasuryAfterWall} (delta ${treasuryAfterWall - treasuryBeforeWall}) for ${northSegments} wall segment(s)`);
+
+  /*
+   * **Does the purchase the game just made for the player ever appear where
+   * purchases appear?**
+   *
+   * `PROCUREMENT_DELIVERY_DELAY_TICKS` is 100 -- five seconds at the kernel's
+   * 50 ms step (`src/content/procurement-catalog.ts`, which says so) -- so a
+   * just-in-time delivery is in flight for five seconds and then is not. The
+   * Build panel's *On the way* block is the surface that names bought-and-not-
+   * arrived material, it is refreshed only while the Build tab is open
+   * (`src/main.ts:1832`), and `paintDeliveries` hides it when there is nothing
+   * (`src/ui/hud/build-panel.ts:1394`).
+   *
+   * Every coarse sample in run A read `not laid out`, which is suggestive and
+   * not a measurement: the window is five seconds and the samples were three
+   * apart. This polls it four times a second across the whole window, starting
+   * from the press, so the answer is a fact rather than an inference.
+   */
+  {
+    const started = Date.now();
+    const seen = new Set<string>();
+    while (Date.now() - started < 12_000) {
+      const text = (await panelText(page, '.hud-build__deliveries')).replace(/\n+/g, ' | ');
+      if (!seen.has(text)) {
+        seen.add(text);
+        log(act, `  ON THE WAY at t+${Date.now() - started}ms (tick ${await currentTick(page)}): ${JSON.stringify(text)}`);
+      }
+      await page.waitForTimeout(250);
+    }
+    log(act, `ON THE WAY block showed ${seen.size} distinct state(s) across the 12 s after the press: ${JSON.stringify([...seen])}`);
+  }
+
   await observe(page, act, `one wall run of ${northSegments} placed, no Buy ever pressed`);
 
   log(act, 'watching the queue until it empties -- ONE wall run only');
@@ -588,10 +620,29 @@ test('act 3: how much wall 25,000 buys, and what the game says when it runs out'
    * band keeps whatever the last press put on it and says nothing new,
    * however long the stalled queue sits.
    */
-  await page.waitForTimeout(20_000);
+  const stallStarted = Date.now();
+  let previousHeader = '';
+  let unchangedSince = Date.now();
+  for (;;) {
+    const dump = await hudDump(page);
+    if (dump.queue.headerText !== previousHeader) {
+      previousHeader = dump.queue.headerText;
+      unchangedSince = Date.now();
+      log(act, `  stalling t+${Date.now() - stallStarted}ms: header=${JSON.stringify(dump.queue.headerText)} band=${JSON.stringify(dump.refusal.text)}`);
+    }
+    // Stop once the queue has not moved for 25 s: what is left then is what
+    // the money could not buy, and nothing but the player can change it.
+    if (Date.now() - unchangedSince > 25_000) break;
+    if (Date.now() - stallStarted > 240_000) {
+      log(act, `  the queue was still moving after 240 s -- stopping the watch, not the queue`);
+      break;
+    }
+    await page.waitForTimeout(2000);
+  }
   const afterWaiting = await hudDump(page);
-  log(act, `after 20 s of the queue sitting stalled: band=${JSON.stringify(afterWaiting.refusal.text)} queueHeader=${JSON.stringify(afterWaiting.queue.headerText)} collapsed=${afterWaiting.queue.collapsed}`);
-  await observe(page, act, 'twenty seconds later, nothing pressed');
+  log(act, `THE QUEUE STOPPED MOVING after ${Date.now() - stallStarted}ms: header=${JSON.stringify(afterWaiting.queue.headerText)} band=${JSON.stringify(afterWaiting.refusal.text)}`);
+  log(act, `does the band still name money with nothing pressed since? ${String(FUNDS_SENTENCE.test(afterWaiting.refusal.text))}`);
+  await observe(page, act, 'the queue has stopped moving, nothing pressed');
 
   /*
    * The Build panel unfolded, which is the one place `#627`'s work could still
