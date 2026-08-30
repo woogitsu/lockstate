@@ -276,8 +276,9 @@ except for what they can meet.
 | cell + guard + yard | 970 | 300, 300, 300, 300, **260**, 260, … | **260** (hygiene unmet) |
 | cell + guard + yard + shower | 1,995 | **300** every day, 30 days running | **300** |
 
-**Break-even is day 4 in every configuration measured**, and it is day 4 for a
-one-prisoner prison and for an eight-prisoner one:
+**Break-even is day 4 in every one-bed-per-cell configuration measured** — for
+a one-prisoner prison and for an eight-prisoner one alike, which is what makes
+it a property of the model rather than of a scale:
 
 | prison | spent | first day the balance is back at 25,000 |
 | --- | --- | --- |
@@ -402,8 +403,9 @@ is **4 to 32 real minutes**. A plausible weeks-long range — 14–28 days — i
 to 56 real minutes.
 
 Sentence length changes income because **a new arrival's needs start full**
-(`needs.ts:209`, filled to `NEED_MAX`). Every prisoner therefore pays 300 for
-their first days and decays toward whatever their prison can actually meet.
+(`needs.ts:208`, and `NeedsComponent.reset` at `needs.ts:220-224`; both fill to
+`NEED_MAX`). Every prisoner therefore pays 300 for their first days and decays
+toward whatever their prison can actually meet.
 Turnover is a subsidy, and a longer sentence spends it.
 
 MEASURED — mean daily grant per resident, averaged over every stay length in
