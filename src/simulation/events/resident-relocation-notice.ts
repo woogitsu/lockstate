@@ -95,10 +95,11 @@ export interface ResidentRelocationNotice {
 export function createResidentRelocationNotice(sources: ResidentRelocationNoticeSources): ResidentRelocationNotice {
   return {
     announceRelocations(relocated: readonly RelocatedResident[]): void {
-      // Nothing moved is the ordinary case -- every removal from an
-      // under-occupied room reaches here with an empty list -- so the tick is
-      // not even read for one.
-      if (relocated.length === 0) return;
+      // No early return for the empty list, which is the ordinary case: the
+      // loop below is already that guard, and a `relocated.length === 0` line
+      // saves one call to `sources.tick()` and cannot be killed by any test.
+      // The precedent is `relocateExcessResidentsOf`'s own deleted exclusion
+      // set -- a line no test can kill is a line that rots.
       const tick = sources.tick();
       for (const { entityId, toInstanceId } of relocated) {
         const roomCatalogId = sources.roomInstances.getById(toInstanceId)?.roomCatalogId;
