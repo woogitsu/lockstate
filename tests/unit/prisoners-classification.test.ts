@@ -80,14 +80,33 @@ describe('classifyPrisoner', () => {
     it('cannot reach high-risk from what the Intake panel asks for, at any seed', () => {
       // What the Intake panel asks for. `priorIncidents: 0` is still
       // `ADMISSION_REQUEST` in `src/main.ts`; the 10,000 was too until #535
-      // decision 5 made the length a draw, and it is kept here because the
-      // whole drawn range (4,800-38,400, `prisoners/sentence.ts`) is on the
-      // same side of the 200,000-tick threshold -- so the score is 0 and the
-      // tier is the screening draw alone for *every* sentence a press can now
-      // produce, not only for the one it used to produce.
+      // decision 5 made the length a draw.
+      //
+      // **The reason this holds changed with the owner's 2026-08-30 ruling on
+      // #593, and the old reason is recorded here rather than overwritten.**
+      // It read: *"it is kept here because the whole drawn range (4,800-38,400,
+      // `prisoners/sentence.ts`) is on the same side of the 200,000-tick
+      // threshold -- so the score is 0 and the tier is the screening draw alone
+      // for every sentence a press can now produce."* That is no longer true.
+      // The range is 33,600-216,000 and it **straddles** the threshold, so a
+      // long-sentence admission scores 1 and reaches tier 2 -- which is the
+      // point of the ruling, and is asserted below rather than only described.
+      //
+      // What survives is the *title*: `classificationGroupIdForTier` answers
+      // `'high-risk'` only at tier 3, and 1 + 0 priors + a maximum screening
+      // draw of +1 clamps at 2. So no press of Admit has ever produced a
+      // high-risk prisoner, and none can now either -- but it is one screening
+      // point away instead of two, which is a real narrowing and is why the top
+      // of the range is pinned here as well as the bottom.
       expect(reachableTiers({ sentenceLengthTicks: 10_000, priorIncidents: 0 })).toEqual([0, 1]);
-      expect(reachableTiers({ sentenceLengthTicks: 4_800, priorIncidents: 0 })).toEqual([0, 1]);
-      expect(reachableTiers({ sentenceLengthTicks: 38_400, priorIncidents: 0 })).toEqual([0, 1]);
+      // The bottom of the drawn range, and the last drawable length below the
+      // threshold (83 in-game days).
+      expect(reachableTiers({ sentenceLengthTicks: 33_600, priorIncidents: 0 })).toEqual([0, 1]);
+      expect(reachableTiers({ sentenceLengthTicks: 199_200, priorIncidents: 0 })).toEqual([0, 1]);
+      // The first drawable length at or above it (84 days), and the top of the
+      // range. Tier 2, and still not high-risk.
+      expect(reachableTiers({ sentenceLengthTicks: 201_600, priorIncidents: 0 })).toEqual([0, 1, 2]);
+      expect(reachableTiers({ sentenceLengthTicks: 216_000, priorIncidents: 0 })).toEqual([0, 1, 2]);
     });
 
     it('reaches high-risk from two priors alone, or from one plus a long sentence', () => {

@@ -106,8 +106,8 @@ export interface ContrabandIntroductionPolicy {
  *     held deliberately -- and since ADR 0069 the sentence is no longer sent
  *     from there at all: it is *drawn inside the worker* from the
  *     `prisoners.sentence` stream. Neither number is a player decision.
- *  2. **The revision is a phase lottery, and for most sentences it is
- *     impossible.** `ClassificationReviewSystem` is globally phased at
+ *  2. **The revision is a phase lottery, and it used to be impossible for most
+ *     sentences.** `ClassificationReviewSystem` is globally phased at
  *     `intervalTicks - 1`, so it runs at every tick congruent to 23,999 modulo
  *     24,000; eligibility is per prisoner, `tick - classifiedAt >= 24,000`,
  *     where `classifiedAt` is derived from that prisoner's own record. So a
@@ -115,13 +115,30 @@ export interface ContrabandIntroductionPolicy {
  *     scheduled tick falls in `[c + 24,000, c + s]` -- a window of `s - 24,000`
  *     ticks, and empty unless `s >= 24,000`.
  *
- *     `MIN_SENTENCE_DAYS` is 2 and `MAX_SENTENCE_DAYS` is 16, so the drawable
- *     lengths are 4,800..38,400 in steps of `DAY_LENGTH_TICKS` (2,400).
- *     **Eight of those fifteen -- 2 through 9 days -- are below 24,000 and can
- *     never be reviewed at all**, whatever the phase. The other seven have a
- *     window of 0 to 14,400 ticks and are reviewed only if the global schedule
- *     happens to land inside it; at 10 days exactly the window is a single
- *     tick.
+ *     **The owner's 2026-08-30 ruling on
+ *     [#593](https://github.com/matmaxalez/lockstate/issues/593)
+ *     ([ADR 0079](../../../docs/adr/0079-a-sentence-long-enough-to-be-a-history.md))
+ *     replaced this sub-paragraph, and both halves are kept because the
+ *     arithmetic is the same and only the inputs moved.** It read:
+ *
+ *     > `MIN_SENTENCE_DAYS` is 2 and `MAX_SENTENCE_DAYS` is 16, so the drawable
+ *     > lengths are 4,800..38,400 in steps of `DAY_LENGTH_TICKS` (2,400).
+ *     > **Eight of those fifteen -- 2 through 9 days -- are below 24,000 and
+ *     > can never be reviewed at all**, whatever the phase. The other seven
+ *     > have a window of 0 to 14,400 ticks and are reviewed only if the global
+ *     > schedule happens to land inside it; at 10 days exactly the window is a
+ *     > single tick.
+ *
+ *     `MIN_SENTENCE_DAYS` is now **14** and `MAX_SENTENCE_DAYS` is **90**, so
+ *     the drawable lengths are 33,600..216,000 and **none of the seventy-seven
+ *     is below 24,000**. The window is `s - 24,000 + 1` ticks in every case:
+ *     9,601 at the floor, 192,001 at the ceiling. Measured against the real
+ *     `ClassificationReviewSystem` over every drawable length at 100 arrival
+ *     phases, **97.3% of prisoners reach a first review and 85.1% a second**,
+ *     against 14.0% and 0% before -- and every length at 20 in-game days or
+ *     more is reviewed whatever tick it arrives on. What survives unchanged is
+ *     that the bottom of the range is still a lottery: at 14 days the window is
+ *     40% of a period, so two arrivals in five get no review.
  *
  *     **This paragraph said "the revision never happens" and that was wrong.**
  *     It was true of the session's *first* prisoner -- classified near tick 0,
@@ -133,11 +150,15 @@ export interface ContrabandIntroductionPolicy {
  *     produced the wrong answer is the arithmetic worth checking next time: a
  *     schedule is global and eligibility is per record, and the two only
  *     coincide for whoever arrives first.
- *  3. **The sentence cannot move the tier even if it were chosen.**
- *     `classifyPrisoner` reads it as
+ *  3. **The sentence could not move the tier even if it were chosen, and now
+ *     it can.** `classifyPrisoner` reads it as
  *     `sentenceLengthTicks >= LONG_SENTENCE_THRESHOLD_TICKS ? 1 : 0` with the
- *     threshold at **200,000**, which is 5.2x the largest sentence the shipped
- *     range can draw. That term is always 0.
+ *     threshold at **200,000**. This read *"which is 5.2x the largest sentence
+ *     the shipped range can draw. That term is always 0."* That was true and
+ *     is now false: 216,000 > 200,000, so the seven drawable lengths from 84
+ *     to 90 in-game days -- 9.1% of the range -- score 1. The threshold itself
+ *     did not move; the range crossed it, deliberately, which is the decision
+ *     `sentence.ts`'s docblock had named and declined.
  *
  * So `riskTier` is, today, exactly the dice roll this sentence said it was not:
  * reachable tiers are `[0, 1]` and which one a prisoner gets is the draw alone.

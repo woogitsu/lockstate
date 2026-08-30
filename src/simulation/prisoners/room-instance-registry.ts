@@ -290,6 +290,42 @@ export function residentsWithExistingPlace(
   return residentCapacity > 0 ? occupantsAscending.slice(0, residentCapacity) : [];
 }
 
+/**
+ * The exact complement of `residentsWithExistingPlace`: which of one
+ * instance's residents hold **no** place that currently exists, ascending.
+ *
+ * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+ * decision A(i) calls these residents *"the excess"*, and this function is why
+ * "the excess" and "the residents the state declines to pay for" cannot drift
+ * apart: they are one partition of `occupantsAscending`, computed here at one
+ * index, rather than two rules that happen to agree today. `A(ii)` withholds
+ * the money for exactly the entities this returns
+ * (`RoomInstanceRegistry.residentIdsWithExistingPlace` returns the other half),
+ * and `PrisonerOperationsRuntime.relocateExcessResidentsOf` tries to move
+ * exactly these -- so a relocation that succeeds is also, and by construction,
+ * the removal of the reason the state was withholding.
+ *
+ * **`occupantsAscending` must already be sorted**, for
+ * `residentsWithExistingPlace`'s reason and with its consequence: the lowest
+ * entity ids keep the places, so it is the *highest* that move. That
+ * tie-break is `docs/DETERMINISM.md`'s total order and not a preference --
+ * which resident moves changes the prison, so it may not depend on insertion
+ * history.
+ *
+ * `Math.max(0, ...)` rather than the sibling's `residentCapacity > 0` guard,
+ * and it is the same defence written the other way round: `slice(-1)` answers
+ * *the last resident only*, so a negative capacity would leave every resident
+ * but one unrelocated while the sibling paid for none of them. Nothing derives
+ * a negative `residentCapacity` today; this is what keeps that a fact about
+ * the content rather than a dependency of who gets moved.
+ */
+export function residentsWithoutExistingPlace(
+  occupantsAscending: readonly EntityId[],
+  residentCapacity: number,
+): readonly EntityId[] {
+  return occupantsAscending.slice(Math.max(0, residentCapacity));
+}
+
 function openGroundCapacityOf(instance: RoomInstance): number {
   // The owner's ruling of 2026-08-29 (issue #585), amending ADR 0071: floor
   // area is a resource only a room *tagged* as an open area supplies, and it

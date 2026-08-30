@@ -31,6 +31,23 @@ player-visible promise is one of the four things reserved to the owner, so
 whoever implements relocation must put the question rather than invent the
 string.
 
+> **Answered on 2026-08-30, and the paragraph above is left standing because it
+> is what the question was.** [PR #637](https://github.com/matmaxalez/lockstate/pull/637)
+> shipped A(i) silent and recorded the debt. The question was put, and the
+> owner approved one sentence:
+>
+> > `{name} had nowhere to sleep and moved to {room}.`
+>
+> It is in `src/content/default-locale-en.ts` under
+> `hud.alert.event.prisoners.relocated`, reproduced exactly, and it reaches the
+> player on the events band and in the alerts list.
+>
+> **The approval covers the relocated case only.** A resident the prison had
+> nowhere to move is still announced by nothing — that is
+> `ExcessRelocationOutcome.stranded`, it is the branch decision A(ii) is
+> unconditional for, and whether the player should be told about *that* is an
+> open question with no wording behind it. Recorded here rather than answered.
+
 It answers an economy audit finding raised against `4c18bc4` (v0.0.203) as
 ECON-003 and reproduced by running it against `ec10451` (v0.0.206).
 
@@ -320,6 +337,11 @@ charge for becomes rare, which weakens the case for it.
   player asking is a thing the player should be told about, and saying nothing is
   cheaper than saying it badly. Flagged rather than decided, because copy is the
   owner's.
+  **Both halves of that came true, and it is marked rather than rewritten.**
+  A(i) did create one, flagging it was the right call, and the owner wrote the
+  sentence on 2026-08-30 — see the Status section. What is still true exactly
+  as written is the rest: neither A(ii) nor B adds a string, and the
+  over-capacity readout is still owed by somebody else.
 - **No production code is in this branch.** Each part is its own change after
   acceptance.
 
