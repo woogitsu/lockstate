@@ -246,6 +246,15 @@ export const HUD_MESSAGE_KEY = {
    * `BUILD_QUEUE_ROW_LIMIT`: the list is the crew's schedule, so the rows are
    * the orders that are about to happen, and taking a whole run back is what
    * `Undo` is for.
+   *
+   * `buildQueueShortfall` is the queue's one sentence about **money**, and it
+   * is the only member of this group that is not a fact about rows (#627,
+   * #629, #640). It is drawn outside the fold, unlike everything above it: the
+   * queue section starts collapsed, and #625 is the record of what that costs
+   * -- *"Awaiting Materials"* lived inside it and reached nobody. `{total}` is
+   * `HudBuildQueueMaterialsFundingViewModel.shortfallMinorUnits`, in the same
+   * minor units as the status strip's Funds chip, which is the comparison the
+   * projection says the figure exists for.
    */
   buildQueue: 'hud.build.queue',
   buildQueueCount: 'hud.build.queue-count',
@@ -253,6 +262,7 @@ export const HUD_MESSAGE_KEY = {
   buildQueueCancel: 'hud.build.queue-cancel',
   buildQueueUnnamed: 'hud.build.queue-unnamed',
   buildQueueMore: 'hud.build.queue-more',
+  buildQueueShortfall: 'hud.build.queue-shortfall',
   /**
    * What has been bought and has not arrived, inside the buy disclosure (#285).
    *
