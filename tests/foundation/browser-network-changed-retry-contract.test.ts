@@ -184,6 +184,54 @@ describe('browser network-changed retry contract', () => {
       runner,
       `${RUNNER} must read \`test-results/.last-run.json\` rather than trusting the fixture's own record of what failed. A test killed by a 60-second timeout may never reach fixture teardown, and Playwright's own file is the authority on which tests failed.`,
     ).toContain('.last-run.json');
+
+    /*
+     * The link #652 was actually about. `appendEvidence` returns at its first
+     * line when this variable is unset, so a run started without it records
+     * nothing while every spec still imports the fixture and every listener
+     * still attaches -- the exact arrangement `pnpm test:artifact` was in for
+     * one merge, and it looked correct from every file involved.
+     */
+    expect(
+      runner,
+      `${RUNNER} must pass \`${'LOCKSTATE_NETWORK_CHANGED_EVIDENCE'}\` into the Playwright process it spawns. Without it the fixture's \`appendEvidence\` returns immediately, every observation is dropped, and this whole mechanism runs and decides nothing -- silently, because the specs still import the fixture.`,
+    ).toContain('[NETWORK_CHANGED_EVIDENCE_VARIABLE]: evidencePath');
+  });
+
+  /**
+   * The runner must not know a config path at all.
+   *
+   * `run-suite.ts` spawns Playwright at module scope, so Vitest cannot import
+   * it and no unit test can watch it choose. A mutation that replaces
+   * `suite.config` with a literal `tests/browser/playwright.config.ts`
+   * therefore survives everything else in this repository -- and what it
+   * produces is #578 exactly: a CI step that believes it is gating the built
+   * artefact while Chromium is pointed at a Vite dev server over `src/**`, and
+   * a green run that means nothing. Source text is the only place this is
+   * readable, so it is read here.
+   */
+  it('takes its config from the selected suite and names none of its own', async () => {
+    const runner = await read(RUNNER);
+
+    expect(
+      runner,
+      `${RUNNER} must pass \`suite.config\` to \`playwright test --config\`, so that which gate runs is decided by \`--suite\` and nothing else.`,
+    ).toContain("'--config', suite.config,");
+
+    const codeLines = runner.split(/\r?\n/u).filter((line) => {
+      const trimmed = line.trim();
+      return !(
+        trimmed.startsWith('*') ||
+        trimmed.startsWith('/*') ||
+        trimmed.startsWith('//') ||
+        trimmed.startsWith('*/')
+      );
+    });
+
+    expect(
+      codeLines.filter((line) => /tests\/browser\/playwright[\w.]*\.config\.ts/u.test(line)),
+      `${RUNNER} names a Playwright config in its code. It must not: the config comes from the suite selected on the command line, and a literal here is a gate that runs whatever the literal says regardless of which gate was asked for. Prose in the comments may name configs; code may not.`,
+    ).toEqual([]);
   });
 
   /**
