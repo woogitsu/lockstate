@@ -184,10 +184,17 @@ been designed. That is an ADR, and `AGENTS.md` forbids self-approving one.
 ## 3. The sweep: other authored content with no producer
 
 The class asked for is **content that exists and has nothing to bring it into
-being** — distinct from `agent/632-unreachable-thresholds`'s inventory in
-`docs/research/2026-08-30-what-a-classification-can-reach.md`, which is about
-*values no input can reach* through arithmetic that does run. Nothing here
-overlaps it: no threshold, range or balance constant appears below.
+being** — distinct from the inventory carried by branch
+`agent/632-unreachable-thresholds` (PR #643), *What a classification can
+reach*, which is about **values no input can reach** through arithmetic that
+does run. Nothing here overlaps it: no threshold, range or balance constant
+appears below.
+
+That record is deliberately named rather than linked. It is not on `main` at
+`cd2c7c5`, and `tests/foundation/documentation-links-contract.test.ts` refuses
+a rooted path to a file that is not on disk — correctly, since a pointer to a
+file that is not there is the defect that test exists for. Once the branch
+merges, the link is `./2026-08-30-what-a-classification-can-reach.md`.
 
 ### 3.1 Method
 
