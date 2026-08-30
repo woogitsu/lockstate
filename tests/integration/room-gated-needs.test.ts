@@ -250,8 +250,12 @@ const ROOM_GATED: readonly NeedId[] = ['hygiene', 'recreation'];
  * That distinction is why it cannot simply move to `ROOM_GATED` either. A
  * room-gated need is pinned at **zero** and never rises; this one is pinned at
  * `NEED_MAX` and never falls. Both fail an `everRose` check and they are
- * opposite facts, so `SAFETY_HELD_BY_COVERAGE` asserts the level rather than
- * the movement.
+ * opposite facts, so `safety` is asserted on its **level** rather than on its
+ * movement -- `expect(watched.lowest.safety).toBe(NEED_MAX)`, beside an
+ * explicit `everRose.safety` of `false`, in each case below. (This paragraph
+ * named a `SAFETY_HELD_BY_COVERAGE` constant to sit beside `ROOM_GATED` and
+ * `CELL_SERVED`; it has never existed. `safety` is one need rather than a
+ * list, so it is asserted directly and there is no name to grep for.)
  */
 const CELL_SERVED: readonly NeedId[] = ['hunger', 'sleep', 'bladder'];
 

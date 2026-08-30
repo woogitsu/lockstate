@@ -1419,6 +1419,17 @@ bumped to 2 alongside it — ADR 0003 gives a snapshot its own version for
 exactly this, and a build handed the other shape now faults
 `snapshot-incompatible` instead of restoring a corrupt ledger.
 
+> **That "2" is this section's own history and has not been the live value
+> since 2026-08-23.** `a5ec448` (#50) raised it 1 → 2, which is the change this
+> section narrates; `01536a3` (#70, *"persist the whole prison, not just its
+> terrain and walls"*) raised it 2 → 3 the same day, and
+> `src/simulation/runtime/restore-session.ts:104` has read
+> `export const SESSION_SNAPSHOT_SCHEMA_VERSION = 3;` ever since. The number is
+> left standing rather than swapped because a `## V2:` section describing the
+> bump *it* made is the correct record; what was wrong is that it read as the
+> current value with nothing beside it. Any later section that needs the live
+> figure should read the constant, not this line.
+
 **Cost is now proportional to the structure of liveness** — the number of
 live/dead runs, bounded by the live population — rather than to the
 allocation. A store with no destroys is two runs; churn adds runs. Worst case

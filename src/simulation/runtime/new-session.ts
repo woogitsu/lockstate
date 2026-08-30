@@ -611,6 +611,14 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     placedObjects,
     roomCapacity,
     construction,
+    defaultRoomContentRegistry,
+    // ADR 0076 decision A(i), and the second wiring of the same idea `roomZoning`
+    // above takes: a removal that drops a room's `residentCapacity` below its
+    // occupancy relocates the residents it can no longer sleep, through
+    // `PrisonerOperationsRuntime.relocateExcessResidentsOf`. The catalog is
+    // named explicitly only because it sits between the two -- it is the same
+    // default the parameter already had.
+    prisoners,
   );
 
   // Issue #96's money-first resource model, and the half of its loop that

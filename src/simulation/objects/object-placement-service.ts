@@ -289,6 +289,47 @@ export interface ObjectOrderSink {
   cancelOrder(id: string): void;
 }
 
+/**
+ * What a removal asks when the room it emptied is now housing more residents
+ * than it can sleep ([ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+ * decision A(i)).
+ *
+ * The same shape, for the same reason, as `RoomZoningService`'s
+ * `ResidentRelocationPort`: a narrow port rather than the prisoner runtime
+ * itself, so this module keeps no dependency on classification, cold state or
+ * the accommodation policy beyond the one question it asks.
+ * `PrisonerOperationsRuntime.relocateExcessResidentsOf` implements it, and the
+ * composition root is the only thing that holds both sides.
+ *
+ * **Optional, and absence means ADR 0028 decision 2 unamended.** A fixture
+ * that builds an `ObjectPlacementService` without it gets exactly the
+ * behaviour this service always had -- the object goes, the capacity drops,
+ * and every resident stays where they were. Only a session that wires
+ * `new-session.ts`'s real runtime in relocates anybody.
+ *
+ * **It cannot refuse the removal and is not asked before it.** ADR 0076
+ * records "refusing the removal while a resident depends on the object" as not
+ * taken, for #478's reason: a room could otherwise become permanently
+ * un-editable through ordinary play. So this is called *after* the object has
+ * gone and the capacity has been re-derived -- which is also the only moment
+ * "who is excess" has an answer -- and its result changes nothing about the
+ * outcome the player is handed.
+ */
+export interface ExcessResidentRelocationPort {
+  /**
+   * Moves the residents of `instanceIds` who no longer hold a place that
+   * exists into accommodation that does, best-effort, and reports who moved
+   * and who could not. See
+   * `PrisonerOperationsRuntime.relocateExcessResidentsOf` for what "nowhere to
+   * go" means, why it is not all-or-nothing here, and why the choice of
+   * destination cannot be an unseeded one.
+   */
+  relocateExcessResidentsOf(instanceIds: readonly string[]): {
+    readonly relocated: readonly number[];
+    readonly stranded: readonly number[];
+  };
+}
+
 /** The orientation every placement gets, until a rotate control exists. See `ObjectOrientation`. */
 const DEFAULT_PLACEMENT_ORIENTATION: ObjectOrientation = 0;
 
@@ -305,6 +346,8 @@ export class ObjectPlacementService {
     private readonly resolver: RoomCapacityResolver,
     private readonly orders: ObjectOrderSink,
     private readonly rooms: ContentRegistry<RoomCatalogDefinition> = defaultRoomContentRegistry,
+    /** ADR 0076 decision A(i). Absent in a fixture; wired to the prisoner runtime in a real session. See `ExcessResidentRelocationPort`. */
+    private readonly residentRelocation?: ExcessResidentRelocationPort,
   ) {}
 
   /**
@@ -406,18 +449,34 @@ export class ObjectPlacementService {
    *
    * ## What happens to a room that was occupied or in use
    *
-   * **Nothing is evicted and no claim is touched**, which is ADR 0028 decision
-   * 2 for residents and the same answer extended to the concurrent-use claims
-   * ADR 0029 added after that decision was written. Removal changes a capacity;
-   * it does not reach into anybody's action or anybody's accommodation.
+   * **Nothing is evicted and no *use* claim is touched.** Removal changes a
+   * capacity; it does not reach into anybody's action.
    *
-   * The consequence is a room whose claim count is above its capacity, and it is
-   * a **legal, named state on both collections**:
+   * **The residency half of that sentence was unconditional until
+   * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+   * decision A(i), and it read: "Nothing is evicted and no claim is touched",
+   * for residents and use claims alike.** It is narrowed rather than
+   * withdrawn, in the terms that ADR narrows ADR 0028 decision 2 in. Nobody is
+   * evicted -- nobody is put on the street, and a resident the prison has
+   * nowhere else to put stays exactly where they were, sleeping in a cell with
+   * no bed in it. What changed is that a resident the prison *can* rehouse is
+   * **moved** rather than left: `ExcessResidentRelocationPort` is asked, after
+   * the capacity has been re-derived, to relocate the residents who no longer
+   * hold a place that exists. It cannot refuse this removal and is not
+   * consulted before it.
+   *
+   * So the room whose claim count stands above its capacity is still a
+   * **legal, named state on both collections** -- for use claims always, and
+   * for residency whenever relocation found nowhere to go, which is the branch
+   * ADR 0076 decision A(ii) makes the state stop paying for:
    *
    *  - `assign` refuses at `occupants.size >= residentCapacity` and
    *    `findAvailableResidence` skips a full instance, so the room stops taking
-   *    new residents while the prisoner already living there keeps their
-   *    `accommodationInstanceId` and keeps sleeping.
+   *    new residents -- and a prisoner relocation could not move keeps their
+   *    `accommodationInstanceId` and keeps sleeping there. That the room stops
+   *    taking new residents is what makes it safe to ask for relocation
+   *    afterwards rather than before: it cannot be handed back the resident it
+   *    just gave up.
    *  - `claimUse` refuses at `claims for this capability >= that capability's
    *    ceiling` and `findAvailableForUse` skips at the same comparison, so the
    *    room stops taking new users of the thing that was removed -- and only of
@@ -458,6 +517,7 @@ export class ObjectPlacementService {
       // both untouched by the removal, so this resolves the same room the
       // placement resolved.
       const roomInstanceId = this.resolver.resolveContaining(object.anchorTile);
+      this.relocateResidentsLeftWithoutAPlace(roomInstanceId);
       return {
         kind: 'removed',
         placedObjectId: object.placedObjectId,
@@ -571,8 +631,34 @@ export class ObjectPlacementService {
       return false;
     }
     this.placedObjects.remove(object.placedObjectId);
-    this.resolver.resolveContaining(anchor);
+    this.relocateResidentsLeftWithoutAPlace(this.resolver.resolveContaining(anchor));
     return true;
+  }
+
+  /**
+   * ADR 0076 decision A(i), on the one line both routes out of the world reach.
+   *
+   * **Both**, and that is the decision rather than a convenience.
+   * `RemoveObject` and the `Undo` of a completed object order take the same
+   * bed out of the same room and drop the same `residentCapacity`; a
+   * relocation wired to only one of them would leave a prisoner's cell
+   * depending on which gesture the player used, and it is the *undo* route
+   * that `tests/integration/economy-bed-recycling.test.ts` measures the
+   * recycling loop through. The two commands disagreeing about materials is
+   * decision B and is not this; the two agreeing about residents is this.
+   *
+   * Called after `resolveContaining` and never before it: "who is excess"
+   * is a question about the capacity standing *now*, and before the
+   * re-derivation the room still claims the capacity the object it no longer
+   * has was supplying.
+   *
+   * `undefined` is an object that stood in no room -- legal, and nothing to
+   * ask about. An instance with no excess is an ordinary call that moves
+   * nobody, so the guard here is only the containment one.
+   */
+  private relocateResidentsLeftWithoutAPlace(roomInstanceId: string | undefined): void {
+    if (roomInstanceId === undefined) return;
+    this.residentRelocation?.relocateExcessResidentsOf([roomInstanceId]);
   }
 
   /**
