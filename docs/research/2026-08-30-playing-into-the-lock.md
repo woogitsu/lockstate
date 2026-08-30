@@ -165,3 +165,126 @@ A probe that counts them cannot tell a warning from a wall, so the descent
 captures the visible-line set at the moment the wall tool is armed and reports
 only the lines that were **not** in it, discarding the bare-number line so that
 the counter counting does not read as the game speaking.
+
+## 1. The descent reproduces, to the segment — and the wall-clock figure beside it does not
+
+**MEASURED.** The treasury falls by exactly 80 on every segment and the floor is
+where [#641](https://github.com/matmaxalez/lockstate/issues/641) and
+[`2026-08-30-a-wall-that-buys-itself.md`](./2026-08-30-a-wall-that-buys-itself.md)
+§4 put it. Run A, three consecutive drags across the bottom:
+
+```
+[L1 +133.9s] drag 23 (column 20): +12 -> 301 segment(s); treasury=1880 ... fundsChip="1,880 FUNDS" tone=null; newOnScreen=["95%","Saved (generation gen-mtg4mnn9-5).","Queued","255 waiting · 1 being built"]
+[L1 +139.2s] drag 24 (column 21): +12 -> 313 segment(s); treasury=920  ... fundsChip="920 FUNDS"   tone=null; newOnScreen=["99%","Saved (generation gen-mtg4mnn9-5).","Queued","265 waiting · 1 being built"]
+[L1 +144.6s] drag 25 (column 22): +12 -> 325 segment(s); treasury=40   ... fundsChip="40 FUNDS"    tone=null; newOnScreen=["4%","The materials were not ordered — there are not enough funds.", ... ,"Waiting for 80 to buy materials."]
+```
+
+**312 funded, 40 left**: `25,000 − 40 = 24,960 = 312 × 80`, and the strip agreed
+— `40 | FUNDS`.
+
+**This pass's own segment number is 325 and the true one is 313, and the
+difference is this file's instrument rather than the game.** Both the treasury
+and the refusal band are read from worker publications
+(`simulation/status-counts` is skipped entirely when the payload equals the last
+one, `src/simulation/worker/status-counts.ts`), so a dump taken 150 ms after a
+drag can answer from before it — visible above, where drag 24 reports 920 for a
+prison that had already spent down to 40. §4's detector broke out of its loop
+*inside* the run that crossed the line and got 313; this one samples after each
+whole drag and attributed the same event to the next one. **313 is the number.**
+
+**The 24-drag count reproduces; the "six and a half minutes" beside it does
+not.** §4 records *"24 separate drags across rows **and** columns, six and a
+half minutes of continuous dragging"*. Run A reached the same place in **25
+order-producing drags** — the extra one is the sampling artifact above — and
+took **145 seconds** from the first drag to the refusal, on a machine whose load
+average had fallen to 3.1. §4's own runs were taken with other agents holding
+browser suites throughout, and that record says so and says which of its figures
+are ticks rather than milliseconds. So: **the gesture count is a property of the
+game and reproduces; the duration was a property of the machine.** Marked in
+both directions rather than replacing it, and it is this document's weakest
+claim (§9).
+
+## 2. Nothing warns them. The first sentence about money arrives *after* the money is gone
+
+**MEASURED, and this is the answer to the brief's first question.**
+
+Across every one of the 24 drags that spent the treasury from 25,000 down to
+40, the set of lines newly on screen was:
+
+- the in-game day's progress percentage (`4%`, `7%`, `10%` … `99%`),
+- the autosave notice (`Saved (generation gen-mtg4l9ls-3).`),
+- the Queued fold's header and its count (`Queued`, `129 waiting · 1 being built`).
+
+**Nothing else. In particular, nothing about money at any balance.** The first
+new sentence about money in the whole session:
+
+```
+[L1 +144.6s] THE FIRST NEW SENTENCE ABOUT MONEY arrived at segment 325, treasury 40:
+  "The materials were not ordered — there are not enough funds. | Waiting for 80 to buy materials."
+```
+
+That is the **first press the prison could not pay for**. Every sentence the
+game has about the state of the player's money arrives on the press *after* the
+last one it could afford.
+
+### 2a. The one number that is always there never changes its appearance
+
+**MEASURED**, on every drag, at every balance: `tone=null`. The Funds chip reads
+`25,000 FUNDS` at the top and `40 FUNDS` at the bottom and is drawn identically.
+
+**VERIFIED, read**, and it is deliberate: `src/ui/hud/projection.ts:400-438`
+builds the `funds` descriptor with `tone: undefined`, and `createStatChip`
+deletes the attribute for `undefined` (`src/ui/primitives/stat-chip.ts:51`). The
+comment beside it gives the reason, and half of that reason is sound and the
+owner's — *"'Low on money' is a threshold, and a threshold is a balance
+decision"*, which ADR 0017 decision 5 reserves to
+[#29](https://github.com/matmaxalez/lockstate/issues/29).
+
+**The other half had expired and is corrected on this branch.** It argued that
+the slope ran the wrong way for a warning, because the state pays in once a day
+while the treasury had no outgoing side at all. That was written on 2026-08-25
+in `4f711d5` (#311) and was falsified twice: `916ac46` (#455) made wages
+recurring, and `a87b0d3` (#640) made a wall order buy its own materials.
+`git merge-base --is-ancestor 4f711d5 916ac46` holds, so the sentence predated
+the first thing that falsified it rather than having been wrong when written.
+
+**The class, not the instance.** The sibling assertion in
+`tests/foundation/documentation-claims-contract.test.ts` already pinned the
+*income* direction of exactly this claim, and its own docblock records that the
+phrase had by then been written wrong twice. The outgoing direction was ungated.
+Gating it found **two** sites, not one — the second is
+`src/simulation/economy/income.ts`, whose 300-per-place payback arithmetic ends
+in a clause written to expire and which had. Both are corrected in both
+directions, and the gate is now the thing that keeps them corrected.
+
+**What is *not* proposed here.** Nothing in this pass says the chip should have
+a tone, and nothing here chooses a number. That is #29's.
+
+### 2b. What the game *does* say, and where — corrected against `2026-08-30-a-wall-that-buys-itself.md` §3
+
+That record, written from `agent/627-just-in-time-materials` at `61dbee8`,
+reported: *"the shortfall figure exists on the wire and reaches no pixel … no
+`src/ui/` module reads it … `HudBuildQueueViewModel` has exactly three
+members."* **True of the tree it measured, and false of what merged.** Both
+directions are kept.
+
+**MEASURED on `main` at v0.0.257**, on the press that ran out:
+
+```
+shortfall line: {"present":true,"hidden":false,"laidOut":true,"text":"Waiting for 1,040 to buy materials."}
+```
+
+**VERIFIED, read**: `hud.build.queue-shortfall` is
+*"Waiting for {total} to buy materials."* (`src/content/default-locale-en.ts:583`),
+`queueShortfall` is appended to the panel body **after** `queueSection.element`
+rather than inside it (`src/ui/hud/build-panel.ts:1520`) with the reason written
+beside it — *"A player who never opens the fold still reads it"* — and it is
+painted from `shown.materialsFunding.shortfallMinorUnits`
+(`src/ui/hud/build-panel.ts:1698-1703`). `git log -S` puts both the string and
+the wiring in `a87b0d3`, the merge of #640 itself: the gap was closed during
+that pull request's own review, after the playtest that recorded it.
+
+So at the bottom the player has two sentences and two numbers, both outside any
+fold: **40** on the strip, and *"Waiting for 1,040 to buy materials."* under the
+Build panel's queue. Nothing relates them, and the shortfall is the one that
+moves as the queue is worked (§4).
