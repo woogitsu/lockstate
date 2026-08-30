@@ -63,6 +63,15 @@ const CANDIDATES = [
 /** Principals to price each candidate at. Whether a ceiling exists, and where, is #29's too. */
 const PRINCIPALS = [200, 500, 1_000, 1_500, 2_000];
 
+/**
+ * Which sections to run, as a comma-separated list in
+ * `LOCKSTATE_PRICING_SECTIONS`. All of them by default; a whole run is several
+ * minutes of real kernel ticks, and re-checking one table should not cost the
+ * other six.
+ */
+const SECTIONS = (process.env.LOCKSTATE_PRICING_SECTIONS ?? '1,2,3,4,5,6,7,8').split(',').map((part) => part.trim());
+const wanted = (section) => SECTIONS.includes(section);
+
 const modules = await loadSimulationRuntimeModules();
 const { createNewSimulationRuntime, packCommand, DAY_LENGTH_TICKS, CONSTRUCTION_MATERIALS_CONTAINER_ID } = modules;
 
@@ -212,13 +221,18 @@ function playRecovery({ candidate, principal, plan, seed = 0x692, horizonDays = 
 
   let bedsPlaced = 0;
   let bedsRefused = 0;
+  const bedRefusals = new Set();
   for (let bed = 0; bed < plan.beds; bed += 1) {
     const x = CELL_RECT.x + (bed % CELL_RECT.width);
     const y = CELL_RECT.y + Math.floor(bed / CELL_RECT.width);
-    const before = session.commands;
+    // Reference identity, not a sequence comparison: `RefusalLog` numbers its
+    // own entries, so `refusals.last.sequence` is not the command's. An
+    // earlier version of this line compared the two and reported every bed as
+    // placed, including the ones the cell refused.
+    const before = session.runtime.refusals.last;
     session.send({ type: 'PlaceObject', orderId: session.nextOrderId('bed'), definitionId: 'bed-wooden', x, y });
     const refusal = session.runtime.refusals.last;
-    if (refusal !== undefined && refusal.sequence === before) bedsRefused += 1; else bedsPlaced += 1;
+    if (refusal !== before) { bedsRefused += 1; bedRefusals.add(refusal?.reason ?? 'unknown'); } else bedsPlaced += 1;
   }
   session.step(900);
   const capacity = session.runtime.prisoners.roomInstances.getById(CELL_INSTANCE_ID)?.residentCapacity ?? 0;
@@ -277,6 +291,7 @@ function playRecovery({ candidate, principal, plan, seed = 0x692, horizonDays = 
     zoneRefused: zoned ? null : (zoneRefusal?.reason ?? 'unknown'),
     bedsPlaced,
     bedsRefused,
+    bedRefusals: [...bedRefusals].join(','),
     capacity,
     occupancy: session.occupancy,
     commandsSpent,
@@ -318,86 +333,6 @@ const PLANS = {
 console.log('ADR 0075 decision 2 -- pricing the loan by playing out of the locked position');
 console.log('One in-game day is 2,400 ticks. Every figure below comes from a real kernel run.\n');
 
-console.log('## 1. The locked position, reproduced\n');
-{
-  const probe = new Session(0x692, undefined);
-  const { unfunded } = buildLockedPosition(probe);
-  const atTheBottom = probe.balance;
-  stepDays(probe, 20);
-  console.log(`  312 wall orders funded, ${String(unfunded.length)} left unfunded behind them.`);
-  console.log(`  balance at the last funded segment: ${String(atTheBottom)}`);
-  console.log(`  balance twenty in-game days later, nothing pressed: ${String(probe.balance)}`);
-  console.log(`  bricks in the container: ${String(probe.bricks)}`);
-  const states = {};
-  for (const order of probe.runtime.construction.snapshot().orders) states[order.state] = (states[order.state] ?? 0) + 1;
-  console.log(`  build order states: ${JSON.stringify(states)}`);
-  const plank = probe.send({ type: 'PurchaseMaterials', orderId: 'plank', itemId: 'item.wood-plank', quantity: 1 });
-  console.log(`  buying one plank: ${String(plank?.reason)}; balance ${String(probe.balance)}\n`);
-}
-
-console.log('## 2. Every candidate, minimum plan (one bed, the wall queue left standing)\n');
-const minimumRows = [];
-for (const candidate of CANDIDATES) {
-  for (const principal of PRINCIPALS) {
-    minimumRows.push(playRecovery({ candidate, principal, plan: PLANS.minimum }));
-  }
-}
-table(minimumRows, [
-  { label: 'candidate', value: (row) => row.candidate },
-  { label: 'principal', value: (row) => row.principal },
-  { label: 'fee', value: (row) => row.fee },
-  { label: 'owed', value: (row) => row.totalOwed },
-  { label: 'cash after draw', value: (row) => row.balanceAfterDraw },
-  { label: 'zone refused', value: (row) => row.zoneRefused },
-  { label: 'capacity', value: (row) => row.capacity },
-  { label: 'housed day', value: (row) => row.dayHoused },
-  { label: 'out of lock day', value: (row) => row.dayOutOfTheLock },
-  { label: 'debt cleared day', value: (row) => row.dayDebtCleared },
-  { label: 'escalated day', value: (row) => row.escalationDay },
-  { label: 'final balance', value: (row) => row.finalBalance },
-]);
-
-console.log('\n## 3. Every candidate, cancelling the unfunded tail first\n');
-const cancelledRows = [];
-for (const candidate of CANDIDATES) {
-  for (const principal of PRINCIPALS) {
-    cancelledRows.push(playRecovery({ candidate, principal, plan: PLANS.minimumCancelled }));
-  }
-}
-table(cancelledRows, [
-  { label: 'candidate', value: (row) => row.candidate },
-  { label: 'principal', value: (row) => row.principal },
-  { label: 'cancels', value: (row) => row.cancelPresses },
-  { label: 'owed', value: (row) => row.totalOwed },
-  { label: 'capacity', value: (row) => row.capacity },
-  { label: 'housed day', value: (row) => row.dayHoused },
-  { label: 'out of lock day', value: (row) => row.dayOutOfTheLock },
-  { label: 'debt cleared day', value: (row) => row.dayDebtCleared },
-  { label: 'escalated day', value: (row) => row.escalationDay },
-  { label: 'diverted', value: (row) => row.diverted },
-  { label: 'final balance', value: (row) => row.finalBalance },
-]);
-
-console.log('\n## 4. The capacity plan: the player fills the cell rather than putting one bed in it\n');
-const capacityRows = [];
-for (const candidate of CANDIDATES) {
-  capacityRows.push(playRecovery({ candidate, principal: 1_500, plan: PLANS.capacity }));
-}
-table(capacityRows, [
-  { label: 'candidate', value: (row) => row.candidate },
-  { label: 'principal', value: (row) => row.principal },
-  { label: 'owed', value: (row) => row.totalOwed },
-  { label: 'beds placed', value: (row) => row.bedsPlaced },
-  { label: 'beds refused', value: (row) => row.bedsRefused },
-  { label: 'capacity', value: (row) => row.capacity },
-  { label: 'occupancy', value: (row) => row.occupancy },
-  { label: 'commands', value: (row) => row.commandsSpent },
-  { label: 'housed day', value: (row) => row.dayHoused },
-  { label: 'debt cleared day', value: (row) => row.dayDebtCleared },
-  { label: 'idle days', value: (row) => row.idleDays },
-  { label: 'final balance', value: (row) => row.finalBalance },
-]);
-
 /**
  * The other reachable position ADR 0075 names, and the one its fear is about:
  * a prison walked below a plank by **a charge it cannot decline**.
@@ -408,7 +343,7 @@ table(capacityRows, [
  * ADR 0075's own: *"wages exceed every income line, the balance falls for
  * ever … a hard-lock again, only slower, and dressed as a mechanic."*
  */
-function playStaffedRecovery({ candidate, principal, guards, drainFirst, seed = 0x692, horizonDays = 120 }) {
+function playStaffedRecovery({ candidate, principal, guards, drainFirst, cancelBacklog = false, seed = 0x692, horizonDays = 120 }) {
   const terms = {
     diversionRateBasisPoints: candidate.diversion,
     feeRateBasisPoints: candidate.fee,
@@ -424,8 +359,21 @@ function playStaffedRecovery({ candidate, principal, guards, drainFirst, seed = 
   // press -- ADR 0075's payroll route, to the minor unit.
   const reserve = 80 * guards * 4;
   const segments = Math.floor((25_000 - reserve) / 80);
+  /*
+   * The nine orders that are the cell's own perimeter are remembered, because
+   * `cancelBacklog` below must not sweep them away. **An earlier version of
+   * this function did**, and the four rows it produced said every candidate
+   * failed: construction does not work the queue strictly in order, so only
+   * three of the nine ring segments had been built when the sweep ran and the
+   * other six were cancelled with the rest -- leaving a rectangle that could
+   * never be enclosed however much money arrived. That was the instrument and
+   * not the game, and it is recorded here rather than quietly fixed.
+   */
+  const ringOrderIds = new Set();
   for (let index = 0; index < segments; index += 1) {
-    session.send({ type: 'PlaceBuildOrder', orderId: session.nextOrderId('wall'), definitionId: 'wall-brick', ...order[index] });
+    const orderId = session.nextOrderId('wall');
+    if (index < ring.length - 1) ringOrderIds.add(orderId);
+    session.send({ type: 'PlaceBuildOrder', orderId, definitionId: 'wall-brick', ...order[index] });
   }
   /*
    * `drainFirst` decides whether the 300-odd wall orders are standing when the
@@ -448,6 +396,21 @@ function playStaffedRecovery({ candidate, principal, guards, drainFirst, seed = 
   const startTick = session.tick;
   const dayOf = (tick) => (tick - startTick) / DAY_LENGTH_TICKS;
 
+  /*
+   * The press a player has that the plan above does not use, measured because
+   * a position is only unrecoverable once the controls the game *does* offer
+   * have been tried: `CancelBuildOrder` clears the backlog the rescue order
+   * would otherwise queue behind.
+   */
+  let backlogCancelled = 0;
+  if (cancelBacklog) {
+    for (const order of session.runtime.construction.snapshot().orders) {
+      if (order.state === 'completed' || order.state === 'failed') continue;
+      if (ringOrderIds.has(order.id)) continue;
+      session.send({ type: 'CancelBuildOrder', orderId: order.id });
+      backlogCancelled += 1;
+    }
+  }
   session.runtime.loans.draw(principal, session.tick);
   session.send({ type: 'PlaceBuildOrder', orderId: 'door', definitionId: 'door-wooden', ...doorway });
   session.step(600);
@@ -481,6 +444,7 @@ function playStaffedRecovery({ candidate, principal, guards, drainFirst, seed = 
     candidate: candidate.name,
     guards,
     drainFirst,
+    backlogCancelled,
     principal,
     beforeHire,
     afterHire,
@@ -509,59 +473,177 @@ function playStalledRecovery({ candidate, principal, seed = 0x692, horizonDays =
   return { ...playRecovery({ candidate, principal, plan: PLANS.minimumCancelled, seed, horizonDays }), durationDays: candidate.durationDays };
 }
 
-console.log('\n## 5. The control: no loan at all, only a balance allowed to go negative\n');
-const controlRows = [];
-for (const principal of [200, 1_500]) {
-  controlRows.push(playRecovery({ candidate: CANDIDATES[2], principal, plan: PLANS.capacity, useLoan: false }));
-}
-table(controlRows, [
-  { label: 'overdraft room', value: (row) => row.principal },
-  { label: 'cash after', value: (row) => row.balanceAfterDraw },
-  { label: 'capacity', value: (row) => row.capacity },
-  { label: 'housed day', value: (row) => row.dayHoused },
-  { label: 'out of lock day', value: (row) => row.dayOutOfTheLock },
-  { label: 'final balance', value: (row) => row.finalBalance },
-]);
-
-
-console.log('\n## 6. The payroll route: a prison walked under by a charge it cannot decline\n');
-const staffedRows = [];
-for (const drainFirst of [false, true]) {
-  for (const guards of [1, 3, 5]) {
-    for (const candidate of [CANDIDATES[0], CANDIDATES[2], CANDIDATES[4]]) {
-      staffedRows.push(playStaffedRecovery({ candidate, principal: 1_500, guards, drainFirst }));
-    }
+if (wanted('1')) {
+  console.log('## 1. The locked position, reproduced\n');
+  {
+    const probe = new Session(0x692, undefined);
+    const { unfunded } = buildLockedPosition(probe);
+    const atTheBottom = probe.balance;
+    stepDays(probe, 20);
+    console.log(`  312 wall orders funded, ${String(unfunded.length)} left unfunded behind them.`);
+    console.log(`  balance at the last funded segment: ${String(atTheBottom)}`);
+    console.log(`  balance twenty in-game days later, nothing pressed: ${String(probe.balance)}`);
+    console.log(`  bricks in the container: ${String(probe.bricks)}`);
+    const states = {};
+    for (const order of probe.runtime.construction.snapshot().orders) states[order.state] = (states[order.state] ?? 0) + 1;
+    console.log(`  build order states: ${JSON.stringify(states)}`);
+    const plank = probe.send({ type: 'PurchaseMaterials', orderId: 'plank', itemId: 'item.wood-plank', quantity: 1 });
+    console.log(`  buying one plank: ${String(plank?.reason)}; balance ${String(probe.balance)}\n`);
   }
 }
-table(staffedRows, [
-  { label: 'backlog drained', value: (row) => row.drainFirst },
-  { label: 'candidate', value: (row) => row.candidate },
-  { label: 'guards', value: (row) => row.guards },
-  { label: 'wage bill/day', value: (row) => row.wageBill },
-  { label: 'walked to', value: (row) => row.walkedTo },
-  { label: 'arrears before loan', value: (row) => row.arrearsBeforeLoan },
-  { label: 'capacity', value: (row) => row.capacity },
-  { label: 'occupancy', value: (row) => row.occupancy },
-  { label: 'min balance', value: (row) => row.minBalance },
-  { label: 'debt cleared day', value: (row) => row.dayDebtCleared },
-  { label: 'escalated day', value: (row) => row.escalationDay },
-  { label: 'arrears after', value: (row) => row.arrears },
-  { label: 'final balance', value: (row) => row.finalBalance },
-]);
 
-console.log('\n## 7. Does the maximum duration ever bite? The prison that borrows big and builds one bed\n');
-const stalledRows = [];
-for (const candidate of CANDIDATES) {
-  stalledRows.push(playStalledRecovery({ candidate, principal: 5_000 }));
+if (wanted('2')) {
+  console.log('## 2. Every candidate, minimum plan (one bed, the wall queue left standing)\n');
+  const minimumRows = [];
+  for (const candidate of CANDIDATES) {
+    for (const principal of PRINCIPALS) {
+      minimumRows.push(playRecovery({ candidate, principal, plan: PLANS.minimum }));
+    }
+  }
+  table(minimumRows, [
+    { label: 'candidate', value: (row) => row.candidate },
+    { label: 'principal', value: (row) => row.principal },
+    { label: 'fee', value: (row) => row.fee },
+    { label: 'owed', value: (row) => row.totalOwed },
+    { label: 'cash after draw', value: (row) => row.balanceAfterDraw },
+    { label: 'zone refused', value: (row) => row.zoneRefused },
+    { label: 'capacity', value: (row) => row.capacity },
+    { label: 'housed day', value: (row) => row.dayHoused },
+    { label: 'out of lock day', value: (row) => row.dayOutOfTheLock },
+    { label: 'debt cleared day', value: (row) => row.dayDebtCleared },
+    { label: 'escalated day', value: (row) => row.escalationDay },
+    { label: 'final balance', value: (row) => row.finalBalance },
+  ]);
 }
-table(stalledRows, [
-  { label: 'candidate', value: (row) => row.candidate },
-  { label: 'principal', value: (row) => row.principal },
-  { label: 'owed', value: (row) => row.totalOwed },
-  { label: 'duration (days)', value: (row) => row.durationDays },
-  { label: 'escalated day', value: (row) => row.escalationDay },
-  { label: 'debt cleared day', value: (row) => row.dayDebtCleared },
-  { label: 'final balance', value: (row) => row.finalBalance },
-]);
+
+if (wanted('3')) {
+  console.log('\n## 3. Every candidate, cancelling the unfunded tail first\n');
+  const cancelledRows = [];
+  for (const candidate of CANDIDATES) {
+    for (const principal of PRINCIPALS) {
+      cancelledRows.push(playRecovery({ candidate, principal, plan: PLANS.minimumCancelled }));
+    }
+  }
+  table(cancelledRows, [
+    { label: 'candidate', value: (row) => row.candidate },
+    { label: 'principal', value: (row) => row.principal },
+    { label: 'cancels', value: (row) => row.cancelPresses },
+    { label: 'owed', value: (row) => row.totalOwed },
+    { label: 'capacity', value: (row) => row.capacity },
+    { label: 'housed day', value: (row) => row.dayHoused },
+    { label: 'out of lock day', value: (row) => row.dayOutOfTheLock },
+    { label: 'debt cleared day', value: (row) => row.dayDebtCleared },
+    { label: 'escalated day', value: (row) => row.escalationDay },
+    { label: 'diverted', value: (row) => row.diverted },
+    { label: 'final balance', value: (row) => row.finalBalance },
+  ]);
+}
+
+if (wanted('4')) {
+  console.log('\n## 4. The capacity plan: the player fills the cell rather than putting one bed in it\n');
+  const capacityRows = [];
+  for (const candidate of CANDIDATES) {
+    capacityRows.push(playRecovery({ candidate, principal: 1_500, plan: PLANS.capacity }));
+  }
+  table(capacityRows, [
+    { label: 'candidate', value: (row) => row.candidate },
+    { label: 'principal', value: (row) => row.principal },
+    { label: 'owed', value: (row) => row.totalOwed },
+    { label: 'beds placed', value: (row) => row.bedsPlaced },
+    { label: 'beds refused', value: (row) => row.bedsRefused },
+    { label: 'why refused', value: (row) => row.bedRefusals },
+    { label: 'capacity', value: (row) => row.capacity },
+    { label: 'occupancy', value: (row) => row.occupancy },
+    { label: 'commands', value: (row) => row.commandsSpent },
+    { label: 'housed day', value: (row) => row.dayHoused },
+    { label: 'debt cleared day', value: (row) => row.dayDebtCleared },
+    { label: 'idle days', value: (row) => row.idleDays },
+    { label: 'final balance', value: (row) => row.finalBalance },
+  ]);
+
+}
+
+if (wanted('5')) {
+  console.log('\n## 5. The control: no loan at all, only a balance allowed to go negative\n');
+  const controlRows = [];
+  for (const principal of [200, 1_500]) {
+    controlRows.push(playRecovery({ candidate: CANDIDATES[2], principal, plan: PLANS.capacity, useLoan: false }));
+  }
+  table(controlRows, [
+    { label: 'overdraft room', value: (row) => row.principal },
+    { label: 'cash after', value: (row) => row.balanceAfterDraw },
+    { label: 'capacity', value: (row) => row.capacity },
+    { label: 'housed day', value: (row) => row.dayHoused },
+    { label: 'out of lock day', value: (row) => row.dayOutOfTheLock },
+    { label: 'lowest balance', value: (row) => row.minBalance },
+    { label: 'beds refused', value: (row) => row.bedRefusals },
+    { label: 'final balance', value: (row) => row.finalBalance },
+  ]);
+}
+
+if (wanted('6')) {
+  console.log('\n## 6. The payroll route: a prison walked under by a charge it cannot decline\n');
+  const staffedRows = [];
+  for (const drainFirst of [false, true]) {
+    for (const guards of [1, 3, 5]) {
+      for (const candidate of [CANDIDATES[0], CANDIDATES[2], CANDIDATES[4]]) {
+        staffedRows.push(playStaffedRecovery({ candidate, principal: 1_500, guards, drainFirst }));
+      }
+    }
+  }
+  table(staffedRows, [
+    { label: 'backlog drained', value: (row) => row.drainFirst },
+    { label: 'candidate', value: (row) => row.candidate },
+    { label: 'guards', value: (row) => row.guards },
+    { label: 'wage bill/day', value: (row) => row.wageBill },
+    { label: 'walked to', value: (row) => row.walkedTo },
+    { label: 'arrears before loan', value: (row) => row.arrearsBeforeLoan },
+    { label: 'capacity', value: (row) => row.capacity },
+    { label: 'occupancy', value: (row) => row.occupancy },
+    { label: 'min balance', value: (row) => row.minBalance },
+    { label: 'debt cleared day', value: (row) => row.dayDebtCleared },
+    { label: 'escalated day', value: (row) => row.escalationDay },
+    { label: 'arrears after', value: (row) => row.arrears },
+    { label: 'final balance', value: (row) => row.finalBalance },
+  ]);
+}
+
+if (wanted('8')) {
+  console.log('\n## 8. The payroll route again, with the backlog cancelled first\n');
+  const rescuedRows = [];
+  for (const guards of [1, 5]) {
+    for (const candidate of [CANDIDATES[0], CANDIDATES[4]]) {
+      rescuedRows.push(playStaffedRecovery({ candidate, principal: 1_500, guards, drainFirst: false, cancelBacklog: true }));
+    }
+  }
+  table(rescuedRows, [
+    { label: 'candidate', value: (row) => row.candidate },
+    { label: 'guards', value: (row) => row.guards },
+    { label: 'orders cancelled', value: (row) => row.backlogCancelled },
+    { label: 'capacity', value: (row) => row.capacity },
+    { label: 'occupancy', value: (row) => row.occupancy },
+    { label: 'min balance', value: (row) => row.minBalance },
+    { label: 'debt cleared day', value: (row) => row.dayDebtCleared },
+    { label: 'arrears after', value: (row) => row.arrears },
+    { label: 'final balance', value: (row) => row.finalBalance },
+  ]);
+}
+
+if (wanted('7')) {
+  console.log('\n## 7. Does the maximum duration ever bite? The prison that borrows big and builds one bed\n');
+  const stalledRows = [];
+  for (const candidate of CANDIDATES) {
+    stalledRows.push(playStalledRecovery({ candidate, principal: 5_000 }));
+  }
+  table(stalledRows, [
+    { label: 'candidate', value: (row) => row.candidate },
+    { label: 'principal', value: (row) => row.principal },
+    { label: 'owed', value: (row) => row.totalOwed },
+    { label: 'duration (days)', value: (row) => row.durationDays },
+    { label: 'escalated day', value: (row) => row.escalationDay },
+    { label: 'debt cleared day', value: (row) => row.dayDebtCleared },
+    { label: 'final balance', value: (row) => row.finalBalance },
+  ]);
+}
 
 process.exitCode = 0;
