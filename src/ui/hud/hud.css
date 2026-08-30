@@ -1975,28 +1975,6 @@
     overflow: hidden;
   }
 
-  /* The one `.hud-build__note` that is not clamped, and a measurement decides
-     it rather than taste. `hud.build.note` -- "An order is queued now and built
-     while the clock runs." -- lays out as two lines in the 238px Build panel at
-     900x600, so the rule above delivered `scrollHeight` 26 against
-     `clientHeight` 13: "An order is queued now and built while the…", which is
-     the half saying an order was taken with the half saying nothing happens
-     until the clock runs cut off. Half of this sentence is worse than none of
-     it, because what survives the cut reads as a confirmation -- and a player
-     reading a confirmation while nothing is built is #627 exactly, which is the
-     wall this sentence is being restored to prevent.
-
-     The clamp's own reason is the panel's height budget (#174), and it is paid
-     here in the currency this panel actually has: the Build panel scrolls, so
-     one more 13px line moves the scroll threshold and loses nothing. The
-     sentences that stay clamped are the ones where a clipped line still leaves
-     a usable instruction; this one has its operative clause at the end. */
-  .hud-build__order-note {
-    display: block;
-    -webkit-line-clamp: none;
-    overflow: visible;
-  }
-
   /* The Regime panel's own note, on the same terms and for the same
      four-declaration reason: the empty-roster sentence and the "and N more"
      line are the two that can wrap, and a short viewport is where the roster
