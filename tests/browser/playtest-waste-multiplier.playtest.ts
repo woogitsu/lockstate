@@ -103,13 +103,19 @@ import {
  * is its §4 bottom row, *"cell + guard + yard + shower"*, the cheapest prison
  * measured that pays the full 300 per place-day.
  *
- * **The brief for this run named 2,105 for "a working prison" and that figure
- * appears nowhere in the costing document** — `grep -n '2,105\|2105'` over it
- * returns nothing. 1,995 is used instead, with its source above, and the
- * discrepancy is reported rather than reconciled by guessing.
+ * **2,105 is a third denominator and it is not in the costing document at
+ * all** — `grep -n '2,105\|2105'` over that file returns nothing. It comes
+ * from PR #655's playtest, quoted on
+ * [#641](https://github.com/matmaxalez/lockstate/issues/641#issuecomment-5468683929):
+ * *"a 24-segment perimeter for 1,920, `Designate` on the first press, a bed for
+ * 65, a toilet for 40, two admissions, one guard for 80 — a working prison
+ * costs 2,105 of 25,000"*. `1,920 + 65 + 40 + 80 = 2,105`, so it prices a
+ * **6×6** cell rather than the 2×3 minimum, and it is the right denominator for
+ * a session that drew a 6×6.
  */
 const MINIMUM_VIABLE_PRISON = 890;
 const PROVISIONED_PRISON = 1_995;
+const PLAYED_WORKING_PRISON = 2_105;
 
 /** The floor the costing found the whole session turns on: the price of a plank. */
 const PLANK_PRICE = 65;
@@ -152,9 +158,26 @@ class Session {
     return this.openingBalance;
   }
 
+  /**
+   * The balance, from the **last** `simulation/status-counts` in the tee.
+   *
+   * **Not `latestCounts` from the harness**, and that is a measured cost
+   * rather than a preference: `countsSeries` maps *every* message the tee has
+   * kept, and the tee keeps every `simulation/clock-state` the worker has ever
+   * published. Polling it after each press made a ten-minute run out of a
+   * two-minute one, because the array it serialises across the bridge grows
+   * for the whole session. This scans backwards and stops at the first hit, so
+   * its cost does not depend on how long the session has run.
+   */
   public async treasury(): Promise<number> {
-    const counts = await latestCounts(this.page);
-    return counts?.treasuryMinorUnits ?? -1;
+    return this.page.evaluate(() => {
+      const messages = (window as unknown as { lockstateFromWorker?: unknown[] }).lockstateFromWorker ?? [];
+      for (let index = messages.length - 1; index >= 0; index -= 1) {
+        const message = messages[index] as { kind?: string; payload?: { counts?: Record<string, number> } };
+        if (message.kind === 'simulation/status-counts') return message.payload?.counts?.['treasuryMinorUnits'] ?? -1;
+      }
+      return -1;
+    });
   }
 
   /**
@@ -260,6 +283,7 @@ class Session {
     );
     this.log(
       `MULTIPLIER against the 890 minimum viable prison: ${(ledger.grossDebits / MINIMUM_VIABLE_PRISON).toFixed(2)}x` +
+        ` | against the 2,105 played working prison: ${(ledger.grossDebits / PLAYED_WORKING_PRISON).toFixed(2)}x` +
         ` | against the 1,995 provisioned prison: ${(ledger.grossDebits / PROVISIONED_PRISON).toFixed(2)}x`,
     );
     this.log(`final status strip: ${(await panelText(this.page, '.hud-strip')).replace(/\n/g, ' | ')}`);
@@ -301,6 +325,66 @@ async function traceRectangle(
     await drag(page, run.a, run.b);
   }
   return (await sentCommands(page)).length - before;
+}
+
+/**
+ * Which tiles the mouse can actually reach, asked of the page rather than
+ * assumed.
+ *
+ * **The first run of this file failed on exactly this.** A click aimed at the
+ * canvas at (5, 5) was refused because `.hud-strip` *"intercepts pointer
+ * events"*, and the calibrated origin came back at (-304, -574) -- so tile
+ * (4, 4), which an earlier draft dragged from, is off the top-left of a
+ * 1440x900 viewport entirely. Guessing a safe rectangle would have to be
+ * re-guessed the moment the HUD or the starting camera moves.
+ *
+ * `document.elementFromPoint` answers it exactly: a tile is usable when its
+ * centre hits the world canvas and not a panel. Both ends *and* the midpoint
+ * of a drag are checked, because `drag` moves through the midpoint and a panel
+ * sitting between two reachable tiles would swallow the gesture.
+ */
+async function tileIsReachable(page: Page, origin: { originX: number; originY: number }, tx: number, ty: number): Promise<boolean> {
+  const point = centreOf(origin, tx, ty);
+  return page.evaluate(
+    ([x, y]) => {
+      const element = document.elementFromPoint(x as number, y as number);
+      return element !== null && element.closest('#game-root') !== null && element.tagName === 'CANVAS';
+    },
+    [point.x, point.y],
+  );
+}
+
+/**
+ * The largest tile rectangle the mouse can reach, found by walking out from a
+ * tile known to be reachable.
+ *
+ * The seed is `(700, 300)` in screen pixels, which is where `calibrate`
+ * bisects and therefore a point the harness has already proved is over the
+ * canvas. Walking out along one row and one column is 64 probes rather than
+ * the 1,024 a full sweep would cost, and the HUD is made of rectangles at the
+ * edges, so the answer is the same.
+ *
+ * Clamped to `0..31`: that is the one chunk the starter prison owns, and
+ * nothing outside it can be built on.
+ */
+async function reachableTileWindow(
+  page: Page,
+  origin: { originX: number; originY: number },
+): Promise<{ readonly left: number; readonly right: number; readonly top: number; readonly bottom: number }> {
+  const seedX = Math.max(0, Math.min(31, Math.floor((700 - origin.originX) / TILE)));
+  const seedY = Math.max(0, Math.min(31, Math.floor((300 - origin.originY) / TILE)));
+  if (!(await tileIsReachable(page, origin, seedX, seedY))) {
+    throw new Error(`the seed tile (${seedX},${seedY}) is not over the canvas; the HUD or the camera has moved`);
+  }
+  let left = seedX;
+  let right = seedX;
+  let top = seedY;
+  let bottom = seedY;
+  while (left > 0 && (await tileIsReachable(page, origin, left - 1, seedY))) left -= 1;
+  while (right < 31 && (await tileIsReachable(page, origin, right + 1, seedY))) right += 1;
+  while (top > 0 && (await tileIsReachable(page, origin, seedX, top - 1))) top -= 1;
+  while (bottom < 31 && (await tileIsReachable(page, origin, seedX, bottom + 1))) bottom += 1;
+  return { left, right, top, bottom };
 }
 
 /** Opens a session the way a player opens one: a new prison, then fast forward. */
@@ -380,7 +464,12 @@ test.describe('playtest: the waste multiplier', () => {
 
     for (let index = 0; index < 4; index += 1) {
       await session.press(`Undo (KeyZ) #${index + 1} of the 6x6`, 'undo-geometry', async () => {
-        await page.locator('#game-root canvas').click({ position: { x: 5, y: 5 } });
+        // **No click first.** `world-scene.ts:364` registers the listener on
+        // `window`, so the key needs no canvas focus -- and a click aimed at
+        // the canvas is intercepted by `.hud-strip`, which is what killed the
+        // first run of this file. Blurring is enough, and it is what keeps the
+        // binding out of the `text-entry` context.
+        await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
         await page.keyboard.press('KeyZ');
         return `queue ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`;
       });
@@ -441,38 +530,56 @@ test.describe('playtest: the waste multiplier', () => {
    */
   test('profile B: an abandoned run, a removed bed, an early guard, then the cell', async ({ page }) => {
     const { session, origin } = await startSession(page, 'B/ordinary');
+    const window_ = await reachableTileWindow(page, origin);
+    session.log(`reachable tile window: ${JSON.stringify(window_)}`);
+
+    const strayRow = window_.top + 1;
+    const strayColumn = window_.left + 1;
+    const strayRunEnd = Math.min(window_.right - 1, strayColumn + 10);
+    const strayRunFoot = Math.min(window_.bottom - 1, strayRow + 6);
+    const strayBed = { x: strayColumn + 3, y: strayRow + 3 };
 
     await tab(page, 'build').click();
     await armBuildable(page, 'wall-brick');
 
     // 1. Geometry that encloses nothing, and is then left alone. Two further
     //    gestures follow before any Undo, so it is out of the stack's reach.
-    await session.press('drag one wall run across open ground (encloses nothing)', 'abandoned-geometry', async () => {
+    await session.press(`drag one wall run across open ground, row ${strayRow} (encloses nothing)`, 'abandoned-geometry', async () => {
       const before = (await sentCommands(page)).length;
-      await drag(page, centreOf(origin, 4, 4), centreOf(origin, 15, 4));
+      await drag(page, centreOf(origin, strayColumn, strayRow), centreOf(origin, strayRunEnd, strayRow));
       const produced = (await sentCommands(page)).length - before;
       return `${produced} PlaceBuildOrder command(s)`;
     }, 40);
 
-    await session.press('drag a second run at right angles to it (still encloses nothing)', 'abandoned-geometry', async () => {
+    await session.press(`drag a second run at right angles, column ${strayColumn} (still encloses nothing)`, 'abandoned-geometry', async () => {
       const before = (await sentCommands(page)).length;
-      await drag(page, centreOf(origin, 4, 4), centreOf(origin, 4, 10));
+      await drag(page, centreOf(origin, strayColumn, strayRow), centreOf(origin, strayColumn, strayRunFoot));
       const produced = (await sentCommands(page)).length - before;
       return `${produced} PlaceBuildOrder command(s)`;
     }, 40);
 
-    // 2. A bed placed on open ground, before any room exists, then taken away
-    //    with the Build panel's own Remove control.
+    /*
+     * 2. A bed placed on open ground, before any room exists.
+     *
+     * **Kept, and relabelled `free`, because run 1 measured it costing
+     * nothing.** `ObjectPlacementService` refuses it -- *"The object was not
+     * placed — it has to stand in a room you have zoned."* -- and a refused
+     * placement mints no order, so `JustInTimeMaterialsService` is never asked
+     * and no money leaves. The brief for this pass listed *"objects placed …
+     * before the room existed"* as a shape of waste; it is not one, and the
+     * refusal is what makes it not one. The pair stays in the script so the
+     * empty category keeps its evidence rather than becoming a claim nobody
+     * re-checks.
+     */
     await armBuildable(page, 'bed-wooden');
-    await session.press('place a bed on open ground, before any room exists', 'removed-object', async () => {
-      const point = centreOf(origin, 8, 8);
+    await session.press(`place a bed on open ground at (${strayBed.x},${strayBed.y}), before any room exists`, 'free', async () => {
+      const point = centreOf(origin, strayBed.x, strayBed.y);
       const commands = await press(page, point.x, point.y);
       return `${commands.length} command(s) | band ${await refusal(page)}`;
     });
-    await waitForQueueEmpty(page);
-    await session.press('remove that bed with the Remove control', 'removed-object', async () => {
+    await session.press('press Remove on the tile where that bed is not', 'free', async () => {
       await page.locator('.hud-build__remove').click();
-      const point = centreOf(origin, 8, 8);
+      const point = centreOf(origin, strayBed.x, strayBed.y);
       const commands = await press(page, point.x, point.y);
       await page.locator('.hud-build__remove').click();
       return `${commands.length} command(s) | band ${await refusal(page)}`;
@@ -509,6 +616,38 @@ test.describe('playtest: the waste multiplier', () => {
       const commands = await press(page, point.x, point.y);
       return `${commands.length} command(s)`;
     });
+
+    /*
+     * Second thoughts about where the bed goes -- the one route by which a
+     * player destroys money rather than parking it.
+     *
+     * **This is where the removed-object shape had to move to.** Run 1 put it
+     * on open ground and measured a refusal costing nothing; a standing object
+     * needs a zoned room to stand in. `ObjectPlacementService.remove` deletes
+     * the object from `PlacedObjectRegistry` and never touches the order
+     * (`object-placement-service.ts:448,453`), so `materialsAllocated` is never
+     * released and the plank is gone -- which the Build panel's own
+     * `hud.build.remove-hint` states: *"One still being built is cancelled and
+     * its materials come back; a finished one is not refunded."*
+     *
+     * So the wait matters: it is what makes this the finished case rather than
+     * the cancelled one.
+     */
+    await waitForQueueEmpty(page);
+    await session.press('remove the finished bed, having changed your mind about the tile', 'removed-object', async () => {
+      await page.locator('.hud-build__remove').click();
+      const point = centreOf(origin, 12, 12);
+      const commands = await press(page, point.x, point.y);
+      await page.locator('.hud-build__remove').click();
+      return `${commands.length} command(s) | band ${await refusal(page)}`;
+    });
+    await armBuildable(page, 'bed-wooden');
+    await session.press('place the bed again, one tile over', 'build', async () => {
+      const point = centreOf(origin, 12, 13);
+      const commands = await press(page, point.x, point.y);
+      return `${commands.length} command(s) | band ${await refusal(page)}`;
+    });
+
     await armBuildable(page, 'toilet-brick');
     await session.press('place a toilet inside the cell', 'build', async () => {
       const point = centreOf(origin, 13, 14);
@@ -551,16 +690,47 @@ test.describe('playtest: the waste multiplier', () => {
     await tab(page, 'build').click();
     await armBuildable(page, 'wall-brick');
 
+    const window_ = await reachableTileWindow(page, origin);
+    session.log(`reachable tile window: ${JSON.stringify(window_)}`);
+
     let segments = 0;
     let lowest = await session.treasury();
-    // Rows first, then columns, so every drag lands on edges no earlier drag
-    // claimed. Bounded at 40 gestures: the point is where the balance goes, and
-    // a run that buys nothing has already answered the question.
+    // Rows first, then columns, so every drag lands on tile edges no earlier
+    // drag claimed. The window is what the mouse can reach without the camera
+    // moving; a player who wants more wall pans, and that is a different
+    // gesture from the one being priced here.
     const gestures: { readonly from: [number, number]; readonly to: [number, number] }[] = [];
-    for (let row = 1; row <= 13; row += 1) gestures.push({ from: [2, row], to: [19, row] });
-    for (let column = 2; column <= 19; column += 1) gestures.push({ from: [column, 1], to: [column, 13] });
+    for (let row = window_.top; row <= window_.bottom; row += 1) gestures.push({ from: [window_.left, row], to: [window_.right, row] });
+    for (let column = window_.left; column <= window_.right; column += 1) gestures.push({ from: [column, window_.top], to: [column, window_.bottom] });
 
+    /*
+     * **Every gesture's own ends are re-checked, and this is a correction to
+     * run 1 rather than caution.**
+     *
+     * `reachableTileWindow` answers with a *rectangle*, found by walking one
+     * row and one column out from the seed. The HUD is not a rectangle: run 1's
+     * eighth drag started at tile (5, 17) -- screen x = 48, inside the left
+     * rail -- and produced **0 `PlaceBuildOrder` commands** while the Build
+     * panel's own WHERE readout still said `22, 17 · North`, because the
+     * mousedown never reached the canvas. The run stopped there and reported
+     * *"a drag bought nothing"*, which would have read as a game refusal and is
+     * nothing of the kind.
+     *
+     * So a gesture whose ends are not both over the canvas is skipped, and a
+     * drag that buys nothing is counted rather than treated as the end: only a
+     * run of three consecutive silent drags ends the probe, and the balance
+     * falling below the plank floor ends it immediately, which is the thing
+     * being looked for.
+     */
+    let silentDrags = 0;
     for (const [index, gesture] of gestures.entries()) {
+      const bothEndsReachable =
+        (await tileIsReachable(page, origin, gesture.from[0], gesture.from[1])) &&
+        (await tileIsReachable(page, origin, gesture.to[0], gesture.to[1]));
+      if (!bothEndsReachable) {
+        session.log(`skipping drag ${index + 1}: (${gesture.from.join(',')}) -> (${gesture.to.join(',')}) is not both over the canvas`);
+        continue;
+      }
       const action = await session.press(
         `wall drag ${index + 1}: (${gesture.from.join(',')}) -> (${gesture.to.join(',')})`,
         'abandoned-geometry',
@@ -579,9 +749,15 @@ test.describe('playtest: the waste multiplier', () => {
         session.log(`*** the balance is below the ${PLANK_PRICE} plank floor after ${segments} segments: ${now}`);
         break;
       }
-      if (now === action.treasuryBefore && index > 2) {
-        session.log(`*** a drag bought nothing: balance still ${now} after ${segments} segments`);
-        break;
+      if (now === action.treasuryBefore) {
+        silentDrags += 1;
+        session.log(`*** drag ${index + 1} bought nothing: balance still ${now} after ${segments} segments (${silentDrags} in a row)`);
+        if (silentDrags >= 3) {
+          session.log(`*** three silent drags in a row; stopping at ${segments} segments and ${now}`);
+          break;
+        }
+      } else {
+        silentDrags = 0;
       }
     }
 
