@@ -65,3 +65,114 @@ Two runs of the same script on the same commit, both pasted:
 ---
 
 *(Sections 1–7 follow; measurements from the two runs are pasted in place.)*
+
+## 2. Nothing on screen says how long a prisoner is staying, and nothing ever did
+
+**VERIFIED, code.** Exactly one read model carries a sentence:
+`PrisonerDetailViewModel.sentence` — `lengthTicks`, `endTick`,
+`priorIncidentsAtIntake` — at
+`src/simulation/presentation/prisoner-projection.ts:214-219`. It travels on the
+`hud/prisoner-detail` channel, and that channel is pinned as having **no
+reader** by a contract test, in its own words
+(`tests/foundation/projection-reachability-contract.test.ts:317-318`):
+
+> No reader in `src/ui/` or `src/rendering/`. Blocked on a selection model that
+> does not exist yet […] "there is no selection state, no highlight and no
+> inspector."
+
+The roster row that *is* rendered carries no sentence field at all:
+`PrisonerRosterRowViewModel` (`prisoner-projection.ts:169-188`) has
+`intakeStage`, `classified`, `classificationGroupId`, `riskTier`, `tile`,
+`actionPhase`, `currentActionId`, `accommodation`, `gangId`, `lowestNeed` — and
+nothing else.
+
+**VERIFIED, Run A.** So the confirmation the brief asked for is a negative, and
+here is what the negative looks like from the chair. Twelve prisoners, admitted
+by tick 7,142, in-game day 3. The Regime panel's roster block, whole:
+
+```
+[act3] roster at admission:
+PRISONERS
+4 of 12
+Ines Xavier
+Sleeping
+Safety
+Low
+Malik Pereira
+Sleeping
+Safety
+Minimal
+Rosa Kowal
+Sleeping
+Safety
+Low
+Omar Rossi
+Sleeping
+Safety
+Minimal
+and 8 more
+```
+
+A name, what they are doing, their worst need, and a risk tier. Four rows of
+twelve, because `PRISONER_ROSTER_ROW_LIMIT` is 4
+(`src/ui/hud/regime-panel.ts:156`). **No sentence, no release date, no elapsed
+time, no "day 41 of 68".**
+
+The vocabulary sweep over the whole visible HUD at that moment — every word a
+player would need to see for a sentence to be on screen at all — is in §6.
+
+**What that costs is a change of kind, not of degree.** Under the old range the
+whole thing a player could not see lasted 4 to 32 real minutes. It now lasts
+**28 real minutes to 3 real hours** at ×1, which is longer than a session. A
+player looking at a full prison has no way to find out whether a bed frees in
+ten minutes or in two hours, and the game offers no control that would tell
+them: `hud/prisoner-detail` is the answer and nothing asks it.
+
+**The one shipped sentence that mentions a sentence at all arrives when it is
+over.** `hud.alert.event.prisoners.discharged` is
+*"{count} released — their sentences are served."*
+(`src/content/default-locale-en.ts:437`), recorded by
+`PrisonerDischargeSystem` at `src/simulation/prisoners/discharge-system.ts:231`
+and rendered on the `.hud__event` band. That is the first and only moment the
+word appears.
+
+**This is reported, not fixed.** Every route out needs player-facing copy, and
+`AGENTS.md` reserves that to the owner: *"Anything that reaches a player as a
+promise the code does not keep"* is the fourth exclusion, and a locale key with
+no implementation behind it is the defect it names. Where it belongs is not in
+doubt — the roster row is the surface, `PrisonerRosterRowViewModel` is the shape
+that would have to carry it, and `hud/prisoner-roster` is the channel — but the
+words are the owner's.
+
+## 3. 97% of prisoners now get reviewed, and a review reaches the player as nothing at all
+
+**VERIFIED, code.** `SIMULATION_EVENT_TYPES` has **eight** members
+(`src/simulation/protocol/types.ts:1385-1394`), and they are the whole of what
+can reach the alerts list or the event band, each with a label key and a
+severity in `EVENT_PRESENTATION` (`src/ui/simulation-events.ts:127-144`):
+`economy.wages-unpaid`,
+`incidents.all-clear`, `incidents.assault-opened`,
+`incidents.escape-attempt-opened`, `incidents.gang-retaliation-opened`,
+`incidents.riot-opened`, `prisoners.discharged`, `prisoners.relocated`. **None
+of them is a classification review**, and `ClassificationReviewSystem`
+(`src/simulation/prisoners/classification-review-system.ts`) calls nothing on
+`SimulationEventLog`: `grep -n "events\.\|SimulationEventLog"` over that file
+returns no lines at all.
+
+So the only surface a review can move is the **risk-tier badge on a roster
+row**: `standingLabelKey` is `deriveSimulationMessageKey('risk-tier', riskTier)`
+once `classified` is true (`src/ui/simulation-prisoner-roster.ts:133-136`), and
+the tier words are `Minimal | Low | Medium | High`
+(`src/content/simulation-message-keys.ts:225`). A promotion changes one word on
+one row — for at most four prisoners, silently, between two 500 ms repaints,
+with no history and no notification.
+
+ADR 0079 measures what #659 turned on: a first review goes from **14.00% to
+97.27%** of prisoners and a second from **0% to 85.06%**, with mean reviews per
+prisoner from 0.14 to 4.20. That is a mechanic that was effectively dead and is
+now the ordinary case. **Its entire player-visible footprint is a word that
+changes when nobody is looking at it**, and only if that prisoner happens to be
+one of the four rows the roster draws.
+
+**Reported, not fixed**, for §2's reason: the missing thing is a sentence
+addressed to a player, and that is the owner's.
