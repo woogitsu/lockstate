@@ -27,6 +27,34 @@ Lockstate.io is a long-lived browser simulation project. Optimize for architectu
 9. Pathfinding must be budgeted and hierarchical. Never run unrestricted full-map A* per agent per frame.
 10. Input must support remapping, QWERTY/AZERTY and touch/pointer interaction.
 
+## Where to start
+
+Find the subsystem before reading anything else. Each line is *first code path;
+tests that already cover it; the document that governs it.* If a change spans
+two lines, it probably crosses a boundary listed above — say so in the PR.
+
+- **Simulation kernel, tick order, RNG streams** — `src/simulation/kernel/`, `src/simulation/rng/`; `tests/determinism/`; `docs/DETERMINISM.md`, `docs/ARCHITECTURE.md`.
+- **Clock, day length, speed** — `src/simulation/clock/`; `tests/determinism/`; `docs/DETERMINISM.md`.
+- **Prisoners, needs, jobs, regime** — `src/simulation/prisoners/`, `src/simulation/operations/`; `tests/integration/`; `docs/PRISONER_OPERATIONS.md`.
+- **Staff, wages, payroll** — `src/simulation/staff/`, `src/simulation/economy/`; `tests/integration/economy-*.test.ts`; `docs/OPERATIONS.md`.
+- **Economy, procurement, build orders** — `src/simulation/economy/`, `src/simulation/construction/`; `tests/integration/economy-*.test.ts`; ADR 0017, ADR 0075.
+- **Incidents, escapes, contraband, security** — `src/simulation/incidents/`, `src/simulation/security/`, `src/simulation/contraband/`; `tests/integration/incident*.test.ts`; `docs/INCIDENTS.md`, `docs/SECURITY.md`, `docs/CONTRABAND.md`.
+- **World, rooms, objects** — `src/simulation/world/`, `src/simulation/rooms/`, `src/simulation/objects/`; `tests/integration/`; `docs/WORLD.md`.
+- **Pathfinding and movement** — `src/simulation/navigation/`, `src/simulation/locomotion/`; `benchmarks/scenarios/`; `docs/NAVIGATION.md`.
+- **Worker messaging and protocol** — `src/simulation/protocol/`, `src/simulation/worker/`; `tests/contract/`; `docs/ARCHITECTURE.md`, ADR 0006, ADR 0024.
+- **Persistence and save format** — `src/persistence/`; `tests/migrations/`, `tests/contract/`; `docs/PERSISTENCE.md`, ADR 0038.
+- **Cloud save and SQL** — `src/persistence/cloud/`, `supabase/`; `pnpm verify:sql`; `docs/CLOUD_SAVE.md`, `docs/TRUSTED_SERVICES.md`. `supabase/migrations/` is the owner's.
+- **Rendering** — `src/rendering/`; `tests/browser/`; `docs/RENDERING.md`.
+- **HUD, panels, projections** — `src/ui/`, `src/simulation/presentation/`; `tests/unit/ui-*.test.ts`, `tests/browser/`; `docs/HUD_PROJECTIONS.md`.
+- **Input and controls** — `src/input/`; `tests/browser/`; `docs/INPUT.md`.
+- **Player-visible text** — `src/content/`, `src/services/localization/`; `tests/foundation/localization-*.test.ts`; `docs/CONTENT.md`, `docs/LOCALIZATION.md`. New player-facing wording is the owner's (see below).
+- **Performance** — `benchmarks/`, `tests/perf/`; `pnpm verify:benchmark`; `docs/BENCHMARKING.md`. Record before *and* after.
+- **Deployment and hosting** — `docs/DEPLOYMENT.md`; `pnpm verify:deployment`. Configuration there is the owner's.
+
+Repository-wide rules that no single subsystem owns live in `tests/foundation/`;
+that directory is where a gate goes when the invariant is about the repository
+rather than the game.
+
 ## How this work is carried out
 `docs/AGENT_WORKFLOW.md` is the operating *method* that accompanies this
 contract: how work is picked up between sessions, how it is split across several
@@ -106,6 +134,55 @@ Before completion:
 - Include performance evidence for performance-sensitive systems.
 - Do not silently broaden scope.
 
+## Reading the repository
+
+Search first, read narrowly second, read a whole large file only when the
+evidence asks for it. The order that works here: find the symbol, open the
+source file around it, open the test that already pins it, widen only when what
+you found does not explain what you are seeing.
+
+None of this licenses a shallow answer. Architecture work legitimately reads
+whole files and whole subsystems, and the mandate above is explicit that cost is
+not a constraint. The rule is against reading that buys nothing: opening a large
+file to "get oriented" rather than to answer a question, pasting a whole log or
+a generated artifact when the failing lines would do, scanning a subsystem the
+change does not touch, or walking git history with no claim to establish. Every
+one of those is answerable with a search.
+
+## Running the checks while you work
+
+`pnpm verify` — typecheck, the full suite and the production build — is the
+gate at completion and is not negotiable. It is not the command to run after
+every edit, and the ladder below is measured on this repository, at v0.0.262:
+
+- **One test file** — `pnpm exec vitest run tests/unit/<file>.test.ts` — 0.8 s.
+- **One directory** — `pnpm exec vitest run tests/determinism` — 7.5 s.
+- **The suite** — `pnpm test` — 62 s over 349 files.
+- **The gate** — `pnpm verify`, plus whatever the changed subsystem requires:
+  `pnpm test:browser` for anything a player clicks, `pnpm verify:benchmark` for
+  a performance-sensitive path, `pnpm verify:sql` for `supabase/`,
+  `pnpm verify:assets` for the runtime atlases.
+
+Work at the smallest rung that can fail for the reason you care about, and climb
+when the change stops being local. A full run after a two-line edit is 80 times
+the wait for the same information.
+
+**Mutation proof sits on the bottom rung, not the top.** "A green suite is not a
+guarded suite" (`docs/AGENT_WORKFLOW.md` §3) requires the production code to be
+mutated and the test watched going red — against the *targeted* test, not the
+suite. The cycle is: write the test, break the production code, watch that one
+file go red, restore the code by hand, watch it go green, then climb. Restoring
+by hand rather than with `git checkout`/`stash`/`restore` is what keeps the rest
+of your working tree; a mutation that survives is reported, never quietly
+covered.
+
+**Do not reach for `--reporter=dot`.** Measured on this repository: the default
+reporter prints **9 lines / 231 bytes** on a clean full run, and `--reporter=dot`
+prints **147 lines / 17,888 bytes** for the same run — 77 times the output, no
+extra information. `pnpm typecheck` is 6 lines and `pnpm build` is 29 when they
+pass. Every one of these is already terse on success and verbose on failure,
+which is the behaviour worth keeping; do not add flags that undo it.
+
 ## Prohibited behavior
 - Do not replace approved technologies without an ADR and explicit human approval.
 - Do not add a dependency for trivial functionality.
@@ -114,6 +191,27 @@ Before completion:
 - Do not mark an issue complete while acceptance criteria remain unverified.
 - Do not copy Prison Architect code, assets, text, UI layouts or protected content. Research may inform mechanics, but Lockstate must have its own implementation and identity.
 - Do not optimize for token use, API cost or shortest implementation when doing so reduces engineering quality.
+
+## What belongs in this file
+
+This file and `CLAUDE.md` carry project-wide rules and navigation. They are not
+a changelog, a post-mortem archive or a bug diary, and the way they turn into
+one is a paragraph at a time. When something is learned, file it where it will
+still be found:
+
+- A rule that binds every agent → here.
+- A rule that binds one subsystem → that subsystem's document under `docs/`.
+- A decision with alternatives and consequences → an ADR.
+- A bug that must never return → **a regression test**, which is the only form
+  that fails when it is violated.
+- A repository-wide invariant → a gate in `tests/foundation/`.
+- Why something is the way it is → the ADR, the issue, or the commit message.
+- An investigation still in progress → an issue, not a permanent instruction.
+
+The reusable rule belongs here; the forensic story does not. *"Regime
+transitions must stay deterministic across tick boundaries — see
+`tests/determinism/`"* is a rule. Four paragraphs about the session that
+discovered it are history, and history goes in the issue that recorded it.
 
 ## Definition of done
 A change is done only when it is correct, typed, tested, documented where necessary, buildable, reviewable and consistent with the architecture.

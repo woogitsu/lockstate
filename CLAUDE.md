@@ -10,6 +10,12 @@ entry point, `supabase/migrations/`, deploy configuration, and any
 player-visible promise the code does not keep). Read it before deciding whether
 a question is yours to answer.
 
+Three sections of `AGENTS.md` earn their keep before you open any source file:
+**"Where to start"** routes a task to its subsystem, its existing tests and its
+governing document; **"Reading the repository"** says how much to read;
+**"Running the checks while you work"** gives the measured ladder from one test
+file to `pnpm verify`, and where mutation proof sits on it.
+
 Additional Claude-specific rules:
 - Use repository docs and ADRs as the source of truth.
 - Prefer small reviewable commits tied to GitHub Issues.
