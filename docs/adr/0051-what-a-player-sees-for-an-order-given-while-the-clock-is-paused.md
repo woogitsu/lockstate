@@ -44,12 +44,24 @@ commit carrying it does — for an approval given here.
 **Acceptance closes none of the three open questions at the foot of this
 document**, and they are left standing rather than tidied away. It does not
 decide whether a purchase should spend money during a pause, and that is still
-the sharpest one. **Open question 3 is the exception, and it is being answered
-by the same issue that accepted this ADR** — #639's other two rulings restore a
-renderer for `hud.build.note` and make the clock readout say `PAUSED` rather
-than `×1`. So the sentence below, *"it does not make the pause more
-discoverable, and that is a separate piece of work"*, was right that the work
-was separate and is now spent rather than wrong: the separate work is #639.
+the sharpest one.
+
+**Open question 3 — "does the game ever tell a new player that it starts
+paused?" — is half answered by the same issue that accepted this ADR, and the
+other half is measured and blocked.** #639's second ruling ships in this commit:
+the clock readout says `PAUSED` instead of `×1` and the day, the day progress
+and the speed are dimmed while the clock is stopped, so the sentence below —
+*"The Pause button is accented and `data-clock-mode` says `paused`, which is
+honest but quiet"* — is no longer true of the readout. Its first ruling does
+not ship: restoring a renderer for `hud.build.note` was measured against the
+assembled page and the Build panel has no room for the sentence at 900x600,
+9px short even clipped to a single line. The numbers are in
+`src/ui/hud/build-panel.ts` where the renderer would go, and the decision they
+need belongs to #174 rather than here.
+
+So the sentence below, *"it does not make the pause more discoverable, and that
+is a separate piece of work"*, was right that the work was separate; the work
+exists, it is #639, and it is partly done.
 
 This amends the "Ordered Command Queue" heading of
 [ADR 0020](./0020-deterministic-kernel.md), which is the deterministic

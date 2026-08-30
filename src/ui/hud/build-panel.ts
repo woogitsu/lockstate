@@ -1057,36 +1057,47 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   /*
    * `hud.build.note` -- "An order is queued now and built while the clock
-   * runs." -- rendered nowhere between `67e366e` (2026-08-23) and this change.
+   * runs." -- is in the shipped locale and in `HUD_MESSAGE_KEY` and is rendered
+   * by nothing. It has been that way since `67e366e` (2026-08-23), which
+   * replaced the coordinate steppers with pointing at the world and, in moving
+   * the submit button into the folded "Enter coordinates" section, deleted the
+   * `.hud-build__footer` the sentence shared with it.
    *
-   * **Where it used to be.** That commit replaced the coordinate steppers with
-   * pointing at the world, and in doing so moved the submit button into the
-   * folded "Enter coordinates" section. The note was the second half of the
-   * `.hud-build__footer` that button lived in, so the footer went with it:
-   * `git show 67e366e -- src/ui/hud/build-panel.ts` deletes
-   * `children: [submit.element, eyebrowText(t(HUD_MESSAGE_KEY.buildNote), …)]`
-   * and nothing replaces it. The key stayed in `HUD_MESSAGE_KEY` and the
-   * sentence stayed in the shipped locale, and `ui-hud-messages.test.ts` gates
-   * that keys *resolve*, not that anything renders them -- so it passed every
-   * gate for a week and reached nobody (#636, #639).
+   * **The owner ruled on 2026-08-30 (#639) that it should render again, and it
+   * still does not, because this panel has no room for it. That is a
+   * measurement, not an opinion, and it is written here because the next reader
+   * of #639 will reach for exactly this spot.** Taken on the assembled page
+   * (issue #647), one prison saved, Build tab, nothing scrolled, the sentence
+   * appended to the map block below `armHint`:
    *
-   * **Why here rather than back beside the submit button.** The footer no
-   * longer exists and the button it held is now the fallback route, inside a
-   * section that is built `collapsed: true`. Restoring the sentence there
-   * would put it in a fold that starts shut, which is exactly the failure
-   * #627 is: "Awaiting Materials" was on the page the whole time, one fold
-   * down, and the owner played a whole session without meeting it. So it goes
-   * where the order is actually placed -- the map block, under the hint that
-   * says what the armed gesture does -- which is outside every fold in this
-   * panel and is laid out whether or not anything is selected, queued or
-   * bought.
+   * | viewport | sentence | panel overflow | why |
+   * | --- | --- | --- | --- |
+   * | 1440x900 | 26.4px, 2 lines | 0 | the catalogue list absorbs it whole |
+   * | 1024x768 | 26.4px, 2 lines | 0 | same |
+   * | 375x812 | 13.2px, 1 line | 0 | same |
+   * | 1280x720 | 26.4px, 2 lines | **4px** | list absorbs 22.4 of 26.4, then hits its floor |
+   * | 900x600 | 26.4px, 2 lines | **23px** | list is *already* on its floor and absorbs nothing |
    *
-   * **Static, and it covers both intents this panel produces.** A removal is
-   * the same `onPlace` with `removing: true`; it is queued and executed by the
-   * same crew on the same clock, so unlike `armHint` there is no second thing
-   * for this line to say.
+   * The catalogue list is this panel's only flexible member -- the thing
+   * `hud.css` lets it take height from, which ADR 0031 decision 3 already
+   * spends 45px of on the queue. At 900x600 it is on its two-row floor on
+   * arrival and its one-row floor with a queue, so there is nothing left to
+   * take: the panel's whole always-visible budget there is **7.8px** on arrival
+   * and **6.8px** queued.
+   *
+   * **And one clipped line does not fit either**, which is what makes this
+   * structural rather than tunable. Clamped to a single line by the
+   * `max-height: 700px` trims, the sentence still costs 17.2px against that
+   * 7.8px -- 9px of overflow on arrival and 10px queued. There is no smaller
+   * version of it.
+   *
+   * So it is not rendered here, and it is deliberately **not** put in a fold
+   * instead: a fold that starts shut is what #627 measured reaching nobody. The
+   * height has to come from somewhere, every candidate is a number pinned by
+   * `tests/browser/app-shell.spec.ts` under #88, #174, #285 and #390, and
+   * moving one of those is a decision with #174 attached rather than an
+   * implementation detail. Issue #647 carries the options and their costs.
    */
-  const orderNote = eyebrowText(t(HUD_MESSAGE_KEY.buildNote), 'hud-build__note hud-build__order-note');
 
   function paintArmed(): void {
     // "Armed" on the arm button means armed *to place*, which is what its label
@@ -1807,7 +1818,6 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         }),
         targetBlock,
         armHint,
-        orderNote,
         buyRow,
       ],
     }),
