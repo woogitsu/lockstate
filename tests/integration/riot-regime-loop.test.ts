@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { ACTION_PHASES } from '../../src/simulation/prisoners/components';
-import { NEED_IDS, NEED_MAX } from '../../src/simulation/prisoners/needs';
+import { NEED_IDS, NEED_MAX, type NeedId } from '../../src/simulation/prisoners/needs';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
@@ -43,11 +43,22 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * ## The control is the same prison with two guards, and nothing else
  *
  * `staffingShortfallWeight` is 0.3, so hiring against the derived sector's
- * single requirement drops the score from 0.676 to 0.376 and the sector never
- * goes hot. Same seed, same rooms, same objects, same admissions, same ticks --
- * two extra `HireStaff` commands. Nothing in guard deployment reaches prisoner
- * action selection, which is what makes the difference in the censuses
- * attributable to the riot.
+ * single requirement drops the score and the sector never goes hot. Same seed,
+ * same rooms, same objects, same admissions, same ticks -- two extra
+ * `HireStaff` commands. Nothing in guard deployment reaches prisoner action
+ * selection, which is what makes the difference in the censuses attributable
+ * to the riot.
+ *
+ * **That last sentence is now true only of action *selection*, and it used to
+ * be true of the needs as well.** Since issue #588 and the owner's ruling on
+ * issue #599, `SafetyCoverageSystem` provisions the `safety` need from the
+ * sector's coverage rung -- so the control's two guards do change one thing
+ * about a prisoner, directly. Nothing in `ActionSystem` reads coverage and no
+ * action serves `safety` any more, so which actions a prisoner performs is
+ * still untouched by the hire and the census comparisons below stand
+ * unchanged; the *need* comparison is scoped to `COMPARABLE_NEEDS` instead.
+ * Both directions are marked rather than the old sentence being overwritten,
+ * because the reason it was written has not gone away.
  */
 
 /** Distinct from every other seed in the suite, so a shared fixture cannot make these figures true by accident. */
@@ -75,16 +86,27 @@ const DAY_LENGTH = 2_400;
  * weighted 1, staffing 0.3, hot at 0.65, twelve consecutive samples) and
  * `IncidentTriggerSystem`'s 50-tick cadence. If any of those move, this line
  * has to move and a reviewer has to see it.
+ *
+ * **13,300 until issue #588, and 6,200 since -- more than twice as early.**
+ * The rioting prison hires nobody, so its sector is `unguarded`,
+ * `SafetyCoverageSystem` provisions nothing, and `safety` itself now falls at
+ * 0.05 a tick where it fell at 0.01. A sixth of `needsPressure` therefore
+ * reaches the floor in 4,080 ticks instead of 20,400, and the twelfth
+ * consecutive hot sample lands 7,100 ticks sooner. The *control* is unchanged
+ * and that is the half worth reading: two guards still open no incident at all
+ * in ten in-game days, so the difference this file attributes to the riot is
+ * still attributable to it.
  */
-const RIOT_TICK = 13_300;
+const RIOT_TICK = 6_200;
 /**
  * `responseDeadlineTicks` is 600 and `isPastDeadline` is a strict `>`, so an
  * unanswered riot lapses on the response system's first scheduled update after
- * tick 13,900. Its cadence is 10 ticks and 13,900 is on it, so the transition
- * lands at 13,910 -- asserted below rather than assumed, because the whole of
- * the override's lifetime is bounded by it.
+ * tick 6,800. Its cadence is 10 ticks and 6,800 is on it, so the transition
+ * lands at 6,810 -- asserted below rather than assumed, because the whole of
+ * the override's lifetime is bounded by it. The derivation is `RIOT_TICK + 610`
+ * and moved with it; it read 13,910 while `RIOT_TICK` read 13,300.
  */
-const RIOT_LAPSE_TICK = 13_910;
+const RIOT_LAPSE_TICK = 6_810;
 
 function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<typeof packCommand>): void {
   runtime.kernel.submitCommand(id, runtime.kernel.expectedSequence, runtime.kernel.tick, payload);
@@ -167,10 +189,32 @@ function censusOver(runtime: SimulationRuntime, ticks: number): Census {
 }
 
 /**
- * The mean over living prisoners of each one's mean deficit over `NEED_IDS` --
- * the same quantity `new-session.ts`'s default sampler feeds
- * `SectorRiskSample.needsPressure`, computed here over the population rather
- * than over a sector's occupants.
+ * The needs this comparison may average over, and **`safety` is not one of
+ * them since issue #588**.
+ *
+ * The exclusion is the whole reason this constant exists rather than the
+ * function below walking `NEED_IDS`. The sentence under `meanNeedDeficit` used
+ * to be true of all six: the control's two guards "change the sector's
+ * staffing term and nothing a prisoner does". Under the owner's ruling on
+ * issue #599 they change one thing a prisoner *has* -- `SafetyCoverageSystem`
+ * provisions `safety` from the sector's coverage rung, so the guarded control
+ * holds that need at `NEED_MAX` while the rioting prison's falls to the floor.
+ * Averaging it in would put the guards themselves inside the quantity this
+ * pair asserts to be *equal* before the riot, and the equality would be false
+ * by construction rather than by anything the riot did.
+ *
+ * Measured, with `safety` in: 0.3843 rioting against 0.2176 control at
+ * `RIOT_TICK`. Excluded, both read the same number and the comparison means
+ * what it always meant.
+ */
+const COMPARABLE_NEEDS: readonly NeedId[] = NEED_IDS.filter((needId) => needId !== 'safety');
+
+/**
+ * The mean over living prisoners of each one's mean deficit over
+ * `COMPARABLE_NEEDS` -- very nearly the quantity `new-session.ts`'s default
+ * sampler feeds `SectorRiskSample.needsPressure`, computed here over the
+ * population rather than over a sector's occupants, and over five of the six
+ * needs rather than all of them for the reason above.
  *
  * Recomputed rather than read off the risk tracker, and the difference is the
  * point: `SectorRiskTracker.getScore` is the *weighted* score including
@@ -183,8 +227,8 @@ function meanNeedDeficit(runtime: SimulationRuntime): number {
   for (let index = 0; index <= runtime.prisoners.entityStore.maxActiveIndex; index += 1) {
     if (!runtime.prisoners.entityStore.isIndexAlive(index)) continue;
     let deficit = 0;
-    for (const needId of NEED_IDS) deficit += (NEED_MAX - runtime.prisoners.needs.get(index, needId)) / NEED_MAX;
-    sum += deficit / NEED_IDS.length;
+    for (const needId of COMPARABLE_NEEDS) deficit += (NEED_MAX - runtime.prisoners.needs.get(index, needId)) / NEED_MAX;
+    sum += deficit / COMPARABLE_NEEDS.length;
     population += 1;
   }
   return population === 0 ? 0 : sum / population;
@@ -280,16 +324,24 @@ describe('a neglected prison a player can build riots, and the riot reaches its 
     // term that carries this test is still `action.use-toilet`, present in the
     // control and absent under the riot.
     console.log('DURING', JSON.stringify(during));
+    // Re-measured for issue #588, which moved `RIOT_TICK` from 13,300 to 6,200
+    // -- a different point of the in-game day, so a different regime block and
+    // a different set of terms. `action.eat-meal` has left this column with the
+    // meal block; the term that carries this test is still
+    // `action.use-toilet`, present in the control and absent under the riot.
     expect(during).toEqual({
-      byAction: { 'action.eat-meal': 60, 'action.free-association': 753 },
-      idleTicks: 261,
-      travellingTicks: 128,
+      byAction: { 'action.free-association': 893 },
+      idleTicks: 281,
+      travellingTicks: 28,
     });
     console.log('CONTROL', JSON.stringify(control));
+    // Re-measured with `during` above, for the same reason: `RIOT_TICK` moved
+    // to 6,200 and the window now covers a different part of the day. The
+    // toilet is here and absent from `during`, which is the comparison.
     expect(control).toEqual({
-      byAction: { 'action.eat-meal': 60, 'action.free-association': 612, 'action.use-toilet': 100 },
-      idleTicks: 302,
-      travellingTicks: 128,
+      byAction: { 'action.free-association': 652, 'action.use-toilet': 160 },
+      idleTicks: 361,
+      travellingTicks: 29,
     });
 
     // And it is given back. The incident lapses -- nobody was hired to answer
@@ -313,8 +365,12 @@ describe('a neglected prison a player can build riots, and the riot reaches its 
     // Re-measured for ADR 0059, like every other census in this file.
     console.log('AFTER', JSON.stringify(censusOver(rioting, 400)));
     expect(censusOver(rioting, 400)).toEqual({
-      byAction: { 'action.sleep': 751 },
-      idleTicks: 49,
+      // Re-measured for issue #588's earlier `RIOT_TICK`, like every other
+      // census in this file. `action.sleep` is still the only term, which is
+      // the claim: the toilet is legal again and the prisoners are back on
+      // `GENERAL_POPULATION_REGIME`.
+      byAction: { 'action.sleep': 720 },
+      idleTicks: 80,
       travellingTicks: 0,
     });
   });
@@ -340,11 +396,15 @@ describe('a neglected prison a player can build riots, and the riot reaches its 
     // assertions are for and is unchanged except where noted.
     console.log('CONTROLDAY', JSON.stringify(controlDay));
     expect(controlDay).toEqual({
+      // Re-measured for issue #588's earlier `RIOT_TICK`; the day this covers
+      // starts 7,100 ticks sooner, so the same four terms carry slightly
+      // different totals. The shape -- four terms, the toilet among them -- is
+      // what these assertions are for.
       byAction: {
-        'action.eat-meal': 204,
-        'action.free-association': 1_572,
+        'action.eat-meal': 184,
+        'action.free-association': 1_612,
         'action.sleep': 1_200,
-        'action.use-toilet': 292,
+        'action.use-toilet': 272,
       },
       idleTicks: 1_020,
       travellingTicks: 512,
@@ -364,16 +424,24 @@ describe('a neglected prison a player can build riots, and the riot reaches its 
      * `[0, 400)` sleep block or the `[1200, 1300)` meal block would take those
      * instead; where the streak lands in the day is a property of this fixture,
      * not of the mechanism.
+     *
+     * **Issue #588 moved `RIOT_TICK` to 6,200, so it now lands at tick-of-day
+     * 1,400-2,010** -- still inside the same work/education and recreation
+     * stretch, which is why the paragraph above survives the move and the
+     * terms below are the same four. What changed is the split between them,
+     * and `action.use-toilet` falling from 172 to 72 is the mechanism showing
+     * through: the riot takes it away for its whole lifetime, and its lifetime
+     * now overlaps more of the day's toilet demand.
      */
     console.log('RIOTDAY', JSON.stringify(riotDay));
     expect(riotDay).toEqual({
       byAction: {
-        'action.eat-meal': 204,
-        'action.free-association': 1_752,
+        'action.eat-meal': 184,
+        'action.free-association': 1_912,
         'action.sleep': 1_200,
-        'action.use-toilet': 172,
+        'action.use-toilet': 72,
       },
-      idleTicks: 960,
+      idleTicks: 920,
       travellingTicks: 512,
     });
   });
@@ -392,30 +460,38 @@ describe('a neglected prison a player can build riots, and the riot reaches its 
     const calm = neglectedPrison(2);
     stepTo(rioting, RIOT_TICK);
     stepTo(calm, RIOT_TICK);
-    // 0.4007 since ADR 0059, 0.3752 before it: a prison whose prisoners spend
-    // part of the day walking meets slightly fewer needs by the tick the riot
-    // opens. **What this pair asserts is the equality**, which is what makes
-    // the divergence after the riot attributable to the riot.
+    // 0.2612 since issue #588, 0.4007 since ADR 0059 and 0.3752 before that.
+    // Two things moved it this time and they are separate: the riot now opens
+    // at 6,200 rather than 13,300, so less of the day has decayed by the time
+    // it does; and the average is over `COMPARABLE_NEEDS` rather than all six,
+    // because `safety` is the one need the control's guards now change
+    // directly. **What this pair asserts is the equality**, which is what makes
+    // the divergence after the riot attributable to the riot -- and it is
+    // exactly what the scoping preserves: with `safety` averaged in the two
+    // read 0.3843 and 0.2176 and the pair would be asserting the hire.
     console.log('DEF1', meanNeedDeficit(rioting), meanNeedDeficit(calm));
-    expect(meanNeedDeficit(rioting)).toBeCloseTo(0.4007, 4);
-    expect(meanNeedDeficit(calm)).toBeCloseTo(0.4007, 4);
+    expect(meanNeedDeficit(rioting)).toBeCloseTo(0.2612, 4);
+    expect(meanNeedDeficit(calm)).toBeCloseTo(0.2612, 4);
 
     stepTo(rioting, RIOT_LAPSE_TICK + 1);
     stepTo(calm, RIOT_LAPSE_TICK + 1);
 
-    // 0.4526 against 0.3480 since ADR 0059, and 0.4542 against 0.3497 before
-    // it: the riot costs 0.1046 of mean deficit over 611 ticks where it used to
-    // cost 0.1045 -- a thousandth apart, against a `hotThreshold` of 0.65 that `needsPressure` enters
-    // at weight 1. Both arms sit slightly worse because both spend part of the
-    // window walking; the gap between them is smaller for the same reason and
-    // is still the whole of what this asserts. `bladder` is where nearly all of
-    // it is -- 94 of 255 against the control's 254, because
-    // `action.use-toilet` was illegal throughout, and **those two numbers did
-    // not move**.
+    // 0.3561 against 0.2243 since issue #588; 0.4526 against 0.3480 since ADR
+    // 0059, and 0.4542 against 0.3497 before it. The riot costs **0.1318** of
+    // mean deficit over 611 ticks where it cost 0.1046 and 0.1045 before --
+    // *more*, and the reason is arithmetic rather than a change to the riot:
+    // the average is now over five needs instead of six, so each one weighs a
+    // sixth more, and `bladder` -- which is where nearly all of the gap is --
+    // weighs correspondingly more in it.
+    //
+    // `bladder` at 85 of 255 against the control's 254, because
+    // `action.use-toilet` was illegal throughout. The control's 254 **did not
+    // move**; the rioting arm's 94 became 85 because the riot now opens at a
+    // point of the day with more toilet demand behind it.
     console.log('DEF2', meanNeedDeficit(rioting), meanNeedDeficit(calm), rioting.prisoners.needs.get(0, 'bladder'), calm.prisoners.needs.get(0, 'bladder'));
-    expect(meanNeedDeficit(rioting)).toBeCloseTo(0.4526, 4);
-    expect(meanNeedDeficit(calm)).toBeCloseTo(0.3480, 4);
-    expect(rioting.prisoners.needs.get(0, 'bladder')).toBe(94);
+    expect(meanNeedDeficit(rioting)).toBeCloseTo(0.3561, 4);
+    expect(meanNeedDeficit(calm)).toBeCloseTo(0.2243, 4);
+    expect(rioting.prisoners.needs.get(0, 'bladder')).toBe(85);
     expect(calm.prisoners.needs.get(0, 'bladder')).toBe(254);
   });
 
@@ -488,9 +564,19 @@ describe('a riot survives a save, because nothing about it is stored', () => {
      * one -- is left.
      */
     expect(Object.keys(restoredCensus.byAction).sort()).toEqual(Object.keys(liveCensus.byAction).sort());
+    /*
+     * **The two censuses are now identical, where they used to differ by one
+     * reconsideration cycle** -- 592/28 live against 568/72 restored. Issue
+     * #588's earlier `RIOT_TICK` puts this 600-tick window somewhere neither
+     * session is mid-walk when the save is taken, so ADR 0059's unpersisted
+     * walk has nothing to lose. That is a weaker demonstration of the open
+     * question than the old numbers were and a stronger result for this file's
+     * own claim, so both are recorded: the divergence is a property of where
+     * the window falls, not of the restore.
+     */
     expect({ live: liveCensus, restored: restoredCensus }).toEqual({
-      live: { byAction: { 'action.free-association': 592 }, idleTicks: 180, travellingTicks: 28 },
-      restored: { byAction: { 'action.free-association': 568 }, idleTicks: 160, travellingTicks: 72 },
+      live: { byAction: { 'action.free-association': 600 }, idleTicks: 200, travellingTicks: 0 },
+      restored: { byAction: { 'action.free-association': 600 }, idleTicks: 200, travellingTicks: 0 },
     });
     expect(restoredCensus.byAction['action.use-toilet']).toBeUndefined();
   });
@@ -516,9 +602,12 @@ describe('a riot survives a save, because nothing about it is stored', () => {
     // census -- which actions appear and which do not -- is what these
     // assertions are for and is unchanged except where noted.
     console.log('RESTORED', JSON.stringify(restoredCensus));
+    // Re-measured for issue #588's earlier `RIOT_TICK`, for the reason the
+    // day-long census above gives. Same four terms, the toilet among them,
+    // which is the claim.
     expect(restoredCensus).toEqual({
-      byAction: { 'action.eat-meal': 92, 'action.free-association': 29, 'action.sleep': 11, 'action.use-toilet': 172 },
-      idleTicks: 240,
+      byAction: { 'action.eat-meal': 92, 'action.free-association': 49, 'action.sleep': 182, 'action.use-toilet': 72 },
+      idleTicks: 149,
       travellingTicks: 256,
     });
   });

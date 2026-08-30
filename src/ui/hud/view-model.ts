@@ -115,6 +115,24 @@ export interface HudCountsViewModel {
   readonly prisonerCapacity: number;
   readonly staff: number;
   readonly rooms: number;
+  /**
+   * How many prisoners are standing in a sector on each rung of the guard
+   * coverage ladder (issue #588): all the guards it asks for, some of them,
+   * none of them.
+   *
+   * Published, never derived here, exactly like `prisonerCapacity` above --
+   * `SafetyCoverageSystem` produces the three on the same walk that
+   * provisions the `safety` need, so the readout and the provisioning cannot
+   * disagree. They sum to the prisoners **in a sector**, which is not
+   * necessarily `prisoners`: an arrival still in transit is in neither, so
+   * none of the three may be derived from that count by subtraction.
+   *
+   * All three zero is a real state and not "unknown": it is a prison with
+   * nobody in a sector, which is every prison before its first admission.
+   */
+  readonly prisonersCovered: number;
+  readonly prisonersUnderstaffed: number;
+  readonly prisonersUnguarded: number;
   readonly activeIncidents: number;
   /**
    * A message key naming the kind of the incident `activeIncidents` counts,
@@ -1346,6 +1364,9 @@ export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {
     prisonerCapacity: 0,
     staff: 0,
     rooms: 0,
+    prisonersCovered: 0,
+    prisonersUnderstaffed: 0,
+    prisonersUnguarded: 0,
     activeIncidents: 0,
     // No key at all -- an empty prison has nothing to name (issue #506
     // finding 2), and this field's own doc comment says why `undefined` is

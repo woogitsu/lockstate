@@ -192,6 +192,22 @@ interface WatchedRun {
 function watched(showerHeads: 2 | 8): WatchedRun {
   const runtime = prison(showerHeads);
   stepTo(runtime, BUILT_BY);
+  /*
+   * **Guards, hired for what this fixture is *not* about** (issue #588).
+   * Coverage now provisions the `safety` need, so an unstaffed prison of this
+   * size loses it at 0.05 a tick with nothing opposing -- which drives
+   * `needsPressure` over `hotThreshold` and opens riots, and a riot regime
+   * takes the very actions this file measures away from its prisoners.
+   * Measured without them: six riots in the 40,000-tick watch, total shower time halved from 7,488 ticks to 3,816, and twelve of the 24 prisoners touching hygiene 0.
+   *
+   * `DEFAULT_SECTOR_PRISONERS_PER_GUARD` is 8, so `ceil(PRISONERS / 8)` is
+   * what the derived sector asks for. Hiring it isolates the subject of this
+   * file from a mechanic that is measured on its own in
+   * `tests/integration/coverage-safety-loop.test.ts`.
+   */
+  for (let n = 0; n < Math.ceil(PRISONERS / 8); n += 1) {
+    submit(runtime, `hire-guard-${n}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ARRIVAL }));
+  }
   for (let n = 0; n < PRISONERS; n += 1) {
     submit(runtime, `admit-${n}`, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
   }
@@ -275,7 +291,16 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
      * unchanged and are what this literal is for**: a re-baseline that quietly
      * returned prisoner 22 or 23 to zero fails them.
      */
-    expect(run.showerTicksByDay[23]).toEqual([0, 0, 0, 0, 0, 36, 36, 0, 36, 36, 36, 36, 0, 72, 0, 36, 0]);
+    /*
+     * **Re-measured again for issue #588**, and for the *hire* rather than for
+     * the need: this prison now employs three guards (see `watched`), because
+     * an unstaffed one of this size riots six times inside the watch and a
+     * riot regime takes the shower away from everybody. The array read
+     * `[0, 0, 0, 0, 0, 36, 36, 0, 36, 36, 36, 36, 0, 72, 0, 36, 0]` before it.
+     * **Both of the assertions under it are unchanged and are still what this
+     * literal is for.**
+     */
+    expect(run.showerTicksByDay[23]).toEqual([0, 0, 36, 0, 0, 36, 36, 0, 72, 36, 0, 0, 36, 0, 0, 72, 0]);
     expect(run.showerTicks[23], 'the last prisoner scanned took no shower at all before #434').toBeGreaterThan(0);
     expect(run.showerTicks[22], 'and neither did the one before them').toBeGreaterThan(0);
 
@@ -295,16 +320,24 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
 
     /*
      * **And the player-visible consequence: nobody is left filthy.** `hygiene`
-     * has no cell-side route, so before this change the losers simply decayed:
-     * eight of the 24 touched 0.0 at some tick and six were still there at
-     * 40,000. Every one of them now stays well above a third of `NEED_MAX` at
-     * their worst.
+     * has no cell-side route, so before #434 the losers simply decayed: eight
+     * of the 24 touched 0.0 at some tick and six were still there at 40,000.
+     * Every one of them still comes off the floor, and the per-prisoner loop
+     * below is where that is asserted.
+     *
+     * **The sentence that stood here said they stay "well above a third of
+     * `NEED_MAX`", and that is no longer true.** The worst floor is 24.4 of
+     * 255 -- a tenth, not a third -- and it fell there with issue #588's
+     * hire (see `watched`): three guards walking to and standing on the
+     * arrival tile change how 24 prisoners route to a two-head shower room,
+     * and one of them now cuts it much finer than before. The claim is
+     * narrowed to what is measured rather than kept at a level the run does
+     * not support: **nobody reaches the floor**, and the run is much closer to
+     * it than it was.
      */
-    // 90.4 and 125.2 since ADR 0059, against 96.8 and 166.4 before it: a
-    // prisoner spends part of the day walking, so a two-head room washes 24
-    // people slightly less thoroughly. **Still nowhere near the floor**, which
-    // is the claim, and the per-prisoner loop below is where it is asserted.
-    expect(Math.min(...run.lowestHygiene)).toBe(90.4);
+    // 24.4 since issue #588's hire; 90.4 and 125.2 since ADR 0059, against
+    // 96.8 and 166.4 before that.
+    expect(Math.min(...run.lowestHygiene)).toBe(24.4);
     expect(Math.min(...run.finalHygiene)).toBe(125.2);
     for (const [n, hygiene] of run.lowestHygiene.entries()) {
       expect(hygiene, `prisoner ${n} was left to reach the hygiene floor`).toBeGreaterThan(0);
@@ -326,14 +359,13 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
     // With the ceiling above what the population ever asks for, the spread that
     // the two-head run is about is gone: every prisoner washes as often as the
     // regime lets them and nobody is refused.
-    // 612 / 828 / 185 since ADR 0059, against 760 / 1,000 / 203.6 before it.
-    // Every prisoner spends part of the day walking to the room, so the totals
-    // fall in both arms; what this test is for is the line below, and 612
-    // against the two-head run's best of 468 is the same margin the
-    // re-baseline preserved.
+    // 612 / 756 / 186.4 since issue #588's hire (see `watched`); 612 / 828 /
+    // 185 since ADR 0059, against 760 / 1,000 / 203.6 before that. The number
+    // this test is actually for -- the least-washed prisoner in an eight-head
+    // room against the best-washed in a two-head one -- did not move at all.
     expect(Math.min(...control.showerTicks), 'the least-washed prisoner here beats the best-washed one in the two-head run').toBe(612);
-    expect(Math.max(...control.showerTicks)).toBe(828);
-    expect(Math.min(...control.lowestHygiene)).toBe(185);
+    expect(Math.max(...control.showerTicks)).toBe(756);
+    expect(Math.min(...control.lowestHygiene)).toBe(186.4);
     expect(Math.min(...control.showerTicks)).toBeGreaterThan(Math.max(...watchedTwoHead.showerTicks));
   });
 

@@ -669,6 +669,74 @@ export const statusCountsSchema = z
      */
     accommodationCapacity: countSchema,
     roomOccupants: countSchema,
+    /**
+     * **How many prisoners are standing in a sector on each rung of the guard
+     * coverage ladder** (issue #588): `covered` has all the guards it asks
+     * for, `understaffed` has some of them, `unguarded` has none.
+     *
+     * Three counts rather than one ratio, because the strip's job here is that
+     * *"the 40s are attributable"*: since ADR 0064 the state withholds
+     * `STATE_INCOME_UNMET_NEED_WITHHOLDING_MINOR_UNITS` of the prisoner-day
+     * grant per unmet need, and `SafetyCoverageSystem` is what decides whether
+     * `safety` is one of them. A player looking at a grant smaller than the
+     * headline rate has to be able to see how much of the population is paying
+     * that particular 40, and a single percentage cannot say which rung the
+     * missing ones are on.
+     *
+     * They sum to the population **standing in a sector**, which in the
+     * shipped single-sector topology is every living prisoner on owned land
+     * (ADR 0048 decision 1) -- not necessarily to `prisoners` above, which
+     * counts every prisoner in existence including an arrival still in
+     * transit. Nothing here should be derived by subtraction from that count.
+     *
+     * **And that set is not the set the 40s are actually charged on**, which
+     * is worth stating here because these counts exist to make the 40s
+     * attributable and the gap between the two is a real prison state rather
+     * than a rounding error. `StateIncomeSystem` charges per *occupied place*
+     * -- a unit of a room instance's `residentCapacity` that a prisoner holds
+     * -- while `SafetyCoverageSystem` provisions, and counts, every prisoner
+     * the sector covers. An over-capacity prison's unhoused prisoner is in the
+     * sector and in these counts, and is on nobody's income line at all.
+     *
+     * **Measured on the tree this paragraph was written against**, rather than
+     * argued: six prisoners admitted into a two-bed prison with nobody on post
+     * read `covered 0 / understaffed 0 / unguarded 6` here, while
+     * `RoomInstanceRegistry.residentIdsWithExistingPlace()` -- the accessor
+     * #610 made the income line's -- answers **two**. Both are right about
+     * their own question, and a player who read "6 unguarded" as six withheld
+     * 40s would be wrong by four of them. The difference is exactly the
+     * population the prison has not housed, which the `prisoners` and
+     * `accommodationCapacity` counts beside these already let them see.
+     *
+     * That asymmetry is deliberate and it is the honest direction: a prisoner
+     * with no bed is still somebody the guards are or are not guarding, so
+     * provisioning them is right even though the state pays nothing for them.
+     * The alternative -- counting only paid places here -- would make the chip
+     * silent about exactly the prisoners a player most needs to see, since an
+     * unhoused population is what drives a sector hot in the first place
+     * ([ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md)).
+     * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+     * decision A(ii) and #610 both sharpen the income side further -- an
+     * occupied place is now a bed that currently exists -- which widens this
+     * gap without changing what these three counts mean.
+     *
+     * **Nothing in the shipped interface states the two figures side by side**,
+     * so the mis-inference above is available rather than presented; whether
+     * the chip should say "6 here, 2 paid" is a copy decision and the owner's,
+     * not something to settle in a schema comment.
+     *
+     * `SafetyCoverageSystem.getCensus` produces them on the same walk that
+     * provisions the need, so the readout cannot disagree with what was
+     * provisioned. It is at most nine ticks stale, and reads all zeroes for
+     * the first ten ticks after a load, which is the ordinary staleness of
+     * every ten-tick cadence in the kernel rather than a missing value.
+     *
+     * **`HUD_VIEW_MODEL_SCHEMA_VERSION` is deliberately not bumped**, for the
+     * reason `accommodationCapacity` above gives.
+     */
+    prisonersCovered: countSchema,
+    prisonersUnderstaffed: countSchema,
+    prisonersUnguarded: countSchema,
     activeIncidents: countSchema,
     /**
      * The kind of the incident `activeIncidents` above counts, when the

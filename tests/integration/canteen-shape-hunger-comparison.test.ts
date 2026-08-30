@@ -150,6 +150,22 @@ interface WatchedRun {
 function watched(shape: CanteenShape): WatchedRun {
   const runtime = prison(shape);
   stepTo(runtime, BUILT_BY);
+  /*
+   * **Guards, hired for what this fixture is *not* about** (issue #588).
+   * Coverage now provisions the `safety` need, so an unstaffed prison of this
+   * size loses it at 0.05 a tick with nothing opposing -- which drives
+   * `needsPressure` over `hotThreshold` and opens riots, and a riot regime
+   * takes the very actions this file measures away from its prisoners.
+   * Measured without them: riots that take the meal block away from the prisoners whose meals this file counts.
+   *
+   * `DEFAULT_SECTOR_PRISONERS_PER_GUARD` is 8, so `ceil(PRISONERS / 8)` is
+   * what the derived sector asks for. Hiring it isolates the subject of this
+   * file from a mechanic that is measured on its own in
+   * `tests/integration/coverage-safety-loop.test.ts`.
+   */
+  for (let n = 0; n < Math.ceil(PRISONERS / 8); n += 1) {
+    submit(runtime, `hire-guard-${n}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ARRIVAL }));
+  }
   for (let n = 0; n < PRISONERS; n += 1) {
     submit(runtime, `admit-${n}`, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
   }
@@ -235,8 +251,9 @@ describe('canteen-wasted-walk: no canteen vs a too-small canteen vs a canteen th
     // Exact, deterministic measurements (one seed, one command order, no RNG
     // on this path) -- pinned so a re-baseline has to explain the new numbers.
     expect(none.lowestHunger).toEqual([178.5, 178.5, 178.5, 178.5, 178.5, 178.5]);
-    expect(small.lowestHunger).toEqual([174.5, 173.5, 174.5, 173.5, 173.5, 176.5]);
-    expect(large.lowestHunger).toEqual([177.5, 176.5, 177.5, 176.5, 176.5, 176.5]);
+    // 173.5 in the fifth slot until issue #588's hire; see `watched`.
+    expect(small.lowestHunger).toEqual([174.5, 173.5, 174.5, 173.5, 176.5, 178.5]);
+    expect(large.lowestHunger).toEqual([177.5, 176.5, 177.5, 176.5, 176.5, 178.5]);
   });
 
   it('finds the real effect is travel time, not capacity: `large` travels more and finishes lower than `small`', () => {
@@ -273,9 +290,10 @@ describe('canteen-wasted-walk: no canteen vs a too-small canteen vs a canteen th
     expect(none.travellingPhaseTicks).toBe(444);
     expect(small.travellingPhaseTicks).toBe(7_852);
     expect(large.travellingPhaseTicks).toBe(8_140);
-    expect(none.hungerDeficitLevelTicks).toBe(2_098_577);
-    expect(small.hungerDeficitLevelTicks).toBe(2_223_137);
-    expect(large.hungerDeficitLevelTicks).toBe(2_242_117);
+    // 2,098,577 until issue #588's hire; see `watched`.
+    expect(none.hungerDeficitLevelTicks).toBe(2_096_320);
+    expect(small.hungerDeficitLevelTicks).toBe(2_221_400);
+    expect(large.hungerDeficitLevelTicks).toBe(2_233_320);
   });
 
   it('produces the identical loop on a second run of each shape, so nothing here is nondeterministic', () => {

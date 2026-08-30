@@ -196,6 +196,13 @@ describe('message keys live in one registry', () => {
       prisonerCapacity: 2,
       staff: 1,
       rooms: 1,
+      // Non-zero on both lower rungs, so the coverage chip takes its
+      // `coverageDetail` branch rather than the `securityCoverageMet`
+      // fallback: this case walks every label the strip can render, and a
+      // fixture that never left the fallback would leave one unwalked.
+      prisonersCovered: 1,
+      prisonersUnderstaffed: 1,
+      prisonersUnguarded: 1,
       activeIncidents: 1,
       // No `activeIncidentTypeLabelKey` here on purpose: the label this test
       // walks against is the HUD's own closed registry, and a real

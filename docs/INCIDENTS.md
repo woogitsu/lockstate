@@ -406,12 +406,23 @@ occupancy "uses the sector's post tile" and that needs pressure came from "the
   ADR 0036 derived to be the post tile. It is now every prisoner standing on
   owned land, and `docs/SECURITY.md`'s "What a sector's occupants are" carries
   the rule.
-- **Needs pressure** was the mean `safety` deficit, and `action.sleep` restores
-  `safety` twenty times faster than it decays, so the term read ~0 for anybody
+- **Needs pressure** was the mean `safety` deficit, and `action.sleep` restored
+  `safety` twenty times faster than it decayed, so the term read ~0 for anybody
   with a bed and ~1 for anybody without one: it measured homelessness. It is now
   the mean over `NEED_IDS` of each occupant's deficit, averaged over the
   occupants -- so a prison with no toilet, no shower room and no yard reads
   about 0.44 where it used to read 0.
+
+  **The past tense in that bullet became load-bearing with
+  [#588](https://github.com/matmaxalez/lockstate/issues/588).** `action.sleep`
+  no longer restores `safety` at all: under the owner's ruling on
+  [#599](https://github.com/matmaxalez/lockstate/issues/599) the provisioner is
+  **guard coverage** -- `SafetyCoverageSystem` gives a `covered` sector's
+  occupants 0.08 a tick, an `understaffed` one half of that and an `unguarded`
+  one nothing, against a decay raised from 0.01 to 0.05. So `safety` is back
+  inside `needsPressure` as a term that *moves*, and it moves with staffing:
+  the two bullets above widened who is counted and what is counted, and this
+  narrows what one of the six needs means.
 
 The second change is not optional given the first. Widening the occupant set
 without widening the need set divides the same numerator by the whole
@@ -427,7 +438,7 @@ for its one bed, and the two it cannot house left standing on the arrival tile
 with nothing to restore any of their six needs. `needsPressure` reaches 0.389 --
 the mean of three prisoners' mean deficits, the housed one included -- against a
 `staffingShortfall` of 1, and `DEFAULT_SECTOR_RISK_POLICY`'s twelve-sample
-window opens a **severity-7 riot at tick 4,000**. Five `HireStaff` commands
+window opens a **severity-7 riot at tick 3,450**. Five `HireStaff` commands
 later four responders walk from (0, 0) to the post tile, the sector locks down,
 and the riot is `resolved` with `propertyDamage: 3` and nobody injured.
 
@@ -435,7 +446,16 @@ and the riot is `resolved` with `propertyDamage: 3` and nobody injured.
 > The paragraph read *"`needsPressure` crosses 0.6 ... opens a **severity-6 riot
 > at tick 15,600**"* when the sample was the two homeless prisoners' `safety`
 > alone. Nearly four times sooner is the intended change: `bladder` falls at
-> 0.08 a tick and `hunger` at 0.05, against `safety`'s 0.01.
+> 0.08 a tick and `hunger` at 0.05, against `safety`'s 0.01 at the time.
+>
+> **They moved again with #588**, in the same direction and for a reason that
+> is now about staffing rather than about who is counted: 0.389 became 0.4427
+> and tick 4,000 became tick 3,450. This prison hires nobody, so its sector is
+> `unguarded`, nothing provisions `safety`, and that need now falls at 0.05
+> rather than 0.01 -- a sixth of the mean reaches the floor five times sooner.
+> The same prison **with a guard on post** does not riot at all, which is the
+> half of the change worth reading and is measured in
+> `tests/integration/room-gated-needs.test.ts`.
 
 `tests/integration/incident-trigger-reachability.test.ts` is the other half of
 that claim and the more important one -- a trigger that fires in every prison is

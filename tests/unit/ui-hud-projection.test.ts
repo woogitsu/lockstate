@@ -10,6 +10,8 @@ import {
   severityLabelKey,
   severityTone,
   transportPressedStates,
+  type HudMetricDescriptor,
+  type HudMetricId,
 } from '../../src/ui/hud/projection';
 import {
   EMPTY_HUD_VIEW_MODEL,
@@ -42,6 +44,9 @@ function counts(overrides: Partial<HudCountsViewModel> = {}): HudCountsViewModel
     prisonerCapacity: 0,
     staff: 0,
     rooms: 0,
+    prisonersCovered: 0,
+    prisonersUnderstaffed: 0,
+    prisonersUnguarded: 0,
     activeIncidents: 0,
     contrabandFound: 0,
     treasuryMinorUnits: 0,
@@ -51,16 +56,25 @@ function counts(overrides: Partial<HudCountsViewModel> = {}): HudCountsViewModel
 }
 
 describe('status strip: which metrics exist, in what order', () => {
-  it('projects exactly the seven declared metrics, in a fixed order', () => {
+  it('projects exactly the eight declared metrics, in a fixed order', () => {
     // Order is part of the contract: a HUD whose metrics move between builds
     // is one a player has to re-read every time. It was five until the
     // treasury balance joined them (#96), and six until #29's "earned today"
-    // joined it. Each new chip goes on the **end**, so every metric a player
-    // already knows keeps its position -- which is why `funds` is still sixth
+    // joined it. Each new chip went on the **end**, so every metric a player
+    // already knew kept its position -- which is why `funds` was still sixth
     // rather than being pushed along by the figure that belongs beside it.
+    //
+    // **Issue #588's `coverage` is the first that did not**, and the
+    // descriptor itself argues why: it is a staffing readout whose only remedy
+    // is the control `staff` counts, so reading "27 staff, 100 covered, 12
+    // unguarded" left to right is the whole decision. The four chips after it
+    // each moved one column right, once, in an interface no player has
+    // learned yet. The convention is not withdrawn -- an *unrelated* new chip
+    // still belongs on the end.
     expect(projectStatusMetrics(counts()).map((metric) => metric.id)).toEqual([
       'prisoners',
       'staff',
+      'coverage',
       'rooms',
       'incidents',
       'contraband',
@@ -76,6 +90,7 @@ describe('status strip: which metrics exist, in what order', () => {
     expect(labels).toEqual([
       HUD_MESSAGE_KEY.prisoners,
       HUD_MESSAGE_KEY.staff,
+      HUD_MESSAGE_KEY.coverage,
       HUD_MESSAGE_KEY.rooms,
       HUD_MESSAGE_KEY.incidents,
       HUD_MESSAGE_KEY.contraband,
@@ -134,17 +149,31 @@ describe('status strip: which metrics exist, in what order', () => {
         stateIncomeAccruedTodayMinorUnits: 10_667,
       }),
     );
-    expect(metrics.map((metric) => metric.value)).toEqual([142, 27, 61, 0, 8, 24_920, 10_667]);
+    expect(metrics.map((metric) => metric.value)).toEqual([142, 27, 0, 61, 0, 8, 24_920, 10_667]);
   });
 });
 
+/**
+ * The descriptor for one metric, **by id rather than by index**.
+ *
+ * The cases below are about what a chip says, not about where it sits, and
+ * `coverage` landing third (issue #588) turned four of them red by moving an
+ * index they never meant to assert. The order is pinned once, in its own case
+ * above, which is where a change to it should be read.
+ */
+function metric(view: HudCountsViewModel, id: HudMetricId): HudMetricDescriptor {
+  const found = projectStatusMetrics(view).find((descriptor) => descriptor.id === id);
+  expect(found, `no ${id} metric in the strip`).toBeDefined();
+  return found!;
+}
+
 describe('status strip: tone and badges', () => {
   it('states the incident condition in words, so colour is never the only signal', () => {
-    const clear = projectStatusMetrics(counts({ activeIncidents: 0 }))[3];
+    const clear = metric(counts({ activeIncidents: 0 }), 'incidents');
     expect(clear?.badge).toEqual({ tone: 'success', textKey: HUD_MESSAGE_KEY.incidentsClear });
     expect(clear?.tone).toBeUndefined();
 
-    const active = projectStatusMetrics(counts({ activeIncidents: 3 }))[3];
+    const active = metric(counts({ activeIncidents: 3 }), 'incidents');
     expect(active?.badge).toEqual({ tone: 'danger', textKey: HUD_MESSAGE_KEY.incidentsActive });
     expect(active?.tone).toBe('danger');
   });
@@ -157,9 +186,7 @@ describe('status strip: tone and badges', () => {
     // (`src/content/simulation-message-keys.ts`), reused here as a plain
     // string so this file stays in `environment: 'node'` with no simulation
     // import.
-    const riot = projectStatusMetrics(
-      counts({ activeIncidents: 1, activeIncidentTypeLabelKey: 'incident-type.riot.name' }),
-    )[3];
+    const riot = metric(counts({ activeIncidents: 1, activeIncidentTypeLabelKey: 'incident-type.riot.name' }), 'incidents');
     expect(riot?.badge).toEqual({ tone: 'danger', textKey: 'incident-type.riot.name' });
     expect(riot?.tone).toBe('danger');
 
@@ -167,13 +194,72 @@ describe('status strip: tone and badges', () => {
     // incidents agree on a kind (ADR 0061 decision 6), and that case is
     // `activeIncidentTypeLabelKey` absent -- the strip falls back to the
     // generic wording the case above already covers, rather than guessing.
-    const mixed = projectStatusMetrics(counts({ activeIncidents: 2 }))[3];
+    const mixed = metric(counts({ activeIncidents: 2 }), 'incidents');
     expect(mixed?.badge).toEqual({ tone: 'danger', textKey: HUD_MESSAGE_KEY.incidentsActive });
   });
 
+  it('escalates the coverage chip one rung at a time, and says which rung in words', () => {
+    /*
+     * Issue #588's `Covered N / Understaffed N / Unguarded N`, as the three
+     * things the chip can say. The value is the covered count and the badge
+     * carries the other two, so all three numbers are on the strip without one
+     * of them being stated twice.
+     *
+     * The ladder is `describeStaffCoverage`'s and the reason is its: a prison
+     * with somebody unguarded is not a worse version of an understaffed one,
+     * so `unguarded` is checked first and wins even when both are non-zero.
+     */
+    const covered = metric(counts({ prisonersCovered: 8 }), 'coverage');
+    expect(covered.value).toBe(8);
+    expect(covered.tone).toBeUndefined();
+    // The word this repository already ships for the top rung, not a second
+    // copy of it -- so the strip and the Staff panel cannot come to disagree.
+    expect(covered.badge).toEqual({ tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet });
+
+    const short = metric(counts({ prisonersCovered: 8, prisonersUnderstaffed: 3 }), 'coverage');
+    expect(short.tone).toBe('warning');
+    expect(short.badge).toEqual({
+      tone: 'warning',
+      textKey: HUD_MESSAGE_KEY.coverageDetail,
+      parameters: { understaffed: 3, unguarded: 0 },
+    });
+
+    const dark = metric(counts({ prisonersCovered: 8, prisonersUnderstaffed: 3, prisonersUnguarded: 1 }), 'coverage');
+    expect(dark.tone).toBe('danger');
+    // Both counts, not only the one that set the tone: the badge is the whole
+    // of the remainder, and a player who fixed the unguarded rung would
+    // otherwise not know there was a second one underneath it.
+    expect(dark.badge).toEqual({
+      tone: 'danger',
+      textKey: HUD_MESSAGE_KEY.coverageDetail,
+      parameters: { understaffed: 3, unguarded: 1 },
+    });
+
+    // Unguarded with nobody understaffed still reads danger, so the two rungs
+    // are independent rather than a two-step scale one has to climb.
+    expect(metric(counts({ prisonersUnguarded: 2 }), 'coverage').tone).toBe('danger');
+  });
+
+  it('reads the empty prison as covered, which is what a prison with nobody in a sector is', () => {
+    // Three zeroes is a real state and not a missing reading -- every session
+    // before its first admission is in it -- and it is the same answer
+    // `describeStaffCoverage` gives a sector that asks for nobody.
+    const empty = metric(counts(), 'coverage');
+    expect(empty.value).toBe(0);
+    expect(empty.badge).toEqual({ tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet });
+  });
+
+  it('sets no capacity on the coverage chip, because the population is not its denominator', () => {
+    // The three rungs sum to the prisoners standing in a sector, and an
+    // arrival still in transit is in none of them -- so a bar reading "12 of
+    // 16" would be false at exactly the moments intake is busy.
+    const busy = metric(counts({ prisoners: 16, prisonersCovered: 12 }), 'coverage');
+    expect(busy.capacity).toBeUndefined();
+  });
+
   it('marks confiscated contraband as a warning only once there is some', () => {
-    expect(projectStatusMetrics(counts({ contrabandFound: 0 }))[4]?.tone).toBeUndefined();
-    expect(projectStatusMetrics(counts({ contrabandFound: 1 }))[4]?.tone).toBe('warning');
+    expect(metric(counts({ contrabandFound: 0 }), 'contraband').tone).toBeUndefined();
+    expect(metric(counts({ contrabandFound: 1 }), 'contraband').tone).toBe('warning');
   });
 
   it('omits the occupancy bar when capacity is unknown rather than guessing one', () => {

@@ -65,6 +65,13 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
         prisonerCapacity: counts.accommodationCapacity,
         staff: counts.staff,
         rooms: counts.rooms,
+        // Straight through, all three, for `accommodationCapacity`'s reason:
+        // the HUD may not derive a simulation figure, and these are the rungs
+        // `SafetyCoverageSystem` counted the population onto on the same walk
+        // that provisioned its `safety` (issue #588).
+        prisonersCovered: counts.prisonersCovered,
+        prisonersUnderstaffed: counts.prisonersUnderstaffed,
+        prisonersUnguarded: counts.prisonersUnguarded,
         activeIncidents: counts.activeIncidents,
         /**
          * The one label this module derives rather than reads straight

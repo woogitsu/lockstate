@@ -341,6 +341,21 @@ const INJECTED_STATUS_COUNTS = {
       // bar, so they are unaffected.
       accommodationCapacity: 40,
       roomOccupants: 30,
+      // Required for the same reason `accommodationCapacity` above is: the
+      // counts payload is `.strict()`, so a fixture missing one of these three
+      // is dropped whole by `decodeWorkerToMainMessage` and every assertion
+      // after the injection fails on a strip that was never updated. That is
+      // exactly how this test failed when issue #588 added them.
+      //
+      // Three distinct figures summing to 37, this payload's own `prisoners`,
+      // so a chip that read the wrong rung -- or derived one by subtracting the
+      // others from the population -- renders a number this fixture never gave
+      // it. 4 unguarded makes the chip's tone `danger` and its badge the
+      // `hud.status.coverage-detail` sentence rather than the "Covered"
+      // fallback, which is the branch worth exercising in a real DOM.
+      prisonersCovered: 25,
+      prisonersUnderstaffed: 8,
+      prisonersUnguarded: 4,
       activeIncidents: 2,
       contrabandDiscovered: 5,
       treasuryMinorUnits: 31_500,

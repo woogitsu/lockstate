@@ -1,4 +1,5 @@
 import type { LocalizationKey } from '../../content/localization';
+import type { MessageParameters } from '../../services/localization/format';
 import type { IconId } from '../primitives/icon';
 import type { BadgeTone } from '../primitives/status-badge';
 import { HUD_MESSAGE_KEY } from './messages';
@@ -104,11 +105,22 @@ export function transportPressedStates(clock: HudClockViewModel): TransportPress
   return { pause: false, play: !fast, fastForward: fast };
 }
 
-export type HudMetricId = 'prisoners' | 'staff' | 'rooms' | 'incidents' | 'contraband' | 'funds' | 'earned-today';
+export type HudMetricId = 'prisoners' | 'staff' | 'coverage' | 'rooms' | 'incidents' | 'contraband' | 'funds' | 'earned-today';
 
 export interface HudMetricBadge {
   readonly tone: BadgeTone;
   readonly textKey: LocalizationKey;
+  /**
+   * Placeholders for `textKey`, when the badge states a quantity rather than a
+   * condition (issue #588's `Covered N / Understaffed N / Unguarded N`).
+   *
+   * Absent for every badge that names a state in one word, which is what a
+   * badge was for until the coverage chip: a key with no placeholders and an
+   * empty parameter object are the same rendered string, so "absent" carries
+   * the distinction rather than an empty literal. `status-strip.ts` formats
+   * with them only when they are present, so no existing badge changes call.
+   */
+  readonly parameters?: MessageParameters;
 }
 
 export interface HudMetricDescriptor {
@@ -139,6 +151,46 @@ export function occupancyTone(prisoners: number, capacity: number): BadgeTone | 
 }
 
 /**
+ * The worst rung anybody is standing on, as a tone (issue #588).
+ *
+ * Three steps for one metric, in `occupancyTone`'s shape and for
+ * `describeStaffCoverage`'s reason: a prison with somebody unguarded is not a
+ * worse version of an understaffed one, it is the rung where the cheapest
+ * possible action changes the outcome. `undefined` -- not `success` -- when
+ * nobody is on either lower rung, because this is a strip of eight chips
+ * competing for one glance and *"a status strip where several things are
+ * always amber teaches players to ignore amber"* applies to green as well;
+ * the badge still says "Covered" in words, so the state is never carried by
+ * colour alone.
+ */
+function coverageTone(counts: HudCountsViewModel): BadgeTone | undefined {
+  if (counts.prisonersUnguarded > 0) return 'danger';
+  if (counts.prisonersUnderstaffed > 0) return 'warning';
+  return undefined;
+}
+
+/**
+ * The sentence under the coverage chip: the two rungs that are not covered,
+ * with their counts, or the one word an all-covered prison should read.
+ *
+ * The fallback is `securityCoverageMet` -- "Covered", the Staff panel's own
+ * word for the top rung -- rather than a second copy of it, so the panel and
+ * the strip cannot come to disagree about what the top rung is called. It is
+ * also what an *empty* prison reads, which is correct for the same reason it
+ * is correct on the panel: a prison with nobody in a sector has all the
+ * coverage it needs.
+ */
+function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
+  const tone = coverageTone(counts);
+  if (tone === undefined) return { tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet };
+  return {
+    tone,
+    textKey: HUD_MESSAGE_KEY.coverageDetail,
+    parameters: { understaffed: counts.prisonersUnderstaffed, unguarded: counts.prisonersUnguarded },
+  };
+}
+
+/**
  * The top strip, left to right.
  *
  * Order is part of the contract: a HUD whose metrics move between builds is
@@ -166,6 +218,42 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       capacity: undefined,
       tone: undefined,
       badge: undefined,
+    },
+    {
+      /**
+       * **How many prisoners the prison's guards are actually covering**
+       * (issue #588).
+       *
+       * The value is the top rung; the badge splits the remainder into the
+       * other two. Together they are the `Covered N / Understaffed N /
+       * Unguarded N` the issue asks the strip for, *"so the 40s are
+       * attributable"* -- since ADR 0064 the state withholds part of the
+       * prisoner-day grant per unmet need, and `SafetyCoverageSystem` is what
+       * decides whether `safety` is one of them for a given prisoner.
+       *
+       * **Placed beside `staff` rather than appended after `earned-today`**,
+       * which is the convention the `earned-today` descriptor below records
+       * ("a new chip at the end adds a column without moving one"). That
+       * convention is about not moving a column a player has learned, and this
+       * chip is a *staffing* readout whose only remedy is the control the chip
+       * to its left counts: reading "5 staff, 12 covered, 4 unguarded" left to
+       * right is the whole decision. The four chips it displaces move one
+       * column right, once, in an interface no player has learned yet.
+       *
+       * **`counts.prisoners` is deliberately not the denominator and no
+       * capacity is set.** The three rungs sum to the prisoners standing in a
+       * sector, and a prisoner still in transit is in none of them, so a bar
+       * reading "12 of 16" would be false at exactly the moments intake is
+       * busy. The badge states the remainder instead, which is true whatever
+       * the population is doing.
+       */
+      id: 'coverage',
+      icon: 'security',
+      labelKey: HUD_MESSAGE_KEY.coverage,
+      value: counts.prisonersCovered,
+      capacity: undefined,
+      tone: coverageTone(counts),
+      badge: coverageBadge(counts),
     },
     {
       id: 'rooms',

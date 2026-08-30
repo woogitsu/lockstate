@@ -72,8 +72,37 @@ export interface ActionDefinition {
  */
 export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
   {
+    /*
+     * **`safety` is no longer one of this action's effects** (issue #588, the
+     * owner's ruling on issue #599). It carried `safety: 0.2` -- twenty times
+     * the decay rate of the day -- which made a bed, and not a guard, the
+     * thing that kept a prisoner safe. Two consequences were measured before
+     * it was removed:
+     *
+     * - Any prisoner with a furnished cell sat at 237 or above for ever
+     *   (`tests/integration/room-gated-needs.test.ts`), so the state's
+     *   40-per-unmet-need withholding never once fired on `safety` in a prison
+     *   that had built cells. The ruling's own reading of the old numbers --
+     *   40 permanently withheld and no play able to move it -- has the sign
+     *   the wrong way round; see `NEED_DECAY_PER_TICK` in `./needs.ts`.
+     * - `sampleSectorRisk` already records the same fact from the other side:
+     *   its `needsPressure` term *"used to be the `safety` deficit alone,
+     *   which `action.sleep` restores twenty times faster than it decays, so
+     *   the term was pinned near zero for anybody with a bed"*
+     *   (`src/simulation/incidents/sector-risk.ts`). It measured homelessness.
+     *
+     * The ruling makes coverage the instrument for `safety`, and an
+     * instrument that a bed overrides twenty to one is not one. Sleeping still
+     * restores `sleep`; being guarded restores `safety`
+     * (`SafetyCoverageSystem`).
+     *
+     * **This is a change to an existing entry's effects and not an insertion**,
+     * so no index in this array moves and the paragraph above this array about
+     * appending does not apply: every in-flight action in every existing save
+     * still decodes to the action it was.
+     */
     id: 'action.sleep', category: 'sleep', target: { kind: 'own-accommodation' },
-    requiredObjectCapability: 'sleep-surface', needEffectsPerTick: { sleep: 2, safety: 0.2 }, minDurationTicks: 200,
+    requiredObjectCapability: 'sleep-surface', needEffectsPerTick: { sleep: 2 }, minDurationTicks: 200,
   },
   {
     id: 'action.eat-meal', category: 'meal', target: { kind: 'room-catalog-id', roomCatalogId: 'room.canteen' },
@@ -92,8 +121,37 @@ export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
     requiredObjectCapability: 'hygiene', needEffectsPerTick: { hygiene: 4 }, minDurationTicks: 30,
   },
   {
+    /*
+     * **`safety: 0.1` is gone too** (issue #588). It was kept for one draft on
+     * the grounds that it is dominated rather than dominant -- a yard session
+     * returns about 6% of what `safety` now loses in a day, so it is nowhere
+     * near a substitute for a guard -- and that argument is still true and was
+     * still the wrong one, because the term's real effect is not on the need
+     * at all. It is on **what the prisoner chooses**.
+     *
+     * `scoreAction` is deficit x effect summed
+     * (`./utility-ai.ts`), so a term worth `d_safety * 0.1` grows with the
+     * deficit, and since the ruling on issue #599 an unguarded prison drives
+     * that deficit to the top of its range. Measured on
+     * `tests/integration/yard-and-common-room.test.ts`'s six-prisoner fixture
+     * over ten in-game days, with the term still in: yard time went from
+     * **5,872 to 8,588** performing ticks in the minimum yard and **7,208 to
+     * 13,120** in the enlarged one -- the yard climbing over meals, showers
+     * and sleep in the ranking, for a need standing in it barely moves. A
+     * prisoner skipping lunch because they feel unsafe and the yard helps a
+     * little is not a mechanic anybody chose.
+     *
+     * What it costs to remove is real and is recorded rather than hidden: the
+     * yard and the common room now tie wherever `recreation` alone is full,
+     * instead of only where `recreation` *and* `safety` are both full, so the
+     * common room wins the ascending-id tie-break in eight of that file's
+     * sixty-four sampled states rather than in one. Both are the same state --
+     * a prisoner who wants nothing, choosing between two things worth nothing
+     * -- and #532's ceiling, not this term, is what makes the common room
+     * reachable on merit.
+     */
     id: 'action.yard-recreation', category: 'recreation', target: { kind: 'room-catalog-id', roomCatalogId: 'room.yard' },
-    needEffectsPerTick: { recreation: 3, safety: 0.1 }, minDurationTicks: 100,
+    needEffectsPerTick: { recreation: 3 }, minDurationTicks: 100,
   },
   {
     id: 'action.common-room-recreation', category: 'recreation', target: { kind: 'room-catalog-id', roomCatalogId: 'room.common-room' },
