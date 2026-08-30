@@ -467,19 +467,30 @@ const BUILD_MODEL: HudBuildViewModel = {
  * `tests/browser/app-shell.spec.ts` is where the real projection is driven.
  */
 const STAFF_MODEL: HudStaffViewModel = {
-  // Both figures are the shipped guard's, which `staff-role-catalog.ts` authors
-  // as `wageBand: { minPerDay: 80 }` and both `staffHireCostMinorUnits` and
-  // `staffDailyWageMinorUnits` read -- so they are equal here because they are
-  // equal in content, not because one was copied from the other. That they
-  // come from two *fields* is proven where a fixture can make them differ:
-  // `tests/unit/ui-staff-hire-charge.test.ts`, over the pure
-  // `describeHireCharge`.
+  /*
+   * **The two money figures are deliberately different, and content makes them
+   * the same** (issue #639 ruling 2).
+   *
+   * The shipped guard is authored `wageBand: { minPerDay: 80 }`, and both
+   * `staffHireCostMinorUnits` and `staffDailyWageMinorUnits` read it -- so in
+   * the real application a hire costs 80 and bills 80 a day, which is what
+   * `app-shell.spec.ts` drives through the real projection and what
+   * `ui-shell.spec.ts` pins as `Hire Guard · 80`.
+   *
+   * A fixture that copied that pair would let a panel render
+   * `hireChargeMinorUnits` twice and never read the wage at all, and every
+   * assertion would still pass -- a fixture supplying both sides of the
+   * comparison, which `docs/TESTING.md` forbids. So `hireChargeMinorUnits`
+   * stays 80, because specs in this file assert the button's own label against
+   * it, and the daily wage is 55: a figure no catalogue authors, chosen so that
+   * one standing in for the other is a visible failure.
+   */
   roles: [
     {
       staffRoleId: 'staff-role.guard',
       labelKey: 'staff-role.guard.name',
       hireChargeMinorUnits: 80,
-      dailyWageMinorUnits: 80,
+      dailyWageMinorUnits: 55,
     },
   ],
 };
