@@ -563,6 +563,23 @@ tool is already armed. The panel is folded on arrival, so that reading costs a
 press first — and the fold is there for a good measured reason, which is why
 this is a report and not a proposed change.
 
+**Run B confirms both halves in one pair of lines.** The script now reads the
+label instead of pressing blind, and prints it:
+
+```
+[act2] designate north: the arm control reads "Draw on map" before anything is pressed
+[act2] designate north attempt 1: rooms=1 …
+[act2] designate south: panel data-collapsed=true catalogue data-collapsed=false
+[act2] designate south: the arm control reads "Stop drawing" before anything is pressed
+[act2] designate south attempt 1: rooms=2 …
+```
+
+**"Draw on map" for the first room and "Stop drawing" for the second**, and once
+the press is skipped the second cell is accepted on the **first** attempt. So
+the state is real, the label is honest, and the whole cost is that a player has
+to open a folded panel to read it before touching the control that looks like
+the way in.
+
 **It cost this pass a run**, which is the honest way to say how discoverable it
 is: the script did the obvious thing and lost ten minutes to it.
 
