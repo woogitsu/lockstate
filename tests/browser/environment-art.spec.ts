@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './network-changed-fixture';
 import { ENVIRONMENT_SPRITE_IDS } from '../../src/rendering/assets/environment-sprites';
 import { FLOOR_ART_DEPTH } from '../../src/rendering/depth';
 import { EDGE_WALL_THICKNESS_TILES, edgeAppearance } from '../../src/rendering/world/appearance';

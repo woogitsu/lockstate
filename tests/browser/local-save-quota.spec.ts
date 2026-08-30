@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './network-changed-fixture';
 import { openHarness } from './harness-fixture';
 
 /**
@@ -25,7 +25,7 @@ const PRISON = 'quota-prison';
  */
 const OVERSIZED_SAVE_BYTES = 8 * 1024;
 
-async function capOriginQuota(page: import('@playwright/test').Page): Promise<void> {
+async function capOriginQuota(page: import('./network-changed-fixture').Page): Promise<void> {
   const client = await page.context().newCDPSession(page);
   await client.send('Storage.overrideQuotaForOrigin', {
     origin: new URL(page.url()).origin,

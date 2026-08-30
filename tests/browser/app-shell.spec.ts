@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from './network-changed-fixture';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { procurableMaterial } from '../../src/content/procurement-catalog';
 import { SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';

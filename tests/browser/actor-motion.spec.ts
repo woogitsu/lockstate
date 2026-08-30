@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './network-changed-fixture';
 import type { LockstateActorMotionHarness } from './actor-motion-harness-api';
 
 /**
@@ -40,7 +40,7 @@ const HARNESS = '/tests/browser/actor-motion-harness.html';
 const settled = (samples: readonly { readonly x: number; readonly y: number }[]): readonly { readonly x: number; readonly y: number }[] =>
   samples.slice(2);
 
-async function waitForFrames(page: import('@playwright/test').Page, count: number): Promise<void> {
+async function waitForFrames(page: import('./network-changed-fixture').Page, count: number): Promise<void> {
   const from = await page.evaluate(() => window.lockstateActorMotionHarness!.framesDrawn());
   await page.waitForFunction(
     ([start, wanted]) => window.lockstateActorMotionHarness!.framesDrawn() >= start + wanted,

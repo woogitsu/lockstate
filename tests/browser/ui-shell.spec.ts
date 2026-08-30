@@ -1,4 +1,4 @@
-import { type Page, expect, test } from '@playwright/test';
+import { type Page, expect, test } from './network-changed-fixture';
 import type { HudPrisonerRosterViewModel, HudRegimeViewModel, HudViewModel } from '../../src/ui/hud';
 import { MAX_ROOM_SIDE_TILES } from '../../src/ui/hud/rooms-panel';
 import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global augmentation

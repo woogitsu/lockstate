@@ -1,4 +1,4 @@
-import { type Page, expect, test } from '@playwright/test';
+import { type Page, expect, test } from './network-changed-fixture';
 
 /**
  * The Build panel's "Where" readout, in the assembled application (issue #550).
