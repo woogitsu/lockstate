@@ -280,7 +280,32 @@ outlasts the hygiene and recreation crossings *"by more than eight in-game
 days"*. A third of this prison's gross income was withheld, every day, for the
 whole run.
 
-### 1.6 So what should #653 and #668 be costed against?
+### 1.6 So what should #653 and #668 be costed against? — and a correction to the question
+
+**The brief that produced this pass said the two open economy pull requests
+*"costed the economy against a prison that may be 5.8× too small."* Both halves
+of that need narrowing, and the narrowing is the useful part.**
+
+**[#668](https://github.com/matmaxalez/lockstate/pull/668) does not depend on
+population at all.** Read at its own PR body: it measures a **waste
+multiplier** on *build* spend — *"a profile 0 control builds the same 2×3 cell
+flawlessly for **905**"* against 1,985–2,570 for profiles that make mistakes —
+and its conclusions are about walls, `Undo` and the treasury figure. Sentence
+length does not enter its arithmetic anywhere. **The ×5.8 does not touch it.**
+
+**[#653](https://github.com/matmaxalez/lockstate/pull/653) already costs per
+*place*, not per prisoner**, which is the same quantity §1.3 identifies. Its own
+table is *"Measured mean grant per **place-day**"*, and its structure is
+therefore right. What is stale in it is one row: that table compares
+*"2–16 days"* against *"**14–28** days"* — a range that was under consideration
+and is **not what landed**. `MIN_SENTENCE_DAYS`/`MAX_SENTENCE_DAYS` are 14 and
+90 (`src/simulation/prisoners/sentence.ts`), so the *"−14%"* on its cells-only
+row is measured against a mean of 21 days where the shipped mean is 52.
+**That is a re-measurement, not a re-costing**, and it is a much smaller job
+than "the prison is 5.8× too small" implies. #653's other headline —
+*"the economy is not short of money"* — is untouched by anything here.
+
+**And what the ×5.8 would have done to a costing that *did* read the roster:**
 
 **Not a prison 5.8× larger.** The three statements that follow from §1.1–§1.5,
 separated because they need separate evidence:
