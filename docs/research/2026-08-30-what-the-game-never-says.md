@@ -10,11 +10,21 @@ below carries `v0.0.230 · e5f597f` as its first three lines.
 
 Two runs, both pasted from:
 
-- **Run 1**, the three acts as first written.
+- **Run 1**, the three acts as first written. `3 passed (10.0m)`.
 - **Run 2**, the same three acts with two probes added — `visibleText` (§7) and
-  the Staff panel's fold state. **No change under `src/` between them**, and
-  none at all: the branch this was played on changes `tests/browser/` and
-  `docs/` only.
+  the Staff panel's fold state. `3 passed (13.3m)`. **No change under `src/`
+  between them**, and none at all: the branch this was played on changes
+  `tests/browser/` and `docs/` only.
+
+Running twice was not redundancy. §8 records a finding that Run 1 supported and
+Run 2 refuted, and it is kept for that reason.
+
+**`main` moved while this was being written**, to `dac0077` (v0.0.231), which
+is #626's *"An occupied place already means a bed that exists — pin it, and
+publish the count"* plus its release bump. It touches
+`src/simulation/economy/income.ts`, `status-strip-projection.ts` and
+`protocol/types.ts`; it adds no reader in `src/ui/`, changes no surface named in
+Part A, and every `file:line` below is read at `e5f597f`.
 
 The brief is [#629](https://github.com/matmaxalez/lockstate/issues/629), the
 owner's standing directive stated in their own words after hitting #627 live:
@@ -34,8 +44,10 @@ but:
 
 **A caveat on freshness, stated first.** Another agent is changing material
 procurement (`src/simulation/construction/**`) as this is written. Everything
-below was measured at `e5f597f` and nothing below depends on procurement
-behaviour except where §5 says so.
+below was measured at `e5f597f`. **§1 buys bricks and places wall orders, so it
+is the one part of this record that would need re-measuring after that lands**;
+§2 and §4 touch neither, and the last bullet of *What this pass did not reach*
+says so again where a reader looking for limits will find it.
 
 ## Claim tiers
 
@@ -43,8 +55,9 @@ behaviour except where §5 says so.
 MEMORY / UNKNOWN. Everything here is **VERIFIED**, meaning one of exactly two
 first-party things: a number or a sentence pasted verbatim from Run 1 or Run 2,
 or a `file:line` in this repository that was opened and read. **SEARCH-SUMMARY
-and FROM MEMORY do not occur.** Four **UNKNOWN**s are marked inline, each with
-what would settle it.
+and FROM MEMORY do not occur.** Five **UNKNOWN**s are marked inline — at
+§1, §2, §4 and twice in *What this pass did not reach* — each with what would
+settle it.
 
 ---
 
@@ -63,8 +76,13 @@ established that and it is unchanged: *"the only caller of
 `SimulationCommandSender.setClock` is the `set-clock` intent branch … which runs
 when the player presses a transport control."*
 
-Since that same ADR, a command submitted against a paused clock is **dispatched
-immediately**. So the game answers every press. Only time does not pass.
+A command submitted against a paused clock is **dispatched immediately** — the
+behaviour ADR 0051 proposed, and which `src/main.ts:2432-2435` records as
+shipped in a comment beginning *"**That is no longer why**: since ADR 0051 the
+worker dispatches a due command as soon as it is submitted against a paused
+clock"*. **That ADR's own Status line still reads "Proposed, 2026-08-28. Not
+self-approved."**, so what is cited here is the code and the measurement, not an
+accepted decision. So the game answers every press. Only time does not pass.
 
 ### What the player did, and what it cost
 
@@ -444,7 +462,8 @@ These are complete results. They exist so nobody re-checks them.
 prison keeps accepting prisoners it cannot house **and that nothing says so**.
 Played: one 6x6 cell, **one** bed, one toilet, four admissions.
 
-**The first half reproduces exactly. The second half is refuted.**
+**The first half reproduces exactly. The second half is refuted.** Both runs
+produced identical figures at every one of the four presses; Run 2 is quoted.
 
 ```
 ACT 3b admission 1: disabled-before=null prisoners=1 inIntake=0 occupants=1 accommodationCapacity=1
@@ -474,6 +493,10 @@ later:
 .hud-intake a day later: "…3 waiting with no bed to sleep in…IN INTAKE\n3 of 4\n3 at Cell Assignment"
 counts a day later: {…,"prisoners":4,"prisonersInIntake":3,"roomOccupants":1,…}
 ```
+
+and it is on screen rather than merely in the DOM — the sighted-text walk at
+that moment carries `3 waiting with no bed to sleep in` and
+`In intake / 3 of 4 / 3 at Cell Assignment` verbatim.
 
 **What #538 asks for beyond this is a remedy, and the locale deliberately does
 not give one** — its own comment says the line *"states the prison's condition
@@ -570,32 +593,61 @@ It is written into the script and into this record because it is #625 §6's
 failure one size along, and that record's sentence covers it exactly: **a survey
 answers about the probe until the file is opened.**
 
-## 8. A riot happened, and the band that reported it had already moved on
+## 8. A riot is legible while it is live — and this pass read it wrong from one run
 
-Not part of the brief; measured on the way past, and recorded because a reader
-of §4 will otherwise wonder what those four prisoners did. Run 2, Act 3, one
-in-game day after four prisoners were admitted into one bed with no guards:
+Not part of the brief; measured on the way past, and kept because **the first
+reading of it was wrong and the second run is what corrected it.** Four
+prisoners were admitted into one bed with no guards; an assault and a riot both
+opened.
+
+**Run 1 sampled a day later, after the riot had closed**, and showed:
 
 ```
+--- .hud__event: {…,"severity":"info","text":"The prison is under control again — no incident is still open."}
+Incidents chip (visible text): "0 / Incidents / Clear"
 ALERTS fold a day later: {"sectionCollapsed":"true","listChildCount":5,
  "listText":"A fight has broken out between two prisoners.Warning
   The prison is under control again — no incident is still open.Info
   A riot has broken out — 4 prisoners have stopped taking orders.Critical
   The prison is under control again — no incident is still open.Info
   Nothing was removed — …Warning"}
---- .hud__event: {…,"severity":"info","text":"The prison is under control again — no incident is still open."}
-INCIDENTS chip: 0 … Clear
 ```
 
-An assault and a **riot** opened and closed inside one in-game day. The event
-band shows the newest event, by design and for a stated reason
-(`src/ui/hud/hud.ts:1015-1022`), so what stands on the line is the all-clear;
-the strip's Incidents chip reads `0 / Clear`, which is true *now*. **The cause
-is understood** — the prison had zero guards and the strip said
-`0 understaffed · 4 unguarded`, which is ADR 0078's ladder working. **The
-impact is not claimed**: whether a player who looked away for ten seconds
-should be able to learn that a riot happened is a product question, and the
-alerts list *did* keep both rows, behind a fold that starts shut.
+From that alone the draft of this section read *"a riot happened and the band
+that reported it had already moved on"*, which is a claim about the interface.
+**Run 2 falsifies it.** Its sample landed while the riot was open:
+
+```
+--- .hud__event: {"present":true,"hidden":false,"severity":"danger",
+                  "box":{"w":1440,"h":32,"x":0,"y":80},
+                  "text":"A riot has broken out — 4 prisoners have stopped taking orders."}
+```
+
+and the visible strip at that moment read:
+
+```
+1
+Incidents
+Riot
+```
+
+So a live riot is a `danger`-toned full-width band **and** a chip whose badge
+names it — the two channels §5 credits for the unpaid payday, working here too.
+What Run 1 measured was a sample taken after the incident closed, which is the
+interface being *correct*, not silent. The alerts list keeps both rows either
+way, behind a fold that starts shut.
+
+**What survives as a real observation, and it is not a defect claim:** the riot
+arrived in a beginner-shaped prison — four prisoners, one bed, no guards, day
+four — and the only forewarning was the strip's `0 understaffed · 4 unguarded`,
+which is ADR 0078's ladder saying exactly the right thing. Whether that is
+enough forewarning is a product question and no impact is claimed here.
+
+**The method note is the point of keeping this section.** One run produced a
+plausible interface criticism; the second run, differing only in when it
+sampled, refuted it. `docs/AGENT_WORKFLOW.md` §3's *"a measurement is not a
+diagnosis"* is what that is, and it was caught by running twice rather than by
+being careful.
 
 ## 9. Two harness facts worth not re-deriving
 
@@ -697,8 +749,10 @@ nodes, and `createIconButton` sets `title: options.label`
   one place that matters.
 - **ADR 0064's withholding as a thing a player can diagnose.** It is implemented
   (`stateIncomeForPrisonerDay`, `src/simulation/economy/income.ts:383-387`) and
-  Act 3 saw `EARNED TODAY` at `229` with one resident, which is a prorated
-  accrual rather than a withheld one, so nothing here separates the two.
+  Act 3 saw `EARNED TODAY` at `229` (Run 1) and `73` (Run 2) with one resident
+  in each — both prorated accruals sampled at different points in the day
+  rather than withheld amounts, so nothing here separates a withholding from a
+  proration.
   **UNKNOWN**, and what would settle it: run one prison with a shower room and
   one without for ten in-game days and read `stateIncomeAccruedTodayMinorUnits`
   at each day boundary — the shape

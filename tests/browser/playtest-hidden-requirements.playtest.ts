@@ -263,12 +263,12 @@ test.describe('playtest: what the game requires and never says', () => {
    * `new FixedStepClock(50, { mode: 'paused' })`) and **nothing starts it but
    * the player**.
    *
-   * Since ADR 0051 the worker dispatches a submitted command against a paused
-   * clock immediately (`src/main.ts:2432-2435`), so zoning, buying and
-   * ordering all *work* while the clock is stopped -- money leaves the
-   * treasury, rooms appear, orders are accepted. Only the passage of time does
-   * not happen. That is the exact shape #629 is about: every press answers,
-   * and the prison never gets built.
+   * The worker dispatches a submitted command against a paused clock
+   * immediately -- the behaviour ADR 0051 proposed and `src/main.ts:2432-2435`
+   * records as shipped -- so zoning, buying and ordering all *work* while the
+   * clock is stopped: money leaves the treasury, rooms appear, an order joins
+   * the queue. Only the passage of time does not happen. That is the exact
+   * shape #629 is about: every press answers, and the prison never gets built.
    *
    * So this act plays the informed material route -- buy first, then build,
    * which is the route `buildAndPopulate` hard-codes and the one that is known
