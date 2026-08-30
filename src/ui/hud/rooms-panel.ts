@@ -77,6 +77,13 @@ import type {
  * `.ui-panel__body[hidden]` in `primitives.css` for why this fold did nothing
  * at all before it.
  *
+ * **And the confirm ends the pass, so the panel stays back** (#684). This
+ * paragraph described the whole cycle until then and was silent about what
+ * happens after a designation, which is where the defect lived: the pass used
+ * to resume with the tool still armed and the panel folded over the only
+ * control that says so. `standDownAfterConfirm` carries the reasoning, the
+ * option that was rejected, and what it costs.
+ *
  * **The confirm gates removals too**, and that is deliberate rather than
  * uniformity for its own sake. A removal drag grows every tile it covers into
  * the whole room instance that claims it, so clipping the corner of a 6x6
@@ -1050,6 +1057,64 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     };
   };
 
+  /**
+   * The confirm ends the drawing pass, and the tool goes with it (#684).
+   *
+   * **The panel used to leave the tool armed here**, deliberately: a player
+   * designating a row of cells could drag the next rectangle without touching
+   * the panel again, and `app-shell.spec.ts` said so in as many words -- *"the
+   * tool stays armed through a confirm, so this is another drag and nothing
+   * else"*. That reasoning is kept rather than deleted because it is still the
+   * cheaper loop for a player who knows about it. What it did not survive is
+   * the state being invisible at the moment it changes.
+   *
+   * `drawing()` is true the instant the rectangle clears, so the panel folds
+   * itself to its header on the same press -- and the one control that reports
+   * the tool's state, this row's arm button, folds away with it. A player
+   * coming back for a second room therefore opens the panel and presses the
+   * control that looks like the way in, and that press *disarms*. The next drag
+   * does nothing, and the third press arms again, so pressing repeatedly
+   * eventually works and never teaches what happened. Measured by playing
+   * `main`: it cost a playtest run outright (issue #684, and
+   * `docs/research/2026-08-29-playtest-ordering-and-the-second-room.md` reached
+   * the same state from the other direction).
+   *
+   * **The label was honest throughout and that is not enough.** `paintActions`
+   * has always set "Stop drawing", `data-armed` and `aria-pressed` on the armed
+   * control, so a player who opens the folded panel and *reads* the button
+   * before pressing it is told the truth. The whole failure is that reading it
+   * costs a press first, on a panel that folded itself, in the one state where
+   * the player's model -- "press the button, then draw" -- says there is
+   * nothing to read.
+   *
+   * So the arm press becomes one statement of intent per room: it arms, the
+   * panel gets out of the way, the rectangle is drawn, the confirm designates
+   * *and stands the tool down*. The fold then ends on its own -- `drawing()` is
+   * false with nothing armed -- so the panel comes back saying "Draw on map",
+   * which is exactly what the player is about to press. The alternative
+   * considered and rejected was to keep the tool armed and hold the panel open
+   * instead: at 375x812 with both rail panels expanded the largest square of
+   * bare world on the whole page is 16px (see `drawingFolded`), so a panel that
+   * stayed open while armed would leave nowhere to draw the second room at all.
+   *
+   * It costs one press per extra room, paid by the player who already knew the
+   * tool stayed armed. It buys the state never being hidden at the moment it
+   * changes, which is the thing the owner's standing directive rules out.
+   *
+   * A **discard** still leaves the tool armed, and that asymmetry is the point:
+   * discarding says "not that rectangle", so the pass continues and the panel
+   * folds again. Confirming says the room is placed.
+   */
+  const standDownAfterConfirm = (): void => {
+    if (!armed) return;
+    armed = false;
+    // Both modes end, for the reason `setVisible` clears both: a tool that is
+    // not armed is aimed at nothing, and leaving `removing` set would leave the
+    // control beside this one reading "Stop removing" with nothing to stop.
+    removing = false;
+    options.onArm(false, { ...(selectedId === undefined ? {} : { roomId: selectedId }), removing: false });
+  };
+
   const confirmButton: ActionButton = createActionButton({
     label: t(HUD_MESSAGE_KEY.roomsConfirm, { width: 0, height: 0 }),
     tone: 'primary',
@@ -1061,6 +1126,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       if (removing) {
         pending = undefined;
         pendingEnclosure = undefined;
+        standDownAfterConfirm();
         paintActions();
         handOn();
         options.onRemove(rectangle);
@@ -1073,6 +1139,11 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       if (roomId === undefined) return;
       pending = undefined;
       pendingEnclosure = undefined;
+      // Before the repaint, so the row this press just swapped back is painted
+      // once, in the state it will be read in -- and before the intent leaves,
+      // so a host that refuses it cannot leave the world armed behind a panel
+      // that says it is not.
+      standDownAfterConfirm();
       paintActions();
       handOn();
       options.onDesignate({ roomId, area: rectangle });
