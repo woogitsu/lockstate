@@ -257,6 +257,48 @@ async function settledTreasury(
   }
 }
 
+/**
+ * The tiles a drag can actually reach, measured against the HUD's own boxes
+ * rather than against the viewport.
+ *
+ * **`visibleTileWindow` below is not enough, and two runs measured why.** It
+ * computes the window from the viewport, so at 1440x900 it answers columns
+ * 6..26 -- and a *vertical* drag at column 25 produced **zero** orders in run 1
+ * and again in run 2, while the horizontal runs at rows 10 and 22 each produced
+ * twenty. The difference is `.hud__rail`: a horizontal drag crosses the world
+ * for most of its path and only ends under the rail, whereas a vertical drag at
+ * a column the rail covers never touches the world at all.
+ *
+ * So this reads the rail's left edge, the tab bar's top and the strip's bottom
+ * off the live page and clamps the window to the rectangle actually left over.
+ * The numbers it answers are a property of the interface, and printing them is
+ * itself part of what act 3 reports: it is how much prison a player can draw
+ * without moving the camera.
+ */
+async function drawableTileWindow(
+  page: import('@playwright/test').Page,
+  origin: { originX: number; originY: number },
+): Promise<{ firstColumn: number; lastColumn: number; firstRow: number; lastRow: number; freeBox: string }> {
+  const box = await page.evaluate(() => {
+    const rect = (selector: string) => document.querySelector(selector)?.getBoundingClientRect() ?? null;
+    const rail = rect('.hud__rail');
+    const strip = rect('.hud-strip');
+    const tabs = rect('.hud__tabs');
+    return {
+      right: rail === null ? window.innerWidth : rail.left,
+      top: strip === null ? 0 : strip.bottom,
+      bottom: tabs === null ? window.innerHeight : tabs.top,
+    };
+  });
+  return {
+    firstColumn: Math.ceil(-origin.originX / TILE) + 1,
+    lastColumn: Math.floor((box.right - origin.originX) / TILE) - 1,
+    firstRow: Math.ceil((box.top - origin.originY) / TILE) + 1,
+    lastRow: Math.floor((box.bottom - origin.originY) / TILE) - 1,
+    freeBox: `x<${Math.round(box.right)} y ${Math.round(box.top)}..${Math.round(box.bottom)}`,
+  };
+}
+
 /** The tiles a drag can actually reach, from the measured origin. */
 function visibleTileWindow(origin: { originX: number; originY: number }): {
   firstColumn: number;
@@ -660,12 +702,24 @@ async function drawWing(
   label: string,
   state: { ordered: number },
 ): Promise<void> {
+  /*
+   * **The rectangle is the *viewport* window, not the uncovered one, and run 3
+   * is why.** Clamping the wing to the rectangle the HUD leaves free
+   * (`drawableTileWindow`, columns 6..21 and rows 11..20 at 1440x900) shrinks
+   * the wing from 119 segments to about 80 and loses two runs to the minimap
+   * corner -- which measures the harness, not the player. A player drags to the
+   * edge of the world they can see, and the HUD swallows whichever end of the
+   * gesture it covers; the middle still lands. So the wing is drawn to the
+   * viewport window, exactly as run 1 drew it, and the uncovered box is logged
+   * beside it as the explanation for the runs that produce nothing.
+   */
   const bounds = visibleTileWindow(origin);
+  const uncovered = await drawableTileWindow(page, origin);
   const x0 = bounds.firstColumn;
-  const x1 = bounds.lastColumn - 1;
+  const x1 = bounds.lastColumn;
   const y0 = bounds.firstRow;
   const y1 = bounds.lastRow;
-  log(act, `${label}: rectangle (${x0},${y0}) .. (${x1},${y1}) inside window columns ${bounds.firstColumn}..${bounds.lastColumn}, rows ${bounds.firstRow}..${bounds.lastRow}`);
+  log(act, `${label}: rectangle (${x0},${y0}) .. (${x1},${y1}) from the viewport window; the box the HUD leaves uncovered is ${uncovered.freeBox}, columns ${uncovered.firstColumn}..${uncovered.lastColumn}, rows ${uncovered.firstRow}..${uncovered.lastRow}`);
 
   const edgeX = (tx: number) => origin.originX + tx * TILE;
   const edgeY = (ty: number) => origin.originY + ty * TILE;
@@ -774,8 +828,9 @@ test('act 3: three wings of an ambitious prison, drawn without once trying to ru
   const beforeBeds = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
   await armBuildable(page, 'bed-wooden');
   let bedsPlaced = 0;
+  const bedBounds = await drawableTileWindow(page, origin);
   for (let index = 0; index < 12; index += 1) {
-    const bounds = visibleTileWindow(origin);
+    const bounds = bedBounds;
     const target = centreOf(origin, bounds.firstColumn + 2 + (index % 5), bounds.firstRow + 2 + Math.floor(index / 5));
     const produced = await press(page, target.x, target.y);
     if (produced.some((c) => c['type'] === 'PlaceObject')) bedsPlaced += 1;
@@ -819,7 +874,7 @@ test('act 3: three wings of an ambitious prison, drawn without once trying to ru
   log(act, `CHANGED THEIR MIND: ${regretCancels} order(s) cancelled; treasury ${beforeRegret} -> ${afterRegret}`);
 
   origin = await panAndRecalibrate(page, act);
-  const clean = visibleTileWindow(origin);
+  const clean = await drawableTileWindow(page, origin);
   const redrawRow = clean.firstRow + 1;
   const beforeRedraw = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
   const beforeRedrawCommands = (await sentCommands(page)).length;
@@ -876,7 +931,8 @@ test('act 4: the same wall run with the clock never started, and what that does 
   log(act, `clock, NEVER pressed: ${JSON.stringify(await currentClock(page))} tick=${await currentTick(page)}`);
   await armBuildable(page, 'wall-brick');
 
-  const bounds = visibleTileWindow(origin);
+  const bounds = await drawableTileWindow(page, origin);
+  log(act, `the free world box is ${bounds.freeBox}, columns ${bounds.firstColumn}..${bounds.lastColumn}, rows ${bounds.firstRow}..${bounds.lastRow}`);
   const before = (await sentCommands(page)).length;
   await drag(
     page,
