@@ -235,11 +235,13 @@ function playRecovery({ candidate, principal, plan, seed = 0x692, horizonDays = 
   let dayOutOfTheLock = null;
   let escalationDay = null;
   let peakBalance = session.balance;
+  let minBalance = session.balance;
   const dailyIncome = [];
   for (let day = 0; day < horizonDays; day += 1) {
     stepDays(session, 1);
     const balance = session.balance;
     peakBalance = Math.max(peakBalance, balance);
+    minBalance = Math.min(minBalance, balance);
     if (dayHoused === null && session.occupancy > 0) dayHoused = dayOf(session.tick);
     if (dayOutOfTheLock === null && balance >= 65 && session.occupancy > 0) dayOutOfTheLock = dayOf(session.tick);
     if (useLoan) {
@@ -285,6 +287,8 @@ function playRecovery({ candidate, principal, plan, seed = 0x692, horizonDays = 
     diverted: useLoan ? session.runtime.loans.divertedTotalMinorUnits : 0,
     outstanding: useLoan ? session.runtime.loans.outstandingMinorUnits : 0,
     finalBalance: session.balance,
+    minBalance,
+    peakBalance,
     finalDay: dayOf(session.tick),
     idleDays: dayOf(session.tick) - dayOf(firstDayPressedNothing),
     dailyIncome,
@@ -404,7 +408,7 @@ table(capacityRows, [
  * ADR 0075's own: *"wages exceed every income line, the balance falls for
  * ever … a hard-lock again, only slower, and dressed as a mechanic."*
  */
-function playStaffedRecovery({ candidate, principal, guards, seed = 0x692, horizonDays = 120 }) {
+function playStaffedRecovery({ candidate, principal, guards, drainFirst, seed = 0x692, horizonDays = 120 }) {
   const terms = {
     diversionRateBasisPoints: candidate.diversion,
     feeRateBasisPoints: candidate.fee,
@@ -423,6 +427,15 @@ function playStaffedRecovery({ candidate, principal, guards, seed = 0x692, horiz
   for (let index = 0; index < segments; index += 1) {
     session.send({ type: 'PlaceBuildOrder', orderId: session.nextOrderId('wall'), definitionId: 'wall-brick', ...order[index] });
   }
+  /*
+   * `drainFirst` decides whether the 300-odd wall orders are standing when the
+   * rescue is attempted, and it turns out to be the whole difference between
+   * the two halves of section 6. `ConstructionSystem` builds one order at a
+   * time, so a door placed behind a full backlog does not reach the head of
+   * the queue for about thirteen in-game days -- by which time the wages have
+   * spent the loan.
+   */
+  if (drainFirst) stepDays(session, 20);
   const beforeHire = session.balance;
   for (let guard = 0; guard < guards; guard += 1) {
     session.send({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ARRIVAL });
@@ -467,6 +480,7 @@ function playStaffedRecovery({ candidate, principal, guards, seed = 0x692, horiz
   return {
     candidate: candidate.name,
     guards,
+    drainFirst,
     principal,
     beforeHire,
     afterHire,
@@ -512,12 +526,15 @@ table(controlRows, [
 
 console.log('\n## 6. The payroll route: a prison walked under by a charge it cannot decline\n');
 const staffedRows = [];
-for (const guards of [1, 3, 5]) {
-  for (const candidate of [CANDIDATES[0], CANDIDATES[2], CANDIDATES[4]]) {
-    staffedRows.push(playStaffedRecovery({ candidate, principal: 1_500, guards }));
+for (const drainFirst of [false, true]) {
+  for (const guards of [1, 3, 5]) {
+    for (const candidate of [CANDIDATES[0], CANDIDATES[2], CANDIDATES[4]]) {
+      staffedRows.push(playStaffedRecovery({ candidate, principal: 1_500, guards, drainFirst }));
+    }
   }
 }
 table(staffedRows, [
+  { label: 'backlog drained', value: (row) => row.drainFirst },
   { label: 'candidate', value: (row) => row.candidate },
   { label: 'guards', value: (row) => row.guards },
   { label: 'wage bill/day', value: (row) => row.wageBill },
