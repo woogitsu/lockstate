@@ -57,104 +57,34 @@ it would have run green with no art and said nothing
 
 Nothing below is tiered **FROM MEMORY**.
 
+## The four answers, in one place
+
+1. **What does the player see on the way down?** Nothing. Over the 24 drags that
+   spend 25,000 down to 40, the only lines newly on screen are the in-game day's
+   progress percentage, the autosave notice and the queue count. The one number
+   that is always there — the Funds chip — is drawn identically at both ends.
+   The first sentence about money in the whole session arrives on the first
+   press the prison cannot pay for. **§2.**
+2. **What happens at the lock?** 40 in the bank against a 65 plank, no
+   prisoners, no staff. Seven escapes a mouse can reach leave the balance at 40:
+   waiting, cancelling queued orders (three rows at a time), `Undo`, the Remove
+   tool, buying a plank, placing a bed, and running the clock past two day
+   boundaries. **§3–§10.** The eighth is the one ADR 0075's table cannot have,
+   and it is §11.
+3. **Does an ambitious build get there?** Not in three wings. One prison wing is
+   121 wall segments and **9,680 — 39% of the treasury**; three is **68.8%**,
+   with 7,880 left. The step from there to a played arrival is arithmetic and is
+   named as this document's weakest claim. **§12–§13, §16.**
+4. **Which of ADR 0075's three decisions catches it?** **Decision 2, and only
+   decision 2.** Decision 1 cannot fire at all and the ADR says so itself;
+   decision 3 does not reach this prison as written, because #640 moved the
+   illiquidity out of the container and into the world. **Part C.**
+
+**And the thing this pass went looking for something else and found instead:**
+the game *does* have a control that puts money back in the treasury, it is
+exact, and the clock undoes it six seconds later. **§11.**
+
 ---
-
-# Part C — which of ADR 0075's three accepted decisions would have caught this
-
-ADR 0075 is `docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md`,
-**Accepted, 2026-08-29**. It records three decisions and says the ordering is
-the substance: *"decision 1 gets a prison its first bed and pays for growth
-after that; decision 2 is what happens when the money runs out anyway; and
-decision 3 is the way out of holding the wrong thing."* Taken against the wall
-route, one of the three catches it, one does not, and one catches a different
-prison from the one this route produces.
-
-## Decision 1 — development grants at population thresholds: **no**, and the ADR says so itself
-
-The decision is *"one-off per threshold, with the first threshold very low"*,
-and it is paid **for population crossing a line**.
-
-**A prison at the wall lock has no prisoners and cannot get one.** ADR 0075's
-own "why it is terminal" gives the chain: state income is paid per occupied
-place, an occupied place needs a standing `sleep-surface`, and both buildables
-that place one are priced in `item.wood-plank`. So no threshold above zero can
-ever be crossed from the locked state, and a threshold *at* zero is not a
-threshold — it is the starting grant the ADR already names and declines to
-treat as a mechanic: *"**The very low first threshold is a starting grant in
-disguise, and this ADR says so rather than letting it pass.**"*
-
-A starting grant of `G` does not remove the lock either. It moves it: the wall
-route's floor is `floor((25,000 + G) / 80)` segments instead of
-`floor(25,000 / 80)`, and one more drag arrives at the same place. The ADR
-states this conclusion in its own terms, about a different route, and it holds
-unchanged here:
-
-> **So: the first threshold alone does not close the class.** It gets the
-> prison started; the recurring pressure that the payroll route demonstrates is
-> answered by decision 2's ladder and its loan, not by this.
-
-## Decision 2 — the balance may go negative, and loans are the way out: **yes, and only this one**
-
-This is the decision that dissolves the lock rather than moving it, and the
-reason is a single sentence of the ADR's own:
-
-> **Its precondition is named in ADR 0017's own text and is not met today.**
-> `Treasury.spend` refuses rather than overdrawing
-> (`src/simulation/economy/treasury.ts:111`), so there is no negative balance
-> for a ladder to respond to. **Building this means changing that.**
-
-Changing that *is* the remedy here. `Treasury.spend` is the whole of the lock:
-**VERIFIED, read**, `src/simulation/economy/treasury.ts:111-116` is four lines,
-`if (!this.canAfford(amountMinorUnits)) return false;`, and `canAfford` is
-`amountMinorUnits <= this.balance`. With overdraw permitted, a balance of 40
-buys a plank at 65 and lands at −25; a bed stands; a prisoner is admitted; the
-income line starts; the loan is the instrument that keeps the hole
-serviceable. Nothing else in the three decisions touches the refusal.
-
-The ADR also says why the loan is not optional beside it, and the sentence is
-about exactly the state this route reaches:
-
-> **The loan is not a nice-to-have beside the ladder. It is what keeps
-> decision 8 honest.** With no floor and no terminal state, a prison can reach
-> a position from which recovery is arithmetically impossible … **a hard-lock
-> again, only slower, and dressed as a mechanic.**
-
-## Decision 3 — sell-back at a loss: **not as written**, because the wall route holds no stock to sell
-
-Decision 3 is *"a command that converts **stock** back into money at a fraction
-of the purchase price"*, and its justification names the prison it was written
-against:
-
-> **This is the general answer to "the money is in the wrong shape"**, which is
-> what ECON-002 is underneath: **the 625-brick prison is not poor, it is
-> illiquid.**
-
-The 625-brick prison holds 625 bricks in a container. **The wall-drag prison
-holds none.** **VERIFIED, read**:
-
-- `ConstructionMaterialsProvider.tryAllocate` is *"all-or-nothing: either every
-  requirement is satisfied and **consumed**"* (`src/simulation/construction/materials-provider.ts:3-8`).
-- The just-in-time sink buys the **deficit** only —
-  `const deficit = requirement.quantity - this.stock.availableOf(requirement.itemId) - inFlight;`
-  (`src/simulation/economy/just-in-time-materials.ts:164`) — so it never
-  over-buys and the container never accumulates.
-
-Two bricks per segment are bought, delivered, allocated, consumed, and written
-into the world's edge layers. So a `SellMaterials` over stock, dropped into this
-prison, would find nothing to sell.
-
-**It reaches this prison only through a demolition step that decision 3 does not
-mention and the interface barely supports.** `ConstructionSystem.cancelOrder`
-(`src/simulation/construction/system.ts:594-612`) reverses the geometry of a
-`completed` order and then hands its materials back —
-`this.materialsProvider.release(order.materialsAllocated)` — so bricks *can*
-return to the container. What can aim that command is the measured part, and it
-is Part B's subject.
-
-**This is the sharpest thing the pass has to say about the ADR**: #640 did not
-only make the lock reachable by a gesture, it moved the illiquidity from the
-container into the world. Decision 3 was written for money in the wrong shape
-*in a warehouse*; the wall route puts it in the wrong shape *in the map*.
 
 ---
 
@@ -514,10 +444,9 @@ about zoning. Nothing on that screen suggests the bed was also unaffordable.
 staff there is nothing to bill, which is exactly ADR 0075's terminality
 argument, observed rather than reasoned.
 
-**So: seven escapes, six of them nothing.** Wait, cancel, undo, remove, buy,
-place, run — the balance is 40 at the end of every one of them. The seventh is
-§11, and it is the only place this pass found anything the ADR's table does not
-have.
+**So: seven escapes, and nothing.** Wait, cancel, undo, remove, buy, place, run
+— the balance reads 40 at the end of every one of them. The eighth is §11, and
+it is the only place this pass found anything ADR 0075's table does not have.
 
 ## 11. Escape H — the one that gives the money back, and the clock that takes it away again
 
@@ -660,6 +589,105 @@ Not filed as a defect: one owned chunk is ADR 0019's and #649's subject, and
 `PurchaseParcel` has never existed
 ([`2026-08-30-two-subsystems-with-no-entrance.md`](./2026-08-30-two-subsystems-with-no-entrance.md)).
 Recorded because the ratio is the honest scale of the wall route.
+
+---
+
+# Part C — which of ADR 0075's three accepted decisions would have caught this
+
+ADR 0075 is `docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md`,
+**Accepted, 2026-08-29**. It records three decisions and says the ordering is
+the substance: *"decision 1 gets a prison its first bed and pays for growth
+after that; decision 2 is what happens when the money runs out anyway; and
+decision 3 is the way out of holding the wrong thing."* Taken against the wall
+route, one of the three catches it, one does not, and one catches a different
+prison from the one this route produces.
+
+## Decision 1 — development grants at population thresholds: **no**, and the ADR says so itself
+
+The decision is *"one-off per threshold, with the first threshold very low"*,
+and it is paid **for population crossing a line**.
+
+**A prison at the wall lock has no prisoners and cannot get one.** ADR 0075's
+own "why it is terminal" gives the chain: state income is paid per occupied
+place, an occupied place needs a standing `sleep-surface`, and both buildables
+that place one are priced in `item.wood-plank`. So no threshold above zero can
+ever be crossed from the locked state, and a threshold *at* zero is not a
+threshold — it is the starting grant the ADR already names and declines to
+treat as a mechanic: *"**The very low first threshold is a starting grant in
+disguise, and this ADR says so rather than letting it pass.**"*
+
+A starting grant of `G` does not remove the lock either. It moves it: the wall
+route's floor is `floor((25,000 + G) / 80)` segments instead of
+`floor(25,000 / 80)`, and one more drag arrives at the same place. The ADR
+states this conclusion in its own terms, about a different route, and it holds
+unchanged here:
+
+> **So: the first threshold alone does not close the class.** It gets the
+> prison started; the recurring pressure that the payroll route demonstrates is
+> answered by decision 2's ladder and its loan, not by this.
+
+## Decision 2 — the balance may go negative, and loans are the way out: **yes, and only this one**
+
+This is the decision that dissolves the lock rather than moving it, and the
+reason is a single sentence of the ADR's own:
+
+> **Its precondition is named in ADR 0017's own text and is not met today.**
+> `Treasury.spend` refuses rather than overdrawing
+> (`src/simulation/economy/treasury.ts:111`), so there is no negative balance
+> for a ladder to respond to. **Building this means changing that.**
+
+Changing that *is* the remedy here. `Treasury.spend` is the whole of the lock:
+**VERIFIED, read**, `src/simulation/economy/treasury.ts:111-116` is four lines,
+`if (!this.canAfford(amountMinorUnits)) return false;`, and `canAfford` is
+`amountMinorUnits <= this.balance`. With overdraw permitted, a balance of 40
+buys a plank at 65 and lands at −25; a bed stands; a prisoner is admitted; the
+income line starts; the loan is the instrument that keeps the hole
+serviceable. Nothing else in the three decisions touches the refusal.
+
+The ADR also says why the loan is not optional beside it, and the sentence is
+about exactly the state this route reaches:
+
+> **The loan is not a nice-to-have beside the ladder. It is what keeps
+> decision 8 honest.** With no floor and no terminal state, a prison can reach
+> a position from which recovery is arithmetically impossible … **a hard-lock
+> again, only slower, and dressed as a mechanic.**
+
+## Decision 3 — sell-back at a loss: **not as written**, because the wall route holds no stock to sell
+
+Decision 3 is *"a command that converts **stock** back into money at a fraction
+of the purchase price"*, and its justification names the prison it was written
+against:
+
+> **This is the general answer to "the money is in the wrong shape"**, which is
+> what ECON-002 is underneath: **the 625-brick prison is not poor, it is
+> illiquid.**
+
+The 625-brick prison holds 625 bricks in a container. **The wall-drag prison
+holds none.** **VERIFIED, read**:
+
+- `ConstructionMaterialsProvider.tryAllocate` is *"all-or-nothing: either every
+  requirement is satisfied and **consumed**"* (`src/simulation/construction/materials-provider.ts:3-8`).
+- The just-in-time sink buys the **deficit** only —
+  `const deficit = requirement.quantity - this.stock.availableOf(requirement.itemId) - inFlight;`
+  (`src/simulation/economy/just-in-time-materials.ts:164`) — so it never
+  over-buys and the container never accumulates.
+
+Two bricks per segment are bought, delivered, allocated, consumed, and written
+into the world's edge layers. So a `SellMaterials` over stock, dropped into this
+prison, would find nothing to sell.
+
+**It reaches this prison only through a demolition step that decision 3 does not
+mention and the interface barely supports.** `ConstructionSystem.cancelOrder`
+(`src/simulation/construction/system.ts:594-612`) reverses the geometry of a
+`completed` order and then hands its materials back —
+`this.materialsProvider.release(order.materialsAllocated)` — so bricks *can*
+return to the container. What can aim that command is the measured part, and it
+is Part B's subject.
+
+**This is the sharpest thing the pass has to say about the ADR**: #640 did not
+only make the lock reachable by a gesture, it moved the illiquidity from the
+container into the world. Decision 3 was written for money in the wrong shape
+*in a warehouse*; the wall route puts it in the wrong shape *in the map*.
 
 ---
 
