@@ -641,8 +641,9 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
    * together the two measured `scrollHeight` 26 against `clientHeight` 13 at
    * 900x600, so the clause that survived was the price and the clause that was
    * cut was the one telling the player their new guard is posted nowhere.
-   * `.hud-staff__hire-unassigned` is exempted from that clamp in `hud.css`, on
-   * `.hud-build__order-note`'s terms and for its reason.
+   * `.hud-staff__hire-unassigned` is exempted from that clamp in `hud.css`,
+   * which is the shape PR #647 uses for the Build panel's restored clock note
+   * and is taken for its reason.
    *
    * Set once rather than painted: it quotes no figure, so unlike `hireNote`
    * above there is nothing about it that a change of selection can falsify. It

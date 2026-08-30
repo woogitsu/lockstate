@@ -1966,9 +1966,12 @@
     overflow: hidden;
   }
 
-  /* The one `.hud-staff__note` that is not clamped, on
-     `.hud-build__order-note`'s terms and for its reason (#639, the owner's
-     ruling of 2026-08-30). `hud.security.hire-unassigned` -- "A new guard
+  /* The one `.hud-staff__note` that is not clamped (#639, the owner's ruling of
+     2026-08-30). The shape is PR #647's, which exempts `.hud-build__order-note`
+     from this same block for the same kind of sentence -- that branch is not
+     merged as this is written, so the selector it adds is not in this file yet
+     and the citation is to the pull request rather than to a rule below.
+     `hud.security.hire-unassigned` -- "A new guard
      starts unassigned." -- is the half of the old hire hint the approved
      wording displaced, and the measurement that displaced it is why it comes
      back as its own element rather than as a second sentence: run on after
