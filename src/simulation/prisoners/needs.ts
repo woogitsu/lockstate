@@ -65,12 +65,23 @@ export const NEED_MAX_SCALED = NEED_MAX * NEED_SCALE;
  * 20,400 is `204 / 0.01`: the ticks a need falling at the old rate takes to
  * cross `STATE_INCOME_UNMET_NEED_LEVEL` (51) from `NEED_MAX`
  * (`docs/research/2026-08-29-sentence-length-at-admission.md` measures the
- * batching-and-rounding correction at 20,360). Sentences are drawn from 2 to
+ * batching-and-rounding correction at 20,360). Sentences were drawn from 2 to
  * 16 in-game days -- 4,800 to 38,400 ticks
  * (`src/simulation/prisoners/sentence.ts`) -- so at 0.01 more than half the
- * population leaves before an *entirely unguarded* prison could have cost them
- * anything, and coverage would be an instrument with nothing on the other end
- * of it.
+ * population left before an *entirely unguarded* prison could have cost them
+ * anything, and coverage would have been an instrument with nothing on the
+ * other end of it.
+ *
+ * **That premise is gone since the owner's 2026-08-30 ruling on
+ * [#593](https://github.com/matmaxalez/lockstate/issues/593)
+ * ([ADR 0079](../../../docs/adr/0079-a-sentence-long-enough-to-be-a-history.md)):
+ * the range is 14 to 90 in-game days, 33,600 to 216,000 ticks, so 20,400 is
+ * now inside every drawable sentence and 0.01 would have a population after
+ * all.** Recorded rather than rewritten, and **no rate is changed here**: the
+ * decay stays 0.05 and the provision stays 0.08. Whether ADR 0078 decision 2
+ * is still the best answer at the new range is a balance question for the
+ * owner, raised here and in ADR 0078's own margin rather than settled inside
+ * an implementation file.
  *
  * 0.05 is `hunger`'s rate, which is this module's existing statement of "a
  * need a prison has to attend to about daily": 4,080 ticks, one and seven
@@ -151,10 +162,17 @@ export const NEED_DECAY_SCALED_PER_TICK: Readonly<Record<NeedId, number>> = Obje
  * to be representable too, which restricts this constant to multiples of
  * 0.01), the whole of the available range is 0.06, 0.07, 0.08 and 0.09.
  * Their long-stay accumulators are 10,200, 13,600, 20,400 and 40,800 ticks;
- * the last is past the 38,400-tick maximum sentence, so it is an accumulator
- * that never accumulates, and the first two are `hygiene`'s and
- * `recreation`'s numbers, which would read as a coincidence rather than a
- * decision.
+ * the first two are `hygiene`'s and `recreation`'s numbers, which would read as
+ * a coincidence rather than a decision.
+ *
+ * **This sentence also said of 40,800 that "the last is past the 38,400-tick
+ * maximum sentence, so it is an accumulator that never accumulates", and that
+ * is false since #593 re-ranged sentences to 33,600..216,000.** 40,800 is
+ * inside all but the shortest eleven of the seventy-seven drawable lengths, so
+ * 0.09 would accumulate for most of the population. It is left out of the
+ * bracket on the *other* ground only: the legibility argument above is
+ * untouched by the re-range. Both directions are marked because the reason a
+ * rung was set aside is the thing a later balance pass needs.
  *
  * A **directional default, not a committed balance decision**, in the sense
  * `DEFAULT_SECTOR_RISK_POLICY` uses the phrase.

@@ -153,7 +153,18 @@ window is 9,601 ticks inside a 24,000-tick period, so **40%** of 14-day arrivals
 are reviewed. Every length from **20 in-game days** upward is reviewed whatever
 tick it arrives on, and from **30 days** upward, twice. The residual is
 **2.73% of prisoners who still receive no review at all**, all of them in the
-14-to-19-day band. That is #593's own subject — its evidence-clock proposal
+14-to-19-day band.
+
+The population figures above come from a harness run outside the repository;
+what is committed is the cross-section of the same measurement, driven through
+the same real system, in
+`tests/unit/prisoners-classification-review.test.ts`'s *"reaches no sentence the
+old range could draw, and every sentence the new one can"* — which pins that the
+old floor and a sentence of exactly one interval reach nothing at any arrival
+phase, the old ceiling reaches one at 6 phases in 10 and a second at none, the
+new floor reaches one at 4 in 10, 20 days at all 10, 30 days twice at all 10,
+and the top of the range exactly 8 times. A reader who does not trust the
+percentages can read the shape off that file. That is #593's own subject — its evidence-clock proposal
 answers it — and is left to that issue rather than fixed by moving a constant.
 
 ### 4. The bit-identical-tiers property is spent, and every place that claimed it says so in both directions

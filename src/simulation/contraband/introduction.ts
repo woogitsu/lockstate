@@ -115,11 +115,11 @@ export interface ContrabandIntroductionPolicy {
  *     scheduled tick falls in `[c + 24,000, c + s]` -- a window of `s - 24,000`
  *     ticks, and empty unless `s >= 24,000`.
  *
- *     **This sub-paragraph is superseded by the owner's 2026-08-30 ruling on
+ *     **The owner's 2026-08-30 ruling on
  *     [#593](https://github.com/matmaxalez/lockstate/issues/593)
- *     ([ADR 0079](../../../docs/adr/0079-a-sentence-long-enough-to-be-a-history.md)),
- *     and both halves are kept because the arithmetic is the same and only the
- *     inputs moved.** It read:
+ *     ([ADR 0079](../../../docs/adr/0079-a-sentence-long-enough-to-be-a-history.md))
+ *     replaced this sub-paragraph, and both halves are kept because the
+ *     arithmetic is the same and only the inputs moved.** It read:
  *
  *     > `MIN_SENTENCE_DAYS` is 2 and `MAX_SENTENCE_DAYS` is 16, so the drawable
  *     > lengths are 4,800..38,400 in steps of `DAY_LENGTH_TICKS` (2,400).

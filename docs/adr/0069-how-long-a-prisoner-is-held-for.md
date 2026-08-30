@@ -213,6 +213,20 @@ its bit-identical-tiers property. It is filed as
 [issue #540](https://github.com/matmaxalez/lockstate/issues/540) and is its own
 decision.
 
+> **Two claims in this section moved on 2026-08-30 with
+> [ADR 0079](./0079-a-sentence-long-enough-to-be-a-history.md), and the one that
+> matters did not.** *"Reachable tiers at `priorIncidents: 0` are `[0, 1]` … at
+> both ends of the proposed sentence range … because the whole range is below
+> `LONG_SENTENCE_THRESHOLD_TICKS`"* — the range now straddles that threshold, so
+> the same enumeration answers `[0, 1]` below 84 in-game days and `[0, 1, 2]` at
+> or above it, and *"holding it at 0 is precisely what buys decision 3 its
+> bit-identical-tiers property"* describes a property that has been spent.
+> **The bolded sentence survives**: `classificationGroupIdForTier` still answers
+> `'high-risk'` only at tier 3, and one sentence point plus a maximum screening
+> draw clamps at 2, so no admission a player can make produces a high-risk
+> prisoner. It is one screening point away now instead of two. #540 is still
+> open and still owns `priorIncidents`.
+
 ## What this does not decide
 
 - **Any balance number.** The range is a proposal; the research record names

@@ -129,7 +129,7 @@ export const SENTENCE_UNSET_TICKS = 0;
  *   (24,000), which is the point: the first review becomes *possible* for
  *   every drawable sentence rather than for seven of fifteen. It does not make
  *   the first review certain, because the review schedule is global and
- *   eligibility is per record -- see the measurement below.
+ *   eligibility is per record -- see the measurement two sections down.
  * - **The maximum, 90 days (216,000 ticks).** Three in-game months, three real
  *   hours at x1, and **above `LONG_SENTENCE_THRESHOLD_TICKS`** (200,000). See
  *   the next section: crossing that threshold is the reason this number is 90
@@ -145,6 +145,30 @@ export const SENTENCE_UNSET_TICKS = 0;
  *   `DAY_LENGTH_TICKS` -- itself *"a candidate value, not a locked balance
  *   decision"* -- carries sentences with it instead of silently reshaping
  *   them.
+ *
+ * ## What this does to classification review, measured
+ *
+ * `ClassificationReviewSystem` is globally scheduled -- `intervalTicks: 24,000`,
+ * `phaseTicks: 23,999` -- while eligibility is per record, so a prisoner
+ * classified at `c` with sentence `s` is reviewed only when a scheduled tick
+ * falls in `[c + 24,000, c + s]`. Measured by running the real system in the
+ * real kernel over every drawable length at 100 arrival phases, counting each
+ * prisoner's reviews and removing them at `sentenceEndTick`:
+ *
+ * | | old `[2, 16]` | new `[14, 90]` |
+ * | --- | --- | --- |
+ * | reach a first review | 14.00% | **97.27%** |
+ * | reach a second | 0% | **85.06%** |
+ * | mean reviews per prisoner | 0.14 | **4.20** |
+ *
+ * So `CLASSIFICATION_REVIEW_INTERVAL_TICKS` does **not** need to move, and is
+ * not moved. What survives is the phase lottery at the bottom of the range: at
+ * 14 days the window is 9,601 ticks inside a 24,000-tick period, so 40% of
+ * 14-day arrivals are reviewed and **2.73% of all prisoners still get no review
+ * at all**. Every length from 20 in-game days up is reviewed whatever tick it
+ * arrives on, and from 30 up, twice.
+ * `tests/unit/prisoners-classification-review.test.ts` pins that cross-section
+ * against the real system rather than restating these figures.
  *
  * ## The threshold this range now crosses, and the sentence that said it must not
  *
