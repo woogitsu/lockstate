@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-30
 **Branch measured:** `agent/675-play-into-the-lock`, cut from `main` at
-`v0.0.257`, which carries [#640](https://github.com/matmaxalez/lockstate/pull/640)
+`v0.0.257` (`b143791`), which carries [#640](https://github.com/matmaxalez/lockstate/pull/640)
 (a build order buys its own materials at the press) and
 [#655](https://github.com/matmaxalez/lockstate/pull/655) (the shared harness's
 `waitForQueueEmpty` regex).
@@ -281,7 +281,7 @@ reported: *"the shortfall figure exists on the wire and reaches no pixel … no
 members."* **True of the tree it measured, and false of what merged.** Both
 directions are kept.
 
-**MEASURED on `main` at v0.0.257**, on the press that ran out:
+**MEASURED on `main` at `v0.0.257` (`b143791`)**, on the press that ran out:
 
 ```
 shortfall line: {"present":true,"hidden":false,"laidOut":true,"text":"Waiting for 1,040 to buy materials."}
