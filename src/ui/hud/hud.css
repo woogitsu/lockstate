@@ -2583,9 +2583,9 @@
  * is a scroll-affordance question and #634 rules that out explicitly.
  *
  * AND IT IS A VIEWPORT BREAKPOINT, so it cannot see `--ui-scale`. At 200%
- * the row needs 2202px and the chrome takes 1454, so the one-row layout is
- * not a readout at any viewport that exists; at 1920/200% the metrics measure
- * 467px against 2202px of content. That was true before this block and is
+ * the row needs 2202px and the chrome more than doubles, so the one-row layout is
+ * not a readout at any viewport that exists; at 1920/200% the chrome takes
+ * 1453px and the metrics measure 467px against 2202px of content. That was true before this block and is
  * still true above 1920 -- the honest fix for it is a container-relative rule,
  * not a bigger number here.
  *
@@ -2645,9 +2645,10 @@
    * content than box"* by exactly 10px, which is #174's defect returning.
    *
    * Laying the metrics *last* puts the badge, the clock and the transport on
-   * one row together -- they measure 687px of the 1256px available at 1280 --
-   * and the metrics on the second. Two rows, 84px, so the cost is 36px rather
-   * than 53.5px and the Build panel arrives inside its own fold again.
+   * one row together -- their content is 351.9 + 131.5 + 172 plus three gaps,
+   * 687px of the 1256px a 1280px viewport has -- and the metrics on the
+   * second. Measured **78.5px**, so the cost is 30.5px rather than 53.5px,
+   * and the Build panel arrives inside its own fold again at 1280x720.
    *
    * Last rather than first, and that is measured too: `order: -1` also gives
    * two rows, and it puts the brand badge on the second one. `app-shell.spec.ts`
