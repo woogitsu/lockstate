@@ -110,6 +110,33 @@ describe('what the prison says when nothing went wrong', () => {
     expect(missing, 'every event key must be in the catalog that ships').toEqual([]);
   });
 
+  it('names a prisoner the prison never named by their entity id, rather than saying nothing (ADR 0076)', () => {
+    /*
+     * The relocation notice's `name` is optional on the wire, exactly as
+     * `PrisonerRosterRowViewModel.name` is, and for the same reason: a session
+     * wired without an identity registry mints nobody. No path in `src/` can
+     * produce that -- `createNewSimulationRuntime` always wires one -- which is
+     * why this is pinned here rather than in
+     * `tests/integration/relocation-notice-loop.test.ts`.
+     *
+     * The fallback reuses `hud.regime.roster-unnamed`, which is what
+     * `formatPrisonerName` shows for an unnamed roster row. **No new copy is
+     * authored for it**, and the alternative -- dropping the notice -- is the
+     * silence issue #629 outlaws.
+     */
+    const anonymous = { ...SAMPLE['prisoners.relocated'](1) } as Record<string, unknown>;
+    delete anonymous['name'];
+    const notice = hudEventNoticeFromWorkerMessage(publication(anonymous as never));
+    if (notice === undefined || notice === 'none') throw new Error('an unnamed prisoner still moved');
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const sentence = localizer.format(
+      notice.labelKey,
+      resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+    );
+    expect(sentence).toBe('Prisoner 3 had nowhere to sleep and moved to Cell.');
+    expect(sentence, 'and no placeholder survives the fallback').not.toContain('{');
+  });
+
   it('carries a severity that says whether anything is wrong, which is the whole point of #507', () => {
     // A served sentence is good news. This is the assignment that makes
     // `'info'` a member with a producer rather than a member with a comment.
