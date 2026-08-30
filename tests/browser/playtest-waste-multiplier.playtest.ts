@@ -299,6 +299,38 @@ async function refusal(page: Page): Promise<string> {
 }
 
 /**
+ * Turns the Build panel's *Remove* tool on or off, by reading its state rather
+ * than toggling it.
+ *
+ * **This is a correction, and the measurement it broke is the reason it
+ * exists.** `calibrate` (`playtest-harness.ts`) arms Remove, bisects with it,
+ * and clicks it a second time to put it back. Run 2 of this file reached the
+ * first wall drag with Remove still armed: the four gestures of profile A's
+ * 6×6 produced **6 commands and cost 0**, because they were `RemoveObject`
+ * commands and not `PlaceBuildOrder`s, and the refusal band said *"Nothing was
+ * removed"* where run 1's had said the zoning refusal. The session then played
+ * a *flawless* prison and reported a 1.02x multiplier — a number that looks
+ * like a finding and is an artifact of a swallowed click.
+ *
+ * `data-removing` is what the panel itself writes
+ * (`src/ui/hud/build-panel.ts:1072`), so asking it is exact where toggling is a
+ * guess about how many clicks landed.
+ */
+async function setRemoveTool(page: Page, on: boolean): Promise<void> {
+  const control = page.locator('.hud-build__remove');
+  const removing = (await control.getAttribute('data-removing')) === 'true';
+  if (removing !== on) await control.click();
+  const settled = (await control.getAttribute('data-removing')) === 'true';
+  if (settled !== on) throw new Error(`the Remove tool would not go ${on ? 'on' : 'off'}: data-removing=${String(settled)}`);
+}
+
+/** `armBuildable`, with the Remove tool provably off first. */
+async function armTool(page: Page, buildableId: string): Promise<void> {
+  await setRemoveTool(page, false);
+  await armBuildable(page, buildableId);
+}
+
+/**
  * Four drags around a rectangle in tiles, the way a player traces a room —
  * one gesture per side, which is one *transaction* per side and therefore one
  * `Undo` per side.
@@ -435,6 +467,68 @@ async function designateCell(
 
 test.describe('playtest: the waste multiplier', () => {
   /**
+   * **Profile 0 — the control: the same prison, played perfectly.**
+   *
+   * The denominator, measured in this harness rather than quoted from another
+   * document. It builds exactly what profiles A and B end up with — a 2×3
+   * `room.cell` in ten `wall-brick`, one `bed-wooden`, one `toilet-brick` — and
+   * makes no mistake on the way, so its gross debits *are* what the finished
+   * prison is worth.
+   *
+   * **It exists because run 2 produced it by accident and it turned out to be
+   * the most useful number in the pass.** A swallowed click left the Remove
+   * tool armed, profile A's 6×6 never happened, and the session reported
+   * `gross debits 905` for the prison it did finish. 905 is `10 × 80 + 65 +
+   * 40` exactly, and it sits 15 above the costing document's canonical 890 —
+   * which is the whole of the door-for-a-wall substitution that record names,
+   * `80 − 65`. A ratio between two prisons measured on the same tree in the
+   * same harness is worth more than a ratio to a figure from elsewhere, so the
+   * accident is now deliberate.
+   */
+  test('profile 0 (control): the same cell, played perfectly', async ({ page }) => {
+    const { session, origin } = await startSession(page, '0/control');
+
+    await tab(page, 'build').click();
+    await armTool(page, 'wall-brick');
+    await session.press('trace the 2x3 cell perimeter', 'build', async () => {
+      const commands = await traceRectangle(page, origin, 12, 12, 13, 14);
+      return `${commands} PlaceBuildOrder command(s)`;
+    }, 40);
+
+    await waitForQueueEmpty(page);
+    await session.press('designate the 2x3 as room.cell', 'free', async () => {
+      const attempts = await designateCell(page, session, origin, 12, 12, 13, 14, 8);
+      return `attempts ${attempts}`;
+    });
+
+    await tab(page, 'build').click();
+    await armTool(page, 'bed-wooden');
+    await session.press('place a bed inside the cell', 'build', async () => {
+      const point = centreOf(origin, 12, 12);
+      const commands = await press(page, point.x, point.y);
+      return `${commands.length} command(s)`;
+    });
+    await armTool(page, 'toilet-brick');
+    await session.press('place a toilet inside the cell', 'build', async () => {
+      const point = centreOf(origin, 13, 14);
+      const commands = await press(page, point.x, point.y);
+      return `${commands.length} command(s)`;
+    });
+
+    await waitForQueueEmpty(page);
+    await tab(page, 'overview').click();
+    await session.press('admit one prisoner', 'free', async () => {
+      await page.locator('.hud-intake__admit').click();
+      return `intake ${JSON.stringify((await panelText(page, '.hud-intake')).replace(/\n/g, ' / '))}`;
+    });
+
+    const boundary = Math.ceil(((await currentTick(page)) + 1) / TICKS_PER_DAY) * TICKS_PER_DAY;
+    session.log(`running to the next day boundary, tick ${boundary}`);
+    await runUntilTick(page, boundary + 60, 300_000);
+    await session.report();
+  });
+
+  /**
    * **Profile A — the careful first-timer.** One mistake, noticed and undone.
    *
    * The mistake is the one the costing predicts a player makes first: *"a
@@ -455,7 +549,7 @@ test.describe('playtest: the waste multiplier', () => {
     });
 
     await tab(page, 'build').click();
-    await armBuildable(page, 'wall-brick');
+    await armTool(page, 'wall-brick');
 
     await session.press('trace a 6x6 perimeter with the wall tool', 'undo-geometry', async () => {
       const commands = await traceRectangle(page, origin, 12, 12, 17, 17);
@@ -477,7 +571,7 @@ test.describe('playtest: the waste multiplier', () => {
     session.log(`stock after undoing the 6x6: ${JSON.stringify(await panelText(page, '.hud-build__deliveries'))}`);
 
     await tab(page, 'build').click();
-    await armBuildable(page, 'wall-brick');
+    await armTool(page, 'wall-brick');
     await session.press('trace the 2x3 cell perimeter', 'build', async () => {
       const commands = await traceRectangle(page, origin, 12, 12, 13, 14);
       return `${commands} PlaceBuildOrder command(s) | queue ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`;
@@ -490,13 +584,13 @@ test.describe('playtest: the waste multiplier', () => {
     });
 
     await tab(page, 'build').click();
-    await armBuildable(page, 'bed-wooden');
+    await armTool(page, 'bed-wooden');
     await session.press('place a bed inside the cell', 'build', async () => {
       const point = centreOf(origin, 12, 12);
       const commands = await press(page, point.x, point.y);
       return `${commands.length} command(s)`;
     });
-    await armBuildable(page, 'toilet-brick');
+    await armTool(page, 'toilet-brick');
     await session.press('place a toilet inside the cell', 'build', async () => {
       const point = centreOf(origin, 13, 14);
       const commands = await press(page, point.x, point.y);
@@ -540,7 +634,7 @@ test.describe('playtest: the waste multiplier', () => {
     const strayBed = { x: strayColumn + 3, y: strayRow + 3 };
 
     await tab(page, 'build').click();
-    await armBuildable(page, 'wall-brick');
+    await armTool(page, 'wall-brick');
 
     // 1. Geometry that encloses nothing, and is then left alone. Two further
     //    gestures follow before any Undo, so it is out of the stack's reach.
@@ -571,17 +665,17 @@ test.describe('playtest: the waste multiplier', () => {
      * empty category keeps its evidence rather than becoming a claim nobody
      * re-checks.
      */
-    await armBuildable(page, 'bed-wooden');
+    await armTool(page, 'bed-wooden');
     await session.press(`place a bed on open ground at (${strayBed.x},${strayBed.y}), before any room exists`, 'free', async () => {
       const point = centreOf(origin, strayBed.x, strayBed.y);
       const commands = await press(page, point.x, point.y);
       return `${commands.length} command(s) | band ${await refusal(page)}`;
     });
     await session.press('press Remove on the tile where that bed is not', 'free', async () => {
-      await page.locator('.hud-build__remove').click();
+      await setRemoveTool(page, true);
       const point = centreOf(origin, strayBed.x, strayBed.y);
       const commands = await press(page, point.x, point.y);
-      await page.locator('.hud-build__remove').click();
+      await setRemoveTool(page, false);
       return `${commands.length} command(s) | band ${await refusal(page)}`;
     });
 
@@ -597,7 +691,7 @@ test.describe('playtest: the waste multiplier', () => {
 
     // 4. And only now, the prison.
     await tab(page, 'build').click();
-    await armBuildable(page, 'wall-brick');
+    await armTool(page, 'wall-brick');
     await session.press('trace the 2x3 cell perimeter', 'build', async () => {
       const commands = await traceRectangle(page, origin, 12, 12, 13, 14);
       return `${commands} PlaceBuildOrder command(s)`;
@@ -610,7 +704,7 @@ test.describe('playtest: the waste multiplier', () => {
     });
 
     await tab(page, 'build').click();
-    await armBuildable(page, 'bed-wooden');
+    await armTool(page, 'bed-wooden');
     await session.press('place a bed inside the cell', 'build', async () => {
       const point = centreOf(origin, 12, 12);
       const commands = await press(page, point.x, point.y);
@@ -635,20 +729,20 @@ test.describe('playtest: the waste multiplier', () => {
      */
     await waitForQueueEmpty(page);
     await session.press('remove the finished bed, having changed your mind about the tile', 'removed-object', async () => {
-      await page.locator('.hud-build__remove').click();
+      await setRemoveTool(page, true);
       const point = centreOf(origin, 12, 12);
       const commands = await press(page, point.x, point.y);
-      await page.locator('.hud-build__remove').click();
+      await setRemoveTool(page, false);
       return `${commands.length} command(s) | band ${await refusal(page)}`;
     });
-    await armBuildable(page, 'bed-wooden');
+    await armTool(page, 'bed-wooden');
     await session.press('place the bed again, one tile over', 'build', async () => {
       const point = centreOf(origin, 12, 13);
       const commands = await press(page, point.x, point.y);
       return `${commands.length} command(s) | band ${await refusal(page)}`;
     });
 
-    await armBuildable(page, 'toilet-brick');
+    await armTool(page, 'toilet-brick');
     await session.press('place a toilet inside the cell', 'build', async () => {
       const point = centreOf(origin, 13, 14);
       const commands = await press(page, point.x, point.y);
@@ -688,7 +782,7 @@ test.describe('playtest: the waste multiplier', () => {
     const { session, origin } = await startSession(page, 'C/enthusiast');
 
     await tab(page, 'build').click();
-    await armBuildable(page, 'wall-brick');
+    await armTool(page, 'wall-brick');
 
     const window_ = await reachableTileWindow(page, origin);
     session.log(`reachable tile window: ${JSON.stringify(window_)}`);
