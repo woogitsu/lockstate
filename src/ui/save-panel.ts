@@ -15,6 +15,7 @@ import {
   describeActionError,
 } from './primitives/async-action';
 import { SAVE_PANEL_MESSAGE_KEY } from './save-panel-messages';
+import { protocolFaultMessageKeyOf } from './simulation-alerts';
 
 /**
  * The localization surface this panel uses.
@@ -26,6 +27,47 @@ import { SAVE_PANEL_MESSAGE_KEY } from './save-panel-messages';
 export interface SavePanelLocalizer {
   format(key: LocalizationKey, parameters?: MessageParameters): string;
   formatNumber(value: number, options?: Intl.NumberFormatOptions): string;
+}
+
+/**
+ * What goes into a failure sentence's `{detail}`.
+ *
+ * ## The defect this closes
+ *
+ * `{detail}` used to be `describeActionError(error)` unconditionally, which
+ * is `Error.message` -- and on the paths that matter most that message is
+ * built by `WorkerSessionHost`'s `WorkerFaultError` as
+ * `` `Simulation worker fault (${code}): ${detail}` ``. So a player running
+ * the game in any language read
+ * `Could not create a prison: Simulation worker fault (already-initialized):
+ * Kernel is already initialized.` -- engine English inside a localised
+ * template, which no translation can ever reach (#680; measured under the
+ * pseudo-locale in
+ * issue #680, whose §"What the sweep also found about how it is reported"
+ * names seven splice sites in this file and quotes what the player reads).
+ *
+ * The catalogue already ships a sentence for every one of the twelve protocol
+ * fault codes, and the HUD one panel over already renders them: `hud.ts`'s
+ * `reportError` maps a failure to a key and paints the key. This does the
+ * same thing at the same boundary -- it resolves the code to that key and
+ * hands the *resolved sentence* to the template, exactly as `{restored}` and
+ * `{notCarried}` are resolved before being joined (#226).
+ *
+ * ## What is deliberately left as it was
+ *
+ * An error that declares no protocol fault code still contributes its raw
+ * message, and that is the honest answer rather than a gap. A storage
+ * `DOMException`, a reply timeout ("did not reply within 15000ms" -- issue
+ * #65's own example) and a file the browser would not read carry no code, so
+ * there is no shipped sentence to resolve; inventing one would be authoring
+ * player-facing copy, which is the owner's. The comment at
+ * `describeActionFailure` has said since #65 that hiding the detail costs the
+ * player the one thing that names what went wrong, and that argument is
+ * untouched by this change: it now applies only where nothing better exists.
+ */
+export function describeFailureDetail(error: unknown, localizer: SavePanelLocalizer): string {
+  const key = protocolFaultMessageKeyOf(error);
+  return key === undefined ? describeActionError(error) : localizer.format(key);
 }
 
 
@@ -54,6 +96,23 @@ export type SaveStatusKind = 'idle' | 'saving' | 'saved' | 'recovered' | 'quota-
  * because a list spliced into a sentence has to be resolved before it can be
  * joined. Neither is a literal authored in this module, which is the property
  * that matters.
+ *
+ * **That last sentence is true and was not enough, and it is kept rather than
+ * replaced because it is still the property this interface guarantees.** It is
+ * a claim about the *template*; the pseudo-locale sweep of 2026-08-30 showed
+ * what reaches the screen, and a `{detail}` that is a `WorkerFaultError`'s
+ * message is untranslated engine English wherever it lands (#680). So the rule
+ * this file now follows is one line longer: a `{detail}` that *can* be a
+ * catalogue sentence is resolved into one before it is spliced, by
+ * `describeFailureDetail`, and only the residue that declares no fault code
+ * travels as a raw message.
+ *
+ * Three of this module's `{detail}` producers are outside that rule, and they
+ * are outside it because their input is already a `string`:
+ * `describeSaveResult` receives `SaveWriteError.message` and
+ * `describeImportResult` receives `SaveDecodeError.message`. Neither type
+ * carries a code from the protocol, so there is nothing to look a sentence up
+ * by -- see the note at each.
  */
 export interface SaveMessage {
   readonly messageKey: LocalizationKey;
@@ -83,6 +142,20 @@ export function describeSaveResult(result: SaveResult): SaveStatus {
     case 'transaction-aborted':
       return { kind: 'transaction-aborted', messageKey: SAVE_PANEL_MESSAGE_KEY.statusTransactionAborted };
     default:
+      /*
+       * A raw message, and the one place in this file where that is not a
+       * choice this module can make differently (#680).
+       *
+       * `SaveWriteError` is `{ code, message }` over three *storage* codes, so
+       * a protocol fault that reached here has already been flattened into
+       * prose: `SessionController.saveNow` catches a failed capture and
+       * reports `` `Could not capture simulation state: ${error.message}` ``
+       * under `code: 'unknown-error'`. Recovering the fault code from that
+       * string would be message matching, which is exactly what #431 removed
+       * from the restore path. Closing it properly means carrying the original
+       * error beside the classified one -- a `cause` on `SaveWriteError` --
+       * which is a change to a persistence contract and not to this panel.
+       */
       return {
         kind: 'error',
         messageKey: SAVE_PANEL_MESSAGE_KEY.statusSaveFailed,
@@ -182,6 +255,15 @@ export function describeImportResult(result: SaveImportResult): SaveStatus {
   const rejected = result.rejected;
   if (rejected === undefined) return describeSaveResult(result);
 
+  /*
+   * `rejected.message` travels raw at both sites below, and unlike the
+   * failure sentences it has nothing to route through (#680).
+   * `SaveDecodeError` is the *save schema's* verdict about a file the player
+   * chose, not the simulation protocol's about a message; its four codes are
+   * already mapped to four whole sentences here, and `invalid-shape` with a
+   * declared version is the residue the sweep left -- a structural complaint
+   * about somebody's file, in whatever words `decodeSaveEnvelope` used.
+   */
   switch (rejected.code) {
     case 'unsupported-version':
       return { kind: 'error', messageKey: SAVE_PANEL_MESSAGE_KEY.statusImportUnsupportedVersion };
@@ -268,16 +350,24 @@ const ACTION_FAILURE_KEYS: Readonly<Record<SavePanelActionId, LocalizationKey>> 
  * developer console where a player never sees it while the UI sat silently
  * on a stale state.
  */
-export function describeActionFailure(failure: AsyncActionFailure): SaveStatus {
+export function describeActionFailure(failure: AsyncActionFailure, localizer: SavePanelLocalizer): SaveStatus {
   const actionId = failure.actionId as SavePanelActionId;
   return {
     kind: 'error',
     messageKey: ACTION_FAILURE_KEYS[actionId] ?? SAVE_PANEL_MESSAGE_KEY.failureUnknown,
-    // The thrown message is diagnostic English from `src/persistence/**`, so
-    // it travels as a parameter rather than as part of the translatable
-    // sentence. Hiding it would cost the player the one detail that names
-    // what actually went wrong (issue #65's `did not reply within 15000ms`).
-    messageParameters: { detail: describeActionError(failure.error) },
+    // **The detail is a catalogue sentence wherever the failure declared a
+    // protocol fault code, and the thrown message only where it did not.**
+    //
+    // This comment used to read, in full: *"The thrown message is diagnostic
+    // English from `src/persistence/**`, so it travels as a parameter rather
+    // than as part of the translatable sentence. Hiding it would cost the
+    // player the one detail that names what actually went wrong (issue #65's
+    // `did not reply within 15000ms`)."* Both sentences are still true of the
+    // fallback and that is why they are kept -- what was wrong is the word
+    // *is*. A `WorkerFaultError`'s message is diagnostic English the catalogue
+    // already has a translation for, and printing it walked past that
+    // translation (#680). `describeFailureDetail` states the whole rule.
+    messageParameters: { detail: describeFailureDetail(failure.error, localizer) },
   };
 }
 
@@ -436,7 +526,7 @@ export class SavePanel {
       // classify its own failures; anything that escapes still reaches the
       // player instead of `window.onunhandledrejection`.
       onError: (failure) => {
-        this.setStatus(describeActionFailure(failure));
+        this.setStatus(describeActionFailure(failure, this.localizer));
       },
     });
 
@@ -547,7 +637,7 @@ export class SavePanel {
       this.setStatus({
         kind: 'storage-unavailable',
         messageKey: SAVE_PANEL_MESSAGE_KEY.statusListUnreadable,
-        messageParameters: { detail: describeActionError(error) },
+        messageParameters: { detail: describeFailureDetail(error, this.localizer) },
       });
       return;
     }
@@ -631,7 +721,7 @@ export class SavePanel {
         this.setStatus({
           kind: 'error',
           messageKey: SAVE_PANEL_MESSAGE_KEY.statusCreateFailed,
-          messageParameters: { detail: describeActionError(error) },
+          messageParameters: { detail: describeFailureDetail(error, this.localizer) },
         });
       }
       // Inside the try/catch-protected action, so a failure here reaches the
@@ -813,7 +903,7 @@ export class SavePanel {
         this.setStatus({
           kind: 'error',
           messageKey: SAVE_PANEL_MESSAGE_KEY.failureImport,
-          messageParameters: { detail: describeActionError(error) },
+          messageParameters: { detail: describeFailureDetail(error, this.localizer) },
         });
         return;
       }
