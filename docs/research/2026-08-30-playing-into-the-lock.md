@@ -288,3 +288,94 @@ So at the bottom the player has two sentences and two numbers, both outside any
 fold: **40** on the strip, and *"Waiting for 1,040 to buy materials."* under the
 Build panel's queue. Nothing relates them, and the shortfall is the one that
 moves as the queue is worked (§4).
+
+---
+
+# Part B — what happens at the lock, and what a mouse can do about it
+
+ADR 0075 exhausted the escapes **through the command router**, and its table is
+what makes *"there is no escape"* a claim rather than a list. This part
+exhausts the escapes a player has a **mouse** for, which is a different
+question and has a different answer in one place.
+
+## 3. The state at the bottom, in full
+
+**MEASURED**, run A, at the press that ran out:
+
+```
+counts: treasury=40 rooms=0 accommodation=0 prisoners=0 staff=0 wageBill=0 unpaid=0
+strip:  ... | 0 | PRISONERS | 0 | STAFF | ... | 0 | ROOMS | ... | 40 | FUNDS | 0 | EARNED TODAY | DAY | 2 | Through the day | 4% | ...
+funds chip: {"present":true,"text":"40 FUNDS","tone":null,"badge":null}
+queue fold: {"present":true,"hidden":false,"collapsed":"true","headerText":"QUEUED 287 waiting · 1 being built"}
+shortfall line: {"present":true,"hidden":false,"laidOut":true,"text":"Waiting for 1,040 to buy materials."}
+refusal band: hidden=false text="The materials were not ordered — there are not enough funds."
+```
+
+40 in the bank, a plank costs 65, nothing is standing that a plank paid for, and
+there are no prisoners and no staff — so neither income line nor payroll can
+move the number. That is ADR 0075's closed state, reached by dragging.
+
+## 4. Escape A — wait: the treasury does not move, and the sentence does not change
+
+**MEASURED.** Three minutes with nothing pressed, sampled every three seconds:
+
+```
+[L1 +147.0s]   ESCAPE A (wait) t+458ms:    header="QUEUED 287 waiting · 1 being built" treasury=40 band="The materials were not ordered — there are not enough funds." shortfall="Waiting for 1,040 to buy materials."
+[L1 +329.7s] ESCAPE A RESULT: waited 180 s with nothing pressed; treasury 40 -> 40
+```
+
+The queue drained from 287 to about 240 while it ran — **the prison visibly
+builds itself for three minutes while the band says there is not enough money**,
+which is the shape §3 of the earlier record already reported and which
+reproduces on `main`.
+
+**The queue draining is also the proof that the container is empty.** The order
+that cannot be funded never starts, and it needs two bricks; if there were two
+spare bricks anywhere in the prison it would have taken them
+(`tryAllocate` is checked on every scheduled construction tick). So the
+315-segment prison holds **0 bricks** and **312 walls**, which is what Part C's
+reading of decision 3 turns on.
+
+## 5. Escape B — the Queued fold: three rows, and no money comes back
+
+**MEASURED.** The fold is **collapsed on arrival** (`collapsed="true"`), and
+opened it reads, verbatim:
+
+```
+[L1 +333.6s] ESCAPE B: fold open reads "QUEUED | 224 waiting · 0 being built |
+  Brick wall · 22, 19 · West | Awaiting Materials | Cancel |
+  Brick wall · 22, 21 · West | Awaiting Materials | Cancel |
+  Brick wall · 22, 10 · West | Awaiting Materials | Cancel |
+  and 221 more behind these — undo takes back a whole run."; 3 cancellable row(s) laid out
+```
+
+**Three Cancel controls against 224 waiting orders**, which is
+`BUILD_QUEUE_ROW_LIMIT = 3` (`src/ui/hud/build-panel.ts:545`) doing exactly what
+it says. And every row reads *"Awaiting Materials"* — the order whose materials
+will never be bought is spelled identically to the 223 whose materials are
+already paid for.
+
+**Twelve presses, and the balance does not move:**
+
+```
+[L1 +336.8s]   ESCAPE B press 1:  treasury=40 ... shortfall="Waiting for 1,040 to buy materials."
+[L1 +343.8s]   ESCAPE B press 4:  treasury=40 ... shortfall="Waiting for 800 to buy materials."
+[L1 +357.9s]   ESCAPE B press 10: treasury=40 ... shortfall="Waiting for 320 to buy materials."
+[L1 +362.5s]   ESCAPE B press 12: treasury=40 ... shortfall="Waiting for 160 to buy materials."
+[L1 +362.7s] ESCAPE B RESULT: 12 Cancel press(es); treasury 40 -> 40
+```
+
+**VERIFIED, read**, and this is why: `ConstructionSystem.cancelOrder`
+(`src/simulation/construction/system.ts:594-612`) hands the order's materials
+back to the container — `this.materialsProvider.release(order.materialsAllocated)`
+— and touches the treasury nowhere. Money spent on a wall does not come back
+as money at any point, by any route this command can take.
+
+**What the presses *do* do is worth stating, because it is a genuinely good
+behaviour and it is invisible.** The shortfall fell from 1,040 to 160 over the
+twelve presses: each cancelled order released two bricks into the container, the
+just-in-time pass netted them off demand
+(`src/simulation/economy/just-in-time-materials.ts:164`), and an order that
+could not be funded became one that could. **The queue heals itself, one
+cancellation at a time, and the only sign of it is a number in a sentence about
+waiting.**
