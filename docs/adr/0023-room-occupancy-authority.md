@@ -208,10 +208,10 @@ policy touches.
 Recorded rather than overwritten, because the *shape* of the drift is the whole
 argument for the form above. This section was written against `origin/main` at
 v0.0.34 (§*What the evidence rests on, stated because it bounds every claim
-below*) and issue #645 re-read it at v0.0.238. Its citations are given here as
-bare basenames, which is this corpus's form for an anchor quoted as history
-rather than offered as current. Six had moved. Five are the ones the issue
-tabulated, and all five are confirmed:
+below*) and issue #645 re-read it at `4f0b508` (v0.0.238). Its citations are
+given here as bare basenames, which is this corpus's form for an anchor quoted
+as history rather than offered as current. Six had moved. Five are the ones the
+issue tabulated, and all five are confirmed:
 
 - It cited `RoomInstanceRegistry.findAvailable(roomCatalogId, requiredObjectCapability?)`
   at `room-instance-registry.ts:81-87`, with the two gates at `:83` and `:84`
