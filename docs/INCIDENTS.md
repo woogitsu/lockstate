@@ -290,7 +290,29 @@ regression test asserting zero route failures through a live lockdown.
 
 `IncidentRowViewModel` (`src/simulation/presentation/incident-projection.ts`)
 is what a player sees: type, sector, state, severity, participant *count*,
-start tick, age, outcome and required responder count. The incident's
+start tick, age, outcome and required responder count.
+
+**"Is what a player sees" is what this document has said since `31c51ef`
+(2026-08-23, #28), and it has never been true.** It is what a player *would*
+see: `hud/incidents` is declared, catalogued and routed out of the worker, and
+no module under `src/ui/` or `src/rendering/` has ever quoted that id on any
+ref — `git log --all -S` over both directories for the quoted id returns
+nothing. The absence is asserted rather than merely noted:
+`tests/foundation/projection-reachability-contract.test.ts` names it in
+`UNPAINTED_PROJECTION_IDS` with the panel it waits on, and fails in both
+directions, so the day something paints it that entry goes stale and this
+paragraph is corrected by the same change. Both readings are kept rather than
+overwritten (`docs/AGENT_WORKFLOW.md` section 4), because the field list above
+is accurate and it is the verb that was wrong.
+
+What that costs is measured at
+[#683](https://github.com/matmaxalez/lockstate/issues/683): `outcome.escaped` —
+the one field that says a prisoner got out rather than was stopped — reaches no
+pixel, so a successful escape and a contained attempt put the same two rows on
+the events channel. See `docs/research/2026-08-30-what-an-escape-says.md` and
+`tests/integration/escape-outcome-visibility.test.ts`.
+
+The incident's
 `causeFactors` — the raw risk and grudge scores that produced it — are
 withheld, exactly as #27's contraband ground truth stays behind its
 intelligence projection. `summarizeIncidents`
@@ -312,6 +334,13 @@ channel and is not this one.** `simulation/event` carries
 one closes; those are occurrences and are pushed once, where everything
 above is a projection the HUD pulls. See `src/ui/simulation-events.ts` for
 which kind is graded `'danger'` and why.
+
+**Every member of that set is about an incident *starting*, except the one that
+says the prison is calm again.** No event on the channel reports an outcome, so
+the two ways an escape attempt can end reach the player as the same pair of
+rows — the opening, then the all-clear. What the outcome is worth, and where a
+distinguishing event would go if one is authored, is measured in
+`docs/research/2026-08-30-what-an-escape-says.md`.
 
 ## Snapshot/restore
 

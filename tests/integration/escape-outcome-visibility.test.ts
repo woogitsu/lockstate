@@ -31,7 +31,8 @@ import { buildCellBlockFixture } from '../helpers/navigation-fixture';
  * own event stream -- `incidents.escape-attempt-opened` at tick 48,000, a
  * population that fell in the window after it, and no `prisoners.discharged`
  * anywhere near it
- * (`docs/research/2026-08-30-playing-main-after-fifteen-changes.md`). The claim
+ * (the playtest record `2026-08-30-playing-main-after-fifteen-changes.md`, on an
+ * unmerged branch, so it is not spelled as a rooted path here). The claim
  * this file measures is the one #683 makes out of that: **a successful escape
  * and a contained attempt reach the player as the same two sentences.**
  *
