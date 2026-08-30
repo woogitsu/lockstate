@@ -19,7 +19,37 @@
 
 ## Status
 
-**Proposed, 2026-08-28. Not self-approved.**
+**Accepted, 2026-08-30, by the repository owner.**
+
+**This clause read `Proposed, 2026-08-28. Not self-approved.` until the owner
+accepted it on 2026-08-30.** The paragraph that stood under it is kept below,
+unedited, because everything it says is still true: the amendment it names is
+still an amendment, and the rule it cites is still the rule. What had not
+happened was the acceptance step, and it has now happened.
+
+**How the acceptance arrived, recorded because a reader checking this status
+later deserves to know its weight.** It arrived in
+[#639](https://github.com/matmaxalez/lockstate/issues/639), *"OWNER RULINGS
+2026-08-30: four calls on what the game tells the player"*, filed by the owner
+in their own words after they hit a stopped clock live. Its first ruling reads:
+*"**ADR 0051 is accepted.** It has been `Proposed, 2026-08-28. Not
+self-approved.` while **its behaviour already ships** — a decision the code
+already keeps, waiting on a signature."* It was one of four rulings in that
+issue and was given against the issue's own summary of this ADR's subject and
+its stated cost, not against the full text of this document. `AGENTS.md`'s rule
+is *"never self-approve"*; the owner accepted, and this paragraph exists so
+that nobody mistakes the **recording** of that acceptance — which is all the
+commit carrying it does — for an approval given here.
+
+**Acceptance closes none of the three open questions at the foot of this
+document**, and they are left standing rather than tidied away. It does not
+decide whether a purchase should spend money during a pause, and that is still
+the sharpest one. **Open question 3 is the exception, and it is being answered
+by the same issue that accepted this ADR** — #639's other two rulings restore a
+renderer for `hud.build.note` and make the clock readout say `PAUSED` rather
+than `×1`. So the sentence below, *"it does not make the pause more
+discoverable, and that is a separate piece of work"*, was right that the work
+was separate and is now spent rather than wrong: the separate work is #639.
 
 This amends the "Ordered Command Queue" heading of
 [ADR 0020](./0020-deterministic-kernel.md), which is the deterministic

@@ -1055,6 +1055,39 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   const armHint = eyebrowText(t(HUD_MESSAGE_KEY.buildArmHint), 'hud-build__note');
 
+  /*
+   * `hud.build.note` -- "An order is queued now and built while the clock
+   * runs." -- rendered nowhere between `67e366e` (2026-08-23) and this change.
+   *
+   * **Where it used to be.** That commit replaced the coordinate steppers with
+   * pointing at the world, and in doing so moved the submit button into the
+   * folded "Enter coordinates" section. The note was the second half of the
+   * `.hud-build__footer` that button lived in, so the footer went with it:
+   * `git show 67e366e -- src/ui/hud/build-panel.ts` deletes
+   * `children: [submit.element, eyebrowText(t(HUD_MESSAGE_KEY.buildNote), …)]`
+   * and nothing replaces it. The key stayed in `HUD_MESSAGE_KEY` and the
+   * sentence stayed in the shipped locale, and `ui-hud-messages.test.ts` gates
+   * that keys *resolve*, not that anything renders them -- so it passed every
+   * gate for a week and reached nobody (#636, #639).
+   *
+   * **Why here rather than back beside the submit button.** The footer no
+   * longer exists and the button it held is now the fallback route, inside a
+   * section that is built `collapsed: true`. Restoring the sentence there
+   * would put it in a fold that starts shut, which is exactly the failure
+   * #627 is: "Awaiting Materials" was on the page the whole time, one fold
+   * down, and the owner played a whole session without meeting it. So it goes
+   * where the order is actually placed -- the map block, under the hint that
+   * says what the armed gesture does -- which is outside every fold in this
+   * panel and is laid out whether or not anything is selected, queued or
+   * bought.
+   *
+   * **Static, and it covers both intents this panel produces.** A removal is
+   * the same `onPlace` with `removing: true`; it is queued and executed by the
+   * same crew on the same clock, so unlike `armHint` there is no second thing
+   * for this line to say.
+   */
+  const orderNote = eyebrowText(t(HUD_MESSAGE_KEY.buildNote), 'hud-build__note hud-build__order-note');
+
   function paintArmed(): void {
     // "Armed" on the arm button means armed *to place*, which is what its label
     // and its pressed state are about. A tool armed to remove is armed, and this
@@ -1774,6 +1807,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         }),
         targetBlock,
         armHint,
+        orderNote,
         buyRow,
       ],
     }),

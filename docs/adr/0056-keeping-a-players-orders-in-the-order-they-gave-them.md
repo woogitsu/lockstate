@@ -308,6 +308,23 @@ reads any backticked hex run as a commit it must be able to resolve.)
    wrong rather than mis-sequenced, and the answer taken here is
    *mis-sequenced*.
 3. **Does ADR 0051's own text get the clause above?** This ADR states the
-   narrowing; it does not edit ADR 0051, because ADR 0051 is itself Proposed and
-   unapproved and rewriting an unapproved decision from a second unapproved one
-   would leave nothing for the owner to compare.
+   narrowing; it does not edit ADR 0051.
+
+   **The reason this bullet gave expired on 2026-08-30 and is marked rather
+   than overwritten.** It read, of the ADR this bullet names: *"…because it is
+   itself Proposed and unapproved and rewriting an unapproved decision from a
+   second unapproved one would leave nothing for the owner to compare."* That
+   was true when it was written. The owner accepted that ADR on 2026-08-30 in
+   [#639](https://github.com/matmaxalez/lockstate/issues/639), so half the
+   reason is gone and half survives: **this** ADR is still unapproved, and it
+   is now a proposed document narrowing an accepted one. (The pronoun above
+   replaces the number the sentence originally carried, so that quoting a
+   sentence that expired does not re-assert a status the ADR no longer holds —
+   `tests/foundation/adr-status-reference-contract.test.ts` reads English
+   claims and cannot tell a quotation from an assertion, which is the right
+   trade for a gate whose whole subject is sentences going stale.)
+
+   **The question is still open, and what it turns on has changed.** An
+   accepted decision narrowed by a proposed one is a decision the owner has
+   not been shown the narrowed form of — so the clause belongs in ADR 0051's
+   text if and when this ADR is accepted too, and not before.

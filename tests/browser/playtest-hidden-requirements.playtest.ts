@@ -100,6 +100,19 @@ interface HudDump {
    * on screen. What a sighted player reads of the clock is `×1` and three
    * icons. Same failure as #625 §6, one size along: a survey answers about the
    * probe until the probe is checked.
+   *
+   * **The last claim expired on 2026-08-30 and is marked rather than
+   * overwritten, because the reading it records is the finding.** What a
+   * sighted player reads of a *stopped* clock is now `PAUSED` and three icons,
+   * and the day, the day progress and the speed are all dimmed to
+   * `--text-muted` while it is stopped -- the owner's ruling on #639, taken
+   * after this file measured that `×1` printed identically either way. So
+   * `/paus/i` coming back true against `visibleText` is no longer an
+   * instrumentation artefact at every observation point: while the clock is
+   * stopped it is the game saying so, and the two are told apart by which of
+   * `text` and `visibleText` carries it. A run of this act that reports
+   * `readable by a sighted player: false` for `/paus/i` is now a **defect**
+   * rather than the expected reading.
    */
   readonly visibleText: string;
   readonly refusal: { hidden: boolean | string; box: { w: number; h: number; x: number; y: number }; text: string };
