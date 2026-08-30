@@ -276,8 +276,9 @@ except for what they can meet.
 | cell + guard + yard | 970 | 300, 300, 300, 300, **260**, 260, … | **260** (hygiene unmet) |
 | cell + guard + yard + shower | 1,995 | **300** every day, 30 days running | **300** |
 
-**Break-even is day 4 in every configuration measured**, and it is day 4 for a
-one-prisoner prison and for an eight-prisoner one:
+**Break-even is day 4 in every one-bed-per-cell configuration measured** — for
+a one-prisoner prison and for an eight-prisoner one alike, which is what makes
+it a property of the model rather than of a scale:
 
 | prison | spent | first day the balance is back at 25,000 |
 | --- | --- | --- |
