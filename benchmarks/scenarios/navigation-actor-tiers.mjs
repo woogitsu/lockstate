@@ -93,6 +93,13 @@ function doorTraversalCost(door) {
   return 2;
 }
 
+/**
+ * Same reason as `resolveLeg` below: without the union written out, the two
+ * returns infer one object with an optional `reason` and every consumer sees
+ * `string | undefined` (#602).
+ *
+ * @returns {{ allowed: true } | { allowed: false, reason: string }}
+ */
 function checkAccess(door, context) {
   if (door.state === 'locked' && !context.emergencyOverride) return { allowed: false, reason: 'locked' };
   if (context.securityClearance < door.clearance) return { allowed: false, reason: 'insufficient-clearance' };
@@ -100,6 +107,14 @@ function checkAccess(door, context) {
   return { allowed: true };
 }
 
+/**
+ * The union is written out because TypeScript infers one optional-property
+ * object from the two returns below and then `leg.cost` is `number |
+ * undefined` at every call site even after `leg.ok` is checked (#602).
+ *
+ * @returns {{ ok: true, cost: number, expansions: number }
+ *   | { ok: false, reason: string, expansions: number }}
+ */
 function resolveLeg(graph, cellId, context, chargeRegionGraphCost) {
   const door = graph.doorsByCellId.get(cellId);
   let expansions = chargeRegionGraphCost ? graph.regionGraphExpansionCost : 1;

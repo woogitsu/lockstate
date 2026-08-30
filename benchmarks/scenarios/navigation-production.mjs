@@ -85,10 +85,17 @@ function mixHash(hash, value) {
 async function runQueueDrain(seed, actorCount, mode) {
   const layout = await buildPrisonBlockLayout(CELL_COUNT, CANTEEN_WIDTH);
   const options = await loadProductionNavigationOptions();
-  const { Xoshiro128StarStar, deriveXoshiroState } = await loadSimulationRng();
+  const { Xoshiro128StarStar, deriveXoshiroState, NamedRngStreams } = await loadSimulationRng();
 
   const system = new layout.nav.NavigationSystem(layout.world, options, layout.doors);
   system.setLoadedChunks(layout.chunkPositions);
+
+  // `SimulationContext` is `{ tick, rng }` and this scenario used to pass
+  // `{ tick }` alone -- `NavigationSystem.update` happens to read only `tick`,
+  // so it ran, and nothing typechecked the call until #602. An empty stream
+  // set is the honest value: the system draws from none, and a stream that
+  // was never registered throws on `get` rather than silently seeding.
+  const tickRng = new NamedRngStreams([]);
 
   const rng = new Xoshiro128StarStar(deriveXoshiroState(seed, `navigation.production.${mode}`).words);
   const sharedCanteenTile = layout.canteenTiles[Math.floor(layout.canteenTiles.length / 2)];
@@ -120,7 +127,7 @@ async function runQueueDrain(seed, actorCount, mode) {
   let tick = 0;
   while (system.pendingCount() > 0 && tick < MAX_DRAIN_TICKS) {
     const before = system.getQueueMetrics().totalExpansions;
-    system.update({ tick });
+    system.update({ tick, rng: tickRng });
     expansionsPerTick.push(system.getQueueMetrics().totalExpansions - before);
     tick += 1;
   }
@@ -338,10 +345,17 @@ async function runSingleRequestBudget(seed, side) {
 async function runYardCrossing(seed, actorCount, side) {
   const layout = await buildOpenRegionLayout(side);
   const options = await loadProductionNavigationOptions();
-  const { Xoshiro128StarStar, deriveXoshiroState } = await loadSimulationRng();
+  const { Xoshiro128StarStar, deriveXoshiroState, NamedRngStreams } = await loadSimulationRng();
 
   const system = new layout.nav.NavigationSystem(layout.world, options, layout.doors);
   system.setLoadedChunks(layout.chunkPositions);
+
+  // `SimulationContext` is `{ tick, rng }` and this scenario used to pass
+  // `{ tick }` alone -- `NavigationSystem.update` happens to read only `tick`,
+  // so it ran, and nothing typechecked the call until #602. An empty stream
+  // set is the honest value: the system draws from none, and a stream that
+  // was never registered throws on `get` rather than silently seeding.
+  const tickRng = new NamedRngStreams([]);
 
   const rng = new Xoshiro128StarStar(deriveXoshiroState(seed, 'navigation.production.yard-crossing').words);
   const context = { role: 'stub-actor', securityClearance: 0 };
@@ -364,7 +378,7 @@ async function runYardCrossing(seed, actorCount, side) {
   let tick = 0;
   while (system.pendingCount() > 0 && tick < MAX_DRAIN_TICKS) {
     const before = system.getQueueMetrics().totalExpansions;
-    system.update({ tick });
+    system.update({ tick, rng: tickRng });
     expansionsPerTick.push(system.getQueueMetrics().totalExpansions - before);
     tick += 1;
   }
