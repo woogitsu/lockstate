@@ -660,3 +660,104 @@ Not filed as a defect: one owned chunk is ADR 0019's and #649's subject, and
 `PurchaseParcel` has never existed
 ([`2026-08-30-two-subsystems-with-no-entrance.md`](./2026-08-30-two-subsystems-with-no-entrance.md)).
 Recorded because the ratio is the honest scale of the wall route.
+
+---
+
+# Part E — what this proposes, what it changed, and what it does not know
+
+## 16. The weakest claim, and what would change my mind
+
+**The weakest claim is §13's arithmetic step**: that a player drawing three
+*disjoint* ambitious wings arrives at the floor during the third. What is
+measured is the cost of one wing (121 segments, 9,680, three times) and the
+total of three overlapping ones (215 funded segments, 17,200, 68.8%). The step
+from those to *"the third wing ends it"* is multiplication, not play.
+
+**What would refute it**: a run that draws three non-overlapping wings inside
+the 32 x 32 world and finishes with money left. **What would confirm it**: the
+same run reaching `purchase.insufficient-funds` mid-wing. This pass did not do
+either, because its camera pans put wings 2 and 3 partly over wing 1, and it
+says so rather than rounding the number up.
+
+**The second weakest is §1's wall-clock correction.** That the same descent took
+145 s here and *"six and a half minutes"* there is two measurements on two
+machines at two load averages, and neither record can say what a player's
+machine does. What is solid is the **25 drags**, which is a property of the
+gesture and reproduced identically in runs A and B. Read the duration as "not
+six and a half minutes on an idle machine", not as a corrected constant.
+
+**Not established at all (UNKNOWN):**
+
+- Whether any *save/reload* path changes anything at the bottom. Not played.
+- What happens to the wall route once a prison has staff, so payroll is also
+  draining. §5 of the earlier record already named this gap and it is still open.
+- Whether a player would in fact keep drawing after the first
+  `"that tile is outside the map"`. Assumed no; not tested with a person.
+
+## 17. What this pass changed, and why each was in scope
+
+Two comment corrections and one gate, none of which is a balance number or a
+player-facing string:
+
+1. **`src/ui/hud/projection.ts`** — the comment that decides the Funds chip has
+   no tone reasoned from an absolute the code contradicts (§2a). Corrected in
+   both directions, with the commits that falsified it and the
+   `git merge-base --is-ancestor` that orders them.
+2. **`src/simulation/economy/income.ts`** — the same class, milder: a payback
+   figure qualified with a clause written to expire, which had. Corrected the
+   same way; the 300 rate is untouched and stays #29's.
+3. **`tests/foundation/documentation-claims-contract.test.ts`** — a gate for the
+   claim in the charge direction, mirroring the one that already existed for the
+   credit direction. Red first, naming both sites; green after. It is what keeps
+   1 and 2 corrected.
+
+## 18. Proposals — each is copy or a number, and therefore the owner's
+
+**Nothing below is implemented on this branch.** Every one needs either a
+player-facing sentence or a balance value, and `AGENTS.md` reserves both.
+
+1. **The refund the clock undoes (§11) is the one to fix first, and it may need
+   no new copy at all.** The problem is not the sentence *"1,200 back if
+   cancelled"* — that sentence is true when it is read. The problem is that
+   cancelling a delivery leaves the order that will re-buy it. Options, cheapest
+   first: (a) cancelling the last delivery for an order also cancels the order;
+   (b) an order whose delivery the player cancelled stops asking, until touched
+   again; (c) a sentence in the fold saying the order will re-order. **(a) and
+   (b) are behaviour, not copy, and could be built under the mandate — but they
+   change what a control does, and #640's author deliberately kept the two
+   commands apart, so this is put up rather than taken.**
+2. **The refusal on the Buy control should say what the console already says
+   (§8).** `hud.refusal.purchase-materials` is generic; the pre-check that fires
+   it holds both numbers. New copy, so the owner's. It is the smallest change in
+   this document and it removes the only place where asking the game about money
+   gets an answer that is not about money.
+3. **Whether the Funds chip should change appearance, and at what balance
+   (§2a), is #29's** and this pass does not propose a number. What it can
+   report is that the number falls from 25,000 to 40 in twenty-five gestures
+   with no change of any kind on screen.
+4. **A wall order's price is not shown anywhere before the press.** The Buy
+   control renders `Buy 1 × Wood Plank · 65`; the buildable list renders
+   `Brick wall` and nothing else, and the arm hint says how to drag and not what
+   it costs. This is the same gap
+   [`2026-08-30-the-naive-route.md`](./2026-08-30-the-naive-route.md) §3 records
+   for the two-bricks-a-wall requirement, one layer along: now that the drag
+   spends money, the drag has a price and does not say it. Copy, so the owner's.
+
+## 19. The standing directive, and the answer against it
+
+The owner's directive is *"gra ma być łatwa przyjazna do grania, a nie jakieś
+ukryte funkcje"* — easy and friendly to play, with no hidden mechanics.
+
+Measured against it, the wall route is not a hidden mechanic; it is a **hidden
+price**. Every individual piece is honest: the strip shows the balance, the
+queue shows the shortfall when there is one, the fold shows the refund, the
+refusals are true. What is hidden is the relationship between a gesture and its
+cost — and the one place the game volunteers a number about money before it is
+too late is inside the procurement fold, which is the exact fold
+[#627](https://github.com/matmaxalez/lockstate/issues/627) exists so that the
+player never has to find.
+
+That is the same sentence
+[`2026-08-30-a-wall-that-buys-itself.md`](./2026-08-30-a-wall-that-buys-itself.md)
+§2b ends on, arrived at from the other direction, and it is now true of one more
+thing: **the only way out of the lock is also in there.**
