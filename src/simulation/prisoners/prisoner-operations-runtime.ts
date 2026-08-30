@@ -68,7 +68,8 @@ export interface PrisonerOperationsRuntimeOptions {
    * *sink* rather than a capability: a runtime handed no log discharges
    * prisoners silently, and every fixture that steps this runtime past a
    * sentence end would then be asserting against a prison that cannot say so.
-   * The two constructors in the repository -- `createNewSession` and
+   * The two constructors in the repository -- `createNewSimulationRuntime`
+   * (`src/simulation/runtime/new-session.ts`) and
    * `tests/helpers/prisoner-fixture.ts` -- each pass the session's own log.
    */
   readonly events: SimulationEventLog;

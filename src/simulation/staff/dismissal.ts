@@ -74,7 +74,7 @@ import type { GuardRoster } from '../security/guard-roster';
  *    `release` does internally.
  * 5. **Contraband leaves with them.** A staff member is a `ContrabandHolder`
  *    kind (`src/simulation/contraband/item.ts`) and the registry is keyed by the
- *    *stringified* id, which is the one store `dismissStaffCompletely`'s
+ *    *stringified* id, which is the one store `dismissStaff`'s
  *    reflection gate structurally cannot see -- `release.ts` documents the same
  *    hole for prisoners and it is repeated here for the same reason.
  * 6. **The name is given back.** `ActorIdentityRegistry.release`'s own contract

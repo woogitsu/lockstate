@@ -464,7 +464,7 @@ async function openApp(page: Page): Promise<void> {
  * the player has no way to detect".
  *
  * So a Play pressed inside that window throws `No simulation session is
- * running yet, so the clock cannot be changed.`, `createHud`'s `reportError`
+ * running yet, so the clock cannot be changed.`, `mountHud`'s `reportError`
  * marks the button `data-action-failed="true"` and points its
  * `aria-describedby` at the refusal line -- and **nothing retries the press**,
  * because a host refusal clears only when the same action later succeeds. The
@@ -4382,7 +4382,7 @@ test.describe('the assembled application', () => {
 
       // Vacuity guard, before a single pixel is trusted: the page really is
       // showing the Rooms panel of the real application, with the real
-      // catalogue behind it. Eighteen is `ROOM_CATALOG`'s own length; a harness
+      // catalogue behind it. Eighteen is `defaultRoomCatalog`'s own length; a harness
       // page has three.
       expect(
         await page.locator('.hud-rooms__list [data-room]').count(),
@@ -4527,7 +4527,7 @@ test.describe('the assembled application', () => {
 
     // Vacuity guard, before a single pixel is trusted: this is the shipped
     // application with the shipped catalogue behind it, not a harness.
-    // Eighteen is `ROOM_CATALOG`'s own length.
+    // Eighteen is `defaultRoomCatalog`'s own length.
     expect(
       await page.locator('.hud-rooms__list [data-room]').count(),
       'the Rooms catalogue is not the shipped one',
@@ -5254,7 +5254,7 @@ test.describe('the assembled application', () => {
    *
    * A press that was quietly refused would drop focus the same way, so a test
    * that did not check would prove nothing about the working case. Each record
-   * carries the control's own `data-action-failed`, which `createHud` sets on
+   * carries the control's own `data-action-failed`, which `mountHud` sets on
    * a host refusal, and the refusal line is asserted hidden -- and the prison,
    * the walls, the room and the admission are each asserted to have happened.
    */
