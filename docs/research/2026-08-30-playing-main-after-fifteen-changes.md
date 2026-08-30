@@ -74,12 +74,17 @@ against a prison that may be 5.8× too small. This pass was asked to measure it.
 meaning one of exactly two first-party things: a number or a sentence pasted
 verbatim out of one of the two runs named below, or a `file:line` in this
 repository that was opened and read. **SEARCH-SUMMARY and FROM MEMORY do not
-occur.** Where something could not be established it is marked **UNKNOWN**
-inline, with what would settle it.
+occur.** What could not be established is not marked inline and is collected in
+one place instead — §7, *"What was not reached"* — because a pass that stops
+five things short is better read as a list than as five asides.
 
 Two runs, both pasted. **Both play the same game**: the branch this record is on
-changes nothing under `src/` — `git diff --stat origin/main -- src/` is empty —
-so the simulation, the HUD and every balance value in both runs are `898a16a`'s.
+changes nothing under `src/` — `git diff --stat 898a16a..HEAD -- src/` is empty
+— so the simulation, the HUD and every balance value in both runs are
+`898a16a`'s. (Against **`898a16a`**, not against `origin/main`: `main` moved
+four times while this pass was running, one of them #640 — see §5.1 — so a diff
+against it would be a diff against other people's work, not a statement about
+this branch.)
 
 - **Run A**, 2026-08-30 16:46 UTC.
 - **Run B**, 2026-08-30 17:16 UTC, with three instrumentation changes run A paid
