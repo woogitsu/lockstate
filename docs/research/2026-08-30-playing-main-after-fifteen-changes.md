@@ -519,10 +519,21 @@ The reason is one press away and it is a press nobody is told to make:
 [act1]   /awaiting materials/i once the queue is unfolded? true
 ```
 
+**Run B, same act, independently:**
+
+```
+[act1] after 48.222s of x4, tick 585: queue "QUEUED\n6 waiting · 0 being built"
+[act1] after 70.353s of x4, tick 2350: queue "QUEUED\n6 waiting · 0 being built"
+[act1] after 107.026s of x4, tick 5287: queue "QUEUED\n6 waiting · 0 being built"
+[act1]   /awaiting materials/i in the visible HUD? false
+[act1]   /material/i in the visible HUD? false
+[act1]   /awaiting materials/i once the queue is unfolded? true
+```
+
 This reproduces `docs/research/2026-08-30-the-naive-route.md` rather than
 extending it, and it is here because the brief asked for it to be confirmed on
 today's `main` rather than assumed. **It is the earliest thing a player meets and
-it is still live at `898a16a`.**
+it is still live at `898a16a`, in both runs.**
 
 ### 5.2 The control that looks like "start drawing" is the one that stops it, for a second room
 
