@@ -314,6 +314,18 @@ lands on**, which is the previous anchor's own finding applied to this
 paragraph rather than restated about that one. One of those nine, **#654**, is
 open against the budget itself; nothing here anticipates what it decides.
 
+**And it started moving immediately, which is recorded because it is evidence
+for the paragraph above rather than a correction to it.** Measured once, minutes
+after the commit that wrote it: `origin/main` had already reached
+**v0.0.243** — `48be7e6`, releasing #646 (`c277864`), which edits one member,
+`docs/research/README.md` — so the count was **nine** before this branch had a
+pull request, and one member had moved since the tree every citation here was
+derived from. **The anchor is not chased to that tree**, deliberately: an
+anchor names the commit its citations were re-read against, and #646's edit
+belongs to the next window rather than to this one. What the reading is for is
+that it settles, with a number rather than an argument, that the figure above
+had to be scoped to a commit.
+
 `eb1f040` is `origin/main`'s tip at the time of writing and is itself the
 **v0.0.242 release commit**, named deliberately rather than the merge commit
 beneath it, for the reason every previous anchor gives: it is cut after the
