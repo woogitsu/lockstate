@@ -15,24 +15,66 @@
 
 ## Status
 
-**Proposed, 2026-08-30. Not self-approved, and not accepted.**
+**Accepted, 2026-08-30, on the owner's ruling on
+[#677](https://github.com/matmaxalez/lockstate/issues/677) — and superseded in
+one part by the same ruling.**
+
+**This is not a self-approval.** The document was offered as one of four
+answers — this decision as written, the priors distribution instead, both, or
+neither — and the owner ruled, in a comment on #677 dated 2026-08-30 titled
+*"Owner ruling, 2026-08-30 — both shapes, not one"*:
+
+> **The ruling is both:**
+>
+> 1. **The review that raises a prisoner into tier 3 asks what they are
+>    carrying** — ADR 0080's decision, unchanged.
+> 2. **`priorIncidents` moves off zero** — the shape ADR 0080 explicitly
+>    declined to take (*"`priorIncidents` does not move, and no balance value is
+>    decided here"*).
+>
+> So ADR 0080 is accepted **and** superseded in one part, and it has to be
+> amended to say so rather than left reading as if the second shape was refused.
+> That amendment is not a rewrite: its measurement, its decision 2 (only the
+> step *into* tier 3) and its refusal to draw on every tier increase all survive
+> untouched.
+
+**So decisions 1, 2 and 4 are accepted as written. Decision 3 is superseded in
+its first half and stands in its second**, and it is marked in both directions
+below rather than overwritten — the practice `docs/AGENT_WORKFLOW.md` §4
+requires, because the reasoning that declined the second shape has not become
+wrong, only outranked. **The magnitude is still not decided**, by the owner's
+own words in the same ruling: *"**Decided:** both mechanisms exist. **Not
+decided: the magnitude**, and it is deliberately not mine."*
+
+**What this Status section said while the document was `Proposed`, kept because
+it records what was actually offered:**
+
+> **Proposed, 2026-08-30. Not self-approved, and not accepted.**
+>
+> ... The implementation is on the same branch as this document, in a
+> **separate commit**, so it can be dropped on its own if the owner decides the
+> other way — the practice [ADR 0061](./0061-what-the-prison-produces-on-its-own.md)
+> records about itself: *"This records a decision that has been built ... The
+> reasoning below is the whole of the warrant, and a reader who disagrees with
+> any of it should treat that decision as open."*
+>
+> **The decision the owner has to make, in one sentence:** should a prisoner the
+> prison re-classifies as high risk be asked what they are carrying — or should
+> `contraband.weapon` stay a catalogue entry that no prison can produce until
+> somebody decides what `priorIncidents` ought to be?
+
+The answer to that question is *both*, and the separate-commit property it
+describes is now spent rather than false: the implementation
+(`ee4c0b6` and its fixture half `3bf9505`) stays a separate commit from this
+document (`d124548`, `256e022`) because that is how the branch was built, not
+because it is still waiting to be dropped.
 
 It answers [issue #677](https://github.com/matmaxalez/lockstate/issues/677),
 which falls out of the [#540](https://github.com/matmaxalez/lockstate/issues/540)
 measurement recorded in
 the research note [#676](https://github.com/matmaxalez/lockstate/pull/676)
 carries (*Tier 3 at intake, and the weapon nobody can smuggle*, not yet on
-`main`). The implementation is on the same branch as this document, in a
-**separate commit**, so it can be dropped on its own if the owner decides the
-other way — the practice [ADR 0061](./0061-what-the-prison-produces-on-its-own.md)
-records about itself: *"This records a decision that has been built ... The
-reasoning below is the whole of the warrant, and a reader who disagrees with
-any of it should treat that decision as open."*
-
-**The decision the owner has to make, in one sentence:** should a prisoner the
-prison re-classifies as high risk be asked what they are carrying — or should
-`contraband.weapon` stay a catalogue entry that no prison can produce until
-somebody decides what `priorIncidents` ought to be?
+`main`).
 
 ## Context
 
@@ -225,13 +267,50 @@ balance number**: it is the tier at which the band first admits a fifth entry,
 which is a fact about `2 + tier` and the shipped catalogue, not a rate somebody
 picked.
 
-### 3. `priorIncidents` does not move, and no balance value is decided here
+### 3. `priorIncidents` does not move, and no balance value is decided here — **the first half is superseded, the second stands**
 
-#677's second shape — decide the priors distribution — is **not taken**. It is a
-balance decision, ADR 0017 decision 5 and #29 own it, and it is not needed:
-decision 1 gives the fifth slot a producer without it. The numbers are set out
-under *The other shape, priced* so the owner can overrule this on evidence
-rather than on absence.
+**What this decision said when the document was `Proposed`, kept whole because
+half of it is still in force:**
+
+> #677's second shape — decide the priors distribution — is **not taken**. It is
+> a balance decision, ADR 0017 decision 5 and #29 own it, and it is not needed:
+> decision 1 gives the fifth slot a producer without it. The numbers are set out
+> under *The other shape, priced* so the owner can overrule this on evidence
+> rather than on absence.
+
+**The owner overruled it on the evidence, which is exactly what that last
+sentence asked for.** The ruling of 2026-08-30 takes **both** shapes:
+`priorIncidents` moves off zero, *and* the review that raises a prisoner into
+tier 3 asks what they are carrying. The two halves of the heading above
+therefore now point in different directions, and both are stated rather than one
+being deleted:
+
+- **Superseded: *"`priorIncidents` does not move".*** It moves. That is the
+  owner's ruling and not this document's finding, and the reasoning that
+  declined it — that decision 1 does not *need* it — is not thereby wrong. It
+  was an argument about sufficiency, and the ruling is about what the game
+  should be, which outranks it. *"It is not needed"* survives as a true
+  statement about the mechanism and stops being a reason.
+- **Standing: *"no balance value is decided here".*** Unchanged, and reinforced
+  by the ruling in the same breath — *"Not decided: the magnitude, and it is
+  deliberately not mine"*. ADR 0017 decision 5 and
+  [#29](https://github.com/matmaxalez/lockstate/issues/29) still own every value
+  of this kind. **This document therefore names no distribution**, and nothing
+  in `src/` sets one: `src/main.ts`'s `ADMISSION_REQUEST` still reads
+  `{ priorIncidents: 0 }`, and moving it is a separate change under #29 with its
+  own new named-RNG stream (see *A distribution is also new state*, below,
+  which is unamended and is the cost of that change rather than of this one).
+- **Also standing, and worth saying because the ruling did not touch it:** the
+  *shape* of what a moved `priorIncidents` costs. The eight candidates are
+  priced in isolation under *The other shape, priced* and **re-priced with this
+  decision in force** under *The other shape, measured beside this one* — which
+  is the section the ruling asked for, because every figure in the first table
+  was taken at `priorIncidents: 0`.
+
+**Nothing else in this document moves.** Decision 1, decision 2 (only the step
+*into* tier 3), decision 4, the whole *Measurement* section and *Alternatives
+considered* 3 (drawing on every tier increase, rejected on measurement) are
+accepted as written, which the ruling says in terms.
 
 ### 4. Nothing else moves
 
