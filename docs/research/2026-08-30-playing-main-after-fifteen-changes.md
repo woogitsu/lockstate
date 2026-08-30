@@ -72,7 +72,208 @@ so the simulation, the HUD and every balance value in both runs are `898a16a`'s.
 
 ---
 
-*(Sections 1–7 follow; measurements from the two runs are pasted in place.)*
+## 1. The ×5.8 prediction: right as arithmetic, unmeasurable as a steady state, and not the number the economy needs
+
+ADR 0079's sentence is quoted at the top of this record. Taken apart, it makes
+three separate claims, and they do not stand or fall together.
+
+### 1.1 As a ratio of *times in system* it is right, and the intake overhead that could have spoilt it is nine ticks
+
+**VERIFIED, code.** Little's law is `L = λ·W`. `W` here is not the sentence: it
+is admission-to-departure, which is the intake pipeline plus the sentence.
+
+- `sentenceEndTick` is written **once**, at the `'classification'` stage
+  (`src/simulation/prisoners/intake-system.ts:493`,
+  `this.records.sentenceEndTick[index] = context.tick + this.records.sentenceLengthTicks[index]!`).
+- `INTAKE_STAGES` is
+  `['queued', 'reception', 'classification', 'accommodation-assignment', 'completed', 'failed']`
+  (`src/simulation/prisoners/components.ts:19`) and `IntakeSystem` advances
+  **at most one stage per entity per scheduled tick**, on
+  `schedule = { intervalTicks: 5, phaseTicks: 0 }` (`intake-system.ts:211`).
+
+So a sentence starts about **ten ticks** after the press — two stage advances —
+which is 0.004 in-game days against a mean sentence of 52. `W_new / W_old` is
+therefore `124,800 / 21,600` to three significant figures whatever the overhead
+does, and **5.8 is right**.
+
+Note which stage that is: **classification is stage 3 and accommodation is
+stage 4**. A prisoner who never gets a bed is already serving. And
+`SENTENCE_BEARING_STAGES` in `PrisonerDischargeSystem` is
+`['accommodation-assignment', 'completed', 'failed']`
+(`src/simulation/prisoners/discharge-system.ts:46`), so they are released on time
+too. That is not a detail; §1.3 is built on it.
+
+### 1.2 There is no λ. Every arrival in this game is a press of one button
+
+**VERIFIED, code, and confirmed by every run below.** `AdmitPrisoner` has
+exactly one producer in `src/`: `src/main.ts:2522`, inside the Intake panel's
+`onAdmit`. It reaches exactly one consumer,
+`src/simulation/runtime/session-commands.ts:266`, which calls
+`PrisonerOperationsRuntime.requestAdmission`. That method refuses for exactly
+two reasons (`prisoner-operations-runtime.ts:902-906`):
+
+```ts
+if (!this.intakeSystem.hasAccommodationTarget()) return { kind: 'refused', reason: 'no-accommodation' };
+if (!this.entityStore.canSpawn) return { kind: 'refused', reason: 'population-full' };
+```
+
+— no zoned accommodation at all, or the entity store exhausted at 5,000.
+**Never "the beds are full."** Nothing anywhere in `src/` schedules an arrival,
+and `grep -rn "admitPrisoner\|requestAdmission" src/` returns no producer but
+that one.
+
+So the "given admission rate" in ADR 0079's sentence is not a property of the
+game. It is a property of the player, and the game has no opinion about it.
+**"Steady-state occupancy rises ×5.8 for a given admission rate" is
+arithmetically true and describes nothing the simulation does on its own.**
+
+What it *does* describe, restated so it is about the game: **under the old
+range a player had to press Admit 5.8× as often to keep a prison of a given
+size full.** That is a real and probably good consequence of #659, and it is
+not an occupancy figure.
+
+### 1.3 What the economy actually reads is `occupiedPlaces`, and no sentence length moves it
+
+**VERIFIED, code.** `StateIncomeSystem` credits per **occupied place**, not per
+prisoner: `stateIncomeForOccupiedPlaces(source, source.roomInstances.residentIdsWithExistingPlace())`
+(`src/simulation/economy/income.ts:418`), at
+`STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS = 300` (`:103`) less
+`STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 40` per unmet need (`:335`).
+`residentIdsWithExistingPlace` is places that **currently exist** — furnished
+beds — so the paying population is `min(roster, furnished capacity)` and
+**furnished capacity is a function of what the player built, which no sentence
+length touches.**
+
+The other side is not symmetric. Guard requirement is
+`ceil(occupants / DEFAULT_SECTOR_PRISONERS_PER_GUARD)` with
+`DEFAULT_SECTOR_PRISONERS_PER_GUARD = 8`
+(`src/simulation/security/sector-staffing.ts:147,190`), and the occupant count
+for the derived sector *"counts the whole prison"*
+(`src/simulation/security/deployment-system.ts:107-113`). **A prisoner with no
+bed raises the guard bill and pays nothing.**
+
+### 1.5 So what should #653 and #668 be costed against?
+
+**Not a prison 5.8× larger.** The three statements that follow from §1.1–§1.4,
+separated because they need separate evidence:
+
+1. **The ratio of times in system is 5.78.** Arithmetic on two constants, and
+   ADR 0079 is right about it.
+2. **`occupiedPlaces` is what the state pays for, and it is capped by furnished
+   capacity** — measured pinned at 6 while the roster was 12 and while the
+   roster fell to a smaller number. Longer sentences raise *average* occupancy
+   toward that cap; they cannot raise it past the cap, so the largest effect a
+   sentence change can have on income is bounded by
+   `capacity / previous average occupancy`, and is 5.8 only for a prison that
+   was 5.8× under-occupied.
+3. **The guard bill is not capped that way.** It scales on the whole roster
+   (§1.3), so the population that grows with sentence length is the population
+   that costs and does not pay.
+
+**What would change my mind on 2:** a session in which `occupiedPlaces` exceeds
+the number of furnished beds, or an income credit that is not
+`occupiedPlaces × 300` less withholding. Neither appeared in either run.
+
+### 1.4 What a batch of twelve into six beds actually did
+
+**VERIFIED, Run A, act 3.** Twelve `Admit` presses into a 6×6 cell with six
+beds and one toilet, one guard hired, then ×4 for twenty-five wall minutes.
+`occupiedPlaces` is in bold because it is the number the state pays for:
+
+| tick | in-game day | `prisoners` | `roomOccupants` | **`occupiedPlaces`** | `accommodationCapacity` | treasury |
+| --- | --- | --- | --- | --- | --- | --- |
+| 8,409 | 4 | 12 | 6 | **6** | 6 | 23,720 |
+| 18,735 | 8 | 12 | 6 | **6** | 6 | 30,360 |
+| 28,575 | 12 | 12 | 6 | **6** | 6 | 34,560 |
+| 38,855 | 17 | 12 | 6 | **6** | 6 | 39,560 |
+| 49,192 | 21 | 11 | 6 | **6** | 6 | 43,560 |
+| 59,360 | 25 | 10 | 6 | **6** | 6 | 47,560 |
+| 69,694 | 30 | 7 | 6 | **6** | 6 | 53,040 |
+| 79,943 | 34 | 7 | 6 | **6** | 6 | 58,000 |
+| 89,620 | 38 | 6 | 6 | **6** | 6 | 62,960 |
+| 99,766 | 42 | 5 | 5 | **5** | 6 | 67,700 |
+| 110,121 | 46 | 4 | 4 | **4** | 6 | 71,120 |
+| 118,613 | 50 | 3 | 3 | **3** | 6 | 74,320 |
+
+**`occupiedPlaces` is `min(roster, 6)` at every single one of the 129 samples
+this run took.** While the roster stood at 12 it read 6 and would not rise,
+however many people were waiting; each time somebody left while the roster was
+still above 6 it stayed at 6, because the bed was refilled from the queue inside
+one ten-second sample; and only once the roster fell *below* the bed count did
+it start to track the roster — 5, then 4, then 3. `accommodationCapacity` stayed
+6 throughout. The status strip said the same thing in words, and this is
+#635's badge doing its job:
+
+```
+[act3] status strip: … | 12 | PRISONERS | 6 with no bed | 0 | STAFF | … | 1 | ROOMS | …
+[act3] intake panel after 12 admissions: INTAKE
+Admit a prisoner
+6 waiting with no bed to sleep in
+A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits until a bed is free.
+IN INTAKE
+6 of 12
+6 at Cell Assignment
+```
+
+**The falls in the population, and what the player saw of each:**
+
+- **tick 44,185–45,021**, `prisoners` 12 → 11. Band: `severity=info 1440x32 at (0,80) :: 1 released — their sentences are served.` — **the release sentence**
+- **tick 53,560–54,376**, `prisoners` 11 → 10. Band: `severity=info 1440x32 at (0,80) :: 1 released — their sentences are served.` — **the release sentence**
+- **tick 62,176–62,993**, `prisoners` 10 → 9. Band: `severity=info 1440x32 at (0,80) :: 1 released — their sentences are served.` — **the release sentence**
+- **tick 63,850–64,666**, `prisoners` 9 → 8. Band: `severity=info 1440x32 at (0,80) :: The prison is under control again — no incident is still open.` — **not the release sentence**
+- **tick 68,019–68,836**, `prisoners` 8 → 7. Band: `severity=warning 1440x32 at (0,80) :: A fight has broken out between two prisoners.` — **not the release sentence**
+- **tick 84,503–85,342**, `prisoners` 7 → 6. Band: `severity=info 1440x32 at (0,80) :: 1 released — their sentences are served.` — **the release sentence**
+- **tick 96,461–97,277**, `prisoners` 6 → 5. Band: `severity=info 1440x32 at (0,80) :: 1 released — their sentences are served.` — **the release sentence**
+- **tick 102,461–103,300**, `prisoners` 5 → 4. Band: `severity=info 1440x32 at (0,80) :: 1 released — their sentences are served.` — **the release sentence**
+- **tick 117,765–118,613**, `prisoners` 4 → 3. Band: `severity=info 1440x32 at (0,80) :: 1 released — their sentences are served.` — **the release sentence**
+
+**Nine falls, 12 → 3, over 46.4 in-game days after admission** (the run ended
+at tick 118,613, in-game day 50). **Seven of the nine left the release sentence
+on the band**; the other two had it overwritten by an incident inside the same
+ten-second window, because `.hud__event` holds one event and does not
+auto-dismiss. §7 records what that means for reading these nine as
+*discharges*.
+
+**And one number here does not sit comfortably.** Under a uniform draw over
+`{14 … 90}` days, the expected number of twelve prisoners whose sentence ends
+within 46 days is `12 × 33/77 = 5.1`, with a standard deviation of 1.7. **Nine
+were observed.** That is 2.3 standard deviations high, and twelve draws is not
+a sample worth arguing from — so this is recorded as an *observation with a
+question attached*, not a finding:
+
+- The draw itself is uniform by construction — `drawSentenceLengthTicks` is
+  `(MIN + rng.nextInt(77)) × DAY_LENGTH_TICKS` and
+  `Xoshiro128StarStar.nextInt` rejects the unrepresentable tail before taking
+  the modulus (`src/simulation/rng/xoshiro128starstar.ts:41-51`).
+- **The candidate this pass can name is that a fall in `prisoners` is not
+  necessarily a discharge** — see §7 — and four of these nine fell after the
+  reviews at tick 47,999 put the population at the tier that opens the escape
+  gate.
+- **What settles it** is the `simulation/event` stream, which names
+  `prisoners.discharged` and `incidents.escape-attempt-opened` separately. Run
+  A did not record it; run B does.
+
+### 1.4b What the day boundary actually paid, and why it is below the ceiling
+
+**VERIFIED, Run A, act 3.** From tick 8,409 (treasury 23,720) to tick 89,620
+(62,960) is **39,240 minor units over 34 day boundaries** — an average of
+**1,154 per day** with `occupiedPlaces` at 6 and one guard on the payroll.
+
+The ceiling for that prison is `6 × 300 − 80 = 1,720`
+(`STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS = 300`, `income.ts:103`; the guard's
+80 is the `dailyWageBill` the run logged at hire). The 566 short is
+`STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 40` (`income.ts:335`) times
+about **2.4 unmet needs per resident per day** — which is what a cell-and-toilet
+prison is: ADR 0054 decision 2 states that *"a prison with no shower room and no
+laundry still has no hygiene at all"*, and the roster's own worst-need column
+read `Hygiene` for every visible prisoner from tick 28,575 onward.
+
+**That is ADR 0079's own prediction, observed.** It states that under the old
+range the withholding schedule fired *"for a lucky draw"* and under the new one
+*"for every neglected prisoner"*, because the shortest drawable sentence
+outlasts the hygiene and recreation crossings *"by more than eight in-game
+days"*. A third of this prison's gross income was withheld, every day, for the
+whole run.
 
 ## 2. Nothing on screen says how long a prisoner is staying, and nothing ever did
 
@@ -351,3 +552,93 @@ this is a report and not a proposed change.
 
 **It cost this pass a run**, which is the honest way to say how discoverable it
 is: the script did the obvious thing and lost ten minutes to it.
+
+## 6. The vocabulary sweep
+
+**VERIFIED, both runs.** Every observation point dumps
+`document.querySelector('.hud').innerText` whole rather than the panels this
+pass expected to matter — `docs/research/2026-08-30-the-naive-route.md` §6
+records why: *"A survey that enumerates known regions cannot find a message in a
+region it did not know about. Print the container, not the parts."* `innerText`
+reflects layout, so a word inside a folded section does not appear in it, which
+makes *"could a player read this without unfolding anything?"* a substring test.
+
+Eleven words, swept over the whole visible HUD the moment twelve prisoners had
+been admitted:
+
+```
+[act3] VOCABULARY at just after admission: present=[] absent=["sentence","sentenced","days left","release","released","discharge","review","reviewed","reclassif","tier","due out"]
+```
+
+**All eleven absent.** Not "the sentence is not shown" — the *vocabulary* of
+sentences, releases and reviews does not occur anywhere a player can read
+without opening something. The end-of-run sweep, after seven people had left, is
+at the end of the same run, after nine people had left, is different in exactly
+the way that proves the point:
+
+```
+[act3] VOCABULARY at end of run: present=["sentence","release","released"] absent=["sentenced","days left","discharge","review","reviewed","reclassif","tier","due out"]
+```
+
+Three words have appeared, and all three are the same string:
+`"1 released — their sentences are served."`, standing on the event band. **The
+only way the word "sentence" ever reaches a player in this game is after
+somebody's is over.** `review`, `tier` and `days left` are still absent at the
+end of a fifty-day session in which the whole population was reclassified
+twice.
+
+## 7. The weakest claim, and what this pass did not reach
+
+### The weakest claim, and it is a method one
+
+**That the falls in the population in §1.4 are *discharges*.** A fall in
+`prisoners` is "somebody left", and `releasePrisoner` — the one door out — has
+**two** callers in `src/`:
+
+- `PrisonerDischargeSystem`, for a sentence that ended
+  (`src/simulation/prisoners/discharge-system.ts:184`);
+- the incident runtime's escape hook, for a prisoner who got out
+  (`src/simulation/runtime/new-session.ts:1118`), which is reached from
+  `IncidentResponseSystem` when an escape-attempt incident lapses
+  (`response-system.ts:551,566-568`).
+
+Both destroy the entity and free the bed, and the counts publication reads
+identically. So the number this pass can defend is *departures*, not *releases*.
+
+**Why it matters more on this tree than it would have last week** is §3: the
+escape gate is `riskTier >= 3`, and act 3's own reviews put the whole visible
+population at tier 3 at tick 47,999 — after which four of run A's six falls
+occurred.
+
+**What would change my mind, and what was done about it:** the worker publishes
+`prisoners.discharged` and `incidents.escape-attempt-opened` as separate members
+of `SIMULATION_EVENT_TYPES`, and the `Worker` tee keeps every one. Run B dumps
+that stream whole and opens the eight-row alerts list for the whole run.
+ESCAPE_RESOLUTION
+
+### What was not reached, stated rather than glossed
+
+1. **A steady state.** Arithmetic, not an omission: at ×4 — 80 ticks per wall
+   second, `SIMULATION_SPEEDS` is `{1, 2, 4}` — four mean sentences is 104 wall
+   minutes *before* a prison is built. **Nothing in this record is a
+   steady-state occupancy measurement and nothing in it should be quoted as
+   one.** What would settle it is ADR 0050's population harness re-run at the
+   new range, headlessly, which needs no browser at all — and that is the same
+   thing ADR 0079 said nobody had done.
+2. **The long tail.** No sentence longer than the run's horizon was observed at
+   all, so nothing here says anything about the 90-day end of the range.
+3. **A second review's effect.** ADR 0079 predicts 85% of prisoners reach a
+   second review. Both runs cover one scheduled pass inside the batch's window.
+4. **Whether anybody was carrying contraband**, which is the second gate on an
+   escape (`contrabandSeverity > 0`). The `CONTRABAND` chip counts what has been
+   *found*, and it read 0 throughout.
+5. **The whole `[14, 90]` distribution.** Twelve draws per run is not a sample
+   of 77 values, and the departures observed sit at the short end of the range.
+   Whether that is the draw or the horizon is not separable from these runs, and
+   nothing in this record should be read as a claim about the distribution's
+   shape. `drawSentenceLengthTicks` uses `Xoshiro128StarStar.nextInt`, which
+   rejects the unrepresentable tail before taking a modulus
+   (`src/simulation/rng/xoshiro128starstar.ts:41-51`), so it is uniform by
+   construction; what is unmeasured is whether this game draws it once per
+   prisoner as intended, and `tests/unit/prisoners-sentence.test.ts` is where
+   that lives rather than here.
