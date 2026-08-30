@@ -79,7 +79,25 @@ function queueOf(total = 12): HudBuildQueueViewModel {
     orders: Array.from({ length: Math.min(total, 3) }, (_unused, index) =>
       order(index, index === 0 ? 'in-progress' : 'assigned'),
     ),
+    // A queue that is paid for, which is what every case in this file is about:
+    // these assert the window, the ids and the pooled rows. The funded state is
+    // the one that leaves the block's drawing unchanged, so no case here is
+    // silently measuring a shortfall it did not ask for.
+    materialsFunding: { unfunded: false, shortfallMinorUnits: 0 },
   };
+}
+
+/**
+ * The same queue, stalled on money: the prison could not pay for `shortfall`.
+ *
+ * `80` is one wall segment all in -- two bricks at forty -- which is the figure
+ * `tests/integration/construction-just-in-time-materials.test.ts` measures the
+ * simulation producing for exactly this state. Written out here rather than
+ * imported, because a fixture that took its expected value from the code under
+ * test would agree with any price (`docs/TESTING.md`).
+ */
+function unfundedQueueOf(total = 12, shortfall = 80): HudBuildQueueViewModel {
+  return { ...queueOf(total), materialsFunding: { unfunded: true, shortfallMinorUnits: shortfall } };
 }
 
 async function openBuildTab(page: Page): Promise<void> {
@@ -286,7 +304,7 @@ test.describe('the Build panel queue', () => {
     // surviving rows are still there and still aimed at their own orders.
     await page.evaluate(
       (model) => window.lockstateUiHarness.reportBuildQueue(model),
-      { total: 11, started: 1, orders: [order(0, 'in-progress'), order(2, 'assigned')] } as HudBuildQueueViewModel,
+      { total: 11, started: 1, orders: [order(0, 'in-progress'), order(2, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
     );
     const settled = await probeQueue(page);
     expect(settled.rows.map((row) => row.orderId)).toEqual(['order-00', 'order-02']);
@@ -313,7 +331,7 @@ test.describe('the Build panel queue', () => {
     // The queue advances: the first order finished, so every row shifts up one.
     await page.evaluate(
       (model) => window.lockstateUiHarness.reportBuildQueue(model),
-      { total: 11, started: 1, orders: [order(1, 'in-progress'), order(2, 'assigned'), order(3, 'assigned')] } as HudBuildQueueViewModel,
+      { total: 11, started: 1, orders: [order(1, 'in-progress'), order(2, 'assigned'), order(3, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
     );
     const advanced = await probeQueue(page);
     expect(advanced.rows.map((row) => row.orderId)).toEqual(['order-01', 'order-02', 'order-03']);
@@ -428,5 +446,113 @@ test.describe('the Build panel queue', () => {
       overflowed,
       'the open fold fits the panel at every viewport this sweep visits, so the scroll it is named for was never exercised. Add a shorter viewport, or this test is about nothing',
     ).not.toEqual([]);
+  });
+
+  /*
+   * #629's directive, on this surface: *"a mechanic the player must discover in
+   * order to proceed is a defect."* Everything below is about the word
+   * **discover**.
+   */
+  test('says what the queue is short of with the fold still shut, which is where the last one failed (#629)', async ({
+    page,
+  }) => {
+    /*
+     * The defect this is shaped against is #625, in this exact block. *"Awaiting
+     * Materials"* was present, correct, and inside `queueSection` -- which opens
+     * collapsed -- so it reached nobody, and the owner met the consequence live
+     * (#627): forty walls, 25,000 in the bank, nothing built.
+     *
+     * So the assertion is not "the sentence exists". It is that the sentence is
+     * on screen **without the player opening anything**, and the test never
+     * calls `toggleBuildQueue`.
+     */
+    for (const [width, height] of VIEWPORTS) {
+      await page.setViewportSize({ width, height });
+      await openBuildTab(page);
+      await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), unfundedQueueOf(12));
+
+      const queue = await probeQueue(page);
+      const layout = await page.evaluate(() => window.lockstateUiHarness.buildLayoutProbe());
+
+      // Nothing was pressed, so the block is still folded. If this ever arrives
+      // `true` the test has stopped measuring what it is named for.
+      expect(queue.open, `the fold opened by itself at ${width}x${height}`).toBe(false);
+
+      // The rendered sentence, with the figure substituted. An unresolved
+      // `hud.build.queue-shortfall` shows up here as its own dotted key, and an
+      // unsubstituted parameter shows up as a literal brace.
+      expect(queue.shortfallText, `the shortfall line at ${width}x${height}`).toBe(
+        'Waiting for 80 to buy materials.',
+      );
+
+      /*
+       * The three answers #220 taught this repository to demand. `.hud-build__note`
+       * carries an author `display: -webkit-box` that beats `[hidden]`, so a
+       * missing `.hud-build__queue-shortfall[hidden]` rule is a real failure mode
+       * here in the other direction -- and an attribute read would agree with
+       * either defect.
+       */
+      expect(queue.shortfallHasOffsetParent, `the shortfall line has no offsetParent at ${width}x${height}`).toBe(true);
+      expect(queue.shortfallBox, `the shortfall line has no box at ${width}x${height}`).not.toBeNull();
+      expect(queue.shortfallBox?.height ?? 0, `the shortfall line is 0px tall at ${width}x${height}`).toBeGreaterThan(0);
+
+      // Inside the panel's visible box and unscrolled: a sentence laid out past
+      // the fold is the same defect as a control laid out past it, and this one
+      // is the only thing telling the player why nothing is being built.
+      expect(layout.panelScrollTop, `the Build panel is pre-scrolled at ${width}x${height}`).toBe(0);
+      expect(
+        queue.shortfallBox?.bottom ?? Number.POSITIVE_INFINITY,
+        `the shortfall line ends at y=${String(queue.shortfallBox?.bottom)} in a panel clipped at y=${String(layout.panelVisibleBottom)} at ${width}x${height}`,
+      ).toBeLessThanOrEqual(layout.panelVisibleBottom);
+      expect(
+        queue.shortfallBox?.bottom ?? Number.POSITIVE_INFINITY,
+        `the shortfall line is off the viewport at ${width}x${height}`,
+      ).toBeLessThanOrEqual(height);
+
+      // And nothing anywhere in this panel is showing a template. One
+      // unsubstituted parameter is the whole of what "the number cannot render"
+      // would look like on screen.
+      const texts = await page.evaluate(() => window.lockstateUiHarness.buildProbe().texts);
+      expect(
+        texts.filter((text) => text.includes('{') || text.includes('}')),
+        `unresolved message parameters in the Build panel at ${width}x${height}`,
+      ).toEqual([]);
+    }
+  });
+
+  test('draws the money line from the model in both directions, and never over a paid-for queue', async ({ page }) => {
+    /*
+     * Two claims a single publication cannot separate.
+     *
+     * **The figure is the model's**, not a constant: the same block is published
+     * twice with different amounts and the sentence follows.
+     *
+     * **It withdraws.** A queue that is paid for must draw no line at all --
+     * not an empty one. `.hud-build__note`'s author `display` beats `[hidden]`,
+     * so "hidden" here has to mean *no box*, which is what the browser is asked.
+     * A permanent empty line under the queue would be furniture bought with the
+     * height ADR 0031 decision 3 already spends on this block.
+     */
+    await page.setViewportSize({ width: 900, height: 600 });
+    await openBuildTab(page);
+
+    await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), unfundedQueueOf(12, 80));
+    expect((await probeQueue(page)).shortfallText).toBe('Waiting for 80 to buy materials.');
+
+    await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), unfundedQueueOf(12, 240));
+    expect((await probeQueue(page)).shortfallText, 'the figure is a constant, not the model').toBe(
+      'Waiting for 240 to buy materials.',
+    );
+
+    await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), queueOf(12));
+    const funded = await probeQueue(page);
+    expect(funded.shortfallText, 'a paid-for queue still says it is waiting for money').toBe('');
+    expect(funded.shortfallLaidOut, 'the withdrawn line still has a box').toBe(false);
+    expect(funded.shortfallHasOffsetParent, 'the withdrawn line still has an offsetParent').toBe(false);
+
+    // And the queue itself is untouched by any of it: this line is beside the
+    // block, never inside it.
+    expect(funded.countText).toBe('12 waiting · 1 being built');
+    expect(funded.sectionLaidOut).toBe(true);
   });
 });

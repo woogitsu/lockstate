@@ -421,20 +421,46 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       value: counts.treasuryMinorUnits,
       capacity: undefined,
       // No tone. "Low on money" is a threshold, and a threshold is a balance
-      // decision -- the same reason `BoundedValue` carries no severity band.
-      // There is still nothing to be low *for* on a schedule, but the reason
-      // inverted with #29 rather than going away: the state now pays in once a
-      // day and nothing at all is charged, so a warning here would describe a
-      // slope that runs the wrong way.
+      // decision -- the same reason `BoundedValue` carries no severity band,
+      // and ADR 0017 decision 5 reserves every such value to #29. That half is
+      // unchanged and is still the whole reason this field is `undefined`.
       //
-      // Worth recording, because this comment used to say the opposite. Until
-      // #29 it had to carry the qualifier "on a schedule" -- the unqualified
-      // form was false from the day `ProcurementSystem.cancel` landed, and
+      // **The reason that used to follow it is false, and both directions are
+      // kept rather than one overwritten.** It argued that the slope ran the
+      // wrong way for a warning: that #29 had inverted the situation, since
+      // the state now pays in once a day while the treasury had, in its words,
+      // no outgoing side at all. That was true when it was written -- `4f711d5`
+      // (#311, 2026-08-25) -- and it has since been falsified twice, once in
+      // each of the two ways money leaves a treasury:
+      //
+      // - **A charge the player cannot decline.** `916ac46` (#455) made wages
+      //   recurring: `PayrollSystem` bills every employee's
+      //   `wageBand.minPerDay` at each in-game day boundary.
+      // - **A charge the player makes without meaning to.** `a87b0d3` (#640)
+      //   made a `PlaceBuildOrder` buy its own materials at the press, so one
+      //   drag along a tile edge takes 80 a segment out of this very number.
+      //
+      // `git merge-base --is-ancestor 4f711d5 916ac46` holds, so the sentence
+      // predated the first thing that falsified it by three days rather than
+      // having been wrong when written.
+      //
+      // **So: this chip carries no tone because nobody has chosen the number,
+      // not because there is no slope for a number to sit on.** Choosing it is
+      // #29's, and `docs/research/2026-08-30-playing-into-the-lock.md` measured
+      // what its absence costs -- a wall drag takes the balance from 25,000 to
+      // 40 with this chip looking identical at both ends.
+      //
+      // Worth recording, because this comment used to say the opposite about
+      // the *income* side. Until #29 it had to carry the qualifier "on a
+      // schedule" -- the unqualified form was false from the day
+      // `ProcurementSystem.cancel` landed, and
       // `tests/foundation/documentation-claims-contract.test.ts` was written
       // for exactly that defect. A scheduled credit now exists, so the claim
       // this comment once made is simply untrue and is gone rather than
-      // qualified. The phrase itself is deliberately not spelled out here: that
-      // check reads comments, so quoting the thing it hunts for would trip it.
+      // qualified. That file now gates the outgoing direction as well, and the
+      // paragraph above was one of the two sites it found. Neither phrase is
+      // spelled out here: those checks read comments, so quoting what they hunt
+      // for would trip them.
       tone: undefined,
       badge: undefined,
     },

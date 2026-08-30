@@ -172,6 +172,28 @@ const ONE_DAY_PAYMENT = STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS * OCCUPIED_PLA
  */
 const SCENARIO_STAFF = 5;
 const ONE_DAY_WAGES = 400;
+/**
+ * What the scenario's four wall orders bought for themselves, which this file
+ * has to net off since #627.
+ *
+ * `SCENARIO_COMMANDS` places four `wall-brick` orders against a prison whose
+ * construction container starts empty, and ADR 0017 decision 7 -- *"materials
+ * are just-in-time by default; holding is permitted, never required"* -- means
+ * an order now buys what it needs at the moment it is placed. Measured on this
+ * tree: **two** of the four buy, for 2 `item.brick` each at 40, and the other
+ * two buy nothing because the scenario's own carry jobs have moved twelve
+ * bricks into that container by the time they are placed. So 4 x 40 = 160, once,
+ * at tick 0, and never again.
+ *
+ * That the other two buy nothing is the *"holding is permitted"* half working,
+ * and it is why this constant is 160 rather than 320. It is written out here
+ * rather than read off the runtime for `ONE_DAY_WAGES`'s reason -- a figure
+ * derived from the code under test agrees with any implementation -- and the
+ * first case below anchors it against the scenario that produces it.
+ */
+const SCENARIO_JUST_IN_TIME_MATERIALS = 160;
+/** What the scenario holds once its walls have paid for themselves. */
+const OPENING_BALANCE = 25_000 - SCENARIO_JUST_IN_TIME_MATERIALS;
 /** What one settled in-game day actually moves the balance by: 1,200 in, 400 out. */
 const ONE_DAY_NET = ONE_DAY_PAYMENT - ONE_DAY_WAGES;
 
@@ -187,8 +209,18 @@ describe('a mid-day save neither loses the partial day nor pays for it twice', (
     expect(runtime.payroll.dailyWageBillMinorUnits(), 'five guards at the catalogue`s 80 a day').toBe(ONE_DAY_WAGES);
     expect(
       runtime.treasury.balanceMinorUnits,
-      'nothing has been paid yet: the first day boundary is at tick 2,399',
-    ).toBe(25_000);
+      'nothing has been paid yet: the first day boundary is at tick 2,399 -- but the walls have bought their bricks (#627)',
+    ).toBe(OPENING_BALANCE);
+    // The anchor for the literal above: exactly two just-in-time purchases,
+    // for the two orders placed before the carry jobs had delivered anything.
+    // A third would mean the deficit stopped netting off stock already held.
+    expect(
+      runtime.procurement.pendingDeliveries.map((delivery) => [delivery.itemId, delivery.quantity, delivery.paidMinorUnits]),
+      'two orders bought two bricks each; the other two found bricks already in the container',
+    ).toEqual([
+      ['item.brick', 2, 80],
+      ['item.brick', 2, 80],
+    ]);
   });
 
   it('restores the same accrual it had mid-day, because the accrual is recomputed from the tick', () => {
@@ -236,11 +268,11 @@ describe('a mid-day save neither loses the partial day nor pays for it twice', (
 
     expect(original.kernel.tick).toBe(DAY_LENGTH_TICKS);
     expect(restored.kernel.tick).toBe(DAY_LENGTH_TICKS);
-    expect(original.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_NET);
+    expect(original.treasury.balanceMinorUnits).toBe(OPENING_BALANCE + ONE_DAY_NET);
     expect(
       restored.treasury.balanceMinorUnits,
       'the restored session paid the same one day: not zero (the partial day lost) and not two days (the boundary replayed)',
-    ).toBe(25_000 + ONE_DAY_NET);
+    ).toBe(OPENING_BALANCE + ONE_DAY_NET);
   });
 
   it('pays once, not twice, when the save is taken on the very tick the payment is due', () => {
@@ -258,38 +290,38 @@ describe('a mid-day save neither loses the partial day nor pays for it twice', (
      * the last-paid-day field it suggested recording.
      */
     const original = sessionAtTick(DAY_LENGTH_TICKS - 1);
-    expect(original.treasury.balanceMinorUnits, 'the payment has not run yet').toBe(25_000);
+    expect(original.treasury.balanceMinorUnits, 'the payment has not run yet').toBe(OPENING_BALANCE);
 
     const { restored } = saveAndLoad(original);
     expect(restored.kernel.tick).toBe(DAY_LENGTH_TICKS - 1);
 
     step(restored, 1);
     expect(restored.treasury.balanceMinorUnits, 'the pending boundary runs after the restore, once').toBe(
-      25_000 + ONE_DAY_NET,
+      OPENING_BALANCE + ONE_DAY_NET,
     );
 
     // And it does not run a second time on the next tick.
     step(restored, 1);
-    expect(restored.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_NET);
+    expect(restored.treasury.balanceMinorUnits).toBe(OPENING_BALANCE + ONE_DAY_NET);
   });
 
   it('does not re-pay a boundary the save was taken just after', () => {
     const original = sessionAtTick(DAY_LENGTH_TICKS);
-    expect(original.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_NET);
+    expect(original.treasury.balanceMinorUnits).toBe(OPENING_BALANCE + ONE_DAY_NET);
 
     const { restored } = saveAndLoad(original);
     expect(restored.kernel.tick).toBe(DAY_LENGTH_TICKS);
-    expect(restored.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_NET);
+    expect(restored.treasury.balanceMinorUnits).toBe(OPENING_BALANCE + ONE_DAY_NET);
 
     // The next payment is a whole day away, not immediate: the restored tick
     // is 2,400 and the predicate is `tick % 2,400 === 2,399`.
     step(restored, DAY_LENGTH_TICKS - 1);
     expect(restored.kernel.tick).toBe(DAY_LENGTH_TICKS * 2 - 1);
     expect(restored.treasury.balanceMinorUnits, 'still one day paid on the tick before the second boundary').toBe(
-      25_000 + ONE_DAY_NET,
+      OPENING_BALANCE + ONE_DAY_NET,
     );
     step(restored, 1);
-    expect(restored.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_NET * 2);
+    expect(restored.treasury.balanceMinorUnits).toBe(OPENING_BALANCE + ONE_DAY_NET * 2);
   });
 
   it('pays a restored session over two further days at the same rate as one that was never saved', () => {
@@ -306,9 +338,9 @@ describe('a mid-day save neither loses the partial day nor pays for it twice', (
       // repeatedly rather than once.
       restored = saveAndLoad(restored).restored;
 
-      expect(original.treasury.balanceMinorUnits, `day ${String(day)}`).toBe(25_000 + ONE_DAY_NET * day);
+      expect(original.treasury.balanceMinorUnits, `day ${String(day)}`).toBe(OPENING_BALANCE + ONE_DAY_NET * day);
       expect(restored.treasury.balanceMinorUnits, `day ${String(day)}, restored`).toBe(
-        25_000 + ONE_DAY_NET * day,
+        OPENING_BALANCE + ONE_DAY_NET * day,
       );
     }
   });

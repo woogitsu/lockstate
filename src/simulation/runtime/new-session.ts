@@ -32,10 +32,10 @@ import {
   type SectorOccupantResolver,
   type SectorRiskSampler,
 } from '../incidents';
-import { PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury } from '../economy';
+import { JustInTimeMaterialsService, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury } from '../economy';
 import { SimulationEventLog } from '../events';
 import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
-import { RefusalLog } from '../refusals';
+import { RefusalLog, materialsFundingSupersessionKey } from '../refusals';
 import { StaffDismissalService, StaffHiringService } from '../staff';
 import { createSessionCommandHandler } from './session-commands';
 import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
@@ -154,6 +154,17 @@ export interface SimulationRuntime {
    */
   readonly treasury: Treasury;
   readonly procurement: ProcurementSystem;
+  /**
+   * What the build queue could not buy for itself, and what it bought (#627).
+   *
+   * On the runtime rather than reachable only through `construction` because
+   * it is the observable half of ADR 0017 decision 2 -- *"a purchase that
+   * cannot be afforded must be refusable"* -- for purchases nobody pressed a
+   * button for. `ConstructionSystem` is handed it as an opaque
+   * `ConstructionProcurementSink` and can read nothing back off it; the
+   * projection layer and the save-independent tests read it here.
+   */
+  readonly justInTimeMaterials: JustInTimeMaterialsService;
   readonly stateIncome: StateIncomeSystem;
   /**
    * Wages, once per in-game day, for everyone on the roster
@@ -597,6 +608,53 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * a parallel door model that saves nothing and routes nobody.
    */
   const doorConstruction = new DoorConstructionService(navigation.doors);
+  /*
+   * Issue #96's money-first resource model, and the half of its loop that
+   * exists (#89). A purchase spends now and delivers later; the delivery
+   * lands in the container construction draws from.
+   *
+   * **Directly, and that is scaffolding.** #96 describes the materials
+   * arriving at `room.delivery-bay` and being carried to the site. No session
+   * instantiates that room: a `ZoneRoom` command can zone one since #261, and
+   * nothing in the application sends that command (`room.delivery-bay` is
+   * still content with no reader, #141) -- so there is no bay to deliver to,
+   * and inventing one would mean deciding where a new prison's bay sits and
+   * when a carry job is raised. Recorded on #96 rather than left to be
+   * discovered from the absence.
+   *
+   * **Constructed before `ConstructionSystem` rather than after it**, which is
+   * where these two lines used to sit. `JustInTimeMaterialsService` is the
+   * construction system's fifth constructor argument (issue #627), so it has to
+   * exist first, and it needs the procurement system, which needs the treasury.
+   * Nothing between the old position and this one reads either, so the move
+   * changes no behaviour -- and the alternative, the late-bound closure
+   * `objectPlacement` uses a few lines down, buys nothing here because there is
+   * no cycle to break: procurement does not know construction.
+   *
+   * `JustInTimeMaterialsService` is ADR 0017 decision 7 -- *"materials are
+   * just-in-time by default; holding is permitted, never required"* -- made
+   * true rather than merely written down. It is handed the same
+   * `constructionMaterials` container `ContainerMaterialsProvider` draws from,
+   * because the deficit it computes is against exactly the stock the next
+   * allocation attempt will see; a second container would have it buying
+   * against a shelf nobody builds from.
+   */
+  // Issue #261's route out for a command the simulation accepts and then
+  // refuses on its content. Empty for a new session and for a restored one
+  // alike -- it is not snapshotted.
+  //
+  // **Constructed here rather than below `stateIncome`, which is where it used
+  // to sit** (#640): the construction system's sixth argument withdraws a
+  // standing materials shortfall on the scheduled tick, so this has to exist
+  // before that system does. It takes no arguments and nothing between the old
+  // position and this one reads it, so the move changes no behaviour -- the
+  // same reasoning the treasury/procurement pair below carries for its own
+  // move under #627.
+  const refusals = new RefusalLog();
+
+  const treasury = new Treasury();
+  const procurement = new ProcurementSystem(treasury, constructionMaterials);
+  const justInTimeMaterials = new JustInTimeMaterialsService(procurement, constructionMaterials);
   const construction = new ConstructionSystem(
     world,
     new ContainerMaterialsProvider(constructionMaterials),
@@ -605,6 +663,41 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
       onOrderReverted: (objectId, anchor) => objectPlacement?.onOrderReverted(objectId, anchor) ?? false,
     },
     doorConstruction,
+    justInTimeMaterials,
+    /*
+     * The scheduled pass's report, and the one thing a session does with it:
+     * **withdraw a shortfall that has stopped being true** (#640).
+     *
+     * `reportMaterialsFunding` is deliberately NOT called here, and the
+     * asymmetry is the decision rather than an omission. That function both
+     * withdraws and records; recording on every scheduled tick would call
+     * `RefusalLog.record`, which increments `sequence` monotonically -- and
+     * `sequence` is the alert row's identity on the main thread
+     * (`src/ui/simulation-alerts.ts`, `id: ${REFUSAL_ROW_PREFIX}${sequence}`).
+     * A queue that genuinely cannot be paid for would then mint a new alert
+     * row every scheduled tick and drive `refusals.count` up without bound,
+     * for a condition that has not changed.
+     *
+     * **What this leaves undone, stated rather than left to be discovered:** a
+     * shortfall that *arises* on a scheduled tick with no press -- payroll
+     * draining the treasury under a standing queue -- is still silent. Whether
+     * a refusal here is an event caused by a press or a condition of the
+     * prison is a decision that outgrew this change; it is filed as its own
+     * issue and is not settled here. Making `RefusalLog.record` idempotent
+     * under an unchanged key is the shape that would settle it, and it changes
+     * that class's core contract, so it needs an ADR and not a line in a
+     * composition root.
+     *
+     * The queue's *read model* has no such gap: `projectBuildQueue` recomputes
+     * `materialsFunding` from `JustInTimeMaterialsService.lastReport`, which
+     * every pass rewrites, so the Build panel's own line follows the scheduled
+     * tick in both directions whatever the alert band is doing.
+     */
+    (report) => {
+      if (report !== undefined && report.unfunded.length === 0) {
+        refusals.supersede(materialsFundingSupersessionKey());
+      }
+    },
   );
   objectPlacement = new ObjectPlacementService(
     world,
@@ -646,21 +739,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     }),
   );
 
-  // Issue #96's money-first resource model, and the half of its loop that
-  // exists (#89). A purchase spends now and delivers later; the delivery
-  // lands in the container construction draws from.
-  //
-  // **Directly, and that is scaffolding.** #96 describes the materials
-  // arriving at `room.delivery-bay` and being carried to the site. No session
-  // instantiates that room: a `ZoneRoom` command can zone one since #261, and
-  // nothing in the application sends that command (`room.delivery-bay` is
-  // still content with no reader, #141)
-  // -- so there is no bay to deliver to, and inventing one would mean
-  // deciding where a new prison's bay sits and when a carry job is raised.
-  // Recorded on #96 rather than left to be discovered from the absence.
-  const treasury = new Treasury();
-  const procurement = new ProcurementSystem(treasury, constructionMaterials);
-
   // ADR 0017 decision 3's income line, on decision 6's basis: the state pays
   // per prisoner-day, accrued per occupied place, at the end of each in-game
   // day (#29). It reads `prisoners.roomInstances` -- an occupied place is an
@@ -675,11 +753,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // `PrisonerDayGrantSource` structurally, the same way it already satisfies
   // both of `projectStatusStrip`'s source shapes.
   const stateIncome = new StateIncomeSystem(treasury, prisoners);
-
-  // Issue #261's route out for a command the simulation accepts and then
-  // refuses on its content. Empty for a new session and for a restored one
-  // alike -- it is not snapshotted.
-  const refusals = new RefusalLog();
 
   const jobs = new JobBoard();
   const jobWorkerAdapter = new PrisonerJobWorkerAdapter(prisoners);
@@ -1113,9 +1186,24 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
      * out of the prison as any other way of leaving. Nothing about *why* they
      * left is recorded on the prisoner, because ADR 0050 decision 4 and #31 own
      * that: the incident log is where the reason lives, and it keeps it.
+     *
+     * **The name is read before the release and answered back, and the order
+     * is load-bearing (#683).** `releasePrisoner` calls
+     * `identity.release('prisoner', entityId)`, so after it returns there is
+     * nobody left to ask -- and the sentence the prison now says about an
+     * escape names the escapee. This callback is the only place that holds
+     * both the registry and the departure, which is why the port answers with
+     * the name instead of the response system resolving one.
+     *
+     * A refused release answers `undefined` and the prison says nothing: the
+     * incident record still reads `escaped: true` for a participant who was
+     * not a live prisoner, and announcing a loss the prison did not take would
+     * be the promise-the-code-does-not-keep case rather than a tidier branch.
      */
     (entityId, tick) => {
-      prisoners.releasePrisoner(entityId, tick);
+      const name = actorIdentity.getName('prisoner', entityId);
+      if (!prisoners.releasePrisoner(entityId, tick)) return undefined;
+      return name === undefined ? {} : { name: { givenName: name.givenName, familyName: name.familyName } };
     },
     /*
      * Issue #80, ADR 00XX (number not yet assigned): the assault's instigator
@@ -1181,6 +1269,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     construction,
     treasury,
     procurement,
+    justInTimeMaterials,
     stateIncome,
     payroll,
     refusals,

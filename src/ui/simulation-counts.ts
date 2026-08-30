@@ -118,6 +118,18 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
         contrabandFound: counts.contrabandDiscovered,
         treasuryMinorUnits: counts.treasuryMinorUnits,
         stateIncomeAccruedTodayMinorUnits: counts.stateIncomeAccruedTodayMinorUnits,
+        /**
+         * Straight through, for `accommodationCapacity`'s reason above, and it
+         * is the figure the collapsed `On the payroll` header states (issue
+         * #639 ruling 2).
+         *
+         * **It has crossed the protocol since ADR 0042 step 3 and until this
+         * line nothing in `src/ui/` read it** -- `grep -rn
+         * 'dailyWageBillMinorUnits' src/ui/` returned nothing. The prison's
+         * whole standing cost was computed, published twice a second and shown
+         * to nobody, which is issue #629's class rather than a missing feature.
+         */
+        dailyWageBillMinorUnits: counts.dailyWageBillMinorUnits,
       };
     }
 
