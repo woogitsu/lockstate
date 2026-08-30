@@ -4,7 +4,8 @@
  *
  * ## Why this file exists
  *
- * `docs/research/2026-08-30-what-the-whole-economy-costs.md` costed the whole
+ * `2026-08-30-what-the-whole-economy-costs.md` — on `agent/641-economy-costing`,
+ * not on this branch, so it is named rather than linked — costed the whole
  * economy and concluded *"the economy is not short of money"*. Its §9 names
  * its own weakest claim and asks for exactly this run:
  *
@@ -120,7 +121,7 @@ const PLAYED_WORKING_PRISON = 2_105;
 /** The floor the costing found the whole session turns on: the price of a plank. */
 const PLANK_PRICE = 65;
 
-/** One in-game day, `src/simulation/regime/regime.ts`. */
+/** One in-game day: `DAY_LENGTH_TICKS`, `src/simulation/prisoners/regime.ts:12`. */
 const TICKS_PER_DAY = 2_400;
 
 interface Action {
