@@ -480,6 +480,92 @@ and this pass did not measure whether anybody was carrying anything — see §7.
 **Reported, not fixed**, for §2's reason: the missing thing is a sentence
 addressed to a player, and that is the owner's.
 
+## 4. The relocation notice, in a game rather than in a harness
+
+**VERIFIED, code, first — because the shape of the test is forced by it.**
+`ObjectPlacementService.remove` asks
+`relocateResidentsLeftWithoutAPlace(roomInstanceId)`
+(`src/simulation/objects/object-placement-service.ts:695-705`), which calls
+`PrisonerOperationsRuntime.relocateExcessResidentsOf([instanceId])`. That method
+takes the residents of **that instance** who no longer have a place and hands
+each to `findBestAvailable` for a room with a free one
+(`src/simulation/prisoners/prisoner-operations-runtime.ts:703-731`); each
+successful move is one `SimulationEventLog.recordResidentRelocated`
+(`src/simulation/events/resident-relocation-notice.ts:117`), which the HUD
+renders as `hud.alert.event.prisoners.relocated` —
+*"{name} had nowhere to sleep and moved to {room}."*
+(`src/content/default-locale-en.ts:461`), severity `'info'`
+(`src/ui/simulation-events.ts:143`).
+
+**So a one-room prison can never produce the notice**: with a single cell
+instance, the only room with a spare bed is the room the bed was just taken
+from. Two cell instances are the minimum, which is why act 2 builds a 2×7
+enclosure divided into a 2×3 and a 2×4 cell — 20 wall segments against the 24
+a single 6×6 costs — and furnishes the north cell **first**, so the prisoner's
+home is not a coin flip.
+
+`tests/browser/ui-relocation-notice.spec.ts` already covers the notice, and it
+covers something else: it drives `createNewSimulationRuntime` directly and
+feeds `hudEventNoticeFromWorkerMessage` into the HUD harness. That is a real
+prison and a real band; it is not the assembled page, not `src/main.ts`, and not
+a mouse. **This is the first time the sentence has been produced by playing.**
+
+### It appears, and here it is
+
+**VERIFIED, Run B, act 2.** A 2×7 enclosure divided into two cells; the north
+cell furnished first and one prisoner admitted into it; the south cell furnished
+afterwards; then the mouse presses the north cell's bed with the Remove tool:
+
+```
+[act2] sample before the removal: {"tick":7331,"day":4,"prisoners":1,"roomOccupants":1,"occupiedPlaces":1,"accommodationCapacity":2,…}
+[act2] event band before the removal: "hidden, 0x0 at (0,0)"
+[act2] RemoveObject commands from the press on the occupied bed: [{"type":"RemoveObject","x":12,"y":12}]
+[act2] +0ms after the removal -- event band: "severity=info 1440x32 at (0,80) :: Jonas Costa had nowhere to sleep and moved to Cell."
+[act2] +3000ms after the removal -- event band: "severity=info 1440x32 at (0,80) :: Jonas Costa had nowhere to sleep and moved to Cell."
+[act2] +10000ms after the removal -- event band: "severity=info 1440x32 at (0,80) :: Jonas Costa had nowhere to sleep and moved to Cell."
+[act2]   /had nowhere to sleep/i in the visible HUD? true
+```
+
+**It works.** One press, one sentence, a named prisoner, on a full-width
+1440×32 `role="status"` band at y=80 — present immediately and still there ten
+seconds later, because the band does not auto-dismiss.
+
+The simulation behind it is right too. `accommodationCapacity` falls from 2 to
+1 (the bed is gone) while `occupiedPlaces` **stays 1** — the resident is
+living somewhere a bed exists, which is ADR 0076 decision A(ii)'s whole point,
+and the state keeps paying for them:
+
+```
+[act2] sample after the removal: {"tick":9135,"day":4,"prisoners":1,"roomOccupants":1,"occupiedPlaces":1,"accommodationCapacity":1,…}
+```
+
+### Two observations about the sentence, neither of them a defect
+
+**It says "Cell", not *which* cell.** `{room}` is the destination's room
+**catalogue** `nameKey`, resolved in two hops —
+`roomInstances.getById(toInstanceId)?.roomCatalogId` then
+`rooms.getById(roomCatalogId)?.nameKey`
+(`src/simulation/events/resident-relocation-notice.ts:105-106`) — and both
+rooms in this prison are `room.cell`. So the sentence a player reads in a prison with two
+cells is *"Jonas Costa had nowhere to sleep and moved to Cell."* There is
+nothing else it could say today — a room **instance** has an anchor tile and no
+name, and this repository does not author player-facing copy — so this is
+recorded rather than proposed.
+
+**The durable copy is behind a fold, and the visible copy is transient.** The
+alerts list read `"ALERTS LIST not laid out"` at every observation until the
+script opened it by hand, and then held it:
+
+```
+[act2] alerts list once unfolded by hand: "Jonas Costa had nowhere to sleep and moved to Cell.\nInfo\nNothing was removed — there is no object on that tile, and none being built there.\nWarning"
+```
+
+That is the design working as `src/ui/hud/hud.ts:962-983` describes it, and it
+has a cost this pass measured elsewhere: §1.4's nine departures include two
+whose release sentence had already been pushed off the band by another event
+within ten seconds. **A notice that matters after the moment it happens is only
+recoverable from a section that starts shut.**
+
 ## 5. What stopped a player, in the order they meet it
 
 ### 5.1 The first wall a new player orders still parks, and the word "material" is nowhere on screen
