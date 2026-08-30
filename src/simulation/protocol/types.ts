@@ -668,6 +668,40 @@ export const statusCountsSchema = z
      * too.
      */
     accommodationCapacity: countSchema,
+    /**
+     * How many prisoners hold a **residency assignment** in a room the room
+     * catalog declares: the summed `occupancyOf` of the instances
+     * `collectRoomInstances` reaches
+     * (`src/simulation/presentation/status-strip-projection.ts`), which is the
+     * catalog fan-out and therefore carries `docs/HUD_PROJECTIONS.md` gap 15.
+     *
+     * **An assignment is no longer the same thing as an occupied place, and
+     * this field is the assignment.** ADR 0028 decision 2 keeps a resident
+     * where they are when the bed under them is taken away, so an assignment
+     * outlives its place; `StateIncomeSystem` pays per *place*, through
+     * `RoomInstanceRegistry.residentIdsWithExistingPlace`, which clamps each
+     * instance's residents to that instance's own `residentCapacity`
+     * ([ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+     * decision A(ii), issue #585). Before that clamp the two were the same
+     * number by construction and the income line read this one -- which is
+     * exactly why the name still reads like the income count and is not it.
+     *
+     * **Measured through real commands rather than argued.** A 3x3 `room.cell`
+     * with two beds and two prisoners housed in it, with one bed then taken
+     * out by `RemoveObject`, publishes **`roomOccupants` 2 against
+     * `roomCapacity` 1, one occupied place and a 300 day**
+     * (`tests/integration/economy-occupied-place-exists.test.ts`, *"two
+     * residents over one remaining bed, in one cell"*, which asserts both
+     * figures off the one prison state). A payout derived from this field
+     * would pay 600 for one bed, which is the shape #585 exists to remove.
+     *
+     * `roomCapacity` above is the summed `residentCapacity` of the same
+     * instances, so this count standing above it is the over-capacity state
+     * ADR 0028 decision 2 names rather than an inconsistency. Whether a player
+     * should be shown the two figures side by side is a copy decision and the
+     * owner's, in the same way `prisonersUnguarded` below leaves *"6 here, 2
+     * paid"* open rather than settling it in a schema comment.
+     */
     roomOccupants: countSchema,
     /**
      * **How many prisoners are standing in a sector on each rung of the guard

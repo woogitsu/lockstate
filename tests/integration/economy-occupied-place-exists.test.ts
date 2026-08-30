@@ -3,6 +3,7 @@ import { stateIncomeForCompletedDay } from '../../src/simulation/economy';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
@@ -171,5 +172,101 @@ describe('one plank, cycled through three cells, against the same plank spent on
     expect(earnedOverOneDay(exploit)).toBe(300);
     expect(placeReport(control).dayGrant).toBe(300);
     expect(earnedOverOneDay(control)).toBe(300);
+  });
+});
+
+/**
+ * The same rule inside **one** room, which the three-cell reproduction above
+ * cannot show.
+ *
+ * That measurement moves a whole cell from one place to none, so it is
+ * satisfied by an all-or-nothing rule as much as by the clamp the code
+ * actually implements: `min(occupancy, residentCapacity)` **per room instance**
+ * ([ADR 0076](../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+ * decision A(ii), refined by `RoomInstanceRegistry.residentIdsWithExistingPlace`
+ * so that *which* resident keeps the place is decided too). A cell holding two
+ * residents over one remaining bed is the case where the two rules disagree --
+ * the clamp pays 300, all-or-nothing pays 0, and paying by assignment pays 600
+ * -- and no test drove it through real commands. `tests/unit/economy-state-income.test.ts`
+ * pins the arithmetic on a hand-built registry; this pins that a player pressing
+ * `RemoveObject` reaches it.
+ *
+ * ## And it is where the two published notions of "occupant" come apart
+ *
+ * `SimulationStatusCounts.roomOccupants` is the summed `occupancyOf` of every
+ * catalog-known instance -- **assignments**, which ADR 0028 decision 2 keeps
+ * alive when a bed goes. `residentIdsWithExistingPlace()` is places. Before
+ * #585 those were the same number by construction and the income line read the
+ * first; they are now different questions, and the only thing keeping the money
+ * off the wrong one is which accessor `stateIncomeForCompletedDay` names. This
+ * case asserts both figures from one prison state so the divergence is a
+ * measurement rather than a claim, and so that deriving a payout from the
+ * published count would fail here rather than in a balance nobody is watching.
+ */
+describe('two residents over one remaining bed, in one cell', () => {
+  /** One 3x3 cell -- `room.cell`'s authored minimum is 2x3 -- with room for two beds side by side. */
+  const SHARED = { x: 4, y: 6, width: 3, height: 3 } as const;
+  const SHARED_ID = `${CELL}:${SHARED.x}:${SHARED.y}`;
+  const FIRST_BED = { x: SHARED.x, y: SHARED.y };
+  const SECOND_BED = { x: SHARED.x + 1, y: SHARED.y };
+
+  /** Two beds standing, two prisoners housed in them, and the second bed then taken away by `RemoveObject`. */
+  function twoResidentsAndOneBedLeft(): SimulationRuntime {
+    const runtime = createNewSimulationRuntime(SEED);
+    submit(runtime, 'buy', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 4 }));
+    wallRoomPerimeter(runtime.world, SHARED, { doors: runtime.navigation.doors });
+    submit(runtime, 'zone', packCommand({ type: 'ZoneRoom', roomId: CELL, ...SHARED }));
+    stepBy(runtime, 200);
+
+    submit(runtime, 'bed-a', packCommand({ type: 'PlaceObject', orderId: 'bed-a', definitionId: 'bed-wooden', ...FIRST_BED }));
+    submit(runtime, 'bed-b', packCommand({ type: 'PlaceObject', orderId: 'bed-b', definitionId: 'bed-wooden', ...SECOND_BED }));
+    stepBy(runtime, 600);
+    expect(runtime.prisoners.roomInstances.getById(SHARED_ID)?.residentCapacity, 'two beds must furnish two places').toBe(2);
+
+    submit(runtime, 'admit-1', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
+    stepBy(runtime, 200);
+    submit(runtime, 'admit-2', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
+    stepBy(runtime, 200);
+    expect(runtime.prisoners.roomInstances.occupancyOf(SHARED_ID), 'intake must have housed both in the one cell').toBe(2);
+    expect(stateIncomeForCompletedDay(runtime.prisoners), 'and a furnished prison pays for both').toBe(600);
+
+    // `RemoveObject` and not `Undo`: this is a player taking a bed back out of
+    // a room they built correctly, which refunds nothing. The exploit above
+    // needs `Undo` because only `cancelOrder` releases `materialsAllocated`;
+    // here the plank is irrelevant and the bed simply stops existing.
+    submit(runtime, 'remove-second-bed', packCommand({ type: 'RemoveObject', ...SECOND_BED }));
+    stepBy(runtime, 5);
+    return runtime;
+  }
+
+  it('pays for the one bed that is left, and neither for both residents nor for neither', () => {
+    const runtime = twoResidentsAndOneBedLeft();
+
+    // The prison the player built: one bed standing in a cell that furnishes
+    // one place, with two prisoners living in it.
+    expect(runtime.placedObjects.size).toBe(1);
+    expect(runtime.prisoners.roomInstances.getById(SHARED_ID)?.residentCapacity).toBe(1);
+    expect(runtime.prisoners.roomInstances.occupancyOf(SHARED_ID), 'nobody is evicted -- ADR 0028 decision 2').toBe(2);
+
+    // One place, not two and not none. 600 would be paying by assignment, which
+    // is the defect #585 removed; 0 would be an all-or-nothing rule the code
+    // does not implement and would over-punish an honest player who took one
+    // bed out of a two-bed cell.
+    expect(runtime.prisoners.roomInstances.residentIdsWithExistingPlace()).toHaveLength(1);
+    expect(stateIncomeForCompletedDay(runtime.prisoners)).toBe(300);
+    expect(earnedOverOneDay(runtime), 'and the treasury is credited what the walk says').toBe(300);
+  });
+
+  it('publishes two occupants beside the one place the state pays for', () => {
+    const runtime = twoResidentsAndOneBedLeft();
+    const counts = projectStatusCounts(runtime, runtime.kernel.tick);
+
+    // Assignments, over a capacity that is now smaller than they are. Both
+    // numbers are honest about their own question and they are not the same
+    // question, which is the whole of what this asserts.
+    expect(counts.roomOccupants, 'the strip publishes assignments').toBe(2);
+    expect(counts.roomCapacity, 'against the places the prison has furnished').toBe(1);
+    expect(runtime.prisoners.roomInstances.residentIdsWithExistingPlace().length, 'and the state pays for the places').toBe(1);
+    expect(counts.roomOccupants).not.toBe(runtime.prisoners.roomInstances.residentIdsWithExistingPlace().length);
   });
 });
