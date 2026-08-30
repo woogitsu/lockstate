@@ -1,6 +1,8 @@
 import type { LocalizationKey } from '../content/localization';
 import type { SimulationEvent, SimulationEventType, WorkerToMainMessage } from '../simulation/protocol/types';
 import type { HudAlertViewModel, HudEventNoticeViewModel, HudSeverity } from './hud/view-model';
+import type { HudMessageParameterViewModel } from './hud/label-parameters';
+import { HUD_MESSAGE_KEY } from './hud/messages';
 
 /**
  * What the player is told about each thing the prison does, and how loudly.
@@ -102,6 +104,25 @@ import type { HudAlertViewModel, HudEventNoticeViewModel, HudSeverity } from './
  *   also what stops a `'danger'` band standing over a calm prison for the rest
  *   of a session; see the schema's own comment in
  *   `src/simulation/protocol/types.ts`.
+ *
+ * ## `prisoners.relocated` is `'info'`, and the grade is arguable (ADR 0076)
+ *
+ * A prisoner moved cell without the player asking, because the player took
+ * their bed away. Read as a *consequence* it sounds like a warning; read as a
+ * *state* it is not one, and this table grades states: the prisoner now sleeps
+ * on a bed that exists, the prison pays for a place it really furnished
+ * (decision A(ii)), and there is nothing left for the player to put right. An
+ * unpaid payday is `'warning'` because the arrears are still owed on the next
+ * tick; this is closer to `prisoners.discharged`, where the loop worked.
+ *
+ * **What it must not be is silent**, which is what it was between PR #637 and
+ * this change and what issue #629 puts in the same class as a promise the code
+ * does not keep. The band is the surface that reaches the player at every
+ * viewport with nothing opened, and `'info'` still lands on it.
+ *
+ * The resident relocation could *not* rehouse is a different fact with no
+ * approved sentence, so it has no row here and no key. See
+ * `SimulationEventLog.recordResidentRelocated`.
  */
 const EVENT_PRESENTATION: Readonly<
   Record<SimulationEventType, { readonly labelKey: LocalizationKey; readonly severity: HudSeverity }>
@@ -119,6 +140,7 @@ const EVENT_PRESENTATION: Readonly<
   },
   'incidents.riot-opened': { labelKey: 'hud.alert.event.incidents.riot-opened', severity: 'danger' },
   'prisoners.discharged': { labelKey: 'hud.alert.event.prisoners.discharged', severity: 'info' },
+  'prisoners.relocated': { labelKey: 'hud.alert.event.prisoners.relocated', severity: 'info' },
 };
 
 /**
@@ -164,8 +186,16 @@ const EVENT_ROW_PREFIX = 'event-';
  * `src/main.ts` asks for `sentenceLengthTicks: 10_000`, which ADR 0050 records
  * as about four in-game days"*. Since ADR 0069 that constant is
  * `{ priorIncidents: 0 }` and carries no sentence at all: the length is drawn
- * **inside the worker**, uniformly over whole in-game days in `[2, 16]`, so
- * 4,800..38,400 ticks with a mean of 21,600 -- nine days rather than four.
+ * **inside the worker**, uniformly over whole in-game days.
+ *
+ * **The range that sentence quoted, `[2, 16]` -- 4,800..38,400 ticks, mean
+ * 21,600 -- is itself gone since the owner's 2026-08-30 ruling on
+ * [#593](https://github.com/matmaxalez/lockstate/issues/593)
+ * ([ADR 0079](../../docs/adr/0079-a-sentence-long-enough-to-be-a-history.md)).**
+ * It is `[14, 90]` now: 33,600..216,000 ticks, mean 124,800 -- **52** in-game
+ * days rather than nine, and 5.8x the spread. The old figures are kept above
+ * because the worked example below is written in them, and because this
+ * paragraph's subject is a measurement that has now been re-based twice.
  *
  * **The conclusion drawn from that is withdrawn too, and it was mine.** It read
  * *"the wider spread strengthens it: cohorts leave further apart than the old
@@ -179,6 +209,12 @@ const EVENT_ROW_PREFIX = 'event-';
  * **38,400 as well** -- merged onto a single tick, where the old fixed 10,000
  * would have left them 2,400 apart. `PrisonerDischargeSystem` aggregates only
  * those due on the *same tick*, so both directions really do move the count.
+ *
+ * The worked example is in the old range's numbers and is left in them: the
+ * shape of the argument is what it is for, and it survives the re-range
+ * unchanged except that both effects get larger. Under `[14, 90]` the split
+ * case is 182,400 ticks rather than 33,600, and the merge case still needs
+ * only that two arrival ticks and two draws sum to the same number.
  *
  * So **eight rows is no longer an argued figure, it is an unmeasured one**.
  * What would settle it is the number of discharge events a real admission
@@ -311,7 +347,14 @@ export function hudEventNoticeFromWorkerMessage(
     case 'simulation/event': {
       const { event } = message.payload;
       const { labelKey, severity } = EVENT_PRESENTATION[event.type];
-      return { sequence: event.sequence, labelKey, severity, labelParameters: eventParameters(event) };
+      const messages = eventParameterMessages(event);
+      return {
+        sequence: event.sequence,
+        labelKey,
+        severity,
+        labelParameters: eventParameters(event),
+        ...(messages === undefined ? {} : { labelParameterMessages: messages }),
+      };
     }
 
     // The session is over, so the band empties -- the same thing the alerts
@@ -327,6 +370,7 @@ export function hudEventNoticeFromWorkerMessage(
 
 function eventAlertRow(event: SimulationEvent): HudAlertViewModel {
   const { labelKey, severity } = EVENT_PRESENTATION[event.type];
+  const messages = eventParameterMessages(event);
   return {
     // The event's own ordinal, so every event is its own row rather than
     // rewriting the previous one -- the opposite of what a refusal's ordinal
@@ -336,6 +380,7 @@ function eventAlertRow(event: SimulationEvent): HudAlertViewModel {
     id: `${EVENT_ROW_PREFIX}${event.sequence}`,
     labelKey,
     labelParameters: eventParameters(event),
+    ...(messages === undefined ? {} : { labelParameterMessages: messages }),
     severity,
   };
 }
@@ -369,6 +414,11 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
       return { count: event.count };
     case 'incidents.riot-opened':
       return { count: event.participantCount };
+    // Both of this one's parameters are messages rather than figures, so they
+    // are resolved at render time by `eventParameterMessages` below. Nothing
+    // is substituted from here.
+    case 'prisoners.relocated':
+      return {};
     // Four members with nothing to substitute, and an empty object rather than
     // `undefined`: a `switch` that sometimes returned nothing would make an
     // absent `labelParameters` mean two different things at the two call
@@ -382,4 +432,48 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     case 'incidents.all-clear':
       return {};
   }
+}
+
+/**
+ * The parameters whose value is another message, keyed by the placeholder its
+ * sentence uses.
+ *
+ * The counterpart of `eventParameters` for text a localizer has to produce,
+ * and the reason both exist is that `MessageParameters` cannot carry a
+ * *deferred* translation. See `HudMessageParameterViewModel` for why the view
+ * model must not carry the finished text instead.
+ *
+ * **Only ADR 0076's relocation notice has any**, and both of its two are
+ * message-valued for different reasons:
+ *
+ * - **`{room}`** is a room type, and `roomNameKey` is the catalog's own
+ *   `nameKey` -- the same field `PrisonerRoomRefViewModel` already carries to
+ *   the roster panel. This module resolves nothing and authors nothing; it
+ *   passes the key through to the renderer.
+ * - **`{name}`** is a person, and the two halves cross the wire as state
+ *   (ADR 0015: a name is never translated and is identical in every locale)
+ *   while the *order* they are read in is a locale decision. That decision is
+ *   already made once, in `hud.regime.roster-name`, and this reuses it rather
+ *   than authoring a second one: two keys spelling "{given} {family}" would be
+ *   two answers to one question, and the second locale to disagree with
+ *   English would find only one of them.
+ *
+ * A prisoner with no name falls back to `hud.regime.roster-unnamed` --
+ * "Prisoner 3" -- which is exactly what `formatPrisonerName` does for a roster
+ * row, and is why the notice does not go silent for a session wired without an
+ * identity registry. **Neither key is new copy.** The only string this change
+ * authors is the sentence the owner approved.
+ */
+function eventParameterMessages(
+  event: SimulationEvent,
+): Readonly<Record<string, HudMessageParameterViewModel>> | undefined {
+  if (event.type !== 'prisoners.relocated') return undefined;
+  const { name } = event;
+  return {
+    name:
+      name === undefined
+        ? { key: HUD_MESSAGE_KEY.regimeRosterUnnamed, parameters: { id: event.entityId } }
+        : { key: HUD_MESSAGE_KEY.regimeRosterName, parameters: { given: name.givenName, family: name.familyName } },
+    room: { key: event.roomNameKey },
+  };
 }

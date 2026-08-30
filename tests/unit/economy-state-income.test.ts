@@ -13,7 +13,11 @@ import {
 import { Treasury } from '../../src/simulation/economy';
 import { Kernel } from '../../src/simulation/kernel';
 import { NEED_IDS, NEED_MAX, NeedsComponent, type NeedId } from '../../src/simulation/prisoners/needs';
-import { RoomInstanceRegistry, residentsWithExistingPlace } from '../../src/simulation/prisoners/room-instance-registry';
+import {
+  RoomInstanceRegistry,
+  residentsWithExistingPlace,
+  residentsWithoutExistingPlace,
+} from '../../src/simulation/prisoners/room-instance-registry';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 
@@ -488,6 +492,29 @@ describe('a place the prison no longer has is not an occupied place', () => {
     expect(residentsWithExistingPlace([3, 7, 11], -1)).toEqual([]);
     // And an empty room with capacity to spare is still not a place.
     expect(residentsWithExistingPlace([], 4)).toEqual([]);
+  });
+
+  it('splits the room in two at the same index the money is: the excess is exactly who is not paid for', () => {
+    // `residentsWithoutExistingPlace` is ADR 0076 decision A(i)'s "excess",
+    // and it is asserted here beside A(ii)'s rule because the two are one
+    // partition: whoever this returns is whoever the line above leaves out,
+    // and a relocation that moved anybody else would be moving a resident the
+    // state is paying for. Same six cases, same order, mirrored.
+    expect(residentsWithoutExistingPlace([3, 7], 4)).toEqual([]);
+    expect(residentsWithoutExistingPlace([3, 7], 2)).toEqual([]);
+    expect(residentsWithoutExistingPlace([3, 7, 11], 2)).toEqual([11]);
+    expect(residentsWithoutExistingPlace([3, 7, 11], 1)).toEqual([7, 11]);
+    expect(residentsWithoutExistingPlace([3, 7, 11], 0)).toEqual([3, 7, 11]);
+    // Negative: `slice(-1)` would answer *the last resident only*, leaving
+    // every other resident of a bedless cell unrelocated while the sibling
+    // paid for none of them. `Math.max(0, ...)` is what stops that, and it is
+    // the same defence the sibling's `> 0` guard is.
+    expect(residentsWithoutExistingPlace([3, 7, 11], -1)).toEqual([3, 7, 11]);
+    expect(residentsWithoutExistingPlace([], 4)).toEqual([]);
+
+    // The partition property itself, stated once over the case that has both
+    // halves non-empty: concatenating them reproduces the room, in order.
+    expect([...residentsWithExistingPlace([3, 7, 11], 2), ...residentsWithoutExistingPlace([3, 7, 11], 2)]).toEqual([3, 7, 11]);
   });
 
   it('counts a bedless cell full of residents as no places at all', () => {

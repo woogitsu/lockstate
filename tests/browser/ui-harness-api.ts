@@ -333,7 +333,7 @@ export interface PendingDeliveryRowProbe {
  * that is laid out, hit-tests to itself and is not on screen is a feature that
  * does not exist. Unlike the delivery rows one panel over these are not inside a
  * disclosure, so the arrival state has a box the moment the simulation reports a
- * held guard -- which is what makes `heldPanelBox` and `panelVisibleBottom` the
+ * held guard -- which is what makes `blockBox` and `panelVisibleBottom` the
  * pair the reachability assertions turn on.
  */
 export interface HeldGuardsProbe {

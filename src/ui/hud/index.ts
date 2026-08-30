@@ -9,6 +9,7 @@
 export * from './build-panel';
 export * from './hud';
 export * from './hud-state';
+export * from './label-parameters';
 export * from './messages';
 export * from './projection';
 export * from './regime-panel';

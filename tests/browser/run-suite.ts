@@ -18,6 +18,7 @@ import { fileURLToPath } from 'node:url';
  * without requiring it anywhere else. Every other file in `tests/browser/` is
  * loaded by a bundler-shaped resolver and keeps the extensionless form.
  */
+import { selectBrowserSuite } from './browser-suites.ts';
 import {
   BROWSER_SUITE_NO_RETRY_PREFIX,
   BROWSER_SUITE_RETRY_PREFIX,
@@ -28,9 +29,26 @@ import {
 } from './network-changed-signature.ts';
 
 /**
- * `pnpm test:browser`. Runs the real-browser suite exactly as before, and
- * retries it once **only** when every failing test observed
- * `net::ERR_NETWORK_CHANGED` while it ran.
+ * `pnpm test:browser` and `pnpm test:artifact`. Runs one of the two browser
+ * gates exactly as a bare `playwright test` would, and retries it once **only**
+ * when every failing test observed `net::ERR_NETWORK_CHANGED` while it ran.
+ *
+ * ## Why both gates come through here
+ *
+ * They are different subjects -- the dev server over `src/**`, and `dist/`
+ * served by workerd -- but they are the same exposure: Chromium fetching a
+ * module graph over HTTP on a runner whose host network can reconfigure
+ * underneath it. Until #652, `pnpm test:artifact` ran `playwright test`
+ * directly; the artefact spec imported the evidence fixture the whole time, so
+ * the listeners attached and wrote their observations nowhere, because nothing
+ * set `LOCKSTATE_NETWORK_CHANGED_EVIDENCE` and no process was there to read it.
+ * The owner ruled on 2026-08-30 that the second gate should come through this
+ * wrapper rather than be documented as an exception, so that the retry
+ * decision -- evidence joined against `.last-run.json`, `--last-failed` only
+ * when every failure carried the signature -- exists in exactly one place.
+ *
+ * `tests/browser/browser-suites.ts` holds which configs are drivable and
+ * parses `--suite`; everything below is the same for either of them.
  *
  * ## Why a wrapper process and not a Playwright option
  *
@@ -67,8 +85,8 @@ import {
  * banner and one greppable `LOCKSTATE_BROWSER_SUITE_RETRY` line to stdout --
  * which CI tees into `browser-suite.log` -- emits a `::warning::` annotation
  * when it is running under GitHub Actions, and leaves
- * `test-results/network-changed-retry.json` behind for the failure-evidence
- * upload. A refusal is equally loud, with `LOCKSTATE_BROWSER_SUITE_NO_RETRY`,
+ * `test-results/network-changed-retry-<suite>.json` behind for the
+ * failure-evidence upload. A refusal is equally loud, with `LOCKSTATE_BROWSER_SUITE_NO_RETRY`,
  * because "we considered a retry and would not" is the other half of the same
  * number.
  *
@@ -78,7 +96,20 @@ import {
  */
 
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
-const CONFIG = 'tests/browser/playwright.config.ts';
+
+const selection = selectBrowserSuite(process.argv.slice(2));
+if (!selection.ok) {
+  /*
+   * Exit 2, not 1. A bad command line is not a red suite, and CI's artefact
+   * step inspects the status it gets: a usage error that arrived as a 1 would
+   * be indistinguishable from the gate having failed, which is the shape of
+   * report this whole mechanism exists to stop producing.
+   */
+  process.stderr.write(`run-suite.ts: ${selection.error}\n`);
+  process.exit(2);
+}
+
+const { suite, forwarded: forwardedArguments } = selection.selection;
 
 /**
  * Resolved the way `playwright.config.ts` resolves Vite, and for the same
@@ -93,12 +124,10 @@ const playwrightCliPath = (() => {
   return path.resolve(path.dirname(manifestPath), binField);
 })();
 
-const forwardedArguments = process.argv.slice(2);
-
 function runPlaywright(extraArguments: readonly string[], evidencePath: string): number {
   const result = spawnSync(
     process.execPath,
-    [playwrightCliPath, 'test', '--config', CONFIG, ...extraArguments, ...forwardedArguments],
+    [playwrightCliPath, 'test', '--config', suite.config, ...extraArguments, ...forwardedArguments],
     {
       cwd: repositoryRoot,
       stdio: 'inherit',
@@ -180,13 +209,17 @@ function banner(lines: readonly string[]): void {
   process.stdout.write(`\n${rule}\n${lines.join('\n')}\n${rule}\n\n`);
 }
 
-function writeSummary(payload: unknown): void {
+function writeSummary(payload: Record<string, unknown>): void {
   const directory = path.join(repositoryRoot, 'test-results');
   try {
     mkdirSync(directory, { recursive: true });
     writeFileSync(
-      path.join(directory, 'network-changed-retry.json'),
-      `${JSON.stringify(payload, null, 2)}\n`,
+      // Named per suite. Both gates share Playwright's default `test-results/`
+      // -- neither config sets an `outputDir` -- so one name would have the
+      // second run's summary overwrite the first's and no reader could tell
+      // which subject a leftover file described.
+      path.join(directory, `network-changed-retry-${suite.name}.json`),
+      `${JSON.stringify({ suite: suite.name, config: suite.config, ...payload }, null, 2)}\n`,
       'utf8',
     );
   } catch {
@@ -204,7 +237,7 @@ if (exitCode !== 0) {
 
   if (failedTestIds === undefined) {
     banner([
-      `${BROWSER_SUITE_NO_RETRY_PREFIX} reason=no-last-run-file`,
+      `${BROWSER_SUITE_NO_RETRY_PREFIX} suite=${suite.name} reason=no-last-run-file`,
       'Playwright left no readable test-results/.last-run.json, so the run failed before it',
       `could record which tests failed. That is not ${NETWORK_CHANGED_ERROR_TEXT}; not retrying.`,
     ]);
@@ -224,14 +257,15 @@ if (exitCode !== 0) {
 
     if (!decision.retry) {
       banner([
-        `${BROWSER_SUITE_NO_RETRY_PREFIX} failures=${String(failures.length)} withSignature=${String(decision.withSignature.length)}`,
+        `${BROWSER_SUITE_NO_RETRY_PREFIX} suite=${suite.name} failures=${String(failures.length)} withSignature=${String(decision.withSignature.length)}`,
         decision.reason,
       ]);
       writeSummary({ retried: false, reason: decision.reason, failures });
     } else {
       banner([
-        `${BROWSER_SUITE_RETRY_PREFIX} tests=${String(decision.withSignature.length)} signature=${NETWORK_CHANGED_ERROR_TEXT}`,
+        `${BROWSER_SUITE_RETRY_PREFIX} suite=${suite.name} tests=${String(decision.withSignature.length)} signature=${NETWORK_CHANGED_ERROR_TEXT}`,
         decision.reason,
+        `The subject retried is ${suite.subject}.`,
         '',
         'This is issue #616: the host network reconfigured under Chromium and it aborted',
         'in-flight requests. `retries: 0` is still the default and this is the only',
@@ -240,7 +274,7 @@ if (exitCode !== 0) {
 
       if (process.env['GITHUB_ACTIONS'] === 'true') {
         process.stdout.write(
-          `::warning title=${BROWSER_SUITE_RETRY_PREFIX}::${decision.reason}\n`,
+          `::warning title=${BROWSER_SUITE_RETRY_PREFIX} (${suite.name})::${decision.reason}\n`,
         );
       }
 
@@ -248,7 +282,7 @@ if (exitCode !== 0) {
       exitCode = retryExitCode;
 
       banner([
-        `${BROWSER_SUITE_RETRY_PREFIX} outcome=${retryExitCode === 0 ? 'green-after-retry' : 'still-red-after-retry'}`,
+        `${BROWSER_SUITE_RETRY_PREFIX} suite=${suite.name} outcome=${retryExitCode === 0 ? 'green-after-retry' : 'still-red-after-retry'}`,
         retryExitCode === 0
           ? 'The retried tests passed. The suite is green because of a retry, not instead of one.'
           : 'The retried tests failed again, so this run is red and stays red.',

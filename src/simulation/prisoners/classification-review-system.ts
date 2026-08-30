@@ -150,10 +150,84 @@ export class ClassificationReviewSystem implements SystemRegistration {
   public readonly order = 55;
   /**
    * The last tick of every review period, mirroring `economy.state-income`'s
-   * end-of-day phase. The phase matters more than it looks: at
-   * `phaseTicks: 0` the first run is tick 0, where nobody is classified and
-   * every prisoner is skipped, so the readout would be a system that has
-   * "run" and done nothing.
+   * end-of-day phase.
+   *
+   * ## The reason this comment gave welds two claims together, and the phase
+   * ## delivers only one of them
+   *
+   * Kept rather than replaced, because a true premise carrying a false
+   * conclusion is the harder kind to spot and the shape is the thing worth
+   * recording. It read:
+   *
+   * > The phase matters more than it looks: at `phaseTicks: 0` the first run
+   * > is tick 0, **where nobody is classified** and every prisoner is skipped,
+   * > so the readout would be a system that has "run" and done nothing.
+   *
+   * **Claim one -- "nobody is classified" at tick 0 -- is true, and the phase
+   * does fix it.** Measured in a real session that submits its admission at
+   * tick 0: after executing tick 0 there is **1 prisoner entity alive and 0
+   * classified** -- the command dispatched at the head of `step(0)` has already
+   * spawned the entity, but `IntakeSystem` has not reached the
+   * `'classification'` stage and `'queued'` is not in `REVIEWABLE_STAGES`.
+   * After executing tick 23,999 the same session has **1 alive and 1
+   * classified**. So the phase does buy a run over a classified population
+   * rather than an unclassified one.
+   *
+   * **Claim two -- "a system that has run and done nothing" -- the phase does
+   * not fix, and never did.** `update`'s guard is
+   * `context.tick - classifiedAtTick < CLASSIFICATION_REVIEW_INTERVAL_TICKS`,
+   * and `classifiedAtTickOf` returns either `undefined` or the difference of
+   * two `Uint32Array` reads it has already guarded against wrapping, so
+   * `classifiedAtTick` is never negative. The whole proof is one line --
+   * **`23,999 - 0 = 23,999 < 24,000`** -- so even a prisoner classified on the
+   * very first tick is skipped, and **every prisoner is skipped on the first
+   * run whatever the phase is**. The phase moves the empty run from tick 0 to
+   * tick 23,999; it does not remove it. The stated benefit is not delivered by
+   * the mechanism credited with it.
+   *
+   * Measured rather than argued, through this system in the real kernel:
+   * 24,000 prisoners alive at once, one per possible classification tick in
+   * `[0, 23,999]`, gives `reviewsCompleted === 0` after the run at 23,999 and
+   * `24,000` after the run at 47,999. Found by the owner's read-only audit of
+   * `origin/main` at v0.0.242 and confirmed at the lines before anything here
+   * was changed.
+   *
+   * ## What the phase costs and buys, on the same 24,000 cases
+   *
+   * One tick, against one degenerate regression. Compared with
+   * `phaseTicks: 0`, this phase reviews **23,999 of the 24,000 one tick
+   * earlier**, and reviews **one of them 23,999 ticks later** -- the prisoner
+   * whose `classifiedAtTick` is exactly `0`, who becomes due at 24,000, which
+   * is on phase 0's grid and one past this one's. That case is not a fresh
+   * session's first admission, which is classified at tick **15**; it is
+   * reachable from a fixture or a restore.
+   *
+   * **And it is not load-bearing for what the first period now looks like.**
+   * The arithmetic above has not changed, but the world it runs in has: since
+   * [#593](https://github.com/matmaxalez/lockstate/issues/593) re-ranged
+   * sentences to 14-90 in-game days, **97.27%** of prisoners reach a first
+   * review where **14.00%** used to. Re-derived against those numbers rather
+   * than inherited from the old ones: on the same 7,700-case cross-section
+   * (every drawable length at 100 arrival phases) `phaseTicks: 0` gives
+   * **97.35%** -- six prisoners in 7,700 apart. Nothing about that ruling's
+   * purpose turns on the phase in either direction.
+   *
+   * ## What the phase rests on now
+   *
+   * Two things, and claim two is not one of them. **The first sentence of this
+   * docblock**: this is the last tick of a period, which is exactly what
+   * `economy.state-income` does for a day, and a period-end system running at
+   * period end is legible without having to be load-bearing. **And claim one**,
+   * narrowed to what it actually says: the first run happens over a classified
+   * population rather than an unclassified one, which is a better readout even
+   * though neither run reviews anybody.
+   *
+   * **The value is deliberately left alone.** Moving it would shift when every
+   * review in every session fires, underneath a balance change (#593) that is
+   * already large, and a one-tick argument is not a reason to take that on.
+   * `tests/unit/prisoners-classification-review.test.ts` pins the
+   * empty-first-run fact at its extremal case, so claim two's refutation is
+   * checkable rather than another sentence that can rot.
    */
   public readonly schedule = {
     intervalTicks: CLASSIFICATION_REVIEW_INTERVAL_TICKS,

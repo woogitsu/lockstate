@@ -135,6 +135,29 @@ prisoner held more than eight and a half in-game days ever crosses. **A prison
 short of guards does not stop being safe; it stops being safe for its
 long-stayers.**
 
+> **Three figures in this section and one in *Alternatives considered* rest on
+> a sentence range that changed on 2026-08-30**, when the owner ruled on
+> [#593](https://github.com/matmaxalez/lockstate/issues/593) and
+> [ADR 0079](./0079-a-sentence-long-enough-to-be-a-history.md) made a sentence
+> **14 to 90** in-game days rather than 2 to 16. Recorded here rather than
+> rewritten, because **decision 2 is unaffected and none of this reopens it**:
+>
+> - *"crosses inside `MIN_SENTENCE_LENGTH_TICKS` (4,800)"* — that constant is
+>   **33,600** now. The conclusion holds a fortiori: every sentence the game
+>   draws still outlasts 4,080 ticks, by far more than it did.
+> - *"0.09's never accumulates (past the 38,400-tick maximum sentence)"* — this
+>   is now **false**. 0.09's accumulator is 40,800 ticks, which is inside all
+>   but the shortest eleven of the seventy-seven drawable lengths. It was one of
+>   two reasons 0.09 was set aside; the other (legibility against `hunger`'s
+>   0.05) is untouched, and no rate is changed here.
+> - *"sentences are drawn from 2 to 16 in-game days: more than half the
+>   population would leave before an entirely unguarded prison could cost them
+>   anything"* (Alternatives considered) — also **false** at the new range: at
+>   decay 0.01 the 20,400-tick crossing is inside every drawable sentence. The
+>   alternative it rejects would now describe a real population, so **whether
+>   decision 2 is still the best answer is a question for the owner rather than
+>   a conclusion for this note.** It is raised, not answered.
+
 **The bracket the rate was chosen inside**, so a later balance pass can see what
 it is moving within: three rungs stay three distinct outcomes only while
 `provision / 2 < decay < provision`. Below the lower bound `understaffed`

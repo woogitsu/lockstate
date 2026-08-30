@@ -650,12 +650,35 @@ export const statusCountsSchema = z
      * any session.
      *
      * **A sibling of `roomCapacity` rather than a replacement for it**,
-     * because the two are different true facts and each has a reader. A
-     * furnished infirmary raises `roomCapacity` -- `object.medical-bed`
-     * declares `'sleep-surface'` -- and raises nothing here, because no
-     * classification group's `AccommodationPolicy` names `room.infirmary`.
-     * Collapsing them would either overstate the prisoner denominator by every
-     * medical bed or understate the Rooms readout by every one.
+     * because the two are different true facts. A furnished infirmary raises
+     * `roomCapacity` -- `object.medical-bed` declares `'sleep-surface'` -- and
+     * raises nothing here, because no classification group's
+     * `AccommodationPolicy` names `room.infirmary`. Collapsing them would
+     * either overstate the prisoner denominator by every medical bed or
+     * understate the Rooms readout by every one.
+     *
+     * **That sentence read "the two are different true facts and each has a
+     * reader", and the second clause has never been true.** It was written
+     * here at `b20d116`, in the commit that added this field -- at which point
+     * `src/ui/simulation-counts.ts` still returned the literal
+     * `prisonerCapacity: 0`, so *neither* count had a reader. One commit later
+     * `50ca715` gave **this** field one (`prisonerCapacity:
+     * counts.accommodationCapacity`, `src/ui/simulation-counts.ts`), and
+     * `roomCapacity` has never acquired one: grep it across `src/ui/` and the
+     * only occurrences are the three lines of prose in that same file
+     * explaining why the mapping is *not* `counts.roomCapacity`.
+     * `docs/HUD_PROJECTIONS.md` has said so from the same day and still does
+     * -- *"`roomCapacity` stays exactly what it was: the Rooms readout's
+     * total, with no reader in `src/ui/` yet"* -- so this comment and that
+     * document have disagreed since they were written.
+     *
+     * The argument above is unaffected and is why the clause is corrected
+     * rather than the field withdrawn: `roomCapacity` is published and pinned
+     * by `tests/unit/hud-projections.test.ts`, which builds a prison
+     * specifically to tell the two apart, and the "Rooms readout" it is the
+     * total of is a panel nobody has built. A count with a test and no panel
+     * is a different thing from a count with a reader, and saying so is the
+     * point.
      *
      * `countSchema`'s floor of `0` is its own invariant: it is a sum of
      * `residentCapacity`, which `deriveRoomCapacity` builds from footprint
@@ -776,7 +799,7 @@ export const statusCountsSchema = z
      *
      * Three counts rather than one ratio, because the strip's job here is that
      * *"the 40s are attributable"*: since ADR 0064 the state withholds
-     * `STATE_INCOME_UNMET_NEED_WITHHOLDING_MINOR_UNITS` of the prisoner-day
+     * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` of the prisoner-day
      * grant per unmet need, and `SafetyCoverageSystem` is what decides whether
      * `safety` is one of them. A player looking at a grant smaller than the
      * headline rate has to be able to see how much of the population is paying
@@ -952,7 +975,7 @@ export type SimulationStatusCounts = DeepReadonly<
  * `simulation/command-result`'s `rejected` form both describe a command that
  * never reached the kernel; these describe a command that was accepted,
  * ordered, dispatched at its tick -- and then refused on its *content* by the
- * system that ran it. `WorkerStateMachine.handleSubmitCommand` has already
+ * system that ran it. `SimulationWorkerStateMachine.handleSubmitCommand` has already
  * answered `status: 'queued'` by then, and ADR 0003 decision 9 is explicit
  * that the queued acknowledgement "never reports a command as applied": this
  * vocabulary is what the simulation says instead.
@@ -1367,6 +1390,7 @@ export const SIMULATION_EVENT_TYPES = [
   'incidents.gang-retaliation-opened',
   'incidents.riot-opened',
   'prisoners.discharged',
+  'prisoners.relocated',
 ] as const;
 
 export type SimulationEventType = (typeof SIMULATION_EVENT_TYPES)[number];
@@ -1405,6 +1429,61 @@ const dischargedEventSchema = z
     ...simulationEventEnvelopeFields,
     type: z.literal('prisoners.discharged'),
     count: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+  })
+  .strict();
+
+/**
+ * A resident whose bed was taken away has been moved into accommodation that
+ * exists ([ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+ * decision A(i)).
+ *
+ * **One event per resident, where `prisoners.discharged` is one per tick, and
+ * the difference is what the sentence says.** A discharge is reported as a
+ * count because a player reads a cohort leaving as one occurrence; this
+ * sentence names *one prisoner* and *one room*, so a removal that rehouses two
+ * residents is two of these. That grain is the owner's, not this schema's: the
+ * approved wording is "{name} had nowhere to sleep and moved to {room}.", and
+ * a per-removal aggregate could not fill either placeholder.
+ *
+ * ## Why this one carries an identity when the channel's own comment says none do
+ *
+ * `SimulationEventLog`'s class comment reads *"It carries no identity. No
+ * entity id, no name, no tile"*, and gives `prisoners.discharged`'s reason:
+ * *"the subject of a discharge event does not exist by the time the main
+ * thread reads it"*. **That reason is the whole of the rule, and it is false
+ * of this event** -- the subject is alive, housed, and already on the roster
+ * projection under this very `entityId`, with these very two name halves
+ * (`PrisonerRosterRowViewModel.name`). So the sentence is narrowed where it
+ * stands rather than deleted: identity stays off this channel wherever the
+ * subject may be gone, and this member is the exception that says why.
+ *
+ * **ADR 0011 is not bent by it either.** What that decision keeps off the wire
+ * is *translated text*: a name is player-facing **state**, minted from
+ * `identity.actor-name` and identical in every locale
+ * (`src/simulation/identity/actor-identity.ts`), and `roomNameKey` is a
+ * *message key* -- the same field, resolved from the same catalog, that
+ * `PrisonerRoomRefViewModel.roomNameKey` already carries to the roster panel.
+ * No sentence crosses here; the main thread still assembles one.
+ *
+ * `name` is optional for the reason `PrisonerRosterRowViewModel.name` is: a
+ * session wired without an identity registry mints nobody, and the HUD names
+ * such a prisoner by entity id (`hud.regime.roster-unnamed`) rather than
+ * saying nothing at all.
+ */
+const residentRelocatedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('prisoners.relocated'),
+    entityId: sequenceSchema,
+    name: z
+      .object({
+        givenName: z.string().min(1).max(128),
+        familyName: z.string().min(1).max(128),
+      })
+      .strict()
+      .optional(),
+    /** The room they now live in, as the catalog's own `nameKey`. */
+    roomNameKey: identifierSchema,
   })
   .strict();
 
@@ -1555,6 +1634,7 @@ const incidentsAllClearEventSchema = z
 const simulationEventSchema = z.discriminatedUnion('type', [
   wagesUnpaidEventSchema,
   dischargedEventSchema,
+  residentRelocatedEventSchema,
   riotOpenedEventSchema,
   gangRetaliationOpenedEventSchema,
   assaultOpenedEventSchema,
