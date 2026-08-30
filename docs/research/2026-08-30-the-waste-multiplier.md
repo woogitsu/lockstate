@@ -58,9 +58,27 @@ record.
 
 | run | commit | result |
 | --- | --- | --- |
-| 1 | `ce81b29` | `3 passed (8.1m)` |
-| 2 | `2c2f19a` | `3 passed (13.1m)` |
-| 3 | `6766f88` | `4 passed (12.3m)` |
+| 1 | `e3e4e09` | `3 passed (8.1m)` |
+| 2 | `6c7e59b` | `3 passed (13.1m)` |
+| 3 | `5375903` | `4 passed (12.3m)` |
+
+**The table names the published commits, which are not the ones the runs were
+performed at.** The runs happened on this branch while it was still based on
+`agent/627-just-in-time-materials`.
+[#640](https://github.com/matmaxalez/lockstate/pull/640) then squash-merged, so
+that base is not an ancestor of `main`, and the integrator rebased this branch
+onto `main` rather than merging — a plain merge produced add/add conflicts on
+everything both sides carried. The rebase rewrote all three shas. **The trees
+and the subjects are unchanged**, so every number below still belongs to the
+run beside it; the anchor moved and the measurement did not.
+
+The original run-1 sha still resolves, on `origin/wip/641-waste-multiplier`;
+the other two were only ever ancestors of a branch head that no longer exists
+and are therefore not cited here — an unresolvable sha in a document is what
+`tests/foundation/documentation-commit-citation-contract.test.ts` exists to
+stop, and it caught this table on the first push after the rebase. Its
+`UNPUBLISHED_BY_ORIGIN` list stays empty: an entry belongs there only when the
+anchor genuinely cannot move, and here it could.
 
 ## 2. The denominator, measured rather than quoted
 
