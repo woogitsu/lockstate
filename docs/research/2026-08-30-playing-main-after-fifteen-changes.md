@@ -36,6 +36,38 @@ t+1,503.5 s — **79.991**. **A difference of 0.02%**, and the two runs finished
 419 ticks apart on a ~110,000-tick horizon. So the contention cost this record
 nothing, and that is a comparison rather than an assurance.
 
+**`main` moved five times underneath this pass, so here is exactly which of
+these findings survived it.** The runs played `898a16a`; by the time they
+finished, `main` was `b143791` (v0.0.257) with #674, #640, #672, #673 and #655
+merged. `git diff --stat 898a16a..origin/main -- src/` is **18 files, all of
+them construction, procurement or the build queue** — `handler.ts`,
+`materials-procurement.ts`, `just-in-time-materials.ts`,
+`construction/system.ts`, `construction-projection.ts`, `build-panel.ts`,
+`simulation-build-queue.ts` and the locale and view-model entries they need.
+
+Checked file by file, **every file this record's findings rest on is unchanged
+between `898a16a` and `main` at `b143791`**:
+
+| file | §§ that rest on it | `898a16a..origin/main` |
+| --- | --- | --- |
+| `src/simulation/prisoners/sentence.ts` | 1, 2 | unchanged |
+| `src/simulation/prisoners/intake-system.ts` | 1.1 | unchanged |
+| `src/simulation/prisoners/discharge-system.ts` | 1.1, 2, 7 | unchanged |
+| `src/simulation/prisoners/classification-review-system.ts` | 3 | unchanged |
+| `src/simulation/prisoners/prisoner-operations-runtime.ts` | 1.2 | unchanged |
+| `src/simulation/economy/income.ts` | 1.3, 1.5 | unchanged |
+| `src/simulation/presentation/prisoner-projection.ts` | 2 | unchanged |
+| `src/simulation/events/resident-relocation-notice.ts` | 4 | unchanged |
+| `src/simulation/incidents/response-system.ts`, `flashpoint.ts` | 3, 7 | unchanged |
+| `src/simulation/protocol/types.ts` | 3, 7 | unchanged |
+| `src/ui/simulation-events.ts` | 3, 4 | unchanged |
+| `src/ui/hud/regime-panel.ts`, `hud-state.ts`, `rooms-panel.ts` | 2, 3, 5.2 | unchanged |
+| `src/main.ts` | 1.2, 3 | unchanged |
+
+**So §§1, 2, 3, 4 and 5.2 are statements about `main` as it stands. §5.1 is
+not, and says so at length.** That distinction is the whole reason this
+paragraph is here rather than left to a reader to work out.
+
 **One harness defect these runs inherited, and what it can and cannot have
 touched.** `playtest-harness.ts`'s `waitForQueueEmpty` carried an **unanchored**
 `/0 waiting . 0 being built/` at `898a16a`, and the queue readout is
