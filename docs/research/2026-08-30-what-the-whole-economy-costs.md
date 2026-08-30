@@ -229,6 +229,34 @@ plus the fallback in `DEFAULT_ACCOMMODATION_POLICY`, which lists both housing
 types for both classification groups so that a prison holding either can admit
 anybody.
 
+### 3.1 And the private cell is the worst deal in the game — MEASURED
+
+890 is the *minimum viable* prison, not the sensible one. Residency capacity is
+the summed `footprint.width` of every `'sleep-surface'` object in the room, so
+one room may hold any number of beds, and the perimeter — 68–94% of the cost —
+amortises across all of them. A player who drags a large rectangle and fills it
+with beds is not being clever; they are doing the obvious thing, and it is an
+order of magnitude cheaper per prisoner.
+
+MEASURED, each built through real commands, one `room.cell` with one toilet:
+
+| room | walls + door | beds | **spend** | places | **cost per place** | break-even |
+| --- | --- | --- | --- | --- | --- | --- |
+| 2×3 | 9 + 1 | 1 | 890 | 1 | **890** | day 4 |
+| 6×6 | 23 + 1 | 12 | 2,885 | 12 | **240** | **day 1** |
+| 10×10 | 39 + 1 | 40 | 6,225 | 40 | **156** | **day 1** |
+
+The 6×6 figure includes two guards and a yard; the 10×10 includes five guards
+and a yard. Both reach break-even at the **first day boundary**, because the
+first day's grant (3,440 and 11,600) exceeds the whole build. The 10×10 room
+closed the twelfth day on **155,535** — six times the opening balance — from a
+6,225 outlay.
+
+Two things follow. **A perimeter is a fixed cost and a bed is a marginal one**,
+so the economy already rewards the shape the player naturally draws. And **the
+2×3 private cell is a design choice the price list punishes**: 890 a place
+against 156, for a prisoner who is served identically by both.
+
 **Time, not money, is the other cost.** The crew builds one order at a time at
 one work unit per tick, so a cell is 540 work units — 9×50 for the walls, 30
 each for door, bed and toilet — plus a 100-tick delivery wait. MEASURED
@@ -262,6 +290,10 @@ Day 4 is **8 real minutes at ×1** and **2 minutes at ×4**.
 meets every need nets **2,320 a day** — 8 × 300 less one guard's 80 — and was
 measured at **44,575** on day 12, from an opening 25,000 with 8,225 spent. The
 cells-only eight-prisoner prison, meeting nothing, still nets **1,440 a day**.
+
+**The private cell is the slow case.** §3.1's shared rooms break even at the
+**first day boundary**: a 6×6 cell with twelve beds costs 2,885 and its first
+day pays 3,440.
 
 **There is no configuration in which a prison with a furnished cell and a
 prisoner in it loses money.** The floor of the income line is 60 per place per
@@ -424,10 +456,13 @@ per-prisoner funding. The measurements support **none of them as stated**, and
 the reason is the same for all three.
 
 **The economy is not short of money.** 25,000 buys one of every room type in
-the game (21,660), or 28 furnished cells (24,920). The minimum viable prison
-costs 3.6% of it and repays itself in four in-game days — eight real minutes.
-An eight-prisoner prison meeting every need repays itself in the same four days
-and then compounds at 2,320 a day with no ceiling. Wages never overtake income
+the game (21,660), or 28 private cells (24,920), or — the shape a player
+actually drags — **a 10×10 cell with forty beds, five guards and a yard for
+6,225, which repays itself at the first day boundary and closes day 12 on
+155,535**. The minimum viable prison costs 3.6% of the opening balance and
+repays itself in four in-game days, eight real minutes. An eight-prisoner
+prison meeting every need repays itself in the same four days and then compounds
+at 2,320 a day with no ceiling. Wages never overtake income
 for a player who hires to the requirement, and a player who over-hires ten to
 one takes 41 in-game days to notice.
 
