@@ -846,15 +846,29 @@ function staffRoster(): HudStaffViewModel {
  *
  * It is still the least eventful value in range: `0` is the bottom of the
  * `priorIncidentsAtIntake` slot, so it adds nothing to `classifyPrisoner`'s
- * score and the tier that results is the screening draw alone. The measured
- * consequence, stated so it is not mistaken for a gap nobody looked at:
- * `classifyPrisoner`'s reachable tiers at `priorIncidents: 0` are `[0, 1]`
- * (`tests/unit/prisoners-classification.test.ts`), and
- * `classificationGroupIdForTier` only answers `'high-risk'` at tier 3 -- so
- * **no admission a player can make from this panel has ever produced a
- * high-risk prisoner**, and `room.solitary-cell`'s accommodation branch is
- * reachable only through `ClassificationReviewSystem` later revising a tier
- * upward.
+ * score.
+ *
+ * **This paragraph used to continue "and the tier that results is the
+ * screening draw alone ... reachable tiers at `priorIncidents: 0` are
+ * `[0, 1]`", and that stopped being true when the owner ruled on #593.** It is
+ * corrected here rather than left to be contradicted eighteen lines further
+ * down, which is what it was doing: the paragraph below already says the right
+ * thing, and a reader arriving at this one first had no way to know which half
+ * to believe. `priorIncidents` is no longer the only term that can be zero --
+ * the *sentence* term can now be 1, for the seven drawable lengths of 84
+ * in-game days and up -- so the tier is the screening draw **plus that point**,
+ * and the reachable set is `[0, 1]` below 84 days and `[0, 1, 2]` at or above
+ * it (`tests/unit/prisoners-classification.test.ts` enumerates it over the
+ * whole draw space rather than sampling).
+ *
+ * **What the old sentence was protecting is untouched, and it is the half
+ * worth keeping:** `classificationGroupIdForTier` only answers `'high-risk'`
+ * at tier 3, and one sentence point plus a maximum screening draw of `+1`
+ * clamps at 2 -- so **no admission a player can make from this panel has ever
+ * produced a high-risk prisoner**, and `room.solitary-cell`'s accommodation
+ * branch is still reachable only through `ClassificationReviewSystem` later
+ * revising a tier upward. The margin narrowed from two screening points to
+ * one; it did not close.
  *
  * That is a real dead branch of exactly the kind #535 decision 5 was taken
  * about, and it is deliberately **not** fixed here. Drawing prior incidents
