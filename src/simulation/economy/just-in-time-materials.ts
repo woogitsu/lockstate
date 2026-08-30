@@ -126,9 +126,10 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
   /**
    * What the most recent pass did.
    *
-   * Rewritten on every scheduled construction tick, including the ones with
-   * nothing to buy, so it is never stale: a queue that drains reports an empty
-   * `unfunded` on the next tick rather than leaving the last shortfall
+   * Rewritten by **every** pass -- the one on the press that placed an order
+   * and the one on every scheduled construction tick, including the ticks with
+   * nothing to buy -- so it is never stale: a queue that drains reports an
+   * empty `unfunded` within ten ticks rather than leaving the last shortfall
    * standing. Before the first pass it reads `tick: -1` and three empty lists,
    * which is a real tick nothing can have run at.
    *
@@ -195,9 +196,13 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
           unprocurable.push({ itemId: requirement.itemId, quantity: deficit, reason: 'unpurchasable' });
           break;
         case 'duplicate-order':
-          // A purchase for this item at this tick is already standing, which
-          // is the restored-session case in the class comment. The materials
-          // are coming; nothing is owed and nothing is refused.
+          // This exact purchase already stands -- see `justInTimePurchaseOrderId`
+          // for the one shape that reaches here and for why it cannot be an
+          // ordinary second purchase at the same tick. The materials are on the
+          // road under that id, so nothing is owed and nothing is refused, and
+          // the next tick composes a different id if any shortfall remains.
+          // `tests/unit/construction-just-in-time-materials.test.ts` constructs
+          // the state and measures both halves.
           break;
       }
     }
