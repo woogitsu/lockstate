@@ -7,8 +7,21 @@
 [#655](https://github.com/matmaxalez/lockstate/pull/655) (the shared harness's
 `waitForQueueEmpty` regex).
 **Reproduction:** `tests/browser/playtest-into-the-lock.playtest.ts`, run with
-`LOCKSTATE_BROWSER_TEST_PORT=5189 ./node_modules/.bin/playwright test -c tests/browser/playwright.playtest.config.ts tests/browser/playtest-into-the-lock.playtest.ts`.
+`LOCKSTATE_BROWSER_TEST_PORT=5190 ./node_modules/.bin/playwright test -c tests/browser/playwright.playtest.config.ts tests/browser/playtest-into-the-lock.playtest.ts`.
 Nothing in CI collects `.playtest.ts`.
+
+**Four runs, what each was of, and which two are the pair.**
+
+| run | acts | result | what it added, or what it cost |
+| --- | --- | --- | --- |
+| 1 | act 3 only | `1 passed (2.7m)` | the first ambitious-wing cost; **refuted this file's own first instrument** (§0) |
+| 2 | acts 3, 4 | abandoned | showed that clamping the wing to the box the HUD leaves free measures the harness, not the game |
+| **A** | all four | `1 failed, 2 passed (11.0m)` | the descent, escapes A and B, act 4's refund. Act 2 died at escape C on a locator click the HUD covers |
+| **B** | all four | see §8 | the same file with escape C driven by `page.mouse`, and act 3 clamped to the owned world |
+
+**A and B are the pair for the descent**, and their `DESCENT RESULT` lines are
+identical character for character apart from the autosave generation id. Runs 1
+and 2 are quoted only where they are the thing being corrected.
 
 **The question, and what is deliberately not re-litigated.**
 [`2026-08-30-a-wall-that-buys-itself.md`](./2026-08-30-a-wall-that-buys-itself.md)
