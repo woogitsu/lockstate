@@ -153,6 +153,31 @@ async function allChips(page: Page): Promise<string> {
   );
 }
 
+/**
+ * `.hud__event` -- the band an event actually reaches the player on.
+ *
+ * **Reading only the alerts list would have missed every notice this file is
+ * looking for**, and the reason is in the HUD's own comment at
+ * `src/ui/hud/hud.ts:962-983`: the alerts section starts folded
+ * (`INITIAL_HUD_SHELL_STATE`'s `collapsedPanels: ['alerts']`,
+ * `src/ui/hud/hud-state.ts:53`) and `.hud__corner` is dropped entirely at
+ * 720px and below, so *"an event routed only to the alerts list would not
+ * exist on a phone"*. #507 gave events their own band for that reason, and
+ * that band is where `prisoners.relocated` and `prisoners.discharged` land.
+ * The first run of this file read the folded list, got *"ALERTS LIST not laid
+ * out"*, and would have reported a silence that is not there.
+ */
+async function eventBand(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const band = document.querySelector<HTMLElement>('.hud__event');
+    if (band === null) return 'EVENT BAND ABSENT';
+    const box = band.getBoundingClientRect();
+    const geometry = `${Math.round(box.width)}x${Math.round(box.height)} at (${Math.round(box.x)},${Math.round(box.y)})`;
+    if (band.hidden) return `hidden, ${geometry}`;
+    return `severity=${band.getAttribute('data-severity') ?? 'none'} ${geometry} :: ${(band.innerText ?? '').trim()}`;
+  });
+}
+
 /** The alerts list in the bottom-left minimap panel -- where #660's notice would land. */
 async function alerts(page: Page): Promise<string> {
   return page.evaluate(() => {
@@ -197,6 +222,16 @@ function vocabularyReport(log: (line: string) => void, moment: string, text: str
 
 test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
   test.beforeEach(async ({ page }) => {
+    /*
+     * A finite action timeout, because the default is **zero, meaning no
+     * timeout at all** -- and the first run of this file paid for that. The
+     * Rooms panel's catalogue is a `CollapsibleSection` that re-folds itself
+     * on every arm press (`src/ui/hud/rooms-panel.ts:439-465`), so the click
+     * on `[data-room="room.cell"]` for a *second* room waits on an element
+     * that will never be laid out. With no action timeout that click hung
+     * until the 900 s test timeout instead of failing in 30 s.
+     */
+    page.setDefaultTimeout(30_000);
     page.on('console', (message) => {
       const text = message.text();
       if (message.type() === 'error' || /Failed to process file|could not be decoded/.test(text)) {
@@ -248,6 +283,27 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
       log(`  /${word}/i in the visible HUD? ${new RegExp(word, 'i').test(visible)}`);
     }
     log(`clock: ${JSON.stringify(await currentClock(page))}`);
+
+    // Now unfold the queue by hand, which is the thing a player has to think of
+    // doing, and read what the rows have been saying all along.
+    const queueSection = page.locator('.hud-build__queue');
+    log(`queue data-collapsed before unfolding: ${await queueSection.getAttribute('data-collapsed')}`);
+    // `.ui-section__header` IS the button (`src/ui/primitives/collapsible-section.ts:69`);
+    // the first run of this file looked for a `.ui-section__toggle` that does not exist,
+    // clicked nothing, and read the rows out of a body that was still hidden.
+    await queueSection.locator('.ui-section__header').first().click();
+    await page.waitForTimeout(500);
+    log(`queue data-collapsed after the header press: ${await queueSection.getAttribute('data-collapsed')}`);
+    log(`queue after unfolding: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+    log(
+      `queue row states: ${JSON.stringify(
+        await page.evaluate(() =>
+          [...document.querySelectorAll<HTMLElement>('.hud-build__queue-row')].map((row) => (row.innerText ?? '').replace(/\n+/g, ' | ').trim()),
+        ),
+      )}`,
+    );
+    const unfolded = await hudText(page);
+    log(`  /awaiting materials/i once the queue is unfolded? ${/awaiting materials/i.test(unfolded)}`);
   });
 
   /**
@@ -305,25 +361,51 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
     await waitForQueueEmpty(page);
     log(`walls up at tick ${await currentTick(page)}: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
 
-    const designate = async (label: string, a: [number, number], b: [number, number]): Promise<number> => {
-      for (let attempt = 1; attempt <= 12; attempt += 1) {
+    /**
+     * Designate one cell, and say at every step what the panel was actually
+     * showing.
+     *
+     * **The catalogue has to be unfolded by hand for a second room, and that
+     * is a finding rather than a workaround.** `folded()` is `drawingFolded`
+     * whenever the tool is armed with nothing pending, and `drawingFolded`
+     * starts `true` on every arm press
+     * (`src/ui/hud/rooms-panel.ts:439-465`), *"because a panel that covers the
+     * thing it operates on is not a panel the player can draw on"*. So after
+     * the first Designate the room-type list is shut, and a player who wants a
+     * *different* kind of room for their second one has to find the header
+     * that opens it again. This helper does what that player would: open the
+     * panel, open the catalogue, then pick.
+     */
+    const designate = async (label: string, a: [number, number], b: [number, number], want: number): Promise<number> => {
+      for (let attempt = 1; attempt <= 10; attempt += 1) {
         await tab(page, 'rooms').click();
-        const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
-        if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
-        await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+        const panelCollapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
+        if (panelCollapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+        const catalogue = page.locator('.hud-rooms__catalogue');
+        const catalogueCollapsed = await catalogue.getAttribute('data-collapsed');
+        if (attempt === 1) log(`designate ${label}: panel data-collapsed=${panelCollapsed} catalogue data-collapsed=${catalogueCollapsed}`);
+        if (catalogueCollapsed === 'true') await catalogue.locator('.ui-section__header').first().click();
+        const row = page.locator('.hud-rooms__list [data-room="room.cell"]');
+        if (await row.isVisible()) await row.click();
+        else log(`designate ${label} attempt ${attempt}: the Cell row is not visible even with the catalogue open`);
         await page.locator('.hud-rooms__arm').click();
         await drag(page, at(a[0], a[1]), at(b[0], b[1]));
+        const note = await panelText(page, '.hud-rooms');
         await page.locator('.hud-rooms__confirm').click();
         await page.waitForTimeout(900);
         const rooms = (await latestCounts(page))?.rooms ?? 0;
-        log(`designate ${label} attempt ${attempt}: rooms=${rooms}`);
-        if (rooms >= (label === 'north' ? 1 : 2)) return rooms;
+        log(
+          `designate ${label} attempt ${attempt}: rooms=${rooms}` +
+            ` | panel said ${JSON.stringify(note.split('\n').filter((l) => /OPEN|ENCLOS/i.test(l)))}` +
+            ` | band ${JSON.stringify(await panelText(page, '.hud__refusal'))}`,
+        );
+        if (rooms >= want) return rooms;
         await page.waitForTimeout(4_000);
       }
       throw new Error(`${label} cell was never accepted`);
     };
-    await designate('north', [12, 12], [13, 14]);
-    await designate('south', [12, 15], [13, 18]);
+    await designate('north', [12, 12], [13, 14], 1);
+    await designate('south', [12, 15], [13, 18], 2);
 
     // The north cell only. One bed and one toilet, so it is the only place to live.
     await tab(page, 'build').click();
@@ -365,6 +447,7 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
     await page.waitForTimeout(2_000);
     log(`south furnished at tick ${await currentTick(page)}: ${JSON.stringify(await latestCounts(page))}`);
     log(`alerts before the removal: ${JSON.stringify(await alerts(page))}`);
+    log(`event band before the removal: ${JSON.stringify(await eventBand(page))}`);
     const before = await sample(page, startedAt);
     log(`sample before the removal: ${JSON.stringify(before)}`);
 
@@ -376,8 +459,14 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
 
     for (const waitMs of [0, 3_000, 10_000]) {
       if (waitMs > 0) await page.waitForTimeout(waitMs);
-      log(`alerts +${waitMs}ms after the removal: ${JSON.stringify(await alerts(page))}`);
+      log(`+${waitMs}ms after the removal -- event band: ${JSON.stringify(await eventBand(page))}`);
+      log(`+${waitMs}ms after the removal -- alerts list: ${JSON.stringify(await alerts(page))}`);
     }
+    // And what the folded list holds once a player thinks to open it.
+    const alertsHeader = page.locator('.hud-minimap .ui-section__header').first();
+    if ((await alertsHeader.count()) > 0) await alertsHeader.click();
+    await page.waitForTimeout(500);
+    log(`alerts list once unfolded by hand: ${JSON.stringify(await alerts(page))}`);
     const after = await sample(page, startedAt);
     log(`sample after the removal: ${JSON.stringify(after)}`);
     log(`chips after the removal: ${await allChips(page)}`);
@@ -414,6 +503,8 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
     log(`=== all twelve admitted by tick ${admittedAt} (in-game day ${Math.floor(admittedAt / DAY_LENGTH_TICKS) + 1}) ===`);
     log(`chips: ${await allChips(page)}`);
     log(`PRISONERS chip: ${JSON.stringify(await prisonersChip(page))}`);
+    log(`event band: ${JSON.stringify(await eventBand(page))}`);
+    log(`intake panel: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
     log(`roster at admission:\n${await rosterText(page)}`);
 
     const firstVisible = await hudText(page);
@@ -424,7 +515,7 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
     log(`clock: ${JSON.stringify(await currentClock(page))}`);
 
     // The run. Sample every 10 s of wall time; dump the roster every 2 minutes.
-    const budgetMs = 33 * 60 * 1_000;
+    const budgetMs = 25 * 60 * 1_000;
     const samples: Sample[] = [];
     const departures: { tick: number; from: number; to: number; wallMs: number }[] = [];
     let peak = 0;
@@ -445,7 +536,7 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
         log(
           `*** DEPARTURE between tick ${previous.tick} and ${now.tick}: prisoners ${previous.prisoners} -> ${now.prisoners}` +
             ` | that is ${((now.tick - admittedAt) / DAY_LENGTH_TICKS).toFixed(1)} in-game days after admission` +
-            ` | alerts: ${JSON.stringify(await alerts(page))}`,
+            ` | event band: ${JSON.stringify(await eventBand(page))}`,
         );
         log(`    chips: ${await allChips(page)}`);
       }
@@ -454,6 +545,7 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
         const roster = await rosterText(page);
         log(`--- t+${Math.round(now.wallMs / 1000)}s tick ${now.tick} (day ${now.day}) ${JSON.stringify(now)}`);
         log(`    chips: ${await allChips(page)}`);
+        log(`    event band: ${JSON.stringify(await eventBand(page))}`);
         log(`    roster:\n${roster}`);
         if (roster !== lastRoster && lastRoster !== '') log(`    (the roster block changed since the previous dump)`);
         lastRoster = roster;
@@ -474,6 +566,7 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
     log(`WHOLE VISIBLE HUD at the end:\n${finalHud}`);
     vocabularyReport(log, 'end of run', finalHud);
     log(`final roster:\n${await rosterText(page)}`);
-    log(`final alerts: ${JSON.stringify(await alerts(page))}`);
+    log(`final event band: ${JSON.stringify(await eventBand(page))}`);
+    log(`final alerts list: ${JSON.stringify(await alerts(page))}`);
   });
 });
