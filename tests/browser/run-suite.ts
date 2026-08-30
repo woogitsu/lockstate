@@ -5,6 +5,19 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+/*
+ * FULLY SPECIFIED, WITH THE `.ts`, AND THAT IS NOT A STYLE CHOICE.
+ *
+ * This file is executed by Node itself rather than by Vite, Vitest or
+ * Playwright, and Node's TypeScript support resolves only fully-specified
+ * relative specifiers. Measured rather than assumed, on Node 24.19.0: of
+ * `./dep.ts`, `./dep.js` and `./dep`, only the first resolves -- the other two
+ * die with `ERR_MODULE_NOT_FOUND` at the import, before a line of this file
+ * runs. `tsconfig.json` therefore sets `allowImportingTsExtensions`, which is
+ * legal because the whole project is `noEmit` and which permits this form
+ * without requiring it anywhere else. Every other file in `tests/browser/` is
+ * loaded by a bundler-shaped resolver and keeps the extensionless form.
+ */
 import {
   BROWSER_SUITE_NO_RETRY_PREFIX,
   BROWSER_SUITE_RETRY_PREFIX,
@@ -12,7 +25,7 @@ import {
   NETWORK_CHANGED_EVIDENCE_VARIABLE,
   decideBrowserSuiteRetry,
   type BrowserSuiteFailure,
-} from './network-changed-signature';
+} from './network-changed-signature.ts';
 
 /**
  * `pnpm test:browser`. Runs the real-browser suite exactly as before, and
