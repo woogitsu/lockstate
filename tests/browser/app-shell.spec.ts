@@ -341,6 +341,23 @@ const INJECTED_STATUS_COUNTS = {
       // bar, so they are unaffected.
       accommodationCapacity: 40,
       roomOccupants: 30,
+      // The nineteenth count (issue #585): the residency places that currently
+      // exist, which is what `StateIncomeSystem` pays for. Required for the
+      // same `.strict()` reason as the fields around it.
+      //
+      // **Deliberately the same figure as `roomOccupants` above**, which is the
+      // opposite of what this file does with `roomCapacity`/
+      // `accommodationCapacity` and is worth the sentence. The two counts
+      // diverge only when a place stops existing under a sitting resident, and
+      // that divergence is measured through real commands in
+      // `tests/integration/economy-occupied-place-exists.test.ts` ("two
+      // residents over one remaining bed, in one cell"). Here it would buy
+      // nothing and cost something: `stateIncomeAccruedTodayMinorUnits` below
+      // is derived from this number and its 4,631 is asserted in the DOM, so
+      // splitting the two would move a figure this fixture exists to render.
+      // When a chip reads `occupiedPlaces` -- issue #609's surface, not this
+      // one -- separating them here becomes worth doing.
+      occupiedPlaces: 30,
       // Required for the same reason `accommodationCapacity` above is: the
       // counts payload is `.strict()`, so a fixture missing one of these three
       // is dropped whole by `decodeWorkerToMainMessage` and every assertion
@@ -359,8 +376,8 @@ const INJECTED_STATUS_COUNTS = {
       activeIncidents: 2,
       contrabandDiscovered: 5,
       treasuryMinorUnits: 31_500,
-      // Derived from this payload's own `tick` and `roomOccupants` rather than
-      // picked: thirty occupied places, 1,235 ticks of the day served,
+      // Derived from this payload's own `tick` and `occupiedPlaces` rather
+      // than picked: thirty occupied places, 1,235 ticks of the day served,
       // `floor(300 x 30 x 1235 / 2400)` = 4,631 (#29). Required, not optional
       // -- the counts payload is `.strict()`, so a fixture missing this field
       // is dropped by `decodeWorkerToMainMessage` and every assertion below it

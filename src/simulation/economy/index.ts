@@ -5,6 +5,7 @@ export {
   StateIncomeSystem,
   stateIncomeAccruedByTick,
   stateIncomeForCompletedDay,
+  stateIncomeForOccupiedPlaces,
   stateIncomeForPrisonerDay,
   unmetNeedCount,
   type OccupiedPlaceSource,

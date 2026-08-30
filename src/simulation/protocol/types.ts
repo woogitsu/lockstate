@@ -668,7 +668,107 @@ export const statusCountsSchema = z
      * too.
      */
     accommodationCapacity: countSchema,
+    /**
+     * How many prisoners hold a **residency assignment** in a room the room
+     * catalog declares: the summed `occupancyOf` of the instances
+     * `collectRoomInstances` reaches
+     * (`src/simulation/presentation/status-strip-projection.ts`), which is the
+     * catalog fan-out and therefore carries `docs/HUD_PROJECTIONS.md` gap 15.
+     *
+     * **An assignment is no longer the same thing as an occupied place, and
+     * this field is the assignment.** ADR 0028 decision 2 keeps a resident
+     * where they are when the bed under them is taken away, so an assignment
+     * outlives its place; `StateIncomeSystem` pays per *place*, through
+     * `RoomInstanceRegistry.residentIdsWithExistingPlace`, which clamps each
+     * instance's residents to that instance's own `residentCapacity`
+     * ([ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+     * decision A(ii), issue #585). Before that clamp the two were the same
+     * number by construction and the income line read this one -- which is
+     * exactly why the name still reads like the income count and is not it.
+     *
+     * **Measured through real commands rather than argued.** A 3x3 `room.cell`
+     * with two beds and two prisoners housed in it, with one bed then taken
+     * out by `RemoveObject`, publishes **`roomOccupants` 2 against
+     * `roomCapacity` 1, one occupied place and a 300 day**
+     * (`tests/integration/economy-occupied-place-exists.test.ts`, *"two
+     * residents over one remaining bed, in one cell"*, which asserts both
+     * figures off the one prison state). A payout derived from this field
+     * would pay 600 for one bed, which is the shape #585 exists to remove.
+     *
+     * `roomCapacity` above is the summed `residentCapacity` of the same
+     * instances, so this count standing above it is the over-capacity state
+     * ADR 0028 decision 2 names rather than an inconsistency. Whether a player
+     * should be shown the two figures side by side is a copy decision and the
+     * owner's, in the same way `prisonersUnguarded` below leaves *"6 here, 2
+     * paid"* open rather than settling it in a schema comment.
+     */
     roomOccupants: countSchema,
+    /**
+     * How many residency places a prisoner is holding **that currently
+     * exist**: `RoomInstanceRegistry.residentIdsWithExistingPlace().length`,
+     * which is `min(occupancy, residentCapacity)` summed over every registered
+     * instance ([ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+     * decision A(ii), issue #585).
+     *
+     * **This is the number the state pays on**, and until now nothing
+     * published it. `StateIncomeSystem` credits
+     * `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS` per unit of it at each day
+     * boundary, less what ADR 0064 withholds per unmet need, and
+     * `stateIncomeAccruedTodayMinorUnits` below is that same day prorated by
+     * the tick. A player could see the money and could not see the count the
+     * money is a multiple of.
+     *
+     * ## Beside `roomOccupants`, never instead of it
+     *
+     * The two answer different questions and both are true. `roomOccupants` is
+     * **assignments** -- who the prison is holding -- and ADR 0028 decision 2
+     * keeps an assignment alive when the bed under it is taken away, which is
+     * the decision that makes an over-capacity room a legal state rather than
+     * a defect. This field is **places**, and it is what the treasury reads.
+     * Collapsing them either stops the strip reporting a prisoner the prison
+     * is genuinely holding, or pays for a bed that is not there; #585 is the
+     * measurement of the second.
+     *
+     * They diverge in exactly two ways, and only the first is reachable by
+     * playing:
+     *
+     * 1. **A place stops existing under a sitting resident.** Measured through
+     *    real commands: a 3x3 `room.cell` with two beds and two prisoners
+     *    housed, one bed then taken out with `RemoveObject`, publishes
+     *    `roomOccupants` 2, `roomCapacity` 1 and `occupiedPlaces` **1**, and
+     *    the day is worth 300 rather than 600
+     *    (`tests/integration/economy-occupied-place-exists.test.ts`, *"two
+     *    residents over one remaining bed, in one cell"*).
+     * 2. **An instance registered under a room-catalog id this build does not
+     *    declare.** `roomOccupants` is built by fanning out over catalog ids
+     *    (`docs/HUD_PROJECTIONS.md` gap 15) and cannot see one; this field
+     *    walks the registry and does. `RoomZoningService` only ever registers
+     *    a catalog-defined id, so no `ZoneRoom` reaches it -- it is named
+     *    because it is the direction the two counts differ *structurally*,
+     *    which no measurement of case 1 would reveal.
+     *
+     * **It is never a plain over-admission signal.** A prisoner the prison has
+     * nowhere to put holds no assignment either, so both counts omit them
+     * equally; the gap between `prisoners` and `accommodationCapacity` above is
+     * where over-admission shows, and `prisonersUnguarded` below already says
+     * so at length. This field moves only when a place a prisoner *holds*
+     * stops existing.
+     *
+     * **No extra walk.** `projectStatusStrip` asks the registry once and folds
+     * the same list into the accrual chip through
+     * `stateIncomeForOccupiedPlaces`, so publishing this costs a `length` and
+     * not a second `O(P log P)` sort at the 5,000-actor tier.
+     *
+     * **Not a save concern.** Status counts are published, never persisted:
+     * they are a `WorkerToMainMessage` payload and no field of them reaches
+     * `src/persistence/save-schema.ts`, so `SAVE_SCHEMA_VERSION` is untouched
+     * and nothing migrates. **`HUD_VIEW_MODEL_SCHEMA_VERSION` is deliberately
+     * not bumped** either, for the reason `accommodationCapacity` above gives:
+     * one constant covers every projection in
+     * `src/simulation/presentation/`, so raising it because the status strip
+     * gained a field would assert that the other three changed too.
+     */
+    occupiedPlaces: countSchema,
     /**
      * **How many prisoners are standing in a sector on each rung of the guard
      * coverage ladder** (issue #588): `covered` has all the guards it asks
