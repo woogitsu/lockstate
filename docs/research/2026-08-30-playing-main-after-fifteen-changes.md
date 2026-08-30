@@ -225,6 +225,23 @@ assembled page.
 older incident all-clear; four words changed on a panel that is not the one the
 player has open, and no other pixel moved.
 
+**And it moves back.** A later pass in the same run:
+
+```
+[act3] --- t+1268s tick 99766 (day 42) {"prisoners":5,"roomOccupants":5,"occupiedPlaces":5,…}
+    roster:
+    Malik Pereira Sleeping     Hygiene  High
+    Rosa Kowal    Association  Hygiene  Medium
+    Omar Rossi    Association  Hygiene  Medium
+    Nadia Pereira Association  Hygiene  Medium
+```
+
+Three of the four have come **back down** from `High` to `Medium` — the same
+system, the same silence, in the other direction. `tierIncreases` and
+`tierDecreases` are both live now, which is exactly what ADR 0079 predicted; a
+player watching the roster would see a word change twice in forty in-game days
+and be given no reason either time.
+
 **A second, smaller observation about that band, and it is a property rather
 than a defect.** `.hud__event` does not auto-dismiss — deliberately
 (`src/ui/hud/hud.ts:998-1001`, *"a message that clears itself on a timer is a
