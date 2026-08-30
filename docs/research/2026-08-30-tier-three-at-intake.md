@@ -545,13 +545,38 @@ read-only history this directory promises.
 
 ## 11. Verification
 
-Machine checked idle before every timed run —
-`ps -eo etime,args | grep -E "[p]laywright/test/cli|[v]itest" | grep -v "bash -c"`
-empty, and re-checked between runs rather than only before the first
-(`docs/AGENT_WORKFLOW.md` §2, and the failure #667 records). Load average 0.33
-at the start of the session on a 4-core box.
+**Contention, stated rather than assumed** — `docs/AGENT_WORKFLOW.md` §2 and
+[#667](https://github.com/matmaxalez/lockstate/issues/667): *"a `ps` check
+before a run is not a statement about the run."*
 
-PENDING-VERIFICATION-BLOCK
+`ps -eo etime,args | grep -E "[p]laywright/test/cli|[v]itest" | grep -v "bash -c"`
+was **empty** before the kernel probe runs and before the two commands below,
+on a 4-core box at load average 0.33. Sampled **again immediately after the
+suite finished**, it was *not* empty: another agent's `pseudo-locale-sweep.spec.ts`
+Playwright run showed 1 minute 5 seconds elapsed and a `tests/foundation/`
+vitest run 2 seconds, so **both started inside the last ~20 seconds of the
+80-second suite run below.** So the honest statement is: the suite ran on an
+idle machine for most of its length and shared it for the tail.
+
+That does not weaken the result, and the direction matters: contention in this
+repository produces `Test timed out in 5000ms` **failures**, never false passes,
+so a green 330/330 is if anything understated by it. The **kernel probe runs in
+§4, §5 and §7 are unaffected in either direction** — they are a `while` loop
+over `kernel.step()` with no timeout and no wall clock, so their numbers are a
+function of seed and commands alone. Nothing in this record is a *timing*
+measurement.
+
+```
+$ node node_modules/typescript/bin/tsc -b --pretty false
+--- tsc exit 0 ---
+```
+
+```
+$ node node_modules/vitest/vitest.mjs run tests/foundation/ tests/unit/ tests/integration/ tests/determinism/
+ Test Files  330 passed (330)
+      Tests  3755 passed | 1 skipped (3756)
+   Duration  80.16s
+```
 
 The only files changed on this branch are this record, its `docs/research/README.md`
 row, and the two comment corrections in §8. No determinism fingerprint moved.
