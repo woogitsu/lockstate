@@ -30,6 +30,38 @@ import { describe, expect, it } from 'vitest';
  * `adr-status-queue-anchor-contract.test.ts`. What it buys and what it does not
  * is set out under "The bound" below.
  *
+ * ## Why there is no per-ADR staleness budget, measured rather than argued
+ *
+ * #645's ruling named three candidates and asked for the third to be tried
+ * first. Measured on `4f0b508` (v0.0.238), over the 72 ADRs, of which 46 cite
+ * `src/` by `file:line` at all -- 381 anchors between them:
+ *
+ * 1. **A per-ADR anchor line with `STATUS-QUEUE.md`'s budget of 10 releases.**
+ *    This repository took **238 releases in the fourteen days** to that commit,
+ *    because `.github/workflows/version.yml` bumps the patch on every push to
+ *    `main`. Ten releases is therefore about fourteen hours. Adding that line
+ *    to 46 documents would put all 46 permanently red inside a day, on work
+ *    none of them touched -- which is the exact failure
+ *    `adr-status-queue-anchor-contract.test.ts` says a budget must avoid:
+ *    *"a gate that fires on work it has no complaint about does not survive"*.
+ *    One document can carry a budget at this cadence because one document can
+ *    be re-read in an afternoon. Forty-six cannot.
+ * 2. **The ADR's last commit against the last commit of each file it cites.**
+ *    Fires on **37 of those 46 today**. It is also silent about whether
+ *    anything is wrong: ADR 0023's six citations drifted without a single
+ *    commit to ADR 0023, and so would a citation that a refactor left perfectly
+ *    correct. It measures editing, not truth.
+ * 3. **This.** Fires on exactly the quotations that stopped being verbatim.
+ *    Zero today, eight of eight under mutation (below).
+ *
+ * So the budget is not merely unnecessary here, it is unaffordable at this
+ * release cadence, and the reason is in `version.yml` rather than in anything
+ * about ADRs. What the budget would have bought and this does not is
+ * **coverage**: candidates 1 and 2 say something about every ADR, and this says
+ * something only about paragraphs somebody converted. That is the trade, stated
+ * plainly, and it is a trade between a gate that is red on 46 documents that
+ * are mostly fine and a gate that is red on nothing that is fine.
+ *
  * ## The form
  *
  * A quotation is a backtick span. Its attribution is a parenthesis that follows
@@ -101,24 +133,32 @@ import { describe, expect, it } from 'vitest';
  *
  * ## Watched going red
  *
- * Measured on this branch, each mutation reverted before the next; outputs are
- * in the commit that landed this file.
+ * Eight mutations, measured on this branch at v0.0.238, each reverted before the
+ * next. The full outputs are in the commit that landed this file.
  *
  * - One character changed inside a quotation in ADR 0023
- *   (`residentCapacity` -> `residentCapacty`): 1 failed, naming the document,
- *   the file and the quotation.
- * - A quotation left in place while the code it quotes was edited
- *   (`roomCapacity += instance.residentCapacity;` -> `+= 1;` in
- *   `status-strip-projection.ts`): 1 failed. This is the drift the gate exists
- *   for, produced from the code side rather than the document side.
- * - `both` changed to `all` on a two-quotation chain: 1 failed, on the count.
- * - The quotation span deleted from in front of an attribution, leaving the
- *   attribution orphaned: 1 failed. An attribution that binds nothing is how
- *   this gate would otherwise be switched off silently.
- * - The extractor blinded (`verbatim in` -> `verbatimm in`): 2 failed -- the
- *   corpus floor and the ADR-coverage case -- rather than the file passing by
- *   reading nothing.
- * - The whole `docs/` tree deleted from the scan: 2 failed, same pair.
+ *   (`residentCapacity` -> `residentCapacty`): **1 failed**, naming the
+ *   document, the file and the quotation.
+ * - The mutation from the other side, which is the one this gate exists for:
+ *   the quotation left alone and the *code* edited
+ *   (`roomCapacity += instance.residentCapacity;` -> `roomCapacity += 1;` in
+ *   `status-strip-projection.ts`): **1 failed**, with the same message. A
+ *   line anchor would have survived this edit unchanged and still pointed at
+ *   the wrong thing.
+ * - `both` changed to `all` on a two-quotation chain: **1 failed**, on the
+ *   count rather than on the quotations, which both still resolved.
+ * - The quotation deleted from in front of an attribution, leaving it
+ *   orphaned: **1 failed**, *"no quotation immediately before it"*. An
+ *   attribution that binds nothing is how this gate would otherwise be
+ *   switched off without deleting anything.
+ * - A quotation shortened to `r`, which every file contains: **1 failed**,
+ *   *"too short to be evidence of anything"*, rather than passing.
+ * - The extractor blinded (`verbatim in` -> `verbatimm in`): **6 failed** --
+ *   the four written-out fixtures, the corpus floor and the ADR-coverage case.
+ * - The converted section deleted from ADR 0023 outright, which is the
+ *   vacuity case: **2 failed** -- floor and coverage -- rather than 13 passing
+ *   on an empty corpus.
+ * - `docs/` dropped from the file walk: **2 failed**, the same pair.
  */
 
 const ROOT = join(__dirname, '../..');
@@ -252,7 +292,9 @@ function normalizedSourceOf(path: string): string {
 /** Every complaint one citation earns. A citation can earn more than one. */
 function faultsOf(citation: Citation): readonly string[] {
   const faults: string[] = [];
-  const where = `${citation.source} -> (${citation.countWord ?? ''}verbatim in \`${citation.path}\`)`;
+  // The citation reprinted as it is written, so a failure can be grepped for.
+  const countWord = citation.countWord === undefined ? '' : `${citation.countWord} `;
+  const where = `${citation.source} -> (${countWord}verbatim in \`${citation.path}\`)`;
 
   if (!ROOTED_PATH.test(citation.path)) {
     return [`${where}: not a repository-rooted path with an extension`];
