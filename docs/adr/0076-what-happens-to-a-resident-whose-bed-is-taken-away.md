@@ -287,27 +287,48 @@ this ADR records refusing the removal as **not taken** — so the object is
 already gone by the time the question is asked, and rolling a move back would
 put a resident into a bedless room on purpose:
 `It cannot refuse the removal and is not asked before it.`
-(verbatim in `src/simulation/objects/object-placement-service.ts`). The call
-site discards the result for exactly that reason:
-`this.residentRelocation?.relocateExcessResidentsOf([roomInstanceId]);`
 (verbatim in `src/simulation/objects/object-placement-service.ts`).
 
 **So each resident is moved or left, one at a time, and the caller is told which
 happened to whom:**
 `return { relocated, stranded };`
-(verbatim in `src/simulation/prisoners/prisoner-operations-runtime.ts`). On
-`main` today both halves are arrays of entity ids:
-`readonly relocated: readonly EntityId[];`
+(verbatim in `src/simulation/prisoners/prisoner-operations-runtime.ts`). The
+two halves are no longer the same shape:
+`readonly relocated: readonly ExcessResidentRelocation[];`
 `readonly stranded: readonly EntityId[];`
-(both verbatim in `src/simulation/prisoners/prisoner-operations-runtime.ts`).
+(both verbatim in `src/simulation/prisoners/prisoner-operations-runtime.ts`) —
+because a relocation has to say where to, and a stranding has nowhere to name.
 
-**That shape is already moving again, and this quotation is what will say so.**
-[PR #660](https://github.com/matmaxalez/lockstate/pull/660), open on
-`agent/0076-relocation-notice`, widens `relocated` to carry the instance each
-resident moved *into*, so that the move can be announced. It has not merged, so
-it is not quoted here and this paragraph describes `main`. When it merges the
-two `readonly` quotations above go red — which is the gate working, and the
-repair is to requote the widened field, not to drop the citation.
+#### 2026-08-30: the prediction fired, and it fired on `main`
+
+**The paragraph above said, until this date:** that both halves were
+`readonly EntityId[]`, that [PR #660](https://github.com/matmaxalez/lockstate/pull/660)
+*"has not merged, so it is not quoted here"*, and that **"when it merges the two
+`readonly` quotations above go red — which is the gate working, and the repair
+is to requote the widened field, not to drop the citation."**
+
+All three were true when written. #660 merged, `relocated` widened to
+`ExcessResidentRelocation[]`, the quotation stopped matching, and
+`adr-quotation-verbatim-contract` failed exactly as promised. It has been
+requoted, not dropped.
+
+**It went red on `main` rather than on a pull request, and that is worth
+recording rather than tidying away.** The integrator merged #660 first and then
+merged the pull request carrying this paragraph, having read the sentence that
+predicted the collision. The gate did its whole job; the ordering did not.
+
+**And the same window produced the failure this gate cannot catch, which the
+contract's own header names.** Until this date the sentence above the call-site
+quotation read *"The call site discards the result for exactly that reason"*.
+Since #660 it does not discard:
+`this.relocationNotice?.announceRelocations(outcome.relocated);`
+(verbatim in `src/simulation/objects/object-placement-service.ts`). The old
+quotation beside that false sentence — `relocateExcessResidentsOf([roomInstanceId])`
+— **remained a substring of the widened statement**, so the contract went on
+accepting it while the sentence around it had become untrue. A verbatim
+quotation proves the text still exists. It does not prove the claim it is
+offered in support of, and that is the boundary this document now demonstrates
+rather than merely states.
 
 #### What this paragraph predicted, and what shipped instead
 
