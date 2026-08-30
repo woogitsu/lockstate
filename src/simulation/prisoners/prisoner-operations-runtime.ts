@@ -640,11 +640,25 @@ export class PrisonerOperationsRuntime {
    * high-risk prisoner is not quietly moved into general population to spare
    * the caller an unhoused entity.
    *
-   * `excludeInstanceIds` is every id in `instanceIds`. The room being emptied
-   * of its excess would in fact be skipped anyway -- it reads occupancy at or
-   * above its capacity, which is what made these residents excess -- so this
-   * is belt and braces against a caller that hands over an instance whose
-   * capacity has not been re-derived yet, not a load-bearing exclusion.
+   * **`findBestAvailable` is given no exclusion set, where the sibling gives
+   * it every instance it was handed, and the difference is the difference
+   * between the two callers.** `unzone` is about to *unregister* those
+   * instances, so relocating into one would strand the resident a second
+   * time; nothing is unregistered here, so there is nothing to exclude. The
+   * room the excess is being taken out of cannot be chosen anyway -- it reads
+   * occupancy at or above its capacity, which is what made these residents
+   * excess in the first place, and `findBestAvailable` skips exactly that.
+   *
+   * **An exclusion set was written here first and taken out again**, and this
+   * is what mutation testing is for: emptying it changed nothing any test
+   * could see, and nothing any test *could* have seen for a call naming one
+   * instance. It was also latently wrong for a call naming two -- an
+   * under-capacity instance in `instanceIds` is a perfectly good destination
+   * for another's excess, and excluding it would refuse a move the prison can
+   * make. The honest fix is to delete the line rather than to write a test
+   * that pins a redundancy, which is the reasoning
+   * `residentsWithExistingPlace`'s own comment records for its deleted fast
+   * path.
    *
    * **Determinism.** No RNG stream and no clock, exactly as the sibling reads
    * neither. The visit order is ascending entity id over a set selected by an
@@ -653,8 +667,6 @@ export class PrisonerOperationsRuntime {
    * save folds the same way (`docs/DETERMINISM.md`).
    */
   public relocateExcessResidentsOf(instanceIds: readonly string[]): ExcessRelocationOutcome {
-    const excluded = new Set(instanceIds);
-
     const pending: Array<{ readonly entityId: EntityId; readonly fromInstanceId: string }> = [];
     for (const instanceId of instanceIds) {
       const instance = this.roomInstances.getById(instanceId);
@@ -681,7 +693,6 @@ export class PrisonerOperationsRuntime {
               target.roomCatalogId,
               (occupants) => rateCellSharing(arrival, this.sharingViewsOf(occupants)),
               target.requiredObjectCapability,
-              excluded,
             );
 
       if (instance === undefined) {
