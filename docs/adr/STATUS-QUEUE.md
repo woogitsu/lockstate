@@ -296,28 +296,52 @@ this one.
 
 Re-anchored at `main` @ `104d078` (**v0.0.234**) by the delta method this
 header describes, from the v0.0.225 anchor described below. **Dispatched at
-ten of the ten releases the budget allows -- the first pass in this series
-dispatched with no headroom left at all.** Every previous anchor was moved
-with between four and seven releases still spendable; this one was moved
-because the *next* merge of anything would have taken the budget to eleven and
-turned `main` red on
-`tests/foundation/adr-status-queue-anchor-contract.test.ts`. That is the gate
-firing rather than being anticipated, which is the case four consecutive
-paragraphs above described as the one this sequence had not yet met. It is
-recorded as a worse outcome than the four before it, not a comparable one: a
-budget spent to its last release leaves no room for the pass itself to be
-wrong.
+nine of the ten releases the budget allows, and merged at eleven.**
 
-**Why the headroom went in one night.** Nine releases landed between
-`53e1405` and this commit, and six of them are merges this file's own
-integrator made: #606 (accepting ADR 0075 and 0076), #578, #605, #617, #618
-and #619. The budget is a bound on unreviewed history, so a night of merges
-spends it exactly as fast as it earns them, and nothing in the merge path
-reads this number. **The remedy is not a larger budget** -- the constant's own
-comment forbids raising it and says why -- but it is worth naming what would
-actually help: the count is derivable from `package.json` and this file's own
-anchor line, so a check that *warns* at seven rather than failing at eleven
-would put the signal where the merging happens. That is not done here.
+**The paragraph that stood here until 2026-08-30 said "ten of the ten
+releases the budget allows -- the first pass in this series dispatched with
+no headroom left at all", and went on to say that the *next* merge of
+anything would take the budget to eleven, and that this was "the gate firing
+rather than being anticipated". A second paragraph beneath it explained "why
+the headroom went in one night", counting nine releases from `53e1405` and
+naming #606, #578, #605, #617, #618 and #619.** Every sentence of both was
+true of the **previous** anchor and was carried over with only the sha and
+the version changed: `53e1405` is v0.0.215, and v0.0.215 to v0.0.234 is
+nineteen releases, not nine. The correct attribution has always been below,
+at the previous anchor's own line, which says v0.0.225 was *"dispatched at
+ten of ten -- the only pass in this series moved with no headroom at all"* --
+and still says it.
+
+It is corrected rather than deleted, because **the carry-over is itself the
+finding**: this file's own pass reproduced, in its own header, the exact
+class of defect the file exists to catch. `adr-status-queue-anchor-contract`
+did not see it, correctly -- it tests the anchor's format and singularity,
+not whether the prose around it is true.
+
+**What actually happened is worse than the sentence it replaces, which is why
+this is not bookkeeping.** `0637ab1` (v0.0.225) to `104d078` (v0.0.234) is
+**nine** releases, so this pass was dispatched with one still spendable. It
+was not merged there. Two further releases landed while it sat open --
+`main` reached **v0.0.236** -- so the budget went to **eleven** and the
+contract turned `main` red *before this pass landed*. **Every open pull
+request inherited that failure**, because the gate tests the tree rather than
+the diff -- including #628, the fix for the browser flake that was itself
+reddening this pull request's own `browser` job. The pass that exists to keep
+the budget solvent was blocked by the budget it was spending, and the merge
+went through with a red `browser` job on evidence recorded in that pull
+request.
+
+So the case this sequence had not yet met has now been met, and it is not the
+one the carried-over paragraph named. Not *dispatched with no headroom*, but
+**dispatched with headroom and merged without it**.
+
+**The remedy is still not a larger budget** -- the constant's own comment
+forbids raising it and says why -- but the shape of what would help has
+changed with the finding. A check that *warns* at seven rather than failing
+at eleven would put the signal where the merging happens, and it must read
+the count **at merge**, because this pass was correct at dispatch by exactly
+the margin that failed at merge. A number measured when a branch is cut says
+nothing about the tree it lands on. That is not done here.
 
 `104d078` is `origin/main`'s tip at the time of writing and is itself the
 **v0.0.234 release commit**, named deliberately rather than the merge commit
