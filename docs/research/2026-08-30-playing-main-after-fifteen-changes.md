@@ -36,6 +36,36 @@ t+1,503.5 s — **79.991**. **A difference of 0.02%**, and the two runs finished
 419 ticks apart on a ~110,000-tick horizon. So the contention cost this record
 nothing, and that is a comparison rather than an assurance.
 
+**One harness defect these runs inherited, and what it can and cannot have
+touched.** `playtest-harness.ts`'s `waitForQueueEmpty` carried an **unanchored**
+`/0 waiting . 0 being built/` at `898a16a`, and the queue readout is
+`'{count} waiting · {started} being built'` — so **`10 waiting · 0 being built`
+matches it as a substring**. It was fixed on `main` afterwards, as `16d8b2a`,
+to `/(?<![0-9])0 waiting . 0 being built/`; both runs here predate that and used
+the broken one. Run A's act 3 read exactly the string that triggers it
+immediately before calling the helper:
+
+```
+[act3] queue right after the wall runs (tick 1864): "QUEUED\n10 waiting · 0 being built"
+[act3] Build panel says the queue is empty at page t=8349ms, tick 2557
+```
+
+**So *"the Build panel says the queue is empty at tick N"* is not trustworthy in
+either run, and no claim in this record rests on it.** Every structural fact
+each act depends on is a **counts** value published by the simulation, and each
+one would have failed loudly had the script proceeded early:
+
+| what the script needed | how it is confirmed here | run A | run B |
+| --- | --- | --- | --- |
+| the perimeter is finished | a `ZoneRoom` is refused unless the rectangle is enclosed, so `rooms` rising is the proof | `designate attempt 1 … rooms=1` | `designate attempt 1 … rooms=1` |
+| the six beds are built | `roomCapacity` / `accommodationCapacity` | `at tick 4483: rooms=1 roomCapacity=6 accommodationCapacity=6` | `at tick 5067: rooms=1 roomCapacity=6 accommodationCapacity=6` |
+| act 2's two cells and their beds | same, twice | — | `rooms=1` then `rooms=2`; `accommodationCapacity` 1 then 2 |
+
+A perimeter with ten segments missing does not enclose, and a cell with fewer
+beds does not report a capacity of six. **The regex could only ever have made
+the script move on too early; moving on too early is exactly what these three
+readings would have caught.**
+
 The brief was the owner's, in their own words: *"znajdź bugi i błędy grając, bo
 ja nie mogłem postawić więzienia itp grając sam"* — find defects **by playing**
 — under the standing design directive *"gra ma być łatwa przyjazna do grania, a
