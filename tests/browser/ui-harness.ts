@@ -1852,6 +1852,7 @@ window.lockstateUiHarness = {
       coordinatesFolded:
         document.querySelector<HTMLElement>('.hud-rooms__coordinates')?.dataset['collapsed'] ?? '',
       armPressed: document.querySelector<HTMLElement>('.hud-rooms__arm')?.getAttribute('aria-pressed') ?? '',
+      armText: document.querySelector<HTMLElement>('.hud-rooms__arm')?.textContent?.trim() ?? '',
       removePressed:
         document.querySelector<HTMLElement>('.hud-rooms__remove')?.getAttribute('aria-pressed') ?? '',
       folded: panel?.dataset['collapsed'] ?? '',

@@ -4703,21 +4703,46 @@ test.describe('the assembled application', () => {
      * only when a tab is selected would sit there saying "needs a bed" after the
      * bed was built.
      *
-     * The panel is folded here -- confirming leaves the tool armed, so the
-     * drawing pass resumes -- so the header control is what brings the body
-     * back, exactly as a player reaching for it would.
+     * **This block used to press the panel's header control first**, under the
+     * sentence *"the panel is folded here -- confirming leaves the tool armed,
+     * so the drawing pass resumes -- so the header control is what brings the
+     * body back, exactly as a player reaching for it would."* That was an
+     * accurate reading of the code and of what a player had to do, and it is
+     * exactly the reach issue #684 was filed about: the fold took the one
+     * control that reports the tool's state off the screen at the moment the
+     * state changed. Since the confirm stands the tool down, the drawing pass
+     * ends with it and the panel is already back -- so the assertion is the
+     * same one pointed the other way, and the press it used to need is gone.
      */
-    await expect(page.locator('.hud-rooms')).toHaveAttribute('data-collapsed', 'true');
-    await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    await expect(page.locator('.hud-rooms')).toHaveAttribute('data-collapsed', 'false');
     await expect(
       page.locator('.hud-rooms__needs'),
       'the readout never arrived on the counts cadence, only on a tab change',
     ).toBeVisible();
     expect((await needsProbe()).unfinished).toBe('1');
 
-    // A second cell, lower down so it cannot overlap the first. The tool stays
-    // armed through a confirm, so this is another drag and nothing else -- and
-    // two rooms are what make the readout have more needs than rows.
+    /*
+     * A second cell, lower down so it cannot overlap the first -- and this is
+     * the route issue #684 is about, walked end to end on the assembled page.
+     *
+     * **It used to be a drag and nothing else**, under *"the tool stays armed
+     * through a confirm"*, which was true. The arm press below is what a player
+     * actually does between two rooms, and on the old behaviour it *disarmed*:
+     * the drag after it produced no rectangle at all, so `pendingRoomRectangle`
+     * had nothing to read and this test failed here. That is the whole defect,
+     * and it is asserted rather than assumed -- the control has to be reading
+     * "Draw on map" before it is pressed, or the press means the opposite.
+     */
+    await expect(
+      page.locator('.hud-rooms__arm'),
+      'the confirm left the arm control offering to stop something',
+    ).toHaveText(localeText('hud.rooms.arm'));
+    await expect(page.locator('.hud-rooms__arm')).toHaveAttribute('aria-pressed', 'false');
+    await page.locator('.hud-rooms__arm').click();
+    await expect(
+      page.locator('.hud-rooms__arm'),
+      'pressing the arm control for a second room disarmed the tool',
+    ).toHaveAttribute('aria-pressed', 'true');
     expect(await dragRectangleOnWorld(page, { minY: 320 }), 'a second room drag found no bare world').toBe(
       true,
     );
