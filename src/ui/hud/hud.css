@@ -1205,15 +1205,31 @@
 
 .hud-build__buy > .ui-action { width: 100%; }
 
-/* Armed is a state, not a moment: the control has to keep saying so while the
-   player's attention is out on the world. */
-.hud-build .ui-action[data-armed='true'] {
+/*
+ * Armed is a state, not a moment: the control has to keep saying so while the
+ * player's attention is out on the world.
+ *
+ * **The Rooms panel was named here only from #684**, and it had set
+ * `data-armed` on its own arm control since the day it shipped -- the attribute
+ * was written and no stylesheet in this repository read it, so the two panels
+ * carried the identical DOM contract and only one of them looked any different
+ * armed. Both are named now rather than the selector being widened to
+ * `.hud .ui-action`, because what earns the tint is a control that hands the
+ * pointer to the world, not any toggle that happens to use the attribute.
+ *
+ * The label is what *says* the state -- "Stop drawing", "Stop placing" -- and
+ * `aria-pressed` is what announces it; this is the half a player reads without
+ * reading, which is the half that was missing.
+ */
+.hud-build .ui-action[data-armed='true'],
+.hud-rooms .ui-action[data-armed='true'] {
   background: var(--accent-soft);
   border-color: var(--accent);
   color: var(--accent);
 }
 
-.hud-build .ui-action[data-armed='true']:hover {
+.hud-build .ui-action[data-armed='true']:hover,
+.hud-rooms .ui-action[data-armed='true']:hover {
   background: var(--surface-active);
   color: var(--text-heading);
 }

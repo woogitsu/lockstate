@@ -727,6 +727,17 @@ export interface RoomsProbe {
   /** `data-collapsed` on the typed route's disclosure. */
   readonly coordinatesFolded: string;
   readonly armPressed: string;
+  /**
+   * The arm control's rendered label -- "Draw on map" disarmed, "Stop drawing"
+   * armed.
+   *
+   * `aria-pressed` beside it says the same thing to a screen reader, and both
+   * are read because they are two different promises: one is what the player
+   * sees, the other what the toggle announces, and issue #684 is about the
+   * moment the seen half was folded off the screen while the state changed
+   * underneath it.
+   */
+  readonly armText: string;
   readonly removePressed: string;
   /**
    * `data-collapsed` on the panel, and whether its body has a box at all.
