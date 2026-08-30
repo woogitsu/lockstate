@@ -38,6 +38,14 @@
  *   and no checksum can see.
  * - **Reads per live actor.** `locomotionReadCallsPerLiveActor` pins the
  *   encoder's other per-actor cost at exactly one.
+ * - **Edge re-validations per crossing.** ADR 0077 added a predicate that
+ *   `LocomotionStore.advance` asks before every tile crossing, and its cost
+ *   claim is that this is *once per crossing and not once per tick* -- one call
+ *   every second tick per walker at `DEFAULT_WALK_SUBTILE_UNITS_PER_TICK`, and
+ *   none at all for the standing population. `canCrossCalls` and
+ *   `canCrossCallsPerWalkerPerPublication` are that sentence made mechanical.
+ *   A predicate moved out of the crossing branch and into the per-tick loop
+ *   would double it and move no other metric here.
  * - **Outcome counts.** `renderActorCount` and `decodedRecordCount` are pinned
  *   with `equals` for `docs/BENCHMARKING.md`'s reason: a change that broke the
  *   workload would lower every count, and a ceiling would call that an
@@ -81,6 +89,13 @@
  *   kernel. Routes are handed to `beginWalk` directly, so this measures what a
  *   publication costs and not what producing one route costs -- that is the
  *   `navigation.production.*` family's subject.
+ * - **What ADR 0077's predicate *decides*, only how often it is asked.** The
+ *   grid here has no `SparseWorld`, no `DoorRegistry` and no walls, so
+ *   `canCross` is open ground and answers yes to everything;
+ *   `isEdgeTraversable` and `edgeStanding` are `tests/unit/` and
+ *   `tests/integration/wall-built-mid-walk.test.ts`'s subject, not this file's.
+ *   The one thing this scenario is entitled to say about ADR 0077 is the call
+ *   count, which is why that is the only thing it bounds.
  * - **Constant-factor regressions inside a per-actor step are invisible.**
  *   An `actorsFromDelta` that allocated a second object per actor would cost
  *   real milliseconds and move no count here. Counted work bounds *how many
@@ -149,9 +164,18 @@ async function runPublication(seed, population) {
   position.tileY.set(templateTileY);
   fixture.resetCounters();
 
+  let canCrossCalls = 0;
   let writeTileCalls = 0;
   let arrivedCount = 0;
   let arrivedKeySum = 0;
+  // Open ground: this scenario's grid has no world, no doors and no walls, so
+  // the honest answer to every edge is yes. It counts, because since ADR 0077
+  // this predicate is a real per-crossing cost of a publication and counting
+  // work is what this scenario is for -- see `canCrossCalls` below.
+  const canCross = () => {
+    canCrossCalls += 1;
+    return true;
+  };
   const writeTile = (key, tile) => {
     writeTileCalls += 1;
     position.tileX[key] = tile.x;
@@ -166,7 +190,7 @@ async function runPublication(seed, population) {
     locomotion.beginWalk(walkerKeys[index], walkerRoutes[index]);
   }
   for (let tick = 0; tick < ticksPerPublication; tick += 1) {
-    locomotion.advance(1, writeTile, onArrived);
+    locomotion.advance(1, canCross, writeTile, onArrived);
   }
 
   const walkersInTransit = locomotion.walkingCount;
@@ -202,8 +226,10 @@ async function runPublication(seed, population) {
       kernelStepMilliseconds,
       renderDeltaPublishIntervalMs: modules.RENDER_DELTA_PUBLISH_INTERVAL_MS,
       ticksPerPublication,
-      // Worker, per tick (ADR 0059 row 1).
+      // Worker, per tick (ADR 0059 row 1, plus ADR 0077's per-crossing predicate).
       writeTileCalls,
+      canCrossCalls,
+      canCrossCallsPerWalkerPerPublication: canCrossCalls / fixture.walkingCount,
       arrivedCount,
       walkersInTransit,
       // Worker, per publication (ADR 0059 row 2).
@@ -242,6 +268,18 @@ async function runPublication(seed, population) {
  * decision, a ceiling with headroom would be strictly weaker and would say
  * something the code does not.
  *
+ * `walkersInTransit` is pinned for the same reason `arrivedCount` is, and for
+ * a reason this scenario paid for: on 2026-08-29 the `verify` job caught
+ * `arrivedCount` at `0` because this file still called `advance` with ADR
+ * 0077's parameter list missing, so every walker was refused its first edge.
+ * `walkersInTransit`, `changedActorCount` and `changedOnlyByteShare` all went
+ * to zero with it and none of the three was bounded, while `writeTileCalls`
+ * stayed at exactly `167` *by coincidence* -- the misplaced `writeTile` was
+ * being invoked in the predicate's slot, once per walker, which is the same
+ * count one crossing per walker produces. A count can be right for the wrong
+ * reason; the arithmetic that makes it right is what the neighbouring pins are
+ * for.
+ *
  * `kernelStepMilliseconds`, `renderDeltaPublishIntervalMs` and
  * `ticksPerPublication` are bounded for the reason
  * `navigation.production.single-request-budget` bounds `workBudgetPerTick`:
@@ -257,7 +295,10 @@ const SMOKE_BOUNDS = Object.freeze({
   renderDeltaPublishIntervalMs: { equals: 100 },
   ticksPerPublication: { equals: 2 },
   writeTileCalls: { equals: 167 },
+  canCrossCalls: { equals: 167 },
+  canCrossCallsPerWalkerPerPublication: { equals: 1 },
   arrivedCount: { equals: 21 },
+  walkersInTransit: { equals: 146 },
   isIndexAliveCalls: { equals: 1_100 },
   isIndexAliveCallsPerSlot: { equals: 2 },
   getIdByIndexCalls: { equals: 500 },
@@ -281,7 +322,10 @@ const FULL_BOUNDS = Object.freeze({
   renderDeltaPublishIntervalMs: { equals: 100 },
   ticksPerPublication: { equals: 2 },
   writeTileCalls: { equals: 1_667 },
+  canCrossCalls: { equals: 1_667 },
+  canCrossCallsPerWalkerPerPublication: { equals: 1 },
   arrivedCount: { equals: 209 },
+  walkersInTransit: { equals: 1_458 },
   isIndexAliveCalls: { equals: 11_000 },
   isIndexAliveCallsPerSlot: { equals: 2 },
   getIdByIndexCalls: { equals: 5_000 },

@@ -13,7 +13,7 @@ import {
 import { Treasury } from '../../src/simulation/economy';
 import { Kernel } from '../../src/simulation/kernel';
 import { NEED_IDS, NEED_MAX, NeedsComponent, type NeedId } from '../../src/simulation/prisoners/needs';
-import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
+import { RoomInstanceRegistry, residentsWithExistingPlace } from '../../src/simulation/prisoners/room-instance-registry';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 
@@ -424,5 +424,146 @@ describe('who holds the occupied places', () => {
     expect(registry.residentIds()).toEqual([0, 2]);
     registry.releaseEntity(2);
     expect(registry.residentIds()).toEqual([0]);
+  });
+});
+
+/**
+ * Issue #585: **an occupied place is a prisoner backed by residency capacity
+ * that currently exists**, and a bed can stop existing under a sitting
+ * resident. ADR 0028 decision 2 decides that this evicts nobody, so the two
+ * counts genuinely diverge and both are needed -- `residentIds` for who is
+ * housed, `residentIdsWithExistingPlace` for who is a place.
+ *
+ * The arithmetic is `residentsWithExistingPlace`; the walk that applies it to a
+ * whole prison is the registry's; the consequence for the money is
+ * `stateIncomeForCompletedDay`. All three are exercised, because a green
+ * function and a green registry would still let the income line read the wrong
+ * accessor.
+ *
+ * The end-to-end measurement -- one plank cycled through three cells by real
+ * commands -- is `tests/integration/economy-occupied-place-exists.test.ts`.
+ */
+describe('a place the prison no longer has is not an occupied place', () => {
+  /** `count` residents, entity ids ascending from `firstEntityId`, in one instance whose capacity is `capacity`. */
+  function overfilledCell(capacity: number, count: number, firstEntityId = 0): RoomInstanceRegistry {
+    const registry = new RoomInstanceRegistry();
+    registry.register({
+      instanceId: 'cell-0',
+      roomCatalogId: 'room.cell',
+      anchorTile: TILE(0, 0),
+      // Registered at the occupancy the prison had *before* the bed went, so
+      // `assign` accepts the residents; `updateDerived` then takes the capacity
+      // away underneath them, which is the sequence a removal really produces.
+      residentCapacity: count,
+      concurrentUseCapacity: count,
+      objectCapabilities: ['sleep-surface'],
+    });
+    for (let index = 0; index < count; index += 1) {
+      expect(registry.assign('cell-0', firstEntityId + index)).toBe(true);
+    }
+    registry.updateDerived('cell-0', {
+      residentCapacity: capacity,
+      concurrentUseCapacity: capacity,
+      concurrentUseCapacityByCapability: capacity > 0 ? [['sleep-surface', capacity]] : [],
+      objectCapabilities: capacity > 0 ? ['sleep-surface'] : [],
+    });
+    return registry;
+  }
+
+  it('keeps every resident under capacity, and takes exactly the surplus above it', () => {
+    // Under: nothing is dropped, and the answer is the input array.
+    expect(residentsWithExistingPlace([3, 7], 4)).toEqual([3, 7]);
+    // Exactly at: the boundary case a `>` for a `>=` would break.
+    expect(residentsWithExistingPlace([3, 7], 2)).toEqual([3, 7]);
+    // Over: the lowest ids keep the places, in the order handed in.
+    expect(residentsWithExistingPlace([3, 7, 11], 2)).toEqual([3, 7]);
+    expect(residentsWithExistingPlace([3, 7, 11], 1)).toEqual([3]);
+    // No capacity at all: a bedless cell full of prisoners is worth nothing.
+    expect(residentsWithExistingPlace([3, 7, 11], 0)).toEqual([]);
+    // Negative, which is why the guard is a `> 0` and not a `!== 0`: without
+    // it `slice(0, -1)` answers *every resident but the last*, so a negative
+    // capacity would pay for a bedless cell instead of for nothing. Nothing
+    // derives one today, and this is what keeps that a fact about the content
+    // rather than something the money depends on.
+    expect(residentsWithExistingPlace([3, 7, 11], -1)).toEqual([]);
+    // And an empty room with capacity to spare is still not a place.
+    expect(residentsWithExistingPlace([], 4)).toEqual([]);
+  });
+
+  it('counts a bedless cell full of residents as no places at all', () => {
+    const registry = overfilledCell(0, 3);
+    // Housed, and the count that says so is unchanged -- ADR 0028 decision 2.
+    expect(registry.residentIds()).toEqual([0, 1, 2]);
+    expect(registry.totalOccupancy).toBe(3);
+    // And not places.
+    expect(registry.residentIdsWithExistingPlace()).toEqual([]);
+    expect(stateIncomeForCompletedDay(prisonOf(registry))).toBe(0);
+  });
+
+  it('pays for as many places as are left standing, not for as many as were assigned', () => {
+    const registry = overfilledCell(1, 3);
+    expect(registry.residentIdsWithExistingPlace()).toEqual([0]);
+    expect(stateIncomeForCompletedDay(prisonOf(registry))).toBe(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS);
+  });
+
+  it('pays for the surviving place at the rate of its own occupant, which is what makes the tie-break observable', () => {
+    // Two residents over one bed, and only the *first* is neglected. If the
+    // walk kept the wrong one the day would pay the full 300, so this
+    // distinguishes "one place" from "the right one place" -- a bound on the
+    // count alone could not.
+    const neglectedFirst = prisonOf(overfilledCell(1, 2));
+    floorNeeds(neglectedFirst, 0, 6);
+    expect(neglectedFirst.roomInstances.residentIdsWithExistingPlace()).toEqual([0]);
+    expect(stateIncomeForCompletedDay(neglectedFirst)).toBe(
+      STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS - 6 * STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS,
+    );
+
+    // The mirror: neglect the resident who *loses* the place instead, and the
+    // day is worth the full rate. Same two prisoners, same one bed, opposite
+    // answers -- so the tie-break is pinned in both directions rather than by
+    // one measurement that a reversed rule would also satisfy.
+    const neglectedSecond = prisonOf(overfilledCell(1, 2));
+    floorNeeds(neglectedSecond, 1, 6);
+    expect(stateIncomeForCompletedDay(neglectedSecond)).toBe(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS);
+  });
+
+  it('spends each room capacity on the residents of that room, never prison-wide', () => {
+    // A prison-wide `min(residents, capacity)` would answer 2 here and be
+    // wrong: the empty furnished cell's spare bed cannot house the prisoner
+    // sleeping on the floor of the other one. Nobody is moved by the income
+    // line -- reassignment is intake's, not this line's.
+    const registry = new RoomInstanceRegistry();
+    registry.register({
+      instanceId: 'cell-bedless', roomCatalogId: 'room.cell', anchorTile: TILE(0, 0),
+      residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: ['sleep-surface'],
+    });
+    registry.register({
+      instanceId: 'cell-spare', roomCatalogId: 'room.cell', anchorTile: TILE(2, 0),
+      residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: ['sleep-surface'],
+    });
+    expect(registry.assign('cell-bedless', 0)).toBe(true);
+    registry.updateDerived('cell-bedless', {
+      residentCapacity: 0, concurrentUseCapacity: 0, concurrentUseCapacityByCapability: [], objectCapabilities: [],
+    });
+
+    expect(registry.totalOccupancy).toBe(1);
+    expect(registry.residentIdsWithExistingPlace()).toEqual([]);
+    expect(stateIncomeForCompletedDay(prisonOf(registry))).toBe(0);
+  });
+
+  it('agrees with itself across a save', () => {
+    const source = overfilledCell(1, 3);
+    const restored = overfilledCell(1, 3, 100);
+    restored.loadSnapshot(source.getSnapshot());
+    expect(restored.residentIdsWithExistingPlace()).toEqual(source.residentIdsWithExistingPlace());
+    expect(restored.residentIdsWithExistingPlace()).toEqual([0]);
+  });
+
+  it('is exactly `residentIds` for a prison whose beds all still stand', () => {
+    // The property that makes this change a patch and not a nerf: nothing an
+    // honest prison earns moves.
+    const registry = registryWithOccupiedCells(4, 2);
+    expect(registry.residentIdsWithExistingPlace()).toEqual(registry.residentIds());
+    expect(stateIncomeForCompletedDay(prisonOf(registry))).toBe(4 * STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS);
   });
 });
