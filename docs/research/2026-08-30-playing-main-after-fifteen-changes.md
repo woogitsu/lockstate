@@ -688,9 +688,8 @@ been admitted:
 
 **All eleven absent.** Not "the sentence is not shown" — the *vocabulary* of
 sentences, releases and reviews does not occur anywhere a player can read
-without opening something. The end-of-run sweep, after seven people had left, is
-at the end of the same run, after nine people had left, is different in exactly
-the way that proves the point:
+without opening something. The sweep at the end of the same run, after nine
+people had left, is different in exactly the way that proves the point:
 
 ```
 [act3] VOCABULARY at end of run: present=["sentence","release","released"] absent=["sentenced","days left","discharge","review","reviewed","reclassif","tier","due out"]
@@ -702,6 +701,12 @@ only way the word "sentence" ever reaches a player in this game is after
 somebody's is over.** `review`, `tier` and `days left` are still absent at the
 end of a fifty-day session in which the whole population was reclassified
 twice.
+
+The eleven words are `sentence`, `sentenced`, `days left`, `release`,
+`released`, `discharge`, `review`, `reviewed`, `reclassif`, `tier`, `due out`.
+The list is in the script (`VOCABULARY`) so that a reader can see what was
+*looked for* as well as what was found — a sweep that reports only its hits
+cannot be checked.
 
 ## 7. The weakest claim, and what this pass did not reach
 
@@ -723,8 +728,8 @@ identically. So the number this pass can defend is *departures*, not *releases*.
 
 **Why it matters more on this tree than it would have last week** is §3: the
 escape gate is `riskTier >= 3`, and act 3's own reviews put the whole visible
-population at tier 3 at tick 47,999 — after which four of run A's six falls
-occurred.
+population at tier 3 at tick 47,999 — after which **eight of run A's nine
+falls** occurred.
 
 **What would change my mind, and what was done about it:** the worker publishes
 `prisoners.discharged` and `incidents.escape-attempt-opened` as separate members
