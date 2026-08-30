@@ -508,6 +508,60 @@ is open for the whole population**, where ADR 0079 states no admission a player
 can make can open it. The second gate, `contrabandSeverity > 0`, still stands
 and this pass did not measure whether anybody was carrying anything — see §7.
 
+### The consequence nobody is told about: a prisoner who gets out
+
+**VERIFIED, code.** `IncidentOutcome.escaped` is documented as *"True only when
+an escape-attempt actually got out"* (`src/simulation/incidents/incident.ts:59`),
+and `lapse` sets it for every lapsed escape-attempt
+(`response-system.ts:551`). The block immediately after removes them:
+
+```ts
+if (outcome.escaped) {
+  for (const entityId of incident.participantIds) this.onPrisonerEscaped(entityId, tick);
+}
+this.adjudicateAssaultIfAny(incident, tick);
+this.reportAllClearIfCalm(tick);
+```
+(`response-system.ts:566-571`)
+
+`onPrisonerEscaped` is wired to `prisoners.releasePrisoner`
+(`src/simulation/runtime/new-session.ts:1117-1119`) — the same door a served
+sentence leaves by.
+
+**And the next line is `reportAllClearIfCalm`**, which records
+`incidents.all-clear` whenever no incident is still open
+(`response-system.ts:211-214`) — rendered as *"The prison is under control
+again — no incident is still open."* (`default-locale-en.ts:488`).
+
+**`SIMULATION_EVENT_TYPES` has a member for the attempt opening and none for it
+succeeding.** So the player's whole account of a prisoner escaping is:
+
+1. *"A prisoner is trying to break out."* (`danger`)
+2. *"The prison is under control again — no incident is still open."* (`info`)
+3. the PRISONERS chip is one lower.
+
+The second sentence is true — no incident is open, because it ended — and it is
+the **same sentence a contained attempt produces**. Nothing distinguishes
+"we stopped them" from "they got out", and the count is the only tell.
+
+**VERIFIED, Run B, act 3.** The escape route is not theoretical on this tree. By
+tick 48,891 the eight-row alerts list of a neglected twelve-prisoner prison read,
+whole:
+
+```
+[act3]     alerts list: "The prison is under control again — no incident is still open.\nInfo\nA riot has broken out — 12 prisoners have stopped taking orders.\nCritical\nThe prison is under control again — no incident is still open.\nInfo\nA riot has broken out — 12 prisoners have stopped taking orders.\nCritical\nThe prison is under control again — no incident is still open.\nInfo\nA prisoner is trying to break out.\nCritical\nThe prison is under control again — no incident is still open.\nInfo\nA riot has broken out — 11 prisoners have stopped taking orders.\nCritical\nNothing was removed — there is no object on that tile, and none being built there.\nWarning"
+```
+
+Two riots, an escape attempt, four all-clears — and **no `released` row at
+all** — beside a population that had just fallen from 12 to 11. That is eight
+rows, which is `MAX_EVENT_ALERT_ROWS` exactly
+(`src/ui/simulation-events.ts:252`), so the list was already full and dropping
+its oldest.
+
+`incidents.escape-attempt-opened` is the only escape event there is, so what the
+list *cannot* say is whether that attempt was contained or whether it is the
+reason the count fell. §7 is where that goes.
+
 **Reported, not fixed**, for §2's reason: the missing thing is a sentence
 addressed to a player, and that is the owner's.
 
