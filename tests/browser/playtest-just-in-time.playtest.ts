@@ -198,7 +198,20 @@ async function watchQueue(
       log(act, `  ${label} t+${sample.ms}ms tick=${sample.tick} treasury=${sample.treasury} queue=${JSON.stringify(sample.queue)} deliveries=${JSON.stringify(sample.deliveries)}`);
       lastKey = key;
     }
-    if (/0 waiting . 0 being built/.test(queue)) return samples;
+    /*
+     * **The empty queue is an *absent* block, not a `0 waiting` one.**
+     * `paintQueue` sets `queueSection.element.hidden = true` whenever
+     * `queue.total === 0` (`src/ui/hud/build-panel.ts:1590-1591`), with the
+     * reason written out beside it: the panel's always-visible budget at
+     * 900x600 is 7.8px, so a block saying "nothing is queued" would be
+     * permanent furniture. `panelText` therefore answers `not laid out`, and
+     * the first version of this loop -- which waited for the literal
+     * `0 waiting . 0 being built` that `waitForQueueEmpty` also greps for --
+     * sat through its whole 180 s timeout on a queue that had drained in 24 s.
+     * Recorded rather than corrected away: the shared harness treats
+     * `not laid out` as empty and is right to.
+     */
+    if (/0 waiting . 0 being built/.test(queue) || queue.includes('not laid out') || queue.includes('ABSENT')) return samples;
     if (Date.now() - started > timeoutMs) {
       log(act, `  ${label} GAVE UP after ${Date.now() - started}ms, queue still ${JSON.stringify(queue)}`);
       return samples;
@@ -363,65 +376,133 @@ test('act 3: how much wall 25,000 buys, and what the game says when it runs out'
   await tab(page, 'build').click();
   const origin = await calibrate(page);
   log(act, `calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
+
+  /*
+   * **What `calibrate` leaves standing on the refusal band, printed before
+   * anything else asks a question about that band.**
+   *
+   * `calibrate` bisects by pressing *Remove* on empty tiles, so it ends with
+   * `remove-object.nothing-to-remove` on the band -- and the band does not
+   * decay: run 0 of this file read *"Nothing was removed — there is no object
+   * on that tile, and none being built there."* still on screen 3,600 ticks
+   * later. The first version of act 3 tested `refusal.text !== ''` and would
+   * therefore have "found" a funding refusal on its very first wall run.
+   * The detector below matches the *sentence*, and this line is the baseline
+   * it is read against.
+   */
+  const bandAfterCalibration = (await hudDump(page)).refusal.text;
+  log(act, `refusal band after calibration (an artifact of this harness, not of play): ${JSON.stringify(bandAfterCalibration)}`);
+
   await pressPlay(page, act);
   await armBuildable(page, 'wall-brick');
 
   /*
-   * Long horizontal runs at successive rows, which is the cheapest way a
-   * *player* can spend the treasury on walls -- one drag lays a whole run. The
-   * span is bounded by the viewport, not by the map: a drag that leaves the
-   * window is not a gesture a player can make, so the number of segments per
-   * run measured here is the number a player gets per drag at 1440x900.
+   * **Only tiles that are actually on screen**, because a drag that leaves the
+   * window is not a gesture a player can make. At 1440x900 with tile (0,0) at
+   * (-304,-574) the visible tiles are columns ~5..27 and rows ~9..23, which
+   * the first version of act 3 got wrong -- it dragged from tile column 2 at
+   * row 4, both off screen. The bounds are computed from the measured origin
+   * rather than hard-coded, so the same code is right at another viewport.
    *
-   * The loop stops the moment the refusal band carries anything, which is the
-   * question: is `purchase.insufficient-funds` reachable by playing?
+   * Horizontal runs lay `north` edges and vertical runs lay `west` edges, so
+   * the two families never collide and no run is refused as a duplicate. One
+   * screenful of both is 22x14 + 14x22 segments, comfortably more than the
+   * 312 that `floor(25,000 / 80)` predicts -- which is the point: the question
+   * is whether an ordinary sustained drag gesture reaches ADR 0075's lock, and
+   * a player who never moves the camera has that many drags available.
    */
-  const firstRow = 4;
-  const spanTiles = 18;
+  const firstColumn = Math.ceil((-origin.originX) / TILE) + 1;
+  const lastColumn = Math.floor((1440 - origin.originX) / TILE) - 1;
+  const firstRow = Math.ceil((-origin.originY) / TILE) + 1;
+  const lastRow = Math.floor((900 - origin.originY) / TILE) - 1;
+  log(act, `visible tile window: columns ${firstColumn}..${lastColumn}, rows ${firstRow}..${lastRow}`);
+
+  const FUNDS_SENTENCE = /not enough funds/i;
   let ordered = 0;
-  let refusalSeenAtSegment = -1;
-  let refusalText = '';
-  for (let row = firstRow; row < firstRow + 26; row += 1) {
-    const y = origin.originY + row * TILE;
-    const a = { x: origin.originX + 2 * TILE + TILE / 2, y };
-    const b = { x: origin.originX + (2 + spanTiles) * TILE - TILE / 2, y };
+  let fundsRefusalAtSegment = -1;
+  let fundsRefusalText = '';
+  let lastAffordableTreasury = -1;
+  const runs: { kind: 'row' | 'column'; index: number }[] = [];
+  for (let row = firstRow; row <= lastRow; row += 1) runs.push({ kind: 'row', index: row });
+  for (let column = firstColumn; column <= lastColumn; column += 1) runs.push({ kind: 'column', index: column });
+
+  for (const run of runs) {
+    const a =
+      run.kind === 'row'
+        ? { x: origin.originX + firstColumn * TILE + TILE / 2, y: origin.originY + run.index * TILE }
+        : { x: origin.originX + run.index * TILE, y: origin.originY + firstRow * TILE + TILE / 2 };
+    const b =
+      run.kind === 'row'
+        ? { x: origin.originX + lastColumn * TILE - TILE / 2, y: origin.originY + run.index * TILE }
+        : { x: origin.originX + run.index * TILE, y: origin.originY + lastRow * TILE - TILE / 2 };
     const before = (await sentCommands(page)).length;
     await drag(page, a, b);
-    const produced = (await sentCommands(page)).slice(before).filter((c) => c['type'] === 'PlaceBuildOrder');
+    const produced = (await sentCommands(page)).slice(before).filter((command) => command['type'] === 'PlaceBuildOrder');
     ordered += produced.length;
     const counts = await latestCounts(page);
     const band = await hudDump(page);
     log(
       act,
-      `run at row ${row}: +${produced.length} segments (total ordered ${ordered}) treasury=${counts?.treasuryMinorUnits}` +
-        ` band=${JSON.stringify(band.refusal.text)} hidden=${String(band.refusal.hidden)}`,
+      `${run.kind} ${run.index}: +${produced.length} segments (total ${ordered}) treasury=${counts?.treasuryMinorUnits}` +
+        ` band=${JSON.stringify(band.refusal.text)}`,
     );
-    if (band.refusal.text !== '' && refusalSeenAtSegment < 0) {
-      refusalSeenAtSegment = ordered;
-      refusalText = band.refusal.text;
-      log(act, `REFUSAL BAND FIRST CARRIED TEXT after ${ordered} segments ordered: ${JSON.stringify(refusalText)}`);
-      await observe(page, act, 'the moment the band spoke');
-      // One more run, to see whether the sentence survives a second press.
-      const more = (await sentCommands(page)).length;
-      await drag(page, { x: a.x, y: y + TILE }, { x: b.x, y: y + TILE });
-      const again = (await sentCommands(page)).slice(more).filter((c) => c['type'] === 'PlaceBuildOrder');
-      ordered += again.length;
-      const bandAgain = await hudDump(page);
-      log(act, `one more run: +${again.length} segments, band now ${JSON.stringify(bandAgain.refusal.text)}`);
+    if (FUNDS_SENTENCE.test(band.refusal.text) && fundsRefusalAtSegment < 0) {
+      fundsRefusalAtSegment = ordered;
+      fundsRefusalText = band.refusal.text;
+      log(act, `THE BAND NAMED MONEY after ${ordered} segments ordered; treasury was ${lastAffordableTreasury} before this run`);
+      await observe(page, act, 'the moment the band named money');
       break;
     }
+    lastAffordableTreasury = counts?.treasuryMinorUnits ?? -1;
     if (produced.length === 0) {
-      log(act, `run at row ${row} produced NO orders -- stopping; band ${JSON.stringify(band.refusal.text)}`);
+      log(act, `${run.kind} ${run.index} produced NO orders -- stopping; band ${JSON.stringify(band.refusal.text)}`);
       break;
     }
   }
   const settled = await latestCounts(page);
-  log(act, `ACT 3 RESULT: ${ordered} wall segments ordered, treasury=${settled?.treasuryMinorUnits}, refusal first seen at segment ${refusalSeenAtSegment}`);
-  log(act, `ACT 3 the sentence, verbatim: ${JSON.stringify(refusalText)}`);
-  await observe(page, act, 'act 3 end');
+  log(act, `ACT 3 RESULT: ${ordered} wall segments ordered; treasury=${settled?.treasuryMinorUnits}; funds refusal first seen at segment ${fundsRefusalAtSegment}`);
+  log(act, `ACT 3 the sentence, verbatim: ${JSON.stringify(fundsRefusalText)}`);
 
-  // Let it run, so the difference between "bought and coming" and "never
-  // bought" shows up in the queue readout rather than only in the treasury.
-  await watchQueue(page, act, 'act3-drain', 240_000);
-  await observe(page, act, 'act 3 after draining what it could');
+  /*
+   * **Does the sentence survive being left alone?** The scheduled-tick
+   * procurement pass -- `src/simulation/construction/system.ts:699` -- calls
+   * `procureQueuedMaterials` and *discards* the report; only the two press
+   * paths (`handler.ts:75`, `session-commands.ts:508`) run it through
+   * `reportMaterialsFunding`. So the prediction being tested here is that the
+   * band keeps whatever the last press put on it and says nothing new,
+   * however long the stalled queue sits.
+   */
+  await page.waitForTimeout(20_000);
+  const afterWaiting = await hudDump(page);
+  log(act, `after 20 s of the queue sitting stalled: band=${JSON.stringify(afterWaiting.refusal.text)} queueHeader=${JSON.stringify(afterWaiting.queue.headerText)} collapsed=${afterWaiting.queue.collapsed}`);
+  await observe(page, act, 'twenty seconds later, nothing pressed');
+
+  /*
+   * The Build panel unfolded, which is the one place `#627`'s work could still
+   * reach a player: `BuildQueueViewModel.materialsFunding` is on the wire.
+   * Whether it is on the *screen* is what this prints.
+   */
+  await tab(page, 'build').click();
+  if ((await page.locator('.hud-build__queue').getAttribute('data-collapsed')) === 'true') {
+    await page.locator('.hud-build__queue > .ui-section__header').click();
+    await page.waitForTimeout(500);
+  }
+  log(act, `Queued fold OPENED: ${JSON.stringify((await panelText(page, '.hud-build__queue')).replace(/\n+/g, ' | '))}`);
+  const opened = await hudDump(page);
+  log(act, `with the fold open, does anything visible name money? /fund|afford|money|short|cannot pay/i = ${String(/fund|afford|money|short|cannot pay/i.test(opened.visibleText))}`);
+  log(act, `VISIBLE HUD TEXT with the Queued fold open:\n${opened.visibleText.split('\n').map((l) => `      ${l}`).join('\n')}`);
+
+  /*
+   * **The projection's own answer is not readable from here, and that is worth
+   * saying rather than faking.** `installTee` drops `simulation/projection`
+   * messages so the tee array cannot grow without bound, so `materialsFunding`
+   * cannot be read off the wire by this file. What it *can* establish is the
+   * static half, which needs no run: `buildQueueFromProjection`
+   * (`src/ui/simulation-build-queue.ts:91-103`) maps `orderId`, `tile`, `edge`,
+   * `state` and the two counts into `HudBuildQueueViewModel`, and that
+   * interface (`src/ui/hud/view-model.ts:448-463`) has exactly three members --
+   * `total`, `started`, `orders`. There is no `materialsFunding` on it, so the
+   * Build panel is not given the field and cannot render it. The line above is
+   * the measurement of the consequence.
+   */
 });
