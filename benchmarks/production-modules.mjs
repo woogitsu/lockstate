@@ -38,6 +38,62 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sourceRoot = pathToFileURL(path.join(repositoryRoot, 'src', path.sep)).href;
 
+/*
+ * ## Why the loaders below carry `@returns` types
+ *
+ * Issue #602. Every production symbol a benchmark or a report script touches
+ * arrives through one of the five loaders in this file, and each of them
+ * reaches it by `import()` of a *computed* URL string. TypeScript cannot
+ * resolve a non-literal dynamic import, so without the annotations below the
+ * whole production surface is `any` on the benchmark side -- and `checkJs`
+ * over `benchmarks/**` then checks nothing that matters. Measured: with
+ * `allowJs`/`checkJs` on and no annotation here, reintroducing PR #581's
+ * three-argument `locomotion.advance(1, writeTile, onArrived)` produced no
+ * error at all.
+ *
+ * The types are *derived*, never restated. `Pick<typeof import('...'), 'X'>`
+ * fails to compile if `X` stops being exported and follows `X`'s signature
+ * wherever it goes, so these typedefs cannot rot into a second copy of the
+ * production contract the way a hand-written `.d.mts` body would.
+ *
+ * What they do **not** check is the wiring: that the key `LocomotionStore`
+ * really is assigned `locomotion.LocomotionStore` below. That assignment runs
+ * through `any` and nothing types it. A key mapped to the wrong symbol would
+ * still compile, and only a benchmark run would notice.
+ */
+
+/**
+ * @typedef {Pick<typeof import('../src/simulation/world/coordinates'), 'chunkCoordinate' | 'tileCoordinate'>
+ *   & Pick<typeof import('../src/simulation/world/sparse-world'), 'SparseWorld'>
+ *   & Pick<typeof import('../src/simulation/navigation/door'), 'DoorRegistry'>
+ *   & Pick<typeof import('../src/simulation/navigation/region-graph'), 'buildNavigationGraph'>
+ *   & Pick<typeof import('../src/simulation/navigation/router'), 'findRoute'>
+ *   & Pick<typeof import('../src/simulation/navigation/navigation-system'), 'NavigationSystem'>
+ *   & Pick<typeof import('../src/simulation/navigation/local-search'), 'PLAIN_STEP_COST'>} NavigationModules
+ */
+
+/**
+ * @typedef {Pick<typeof import('../src/simulation/runtime/new-session'), 'createNewSimulationRuntime'>
+ *   & Pick<typeof import('../src/simulation/kernel/kernel'), 'Kernel'>} SimulationRuntimeModules
+ */
+
+/**
+ * @typedef {Pick<typeof import('../src/simulation/rng/xoshiro128starstar'), 'Xoshiro128StarStar'>
+ *   & Pick<typeof import('../src/simulation/rng/seed'), 'deriveXoshiroState'>
+ *   & Pick<typeof import('../src/simulation/rng/streams'), 'NamedRngStreams'>} SimulationRngModules
+ */
+
+/**
+ * @typedef {Pick<typeof import('../src/simulation/entity/entity-store'), 'EntityStore'>
+ *   & Pick<typeof import('../src/simulation/prisoners/components'), 'PositionComponent'>
+ *   & Pick<typeof import('../src/simulation/locomotion/index'), 'LocomotionStore' | 'DEFAULT_WALK_SUBTILE_UNITS_PER_TICK' | 'LOCOMOTION_SUBTILE_UNITS'>
+ *   & Pick<typeof import('../src/simulation/worker/render-actors-keyframe'), 'encodeRenderActorsKeyframe'>
+ *   & Pick<typeof import('../src/simulation/protocol/render-actors-payload'), 'decodeRenderActorsPayload' | 'renderActorsByteLength' | 'RENDER_ACTORS_SUBTILE_UNITS'>
+ *   & Pick<typeof import('../src/rendering/feed/actors-from-delta'), 'actorsFromDelta'>
+ *   & Pick<typeof import('../src/simulation/clock/fixed-step-clock'), 'FixedStepClock'>
+ *   & Pick<typeof import('../src/simulation/worker/state-machine'), 'RENDER_DELTA_PUBLISH_INTERVAL_MS'>} ActorPublicationModules
+ */
+
 const TYPESCRIPT_EXTENSION_PATTERN = /\.[cm]?[jt]sx?$/u;
 
 let hooksRegistered = false;
@@ -100,6 +156,8 @@ async function importRendering(relativePath) {
  * process. Deliberately an explicit list rather than `navigation/index.ts`:
  * the set of production modules a benchmark depends on should be readable
  * from the benchmark side.
+ *
+ * @returns {Promise<Readonly<NavigationModules>>}
  */
 export async function loadNavigationModules() {
   assertTypeScriptTransformEnabled();
@@ -140,6 +198,8 @@ export async function loadNavigationModules() {
  * somebody changes the budget. This costs one import of the composition
  * root's module graph -- roughly half a second, once per process, and only
  * for a run that includes a production-code scenario.
+ *
+ * @returns {Promise<typeof import('../src/simulation/runtime/new-session').DEFAULT_NAVIGATION_SYSTEM_OPTIONS>}
  */
 export async function loadProductionNavigationOptions() {
   assertTypeScriptTransformEnabled();
@@ -160,6 +220,8 @@ export async function loadProductionNavigationOptions() {
  * it so a benchmark can register a subset of the same system instances
  * (`runtime.navigation`, say) on a fresh kernel of its own, to isolate one
  * system's tick cost without rebuilding the object graph around it.
+ *
+ * @returns {Promise<Readonly<SimulationRuntimeModules>>}
  */
 export async function loadSimulationRuntimeModules() {
   assertTypeScriptTransformEnabled();
@@ -182,19 +244,25 @@ export async function loadSimulationRuntimeModules() {
  * The simulation's own seeded RNG. Every `.mjs` scenario written before #410
  * carries its own copy of xoshiro128** -- five copies of the same 20 lines,
  * none of them the generator the game draws from.
+ *
+ * @returns {Promise<Readonly<SimulationRngModules>>}
  */
 export async function loadSimulationRng() {
   assertTypeScriptTransformEnabled();
   registerTypeScriptResolution();
 
   rngPromise ??= (async () => {
-    const [xoshiro, seed] = await Promise.all([
+    const [xoshiro, seed, streams] = await Promise.all([
       importSimulation('rng/xoshiro128starstar.ts'),
       importSimulation('rng/seed.ts'),
+      importSimulation('rng/streams.ts'),
     ]);
     return Object.freeze({
       Xoshiro128StarStar: xoshiro.Xoshiro128StarStar,
       deriveXoshiroState: seed.deriveXoshiroState,
+      // Added by #602: `SimulationContext` requires `rng`, and a benchmark
+      // driving `NavigationSystem.update` has to be able to build one.
+      NamedRngStreams: streams.NamedRngStreams,
     });
   })();
   return rngPromise;
@@ -215,6 +283,8 @@ export async function loadSimulationRng() {
  * `loadProductionNavigationOptions` reads the navigation options: the tick rate
  * the encoder converts velocity against is the clock's step duration, and a
  * benchmark that hard-codes 50 ms keeps passing after somebody changes it.
+ *
+ * @returns {Promise<Readonly<ActorPublicationModules>>}
  */
 export async function loadActorPublicationModules() {
   assertTypeScriptTransformEnabled();

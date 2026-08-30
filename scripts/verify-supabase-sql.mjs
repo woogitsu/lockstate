@@ -72,6 +72,14 @@ function scratchDatabaseName() {
 
 const scratchDatabase = scratchDatabaseName();
 
+/**
+ * Written out because TypeScript infers `{}` from a destructuring pattern
+ * whose members have no defaults, and then neither `input` nor `database`
+ * exists on it (#602).
+ *
+ * @param {readonly string[]} args
+ * @param {{ input?: string, database?: string }} [options]
+ */
 function psql(args, { input, database } = {}) {
   const connection = databaseUrl === '' ? ['-d', database ?? scratchDatabase] : [databaseUrl];
   return execFileSync('psql', ['-X', '-q', '-v', 'ON_ERROR_STOP=1', ...connection, ...args], {
@@ -149,7 +157,10 @@ function run() {
         { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
       );
     } catch (error) {
-      output = `${error.stdout ?? ''}${error.stderr ?? ''}`;
+      // A `catch` binding is `unknown` under `strict`, and what `execFileSync`
+      // throws carries the captured streams (#602).
+      const failure = /** @type {{ stdout?: string, stderr?: string }} */ (error);
+      output = `${failure.stdout ?? ''}${failure.stderr ?? ''}`;
     }
 
     const { passed, failed, planned } = parseTap(output);

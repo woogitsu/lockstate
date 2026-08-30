@@ -15,7 +15,7 @@
     "preview": "vite preview",
     "preview:production": "node scripts/cloudflare-task.mjs preview production",
     "preview:staging": "node scripts/cloudflare-task.mjs preview staging",
-    "typecheck": "tsc -b --pretty false",
+    "typecheck": "tsc -b --pretty false && tsc -b tsconfig.tools.json --pretty false",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:browser": "playwright test --config tests/browser/playwright.config.ts",
