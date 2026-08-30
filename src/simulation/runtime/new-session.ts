@@ -32,7 +32,7 @@ import {
   type SectorOccupantResolver,
   type SectorRiskSampler,
 } from '../incidents';
-import { JustInTimeMaterialsService, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury } from '../economy';
+import { JustInTimeMaterialsService, LoanBook, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury, type LoanTerms } from '../economy';
 import { SimulationEventLog } from '../events';
 import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
 import { RefusalLog, materialsFundingSupersessionKey } from '../refusals';
@@ -166,6 +166,12 @@ export interface SimulationRuntime {
    */
   readonly justInTimeMaterials: JustInTimeMaterialsService;
   readonly stateIncome: StateIncomeSystem;
+  /**
+   * ADR 0075 decision 2's loan book, or `undefined` when no terms were
+   * supplied — which is every session `src/` builds today. See
+   * `SimulationRuntimeOptions.loanTerms`.
+   */
+  readonly loans: LoanBook | undefined;
   /**
    * Wages, once per in-game day, for everyone on the roster
    * ([ADR 0042](../../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
@@ -363,6 +369,15 @@ export interface SimulationRuntimeOptions {
   readonly world?: SparseWorld;
   /** Chunks to mark loaded for navigation. Defaults to the world's own owned chunks, or the starter chunk for a fresh world. */
   readonly loadedChunks?: readonly ChunkPosition[];
+  /**
+   * Terms for [ADR 0075](../../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+   * decision 2's loan book. Omitted everywhere in `src/`: no magnitude for any
+   * of the three has been chosen, and choosing one is #29's under ADR 0017
+   * decision 5. Supplying them is how the pricing measurement in
+   * `docs/research/2026-08-30-pricing-the-way-out.md` opens a facility on a
+   * real session.
+   */
+  readonly loanTerms?: LoanTerms;
 }
 
 /**
@@ -752,7 +767,19 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // beside the residency claims. `PrisonerOperationsRuntime` satisfies
   // `PrisonerDayGrantSource` structurally, the same way it already satisfies
   // both of `projectStatusStrip`'s source shapes.
-  const stateIncome = new StateIncomeSystem(treasury, prisoners);
+  /*
+   * ADR 0075 decision 2's loan book, and it exists only when somebody supplies
+   * terms.
+   *
+   * `undefined` is the shipped case: the diversion percentage, the fee and the
+   * maximum duration are #29's under ADR 0017 decision 5, none of them has
+   * been chosen, and a default here would be a magnitude wired in as though it
+   * had been. With no book, `StateIncomeSystem` credits exactly what it
+   * credited before and `Treasury`'s overdraft floor stays at 0, so a session
+   * that does not opt in is byte-identical to one on `main`.
+   */
+  const loans = options.loanTerms === undefined ? undefined : new LoanBook(treasury, options.loanTerms);
+  const stateIncome = new StateIncomeSystem(treasury, prisoners, loans);
 
   const jobs = new JobBoard();
   const jobWorkerAdapter = new PrisonerJobWorkerAdapter(prisoners);
@@ -1256,6 +1283,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     procurement,
     justInTimeMaterials,
     stateIncome,
+    loans,
     payroll,
     refusals,
     events,
