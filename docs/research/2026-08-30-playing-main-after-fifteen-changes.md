@@ -17,21 +17,24 @@ sprites on screen at all.
 once.** `docs/AGENT_WORKFLOW.md` records an integrator who checked `ps` before a
 run and drew a conclusion about the run; so a sampler wrote
 `ps -eo args | grep -c "[p]laywright/test/cli"` and the configs behind it every
-sixty seconds for the whole of both runs, 41 samples. **Another agent's
-`tests/browser/playwright.config.ts` suite was on the machine for five of
-them**, all inside run B (17:21–17:27 UTC), and one 18-second
-`vitest run tests/foundation/` of this pass's own was at 17:21:29.
+sixty seconds for the whole of both runs, 60 samples between 16:46 and 17:46
+UTC. **Another agent's `tests/browser/playwright.config.ts` suite was on the
+machine for 24 of them** — from 17:21:41 to the end of the window, which is all
+of run B's act 3 — and one 18-second `vitest run tests/foundation/` of this
+pass's own was at 17:21:29. **Run A's act 3 was uncontended throughout; run B's
+was contended throughout.**
 
 **It cost nothing measurable, and that is a number rather than an
 impression.** Every figure in this record is a tick, a treasury amount or panel
 text, and the tick is what the contention could have moved. At ×4 the clock
 defines 80 ticks per wall second (`FixedStepClock(50)`,
 `src/simulation/worker/state-machine.ts:216`, times a speed of 4). Measured
-across the contended window in run B — tick 11,686 at t+167 s to tick 31,912 at
-t+420 s — **79.9 ticks per wall second**; measured across the whole of run A's
-uncontended act 3 — tick 8,409 at t+126 s to tick 118,613 at t+1,503 s —
-**80.03**. So the contention shortened neither run's horizon in any way this
-record depends on.
+across the whole of run B's contended act 3 — tick 11,686 at t+167.1 s to tick
+119,032 at t+1,508.8 s — **80.005 ticks per wall second**; across the whole of
+run A's uncontended act 3 — tick 8,409 at t+125.8 s to tick 118,613 at
+t+1,503.5 s — **79.991**. **A difference of 0.02%**, and the two runs finished
+419 ticks apart on a ~110,000-tick horizon. So the contention cost this record
+nothing, and that is a comparison rather than an assurance.
 
 The brief was the owner's, in their own words: *"znajdź bugi i błędy grając, bo
 ja nie mogłem postawić więzienia itp grając sam"* — find defects **by playing**
