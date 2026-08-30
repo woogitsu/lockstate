@@ -184,10 +184,43 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: bash deletebranches.sh --apply
 
+      # ASKS THE REMOTE, NOT THE RUNNER'S CLONE (#620).
+      #
+      # This printed `git branch -r | grep -vc 'origin/HEAD'` until 2026-08-30,
+      # and on the first successful run of this workflow it reported **450**
+      # remaining branches while `git ls-remote --heads origin | wc -l`
+      # answered **254**. `git branch -r` lists remote-TRACKING refs in the
+      # local clone, which is not the set of branches on the remote.
+      #
+      # WHY THE RUNNER'S CLONE HOLDS MORE IS NOT ESTABLISHED, and is not
+      # asserted here. What is measured: the two figures DISAGREE on the runner
+      # and AGREE in an ordinary clone (270 and 270 at the time of writing), so
+      # the local-clone basis is the difference and the remote is the authority.
+      # A plausible mechanism is that this runner reuses one long-lived working
+      # directory across jobs -- its logs name
+      # `/home/mateusz/actions-runner-lockstate-N/_work/lockstate/lockstate` --
+      # and accumulates refs the `git fetch --prune` above does not reach. That
+      # is a guess offered as one, because the fix does not depend on it: asking
+      # the remote is correct whatever the clone is doing.
+      #
+      # It matters because this step is the ONLY thing a person reads to decide
+      # whether the cleanup did what it said. A run that deletes 103 branches
+      # and then reports a total 77% too high invites exactly two wrong
+      # conclusions -- that the deletions did not take, or that the repository
+      # has far more branches than it does -- and both prompt an action on a
+      # number nobody sourced.
+      #
+      # `ls-remote` needs no local state and cannot drift.
+      #
+      # THE SECOND FIGURE WAS ALREADY CORRECT and is left on the local clone
+      # deliberately: `--merged origin/main` is a reachability question, and a
+      # stale extra ref can only make that count too HIGH, never too low. So
+      # the safety claim this step exists to make -- "nothing merged is still
+      # present" -- cannot be weakened by the drift that broke the headline.
       - name: Verify deletion
         run: |
           git fetch --prune
-          echo "Remaining remote branches: $(git branch -r | grep -vc 'origin/HEAD')"
+          echo "Remaining remote branches: $(git ls-remote --heads origin | wc -l)"
           echo "Merged into main and still present (protected refs only, so 0 or wip/ leftovers):"
           git branch -r --merged origin/main \
             | grep -vE 'origin/(HEAD|main)$' \
