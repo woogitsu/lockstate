@@ -633,6 +633,31 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
     log(`departures observed: ${departures.length} -> ${JSON.stringify(departures)}`);
     log(`shortest drawable sentence is 14 days = 33600 ticks; the run covered ${last.tick - admittedAt} ticks after admission`);
     log(`every sample: ${JSON.stringify(samples.map((s) => [Math.round(s.wallMs / 1000), s.tick, s.prisoners, s.roomOccupants, s.occupiedPlaces, s.treasuryMinorUnits]))}`);
+    /*
+     * **Every `simulation/event` the worker published, whole.** This is the
+     * definitive answer to the question the departure counter cannot answer
+     * on its own -- whether a fall in `prisoners` was a discharge or an escape
+     * -- because `prisoners.discharged` and `incidents.escape-attempt-opened`
+     * are separate members of `SIMULATION_EVENT_TYPES`
+     * (`src/simulation/protocol/types.ts:1385-1394`) and the tee keeps every
+     * one of them: `installTee` drops only `simulation/delta`,
+     * `simulation/snapshot` and `simulation/projection`.
+     *
+     * It is *also* the answer to "what could the player have seen", read
+     * against the band and the eight-row list above -- the worker published
+     * these, the HUD chose what to show.
+     */
+    const events = await page.evaluate(() =>
+      ((window as unknown as { lockstateFromWorker?: unknown[] }).lockstateFromWorker ?? [])
+        .filter((message) => (message as { kind?: string }).kind === 'simulation/event')
+        .map((message) => {
+          const payload = (message as { payload?: Record<string, unknown> }).payload ?? {};
+          const event = (payload['event'] ?? payload) as Record<string, unknown>;
+          return `${String(event['tick'] ?? payload['tick'] ?? '?')}:${String(event['type'] ?? '?')}${event['count'] === undefined ? '' : `(${String(event['count'])})`}`;
+        }),
+    );
+    log(`every simulation/event the worker published, in order: ${JSON.stringify(events)}`);
+
     const finalHud = await hudText(page);
     log(`WHOLE VISIBLE HUD at the end:\n${finalHud}`);
     vocabularyReport(log, 'end of run', finalHud);
