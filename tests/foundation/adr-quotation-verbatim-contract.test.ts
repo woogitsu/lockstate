@@ -1,0 +1,421 @@
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+/**
+ * A documented quotation of source code still appears, verbatim, in the file it
+ * names.
+ *
+ * ## Why a quotation rather than a line number
+ *
+ * Issue #645 measured the failure this replaces. One Context paragraph of
+ * [ADR 0023](../../docs/adr/0023-room-occupancy-authority.md) carried six
+ * citations into `src/`; every one was correct when it was written, none was
+ * ever edited, and by v0.0.238 all six landed somewhere else -- an interface
+ * declaration cited as a summation, two doc comments cited as the branches they
+ * describe, a field name (`instance.capacity`) that no longer exists at all.
+ * `documentation-source-anchor-contract.test.ts` could condemn none of them,
+ * and says so in its own header: *"a line number is a fact about every
+ * insertion above it"*, so nothing mechanical can decide whether an anchor
+ * landed on the code its sentence means. All six were **in range**.
+ *
+ * A quotation inverts that. It carries the code with it, so it cannot drift
+ * silently; the only thing it can become is a quotation of something that
+ * changed, and that is exactly what this file fails on. There is no window, no
+ * budget and no version arithmetic, because there is nothing to be stale
+ * *relative to*: the claim is about the file as it is now.
+ *
+ * The owner's ruling on #645 (2026-08-30) named this as the thing to try before
+ * building a per-ADR staleness budget on the model of
+ * `adr-status-queue-anchor-contract.test.ts`. What it buys and what it does not
+ * is set out under "The bound" below.
+ *
+ * ## The form
+ *
+ * A quotation is a backtick span. Its attribution is a parenthesis that follows
+ * it, naming a repository-rooted path **without** a line number:
+ *
+ * > `roomCapacity += instance.residentCapacity;`
+ * > (verbatim in `src/simulation/presentation/status-strip-projection.ts`)
+ *
+ * Several quotations from one file may be chained, provided nothing but
+ * whitespace separates them, and the count word then has to be right:
+ *
+ * - no count word -- exactly one quotation binds;
+ * - `both` -- exactly two;
+ * - `all` -- three or more.
+ *
+ * The count word is checked because it is the one part of the sentence a reader
+ * takes on trust. A paragraph that chains two quotations and says "all" is
+ * claiming a coverage the gate is not giving it.
+ *
+ * **The form is opt-in and this gate polices only documents that use it.** That
+ * is deliberate: an implicit rule -- "a backtick span followed by a file path is
+ * a quotation" -- was measured against this corpus first and does not work.
+ * 71 spans match that shape outside `docs/research/`; 64 are verbatim and the
+ * other 7 are not defects but *symbol references* -- `EntityStore.destroy`,
+ * `RoomZoningService.zone`, `pnpm verify:stack` -- which name something rather
+ * than quote it and must not be required to appear character for character.
+ * Nothing in the text distinguishes the two, so the writer has to, and
+ * `verbatim in` is how.
+ *
+ * ## Comparing, and what is normalised away
+ *
+ * Two things, both forced by the media rather than chosen:
+ *
+ * - **Comment markers.** A quotation of a comment is a quotation of its text,
+ *   not of the prefixes the language needs to carry it, so a leading
+ *   block-comment opener or terminator, a leading `*`, a leading `//` or a
+ *   leading `#` is stripped from each source line before comparing.
+ * - **Whitespace runs.** Markdown re-wraps and source indents, so every run of
+ *   whitespace on both sides collapses to one space. A quotation may therefore
+ *   span source lines.
+ *
+ * Nothing else. Case, punctuation and spelling are compared exactly: if the
+ * source says `--` the document may not say an em dash, because at that point
+ * it is a paraphrase and the reader can no longer grep for it.
+ *
+ * A quotation must survive normalisation at 12 characters or more. Without that
+ * floor the form could be satisfied by quoting `a`, which is in every file.
+ *
+ * ## The bound, stated first because a green run here reads like more than it is
+ *
+ * **This cannot tell whether a sentence is true.** It checks that the evidence a
+ * sentence offers is still on disk. ADR 0023's sixth drifted citation --
+ * *"`room.solitary-cell` for the `high-risk` classification group and
+ * `room.cell` for everything else"* -- was a wrong *claim* about a policy whose
+ * anchors happened to be fine, and no gate of this shape would have caught it.
+ * Only a person reading the code catches that one.
+ *
+ * It also says nothing about a document that adopts no quotations. Coverage is
+ * a writing decision, and the honest way to raise it is to convert paragraphs,
+ * not to add an assertion here.
+ *
+ * ## `docs/research/` is out of scope
+ *
+ * For the reason `documentation-source-anchor-contract.test.ts` gives for the
+ * same exclusion: `docs/research/README.md` keeps those records as dated
+ * history -- *"when the code moves on, a record here does not become wrong, it
+ * becomes older"* -- so failing the build on one would demand the edit that
+ * directory forbids.
+ *
+ * ## Watched going red
+ *
+ * Measured on this branch, each mutation reverted before the next; outputs are
+ * in the commit that landed this file.
+ *
+ * - One character changed inside a quotation in ADR 0023
+ *   (`residentCapacity` -> `residentCapacty`): 1 failed, naming the document,
+ *   the file and the quotation.
+ * - A quotation left in place while the code it quotes was edited
+ *   (`roomCapacity += instance.residentCapacity;` -> `+= 1;` in
+ *   `status-strip-projection.ts`): 1 failed. This is the drift the gate exists
+ *   for, produced from the code side rather than the document side.
+ * - `both` changed to `all` on a two-quotation chain: 1 failed, on the count.
+ * - The quotation span deleted from in front of an attribution, leaving the
+ *   attribution orphaned: 1 failed. An attribution that binds nothing is how
+ *   this gate would otherwise be switched off silently.
+ * - The extractor blinded (`verbatim in` -> `verbatimm in`): 2 failed -- the
+ *   corpus floor and the ADR-coverage case -- rather than the file passing by
+ *   reading nothing.
+ * - The whole `docs/` tree deleted from the scan: 2 failed, same pair.
+ */
+
+const ROOT = join(__dirname, '../..');
+
+const RESEARCH = join('docs', 'research');
+
+/**
+ * The corpus floor.
+ *
+ * 20 rather than the live count, for the reason
+ * `documentation-source-anchor-contract.test.ts` gives for its own: high enough
+ * that an extractor which stopped matching fails here, low enough that editing
+ * one paragraph does not. ADR 0023 alone carried 24 quotations when this
+ * landed; raising this number as documents convert is fine, lowering it to make
+ * a red run green is the thing it is here to prevent.
+ */
+const MINIMUM_QUOTATIONS = 15;
+
+/** Markdown under `docs/`, plus the markdown at the repository root. */
+function collectMarkdownFiles(directory: string): readonly string[] {
+  const files: string[] = [];
+  for (const entry of readdirSync(directory)) {
+    if (entry === 'node_modules' || entry.startsWith('.')) continue;
+    const path = join(directory, entry);
+    if (statSync(path).isDirectory()) {
+      files.push(...collectMarkdownFiles(path));
+      continue;
+    }
+    if (entry.endsWith('.md')) files.push(path);
+  }
+  return files;
+}
+
+const ROOTED_PATH = /^(?:docs|src|tests|scripts|supabase|public|\.github)\/[^\s`]*\.[A-Za-z0-9]+$/;
+
+/**
+ * The attribution: an optional count word, the words `verbatim in`, and one
+ * backticked rooted path, all inside parentheses.
+ *
+ * Anchored on the parentheses at both ends so that prose *about* the convention
+ * -- this file's own header, or a sentence explaining the form -- cannot be
+ * mistaken for a citation using it.
+ */
+const ATTRIBUTION = /\((both |all )?verbatim in `([^`\n]+)`\)/g;
+
+/** A backtick span with the whitespace that may separate it from the next one, read right to left. */
+const TRAILING_QUOTE = /`([^`\n]+)`\s*$/;
+
+interface Binding {
+  readonly path: string;
+  readonly countWord: string | undefined;
+  readonly quotations: readonly string[];
+}
+
+interface Citation extends Binding {
+  readonly source: string;
+}
+
+/**
+ * Every citation in a markdown text, and every attribution that binds nothing.
+ *
+ * The walk is backwards from the attribution over whitespace only. Anything
+ * else -- a word, a dash, a comma -- ends the chain, so a quotation is bound to
+ * an attribution only when a reader would also read them as one unit.
+ *
+ * One copy of this rule, called by the corpus scan and by the written-out
+ * fixtures below. A second copy of a scanner is issue #188 and this repository
+ * has paid for it.
+ */
+function bindCitations(text: string): { readonly bindings: readonly Binding[]; readonly orphans: readonly string[] } {
+  const bindings: Binding[] = [];
+  const orphans: string[] = [];
+
+  for (const match of text.matchAll(ATTRIBUTION)) {
+    const quotations: string[] = [];
+    let head = text.slice(0, match.index);
+    for (;;) {
+      const quote = TRAILING_QUOTE.exec(head);
+      if (quote === null) break;
+      quotations.unshift(quote[1]!);
+      head = head.slice(0, quote.index);
+    }
+    if (quotations.length === 0) {
+      orphans.push(match[0]);
+      continue;
+    }
+    bindings.push({ path: match[2]!, countWord: match[1]?.trim(), quotations });
+  }
+
+  return { bindings, orphans };
+}
+
+function citationsIn(file: string): { readonly citations: readonly Citation[]; readonly orphans: readonly string[] } {
+  const source = relative(ROOT, file);
+  const { bindings, orphans } = bindCitations(readFileSync(file, 'utf8'));
+  return {
+    citations: bindings.map((binding) => ({ ...binding, source })),
+    orphans: orphans.map((orphan) => `${source} -> ${orphan}: no quotation immediately before it`),
+  };
+}
+
+/** A comment prefix is punctuation of the medium, not of the sentence being quoted. */
+function normalizeSource(text: string): string {
+  return text
+    .split('\n')
+    .map((line) => line.replace(/^\s*(?:\/\*\*|\/\*|\*\/|\*|\/\/|#)\s?/, ''))
+    .join('\n')
+    .replace(/\s+/g, ' ');
+}
+
+function normalizeQuotation(quotation: string): string {
+  return quotation.replace(/\s+/g, ' ').trim();
+}
+
+/** How many quotations the count word promises, or `undefined` when it promises a floor instead. */
+function expectedCount(countWord: string | undefined): { readonly exact?: number; readonly atLeast?: number } {
+  if (countWord === 'both') return { exact: 2 };
+  if (countWord === 'all') return { atLeast: 3 };
+  return { exact: 1 };
+}
+
+const normalizedSources = new Map<string, string>();
+function normalizedSourceOf(path: string): string {
+  const cached = normalizedSources.get(path);
+  if (cached !== undefined) return cached;
+  const normalized = normalizeSource(readFileSync(join(ROOT, path), 'utf8'));
+  normalizedSources.set(path, normalized);
+  return normalized;
+}
+
+/** Every complaint one citation earns. A citation can earn more than one. */
+function faultsOf(citation: Citation): readonly string[] {
+  const faults: string[] = [];
+  const where = `${citation.source} -> (${citation.countWord ?? ''}verbatim in \`${citation.path}\`)`;
+
+  if (!ROOTED_PATH.test(citation.path)) {
+    return [`${where}: not a repository-rooted path with an extension`];
+  }
+  if (!existsSync(join(ROOT, citation.path))) {
+    return [`${where}: no such file`];
+  }
+
+  const { exact, atLeast } = expectedCount(citation.countWord);
+  if (exact !== undefined && citation.quotations.length !== exact) {
+    faults.push(
+      `${where}: binds ${String(citation.quotations.length)} quotations, and the wording promises ${String(exact)}`,
+    );
+  }
+  if (atLeast !== undefined && citation.quotations.length < atLeast) {
+    faults.push(
+      `${where}: binds ${String(citation.quotations.length)} quotations, and "all" promises at least ${String(atLeast)}`,
+    );
+  }
+
+  const normalizedSource = normalizedSourceOf(citation.path);
+  for (const quotation of citation.quotations) {
+    const normalized = normalizeQuotation(quotation);
+    if (normalized.length < 12) {
+      faults.push(`${where}: the quotation \`${quotation}\` is too short to be evidence of anything`);
+      continue;
+    }
+    if (!normalizedSource.includes(normalized)) {
+      faults.push(`${where}: \`${quotation}\` is not in that file`);
+    }
+  }
+
+  return faults;
+}
+
+const markdownFiles = [
+  ...collectMarkdownFiles(join(ROOT, 'docs')),
+  ...readdirSync(ROOT)
+    .filter((entry) => entry.endsWith('.md'))
+    .map((entry) => join(ROOT, entry)),
+].filter((file) => !relative(ROOT, file).startsWith(RESEARCH));
+
+const scanned = markdownFiles.map(citationsIn);
+const citations = scanned.flatMap((result) => result.citations);
+const orphans = scanned.flatMap((result) => result.orphans);
+const quotationCount = citations.reduce((total, citation) => total + citation.quotations.length, 0);
+
+describe('the extractor and the comparison, against written-out inputs', () => {
+  /*
+   * A positive control in the shape `content-validation-reachability-contract`
+   * uses: the scanner is run on text written out here, so a change that made it
+   * stop matching -- or match everything -- fails on inputs whose answer is
+   * fixed, not on a corpus that moves. Every assertion over the real corpus
+   * below is a `toEqual([])`, and a set of "found nothing" claims cannot notice
+   * a scanner finding nothing for the wrong reason.
+   */
+  it('binds one quotation to a bare attribution, and stops at the first word', () => {
+    const { bindings } = bindCitations(
+      ('the strip sums it:\n`roomCapacity += x;`\n(verbatim in `src/a.ts`)'),
+    );
+
+    expect(bindings).toEqual([
+      { path: 'src/a.ts', countWord: undefined, quotations: ['roomCapacity += x;'] },
+    ]);
+  });
+
+  it('chains across whitespace only', () => {
+    const { bindings } = bindCitations(
+      ('lines:\n`first line;`\n`second line;`\n(both verbatim in `src/a.ts`)'),
+    );
+
+    expect(bindings).toEqual([
+      { path: 'src/a.ts', countWord: 'both', quotations: ['first line;', 'second line;'] },
+    ]);
+  });
+
+  it('does not chain across a word, so a symbol named in prose is not swept in', () => {
+    const { bindings } = bindCitations(
+      ('`RoomOccupancyViewModel` declares\n`readonly free: number;`\n(verbatim in `src/a.ts`)'),
+    );
+
+    expect(bindings).toEqual([
+      { path: 'src/a.ts', countWord: undefined, quotations: ['readonly free: number;'] },
+    ]);
+  });
+
+  it('reports an attribution with nothing quotable in front of it', () => {
+    const { bindings, orphans: orphansFound } = bindCitations(('as the code says (verbatim in `src/a.ts`)'));
+
+    expect(bindings).toEqual([]);
+    expect(orphansFound).toEqual(['(verbatim in `src/a.ts`)']);
+  });
+
+  it('reads prose about the convention as prose', () => {
+    // This file's own header contains the words. A gate that treated them as a
+    // citation would fail on its own documentation.
+    const { bindings, orphans: orphansFound } = bindCitations(
+      ('the attribution is the words `verbatim in` followed by a path'),
+    );
+
+    expect([...bindings, ...orphansFound]).toEqual([]);
+  });
+
+  it('accepts a quotation of a comment across its line prefixes and the markdown re-wrap', () => {
+    const source = normalizeSource(['  /**', '   * The resident capacity, because this', '   * counter sits beside it.', '   */'].join('\n'));
+
+    expect(source).toContain(normalizeQuotation('The resident capacity, because this\ncounter sits beside it.'));
+  });
+
+  it('rejects a quotation that differs by one character', () => {
+    const source = normalizeSource('  roomCapacity += instance.residentCapacity;');
+
+    expect(source).not.toContain(normalizeQuotation('roomCapacity += instance.residentCapacty;'));
+  });
+
+  it('rejects a paraphrase that swaps the punctuation the source actually uses', () => {
+    const source = normalizeSource(' * a share of nothing -- no meaning');
+
+    expect(source).not.toContain(normalizeQuotation('a share of nothing — no meaning'));
+  });
+
+  it('counts what each wording promises', () => {
+    expect([expectedCount(undefined), expectedCount('both'), expectedCount('all')]).toEqual([
+      { exact: 1 },
+      { exact: 2 },
+      { atLeast: 3 },
+    ]);
+  });
+});
+
+describe('every documented quotation of source code is still in the file it names', () => {
+  it('finds quotations to check, so this cannot pass vacuously', () => {
+    expect(
+      quotationCount,
+      `only ${String(quotationCount)} quotations were found in the documentation. Either the extractor stopped matching or the documents that used the form stopped using it; do not lower MINIMUM_QUOTATIONS to make this pass`,
+    ).toBeGreaterThanOrEqual(MINIMUM_QUOTATIONS);
+  });
+
+  it('finds them in docs/adr/, which is the corpus the form was introduced for', () => {
+    // Named separately from the floor above because the floor could one day be
+    // met entirely by documents outside `docs/adr/`, and #645's ruling is about
+    // ADRs. ADR 0023 is the document that conforms today.
+    const inAdrs = citations.filter((citation) => citation.source.startsWith(join('docs', 'adr')));
+
+    expect(
+      inAdrs.map((citation) => citation.source),
+      'no ADR cites code by quotation any more',
+    ).not.toEqual([]);
+  });
+
+  it('binds every attribution to a quotation', () => {
+    expect(
+      orphans,
+      'an attribution with no quotation in front of it claims a check that is not being made',
+    ).toEqual([]);
+  });
+
+  it('resolves every quotation against the file its citation names', () => {
+    const faults = citations.flatMap(faultsOf);
+
+    expect(
+      faults,
+      'a quotation that is no longer in the file it names is either a document to rewrite or a change to the code that nobody told the document about',
+    ).toEqual([]);
+  });
+});

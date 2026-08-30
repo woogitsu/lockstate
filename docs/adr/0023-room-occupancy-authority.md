@@ -119,44 +119,139 @@ everywhere. That distinction is the whole of what this ADR decides.
 ### The mechanism the decision has to fit
 
 Verified, because the decision is a sentence about a resolver and this is what
-the resolver feeds:
+the resolver feeds.
 
-- `RoomInstanceRegistry.findAvailable(roomCatalogId, requiredObjectCapability?)`
-  (`room-instance-registry.ts:81-87`) rejects an instance on **both** counts:
-  `this.occupancyOf(instance.instanceId) >= instance.capacity` (`:83`) and, when
-  a capability is requested, `!instance.objectCapabilities.includes(...)`
-  (`:84`). `assign` re-checks the capacity half independently (`:93`).
+**This section cites by quotation, not by `file:line`, and that is issue #645's
+ruling of 2026-08-30 (option 3).** Every citation below quotes the code it means
+and names the file that code is in, and
+`tests/foundation/adr-quotation-verbatim-contract.test.ts` re-checks each
+quotation against that file on every run. A citation here can therefore no
+longer become wrong quietly. What it can still become is a quotation of
+something that *changed* — which is visible to a reader and red in CI, and is
+the whole of the difference. **The rest of this document still cites by line and
+is not covered by that gate**; the subsection at the end of this one records
+what these anchors had drifted to before they were replaced.
+
+- The registry rejects an instance on **both** counts, on two consecutive lines:
+  `if (this.occupancyOf(instance.instanceId) >= instance.residentCapacity) return false;`
+  `if (requiredObjectCapability !== undefined && !instance.objectCapabilities.includes(requiredObjectCapability)) return false;`
+  (both verbatim in `src/simulation/prisoners/room-instance-registry.ts`). The
+  call that actually houses an arrival re-checks the residency half
+  independently:
+  `if (occupants.size >= instance.residentCapacity) return false;`
+  (verbatim in `src/simulation/prisoners/room-instance-registry.ts`).
 - The capability intake asks for is `'sleep-surface'`, and **exactly two objects
-  in the catalog carry it**: `object.bed` (`capabilities: ['sleep-surface']`)
-  and `object.medical-bed` (`['sleep-surface', 'medical-treatment']`) —
-  `src/content/object-catalog.ts:41-42`. No other definition in the file
-  declares it.
-- `DEFAULT_ACCOMMODATION_POLICY` (`intake-system.ts:27-34`) targets **two** room
-  ids, not three: `room.solitary-cell` for the `high-risk` classification group
-  and `room.cell` for everything else, both with
-  `requiredObjectCapability: 'sleep-surface'`. **`room.holding-cell` is not
-  targeted by any policy in the tree** — which matters below, because it is the
-  room whose real-world analogue is the one PA's own onboarding tells the player
-  to build.
-- Both refusal paths are already distinguished by the caller.
-  `intake-system.ts:126-130` marks an arrival `'failed'` when
-  `allByRoomCatalogId` is empty — a structural gap retrying cannot fix — while
-  `:133-135` counts a tick of `accommodationBacklogTicks` and stays in the
-  stage when instances exist but `findAvailable` returns none.
+  in the catalog carry it** — `object.bed` and `object.medical-bed`, whose
+  definitions end
+  `capabilities: ['sleep-surface'] },`
+  `capabilities: ['sleep-surface', 'medical-treatment'] },`
+  (both verbatim in `src/content/object-catalog.ts`). No other definition in
+  that file declares it.
+- `DEFAULT_ACCOMMODATION_POLICY` names **two** room ids, not three, and offers
+  both of them to both classification groups, in opposite orders:
+  `return classificationGroupId === 'high-risk' ? [SOLITARY_CELL, CELL] : [CELL, SOLITARY_CELL];`
+  (verbatim in `src/simulation/prisoners/intake-system.ts`). Both targets carry
+  the same capability requirement:
+  `{ roomCatalogId: 'room.cell', requiredObjectCapability: 'sleep-surface' }`
+  `{ roomCatalogId: 'room.solitary-cell', requiredObjectCapability: 'sleep-surface' }`
+  (both verbatim in `src/simulation/prisoners/intake-system.ts`).
+  **`room.holding-cell` is named by neither** — which matters below, because it
+  is the room whose real-world analogue is the one PA's own onboarding tells the
+  player to build.
+- Both refusal paths are still distinguished by the caller, and they are the two
+  branches §1 of the decision depends on. The structural gap that retrying
+  cannot fix is terminal:
+  `this.records.intakeStage[index] = intakeStageIndex('failed');`
+  (verbatim in `src/simulation/prisoners/intake-system.ts`). The recoverable one
+  counts a tick and stays in the stage:
+  `this.accommodationBacklogTicks += 1;`
+  `continue; // stay in accommodation-assignment; retried next scheduled tick`
+  (both verbatim in `src/simulation/prisoners/intake-system.ts`).
 - The projection layer already separates the two numbers the decision separates.
-  `RoomOccupancyViewModel` is `{ current, capacity, utilization?, free }`
-  (`src/simulation/presentation/room-projection.ts:97-103`), and `utilization`
-  is documented absent for a zero-capacity instance because "a share of nothing
-  has no meaning" (`:100`). The status strip sums `instance.capacity` across
-  instances into `roomCapacity` (`status-strip-projection.ts:150-155`).
+  `RoomOccupancyViewModel` declares
+  `readonly current: number;`
+  `readonly capacity: number;`
+  `readonly utilization?: BoundedValue;`
+  `readonly free: number;`
+  (all verbatim in `src/simulation/presentation/room-projection.ts`), and
+  `utilization` is documented absent for a zero-capacity instance:
+  `Absent for an instance whose resident capacity is zero -- a share of nothing has no meaning.`
+  (verbatim in `src/simulation/presentation/room-projection.ts`). The status
+  strip sums the same figure across instances —
+  `roomCapacity += instance.residentCapacity;`
+  (verbatim in `src/simulation/presentation/status-strip-projection.ts`) — and
+  says in place which of the two capacities that is:
+  `The resident capacity, because this counter sits beside the prisoner`
+  (verbatim in `src/simulation/presentation/status-strip-projection.ts`).
 
-There are 18 room definitions (`room-catalog.ts:66-159`), `numericId` 1 through
-18, and exactly three of them name a bed in their `requirements`:
-`room.cell` (`object.bed` + `object.toilet`, `:66-71`), `room.solitary-cell`
-(the same pair, `:77-82`) and `room.infirmary` (`object.medical-bed`, `:130`).
-The remaining housing room, `room.holding-cell`, requires `object.bench` and no
-bed at all (`:72-76`) — the one accommodation room in the catalog that no bed
-requirement and no accommodation policy touches.
+There are 18 room definitions, `numericId` 1 through 18. The first and the last
+are
+`id: 'room.cell', numericId: 1,`
+`id: 'room.utility-room', numericId: 18,`
+(both verbatim in `src/content/room-catalog.ts`). Exactly three of them name a
+bed in their `requirements`. `room.cell` and `room.solitary-cell` each carry the
+same pair:
+`{ type: 'object', objectId: 'object.bed', minQuantity: 1 },`
+`{ type: 'object', objectId: 'object.toilet', minQuantity: 1 },`
+(both verbatim in `src/content/room-catalog.ts`). `room.infirmary` carries a
+medical bed instead:
+`{ type: 'object', objectId: 'object.medical-bed', minQuantity: 1 },`
+(verbatim in `src/content/room-catalog.ts`). The remaining housing room,
+`room.holding-cell`, requires
+`{ type: 'object', objectId: 'object.bench', minQuantity: 1 },`
+(verbatim in `src/content/room-catalog.ts`) and no bed at all — the one
+accommodation room in the catalog that no bed requirement and no accommodation
+policy touches.
+
+#### What this section said before 2026-08-30, and what had gone wrong with it
+
+Recorded rather than overwritten, because the *shape* of the drift is the whole
+argument for the form above. This section was written against `origin/main` at
+v0.0.34 (§*What the evidence rests on, stated because it bounds every claim
+below*) and issue #645 re-read it at v0.0.238. Its citations are given here as
+bare basenames, which is this corpus's form for an anchor quoted as history
+rather than offered as current. Six had moved. Five are the ones the issue
+tabulated, and all five are confirmed:
+
+- It cited `RoomInstanceRegistry.findAvailable(roomCatalogId, requiredObjectCapability?)`
+  at `room-instance-registry.ts:81-87`, with the two gates at `:83` and `:84`
+  and the re-check at `:93`. **No method of that name survives.** ADR 0028
+  decision 3 split it into `findAvailableResidence` and `findAvailableForUse`,
+  and `IntakeSystem` now reaches the first through `findBestAvailable`.
+  `:81-87` is inside the `RoomInstance` interface declaration.
+- It said the gate reads `instance.capacity`. **That field no longer exists.**
+  It is `residentCapacity`, and `RoomInstance` carries a second, differently
+  scoped capacity beside it — which is why the old spelling could not simply
+  have been renamed in place and the sentence left alone.
+- It cited `intake-system.ts:126-130` for the `'failed'` branch and `:133-135`
+  for the backlog branch. **Both anchors now land inside a doc comment** about
+  deduplicating accommodation targets; the branches themselves are several
+  hundred lines below. It also said the `'failed'` branch tests
+  `allByRoomCatalogId` directly; that test now sits one call in, inside
+  `resolveExistingTarget`.
+- It cited `room-projection.ts:97-103` for `RoomOccupancyViewModel` and `:100`
+  for the *"a share of nothing has no meaning"* sentence. **Both anchors now
+  land inside an unrelated doc comment** about how far a room requirement can be
+  checked against an instance. The view model's four fields are unchanged; only
+  its position is.
+- It cited `status-strip-projection.ts:150-155` for the capacity summation.
+  **That anchor is an interface declaration** — `StatusStripViewModel`'s
+  `counts` block. The summation is around three hundred lines lower.
+- It cited `room-catalog.ts:66-159` as the bounds of the 18 definitions, and
+  `:66-71`, `:72-76`, `:77-82` and `:130` for four of them individually. **The
+  definitions moved down the file**, `:159` is now `room.security-office`
+  (`numericId` 13), and each of those four sub-anchors names a different room
+  than it did.
+- The sixth, which issue #645 did not tabulate and which is a wrong *claim*
+  rather than a wrong anchor: it said `DEFAULT_ACCOMMODATION_POLICY` targets
+  *"`room.solitary-cell` for the `high-risk` classification group and
+  `room.cell` for everything else"*. **Both groups now list both rooms**, in
+  opposite orders, so the sentence is false about which rooms a group may be
+  housed in, even though the count of distinct room ids it gives is still two.
+
+Every one of those anchors was correct on the day it was written, and none of
+them was edited afterwards. That is the case for quoting rather than anchoring,
+put as a measurement instead of as a preference.
 
 ### Why the binary was false
 
