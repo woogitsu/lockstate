@@ -707,7 +707,15 @@ its oldest.
 
 `incidents.escape-attempt-opened` is the only escape event there is, so what the
 list *cannot* say is whether that attempt was contained or whether it is the
-reason the count fell. §7 is where that goes.
+reason the count fell.
+
+**The worker's own event stream can, and it does.** §1.6: that attempt is at
+tick **48,000**, the fall is sampled between **48,031 and 48,891**, and there is
+**no `prisoners.discharged` anywhere in that window** — the three this run
+produced are at 73,340, 81,300 and 94,440. **The prisoner got out.** The player
+was told *"A prisoner is trying to break out."*, then *"The prison is under
+control again — no incident is still open."*, and the PRISONERS chip went from
+12 to 11.
 
 **Reported, not fixed**, for §2's reason: the missing thing is a sentence
 addressed to a player, and that is the owner's.
