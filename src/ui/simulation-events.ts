@@ -473,18 +473,17 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
  * whose branch nobody added here renders the literal placeholder, because
  * `interpolate` deliberately leaves an unsubstituted one visible. It was
  * handed over rather than fixed, on the reasoning that the change authoring
- * such a sentence is the change that should close it. This is that change, and
- * the shape that closes it is the one `eventParameters` already had: a
- * `switch` exhaustive over the union, so the next event type does not compile
- * until somebody has decided whether its sentence needs one.
+ * such a sentence is the change that should close it. This is that change.
  *
- * The measurement that the fix is real rather than stylistic:
- * `tests/unit/ui-simulation-events.test.ts` asserts no rendered sentence
- * contains `{`, for every type at once, and was watched failing on
- * `incidents.escape-succeeded` before this `switch` existed.
+ * The `switch` is the readable half; the `default` branch is the half that
+ * actually forces the next decision, and it says at its own site why the
+ * `switch` alone does not. The measurement that the fix is real rather than
+ * stylistic: `tests/unit/ui-simulation-events.test.ts` asserts no rendered
+ * sentence contains `{`, for every type at once, and was watched failing on
+ * `incidents.escape-succeeded` before either half existed.
  *
- * **Two members have message-valued parameters**, and the three parameters
- * between them are message-valued for different reasons:
+ * **Two members have message-valued parameters.** ADR 0076's relocation notice
+ * has two, message-valued for different reasons:
  *
  * - **`{room}`** is a room type, and `roomNameKey` is the catalog's own
  *   `nameKey` -- the same field `PrisonerRoomRefViewModel` already carries to
@@ -498,14 +497,14 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
  *   two answers to one question, and the second locale to disagree with
  *   English would find only one of them.
  *
- * - **`incidents.escape-succeeded`'s `{name}`** is the same person-shaped
- *   parameter as the relocation's, resolved through the same
- *   `hud.regime.roster-name`, and it reuses that treatment rather than
- *   authoring a second (#683). What differs is only the subject's fate: this
- *   one is gone. Nothing here looks anybody up -- both halves are in the
- *   payload -- so a departed entity id costs the sentence nothing. See the
- *   schema in `src/simulation/protocol/types.ts` for why naming them is
- *   nonetheless a narrowing of a rule rather than a free extension of one.
+ * #683's escape notice has one, and it is the second bullet's `{name}` again
+ * rather than a third kind of thing: the same halves, the same
+ * `hud.regime.roster-name`, shared through `prisonerName` below so the two
+ * cannot drift about the fallback. What differs is only the subject's fate --
+ * this one is gone. Nothing here looks anybody up, both halves being in the
+ * payload, so a departed entity id costs the sentence nothing; see the schema
+ * in `src/simulation/protocol/types.ts` for why naming them is nonetheless a
+ * narrowing of a rule rather than a free extension of one.
  *
  * A prisoner with no name falls back to `hud.regime.roster-unnamed` --
  * "Prisoner 3" -- which is exactly what `formatPrisonerName` does for a roster
@@ -550,7 +549,7 @@ function eventParameterMessages(
       // unreachable while the union and this `switch` agree, which is the
       // point of it.
       const unhandled: never = event;
-      throw new Error(`Unhandled simulation event type "${String((unhandled as { type: string }).type)}".`);
+      throw new Error(`Unhandled simulation event: ${JSON.stringify(unhandled)}.`);
     }
   }
 }
