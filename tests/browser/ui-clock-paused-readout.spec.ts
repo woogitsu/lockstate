@@ -1,4 +1,4 @@
-import { type Page, expect, test } from '@playwright/test';
+import { type Page, expect, test } from './network-changed-fixture';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
