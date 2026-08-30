@@ -225,6 +225,30 @@ emptied when the session ends"*) — so what it holds is the **last**
 event, not a current state. At tick 49,192 it was still displaying an all-clear
 from an incident that had closed some time before.
 
+### What tier 3 unlocks, which is not only a badge
+
+**VERIFIED, code.** Tier 3 is the gate on an escape attempt:
+
+```ts
+export const ESCAPE_ATTEMPT_MINIMUM_RISK_TIER = 3;                       // flashpoint.ts:113
+export function canAttemptEscape(flashpoint: PrisonerFlashpoint): boolean {
+  return flashpoint.riskTier >= ESCAPE_ATTEMPT_MINIMUM_RISK_TIER && flashpoint.contrabandSeverity > 0;
+}                                                                        // flashpoint.ts:281-283
+```
+
+and `IncidentTriggerSystem` filters its escape candidates through exactly that
+(`trigger-system.ts:343`). An escape is not cosmetic: a lapsed escape-attempt
+incident writes `escaped: true` (`response-system.ts:551`) and
+`onPrisonerEscaped` calls **the same `releasePrisoner`** a served sentence does
+(`src/simulation/runtime/new-session.ts:1118`, *"A prisoner who got out is gone
+(ADR 0061 decision 5)"*).
+
+So the chain #659 turned on is: longer sentences → 97% of prisoners reviewed →
+in a neglected prison the reviews reach tier 3 → **the risk-tier gate on escape
+is open for the whole population**, where ADR 0079 states no admission a player
+can make can open it. The second gate, `contrabandSeverity > 0`, still stands
+and this pass did not measure whether anybody was carrying anything — see §7.
+
 **Reported, not fixed**, for §2's reason: the missing thing is a sentence
 addressed to a player, and that is the owner's.
 
