@@ -59,6 +59,15 @@ with two exceptions, both marked where they occur:
   handover was low, and the reason it was low is worth more than the number.
   See §3.2's amendment.
 
+**Gates after the sentence shipped**, replacing the figures below for the tree
+this record was written against rather than correcting them:
+`./node_modules/.bin/tsc -b --pretty false` and
+`./node_modules/.bin/tsc -b tsconfig.tools.json --pretty false` both exit 0,
+and the vitest suite is `350 passed (350)` files / `3971 passed | 1 skipped
+(3972)` tests, exit 0. The file count is unchanged and the test count is one
+higher: the vocabulary test this branch's own file instructed its successor to
+delete is gone, and three arms replaced it.
+
 **Gates on the branch as it stands:** `./node_modules/.bin/tsc -b --pretty false`
 exit 0, and the vitest suite `350 passed (350)` files / `3970 passed | 1 skipped
 (3971)` tests, exit 0, on the committed tree. Another agent's suite was running
