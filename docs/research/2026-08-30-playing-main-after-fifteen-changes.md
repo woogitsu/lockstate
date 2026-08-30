@@ -280,7 +280,121 @@ outlasts the hygiene and recreation crossings *"by more than eight in-game
 days"*. A third of this prison's gross income was withheld, every day, for the
 whole run.
 
-### 1.6 So what should #653 and #668 be costed against? — and a correction to the question
+### 1.6 Run B, and the event stream that settles what a fall in `prisoners` was
+
+**VERIFIED, Run B, act 3.** The same twelve-into-six prison, run to tick 119,032
+(in-game day 50), 45.6 in-game days after the batch was admitted. Two things it
+has that run A did not.
+
+**First, the tick each admission landed on**, reconstructed from the counts
+publications rather than from a wall clock:
+
+```
+[act3] admissions, as (population@tick) from the counts publications: ["1@6147","2@6310","3@6474","4@6674","5@6884","6@7129","7@7462","8@7708","9@7911","10@8034","11@8280","12@8524"]
+```
+
+Twelve presses spread over **2,377 ticks** — very nearly one whole in-game day —
+which is why run A's departures could only be given as bands.
+
+**The trajectory, and `occupiedPlaces` doing exactly what it did in run A:**
+
+| tick | in-game day | `prisoners` | `roomOccupants` | **`occupiedPlaces`** | `accommodationCapacity` | treasury |
+| --- | --- | --- | --- | --- | --- | --- |
+| 11,686 | 5 | 12 | 6 | **6** | 6 | 25,520 |
+| 21,708 | 10 | 12 | 6 | **6** | 6 | 32,560 |
+| 31,912 | 14 | 12 | 6 | **6** | 6 | 36,560 |
+| 41,575 | 18 | 12 | 6 | **6** | 6 | 40,560 |
+| 51,590 | 22 | 11 | 6 | **6** | 6 | 44,560 |
+| 61,760 | 26 | 11 | 6 | **6** | 6 | 48,560 |
+| 71,373 | 30 | 11 | 6 | **6** | 6 | 52,560 |
+| 81,795 | 35 | 9 | 6 | **6** | 6 | 57,520 |
+| 91,931 | 39 | 9 | 6 | **6** | 6 | 61,520 |
+| 101,605 | 43 | 8 | 6 | **6** | 6 | 66,000 |
+| 111,991 | 47 | 8 | 6 | **6** | 6 | 70,960 |
+| 119,032 | 50 | 8 | 6 | **6** | 6 | 74,680 |
+
+**121 samples, zero where `occupiedPlaces !== min(prisoners, 6)`** — the second
+independent confirmation of §1.3, on a roster that never fell below the bed
+count and so never left 6.
+
+**Second, and this is what run A could not do at all: every `simulation/event`
+the worker published.** Sixty-six of them. By type:
+
+| event type | count |
+| --- | --- |
+| `incidents.all-clear` | 31 |
+| `incidents.riot-opened` | 17 |
+| `incidents.assault-opened` | 14 |
+| `prisoners.discharged` | 3 |
+| `incidents.escape-attempt-opened` | 1 |
+
+and the four that are not incidents, with their ticks:
+
+```
+["48000:incidents.escape-attempt-opened","73340:prisoners.discharged(1)","81300:prisoners.discharged(1)","94440:prisoners.discharged(1)"]
+```
+
+**Four falls in `prisoners` were observed, and the stream names each one:**
+
+| fall, sampled between | what the stream says | band at the time |
+| --- | --- | --- |
+| 48,031 – 48,891 | `incidents.escape-attempt-opened` at **48,000**, and **no discharge in that window** | *"A riot has broken out — 11 prisoners have stopped taking orders."* |
+| 73,004 – 73,886 | `prisoners.discharged(1)` at **73,340** | *"1 released — their sentences are served."* |
+| 80,908 – 81,795 | `prisoners.discharged(1)` at **81,300** | *"1 released — their sentences are served."* |
+| 93,969 – 94,807 | `prisoners.discharged(1)` at **94,440** | *"A fight has broken out between two prisoners."* |
+
+**So the weakest claim was a real one and it has an answer: one of four falls in
+run B was a prisoner getting out, not a sentence ending.** §7 is rewritten
+against this rather than left as a caveat.
+
+#### The escape attempt opened one tick after the review that made it possible
+
+**`ClassificationReviewSystem` is scheduled at `intervalTicks: 24,000,
+phaseTicks: 23,999`, so a review pass runs on tick 47,999.
+`incidents.escape-attempt-opened` is at tick 48,000.**
+
+`canAttemptEscape` is `riskTier >= ESCAPE_ATTEMPT_MINIMUM_RISK_TIER &&
+contrabandSeverity > 0` with the threshold at 3
+(`src/simulation/incidents/flashpoint.ts:113,281-283`), and ADR 0079 states that
+**no admission a player can make produces a tier 3**. This prison's twelve
+arrivals were tiers 0 and 1; run A's roster shows the same population reaching
+`High` across the same scheduled pass. **The review opened the gate and the
+trigger walked through it on the next tick.** That is the sharpest single piece
+of evidence this pass produced, and it is a *consequence of #659* that nothing
+in ADR 0079's consequence list anticipates.
+
+It is one occurrence. What would make it more than that is the same run at
+several seeds, which is a headless job rather than a browser one.
+
+#### Three sentences, resolved to whole in-game days
+
+With the per-admission ticks in hand and `sentenceEndTick = classification tick
++ sentenceLengthTicks` (classification about ten ticks after the press,
+§1.1), each discharge resolves to a narrow band:
+
+| discharged at tick | sentence, in ticks | in in-game days |
+| --- | --- | --- |
+| 73,340 | 64,806 – 67,183 | 27.0 – 28.0 |
+| 81,300 | 72,766 – 75,143 | 30.3 – 31.3 |
+| 94,440 | 85,906 – 88,283 | 35.8 – 36.8 |
+
+`drawSentenceLengthTicks` returns whole days, so the second and third are **31**
+and **36** exactly and the first is **27 or 28**. All three are inside
+`[14, 90]`, and all three are at the short end of it — which is what a 45-day
+horizon can see and nothing more.
+
+#### And a riot every three in-game days
+
+Not what this pass was sent to measure, and too loud to leave out: **17 riots and
+14 assaults in 45 in-game days**, in a twelve-prisoner prison with one guard and
+no shower room. `incidents.all-clear` fires 31 times, once after each. The
+eight-row alerts list is therefore **always full of incidents**: by tick 48,891
+it held two riots, one escape attempt and four all-clears and had already
+dropped everything older, and by tick 73,886 the escape-attempt row was gone.
+**In a prison like this the durable record of who left survives about ten
+in-game days.**
+
+### 1.7 So what should #653 and #668 be costed against? — and a correction to the question
 
 **The brief that produced this pass said the two open economy pull requests
 *"costed the economy against a prison that may be 5.8× too small."* Both halves
@@ -307,7 +421,7 @@ than "the prison is 5.8× too small" implies. #653's other headline —
 
 **And what the ×5.8 would have done to a costing that *did* read the roster:**
 
-**Not a prison 5.8× larger.** The three statements that follow from §1.1–§1.5,
+**Not a prison 5.8× larger.** The three statements that follow from §1.1–§1.6,
 separated because they need separate evidence:
 
 1. **The ratio of times in system is 5.78.** Arithmetic on two constants, and
@@ -843,6 +957,21 @@ somebody's is over.** `review`, `tier` and `days left` are still absent at the
 end of a fifty-day session in which the whole population was reclassified
 twice.
 
+**And run B's end-of-run sweep, on the same script and the same commit, is back
+to all eleven absent:**
+
+```
+[act3] VOCABULARY at end of run: present=[] absent=["sentence","sentenced","days left","release","released","discharge","review","reviewed","reclassif","tier","due out"]
+```
+
+Run B had **three** releases — the event stream names their ticks — and by the
+end of it none of the three words was on screen, because the band holds one
+event and the last one was an incident. **So the three words run A had at the
+end were not a property of a prison that has released somebody. They were a
+property of what happened to be on the band in the last few seconds**, and the
+difference between the two runs is the clearest statement this record can make
+about how much of the game's account of itself is transient.
+
 The eleven words are `sentence`, `sentenced`, `days left`, `release`,
 `released`, `discharge`, `review`, `reviewed`, `reclassif`, `tier`, `due out`.
 The list is in the script (`VOCABULARY`) so that a reader can see what was
@@ -872,11 +1001,31 @@ escape gate is `riskTier >= 3`, and act 3's own reviews put the whole visible
 population at tier 3 at tick 47,999 — after which **eight of run A's nine
 falls** occurred.
 
-**What would change my mind, and what was done about it:** the worker publishes
+**What would change my mind, and what run B did about it:** the worker publishes
 `prisoners.discharged` and `incidents.escape-attempt-opened` as separate members
-of `SIMULATION_EVENT_TYPES`, and the `Worker` tee keeps every one. Run B dumps
-that stream whole and opens the eight-row alerts list for the whole run.
-ESCAPE_RESOLUTION
+of `SIMULATION_EVENT_TYPES`, and the `Worker` tee keeps every one. Run B dumped
+that stream whole.
+
+**It was a real doubt, and the answer is one in four.** §1.6 has the table; the
+short form is that run B's four falls resolve to **three
+`prisoners.discharged`** (ticks 73,340 / 81,300 / 94,440) and **one
+`incidents.escape-attempt-opened` at tick 48,000 with no discharge anywhere in
+that window**. So a fall in `prisoners` is genuinely ambiguous, it was ambiguous
+in play and not only in principle, and this record's own §1.4 figure for run A —
+**nine falls** — is an **upper bound on run A's discharges** and not a count of
+them.
+
+**What that does to the number §1.4 flagged as uncomfortable.** Under a uniform
+draw, 5.1 of twelve would end within 46 days; run A saw nine falls. Run B shows
+a mechanism that inflates falls above discharges, so the gap is at least partly
+explained rather than merely suspicious — and it is **not** explained in run A,
+because run A did not record the stream. The honest statement is that **run A's
+discharge count is unknown and lies somewhere in `[0, 9]`**, and that run B's,
+which is known, is **three in 45.6 in-game days against an expectation of 4.7.**
+
+**This is what the second run bought.** The instrumentation that answered it was
+written *because* the first run could not, which is the only reason a second run
+of the same script is worth anything.
 
 ### What was not reached, stated rather than glossed
 
