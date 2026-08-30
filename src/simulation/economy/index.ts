@@ -20,6 +20,7 @@ export {
 export {
   JUST_IN_TIME_ORDER_ID_PREFIX,
   JustInTimeMaterialsService,
+  isJustInTimePurchaseOrderId,
   justInTimePurchaseOrderId,
 } from './just-in-time-materials';
 export { BASIS_POINTS_PER_UNIT, LoanBook, type LoanSnapshot, type LoanTerms } from './loans';

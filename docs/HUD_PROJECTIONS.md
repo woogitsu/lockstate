@@ -1185,6 +1185,29 @@ decision about what to build next.
       `tests/integration/economy-money-conservation.test.ts`. The balance
       returning to exactly its prior figure is asserted in integer minor units by
       `tests/integration/economy-purchase-cancellation.test.ts`.
+
+      **A third property was added by [#687](https://github.com/matmaxalez/lockstate/issues/687),
+      and the two above are kept rather than rewritten because neither has
+      stopped being true.** They describe the refund; what #687 measured is that
+      for one kind of delivery the refund did not *last*. #640 made a build
+      order buy its own materials, so the fold now lists deliveries the build
+      queue bought as well as ones the player pressed *Buy* for, and cancelling
+      one of the first kind left the order that had caused it queued and still
+      wanting the material: with the clock stopped a fifteen-segment wall run
+      refunded in full, `23,800 -> 24,760`, and six seconds after *Play* the
+      treasury read `23,800` again. The fold's own sentence, *"15 bought - 1,200
+      back if cancelled"*, was true when it was read and false a moment later,
+      and nothing on screen said so. So `CancelMaterialPurchase` now also
+      **withdraws** queued build orders -- the fewest that make the prison stop
+      having to buy the material back, decided against what it already holds and
+      has coming rather than against the cancelled quantity, and taken from the
+      back of the crew's ascending-id walk. **Only for a delivery the build
+      queue bought** (`isJustInTimePurchaseOrderId`): a delivery the player
+      pressed *Buy* for is stock they chose to hold, and no order is waiting on
+      it by name. Gated by
+      `tests/integration/economy-refund-survives-the-clock.test.ts`, and the
+      conservation equation across the whole sequence by the `#687` case in
+      `tests/integration/economy-money-conservation.test.ts`.
     - **The income line pays.** It used to have no occupied *place*:
       `RoomZoningService` registered a zoned room with `capacity: 0`, so a
       prisoner held no unit of any declared capacity and 300 × 0 was 0 in every
