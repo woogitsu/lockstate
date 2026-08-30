@@ -145,7 +145,17 @@ async function hudDump(page: import('@playwright/test').Page): Promise<HudDump> 
   });
 }
 
-const log = (act: string, line: string) => console.log(`[${act}] ${line}`);
+/**
+ * Wall-clock seconds since the act started, on every line.
+ *
+ * Added after a run spent its whole 600 s budget and the log could not say
+ * where: the answer was one `locator.click()` on a control that never became
+ * actionable, and Playwright's default action timeout is `0` -- no timeout at
+ * all. `page.setDefaultTimeout` below is the other half of that fix.
+ */
+let actStartedAt = Date.now();
+const log = (act: string, line: string) =>
+  console.log(`[${act} +${((Date.now() - actStartedAt) / 1000).toFixed(1)}s] ${line}`);
 
 async function observe(page: import('@playwright/test').Page, act: string, moment: string): Promise<HudDump> {
   const dump = await hudDump(page);
@@ -160,6 +170,61 @@ async function observe(page: import('@playwright/test').Page, act: string, momen
   log(act, `  transport: ${JSON.stringify(dump.transport)} clockMode=${dump.clockMode} speed=${JSON.stringify(dump.speedText)}`);
   log(act, `  VISIBLE HUD TEXT:\n${dump.visibleText.split('\n').map((l) => `      ${l}`).join('\n')}`);
   return dump;
+}
+
+/**
+ * The treasury, once the worker has actually published it.
+ *
+ * **Not `latestCounts` straight after a press.** `simulation/status-counts` is
+ * published on the worker's own cadence and skipped entirely when the payload
+ * equals the last one (`statusCountsEqual`,
+ * `src/simulation/worker/status-counts.ts`), so a read taken in the same
+ * hundred milliseconds as a click answers the balance from *before* it. Run 1
+ * of this file read `25000 -> 25000 (delta 0)` for six wall segments that had
+ * demonstrably cost 480, and the next observation a second later read 24,520.
+ * This polls until the figure moves or the budget runs out, and says which.
+ */
+async function settledTreasury(
+  page: import('@playwright/test').Page,
+  act: string,
+  was: number,
+  budgetMs = 8000,
+): Promise<number> {
+  const started = Date.now();
+  for (;;) {
+    const now = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
+    if (now !== was) return now;
+    if (Date.now() - started > budgetMs) {
+      log(act, `  treasury never moved off ${was} within ${budgetMs}ms -- reporting it unchanged`);
+      return now;
+    }
+    await page.waitForTimeout(400);
+  }
+}
+
+/**
+ * The tiles a drag can actually reach, from the measured origin.
+ *
+ * A gesture that leaves the window is not one a player can make, and the first
+ * version of act 3 dragged from tile column 2 at row 4 -- both off screen at
+ * 1440x900, where tile (0,0) sits at (-304,-574). Computed rather than
+ * hard-coded so the same code is right at another viewport. It is still an
+ * over-estimate: the HUD rail covers the right of the world and the panel
+ * covers the bottom, which run 1 measured as 20 segments on the first row and
+ * 16 on the next six.
+ */
+function visibleTileWindow(origin: { originX: number; originY: number }): {
+  firstColumn: number;
+  lastColumn: number;
+  firstRow: number;
+  lastRow: number;
+} {
+  return {
+    firstColumn: Math.ceil(-origin.originX / TILE) + 1,
+    lastColumn: Math.floor((1440 - origin.originX) / TILE) - 1,
+    firstRow: Math.ceil(-origin.originY / TILE) + 1,
+    lastRow: Math.floor((900 - origin.originY) / TILE) - 1,
+  };
 }
 
 /** Presses Play, and prints the clock either side of the press. */
@@ -190,8 +255,8 @@ async function watchQueue(
   for (;;) {
     const queue = (await panelText(page, '.hud-build__queue')).replace(/\n+/g, ' | ');
     const deliveries = (await panelText(page, '.hud-build__deliveries')).replace(/\n+/g, ' | ');
-    const treasury = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
-    const key = `${queue}::${deliveries}::${treasury}`;
+    const key = `${queue}::${deliveries}`;
+    const treasury = key === lastKey ? -2 : (await latestCounts(page))?.treasuryMinorUnits ?? -1;
     if (key !== lastKey) {
       const sample = { ms: Date.now() - started, tick: await currentTick(page), queue, treasury, deliveries };
       samples.push(sample);
@@ -211,12 +276,12 @@ async function watchQueue(
      * Recorded rather than corrected away: the shared harness treats
      * `not laid out` as empty and is right to.
      */
-    if (/0 waiting . 0 being built/.test(queue) || queue.includes('not laid out') || queue.includes('ABSENT')) return samples;
+    if (/(?<![0-9])0 waiting . 0 being built/.test(queue) || queue.includes('not laid out') || queue.includes('ABSENT')) return samples;
     if (Date.now() - started > timeoutMs) {
       log(act, `  ${label} GAVE UP after ${Date.now() - started}ms, queue still ${JSON.stringify(queue)}`);
       return samples;
     }
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
   }
 }
 
@@ -241,6 +306,10 @@ async function wallRun(
 test('act 1 and 2: a wall, then everything after it, with no procurement press', async ({ page }) => {
   test.setTimeout(600_000);
   const act = 'A1';
+  actStartedAt = Date.now();
+  // Playwright's default action timeout is 0 -- no timeout. One un-actionable
+  // control therefore consumes the whole test budget with no line saying which.
+  page.setDefaultTimeout(20_000);
   await installTee(page);
   await openApp(page);
 
@@ -265,7 +334,7 @@ test('act 1 and 2: a wall, then everything after it, with no procurement press',
   const southY = origin.originY + (AREA.y1 + 1) * TILE;
 
   const northSegments = await wallRun(page, act, origin, 'north', { x: westX + TILE / 2, y: northY }, { x: eastX - TILE / 2, y: northY });
-  const treasuryAfterWall = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
+  const treasuryAfterWall = await settledTreasury(page, act, treasuryBeforeWall);
   log(act, `TREASURY AT THE PRESS: ${treasuryBeforeWall} -> ${treasuryAfterWall} (delta ${treasuryAfterWall - treasuryBeforeWall}) for ${northSegments} wall segment(s)`);
   await observe(page, act, `one wall run of ${northSegments} placed, no Buy ever pressed`);
 
@@ -301,20 +370,28 @@ test('act 1 and 2: a wall, then everything after it, with no procurement press',
   let zoned = false;
   for (; attempts < 12 && !zoned; ) {
     attempts += 1;
-    await tab(page, 'rooms').click();
-    if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
-      await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    let note = '(the panel was never read)';
+    try {
+      await tab(page, 'rooms').click();
+      if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
+        await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+      }
+      await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+      // The arm control toggles, so a previous attempt can have left it armed
+      // and a blind click would disarm it. Read the label rather than assume.
+      const armLabel = (await page.locator('.hud-rooms__arm').innerText()).trim().toLowerCase();
+      if (!armLabel.startsWith('stop')) await page.locator('.hud-rooms__arm').click();
+      await drag(page, centreOf(origin, AREA.x0, AREA.y0), centreOf(origin, AREA.x1, AREA.y1));
+      note = await panelText(page, '.hud-rooms');
+      await page.locator('.hud-rooms__confirm').click();
+      await page.waitForTimeout(900);
+    } catch (error) {
+      log(act2, `designate attempt ${attempts} THREW: ${String(error).split('\n')[0]}`);
     }
-    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
-    await page.locator('.hud-rooms__arm').click();
-    await drag(page, centreOf(origin, AREA.x0, AREA.y0), centreOf(origin, AREA.x1, AREA.y1));
-    const note = await panelText(page, '.hud-rooms');
-    await page.locator('.hud-rooms__confirm').click();
-    await page.waitForTimeout(900);
     const counts = await latestCounts(page);
     log(act2, `designate attempt ${attempts} at t+${Date.now() - zoneStarted}ms: rooms=${counts?.rooms} | panel said ${JSON.stringify(note.split('\n').filter((l) => /OPEN|ENCLOS/i.test(l)))} | band ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
     zoned = (counts?.rooms ?? 0) > 0;
-    if (!zoned) await page.waitForTimeout(4000);
+    if (!zoned) await page.waitForTimeout(3000);
   }
   log(act2, `ZONING: ${zoned ? 'accepted' : 'NEVER ACCEPTED'} after ${attempts} attempt(s), ${Date.now() - zoneStarted}ms`);
   await observe(page, act2, 'after zoning');
@@ -325,7 +402,7 @@ test('act 1 and 2: a wall, then everything after it, with no procurement press',
   const treasuryBeforeBed = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
   const bedPoint = centreOf(origin, AREA.x0 + 1, AREA.y0 + 1);
   const bedCommands = await press(page, bedPoint.x, bedPoint.y);
-  const treasuryAfterBed = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
+  const treasuryAfterBed = await settledTreasury(page, act2, treasuryBeforeBed);
   log(act2, `bed press produced ${bedCommands.length} command(s): ${JSON.stringify(bedCommands.map((c) => c['type']))}`);
   log(act2, `TREASURY AT THE BED PRESS: ${treasuryBeforeBed} -> ${treasuryAfterBed} (delta ${treasuryAfterBed - treasuryBeforeBed})`);
   await observe(page, act2, 'one bed ordered');
@@ -369,12 +446,14 @@ test('act 1 and 2: a wall, then everything after it, with no procurement press',
 test('act 3: how much wall 25,000 buys, and what the game says when it runs out', async ({ page }) => {
   test.setTimeout(600_000);
   const act = 'A3';
+  actStartedAt = Date.now();
+  page.setDefaultTimeout(20_000);
   await installTee(page);
   await openApp(page);
   await page.getByRole('button', { name: 'New prison' }).click();
   await page.waitForTimeout(1000);
   await tab(page, 'build').click();
-  const origin = await calibrate(page);
+  let origin = await calibrate(page);
   log(act, `calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
 
   /*
@@ -421,42 +500,79 @@ test('act 3: how much wall 25,000 buys, and what the game says when it runs out'
   let ordered = 0;
   let fundsRefusalAtSegment = -1;
   let fundsRefusalText = '';
-  let lastAffordableTreasury = -1;
-  const runs: { kind: 'row' | 'column'; index: number }[] = [];
-  for (let row = firstRow; row <= lastRow; row += 1) runs.push({ kind: 'row', index: row });
-  for (let column = firstColumn; column <= lastColumn; column += 1) runs.push({ kind: 'column', index: column });
+  let treasuryBeforeTheRefusingRun = -1;
+  let bounds = visibleTileWindow(origin);
+  log(act, `visible tile window: columns ${bounds.firstColumn}..${bounds.lastColumn}, rows ${bounds.firstRow}..${bounds.lastRow}`);
 
-  for (const run of runs) {
-    const a =
-      run.kind === 'row'
-        ? { x: origin.originX + firstColumn * TILE + TILE / 2, y: origin.originY + run.index * TILE }
-        : { x: origin.originX + run.index * TILE, y: origin.originY + firstRow * TILE + TILE / 2 };
-    const b =
-      run.kind === 'row'
-        ? { x: origin.originX + lastColumn * TILE - TILE / 2, y: origin.originY + run.index * TILE }
-        : { x: origin.originX + run.index * TILE, y: origin.originY + lastRow * TILE - TILE / 2 };
-    const before = (await sentCommands(page)).length;
-    await drag(page, a, b);
-    const produced = (await sentCommands(page)).slice(before).filter((command) => command['type'] === 'PlaceBuildOrder');
-    ordered += produced.length;
-    const counts = await latestCounts(page);
-    const band = await hudDump(page);
-    log(
-      act,
-      `${run.kind} ${run.index}: +${produced.length} segments (total ${ordered}) treasury=${counts?.treasuryMinorUnits}` +
-        ` band=${JSON.stringify(band.refusal.text)}`,
-    );
-    if (FUNDS_SENTENCE.test(band.refusal.text) && fundsRefusalAtSegment < 0) {
-      fundsRefusalAtSegment = ordered;
-      fundsRefusalText = band.refusal.text;
-      log(act, `THE BAND NAMED MONEY after ${ordered} segments ordered; treasury was ${lastAffordableTreasury} before this run`);
-      await observe(page, act, 'the moment the band named money');
-      break;
+  /*
+   * **Several screenfuls, because one is not enough and that is itself the
+   * measurement.** Run 1 laid 116 segments from a single screen at 1440x900 --
+   * seven usable rows, the first giving 20 and the rest 16 because the HUD
+   * rail covers the right of the world, and nothing at all below row 16 where
+   * the panel sits. 116 x 80 is 9,280: a third of the treasury, and not the
+   * lock. So issue #641's *"a single sustained drag reaches it"* is measured
+   * here rather than assumed, and the camera is panned between passes with the
+   * **middle button**, which the panel's own arm hint names as a camera
+   * gesture (*"Two fingers, the middle button or the arrow keys still move the
+   * camera"*) and which, unlike the arrow keys, does not depend on where focus
+   * happens to be after a panel press.
+   *
+   * The origin is re-measured by `calibrate` after each pan rather than
+   * predicted from the gesture, for the reason `calibrate` exists at all --
+   * and `calibrate` leaves the *Remove* tool disarmed and the wall tool
+   * unarmed, so the wall is re-armed after every pass.
+   */
+  const MAX_PASSES = 8;
+  for (let pass = 0; pass < MAX_PASSES && fundsRefusalAtSegment < 0; pass += 1) {
+    if (pass > 0) {
+      await page.mouse.move(1000, 500);
+      await page.mouse.down({ button: 'middle' });
+      await page.mouse.move(200, 300, { steps: 12 });
+      await page.mouse.up({ button: 'middle' });
+      await page.waitForTimeout(400);
+      origin = await calibrate(page);
+      bounds = visibleTileWindow(origin);
+      await armBuildable(page, 'wall-brick');
+      log(act, `pass ${pass}: panned; origin now (${origin.originX}, ${origin.originY}); window columns ${bounds.firstColumn}..${bounds.lastColumn}, rows ${bounds.firstRow}..${bounds.lastRow}`);
     }
-    lastAffordableTreasury = counts?.treasuryMinorUnits ?? -1;
-    if (produced.length === 0) {
-      log(act, `${run.kind} ${run.index} produced NO orders -- stopping; band ${JSON.stringify(band.refusal.text)}`);
-      break;
+
+    const runs: { kind: 'row' | 'column'; index: number }[] = [];
+    for (let row = bounds.firstRow; row <= bounds.lastRow; row += 1) runs.push({ kind: 'row', index: row });
+    for (let column = bounds.firstColumn; column <= bounds.lastColumn; column += 1) runs.push({ kind: 'column', index: column });
+
+    for (const run of runs) {
+      const a =
+        run.kind === 'row'
+          ? { x: origin.originX + bounds.firstColumn * TILE + TILE / 2, y: origin.originY + run.index * TILE }
+          : { x: origin.originX + run.index * TILE, y: origin.originY + bounds.firstRow * TILE + TILE / 2 };
+      const b =
+        run.kind === 'row'
+          ? { x: origin.originX + bounds.lastColumn * TILE - TILE / 2, y: origin.originY + run.index * TILE }
+          : { x: origin.originX + run.index * TILE, y: origin.originY + bounds.lastRow * TILE - TILE / 2 };
+      const before = (await sentCommands(page)).length;
+      await drag(page, a, b);
+      const produced = (await sentCommands(page)).slice(before).filter((command) => command['type'] === 'PlaceBuildOrder');
+      const wasOrdered = ordered;
+      ordered += produced.length;
+      const band = await hudDump(page);
+      const counts = await latestCounts(page);
+      // Printed only when it did something or when the band moved, so that
+      // eight passes of runs do not bury the one line that matters.
+      if (produced.length > 0 || FUNDS_SENTENCE.test(band.refusal.text)) {
+        log(
+          act,
+          `pass ${pass} ${run.kind} ${run.index}: +${produced.length} (total ${ordered}) treasury=${counts?.treasuryMinorUnits}` +
+            ` predicted=${25_000 - 80 * ordered} band=${JSON.stringify(band.refusal.text)}`,
+        );
+      }
+      if (FUNDS_SENTENCE.test(band.refusal.text) && fundsRefusalAtSegment < 0) {
+        fundsRefusalAtSegment = wasOrdered + produced.length;
+        fundsRefusalText = band.refusal.text;
+        log(act, `THE BAND NAMED MONEY on the run that took the total to ${ordered} segments; the balance before this run was ${treasuryBeforeTheRefusingRun}`);
+        await observe(page, act, 'the moment the band named money');
+        break;
+      }
+      treasuryBeforeTheRefusingRun = counts?.treasuryMinorUnits ?? -1;
     }
   }
   const settled = await latestCounts(page);
