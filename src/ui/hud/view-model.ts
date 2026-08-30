@@ -453,8 +453,9 @@ export interface HudBuildOrderViewModel {
  * `buildQueueFromProjection`: the field reached this thread on the wire and
  * had nowhere to land, so no surface could read it and no test could assert
  * it above the worker boundary. Measured on this branch by the #640 playtest
- * (`docs/research/2026-08-30-a-wall-that-buys-itself.md`, "The shortfall
- * figure exists on the wire and reaches no pixel").
+ * (PR #655, section "The shortfall figure exists on the wire and reaches no
+ * pixel" -- its research document is cited by title rather than by path
+ * because it lives on that branch and not on this one).
  *
  * **Not derivable from `orders`, and that is the whole reason it is here.**
  * Since a build order buys its own materials (ADR 0017 decision 7), a row

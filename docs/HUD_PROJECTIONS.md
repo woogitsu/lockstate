@@ -1339,9 +1339,10 @@ decision about what to build next.
     `materialsFunding` on the floor: `HudBuildQueueViewModel` had no member to
     receive it, so the figure crossed the worker boundary inside the
     projection's JSON and was discarded on arrival. Found by playing, on the
-    branch that added it
-    (`docs/research/2026-08-30-a-wall-that-buys-itself.md`, *"The shortfall
-    figure exists on the wire and reaches no pixel"*).
+    branch that added it — #640's playtest, PR #655, section *"The shortfall
+    figure exists on the wire and reaches no pixel"*. Cited by title rather
+    than by path: that research document is on the playtest's own branch and
+    not yet on this one.
 
     `HudBuildQueueViewModel.materialsFunding` now carries `unfunded` and
     `shortfallMinorUnits` — the projection's `items` list is deliberately not
