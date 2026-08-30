@@ -59,7 +59,54 @@ const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url))
 
 const DEV_SERVER_CONFIG = 'tests/browser/playwright.config.ts';
 const ARTIFACT_CONFIG = 'tests/browser/playwright.artifact.config.ts';
-const CONFIGS = [DEV_SERVER_CONFIG, ARTIFACT_CONFIG] as const;
+/**
+ * THE CONFIG LIST IS DERIVED FROM DISK, NOT WRITTEN DOWN.
+ *
+ * It used to read `[DEV_SERVER_CONFIG, ARTIFACT_CONFIG] as const`, and that
+ * made this whole contract blind to the failure it exists to prevent: a
+ * **third** config. `tests/browser/playwright.playtest.config.ts` was added
+ * and every assertion below passed -- not because the new config partitions
+ * correctly, but because nothing here looked at it. A contract that enumerates
+ * the things it checks can only ever check the things somebody remembered to
+ * enumerate, and #578's whole finding was that a file nobody had thought about
+ * was being run by a config nobody had re-read.
+ *
+ * So the list is a directory walk. Any `playwright*.config.ts` in
+ * `tests/browser/` is subject to the partition, the moment it exists, whether
+ * or not anyone updates this file.
+ *
+ * The two named constants above survive, and are used only in the failure
+ * messages, which name specific configs because the remedy differs per config.
+ * `assertsKnownConfigsPresent` below keeps them honest: if either is renamed,
+ * this contract says so rather than quietly checking a smaller set.
+ */
+async function browserConfigPaths(): Promise<readonly string[]> {
+  const directory = path.join(repositoryRoot, 'tests/browser');
+  const entries = await readdir(directory, { withFileTypes: true });
+  const found = entries
+    .filter(
+      (entry) =>
+        entry.isFile() && entry.name.startsWith('playwright') && entry.name.endsWith('.config.ts'),
+    )
+    .map((entry) => path.posix.join('tests/browser', entry.name))
+    .sort();
+
+  // Non-vacuity, in both directions. Zero configs would satisfy every
+  // assertion below; a set that has lost one of the two the messages name
+  // would check less than this file claims to.
+  expect(
+    found.length,
+    'no `tests/browser/playwright*.config.ts` was found. Either the configs moved and this walk did not, or the walk is broken; fix the walk rather than restoring a hard-coded list.',
+  ).toBeGreaterThanOrEqual(2);
+  for (const known of [DEV_SERVER_CONFIG, ARTIFACT_CONFIG]) {
+    expect(
+      found,
+      `${known} is named in this contract's failure messages but is not on disk. Rename it there in the same commit, or those messages point a reader at a file that does not exist.`,
+    ).toContain(known);
+  }
+
+  return found;
+}
 
 /**
  * The one `testDir` expression this file knows how to resolve without
@@ -185,7 +232,7 @@ function collects(config: ParsedConfig, specFile: string): boolean {
 
 describe('browser suite partition contract', () => {
   it('runs every browser spec under exactly one Playwright config', async () => {
-    const configs = await Promise.all(CONFIGS.map(parseConfig));
+    const configs = await Promise.all((await browserConfigPaths()).map(parseConfig));
     const specFiles = [
       ...new Set((await Promise.all(configs.map((config) => specFilesUnder(config.testDir)))).flat()),
     ].sort();
@@ -224,7 +271,7 @@ describe('browser suite partition contract', () => {
   });
 
   it('keeps the artefact spec on the server that serves dist/, and only there', async () => {
-    const configs = await Promise.all(CONFIGS.map(parseConfig));
+    const configs = await Promise.all((await browserConfigPaths()).map(parseConfig));
 
     /*
      * The partition above is about names. This is about subjects, and it is
@@ -244,15 +291,40 @@ describe('browser suite partition contract', () => {
 
     expect(
       previewServers.map((config) => config.configPath),
-      `exactly one of the two Playwright configs must start \`vite preview\`, which is the only web server here that serves \`dist/\` rather than \`src/**\`. Commands read: ${configs
+      `exactly one Playwright config must start \`vite preview\`, which is the only web server here that serves \`dist/\` rather than \`src/**\`. Commands read: ${configs
         .map((config) => `${config.configPath} -> ${config.webServerCommand}`)
         .join('; ')}`,
     ).toEqual([ARTIFACT_CONFIG]);
 
+    /*
+     * THIS USED TO SAY "EXACTLY ONE", AND THAT WAS THE TWO-CONFIG SPELLING OF
+     * A NARROWER PROPERTY.
+     *
+     * `.toEqual([DEV_SERVER_CONFIG])` reads as a statement about how many
+     * configs serve the sources. It is not: the reason written beside it is
+     * *"if the ARTEFACT config ever starts that server, everything it asserts
+     * about the artefact becomes an assertion about the sources"* -- which
+     * constrains one config, not the count. The two coincided only while there
+     * were exactly two configs.
+     *
+     * `playwright.playtest.config.ts` is the case that separated them. It
+     * serves the harness dev server on purpose, because a playtest plays the
+     * sources, and under "exactly one" that correct config failed a contract
+     * whose own stated reason it does not violate. Generalised here to the two
+     * halves that are actually load-bearing, so a fourth config that plays the
+     * sources is fine and a config that muddles the artefact is still caught.
+     */
     expect(
       devServers.map((config) => config.configPath),
-      `exactly one of the two Playwright configs must start the harness dev server (\`--config tests/browser/vite.config.ts\`). If the artefact config ever starts that server, everything it asserts about the artefact becomes an assertion about the sources.`,
-    ).toEqual([DEV_SERVER_CONFIG]);
+      `the artefact config must NOT start the harness dev server (\`--config tests/browser/vite.config.ts\`): if it did, everything it asserts about the artefact would become an assertion about the sources. Commands read: ${configs
+        .map((config) => `${config.configPath} -> ${config.webServerCommand}`)
+        .join('; ')}`,
+    ).not.toContain(ARTIFACT_CONFIG);
+
+    expect(
+      devServers.map((config) => config.configPath),
+      `at least one Playwright config must start the harness dev server, or nothing in this repository drives \`src/**\` in a browser at all. This is the vacuity guard on the assertion above: "the artefact config is not among them" is satisfied trivially by an empty set.`,
+    ).toContain(DEV_SERVER_CONFIG);
 
     const artefactSpec = path.join(repositoryRoot, 'tests/browser/production-artifact.spec.ts');
     const owners = configs.filter((config) => collects(config, artefactSpec));
