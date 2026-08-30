@@ -403,8 +403,38 @@ export function stateIncomeForPrisonerDay(unmetNeeds: number): number {
  * array reads every 2,400 ticks.
  */
 export function stateIncomeForCompletedDay(source: PrisonerDayGrantSource): number {
+  return stateIncomeForOccupiedPlaces(source, source.roomInstances.residentIdsWithExistingPlace());
+}
+
+/**
+ * The same sum, over a list of occupied places the caller already holds.
+ *
+ * **It exists so that a caller needing both the money and the count pays for
+ * one walk.** `projectStatusStrip` is that caller: since the status-counts
+ * payload publishes `occupiedPlaces` beside its accrual chip, deriving the
+ * chip through `stateIncomeForCompletedDay` would take a second
+ * `residentIdsWithExistingPlace()` -- a second array and a second
+ * `O(P log P)` sort, on a projection that runs twice a second and is already
+ * called out in that function's own cost note as the one allocation scaling
+ * with the population. One walk, two answers.
+ *
+ * **`occupiedPlaceIds` must be `residentIdsWithExistingPlace()`'s answer**, and
+ * this function cannot check that -- it is handed a list of entity ids and
+ * every id in it is paid for. That is the cost of the shared walk, and it is
+ * why `stateIncomeForCompletedDay` above stays the name every other caller
+ * uses: it takes the source and cannot be handed the wrong list. A caller
+ * reaching for this one is asserting it has just asked the registry.
+ *
+ * Order-insensitive -- it folds integers -- so nothing here depends on the
+ * sort `residentIdsWithExistingPlace` applies. The sort is still that
+ * accessor's contract for the reason its own comment gives.
+ */
+export function stateIncomeForOccupiedPlaces(
+  source: PrisonerDayGrantSource,
+  occupiedPlaceIds: readonly EntityId[],
+): number {
   let total = 0;
-  for (const entityId of source.roomInstances.residentIdsWithExistingPlace()) {
+  for (const entityId of occupiedPlaceIds) {
     total += stateIncomeForPrisonerDay(unmetNeedCount(source.needs, source.entityStore.getIndex(entityId)));
   }
   return total;
