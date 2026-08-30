@@ -759,8 +759,14 @@ ESCAPE_RESOLUTION
    thing ADR 0079 said nobody had done.
 2. **The long tail.** No sentence longer than the run's horizon was observed at
    all, so nothing here says anything about the 90-day end of the range.
-3. **A second review's effect.** ADR 0079 predicts 85% of prisoners reach a
-   second review. Both runs cover one scheduled pass inside the batch's window.
+3. **A count of reviews per prisoner.** ADR 0079 predicts 85% of prisoners
+   reach a *second* review, and run A plainly contains more than one pass —
+   `ClassificationReviewSystem`'s scheduled ticks are 23,999, 47,999, 71,999 and
+   95,999, and the roster's words moved at least twice (up by 49,192, back down
+   by 99,766). **What this pass did not do is count them**, per prisoner or at
+   all: no review is observable except as a word on at most four rows of a panel
+   that only refreshes on one tab, so the 85% is neither confirmed nor
+   challenged here.
 4. **Whether anybody was carrying contraband**, which is the second gate on an
    escape (`contrabandSeverity > 0`). The `CONTRABAND` chip counts what has been
    *found*, and it read 0 throughout.
