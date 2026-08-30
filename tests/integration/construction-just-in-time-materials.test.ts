@@ -10,6 +10,7 @@ import {
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * **A build order buys what it needs** — [ADR 0017](../../docs/adr/0017-money-primary-resource-model.md)
@@ -56,6 +57,8 @@ const BRICK_PRICE = procurableMaterial(BRICK)!.unitPriceMinorUnits;
 const PLANK_PRICE = procurableMaterial(PLANK)!.unitPriceMinorUnits;
 /** One wall segment, all in: 2 bricks at 40. */
 const WALL_COST = 80;
+/** `room.cell`'s authored minimum, the rectangle every object fixture in this repository uses. */
+const CELL_RECT = { x: 4, y: 6, width: 2, height: 3 } as const;
 
 /**
  * Submits one command and steps once.
@@ -320,6 +323,54 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
 
     expect(runtime.refusals.last, 'the same item and quantity, bought this time').toBeUndefined();
     expect(runtime.refusals.count, 'the refusal happened, and the count says so').toBe(1);
+  });
+});
+
+describe('a placed object is a build order too (ADR 0028 decision 4)', () => {
+  /**
+   * `PlaceObject` reaches the same queue by a different door: it is routed in
+   * `runtime/session-commands.ts` rather than `construction/handler.ts`, and
+   * `ObjectPlacementService.place` submits a `BuildOrder` once the footprint
+   * checks pass. So everything above has to be true of a bed as well as of a
+   * wall, and it is a *separate* call site -- measured: removing it leaves
+   * every other test in this repository green.
+   */
+
+  /** A walled, zoned cell, which is what `PlaceObject` refuses without (`outside-room`). */
+  function prisonWithACell(): SimulationRuntime {
+    const runtime = createNewSimulationRuntime(SEED);
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
+    send(runtime, { type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
+    return runtime;
+  }
+
+  it('buys the plank on the press, not on the next scheduled tick', () => {
+    const runtime = prisonWithACell();
+    const before = runtime.treasury.balanceMinorUnits;
+
+    send(runtime, { type: 'PlaceObject', orderId: 'order-bed', definitionId: 'bed-wooden', x: CELL_RECT.x, y: CELL_RECT.y });
+
+    expect(runtime.treasury.balanceMinorUnits, 'one plank at 65, at the press').toBe(before - PLANK_PRICE);
+    expect(runtime.procurement.pendingDeliveries.map((delivery) => [delivery.itemId, delivery.quantity])).toEqual([
+      [PLANK, 1],
+    ]);
+
+    step(runtime, 4_000);
+    expect(runtime.construction.getOrder('order-bed')?.state).toBe('completed');
+    expect(runtime.placedObjects.size).toBe(1);
+  });
+
+  it('tells the player on the press when the prison cannot pay for it', () => {
+    const runtime = prisonWithACell();
+    // Down to 40, on bricks a bed cannot use.
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 624 });
+    expect(runtime.treasury.balanceMinorUnits).toBe(40);
+
+    send(runtime, { type: 'PlaceObject', orderId: 'order-bed', definitionId: 'bed-wooden', x: CELL_RECT.x, y: CELL_RECT.y });
+
+    expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
+    expect(runtime.treasury.balanceMinorUnits).toBe(40);
+    expect(runtime.construction.getOrder('order-bed')?.state, 'and the bed is still the player\'s').not.toBe('failed');
   });
 });
 

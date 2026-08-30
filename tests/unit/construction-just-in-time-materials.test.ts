@@ -223,6 +223,55 @@ describe('what a just-in-time pass cannot buy', () => {
   });
 });
 
+describe('the one way a just-in-time purchase id can collide', () => {
+  it('treats a purchase that already stands as satisfied rather than as a shortfall, and recovers on the next tick', () => {
+    /*
+     * `duplicate-order` is the fourth outcome `ProcurementSystem.purchase` can
+     * answer, and the id scheme is built so that it means one thing:
+     * *this exact purchase already stands*. The state is narrow and it is
+     * constructed here rather than described, because the branch is otherwise
+     * unreachable and an unreachable branch that guesses is how a wrong
+     * sentence ships.
+     *
+     * How it is reached: two purchases at one tick take
+     * `jit:7:item.brick:0` and `jit:7:item.brick:2`, since each raises the
+     * in-flight total. Cancelling the **first** puts the in-flight total back
+     * to 2 without freeing the id that names 2 -- so a third pass at the same
+     * tick composes `jit:7:item.brick:2` again. (The same shape is what a
+     * session restored onto the tick it was saved at produces.)
+     *
+     * What must not happen: the pass reporting a shortfall. Nothing is owed
+     * and no money is missing -- the materials are on the road under that very
+     * id -- and a player told to find money they already spent is worse off
+     * than one told nothing. What does happen is that this pass buys nothing;
+     * the next tick composes a different id and buys normally, which is
+     * asserted rather than assumed.
+     */
+    const { treasury, service, procurement } = fixture();
+
+    service.procureForPendingOrders([need(BRICK, 2)], 7);
+    service.procureForPendingOrders([need(BRICK, 4)], 7);
+    expect(procurement.pendingDeliveries.map((delivery) => delivery.orderId)).toEqual([
+      'jit:7:item.brick:0',
+      'jit:7:item.brick:2',
+    ]);
+
+    expect(procurement.cancel('jit:7:item.brick:0').ok).toBe(true);
+    const afterCancel = treasury.balanceMinorUnits;
+
+    const collided = service.procureForPendingOrders([need(BRICK, 6)], 7);
+    expect(collided.unfunded, 'nothing is owed: the bricks are on the road under that id').toEqual([]);
+    expect(collided.unprocurable, 'and this is not a content problem either').toEqual([]);
+    expect(collided.purchased).toEqual([]);
+    expect(treasury.balanceMinorUnits).toBe(afterCancel);
+
+    // The next tick composes a different id, so the shortfall is bought.
+    expect(service.procureForPendingOrders([need(BRICK, 6)], 8).purchased).toEqual([
+      { itemId: BRICK, quantity: 4, costMinorUnits: 160 },
+    ]);
+  });
+});
+
 describe('the report the queue is read through', () => {
   it('is empty before any pass has run, at a tick nothing can have run at', () => {
     const { service } = fixture();

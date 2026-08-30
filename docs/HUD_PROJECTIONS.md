@@ -1288,6 +1288,49 @@ decision about what to build next.
     materials, or earn them, is a session/economy decision and still unmade;
     what is no longer true is that the wall never comes.
 
+    **Amended 2026-08-30 (#627): the sentence above about the player having to
+    buy first is now false, and the paragraph is kept rather than rewritten
+    because the sequence it describes is what the defect was.** It read *"a
+    build order in the running app reaches `materials-pending` and then
+    *leaves* it, once the player has bought what it needs"*, and that "once
+    the player has bought" was a **requirement the game never stated**. The
+    owner met it live: forty wall orders, 25,000 untouched, nothing built, and
+    the word *material* appearing nowhere on the visible HUD. ADR 0017
+    decision 7 had already ruled the other way — *"materials are just-in-time
+    by default; holding is permitted, never required"* — so the code and an
+    accepted decision had disagreed since #249.
+
+    A build order now **buys what it needs**, at the press, from the treasury,
+    at catalogue price (`JustInTimeMaterialsService`,
+    `ConstructionProcurementSink`). A player who pre-buys sees no change: the
+    deficit nets off both stock held and deliveries already paid for. What a
+    fresh prison *starts* with is still unmade and still a session/economy
+    decision; what changed is that starting with nothing is no longer a dead
+    end.
+
+32b. **`hud/build-queue` says whether the queue is stalled on money** —
+    `BuildQueueViewModel.materialsFunding`, added with #627. It carries
+    `unfunded`, a `shortfallMinorUnits` total, and the per-item quantities and
+    costs behind it, all in ascending item id.
+
+    **Not derivable from the rows, which is the whole reason it exists.**
+    Since a build order procures for itself, `'materials-pending'` means two
+    different things that a player cannot separate: *the lorry is on its way*,
+    which resolves itself in ten scheduled ticks, and *the prison could not
+    pay*, which resolves itself never. Both draw the identical row.
+
+    It answers the standing directive in
+    [#629](https://github.com/matmaxalez/lockstate/issues/629) — *"a mechanic
+    the player must discover in order to proceed is a defect"* — at the level
+    this document owns, which is the payload. **What is owed above it is a
+    player-facing sentence, and that is the owner's** (`AGENTS.md`): the
+    shortfall reaches the alert band today only as
+    `purchase.insufficient-funds`, *"The materials were not ordered — there
+    are not enough funds."* — true, shipped, and authored by nobody for this
+    route. A `build.*`-namespaced sentence could name the wall as well as the
+    money, and would need a new `RefusalReason` member, a new
+    `hud.alert.refusal.build.*` key and its English text.
+
 32. **Build costs are material quantities, and that part is real**:
     `BuildableDefinition.materialsRequired` is `{itemId, quantity}` and
     `ContainerMaterialsProvider` genuinely consumes them from a
