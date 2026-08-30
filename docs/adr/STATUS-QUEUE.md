@@ -8,7 +8,7 @@ implementation.
 
 **Nothing here changes a status.** A status moves in the ADR and in the index,
 never in this file. What changed with this revision is what the file is *for*:
-§1 records **all thirteen** flips, §2 holds **seven entries — the two dated rulings
+§1 records **all thirteen** flips, §2 holds **eight entries — the two dated rulings
 #382 wrote into ADR 0008 §2, the 2026-08-27 amendment scoping that ADR's §3
 by authority, the preconditions on the change that gives this project its
 first server-side entry point, ADR 0056's price for keeping a player's
@@ -16,10 +16,15 @@ orders in the order they gave them (2026-08-28, and the first row filed by the
 change that wrote it since the rule was restated), ADR 0059's price for
 making an actor walk (2026-08-28, #485, the second such row), ADR 0074's
 price for reading a restored room's rectangle off the zoning plane it already
-carries (2026-08-29, #571, the third), and ADR 0071's open-area amendment
+carries (2026-08-29, #571, the third), ADR 0071's open-area amendment
 (2026-08-29, #585, the fourth — and the second consecutive row filed by a
-commit whose only job was the filing)** — **this clause read "six entries"
-until #585's entry was filed, "five entries"
+commit whose only job was the filing), and ADR 0077's price for asking whether
+the edge in front of an actor is still standing (2026-08-29, #581, filed by
+#615 — the fifth, the third consecutive row filed by a commit whose only job
+was the filing, and **the first filed as a debt rather than on time**: #581
+landed the ADR with no row at all, which is what #615 was opened to
+record)** — **this clause read "seven entries" until #615's entry was filed,
+"six entries" until #585's, "five entries"
 until #571's, and "four entries" until `07add3e`**, and the sentence saying four is corrected
 rather than overwritten because the split is the finding: #485 filed ADR 0059's
 entry, moved §2's own heading with it and moved neither this paragraph nor §5's
@@ -2254,7 +2259,7 @@ cells is exercised nowhere, because no shipped session yet furnishes two.
 
 ---
 
-## 2. Seven entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, the Worker that lands with telemetry ingest, ADR 0056's price for keeping a player's orders in order, ADR 0059's price for making them walk, ADR 0074's price for reading a restored room's rectangle, and ADR 0071's open-area amendment
+## 2. Eight entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, the Worker that lands with telemetry ingest, ADR 0056's price for keeping a player's orders in order, ADR 0059's price for making them walk, ADR 0074's price for reading a restored room's rectangle, ADR 0071's open-area amendment, and ADR 0077's price for asking whether the edge in front of an actor is still standing
 
 **This heading has now read "empty", "exactly one entry: ADR 0029", "empty
 again", one entry, two, one, empty for the third time, one again, and — on
@@ -2811,6 +2816,105 @@ the model of 0022's and 0023's rows — **and this entry deleted in the same
 commit**, which is this section's standing recipe. Point 2 above is *not*
 discharged by that and outlives it.
 
+### ADR 0077 (2026-08-29) — the rule is decided, whether a lockdown may strand a walker is not
+
+**What is waiting.** [ADR 0077](./0077-when-a-route-stops-being-valid.md), *"When
+a route stops being valid"*, is `Proposed, 2026-08-29. Not self-approved.` It
+landed at `827201e` (#581) with the change that implements it, and **with no row
+here** — the omission [#615](https://github.com/matmaxalez/lockstate/issues/615)
+records, and this entry discharges.
+
+**The evidence, which is a reproduction rather than a reading.** SIM-001 from the
+2026-08-29 audit pass rated *"active locomotion routes are not invalidated by
+later topology changes"* HIGH/HIGH; the independent red-team pass reached the
+same code as RED-002 and **declined to call it a defect**, because it had not
+shown a legitimate present-day player sequence that leaves a walk alive across
+the construction transition. Neither audit executed anything.
+`tests/integration/wall-built-mid-walk.test.ts` is the producer-side proof the
+second one refused to assume, through the real `PlaceBuildOrder` path on seed
+`0x0b1ec7`:
+
+| tick | what happened |
+| --- | --- |
+| 1,621 | the wall is standing, and the prisoner is **thirteen tiles short of it** |
+| 1,657 | the prisoner crosses the walled edge — thirty-six ticks later |
+| 1,663 | it finishes inside a cell nothing in the prison can reach |
+
+The thirteen tiles are the point: the fixture is shaped so the window is
+**measured rather than assumed**, which is the difference between "walked through
+a wall" and "crossed on the tick it appeared".
+
+**What settling it commits the project to.** Six decisions, and three of them
+commit to something a later change cannot quietly undo.
+
+1. **A required predicate on `LocomotionStore` (decision 5).** Not an optional
+   one with a permissive default — a default of *"always allowed"* is precisely
+   the state the audited tree was in. Making it required turned five call sites
+   into compile errors, and `tests/helpers/open-ground.ts` is the named answer
+   for fixtures that build no geometry. **This is the mechanism by which ADR 0059
+   open question 4 — do guards walk — cannot reintroduce SIM-001 by omission**,
+   so accepting it commits every future locomotion caller to answering the
+   question at the compiler rather than at review.
+2. **A standing gate on the cadence, not on the wall clock.** *"Once per tile
+   crossed, not once per tick"* is a count, so unlike the microseconds beside it
+   it survives a shared runner, which is why `docs/BENCHMARKING.md` refuses a
+   wall-clock threshold and this decision still gets a gate.
+   `benchmarks/scenarios/actor-render-publication.mjs` pins
+   `canCrossCallsPerWalkerPerPublication` at exactly `1`. Both gates were watched
+   failing: moving the predicate into the per-tick loop takes `canCrossCalls` to
+   334 against 167 at smoke and 3,334 against 1,667 at full. **Accepting this
+   commits to keeping that pin**, and the pin is what a later refactor would
+   break silently.
+3. **One passability ordering, one place (decision 4).** `canStep` in
+   `local-search.ts` stops holding a second copy and goes through `edgeStanding`.
+   The *policies* still differ legitimately; the ordering is now written once.
+
+**The decision inside it that is written down as reversible, and the reason this
+row exists rather than only the ADR.** Decision 6 puts doors inside the rule, so
+a door **locked under a walker** — which is exactly what a riot lockdown does via
+`setControlState(sectorId, 'lockdown')` (ADR 0057) — now stops that walker, where
+before the walk continued through it. **The ADR states its own evidence for this
+as negative and does not dress it up**: `riot-regime-loop`,
+`incident-consequence-loop` and `incident-events-loop` all pass unchanged, and
+**no test was written that watches a prisoner meet a door locked mid-walk,
+because none existed to extend and building one was not reached.** The narrower
+alternative is one line and is written out in the ADR so nobody has to re-derive
+it under pressure: return `true` for `standing.kind === 'door'` instead of
+consulting `checkDoorAccess`, keeping the whole SIM-001 fix, at the cost of a
+lockdown that does not confine anybody already walking for the length of one
+journey.
+
+That is the part of this ADR an owner would want to have seen before it is
+settled, and it is a playability judgement rather than a correctness one.
+
+**What it does not cost, stated because the expensive alternative was the
+tempting one.** No save-format change, no migration, no persisted field on a
+walk — option C, the route validity token, would have been an
+[ADR 0038](./0038-what-makes-a-save-compatible.md) question and a
+`SAVE_SCHEMA_VERSION` conversation, and was rejected for that among two other
+counts. **No determinism fingerprint moves**: no system added or reordered, no
+RNG stream added or drawn from differently, the predicate a pure function of
+world state. **No player-facing string** is added or changed. The one visible
+consequence is recorded rather than hidden — an actor refused an edge steps back
+up to half a tile, and the look-ahead that removes even that is named, costed at
+double the predicate calls, and deliberately not taken.
+
+**The number is provisional and the document pre-commits to renumbering.** ADR
+0077's own preamble records that the assigner's branch sweep and the drafting
+agent's `max + 1` off disk **disagreed** — disk said 0075, the sweep across every
+remote head said 0077, because 0075 and 0076 sat unmerged on
+`agent/econ-hardlock-and-recycling` and 0072 is held and unwritten. Both answers
+are in the document on purpose. Since then 0075 and 0076 have merged and are
+Accepted, so the sweep's answer is now visible on disk too and the collision it
+avoided can be checked by anybody.
+
+**The exact line that would replace the status:** `**Accepted, <date> — <by whom,
+and what was read>.**` in
+[`0077-when-a-route-stops-being-valid.md`](./0077-when-a-route-stops-being-valid.md)
+and the matching change to its [`README.md`](./README.md) row, **naming whether
+decision 6 is taken whole or in its narrower form**, because those are different
+games and the ADR says so. **Delete this entry in the same commit.**
+
 ### ADR 0031 — accepted 2026-08-26, and the entry is deleted
 
 Following this section's own recipe: the decision was settled, the accepted count
@@ -2915,6 +3019,63 @@ section is addressed to the owner and exists so a pending decision is visible;
 is unnecessary — 0031 sat for a day *with* an entry — but it is evidence that the
 queue is not the only path, and a rule whose violation costs nothing observable
 will be violated again.
+
+### ADR 0075 and ADR 0076 — accepted 2026-08-29, and their entries were written and never filed
+
+**Six, not four.** The heading above counted 0032, 0033, 0034 and 0035 and is
+left standing, because what it counted is exactly right and the shape it named
+is what happened again. These two are recorded separately rather than folded
+into that count, because **they are a different failure and the difference is
+the finding**.
+
+The four above were *never written*. These two were written in full — argued,
+evidenced, with the exact status line each acceptance would need — and handed
+over as text in
+`docs/research/2026-08-29-a-prison-that-cannot-buy-its-first-bed.md` §8, under a
+heading that says so, with a stated reason:
+
+> any count written here is wrong by one whichever way the two branches land, in
+> all four places at once, and the merge conflicts in exactly the four
+> paragraphs whose value is the record of how they came apart
+
+That is this section's own *"unsatisfiable under concurrency"* diagnosis, applied
+correctly by an author who could see it coming. They did the thing #571 had just
+proved works: leave the file alone, hand the entry to a separate filing commit
+that can read the true count off the merged tree. **The handover was right, the
+reasoning was right, and the entries still never reached this file** — because
+[#606](https://github.com/matmaxalez/lockstate/pull/606) accepted both on
+2026-08-29 before the filing commit ran.
+
+**So the entries are not filed here, and that is a decision rather than the
+omission repeating.** Both were written ending in this section's standing recipe
+— *"Delete this entry in the same commit"* — and both ADRs are now
+`**Accepted, 2026-08-29, by the repository owner.**` Filing them in order to
+delete them in the same commit would put two rows in this file that describe
+decisions nobody is waiting on, which is the opposite of what §2 is for. The
+full text of both survives in the research document, which is where a reader
+who wants to know what the acceptance was weighing should be sent.
+
+**What the pair costs, which the four above did not.** 0032's case established
+that an ADR can be approved faster than its queue entry can be written. These
+two establish something narrower and worse: **an entry can be written, correct,
+complete, and deliberately routed around a known concurrency defect, and still
+not arrive.** Diligence was not the missing ingredient in any of the six. The
+window between "the entry exists as text" and "the entry is in the file" is
+owned by nobody, and every instance so far has been lost inside it.
+
+**And the acceptance route is worth reading beside this.** #606 records, in both
+ADRs, that the owner's acceptance was given **against a summary of each ADR's
+subject and its stated cost, as one of eight decisions, not against the full
+text**. A §2 row is the artefact that would ordinarily carry that summary. Both
+rows existed and neither was in front of anybody. That is not an argument that
+the acceptance was wrong — 0075's and 0076's substance had already been ruled on
+— but it is the clearest case yet of what this section is for, met by not being
+there.
+
+The fix named four cases ago is unchanged and is now overdue by two more: **one
+file per entry in a directory**, so that a filing commit cannot be beaten to the
+finish by an acceptance, and so that "the file is held" and "the count will be
+wrong whichever way the branches land" both stop being reasons.
 
 ### Why the queue was emptied, and what that bought
 
@@ -3362,6 +3523,29 @@ first server-side entry point — so the "with the queue empty" opening no longe
 describes the file either. **Still three at `bb3a01e`**: no entry was added or
 deleted in the eleven releases, and this is one of the four places the header
 names as counting the queue, swept here for that reason.
+
+**EIGHT at #615, and the third consecutive anchor at which no place lagged —
+but the mechanism was a debt being paid rather than a rule being followed.** ADR
+0077's entry was filed by a commit whose only job was the filing, so the header's
+opening paragraph, §2's own heading and this preamble moved together for the
+third time running. **The observation now has three instances and is still not a
+rule**, and the reason it is still not one is sharper than it was: every one of
+the three was a *separate filing commit*, and the split this file keeps
+recording has never once been tested against an implementing change since the
+rule was restated. #581 was the chance to test it and did not — it landed ADR
+0077 and filed nothing, which is the omission
+[#615](https://github.com/matmaxalez/lockstate/issues/615) exists for. So the
+three-instance run is evidence that a filing commit does its job, and no
+evidence at all that the four places have stopped coming apart.
+
+**And the count moved by one where it could have moved by three.** #615 also
+named ADR 0075's and 0076's entries as outstanding — written in full, handed
+over as text, never filed. They are not filed here, because #606 accepted both
+on 2026-08-29 before this commit ran, and both entries' own recipes end *"Delete
+this entry in the same commit"*. Filing them in order to delete them in the same
+commit would be theatre. They are recorded at the foot of §2 instead, where this
+file already keeps the ADRs that were accepted without ever appearing in the
+queue.
 
 **SEVEN at #585, and the second consecutive anchor at which no place lagged.**
 ADR 0071's open-area amendment (the owner's ruling of 2026-08-29 on issue #585)
