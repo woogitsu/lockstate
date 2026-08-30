@@ -161,8 +161,20 @@ export const STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS = 300;
  * backstop": its decision A(i) relocates the excess resident where there is
  * somewhere to put them, and A(ii) is what makes the branch where there is
  * **not** -- a full prison, a one-cell prison, and every prison running the
- * recycling loop by construction -- cost the state nothing. A(i) is not
- * implemented here and is a separate change; nothing in this module needs it.
+ * recycling loop by construction -- cost the state nothing.
+ *
+ * **That sentence continued "A(i) is not implemented here and is a separate
+ * change; nothing in this module needs it", and half of it has since stopped
+ * being true.** A(i) landed -- `ObjectPlacementService` asks
+ * `PrisonerOperationsRuntime.relocateExcessResidentsOf` on both routes that
+ * take a standing object out of a room, so a removal with a free bed anywhere
+ * to hand now moves the resident instead of leaving them. The half that stays
+ * true is the half this module depends on: **nothing here changed for it, and
+ * nothing here needs to.** A relocated resident occupies a real furnished
+ * place and is paid for by the same walk that was already withholding the
+ * money while they sat in a bedless cell; a resident nothing could move is the
+ * `'no-vacancy'` branch, which is exactly the state this rule is
+ * unconditional about.
  *
  * **`min(occupancy, residentCapacity)` is a count, and since
  * [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md) a
