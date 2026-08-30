@@ -908,10 +908,10 @@ was about exactly this; it is **not** a statement about `main`.
 
 **And the successor measurement already exists, so this section does not need a
 re-run and should not get one.** `16d8b2a` — *"The naive build route works now
-— played six times, and one claim of mine refuted (#655)"* — carries
-`docs/research/2026-08-30-a-wall-that-buys-itself.md`, which played the route
-**without ever calling `buy()`** on the post-#640 tree, six times, and answers
-it:
+— played six times, and one claim of mine refuted (#655)"* — carries a research
+record of its own, *"Playtest: does a wall get built without ever pressing
+*Buy*, and what stops the player next?"*, which played the route **without ever
+calling `buy()`** on the post-#640 tree, six times, and answers it:
 
 > **The wall does get built, with no procurement press — the answer to #627**
 > […] `[A1 +75.3s] TREASURY AT THE PRESS: 25000 -> 24520 (delta -480) for 6 wall segment(s)`
@@ -925,6 +925,12 @@ Read the two together and the shape is: the money now leaves the treasury on the
 press that draws the wall, so *"6 waiting · 0 being built"* forever is a state
 `main` cannot produce any more. **Anyone quoting §5.1 as a live defect is
 quoting the wrong record; quote that one.**
+
+*(It is cited by its commit and its title rather than by a path, because it does
+not exist in this tree: this branch is cut from `898a16a`, which predates it.
+`tests/foundation/documentation-links-contract.test.ts` catches exactly that,
+and it caught this — the first version of this paragraph named the file and went
+red.)*
 
 `docs/research/README.md`'s standing rule is what makes keeping this section
 right rather than deleting it: *"when the code moves on, a record here does not
