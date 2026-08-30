@@ -867,9 +867,13 @@ ESCAPE_RESOLUTION
    all: no review is observable except as a word on at most four rows of a panel
    that only refreshes on one tab, so the 85% is neither confirmed nor
    challenged here.
-4. **Whether anybody was carrying contraband**, which is the second gate on an
-   escape (`contrabandSeverity > 0`). The `CONTRABAND` chip counts what has been
-   *found*, and it read 0 throughout.
+4. **How much contraband was in the prison.** This one is *partly* answered and
+   the answer is a correction to how it was first written here. `canAttemptEscape`
+   is `riskTier >= 3 && contrabandSeverity > 0`, and run B produced *"A prisoner
+   is trying to break out."* — so **at least one prisoner was carrying
+   something**, which the `CONTRABAND` chip could never have told anybody: it
+   counts what has been *found*, and it read `0` in every sample of both runs.
+   What is still unmeasured is how many were carrying and how much.
 5. **The whole `[14, 90]` distribution.** Twelve draws per run is not a sample
    of 77 values, and the departures observed sit at the short end of the range.
    Whether that is the draw or the horizon is not separable from these runs, and
