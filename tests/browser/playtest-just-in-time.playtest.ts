@@ -673,3 +673,61 @@ test('act 3: how much wall 25,000 buys, and what the game says when it runs out'
    * the measurement of the consequence.
    */
 });
+
+/**
+ * **The control, and the only place in this file that presses *Buy*.**
+ *
+ * Act 1 measured that the Build panel's *On the way* block reads `not laid
+ * out` for the whole twelve seconds after a wall run, sampled four times a
+ * second, while a just-in-time delivery is demonstrably in flight -- six
+ * purchases of two `item.brick`, each arriving `PROCUREMENT_DELIVERY_DELAY_TICKS`
+ * = 100 ticks later.
+ *
+ * That measurement has two possible readings and reading the code cannot
+ * separate them, because `projectPendingDeliveries`
+ * (`src/simulation/presentation/procurement-projection.ts:138-152`) maps every
+ * entry of `ProcurementSystem.pendingDeliveries` with no filter on who bought
+ * it: either the block does not show a purchase *the game made*, or the block
+ * does not show a purchase *at all* and act 1 found a defect that has nothing
+ * to do with #627.
+ *
+ * So this act buys ten bricks through the procurement fold, the way a player
+ * who found it would, and runs the identical probe. It is deliberately the
+ * last test in the file and it is deliberately named a control, so that
+ * nothing above it is read as having pressed Buy.
+ */
+test('control: the same probe, against a purchase the player pressed Buy for', async ({ page }) => {
+  test.setTimeout(600_000);
+  const act = 'C1';
+  actStartedAt = Date.now();
+  page.setDefaultTimeout(20_000);
+  await installTee(page);
+  await openApp(page);
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.waitForTimeout(1000);
+  await tab(page, 'build').click();
+  await pressPlay(page, act);
+
+  const before = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
+  await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+  const buyRow = page.locator('.hud-build__buy');
+  if (await buyRow.isHidden()) await page.locator('.hud-build__buy-toggle').click();
+  await page.locator('.hud-build__buy .ui-number__input').fill('10');
+  log(act, `the Buy control reads: ${JSON.stringify((await page.locator('.hud-build__buy-submit').innerText()).trim())}`);
+  await page.locator('.hud-build__buy-submit').click();
+  const after = await settledTreasury(page, act, before);
+  log(act, `TREASURY AT THE BUY PRESS: ${before} -> ${after} (delta ${after - before}) for 10 x item.brick`);
+
+  const started = Date.now();
+  const seen = new Set<string>();
+  while (Date.now() - started < 12_000) {
+    const text = (await panelText(page, '.hud-build__deliveries')).replace(/\n+/g, ' | ');
+    if (!seen.has(text)) {
+      seen.add(text);
+      log(act, `  ON THE WAY at t+${Date.now() - started}ms (tick ${await currentTick(page)}): ${JSON.stringify(text)}`);
+    }
+    await page.waitForTimeout(250);
+  }
+  log(act, `CONTROL: the ON THE WAY block showed ${seen.size} distinct state(s) after a pressed Buy: ${JSON.stringify([...seen])}`);
+  await observe(page, act, 'after a pressed Buy');
+});
