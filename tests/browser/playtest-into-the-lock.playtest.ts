@@ -43,11 +43,15 @@ import {
  *    bed, and simply waiting. ADR 0075 exhausted the escapes through the
  *    command router; this exhausts the ones a player can reach.
  * 3. **Whether an ordinary ambitious build gets there.** Act 3 builds the way
- *    somebody planning a real prison would -- a large perimeter, cell walls
- *    inside it -- never trying to reach the lock, and prints what is left. It
+ *    somebody planning a real prison would -- three wings, each a perimeter
+ *    with a corridor and cell partitions, each at its own camera position --
+ *    never trying to reach the lock, and then tries to furnish what it drew. It
  *    also does the thing a planner actually does and a fencer never does:
  *    changes its mind and redraws, which is where money-turned-into-bricks is
- *    either recovered or lost.
+ *    either recovered or paid for twice.
+ * 4. **Whether the escape depends on a control the game never mentions.** Act 4
+ *    draws one run with the clock never started -- the state a new session
+ *    actually arrives in -- and asks the fold what it will refund.
  *
  * ## The rules this file plays under
  *
@@ -73,8 +77,31 @@ import {
  * `docs/research/2026-08-30-playing-into-the-lock.md`.
  */
 
-/** Anything a player could read as the game talking about money. */
+/**
+ * Anything a player could read as the game talking about money.
+ *
+ * **Grepping the whole visible HUD with this is useless, and run 1 of this
+ * file measured why**: `moneyWordOnScreen=true` on the very first drag of a
+ * fresh session, and on every drag after it, because the status strip renders
+ * the word `FUNDS` beside the balance and the Build panel renders a `Buy`
+ * disclosure toggle. Both are furniture. They are on screen at second zero and
+ * they are the same at 25,000 and at 40.
+ *
+ * So the descent measures the **difference** instead: the set of visible lines
+ * at the moment the wall tool is armed is captured once, and every drag after
+ * it reports only the lines that were not in that set. "What did the game
+ * newly say" is a question with an answer; "does the word money appear" is
+ * not.
+ */
 const MONEY_WORDS = /fund|afford|money|cost|price|short|pay|balance|treasur|buy|bought|purchase|spend|spent/i;
+
+/** Every visible line, as a set, so a later dump can be diffed against it. */
+const lineSet = (visibleText: string): ReadonlySet<string> =>
+  new Set(visibleText.split('\n').map((line) => line.trim()).filter((line) => line !== ''));
+
+/** The lines on screen now that were not on screen at the baseline. */
+const newLines = (baseline: ReadonlySet<string>, visibleText: string): readonly string[] =>
+  [...lineSet(visibleText)].filter((line) => !baseline.has(line));
 
 /** The refusal ADR 0075 predicts, and the only sentence the descent ever produces. */
 const FUNDS_SENTENCE = /not enough funds/i;
@@ -265,8 +292,10 @@ async function openQueueFold(page: import('@playwright/test').Page): Promise<boo
 interface DescentResult {
   readonly ordered: number;
   readonly treasury: number;
-  readonly firstMoneyWordAtSegment: number;
-  readonly firstMoneyWordText: string;
+  readonly firstNewLineAtSegment: number;
+  readonly firstNewLineText: string;
+  readonly firstNewMoneyLineAtSegment: number;
+  readonly firstNewMoneyLineText: string;
   readonly origin: { originX: number; originY: number };
 }
 
@@ -285,19 +314,33 @@ async function descendToTheLock(page: import('@playwright/test').Page, act: stri
   let origin = await calibrate(page);
   log(act, `calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
 
-  const baseline = await hudDump(page);
-  log(act, `BASELINE after calibration (a harness artifact, not play): refusal=${JSON.stringify(baseline.refusal.text)}`);
-  log(act, `BASELINE visible HUD matches a money word? ${String(MONEY_WORDS.test(baseline.visibleText))}`);
-  log(act, `BASELINE visible HUD, verbatim:\n${baseline.visibleText.split('\n').map((l) => `      ${l}`).join('\n')}`);
+  const afterCalibration = await hudDump(page);
+  log(act, `BASELINE after calibration (a harness artifact, not play): refusal=${JSON.stringify(afterCalibration.refusal.text)}`);
 
   await pressPlay(page, act);
   await armBuildable(page, 'wall-brick');
 
+  /*
+   * **The baseline is taken here, with the wall tool armed and nothing yet
+   * drawn**, because that is the screen a player is looking at the instant
+   * before the first segment costs them anything. Every line reported below is
+   * a line that was not on this screen.
+   */
+  const baselineDump = await hudDump(page);
+  const baseline = lineSet(baselineDump.visibleText);
+  const baselineMoneyLines = [...baseline].filter((line) => MONEY_WORDS.test(line));
+  log(act, `BASELINE at 25,000, wall tool armed, nothing drawn: ${baseline.size} visible line(s)`);
+  log(act, `BASELINE lines that already match a money word (furniture, present at every balance): ${JSON.stringify(baselineMoneyLines)}`);
+  log(act, `BASELINE funds chip: ${JSON.stringify(baselineDump.fundsChip)}`);
+  log(act, `BASELINE visible HUD, verbatim:\n${baselineDump.visibleText.split('\n').map((l) => `      ${l}`).join('\n')}`);
+
   let bounds = visibleTileWindow(origin);
   let ordered = 0;
   let dragCount = 0;
-  let firstMoneyWordAtSegment = -1;
-  let firstMoneyWordText = '';
+  let firstNewLineAtSegment = -1;
+  let firstNewLineText = '';
+  let firstNewMoneyLineAtSegment = -1;
+  let firstNewMoneyLineText = '';
   let refused = false;
 
   const MAX_PASSES = 8;
@@ -336,24 +379,31 @@ async function descendToTheLock(page: import('@playwright/test').Page, act: stri
 
       const dump = await hudDump(page);
       const counts = await latestCounts(page);
-      const money = MONEY_WORDS.test(dump.visibleText);
+      // Everything on screen now that was not on screen at 25,000. The Funds
+      // chip's own line changes on every drag because the number in it does,
+      // so it is dropped by prefix: what is being asked is whether the game
+      // says anything *new*, not whether the counter counted.
+      const appeared = newLines(baseline, dump.visibleText).filter((line) => !/^[\d,]+$/.test(line));
+      const appearedMoney = appeared.filter((line) => MONEY_WORDS.test(line));
       log(
         act,
         `drag ${dragCount} (${run.kind} ${run.index}): +${produced.length} -> ${ordered} segment(s);` +
           ` treasury=${counts?.treasuryMinorUnits} predicted=${25_000 - 80 * ordered};` +
           ` fundsChip=${JSON.stringify(dump.fundsChip.text)} tone=${dump.fundsChip.tone};` +
-          ` moneyWordOnScreen=${String(money)};` +
+          ` newOnScreen=${JSON.stringify(appeared)};` +
           ` shortfall=${JSON.stringify(dump.shortfall.text)} shortfallLaidOut=${String(dump.shortfall.laidOut)};` +
           ` band=${JSON.stringify(dump.refusal.text)}`,
       );
-      if (money && firstMoneyWordAtSegment < 0) {
-        firstMoneyWordAtSegment = ordered;
-        firstMoneyWordText = dump.visibleText
-          .split('\n')
-          .filter((line) => MONEY_WORDS.test(line))
-          .join(' | ');
-        log(act, `THE FIRST MONEY WORD ON SCREEN arrived at segment ${ordered}, treasury ${counts?.treasuryMinorUnits}: ${JSON.stringify(firstMoneyWordText)}`);
-        await observe(page, act, `the first time anything on screen named money (segment ${ordered})`);
+      if (appeared.length > 0 && firstNewLineAtSegment < 0) {
+        firstNewLineAtSegment = ordered;
+        firstNewLineText = appeared.join(' | ');
+        log(act, `THE FIRST NEW SENTENCE ON SCREEN arrived at segment ${ordered}, treasury ${counts?.treasuryMinorUnits}: ${JSON.stringify(firstNewLineText)}`);
+      }
+      if (appearedMoney.length > 0 && firstNewMoneyLineAtSegment < 0) {
+        firstNewMoneyLineAtSegment = ordered;
+        firstNewMoneyLineText = appearedMoney.join(' | ');
+        log(act, `THE FIRST NEW SENTENCE ABOUT MONEY arrived at segment ${ordered}, treasury ${counts?.treasuryMinorUnits}: ${JSON.stringify(firstNewMoneyLineText)}`);
+        await observe(page, act, `the first time the game said something new about money (segment ${ordered})`);
       }
       if (FUNDS_SENTENCE.test(dump.refusal.text)) {
         refused = true;
@@ -367,13 +417,17 @@ async function descendToTheLock(page: import('@playwright/test').Page, act: stri
   log(
     act,
     `DESCENT RESULT: ${ordered} segments ordered over ${dragCount} order-producing drag(s);` +
-      ` treasury=${settled?.treasuryMinorUnits}; first money word at segment ${firstMoneyWordAtSegment}`,
+      ` treasury=${settled?.treasuryMinorUnits};` +
+      ` first NEW sentence at segment ${firstNewLineAtSegment} (${JSON.stringify(firstNewLineText)});` +
+      ` first NEW sentence about money at segment ${firstNewMoneyLineAtSegment} (${JSON.stringify(firstNewMoneyLineText)})`,
   );
   return {
     ordered,
     treasury: settled?.treasuryMinorUnits ?? -1,
-    firstMoneyWordAtSegment,
-    firstMoneyWordText,
+    firstNewLineAtSegment,
+    firstNewLineText,
+    firstNewMoneyLineAtSegment,
+    firstNewMoneyLineText,
     origin,
   };
 }
@@ -522,6 +576,18 @@ test('acts 1 and 2: the descent from 25,000, and every escape a mouse can reach 
   await page.waitForTimeout(300);
   const buyFoldText = (await panelText(page, '.hud-build__buy')).replace(/\n+/g, ' | ');
   log(act, `ESCAPE E: the procurement fold, open, reads ${JSON.stringify(buyFoldText)}`);
+  /*
+   * **The refundable rows, counted here and not earlier.** `ProcurementSystem.cancel`
+   * is the one command in the fourteen-member union that credits the treasury
+   * (`src/simulation/economy/treasury.ts:118-124`), and its control lives in
+   * this fold. It can only reach a delivery still in flight, and the descent
+   * above took minutes, so the prediction is that there is nothing left to
+   * cancel -- which is what makes act 4's stopped-clock variant a different
+   * prison from the same gesture.
+   */
+  const deliveriesHere = (await panelText(page, '.hud-build__deliveries')).replace(/\n+/g, ' | ');
+  const refundableRows = await page.locator('.hud-build__delivery-row:not([hidden])').count();
+  log(act, `ESCAPE E: ON THE WAY reads ${JSON.stringify(deliveriesHere)}; ${refundableRows} refundable row(s) laid out`);
   await page.locator('.hud-build__buy .ui-number__input').fill('1');
   await page.locator('.hud-build__buy-submit').click();
   await page.waitForTimeout(1200);
@@ -572,10 +638,85 @@ test('acts 1 and 2: the descent from 25,000, and every escape a mouse can reach 
   log(act, `ESCAPE G RESULT: ran to tick ${await currentTick(page)}; treasury=${afterRun?.treasuryMinorUnits} accommodation=${afterRun?.accommodationCapacity} prisoners=${afterRun?.prisoners}`);
   await observe(page, act, 'the end of act 2 — everything a mouse can reach, tried');
 
-  log(act, `SUMMARY: descent ${descent.ordered} segments; first money word at segment ${descent.firstMoneyWordAtSegment}; balance ${descent.treasury} -> ${afterRun?.treasuryMinorUnits} after every escape`);
+  log(act, `SUMMARY: descent ${descent.ordered} segments; first new sentence about money at segment ${descent.firstNewMoneyLineAtSegment}; balance ${descent.treasury} -> ${afterRun?.treasuryMinorUnits} after every escape`);
 });
 
-test('act 3: an ambitious first prison, built the way somebody planning ahead would', async ({ page }) => {
+/**
+ * One wing of the prison a planner draws: a rectangle, a corridor down the
+ * middle of it, and cell partitions off the corridor.
+ *
+ * Bounded to the *measured* visible window rather than to the viewport,
+ * because a drag that leaves the window is not a gesture a player can make --
+ * and run 1 of this file measured the eastern edge of the window being eaten
+ * by the HUD rail: a vertical run at column 25 produced **zero** orders while
+ * the horizontal runs at rows 10 and 22 each produced twenty. So the east wall
+ * is drawn one column short of `lastColumn`, and that shortfall is a fact about
+ * the interface rather than about the prison.
+ */
+async function drawWing(
+  page: import('@playwright/test').Page,
+  act: string,
+  origin: { originX: number; originY: number },
+  label: string,
+  state: { ordered: number },
+): Promise<void> {
+  const bounds = visibleTileWindow(origin);
+  const x0 = bounds.firstColumn;
+  const x1 = bounds.lastColumn - 1;
+  const y0 = bounds.firstRow;
+  const y1 = bounds.lastRow;
+  log(act, `${label}: rectangle (${x0},${y0}) .. (${x1},${y1}) inside window columns ${bounds.firstColumn}..${bounds.lastColumn}, rows ${bounds.firstRow}..${bounds.lastRow}`);
+
+  const edgeX = (tx: number) => origin.originX + tx * TILE;
+  const edgeY = (ty: number) => origin.originY + ty * TILE;
+  const midX = (tx: number) => origin.originX + tx * TILE + TILE / 2;
+  const midY = (ty: number) => origin.originY + ty * TILE + TILE / 2;
+
+  const run = async (name: string, a: { x: number; y: number }, b: { x: number; y: number }): Promise<void> => {
+    const before = (await sentCommands(page)).length;
+    await drag(page, a, b);
+    const produced = (await sentCommands(page)).slice(before).filter((c) => c['type'] === 'PlaceBuildOrder');
+    state.ordered += produced.length;
+    const counts = await latestCounts(page);
+    const dump = await hudDump(page);
+    log(
+      act,
+      `  ${label} ${name}: +${produced.length} -> ${state.ordered} segment(s); treasury=${counts?.treasuryMinorUnits}` +
+        ` fundsChip=${JSON.stringify(dump.fundsChip.text)} tone=${dump.fundsChip.tone}` +
+        ` shortfall=${JSON.stringify(dump.shortfall.text)} band=${JSON.stringify(dump.refusal.text)}`,
+    );
+  };
+
+  await run('north', { x: midX(x0), y: edgeY(y0) }, { x: midX(x1), y: edgeY(y0) });
+  await run('south', { x: midX(x0), y: edgeY(y1) }, { x: midX(x1), y: edgeY(y1) });
+  await run('west', { x: edgeX(x0), y: midY(y0) }, { x: edgeX(x0), y: midY(y1) });
+  await run('east', { x: edgeX(x1), y: midY(y0) }, { x: edgeX(x1), y: midY(y1) });
+
+  const corridorY = Math.floor((y0 + y1) / 2);
+  await run('corridor', { x: midX(x0 + 1), y: edgeY(corridorY) }, { x: midX(x1 - 1), y: edgeY(corridorY) });
+  for (let column = x0 + 3; column < x1 - 1; column += 3) {
+    await run(`cells north at column ${column}`, { x: edgeX(column), y: midY(y0 + 1) }, { x: edgeX(column), y: midY(corridorY - 1) });
+    await run(`cells south at column ${column}`, { x: edgeX(column), y: midY(corridorY + 1) }, { x: edgeX(column), y: midY(y1 - 1) });
+  }
+}
+
+/** Pans the camera with the middle button and re-measures the origin. */
+async function panAndRecalibrate(
+  page: import('@playwright/test').Page,
+  act: string,
+): Promise<{ originX: number; originY: number }> {
+  await page.mouse.move(1000, 500);
+  await page.mouse.down({ button: 'middle' });
+  await page.mouse.move(200, 300, { steps: 12 });
+  await page.mouse.up({ button: 'middle' });
+  await page.waitForTimeout(400);
+  const origin = await calibrate(page);
+  await armBuildable(page, 'wall-brick');
+  log(act, `panned; origin now (${origin.originX}, ${origin.originY})`);
+  return origin;
+}
+
+test('act 3: three wings of an ambitious prison, drawn without once trying to run out', async ({ page }) => {
   test.setTimeout(1_200_000);
   const act = 'L3';
   actStartedAt = Date.now();
@@ -585,80 +726,87 @@ test('act 3: an ambitious first prison, built the way somebody planning ahead wo
   await page.getByRole('button', { name: 'New prison' }).click();
   await page.waitForTimeout(1000);
   await tab(page, 'build').click();
-  const origin = await calibrate(page);
+  let origin = await calibrate(page);
   log(act, `calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
   await pressPlay(page, act);
   await armBuildable(page, 'wall-brick');
 
   /*
-   * **The build a planner draws, and why this shape.** Not a fence: a
-   * perimeter big enough to hold what the game's own content implies a prison
-   * needs -- an accommodation block, an intake hall, a yard -- plus the cell
-   * partitions inside it. It is deliberately generous, because the brief's
-   * question is whether *ambition* reaches the lock, and an ambitious player
-   * draws the outline of the finished prison before furnishing any of it.
+   * **Why three wings, and why this is not the fence act 1 draws.**
    *
-   * The rectangle is 20 x 13 tiles, which is 66 perimeter segments, plus
-   * eleven interior partitions. Every run is inside the measured visible
-   * window so it is a gesture a player could make without moving the camera.
+   * Run 1 of this file measured one wing -- a rectangle filling the visible
+   * window, a corridor, and eight cell partitions off it -- at **119 wall
+   * segments and 9,520**, which is 38.1% of the opening treasury. Nothing in
+   * that gesture is unusual: it is the outline of a prison with about sixteen
+   * cells, drawn before anything is furnished, by a player doing what a player
+   * does with a build tool and an empty map.
+   *
+   * Three of them is 2.6 x 9,520, and the arithmetic that follows is the
+   * question this act exists to answer by playing rather than by multiplying:
+   * a player who plans a prison three wings wide, and never once tries to run
+   * out of money, arrives at ADR 0075's floor with no gesture that looks like
+   * the six and a half minutes of fencing
+   * `2026-08-30-a-wall-that-buys-itself.md` §4 needed.
+   *
+   * Each wing is drawn at a fresh camera position, which is what a player does
+   * when the map runs off the screen, and the origin is re-measured after each
+   * pan rather than predicted.
    */
-  const bounds = visibleTileWindow(origin);
-  log(act, `visible tile window: columns ${bounds.firstColumn}..${bounds.lastColumn}, rows ${bounds.firstRow}..${bounds.lastRow}`);
-  const x0 = bounds.firstColumn;
-  const x1 = Math.min(bounds.firstColumn + 19, bounds.lastColumn);
-  const y0 = bounds.firstRow;
-  const y1 = Math.min(bounds.firstRow + 12, bounds.lastRow);
-  log(act, `the prison a planner draws: rectangle (${x0},${y0}) .. (${x1},${y1})`);
+  const state = { ordered: 0 };
+  const wings: { label: string; segments: number; treasury: number }[] = [];
+  for (let wing = 1; wing <= 3; wing += 1) {
+    if (wing > 1) origin = await panAndRecalibrate(page, act);
+    const before = state.ordered;
+    await drawWing(page, act, origin, `wing ${wing}`, state);
+    const counts = await latestCounts(page);
+    wings.push({ label: `wing ${wing}`, segments: state.ordered - before, treasury: counts?.treasuryMinorUnits ?? -1 });
+    log(act, `WING ${wing} DONE: ${state.ordered - before} segment(s) this wing, ${state.ordered} total; treasury=${counts?.treasuryMinorUnits}`);
+    await observe(page, act, `wing ${wing} drawn, nothing else pressed`);
+  }
+  for (const wing of wings) log(act, `WINGS: ${wing.label} +${wing.segments} segment(s), treasury after ${wing.treasury}`);
 
-  let ordered = 0;
-  const run = async (name: string, a: { x: number; y: number }, b: { x: number; y: number }): Promise<number> => {
-    const before = (await sentCommands(page)).length;
-    await drag(page, a, b);
-    const produced = (await sentCommands(page)).slice(before).filter((c) => c['type'] === 'PlaceBuildOrder');
-    ordered += produced.length;
+  /*
+   * **Then the player furnishes what they drew.** A bed is one
+   * `item.wood-plank` at 65 (`src/content/procurement-catalog.ts:101`), which
+   * is *less* than a wall segment's two bricks at 80 -- so the question is not
+   * whether beds are expensive. It is whether the outline left enough for any.
+   */
+  const beforeBeds = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
+  await armBuildable(page, 'bed-wooden');
+  let bedsPlaced = 0;
+  for (let index = 0; index < 12; index += 1) {
+    const bounds = visibleTileWindow(origin);
+    const target = centreOf(origin, bounds.firstColumn + 2 + (index % 5), bounds.firstRow + 2 + Math.floor(index / 5));
+    const produced = await press(page, target.x, target.y);
+    if (produced.some((c) => c['type'] === 'PlaceObject')) bedsPlaced += 1;
     const counts = await latestCounts(page);
     const dump = await hudDump(page);
     log(
       act,
-      `  ${name}: +${produced.length} -> ${ordered} segment(s); treasury=${counts?.treasuryMinorUnits}` +
-        ` moneyWordOnScreen=${String(MONEY_WORDS.test(dump.visibleText))} band=${JSON.stringify(dump.refusal.text)}`,
+      `  bed ${index + 1}: commands=${JSON.stringify(produced.map((c) => c['type']))} treasury=${counts?.treasuryMinorUnits}` +
+        ` shortfall=${JSON.stringify(dump.shortfall.text)} band=${JSON.stringify(dump.refusal.text)}`,
     );
-    return produced.length;
-  };
-
-  const edge = (tx: number, ty: number) => ({ x: origin.originX + tx * TILE, y: origin.originY + ty * TILE });
-  const mid = (tx: number, ty: number) => ({ x: origin.originX + tx * TILE + TILE / 2, y: origin.originY + ty * TILE + TILE / 2 });
-
-  await run('perimeter north', { ...mid(x0, y0), y: edge(x0, y0).y }, { ...mid(x1, y0), y: edge(x1, y0).y });
-  await run('perimeter south', { ...mid(x0, y1), y: edge(x0, y1).y }, { ...mid(x1, y1), y: edge(x1, y1).y });
-  await run('perimeter west', { ...mid(x0, y0), x: edge(x0, y0).x }, { ...mid(x0, y1), x: edge(x0, y1).x });
-  await run('perimeter east', { ...mid(x1, y0), x: edge(x1, y0).x }, { ...mid(x1, y1), x: edge(x1, y1).x });
-
-  // Cell partitions: a corridor down the middle and cells off it, which is the
-  // layout a player copies from every prison they have ever seen.
-  const corridorY = Math.floor((y0 + y1) / 2);
-  await run('corridor wall', { ...mid(x0 + 1, corridorY), y: edge(x0 + 1, corridorY).y }, { ...mid(x1 - 1, corridorY), y: edge(x1 - 1, corridorY).y });
-  for (let column = x0 + 3; column < x1 - 1; column += 3) {
-    await run(`cell partition at column ${column}`, { ...mid(column, y0 + 1), x: edge(column, y0 + 1).x }, { ...mid(column, corridorY - 1), x: edge(column, corridorY - 1).x });
-    await run(`cell partition south at column ${column}`, { ...mid(column, corridorY + 1), x: edge(column, corridorY + 1).x }, { ...mid(column, y1 - 1), x: edge(column, y1 - 1).x });
   }
-
-  const afterDrawing = await latestCounts(page);
-  log(act, `AMBITIOUS BUILD DRAWN: ${ordered} wall segment(s); treasury=${afterDrawing?.treasuryMinorUnits}; spent=${25_000 - (afterDrawing?.treasuryMinorUnits ?? 0)}`);
-  await observe(page, act, 'the ambitious outline, drawn, nothing else pressed');
+  const afterBeds = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
+  log(act, `FURNISHING RESULT: ${bedsPlaced} bed placement(s) accepted; treasury ${beforeBeds} -> ${afterBeds}`);
+  await observe(page, act, 'after trying to furnish what was drawn');
 
   /*
    * **The thing a planner does and a fencer never does: change their mind.**
-   * The money is now bricks. `cancelOrder` releases them back to the container
-   * and `ConstructionProcurementSink` nets stock off demand
-   * (`src/simulation/economy/just-in-time-materials.ts:166`), so the question
-   * is whether redrawing the same wall somewhere else costs a second time.
-   * This cancels every row the panel offers and then redraws one run, watching
-   * whether the treasury falls again.
+   * `cancelOrder` releases `materialsAllocated` back to the container
+   * (`src/simulation/construction/system.ts:606-612`) and
+   * `ConstructionProcurementSink` nets stock and in-flight off demand
+   * (`src/simulation/economy/just-in-time-materials.ts:166`), so the prediction
+   * is: the treasury does **not** rise on the cancel, and the redraw is then
+   * free because the bricks are back.
+   *
+   * Run 1 of this act measured the first half and could not measure the
+   * second, because its redraw row was already walled and produced zero
+   * orders. The redraw here is aimed at a row the wing never drew.
    */
   await tab(page, 'build').click();
   await openQueueFold(page);
-  const beforeRegret = afterDrawing?.treasuryMinorUnits ?? -1;
+  const beforeRegret = afterBeds;
   let regretCancels = 0;
   for (let attempt = 0; attempt < 9; attempt += 1) {
     const buttons = page.locator('.hud-build__queue-row:not([hidden]) button');
@@ -670,13 +818,105 @@ test('act 3: an ambitious first prison, built the way somebody planning ahead wo
   const afterRegret = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
   log(act, `CHANGED THEIR MIND: ${regretCancels} order(s) cancelled; treasury ${beforeRegret} -> ${afterRegret}`);
 
-  await armBuildable(page, 'wall-brick');
-  const redrawRow = y1 - 2;
-  const beforeRedraw = afterRegret;
-  await run('redraw after cancelling', { ...mid(x0 + 1, redrawRow), y: edge(x0 + 1, redrawRow).y }, { ...mid(x0 + 1 + regretCancels, redrawRow), y: edge(x0 + 1 + regretCancels, redrawRow).y });
+  origin = await panAndRecalibrate(page, act);
+  const clean = visibleTileWindow(origin);
+  const redrawRow = clean.firstRow + 1;
+  const beforeRedraw = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
+  const beforeRedrawCommands = (await sentCommands(page)).length;
+  await drag(
+    page,
+    { x: origin.originX + clean.firstColumn * TILE + TILE / 2, y: origin.originY + redrawRow * TILE },
+    { x: origin.originX + (clean.firstColumn + 8) * TILE + TILE / 2, y: origin.originY + redrawRow * TILE },
+  );
+  const redrawn = (await sentCommands(page)).slice(beforeRedrawCommands).filter((c) => c['type'] === 'PlaceBuildOrder').length;
+  await page.waitForTimeout(1500);
   const afterRedraw = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
-  log(act, `REDRAW RESULT: treasury ${beforeRedraw} -> ${afterRedraw} for a run of ${regretCancels} segment(s) after cancelling the same number`);
+  log(
+    act,
+    `REDRAW RESULT: ${redrawn} segment(s) redrawn on virgin ground after ${regretCancels} cancellation(s);` +
+      ` treasury ${beforeRedraw} -> ${afterRedraw}, which is ${beforeRedraw - afterRedraw} for what would cost ${80 * redrawn} at full price`,
+  );
   await observe(page, act, 'after changing their mind and redrawing');
 
-  log(act, `ACT 3 SUMMARY: an ambitious outline cost ${25_000 - (afterDrawing?.treasuryMinorUnits ?? 0)} of 25,000, which is ${(((25_000 - (afterDrawing?.treasuryMinorUnits ?? 0)) / 25_000) * 100).toFixed(1)}% of the treasury and ${(((25_000 - (afterDrawing?.treasuryMinorUnits ?? 0)) / 24_960) * 100).toFixed(1)}% of the way to the lock`);
+  const finalCounts = await latestCounts(page);
+  const spent = 25_000 - (finalCounts?.treasuryMinorUnits ?? 0);
+  log(act, `ACT 3 SUMMARY: ${state.ordered} wall segment(s) over three wings; ${spent} spent of 25,000 (${((spent / 25_000) * 100).toFixed(1)}%), ${(((finalCounts?.treasuryMinorUnits ?? 0) / 80)).toFixed(0)} wall segment(s) still affordable, ${(((finalCounts?.treasuryMinorUnits ?? 0) / 65)).toFixed(0)} bed(s) still affordable`);
+});
+
+/**
+ * **The same money, with the clock never started -- which is the state a new
+ * session actually arrives in.**
+ *
+ * `docs/research/2026-08-30-what-the-game-never-says.md` §1 measured that a
+ * new session's clock is constructed `paused`
+ * (`src/simulation/worker/state-machine.ts:216`) and that no word on screen
+ * says so. That is not this act's finding and it is not re-litigated here.
+ * What is this act's finding is what it does to the *escape*: a just-in-time
+ * purchase becomes a pending delivery `PROCUREMENT_DELIVERY_DELAY_TICKS` = 100
+ * ticks long (`src/content/procurement-catalog.ts:62`), and
+ * `ProcurementSystem.cancel` refunds it in full through `Treasury.credit`
+ * (`src/simulation/economy/treasury.ts:118-124`) -- but only while it is still
+ * in flight, and a stopped clock means nothing ever lands.
+ *
+ * So the same gesture leaves a *different* prison depending on a control the
+ * game never mentions, and this act measures which.
+ */
+test('act 4: the same wall run with the clock never started, and what that does to the refund', async ({ page }) => {
+  test.setTimeout(600_000);
+  const act = 'L4';
+  actStartedAt = Date.now();
+  page.setDefaultTimeout(20_000);
+  await installTee(page);
+  await openApp(page);
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.waitForTimeout(1000);
+  await tab(page, 'build').click();
+  const origin = await calibrate(page);
+  log(act, `calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
+  log(act, `clock, NEVER pressed: ${JSON.stringify(await currentClock(page))} tick=${await currentTick(page)}`);
+  await armBuildable(page, 'wall-brick');
+
+  const bounds = visibleTileWindow(origin);
+  const before = (await sentCommands(page)).length;
+  await drag(
+    page,
+    { x: origin.originX + bounds.firstColumn * TILE + TILE / 2, y: origin.originY + bounds.firstRow * TILE },
+    { x: origin.originX + bounds.lastColumn * TILE - TILE / 2, y: origin.originY + bounds.firstRow * TILE },
+  );
+  const placed = (await sentCommands(page)).slice(before).filter((c) => c['type'] === 'PlaceBuildOrder').length;
+  await page.waitForTimeout(1500);
+  const afterDrag = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
+  log(act, `a ${placed}-segment run with the clock stopped: treasury -> ${afterDrag} (${25_000 - afterDrag} spent)`);
+  await observe(page, act, 'one wall run, clock never started');
+
+  // The procurement fold, opened on purpose -- the only place `deliveriesBlock`
+  // lives (`src/ui/hud/build-panel.ts:1293-1311`, the last child of `buyRow`).
+  await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+  if (await page.locator('.hud-build__buy').isHidden()) await page.locator('.hud-build__buy-toggle').click();
+  await page.waitForTimeout(500);
+  const deliveriesText = (await panelText(page, '.hud-build__deliveries')).replace(/\n+/g, ' | ');
+  const deliveryRows = await page.locator('.hud-build__delivery-row:not([hidden])').count();
+  log(act, `ON THE WAY, with the clock still stopped: ${JSON.stringify(deliveriesText)}; ${deliveryRows} row(s) laid out`);
+  await observe(page, act, 'the procurement fold, open, with every delivery still in flight');
+
+  /*
+   * Cancel every row the fold offers, and watch the treasury. This is the one
+   * command in the fourteen-member union that credits the treasury, which
+   * ADR 0075's escape table measures **refusing** on a landed order --
+   * `cancel-purchase.not-pending`. Here nothing has landed.
+   */
+  const beforeCancel = afterDrag;
+  let cancelled = 0;
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const buttons = page.locator('.hud-build__delivery-row:not([hidden]) button');
+    if ((await buttons.count()) === 0) break;
+    await buttons.first().click();
+    cancelled += 1;
+    await page.waitForTimeout(500);
+    const counts = await latestCounts(page);
+    log(act, `  cancel ${cancelled}: treasury=${counts?.treasuryMinorUnits}`);
+  }
+  const afterCancel = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
+  log(act, `ACT 4 RESULT: ${cancelled} delivery cancellation(s) with the clock stopped; treasury ${beforeCancel} -> ${afterCancel} (recovered ${afterCancel - beforeCancel} of the ${25_000 - beforeCancel} spent)`);
+  await observe(page, act, 'after cancelling every delivery the fold offered');
 });
