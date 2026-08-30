@@ -230,7 +230,7 @@ async function reportTickDecomposition(repeats, unitMicroseconds) {
       while (system.pendingCount() > 0) {
         const before = system.getQueueMetrics().totalExpansions;
         const startedAt = performance.now();
-        system.update({ tick, rng: tickRng });
+        system.update({ tick });
         samplesMs.push(performance.now() - startedAt);
         samplesExpansions.push(system.getQueueMetrics().totalExpansions - before);
         tick += 1;

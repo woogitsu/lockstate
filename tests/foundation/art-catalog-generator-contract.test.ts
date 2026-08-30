@@ -36,8 +36,10 @@ import { LFS_POINTER_PREFIX, assertSourceInputsAreImages } from '../../tooling/s
  * it can only ever prove the guard is **written**. Issue #264 measured the gap:
  * `if (pointers.length > 0 && false)` leaves every searched substring in place
  * and in the same order, so the refusal became unreachable with this file
- * green — and `tooling/` is outside `tsconfig`'s `include`, so `tsc` never saw
- * it either.
+ * green — and `tooling/` was outside `tsconfig`'s `include`, so `tsc` never saw
+ * it either. Since #602 it is inside `tsconfig.tools.json`, which changes
+ * nothing here: `&& false` is valid TypeScript and a typechecker has no
+ * opinion about an unreachable refusal.
  *
  * So the refusal now lives in `tooling/source-art-lfs-guard.mjs` with its
  * reading injected, and the first test below *runs* it. The generator itself
