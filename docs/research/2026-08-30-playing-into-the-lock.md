@@ -518,3 +518,145 @@ argument, observed rather than reasoned.
 place, run — the balance is 40 at the end of every one of them. The seventh is
 §11, and it is the only place this pass found anything the ADR's table does not
 have.
+
+## 11. Escape H — the one that gives the money back, and the clock that takes it away again
+
+**MEASURED, run B, and this is the finding this pass did not expect.**
+
+`ProcurementSystem.cancel` is the only command in the fourteen-member union that
+credits the treasury, and ADR 0075's escape table measures it **refusing** —
+`cancel-purchase.not-pending` — because in that prison the delivery had landed.
+A just-in-time purchase is a pending delivery for
+`PROCUREMENT_DELIVERY_DELAY_TICKS = 100` ticks
+(`src/content/procurement-catalog.ts:62`), which is five seconds at ×1 — **or
+for ever, if the clock has never been started.** A new session's clock is
+constructed `paused` and nothing on screen says so
+([`2026-08-30-what-the-game-never-says.md`](./2026-08-30-what-the-game-never-says.md)
+§1); act 4 therefore never presses Play.
+
+**One wall run of fifteen segments, with the clock never touched:**
+
+```
+[L4 +36.1s] a 15-segment run with the clock stopped: treasury -> 23800 (1200 spent)
+[L4 +40.2s] ON THE WAY, with the clock still stopped: "ON THE WAY | 15 bought · 1,200 back if cancelled |
+   2 × Brick · 80 back | Cancel | 2 × Brick · 80 back | Cancel | 2 × Brick · 80 back | Cancel |
+   and 12 more on the way — these arrive first, and the rest come into view as they land."; 3 row(s) laid out
+[L4 +59.3s] ACT 4 RESULT: 12 delivery cancellation(s) with the clock stopped; treasury 23800 -> 24760 (recovered 960 of the 1200 spent)
+```
+
+**The money comes back.** Eighty a segment, in full, twelve times — and the fold
+says so before you press: *"15 bought · 1,200 back if cancelled"*. This is a
+real escape, it is the only one in the game, and ADR 0075's table does not have
+it because its prison could not reach it.
+
+**And then the clock takes it back.**
+
+```
+[L4 +59.9s] THE REFUND, ABOUT TO MEET THE CLOCK: treasury=24760, queue="QUEUED 15 waiting · 0 being built"
+[L4 +68.7s] ACT 4 ADDENDUM: six seconds after pressing Play, treasury 24760 -> 23800 (960 taken back out); queue="QUEUED 15 waiting · 1 being built"
+```
+
+**Every minor unit, straight back out, on the first ticks after Play.**
+**VERIFIED, read**, and it is not a defect in any single place:
+`ConstructionSystem.update` calls `procureForPendingOrders` on **every**
+scheduled construction tick (`src/simulation/construction/system.ts:852`), the
+fifteen build orders are still queued and still want their bricks, and the
+just-in-time sink dutifully buys them again. Each half is right on its own.
+
+**So the refund is real and it is not an escape.** It only sticks if the player
+also cancels the fifteen *orders* — three rows at a time, in a different fold,
+under a different heading, with nothing anywhere connecting the two. **Nothing
+in the interface says that.** The sentence the player is given is *"1,200 back
+if cancelled"*, and after they cancel and start the clock they have 1,200 less
+than that sentence promised.
+
+**This is the sharpest thing in the pass, and it is not about the lock.** It is
+about the one control that could have been a way out of it.
+
+---
+
+# Part D — whether an ambitious build gets there without trying
+
+## 12. One prison wing is 121 wall segments and 9,680 — 39% of the treasury, with nothing said
+
+**MEASURED**, and reproduced in three runs (1, A, B). A "wing" here is the shape
+a player draws before furnishing anything: a rectangle filling the visible
+world, a corridor down the middle of it, and cell partitions off the corridor —
+about sixteen cells.
+
+| run | wing 1 | treasury after | spent |
+| --- | --- | --- | --- |
+| 1 | 119 segments | 15,480 | 9,520 |
+| A | 121 segments | 15,320 | 9,680 |
+| B | 121 segments | 15,320 | 9,680 |
+
+`tone=null` and `shortfall=""` on every single one of those drags.
+
+## 13. Three wings is 68.8% of the way to the floor, and the game says nothing at any point
+
+**MEASURED**, run B, three wings at three camera positions inside the owned
+world:
+
+```
+[L3 +230.2s] WINGS: wing 1 +121 segment(s), treasury after 15320
+[L3 +230.2s] WINGS: wing 2 +108 segment(s), treasury after 10120
+[L3 +230.2s] WINGS: wing 3 +88 segment(s), treasury after 7880
+[L3 +307.0s] ACT 3 SUMMARY: 317 wall segment(s) over three wings; 17200 spent of 25,000 (68.8%), 98 wall segment(s) still affordable, 120 bed(s) still affordable
+```
+
+**The honest reading, and it is not the one this pass set out to write.** Three
+ambitious wings do **not** reach the lock. They reach 68.8% of it, with 7,880
+left — which is 98 more wall segments or 120 beds. The wings overlapped
+(`"The build order failed — that order already exists."` on many runs), so 317
+ordered is 215 funded; a player drawing three *disjoint* wings would be at about
+29,000 and would have hit the floor during the third. **This pass did not play
+that, and the arrival is therefore arithmetic on a measured wing cost rather
+than a played arrival.** See §16.
+
+**What is played, and is enough for the brief's question:** a player doing
+nothing unusual — no fencing, no repeated dragging over empty ground, three
+recognisable prison outlines — spends **more than two thirds of everything they
+will ever have** before placing a single bed, and the game does not remark on it
+once. The Funds chip reads `7,880 FUNDS` in the same grey it read `25,000
+FUNDS` in.
+
+## 14. Two things that are FINE, with the evidence, so they are not re-checked
+
+**14a. Changing your mind is free.** MEASURED in runs A and B, identically:
+
+```
+[L3 +265.7s] CHANGED THEIR MIND: 9 order(s) cancelled; treasury 7800 -> 7800
+[L3 +305.5s] REDRAW RESULT: 9 segment(s) redrawn on virgin ground after 9 cancellation(s); treasury 7800 -> 7800, which is 0 for what would cost 720 at full price
+```
+
+Nine cancelled orders released eighteen bricks into the container; nine new
+orders drawn somewhere else took them back out; **720 of wall was redrawn for
+nothing.** ADR 0017 decision 7's *"holding is permitted, never required"* is
+doing real work here, and a player who lays a perimeter in the wrong place is
+not punished for moving it. This is good and it should not be traded away by
+any remedy to the rest of this document.
+
+**14b. The prison a player builds is nowhere near the cliff.**
+[`2026-08-30-a-wall-that-buys-itself.md`](./2026-08-30-a-wall-that-buys-itself.md)
+§1 measured a complete working prison — 24-segment perimeter, designation, bed,
+toilet, two admissions, one guard — at **2,105 of 25,000**, and nothing here
+disturbs that. The gap between 2,105 and 24,960 is the whole subject: it is
+entirely made of wall the player drew and does not yet need.
+
+## 15. One thing that is not about money at all, found on the way
+
+**VERIFIED, read, and MEASURED as a side effect.** The whole owned world of a
+new session is **32 x 32 tiles**: `src/simulation/runtime/new-session.ts:385-387`
+is `new SparseWorld(32)` with a single chunk loaded and owned. Run A's act 3
+panned east past it and drew sixteen consecutive runs onto ground that does not
+exist, each answered *"The build order failed — that tile is outside the map."*
+
+Two figures follow, and the second is the one worth keeping. The map holds
+`32 x 32 x 2 = 2,048` tile edges. The opening treasury funds **312** of them —
+**15%**. So the world is not what stops a player from spending everything on
+wall; there is four and a half times more wall available than money.
+
+Not filed as a defect: one owned chunk is ADR 0019's and #649's subject, and
+`PurchaseParcel` has never existed
+([`2026-08-30-two-subsystems-with-no-entrance.md`](./2026-08-30-two-subsystems-with-no-entrance.md)).
+Recorded because the ratio is the honest scale of the wall route.
