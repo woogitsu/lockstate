@@ -69,7 +69,33 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  * adjusted to the two-sentence text so the clamp assertion could be reached,
  * *"Costs 80 now and 55 a day in wages. A new guard starts unassigned."* is
  * clipped at 900x600 -- which is why the hire hint carries the owner's one
- * sentence and the displaced one is reported rather than appended.
+ * sentence and the displaced one comes back on a line of its own.
+ *
+ * ## And what the owner's two approved strings were watched against
+ *
+ * Eight more, on the change that gave the badge its word and the displaced
+ * sentence its line. Baseline `6 passed (8.2s)`; every mutation restored by
+ * hand and `git diff --stat` checked empty between them.
+ *
+ * | mutation | result |
+ * | --- | --- |
+ * | the badge written as a bare `localizer.formatNumber(bill)` again | 3 failed |
+ * | `hud.security.roster-wage-bill` reduced to `'{total}'` | 3 failed |
+ * | the same key changed to `'{total} a week'` | 3 failed |
+ * | the badge's `{total}` argument renamed to `{bill}` | 3 failed -- *"an unfilled placeholder is on screen"* |
+ * | the restored note never appended to `.hud-staff__actions` | 2 failed |
+ * | the restored note built from `securityStaffHint` instead | 2 failed |
+ * | `hud.security.hire-unassigned` reworded to *"New guards start unassigned."* | 2 failed |
+ * | the clamp exemption's selector unmatched | 1 failed |
+ * | both sentences in one key again, with the text expectation adjusted | 1 failed -- *"the hire sentence is being clipped at 900x600"* |
+ *
+ * **The eighth one survived until this file asserted the rule rather than the
+ * geometry**, and the reason is recorded at the assertion: at 900x600 the
+ * restored sentence is 238px wide and one 13px line, so `scrollHeight` equals
+ * `clientHeight` with the exemption and without it. The clipping assertion is
+ * still the one that matters -- it is what the ninth mutation trips -- but it
+ * cannot see this exemption, and saying so is cheaper than a green tick that
+ * means less than it looks.
  */
 
 const HARNESS_URL = '/tests/browser/ui-harness.html';
@@ -133,6 +159,10 @@ interface WageReading {
   readonly unassignedInsidePanel: boolean | null;
   /** How many leaf elements in the panel render exactly the approved sentence. */
   readonly unassignedMatches: number;
+  /** The clamp as the browser resolved it on the restored line, and on the hint beside it. */
+  readonly unassignedLineClamp: string | null;
+  readonly unassignedDisplay: string | null;
+  readonly hintLineClamp: string | null;
   readonly hintWidth: number;
   readonly hintHeight: number;
   /** True when the clamp is cutting the sentence: more text than box. */
@@ -192,6 +222,9 @@ async function read(page: Page): Promise<WageReading> {
           ? null
           : unassignedBox.top >= panelBox.top - 0.5 && unassignedBox.bottom <= fold + 0.5,
       unassignedMatches,
+      unassignedLineClamp: unassigned === null ? null : getComputedStyle(unassigned).webkitLineClamp,
+      unassignedDisplay: unassigned === null ? null : getComputedStyle(unassigned).display,
+      hintLineClamp: hint === null ? null : getComputedStyle(hint).webkitLineClamp,
       hintWidth: hintBox === undefined ? 0 : Math.round(hintBox.width * 100) / 100,
       hintHeight: hintBox === undefined ? 0 : Math.round(hintBox.height * 100) / 100,
       // A sentence the clamp is cutting has more content than box. `+ 0.5`
@@ -270,6 +303,19 @@ test.describe('the Staff panel says what a guard costs now and what it costs eve
     await openSecurityTab(page);
     await publish(page, viewModel({ hired: 60, bill: DAILY_WAGE_BILL }));
     const reading = await read(page);
+    // Printed rather than only asserted, so the run carries the measurement the
+    // clamp argument rests on instead of a bare green tick.
+    console.log(
+      `[unassigned] ${JSON.stringify({
+        text: reading.unassignedText,
+        box: { width: reading.unassignedWidth, height: reading.unassignedHeight },
+        scrollHeight: reading.unassignedScrollHeight,
+        clientHeight: reading.unassignedClientHeight,
+        lineClamp: reading.unassignedLineClamp,
+        display: reading.unassignedDisplay,
+        hintScrollBox: { clipped: reading.hintClipped, height: reading.hintHeight, lineClamp: reading.hintLineClamp },
+      })}`,
+    );
 
     /*
      * *"A new guard starts unassigned."* is the half of the old hire hint the
@@ -313,6 +359,32 @@ test.describe('the Staff panel says what a guard costs now and what it costs eve
       reading.hintClipped,
       `the hire sentence is being clipped at 900x600: ${String(reading.hintText)}`,
     ).toBe(false);
+
+    /*
+     * And the exemption itself, asserted as a rule rather than through the
+     * geometry above -- **because at this viewport the geometry cannot see
+     * it.** Measured: the restored sentence is 238px wide and one 13px line, so
+     * `scrollHeight` equals `clientHeight` whether or not `hud.css` exempts it,
+     * and removing the exemption leaves every assertion above green. That is a
+     * surviving mutation and it is reported rather than hidden.
+     *
+     * What the exemption is actually for is the case English does not produce
+     * here: a locale whose sentence wraps, where the clamp would cut the clause
+     * and nothing on screen would say so. So the pair below is the assertion
+     * that can be made -- **the hint beside it is clamped and this line is
+     * not**, which also stops the check being vacuous: if the
+     * `max-height: 700px` block were not in force at all, both would read
+     * `none` and the second expectation alone would pass for the wrong reason.
+     */
+    expect(
+      reading.hintLineClamp,
+      'the short-viewport clamp is not in force at 900x600, so nothing here is testing an exemption from it',
+    ).toBe('1');
+    expect(
+      reading.unassignedLineClamp,
+      'the restored line is clamped like its neighbour, so a locale whose sentence wraps loses the clause',
+    ).not.toBe('1');
+    expect(reading.unassignedDisplay, 'the restored line is still laid out as the clamped box').toBe('block');
   });
 
   test('states the standing daily bill on the payroll header, with the fold still shut', async ({ page }) => {
