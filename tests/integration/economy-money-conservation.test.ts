@@ -536,6 +536,64 @@ describe('money is conserved across build orders and undo (#285)', () => {
     expect(session.creditSpy).not.toHaveBeenCalled();
   });
 
+  it('holds while a cancelled just-in-time delivery takes its build orders with it (#687)', () => {
+    /*
+     * **The route #687 added, measured against the same equation.**
+     *
+     * `CancelMaterialPurchase` on a delivery `JustInTimeMaterialsService`
+     * bought now does two things in one command: `ProcurementSystem.cancel`
+     * credits the recorded price, and
+     * `ConstructionSystem.withdrawOrdersAwaitingMaterial` takes the queued
+     * orders that were waiting on it back off the book. Both halves move
+     * value, and the hazard is that they move the *same* value twice --
+     * which is mutation M2 in this file's header, seen from the other
+     * direction: an undo that credits the money the materials it released are
+     * worth.
+     *
+     * It cannot happen here and this case is what says so rather than the
+     * argument that it cannot. Only `'approved'` and `'materials-pending'`
+     * orders are candidates for withdrawal and neither has allocated
+     * anything, so `cancelOrder`'s `release` moves nothing; the only value
+     * that moves is the delivery's own `paidMinorUnits`, from `inFlight` back
+     * to `balance`. `conserved` is checked after every command and on every
+     * tick, so a release that did happen would show up as `total` above
+     * 25,000 on the very command that caused it.
+     */
+    const session = createSession();
+
+    session.place('order-a', WALL, 4, 4, 'run-1', 'segment 1');
+    session.place('order-b', WALL, 5, 4, 'run-1', 'segment 2');
+    session.place('order-c', WALL, 6, 4, 'run-1', 'segment 3');
+    session.place('order-d', WALL, 7, 4, 'run-1', 'segment 4');
+
+    const spent = 4 * WALL_REQUIREMENT.quantity * UNIT_PRICE.get(WALL_REQUIREMENT.itemId)!;
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - spent);
+
+    for (const delivery of [...session.runtime.procurement.pendingDeliveries]) {
+      session.send(
+        { type: 'CancelMaterialPurchase', orderId: delivery.orderId },
+        `cancel ${delivery.orderId}`,
+      );
+    }
+
+    // The refund is whole, the queue went with it, and the credit that
+    // produced it is `ProcurementSystem.cancel`'s -- one per delivery, and no
+    // more. A second producer wired anywhere on this route reads here as a
+    // higher count long before the conservation sum notices.
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(session.creditSpy).toHaveBeenCalledTimes(4);
+    for (const id of ['order-a', 'order-b', 'order-c', 'order-d']) {
+      expect(session.stateOf(id), `${id} was still queued to be bought for`).toBe('cancelled');
+    }
+
+    // Twice the delivery delay, conservation checked on every one of them: the
+    // scheduled procurement pass has had every chance to buy the run back, and
+    // #687 is the measurement that it used to.
+    session.run(PROCUREMENT_DELIVERY_DELAY_TICKS * 2, 'the clock runs on an empty queue');
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(session.creditSpy).toHaveBeenCalledTimes(4);
+  });
+
   it('holds when a purchase is refused, and when undo is pressed with nothing to undo', () => {
     /*
      * The two no-op edges. A refused purchase must leave the equation exactly

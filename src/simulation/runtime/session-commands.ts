@@ -1,5 +1,5 @@
 import { createConstructionCommandHandler, reportMaterialsFunding } from '../construction';
-import type { ProcurementSystem } from '../economy';
+import { isJustInTimePurchaseOrderId, type ProcurementSystem } from '../economy';
 import type { CommandHandler } from '../kernel/kernel';
 import { unpackCommand } from '../protocol/commands';
 import {
@@ -388,8 +388,46 @@ export function createSessionCommandHandler(
        * **No pre-check on the main thread**, for `CancelBuildOrder`'s reason:
        * whether a delivery is still in flight is not something this thread's
        * stale copy may decide.
+       *
+       * ## The build queue is told, when the delivery was the build queue's
+       *
+       * **Added by #687, and it is the narrow half of what the paragraph above
+       * refuses.** That paragraph is about `undo()` crediting money and it
+       * still stands. This is the other direction and the money does not move
+       * twice: a delivery this session bought *for the queue* is cancelled, the
+       * refund is `ProcurementSystem.cancel`'s and nobody else's, and the
+       * orders that were waiting on it are then withdrawn so that the next
+       * scheduled construction tick does not buy the same bricks again.
+       *
+       * Without it the refund is a transient. Issue #687 measured it: fifteen
+       * wall segments, clock never started, cancel every delivery and the
+       * treasury goes `23,800 -> 24,760` exactly as the fold promises -- then
+       * six seconds after *Play*, `23,800`. The player read a sentence, acted
+       * on it, watched it come true and watched it silently reverse.
+       *
+       * **Only for a `jit:` id, and the distinction is the whole reason it is
+       * safe.** A delivery `src/main.ts` minted from the Build panel's *Buy*
+       * control is stock the player chose to hold; nothing in the queue is
+       * waiting on it by name, and cancelling it must leave every order alone.
+       * A delivery `JustInTimeMaterialsService` minted is the queue's own
+       * money -- it exists because an order demanded it and for no other
+       * reason -- so cancelling it without answering the demand is the
+       * cancellation doing nothing at all.
+       *
+       * The refusal path withdraws nothing, and that is not an oversight: a
+       * `not-pending` cancellation credited no money, so there is no refund for
+       * a withdrawal to protect.
        */
+      const cancelledItemId = procurement.pendingDeliveries.find(
+        (delivery) => delivery.orderId === simCommand.orderId,
+      )?.itemId;
       const outcome = procurement.cancel(simCommand.orderId);
+      if (outcome.ok && cancelledItemId !== undefined && isJustInTimePurchaseOrderId(simCommand.orderId)) {
+        // Read from `pendingDeliveries` *before* the cancel and used after it:
+        // `cancel` splices the record out and answers only what it refunded,
+        // and the item is what decides which orders were waiting on it.
+        construction.withdrawOrdersAwaitingMaterial(cancelledItemId);
+      }
       const cancelKey = purchaseCancelSupersessionKey(simCommand.orderId);
       if (!outcome.ok) {
         refusals.record(PURCHASE_CANCEL_REFUSAL_REASONS[outcome.reason], context.tick, cancelKey);
