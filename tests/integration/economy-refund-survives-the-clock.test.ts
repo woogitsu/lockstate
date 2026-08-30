@@ -16,9 +16,8 @@ import {
  *
  * ## What was measured, and by whom
  *
- * The playtest record *"Playing into the lock"* -- written on
- * `agent/675-play-into-the-lock`, and cited by title rather than by path
- * because it is unmerged (PR #688) -- played into
+ * [The playtest record](../../docs/research/2026-08-30-playing-into-the-lock.md)
+ * (PR #688) played into
  * [ADR 0075](../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)'s
  * hard lock and found, in its §11, the one escape that ADR's table does not
  * have: with the clock
