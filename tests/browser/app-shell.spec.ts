@@ -818,9 +818,24 @@ const ROOM_DRAG_DELTAS_PX = [192, 128] as const;
  *
  * The other two viewports are unchanged: the strip does not wrap at 900px or
  * 1280px, so it never overflowed there.
+ *
+ * **`1280x720` moved from 420.1 to 397.3 in #634, and the sentence above is
+ * now half true.** It still does not *overflow* at either width -- that was
+ * #545's point and it holds -- but it does now **wrap** at 1280, deliberately:
+ * `hud.css` gives `.hud-strip__metrics` a row of its own below 1920px, because
+ * on one row the readout was 553px of 1101px there and 41px at 768. The strip
+ * is 48px on one row and 78.5px on two, and 22.8px of that 30.5px lands on
+ * this panel by the same `min-height: 25%` route the paragraph above
+ * describes. 900x600 keeps 338.1 because the rule carries `min-height: 701px`
+ * -- see `hud.css` for why a short viewport cannot pay for the second row --
+ * and 375x812 keeps 441 because that viewport already wrapped.
+ *
+ * The sentence above is left standing rather than rewritten because its
+ * *reason* is still the reason, and a reader who meets only the correction
+ * would not know what 900x600 is still exempt from.
  */
 const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
-  '1280x720': 420.1,
+  '1280x720': 397.3,
   '900x600': 338.1,
   '375x812': 441,
 };
@@ -7799,10 +7814,27 @@ test.describe('the assembled application', () => {
         left: rect.left,
         top: rect.top,
         width: rect.width,
-        // Whether it overlaps the metrics it sits beside. Two independently
-        // positioned layers competing for one corner is the #88 defect, and the
-        // reason this badge is in the strip's own flex row rather than `fixed`.
-        overlapsMetrics: metrics === undefined ? null : rect.right > metrics.left,
+        // Whether it overlaps the metrics. Two independently positioned layers
+        // competing for one corner is the #88 defect, and the reason this
+        // badge is in the strip's own flex row rather than `fixed`.
+        //
+        // **This was `rect.right > metrics.left` and that stopped being the
+        // question in #634.** A horizontal comparison is a valid overlap test
+        // only while the two are guaranteed to share a line, which they were
+        // for as long as the strip was one row. Once the metrics take a row of
+        // their own the badge's right edge is *of course* past the metrics'
+        // left edge -- they both start at the strip's padding -- and the test
+        // failed while nothing was drawn over anything. A rectangle
+        // intersection asks what the comment above always meant, holds in
+        // either layout, and is the assertion that would still catch a badge
+        // that went back to `position: fixed`.
+        overlapsMetrics:
+          metrics === undefined
+            ? null
+            : rect.right > metrics.left &&
+              metrics.right > rect.left &&
+              rect.bottom > metrics.top &&
+              metrics.bottom > rect.top,
         insideStrip: strip === undefined ? null : rect.top >= strip.top && rect.bottom <= strip.bottom,
       };
     });
@@ -8263,7 +8295,7 @@ test.describe('the assembled application', () => {
     await openApp(page);
 
     /**
-     * Nine widths, not the five the rest of this suite visits.
+     * Nine viewports, not the five the rest of this suite visits.
      *
      * #634's curve is not monotonic -- it recovers *below* the old 720px
      * breakpoint (600px showed 4 chips where 900px showed 1) -- so a list
@@ -8271,6 +8303,15 @@ test.describe('the assembled application', () => {
      * 768 and 1440 are the two that matter: the first is the worst point on
      * that curve and the second is an ordinary laptop that still lost three
      * chips.
+     *
+     * **900x600 is here to record what #634 did NOT buy, and it is marked
+     * rather than dropped.** The metrics only get their own row where the
+     * layout can pay 30.5px for it, and at 900x600 the Build panel's
+     * always-visible budget is 7.81px: granting the row there overdrew it by
+     * 23px and turned #174's *"the Build panel arrives inside its own fold"*
+     * red. `hud.css` chooses the fold, so this viewport is still one row and
+     * still shows 1 of 8 chips. A list that omitted it would read as coverage
+     * of the shipped viewports; this one says what happens at each.
      */
     const STRIP_VIEWPORTS = [
       [1920, 1080],
@@ -8283,6 +8324,19 @@ test.describe('the assembled application', () => {
       [600, 800],
       [375, 812],
     ] as const;
+
+    /**
+     * The one viewport where the property below does not hold, named by the
+     * thing that stops it rather than by a flag.
+     *
+     * `hud.css`'s two-row rule carries `min-height: 701px`, so a viewport
+     * shorter than that keeps the one-row layout and the squeeze that comes
+     * with it. Deriving the exception from the same number the stylesheet
+     * uses is what stops this list quietly growing: a second short viewport
+     * added to `STRIP_VIEWPORTS` is exempted for the same stated reason, and
+     * a viewport that stops being short stops being exempt.
+     */
+    const SHORT_VIEWPORT_HEIGHT_PX = 701;
 
     for (const [width, height] of STRIP_VIEWPORTS) {
       await page.setViewportSize({ width, height });
@@ -8340,12 +8394,14 @@ test.describe('the assembled application', () => {
 
       // The property. Every chip the strip is wide enough to show is shown --
       // so nothing else on the strip is taking room the readout needed.
-      expect(
-        reading!.fullyVisible,
-        `${at}: ${reading!.fullyVisible} of ${reading!.chips} chips are on screen, but the strip is ` +
-          `${reading!.stripContentWidth}px wide and has room for ${reading!.fitsInStripWidth}. The readout ` +
-          `is ${reading!.metricsClientWidth}px of ${reading!.metricsScrollWidth}px of content.`,
-      ).toBe(reading!.fitsInStripWidth);
+      if (height >= SHORT_VIEWPORT_HEIGHT_PX) {
+        expect(
+          reading!.fullyVisible,
+          `${at}: ${reading!.fullyVisible} of ${reading!.chips} chips are on screen, but the strip is ` +
+            `${reading!.stripContentWidth}px wide and has room for ${reading!.fitsInStripWidth}. The readout ` +
+            `is ${reading!.metricsClientWidth}px of ${reading!.metricsScrollWidth}px of content.`,
+        ).toBe(reading!.fitsInStripWidth);
+      }
 
       // And #634's headline, refutable on its own: at 768px this was zero.
       // Implied by the line above only while the strip is wider than one
