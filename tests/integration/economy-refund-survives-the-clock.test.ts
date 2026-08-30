@@ -296,6 +296,39 @@ describe('a refund survives the clock (#687)', () => {
     expect(orderStates(runtime).completed).toBe(2);
   });
 
+  it('leaves undo and redo with nothing to bring back', () => {
+    const runtime = createNewSimulationRuntime(SEED);
+    for (let index = 0; index < 3; index += 1) {
+      send(runtime, {
+        type: 'PlaceBuildOrder',
+        orderId: `order-${index}`,
+        definitionId: WALL,
+        x: 4 + index,
+        y: 4,
+        transactionId: 'one-drag',
+      });
+    }
+
+    for (const id of deliveryIds(runtime)) send(runtime, { type: 'CancelMaterialPurchase', orderId: id });
+    expect(balanceOf(runtime)).toBe(25_000);
+    expect(cancelled(runtime)).toBe(3);
+
+    // **The withdrawal goes through `cancelOrder` and not through `undo()`**,
+    // so nothing reaches `redoStack` and there is no route that returns a
+    // withdrawn order to `'approved'` and has it bought for a second time. The
+    // gesture is still on `undoStack`; `undo` finds every order in it already
+    // terminal, skips them all, and pushes an empty redo transaction nowhere.
+    send(runtime, { type: 'Undo' });
+    send(runtime, { type: 'Redo' });
+
+    expect(balanceOf(runtime)).toBe(25_000);
+    expect(cancelled(runtime)).toBe(3);
+    expect(queued(runtime)).toBe(0);
+
+    step(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS);
+    expect(balanceOf(runtime)).toBe(25_000);
+  });
+
   it('withdraws nothing when the cancellation itself was refused', () => {
     const runtime = createNewSimulationRuntime(SEED);
     placeWalls(runtime, 3);
