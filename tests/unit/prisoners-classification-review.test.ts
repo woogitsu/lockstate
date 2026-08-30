@@ -17,6 +17,8 @@ import { ClassificationReviewSystem, classifiedAtTickOf } from '../../src/simula
 import { MAX_SENTENCE_LENGTH_TICKS, PrisonerRecordComponent, intakeStageIndex } from '../../src/simulation/prisoners/components';
 import type { DisciplinaryEvidenceSource } from '../../src/simulation/prisoners/disciplinary-record';
 import { MAX_SENTENCE_LENGTH_TICKS_DRAWN, MIN_SENTENCE_LENGTH_TICKS } from '../../src/simulation/prisoners/sentence';
+import { deriveXoshiroState } from '../../src/simulation/rng/seed';
+import { NamedRngStreams } from '../../src/simulation/rng/streams';
 
 /**
  * The scored, reviewable classification issues #78 and #80 ask for
@@ -173,23 +175,47 @@ describe('classifiedAtTickOf: the classification tick, recovered from two persis
 // --- The system ----------------------------------------------------------
 
 const PRISONER_COMPONENT_ID = 0;
+const INTRODUCTION_STREAM = 'contraband.introduction';
+
+/** What a review handed the introduction port, in call order. ADR 0080. */
+interface IntroductionCall {
+  readonly entityId: number;
+  readonly riskTier: number;
+  readonly tick: number;
+}
 
 interface Fixture {
   readonly store: EntityStore;
   readonly records: PrisonerRecordComponent;
   readonly system: ClassificationReviewSystem;
   readonly kernel: Kernel;
+  /** Empty unless the fixture was built with `withIntroducer`. */
+  readonly introductions: IntroductionCall[];
   admit(options: { readonly sentenceLengthTicks?: number; readonly priorIncidentsAtIntake?: number; readonly riskTier: number; readonly classifiedAtTick: number; readonly stage?: 'accommodation-assignment' | 'completed' | 'queued' | 'failed' }): number;
 }
 
-function fixture(evidence?: DisciplinaryEvidenceSource): Fixture {
+function fixture(evidence?: DisciplinaryEvidenceSource, withIntroducer = false): Fixture {
   const store = new EntityStore(8);
   const bitset = new ComponentBitset(8);
   const query = new EntityQuery(store, bitset);
   query.mask.require(PRISONER_COMPONENT_ID);
   const records = new PrisonerRecordComponent(8);
-  const system = new ClassificationReviewSystem(store, query, records, evidence);
-  const kernel = new Kernel(0, 0);
+  const introductions: IntroductionCall[] = [];
+  // A recording double rather than the real rule: what this file is entitled
+  // to assert is *when* the question is asked and *with which tier*. What the
+  // draw then returns is `contraband/introduction.ts`'s and is asserted in
+  // `tests/unit/contraband-introduction.test.ts`.
+  const introducer = withIntroducer
+    ? { introduce: (entityId: number, riskTier: number, tick: number) => { introductions.push({ entityId, riskTier, tick }); } }
+    : undefined;
+  const system = new ClassificationReviewSystem(store, query, records, evidence, introducer, INTRODUCTION_STREAM);
+  const kernel = new Kernel(
+    0,
+    0,
+    // Registered only for the introducer fixture, so the plain one keeps the
+    // property the "takes no RNG draw" case below rests on: any draw throws.
+    withIntroducer ? new NamedRngStreams([{ name: INTRODUCTION_STREAM, state: deriveXoshiroState(0x0cc0, INTRODUCTION_STREAM) }]) : new NamedRngStreams([]),
+  );
   kernel.registerSystem(system);
 
   return {
@@ -197,6 +223,7 @@ function fixture(evidence?: DisciplinaryEvidenceSource): Fixture {
     records,
     system,
     kernel,
+    introductions,
     admit(options) {
       const entityId = store.spawn();
       const index = store.getIndex(entityId);
@@ -228,6 +255,27 @@ function lapsedRiot(participantIds: readonly number[], startedAtTick: number, en
   log.open({ id: 'i', type: 'riot', sectorId: 's', participantIds, severity: 6, causeFactors: [] }, startedAtTick);
   log.transition('i', 'lapsed', endedAtTick, { injuredEntityIds: [...participantIds], propertyDamage: 6, escaped: false });
   return log.get('i')!;
+}
+
+/**
+ * A finding worth fewer points than a lapsed riot, so a rise can be made to
+ * stop short of tier 3 (ADR 0080).
+ *
+ * `'resolved'` and not `'lapsed'`: an assault is 2 points and
+ * `LAPSED_INCIDENT_SURCHARGE_POINTS` would add the third that puts the
+ * findings term back at 3.
+ */
+function resolvedAssault(participantIds: readonly number[], startedAtTick: number, endedAtTick: number): IncidentRecord {
+  const log = new IncidentLog();
+  log.open({ id: 'a', type: 'assault', sectorId: 's', participantIds, severity: 4, causeFactors: [] }, startedAtTick);
+  // Forward-only, through the states an answered incident actually passes:
+  // `active -> notified -> responding -> resolved` (`incident.ts`'s
+  // `LEGAL_TRANSITIONS`), so this is the shape a contained assault has and not
+  // a shortcut the log would refuse.
+  log.transition('a', 'notified', startedAtTick + 1);
+  log.transition('a', 'responding', startedAtTick + 2);
+  log.transition('a', 'resolved', endedAtTick, { injuredEntityIds: [...participantIds], propertyDamage: 0, escaped: false });
+  return log.get('a')!;
 }
 
 describe('ClassificationReviewSystem', () => {
@@ -337,10 +385,89 @@ describe('ClassificationReviewSystem', () => {
     // `prisoners.classification` on a tick that has nothing to do with an
     // admission, shifting the tier of every prisoner admitted afterwards. The
     // kernel is built with no streams registered at all, so any draw throws.
+    //
+    // **This case's title became narrower than it reads under ADR 0080**, and
+    // is kept rather than renamed because the hazard it names is unchanged. A
+    // review that raises somebody into tier 3 now draws from
+    // `contraband.introduction` -- a different stream, and only when a session
+    // supplies an introducer, which this fixture does not. What is still true,
+    // and is the whole of what the title was ever about, is that
+    // `prisoners.classification` is never touched here: no stream at all is
+    // registered on this kernel, and the run below does not throw.
     const f = fixture(evidenceOf([lapsedRiot([0], 100, 200)]));
     f.admit({ riskTier: 0, classifiedAtTick: 0 });
     expect(() => stepTo(f.kernel, 2 * CLASSIFICATION_REVIEW_INTERVAL_TICKS)).not.toThrow();
     expect(f.system.getMetrics().reviewsCompleted).toBe(1);
+  });
+
+  // --- ADR 0080: the review that reaches tier 3 asks what they are carrying ---
+
+  it('asks the introduction question, with tier 3, at the review that raises somebody into it', () => {
+    // The gap this closes: `contraband.introduce` is reached from exactly one
+    // place, the classification stage, and `classifyPrisoner` at
+    // `priorIncidents: 0` scores `1 (sentence) + 0 (priors) + 1 (screening)`
+    // and clamps -- so the tier-3-only fifth entry of the eligible band
+    // (`contraband.weapon` on the shipped catalogue) had no producer at all.
+    const f = fixture(evidenceOf([lapsedRiot([0], 39_900, 40_000)]), true);
+    const entityId = f.admit({ riskTier: 0, classifiedAtTick: 0 });
+
+    stepTo(f.kernel, 2 * CLASSIFICATION_REVIEW_INTERVAL_TICKS);
+
+    expect(f.records.riskTier[f.store.getIndex(entityId)]).toBe(3);
+    expect(f.introductions).toEqual([{ entityId, riskTier: 3, tick: 2 * CLASSIFICATION_REVIEW_INTERVAL_TICKS - 1 }]);
+  });
+
+  it('does not ask it again while the prisoner stays at tier 3', () => {
+    // The condition is the *step* into 3, not being at 3: a prisoner reviewed
+    // every period would otherwise draw every period, which is a different
+    // mechanic (acquisition in custody) and not this one.
+    const f = fixture(evidenceOf([lapsedRiot([0], 39_900, 40_000)]), true);
+    f.admit({ riskTier: 0, classifiedAtTick: 0 });
+
+    stepTo(f.kernel, 2 * CLASSIFICATION_REVIEW_INTERVAL_TICKS);
+    expect(f.introductions).toHaveLength(1);
+    stepTo(f.kernel, 3 * CLASSIFICATION_REVIEW_INTERVAL_TICKS);
+    expect(f.introductions, 'still tier 3, but not raised into it again').toHaveLength(1);
+  });
+
+  it('does not ask it for a rise that stops below tier 3', () => {
+    // Every lower step of the `2 + tier` band already has a producer at
+    // intake, so a draw here would add contraband to prisons where no category
+    // has changed hands -- and would move the stream position under every
+    // later admission for nothing. Two findings' worth: 0 + 0 + 2 - 0 = 2.
+    const f = fixture(evidenceOf([resolvedAssault([0], 39_900, 40_000)]), true);
+    const entityId = f.admit({ riskTier: 0, classifiedAtTick: 0 });
+
+    stepTo(f.kernel, 2 * CLASSIFICATION_REVIEW_INTERVAL_TICKS);
+
+    expect(f.records.riskTier[f.store.getIndex(entityId)], 'raised, but only to 2').toBe(2);
+    expect(f.system.getMetrics().tierIncreases).toBe(1);
+    expect(f.introductions).toEqual([]);
+  });
+
+  it('does not ask it for a prisoner who was already tier 3 and stayed there', () => {
+    // A review that confirms a tier is not a promotion. Admitted at 3 with a
+    // finding fresh enough to hold them there.
+    const f = fixture(evidenceOf([lapsedRiot([0], 39_900, 40_000)]), true);
+    const entityId = f.admit({ riskTier: 3, classifiedAtTick: 0 });
+
+    stepTo(f.kernel, 2 * CLASSIFICATION_REVIEW_INTERVAL_TICKS);
+
+    expect(f.records.riskTier[f.store.getIndex(entityId)]).toBe(3);
+    expect(f.system.getMetrics().tierIncreases).toBe(0);
+    expect(f.introductions).toEqual([]);
+  });
+
+  it('asks nothing at all, and touches no stream, when a session wires no introducer', () => {
+    // Every fixture in `tests/` and every session that predates ADR 0080 is
+    // this case, and the kernel here has no streams registered -- so a
+    // `context.rng.get` would throw rather than quietly work.
+    const f = fixture(evidenceOf([lapsedRiot([0], 39_900, 40_000)]));
+    const entityId = f.admit({ riskTier: 0, classifiedAtTick: 0 });
+
+    expect(() => stepTo(f.kernel, 2 * CLASSIFICATION_REVIEW_INTERVAL_TICKS)).not.toThrow();
+    expect(f.records.riskTier[f.store.getIndex(entityId)]).toBe(3);
+    expect(f.introductions).toEqual([]);
   });
 
   it('answers what a review would decide without writing anything', () => {
