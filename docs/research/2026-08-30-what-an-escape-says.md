@@ -35,6 +35,12 @@ the layer where it belongs, and the other layer has only one shape open to it.
 **Nothing under `src/` is changed by this branch and no sentence is authored.**
 A prototype was built, measured and reverted; its cost is in §3.4.
 
+**Gates on the branch as it stands:** `./node_modules/.bin/tsc -b --pretty false`
+exit 0, and the vitest suite `350 passed (350)` files / `3970 passed | 1 skipped
+(3971)` tests, exit 0, on the committed tree. Another agent's suite was running
+in the main checkout during part of that window (issue #667); nothing failed, so
+the contention cost nothing to record.
+
 ---
 
 ## 0. Tiers, and how to read this record
@@ -147,6 +153,13 @@ sharper statement is the *stronger* one: **the escape itself emits nothing.**
 The two rows the player sees are "an attempt opened" and "nothing is open any
 more", and both are true of a containment. There is no row on the channel whose
 subject is the escape.
+
+**And the one row that *is* about the attempt does not stay.** The alerts list
+keeps the newest `MAX_EVENT_ALERT_ROWS` = 8 rows
+(`src/ui/simulation-events.ts:252`) and drops the oldest, so in a prison
+producing incidents the opening line is gone within a few events — which the
+playtest observed directly, with an eight-row list holding two riots, one escape
+attempt and four all-clears beside a population that had just fallen by one.
 
 ### 1.5 What *does* move on screen when somebody escapes — VERIFIED
 
@@ -491,9 +504,11 @@ Everything else follows from that sentence rather than being a separate call:
 - **If it does not** — the shape `prisoners.discharged` uses — the payload is
   empty and the event is four lines lighter.
 
-That is a property of the sentence, not an extra question: whoever writes
-*"{name} is over the wall."* has chosen the first, and whoever writes *"A
-prisoner has escaped."* has chosen the second.
+That is a property of the sentence, not an extra question: a sentence with the
+prisoner's name in it has chosen the first, and one that speaks of *a prisoner*
+has chosen the second. **No candidate wording is offered here, deliberately** —
+`AGENTS.md`'s fourth exclusion is about the words themselves, and a record that
+supplied a plausible one would be inviting it to be lifted.
 
 ### 5.2 What is *not* the owner's, and is recommended here
 
