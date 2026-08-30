@@ -43,6 +43,7 @@ import {
   type HudStaffViewModel,
   type HudViewModel,
 } from './view-model';
+import { resolveHudLabelParameters } from './label-parameters';
 
 /**
  * The persistent HUD shell.
@@ -1023,7 +1024,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    */
   function applyEventNotice(notice: HudEventNoticeViewModel | undefined): void {
     eventNotice.hidden = notice === undefined;
-    eventText.textContent = notice === undefined ? '' : t(notice.labelKey, notice.labelParameters);
+    eventText.textContent = notice === undefined ? '' : t(notice.labelKey, resolveHudLabelParameters(t, notice));
     if (notice === undefined) delete eventNotice.dataset['severity'];
     else eventNotice.dataset['severity'] = notice.severity;
   }
@@ -1741,7 +1742,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     const seen = new Set<string>();
     for (const [index, alert] of viewModel.alerts.entries()) {
       seen.add(alert.id);
-      const text = t(alert.labelKey, alert.labelParameters);
+      const text = t(alert.labelKey, resolveHudLabelParameters(t, alert));
       const badge = { tone: severityTone(alert.severity), text: t(severityLabelKey(alert.severity)) };
       const existing = alertRows.get(alert.id);
       let row = existing;

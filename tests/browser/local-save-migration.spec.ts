@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './network-changed-fixture';
 import { SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
 import { openHarness, reloadHarness } from './harness-fixture';
 

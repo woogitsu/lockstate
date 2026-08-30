@@ -71,6 +71,18 @@ const BED_FAR_TILE = { x: 4, y: 7 } as const;
 /** Also inside `CELL_RECT`, and not the bed's second tile. */
 const TOILET_TILE = { x: 5, y: 6 } as const;
 const SECOND_BED_TILE = { x: 7, y: 6 } as const;
+/**
+ * A **second** bed inside `CELL_RECT`, so the cell derives a `residentCapacity`
+ * of 2 and a removal can drop it to 1 rather than to 0.
+ *
+ * The same tile `TOILET_TILE` names, and never in the same prison: the two-bed
+ * fixture (ADR 0076 decision A(i)'s "excess") furnishes no toilet, because
+ * `room.cell`'s 2x3 authored minimum has exactly two 1x2 columns and both are
+ * spoken for. Named separately rather than reusing `TOILET_TILE` because what
+ * a reader needs to know here is that it is a bed, not that it is where a
+ * toilet goes in a different fixture.
+ */
+const SECOND_BED_IN_CELL_TILE = { x: 5, y: 6 } as const;
 
 /**
  * `room.yard`'s authored minimum (8x8, 64 tiles), on owned land and clear of
@@ -315,7 +327,29 @@ describe('a removed object takes its capacity and its capability with it', () =>
   });
 });
 
-describe('a bed removed from an occupied cell evicts nobody (ADR 0028 decision 2)', () => {
+describe('a bed removed from an occupied cell relocates its resident, and evicts nobody when it cannot (ADR 0028 decision 2, narrowed by ADR 0076 A(i))', () => {
+  /**
+   * **This block's name and three of its sentences were rewritten by hand for
+   * [ADR 0076](../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+   * decision A(i), and the old ones are quoted below rather than deleted.**
+   * They were correct when they were written and they were correct against the
+   * code that shipped them; what changed is the decision under them, and that
+   * ADR's consequences say in as many words that each one *"is a sentence that
+   * has to be rewritten by hand, and that is the point: it must not be
+   * possible to change this behaviour without editing the sentences that
+   * promised the old one."*
+   *
+   * The block used to be called *"a bed removed from an occupied cell evicts
+   * nobody (ADR 0028 decision 2)"*. **That decision is not withdrawn and
+   * neither is the sentence** -- ADR 0076 narrows both. Nobody is put on the
+   * street: a resident the prison cannot rehouse stays exactly where ADR 0028
+   * left them, in a cell with no bed in it, and the last two tests here are
+   * that branch, holding the assertions the first two used to hold. What is
+   * new is that a resident the prison *can* rehouse is **moved**, and a prison
+   * with a free furnished bed one cell over no longer houses somebody in a
+   * room it cannot sleep them in.
+   */
+
   /** The furnished prison with a second cell, one prisoner housed in the first, and both beds standing. */
   function prisonWithHousedPrisoner(): { readonly runtime: SimulationRuntime; readonly prisoner: number } {
     const runtime = prisonWithFurnishedCell();
@@ -334,7 +368,25 @@ describe('a bed removed from an occupied cell evicts nobody (ADR 0028 decision 2
     return { runtime, prisoner };
   }
 
-  it('keeps the prisoner housed, stops the cell taking anybody new, and reads the requirement as missing', () => {
+  /**
+   * The same prison with **one** cell, so the relocation this file now measures
+   * has nowhere to go.
+   *
+   * The whole difference from `prisonWithHousedPrisoner` is the second cell,
+   * and that is deliberate: the two branches of decision A(i) are one command
+   * apart, and the fixtures that reach them should be too.
+   */
+  function prisonWithNowhereToMoveAnybody(): { readonly runtime: SimulationRuntime; readonly prisoner: number } {
+    const runtime = prisonWithFurnishedCell();
+    stepTo(runtime, 200);
+    submit(runtime, 'admit', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
+    stepTo(runtime, 260);
+    const prisoner = runtime.prisoners.entityStore.getIdByIndex(0);
+    expect(runtime.prisoners.coldState.getAccommodation(prisoner)).toBe(cellInstanceId);
+    return { runtime, prisoner };
+  }
+
+  it('moves the resident into the still-furnished cell next door, and the state pays for the place they now really hold', () => {
     const { runtime, prisoner } = prisonWithHousedPrisoner();
     expect(runtime.prisoners.roomInstances.occupancyOf(cellInstanceId)).toBe(1);
     expect(objectRequirementStatuses(runtime, cellInstanceId)).toEqual({
@@ -344,33 +396,35 @@ describe('a bed removed from an occupied cell evicts nobody (ADR 0028 decision 2
 
     submit(runtime, 'remove-bed', packCommand({ type: 'RemoveObject', ...BED_TILE }));
 
-    // **Nobody is evicted.** The prisoner keeps the accommodation they were
-    // given, and the occupant set keeps them -- so the cell is now occupied by
-    // one and has room for none, which ADR 0028 decision 2 names as a legal
-    // state rather than a defect to repair.
-    expect(runtime.prisoners.coldState.getAccommodation(prisoner)).toBe(cellInstanceId);
-    expect(runtime.prisoners.roomInstances.occupancyOf(cellInstanceId)).toBe(1);
+    // **This assertion read `toBe(cellInstanceId)` under the message "Nobody is
+    // evicted", and it is the sentence ADR 0076 decision A(i) is.** The
+    // prisoner is not evicted -- they are *rehoused*, in one step, into a cell
+    // whose bed exists, because this prison has one. The cell they came from
+    // now holds nobody rather than holding somebody it cannot sleep.
+    expect(runtime.prisoners.coldState.getAccommodation(prisoner), 'rehoused, not evicted and not left').toBe(
+      secondCellInstanceId,
+    );
+    expect(runtime.prisoners.roomInstances.occupancyOf(cellInstanceId)).toBe(0);
+    expect(runtime.prisoners.roomInstances.occupantsOf(secondCellInstanceId)).toEqual([prisoner]);
     expect(runtime.prisoners.roomInstances.getById(cellInstanceId)?.residentCapacity).toBe(0);
     expect(runtime.prisoners.roomInstances.totalOccupancy, 'and the registry still counts them as housed').toBe(1);
-    // **This assertion's message read "the state still pays for the place they
-    // occupy" and is withdrawn** (issue #585,
-    // [ADR 0076](../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
-    // decision A(ii)). It was true when it was written, and note what it was:
-    // a *count* of occupancy carrying a claim about *money* in its message, so
-    // the count went on passing after the money changed and only the sentence
-    // was false. That is the shape `docs/AGENT_WORKFLOW.md` §4 warns about, met
-    // in a test message rather than in prose, and the fix is to assert the
-    // thing the sentence claims.
+
+    // **And the money follows the bed rather than the room.** Decision A(ii)
+    // pays for `min(occupancy, residentCapacity)` per instance, and after a
+    // relocation the resident occupies a real furnished place -- so the grant
+    // that A(ii) withheld while they sat in a bedless cell is payable again.
+    // That is the half of A(ii) the no-vacancy test below cannot show.
     expect(
       runtime.prisoners.roomInstances.residentIdsWithExistingPlace(),
-      'and the state pays for none of it: the place went with the bed',
-    ).toEqual([]);
-    expect(stateIncomeForCompletedDay(runtime.prisoners), 'so a whole day is worth nothing here').toBe(0);
+      'the place they hold is a bed that exists',
+    ).toEqual([prisoner]);
+    expect(stateIncomeForCompletedDay(runtime.prisoners), 'so a whole day is worth something again').toBeGreaterThan(0);
 
-    // **The cell admits nobody new**, and the second cell still does -- so this
-    // is the cell refusing, not the prison having run out.
+    // **The emptied cell admits nobody new**, and the second cell is full
+    // rather than free -- so this is the cell refusing on its own capacity,
+    // not the prison having run out of rooms.
     expect(runtime.prisoners.roomInstances.assign(cellInstanceId, 4_242 as never)).toBe(false);
-    expect(runtime.prisoners.roomInstances.findAvailableResidence(CELL, 'sleep-surface')?.instanceId).toBe(secondCellInstanceId);
+    expect(runtime.prisoners.roomInstances.findAvailableResidence(CELL, 'sleep-surface')).toBeUndefined();
 
     // **The requirement flips to missing.** The toilet is untouched, which is
     // what makes this a statement about the bed rather than about the room being
@@ -379,29 +433,110 @@ describe('a bed removed from an occupied cell evicts nobody (ADR 0028 decision 2
       'object.bed': 'missing-capability',
       'object.toilet': 'satisfied-by-capability',
     });
-    // The projection reads the over-capacity room as full with nothing free,
-    // clamped rather than negative -- ADR 0028 decision 2 records that "over
-    // capacity" is a sentence phase 5 owes and this shape cannot yet say.
-    expect(projectRoomDetail(runtime.prisoners, cellInstanceId)?.occupancy).toMatchObject({ current: 1, capacity: 0, free: 0 });
+    expect(projectRoomDetail(runtime.prisoners, cellInstanceId)?.occupancy).toMatchObject({ current: 0, capacity: 0, free: 0 });
   });
 
-  it('keeps the prisoner sleeping in the cell whose bed has gone, because own-accommodation re-checks nothing', () => {
+  it('sleeps the relocated prisoner in the cell they were moved to, because own-accommodation resolves by id', () => {
     const { runtime, prisoner } = prisonWithHousedPrisoner();
     submit(runtime, 'remove-bed', packCommand({ type: 'RemoveObject', ...BED_TILE }));
 
-    // The sleep block is `[0, 400)` of each day and `action.sleep` targets
-    // `own-accommodation`, which resolves by id and checks neither gate. So the
-    // prisoner keeps sleeping in a cell with no bed in it -- which is the
-    // "degrade visibly, never hard-fail" answer the ADR reached with no new
-    // mechanic, and it is measured here rather than trusted.
+    // **This test read "keeps the prisoner sleeping in the cell whose bed has
+    // gone, because own-accommodation re-checks nothing", and the mechanism it
+    // named is unchanged -- only the id is.** `action.sleep` targets
+    // `own-accommodation`, which resolves by id and checks neither gate; that
+    // is exactly why relocation had to write `coldState.setAccommodation`
+    // rather than only move the residency claim. It did, so the prisoner walks
+    // to the cell they now live in and sleeps on the bed that is in it.
+    stepTo(runtime, 2_500);
+    const index = runtime.prisoners.entityStore.getIndex(prisoner);
+    expect(DEFAULT_ACTIONS[runtime.prisoners.currentAction.actionIndex[index]!]?.id).toBe('action.sleep');
+    expect(runtime.prisoners.coldState.getActionTarget(prisoner)).toBe(secondCellInstanceId);
+    expect(ACTION_PHASES[runtime.prisoners.currentAction.phase[index]!]).toBe('performing');
+  });
+
+  it('leaves the resident where ADR 0028 put them when there is nowhere to move them, and the state pays for none of it', () => {
+    const { runtime, prisoner } = prisonWithNowhereToMoveAnybody();
+
+    submit(runtime, 'remove-bed', packCommand({ type: 'RemoveObject', ...BED_TILE }));
+
+    // **The whole of what the first two tests used to assert, moved to the
+    // branch where it is still true**, and it is the branch that matters:
+    // ADR 0076 calls it "a prison with one cell, or a prison that is full,
+    // which is every prison the moment the player is under pressure", and the
+    // recycling loop `economy-bed-recycling.test.ts` measures runs through it
+    // by construction, because a player exploiting it has no spare bed.
+    expect(runtime.prisoners.coldState.getAccommodation(prisoner), 'nobody is put on the street').toBe(cellInstanceId);
+    expect(runtime.prisoners.roomInstances.occupancyOf(cellInstanceId)).toBe(1);
+    expect(runtime.prisoners.roomInstances.getById(cellInstanceId)?.residentCapacity).toBe(0);
+    expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(1);
+    expect(
+      runtime.prisoners.roomInstances.residentIdsWithExistingPlace(),
+      'and the state pays for none of it: the place went with the bed',
+    ).toEqual([]);
+    expect(stateIncomeForCompletedDay(runtime.prisoners), 'so a whole day is worth nothing here').toBe(0);
+
+    // And they go on sleeping there, over a whole day boundary, which is the
+    // "degrade visibly, never hard-fail" answer ADR 0028 reached with no new
+    // mechanic.
     stepTo(runtime, 2_500);
     const index = runtime.prisoners.entityStore.getIndex(prisoner);
     expect(DEFAULT_ACTIONS[runtime.prisoners.currentAction.actionIndex[index]!]?.id).toBe('action.sleep');
     expect(runtime.prisoners.coldState.getActionTarget(prisoner)).toBe(cellInstanceId);
     expect(ACTION_PHASES[runtime.prisoners.currentAction.phase[index]!]).toBe('performing');
+    expect(runtime.prisoners.roomInstances.occupancyOf(cellInstanceId), 'still housed a day later').toBe(1);
   });
 
-  it('leaves nothing inconsistent after a long run, and un-zoning the bed-less cell relocates its resident (#478)', () => {
+  it('moves only the excess: a cell losing one of two beds relocates one resident and keeps the other', () => {
+    // ADR 0076 names this as relocation's "one gap for this use": the
+    // mechanism `unzone` had empties *whole instances*, and a room losing one
+    // of two beds needs only the excess moved. The two residents are
+    // deliberately in one cell before the spare cell exists, so intake cannot
+    // have spread them and the fixture is not quietly measuring its own
+    // admission order.
+    const runtime = createNewSimulationRuntime(SEED);
+    submit(runtime, 'buy-planks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 3 }));
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
+    submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
+    submit(runtime, 'bed-a', packCommand({ type: 'PlaceObject', orderId: 'bed-a', definitionId: 'bed-wooden', ...BED_TILE }));
+    submit(runtime, 'bed-b', packCommand({ type: 'PlaceObject', orderId: 'bed-b', definitionId: 'bed-wooden', ...SECOND_BED_IN_CELL_TILE }));
+    stepTo(runtime, 400);
+    expect(runtime.prisoners.roomInstances.getById(cellInstanceId)?.residentCapacity, 'two beds, two places').toBe(2);
+
+    submit(runtime, 'admit-1', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
+    submit(runtime, 'admit-2', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, x: ARRIVAL.x + 1, y: ARRIVAL.y }));
+    stepTo(runtime, 700);
+    const occupants = runtime.prisoners.roomInstances.occupantsOf(cellInstanceId);
+    expect(occupants, 'both housed in the one cell, ascending by entity id').toHaveLength(2);
+    const [staying, excess] = occupants as readonly [number, number];
+
+    // Only now does anywhere else exist to be moved to.
+    wallRoomPerimeter(runtime.world, SECOND_CELL_RECT, { doors: runtime.navigation.doors });
+    submit(runtime, 'zone-cell-2', packCommand({ type: 'ZoneRoom', roomId: CELL, ...SECOND_CELL_RECT }));
+    submit(runtime, 'bed-c', packCommand({ type: 'PlaceObject', orderId: 'bed-c', definitionId: 'bed-wooden', ...SECOND_BED_TILE }));
+    stepTo(runtime, 1_100);
+    expect(runtime.prisoners.roomInstances.getById(secondCellInstanceId)?.residentCapacity).toBe(1);
+
+    submit(runtime, 'remove-bed-a', packCommand({ type: 'RemoveObject', ...BED_TILE }));
+
+    // One bed left, one resident on it: the *lowest* entity id keeps the place,
+    // which is the tie-break `residentsWithExistingPlace` already imposed on
+    // the money (decision A(ii)) rather than a second rule invented for
+    // relocation. The other -- the resident the state had stopped paying for --
+    // is the one that moves.
+    expect(runtime.prisoners.roomInstances.getById(cellInstanceId)?.residentCapacity, 'one bed left').toBe(1);
+    expect(runtime.prisoners.roomInstances.occupantsOf(cellInstanceId), 'the lowest id keeps the place').toEqual([staying]);
+    expect(runtime.prisoners.coldState.getAccommodation(staying)).toBe(cellInstanceId);
+    expect(runtime.prisoners.coldState.getAccommodation(excess), 'and only the excess moves').toBe(secondCellInstanceId);
+    expect(runtime.prisoners.roomInstances.occupantsOf(secondCellInstanceId)).toEqual([excess]);
+
+    // Two residents, two beds, two places -- and no prison anywhere in this
+    // fixture is over capacity, which is the state A(ii) exists to stop paying
+    // for and A(i) has just removed.
+    expect(runtime.prisoners.roomInstances.residentIdsWithExistingPlace()).toEqual([staying, excess].sort((a, b) => a - b));
+    expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(2);
+  });
+
+  it('leaves nothing inconsistent after a long run, and the cell it emptied un-zones with nobody left to relocate', () => {
     const { runtime, prisoner } = prisonWithHousedPrisoner();
     submit(runtime, 'remove-bed', packCommand({ type: 'RemoveObject', ...BED_TILE }));
 
@@ -410,13 +545,18 @@ describe('a bed removed from an occupied cell evicts nobody (ADR 0028 decision 2
     // the action system, the income system and both projections on every
     // scheduled tick, and a capacity below an occupant count is the arithmetic
     // that would produce a `RangeError` or a negative bounded value if any of
-    // them subtracted without clamping.
+    // them subtracted without clamping. Under A(i) this prison is no longer in
+    // that state at all -- which is why the same five days are stepped in the
+    // no-vacancy test above, where it still is.
     expect(() => stepTo(runtime, 12_000)).not.toThrow();
 
     const index = runtime.prisoners.entityStore.getIndex(prisoner);
     expect(intakeStageFromIndex(runtime.prisoners.records.intakeStage[index]!)).toBe('completed');
-    expect(runtime.prisoners.coldState.getAccommodation(prisoner)).toBe(cellInstanceId);
-    expect(runtime.prisoners.roomInstances.occupancyOf(cellInstanceId)).toBe(1);
+    // **This read `toBe(cellInstanceId)` and `occupancyOf(cellInstanceId)` 1.**
+    // The relocation happened at the removal, five days ago, and nothing since
+    // has moved them back or lost them.
+    expect(runtime.prisoners.coldState.getAccommodation(prisoner)).toBe(secondCellInstanceId);
+    expect(runtime.prisoners.roomInstances.occupancyOf(cellInstanceId)).toBe(0);
     expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(1);
     // No claim outlived the action that took it, over five days of them.
     expect(runtime.prisoners.roomInstances.totalUseClaims).toBe(0);
@@ -427,16 +567,134 @@ describe('a bed removed from an occupied cell evicts nobody (ADR 0028 decision 2
     // Every requirement is still answerable, and the projection still resolves.
     expect(projectRoomDetail(runtime.prisoners, cellInstanceId)).toBeDefined();
 
-    // Before issue #478, `unzone` refused this unconditionally -- a bare
-    // "somebody is using that room" that never lifted while this sentence
-    // ran, because nothing moved a prisoner out of accommodation. Since
-    // #478, an occupied room is relocated rather than refused when the
-    // prison has anywhere else to put the resident, and this cell's own
-    // neighbour still has a free bed (`residentCapacity: 0` here since the
-    // removal, one free place at `secondCellInstanceId` throughout). So the
-    // removal really has opened no route to a dangling reference -- the
-    // resident is moved to real, still-furnished accommodation first, and
-    // only then is the now-pointless bed-less cell unregistered.
+    // **This half used to be the file's only measurement of #478's relocation,
+    // and A(i) has taken its subject away**: the cell is empty by the time
+    // `unzone` sees it, so `ResidentRelocationPort` is never asked and the
+    // removal proceeds on the ordinary path. That is a real loss of coverage
+    // *here* and not a silent one -- `unzone` relocating an occupied room is
+    // measured by `tests/integration/room-zoning-loop.test.ts` ("un-zoning an
+    // occupied room relocates its resident instead of refusing for ever
+    // (#478)") and, for a room a removal has already emptied of capacity, by
+    // the no-vacancy prison below, where the resident is still in the bedless
+    // cell when the un-zoning arrives. What this still proves is the thing it was written
+    // for: the removal opened no route to a dangling reference.
+    submit(runtime, 'unzone', packCommand({ type: 'UnzoneRoom', ...CELL_RECT }));
+    expect(runtime.refusals.last, 'accepted -- there was nobody left in it').toBeUndefined();
+    expect(runtime.prisoners.roomInstances.getById(cellInstanceId), 'the bed-less cell is gone').toBeUndefined();
+    expect(runtime.prisoners.coldState.getAccommodation(prisoner), 'and the resident is untouched by it').toBe(
+      secondCellInstanceId,
+    );
+    expect(runtime.prisoners.roomInstances.occupantsOf(secondCellInstanceId)).toEqual([prisoner]);
+  });
+
+  it('offers the one free bed to the lowest entity id when two residents are excess and only one can move', () => {
+    // The visit order, made observable. One removal can only ever make one
+    // more resident excess -- a bed contributes one to `residentCapacity` --
+    // so two-excess-at-once needs a room that was *already* over capacity when
+    // the second bed went, which is exactly what a prison with nowhere to move
+    // anybody produces. Give it one spare bed after that and the tie is real:
+    // two residents with no place, one place going, and the ascending
+    // entity-id walk decides which of them gets it.
+    const runtime = createNewSimulationRuntime(SEED);
+    submit(runtime, 'buy-planks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 3 }));
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
+    submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
+    submit(runtime, 'bed-a', packCommand({ type: 'PlaceObject', orderId: 'bed-a', definitionId: 'bed-wooden', ...BED_TILE }));
+    submit(runtime, 'bed-b', packCommand({ type: 'PlaceObject', orderId: 'bed-b', definitionId: 'bed-wooden', ...SECOND_BED_IN_CELL_TILE }));
+    stepTo(runtime, 400);
+    submit(runtime, 'admit-1', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
+    submit(runtime, 'admit-2', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, x: ARRIVAL.x + 1, y: ARRIVAL.y }));
+    stepTo(runtime, 700);
+    const [lower, higher] = runtime.prisoners.roomInstances.occupantsOf(cellInstanceId) as readonly [number, number];
+
+    // First bed out, with nowhere in the prison to go: one of them is excess
+    // and both stay, which is the ADR 0028 state.
+    submit(runtime, 'remove-bed-a', packCommand({ type: 'RemoveObject', ...BED_TILE }));
+    expect(runtime.prisoners.roomInstances.occupantsOf(cellInstanceId)).toEqual([lower, higher]);
+    expect(runtime.prisoners.roomInstances.residentIdsWithExistingPlace(), 'one place, and the lowest id holds it').toEqual([
+      lower,
+    ]);
+
+    // One spare bed, somewhere else.
+    wallRoomPerimeter(runtime.world, SECOND_CELL_RECT, { doors: runtime.navigation.doors });
+    submit(runtime, 'zone-cell-2', packCommand({ type: 'ZoneRoom', roomId: CELL, ...SECOND_CELL_RECT }));
+    submit(runtime, 'bed-c', packCommand({ type: 'PlaceObject', orderId: 'bed-c', definitionId: 'bed-wooden', ...SECOND_BED_TILE }));
+    stepTo(runtime, 1_100);
+
+    // Second bed out: now *both* are excess and there is one place for them.
+    submit(runtime, 'remove-bed-b', packCommand({ type: 'RemoveObject', ...SECOND_BED_IN_CELL_TILE }));
+
+    expect(runtime.prisoners.coldState.getAccommodation(lower), 'the lowest id is offered the bed first').toBe(
+      secondCellInstanceId,
+    );
+    expect(runtime.prisoners.coldState.getAccommodation(higher), 'and the other stays put rather than being evicted').toBe(
+      cellInstanceId,
+    );
+    expect(runtime.prisoners.roomInstances.occupantsOf(cellInstanceId)).toEqual([higher]);
+    // Partial, and better than nothing: the sibling `relocateResidentsOutOf`
+    // would have rolled the successful move back on reaching the resident it
+    // could not place, because `unzone` can still refuse. This caller cannot
+    // -- the bed is already gone -- so undoing the move would put a rehoused
+    // prisoner back in a bedless cell to preserve an atomicity nobody reads,
+    // and would cost the prison the one place it still has.
+    expect(runtime.prisoners.roomInstances.residentIdsWithExistingPlace()).toEqual([lower]);
+    expect(runtime.prisoners.roomInstances.totalOccupancy, 'and nobody was lost on the way').toBe(2);
+  });
+
+  it('relocates on the undo route too, because a bed taken back by `Undo` is the same bed', () => {
+    // The other command that takes a standing object out of a room
+    // (`ConstructionSystem.cancelOrder` -> `onOrderReverted`), and the one the
+    // recycling loop `economy-bed-recycling.test.ts` measures actually uses.
+    // ADR 0076 decision B is about the two commands disagreeing over
+    // *materials*; this is the two agreeing about *residents*, and it is a
+    // separate wiring that a test of `RemoveObject` alone would not reach.
+    // Its own fixture, because `Undo` pops the *last* transaction and
+    // `prisonWithHousedPrisoner` furnishes the spare cell second. The two beds
+    // are therefore placed the other way round here -- the spare cell first,
+    // the cell that will be occupied last -- so one press reaches the bed the
+    // resident is sleeping on. Nothing else is different.
+    const runtime = createNewSimulationRuntime(SEED);
+    submit(runtime, 'buy-planks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 2 }));
+    wallRoomPerimeter(runtime.world, SECOND_CELL_RECT, { doors: runtime.navigation.doors });
+    submit(runtime, 'zone-cell-2', packCommand({ type: 'ZoneRoom', roomId: CELL, ...SECOND_CELL_RECT }));
+    submit(runtime, 'bed-2', packCommand({ type: 'PlaceObject', orderId: 'bed-2', definitionId: 'bed-wooden', ...SECOND_BED_TILE }));
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
+    submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
+    submit(runtime, 'bed-1', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
+    stepTo(runtime, 600);
+    expect(runtime.construction.getOrder('bed-1')?.state, 'the bed is a completed order').toBe('completed');
+    submit(runtime, 'admit', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
+    stepTo(runtime, 700);
+    const prisoner = runtime.prisoners.entityStore.getIdByIndex(0);
+    expect(runtime.prisoners.coldState.getAccommodation(prisoner), 'housed on the bed the undo will take').toBe(cellInstanceId);
+
+    submit(runtime, 'undo', packCommand({ type: 'Undo' }));
+
+    expect(runtime.placedObjects.objectAt(BED_TILE as never), 'the bed is gone').toBeUndefined();
+    expect(runtime.prisoners.roomInstances.getById(cellInstanceId)?.residentCapacity).toBe(0);
+    expect(runtime.prisoners.coldState.getAccommodation(prisoner), 'and the resident is rehoused, not left').toBe(
+      secondCellInstanceId,
+    );
+    expect(runtime.prisoners.roomInstances.occupancyOf(cellInstanceId)).toBe(0);
+    expect(runtime.prisoners.roomInstances.residentIdsWithExistingPlace()).toEqual([prisoner]);
+  });
+
+  it('still relocates on un-zoning when the removal could not: the two commands answer the same question one after the other (#478)', () => {
+    // The no-vacancy prison, given somewhere to go *afterwards*. This is the
+    // sequence A(i) does not close and #478 does, kept because the test above
+    // no longer reaches it: a resident stranded by a removal is relocated by
+    // the next command that can.
+    const { runtime, prisoner } = prisonWithNowhereToMoveAnybody();
+    submit(runtime, 'remove-bed', packCommand({ type: 'RemoveObject', ...BED_TILE }));
+    expect(runtime.prisoners.coldState.getAccommodation(prisoner), 'stranded by the removal').toBe(cellInstanceId);
+
+    submit(runtime, 'buy-more', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-3', itemId: 'item.wood-plank', quantity: 1 }));
+    wallRoomPerimeter(runtime.world, SECOND_CELL_RECT, { doors: runtime.navigation.doors });
+    submit(runtime, 'zone-cell-2', packCommand({ type: 'ZoneRoom', roomId: CELL, ...SECOND_CELL_RECT }));
+    submit(runtime, 'place-bed-2', packCommand({ type: 'PlaceObject', orderId: 'bed-2', definitionId: 'bed-wooden', ...SECOND_BED_TILE }));
+    stepTo(runtime, 700);
+    expect(runtime.prisoners.roomInstances.getById(secondCellInstanceId)?.residentCapacity).toBe(1);
+
     submit(runtime, 'unzone', packCommand({ type: 'UnzoneRoom', ...CELL_RECT }));
     expect(runtime.refusals.last, 'accepted -- relocated rather than refused').toBeUndefined();
     expect(runtime.prisoners.roomInstances.getById(cellInstanceId), 'the bed-less cell is gone').toBeUndefined();

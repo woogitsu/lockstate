@@ -42,7 +42,11 @@ const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
  * from its own emitted chunk, and completes one command and one persistence
  * round trip. Everything else stays where it is.
  *
- * Run with: `pnpm test:artifact` (after `pnpm build`).
+ * Run with: `pnpm test:artifact` (after `pnpm build`), which since #652 is
+ * `tests/browser/run-suite.ts --suite artifact` rather than `playwright test`
+ * -- the same wrapper the dev-server gate goes through, so a run aborted by
+ * `net::ERR_NETWORK_CHANGED` is retried here on exactly the terms it is there
+ * and on no others. See `retries` below.
  */
 
 /**
@@ -97,6 +101,17 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   forbidOnly: process.env['CI'] !== undefined,
+  /**
+   * ZERO, AND THE WRAPPER ABOVE THIS CONFIG DOES NOT RELAX IT.
+   *
+   * Same rule as `tests/browser/playwright.config.ts`, for the same reason,
+   * and pinned by the same contract since #652: the only retry either browser
+   * gate may have is the one `tests/browser/run-suite.ts` decides after the
+   * run, when every failing test observed `net::ERR_NETWORK_CHANGED`. A
+   * blanket retry here would be worse than there, not better -- this suite is
+   * two tests over the artefact a player downloads, so one flaky pass is a
+   * much larger share of what the gate says.
+   */
   retries: 0,
   reporter: [['list']],
   timeout: 60_000,

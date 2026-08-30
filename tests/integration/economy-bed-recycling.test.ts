@@ -28,18 +28,36 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *   after  A(ii)             26,395    26,395
  * ```
  *
- * The recycled prison now ends on the control's balance **to the minor unit**,
- * which is a stronger statement than "the exploit is smaller": the same plank,
- * the same three cells, the same ticks and the same three admissions earn
- * exactly what playing it straight earns. `StateIncomeSystem` pays for
+ * The recycled prison now ends on the control's balance, which is a stronger
+ * statement than "the exploit is smaller": the same plank, the same three
+ * cells, the same ticks and the same three admissions earn what playing it
+ * straight earns. `StateIncomeSystem` pays for
  * `min(occupancy, residentCapacity)` per room instance
  * (`RoomInstanceRegistry.residentIdsWithExistingPlace`), and the two cells the
  * loop leaves bedless have a capacity of 0.
  *
+ * **This header said "to the minor unit" until 2026-08-30, and its own body
+ * already disagreed with it.** ADR 0078 (`What keeps a prisoner safe`) put 40
+ * minor units between the two arms -- this one reads **26,235** and the
+ * recycled one **26,275** -- because the control's paying resident arrives 805
+ * ticks earlier and crosses the `safety` line on the earlier side of a day
+ * boundary. The derivation is at the measurement below, where it has been
+ * correct since ADR 0078 landed. The equality claim is withdrawn; the argument
+ * it was making is not, because 40 minor units of an unmet-need withholding is
+ * not the exploit and does not scale with the loop.
+ *
  * **The three residents are still housed and this file still asserts it.** ADR
- * 0028 decision 2 is untouched: nobody is evicted, `totalOccupancy` still reads
- * 3, and A(i) -- relocating the excess -- is a separate change that has not
- * shipped. What A(ii) removes is what that state is *worth*.
+ * 0028 decision 2 is untouched: nobody is evicted and `totalOccupancy` still
+ * reads 3. What A(ii) removes is what that state is *worth*.
+ *
+ * **A(i) shipped on 2026-08-30 in [#637](https://github.com/matmaxalez/lockstate/pull/637),
+ * and this header said it had not.** Every removal in this loop still takes the
+ * no-vacancy branch, so nothing here changed and the file passes untouched --
+ * which is ADR 0076's own *"A(i) does not close the leak, and A(ii) does"*
+ * measured rather than restated. The relocation is best-effort
+ * (`relocateExcessResidentsOf`), not the atomic sibling, and since
+ * [#660](https://github.com/matmaxalez/lockstate/pull/660) it announces itself
+ * to the player.
  *
  * Audit finding ECON-003, reproduced by playing it. The loop is four commands
  * a player already has, in an order nothing refuses:

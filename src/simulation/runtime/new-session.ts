@@ -34,6 +34,7 @@ import {
 } from '../incidents';
 import { JustInTimeMaterialsService, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury } from '../economy';
 import { SimulationEventLog } from '../events';
+import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
 import { RefusalLog, materialsFundingSupersessionKey } from '../refusals';
 import { StaffDismissalService, StaffHiringService } from '../staff';
 import { createSessionCommandHandler } from './session-commands';
@@ -704,6 +705,38 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     placedObjects,
     roomCapacity,
     construction,
+    defaultRoomContentRegistry,
+    // ADR 0076 decision A(i), and the second wiring of the same idea `roomZoning`
+    // above takes: a removal that drops a room's `residentCapacity` below its
+    // occupancy relocates the residents it can no longer sleep, through
+    // `PrisonerOperationsRuntime.relocateExcessResidentsOf`. The catalog is
+    // named explicitly only because it sits between the two -- it is the same
+    // default the parameter already had.
+    prisoners,
+    /*
+     * And what the player is told about it, which ADR 0076's Status reserved
+     * to the owner and PR #637 shipped relocation without: *"a prisoner who
+     * changes cell unasked is something the player should be told, flagged
+     * rather than decided"*. The wording was approved on 2026-08-30 and lives
+     * in `src/content/default-locale-en.ts`; nothing in the simulation holds a
+     * sentence.
+     *
+     * This is the only place that holds all four things one needs -- the
+     * identity registry, the room catalog, the events channel and the tick --
+     * which is why the adapter is composed here rather than in either module
+     * it sits between.
+     */
+    createResidentRelocationNotice({
+      identity: actorIdentity,
+      roomInstances: prisoners.roomInstances,
+      rooms: defaultRoomContentRegistry,
+      events,
+      // `kernel.tick`, read at announcement time, for the reason
+      // `ResidentRelocationNoticeSources.tick` gives: the `Undo` route is
+      // handed no tick and threading one to it would edit the construction
+      // system to serve a notice.
+      tick: () => kernel.tick,
+    }),
   );
 
   // ADR 0017 decision 3's income line, on decision 6's basis: the state pays
