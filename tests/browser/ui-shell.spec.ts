@@ -2710,8 +2710,10 @@ test.describe('the Rooms panel', () => {
      * What it did not account for is that the loop it names is invisible: the
      * only control that reports the tool's state is the one the fold takes off
      * the screen, on the same press. A player coming back for a second room
-     * opened the panel and pressed the control that looks like the way in, and
-     * that press disarmed. So the confirm now stands the tool down, the drawing
+     * opened the panel and pressed the control that starts drawing -- which at
+     * that moment reads "Stop drawing", measured, so the surface was telling
+     * the truth to anyone who stopped to read it -- and that press disarmed.
+     * So the confirm now stands the tool down, the drawing
      * pass ends with it, and the panel comes back saying "Draw on map" --
      * `rooms-panel.ts`'s `standDownAfterConfirm` carries the full reasoning and
      * the option that was rejected. The test below owns the new rule; these
