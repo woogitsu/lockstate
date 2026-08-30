@@ -29,8 +29,20 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  *   tall or shorter, so a second line is cut with nothing on screen to say so.
  *   900x600 is inside that band. `scrollHeight` against `clientHeight` is the
  *   only reading that tells a clipped sentence from a whole one, and it is why
- *   the hint carries the owner's one sentence rather than that sentence plus
- *   the *"A new guard starts unassigned."* it displaced.
+ *   the priced sentence stands alone rather than carrying the
+ *   *"A new guard starts unassigned."* it displaced.
+ *
+ *   **That sentence used to end "rather than that sentence plus the ... it
+ *   displaced", full stop, and the displacement is now resolved**: on the
+ *   owner's ruling of 2026-08-30 the displaced clause is back as
+ *   `hud.security.hire-unassigned`, on a line and an element of its own,
+ *   exempted from the clamp in `hud.css`. Both are measured here, separately,
+ *   because they are two boxes now and either can be cut without the other.
+ * - **The payroll badge carries a word.** It stated a bare `4,800` for one
+ *   revision -- correct, and readable as a headcount beside a header naming
+ *   people. `hud.security.roster-wage-bill` is the owner's approved
+ *   *"{total} a day"*, and this file pins the rendered result rather than
+ *   resolving the key, because what is gated is the wording.
  * - **The payroll header is collapsed on arrival.** `collapsed: true` in
  *   `staff-panel.ts`, which is exactly the state the figure has to survive. A
  *   badge asserted while the fold is open would prove nothing about the state
@@ -108,6 +120,19 @@ function viewModel(options: { readonly hired: number; readonly bill?: number }):
 interface WageReading {
   /** The sentence under the hire button, or `null` where the panel drew none. */
   readonly hintText: string | null;
+  /** The displaced sentence's own line, or `null` where the panel drew none. */
+  readonly unassignedText: string | null;
+  readonly unassignedWidth: number;
+  readonly unassignedHeight: number;
+  /** True when the short-viewport clamp is cutting *that* line. */
+  readonly unassignedClipped: boolean | null;
+  /** Its `scrollHeight`/`clientHeight`, reported so the reading is legible when it fails. */
+  readonly unassignedScrollHeight: number;
+  readonly unassignedClientHeight: number;
+  /** Whether its box lies inside the panel's own visible box. */
+  readonly unassignedInsidePanel: boolean | null;
+  /** How many leaf elements in the panel render exactly the approved sentence. */
+  readonly unassignedMatches: number;
   readonly hintWidth: number;
   readonly hintHeight: number;
   /** True when the clamp is cutting the sentence: more text than box. */
@@ -141,6 +166,13 @@ async function read(page: Page): Promise<WageReading> {
 
     const hint = panel.querySelector<HTMLElement>('.hud-staff__hire-note');
     const hintBox = hint?.getBoundingClientRect();
+    const unassigned = panel.querySelector<HTMLElement>('.hud-staff__hire-unassigned');
+    const unassignedBox = unassigned?.getBoundingClientRect();
+    // Counted by rendered text and not by that class, so a class that moved on
+    // to an element saying something else is a failure rather than a pass.
+    const unassignedMatches = [...panel.querySelectorAll<HTMLElement>('*')].filter(
+      (node) => node.childElementCount === 0 && (node.textContent ?? '').trim() === 'A new guard starts unassigned.',
+    ).length;
     const roster = panel.querySelector<HTMLElement>('.hud-staff__roster');
     const bill = panel.querySelector<HTMLElement>('.hud-staff__roster-count');
     const billBox = bill?.getBoundingClientRect();
@@ -149,6 +181,17 @@ async function read(page: Page): Promise<WageReading> {
 
     return {
       hintText: hint === null ? null : hint.textContent,
+      unassignedText: unassigned === null ? null : unassigned.textContent,
+      unassignedWidth: unassignedBox === undefined ? 0 : Math.round(unassignedBox.width * 100) / 100,
+      unassignedHeight: unassignedBox === undefined ? 0 : Math.round(unassignedBox.height * 100) / 100,
+      unassignedClipped: unassigned === null ? null : unassigned.scrollHeight > unassigned.clientHeight + 0.5,
+      unassignedScrollHeight: unassigned?.scrollHeight ?? 0,
+      unassignedClientHeight: unassigned?.clientHeight ?? 0,
+      unassignedInsidePanel:
+        unassignedBox === undefined
+          ? null
+          : unassignedBox.top >= panelBox.top - 0.5 && unassignedBox.bottom <= fold + 0.5,
+      unassignedMatches,
       hintWidth: hintBox === undefined ? 0 : Math.round(hintBox.width * 100) / 100,
       hintHeight: hintBox === undefined ? 0 : Math.round(hintBox.height * 100) / 100,
       // A sentence the clamp is cutting has more content than box. `+ 0.5`
@@ -223,6 +266,55 @@ test.describe('the Staff panel says what a guard costs now and what it costs eve
     ).toBe(false);
   });
 
+  test('gives the displaced sentence its own line, whole, at the viewport that clipped it', async ({ page }) => {
+    await openSecurityTab(page);
+    await publish(page, viewModel({ hired: 60, bill: DAILY_WAGE_BILL }));
+    const reading = await read(page);
+
+    /*
+     * *"A new guard starts unassigned."* is the half of the old hire hint the
+     * owner's approved wording displaced, returned on the owner's ruling of
+     * 2026-08-30 as its own key and its own element.
+     *
+     * **The literal, not a value read back through the catalogue.** What is
+     * being gated is that the player reads the words the owner approved, so a
+     * fixture that resolved the key would supply both sides of the comparison
+     * and would go on passing after somebody rewrote the sentence.
+     */
+    expect(reading.unassignedText, 'the panel drew no line for the displaced sentence').toBe(
+      'A new guard starts unassigned.',
+    );
+    expect(
+      reading.unassignedMatches,
+      'the sentence is not rendered by exactly one element, so either it is gone or something renders it twice',
+    ).toBe(1);
+    expect(reading.unassignedWidth, 'the sentence measured zero width, so it is in the DOM and not on screen').toBeGreaterThan(0);
+    expect(reading.unassignedHeight, 'the sentence measured zero height').toBeGreaterThan(0);
+    expect(
+      reading.unassignedInsidePanel,
+      'the restored line sits below the panel fold, so the sentence returned and reaches nobody -- #629',
+    ).toBe(true);
+    /*
+     * The assertion this test exists for. `@media (max-height: 700px)` clamps
+     * `.hud-staff__note` to one line, which is why this sentence could not be
+     * run on after the priced one: the two together measured `scrollHeight` 26
+     * against `clientHeight` 13 here, and *this* clause was the half that was
+     * cut. A test that only found the text in the DOM would have passed against
+     * that defect.
+     */
+    expect(
+      reading.unassignedClipped,
+      `the restored sentence is being clipped at 900x600: scrollHeight ${reading.unassignedScrollHeight} against clientHeight ${reading.unassignedClientHeight}`,
+    ).toBe(false);
+    // And the priced sentence beside it is still whole: the line was added to a
+    // block that already had to fit, and a fix that clipped its neighbour would
+    // be the same defect one element up.
+    expect(
+      reading.hintClipped,
+      `the hire sentence is being clipped at 900x600: ${String(reading.hintText)}`,
+    ).toBe(false);
+  });
+
   test('states the standing daily bill on the payroll header, with the fold still shut', async ({ page }) => {
     await openSecurityTab(page);
     await publish(page, viewModel({ hired: 60, bill: DAILY_WAGE_BILL }));
@@ -235,7 +327,17 @@ test.describe('the Staff panel says what a guard costs now and what it costs eve
       'true',
     );
 
-    expect(reading.billText, 'the collapsed payroll header states nothing').toBe('4,800');
+    /*
+     * **`4,800 a day`, not `4,800`.** The badge shipped bare for one revision
+     * and the gap was reported rather than papered over: beside a header naming
+     * *people*, a bare figure reads as a headcount as readily as as money, and
+     * no assertion can tell those two readings apart because they render
+     * identical characters. The owner supplied the wording on 2026-08-30, and
+     * this pins it: the figure comes from the fixture and the words from
+     * `hud.security.roster-wage-bill`, so a locale edit that dropped the period
+     * fails here rather than shipping.
+     */
+    expect(reading.billText, 'the collapsed payroll header states nothing').toBe('4,800 a day');
     expect(reading.billInHeader, 'the figure is not inside the header button, so the fold takes it away with the list').toBe(
       true,
     );
@@ -252,7 +354,7 @@ test.describe('the Staff panel says what a guard costs now and what it costs eve
     // a badge that is never cleared reports the last prison's payroll on the
     // next one.
     await publish(page, viewModel({ hired: 60, bill: DAILY_WAGE_BILL }));
-    expect((await read(page)).billText).toBe('4,800');
+    expect((await read(page)).billText).toBe('4,800 a day');
 
     await publish(page, viewModel({ hired: 0, bill: 0 }));
     const empty = await read(page);
@@ -284,5 +386,19 @@ test.describe('the Staff panel says what a guard costs now and what it costs eve
     expect(panelText.length, 'the Staff panel rendered nothing at all').toBeGreaterThan(20);
     expect(panelText, `an unresolved message key is on screen: ${panelText}`).not.toMatch(/\bhud\.[a-z0-9.-]+/);
     expect(panelText, `an unfilled placeholder is on screen: ${panelText}`).not.toMatch(/[{}]/);
+
+    /*
+     * And the sweep above provably **reaches** the two strings the owner
+     * approved on 2026-08-30, rather than passing over a panel that never drew
+     * them. A "must not contain" rule is vacuous against text that is absent,
+     * and both of these are new keys: `hud.security.roster-wage-bill` is the
+     * badge's first placeholder and `hud.security.hire-unassigned` the panel's
+     * newest element. `innerText` and not `textContent`, so this is the text a
+     * sighted player reads -- a string inside a shut fold does not count it.
+     */
+    expect(panelText, 'the payroll badge is not in the text a sighted player reads').toContain('4,800 a day');
+    expect(panelText, 'the restored sentence is not in the text a sighted player reads').toContain(
+      'A new guard starts unassigned.',
+    );
   });
 });

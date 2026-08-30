@@ -1966,6 +1966,34 @@
     overflow: hidden;
   }
 
+  /* The one `.hud-staff__note` that is not clamped, on
+     `.hud-build__order-note`'s terms and for its reason (#639, the owner's
+     ruling of 2026-08-30). `hud.security.hire-unassigned` -- "A new guard
+     starts unassigned." -- is the half of the old hire hint the approved
+     wording displaced, and the measurement that displaced it is why it comes
+     back as its own element rather than as a second sentence: run on after
+     "Costs {total} now and {wage} a day in wages." the note delivered
+     `scrollHeight` 26 against `clientHeight` 13 at 900x600, and the clause that
+     was cut was this one.
+
+     The clamp's own reason is the rail's height budget (#174), and this panel
+     pays it in the currency it has: `.ui-panel.hud-staff` is `overflow-y: auto`,
+     so one more line of `--font-size-eyebrow` moves the scroll threshold and
+     loses nothing. The notes that stay clamped are the ones a clipped line
+     still leaves usable -- a coverage hint reads as an instruction with its
+     tail cut. This one is a whole clause or nothing.
+
+     `.hud-staff__note[hidden]` above still wins over this rule -- it is a class
+     and an attribute against one class -- so the guard that keeps a hidden note
+     hidden under the author `display` this block sets is not weakened here.
+     This note is never hidden in any case: it quotes no figure, so there is no
+     state in which it is unsafe to say. */
+  .hud-staff__hire-unassigned {
+    display: block;
+    -webkit-line-clamp: none;
+    overflow: visible;
+  }
+
   /* The Regime panel's own note, on the same terms and for the same
      four-declaration reason: the empty-roster sentence and the "and N more"
      line are the two that can wrap, and a short viewport is where the roster

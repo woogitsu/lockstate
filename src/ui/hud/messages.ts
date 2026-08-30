@@ -325,6 +325,20 @@ export const HUD_MESSAGE_KEY = {
   securityStaffSelected: 'hud.security.selected',
   securityStaffHire: 'hud.security.hire',
   securityStaffHint: 'hud.security.hire-hint',
+  /**
+   * And what the press gets you, which is a guard and not yet a post.
+   *
+   * `securityStaffUnassigned` is the second half of the sentence
+   * `securityStaffHint` used to be, restored as a key of its own when the
+   * owner's approved replacement took the whole of that value (issue #639
+   * ruling 2, approved 2026-08-30). Two keys rather than one string with two
+   * sentences because the panel has to render them as two elements: the short
+   * viewport clamp in `hud.css` cuts a two-line note to one line, and the
+   * clause a player needs -- that the new guard is posted nowhere -- is the one
+   * that would be cut. Only the second element is exempted from that clamp, so
+   * splitting the key is what makes the exemption addressable at all.
+   */
+  securityStaffUnassigned: 'hud.security.hire-unassigned',
 
   /**
    * The Staff panel's held-guards list
@@ -372,6 +386,22 @@ export const HUD_MESSAGE_KEY = {
    * how many did not fit.
    */
   securityRosterTitle: 'hud.security.roster',
+  /**
+   * The standing daily wage bill, as the collapsed header states it.
+   *
+   * `securityRosterWageBill` is the *sentence* around the figure, not the
+   * figure: `'{total} a day'`. The badge is a trailing element on a section
+   * that starts shut, so it is all a player sees of the payroll until they open
+   * it -- and beside a header that names people, the figure alone reads as a
+   * headcount. `buildQueueCount` is the same mechanism one panel over and has
+   * never been bare for the same reason.
+   *
+   * It is the second key in this registry whose *name* carries a money word,
+   * and `tests/unit/ui-hud-messages.test.ts` has to allow it by name: that gate
+   * refuses a label for a flow nothing renders, and the flow this one names is
+   * rendered by the block that owns this key.
+   */
+  securityRosterWageBill: 'hud.security.roster-wage-bill',
   securityRosterDismiss: 'hud.security.roster-dismiss',
   securityRosterHint: 'hud.security.roster-hint',
 

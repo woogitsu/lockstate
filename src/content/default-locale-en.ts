@@ -670,12 +670,41 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * payroll` header, rather than meeting two vocabularies for one thing.
    *
    * **What this no longer says**: *"A new guard starts unassigned."* It was
-   * displaced rather than judged unwanted -- see the report on #639 -- and
-   * `.hud-staff__note` is clamped to a single line at any viewport 700px tall
-   * or shorter (`src/ui/hud/hud.css`), which is why the two sentences could
-   * not simply be run together.
+   * displaced rather than judged unwanted -- and `.hud-staff__note` is clamped
+   * to a single line at any viewport 700px tall or shorter
+   * (`src/ui/hud/hud.css`), which is why the two sentences could not simply be
+   * run together.
+   *
+   * **That paragraph used to end "see the report on #639" for the displaced
+   * sentence's fate, and the fate is now settled**: the owner ruled on
+   * 2026-08-30 that it returns as a line of its own, and it is
+   * `hud.security.hire-unassigned` immediately below. The clamp sentence above
+   * is left standing because it is still why the two are two keys.
    */
   'hud.security.hire-hint': 'Costs {total} now and {wage} a day in wages.',
+  /*
+   * The half of the old hint that the owner's approved sentence displaced, back
+   * as a key and a line of its own (issue #639 ruling 2, approved 2026-08-30).
+   *
+   * **It is a restoration, not a new string.** `hud.security.hire-hint` read
+   * *"Taken from the treasury on hire. A new guard starts unassigned."* until
+   * the ruling above replaced its first sentence, which was false; the second
+   * sentence was never wrong and was never judged unwanted. It could not simply
+   * be run on after the replacement, because `.hud-staff__note` is clamped to a
+   * single line at any viewport 700px tall or shorter -- run together, the two
+   * sentences measured `scrollHeight` 26 against `clientHeight` 13 at 900x600
+   * and the player read half of them. So it returns as its own note, exempted
+   * from that clamp in `src/ui/hud/hud.css`, which is what
+   * `hud.build.note` does one panel over for the same reason.
+   *
+   * It quotes no figure and takes no parameter: what a hire spends is the
+   * sentence above's job, and this one says what a player gets for it -- a
+   * guard who is hired and posted nowhere, which is the state
+   * `deployment-phase.unassigned.name` names on the roster and the reason
+   * `hud.security.coverage` can still read *"Unguarded"* the tick after a
+   * successful hire.
+   */
+  'hud.security.hire-unassigned': 'A new guard starts unassigned.',
 
   // The Staff panel's held-guards list (ADR 0034). `hud.security.held-row` says
   // who and what is holding them in one line, so the claim is a statement about
@@ -719,11 +748,38 @@ const authoredMessages: Readonly<Record<string, string>> = {
    *
    * Since the same ruling, `hud.security.roster` is also a header with a figure
    * beside it: the whole roster's standing daily bill, as a trailing element on
-   * the section, which is collapsed. The word this hint and the hire hint share
-   * -- *wage* -- is what ties that bare figure to a category the player has
-   * already met with a price on it.
+   * the section, which is collapsed.
+   *
+   * **That figure was bare for one revision and this paragraph used to say so**
+   * -- it called the shared word *wage* "what ties that bare figure to a
+   * category the player has already met with a price on it". It is not bare any
+   * more: `hud.security.roster-wage-bill` below states the period on the badge
+   * itself, because a bare number beside a header naming people reads as a
+   * headcount. The shared vocabulary still matters; it is no longer the only
+   * thing carrying the figure's meaning.
    */
   'hud.security.roster': 'On the payroll',
+  /*
+   * The figure beside that header, with the word that says what kind of figure
+   * it is (issue #639 ruling 2, the owner's approved wording, 2026-08-30).
+   *
+   * **The badge shipped for one revision as a bare `4,800`, and that was the
+   * gap this key closes.** Beside a header naming *people*, a bare number reads
+   * as a headcount as readily as as money, and no test can tell the two
+   * readings apart -- they render identical characters. The Build panel's own
+   * collapsed-header badge was never bare for this reason:
+   * `hud.build.queue-count` is *"{count} waiting · {started} being built"*.
+   *
+   * `{total}` and no currency, on `hud.security.hire`'s terms: #96 named no
+   * currency and the figure is the treasury's own minor units. The word is
+   * carried here rather than concatenated at the call site so a locale can move
+   * it -- "a day" precedes the figure in more languages than it follows it.
+   *
+   * *"a day"* rather than *"per day"* or *"daily"* because it is the phrasing
+   * the hire hint two blocks up already uses for the same period, and one
+   * vocabulary for one thing is the point of the pair.
+   */
+  'hud.security.roster-wage-bill': '{total} a day',
   'hud.security.roster-dismiss': 'Dismiss',
   'hud.security.roster-hint': 'A dismissed staff member leaves the prison for good, and their wage stops.',
 

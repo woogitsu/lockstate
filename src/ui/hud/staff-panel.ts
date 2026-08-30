@@ -630,6 +630,29 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
    */
   const hireNote = eyebrowText('', 'hud-staff__note hud-staff__hire-note');
 
+  /*
+   * What the press gets you, on a line of its own (issue #639 ruling 2, the
+   * owner's ruling of 2026-08-30).
+   *
+   * This sentence used to be the second half of `hud.security.hire-hint` and
+   * was displaced when the approved wording took the whole of that value. It is
+   * **a separate element and not a second sentence in `hireNote`** because
+   * `@media (max-height: 700px)` clamps `.hud-staff__note` to one line: run
+   * together the two measured `scrollHeight` 26 against `clientHeight` 13 at
+   * 900x600, so the clause that survived was the price and the clause that was
+   * cut was the one telling the player their new guard is posted nowhere.
+   * `.hud-staff__hire-unassigned` is exempted from that clamp in `hud.css`, on
+   * `.hud-build__order-note`'s terms and for its reason.
+   *
+   * Set once rather than painted: it quotes no figure, so unlike `hireNote`
+   * above there is nothing about it that a change of selection can falsify. It
+   * is the shape this whole block had before the hint carried parameters.
+   */
+  const hireUnassignedNote = eyebrowText(
+    t(HUD_MESSAGE_KEY.securityStaffUnassigned),
+    'hud-staff__note hud-staff__hire-unassigned',
+  );
+
   function paintHire(): void {
     const role = selectedRole();
     hire.setDisabled(role === undefined);
@@ -834,11 +857,17 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
    * as guards are hired and dismissed is the thing `.hud-build__queue-count`
    * already solved.
    *
-   * **It carries the formatted figure and no word of its own.** The vocabulary
-   * for it -- "wages" -- is on the hire hint two blocks up, and any sentence
-   * here would be a second player-facing string, which stays the owner's
-   * (`AGENTS.md`, and issue #636's own "copy owed to the owner" list names this
-   * badge). What that costs is reported on #639 rather than papered over here.
+   * **It carries a word of its own**, `hud.security.roster-wage-bill`'s
+   * *"{total} a day"*, and the figure fills the placeholder.
+   *
+   * **It did not, for one revision, and that sentence used to say so**: it read
+   * *"It carries the formatted figure and no word of its own ... any sentence
+   * here would be a second player-facing string, which stays the owner's."*
+   * That was the right call at the time and the badge shipped as a bare
+   * `4,800`; the owner supplied the wording on 2026-08-30, so the reason has
+   * been discharged rather than overruled. Both directions are marked because
+   * the rule that produced the bare figure -- a player-facing string is the
+   * owner's -- has not changed.
    */
   const rosterWageBill = valueText('', 'hud-staff__roster-count');
 
@@ -883,7 +912,17 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     // `undefined`: the section survives a repaint, so a badge that was never
     // cleared would state the last prison's payroll on the next one.
     const bill = describeDailyWageBill(roster, dailyWageBillMinorUnits);
-    rosterWageBill.textContent = bill === undefined ? '' : localizer.formatNumber(bill);
+    // The figure *and the word for what kind of figure it is* (the owner's
+    // ruling of 2026-08-30). It read as a bare `4,800` for one revision, which
+    // beside a header naming people reads as readily as a headcount -- and no
+    // test can tell those two readings apart, because they render the same
+    // characters. The word lives in `hud.security.roster-wage-bill` rather than
+    // being concatenated here, on `hud.build.queue-count`'s terms: a locale
+    // that puts the period before the figure has to be able to.
+    rosterWageBill.textContent =
+      bill === undefined
+        ? ''
+        : t(HUD_MESSAGE_KEY.securityRosterWageBill, { total: localizer.formatNumber(bill) });
 
     if (roster === undefined) {
       // Every pooled row emptied as well as hidden, so a press that somehow
@@ -938,7 +977,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     roles.element,
     element('div', {
       className: 'hud-staff__actions',
-      children: [hire.element, hireNote],
+      children: [hire.element, hireNote, hireUnassignedNote],
     }),
     heldBlock,
     rosterSection.element,
