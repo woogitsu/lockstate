@@ -388,7 +388,28 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
         const row = page.locator('.hud-rooms__list [data-room="room.cell"]');
         if (await row.isVisible()) await row.click();
         else log(`designate ${label} attempt ${attempt}: the Cell row is not visible even with the catalogue open`);
-        await page.locator('.hud-rooms__arm').click();
+        /*
+         * **Press the arm control only when it is not already armed**, and the
+         * first attempt at this test is what proves the check is needed rather
+         * than defensive.
+         *
+         * `armButton` toggles -- `armed = !armed`
+         * (`src/ui/hud/rooms-panel.ts:958`) -- and the tool **stays armed after
+         * a Designate**, which is deliberate: it is what lets a second
+         * rectangle be dragged without touching the panel. So an unconditional
+         * press for the *second* room turns drawing **off**. Measured: the
+         * drag then produced no pending rectangle at all, Designate was never
+         * rendered, and the run died on a 30 s wait for a control that was
+         * never going to exist -- with the page snapshot showing the button
+         * reading `"Draw on map"`, i.e. disarmed, at the moment of failure.
+         *
+         * The label is the state: `hud.rooms.arm` is *"Draw on map"* and
+         * `hud.rooms.disarm` is *"Stop drawing"*
+         * (`src/content/default-locale-en.ts:803-804`).
+         */
+        const armLabel = (await page.locator('.hud-rooms__arm').innerText()).trim();
+        if (attempt === 1) log(`designate ${label}: the arm control reads ${JSON.stringify(armLabel)} before anything is pressed`);
+        if (/draw on map/i.test(armLabel)) await page.locator('.hud-rooms__arm').click();
         await drag(page, at(a[0], a[1]), at(b[0], b[1]));
         const note = await panelText(page, '.hud-rooms');
         await page.locator('.hud-rooms__confirm').click();
