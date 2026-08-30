@@ -881,12 +881,15 @@ ESCAPE_RESOLUTION
    prisoner as intended, and `tests/unit/prisoners-sentence.test.ts` is where
    that lives rather than here.
 
-## 8. The one thing this proposes, and the four it hands over
+## 8. The one thing this proposes, and the five it hands over
 
 `docs/AGENT_WORKFLOW.md` §5 asks for proposals the owner can say yes or no to,
 kept separate from the reporting. There is exactly one here, because every
 other route out of what this pass found needs a sentence addressed to a player,
-and `AGENTS.md`'s fourth exclusion reserves those.
+and `AGENTS.md`'s fourth exclusion reserves those — *"Anything that reaches a
+player as a promise the code does not keep"*, whose stated reason is that *"a
+locale key with no implementation behind it is the defect that forced the
+telemetry decision"*.
 
 ### The proposal: narrow ADR 0079's occupancy consequence, marking rather than overwriting
 
@@ -925,7 +928,7 @@ record cited. That is the handover, not a request for permission.
 number of furnished beds, or one in which the state credits anything other than
 `occupiedPlaces × 300` less withholding. Neither occurred in 129 samples.
 
-### Four handovers, none of them mine to close
+### Five handovers, none of them mine to close
 
 1. **A sentence, anywhere, that says how long a prisoner is staying** (§2).
    The surface is the roster row, the shape is
@@ -941,3 +944,10 @@ number of furnished beds, or one in which the state credits anything other than
 4. **The Rooms arm control for a second room** (§5.2). Not a copy question —
    the label is already honest — so this one is a design question about the
    fold, and it belongs with whoever owns `src/ui/hud/rooms-panel.ts`.
+5. **A sentence for a prisoner who got out** (§3, *"The consequence nobody is
+   told about"*). `SIMULATION_EVENT_TYPES` has `incidents.escape-attempt-opened`
+   and nothing for the attempt succeeding, so a successful escape is followed by
+   the same all-clear a contained one produces. **This one is a strictly larger
+   change than a locale key** — the event type, its schema member, its
+   `EVENT_PRESENTATION` row and its wording all have to exist — and the wording
+   is the owner's, so it is handed over whole rather than started.
