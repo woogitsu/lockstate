@@ -696,19 +696,34 @@ export const statusCountsSchema = z
      * -- a unit of a room instance's `residentCapacity` that a prisoner holds
      * -- while `SafetyCoverageSystem` provisions, and counts, every prisoner
      * the sector covers. An over-capacity prison's unhoused prisoner is in the
-     * sector and in these counts, and is on nobody's income line at all. So a
-     * strip reading `2 unguarded` can correspond to fewer than two withheld
-     * 40s, and the difference is exactly the population the prison has not
-     * housed -- which the `prisoners` and `accommodationCapacity` counts beside
-     * these already let a player see.
+     * sector and in these counts, and is on nobody's income line at all.
+     *
+     * **Measured on the tree this paragraph was written against**, rather than
+     * argued: six prisoners admitted into a two-bed prison with nobody on post
+     * read `covered 0 / understaffed 0 / unguarded 6` here, while
+     * `RoomInstanceRegistry.residentIdsWithExistingPlace()` -- the accessor
+     * #610 made the income line's -- answers **two**. Both are right about
+     * their own question, and a player who read "6 unguarded" as six withheld
+     * 40s would be wrong by four of them. The difference is exactly the
+     * population the prison has not housed, which the `prisoners` and
+     * `accommodationCapacity` counts beside these already let them see.
      *
      * That asymmetry is deliberate and it is the honest direction: a prisoner
      * with no bed is still somebody the guards are or are not guarding, so
      * provisioning them is right even though the state pays nothing for them.
+     * The alternative -- counting only paid places here -- would make the chip
+     * silent about exactly the prisoners a player most needs to see, since an
+     * unhoused population is what drives a sector hot in the first place
+     * ([ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md)).
      * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
-     * decision A(ii) sharpens the income side of it further -- the state pays
-     * `min(occupancy, residentCapacity)` per instance -- which widens this gap
-     * without changing what these three counts mean.
+     * decision A(ii) and #610 both sharpen the income side further -- an
+     * occupied place is now a bed that currently exists -- which widens this
+     * gap without changing what these three counts mean.
+     *
+     * **Nothing in the shipped interface states the two figures side by side**,
+     * so the mis-inference above is available rather than presented; whether
+     * the chip should say "6 here, 2 paid" is a copy decision and the owner's,
+     * not something to settle in a schema comment.
      *
      * `SafetyCoverageSystem.getCensus` produces them on the same walk that
      * provisions the need, so the readout cannot disagree with what was

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, procurableMaterial } from '../../src/content/procurement-catalog';
 import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
+import { STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS } from '../../src/simulation/economy/income';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import {
   CONSTRUCTION_MATERIALS_CONTAINER_ID,
@@ -11,7 +12,34 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * **One plank pays for as many revenue-bearing residents as the prison has
- * cells to zone.**
+ * cells to zone** -- **and it no longer does, since
+ * [ADR 0076](../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+ * decision A(ii) shipped on `agent/585-occupied-place` (#585).**
+ *
+ * **Both directions are marked rather than overwritten**, and this file is the
+ * reason the marking matters: every measurement below was taken before the fix
+ * existed, by a different agent, on a different branch, and it is the strongest
+ * evidence the fix works precisely because nobody who wrote it was trying to
+ * make the fix look good. What changed is one number in one assertion:
+ *
+ * ```
+ *                          recycled   control
+ *   before A(ii)             29,315    26,395
+ *   after  A(ii)             26,395    26,395
+ * ```
+ *
+ * The recycled prison now ends on the control's balance **to the minor unit**,
+ * which is a stronger statement than "the exploit is smaller": the same plank,
+ * the same three cells, the same ticks and the same three admissions earn
+ * exactly what playing it straight earns. `StateIncomeSystem` pays for
+ * `min(occupancy, residentCapacity)` per room instance
+ * (`RoomInstanceRegistry.residentIdsWithExistingPlace`), and the two cells the
+ * loop leaves bedless have a capacity of 0.
+ *
+ * **The three residents are still housed and this file still asserts it.** ADR
+ * 0028 decision 2 is untouched: nobody is evicted, `totalOccupancy` still reads
+ * 3, and A(i) -- relocating the excess -- is a separate change that has not
+ * shipped. What A(ii) removes is what that state is *worth*.
  *
  * Audit finding ECON-003, reproduced by playing it. The loop is four commands
  * a player already has, in an order nothing refuses:
@@ -50,9 +78,13 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * A balance asserted on its own would be a number with no claim in it. The
  * claim is a **ratio between two prisons that bought the same thing**: both
  * spend exactly 65, once, on one plank; both run to tick 12,000 from the same
- * seed. One plays the loop above, the other does not. The recycled prison ends
- * on three residents and 4,380 of state income; the control ends on one and
- * 1,460 -- exactly a third, for exactly the same money.
+ * seed. One plays the loop above, the other does not.
+ *
+ * **As measured before A(ii)**, and kept because it is what the finding was:
+ * the recycled prison ended on three residents and 4,380 of state income; the
+ * control on one and 1,460 -- exactly a third, for exactly the same money.
+ * **The ratio is now 1**, and the comparison is still the claim rather than the
+ * number: two prisons that bought the same thing earn the same thing.
  *
  * Both figures are written out as literals, per `docs/TESTING.md`: an expected
  * value computed as `control * 3` would hold for any implementation, including
@@ -111,7 +143,7 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
     expect(procurableMaterial('item.wood-plank')?.unitPriceMinorUnits).toBe(65);
   });
 
-  it('turns one plank into three paying residents, and earns three times the control but for one 40', () => {
+  it('leaves three residents housed and pays for the one place that still exists (was: three times the control)', () => {
     const runtime = prisonWithOnePlankAndThreeCells();
 
     for (let index = 0; index < RECTS.length; index += 1) {
@@ -141,46 +173,77 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
       expect(planksInStock(runtime), 'undo hands the plank back, whole').toBe(1);
       expect(
         runtime.prisoners.roomInstances.totalOccupancy,
-        'and the resident it was holding stays, still counted by the income system',
+        'and the resident it was holding stays -- ADR 0028 decision 2, unchanged by ADR 0076 A(ii)',
       ).toBe(index + 1);
       expect(
         runtime.prisoners.roomInstances.getById(`${CELL}:${rect.x}:${rect.y}`)?.residentCapacity,
         'in a cell whose capacity is now zero',
       ).toBe(0);
+      // **This clause read "still counted by the income system" and is
+      // withdrawn.** It was true when it was written and is what ADR 0076
+      // A(ii) removes: the place goes with the bed. At *this* instant the
+      // plank is back in the container and no bed stands anywhere in the
+      // prison, so a prison holding `index + 1` residents holds **no** places
+      // at all -- which is the sharpest form of the invariant, and it is the
+      // same at every turn of the loop however many residents have piled up.
+      expect(runtime.placedObjects.size, 'no bed stands anywhere at this instant').toBe(0);
+      expect(
+        runtime.prisoners.roomInstances.residentIdsWithExistingPlace(),
+        'so no resident is a place, whatever the occupancy above says',
+      ).toEqual([]);
     }
 
     expect(runtime.prisoners.roomInstances.totalOccupancy, 'three residents').toBe(3);
     expect(runtime.placedObjects.size, 'standing on one bed between them').toBe(1);
+    expect(runtime.prisoners.roomInstances.residentIdsWithExistingPlace(), 'and one place between them').toHaveLength(1);
 
     stepTo(runtime, MEASURE_TICK);
     /*
-     * 28,875 - 24,935. Written as the literal it is, not as a subtraction the
-     * code under test could satisfy with any pair of numbers.
+     * 26,275 - 24,935 = 1,340: one resident's worth of state income for the
+     * four whole days this tick settles, **less one 40**.
      *
-     * **29,315 until [#588](https://github.com/matmaxalez/lockstate/issues/588),
-     * when the exact `3x` identity this file was built on stopped holding --
-     * by exactly one 40, and for a reason worth reading rather than
-     * re-baselining past.** Guard coverage now provisions the `safety` need
-     * and this prison hires nobody, so its sector is `unguarded`, the need
-     * falls at 0.05 a tick with nothing opposing it, and
-     * `STATE_INCOME_UNMET_NEED_WITHHOLDING_MINOR_UNITS` is withheld for it
-     * from the first day boundary past each resident's own crossing.
+     * **This literal has moved twice and both moves are the record.** It read
+     * **29,315** until [ADR 0076](../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+     * A(ii) -- 24,935 + 3 x 1,460, exactly three times the income for exactly
+     * the same money, which is the finding this file was written to record.
+     * It then read **26,395** when #610 made an occupied place mean a bed that
+     * currently exists, which is what closed the exploit: three residents
+     * housed, one place paid for.
      *
-     * The crossings are staggered because the admissions are. Measured on this
-     * fixture: the three residents are admitted at ticks **315, 720 and
-     * 1,120**, so `safety` crosses `STATE_INCOME_UNMET_NEED_LEVEL` at about
-     * **4,376, 4,781 and 5,181**. The day boundary at **4,799** falls between
-     * the second and the third, so on that day this prison is charged **two**
-     * 40s and not three -- while the control below holds only resident 0, the
-     * earliest crosser, whose 40 a naive tripling would charge three times.
-     * The exploiting prison is therefore 40 *richer* than three times the
-     * control, and the identity is restated below with that term in it rather
-     * than dropped for a bound.
+     * **It is 26,275 since ADR 0078 (`What keeps a prisoner safe`,
+     * [#588](https://github.com/matmaxalez/lockstate/issues/588)), and the
+     * sentence that stood here -- that this literal now *equals* the control's
+     * -- is no longer true.** It is 40 above it, and the reason is worth having
+     * rather than re-baselining past, because it is not about places at all.
      *
-     * The claim this file exists to make is untouched and is arguably sharper:
-     * one plank still pays for three residents where it should pay for one.
+     * Guard coverage provisions `safety` now, this prison hires nobody, so the
+     * need falls at 0.05 a tick with nothing opposing it and
+     * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` is withheld for it
+     * from the first day boundary past the paying resident's own crossing.
+     * Both prisons now have exactly one paying resident -- and **they are
+     * different people, admitted at different ticks**. Measured on this
+     * fixture:
+     *
+     * | arm | paying resident | admitted | `safety` crosses |
+     * | --- | --- | --- | --- |
+     * | this one | entity 2, in the cell whose bed survived | tick 1,120 | ~5,181 |
+     * | the control below | entity 0, in the only cell ever furnished | tick 315 | ~4,376 |
+     *
+     * The day boundary at **4,799** falls between those two crossings, so the
+     * control is charged the 40 on that day's settlement and this prison is
+     * not. That is the whole of the difference, and it is an accident of *when*
+     * the surviving resident arrived rather than anything the undo bought.
+     *
+     * **The finding this file exists for is untouched by any of it**: the
+     * exploit no longer turns one plank into three paying residents. What is
+     * left of the gap is one day's withholding on one need, and the control
+     * asserts the relation against the schedule's own constant.
+     *
+     * Written as the literal it is, not as a subtraction or as the control's
+     * balance read back, either of which the code under test could satisfy with
+     * any pair of numbers.
      */
-    expect(runtime.treasury.balanceMinorUnits).toBe(28_875);
+    expect(runtime.treasury.balanceMinorUnits).toBe(26_275);
   });
 
   it('control: the same prison, the same plank, the same ticks, without the undo', () => {
@@ -205,23 +268,35 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
     expect(runtime.prisoners.roomInstances.totalOccupancy, 'one bed, one resident').toBe(1);
     stepTo(runtime, MEASURE_TICK);
     /*
-     * 26,235 - 24,935 = 1,300, and `24,935 + 3 x 1,300 + 40` is 28,875: the
-     * recycled prison's figure above, to the minor unit.
+     * 26,235 - 24,935 = 1,300: one resident's worth of state income for the
+     * four whole days this tick settles, less **two** 40s where the case above
+     * pays one.
      *
-     * **26,395 and a clean `3 x 1,460` until #588.** The `+ 40` is the one day
-     * boundary at which the exploiting prison's third resident had not yet
-     * crossed the `safety` line and this prison's only resident had -- the full
-     * derivation, with the measured admission and crossing ticks, is on the
-     * case above. It is carried here as an explicit term rather than folded
-     * into a re-pinned literal, because the term is the whole of what a reader
-     * comparing the two figures needs and a bound like `greaterThan` would
-     * hold for any pair of numbers.
+     * **This comment has been corrected twice and both directions are kept.**
+     * It used to end *"and 24,935 + 3 x 1,460 is 29,315: the recycled prison's
+     * figure above, to the minor unit"*, and that arithmetic is still right
+     * about the prison it described. ADR 0076 A(ii) and #610 then made the
+     * recycled prison's figure equal to this one, and the comment said so.
+     * Since ADR 0078 (`What keeps a prisoner safe`) neither is true: this arm
+     * reads 26,235 and the recycled one reads 26,275, because this prison's
+     * paying resident arrived 805 ticks earlier and crosses the `safety` line
+     * on the earlier side of a day boundary. The full derivation, with the
+     * measured admission and crossing ticks for both arms, is on the case
+     * above.
      */
     expect(runtime.treasury.balanceMinorUnits).toBe(26_235);
-    // The relationship as arithmetic over the two measured balances, so a
-    // future re-baseline that moved one of them and not the other fails here
-    // rather than passing quietly.
-    expect(24_935 + 3 * (26_235 - 24_935) + 40).toBe(28_875);
+    /*
+     * The relation between the two arms, asserted against the **schedule's own
+     * constant** rather than against a literal 40 -- so a change to what an
+     * unmet need costs fails here naming itself, and a re-baseline that moved
+     * one of the two balances and not the other fails here too.
+     *
+     * It is not a fixture supplying both sides of its own comparison
+     * (`docs/TESTING.md`): the left-hand side is this arm's live balance, the
+     * 26,275 is the other arm's independently pinned literal, and the
+     * right-hand side is production content neither test computes.
+     */
+    expect(26_275 - runtime.treasury.balanceMinorUnits).toBe(STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS);
   });
 
   it('is undo and not removal: `RemoveObject` takes the bed and keeps the plank', () => {

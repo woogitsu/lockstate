@@ -589,8 +589,21 @@ describe('a designation can be removed, which is what makes one recoverable', ()
     const zoned = zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: 2, height: 3 }, 0);
     if (zoned.kind !== 'zoned') throw new Error('the zone must be accepted for this test to mean anything');
     registry.unregister(zoned.instance.instanceId);
-    registry.register({ ...zoned.instance, residentCapacity: 1, concurrentUseCapacity: 1 });
-    expect(registry.claimUse(zoned.instance.instanceId, 1 as never)).toBe(true);
+    // Re-registered with a capability and its own ceiling, and the claim below
+    // asks for that capability. It used to claim with **no** capability, which
+    // a cell answered from its floor area -- and since the owner's ruling of
+    // 2026-08-29 (#585) floor area bounds only a room type tagged as an open
+    // area, which `room.cell` is not. The subject here is `unzone` refusing
+    // while a use claim stands, so the claim is made the way a real action
+    // makes one rather than through the branch the ruling closed.
+    registry.register({
+      ...zoned.instance,
+      residentCapacity: 1,
+      concurrentUseCapacity: 1,
+      concurrentUseCapacityByCapability: [['sanitation', 1]],
+      objectCapabilities: ['sanitation'],
+    });
+    expect(registry.claimUse(zoned.instance.instanceId, 1 as never, 'sanitation')).toBe(true);
     // Nobody *lives* here, so the narrower predicate would have allowed this.
     expect(registry.occupancyOf(zoned.instance.instanceId)).toBe(0);
 

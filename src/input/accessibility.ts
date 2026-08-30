@@ -38,8 +38,16 @@ export const MAX_UI_SCALE = 2;
  * display, rather than stored as percentages and divided.
  *
  * Ascending, and the whole of the vocabulary: `snapUiScaleToStep` and
- * `stepUiScale` are the only two things that decide which of them a value
+ * `nextUiScaleStep` are the only two things that decide which of them a value
  * becomes, and both read this list rather than restating it.
+ *
+ * **This sentence named `stepUiScale` until 2026-08-29, and no such function
+ * has ever existed in this file.** It is the name an earlier draft of #545 used
+ * for what shipped as `nextUiScaleStep`, and it survived into this comment,
+ * into `docs/INPUT.md` and into a reason string in
+ * `tests/unit/ui-orchestration-boundaries.test.ts` -- three places describing
+ * an API by a name that was never exported. `git log -S'export function
+ * stepUiScale'` returns nothing, which is how that was settled.
  */
 export const UI_SCALE_STEPS: readonly number[] = [0.75, 1, 1.25, 1.5, 1.75, 2];
 
