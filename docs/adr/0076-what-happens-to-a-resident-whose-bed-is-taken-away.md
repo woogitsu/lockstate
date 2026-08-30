@@ -14,7 +14,22 @@
 
 ## Status
 
-**Proposed, 2026-08-29. Not self-approved.**
+**Accepted, 2026-08-29, by the repository owner.**
+
+**This clause read `Proposed, 2026-08-29. Not self-approved.` until the owner
+accepted it later the same day.** As with [ADR 0075](./0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md),
+the two rulings below were always the owner's and the acceptance step is what
+had not happened; and as there, the acceptance was given against a summary of
+this ADR's subject and its stated cost rather than against the full text, which
+is written down so the status is not read as heavier than it is.
+
+**One thing this ADR flagged and did not decide is still undecided.** It notes
+that decision A(i) *"arguably creates [a player-facing string] it does not owe —
+a prisoner who changes cell unasked is something the player should be told,
+flagged rather than decided."* Acceptance does not answer that. A new
+player-visible promise is one of the four things reserved to the owner, so
+whoever implements relocation must put the question rather than invent the
+string.
 
 It answers an economy audit finding raised against `4c18bc4` (v0.0.203) as
 ECON-003 and reproduced by running it against `ec10451` (v0.0.206).

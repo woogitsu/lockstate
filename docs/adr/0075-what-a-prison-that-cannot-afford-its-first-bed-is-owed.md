@@ -27,12 +27,29 @@
 
 ## Status
 
-**Proposed, 2026-08-29. Not self-approved.**
+**Accepted, 2026-08-29, by the repository owner.**
 
-The three decisions below are **the owner's, ruled on 2026-08-29** with the
-measurements in this document in front of them. The status stays `Proposed`
-because the ADR itself has not been through the acceptance step, and this
-document does not accept it.
+**This clause read `Proposed, 2026-08-29. Not self-approved.` until the owner
+accepted it later the same day**, and the sentence it replaced is worth keeping
+because it named exactly what was missing: *"The three decisions below are the
+owner's, ruled on 2026-08-29 with the measurements in this document in front of
+them. The status stays `Proposed` because the ADR itself has not been through
+the acceptance step, and this document does not accept it."* The rulings were
+always the owner's; the acceptance step is what had not happened. It has.
+
+**How the acceptance arrived, recorded because a reader checking this status
+later deserves to know its weight.** It was given against a summary of this
+ADR's subject and its stated cost, put to the owner as a decision alongside
+seven others, not against the full text of this document. `AGENTS.md`'s rule is
+*"never self-approve an ADR — the owner accepts"*, and the owner did; this
+paragraph exists so nobody mistakes the acceptance for a reading.
+
+**Acceptance does not close the class, and this ADR already said why.** Its own
+weakest claim, below, is that the class is closed only if the first threshold
+beats the wage bill and the loan terms make recovery possible from any reachable
+position — **and neither number is in this document.** One of the two has since
+been decided in shape though not in magnitude; see the loan ruling recorded
+under decision 2.
 
 It answers an economy audit finding raised against `4c18bc4` (v0.0.203) as
 ECON-002 and reproduced by running it against `ec10451` (v0.0.206).
@@ -222,6 +239,43 @@ price of a plank. This is named here as an open number for the same reason the
 loan terms are in decision 2.
 
 ### 2. The balance may go negative, the ladder runs on it, loans are the way out — and nothing ends the session
+
+> **Owner ruling, 2026-08-29 — how the loan repays.** This ADR says below that
+> *"whoever sets the loan terms owns whether the class is really closed"* and
+> deliberately leaves them open. The shape is now settled: **a loan is repaid by
+> diverting a fixed percentage of positive inflows — state payments, grants,
+> contract rewards — until principal plus a fixed fee is cleared. There is no
+> fixed daily instalment.**
+>
+> The reason is this ADR's own subject. A fixed instalment billed against a
+> prison that is already insolvent drives it further under with nothing the
+> player can do to stop it, which is a loss condition reached by arithmetic
+> rather than by rule — and decision 8 of ADR 0017, which decision 2 above
+> exists to defend, refused a loss condition. A repayment that takes a share of
+> what arrives cannot bill a prison that is earning nothing.
+>
+> **The accepted cost, stated rather than discovered later:** revenue-share debt
+> feels nearly free while income is low and can linger a long time. The named
+> mitigations are a **fixed fee rather than compounding interest**, so the total
+> is known at drawdown, and a **maximum duration after which the diversion rate
+> rises**.
+>
+> **What the ruling does not settle: the magnitudes.** The percentage, the fee
+> and the duration are still #29's, per ADR 0017 decision 5 — so this ADR's
+> weakest claim stands, and recovery-from-any-reachable-position remains
+> unproved until those numbers exist.
+>
+> Three constraints ride with it, each because this ADR has no floor and no
+> terminal state. **An accrual cap**, because interest against a negative
+> balance can otherwise escalate without limit, with a restructuring path that
+> is painful but available. **A loan draw is reported separately from operating
+> income** — a ledger where the operating net is negative while cash rises is a
+> loan masking a deficit, and the player should be able to see the difference.
+> And **no mechanism may capitalise future income**: nothing that converts the
+> coming stream of threshold grants or per-place income into cash now, which is
+> a loan secured against projected occupancy wearing a different name.
+>
+> Recorded at [issue #598](https://github.com/matmaxalez/lockstate/issues/598).
 
 **Author and surface ADR 0017 decision 8's ladder:** *"deliveries refused first,
 then construction halted, then staff unpaid with the morale and incident
