@@ -87,6 +87,7 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
   for (const descriptor of projectStatusMetrics({
     prisoners: 0,
     prisonerCapacity: 0,
+    occupiedPlaces: 0,
     staff: 0,
     rooms: 0,
     prisonersCovered: 0,
