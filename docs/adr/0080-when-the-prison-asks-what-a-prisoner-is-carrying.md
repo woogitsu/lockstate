@@ -20,8 +20,9 @@
 It answers [issue #677](https://github.com/matmaxalez/lockstate/issues/677),
 which falls out of the [#540](https://github.com/matmaxalez/lockstate/issues/540)
 measurement recorded in
-[`docs/research/2026-08-30-tier-three-at-intake.md`](../research/2026-08-30-tier-three-at-intake.md)
-(PR #676). The implementation is on the same branch as this document, in a
+the research note [#676](https://github.com/matmaxalez/lockstate/pull/676)
+carries (*Tier 3 at intake, and the weapon nobody can smuggle*, not yet on
+`main`). The implementation is on the same branch as this document, in a
 **separate commit**, so it can be dropped on its own if the owner decides the
 other way — the practice [ADR 0061](./0061-what-the-prison-produces-on-its-own.md)
 records about itself: *"This records a decision that has been built ... The
@@ -313,7 +314,8 @@ already losing.
 
 **Two costs the table also shows, stated rather than buried.**
 
-- **Escape attempts rise where weapons appear** — 1 → 13, 13 → 46, 30 → 56.
+- **Escape attempts rise where contraband appears in an under-staffed prison** —
+  1 → 13, 13 → 46, 30 → 56.
   That is not contraband quantity, it is the `canAttemptEscape` predicate:
   `flashpoint.riskTier >= ESCAPE_ATTEMPT_MINIMUM_RISK_TIER && flashpoint.contrabandSeverity > 0`
   (`src/simulation/incidents/flashpoint.ts:281-282`). Today its two conditions are
@@ -326,6 +328,47 @@ already losing.
   over-admitted one). Contraband feeds `contrabandSeverity`, which is a term in
   both the sector-risk and the flashpoint scores. In the four well-built prisons
   the assault count is unchanged.
+
+### One guard is the whole difference, and an existing fixture is what proved it
+
+The escape rise above is not a rate this decision tunes; it is the
+`canAttemptEscape` predicate finally having both of its conditions satisfiable
+at once. What decides whether that costs a player anything is **staffing**, and
+the cleanest measurement of it came from the suite rather than from a harness:
+applying this decision turned two cases of
+`tests/integration/incident-consequence-loop.test.ts` red, and the diagnosis is
+the decision working.
+
+That file builds a one-cell, **zero-guard** prison, riots one prisoner into a
+review, and asserts the tier ladder ADR 0032 promises. Under this decision the
+review promotes them to 3 *and* the introduction draw gives them a phone, so
+`canAttemptEscape` is satisfied, the pressure score clears its threshold, and
+the subject of the next two assertions **leaves the prison** — measured on that
+fixture's own seed, an `escape-attempt` with `escaped: true` between ticks
+48,000 and 72,000, after which `projectPrisonerDetail` returns `undefined` and
+the record slot holds a stale 3.
+
+The same fixture, same seed, same commands, varying only the number of guards
+hired before the admission:
+
+| guards | tick 48,000 | tick 72,000 | tick 96,000 | tick 120,000 |
+| --- | --- | --- | --- | --- |
+| **0** | tier 3, phone concealed | **gone — escaped** | gone | gone |
+| **1** | tier 3, phone concealed | tier 2 | tier 1 | tier 1 |
+| **2** | tier 3, phone concealed | tier 3, **phone confiscated** | tier 2 | tier 1 |
+
+**One guard restores the pre-decision behaviour exactly** — the 3 → 2 → 1 → 1
+ladder the test asserted before this decision existed, because
+`staffingShortfall` leaves the escape pressure under its threshold. **Two
+guards find the phone**, which is a disciplinary finding worth a point and
+delays the come-down by one review period, which is the search mechanic doing
+what ADR 0073 built it to do.
+
+So the difficulty this decision adds is **purchasable with a single hire**, and
+that is the strongest single answer to the owner's directive that this document
+has. The fixture was updated to hire one guard in those two cases, with the
+reason recorded at the fixture rather than at the call sites, and every other
+case in the file stays unguarded.
 
 **Contention, stated rather than assumed** (`docs/AGENT_WORKFLOW.md` §2,
 [#667](https://github.com/matmaxalez/lockstate/issues/667)): every run above was
@@ -416,6 +459,18 @@ alone; contention makes them slower and cannot make them different.
 - **The review mechanic does the work it already looks like it does.** Nine of
   the ten tier-3 gates were reachable by review promotion before this; this is
   the tenth, and #676's sweep is the enumeration.
+- **An unguarded prison loses a promoted prisoner.** `canAttemptEscape`'s two
+  conditions can now co-occur, so a prison that hires nobody and lets somebody
+  reach tier 3 will eventually see a successful escape. One guard is enough to
+  put the pressure score back under its threshold, measured above. This is the
+  single largest behavioural consequence of the decision and it is the one to
+  argue with first.
+- **Two cases of `tests/integration/incident-consequence-loop.test.ts` hire a
+  guard now**, and the file's own prediction about what that would cost —
+  *"Hiring a guard would put it back at 1,000 and would change nothing else
+  this file asserts"* — turned out to be exactly right: `safety` moved from 0
+  to 1,000 in both arms and nothing else in the file moved. The old paragraph
+  is kept beside the new one there rather than overwritten.
 - **`ClassificationReviewSystem` is no longer RNG-free.** It was, and its
   docblock said so at length. That claim is now bounded to the stream it was
   ever about.
