@@ -174,6 +174,57 @@ now the ordinary case. **Its entire player-visible footprint is a word that
 changes when nobody is looking at it**, and only if that prisoner happens to be
 one of the four rows the roster draws.
 
+### What that looked like in play
+
+**VERIFIED, Run A, act 3.** Twelve prisoners were classified at about tick
+7,150. `ClassificationReviewSystem` is scheduled at
+`intervalTicks: 24,000, phaseTicks: 23,999`, so the first scheduled tick that
+falls inside their eligibility window is **47,999**. The roster block either
+side of it, pasted, with nothing else changed:
+
+```
+[act3] --- t+378s tick 28575 (day 12) {"prisoners":12,"roomOccupants":6,"occupiedPlaces":6,…}
+    roster:
+    Ines Xavier   Sleeping  Hygiene  Low
+    Malik Pereira Sleeping  Hygiene  Minimal
+    Rosa Kowal    Sleeping  Hygiene  Low
+    Omar Rossi    Sleeping  Hygiene  Minimal
+```
+
+```
+[act3] --- t+636s tick 49192 (day 21) {"prisoners":11,"roomOccupants":6,"occupiedPlaces":6,…}
+    event band: "severity=info 1440x32 at (0,80) :: The prison is under control again — no incident is still open."
+    roster:
+    Ines Xavier   Using Toilet  Hygiene  High
+    Malik Pereira Sleeping      Hygiene  High
+    Rosa Kowal    Using Toilet  Hygiene  High
+    Omar Rossi    Using Toilet  Hygiene  High
+```
+
+**Every visible prisoner went from `Minimal`/`Low` to `High` — tier 0 or 1 to
+tier 3 — in one invisible step.** Tier 3 is the only tier
+`classificationGroupIdForTier` answers `'high-risk'` for, and ADR 0079 states
+that **no admission a player can make can produce one**: *"1 + 0 + a maximum
+screening draw clamps at 2, so no admission a player can make produces a
+high-risk prisoner."* A review can, and in a neglected prison it did, to the
+whole visible population at once. That is consistent with
+`docs/research/2026-08-30-what-a-classification-can-reach.md`, which measured
+*"every reviewed prisoner in a neglected prison reached high risk while none did
+in a well-run one"* — this is the first time it has been seen happen through the
+assembled page.
+
+**The player is told nothing.** The event band at that moment is showing an
+older incident all-clear; four words changed on a panel that is not the one the
+player has open, and no other pixel moved.
+
+**A second, smaller observation about that band, and it is a property rather
+than a defect.** `.hud__event` does not auto-dismiss — deliberately
+(`src/ui/hud/hud.ts:998-1001`, *"a message that clears itself on a timer is a
+race against how fast the player reads. It is replaced by the next event or
+emptied when the session ends"*) — so what it holds is the **last**
+event, not a current state. At tick 49,192 it was still displaying an all-clear
+from an incident that had closed some time before.
+
 **Reported, not fixed**, for §2's reason: the missing thing is a sentence
 addressed to a player, and that is the owner's.
 
