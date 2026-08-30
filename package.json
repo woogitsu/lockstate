@@ -19,6 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:browser": "playwright test --config tests/browser/playwright.config.ts",
+    "test:artifact": "playwright test --config tests/browser/playwright.artifact.config.ts",
     "benchmark": "node --experimental-transform-types --disable-warning=ExperimentalWarning scripts/run-benchmarks.mjs --profile full",
     "benchmark:smoke": "node --experimental-transform-types --disable-warning=ExperimentalWarning scripts/run-benchmarks.mjs --profile smoke --output benchmark-results/smoke.json",
     "verify:benchmark": "pnpm benchmark:smoke && node --experimental-transform-types --disable-warning=ExperimentalWarning scripts/verify-benchmark-result.mjs benchmark-results/smoke.json",

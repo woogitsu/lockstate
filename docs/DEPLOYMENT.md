@@ -289,6 +289,71 @@ State 3 is what `version.yml` produces after every merge. Its bump commit is pus
 > on, that stops being true and this note has to go** — the paragraphs below
 > are then correct again, which is why they were marked rather than deleted.
 
+> ---
+>
+> **Answered by the owner, 2026-08-29, and this is now the primary record.**
+> In their own words: *"jeżeli sprawdzał na www.lockstate.io to normalne, tam
+> nie ma aktualnej gry, aktualna gra jest na
+> `lockstate-staging.matmaxalez94.workers.dev`"* — if it was checked on
+> `www.lockstate.io` that is normal, there is no current game there; the
+> current game is on `lockstate-staging.matmaxalez94.workers.dev`.
+>
+> **THE ONE SENTENCE THIS SECTION EXISTS FOR:** *the current build is served by
+> `https://lockstate-staging.matmaxalez94.workers.dev/`, and `lockstate.io` is
+> not — anything measured against `lockstate.io` is a measurement of an old
+> build and is not evidence about `main`.*
+>
+> **Re-measured 2026-08-29 with read-only `curl`, and nothing has moved.**
+> `lockstate.io` still serves `assets/index-CwVFOnxX.js` — the same bundle hash
+> this note recorded on 2026-08-27, two days and three releases later — still
+> without the five headers. Byte counts of what each host actually returns,
+> beside a local production build of `origin/main`:
+>
+> | | index chunk | worker chunk |
+> |---|---|---|
+> | `lockstate.io` | 1,596,326 B | 235,634 B |
+> | `workers.dev` | 1,753,637 B | 337,563 B |
+> | local `pnpm build` of `origin/main` | 1,753,637 B | 337,563 B |
+>
+> The `workers.dev` host matches a local build of `main` exactly; `lockstate.io`
+> is a materially smaller, different build. Its age is derived from the headers
+> rather than from the bundle: the five that are absent entered `public/_headers`
+> at `cea6849` (2026-08-24 04:15 UTC), so the deployment behind that domain
+> predates it. `git rev-list --count cea6849..origin/main` gives the distance.
+>
+> **A retraction, recorded rather than deleted.** An earlier revision of this
+> note dated the live build a second way: it said the served bundle "contains no
+> `data-build-id` and no `lockstate-<version>-<sha>` literal at all", and
+> concluded the build predated the badge at `2e8ca6e`. **That inference was
+> wrong and the grep behind it proves nothing.** Neither literal appears in *any*
+> build, including one whose badge was then read out of a running page as
+> `lockstate-0.0.206-ec10451` — the attribute name and the identity are assembled
+> at runtime, not written as greppable literals. Absence of the string was
+> absence of evidence. The header signal above is independent and stands on its
+> own, which is the only reason the conclusion survived the correction.
+>
+> **THE RULE THIS CREATES, and it has now cost two findings.** *An observation of
+> `lockstate.io` is not an observation of `main`, and must not be reported as
+> one.* On 2026-08-29 an external audit drove a real browser against
+> `lockstate.io`, found New prison → Load ending in "Loading failed: The
+> simulation worker did not reply within 15000ms" with every save-panel button
+> disabled and Play not starting the clock, and filed it as a critical defect in
+> commit `4c18bc4` (v0.0.203). Built from that tree and driven locally, that
+> sequence passes: both loads settle in well under a second and the clock
+> advances (`tests/browser/production-artifact.spec.ts` is now the standing gate
+> for it). **The observation was real; the conclusion was invented.** It is the
+> same shape as the earlier finding this note already exists to prevent, where an
+> agent measured five missing headers with every step rigorous and then wrote
+> "defect" into this document. Rigorous evidence about the wrong host is what
+> makes the mistake persuasive.
+>
+> **What is deliberately NOT written here:** a root cause for what the old build
+> does. Nothing in this container executed it — Chromium cannot reach the public
+> internet through the agent proxy, which closes the tunnel for the browser while
+> `curl` succeeds — and the owner has said the host is stale by design. Guessing
+> at a mechanism for a build nobody is going to fix is how the last paragraph got
+> written.
+
 **One Worker, not two.** `lockstate.io` is served by **`lockstate-staging`** — the Worker the `staging` job deploys — through a Custom Domain attached by hand in the Cloudflare dashboard. Production and staging are the same thing for now, by the owner's decision.
 
 Two consequences follow, and the second is a trap:
@@ -449,6 +514,43 @@ Overlapping `_headers` rules **concatenate** into a single `Cache-Control` inste
 5. Deploy production using the explicit guard variable.
 6. Verify `/`, a deep route, security headers and a fingerprinted asset on `lockstate.io`.
 7. Record the deployed Worker version ID in release notes.
+
+## Proposed: a post-deploy smoke test against the published URL
+
+**A proposal, not a change.** It would live in `.github/workflows/deploy.yml`,
+which is deploy configuration and stays the owner's (`AGENTS.md`, "The owner's
+standing mandate"), so it is written here for approval rather than landed. The
+artefact-level gate that *is* landed — `pnpm test:artifact`, in the `browser`
+job — proves the built client runs; it says nothing about whether the build a
+visitor receives is that build.
+
+**What it would cost, and why it is worth asking for.** Nothing in this
+repository has ever read back what a deploy published. That is not a
+theoretical gap: `lockstate.io` has served a build from 2026-08-24 or earlier
+for at least five days and 744 commits, every CI run in that window was green,
+and the only reason anyone knows is that a person opened the site and a second
+person re-measured it by hand. A job that fetched the published URL after the
+`staging` job and asserted three things would have said so on the first run:
+
+1. the served `index.html` names an `/assets/index-*.js` that returns
+   `content-type: text/javascript` — not the SPA fallback's `text/html`, which
+   is what a chunk this deployment does not have returns with **HTTP 200**;
+2. the same for the `worker-*.js` that bundle names, which is the specific
+   resolution failure that produces "The simulation worker did not reply within
+   15000ms" with no failed request anywhere;
+3. the served bundle carries a `data-build-id` matching the commit just
+   deployed — which is the one assertion that distinguishes "the deploy
+   succeeded" from "the deploy succeeded and the URL serves it".
+
+All three are `curl` and a grep; none needs a browser, and (3) is the one that
+catches a domain that is not receiving the deploy at all.
+
+**Two things the owner has to decide, because neither is derivable here.**
+*Which URL it checks* — `lockstate.io` is switched off, so a job asserting
+against it would be red on every merge by design, and the honest target today is
+`lockstate-staging.matmaxalez94.workers.dev`. And *what a failure should do*: a
+deploy has already happened by the time this runs, so the job reports rather
+than prevents, which makes it a notification channel more than a gate.
 
 ## Rollback
 Every Worker deployment creates a version. List production versions and deployments:
