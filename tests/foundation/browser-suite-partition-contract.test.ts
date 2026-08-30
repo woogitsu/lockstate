@@ -275,9 +275,9 @@ describe('browser suite partition contract', () => {
     // configs, including two that run nothing.
     expect(
       specFiles.length,
-      `no \`*.spec.ts\` files were found under the configured test directories (${configs
+      `no browser test files (${BROWSER_TEST_SUFFIXES.join(', ')}) were found under the configured test directories (${configs
         .map((config) => path.relative(repositoryRoot, config.testDir))
-        .join(', ')}). Either the specs moved and this contract did not, or the walk is broken; fix the walk rather than deleting the guard.`,
+        .join(', ')}). Either they moved and this contract did not, or the walk is broken; fix the walk rather than deleting the guard.`,
     ).toBeGreaterThan(0);
 
     const collectedByNothing: string[] = [];
