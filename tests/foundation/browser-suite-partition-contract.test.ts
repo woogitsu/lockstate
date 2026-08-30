@@ -195,7 +195,27 @@ async function parseConfig(configPath: string): Promise<ParsedConfig> {
   };
 }
 
-/** Every `*.spec.ts` under `directory`, absolute, recursively. */
+/**
+ * Every browser TEST FILE under `directory`, absolute, recursively.
+ *
+ * **This collected only `*.spec.ts` until 2026-08-30, and that made the
+ * comment on the config walk above a lie.** That comment promises *"any
+ * `playwright*.config.ts` in `tests/browser/` is subject to the partition, the
+ * moment it exists"* -- and it is, but only over the files this function
+ * returns. `playwright.playtest.config.ts` collects `*.playtest.ts`, so every
+ * playtest was outside the partition entirely: neither the "collected by
+ * nothing" check nor the "collected twice" check could see one. A second
+ * config claiming `*.playtest.ts`, or a `testIgnore` that orphaned a playtest,
+ * would have passed in silence.
+ *
+ * Found by an independent audit reading the comment against the walker, which
+ * is the same failure the config list itself had one commit earlier: a
+ * contract that enumerates what it checks can only check what somebody
+ * remembered to enumerate. The suffix list is now the thing to extend, and it
+ * is asserted non-empty below rather than trusted.
+ */
+const BROWSER_TEST_SUFFIXES = ['.spec.ts', '.playtest.ts'] as const;
+
 async function specFilesUnder(directory: string): Promise<readonly string[]> {
   const entries = await readdir(directory, { withFileTypes: true });
   const found: string[] = [];
@@ -206,7 +226,7 @@ async function specFilesUnder(directory: string): Promise<readonly string[]> {
       found.push(...(await specFilesUnder(absolute)));
       continue;
     }
-    if (entry.isFile() && entry.name.endsWith('.spec.ts')) {
+    if (entry.isFile() && BROWSER_TEST_SUFFIXES.some((suffix) => entry.name.endsWith(suffix))) {
       found.push(absolute);
     }
   }
@@ -237,6 +257,20 @@ describe('browser suite partition contract', () => {
       ...new Set((await Promise.all(configs.map((config) => specFilesUnder(config.testDir)))).flat()),
     ].sort();
 
+    // Vacuity guard, in two directions. A partition over no files is satisfied
+    // by any pair of configs, including two that run nothing -- and a suffix
+    // list that has lost an entry silently shrinks the set being partitioned,
+    // which is exactly the hole an audit found here on 2026-08-30.
+    expect(
+      BROWSER_TEST_SUFFIXES.length,
+      'BROWSER_TEST_SUFFIXES is empty, so the walk below returns nothing and every assertion in this file passes vacuously.',
+    ).toBeGreaterThan(0);
+    for (const suffix of BROWSER_TEST_SUFFIXES) {
+      expect(
+        specFiles.some((file) => file.endsWith(suffix)),
+        `no file ending in \`${suffix}\` was found under the configured test directories. Either that kind of browser test is gone and this entry should be too, or the walk stopped seeing it -- and a suffix nothing matches means that whole class is outside the partition without saying so.`,
+      ).toBe(true);
+    }
     // Vacuity guard. A partition over no files is satisfied by any pair of
     // configs, including two that run nothing.
     expect(
@@ -261,12 +295,12 @@ describe('browser suite partition contract', () => {
 
     expect(
       collectedTwice,
-      `a browser spec is collected by both Playwright configs, so it is driven against a Vite dev server over \`src/**\` as well as against the built artefact in \`dist/\`. That is how CI run 33271621137 reported \`production-artifact.spec.ts\` red on "/src/simulation/worker/worker.ts?worker_file&type=module" -- the dev-server worker URL -- while the production build was emitting \`/assets/worker-<hash>.js\` correctly. Decide which server the spec is about and exclude it from the other, in ${DEV_SERVER_CONFIG}'s \`testIgnore\` or ${ARTIFACT_CONFIG}'s \`testMatch\`.`,
+      `a browser test file is collected by more than one Playwright config, so it is driven against a Vite dev server over \`src/**\` as well as against the built artefact in \`dist/\`. That is how CI run 33271621137 reported \`production-artifact.spec.ts\` red on "/src/simulation/worker/worker.ts?worker_file&type=module" -- the dev-server worker URL -- while the production build was emitting \`/assets/worker-<hash>.js\` correctly. Decide which server the spec is about and exclude it from the other, in ${DEV_SERVER_CONFIG}'s \`testIgnore\` or ${ARTIFACT_CONFIG}'s \`testMatch\`.`,
     ).toEqual([]);
 
     expect(
       collectedByNothing,
-      `a browser spec is collected by neither Playwright config, so it never runs and nothing says so: \`playwright test\` only fails on an empty *suite*, not on a file no suite claims. This is the quieter half of the same defect -- ${DEV_SERVER_CONFIG} excluding a spec that ${ARTIFACT_CONFIG} does not include, or the reverse.`,
+      `a browser test file is collected by NO Playwright config, so it never runs and nothing says so: \`playwright test\` only fails on an empty *suite*, not on a file no suite claims. ${DEV_SERVER_CONFIG} excluding a spec that ${ARTIFACT_CONFIG} does not include is one way in; a \`*.playtest.ts\` that no config's \`testMatch\` reaches is another, and that class was outside this contract entirely until 2026-08-30.`,
     ).toEqual([]);
   });
 
