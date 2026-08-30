@@ -132,6 +132,15 @@ the whole of the difference. **The rest of this document still cites by line and
 is not covered by that gate**; the subsection at the end of this one records
 what these anchors had drifted to before they were replaced.
 
+Two spellings in particular survive below this section and are known to be
+stale: §2 of the decision, §*Alternatives considered* and the 2026-08-25
+amendment all say `findAvailable` and `instance.capacity`, and neither name
+exists in `src/` any more — they are `findAvailableResidence`/`findBestAvailable`
+and `residentCapacity`. Those sentences are load-bearing parts of the decision
+and of a dated amendment rather than evidence a reader would follow, so #645
+left them alone and named them here instead of rewording a decision to fix a
+citation.
+
 - The registry rejects an instance on **both** counts, on two consecutive lines:
   `if (this.occupancyOf(instance.instanceId) >= instance.residentCapacity) return false;`
   `if (requiredObjectCapability !== undefined && !instance.objectCapabilities.includes(requiredObjectCapability)) return false;`
@@ -839,7 +848,16 @@ capabilities. That framing is wrong in a way that matters: **a fallback that
 resolves only a number produces no observable behaviour at all.**
 
 Verified on `main` at `d5c50f8` (v0.0.56), by reading each site and then by
-constructing the case:
+constructing the case. **This amendment is left as it was written at that
+commit, and two of its sentences about §*The mechanism* stopped being literally
+true on 2026-08-30**, when #645 rewrote that section to quote code instead of
+anchoring to it: the method it names there is no longer called `findAvailable`
+(ADR 0028 decision 3 split it into `findAvailableResidence` and
+`findAvailableForUse`) and the field is no longer called `capacity` (it is
+`residentCapacity`). Both halves of the gate are still stated there, which is
+what the correction below turns on, so the substance of these two sentences
+holds and only the spellings have moved. They are marked rather than rewritten
+because the amendment is dated evidence about `d5c50f8`:
 
 - `RoomInstanceRegistry.findAvailable`
   (`src/simulation/prisoners/room-instance-registry.ts`, `public findAvailable`)
@@ -850,8 +868,9 @@ constructing the case:
   checks before it rates anything, and it — not `findAvailable` — is the lookup
   on the intake path since #79's cell-sharing rating landed
   (`src/simulation/prisoners/intake-system.ts`, the `accommodation-assignment`
-  stage). §*The mechanism* above names only `findAvailable`; the second lookup
-  gates identically, so the correction applies to both.
+  stage). §*The mechanism* above named only `findAvailable` when this was
+  written; the second lookup gates identically, so the correction applies to
+  both.
 - `DEFAULT_ACCOMMODATION_POLICY` asks for `'sleep-surface'` for both of the room
   ids it targets (`intake-system.ts`, `DEFAULT_ACCOMMODATION_POLICY`), and
   `RoomZoningService` registers every zoned instance with `objectCapabilities:
