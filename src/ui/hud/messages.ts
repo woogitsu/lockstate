@@ -303,6 +303,21 @@ export const HUD_MESSAGE_KEY = {
    * decided money is the primary resource and named no currency, so the
    * figure is rendered as the plain minor units the treasury, the procurement
    * catalogue and the staff-role catalogue's wage bands are all quoted in.
+   *
+   * `securityStaffHint` is the sentence under the action, and since issue #639
+   * ruling 2 it carries **two** figures rather than none: what one press spends
+   * and what the same person bills at every in-game day boundary afterwards. It
+   * said *"Taken from the treasury on hire"* until then, which read as a fee
+   * paid once while `PayrollSystem` charged the same figure every day -- the
+   * player-visible promise the code does not keep that `AGENTS.md` reserves to
+   * the owner, whose replacement sentence it now holds verbatim.
+   *
+   * **It is the one key on this panel that names the money word**, and that is
+   * deliberate rather than an exception to the paragraph above: "wages" is a
+   * category, not a currency, and it is here so that a player meets the word
+   * once with a price attached and again on the `securityRosterTitle` header,
+   * which since the same ruling carries the standing daily bill as a trailing
+   * figure.
    */
   securityStaffTitle: 'hud.security.staff',
   securityStaffRoles: 'hud.security.roles',
