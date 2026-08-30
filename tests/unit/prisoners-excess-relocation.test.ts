@@ -74,7 +74,15 @@ describe('relocating the residents a room can no longer sleep (ADR 0076 A(i))', 
       [],
     );
 
-    expect(fixture.prisoners.relocateExcessResidentsOf(['cell-0'])).toEqual({ relocated: [prisoner], stranded: [] });
+    // **The destination is in the outcome, not merely in the registry
+    // afterwards**, and that is what the ADR 0076 notice reads: its sentence
+    // names one prisoner and one room, and `cell-1` is the room. Asserted as
+    // the whole value rather than by field, so a second entry or a missing one
+    // fails here.
+    expect(fixture.prisoners.relocateExcessResidentsOf(['cell-0'])).toEqual({
+      relocated: [{ entityId: prisoner, toInstanceId: 'cell-1' }],
+      stranded: [],
+    });
     expect(fixture.prisoners.coldState.getAccommodation(prisoner)).toBe('cell-1');
     expect(fixture.prisoners.roomInstances.occupancyOf('cell-0')).toBe(0);
     expect(fixture.prisoners.roomInstances.residentIdsWithExistingPlace(), 'and paid for again').toEqual([prisoner]);
@@ -122,7 +130,10 @@ describe('relocating the residents a room can no longer sleep (ADR 0076 A(i))', 
     // anything -- the bed is already gone -- so undoing the move would put a
     // rehoused prisoner back in a bedless cell and cost the prison the one
     // place it still has. The lowest entity id is offered it first.
-    expect(fixture.prisoners.relocateExcessResidentsOf(['cell-0'])).toEqual({ relocated: [lower], stranded: [higher] });
+    expect(fixture.prisoners.relocateExcessResidentsOf(['cell-0'])).toEqual({
+      relocated: [{ entityId: lower, toInstanceId: 'cell-1' }],
+      stranded: [higher],
+    });
     expect(fixture.prisoners.coldState.getAccommodation(lower)).toBe('cell-1');
     expect(fixture.prisoners.coldState.getAccommodation(higher)).toBe('cell-0');
     expect(fixture.prisoners.roomInstances.residentIdsWithExistingPlace()).toEqual([lower]);

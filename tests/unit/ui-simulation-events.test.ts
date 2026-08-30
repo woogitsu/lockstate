@@ -14,6 +14,7 @@ import {
   hudEventNoticeFromWorkerMessage,
 } from '../../src/ui/simulation-events';
 import type { HudAlertViewModel } from '../../src/ui/hud/view-model';
+import { resolveHudLabelParameters } from '../../src/ui/hud/label-parameters';
 
 /**
  * The main thread's event translation: the channel that gave `HudSeverity`'s
@@ -46,6 +47,14 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   'incidents.escape-attempt-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.escape-attempt-opened' }),
   'incidents.gang-retaliation-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.gang-retaliation-opened' }),
   'incidents.all-clear': (sequence) => ({ sequence, tick: 100, type: 'incidents.all-clear' }),
+  'prisoners.relocated': (sequence) => ({
+    sequence,
+    tick: 100,
+    type: 'prisoners.relocated',
+    entityId: 3,
+    name: { givenName: 'Ada', familyName: 'Bell' },
+    roomNameKey: 'room.cell.name',
+  }),
 };
 
 /**
@@ -87,7 +96,14 @@ describe('what the prison says when nothing went wrong', () => {
     for (const type of SIMULATION_EVENT_TYPES) {
       const notice = hudEventNoticeFromWorkerMessage(publication(SAMPLE[type](1)));
       if (notice === undefined || notice === 'none') throw new Error(`${type} produced no notice`);
-      const sentence = localizer.format(notice.labelKey, notice.labelParameters);
+      // Through `resolveHudLabelParameters`, which is what `hud.ts` renders
+      // with: since ADR 0076's relocation notice a sentence's parameters are
+      // not all plain values, and formatting from `labelParameters` alone
+      // would leave `{name}` and `{room}` on screen while this test passed.
+      const sentence = localizer.format(
+        notice.labelKey,
+        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+      );
       expect(sentence, `${type} reaches the player as its own key`).not.toContain('hud.alert.event');
       expect(sentence.trim().length, `${type} says nothing at all`).toBeGreaterThan(0);
     }
