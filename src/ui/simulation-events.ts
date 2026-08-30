@@ -164,8 +164,16 @@ const EVENT_ROW_PREFIX = 'event-';
  * `src/main.ts` asks for `sentenceLengthTicks: 10_000`, which ADR 0050 records
  * as about four in-game days"*. Since ADR 0069 that constant is
  * `{ priorIncidents: 0 }` and carries no sentence at all: the length is drawn
- * **inside the worker**, uniformly over whole in-game days in `[2, 16]`, so
- * 4,800..38,400 ticks with a mean of 21,600 -- nine days rather than four.
+ * **inside the worker**, uniformly over whole in-game days.
+ *
+ * **The range that sentence quoted, `[2, 16]` -- 4,800..38,400 ticks, mean
+ * 21,600 -- is itself gone since the owner's 2026-08-30 ruling on
+ * [#593](https://github.com/matmaxalez/lockstate/issues/593)
+ * ([ADR 0079](../../docs/adr/0079-a-sentence-long-enough-to-be-a-history.md)).**
+ * It is `[14, 90]` now: 33,600..216,000 ticks, mean 124,800 -- **52** in-game
+ * days rather than nine, and 5.8x the spread. The old figures are kept above
+ * because the worked example below is written in them, and because this
+ * paragraph's subject is a measurement that has now been re-based twice.
  *
  * **The conclusion drawn from that is withdrawn too, and it was mine.** It read
  * *"the wider spread strengthens it: cohorts leave further apart than the old
@@ -179,6 +187,12 @@ const EVENT_ROW_PREFIX = 'event-';
  * **38,400 as well** -- merged onto a single tick, where the old fixed 10,000
  * would have left them 2,400 apart. `PrisonerDischargeSystem` aggregates only
  * those due on the *same tick*, so both directions really do move the count.
+ *
+ * The worked example is in the old range's numbers and is left in them: the
+ * shape of the argument is what it is for, and it survives the re-range
+ * unchanged except that both effects get larger. Under `[14, 90]` the split
+ * case is 182,400 ticks rather than 33,600, and the merge case still needs
+ * only that two arrival ticks and two draws sum to the same number.
  *
  * So **eight rows is no longer an argued figure, it is an unmeasured one**.
  * What would settle it is the number of discharge events a real admission

@@ -16,6 +16,7 @@ import {
 import { ClassificationReviewSystem, classifiedAtTickOf } from '../../src/simulation/prisoners/classification-review-system';
 import { MAX_SENTENCE_LENGTH_TICKS, PrisonerRecordComponent, intakeStageIndex } from '../../src/simulation/prisoners/components';
 import type { DisciplinaryEvidenceSource } from '../../src/simulation/prisoners/disciplinary-record';
+import { MAX_SENTENCE_LENGTH_TICKS_DRAWN, MIN_SENTENCE_LENGTH_TICKS } from '../../src/simulation/prisoners/sentence';
 
 /**
  * The scored, reviewable classification issues #78 and #80 ask for
@@ -246,6 +247,30 @@ describe('ClassificationReviewSystem', () => {
     expect(f.records.riskTier[index]).toBe(0);
   });
 
+  it('reviews a prisoner whose elapsed time is exactly one period, not one tick more', () => {
+    // The boundary the `<` in `update` decides, and it was unguarded until
+    // #593's re-range made a review something most prisoners actually reach.
+    // Reachable only from one arrival tick per period: the schedule fires at
+    // ticks congruent to 23,999 modulo 24,000, so `tick - classifiedAt` is
+    // exactly `CLASSIFICATION_REVIEW_INTERVAL_TICKS` only for a prisoner
+    // classified at 23,999. Every other case in this file is strictly inside or
+    // strictly outside the window, so `<` and `<=` are indistinguishable in all
+    // of them -- which is what a mutation run showed before this case existed.
+    const f = fixture();
+    const entityId = f.admit({ riskTier: 2, classifiedAtTick: CLASSIFICATION_REVIEW_INTERVAL_TICKS - 1 });
+    const index = f.store.getIndex(entityId);
+
+    // Fires at 23,999, when the prisoner has been classified for 0 ticks.
+    stepTo(f.kernel, CLASSIFICATION_REVIEW_INTERVAL_TICKS);
+    expect(f.system.getMetrics().reviewsCompleted).toBe(0);
+
+    // Fires at 47,999: 47,999 - 23,999 = 24,000, exactly one period. "Served a
+    // full review period" includes the tick the period ends on.
+    stepTo(f.kernel, 2 * CLASSIFICATION_REVIEW_INTERVAL_TICKS);
+    expect(f.system.getMetrics().reviewsCompleted).toBe(1);
+    expect(f.records.riskTier[index]).toBe(0);
+  });
+
   it('never reviews a prisoner who has not been classified, or one who failed', () => {
     // `'queued'` still holds the zero a fresh slot has, which decodes as a
     // classified general-population tier-0 prisoner -- the same trap
@@ -333,5 +358,137 @@ describe('ClassificationReviewSystem', () => {
     // And one more review later, two periods have elapsed and the credit caps.
     stepTo(f.kernel, 3 * CLASSIFICATION_REVIEW_INTERVAL_TICKS);
     expect(f.records.riskTier[f.store.getIndex(entityId)]).toBe(1);
+  });
+});
+
+// --- How much of a sentence a review actually reaches ----------------------
+
+/**
+ * **The measurement the owner's ruling on
+ * [#593](https://github.com/matmaxalez/lockstate/issues/593) was taken to
+ * change**, run against the real system rather than derived on paper.
+ *
+ * The schedule is global -- `intervalTicks: 24,000`, `phaseTicks: 23,999`, so
+ * it fires at every tick congruent to 23,999 modulo 24,000 -- while
+ * eligibility is per record: `tick - classifiedAt >= 24,000`. A prisoner
+ * classified at `c` with sentence `s` is reviewed only if a scheduled tick
+ * falls in `[c + 24,000, c + s]`, which is a window of `s - 24,000 + 1` ticks
+ * (inclusive at both ends because `PrisonerDischargeSystem` is order 65 and
+ * this system is order 55, so the review at the discharge tick happens first).
+ * **The two only coincide for whoever arrives first**, which is what made the
+ * arithmetic easy to get wrong before it was measured.
+ *
+ * Nothing below re-implements that rule: the system decides, and each
+ * prisoner's reviews are counted by writing an out-of-range marker into
+ * `riskTier` and watching the system overwrite it with a legal tier, restoring
+ * the marker each time so a second review is counted as well as a first.
+ * Detection is driven by the system's own `reviewsCompleted` metric changing,
+ * so the schedule is not assumed here either.
+ */
+describe('how many reviews a sentence actually reaches', () => {
+  const PRISONER_COMPONENT = 0;
+  /** Outside `RiskTier`'s `0..3`, so "the system wrote a tier here" is unambiguous. */
+  const NOT_YET_REVIEWED = 200;
+  const PHASE_STEP = 2_400;
+
+  /** The old range's floor and ceiling, and the new range's, as literals. */
+  const OLD_MIN = 4_800;
+  const OLD_MAX = 38_400;
+
+  interface Member {
+    readonly sentence: number;
+    readonly classifiedAtTick: number;
+    readonly index: number;
+    reviews: number;
+  }
+
+  function reviewCounts(sentences: readonly number[]): Map<number, readonly number[]> {
+    const phases: number[] = [];
+    for (let phase = 0; phase < CLASSIFICATION_REVIEW_INTERVAL_TICKS; phase += PHASE_STEP) phases.push(phase);
+
+    const capacity = 1 << Math.ceil(Math.log2(sentences.length * phases.length + 2));
+    const store = new EntityStore(capacity);
+    const bitset = new ComponentBitset(capacity);
+    const query = new EntityQuery(store, bitset);
+    query.mask.require(PRISONER_COMPONENT);
+    const records = new PrisonerRecordComponent(capacity);
+    const system = new ClassificationReviewSystem(store, query, records);
+    const kernel = new Kernel(0, 0);
+    kernel.registerSystem(system);
+
+    const cohort: Member[] = [];
+    const expireAt = new Map<number, Member[]>();
+    for (const sentence of sentences) {
+      for (const classifiedAtTick of phases) {
+        const index = store.getIndex(store.spawn());
+        bitset.add(index, PRISONER_COMPONENT);
+        records.reset(index);
+        records.sentenceLengthTicks[index] = sentence;
+        records.priorIncidentsAtIntake[index] = 0;
+        // The relation `IntakeSystem` writes, so the fixture cannot disagree
+        // with the simulation about what a classification tick is.
+        records.sentenceEndTick[index] = classifiedAtTick + sentence;
+        records.riskTier[index] = NOT_YET_REVIEWED;
+        records.intakeStage[index] = intakeStageIndex('completed');
+        const member: Member = { sentence, classifiedAtTick, index, reviews: 0 };
+        cohort.push(member);
+        const end = classifiedAtTick + sentence;
+        if (!expireAt.has(end)) expireAt.set(end, []);
+        expireAt.get(end)!.push(member);
+      }
+    }
+
+    // `'failed'` is a stage `REVIEWABLE_STAGES` excludes, so it stands in for
+    // the discharge that removes the prisoner one order later.
+    const discharged = intakeStageIndex('failed');
+    const lastTick = Math.max(...cohort.map((member) => member.classifiedAtTick + member.sentence));
+    let seen = 0;
+    for (let tick = 0; tick <= lastTick; tick += 1) {
+      kernel.step();
+      if (system.getMetrics().reviewsCompleted !== seen) {
+        seen = system.getMetrics().reviewsCompleted;
+        for (const member of cohort) {
+          if (records.riskTier[member.index] !== NOT_YET_REVIEWED) {
+            member.reviews += 1;
+            records.riskTier[member.index] = NOT_YET_REVIEWED;
+          }
+        }
+      }
+      for (const member of expireAt.get(tick) ?? []) records.intakeStage[member.index] = discharged;
+    }
+
+    const byLength = new Map<number, readonly number[]>();
+    for (const sentence of sentences) byLength.set(sentence, cohort.filter((m) => m.sentence === sentence).map((m) => m.reviews));
+    return byLength;
+  }
+
+  it('reaches no sentence the old range could draw, and every sentence the new one can', () => {
+    const counts = reviewCounts([OLD_MIN, 24_000, OLD_MAX, MIN_SENTENCE_LENGTH_TICKS, 45_600, 48_000, 72_000, MAX_SENTENCE_LENGTH_TICKS_DRAWN]);
+    const reaching = (sentence: number, atLeast: number): number => counts.get(sentence)!.filter((n) => n >= atLeast).length;
+    const phases = counts.get(OLD_MIN)!.length;
+    expect(phases).toBe(10);
+
+    // The old range's floor, and a sentence of exactly one review interval:
+    // no phase of arrival reaches a review, at all.
+    expect(reaching(OLD_MIN, 1)).toBe(0);
+    expect(reaching(24_000, 1)).toBe(0);
+    // The old range's ceiling reached one only 6 arrivals in 10 -- which is the
+    // best any sentence the game used to draw could do.
+    expect(reaching(OLD_MAX, 1)).toBe(6);
+    expect(reaching(OLD_MAX, 2)).toBe(0);
+
+    // The new range's floor. Possible for the first time -- but not certain,
+    // because the schedule is global: 14 in-game days leaves a 9,601-tick
+    // window inside a 24,000-tick period.
+    expect(reaching(MIN_SENTENCE_LENGTH_TICKS, 1)).toBe(4);
+    // 19 days, the last length that is still a lottery.
+    expect(reaching(45_600, 1)).toBe(9);
+    // 20 days: the window is a whole period, so every arrival is reviewed
+    // whatever tick it arrives on.
+    expect(reaching(48_000, 1)).toBe(phases);
+    // 30 days: two whole periods, so every arrival is reviewed twice.
+    expect(reaching(72_000, 2)).toBe(phases);
+    // The top of the range gets eight.
+    expect(counts.get(MAX_SENTENCE_LENGTH_TICKS_DRAWN)!.every((n) => n === 8)).toBe(true);
   });
 });

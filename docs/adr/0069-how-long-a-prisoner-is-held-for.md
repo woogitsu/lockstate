@@ -173,6 +173,19 @@ applied again — the same standing
 `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` and `DEFAULT_ASSAULT_POLICY`
 already have.
 
+> **Superseded in part on 2026-08-30 by
+> [ADR 0079](./0079-a-sentence-long-enough-to-be-a-history.md).** The range
+> below is no longer what the code draws: the owner ruled on
+> [#593](https://github.com/matmaxalez/lockstate/issues/593) that a sentence is
+> **14 to 90** whole in-game days, 33,600 to 216,000 ticks, seventy-seven
+> equally likely values. *This decision itself stands* — the range is still
+> data rather than architecture, and that is precisely what made replacing it a
+> matter of two constants and a docblock. What does **not** stand is decision
+> 3's bit-identical-tiers property and this section's parenthetical about the
+> share above 13,600 ticks; both are read in their new form in ADR 0079. The
+> paragraph is left as written because it is the proposal the owner replaced,
+> and because *What would change my mind* below predicted exactly this.
+
 **What is proposed there, and it is a proposal: uniform over whole in-game days
 in `[2, 16]` — 4,800 to 38,400 ticks, fifteen equally likely values.** Eleven of
 the fifteen exceed 13,600, which is the share #535 decision 5 asks for. The
@@ -271,3 +284,12 @@ stream is registered either way.
 bit-identical-tiers property is gone — and coupling a long sentence to a higher
 risk tier is arguably a *good* mechanic. It would be a different decision, taken
 deliberately, and this document is where the cost of taking it is written down.
+
+> **This happened, on 2026-08-30, and the paragraph above is the reason the cost
+> was already written down when it did.** The owner widened the range past
+> 200,000 in their ruling on
+> [#593](https://github.com/matmaxalez/lockstate/issues/593); the
+> bit-identical-tiers property is gone, deliberately, and
+> [ADR 0079](./0079-a-sentence-long-enough-to-be-a-history.md) is the different
+> decision this sentence anticipated. Marked rather than deleted: a prediction
+> that came true is worth more in place than removed.
