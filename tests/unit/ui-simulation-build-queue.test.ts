@@ -114,7 +114,59 @@ describe('what the Build panel is told about the queue', () => {
       projection({ started: 0, orders: { total: 0, offset: 0, limit: 3, rows: [] } }),
       labelKeyOf,
     );
-    expect(queue).toEqual({ total: 0, started: 0, orders: [] });
+    expect(queue).toEqual({
+      total: 0,
+      started: 0,
+      orders: [],
+      materialsFunding: { unfunded: false, shortfallMinorUnits: 0 },
+    });
+  });
+
+  it('carries the shortfall the queue is stalled on, which is the one fact the rows cannot state', () => {
+    /*
+     * #627 computes it, #629 is why it has to reach a surface, and until #640's
+     * playtest measured it this line was where it stopped: the field crossed the
+     * worker boundary inside the projection's JSON and `HudBuildQueueViewModel`
+     * had no member to receive it, so nothing on this thread could read it and
+     * no test above the projection could assert it.
+     *
+     * Asserted over the whole block rather than the number alone, because
+     * `unfunded` and `shortfallMinorUnits` are two different claims -- "the
+     * queue is stalled on money" and "by this much" -- and a passthrough that
+     * carried one and defaulted the other would satisfy either assertion on its
+     * own. The end-to-end claim, over a prison that genuinely cannot pay rather
+     * than over a literal written here, is in
+     * `tests/integration/construction-just-in-time-materials.test.ts`.
+     */
+    const queue = buildQueueFromProjection(
+      projection({
+        materialsFunding: {
+          unfunded: true,
+          shortfallMinorUnits: 80,
+          items: [{ itemId: 'item.brick', quantity: 2, costMinorUnits: 80 }],
+        },
+      }),
+      labelKeyOf,
+    );
+    expect(queue.materialsFunding).toEqual({ unfunded: true, shortfallMinorUnits: 80 });
+  });
+
+  it('does not carry the projection\'s per-item list, which nothing on this thread can name yet', () => {
+    // Not an omission to be fixed by a passthrough: an item row needs the
+    // catalogue lookup `HudPendingDeliveryViewModel.labelKey` needs, injected
+    // across both boundaries from the composition root. Carrying the ids with
+    // no way to name them would be a second field with no reader.
+    const queue = buildQueueFromProjection(
+      projection({
+        materialsFunding: {
+          unfunded: true,
+          shortfallMinorUnits: 80,
+          items: [{ itemId: 'item.brick', quantity: 2, costMinorUnits: 80 }],
+        },
+      }),
+      labelKeyOf,
+    );
+    expect('items' in queue.materialsFunding).toBe(false);
   });
 });
 
@@ -185,6 +237,7 @@ describe('the reader that asks for the queue', () => {
         { orderId: 'order-02', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 3, y: 4 }, edge: 'north', state: 'assigned' },
         { orderId: 'order-03', labelKey: 'hud.build.buildable.door-wooden', tile: { x: 3, y: 5 }, edge: 'west', state: 'materials-pending' },
       ],
+      materialsFunding: { unfunded: false, shortfallMinorUnits: 0 },
     });
   });
 

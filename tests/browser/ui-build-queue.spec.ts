@@ -79,6 +79,11 @@ function queueOf(total = 12): HudBuildQueueViewModel {
     orders: Array.from({ length: Math.min(total, 3) }, (_unused, index) =>
       order(index, index === 0 ? 'in-progress' : 'assigned'),
     ),
+    // A queue that is paid for, which is what every case in this file is about:
+    // these assert the window, the ids and the pooled rows. The funded state is
+    // the one that leaves the block's drawing unchanged, so no case here is
+    // silently measuring a shortfall it did not ask for.
+    materialsFunding: { unfunded: false, shortfallMinorUnits: 0 },
   };
 }
 
@@ -286,7 +291,7 @@ test.describe('the Build panel queue', () => {
     // surviving rows are still there and still aimed at their own orders.
     await page.evaluate(
       (model) => window.lockstateUiHarness.reportBuildQueue(model),
-      { total: 11, started: 1, orders: [order(0, 'in-progress'), order(2, 'assigned')] } as HudBuildQueueViewModel,
+      { total: 11, started: 1, orders: [order(0, 'in-progress'), order(2, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
     );
     const settled = await probeQueue(page);
     expect(settled.rows.map((row) => row.orderId)).toEqual(['order-00', 'order-02']);
@@ -313,7 +318,7 @@ test.describe('the Build panel queue', () => {
     // The queue advances: the first order finished, so every row shifts up one.
     await page.evaluate(
       (model) => window.lockstateUiHarness.reportBuildQueue(model),
-      { total: 11, started: 1, orders: [order(1, 'in-progress'), order(2, 'assigned'), order(3, 'assigned')] } as HudBuildQueueViewModel,
+      { total: 11, started: 1, orders: [order(1, 'in-progress'), order(2, 'assigned'), order(3, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
     );
     const advanced = await probeQueue(page);
     expect(advanced.rows.map((row) => row.orderId)).toEqual(['order-01', 'order-02', 'order-03']);

@@ -445,6 +445,51 @@ export interface HudBuildOrderViewModel {
  * the rows it drew would tell a player with thirty queued walls that they have
  * twelve.
  */
+/**
+ * Whether the queue is stalled on money, and by how much (#627, #629).
+ *
+ * The main-thread half of `BuildQueueMaterialsFundingViewModel`, which the
+ * projection has computed since #627 and which stopped at
+ * `buildQueueFromProjection`: the field reached this thread on the wire and
+ * had nowhere to land, so no surface could read it and no test could assert
+ * it above the worker boundary. Measured on this branch by the #640 playtest
+ * (`docs/research/2026-08-30-a-wall-that-buys-itself.md`, "The shortfall
+ * figure exists on the wire and reaches no pixel").
+ *
+ * **Not derivable from `orders`, and that is the whole reason it is here.**
+ * Since a build order buys its own materials (ADR 0017 decision 7), a row
+ * reading `'materials-pending'` means two things a player cannot tell apart:
+ * the lorry is on its way, which resolves itself, or the prison could not pay,
+ * which does not. Both draw the identical row.
+ *
+ * **Two scalars and not the projection's per-item list.** The projection also
+ * carries `items` -- `{ itemId, quantity, costMinorUnits }` per unfunded
+ * material -- and a row built from one would need the same catalogue lookup
+ * `HudPendingDeliveryViewModel.labelKey` needs, injected across the same two
+ * boundaries. Nothing on this thread asks for that yet, and carrying it would
+ * be a second field with no reader beside the one this closes. It is added the
+ * day a surface names an item.
+ */
+export interface HudBuildQueueMaterialsFundingViewModel {
+  /**
+   * `false` when the last purchase pass bought everything the queue wanted,
+   * wanted nothing, or ran in a session with no economy at all -- see
+   * `BuildQueueMaterialsFundingViewModel.unfunded` for why the third is folded
+   * into the first two rather than reported as a third state.
+   */
+  readonly unfunded: boolean;
+  /**
+   * What the queue could not buy, in minor units. `0` whenever `unfunded` is
+   * `false`.
+   *
+   * The same minor units as the status strip's Funds chip, deliberately: the
+   * projection's own comment says this figure exists so that it can be
+   * compared against that balance, and every price in
+   * `src/content/procurement-catalog.ts` is a whole number of them.
+   */
+  readonly shortfallMinorUnits: number;
+}
+
 export interface HudBuildQueueViewModel {
   /** Every pending order, however many rows there was room to carry. */
   readonly total: number;
@@ -460,6 +505,14 @@ export interface HudBuildQueueViewModel {
   readonly started: number;
   /** The window, in the order the crew will reach them. */
   readonly orders: readonly HudBuildOrderViewModel[];
+  /**
+   * Whether the queue is stalled on money, and by how much.
+   *
+   * Always present, never optional, exactly as it is on the projection: absent
+   * would mean "this build cannot answer", and every build that reaches this
+   * translator can.
+   */
+  readonly materialsFunding: HudBuildQueueMaterialsFundingViewModel;
 }
 
 /**

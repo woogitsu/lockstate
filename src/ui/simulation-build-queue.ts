@@ -81,6 +81,19 @@ export type BuildableLabelLookup = (definitionId: string) => LocalizationKey | u
  * projection's, and the only thing added is the name -- which is the one fact
  * neither side of the boundary is allowed to hold.
  *
+ * **`materialsFunding` is copied across rather than recomputed, and it is the
+ * one thing here that is not about a row.** The projection decides whether the
+ * queue is stalled on money and by how much (#627, #629); this layer cannot,
+ * because the answer is a fact about the treasury and the last purchase pass
+ * and neither is on this thread. Until #640's playtest measured it, the field
+ * arrived over the wire and was dropped on this line -- `HudBuildQueueViewModel`
+ * had nowhere for it to land -- so the number the projection exists to produce
+ * reached no reader at all.
+ *
+ * The projection's per-item `items` list is deliberately not carried; see
+ * `HudBuildQueueMaterialsFundingViewModel` for why two scalars are the whole
+ * of what a consumer can use today.
+ *
  * A row whose buildable the host cannot name keeps its place. That is the
  * opposite of `roomNeedsFromProjections`, which *skips* a room the catalogue
  * cannot name, and the difference is what the row is for: a nameless room need
@@ -106,7 +119,15 @@ export function buildQueueFromProjection(
     };
   });
 
-  return { total: view.orders.total, started: view.started, orders };
+  return {
+    total: view.orders.total,
+    started: view.started,
+    orders,
+    materialsFunding: {
+      unfunded: view.materialsFunding.unfunded,
+      shortfallMinorUnits: view.materialsFunding.shortfallMinorUnits,
+    },
+  };
 }
 
 export class BuildQueueReader {

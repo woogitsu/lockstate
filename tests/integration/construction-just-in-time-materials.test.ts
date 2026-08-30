@@ -10,6 +10,7 @@ import {
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
+import { buildQueueFromProjection } from '../../src/ui/simulation-build-queue';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
@@ -271,6 +272,56 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
     expect(view.orders.rows.map((row) => row.state), 'and the state alone would have said nothing').toEqual([
       'materials-pending',
     ]);
+  });
+
+  it('hands the main thread the number the prison is short by, instead of dropping it at the boundary', () => {
+    /*
+     * The half of #629 that #640 computed and did not deliver, measured end to
+     * end: a prison that genuinely cannot pay, through the projection the
+     * worker answers `hud/build-queue` with, through the translator the Build
+     * panel is fed from, to the view model a surface can read.
+     *
+     * **Why this is worth an integration case and not only the unit
+     * passthrough in `tests/unit/ui-simulation-build-queue.test.ts`:** that one
+     * is handed a `materialsFunding` block written in the test, so it proves
+     * the field survives the mapping and nothing about the figure. This one is
+     * handed a treasury of 40 and a wall priced at 80 by the shipped catalogue,
+     * and the number it asserts -- 80, the pinned literal this file opens with
+     * -- was produced by the simulation rather than by the assertion.
+     *
+     * **Both directions, in one case, and that is deliberate.** A passthrough
+     * hard-coded to `{ unfunded: true, shortfallMinorUnits: 80 }` would satisfy
+     * the first half; one hard-coded to the empty block would satisfy the
+     * second. Only carrying the projection's own answer satisfies both.
+     *
+     * **What this does not claim.** It is a view model, not a pixel. Nothing in
+     * `src/ui/hud/build-panel.ts` reads `materialsFunding` yet and no test here
+     * says it does: rendering the figure needs a player-facing sentence that
+     * does not exist and that `AGENTS.md` reserves to the owner. See
+     * `docs/HUD_PROJECTIONS.md` gap 32b.
+     */
+    const runtime = prisonWith(40);
+    send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 });
+    step(runtime, 20);
+
+    const stalled = buildQueueFromProjection(
+      projectBuildQueue(runtime.construction, {}, runtime.justInTimeMaterials),
+      () => 'hud.build.buildable.wall-brick',
+    );
+    expect(stalled.materialsFunding).toEqual({ unfunded: true, shortfallMinorUnits: WALL_COST });
+    expect(stalled.orders.map((order) => order.state), 'and the row alone still says nothing about money').toEqual([
+      'materials-pending',
+    ]);
+
+    // The money comes back, the scheduled pass buys, and the same route says so
+    // -- so the figure above is the projection's answer and not a constant.
+    send(runtime, { type: 'CancelMaterialPurchase', orderId: 'order-buy' });
+    step(runtime, 4_000);
+    const settled = buildQueueFromProjection(
+      projectBuildQueue(runtime.construction, {}, runtime.justInTimeMaterials),
+      () => 'hud.build.buildable.wall-brick',
+    );
+    expect(settled.materialsFunding).toEqual({ unfunded: false, shortfallMinorUnits: 0 });
   });
 
   it('builds the order it could not afford, without a further press, once the money is back', () => {

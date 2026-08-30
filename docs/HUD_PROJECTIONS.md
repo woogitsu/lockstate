@@ -1331,6 +1331,28 @@ decision about what to build next.
     money, and would need a new `RefusalReason` member, a new
     `hud.alert.refusal.build.*` key and its English text.
 
+    **Amended 2026-08-30: the payload now reaches the main thread, and the
+    paragraph above described only half of where it stopped.** It said what is
+    owed is a sentence, which is true and is still true — but between the
+    projection and any sentence there was a second break nobody had recorded.
+    `buildQueueFromProjection` mapped the rows and the two counts and dropped
+    `materialsFunding` on the floor: `HudBuildQueueViewModel` had no member to
+    receive it, so the figure crossed the worker boundary inside the
+    projection's JSON and was discarded on arrival. Found by playing, on the
+    branch that added it
+    (`docs/research/2026-08-30-a-wall-that-buys-itself.md`, *"The shortfall
+    figure exists on the wire and reaches no pixel"*).
+
+    `HudBuildQueueViewModel.materialsFunding` now carries `unfunded` and
+    `shortfallMinorUnits` — the projection's `items` list is deliberately not
+    carried, because naming an item needs the catalogue lookup
+    `HudPendingDeliveryViewModel.labelKey` needs and nothing asks for it yet.
+    **Nothing renders it**, and that is the same gap as before rather than a
+    new one: `src/ui/hud/build-panel.ts` has no line it could put the number
+    on without a sentence, and the sentence is the owner's. What changed is
+    that writing that sentence is now a change to one panel and one locale
+    key, rather than a change that also has to cross a boundary.
+
 32. **Build costs are material quantities, and that part is real**:
     `BuildableDefinition.materialsRequired` is `{itemId, quantity}` and
     `ContainerMaterialsProvider` genuinely consumes them from a
