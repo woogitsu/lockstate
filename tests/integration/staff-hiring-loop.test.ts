@@ -64,7 +64,8 @@ function submitHire(
 
 /**
  * The `simulation/status-counts` publication the worker would send for this
- * runtime, assembled exactly as `WorkerStateMachine.publishStatusCounts` does:
+ * runtime, assembled exactly as
+ * `SimulationWorkerStateMachine.publishStatusCounts` does:
  * the projection beside the session's most recent refusal, and the refusal
  * absent rather than null when there has been none.
  *

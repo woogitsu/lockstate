@@ -837,39 +837,71 @@ function staffRoster(): HudStaffViewModel {
  * already drawn. `admitPrisonerSchema` now permits the omission and
  * `IntakeSystem` draws at the `classification` stage, from `prisoners.sentence`.
  *
- * **What the owner decided and what is still open.** #535 decision 5 settles
- * that sentences vary; the bounds -- 2 to 16 in-game days, uniform -- are a
- * proposal recorded at `MIN_SENTENCE_DAYS` with the decay measurements they
- * were derived from, and are the owner's to confirm or replace. Nothing on
- * screen renders a sentence today, so a varying one adds no player-facing
- * sentence and needs no new copy: `projectPrisonerDetail` already carries
- * `sentence.lengthTicks` and `sentence.endTick`, and the HUD already declines
- * to draw them.
+ * **What the owner decided.** #535 decision 5 settles that sentences vary.
+ * This paragraph used to continue *"the bounds -- 2 to 16 in-game days,
+ * uniform -- are a proposal recorded at `MIN_SENTENCE_DAYS` ... and are the
+ * owner's to confirm or replace"*, and the owner has now replaced them: the
+ * ruling on [#593](https://github.com/matmaxalez/lockstate/issues/593),
+ * 2026-08-30, makes the range **14 to 90 in-game days**
+ * ([ADR 0079](../docs/adr/0079-a-sentence-long-enough-to-be-a-history.md)).
+ * Nothing on screen renders a sentence today, so a varying one adds no
+ * player-facing sentence and needs no new copy: `projectPrisonerDetail`
+ * already carries `sentence.lengthTicks` and `sentence.endTick`, and the HUD
+ * already declines to draw them. **That is now a gap worth naming rather than
+ * a convenience**: a 90-day sentence is three real hours at x1 and decides
+ * whether a prisoner is long-sentence, and the player can see neither number.
+ * Filed as a consequence in ADR 0079 rather than fixed here, because inventing
+ * a player-facing string is not this change's to make.
  *
  * ## `priorIncidents` stays 0, and that is a held decision rather than an
  * oversight
  *
  * It is still the least eventful value in range: `0` is the bottom of the
  * `priorIncidentsAtIntake` slot, so it adds nothing to `classifyPrisoner`'s
- * score and the tier that results is the screening draw alone. The measured
- * consequence, stated so it is not mistaken for a gap nobody looked at:
- * `classifyPrisoner`'s reachable tiers at `priorIncidents: 0` are `[0, 1]`
- * (`tests/unit/prisoners-classification.test.ts`), and
- * `classificationGroupIdForTier` only answers `'high-risk'` at tier 3 -- so
- * **no admission a player can make from this panel has ever produced a
- * high-risk prisoner**, and `room.solitary-cell`'s accommodation branch is
- * reachable only through `ClassificationReviewSystem` later revising a tier
- * upward.
+ * score.
+ *
+ * **This paragraph used to continue "and the tier that results is the
+ * screening draw alone ... reachable tiers at `priorIncidents: 0` are
+ * `[0, 1]`", and that stopped being true when the owner ruled on #593.** It is
+ * corrected here rather than left to be contradicted eighteen lines further
+ * down, which is what it was doing: the paragraph below already says the right
+ * thing, and a reader arriving at this one first had no way to know which half
+ * to believe. `priorIncidents` is no longer the only term that can be zero --
+ * the *sentence* term can now be 1, for the seven drawable lengths of 84
+ * in-game days and up -- so the tier is the screening draw **plus that point**,
+ * and the reachable set is `[0, 1]` below 84 days and `[0, 1, 2]` at or above
+ * it (`tests/unit/prisoners-classification.test.ts` enumerates it over the
+ * whole draw space rather than sampling).
+ *
+ * **What the old sentence was protecting is untouched, and it is the half
+ * worth keeping:** `classificationGroupIdForTier` only answers `'high-risk'`
+ * at tier 3, and one sentence point plus a maximum screening draw of `+1`
+ * clamps at 2 -- so **no admission a player can make from this panel has ever
+ * produced a high-risk prisoner**, and `room.solitary-cell`'s accommodation
+ * branch is still reachable only through `ClassificationReviewSystem` later
+ * revising a tier upward. The margin narrowed from two screening points to
+ * one; it did not close.
  *
  * That is a real dead branch of exactly the kind #535 decision 5 was taken
  * about, and it is deliberately **not** fixed here. Drawing prior incidents
  * would move risk tiers, and risk tiers decide cell sharing, contraband
  * introduction and which regime timetable a prisoner runs -- a balance change
  * with a far wider blast radius than a sentence length, and one the owner has
- * not taken. Keeping it at 0 is also what preserves this change's strongest
- * safety property: with the sentence drawn from its own stream and the range
- * entirely below `LONG_SENTENCE_THRESHOLD_TICKS`, every tier every existing
- * seed has ever produced is bit-identical after it.
+ * not taken.
+ *
+ * **The last sentence of this paragraph is withdrawn, by the owner's ruling on
+ * #593 rather than by a mistake.** It read: *"Keeping it at 0 is also what
+ * preserves this change's strongest safety property: with the sentence drawn
+ * from its own stream and the range entirely below
+ * `LONG_SENTENCE_THRESHOLD_TICKS`, every tier every existing seed has ever
+ * produced is bit-identical after it."* The range is no longer entirely below
+ * that threshold, so the property is gone and was spent on purpose. Measured
+ * against the enumeration in `tests/unit/prisoners-classification.test.ts`:
+ * the tiers reachable from this panel's request were `[0, 1]` at every
+ * drawable sentence and are `[0, 1]` below 84 in-game days and `[0, 1, 2]` at
+ * or above it. **What still holds is the claim that mattered**: the panel
+ * still cannot produce a tier-3 prisoner, because `priorIncidents` is 0 and
+ * one sentence point plus a maximum screening draw clamps at 2.
  *
  * The interface still offers no field for either figure and could not label one
  * honestly -- a sentence is quoted in ticks and a prior-incident count feeds a

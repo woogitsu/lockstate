@@ -1,4 +1,4 @@
-import { type Page, expect, test } from '@playwright/test';
+import { type Page, expect, test } from './network-changed-fixture';
 import type { HudPendingDeliveriesViewModel } from '../../src/ui/hud';
 import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global augmentation
 

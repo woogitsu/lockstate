@@ -137,6 +137,24 @@ It also carries the two environment-specific facts observed on Ubuntu 26.04 unde
 
 CI runs that script in the `browser` job and then `pnpm test:browser`, so the layer that found the adapter defect in `docs/PERSISTENCE.md` and the two HUD layout defects above runs on every pull request instead of when a human remembers. The job is ordered after `assets` for two reasons, neither a data dependency: a browser run is a couple of minutes on a single self-hosted runner and there is no point spending it on a tree that does not build; and `assets` has already materialised the runtime atlases into the shared workspace, so the job's own path-scoped `git lfs pull` transfers nothing. That pull stays regardless, because the job has to be correct on a cold workspace — `app-shell.spec.ts` asks a real browser to decode the art, and a pointer-only checkout is exactly what it exists to catch. The job also fails if the suite skipped its way to green: `playwright test` already errors when no test matches and `forbidOnly` is on under CI, but neither covers a suite that ran and skipped.
 
+## The one condition under which the browser suites retry (#616, #652)
+
+Both Playwright configs set `retries: 0` and that is still the default. Neither `pnpm test:browser` nor `pnpm test:artifact` runs `playwright test` directly, though: each runs `tests/browser/run-suite.ts` with a `--suite` name, and that wrapper runs the suite once and retries it **only** when every failing test observed `net::ERR_NETWORK_CHANGED` while it was running.
+
+That error is Chromium aborting in-flight requests because the operating system's network configuration changed underneath it. Issue #616 diagnosed it from a retained trace after three earlier investigations had failed to, and it has turned `main` red five times in four different-looking ways — a harness global that never appears, a `page.evaluate` returning `undefined` in 229 ms, and a simulation worker whose module graph was truncated so a correctly-written panel stayed pending until the test's own expectation gave up. One cause; the symptom depends only on which modules were in the aborted set. It is not a product defect: production is a built bundle over one origin, not several hundred dev-server module requests.
+
+The owner ruled on 2026-08-30 that this class, and nothing adjacent to it, may be retried. Three properties are what make that safe rather than a permission to be green, and each is pinned by `tests/foundation/browser-network-changed-retry-contract.test.ts` or `tests/foundation/browser-network-changed-signature.test.ts`:
+
+- **The evidence covers the whole test.** #616's fifth occurrence measured the aborts spread across ~52 seconds, so anything that samples console errors at one instant could miss the window or be tripped by it. `tests/browser/network-changed-fixture.ts` holds `requestfailed` and `console` listeners on the browser **context** for the lifetime of every test — context, because the fifth occurrence aborted the *simulation worker's* module graph rather than the page's — and appends each observation to a file as it happens, so a 60-second timeout that never reaches fixture teardown still leaves the evidence behind.
+- **It retries on nothing else.** The matcher takes one exact error, anchored on the right. `net::ERR_INTERNET_DISCONNECTED`, `net::ERR_NETWORK_IO_SUSPENDED` and `net::ERR_ABORTED` are all refused, and one failing test without evidence refuses the whole retry rather than narrowing it.
+- **It is loud and countable.** A retry writes `LOCKSTATE_BROWSER_SUITE_RETRY` to stdout, a refusal writes `LOCKSTATE_BROWSER_SUITE_NO_RETRY`, and each observing test writes `LOCKSTATE_NETWORK_CHANGED_OBSERVED` carrying the error text. CI tees all of it into `browser-suite.log` for the dev-server gate; the artefact step captures its output into a shell variable and prints it, because `tests/foundation/ci-configuration-contract.test.ts` requires that job to have exactly one `tee` target, so those lines land in the job log rather than in the uploaded file. That last line is the direct answer to what made this class invisible for three investigations: `grep -c ERR_NETWORK_CHANGED browser-suite.log` returned **0** on every one of the five occurrences, because the evidence existed only inside a retained trace.
+
+Every spec in `tests/browser/` therefore imports its `test` object from `./network-changed-fixture` rather than from `@playwright/test`, and the contract test fails in both directions if one ever does otherwise — a spec written by copying a pre-#616 header would run with no listeners attached and be silently absent from the evidence.
+
+**Both gates, since #652, and for one merge it was only one.** `pnpm test:artifact` invoked `playwright test` directly until then, so the artefact gate recorded no evidence and nothing decided a retry for it — while `production-artifact.spec.ts` imported the fixture like every other spec, which is what made the gap read as covered from every file involved: the listeners really did attach, and `appendEvidence` returned at its first line because nothing set `LOCKSTATE_NETWORK_CHANGED_EVIDENCE`. The owner ruled on 2026-08-30 to route the second gate through the same wrapper rather than write the exception down, so the decision exists once. `tests/browser/browser-suites.ts` is the registry of what the wrapper can drive, and the contract test now fails if a `playwright*.config.ts` appears that is neither driven nor recorded there as deliberately excluded — `playwright.playtest.config.ts` is the one exclusion, because it is not a gate.
+
+Measured on this branch rather than argued: with the signature fabricated through the page console (nothing in Playwright or CDP can make Chromium genuinely emit it), the artefact gate goes `1 failed, 2 passed` → `LOCKSTATE_BROWSER_SUITE_RETRY suite=artifact` → `1 passed` → exit 0, and the same command run the old way on the same fabricated abort exits 1 with no retry line at all. An ordinary wrong expectation in the same suite gets `LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact failures=1 withSignature=0` and stays red.
+
 ## Test layers
 
 | Layer | Purpose | Normal location |
@@ -152,6 +170,36 @@ CI runs that script in the `browser` job and then `pnpm test:browser`, so the la
 | Benchmark | Repeatable performance evidence, never correctness by elapsed time | `benchmarks/` and `docs/BENCHMARKING.md` |
 
 Use the lowest layer that proves the behavior. Do not use a browser test to cover logic that can be proven by a fast headless unit or contract test.
+
+### Comments are not executed, and one shape of them is now gated
+
+`tests/foundation/comment-symbol-existence-contract.test.ts` reads every
+backticked **member path** (`Foo.bar`) and **three-segment screaming constant**
+(`STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`) in every comment under
+`src/` and `tests/`, and fails when the name resolves to nothing in the
+repository's code. Issue #543 is the reason: a comment in module A stating a
+fact about module B has no test tying the two together, and this repository has
+paid for it repeatedly — a comment that was false for 51 releases sent two
+agents hunting a fixed defect.
+
+**It gates the vocabulary half of that class, not the behavioural half**, and
+the distinction is worth knowing before reaching for it. It catches
+`WorkerStateMachine.publishEvents` when the class is
+`SimulationWorkerStateMachine`, and a docblock naming an assertion helper that
+does not exist. It cannot catch *"nothing debits the treasury on a schedule"*
+going false when `PayrollSystem` lands, because that sentence names no symbol;
+nor `RoomInstanceRegistry.residentIds` when the caller moved to
+`residentIdsWithExistingPlace`, because both accessors are real. Those stay the
+discipline.
+
+**A comment may still name something that is gone — it just has to say so.**
+A deletion record whose prose carries *"used to"*, *"no longer"*, *"deleted"*,
+*"there is no"* or one of the other markers, within about two wrapped lines of
+the name, is exempt. That is a convention with teeth rather than a hole: this
+tree already writes deletion records that way, every one of the six in it
+passed before the gate existed, and the marker window is deliberately narrow
+because the first version read markers over the whole comment block and a
+hundred-line docblock's unrelated *"there is no ..."* exempted a real defect.
 
 ### The production artefact layer, and the hole it closes
 

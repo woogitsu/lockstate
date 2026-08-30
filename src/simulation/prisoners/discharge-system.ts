@@ -216,6 +216,14 @@ export class PrisonerDischargeSystem implements SystemRegistration {
      * dominates is a question about admission cadence that nobody has
      * measured.
      *
+     * The worked example is in the 2-to-16-day range #593 replaced on
+     * 2026-08-30 (it is 14 to 90 now,
+     * `src/simulation/prisoners/sentence.ts`). It is left in those numbers
+     * because the *shape* is what it demonstrates and the shape survives: the
+     * split case is 182,400 ticks rather than 33,600, and the merge case still
+     * needs only that two arrival ticks and two draws sum to the same number.
+     * Both effects get larger, which does not settle which dominates either.
+     *
      * `recordDischarge` ignores a count below 1, so a tick on which nobody was
      * due -- every tick but a handful -- records nothing without this needing a
      * guard of its own.

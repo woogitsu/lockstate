@@ -131,6 +131,25 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   forbidOnly: process.env['CI'] !== undefined,
+  /**
+   * ZERO, AND THE CONDITIONAL RETRY ABOVE THIS CONFIG DOES NOT RELAX IT.
+   *
+   * A blanket retry hides a real intermittent defect, which is why this has
+   * always been 0 and why the owner declined `retries: 1` when issue #616
+   * asked. What #616 settled instead is that ONE class may be retried: the CI
+   * runner's host network reconfiguring mid-run, so Chromium aborts in-flight
+   * module requests with `net::ERR_NETWORK_CHANGED` and truncates the page's
+   * (or the simulation worker's) module graph. Five reds on `main`, four
+   * different-looking symptoms, provably not the code under test.
+   *
+   * Playwright decides `retries` before a run and offers no hook for a fixture
+   * to ask for one afterwards, so that decision cannot live here. It lives in
+   * `tests/browser/run-suite.ts`, which is what `pnpm test:browser` runs: this
+   * config's suite executes with no retries at all, and the wrapper re-runs
+   * `--last-failed` only when every failing test observed that exact error.
+   * `tests/foundation/browser-network-changed-retry-contract.test.ts` fails if
+   * this line stops reading `retries: 0,`.
+   */
   retries: 0,
   reporter: [['list']],
   timeout: 60_000,

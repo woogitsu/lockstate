@@ -31,6 +31,23 @@ player-visible promise is one of the four things reserved to the owner, so
 whoever implements relocation must put the question rather than invent the
 string.
 
+> **Answered on 2026-08-30, and the paragraph above is left standing because it
+> is what the question was.** [PR #637](https://github.com/matmaxalez/lockstate/pull/637)
+> shipped A(i) silent and recorded the debt. The question was put, and the
+> owner approved one sentence:
+>
+> > `{name} had nowhere to sleep and moved to {room}.`
+>
+> It is in `src/content/default-locale-en.ts` under
+> `hud.alert.event.prisoners.relocated`, reproduced exactly, and it reaches the
+> player on the events band and in the alerts list.
+>
+> **The approval covers the relocated case only.** A resident the prison had
+> nowhere to move is still announced by nothing — that is
+> `ExcessRelocationOutcome.stranded`, it is the branch decision A(ii) is
+> unconditional for, and whether the player should be told about *that* is an
+> open question with no wording behind it. Recorded here rather than answered.
+
 It answers an economy audit finding raised against `4c18bc4` (v0.0.203) as
 ECON-003 and reproduced by running it against `ec10451` (v0.0.206).
 
@@ -223,18 +240,139 @@ step** exactly as `cancelOrder` already empties it. **A conservation test over
 they ship together.**
 
 **A(i), the behaviour: a removal that drops a room's capacity below its occupancy
-relocates the excess**, through
-`PrisonerOperationsRuntime.relocateResidentsOutOf`
-(`src/simulation/prisoners/prisoner-operations-runtime.ts:500`).
+relocates the excess.**
 
 This is the owner's ruling and it is the better game. A resident silently living
 in a bedless room is a prison that has quietly stopped making sense; a resident
-moved to a bed that exists is a prison that reacted. The mechanism is already
-written, already atomic, already deterministic, and already trusted by
-`UnzoneRoom` — this decision gives it its second caller rather than inventing
-anything. Its one gap for this use is that it empties whole instances: a room
-losing one of two beds needs *the excess* relocated, which is a narrowing of the
-same walk.
+moved to a bed that exists is a prison that reacted.
+
+**The mechanism this paragraph named is corrected here rather than deleted, and
+the correction is dated 2026-08-30.** The sentences that stood here named a
+method, an anchor and an atomicity, and were written before any of the code
+existed — the Consequences below still say *"No production code is in this
+branch"*. What shipped is not what they predicted, and the prediction is kept in
+the subsection at the end of this one, because it is what the owner accepted.
+
+**This subsection cites by quotation rather than by `file:line`, under issue
+#645's ruling of 2026-08-30**, so that a citation here cannot go wrong quietly
+again:
+`tests/foundation/adr-quotation-verbatim-contract.test.ts` re-checks every
+quotation below against the file it names on every run. **The rest of this
+document still cites by line and is not covered by that gate.** A green run
+there means the evidence is still on disk; it does not mean a sentence above it
+is true, and the sentences below were each checked by reading the code.
+
+**The mechanism is `relocateExcessResidentsOf`, and it is a second method rather
+than a second caller of the first**, shipped by
+[PR #637](https://github.com/matmaxalez/lockstate/pull/637):
+`public relocateExcessResidentsOf(instanceIds: readonly string[]): ExcessRelocationOutcome {`
+(verbatim in `src/simulation/prisoners/prisoner-operations-runtime.ts`). It
+moves the excess rather than emptying the room, which is the narrowing this
+decision asked for:
+`It moves the excess, not everybody.`
+(verbatim in `src/simulation/prisoners/prisoner-operations-runtime.ts`).
+
+**It is best-effort, and deliberately not atomic.** The sibling
+`relocateResidentsOutOf` is the atomic one:
+`All-or-nothing, and that is the answer to "what happens when there is nowhere to put them".`
+(verbatim in `src/simulation/prisoners/prisoner-operations-runtime.ts`). The
+asymmetry between the two is stated where it is implemented:
+`It is best-effort, where the sibling is all-or-nothing.`
+`The sibling rolls every move back on the first resident with nowhere to go, because its caller can still *refuse*`
+(both verbatim in `src/simulation/prisoners/prisoner-operations-runtime.ts`).
+The sibling's caller really can refuse, and does:
+`return { kind: 'refused', reason: 'room-occupied', request: { ...request }, tick };`
+(verbatim in `src/simulation/rooms/zoning.ts`). A(i)'s caller cannot, because
+this ADR records refusing the removal as **not taken** — so the object is
+already gone by the time the question is asked, and rolling a move back would
+put a resident into a bedless room on purpose:
+`It cannot refuse the removal and is not asked before it.`
+(verbatim in `src/simulation/objects/object-placement-service.ts`).
+
+**So each resident is moved or left, one at a time, and the caller is told which
+happened to whom:**
+`return { relocated, stranded };`
+(verbatim in `src/simulation/prisoners/prisoner-operations-runtime.ts`). The
+two halves are no longer the same shape:
+`readonly relocated: readonly ExcessResidentRelocation[];`
+`readonly stranded: readonly EntityId[];`
+(both verbatim in `src/simulation/prisoners/prisoner-operations-runtime.ts`) —
+because a relocation has to say where to, and a stranding has nowhere to name.
+
+#### 2026-08-30: the prediction fired, and it fired on `main`
+
+**The paragraph above said, until this date:** that both halves were
+`readonly EntityId[]`, that [PR #660](https://github.com/matmaxalez/lockstate/pull/660)
+*"has not merged, so it is not quoted here"*, and that **"when it merges the two
+`readonly` quotations above go red — which is the gate working, and the repair
+is to requote the widened field, not to drop the citation."**
+
+All three were true when written. #660 merged, `relocated` widened to
+`ExcessResidentRelocation[]`, the quotation stopped matching, and
+`adr-quotation-verbatim-contract` failed exactly as promised. It has been
+requoted, not dropped.
+
+**It went red on `main` rather than on a pull request, and that is worth
+recording rather than tidying away.** The integrator merged #660 first and then
+merged the pull request carrying this paragraph, having read the sentence that
+predicted the collision. The gate did its whole job; the ordering did not.
+
+**And the same window produced the failure this gate cannot catch, which the
+contract's own header names.** Until this date the sentence above the call-site
+quotation read *"The call site discards the result for exactly that reason"*.
+Since #660 it does not discard:
+`this.relocationNotice?.announceRelocations(outcome.relocated);`
+(verbatim in `src/simulation/objects/object-placement-service.ts`). The old
+quotation beside that false sentence — `relocateExcessResidentsOf([roomInstanceId])`
+— **remained a substring of the widened statement**, so the contract went on
+accepting it while the sentence around it had become untrue. A verbatim
+quotation proves the text still exists. It does not prove the claim it is
+offered in support of, and that is the boundary this document now demonstrates
+rather than merely states.
+
+#### What this paragraph predicted, and what shipped instead
+
+Kept rather than overwritten, for the reason `docs/AGENT_WORKFLOW.md` §4 gives:
+a correction that erases what it corrects is no more durable than the claim it
+replaced. Until 2026-08-30 the two paragraphs above read:
+
+> **A(i), the behaviour: a removal that drops a room's capacity below its
+> occupancy relocates the excess**, through
+> `PrisonerOperationsRuntime.relocateResidentsOutOf`
+> (`src/simulation/prisoners/prisoner-operations-runtime.ts:500`).
+>
+> This is the owner's ruling and it is the better game. […] The mechanism is
+> already written, already atomic, already deterministic, and already trusted by
+> `UnzoneRoom` — this decision gives it its second caller rather than inventing
+> anything. Its one gap for this use is that it empties whole instances: a room
+> losing one of two beds needs *the excess* relocated, which is a narrowing of
+> the same walk.
+
+Four clauses, and they did not all fare the same way:
+
+- **The method.** No second caller of `relocateResidentsOutOf` was added. #637
+  wrote a second method beside it, and `UnzoneRoom` is still the first one's only
+  caller. The name in this ADR was therefore never the name of A(i)'s mechanism.
+- **"already atomic".** True of the method named, false of the method built, and
+  that is the substantive error rather than a naming one: best-effort was chosen
+  deliberately, for the asymmetry quoted above, and a reader who took this
+  sentence at face value would expect a rollback that does not exist.
+- **The anchor.** `:500` was **exactly right when it was written** — verified at
+  `092991e`, the commit that added this file, where line 500 is
+  `relocateResidentsOutOf`'s own declaration. On `main` today it lands 44 lines
+  higher than that declaration, inside its doc comment, and about 170 lines above
+  `relocateExcessResidentsOf`. It is given here as a bare number, the way
+  [ADR 0023](./0023-room-occupancy-authority.md) records its own drifted anchors:
+  history, not a citation to follow.
+- **"already deterministic", and the narrowing, are both still true.** The
+  shipped method reads no RNG stream and no clock, visits residents in ascending
+  entity id, and does relocate the excess rather than the room.
+
+The reason this is a correction and not a defect report is that the ADR named
+the gap itself — *"Its one gap for this use is that it empties whole instances"*
+— and #637 closed it by writing a second method instead of widening the first.
+What this document got wrong is which shape closing that gap would take, which
+is the one thing a decision written before its implementation cannot know.
 
 **A(ii), the invariant: `StateIncomeSystem` pays for
 `min(occupancy, residentCapacity)` per room instance.**
@@ -281,6 +419,41 @@ charge for becomes rare, which weakens the case for it.
   behind in this one. **B is a good decision provided the residency half is
   closed, and a bad one on its own.** They must not be accepted separately in
   that order.
+  **Corrected 2026-08-30: they did not ship in the same release, and the
+  decision above is left standing because what changed is the world and not the
+  decision.** Two of the three have shipped, in separate releases, and the third
+  has not shipped at all. **A(ii)** landed first, from issue #585 in
+  [PR #610](https://github.com/matmaxalez/lockstate/pull/610) — `71617799` —
+  and **A(i)** second, in
+  [PR #637](https://github.com/matmaxalez/lockstate/pull/637) — `08d3e62`.
+  **B — a finished object un-building into its full materials by either route —
+  is not implemented.** `RemoveObject` on a standing object still refunds
+  nothing, and the code still argues for the asymmetry B was to close:
+  `A *standing* object is not refunded, and the asymmetry is the honest one:`
+  (verbatim in `src/simulation/objects/object-placement-service.ts`). The
+  behaviour B would change is still pinned by the test this ADR named, under the
+  name it named:
+  `gives back the materials a cancelled order had allocated, and does not refund a built object`
+  (verbatim in `tests/integration/object-removal-loop.test.ts`).
+  **The hazard this bullet exists to prevent has not been realised**, which is
+  why this is a correction and not an incident report. What it forbids is **B
+  without A** — one press that hands the plank back while the resident goes on
+  paying. What shipped is **A without B**, the safe direction by this bullet's
+  own argument: A(ii) stops the recycled cell earning anything, so the loop pays
+  for nothing whether or not the plank comes back.
+  `tests/integration/economy-bed-recycling.test.ts` measures that directly — the
+  recycled prison now earns one resident's income where it earned three, and the
+  40 minor units still separating it from the control are an unmet-need
+  withholding that file derives in place and that has nothing to do with places.
+  **What is outstanding is therefore B alone**, together with the gate this ADR
+  made non-optional for it: one refund per order, the allocation emptied in the
+  same step, and a conservation test over `Remove` → `Undo` and
+  `Undo` → `Remove`. **Whether shipping A without B is an acceptable resting
+  state, or B is now owed as its own change, is the owner's to say** — this note
+  records the divergence and does not settle it. `docs/adr/README.md`'s row for
+  this ADR still carries the same promise, and the same superseded mechanism for
+  A(i); it is named here rather than edited, because that index is under another
+  pass.
 - **A(i) without A(ii) is the same mistake one layer down.** Relocation looks
   like it closes the loop and does not, for the reason A(ii) states: the exploit
   lives in the branch relocation cannot serve. A release that shipped B and A(i)
@@ -320,6 +493,11 @@ charge for becomes rare, which weakens the case for it.
   player asking is a thing the player should be told about, and saying nothing is
   cheaper than saying it badly. Flagged rather than decided, because copy is the
   owner's.
+  **Both halves of that came true, and it is marked rather than rewritten.**
+  A(i) did create one, flagging it was the right call, and the owner wrote the
+  sentence on 2026-08-30 — see the Status section. What is still true exactly
+  as written is the rest: neither A(ii) nor B adds a string, and the
+  over-capacity readout is still owed by somebody else.
 - **No production code is in this branch.** Each part is its own change after
   acceptance.
 

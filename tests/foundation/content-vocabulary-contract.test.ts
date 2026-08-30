@@ -46,7 +46,7 @@ import { SIMULATION_ENUM_GROUPS } from '../../src/content/simulation-message-key
  *    room instance's derived list. It names no capability at all -- it joins
  *    two sets -- so every declared capability is already load-bearing there,
  *    and none of them is dead.
- *  - `requiredObjectCapability` on a `PrisonerAction`
+ *  - `requiredObjectCapability` on an `ActionDefinition`
  *    (`src/simulation/prisoners/actions.ts`) and on an `AccommodationTarget`
  *    (`intake-system.ts`) names **one** capability as a literal, and that is
  *    what decides whether a prisoner can use a room for something.
