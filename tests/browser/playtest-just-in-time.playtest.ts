@@ -730,4 +730,63 @@ test('control: the same probe, against a purchase the player pressed Buy for', a
   }
   log(act, `CONTROL: the ON THE WAY block showed ${seen.size} distinct state(s) after a pressed Buy: ${JSON.stringify([...seen])}`);
   await observe(page, act, 'after a pressed Buy');
+
+  /*
+   * **The decisive half: both kinds of delivery in flight at once, in one
+   * block, at one instant.**
+   *
+   * Act 1's reading -- the block never appears for a just-in-time purchase --
+   * and this act's first half -- it appears within 438 ms for a pressed one --
+   * are still two separate sessions, and *"the samples missed a five-second
+   * window twice"* is a live alternative to *"the block does not show it"*.
+   * This removes the alternative by making the two deliveries share a window.
+   *
+   * Buy ten bricks and, before they land, drag a six-segment wall run. The
+   * run wants twelve bricks; the service subtracts stock (0) and everything
+   * already in flight (10, **including what the player bought**, which is the
+   * whole of ADR 0017 decision 7's *"holding is permitted, never required"*),
+   * so its deficit is 2 and it buys exactly 2. Two deliveries are then in
+   * flight together: `10 x Brick` that a press bought and `2 x Brick` that the
+   * game bought.
+   *
+   * So the block's row count at that instant is the answer, with no timing
+   * argument left in it: **two rows and act 1 was a sampling artifact; one row
+   * and the just-in-time delivery is invisible while a pressed one beside it
+   * is not.** The treasury delta is printed too, because 2 x 40 = 80 rather
+   * than 12 x 40 = 480 is the other half of the same claim.
+   */
+  await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+  const origin = await calibrate(page);
+  log(act, `calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
+  await armBuildable(page, 'wall-brick');
+  const beforeBoth = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
+  await page.locator('.hud-build__buy .ui-number__input').fill('10').catch(() => undefined);
+  const buyRowAgain = page.locator('.hud-build__buy');
+  if (await buyRowAgain.isHidden()) await page.locator('.hud-build__buy-toggle').click();
+  await page.locator('.hud-build__buy .ui-number__input').fill('10');
+  await page.locator('.hud-build__buy-submit').click();
+  await page.waitForTimeout(300);
+  const afterSecondBuy = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
+  log(act, `second Buy of 10 bricks: ${beforeBoth} -> ${afterSecondBuy}`);
+
+  const wallStart = { x: origin.originX + 12 * TILE + TILE / 2, y: origin.originY + 12 * TILE };
+  const wallEnd = { x: origin.originX + 18 * TILE - TILE / 2, y: origin.originY + 12 * TILE };
+  const beforeDrag = (await sentCommands(page)).length;
+  await drag(page, wallStart, wallEnd);
+  const placed = (await sentCommands(page)).slice(beforeDrag).filter((command) => command['type'] === 'PlaceBuildOrder');
+  const afterDrag = await settledTreasury(page, act, afterSecondBuy, 5000);
+  log(act, `wall run of ${placed.length} segments placed OVER 10 bricks already in flight: treasury ${afterSecondBuy} -> ${afterDrag} (delta ${afterDrag - afterSecondBuy})`);
+  log(act, `  a run that bought all 12 bricks itself would have cost 480; one that netted off the 10 in flight costs 80`);
+
+  const bothStarted = Date.now();
+  const bothSeen = new Set<string>();
+  while (Date.now() - bothStarted < 8000) {
+    const text = (await panelText(page, '.hud-build__deliveries')).replace(/\n+/g, ' | ');
+    if (!bothSeen.has(text)) {
+      bothSeen.add(text);
+      log(act, `  BOTH IN FLIGHT at t+${Date.now() - bothStarted}ms (tick ${await currentTick(page)}): ${JSON.stringify(text)}`);
+    }
+    await page.waitForTimeout(200);
+  }
+  log(act, `DECISIVE: states seen while a pressed delivery and a just-in-time delivery were both in flight: ${JSON.stringify([...bothSeen])}`);
 });
