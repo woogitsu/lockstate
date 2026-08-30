@@ -325,9 +325,43 @@ export interface ExcessResidentRelocationPort {
    * destination cannot be an unseeded one.
    */
   relocateExcessResidentsOf(instanceIds: readonly string[]): {
-    readonly relocated: readonly number[];
+    /**
+     * Who moved, and **into which instance**.
+     *
+     * The second field arrived with the notice ADR 0076 owed: the wording the
+     * owner approved names one prisoner and one room, so an entity id alone
+     * could fill neither placeholder. See `ExcessResidentRelocation` in the
+     * prisoner runtime for why the destination is reported rather than looked
+     * up again afterwards.
+     */
+    readonly relocated: readonly { readonly entityId: number; readonly toInstanceId: string }[];
     readonly stranded: readonly number[];
   };
+}
+
+/**
+ * What the player is told when a removal has moved somebody
+ * ([ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+ * decision A(i)).
+ *
+ * A second narrow port beside `ExcessResidentRelocationPort` rather than a
+ * return value this service reads, and for the same reason the first one is a
+ * port: a prisoner's *name* and a room's *message key* are two more things
+ * `src/simulation/objects/` would otherwise have to know about, on top of the
+ * question it actually asks. `createResidentRelocationNotice`
+ * (`src/simulation/events/resident-relocation-notice.ts`) implements it and
+ * the composition root holds both sides.
+ *
+ * **Optional, and absence means the removal is silent** -- which is what every
+ * fixture that builds this service by hand wants, and what shipped between
+ * PR #637 and this change.
+ *
+ * It is told only about residents who *moved*. A resident with nowhere to go
+ * is left where ADR 0028 decision 2 put them and the owner has approved no
+ * sentence about that state, so this service does not hand one over.
+ */
+export interface ExcessResidentRelocationNoticePort {
+  announceRelocations(relocated: readonly { readonly entityId: number; readonly toInstanceId: string }[]): void;
 }
 
 /** The orientation every placement gets, until a rotate control exists. See `ObjectOrientation`. */
@@ -348,6 +382,8 @@ export class ObjectPlacementService {
     private readonly rooms: ContentRegistry<RoomCatalogDefinition> = defaultRoomContentRegistry,
     /** ADR 0076 decision A(i). Absent in a fixture; wired to the prisoner runtime in a real session. See `ExcessResidentRelocationPort`. */
     private readonly residentRelocation?: ExcessResidentRelocationPort,
+    /** ADR 0076 decision A(i)'s notice. Absent in a fixture; wired to the events channel in a real session. See `ExcessResidentRelocationNoticePort`. */
+    private readonly relocationNotice?: ExcessResidentRelocationNoticePort,
   ) {}
 
   /**
@@ -658,7 +694,14 @@ export class ObjectPlacementService {
    */
   private relocateResidentsLeftWithoutAPlace(roomInstanceId: string | undefined): void {
     if (roomInstanceId === undefined) return;
-    this.residentRelocation?.relocateExcessResidentsOf([roomInstanceId]);
+    const outcome = this.residentRelocation?.relocateExcessResidentsOf([roomInstanceId]);
+    if (outcome === undefined) return;
+    // **The notice is on this line and not on either caller's**, so it reaches
+    // the player from `RemoveObject` and from `Undo` alike or from neither.
+    // A notice wired to the press alone would be silent on the route
+    // `tests/integration/economy-bed-recycling.test.ts` drives the recycling
+    // loop through, which is the route it matters most on.
+    this.relocationNotice?.announceRelocations(outcome.relocated);
   }
 
   /**
