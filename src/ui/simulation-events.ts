@@ -99,6 +99,15 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  *   three guards, and by `ASSAULT_SEVERITY_CEILING` it can never reach the
  *   threshold that seals a door. It is bad, and the prison is still the
  *   player's.
+ * - **`incidents.escape-succeeded` is `'danger'`, and it is the row the
+ *   paragraph above was already arguing for without having one to point at
+ *   (#683).** Every word of the escape-attempt entry -- irreversible, ADR 0061
+ *   decision 5, *"a prisoner who is gone"*, nothing about it recoverable -- is
+ *   a description of the *failure*, and until this row the channel only ever
+ *   graded the attempt. The attempt keeps `'danger'`, because at the moment it
+ *   opens the prison cannot know which way it ends; this is what the band says
+ *   when it ended the bad way. It is the only member of this table about an
+ *   outcome rather than an opening or a return to calm.
  * - **`incidents.all-clear` is `'info'`.** Nothing is wrong any more, which is
  *   the same thing `prisoners.discharged` says about a served sentence. It is
  *   also what stops a `'danger'` band standing over a calm prison for the rest
@@ -132,6 +141,10 @@ const EVENT_PRESENTATION: Readonly<
   'incidents.assault-opened': { labelKey: 'hud.alert.event.incidents.assault-opened', severity: 'warning' },
   'incidents.escape-attempt-opened': {
     labelKey: 'hud.alert.event.incidents.escape-attempt-opened',
+    severity: 'danger',
+  },
+  'incidents.escape-succeeded': {
+    labelKey: 'hud.alert.event.incidents.escape-succeeded',
     severity: 'danger',
   },
   'incidents.gang-retaliation-opened': {
@@ -426,6 +439,11 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     // two prisoners, an escape attempt always one, a retaliation's count has
     // no plural rule to render it with, and "all clear" is the absence of one
     // -- is argued in the schemas in `src/simulation/protocol/types.ts`.
+    // The escape's own sentence carries `{name}`, which is a message rather
+    // than a figure and is supplied by `eventParameterMessages` below --
+    // exactly as the relocation notice's two are, and for the same reason.
+    case 'incidents.escape-succeeded':
+      return {};
     case 'incidents.gang-retaliation-opened':
     case 'incidents.assault-opened':
     case 'incidents.escape-attempt-opened':
@@ -443,8 +461,30 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
  * *deferred* translation. See `HudMessageParameterViewModel` for why the view
  * model must not carry the finished text instead.
  *
- * **Only ADR 0076's relocation notice has any**, and both of its two are
- * message-valued for different reasons:
+ * **A `switch` over the discriminant rather than an early return, and that is
+ * the correction #683 paid for.** This opened with
+ * `if (event.type !== 'prisoners.relocated') return undefined;` while the
+ * relocation notice was the only member with a message-valued parameter. The
+ * research that settled #683's plumbing
+ * (`docs/research/2026-08-30-what-an-escape-says.md`) enumerated the sites a
+ * new event type forces -- `EVENT_PRESENTATION` above, `eventParameters`
+ * above, and the test fixture's `SAMPLE` -- and named this one as the site the
+ * compiler does **not** force: an event whose sentence carries `{name}` and
+ * whose branch nobody added here renders the literal placeholder, because
+ * `interpolate` deliberately leaves an unsubstituted one visible. It was
+ * handed over rather than fixed, on the reasoning that the change authoring
+ * such a sentence is the change that should close it. This is that change, and
+ * the shape that closes it is the one `eventParameters` already had: a
+ * `switch` exhaustive over the union, so the next event type does not compile
+ * until somebody has decided whether its sentence needs one.
+ *
+ * The measurement that the fix is real rather than stylistic:
+ * `tests/unit/ui-simulation-events.test.ts` asserts no rendered sentence
+ * contains `{`, for every type at once, and was watched failing on
+ * `incidents.escape-succeeded` before this `switch` existed.
+ *
+ * **Two members have message-valued parameters**, and the three parameters
+ * between them are message-valued for different reasons:
  *
  * - **`{room}`** is a room type, and `roomNameKey` is the catalog's own
  *   `nameKey` -- the same field `PrisonerRoomRefViewModel` already carries to
@@ -458,22 +498,58 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
  *   two answers to one question, and the second locale to disagree with
  *   English would find only one of them.
  *
+ * - **`incidents.escape-succeeded`'s `{name}`** is the same person-shaped
+ *   parameter as the relocation's, resolved through the same
+ *   `hud.regime.roster-name`, and it reuses that treatment rather than
+ *   authoring a second (#683). What differs is only the subject's fate: this
+ *   one is gone. Nothing here looks anybody up -- both halves are in the
+ *   payload -- so a departed entity id costs the sentence nothing. See the
+ *   schema in `src/simulation/protocol/types.ts` for why naming them is
+ *   nonetheless a narrowing of a rule rather than a free extension of one.
+ *
  * A prisoner with no name falls back to `hud.regime.roster-unnamed` --
  * "Prisoner 3" -- which is exactly what `formatPrisonerName` does for a roster
- * row, and is why the notice does not go silent for a session wired without an
- * identity registry. **Neither key is new copy.** The only string this change
- * authors is the sentence the owner approved.
+ * row, and is why neither sentence goes silent for a session wired without an
+ * identity registry. **No key here is new copy.** The only strings these two
+ * changes author are the two sentences the owner approved.
  */
 function eventParameterMessages(
   event: SimulationEvent,
 ): Readonly<Record<string, HudMessageParameterViewModel>> | undefined {
-  if (event.type !== 'prisoners.relocated') return undefined;
-  const { name } = event;
-  return {
-    name:
-      name === undefined
-        ? { key: HUD_MESSAGE_KEY.regimeRosterUnnamed, parameters: { id: event.entityId } }
-        : { key: HUD_MESSAGE_KEY.regimeRosterName, parameters: { given: name.givenName, family: name.familyName } },
-    room: { key: event.roomNameKey },
-  };
+  switch (event.type) {
+    case 'prisoners.relocated':
+      return { name: prisonerName(event.entityId, event.name), room: { key: event.roomNameKey } };
+    case 'incidents.escape-succeeded':
+      return { name: prisonerName(event.entityId, event.name) };
+    // Every sentence whose parameters are figures or nothing at all.
+    // `eventParameters` above is where those are decided; listing them here
+    // rather than falling through a `default` is what makes the next event
+    // type fail to compile until somebody has answered this question too.
+    case 'economy.wages-unpaid':
+    case 'prisoners.discharged':
+    case 'incidents.riot-opened':
+    case 'incidents.gang-retaliation-opened':
+    case 'incidents.assault-opened':
+    case 'incidents.escape-attempt-opened':
+    case 'incidents.all-clear':
+      return undefined;
+  }
+}
+
+/**
+ * One prisoner, as the sentence around them needs to read them.
+ *
+ * Shared by the two members that name somebody rather than duplicated into
+ * both, because the fallback is the part that would drift: a second copy that
+ * dropped the notice for an unnamed prisoner, or named them some other way,
+ * would be a second answer to a question `formatPrisonerName` already
+ * answered once for the roster.
+ */
+function prisonerName(
+  entityId: number,
+  name: { readonly givenName: string; readonly familyName: string } | undefined,
+): HudMessageParameterViewModel {
+  return name === undefined
+    ? { key: HUD_MESSAGE_KEY.regimeRosterUnnamed, parameters: { id: entityId } }
+    : { key: HUD_MESSAGE_KEY.regimeRosterName, parameters: { given: name.givenName, family: name.familyName } };
 }

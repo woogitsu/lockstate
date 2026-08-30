@@ -45,6 +45,13 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   'incidents.riot-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.riot-opened', participantCount: 12 }),
   'incidents.assault-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.assault-opened' }),
   'incidents.escape-attempt-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.escape-attempt-opened' }),
+  'incidents.escape-succeeded': (sequence) => ({
+    sequence,
+    tick: 100,
+    type: 'incidents.escape-succeeded',
+    entityId: 3,
+    name: { givenName: 'Ada', familyName: 'Bell' },
+  }),
   'incidents.gang-retaliation-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.gang-retaliation-opened' }),
   'incidents.all-clear': (sequence) => ({ sequence, tick: 100, type: 'incidents.all-clear' }),
   'prisoners.relocated': (sequence) => ({
@@ -106,6 +113,20 @@ describe('what the prison says when nothing went wrong', () => {
       );
       expect(sentence, `${type} reaches the player as its own key`).not.toContain('hud.alert.event');
       expect(sentence.trim().length, `${type} says nothing at all`).toBeGreaterThan(0);
+      // **The one assertion in this loop that is not about the catalog, and
+      // the one that guards a path the compiler does not.** `EVENT_PRESENTATION`,
+      // `eventParameters` and `SAMPLE` above all fail to compile for an event
+      // type nobody has decided about; `eventParameterMessages` opened with an
+      // early return on a single type, so a sentence carrying `{name}` whose
+      // branch nobody added rendered the literal placeholder -- and the two
+      // assertions above passed on it, because "{name} broke out" contains
+      // neither `hud.alert.event` nor nothing at all. `interpolate`
+      // (`src/services/localization/format.ts`) deliberately leaves an
+      // unsubstituted placeholder visible, so this is what a player would
+      // actually read. Asserted for **every** type rather than for the one
+      // that provoked it (#683), which is the half `not.toContain('{')` in the
+      // ADR 0076 test below could not do.
+      expect(sentence, `${type} leaves a placeholder on screen`).not.toContain('{');
     }
     expect(missing, 'every event key must be in the catalog that ships').toEqual([]);
   });
