@@ -579,8 +579,11 @@ work are not.**
   rather than what it would cost. Also recorded in
   `docs/HUD_PROJECTIONS.md` gap 33.
 - **`SimulationEventLog`** (`SimulationRuntime.events`, #507). What the prison
-  just did — a sentence that ended, a payday it could not meet — published on
-  `simulation/event` and rendered on the events band and in the alerts list.
+  just did — a sentence that ended, a payday it could not meet, a prisoner
+  moved into a bed that exists after the player took theirs away
+  ([ADR 0076](./adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+  decision A(i)) — published on `simulation/event` and rendered on the events
+  band and in the alerts list.
   Excluded on `RefusalLog`'s reasoning above and one addition of its own: an
   event is a statement that something happened *now*, so a loaded prison
   announcing last week's discharges would be describing a tick the player is
@@ -593,6 +596,11 @@ work are not.**
   sentence ticks are carried in the prisoner component arrays, so a sentence
   that ends after a load is announced when it ends. The log is therefore
   derivable-forward rather than lost.
+  ADR 0076's relocation notice is the one member where the *outcome* rather
+  than the condition is what persists — the resident's new accommodation is in
+  the save — so a restored prison has nothing to re-announce and nothing to
+  say: the move already happened and the player was told at the time, or the
+  session it happened in has gone.
   **The incident events of issue #555 are the one member of the channel this
   argument holds less neatly for, and it is worth stating rather than
   discovering.** `IncidentLog` *is* persisted, so an incident that was open
