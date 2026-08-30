@@ -705,10 +705,23 @@ const authoredMessages: Readonly<Record<string, string>> = {
    *
    * `hud.security.roster-hint` says the consequence rather than the mechanism,
    * and it says the *money* half because that is the half a player pressing this
-   * is acting on: `hud.security.hire-hint` two blocks up already told them the
-   * wage is taken on hire, and `PayrollSystem` goes on taking it every in-game
-   * day until this control is pressed. It deliberately does not promise a refund
-   * or a severance, because there is neither.
+   * is acting on: `hud.security.hire-hint` two blocks up already priced the
+   * wage, and `PayrollSystem` goes on taking it every in-game day until this
+   * control is pressed. It deliberately does not promise a refund or a
+   * severance, because there is neither.
+   *
+   * **That sentence used to end "already told them the wage is taken on hire",
+   * and it was describing a hint that was wrong** -- *"Taken from the treasury
+   * on hire"* said once and the system charged daily, which is the defect issue
+   * #639 ruling 2 corrected. Both directions are marked rather than
+   * overwritten, because the reason this hint says the money half has not
+   * changed; only the sentence it leans on has.
+   *
+   * Since the same ruling, `hud.security.roster` is also a header with a figure
+   * beside it: the whole roster's standing daily bill, as a trailing element on
+   * the section, which is collapsed. The word this hint and the hire hint share
+   * -- *wage* -- is what ties that bare figure to a category the player has
+   * already met with a price on it.
    */
   'hud.security.roster': 'On the payroll',
   'hud.security.roster-dismiss': 'Dismiss',
