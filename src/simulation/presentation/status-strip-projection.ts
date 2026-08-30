@@ -412,12 +412,20 @@ function accommodationCapacityOf(source: RoomProjectionSource, policy: Accommoda
  * with**, and it is marked rather than quietly dropped. It read: "Nothing here
  * builds a per-actor object, so it is safe to re-project every frame at the
  * 5,000-actor tier." No per-actor *object* is built and that half stands, but
- * `RoomInstanceRegistry.residentIds` allocates and sorts one array of entity
- * ids per call, which does scale with the population. It is a 200-element sort
+ * the accessor the accrual walks allocates and sorts one array of entity ids
+ * per call, which does scale with the population. It is a 200-element sort
  * at the reference tier and a 5,000-element one at the top tier; the
  * alternative -- deriving the chip from `totalOccupancy` and the flat rate --
  * is not available any more, because the rate is no longer flat and a chip
  * derived that way would promise money the day boundary declines to pay.
+ *
+ * **That accessor is `residentIdsWithExistingPlace` and this paragraph named
+ * `residentIds` until now**, which was true when it was written and stopped
+ * being true when issue #585 split the two (`income.ts:405-411`). The cost
+ * class is identical -- `O(P log P)` in housed prisoners, one array -- so
+ * nothing this note claims about performance moves; what was wrong was the
+ * name, and a reader chasing it would have landed on an accessor the income
+ * line no longer reads.
  */
 export function projectStatusStrip(source: StatusStripSource, options: StatusStripOptions = {}): StatusStripViewModel {
   const rooms = options.rooms ?? defaultRoomContentRegistry;
