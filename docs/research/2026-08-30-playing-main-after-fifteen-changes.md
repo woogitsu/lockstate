@@ -13,6 +13,26 @@ with `git lfs checkout` run first — 62 objects, 93 MB, confirmed with
 `docs/AGENT_WORKFLOW.md` records a browser playtest that ran green with no actor
 sprites on screen at all.
 
+**Whether anything else was on the machine, sampled throughout rather than
+once.** `docs/AGENT_WORKFLOW.md` records an integrator who checked `ps` before a
+run and drew a conclusion about the run; so a sampler wrote
+`ps -eo args | grep -c "[p]laywright/test/cli"` and the configs behind it every
+sixty seconds for the whole of both runs, 41 samples. **Another agent's
+`tests/browser/playwright.config.ts` suite was on the machine for five of
+them**, all inside run B (17:21–17:27 UTC), and one 18-second
+`vitest run tests/foundation/` of this pass's own was at 17:21:29.
+
+**It cost nothing measurable, and that is a number rather than an
+impression.** Every figure in this record is a tick, a treasury amount or panel
+text, and the tick is what the contention could have moved. At ×4 the clock
+defines 80 ticks per wall second (`FixedStepClock(50)`,
+`src/simulation/worker/state-machine.ts:216`, times a speed of 4). Measured
+across the contended window in run B — tick 11,686 at t+167 s to tick 31,912 at
+t+420 s — **79.9 ticks per wall second**; measured across the whole of run A's
+uncontended act 3 — tick 8,409 at t+126 s to tick 118,613 at t+1,503 s —
+**80.03**. So the contention shortened neither run's horizon in any way this
+record depends on.
+
 The brief was the owner's, in their own words: *"znajdź bugi i błędy grając, bo
 ja nie mogłem postawić więzienia itp grając sam"* — find defects **by playing**
 — under the standing design directive *"gra ma być łatwa przyjazna do grania, a
