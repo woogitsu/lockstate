@@ -861,7 +861,7 @@ extending it, and it is here because the brief asked for it to be confirmed on
 today's `main` rather than assumed. **It is the earliest thing a player meets
 and it was live at `898a16a` in both runs.**
 
-### And it stopped being true while this pass was running
+### And it stopped being true while this pass was running — this section is history, not a live defect
 
 **VERIFIED, `git log`.** [#640](https://github.com/matmaxalez/lockstate/issues/640)
 landed on `main` as **`a87b0d3`, *"Buy a build order's materials when it is
@@ -871,16 +871,34 @@ runs still measured the old behaviour, because both play `898a16a`, which is
 the commit this record names at the top and the tree the worktree is checked
 out at.
 
-So the honest form of this section is: *the defect the owner originally
-reported was still live on the commit this pass played, and is not live on
-`main` any more.* Whether `a87b0d3` actually removes it from a player's route
-is not something this record measured — it played a commit that predates it —
-and the way to find out is to run this same act 1 on `main` at `402a420` or
-later. **That is the sentence this section would otherwise have rotted into
-within the hour**, and marking it is cheaper than letting a reader discover it.
+So the honest form of this section is blunt: **§5.1 describes a game that no
+longer exists.** It is a measurement of `898a16a`, kept because that is the
+commit the rest of this record plays and because the owner's original complaint
+was about exactly this; it is **not** a statement about `main`.
 
-`docs/research/README.md`'s standing rule applies exactly here: *"when the code
-moves on, a record here does not become wrong, it becomes older."*
+**And the successor measurement already exists, so this section does not need a
+re-run and should not get one.** `16d8b2a` — *"The naive build route works now
+— played six times, and one claim of mine refuted (#655)"* — carries
+`docs/research/2026-08-30-a-wall-that-buys-itself.md`, which played the route
+**without ever calling `buy()`** on the post-#640 tree, six times, and answers
+it:
+
+> **The wall does get built, with no procurement press — the answer to #627**
+> […] `[A1 +75.3s] TREASURY AT THE PRESS: 25000 -> 24520 (delta -480) for 6 wall segment(s)`
+
+and
+
+> **What stops a player next: nothing did, and that is the finding** […] on
+> this branch, **the naive route completes.**
+
+Read the two together and the shape is: the money now leaves the treasury on the
+press that draws the wall, so *"6 waiting · 0 being built"* forever is a state
+`main` cannot produce any more. **Anyone quoting §5.1 as a live defect is
+quoting the wrong record; quote that one.**
+
+`docs/research/README.md`'s standing rule is what makes keeping this section
+right rather than deleting it: *"when the code moves on, a record here does not
+become wrong, it becomes older."*
 
 ### 5.2 The control that looks like "start drawing" is the one that stops it, for a second room
 
@@ -1122,7 +1140,7 @@ record cited. That is the handover, not a request for permission.
 number of furnished beds, or one in which the state credits anything other than
 `occupiedPlaces × 300` less withholding. Neither occurred in 129 samples.
 
-### Five handovers, none of them mine to close
+### Five handovers, none of them mine to close — and one of them already closed by somebody else
 
 1. **A sentence, anywhere, that says how long a prisoner is staying** (§2).
    The surface is the roster row, the shape is
@@ -1130,11 +1148,12 @@ number of furnished beds, or one in which the state credits anything other than
    words are the owner's.
 2. **Anything at all that tells a player a review happened** (§3). The
    simulation has no event type for it and the HUD has no row for it.
-3. **#640** (§5.1) — **closed while this pass was running**, by `a87b0d3` at
-   17:03 UTC, between run A's act 3 and run B's act 1. Both runs played
-   `898a16a` and measured the old behaviour. What is handed over is not the
-   defect but the *check*: run this file's act 1 on `main` at `402a420` or
-   later and see whether the queue still parks.
+3. ~~**#640** (§5.1)~~ — **nothing to hand over.** It was closed by `a87b0d3`
+   while this pass was running, and the check this row originally asked for has
+   already been done by somebody else: `16d8b2a` played the route six times on
+   the post-#640 tree and found that *"the naive route completes"*. Left in the
+   list, struck through, because a handover that quietly disappears reads as one
+   that was forgotten.
 4. **The Rooms arm control for a second room** (§5.2). Not a copy question —
    the label is already honest — so this one is a design question about the
    fold, and it belongs with whoever owns `src/ui/hud/rooms-panel.ts`.
