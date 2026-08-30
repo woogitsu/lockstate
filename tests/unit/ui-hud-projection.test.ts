@@ -298,6 +298,26 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
     // owner's matching wording rather than a second phrasing for one fact.
   });
 
+  it('counts places and not capacity, in the prison where those differ', () => {
+    /*
+     * Issue #609's second correction, as a case rather than as prose: **two
+     * cells of two beds, four prisoners, all four assigned into cell A.**
+     *
+     * Capacity is 4, so `prisoners - accommodationCapacity` -- the derivation
+     * the protocol's own comment once suggested, and the one
+     * `prisonersWithoutBed` argues at length that it must not be -- says
+     * **0 unhoused**. Cell A holds `min(4, 2) = 2` places and cell B holds
+     * none, so two prisoners have nowhere to sleep. The subtraction breaks
+     * because capacity is not fungible across instances;
+     * `occupiedPlaces` is a count of prisoners and does not care.
+     */
+    expect(metric(counts({ prisoners: 4, occupiedPlaces: 2, prisonerCapacity: 4 }), 'prisoners').badge).toEqual({
+      tone: 'warning',
+      textKey: HUD_MESSAGE_KEY.prisonersWithoutBed,
+      parameters: { count: 2 },
+    });
+  });
+
   it('draws no badge at all when everybody has a bed, rather than a permanent "0 with no bed"', () => {
     // `coverageTone`'s rule, applied to a chip that had no badge until now:
     // a status strip where several things are always on teaches players to
