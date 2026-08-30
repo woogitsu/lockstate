@@ -6,6 +6,7 @@ import {
   buy,
   calibrate,
   centreOf,
+  countsSeries,
   currentClock,
   currentTick,
   drag,
@@ -522,6 +523,28 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
 
     const admittedAt = await currentTick(page);
     log(`=== all twelve admitted by tick ${admittedAt} (in-game day ${Math.floor(admittedAt / DAY_LENGTH_TICKS) + 1}) ===`);
+
+    /*
+     * **The tick each admission landed on**, reconstructed from the counts
+     * publications rather than from the wall clock, because a departure minus
+     * an admission is a *sentence* and a departure minus "the tick the last of
+     * twelve presses finished" is not.
+     *
+     * Run A did not have this and its first departure could only be pinned to
+     * a 15.4-15.8 day band: twelve presses take about twelve wall seconds, and
+     * at x4 that is ~960 ticks of spread between the first arrival and the
+     * last. `sentenceEndTick` is `classification tick + sentenceLengthTicks`
+     * and classification is two stage advances (~10 ticks) after the press, so
+     * with the press ticks in hand a departure resolves to a whole number of
+     * in-game days instead of a band.
+     */
+    const admissionTicks = (await countsSeries(page))
+      .reduce<{ readonly at: number; readonly count: number }[]>((steps, s) => {
+        const previous = steps[steps.length - 1]?.count ?? 0;
+        return s.prisoners > previous ? [...steps, { at: s.tick, count: s.prisoners }] : steps;
+      }, [])
+      .map((step) => `${step.count}@${step.at}`);
+    log(`admissions, as (population@tick) from the counts publications: ${JSON.stringify(admissionTicks)}`);
     log(`chips: ${await allChips(page)}`);
     log(`PRISONERS chip: ${JSON.stringify(await prisonersChip(page))}`);
     log(`event band: ${JSON.stringify(await eventBand(page))}`);
