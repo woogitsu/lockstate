@@ -358,6 +358,164 @@ reception stage**, ordered against the sentence draw and the classification
 draw. That is a determinism-fingerprint change and a stream registration, not a
 constant edit — a further reason it belongs in its own ruling.
 
+## The other shape, measured beside this one
+
+**This section is what the owner's ruling of 2026-08-30 asked for, and it exists
+because the table above cannot be chosen from**: *"Every figure in ADR 0080 was
+taken with `priorIncidents` pinned at 0. **Nothing has measured the two
+mechanisms together**"*. The whole record — per-seed figures, the harness, and
+the validation that it reproduces this document's own Measurement table exactly
+— is
+[the 2026-08-30 research note](../research/2026-08-30-both-shapes-measured-together.md).
+What follows is the part a decision needs.
+
+**Method, in one paragraph.** ADR 0080's decision in force; the same three
+prison shapes as *Measurement*; 300 in-game days over six seeds, and the
+well-built prison again over **600 days and ten seeds**; `priorIncidents` varied
+**on the `AdmitPrisoner` command**, which `admitPrisonerSchema` has always
+accepted, so **no production constant moves and nothing is wired** —
+`src/main.ts:899` still reads `{ priorIncidents: 0 }`. Each contraband item is
+attributed to the producer that minted it by comparing
+`provenance.introducedAtTick` with the holder's classification tick, which is
+what makes the interaction question answerable exactly rather than by a
+counterfactual run.
+
+### The ruling's expectation is refuted: the two producers are mutually exclusive
+
+The ruling reasoned that *"more prisoners arrive at tier 2 and reach tier 3
+sooner — which feeds the same review gate ADR 0080 just armed"*. The first half
+is true; the second does not follow, and the reason is decision 1's own guard:
+the review asks the introduction question only when
+`assessment.riskTier > previousTier`
+(`src/simulation/prisoners/classification-review-system.ts:364`). **A prisoner
+who *arrives* at tier 3 is never *raised into* tier 3**, so a non-zero
+`priorIncidents` moves prisoners **from** the review producer **to** the intake
+producer instead of adding to both.
+
+Measured in the neglected prison, four seeds, 1,196 admissions per candidate:
+
+| `priorIncidents` | weapons | of which intake / review | escape attempts | riots | ever tier 3 |
+| --- | --- | --- | --- | --- | --- |
+| **always 0 (today)** | 74 | 0 / 74 | 223 | 592 | 1,129 |
+| 90 / 8 / 2 | 74 | 0 / 74 | 224 | 592 | 1,129 |
+| 80 / 15 / 5 | 78 | 0 / 78 | 223 | 590 | 1,131 |
+| 70 / 25 / 5 | 78 | 1 / 77 | 222 | 590 | 1,131 |
+| 60 / 30 / 10 | 74 | 3 / 71 | 224 | 590 | 1,132 |
+| 50 / 35 / 15 | 70 | 2 / 68 | 225 | 590 | 1,131 |
+| always 1 | 79 | 3 / 76 | 224 | 591 | 1,132 |
+| always 2 | 93 | 38 / 55 | 235 | 589 | 1,153 |
+
+**The totals are flat and the split swings.** Riots move by three across the
+whole range; escape attempts by twelve, which is less than one seed's noise
+(the four seeds at `always 0` give 56 / 56 / 55 / 56). The under-built prison
+says the same: weapons 43, 51, 44, 42, 39, 42, 39, 39. **The reason is
+saturation** — the neglected prison already promotes 94 % of its admissions, so
+opening the gate earlier changes *when* a prisoner is asked, not *whether*.
+
+**So this document's *"30 → 56 escape attempts"* is the whole of the change in a
+failing prison, and no distribution adds to it.**
+
+### The well-run prison can tell — and it is the priors half it can tell, not this one
+
+Decision 2 rests on *"A well-run prison should not be able to tell this decision
+happened."* Re-measured at seven times the exposure it was originally taken at —
+ten seeds, 600 in-game days, 2,990 admissions per candidate:
+
+| `priorIncidents` | weapons | intake / review | contraband | of which review | escape attempts | **escaped** | riots | ever tier 3 | seeds with a weapon |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **always 0 (today)** | **0** | 0 / 0 | 414 | **0** | **0** | **0** | 0 | 1 | **0 / 10** |
+| 90 / 8 / 2 | 2 | 2 / 0 | 427 | 1 | 2 | **0** | 0 | 25 | 2 / 10 |
+| 80 / 15 / 5 | 10 | 9 / 1 | 471 | 6 | 9 | **0** | 0 | 84 | 8 / 10 |
+| 70 / 25 / 5 | 10 | 9 / 1 | 478 | 2 | 9 | **0** | 0 | 92 | 7 / 10 |
+| 60 / 30 / 10 | 16 | 14 / 2 | 503 | 5 | 14 | **0** | 0 | 160 | 8 / 10 |
+| 50 / 35 / 15 | 18 | 10 / 8 | 546 | 18 | 10 | **0** | 0 | 215 | 10 / 10 |
+| always 1 | 9 | 8 / 1 | 591 | 6 | 8 | **0** | 0 | 104 | 7 / 10 |
+
+**Three things, and the first strengthens this document rather than correcting
+it.**
+
+- **At `priorIncidents: 0` the invariant holds far beyond what was claimed for
+  it**: zero weapons, zero escape attempts, zero riots and **zero items from the
+  review producer** over 2,990 admissions and 6,000 in-game days, with exactly
+  one prisoner in ten runs ever reaching tier 3. *What would change my mind*
+  named four seeds of one shape as the weakness; ten seeds of twice the length
+  do not move it.
+- **Every non-zero candidate breaks it, and four of every five weapons that
+  break it — 52 of 65 — were introduced at intake.** The review producer
+  contributed 1 item of 427 at `90/8/2`, 6 of 471 at `80/15/5`, 5 of 503 at
+  `60/30/10` and 18 of 546 at `50/35/15`. **Decision 2's guarantee survives the
+  priors change intact**; what a well-run prison can now tell is that its
+  *intake* changed.
+- **It never loses anybody.** `escaped` is **0** in all seventy of those runs and
+  in all forty-eight 300-day well-built runs, `always 2` included. The escape
+  attempts a weapon opens are all contained — the general form of *One guard is
+  the whole difference* below.
+
+### One correction to this document, in both directions, and a dominance result
+
+*The other shape, priced* says: **"Every intermediate distribution moves tiers 1
+and 2 far more than tier 3."** **The tier-2 half stands; the tier-1 half does
+not, and is corrected here rather than overwritten.** Tier 1 is 33.33 % today
+and 33.27, 33.18, 33.18, 33.03, 32.88, 33.33 and 30.30 % across the eight
+candidates — **pinned within a point everywhere except `always 2`**, because the
+screening variance is uniform over `{-1, 0, +1}`. Only tier 2 is collateral.
+
+With tier 1 out of it the trade is one ratio, **tier-2 points spent per tier-3
+point bought**, and it says something the original table did not:
+
+| distribution | +t2 | **+t3** | t2 per t3 |
+| --- | --- | --- | --- |
+| 90 / 8 / 2 | 3.03 | **0.97** | 3.12 |
+| 80 / 15 / 5 | 6.06 | **2.27** | **2.67** |
+| 70 / 25 / 5 | 9.09 | **2.58** | 3.52 |
+| 60 / 30 / 10 | 12.12 | **4.55** | **2.66** |
+| 50 / 35 / 15 | 15.15 | **6.52** | 2.32 |
+| **always 1** | 30.30 | **3.03** | **10.00** |
+| always 2 | 30.30 | **36.36** | 0.83 |
+
+**`always 1` spends ten tier-2 points per tier-3 point, nearly four times the
+worst weighted candidate.** This document calls it *"the smallest change that
+gives the fifth slot a producer at all"* — true of the **edit**, and not of the
+**cost**. **`60/30/10` strictly dominates it**, in the enumeration and in the
+measurement alike: more tier 3 (4.55 % vs 3.03 %; 160 prisoners vs 104), more
+weapons (16 vs 9), and **less** total contraband (503 items vs 591), with
+`escaped` 0 and riots 0 in both.
+
+### The costed choice, which is the owner's to make
+
+**Recommended: `60/30/10`** — 60 % of arrivals with no prior incident, 30 % with
+one, 10 % with two. **This document still decides nothing** (decision 3's second
+half, and the ruling's own *"Not decided: the magnitude"*); it is a costed
+recommendation for [#29](https://github.com/matmaxalez/lockstate/issues/29).
+
+Why that one, in the order it decides the question:
+
+1. **The number is a choice about the well-run prison and nothing else** — the
+   failing prisons cannot feel any candidate below `always 2`.
+2. **A prison that promotes nobody still cannot produce a weapon** under
+   decision 1 alone, which is the 0 in the `always 0` row above and the half of
+   the promise the ruling's second shape exists to keep.
+3. **`60/30/10` closes it at a rate that exists without becoming the game**: one
+   weapon per ~190 admissions, 8 of 10 well-run prisons seeing one within 600
+   in-game days. `90/8/2` reaches 2 of 10, which is barely a producer.
+4. **The high-risk regime stays a consequence**: 4.55 % of arrivals at tier 3,
+   against `always 2`'s 36.36 % — and `always 2` measured in the *well-built*
+   prison doubles its contraband, 126 → 283, with 23 escape attempts.
+5. **It never costs a well-run player a prisoner**, measured.
+6. **It is not dominated**, and `always 1` is.
+
+**The conservative alternative is `80/15/5`** — 10 weapons rather than 16, tier
+2 at 9.09 % rather than 15.15 %, the best ratio of the safe candidates. The
+evidence supports both; the difference is a taste about frequency, which is the
+part that is not this document's.
+
+**What is weakest in all of it:** nothing here was measured in a browser, and
+**no module under `src/ui/` renders a contraband category** — a confiscated
+weapon and a confiscated phone are the same event on screen. So *"one weapon per
+370 in-game days"* is a claim about a registry, not about anything a player
+notices, and the frequency argument in point 3 is the softest part. A readout
+that names what was found would change it.
+
 ## Measurement
 
 Eleven prisons, 300 in-game days each (720,000 ticks), `priorIncidents: 0`
