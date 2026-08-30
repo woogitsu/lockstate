@@ -156,16 +156,36 @@ import { HUD_TAB_IDS, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
  *    opposite reason: it hides itself before it dispatches, so the group never
  *    sees it hold focus and the hand-off has to come from the panel.
  *
+ * 16. **The status strip shows every chip the screen has room for.** The
+ *    metrics row is the strip's only flexible member, so everything else on
+ *    that line is subtracted from it -- and on the assembled page that is
+ *    727.4px, a third of it the brand slot `src/main.ts` fills and
+ *    `ui-harness.ts` leaves empty. At 768px the row was 41px wide and showed
+ *    **none** of its eight chips, with the scrollbar suppressed in both
+ *    engines so nothing said so (#634). Only the assembled page carries the
+ *    chrome that causes it: #634 measured 524px on the harness against 173px
+ *    here, same viewport.
+ *
  * Deliberately NOT here, because a headless test already proves it and a
  * browser test that repeats one costs a minute of CI and adds no evidence:
  * the tab/collapse state machine, the view-model → display mapping and the
  * async-action gate (`tests/unit/ui-*.test.ts`); the HUD's computed font
- * stack, responsive layout and intent reporting
- * (`tests/browser/ui-shell.spec.ts`, which drives the same real `mountHud`);
+ * stack and intent reporting (`tests/browser/ui-shell.spec.ts`, which drives
+ * the same real `mountHud`);
  * camera transforms, depth ordering, pose selection, pivot placement and the
  * world projection (`src/rendering/**` unit tests, all Phaser-free by
  * design); and atlas manifest/registry schema rejection
  * (`tests/contract/runtime-atlas-validation.test.ts`).
+ *
+ * **That list used to include "responsive layout", and #634 refuted it rather
+ * than carving out an exception.** The reason it was there is sound -- the
+ * harness "drives the same real `mountHud`" -- and it is not sufficient: the
+ * harness mounts the same *HUD* into a different *page*, and the strip's
+ * layout is decided by what the page put in `brandSlot`. It is marked here
+ * rather than overwritten because the reasoning that put it there will look
+ * correct again to the next reader. Responsive claims that do not depend on
+ * the composition root still belong in `ui-shell.spec.ts`; claim 16 is the
+ * one that does.
  *
  * The one case this file previously left open is now closed. `src/main.ts`
  * promises, in its own comments, that a browser which cannot start the
@@ -8195,6 +8215,145 @@ test.describe('the assembled application', () => {
     }
   });
 
+  /**
+   * **The status strip is a readout at every viewport (#634).**
+   *
+   * WHY THIS IS HERE AND NOT IN `ui-shell.spec.ts`. That file owns the HUD's
+   * responsive layout, and the header of this one says so -- *"the HUD's
+   * computed font stack, responsive layout and intent reporting"* is listed
+   * under "Deliberately NOT here". **For the status strip that sentence is
+   * wrong, and this test is the correction rather than an exception to it.**
+   * `ui-harness.ts`'s `mountHudShell` never touches `HudHandle.brandSlot` --
+   * measured, that slot is **0px wide with 0 children** on the harness page --
+   * while `src/main.ts` puts the brand badge *and* the interface-scale
+   * control in it, which measures **351.9px** on the assembled page. That is
+   * a third of the strip's fixed chrome (727.4px in total) present on one
+   * page and absent from the other, and it is why #634 read the metrics row
+   * at 524px on the harness and **173px on the real page at the same
+   * viewport**. A responsive claim about the strip is therefore a claim about
+   * the assembled page, and only this file loads one.
+   *
+   * WHAT IT ASSERTS, AND WHY NOT A PIXEL COUNT. `.hud-strip__metrics` is
+   * `overflow-x: auto` with the scrollbar suppressed in both engines
+   * (`hud.css`), so a chip that does not fit is not merely small -- it is
+   * *absent*, with nothing on screen saying so. Before this test existed the
+   * strip showed **zero of its eight chips at 768px** in a 41px box, and
+   * every browser test in the repository was green.
+   *
+   * So the property, not the number:
+   *
+   *   > **no chip is cut off by anything except the width of the screen.**
+   *
+   * The screen's width is what the strip's own content box says it is, and
+   * how many chips fit in it is computed from the chips' own measured widths
+   * -- so `fitsInStripWidth` and `fullyVisible` are two independent readings
+   * of the same page that must agree. An assertion on `clientWidth === 1193`
+   * would pin an accident of eight labels in one locale; this one holds for
+   * any number of chips of any width, and fails the moment something on the
+   * strip takes room the readout needed.
+   *
+   * It is deliberately satisfiable at 375px, where eight chips *cannot* fit:
+   * 1101px of content into 359px is not a breakpoint problem, and #634 rules
+   * out both a scroll affordance and prioritising a subset. What the property
+   * demands there is that the row shows every chip the phone has room for --
+   * two -- rather than being squeezed to a fifth of that by a clock and a
+   * transport sharing its line.
+   */
+  test('shows every status chip the screen has room for, at every viewport (#634)', async ({ page }) => {
+    await openApp(page);
+
+    /**
+     * Nine widths, not the five the rest of this suite visits.
+     *
+     * #634's curve is not monotonic -- it recovers *below* the old 720px
+     * breakpoint (600px showed 4 chips where 900px showed 1) -- so a list
+     * that skipped the middle would have reported the two ends looking fine.
+     * 768 and 1440 are the two that matter: the first is the worst point on
+     * that curve and the second is an ordinary laptop that still lost three
+     * chips.
+     */
+    const STRIP_VIEWPORTS = [
+      [1920, 1080],
+      [1600, 900],
+      [1440, 900],
+      [1280, 720],
+      [1024, 768],
+      [900, 600],
+      [768, 1024],
+      [600, 800],
+      [375, 812],
+    ] as const;
+
+    for (const [width, height] of STRIP_VIEWPORTS) {
+      await page.setViewportSize({ width, height });
+
+      const reading = await page.evaluate(() => {
+        const strip = document.querySelector<HTMLElement>('.hud-strip');
+        const metrics = document.querySelector<HTMLElement>('.hud-strip__metrics');
+        if (strip === null || metrics === null) return null;
+
+        const chips = [...metrics.querySelectorAll<HTMLElement>('[data-metric]')];
+        const metricsBox = metrics.getBoundingClientRect();
+
+        // A chip counts as on screen only if *both* its edges are inside the
+        // scroll container's visible box. Half a chip is the failure #634 is
+        // about, not a partial success. The half-pixel tolerance is for
+        // subpixel layout, and is far below one character of a label.
+        const fullyVisible = chips.filter((chip) => {
+          const box = chip.getBoundingClientRect();
+          return box.left >= metricsBox.left - 0.5 && box.right <= metricsBox.right + 0.5;
+        }).length;
+
+        // How many chips the *strip* has room for, from the chips' own
+        // measured widths and the gap the stylesheet actually resolved --
+        // nothing here is copied from `hud.css`. Leading chips, because the
+        // row is laid left to right and a chip is only reachable by scrolling
+        // past the ones before it.
+        const stripStyle = getComputedStyle(strip);
+        const stripContentWidth =
+          strip.getBoundingClientRect().width -
+          Number.parseFloat(stripStyle.paddingLeft) -
+          Number.parseFloat(stripStyle.paddingRight);
+        const gap = Number.parseFloat(getComputedStyle(metrics).columnGap);
+
+        let used = 0;
+        let fitsInStripWidth = 0;
+        for (const chip of chips) {
+          const next = used === 0 ? chip.getBoundingClientRect().width : used + gap + chip.getBoundingClientRect().width;
+          if (next > stripContentWidth + 0.5) break;
+          used = next;
+          fitsInStripWidth += 1;
+        }
+
+        return {
+          chips: chips.length,
+          fullyVisible,
+          fitsInStripWidth,
+          metricsClientWidth: metrics.clientWidth,
+          metricsScrollWidth: metrics.scrollWidth,
+          stripContentWidth: Math.round(stripContentWidth * 10) / 10,
+        };
+      });
+
+      expect(reading, `the status strip is not on the page at ${width}x${height}`).not.toBeNull();
+      const at = `${width}x${height}`;
+
+      // The property. Every chip the strip is wide enough to show is shown --
+      // so nothing else on the strip is taking room the readout needed.
+      expect(
+        reading!.fullyVisible,
+        `${at}: ${reading!.fullyVisible} of ${reading!.chips} chips are on screen, but the strip is ` +
+          `${reading!.stripContentWidth}px wide and has room for ${reading!.fitsInStripWidth}. The readout ` +
+          `is ${reading!.metricsClientWidth}px of ${reading!.metricsScrollWidth}px of content.`,
+      ).toBe(reading!.fitsInStripWidth);
+
+      // And #634's headline, refutable on its own: at 768px this was zero.
+      // Implied by the line above only while the strip is wider than one
+      // chip, which is a thing that could stop being true; stated separately
+      // so the failure names what a player would see.
+      expect(reading!.fullyVisible, `${at}: not one status chip is on screen`).toBeGreaterThan(0);
+    }
+  });
 });
 
 interface CentreHitCounters {
