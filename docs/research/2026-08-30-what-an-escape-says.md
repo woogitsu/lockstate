@@ -151,19 +151,24 @@ subject is the escape.
 ### 1.5 What *does* move on screen when somebody escapes — VERIFIED
 
 #683 says *"the only signal that the prison is one person short is the
-population number going down"*. Three painted surfaces move, and the correction
-does not weaken the finding — none of them says *why*:
+population number going down"*. Four things move, three of them painted, and
+the correction does not weaken the finding — none of them says *why*:
 
 - The `PRISONERS` stat tile (`projectStatusCounts`'s `prisoners`).
 - The accommodation counts, because `releasePrisoner` frees the place —
   `incident-trigger-reachability.test.ts:471-472` asserts both the population
   and the housed count fall by exactly the number of escapes.
-- The Regime tab's roster row disappears, and the state income the place was
-  earning stops.
+- The Regime tab's roster row disappears — `src/ui/simulation-prisoner-roster.ts`
+  is one of the nine painted read models — though #683's own adjacent note
+  records that `refreshPrisonerRoster` returns early unless that tab happens to
+  be open.
+- The state income the freed place was earning stops. **DERIVED, from ADR 0061
+  open question 6** — *"Losing a prisoner costs the state income their place was
+  earning and nothing else"* — rather than measured here.
 
-Each of these also moves for a discharge, which is the whole of the problem:
-the same three needles move for *"their sentence ended"* and for *"they are
-over the wall"*, and the one row that could tell them apart —
+Each of them also moves for a discharge, which is the whole of the problem:
+every one of these needles moves for *"their sentence ended"* and for *"they are
+over the wall"* alike, and the one row that could tell them apart —
 `prisoners.discharged`, *"{count} released — their sentences are served."*
 (`src/content/default-locale-en.ts:437`) — is emitted only by
 `PrisonerDischargeSystem` (`src/simulation/prisoners/discharge-system.ts:231`).
@@ -235,7 +240,7 @@ The "same kind with an outcome field" option has no host:
   (`event-log.ts`, class comment) — so nothing amends a published event.
 - **`incidents.all-clear` must not carry it, and its own schema argues why.**
   It is deliberately an aggregate about the whole prison
-  (`types.ts:1596-1637`):
+  (`types.ts:1599-1632`):
 
   > Carries no figure. What it costs — who was injured, what was damaged,
   > whether anybody got out — is `IncidentOutcome`, which the `hud/incidents`
