@@ -20,6 +20,7 @@ export {
 export {
   JUST_IN_TIME_ORDER_ID_PREFIX,
   JustInTimeMaterialsService,
+  isJustInTimePurchaseOrderId,
   justInTimePurchaseOrderId,
 } from './just-in-time-materials';
 export { Treasury, TREASURY_STARTING_BALANCE_MINOR_UNITS, type TreasurySnapshot } from './treasury';

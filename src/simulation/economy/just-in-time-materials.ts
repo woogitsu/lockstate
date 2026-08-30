@@ -16,8 +16,33 @@ import type { ProcurementSystem } from './procurement';
  * Exported so a test can tell a just-in-time delivery from one the player
  * pressed *Buy* for, and so that `src/main.ts`'s `order-${crypto.randomUUID()}`
  * ids can never collide with one: a UUID does not start with `jit:`.
+ *
+ * **It has a production reader too since #687, and the sentence above is kept
+ * rather than rewritten because it was true when it was written.**
+ * `createSessionCommandHandler`'s `CancelMaterialPurchase` branch asks
+ * `isJustInTimePurchaseOrderId` the same question a test used to ask alone: a
+ * delivery this service bought is the *build queue's* money and cancelling it
+ * has to withdraw the demand behind it, while a delivery the player pressed
+ * *Buy* for is stock they chose to hold and cancelling it must touch no order
+ * at all. Telling the two apart is therefore no longer only a diagnostic.
  */
 export const JUST_IN_TIME_ORDER_ID_PREFIX = 'jit:';
+
+/**
+ * Whether `orderId` names a delivery this service bought for the build queue.
+ *
+ * A prefix test rather than a stored flag, for the reason
+ * `justInTimePurchaseOrderId` composes the id from state instead of minting
+ * one: `PendingDelivery` is persisted (`src/persistence/save-schema.ts`'s
+ * `economySectionSchema`), and a new field on it would be a save-format change
+ * to record something the id already says. Every purchase this service makes
+ * goes through `justInTimePurchaseOrderId`, and nothing else in the repository
+ * composes an id beginning `jit:` -- `src/main.ts` mints
+ * `order-${crypto.randomUUID()}`.
+ */
+export function isJustInTimePurchaseOrderId(orderId: string): boolean {
+  return orderId.startsWith(JUST_IN_TIME_ORDER_ID_PREFIX);
+}
 
 /**
  * The purchase order id one just-in-time purchase carries.
@@ -93,6 +118,21 @@ export function justInTimePurchaseOrderId(tick: number, itemId: string, inFlight
  *   playability -- an order that could not be funded at the press and becomes
  *   affordable later, when the state pays. A prison that is broke queues its
  *   walls and builds them when the money arrives, rather than losing them.
+ *
+ * **The cancellation route in that list stopped being reachable in #687, and
+ * the sentence is kept rather than deleted because it describes what this
+ * class still does.** This pass has always re-bought a cancelled delivery --
+ * that is the whole of the safety net and it is not a defect -- and issue #687
+ * measured what it costs: with the clock stopped a fifteen-segment wall run
+ * refunds in full, `23,800 -> 24,760`, and six seconds after *Play* the same
+ * treasury reads `23,800` again, because the fifteen orders are still queued
+ * and this pass dutifully buys their bricks a second time. The one control in
+ * the game that credits the treasury was undone by the button that starts it.
+ * The fix is on the *demand* side and not here: `CancelMaterialPurchase`
+ * now withdraws build orders until the queue no longer has to buy the material
+ * back (`ConstructionSystem.withdrawOrdersAwaitingMaterial`), so by the time
+ * this pass next runs there is no deficit left for it to find. Nothing about
+ * the pass changed, and the three other routes are untouched.
  *
  * See `justInTimePurchaseOrderId` for why two purchases of one item at one
  * tick do not collide.
@@ -209,6 +249,19 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
 
     this.report = { tick, purchased, unfunded, unprocurable };
     return this.report;
+  }
+
+  /**
+   * The supply half of this class's own subtraction, without the purchase.
+   *
+   * `ConstructionProcurementSink.heldOrInFlightOf` states what it is for. The
+   * two terms are exactly the two `procureForPendingOrders` subtracts from
+   * demand and they are read here from the same two sources, so a caller
+   * comparing its demand against this figure is asking the question this pass
+   * will ask -- not a second opinion about it.
+   */
+  public heldOrInFlightOf(itemId: string): number {
+    return this.stock.availableOf(itemId) + this.inFlightOf(itemId);
   }
 
   /** Everything of `itemId` that has been paid for and not yet unloaded, whoever bought it. */
