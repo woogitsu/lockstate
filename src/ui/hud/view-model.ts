@@ -84,9 +84,25 @@ export interface HudClockViewModel {
  * prisoner-day, accrued per occupied place) and `StateIncomeSystem` implements
  * it, crediting the balance at the end of each in-game day, so the second
  * figure below is a day's accrual against a real payment rather than a number
- * with nothing behind it. There is still **no** budget, forecast, payroll or
+ * with nothing behind it.
+ *
+ * **This paragraph ended "There is still **no** budget, forecast, payroll or
  * running cost: nothing debits the treasury on a schedule, and nothing
- * projects anything forward.
+ * projects anything forward", and half of it went false on 2026-08-28.** It
+ * was written at `4f711d5` (#311), when it was true of the whole tree.
+ * `916ac46` (#455, ADR 0049) then added `PayrollSystem`
+ * (`src/simulation/economy/payroll.ts`), whose `schedule` is
+ * `{ intervalTicks: DAY_LENGTH_TICKS, phaseTicks: DAY_LENGTH_TICKS - 1 }` and
+ * whose `update` calls `Treasury.spend` -- a payroll, and a debit on a
+ * schedule, which is two of the four things that sentence denied. What
+ * survives is the other two: **there is still no budget and no forecast, and
+ * nothing projects anything forward**, which is the half the rule below
+ * actually rests on, because a forecast is the figure with nothing behind it.
+ *
+ * Both directions are kept rather than the sentence rewritten, because the
+ * reason it was written has not changed and because this is the shape
+ * `docs/AGENT_WORKFLOW.md` §4 names: a sentence asserting an absence rots
+ * first, and adding the thing it denies never touches the sentence denying it.
  *
  * It is no longer the only money *the HUD* carries, and the difference is
  * #89's: `HudBuildMaterialViewModel` below carries a unit price, so the Build

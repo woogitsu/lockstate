@@ -650,12 +650,35 @@ export const statusCountsSchema = z
      * any session.
      *
      * **A sibling of `roomCapacity` rather than a replacement for it**,
-     * because the two are different true facts and each has a reader. A
-     * furnished infirmary raises `roomCapacity` -- `object.medical-bed`
-     * declares `'sleep-surface'` -- and raises nothing here, because no
-     * classification group's `AccommodationPolicy` names `room.infirmary`.
-     * Collapsing them would either overstate the prisoner denominator by every
-     * medical bed or understate the Rooms readout by every one.
+     * because the two are different true facts. A furnished infirmary raises
+     * `roomCapacity` -- `object.medical-bed` declares `'sleep-surface'` -- and
+     * raises nothing here, because no classification group's
+     * `AccommodationPolicy` names `room.infirmary`. Collapsing them would
+     * either overstate the prisoner denominator by every medical bed or
+     * understate the Rooms readout by every one.
+     *
+     * **That sentence read "the two are different true facts and each has a
+     * reader", and the second clause has never been true.** It was written
+     * here at `b20d116`, in the commit that added this field -- at which point
+     * `src/ui/simulation-counts.ts` still returned the literal
+     * `prisonerCapacity: 0`, so *neither* count had a reader. One commit later
+     * `50ca715` gave **this** field one (`prisonerCapacity:
+     * counts.accommodationCapacity`, `src/ui/simulation-counts.ts`), and
+     * `roomCapacity` has never acquired one: grep it across `src/ui/` and the
+     * only occurrences are the three lines of prose in that same file
+     * explaining why the mapping is *not* `counts.roomCapacity`.
+     * `docs/HUD_PROJECTIONS.md` has said so from the same day and still does
+     * -- *"`roomCapacity` stays exactly what it was: the Rooms readout's
+     * total, with no reader in `src/ui/` yet"* -- so this comment and that
+     * document have disagreed since they were written.
+     *
+     * The argument above is unaffected and is why the clause is corrected
+     * rather than the field withdrawn: `roomCapacity` is published and pinned
+     * by `tests/unit/hud-projections.test.ts`, which builds a prison
+     * specifically to tell the two apart, and the "Rooms readout" it is the
+     * total of is a panel nobody has built. A count with a test and no panel
+     * is a different thing from a count with a reader, and saying so is the
+     * point.
      *
      * `countSchema`'s floor of `0` is its own invariant: it is a sum of
      * `residentCapacity`, which `deriveRoomCapacity` builds from footprint
@@ -776,7 +799,7 @@ export const statusCountsSchema = z
      *
      * Three counts rather than one ratio, because the strip's job here is that
      * *"the 40s are attributable"*: since ADR 0064 the state withholds
-     * `STATE_INCOME_UNMET_NEED_WITHHOLDING_MINOR_UNITS` of the prisoner-day
+     * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` of the prisoner-day
      * grant per unmet need, and `SafetyCoverageSystem` is what decides whether
      * `safety` is one of them. A player looking at a grant smaller than the
      * headline rate has to be able to see how much of the population is paying
@@ -952,7 +975,7 @@ export type SimulationStatusCounts = DeepReadonly<
  * `simulation/command-result`'s `rejected` form both describe a command that
  * never reached the kernel; these describe a command that was accepted,
  * ordered, dispatched at its tick -- and then refused on its *content* by the
- * system that ran it. `WorkerStateMachine.handleSubmitCommand` has already
+ * system that ran it. `SimulationWorkerStateMachine.handleSubmitCommand` has already
  * answered `status: 'queued'` by then, and ADR 0003 decision 9 is explicit
  * that the queued acknowledgement "never reports a command as applied": this
  * vocabulary is what the simulation says instead.

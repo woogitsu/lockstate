@@ -14,7 +14,7 @@ import type { StaffHireRefusalReason } from '../staff/hiring';
  * ## The gap this closes
  *
  * A player command travels through two acceptances. The worker accepts the
- * *message* -- `WorkerStateMachine.handleSubmitCommand` answers
+ * *message* -- `SimulationWorkerStateMachine.handleSubmitCommand` answers
  * `status: 'queued'` the moment the kernel takes it -- and ADR 0003 decision
  * 9 is explicit that this "never reports a command as applied". The kernel
  * then dispatches it at its tick and a system decides what it means. Between

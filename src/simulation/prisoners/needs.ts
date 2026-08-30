@@ -58,7 +58,8 @@ export const NEED_MAX_SCALED = NEED_MAX * NEED_SCALE;
  * cannot finish: *"Safety is a bug. Guards exist, sectors exist, the HUD
  * already reads `Unguarded` -> `Understaffed` -> `Covered`."* What follows
  * mechanically is that coverage becomes the provisioner
- * (`safetyProvisionScaledPerTick` below, `SafetyCoverageSystem`) and that
+ * (`SAFETY_COVERAGE_PROVISION_SCALED_PER_TICK` and `provisionSafety` below,
+ * applied by `SafetyCoverageSystem`) and that
  * **"the 20,400-tick safety requirement is discarded, or demoted to a
  * long-stay accumulator"**.
  *
