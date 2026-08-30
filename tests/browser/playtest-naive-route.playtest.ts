@@ -385,15 +385,48 @@ test.describe('playtest: the naive quantity', () => {
     log(`funds at the stall: ${JSON.stringify((await latestCounts(page))?.treasuryMinorUnits)}`);
     log(`queue verbatim, folded state as it stands: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
 
-    // The other channel a message could plausibly be in: the Alerts panel,
-    // which starts folded (`src/ui/hud/hud-state.ts:51-54`).
-    log(`.hud-alerts before unfolding: ${JSON.stringify(await panelText(page, '.hud-alerts'))}`);
-    const alertsHeader = page.locator('.hud-alerts > .ui-panel__header > .ui-panel__toggle');
-    if ((await alertsHeader.count()) > 0) {
-      await alertsHeader.first().click();
-      await page.waitForTimeout(500);
-      log(`.hud-alerts unfolded: ${JSON.stringify(await panelText(page, '.hud-alerts'))}`);
-    }
+    // The other channel a message could plausibly be in: the Alerts fold,
+    // which starts shut (`src/ui/hud/hud-state.ts:51-54`).
+    //
+    // **Addressed through `.hud-alerts__list`'s enclosing `.ui-section`, not
+    // through `.hud-alerts`.** There is no element with that class: the list
+    // is `hud-alerts__list` and its section is built by
+    // `createCollapsibleSection` with no extra class at all
+    // (`src/ui/hud/hud.ts:1252-1263`), so a `.hud-alerts` selector answers
+    // `ABSENT` and an unwary reader would write that down as "the game has no
+    // alerts panel". It has one; the selector was wrong.
+    const alertsInfo = await page.evaluate(() => {
+      const list = document.querySelector<HTMLElement>('.hud-alerts__list');
+      const section = list?.closest<HTMLElement>('.ui-section') ?? null;
+      const header = section?.querySelector<HTMLElement>('.ui-section__header') ?? null;
+      return {
+        listPresent: list !== null,
+        sectionCollapsed: section?.getAttribute('data-collapsed') ?? null,
+        headerText: (header?.innerText ?? '').replace(/\n+/g, ' ').trim(),
+        headerAriaExpanded: header?.getAttribute('aria-expanded') ?? null,
+        listChildCount: list?.childElementCount ?? -1,
+        listText: (list?.textContent ?? '').trim(),
+      };
+    });
+    log(`ALERTS fold at the stall: ${JSON.stringify(alertsInfo)}`);
+    await page.evaluate(() => {
+      const list = document.querySelector<HTMLElement>('.hud-alerts__list');
+      list?.closest<HTMLElement>('.ui-section')?.querySelector<HTMLElement>('.ui-section__header')?.click();
+    });
+    await page.waitForTimeout(600);
+    log(
+      `ALERTS unfolded by hand: ${JSON.stringify(
+        await page.evaluate(() => {
+          const list = document.querySelector<HTMLElement>('.hud-alerts__list');
+          const section = list?.closest<HTMLElement>('.ui-section') ?? null;
+          return {
+            sectionCollapsed: section?.getAttribute('data-collapsed') ?? null,
+            listChildCount: list?.childElementCount ?? -1,
+            listText: (list?.textContent ?? '').trim(),
+          };
+        }),
+      )}`,
+    );
 
     // And what the player gets for trying to use the half-built perimeter.
     await tab(page, 'rooms').click();
@@ -406,5 +439,33 @@ test.describe('playtest: the naive quantity', () => {
     await page.waitForTimeout(1200);
     log(`zoning the half-built perimeter: rooms=${(await latestCounts(page))?.rooms}`);
     report(log, 'after trying to zone the half-built perimeter', await hudDump(page));
+
+    // Is the stall recoverable at all, once a player works out what it is?
+    // Twelve segments still standing at two bricks each is twenty-four more.
+    await tab(page, 'build').click();
+    await buy(page, 'wall-brick', 24);
+    log(`bought 24 more bricks; funds now ${JSON.stringify((await latestCounts(page))?.treasuryMinorUnits)}`);
+    let drainedAt = -1;
+    for (let poll = 0; poll < 40; poll += 1) {
+      await page.waitForTimeout(3000);
+      const queueText = await panelText(page, '.hud-build__queue');
+      if (queueText.includes('not laid out') || queueText.includes('ABSENT') || /0 waiting . 0 being built/.test(queueText)) {
+        drainedAt = await currentTick(page);
+        break;
+      }
+      if (poll % 4 === 0) log(`recovery poll ${poll} at tick ${await currentTick(page)}: ${JSON.stringify(queueText.split('\n').slice(0, 2).join(' | '))}`);
+    }
+    log(`RECOVERY: the queue drained at tick ${drainedAt}`);
+
+    await tab(page, 'rooms').click();
+    const stillCollapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
+    if (stillCollapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+    await page.locator('.hud-rooms__arm').click();
+    await drag(page, centreOf(origin, AREA.x0, AREA.y0), centreOf(origin, AREA.x1, AREA.y1));
+    await page.locator('.hud-rooms__confirm').click();
+    await page.waitForTimeout(1200);
+    log(`RECOVERY: zoning after the second purchase: rooms=${(await latestCounts(page))?.rooms}`);
+    report(log, 'RECOVERY — after buying the missing bricks and zoning again', await hudDump(page));
   });
 });
