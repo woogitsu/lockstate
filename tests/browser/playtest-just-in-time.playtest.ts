@@ -476,7 +476,12 @@ test('act 1 and 2: a wall, then everything after it, with no procurement press',
 });
 
 test('act 3: how much wall 25,000 buys, and what the game says when it runs out', async ({ page }) => {
-  test.setTimeout(600_000);
+  // 900 s rather than the config's 600. Run D reached the lock at +367 s -- the
+  // number of drags is fixed but how long each takes is not, and the stall
+  // watch below then ran past the budget and failed the test on a
+  // `waitForTimeout`. The measurement was complete before it did; the failure
+  // was arithmetic about the budget, not about the game.
+  test.setTimeout(900_000);
   const act = 'A3';
   actStartedAt = Date.now();
   page.setDefaultTimeout(20_000);
@@ -633,8 +638,8 @@ test('act 3: how much wall 25,000 buys, and what the game says when it runs out'
     // Stop once the queue has not moved for 25 s: what is left then is what
     // the money could not buy, and nothing but the player can change it.
     if (Date.now() - unchangedSince > 25_000) break;
-    if (Date.now() - stallStarted > 240_000) {
-      log(act, `  the queue was still moving after 240 s -- stopping the watch, not the queue`);
+    if (Date.now() - stallStarted > 150_000) {
+      log(act, `  the queue was still moving after 150 s -- stopping the watch, not the queue`);
       break;
     }
     await page.waitForTimeout(2000);
@@ -732,61 +737,79 @@ test('control: the same probe, against a purchase the player pressed Buy for', a
   await observe(page, act, 'after a pressed Buy');
 
   /*
-   * **The decisive half: both kinds of delivery in flight at once, in one
-   * block, at one instant.**
+   * **The decisive half: both kinds of delivery in flight at once, with the
+   * clock stopped so that neither can land while the block is being read.**
    *
    * Act 1's reading -- the block never appears for a just-in-time purchase --
    * and this act's first half -- it appears within 438 ms for a pressed one --
-   * are still two separate sessions, and *"the samples missed a five-second
-   * window twice"* is a live alternative to *"the block does not show it"*.
-   * This removes the alternative by making the two deliveries share a window.
+   * are two separate sessions, and *"the samples missed a five-second window"*
+   * stays a live alternative to *"the block does not show it"* for as long as
+   * there is a window to miss.
    *
-   * Buy ten bricks and, before they land, drag a six-segment wall run. The
-   * run wants twelve bricks; the service subtracts stock (0) and everything
-   * already in flight (10, **including what the player bought**, which is the
-   * whole of ADR 0017 decision 7's *"holding is permitted, never required"*),
-   * so its deficit is 2 and it buys exactly 2. Two deliveries are then in
-   * flight together: `10 x Brick` that a press bought and `2 x Brick` that the
-   * game bought.
+   * **Pausing removes the window entirely.** ADR 0051 has every command answer
+   * while the clock is stopped -- measured at length in
+   * `docs/research/2026-08-30-what-the-game-never-says.md` §1, where 2,400
+   * leaves the treasury for sixty bricks and *"the delivery block calls them
+   * ON THE WAY"* with the clock never started. So: pause, buy ten bricks,
+   * drag a six-segment wall run, and read the block with no clock running and
+   * nothing able to arrive.
    *
-   * So the block's row count at that instant is the answer, with no timing
+   * The wall run wants twelve bricks; the service subtracts stock (0) and
+   * everything already in flight (10, **including what the player bought**,
+   * which is the whole of ADR 0017 decision 7's *"holding is permitted, never
+   * required"*), so its deficit is 2 and it buys exactly 2 -- 80, not 480.
+   * That delta is printed as its own check on the netting.
+   *
+   * The block's row count at that moment is then the answer with no timing
    * argument left in it: **two rows and act 1 was a sampling artifact; one row
-   * and the just-in-time delivery is invisible while a pressed one beside it
-   * is not.** The treasury delta is printed too, because 2 x 40 = 80 rather
-   * than 12 x 40 = 480 is the other half of the same claim.
+   * and a just-in-time delivery is invisible while a pressed one sits beside
+   * it.**
+   *
+   * A **fresh prison**, because the first half of this act has already spent
+   * 400 and landed it, and the arithmetic below is easier to check from 25,000.
    */
-  await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.waitForTimeout(1200);
+  await tab(page, 'build').click();
   const origin = await calibrate(page);
   log(act, `calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
-  await armBuildable(page, 'wall-brick');
+
+  // Pause, and say so. Index 0 of `pause / play / fast-forward`.
+  await page.locator('.hud-strip__transport button').nth(0).click();
+  await page.waitForTimeout(600);
+  const paused = await hudDump(page);
+  log(act, `clock for the decisive half: clockMode=${paused.clockMode} pressed=${JSON.stringify(paused.transport.map((t) => t.pressed))}`);
+
   const beforeBoth = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
-  await page.locator('.hud-build__buy .ui-number__input').fill('10').catch(() => undefined);
+  await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
   const buyRowAgain = page.locator('.hud-build__buy');
   if (await buyRowAgain.isHidden()) await page.locator('.hud-build__buy-toggle').click();
   await page.locator('.hud-build__buy .ui-number__input').fill('10');
   await page.locator('.hud-build__buy-submit').click();
-  await page.waitForTimeout(300);
-  const afterSecondBuy = (await latestCounts(page))?.treasuryMinorUnits ?? -1;
-  log(act, `second Buy of 10 bricks: ${beforeBoth} -> ${afterSecondBuy}`);
+  const afterBuy = await settledTreasury(page, act, beforeBoth);
+  log(act, `Buy 10 bricks with the clock stopped: ${beforeBoth} -> ${afterBuy} (delta ${afterBuy - beforeBoth})`);
+  log(act, `  block with only the pressed purchase in flight: ${JSON.stringify((await panelText(page, '.hud-build__deliveries')).replace(/\n+/g, ' | '))}`);
 
+  await armBuildable(page, 'wall-brick');
   const wallStart = { x: origin.originX + 12 * TILE + TILE / 2, y: origin.originY + 12 * TILE };
   const wallEnd = { x: origin.originX + 18 * TILE - TILE / 2, y: origin.originY + 12 * TILE };
   const beforeDrag = (await sentCommands(page)).length;
   await drag(page, wallStart, wallEnd);
   const placed = (await sentCommands(page)).slice(beforeDrag).filter((command) => command['type'] === 'PlaceBuildOrder');
-  const afterDrag = await settledTreasury(page, act, afterSecondBuy, 5000);
-  log(act, `wall run of ${placed.length} segments placed OVER 10 bricks already in flight: treasury ${afterSecondBuy} -> ${afterDrag} (delta ${afterDrag - afterSecondBuy})`);
-  log(act, `  a run that bought all 12 bricks itself would have cost 480; one that netted off the 10 in flight costs 80`);
+  const afterDrag = await settledTreasury(page, act, afterBuy);
+  log(act, `wall run of ${placed.length} segments OVER 10 bricks already in flight: ${afterBuy} -> ${afterDrag} (delta ${afterDrag - afterBuy})`);
+  log(act, `  480 would mean it bought all 12 bricks; 80 means it netted off the 10 in flight and bought 2`);
 
-  const bothStarted = Date.now();
   const bothSeen = new Set<string>();
-  while (Date.now() - bothStarted < 8000) {
+  const bothStarted = Date.now();
+  while (Date.now() - bothStarted < 6000) {
     const text = (await panelText(page, '.hud-build__deliveries')).replace(/\n+/g, ' | ');
     if (!bothSeen.has(text)) {
       bothSeen.add(text);
-      log(act, `  BOTH IN FLIGHT at t+${Date.now() - bothStarted}ms (tick ${await currentTick(page)}): ${JSON.stringify(text)}`);
+      log(act, `  BOTH IN FLIGHT, CLOCK STOPPED, at t+${Date.now() - bothStarted}ms (tick ${await currentTick(page)}): ${JSON.stringify(text)}`);
     }
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(300);
   }
+  log(act, `queue with the clock stopped: ${JSON.stringify((await panelText(page, '.hud-build__queue')).replace(/\n+/g, ' | '))}`);
   log(act, `DECISIVE: states seen while a pressed delivery and a just-in-time delivery were both in flight: ${JSON.stringify([...bothSeen])}`);
 });
