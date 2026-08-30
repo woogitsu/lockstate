@@ -780,7 +780,22 @@ player-facing sentence or a balance value, and `AGENTS.md` reserves both.
 
    The measured result, through the real kernel: `25,000 → 23,800` for fifteen
    segments, `→ 25,000` on cancelling every delivery, and still `25,000` two
-   delivery delays after the clock starts.
+   delivery delays after the clock starts. **And act 4 of this file's own
+   playtest re-run against the fix**, which is the same browser, the same
+   twelve presses and the same six seconds as §11 above:
+
+   ```
+   [L4 +42.5s] ACT 4 RESULT: 12 delivery cancellation(s) with the clock stopped; treasury 23800 -> 24760 (recovered 960 of the 1200 spent)
+   [L4 +43.1s] THE REFUND, ABOUT TO MEET THE CLOCK: treasury=24760, queue="QUEUED 3 waiting · 0 being built"
+   [L4 +51.8s] ACT 4 ADDENDUM: six seconds after pressing Play, treasury 24760 -> 24760 (0 taken back out); queue="QUEUED 3 waiting · 1 being built"
+   ```
+
+   The first line is unchanged from §11 character for character. The second is
+   where the fix is visible — `QUEUED 15 waiting` became `QUEUED 3 waiting`,
+   because twelve cancellations withdrew twelve segments — and the third is
+   `0 taken back out` where §11 measured `960`. The three segments still queued
+   are the ones the act never cancelled a delivery for; their bricks were paid
+   for before Play and are still in flight, so nothing new is spent on them.
    **What it does not touch is §6's three-rows-against-224-orders**: the press
    count is unchanged. What changes is that the presses now *accumulate* —
    before, cancelling three rows of a 224-order run refunded 240 and the next
