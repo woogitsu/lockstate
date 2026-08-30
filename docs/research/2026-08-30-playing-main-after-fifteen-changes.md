@@ -887,9 +887,9 @@ ESCAPE_RESOLUTION
 kept separate from the reporting. There is exactly one here, because every
 other route out of what this pass found needs a sentence addressed to a player,
 and `AGENTS.md`'s fourth exclusion reserves those — *"Anything that reaches a
-player as a promise the code does not keep"*, whose stated reason is that *"a
-locale key with no implementation behind it is the defect that forced the
-telemetry decision"*.
+player as a promise the code does not keep. A locale key with no implementation
+behind it is the defect that forced the telemetry decision; do not add one, in
+any tree."*
 
 ### The proposal: narrow ADR 0079's occupancy consequence, marking rather than overwriting
 
