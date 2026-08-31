@@ -66,38 +66,92 @@ interface SamplerWindow {
   lockstateBandSamples?: BandSample[];
 }
 
-/** Records every *change* of the events band from inside the page, at 100 ms. */
-async function installBandSampler(page: import('@playwright/test').Page): Promise<void> {
+interface DeliverySample {
+  readonly t: number;
+  readonly blockHidden: string;
+  readonly pending: string;
+  readonly header: string;
+  readonly rows: readonly string[];
+  readonly visibleRows: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+interface SamplerWindow2 {
+  lockstateDeliverySamples?: DeliverySample[];
+}
+
+/**
+ * Records every *change* of the events band and of the deliveries block from
+ * inside the page, at 100 ms.
+ *
+ * Both surfaces are transient in the same way and for the same reason: the band
+ * holds one sentence that the next event replaces, and the deliveries block is
+ * cleared by `setVisible(false)` and by any failed read
+ * (`main.ts`'s `refreshPendingDeliveries` `.catch`). A poll from the test
+ * process, which cannot run faster than a round trip, can miss either.
+ */
+async function installSamplers(page: import('@playwright/test').Page): Promise<void> {
   await page.addInitScript(() => {
     const samples: BandSample[] = [];
+    const deliveries: DeliverySample[] = [];
     (window as unknown as SamplerWindow).lockstateBandSamples = samples;
+    (window as unknown as SamplerWindow2).lockstateDeliverySamples = deliveries;
     let last = '';
+    let lastDelivery = '';
     const started = Date.now();
     setInterval(() => {
       const node = document.querySelector<HTMLElement>('.hud__event');
-      if (node === null) return;
-      const rect = node.getBoundingClientRect();
-      const style = getComputedStyle(node);
-      const sample: BandSample = {
-        t: Date.now() - started,
-        text: (node.textContent ?? '').trim(),
-        severity: node.dataset['severity'] ?? '',
-        hidden: String(node.hidden),
-        width: Math.round(rect.width),
-        height: Math.round(rect.height),
-        color: style.color,
-        background: style.backgroundColor,
-      };
-      const key = `${sample.text}|${sample.severity}|${sample.hidden}|${sample.width}x${sample.height}`;
-      if (key === last) return;
-      last = key;
-      samples.push(sample);
+      if (node !== null) {
+        const rect = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        const sample: BandSample = {
+          t: Date.now() - started,
+          text: (node.textContent ?? '').trim(),
+          severity: node.dataset['severity'] ?? '',
+          hidden: String(node.hidden),
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+          color: style.color,
+          background: style.backgroundColor,
+        };
+        const key = `${sample.text}|${sample.severity}|${sample.hidden}|${sample.width}x${sample.height}`;
+        if (key !== last) {
+          last = key;
+          samples.push(sample);
+        }
+      }
+
+      const block = document.querySelector<HTMLElement>('.hud-build__deliveries');
+      if (block !== null) {
+        const rect = block.getBoundingClientRect();
+        const rows = [...block.querySelectorAll<HTMLElement>('.hud-build__delivery-row')];
+        const sample: DeliverySample = {
+          t: Date.now() - started,
+          blockHidden: String(block.hidden),
+          pending: block.dataset['pending'] ?? '',
+          header: (block.querySelector('.hud-build__deliveries-header')?.textContent ?? '').trim(),
+          rows: rows.map((row) => `${row.hidden ? 'HIDDEN ' : ''}${(row.textContent ?? '').trim()}`),
+          visibleRows: rows.filter((row) => !row.hidden).length,
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+        };
+        const key = `${sample.blockHidden}|${sample.pending}|${sample.header}|${sample.rows.join('/')}|${sample.width}x${sample.height}`;
+        if (key !== lastDelivery) {
+          lastDelivery = key;
+          deliveries.push(sample);
+        }
+      }
     }, 100);
   });
 }
 
 async function bandSamples(page: import('@playwright/test').Page): Promise<readonly BandSample[]> {
   return page.evaluate(() => (window as unknown as SamplerWindow).lockstateBandSamples ?? []);
+}
+
+async function deliverySamples(page: import('@playwright/test').Page): Promise<readonly DeliverySample[]> {
+  return page.evaluate(() => (window as unknown as SamplerWindow2).lockstateDeliverySamples ?? []);
 }
 
 /** Every `simulation/event` the worker has published, in order. */
@@ -127,11 +181,15 @@ test('act 1: an ambitious first prison, buying nothing on purpose (#640, #693, #
   const log = (line: string) => console.log(`[act1] ${line}`);
 
   await installTee(page);
-  await installBandSampler(page);
+  await installSamplers(page);
   await openApp(page);
   await page.getByRole('button', { name: 'New prison' }).click();
   await page.waitForTimeout(1000);
   log(`strip at day 1: ${await strip(page)}`);
+  // Whether a fresh prison is running or stopped decides how long a delivery is
+  // on screen at all: `PROCUREMENT_DELIVERY_DELAY_TICKS` is 100, which is five
+  // real seconds at x1 and nothing at all while paused.
+  log(`clock on arrival: ${JSON.stringify(await currentClock(page))} at tick ${await currentTick(page)}`);
 
   await tab(page, 'build').click();
   const origin = await calibrate(page);
@@ -163,18 +221,44 @@ test('act 1: an ambitious first prison, buying nothing on purpose (#640, #693, #
   }
 
   /*
-   * The cancellation, with the clock still stopped -- #693's own subject. Read
-   * the row's promise, press it, read the treasury, press Play, wait past the
-   * 20-second procurement poll, read it again.
+   * The cancellation, with the clock still stopped -- #693's own subject.
+   *
+   * **Only a Cancel that is actually laid out counts**, because the point is
+   * what a player can press. `.hud-build__delivery-row` is a *pool* of three
+   * rows created hidden (`build-panel.ts`, `row.element.hidden = true`), and a
+   * `Locator.count()` of 3 says nothing about whether any of them has a box --
+   * a `click()` on a hidden one waits for ever, which is how the first run of
+   * this act was spent.
    */
-  const deliveryRows = page.locator('.hud-build__delivery-row');
-  const rowCount = await deliveryRows.count();
-  log(`delivery rows: ${rowCount}`);
-  if (rowCount > 0) {
-    const rowText = (await deliveryRows.first().innerText()).replace(/\n/g, ' | ');
+  log(`delivery samples so far: ${JSON.stringify(await deliverySamples(page))}`);
+  /*
+   * **`:not([hidden])` is not the question and the first run of this act proved
+   * it.** `paintDeliveries` sets `row.element.hidden = false` on every row it
+   * fills, so the rows really are not hidden -- and the block is a child of
+   * `buyRow`, which is. Playwright resolved the control, then spent twenty
+   * seconds reporting *"element is not visible"*. So the gate is
+   * `isVisible()`, which is the player's question.
+   */
+  const visibleCancel = page.locator('.hud-build__delivery-row button').first();
+  const boxes = await page.evaluate(() => {
+    const rowNode = document.querySelector<HTMLElement>('.hud-build__delivery-row');
+    const buyNode = document.querySelector<HTMLElement>('.hud-build__buy');
+    const rect = rowNode?.getBoundingClientRect();
+    return {
+      rowHidden: rowNode === null ? 'ABSENT' : String(rowNode.hidden),
+      rowBox: rect === undefined ? 'ABSENT' : `${Math.round(rect.width)}x${Math.round(rect.height)}`,
+      buyRowHidden: buyNode === null ? 'ABSENT' : String(buyNode.hidden),
+      buyRowDisplay: buyNode === null ? 'ABSENT' : getComputedStyle(buyNode).display,
+    };
+  });
+  log(`the first delivery row and the fold above it: ${JSON.stringify(boxes)}`);
+  const cancellable = await visibleCancel.isVisible();
+  log(`is the first Cancel visible to a player? ${String(cancellable)}`);
+  if (cancellable) {
+    const rowText = (await page.locator('.hud-build__delivery-row:not([hidden])').first().innerText()).replace(/\n/g, ' | ');
     const before = (await latestCounts(page))?.treasuryMinorUnits;
     log(`cancelling the first delivery. row says: ${JSON.stringify(rowText)} | treasury before = ${before}`);
-    await deliveryRows.first().locator('button').click();
+    await visibleCancel.click({ timeout: 20_000 });
     await page.waitForTimeout(1200);
     const afterCancel = (await latestCounts(page))?.treasuryMinorUnits;
     log(`treasury right after Cancel = ${afterCancel} (delta ${(afterCancel ?? 0) - (before ?? 0)})`);
@@ -189,6 +273,49 @@ test('act 1: an ambitious first prison, buying nothing on purpose (#640, #693, #
       log(`t+${wait}ms into Play: tick=${counts?.tick} treasury=${counts?.treasuryMinorUnits} queue=${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
     }
     log(`deliveries after Play: ${JSON.stringify(await panelText(page, '.hud-build__deliveries'))}`);
+  } else {
+    /*
+     * **The fold, which is where `docs/research/2026-08-30-a-wall-that-buys-itself.md`
+     * §2b already found this block living.** `deliveriesBlock` is the last child
+     * of `buyRow` and `buyRow.hidden = true`, so *On the way* -- and with it the
+     * only `Cancel` in the game -- is inside the procurement disclosure that
+     * #627/#640 exist so a player never has to open.
+     *
+     * That record stopped at "the report is inside the fold". What it did not
+     * measure, because #693 had not landed, is that the **control #693 fixed**
+     * is in there too. So: press the toggle, and see whether the same
+     * cancellation then behaves.
+     */
+    log('NOTHING TO CANCEL with the fold shut. Opening .hud-build__buy-toggle, which is the fold #640 exists to make unnecessary.');
+    await page.locator('.hud-build__buy-toggle').click();
+    await page.waitForTimeout(600);
+    log(`deliveries after opening the Buy fold: ${JSON.stringify(await panelText(page, '.hud-build__deliveries'))}`);
+    log(`delivery samples after opening the fold: ${JSON.stringify(await deliverySamples(page))}`);
+    const inFold = page.locator('.hud-build__delivery-row:not([hidden]) button');
+    const foldCount = await inFold.count();
+    log(`Cancel controls with a box, fold open: ${foldCount}`);
+    if (foldCount > 0) {
+      const rowText = (await page.locator('.hud-build__delivery-row:not([hidden])').first().innerText()).replace(/\n/g, ' | ');
+      const before = (await latestCounts(page))?.treasuryMinorUnits;
+      const queueBefore = await panelText(page, '.hud-build__queue');
+      log(`cancelling from inside the fold. row says ${JSON.stringify(rowText)} | treasury ${before} | queue ${JSON.stringify(queueBefore)}`);
+      await inFold.first().click({ timeout: 20_000 });
+      await page.waitForTimeout(1200);
+      const afterCancel = (await latestCounts(page))?.treasuryMinorUnits;
+      log(`treasury right after Cancel = ${afterCancel} (delta ${(afterCancel ?? 0) - (before ?? 0)})`);
+      log(`queue right after Cancel: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+      await fastForwardToMax(page);
+      log(`clock: ${JSON.stringify(await currentClock(page))}`);
+      for (const wait of [5000, 10_000, 15_000]) {
+        await page.waitForTimeout(wait);
+        const counts = await latestCounts(page);
+        log(`t+${wait}ms into Play: tick=${counts?.tick} treasury=${counts?.treasuryMinorUnits} queue=${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+      }
+    } else {
+      log('still nothing to cancel with the fold OPEN. That is the measurement.');
+      await fastForwardToMax(page);
+      log(`clock: ${JSON.stringify(await currentClock(page))}`);
+    }
   }
 
   /*
@@ -208,6 +335,7 @@ test('act 1: an ambitious first prison, buying nothing on purpose (#640, #693, #
     const counts = await latestCounts(page);
     log(`${run.name}: treasury=${counts?.treasuryMinorUnits} queue=${JSON.stringify(await panelText(page, '.hud-build__queue'))} refusal=${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
   }
+  log(`delivery samples through the whole build: ${JSON.stringify(await deliverySamples(page))}`);
 
   // Let the crew work.
   for (let index = 0; index < 12; index += 1) {
@@ -344,7 +472,7 @@ test('act 3: a deliberately neglected prison — the escape sentence and a weapo
   const log = (line: string) => console.log(`[act3] ${line}`);
 
   await installTee(page);
-  await installBandSampler(page);
+  await installSamplers(page);
   await openApp(page);
 
   // Two beds for fourteen people and nobody watching: the neglect the escape
