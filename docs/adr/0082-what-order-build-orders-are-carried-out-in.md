@@ -115,11 +115,13 @@ c) monotonic zero-padded ids, 5 trials -- trials with one unfunded: 0
 2. **The lock is not certain in a real session, and the pricing record's
    fixture makes it look certain.** With `wall-N` ids a perimeter segment is
    starved every time; with the UUIDs a player actually gets, 7 of 25 trials
-   (and 15 of 50 pooled across two runs of the sweep — 30%) starve one. So the
+   (and 18 of 60 pooled across three runs — 30%) starve one. So the
    position ADR 0075's pricing was measured against is reachable but roughly a
    one-in-three event rather than the default, **and with placement-ordered ids
    it is not reachable at all**: the perimeter is placed first, so it is never
-   in the unfunded tail (measured, 0 of 5 and 0 of 5 across two runs).
+   in the unfunded tail (measured, 0 of 5, 0 of 5 and 0 of 5 across three
+   runs). The three UUID runs individually: 16/8/1 of 25 at zero/one/two
+   starved, 18/7/0 of 25, and 8/2/0 of 10.
 
 **What it costs to get out.** Credits into the locked prison, measured:
 
@@ -390,7 +392,7 @@ a measurement is not a diagnosis. A playtest in which a player drags a perimeter
 and is asked which segment should rise first would settle it, and would settle
 open question 1 with it.
 
-The second weakest is the pooled 30%. It is 50 independent UUID draws over one
+The second weakest is the pooled 30%. It is 60 independent UUID draws over one
 prison shape at one funded/unfunded split. The mechanism is not in doubt — 13
 starved of 325 with uniform ids makes `1 − (312/325)^9 ≈ 31%` the closed form,
 and the samples agree — but a different prison would give a different figure and
