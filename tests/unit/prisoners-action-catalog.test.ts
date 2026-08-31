@@ -320,9 +320,16 @@ describe('every action category a schedule can allow, measured against the catal
     /*
      * The vacuity guard for the assertion above, and it is not a formality:
      * if every action in the catalogue targeted `own-accommodation` the check
-     * would be unfailable and would still read as a strong statement. Six of
+     * would be unfailable and would still read as a strong statement. Seven of
      * the eleven name a room, so the property being asserted is a real one
      * about how the blocks are composed.
+     *
+     * **This read "Six of the eleven" until 2026-08-31.** Six was right for the
+     * ten `DEFAULT_ACTIONS` held when ADR 0054 landed and stayed in the sentence
+     * when `action.kitchen-work` made it eleven and seven, so the count and the
+     * total were taken one change apart. Both directions are marked because the
+     * property is unaffected either way: the guard needs *some* room-gated
+     * action to exist, not a particular number of them.
      */
     const roomGated = DEFAULT_ACTIONS.filter((action) => action.target.kind === 'room-catalog-id');
     expect(roomGated.length).toBeGreaterThan(0);

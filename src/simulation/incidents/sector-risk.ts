@@ -69,7 +69,18 @@ export interface SectorRiskPolicy {
  *   cells with no shower room and no yard: peak score **0.4824** and **zero**
  *   riots with one guard on post, **0.7979** and three riots with none
  *   (`tests/integration/room-gated-needs.test.ts`; 0.7981 on the same fixture
- *   since ADR 0059). The prisoner who does
+ *   since ADR 0059).
+ *
+ *   **Both figures moved again at issue #588 and this bullet did not follow;
+ *   corrected 2026-08-31, both directions kept.** That fixture now asserts
+ *   **0.4742** for the staffed prison and **0.9661** with **four** riots for
+ *   the unguarded one, because `safety` is provisioned by guard coverage
+ *   instead of by a bed: a covered prison holds it at `NEED_MAX` and an
+ *   uncovered one has three needs on the floor rather than two. The claim this
+ *   bullet makes is unchanged and larger — the gap one hire makes was 0.0142
+ *   and is 0.4919 — and the ceiling sentence above it is still right for the
+ *   reason it gives, since it is arithmetic over two of six needs and a staffed
+ *   prison is still the case it describes. The prisoner who does
  *   push the term past the line is the one with no accommodation at all, whose
  *   six needs all decay unopposed — which is what
  *   `tests/integration/security-default-sector.test.ts`'s and

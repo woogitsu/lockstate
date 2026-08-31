@@ -22,11 +22,34 @@ appears in `docs/adr/README.md`"*), and 0053 was handed to another agent in the
 same pass. If 0054 collides, this file, its row in the index and every citation
 of it get renumbered together.
 
+> **It did not collide, measured 2026-08-31 at `8218f23` (v0.0.288).** A sweep
+> of `docs/adr/` across all 365 remote heads and all 420 `refs/pull/*` refs
+> finds exactly one filename claiming 0054, this one, on `main`.
+>
+> **This review pass is the one #535 decision 8's conditional acceptance
+> requires**, and its evidence claim by claim is
+> [`docs/research/2026-08-31-adr-0052-and-0054-review-pass.md`](../research/2026-08-31-adr-0052-and-0054-review-pass.md).
+> It changes no status line and the recommendation it reaches lives there. What
+> it found is marked in place below, and the shape of it is worth stating once
+> here: **every claim this document makes about what the code *does* reproduces,
+> and most of the figures it measured have moved** — the largest mover being
+> decision 1's amendment table, which issue #588's safety provisioning rewrote
+> in the direction that makes the argument stronger rather than weaker.
+
 ## Context
 
 ### What #440 says, clause by clause, against what the code does
 
 `ACTION_CATEGORIES` has seven members (`src/simulation/prisoners/regime.ts:1`).
+
+> **Still seven, and the anchor has drifted two lines.** Re-measured
+> 2026-08-31, the declaration is
+> `export const ACTION_CATEGORIES = ['sleep', 'meal', 'work', 'recreation', 'education', 'hygiene', 'free-association'] as const;` (verbatim in `src/simulation/prisoners/regime.ts`),
+> which is line 3; line 1 is
+> now an `import`. Quoted rather than re-numbered, for the reason
+> `tests/foundation/adr-quotation-verbatim-contract.test.ts` exists: *"A
+> quotation inverts that. It carries the code with it, so it cannot drift
+> silently."*
 
 **Clause 1 — "two of seven action categories have no action". False since
 2026-08-27.** `action.free-association` was appended at `e642f1b` for
@@ -85,7 +108,20 @@ a different name.
 **What empties the day is room-gating, not an empty category.** Six of the ten
 entries in `DEFAULT_ACTIONS` target a zoned room; only `action.sleep`,
 `action.eat-in-cell`, `action.use-toilet` and `action.free-association` resolve
-from the prisoner's own accommodation. Three general-population blocks listed
+from the prisoner's own accommodation.
+
+> **Seven of eleven now, and the ratio moved the way this paragraph would
+> predict.** Re-counted 2026-08-31: `DEFAULT_ACTIONS` holds eleven entries,
+> seven of them `{ kind: 'room-catalog-id' }` — the six this sentence counted
+> plus **`action.kitchen-work`**, which #532 and #535 decision 3 added,
+> targeting `room.kitchen` on capability `food-preparation`. The
+> own-accommodation four are unchanged, which is the half the argument rests on:
+> a new room-gated action does not narrow the terminal set. The vacuity guard in
+> `tests/unit/prisoners-action-catalog.test.ts` read *"Six of the eleven name a
+> room"* against those same eleven, and is corrected in the same commit as this
+> note.
+
+Three general-population blocks listed
 only categories served by the room-gated six —
 `[500, 1000)` and `[1300, 1800)` (`work`/`education`, 1,000 ticks) and
 `[1000, 1200)` (`recreation`, 200 ticks) — as did `HIGH_RISK_REGIME`'s
@@ -101,7 +137,23 @@ same four blocks.
 `needsPressure` the mean deficit over all six needs across every prisoner
 standing on owned land (`src/simulation/runtime/new-session.ts:692-702`), and
 decision 3 raised `needsPressureWeight` to `1` against a `hotThreshold` of
-`0.65` (`src/simulation/incidents/sector-risk.ts:71-77`). Two needs pinned at
+`0.65` (`src/simulation/incidents/sector-risk.ts:71-77`).
+
+> **Both anchors were exactly right when written and both now land on unrelated
+> code; the claims themselves are intact.** Checked 2026-08-31 against `2e3b166`,
+> this document's own implementing commit, where `new-session.ts:692-702` *was*
+> the deficit loop and `sector-risk.ts:71-77` *was* `DEFAULT_SECTOR_RISK_POLICY`.
+> Insertions above them have since moved the first by 441 lines — `:692-702` is
+> now `ContainerMaterialsProvider` wiring — and the second by 41, onto docblock
+> prose. This is the failure `adr-quotation-verbatim-contract.test.ts` was built
+> for, so the citations are replaced by quotations rather than by new numbers:
+> `needsPressure = deficitSum / occupants.length;` (verbatim in
+> `src/simulation/runtime/new-session.ts`), and
+> `needsPressureWeight: 1,` `hotThreshold: 0.65,` (both verbatim in `src/simulation/incidents/sector-risk.ts`).
+> The `file:line` pair above is kept
+> so that a reader who has followed it somewhere confusing finds out why.
+
+Two needs pinned at
 zero are therefore a **floor of 0.3333 on `needsPressure` that no play can
 lower**. Measured: 0.3935 at the end of the cell-only run and 0.4817 at its
 peak, against 0.2248 once a yard is zoned — and a yard requires no object at
@@ -195,6 +247,50 @@ owner's, because a threshold is a statement to a player about what is bad.**
 > this ruling, not two: resolution is real and cheap, enforcement is real and
 > conditional, and the readout is still owed.
 >
+> > **Every figure in that table has moved, and one of the three rows is no
+> > longer pinned anywhere. Re-measured 2026-08-31 at `8218f23` (v0.0.288),
+> > against the same file.** The rows above stand as written because the argument
+> > they carry is the thing a reader relies on, and it survives all three moves —
+> > it survives them more strongly. What moved them is one change:
+> > [ADR 0078](./0078-what-keeps-a-prisoner-safe.md) / issue #588 made `safety`
+> > provisioned by **guard coverage** instead of by a bed, so a staffed prison
+> > holds it at `NEED_MAX` and an unguarded one lets it fall to zero.
+> >
+> > | prison | this table | `room-gated-needs.test.ts` today | riots then → now |
+> > | --- | --- | --- | --- |
+> > | 8 prisoners, 1 guard | 0.4824 | **0.4742** | 0 → **0** |
+> > | 8 prisoners, 0 guards | 0.7979 | **0.9661** | 3 → **4** |
+> > | 1 prisoner, 1 guard | 0.4837 | *not asserted anywhere* | 0 → not measured |
+> >
+> > The third row is the one to be careful about: 0.4837 now appears only in
+> > prose — this table, and that file's own docblock — and **no assertion pins
+> > it**, so it is a figure nobody may vouch for. The file's assertions are
+> > `expect(watched.peakRisk).toBeCloseTo(0.4742, 4)` and
+> > `expect(watched.peakRisk).toBeCloseTo(0.9661, 4)`, and its comments carry the
+> > trail: *"0.4824 until issue #588, and the eighty ten-thousandths it lost are
+> > the sixth of the mean that `safety` contributes"*, and *"It was 0.7979 when
+> > ADR 0048 set the weights, 0.7981 after ADR 0059 … and 0.9661 since issue
+> > #588"*.
+> >
+> > **The two sentences the table exists to support are unchanged, and the second
+> > is now larger.** `hotThreshold` is still `0.65`
+> > (`hotThreshold: 0.65,` verbatim in `src/simulation/incidents/sector-risk.ts`);
+> > `contrabandPressure` is still structurally zero, re-checked rather than
+> > assumed, because a great deal of contraband work has landed since — the only
+> > caller of `IntelligenceLedger.report` in `src/` is
+> > `reportInformantTip` (`src/simulation/contraband/informants.ts:87`) and that
+> > function still has no caller in `src/` at all, so the term is `0` in every
+> > session; and the gap one hire makes has widened from **0.0142** to
+> > **0.4919**. So *"one guard hire is the whole of the difference"* is more true
+> > than when it was written, not less.
+> >
+> > **"Twenty in-game days" above is ten.** `RUN_UNTIL` is 24,000 ticks at
+> > `DAY_LENGTH_TICKS` 2,400. [ADR 0064](./0064-what-an-unmet-need-costs-a-prison.md)
+> > caught the same division in five documents and in that test's own header;
+> > this paragraph is the sixth site. Nothing measured changes — every figure was
+> > read off a 24,000-tick run — but the window is half as long as this amendment
+> > says.
+>
 > **What that does not do is rescue alternative C, and this is the measurement
 > that settles it.** The obvious repair — give the two needs a cell-side sibling
 > at a low rate, so the pressure survives — does not work at any rate, because
@@ -262,6 +358,17 @@ need; the fallback already fixes the wasted cycle."*
   catalogue already uses for a second route to a need (`action.eat-in-cell` 3
   against `action.eat-meal` 4; `action.common-room-recreation` 2 against
   `action.yard-recreation` 3), now pinned by a test over all three pairs.
+
+  > **Five comparisons over four pairs now, and the sentence is still true.**
+  > Re-read 2026-08-31: `tests/unit/prisoners-action-catalog.test.ts`'s
+  > *"keeps the second route to a need slower than the first"* pins the three
+  > pairs this bullet names and two more, both introduced by
+  > `action.kitchen-work` — `hunger: 1` against `action.eat-meal`'s 4 and
+  > against `action.eat-in-cell`'s 3. Every rate this bullet quotes reproduces
+  > exactly: `action.shower` 4, `action.laundry-work` 1, `action.eat-meal` 4,
+  > `action.eat-in-cell` 3, `action.yard-recreation` 3,
+  > `action.common-room-recreation` 2. The count word is the only stale part,
+  > and it rotted upward.
 - **It does not weaken decision 1.** The laundry is a *room*: a prison with no
   shower room and no laundry still has no hygiene at all. What it adds is a
   second building that answers the same pressure, so the player has a choice
@@ -335,11 +442,88 @@ worktree and on this branch, one prisoner, ten in-game days, real commands:
 | cells + laundry | 1,442 → **500** | 560 → **0** | 0.3935 → **0.2301** | 0 → **249.6** | 0 → 0 |
 | cells + yard + shower + laundry | 1,140 → **400** | 440 → **0** | 0.068 → 0.0621 | 254 → 249.2 | 243.8 → 254.9 |
 
+> **The probe this table was measured on is not in the repository, and no test
+> pins any of its figures. Re-measured 2026-08-31 on a probe rebuilt to the
+> stated conditions, and the qualitative claims all hold while the numbers do
+> not.** The table stands as written, because a figure with a date and a commit
+> on it is a record; what follows is what a reader gets today.
+>
+> Grepping the tree for these numbers finds them **only in this document** —
+> `1,442`, `560`, `610`, `0.3935`, `0.2248`, `0.2301`, `0.4817`, `254.9` and
+> `249.6` are pinned by nothing, and `docs/PRISONER_OPERATIONS.md` repeats the
+> first four from here rather than from a measurement of its own. The table
+> also does not say whether a guard was on post, and since
+> [ADR 0078](./0078-what-keeps-a-prisoner-safe.md) that changes `needsPressure`
+> by a sixth — so the `needsPressure` column cannot be reproduced even in
+> principle from what is written here. That is the finding, not a complaint: the
+> honest statement is **not measured**.
+>
+> Rebuilt probe: one prisoner unless stated, **one guard** (so
+> `staffingShortfall` is 0 and the sector score *is* `needsPressure`), one
+> furnished `room.cell` each, ten in-game days, every prison raised with real
+> `PurchaseMaterials` / `ZoneRoom` / `PlaceObject` / `HireStaff` /
+> `AdmitPrisoner` commands, watched every tick from tick 2,000 to 24,000. It
+> reproduces two of the shipped suite's own figures exactly on a different seed
+> — `action.yard-recreation` at **2,116** performing ticks and a lowest
+> `recreation` of **232.65**, both pinned in
+> `tests/integration/room-gated-needs.test.ts` — which is the check that it is
+> measuring the same prison.
+>
+> | prison | idle ticks/day (this table → today) | unmet cycles | sector score peak / final | hygiene low/high | recreation low/high |
+> | --- | --- | --- | --- | --- | --- |
+> | cells only | 610 → **613** | **0** | 0.4752 / 0.3444 | 0 / 235 | 0 / 240 |
+> | cells only, 4 prisoners | 610 → **613** each | **0** | 0.4752 / 0.3444 | 0 / 235 | 0 / 240 |
+> | cells + yard | 540 → **415** | **0** | 0.3183 / 0.2699 | 0 / 235 | 232.65 / 255 |
+> | cells + laundry | 500 → **349** | **0** | 0.3758 / 0.1837 | 232.4 / 255 | 0 / 240 |
+> | cells + yard + shower + laundry | 400 → **266** | **0** | 0.3059 / 0.0641 | 226.8 / 255 | 232.05 / 255 |
+>
+> **What reproduces, and it is everything the decisions rest on.**
+> `unmetDemandCycles` is **0** in all five prisons and in a sixth run with no
+> guard at all — the single number this change existed to move, and the premise
+> of decision 4 and of open question 3. Idle ticks fall monotonically as rooms
+> are built, from 613 in a prison of cells to 266 in a built one. `hygiene` and
+> `recreation` read exactly **0** for the whole window wherever the room is
+> missing and rise the moment it exists, which is decision 1 stated as
+> behaviour. The cells-only *"floor of 0.3333 … that no play can lower"* is
+> arithmetic over two of six needs and still holds: the final score sits at
+> 0.3444, just above it.
+>
+> **What does not.** Every absolute figure. The idle-tick column is 0.5 % out on
+> the two cells-only rows and 20–34 % out on the three built ones, because the
+> prisons are not the same prisons — the laundry and yard rectangles, the seed
+> and the sentence length all differ, and travelling time is a large part of
+> what an unbuilt prison does not pay. The `needsPressure` column is not
+> comparable at all, for the guard reason above. The two need levels (254.9,
+> 249.6, 249.2, 243.8) are final readings where mine are extremes; the shipped
+> tests' nearest equivalents are `finalHygiene` **254.8** in
+> `tests/integration/laundry-work-and-empty-blocks.test.ts` and lowest
+> `recreation` **232.65** in `room-gated-needs.test.ts`.
+>
+> **`docs/PRISONER_OPERATIONS.md` carries the same four figures** in its own
+> voice — *"1,442 of 2,400 ticks a day idle and 560 unmet demand cycles before,
+> 610 and 0 after"* — and is not corrected here, because a second unmeasured
+> restatement is a handover rather than a line to rewrite blind. **The durable
+> repair is to pin the two figures that carry the argument** — idle ticks a day
+> in a cells-only prison, and `unmetDemandCycles` — in
+> `tests/integration/laundry-work-and-empty-blocks.test.ts`, which already
+> measures that prison and already pins `idleWorkBlockTicks` at 1,257. That is
+> recommended and not done here.
+
 - **The remaining 610 is not empty content.** `unmetDemandCycles` is 0, so every
   reconsideration found something; what is left is `ActionSystem`'s twenty-tick
   cadence, which an action of 60 ticks fills 60 of every 80. A fully furnished
   prison sits at 360 on the same floor. **Whether the cadence should leave a
   gap at all is a different question and is not answered here.**
+
+  > **The cause reproduces; the 360 does not, and is not pinned anywhere.**
+  > `ActionSystem`'s cadence is unchanged —
+  > `public readonly schedule = { intervalTicks: 20, phaseTicks: 0 };` (verbatim
+  > in `src/simulation/prisoners/action-system.ts`) — and
+  > `unmetDemandCycles` is 0 in every prison measured on 2026-08-31, so the
+  > diagnosis stands. The figure 360 appears in this document and in
+  > *Alternatives* D and nowhere else in the tree; the rebuilt probe's most
+  > furnished prison sits at 266 idle with 804 ticks a day travelling, which is
+  > a different prison rather than a refutation. **Not measured.**
 - **The neglect is untouched, and that is the point.** `needsPressure` in the
   cell-only prison is 0.3935 before and after — to four decimal places — and
   0.3898 rather than 0.3889 in the sector-risk integration run, which is *up*.
@@ -413,3 +597,29 @@ Three smaller things would move me:
    0 in every prison with a housed population and non-zero only for a prisoner
    with no accommodation. That is a useful number under a different name, and it
    is ADR 0041 open question 2's territory (#435).
+
+> **Where the three stand, re-checked 2026-08-31 at `8218f23`.**
+>
+> - **1 is still open.** `intervalTicks` is still 20 and nothing has ruled on
+>   whether the gap should exist. ADR 0062, ADR 0077 and ADR 0029 each *use* the
+>   reconsideration cadence and none decides this. The number in the question is
+>   the unpinned 360 marked under *Consequences*.
+> - **2 is still open and still the owner's**, and it has narrowed exactly as
+>   the amendment above says. `docs/HUD_PROJECTIONS.md` gap 7 now reads
+>   *"Narrowed, not closed, by #443"*, records
+>   `STATE_INCOME_UNMET_NEED_LEVEL` — still `51`
+>   (`export const STATE_INCOME_UNMET_NEED_LEVEL = 51;` verbatim in
+>   `src/simulation/economy/income.ts`) — as *"the fact this gap was waiting
+>   for"*, and ends *"the threshold is still the owner's, and so is whether it
+>   should be this one."*
+> - **3 is SETTLED, and this document is the last place that still asks it.**
+>   Issue #435 answered it, and ADR 0041 records the answer under its own open
+>   question 2: *"the answer is that `unmetDemandCycles` should keep counting
+>   exactly what it counts."* What #435 added instead is a second pair —
+>   `ActionMetrics.substitutionCycles` and `contendedSubstitutionCycles`
+>   (`readonly substitutionCycles: number;` verbatim in
+>   `src/simulation/prisoners/action-system.ts`) — disjoint from
+>   `unmetDemandCycles` by construction, so the pair reads as "got nothing"
+>   against "got less". The guess in the question above, that the number wants a
+>   different name, is the half that was wrong: the name stayed and a second
+>   number arrived beside it.
