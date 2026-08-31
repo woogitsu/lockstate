@@ -134,6 +134,37 @@ export function justInTimePurchaseOrderId(tick: number, itemId: string, inFlight
  * this pass next runs there is no deficit left for it to find. Nothing about
  * the pass changed, and the three other routes are untouched.
  *
+ * **And the sentence above about the four routes is complete only for a prison
+ * that can pay in one lump, which #687's remainder is where it shows.** This
+ * pass buys the whole per-item deficit in a single
+ * `ProcurementSystem.purchase`, and `Treasury.spend` refuses what it cannot
+ * cover **entirely**, so there is no partial buy: a prison holding 300 against
+ * a deficit of eight bricks at 40 buys nothing, not seven. That is ordinary
+ * while nothing else was paying, and it becomes visible the moment a delivery
+ * the *player* bought was covering part of the queue -- because such a delivery
+ * is a purchase already made at a price the prison could once afford, which
+ * this pass can no longer reproduce. Cancelling it therefore hands back money
+ * the queue cannot spend: measured, a prison drained to 300 that buys six
+ * bricks, draws four wall segments and then cancels the purchase ends with
+ * **300 held and no walls**, where the same prison that does not cancel ends
+ * with 60 held and three walls standing
+ * (`tests/integration/economy-refund-survives-the-clock.test.ts`, *"stalls a
+ * whole queue the prison can no longer fund in one lump, and one press undoes
+ * that"*).
+ *
+ * **Recorded rather than fixed, and the reason is that the remedy is a
+ * decision about money.** No value is lost and no promise is broken -- the
+ * refund is not reversed in that sequence, so the procurement fold's sentence
+ * is true there -- and the state is recoverable by one `CancelBuildOrder`,
+ * which brings the demand under what the balance buys and reaches the
+ * non-cancelling outcome exactly. Buying what the prison *can* afford instead
+ * closes the asymmetry -- measured against the same fixture, both branches then
+ * reach three walls -- and costs 40 more of the treasury for them, spending
+ * liquidity down toward the floor
+ * [ADR 0075](../../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+ * is about. Which of the two a prison is owed is that ADR's question and
+ * `issue #29`'s numbers, so it is put up rather than taken here.
+ *
  * See `justInTimePurchaseOrderId` for why two purchases of one item at one
  * tick do not collide.
  *

@@ -657,6 +657,31 @@ export class ConstructionSystem implements SystemRegistration {
    * is not the last one drawn; what it is, is the same segment on every
    * machine and after every restore, which is the property this has to have.
    *
+   * **#693 called this "the least surprising segment to take" and named its own
+   * doubt about that; the doubt was right and its guess about what a player
+   * sees was wrong in the direction that matters.** It expected a segment to
+   * vanish *"from somewhere in the middle of the line"*. A UUID's ordinal
+   * position within a run is uniform, so the greatest id is as likely to be
+   * either end of the row as the middle -- and the extreme case is reachable
+   * rather than theoretical: with ids that do not follow placement order the
+   * segment withdrawn is the tile the player drew **first**, at the far left of
+   * a left-to-right drag. Measured, no browser needed, because a `BuildOrder`
+   * carries its own `location`:
+   * `tests/integration/economy-refund-survives-the-clock.test.ts`, *"takes
+   * whichever segment holds the greatest id, which can be the first one
+   * drawn"*. The determinism argument above is untouched -- it was never a
+   * claim about surprise -- and the paragraph is kept rather than rewritten
+   * because everything in it is still true.
+   *
+   * **What would change it is a persisted field and therefore a save-format
+   * decision, not a better sort.** Nothing on `BuildOrder`
+   * (`src/simulation/construction/build-order.ts`) records when or in what
+   * order it was placed -- there is no tick, no sequence and no drag index --
+   * so "withdraw the one the player drew last" cannot be computed from the
+   * order book at all. `Map` insertion order is not it either: `orderedOrders`
+   * re-sorts by id precisely so that a restore cannot change the answer, and a
+   * snapshot is not required to preserve insertion order.
+   *
    * ## What it cannot create
    *
    * Only `'approved'` and `'materials-pending'` orders are candidates -- the

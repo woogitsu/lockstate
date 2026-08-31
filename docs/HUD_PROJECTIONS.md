@@ -1208,6 +1208,22 @@ decision about what to build next.
       `tests/integration/economy-refund-survives-the-clock.test.ts`, and the
       conservation equation across the whole sequence by the `#687` case in
       `tests/integration/economy-money-conservation.test.ts`.
+
+      **Two things about that were asserted without a measurement behind them
+      and have since been measured; both are corrections to the claims rather
+      than to the behaviour.** *Which* segment a player watches disappear was
+      guessed to be *"somewhere in the middle of the line"* -- it is the tile
+      holding the greatest id, whose ordinal position in a run of
+      `order-${crypto.randomUUID()}` ids is uniform, so it is as likely to be
+      either end, and the measured fixture takes the segment the player drew
+      **first**. And *"cancelling a delivery the player pressed Buy for is
+      correct, only the fold's sentence is false"* holds in a prison that can
+      pay: the refund goes out again at the same price, the same segments stand,
+      and the whole cost is one delivery delay restarted. It does **not** hold
+      in a prison that cannot pay in one lump, where cancelling such a delivery
+      stalls the queue it was part-funding -- see
+      `src/simulation/economy/just-in-time-materials.ts` for that one, which is
+      a question about money and not about a projection.
     - **The income line pays.** It used to have no occupied *place*:
       `RoomZoningService` registered a zoned room with `capacity: 0`, so a
       prisoner held no unit of any declared capacity and 300 × 0 was 0 in every
