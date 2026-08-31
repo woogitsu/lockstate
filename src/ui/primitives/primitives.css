@@ -310,6 +310,52 @@
   white-space: nowrap;
 }
 
+/*
+ * A row whose label is a SENTENCE rather than a name (`createListRow`'s
+ * `wrap`).
+ *
+ * The one line above is right for what this primitive was built for -- a
+ * buildable, a room type, a staff role, all of them one or two words -- and
+ * it is wrong the moment a whole sentence is put through it. In the HUD's
+ * alerts log it produced the defect issue #720 was filed on: measured on the
+ * assembled page at 1280x800 and again at 1920x1080, a `.ui-row__label`
+ * carrying *"Contraband found: Mobile phone."* reported **scrollWidth 218
+ * against clientWidth 88** and a player read `Contraban…`. The two figures
+ * are identical at both viewports because the rail that holds the log is
+ * `calc(224px * var(--ui-scale))` -- a fixed rail, so a wider window buys the
+ * sentence nothing -- and because the row's severity badge takes a further
+ * 50-70px of the 200px the list has.
+ *
+ * **Nothing in the test suite could see it**, which is the other half of
+ * #720. `textContent`, `innerText`, `toHaveText` and `expectLaidOut` all
+ * return the whole sentence from a clipped element, so four separate acts of
+ * DOM probing during a playtest reported the log correct; only a screenshot
+ * found it. `tests/browser/clipping.ts` is the check that can see it, and it
+ * is pointed at these rows in `ui-shell.spec.ts`.
+ *
+ * `overflow: hidden` is deliberately *kept* rather than relaxed to
+ * `visible`: it is what makes `scrollWidth`/`scrollHeight` still report an
+ * overflow that wrapping failed to absorb, so the check above stays able to
+ * fail here. `overflow-wrap: break-word` is what guarantees there is none --
+ * a single token longer than the box (a long item name, a language that does
+ * not space its words) breaks rather than running past the edge.
+ *
+ * An opt-in and not the default. Wrapping costs row height, and the box
+ * chain around the alerts list is the most constrained in the interface
+ * (#174): measured with eight rows of that sentence, a row goes from 37px to
+ * 62px (77px for the widest badge), the rows that fit without scrolling go
+ * from 8 to 5 at 1280x800 and from 6 to 4 at 1280x720, and the minimap
+ * placeholder square shrinks from 208px to 158px at 1280x800. The rail and
+ * the Build panel are untouched -- `.hud__rail` measures 572.3/652.3/932.3
+ * and `.hud-build` 397.8 for 396px of content, identical with and without
+ * the wrap, because `.hud__corner` and `.hud__rail` are separate items of a
+ * `minmax(0, 1fr)` grid row that neither can grow.
+ */
+.ui-row--wrap .ui-row__label {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
 .ui-row--interactive {
   background: transparent;
   border-top: 0;

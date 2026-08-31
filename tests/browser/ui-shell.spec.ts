@@ -1,4 +1,5 @@
 import { type Page, expect, test } from './network-changed-fixture';
+import { expectNotClipped, probeClipping } from './clipping';
 import type { HudPrisonerRosterViewModel, HudRegimeViewModel, HudViewModel } from '../../src/ui/hud';
 import { MAX_ROOM_SIDE_TILES } from '../../src/ui/hud/rooms-panel';
 import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global augmentation
@@ -1222,6 +1223,177 @@ test.describe('HUD shell', () => {
       expect((await page.evaluate(() => window.lockstateUiHarness.alertProbe())).order).toEqual(['c', 'a', 'b']);
       await expectLaidOut(page, '.hud-alerts__list [data-alert]', 'the alert rows');
       await expect(page.locator('.hud-alerts__list [data-alert="c"]')).toBeVisible();
+    });
+  });
+
+  /**
+   * THE SENTENCES IN THE ALERTS LOG ARE WHOLE ON SCREEN, NOT ONLY IN THE DOM
+   * (issue #720).
+   *
+   * ## Why this block exists beside the four tests above
+   *
+   * Every one of them reads the DOM. `alertProbe().texts` is `textContent`,
+   * `toBeVisible` is a box and a `visibility`, and `expectLaidOut` is
+   * `getClientRects().length > 0`. A clipped element satisfies all three: it
+   * is laid out, it is visible, and its text node is the whole sentence. On
+   * 2026-08-31 the log showed about **ten characters of every sentence in
+   * it**, at 1280x800 and identically at 1920x1080, with this file green --
+   * four separate acts of DOM probing during a playtest called it correct
+   * and only a screenshot found it.
+   *
+   * `expectNotClipped` is the assertion that was missing, and
+   * `tests/browser/clipping.ts` says what it measures. The rows here are the
+   * case it was written for.
+   *
+   * ## Why the sentences are real catalogue sentences
+   *
+   * The block above deliberately repeats `hud.alerts.title` down the list,
+   * because order is what it asserts and a key with no translation must not
+   * reach the screen. This block asserts *width*, so the string has to be a
+   * string the game really renders: `hud.alert.event.contraband.discovered`
+   * is the sentence rulings 3 and 13 of #703 authored so that a found phone
+   * stops rendering as the character `1`, and it is the one the screenshot
+   * in #720 caught reading `Contraban...`. The longest refusal in the
+   * catalogue is here too, because a fix that only fits the short one is not
+   * a fix: eight rows of it measure a 1065px list inside a 342px box at
+   * 1280x720, which the list's own `overflow-y: auto` (#703 ruling 1)
+   * absorbs.
+   */
+  test.describe('the alerts log is readable, not merely rendered (issue #720)', () => {
+    const CONTRABAND_KEY = 'hud.alert.event.contraband.discovered';
+    const LONGEST_REFUSAL_KEY = 'hud.alert.refusal.zone.not-enclosed';
+    const EIGHT_IDS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+
+    const withSentences = (count: number, labelKey: string): HudViewModel => ({
+      counts: {
+        prisoners: 142,
+        prisonerCapacity: 180,
+        occupiedPlaces: 142,
+        staff: 27,
+        rooms: 61,
+        prisonersCovered: 100,
+        prisonersUnderstaffed: 30,
+        prisonersUnguarded: 12,
+        prisonersHighRisk: 0,
+        activeIncidents: 0,
+        contrabandFound: 4,
+        treasuryMinorUnits: 24_920,
+        stateIncomeAccruedTodayMinorUnits: 10_667,
+      },
+      clock: { day: 3, tickOfDay: 600, dayLengthTicks: 2_400, mode: 'paused', speed: 1 },
+      alerts: EIGHT_IDS.slice(0, count).map((id, index) => ({
+        id,
+        labelKey,
+        labelParameters: { item: 'Mobile phone' },
+        severity: index === 0 ? 'danger' : index === 1 ? 'warning' : 'info',
+      })),
+    });
+
+    for (const [width, height] of [
+      [1280, 720],
+      [1280, 800],
+      [1920, 1080],
+    ] as const) {
+      test(`no row is cut off at ${String(width)}x${String(height)}`, async ({ page }) => {
+        await page.setViewportSize({ width, height });
+        await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+        for (const labelKey of [CONTRABAND_KEY, LONGEST_REFUSAL_KEY]) {
+          await page.evaluate(
+            (model) => window.lockstateUiHarness.setHudViewModel(model),
+            withSentences(8, labelKey),
+          );
+
+          // The three assertions in order, because each answers a question
+          // the next one does not: the sentence is in the DOM, the row is on
+          // the page, and the sentence is not being painted with its end cut
+          // off. Before the `wrap` this list passes on the first two.
+          await expect(page.locator('.hud-alerts__list [data-alert="a"]')).toContainText('.');
+          await expectLaidOut(page, '.hud-alerts__list .ui-row__label', 'the alert row labels');
+          await expectNotClipped(page, '.hud-alerts__list .ui-row__label', 'the alert row labels');
+        }
+      });
+    }
+
+    /**
+     * The empty-list row wraps too, and this asserts the *class* because
+     * nothing else here can.
+     *
+     * `hud.alerts.empty` is "No active alerts", which fits the row at every
+     * viewport -- so `expectNotClipped` on it is green with the wrap and
+     * green without it, and a test that cannot fail is worth nothing. What
+     * is actually being pinned is that every row of this list is a wrapping
+     * row, including the one the player sees most often; a translation of
+     * that string longer than the English would otherwise be the single row
+     * here that gets cut, and it would be cut in a locale nobody runs the
+     * browser suite in.
+     */
+    test('the empty-list row wraps like every other row in this list', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withSentences(0, CONTRABAND_KEY));
+
+      const emptyRow = page.locator('.hud-alerts__list [data-alert="empty"]');
+      await expect(emptyRow).toBeVisible();
+      await expect(emptyRow).toHaveClass(/\bui-row--wrap\b/);
+      await expectNotClipped(page, '.hud-alerts__list [data-alert="empty"] .ui-row__label', 'the empty-list row');
+    });
+
+    /**
+     * THE CHECK CAN FAIL, WHICH IS THE ONE THING THE BLOCK ABOVE CANNOT SHOW.
+     *
+     * Everything above is green after the fix, and would be equally green if
+     * `expectNotClipped` compared nothing at all -- which is precisely the
+     * failure #720 is about, a probe reporting a surface correct because it
+     * was asking the wrong question. So the probe is pointed at an element
+     * built here to be clipped, and the clipping it reports is asserted
+     * against numbers this test states rather than reads back: a 40px box
+     * around 400px of nowrap text under `overflow: hidden`.
+     *
+     * Deliberately not `expectNotClipped`, which would only tell us that
+     * *something* was found. The figures are what say it found the right
+     * thing.
+     *
+     * Both kinds are controlled, because the probe reports two and a version
+     * that saw only one swept clean over three of the four labels
+     * `docs/research/2026-08-31-playing-the-twelve.md` §12 measured:
+     * `overflow: hidden` hides the overflow (`cut`), `overflow: visible`
+     * paints it on the neighbours (`spilled`), and the third state --
+     * `overflow: auto`, which a player can scroll -- must produce no finding
+     * at all or every scrolling list in the HUD becomes one.
+     */
+    test('the clipping probe reports a deliberately clipped element', async ({ page }) => {
+      // One box per state, same content: fifty monospace characters, which is
+      // several hundred pixels of text in a 40px box.
+      await page.evaluate(() => {
+        for (const [name, overflow] of [
+          ['cut', 'hidden'],
+          ['spilled', 'visible'],
+          ['scrollable', 'auto'],
+        ] as const) {
+          const control = document.createElement('div');
+          control.className = `lockstate-clipping-control lockstate-clipping-${name}`;
+          control.setAttribute(
+            'style',
+            `position:fixed;left:0;top:0;width:40px;height:20px;overflow:${overflow};white-space:nowrap;font:16px monospace`,
+          );
+          control.textContent = 'x'.repeat(50);
+          document.body.append(control);
+        }
+      });
+
+      const probe = await page.evaluate(probeClipping, '.lockstate-clipping-control');
+
+      expect(probe.matched, 'the three control elements were not found, so nothing was measured').toBe(3);
+      // The scrollable one is deliberately absent: its overflow is reachable.
+      expect(probe.clipped.map((one) => one.kind)).toEqual(['cut', 'spilled']);
+
+      for (const found of probe.clipped) {
+        expect(found.clientWidth, 'the control box is the 40px this test set').toBe(40);
+        expect(found.scrollWidth, 'fifty monospace characters are far wider than 40px').toBeGreaterThan(300);
+        expect(found.hiddenX, 'the horizontal overflow is what the probe reports').toBeGreaterThan(260);
+        expect(found.hiddenY, 'one line of 16px text fits in a 20px box, so nothing leaves it vertically').toBe(0);
+      }
     });
   });
 

@@ -1788,7 +1788,22 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       const existing = alertRows.get(alert.id);
       let row = existing;
       if (row === undefined) {
-        row = createListRow({ icon: 'incident', label: text, badge });
+        /*
+         * `wrap: true` is the fix for #720 and the only place in the HUD
+         * that asks for it.
+         *
+         * Every other `createListRow` caller puts a *name* in the label --
+         * a buildable, a room type, a staff role -- and the primitive's
+         * one clipped line is right for those. This list puts whole
+         * sentences from the catalog through it: "Contraband found:
+         * {item}.", "The room was not zoned -- this room type must be
+         * enclosed, and the area you drew is open on at least one side."
+         * In a 224px rail with a severity badge beside it the label gets
+         * 88-113px, so a sentence was rendered as `Contraban...` and the
+         * item name -- the part rulings 3 and 13 of #703 added the sentence
+         * for -- was always the part cut.
+         */
+        row = createListRow({ icon: 'incident', label: text, badge, wrap: true });
         row.element.dataset['alert'] = alert.id;
         alertRows.set(alert.id, row);
       } else {
@@ -1825,7 +1840,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // An empty list must say it is empty. A blank rectangle is indistinguishable
     // from a broken one.
     if (viewModel.alerts.length === 0 && emptyRow === undefined) {
-      emptyRow = createListRow({ icon: 'check', label: t(HUD_MESSAGE_KEY.alertsEmpty) });
+      // Wrapped for the same reason as the rows above, though today's
+      // sentence fits on one line: the empty-list row is a row of this list,
+      // and a locale whose "no active alerts" is longer should not be the
+      // one row here that gets cut.
+      emptyRow = createListRow({ icon: 'check', label: t(HUD_MESSAGE_KEY.alertsEmpty), wrap: true });
       emptyRow.element.dataset['alert'] = 'empty';
       alertList.append(emptyRow.element);
     } else if (viewModel.alerts.length > 0 && emptyRow !== undefined) {
