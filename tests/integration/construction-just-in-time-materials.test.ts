@@ -852,7 +852,7 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
 });
 
 describe('the money loop this must not create (ADR 0076)', () => {
-  it('never credits the treasury on any build, undo, redo or remove route', () => {
+  it('creates nothing on any build, undo, redo or remove route, and pays each cancellation once', () => {
     /*
      * ADR 0076 names the hazard in terms: a refund added to a removal that
      * leaves `materialsAllocated` populated is refunded a second time by a
@@ -867,6 +867,23 @@ describe('the money loop this must not create (ADR 0076)', () => {
      * command below reaches it. A spy is the whole assertion: if some future
      * change wires a refund here, this fails and sends its author to
      * `economy-money-conservation.test.ts` to prove the sum still holds.
+     *
+     * **THE ANSWER CHANGED ON 2026-08-31 AND THE HAZARD DID NOT, WHICH IS WHY
+     * THE PARAGRAPHS ABOVE ARE KEPT.** The owner's ruling 20 -- *"Anulowanie
+     * zwraca pieniądze zamiast cegieł"*, ADR 0076's amendment of that date --
+     * makes a cancellation before the crew starts give back **money**. So
+     * *"there is no refund"* is now false and *"the money became bricks, and
+     * `cancelOrder` gives the bricks back"* is false with it; what is still
+     * exactly true is the hazard both sentences were defending against, and
+     * this case now measures it as a count rather than as a zero. One
+     * cancellation, one credit, of exactly what the press had bought -- and
+     * `redo` buying it again is the other half, because a refund that were not
+     * re-spent would be a money pump driven by `KeyZ`.
+     *
+     * The spy went from `not.toHaveBeenCalled()` to an enumeration of the
+     * amounts for that reason: a zero cannot distinguish "paid once" from "paid
+     * three times and spent twice", and after the ruling that is the
+     * distinction the file is here for.
      */
     const runtime = createNewSimulationRuntime(SEED);
     const creditSpy = vi.spyOn(runtime.treasury, 'credit');
@@ -879,17 +896,31 @@ describe('the money loop this must not create (ADR 0076)', () => {
     // window in which a naive "cancel the purchase too" would do anything.
     send(runtime, { type: 'Undo' });
     expect(runtime.construction.getOrder('order-a')?.state).toBe('cancelled');
+    expect(runtime.treasury.balanceMinorUnits, 'the crew had not started, so the money came back').toBe(25_000);
+    expect(runtime.procurement.pendingDeliveries, 'and the delivery it had bought was turned around').toHaveLength(0);
+
     send(runtime, { type: 'Redo' });
+    // A `Redo` returns the order to `'approved'` and no more: unlike a
+    // `PlaceBuildOrder` it does not run a purchase pass of its own, so the
+    // re-buy is the next scheduled construction tick's. Twelve ticks reaches
+    // one and is nowhere near a delivery landing.
+    step(runtime, 12);
+    expect(runtime.treasury.balanceMinorUnits, 'a redone order buys its own bricks again').toBe(afterPlacing);
     send(runtime, { type: 'Undo' });
 
-    expect(creditSpy, 'undo and redo must not refund a purchase').not.toHaveBeenCalled();
-    expect(runtime.treasury.balanceMinorUnits).toBe(afterPlacing);
+    expect(
+      creditSpy.mock.calls.map(([amount]) => amount),
+      'two cancellations, two refunds, each of exactly one wall',
+    ).toEqual([WALL_COST, WALL_COST]);
+    expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
 
-    // And past the delivery, where the bricks land whatever the order did.
+    // And past the delivery, where nothing lands because nothing is still paid
+    // for -- which is what makes the refund survive the clock (#687's failure
+    // mode, in the direction the ruling created).
     step(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS + 20);
-    expect(stockOf(runtime, BRICK), 'the money became bricks and the bricks are the prison\'s').toBe(BRICKS_PER_WALL);
-    expect(creditSpy).not.toHaveBeenCalled();
-    expect(runtime.treasury.balanceMinorUnits).toBe(afterPlacing);
+    expect(stockOf(runtime, BRICK), 'no bricks, because none were paid for').toBe(0);
+    expect(creditSpy.mock.calls, 'and nothing paid a third time').toHaveLength(2);
+    expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
   });
 
   it('does not buy a second time for an order that is undone and redone', () => {

@@ -590,6 +590,65 @@ export class ConstructionSystem implements SystemRegistration {
    *
    * `cancelled` and `failed` still throw: they are terminal, and there is no
    * geometry behind them to reverse.
+   *
+   * ## What comes back, and in which currency (the owner's ruling 20 of
+   * 2026-08-31)
+   *
+   * *"Anulowanie zwraca pieniądze zamiast cegieł"* and *"Pieniądze dopóki ekipa
+   * nie zaczęła"* -- money instead of bricks, and only until the crew has
+   * started. [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+   * amendment of that date records both, says which part of its decision B they
+   * supersede, and is **unsigned**: this method is what the owner is being asked
+   * to sign, not something the signature has already covered.
+   *
+   * | state at the press | what the player gets |
+   * | --- | --- |
+   * | `planned` | nothing, and nothing was spent: `pendingOrderDemand` never counts a planned order, so no purchase was ever made for it |
+   * | `approved` | money -- the just-in-time deliveries its demand caused, where the whole delivery is now surplus |
+   * | `materials-pending` | the same |
+   * | `assigned` | money -- the catalogue value of the allocation it is holding; the materials are **not** returned to stock |
+   * | `in-progress` | nothing at all. The allocation is dropped unreleased and unpaid |
+   * | `completed` | the materials, into the container, exactly as before -- ADR 0076 decision B, which ruling 20 does not reach |
+   *
+   * **Why `in-progress` destroys value on purpose.** It is the only place in
+   * the money loop where value leaves rather than changing form, and it is the
+   * whole content of the second ruling: if the materials came back in either
+   * currency, cancelling late would cost nothing and "until the crew has
+   * started" would be a distinction without a difference. The materials went
+   * into a wall that is now being un-built.
+   *
+   * **One refund per order, in exactly one currency, with the allocation
+   * emptied in the same step.** That is decision B's hazard inherited word for
+   * word with *materials* replaced by *money*, and it is sharper than B's was:
+   * B's double refund needed two presses, and paying for the plank while also
+   * releasing it needs one. Every branch below therefore ends at the same
+   * `materialsAllocated = []`, and `redo()` -- which returns an order to
+   * `'approved'` and lets it allocate again -- can find nothing stale to be
+   * paid a second time from.
+   *
+   * **A line the catalogue cannot price is released rather than destroyed.** A
+   * buildable may require an item nothing sells (`UnprocurableMaterial`'s
+   * `'unpurchasable'`), and there is no honest money figure for it; the sink
+   * hands those lines back and they go into the container the way every line
+   * used to.
+   *
+   * **With no procurement sink wired, every cancellable state releases exactly
+   * as it did before ruling 20, and `in-progress` is the one exception.** A
+   * bare `ConstructionSystem` is not a session -- it has no treasury behind it
+   * and cannot pay anybody -- so "money instead of bricks" has no meaning
+   * there and the materials go back, which is what
+   * `UNLIMITED_MATERIALS_PROVIDER` and `ContainerMaterialsProvider` have always
+   * done. `in-progress` is not conditional on the sink because its rule is not
+   * about money: the materials are consumed by the works whether or not
+   * anybody is keeping accounts.
+   *
+   * **What stops that fallback hiding a lost wiring** is that the sink's one
+   * production caller is `createNewSimulationRuntime`, and
+   * `tests/integration/economy-money-conservation.test.ts` drives that function
+   * rather than a fixture: a session whose sink went missing would refund
+   * bricks where those cases measure money, in every one of the states ruling
+   * 20 names. This is not the `composition-root-contract` shape of hazard --
+   * that gate is about `src/main.ts`, which does not construct this system.
    */
   public cancelOrder(id: string): void {
     const order = this.orders.get(id);
@@ -598,17 +657,84 @@ export class ConstructionSystem implements SystemRegistration {
       throw new Error(`Cannot cancel order in state ${order.state}`);
     }
 
-    const hadGeometry = order.state === 'completed';
+    const stateAtCancellation = order.state;
+    const hadGeometry = stateAtCancellation === 'completed';
     order.state = 'cancelled';
     if (hadGeometry) this.revertConstruction(order);
 
-    // The materials this order actually consumed go back where they came
-    // from. `materialsAllocated` is emptied in the same step,
-    // so a `redo()` -- which returns the order to `'approved'` and lets it
-    // allocate again -- cannot refund a second time from a stale record.
     if (order.materialsAllocated.length > 0) {
-      this.materialsProvider.release(order.materialsAllocated);
+      // Read before the field is emptied, because both the release and the
+      // refund are computed from it and the emptying is unconditional.
+      const allocated = order.materialsAllocated;
       order.materialsAllocated = [];
+      if (stateAtCancellation === 'in-progress') {
+        // Ruling 20's "nothing". Neither released nor paid for: see the table
+        // above for why this is the ruling rather than a leak.
+      } else if (hadGeometry || this.materialsProcurement === undefined) {
+        this.materialsProvider.release(allocated);
+      } else {
+        this.materialsProvider.release(this.materialsProcurement.refundAllocatedMaterials(allocated));
+      }
+    }
+
+    this.refundSurplusOf(stateAtCancellation, order);
+  }
+
+  /**
+   * Takes back the money a cancellation has just made surplus, where it is
+   * still recoverable.
+   *
+   * ## Why this is here at all
+   *
+   * A `PlaceBuildOrder` buys at the press (`procureQueuedMaterials`, ADR 0017
+   * decision 7), and the goods take `PROCUREMENT_DELIVERY_DELAY_TICKS` to land.
+   * So an order cancelled soon after it is placed is holding **nothing** -- it
+   * never reached `tryAllocate` -- while its money sits in a delivery on the
+   * road. Without this, "cancelling gives back money" would be false in
+   * precisely the state a player is most likely to press it in, and the four
+   * refundable states ruling 20 names would collapse to one.
+   *
+   * It is the supply-side mirror of `withdrawOrdersAwaitingMaterial`, which
+   * #687 built for the opposite press: that one answers a cancelled *delivery*
+   * by removing demand, this one answers a cancelled *order* by removing
+   * supply. Both stop at the same line -- the point where the next scheduled
+   * pass would find nothing to buy -- and both read it off the same two
+   * figures, `demandedQuantityOf` and `ConstructionProcurementSink.heldOrInFlightOf`.
+   *
+   * ## Which states it runs for, and why not the others
+   *
+   * `'approved'` and `'materials-pending'` only: they are the two states
+   * `pendingOrderDemand` counts, so they are the only ones whose cancellation
+   * moves the demand figure this is subtracting from. An `'assigned'` or
+   * `'in-progress'` order is not demand -- its materials were withdrawn from
+   * the container by `tryAllocate` -- so running this for one would compare an
+   * unchanged demand against an unchanged supply and could only act on a
+   * surplus some *earlier* press had already been offered. `'planned'` is not
+   * demand either. `'completed'` is left out for a different reason: releasing
+   * its materials really does raise supply and really could make a delivery
+   * surplus, but ADR 0076 decision B governs that press and ruling 20 does not
+   * reach it, so its behaviour is left exactly where B put it.
+   *
+   * ## Re-entrancy with `withdrawOrdersAwaitingMaterial`
+   *
+   * That method calls `cancelOrder` in a loop, so this runs inside it. It
+   * cannot make that loop run away: the loop only cancels while demand still
+   * *exceeds* supply, and this only refunds while supply exceeds demand, so at
+   * most one of the two is ever doing anything. The `#687` sequence -- cancel a
+   * delivery, then withdraw orders behind it -- therefore reaches exactly the
+   * same end state it reached before this existed.
+   */
+  private refundSurplusOf(stateAtCancellation: BuildOrder['state'], order: BuildOrder): void {
+    const sink = this.materialsProcurement;
+    if (sink === undefined) return;
+    if (stateAtCancellation !== 'approved' && stateAtCancellation !== 'materials-pending') return;
+    const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+    if (definition === undefined) return;
+    // Ascending item id: this credits the treasury, so the walk writes
+    // simulation state (`docs/DETERMINISM.md`, "Canonical iteration order").
+    const itemIds = [...new Set(definition.materialsRequired.map((requirement) => requirement.itemId))].sort();
+    for (const itemId of itemIds) {
+      sink.refundSurplusDeliveries(itemId, this.demandedQuantityOf(itemId));
     }
   }
 
@@ -694,6 +820,15 @@ export class ConstructionSystem implements SystemRegistration {
    * declined to wire a refund to `undo()`. An order in these two states holds
    * an empty `materialsAllocated`, so the release is a no-op and the only
    * thing that moves is the money the delivery itself carried.
+   *
+   * **The middle of that paragraph changed under the owner's ruling 20 of
+   * 2026-08-31 and the conclusion did not, which is why it is marked rather
+   * than rewritten.** `cancelOrder` no longer releases an allocation in these
+   * states -- it pays for it -- so what withdrawing an allocated order would
+   * now do is credit the treasury *twice over*, once for the allocation and
+   * once for the delivery. That is the same M2, reached by a shorter route. The
+   * candidate set is unchanged and the empty-allocation property it rests on is
+   * unchanged with it.
    *
    * Answers the ids it withdrew, newest-walked first, so a caller can say what
    * happened. `[]` when no sink is wired -- a bare `ConstructionSystem` buys

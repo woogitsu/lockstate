@@ -232,4 +232,64 @@ export interface ConstructionProcurementSink {
    * where the line is without crossing it.
    */
   heldOrInFlightOf(itemId: string): number;
+
+  /**
+   * Pays back, in money, what a cancelled order was holding, and answers the
+   * lines it could not price.
+   *
+   * **The owner's ruling 20 of 2026-08-31 -- *"Anulowanie zwraca pieniądze
+   * zamiast cegieł"* -- reaches this port here**
+   * ([ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+   * amendment of that date). An `assigned` order holds material
+   * `ContainerMaterialsProvider.tryAllocate` withdrew from the container, and
+   * that material is the only place the money for its refund can come from.
+   * It is valued at the catalogue price and credited; the caller drops the
+   * allocation in the same step and does **not** put it back, because paying
+   * for the plank and returning it is one-press value creation.
+   *
+   * **What comes back is what could not be priced.** A buildable may require
+   * an item the procurement catalogue does not sell -- that is exactly
+   * `UnprocurableMaterial`'s `'unpurchasable'` -- and there is no honest money
+   * figure for such a line. Rather than destroy it, this answers it, and
+   * `ConstructionSystem.cancelOrder` releases those lines into the container
+   * through `ConstructionMaterialsProvider.release` as it always did. An empty
+   * answer means everything was paid for.
+   *
+   * It must not throw, for the reason every other method on this port must
+   * not: it is reached from a command dispatch and from `undo()`.
+   */
+  refundAllocatedMaterials(allocations: readonly MaterialRequirement[]): readonly MaterialRequirement[];
+
+  /**
+   * Cancels the just-in-time deliveries of `itemId` the queue no longer needs,
+   * and answers what that refunded.
+   *
+   * **The supply-side mirror of `ConstructionSystem.withdrawOrdersAwaitingMaterial`,
+   * and it exists for the same reason that method does.** #687 established that
+   * cancelling the *supply* while the *demand* still stands is a refund the
+   * clock reverses. Ruling 20 creates the opposite press: cancelling a build
+   * order in `'approved'` or `'materials-pending'` removes demand that a
+   * just-in-time purchase has already been made against, and the money for it
+   * is sitting in a delivery on the road. Leaving it there would make "cancel
+   * gives back money" false in the state a player is most likely to press it
+   * in -- a `PlaceBuildOrder` buys at the press and the goods take
+   * `PROCUREMENT_DELIVERY_DELAY_TICKS` to land, so an order cancelled soon
+   * after it is placed has its money in flight and nowhere else.
+   *
+   * `demandedQuantity` is what the *rest* of the queue still wants of this
+   * item, read after the cancellation, and the implementation may refund only
+   * what is surplus to it. The caller owns the order book and therefore owns
+   * that figure; asking for it rather than deriving it is what keeps this from
+   * being a second opinion about demand.
+   *
+   * **Only deliveries this sink bought, and only whole ones.** A delivery the
+   * player pressed *Buy* for is stock they chose to hold and is never
+   * cancelled here -- the distinction #687 drew through
+   * `isJustInTimePurchaseOrderId` -- and a delivery larger than the surplus is
+   * left alone, because cancelling it would strand the orders behind it and
+   * make the next scheduled pass buy the material back.
+   *
+   * It must not throw.
+   */
+  refundSurplusDeliveries(itemId: string, demandedQuantity: number): number;
 }

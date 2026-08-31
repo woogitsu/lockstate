@@ -231,6 +231,52 @@ export class ProcurementSystem implements SystemRegistration {
     return { ok: true, refundedMinorUnits: delivery!.paidMinorUnits };
   }
 
+  /**
+   * Sells `quantity` of `itemId` back at the catalogue price, and answers what
+   * was credited.
+   *
+   * **The other direction of `purchase`, and it exists for the owner's
+   * ruling 20 of 2026-08-31** -- *"Anulowanie zwraca pieniądze zamiast
+   * cegieł"*, recorded in
+   * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+   * amendment of that date. A build order cancelled before its crew starts
+   * gives back **money**, and the money for an order that has already
+   * allocated has to come from somewhere: the materials it is holding, valued
+   * and handed back to the supplier. The caller destroys the goods in the same
+   * step -- see `ConstructionSystem.cancelOrder` -- because paying for the
+   * plank *and* putting it back in the container is the one-press value
+   * creation the amendment names.
+   *
+   * **It prices from the catalogue where `cancel` deliberately does not, and
+   * the difference is a fact about the two situations rather than an
+   * inconsistency.** `cancel` refunds a `PendingDelivery.paidMinorUnits`
+   * because the record of what that purchase cost still exists and refunding
+   * anything else would open a buy-low-cancel-high trade. Allocated material
+   * carries no such record: `BuildOrderMaterial` is an item id and a quantity,
+   * the goods are fungible with everything else the container held, and the
+   * order may have consumed stock nobody bought at all. The catalogue price is
+   * therefore the only figure available, and it is the same figure
+   * `tests/integration/economy-money-conservation.test.ts` values stock at --
+   * which is what makes the exchange exact. **The buy-low-cancel-high trade it
+   * reopens is bounded by prices never moving**: `PROCURABLE_MATERIALS` is a
+   * static table with no producer. The day a price moves, this becomes an
+   * arbitrage and the fix is a paid-price record on the allocation, which is a
+   * save-format change.
+   *
+   * `0` for an item the catalogue does not sell and for a non-positive or
+   * non-integer quantity, and in both cases nothing is credited: the caller is
+   * then holding goods it could not price, and must put them back rather than
+   * destroy them.
+   */
+  public refundMaterials(itemId: string, quantity: number): number {
+    if (!Number.isSafeInteger(quantity) || quantity <= 0) return 0;
+    const material = procurableMaterial(itemId);
+    if (material === undefined) return 0;
+    const refundedMinorUnits = material.unitPriceMinorUnits * quantity;
+    this.treasury.credit(refundedMinorUnits);
+    return refundedMinorUnits;
+  }
+
   /** Deliveries not yet arrived, in the order they will arrive. */
   public get pendingDeliveries(): readonly PendingDelivery[] {
     return this.pending;
