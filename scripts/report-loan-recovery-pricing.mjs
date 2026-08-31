@@ -69,7 +69,7 @@ const PRINCIPALS = [200, 500, 1_000, 1_500, 2_000];
  * minutes of real kernel ticks, and re-checking one table should not cost the
  * other six.
  */
-const SECTIONS = (process.env.LOCKSTATE_PRICING_SECTIONS ?? '1,2,3,4,5,6,7,8,9').split(',').map((part) => part.trim());
+const SECTIONS = (process.env.LOCKSTATE_PRICING_SECTIONS ?? '1,2,3,4,5,6,7,8,9,10,10c').split(',').map((part) => part.trim());
 const wanted = (section) => SECTIONS.includes(section);
 
 const modules = await loadSimulationRuntimeModules();
@@ -199,7 +199,7 @@ function stepDays(session, days) { session.step(DAY_LENGTH_TICKS * days); }
  * `plan.cancelTail` is whether they first cancel the wall orders that would
  * otherwise eat the money. Both are player choices and both are measured.
  */
-function playRecovery({ candidate, principal, plan, seed = 0x692, horizonDays = 120, useLoan = true }) {
+function playRecovery({ candidate, principal, plan, seed = 0x692, horizonDays = 120, useLoan = true, unfundedTail = 13 }) {
   const terms = useLoan
     ? {
         diversionRateBasisPoints: candidate.diversion,
@@ -209,7 +209,7 @@ function playRecovery({ candidate, principal, plan, seed = 0x692, horizonDays = 
       }
     : undefined;
   const session = new Session(seed, terms);
-  const { doorway, unfunded } = buildLockedPosition(session);
+  const { doorway, unfunded } = buildLockedPosition(session, { unfundedTail });
   // Let the standing queue build itself out, exactly as the playtest watched
   // it do for three minutes while the band said there was not enough money.
   stepDays(session, 20);
@@ -281,9 +281,36 @@ function playRecovery({ candidate, principal, plan, seed = 0x692, horizonDays = 
   let escalationDay = null;
   let peakBalance = session.balance;
   let minBalance = session.balance;
+  /*
+   * The four boundedness observations section 10 exists to make, sampled once
+   * per in-game day exactly as `minBalance` is.
+   *
+   * `floorBreaches` is the one that would be a defect rather than a
+   * magnitude: `Treasury.canAfford` is a single comparison against the floor,
+   * so no route through `spend` can pass it -- and a non-zero count would say
+   * some route does not go through `spend`. It is measured rather than
+   * asserted because "structurally impossible" is what the schema comment
+   * said about a negative balance.
+   */
+  let floorBreaches = 0;
+  let deepestArrears = 0;
+  let deepestUnfunded = 0;
+  let peakPendingDeliveries = 0;
+  const floorMinorUnits = useLoan ? 0 : -principal;
+  const observe = () => {
+    const balance = session.balance;
+    if (balance < floorMinorUnits) floorBreaches += 1;
+    deepestArrears = Math.max(deepestArrears, session.runtime.payroll.unpaidWagesMinorUnits);
+    const unfunded = session.runtime.justInTimeMaterials.lastReport.unfunded
+      .reduce((total, item) => total + item.costMinorUnits, 0);
+    deepestUnfunded = Math.max(deepestUnfunded, unfunded);
+    peakPendingDeliveries = Math.max(peakPendingDeliveries, session.runtime.procurement.pendingDeliveries.length);
+  };
+  observe();
   const dailyIncome = [];
   for (let day = 0; day < horizonDays; day += 1) {
     stepDays(session, 1);
+    observe();
     const balance = session.balance;
     peakBalance = Math.max(peakBalance, balance);
     minBalance = Math.min(minBalance, balance);
@@ -313,6 +340,7 @@ function playRecovery({ candidate, principal, plan, seed = 0x692, horizonDays = 
     principal,
     plan: plan.name,
     useLoan,
+    unfundedTail,
     lockedBalance,
     commandsIntoTheLock,
     cancelPresses,
@@ -335,6 +363,21 @@ function playRecovery({ candidate, principal, plan, seed = 0x692, horizonDays = 
     finalBalance: session.balance,
     minBalance,
     peakBalance,
+    floorMinorUnits,
+    floorBreaches,
+    /** The room the prison actually used, against the room it was offered. */
+    roomUsed: useLoan ? null : Math.max(0, -minBalance),
+    deepestArrears,
+    deepestUnfunded,
+    peakPendingDeliveries,
+    /*
+     * Orders that are still *waiting* -- `'cancelled'` excluded as well as
+     * `'completed'` and `'failed'`. An earlier version of this line excluded
+     * only the latter two and reported 13 standing orders for exactly the runs
+     * that had cancelled 13, which read as the opposite of what happened.
+     */
+    ordersStanding: session.runtime.construction.snapshot().orders
+      .filter((order) => order.state !== 'completed' && order.state !== 'failed' && order.state !== 'cancelled').length,
     finalDay: dayOf(session.tick),
     idleDays: dayOf(session.tick) - dayOf(firstDayPressedNothing),
     dailyIncome,
@@ -374,13 +417,15 @@ console.log('One in-game day is 2,400 ticks. Every figure below comes from a rea
  * ADR 0075's own: *"wages exceed every income line, the balance falls for
  * ever … a hard-lock again, only slower, and dressed as a mechanic."*
  */
-function playStaffedRecovery({ candidate, principal, guards, drainFirst, cancelBacklog = false, seed = 0x692, horizonDays = 120 }) {
-  const terms = {
-    diversionRateBasisPoints: candidate.diversion,
-    feeRateBasisPoints: candidate.fee,
-    maximumDurationDays: candidate.durationDays,
-    escalatedDiversionRateBasisPoints: candidate.escalated,
-  };
+function playStaffedRecovery({ candidate, principal, guards, drainFirst, cancelBacklog = false, seed = 0x692, horizonDays = 120, useLoan = true }) {
+  const terms = useLoan
+    ? {
+        diversionRateBasisPoints: candidate.diversion,
+        feeRateBasisPoints: candidate.fee,
+        maximumDurationDays: candidate.durationDays,
+        escalatedDiversionRateBasisPoints: candidate.escalated,
+      }
+    : undefined;
   const session = new Session(seed, terms);
   const ring = cellRingEdges();
   const doorway = ring[ring.length - 1];
@@ -442,7 +487,15 @@ function playStaffedRecovery({ candidate, principal, guards, drainFirst, cancelB
       backlogCancelled += 1;
     }
   }
-  session.loans.draw(principal, session.tick);
+  /*
+   * `useLoan: false` is the reading-A control: no loan of any kind, only a
+   * standing overdraft of `principal`. It is the only shape in this file in
+   * which `PayrollSystem` runs against an open floor, which is what makes it
+   * the answer to *"does payroll stay bounded"* rather than a restatement of
+   * section 9's staffless sweep.
+   */
+  if (useLoan) session.loans.draw(principal, session.tick);
+  else session.runtime.treasury.setOverdraftFloor(-principal);
   session.send({ type: 'PlaceBuildOrder', orderId: 'door', definitionId: 'door-wooden', ...doorway });
   session.step(600);
   session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
@@ -458,6 +511,10 @@ function playStaffedRecovery({ candidate, principal, guards, drainFirst, cancelB
   }
 
   let minBalance = session.balance;
+  const floorMinorUnits = useLoan ? 0 : -principal;
+  let floorBreaches = 0;
+  let deepestArrears = session.runtime.payroll.unpaidWagesMinorUnits;
+  let peakPendingDeliveries = session.runtime.procurement.pendingDeliveries.length;
   /** @type {number | null} */
   let dayDebtCleared = null;
   /** @type {number | null} */
@@ -465,6 +522,10 @@ function playStaffedRecovery({ candidate, principal, guards, drainFirst, cancelB
   for (let day = 0; day < horizonDays; day += 1) {
     stepDays(session, 1);
     minBalance = Math.min(minBalance, session.balance);
+    if (session.balance < floorMinorUnits) floorBreaches += 1;
+    deepestArrears = Math.max(deepestArrears, session.runtime.payroll.unpaidWagesMinorUnits);
+    peakPendingDeliveries = Math.max(peakPendingDeliveries, session.runtime.procurement.pendingDeliveries.length);
+    if (!useLoan) continue;
     if (escalationDay === null && session.loans.outstandingMinorUnits > 0
       && session.loans.diversionRateBasisPointsAt(session.tick) === candidate.escalated) {
       escalationDay = dayOf(session.tick);
@@ -487,9 +548,14 @@ function playStaffedRecovery({ candidate, principal, guards, drainFirst, cancelB
     occupancy: session.occupancy,
     wageBill: session.runtime.payroll.dailyWageBillMinorUnits(),
     minBalance,
+    floorMinorUnits,
+    floorBreaches,
+    roomUsed: useLoan ? null : Math.max(0, -minBalance),
+    deepestArrears,
+    peakPendingDeliveries,
     dayDebtCleared,
     escalationDay,
-    outstanding: session.loans.outstandingMinorUnits,
+    outstanding: useLoan ? session.loans.outstandingMinorUnits : 0,
     arrears: session.runtime.payroll.unpaidWagesMinorUnits,
     finalBalance: session.balance,
     finalDay: dayOf(session.tick),
@@ -711,6 +777,122 @@ if (wanted('9')) {
     { label: 'min balance', value: (row) => row.minBalance },
     { label: 'zone refused', value: (row) => row.zoneRefused },
     { label: 'beds refused', value: (row) => row.bedRefusals },
+    { label: 'final balance', value: (row) => row.finalBalance },
+  ]);
+}
+
+/*
+ * ## 10. Is the standing overdraft bounded above the room section 9 measured?
+ *
+ * #703 ruling A (2026-08-31) makes the floor a **standing** overdraft every
+ * prison has, and
+ * `docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md` §2
+ * proposes `-2_500` -- one tenth of `TREASURY_STARTING_BALANCE_MINOR_UNITS` --
+ * while saying in the same paragraph that the figure is **unmeasured above
+ * −1,500**, because section 9's sweep stops there. This section is that
+ * measurement, and it exists so the constant ships on a number rather than on
+ * a paragraph.
+ *
+ * Four things have to stay bounded for `-2_500` to be safe, and each has its
+ * own column rather than being asserted:
+ *
+ *  - **`Treasury`**: `room used` against `overdraft room`. If the two track
+ *    each other the floor is what a prison spends to; if `room used`
+ *    saturates, offering more room buys nothing and the magnitude is free.
+ *  - **`floor breaches`** must be 0 everywhere. `Treasury.canAfford` is one
+ *    comparison, so any route that got under the floor would be a route that
+ *    does not go through `spend`.
+ *  - **`ConstructionSystem.procureQueuedMaterials` / `JustInTimeMaterials`**:
+ *    `deepest unfunded` and `orders standing`. The queue is the one thing that
+ *    spends with no press, so it is the runaway candidate.
+ *  - **`PayrollSystem`**: `deepest arrears`. Section 9 has no staff at all, so
+ *    the staffed control below is the only place in this file where payroll
+ *    meets an open floor.
+ */
+if (wanted('10')) {
+  console.log('\n## 10a. Staffless: the same sweep as section 9, carried past −1,500 to the opening grant\n');
+  const deepRows = [];
+  for (const plan of [PLANS.capacity, PLANS.minimum]) {
+    for (const room of [1_500, 2_000, 2_500, 3_000, 5_000, 12_500, 25_000]) {
+      deepRows.push(playRecovery({ candidate: CANDIDATES[2], principal: room, plan, useLoan: false }));
+    }
+  }
+  table(deepRows, [
+    { label: 'queue cancelled', value: (row) => row.plan === PLANS.capacity.name },
+    { label: 'overdraft room', value: (row) => row.principal },
+    { label: 'room used', value: (row) => row.roomUsed },
+    { label: 'floor breaches', value: (row) => row.floorBreaches },
+    { label: 'capacity', value: (row) => row.capacity },
+    { label: 'housed day', value: (row) => row.dayHoused },
+    { label: 'min balance', value: (row) => row.minBalance },
+    { label: 'deepest arrears', value: (row) => row.deepestArrears },
+    { label: 'deepest unfunded', value: (row) => row.deepestUnfunded },
+    { label: 'peak deliveries', value: (row) => row.peakPendingDeliveries },
+    { label: 'orders standing', value: (row) => row.ordersStanding },
+    { label: 'final balance', value: (row) => row.finalBalance },
+  ]);
+
+  console.log('\n## 10b. Staffed, no loan: the only shape in this file where payroll meets an open floor\n');
+  const staffedFloorRows = [];
+  for (const guards of [1, 5]) {
+    for (const room of [0, 1_500, 2_500, 5_000, 25_000]) {
+      staffedFloorRows.push(playStaffedRecovery({
+        candidate: CANDIDATES[2], principal: room, guards, drainFirst: false, cancelBacklog: true, useLoan: false,
+      }));
+    }
+  }
+  table(staffedFloorRows, [
+    { label: 'guards', value: (row) => row.guards },
+    { label: 'overdraft room', value: (row) => row.principal },
+    { label: 'room used', value: (row) => row.roomUsed },
+    { label: 'floor breaches', value: (row) => row.floorBreaches },
+    { label: 'wage bill/day', value: (row) => row.wageBill },
+    { label: 'capacity', value: (row) => row.capacity },
+    { label: 'occupancy', value: (row) => row.occupancy },
+    { label: 'min balance', value: (row) => row.minBalance },
+    { label: 'deepest arrears', value: (row) => row.deepestArrears },
+    { label: 'arrears after', value: (row) => row.arrears },
+    { label: 'peak deliveries', value: (row) => row.peakPendingDeliveries },
+    { label: 'final balance', value: (row) => row.finalBalance },
+  ]);
+}
+
+/*
+ * ## 10c. The one thing that does scale with the room: an unfunded build queue
+ *
+ * 10a and 10b both saturate, and both do it because the *player's* queue is
+ * fixed at the thirteen orders the locked position leaves standing. The
+ * queue is the only thing in this runtime that spends with no press --
+ * `ConstructionSystem.procureQueuedMaterials`
+ * (`src/simulation/construction/system.ts:988`), from its own scheduled
+ * `update` -- so the honest question is not "does 2,500 run away" but "what
+ * does a *bigger* standing queue do with 2,500 of room".
+ *
+ * The room is held at the proposed −2,500 and the standing tail is swept.
+ * `room used` against `overdraft room` is the answer: if it tracks the tail
+ * the queue will spend the whole facility on wall nobody is watching, and the
+ * floor's magnitude is the bound on how much of that a player can suffer in
+ * one go.
+ */
+if (wanted('10c')) {
+  console.log('\n## 10c. A standing overdraft of 2,500 against a growing unfunded build queue\n');
+  const tailRows = [];
+  for (const unfundedTail of [13, 20, 26, 31, 40, 60]) {
+    tailRows.push(playRecovery({
+      candidate: CANDIDATES[2], principal: 2_500, plan: PLANS.minimum, useLoan: false, unfundedTail,
+    }));
+  }
+  table(tailRows, [
+    { label: 'unfunded tail', value: (row) => row.unfundedTail },
+    { label: 'tail cost', value: (row) => row.unfundedTail * 80 },
+    { label: 'overdraft room', value: (row) => row.principal },
+    { label: 'room used', value: (row) => row.roomUsed },
+    { label: 'floor breaches', value: (row) => row.floorBreaches },
+    { label: 'capacity', value: (row) => row.capacity },
+    { label: 'housed day', value: (row) => row.dayHoused },
+    { label: 'min balance', value: (row) => row.minBalance },
+    { label: 'deepest unfunded', value: (row) => row.deepestUnfunded },
+    { label: 'orders standing', value: (row) => row.ordersStanding },
     { label: 'final balance', value: (row) => row.finalBalance },
   ]);
 }
