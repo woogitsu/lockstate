@@ -563,7 +563,7 @@ work are not.**
   the same bound "Navigation caches" accepts, and the right answer for every
   cache that no one is looking at. This one is looked at immediately: a
   restored session arrives `paused` and
-  `SimulationStateMachine.handleInitialize` publishes one
+  `SimulationWorkerStateMachine.handleInitialize` publishes one
   `simulation/status-counts` before any tick runs, deliberately, *"so a prison
   that has a population on screen [is not] the same row of zeros this channel
   exists to remove"*. Nothing then steps the kernel until the player presses
@@ -572,8 +572,10 @@ work are not.**
   (`src/ui/hud/projection.ts`) prints the green **Covered** pill whenever no
   rung is short, and an all-zero census is not short. A twelve-prisoner prison
   came back reading `0 COVERAGE` under a green *Covered*
-  (`docs/research/2026-08-31-playing-the-twelve.md` §13, reproduced headlessly
-  in `tests/integration/session-save-round-trip.test.ts`).
+  (§13 of the playtest record *"the alerts log was opened, and every sentence in
+  it is cut to thirteen characters"*, 2026-08-31 — on the unmerged branch
+  `playtest/play-the-twelve`, so it is cited by title rather than by path;
+  reproduced headlessly in `tests/integration/session-save-round-trip.test.ts`).
 
   So `restoreSimulationRuntime` now calls `SafetyCoverageSystem.takeCensus`
   after every population is in place. **Nothing is written to the save and no

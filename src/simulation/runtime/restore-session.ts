@@ -418,7 +418,7 @@ export function restoreSimulationRuntime(bundle: SessionSnapshotBundle, masterSe
    * It used to happen on the system's first scheduled update, ten ticks in,
    * and for every other ten-tick cadence in the kernel that is the right
    * answer. It is the wrong one here because **a restored session does not
-   * tick**: `SimulationStateMachine.handleInitialize` transitions to `paused`
+   * tick**: `SimulationWorkerStateMachine.handleInitialize` transitions to `paused`
    * and then publishes one `simulation/status-counts` immediately -- on
    * purpose, so that a prison with a population is not shown as a row of
    * zeros -- and the next tick is whenever the player presses play. So the

@@ -126,7 +126,7 @@ export class SafetyCoverageSystem implements SystemRegistration {
    * first update -- ten ticks, which is the same staleness every other
    * ten-tick cadence in the kernel carries", and that sentence was false in
    * the one place it was about.** A restored session arrives `paused`
-   * (`SimulationStateMachine.handleInitialize` sets `mode: 'paused'` and then
+   * (`SimulationWorkerStateMachine.handleInitialize` sets `mode: 'paused'` and then
    * publishes one `simulation/status-counts` straight away, so a prison with a
    * population is not shown as a row of zeros). Nothing steps the kernel until
    * the player presses play, so the "ten ticks" was unbounded in wall time --
