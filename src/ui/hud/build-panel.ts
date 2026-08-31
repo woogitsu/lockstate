@@ -54,6 +54,13 @@ import {
  * than a preference: see the comment on `buyToggle` for the 7.8px the panel
  * had to spend at 900x600 and what each always-visible alternative cost.
  *
+ * What has already been bought and has **not** arrived is not in that
+ * disclosure, and since 2026-08-31 (issue #703 ruling 2) it is not in it in
+ * either direction: the spend and the `Cancel` that reverses it are laid out on
+ * the panel itself, because #640 spends the player's money at a placement press
+ * and a charge nobody ordered cannot live behind a control nobody presses. See
+ * `deliveriesBlock` in `createBuildPanel`.
+ *
  * ### Boundaries
  *
  * It is a *composer*, not a source of truth. It holds which buildable is
@@ -222,6 +229,12 @@ export interface BuildPanel {
    * reason: nothing asked and nothing in transit both have nothing to say about
    * money on its way, and neither earns a line inside a disclosure the player
    * opened to buy something.
+   *
+   * That last clause was written while this block lived inside the buy
+   * disclosure; since 2026-08-31 (issue #703 ruling 2) it does not, and the
+   * silence matters *more* rather than less -- a line saying no money is in
+   * transit would now be permanent furniture on the panel itself. See
+   * `deliveriesBlock` in `createBuildPanel`.
    */
   setPendingDeliveries(deliveries: HudPendingDeliveriesViewModel | undefined): void;
   setVisible(visible: boolean): void;
@@ -583,7 +596,14 @@ function buildOrderStateLabelKey(state: HudBuildOrderViewModel['state']): Locali
 }
 
 /**
- * How many pending deliveries the buy disclosure lists at once.
+ * How many pending deliveries the panel lists at once.
+ *
+ * **Corrected 2026-08-31 (issue #703 ruling 2): this list is no longer inside
+ * the buy disclosure**, so the first line of this docblock used to read *"How
+ * many pending deliveries the buy disclosure lists at once"* and every
+ * measurement below was taken with that disclosure open. The correction at the
+ * foot of the block says which of them survived the move and which did not; the
+ * count itself is unchanged, and the reason is at the foot too.
  *
  * **Three, and unlike `BUILD_QUEUE_ROW_LIMIT` this one is a measurement with no
  * argument beside it: three is what fits, and four does not.**
@@ -636,10 +656,44 @@ function buildOrderStateLabelKey(state: HudBuildOrderViewModel['state']): Locali
  * the figures above are unchanged and "costs the panel nothing" remains the only
  * way a block gets into this panel.
  *
+ * **That last clause is withdrawn as of 2026-08-31 (issue #703 ruling 2), and
+ * the correction at the foot of this docblock says what replaced it.** A second
+ * way into this panel now exists and the owner opened it: a block may cost the
+ * panel height when the *simulation* has something the player has to be told,
+ * as long as it costs nothing in the state the panel arrives in. The rule the
+ * clause was defending is intact -- nothing here donates from the catalogue --
+ * and what it got wrong was treating "nothing at all, ever" as the only price
+ * this panel could pay.
+ *
  * The rows are **pooled** for both of `BUILD_QUEUE_ROW_LIMIT`'s reasons, and the
  * second is not about allocation: each row's cancel button joins the HUD's busy
  * group, `createBusyGroup` has `add` and no `remove`, and a block that built a
  * row per delivery would grow that group without bound over a session.
+ *
+ * ---------------------------------------------------------------------------
+ *
+ * **Corrected 2026-08-31 -- issue #703 ruling 2, and the two halves fare
+ * differently.**
+ *
+ * *"What this block costs the panel when it is not open: nothing at all"* is
+ * **withdrawn as a description of a pending delivery** and kept as a
+ * description of the arrival state. The block is now a child of
+ * `.hud-build__map` rather than of the buy row, so with something pending it
+ * costs the panel the whole of its own height; with nothing pending it is still
+ * `hidden` and still costs nothing, which is why the arrival figures above are
+ * unchanged. The correction beside `deliveriesBlock` in `createBuildPanel`
+ * carries the new per-viewport table.
+ *
+ * *"Three is what fits, and four does not"* **stands, and it is now a floor as
+ * well as a ceiling.** Four rows put the last `Cancel` 7.9px below the fold with
+ * a full box, which is why the limit exists; and three is already more than fits
+ * the visible box at 900x600 now that the block is always laid out -- measured,
+ * one of three on screen with 178px of panel overflow. **Lowering it was
+ * considered and rejected**: a row that is not drawn is a refund the player
+ * cannot reach at all, while a row below the fold is a refund one wheel turn
+ * away, and `tests/browser/build-deliveries-outside-the-fold.spec.ts` asserts
+ * that turn reaches it. The rows are the deliveries arriving soonest, so the
+ * ones drawn are the ones whose refunds stop being available first.
  */
 export const PENDING_DELIVERY_ROW_LIMIT = 3;
 
@@ -1185,6 +1239,15 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * scrolls the row into view -- see `paintBuy` -- because a disclosure that
    * reveals a control below the fold has not revealed it.
    *
+   * **Those two heights no longer move with what is on its way (2026-08-31,
+   * issue #703 ruling 2).** They were measured with nothing pending, and while
+   * the deliveries block was the row's last child the same row measured 312.9px
+   * with three deliveries and the "and N more" line. The block is outside this
+   * row now, so 149.6px and 128.4px are the row's height in every state -- and
+   * `paintBuy` therefore scrolls twice on opening, the block first and this row
+   * second, to keep reaching what one call reached while the two were one
+   * element. The comment there carries the three assertions that measured it.
+   *
    * The toggle is *hidden*, not disabled, for a buildable whose materials
    * cannot be bought: a disabled control still claims the purchase exists,
    * which is the same rule `paintPlacement` follows for the edge chooser.
@@ -1224,7 +1287,12 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   buySubmit.element.classList.add('hud-build__buy-submit');
 
   /*
-   * ---- what has been bought and has not arrived (#285) ----------------
+   * ---- what has been bought and has not arrived (#285, #703) -----------
+   *
+   * **Read the correction at the foot of this block first: since 2026-08-31
+   * this block is NOT inside the buy disclosure.** Everything above that
+   * correction is the argument that put it there, kept because the ruling
+   * overturned the placement and not the measurements.
    *
    * **Why it is here, inside the buy disclosure, and not in a block of its
    * own.** The catalogue is the only block `hud.css` lets this panel take height
@@ -1260,6 +1328,69 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * third control overflowing). A player in the removal mode leaves it to reach
    * their money, which is one tap, and the alternative was re-opening a measured
    * overflow.
+   *
+   * ---------------------------------------------------------------------
+   *
+   * **Corrected 2026-08-31 -- issue #703 ruling 2. This block is no longer
+   * inside the buy disclosure, and none of the sentences above are deleted
+   * because every measurement in them was true when it was taken.** The owner's
+   * words: *"The spent amount and the control that reverses it both come out of
+   * the Buy fold."* Two alternatives were rejected by name -- surfacing the
+   * amount alone and leaving the reversal behind a click, and leaving both in
+   * the fold.
+   *
+   * **What changed under the argument above was who spends the money.** #285
+   * built this block for a delivery the player had pressed *Buy* for, which is
+   * why "it is also where the player is looking" was right. #640 made a
+   * `PlaceBuildOrder` buy its own materials, so the common case became a charge
+   * the player never ordered -- 480 for a six-segment wall run, with no
+   * procurement press at any point -- and #693 then made a cancelled `jit:`
+   * delivery withdraw the queued orders behind it, giving this block's `Cancel`
+   * a job nothing else in the interface can do. Both of those landed inside a
+   * fold that #640 exists so the player never has to open.
+   *
+   * `docs/research/2026-08-31-playing-the-nine-changes.md` §1b measured the
+   * result on the real page with the fold shut:
+   * `{"blockHidden":"false","pending":"24","visibleRows":3,"width":0,"height":0}`
+   * -- correct text, correct total, `data-pending="24"`, zero pixels -- and §1c
+   * measured the refund's only trigger as a twenty-second actionability timeout
+   * on a button that *"is not visible"*.
+   *
+   * **Where it is now, and what that costs.** The last child of
+   * `.hud-build__map`, immediately after `buyRow` -- see the `panel.body.append`
+   * below. The panel's *arrival* geometry is untouched, because `paintDeliveries`
+   * leaves the block `hidden` when nothing is pending and a `hidden` flex child
+   * takes no gap: the figures three paragraphs up still describe the page a
+   * player arrives at. What is no longer true is the *identity* those figures
+   * were quoted for -- with deliveries pending the panel is now taller by this
+   * block, and the coordinates section and the queue below it move down.
+   * Measured on the assembled page by
+   * `tests/browser/build-deliveries-outside-the-fold.spec.ts`, six `jit:`
+   * deliveries pending from one wall run, fold never opened:
+   *
+   * | Viewport | block | panel overflow | refunds on screen without scrolling |
+   * | --- | --- | --- | --- |
+   * | 1920x1080 | 238x226.9 | 0px | 3 of 3 |
+   * | 1440x900 | 238x226.9 | 94px | 3 of 3 |
+   * | 1280x800 | 238x226.9 | 169px | 2 of 3 |
+   * | 900x600 | 238x180.5 | 178px | 1 of 3 |
+   * | 375x812 | 333x213.7 | 158px | 2 of 3 |
+   *
+   * The spend itself and the first row's `Cancel` -- the delivery landing
+   * soonest, whose refund is the first to stop being available -- are inside the
+   * panel's visible box at **every** one of those viewports, and every row below
+   * the fold is reached by the scroll `.ui-panel.hud-build` already performs,
+   * asserted there by scrolling to it and re-measuring rather than assumed. The
+   * owner's steer of the same day is that the desktop browser comes first and
+   * mobile is a later pass, so the three desktop viewports are what this ruling
+   * is judged at and the two tight ones are measured so a later pass can see
+   * what it changed.
+   *
+   * **And the cost recorded in the paragraph above this correction is gone.**
+   * The rows were unreachable while `buyToggle` was hidden -- in the removal
+   * mode, and for a buildable nothing sells. They are not any more, which is
+   * worth stating because it was the one honest complaint against the old
+   * placement.
    */
   const deliveriesCount = valueText('', 'hud-build__deliveries-count');
   const deliveryList = element('div', { className: 'hud-build__delivery-list' });
@@ -1341,15 +1472,26 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       buySubmit.element,
       eyebrowText(t(HUD_MESSAGE_KEY.buildBuyHint), 'hud-build__note'),
       /*
-       * Last in the row, and the order is the argument. The stepper and the
-       * button are what the player opened this for; the deliveries are what they
-       * come back for. `paintBuy` scrolls the row into view when it opens, and
-       * `block: 'nearest'` aligns the row's own leading edge when the row is
-       * taller than the panel's visible box -- so the controls that buy stay
-       * where the player expects them and the rows below them are reached by the
-       * scroll the panel already performs.
+       * `deliveriesBlock` used to be the last child of this row, and the
+       * paragraph that put it here read:
+       *
+       * > Last in the row, and the order is the argument. The stepper and the
+       * > button are what the player opened this for; the deliveries are what
+       * > they come back for. `paintBuy` scrolls the row into view when it
+       * > opens, and `block: 'nearest'` aligns the row's own leading edge when
+       * > the row is taller than the panel's visible box -- so the controls
+       * > that buy stay where the player expects them and the rows below them
+       * > are reached by the scroll the panel already performs.
+       *
+       * **Moved out of this row on 2026-08-31 (issue #703 ruling 2).** It is
+       * now the last child of `.hud-build__map`, immediately after this row --
+       * see the `panel.body.append` below. The argument above was sound while
+       * every delivery was one the player had pressed *Buy* for; #640 made the
+       * game buy materials on the player's behalf, so the row that reports a
+       * spend is no longer a row they came back for. The owner's words:
+       * *"The spent amount and the control that reverses it both come out of
+       * the Buy fold."*
        */
-      deliveriesBlock,
     ],
   });
   buyRow.hidden = true;
@@ -1404,7 +1546,25 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     // disclosure a disclosure rather than a control that appears somewhere
     // the player cannot see; the panel is a scroll container
     // (`.ui-panel.hud-build`), so this scrolls the panel and nothing else.
-    if (opening) buyRow.scrollIntoView({ block: 'nearest' });
+    //
+    // **Two calls since 2026-08-31 (issue #703 ruling 2), and the order is the
+    // whole of it.** `deliveriesBlock` is no longer this row's last child, so
+    // one call on the row scrolls to the stepper and the button and stops --
+    // and the block, now *below* the row, gets pushed down by the 149.6px the
+    // row takes when it opens. That was measured rather than reasoned about:
+    // with a single call, three assertions in `ui-pending-deliveries.spec.ts`
+    // went red -- `buy-02`'s cancel below the panel's fold at 375x812,
+    // `buy-01`'s at 1280x800, and `buy-01`'s at 900x600 beside a queue -- all
+    // of them states that were reachable before the block moved.
+    //
+    // So the block is brought into view first and the row second, because the
+    // last call wins where the two do not both fit. That reproduces exactly
+    // what the single call did while the block was inside the row: the whole of
+    // it if it fits, and the buy controls' own leading edge if it does not.
+    if (opening) {
+      if (deliveriesBlock.hidden === false) deliveriesBlock.scrollIntoView({ block: 'nearest' });
+      buyRow.scrollIntoView({ block: 'nearest' });
+    }
     if (material === undefined || removing) return;
     // A different material is a different purchase, so the quantity goes back
     // to one placement's worth rather than carrying 200 bricks over onto a
@@ -1427,6 +1587,15 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * queue block: a line saying no money is in transit would be furniture inside a
    * disclosure the player opened in order to spend some. `hidden` rather than an
    * empty box, because a laid-out empty block still takes its gap.
+   *
+   * **This function is now the whole of what keeps the panel's arrival height
+   * (2026-08-31, issue #703 ruling 2).** The sentence above was written when the
+   * block sat inside the buy row, which had no box of its own until the player
+   * opened it, so `hidden` was the second of two mechanisms. The block is a child
+   * of `.hud-build__map` now, and this line is the only one left: a block left
+   * laid out with nothing in it would take a hairline, a header and its gap off
+   * the panel's always-visible budget in every state, which is the height #174
+   * closed.
    *
    * Repainted on the counts cadence whether the disclosure is open or shut, and
    * that is deliberate: the rows are what a press cancels, so they must be the
@@ -1553,6 +1722,12 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * Materials"* was there, in this fold, and reached nobody. So this line is
    * appended to the panel body *after* `queueSection.element` rather than to
    * `queueSection.body`. A player who never opens the fold still reads it.
+   *
+   * That is the rule `deliveriesBlock` was moved to obey on 2026-08-31 (issue
+   * #703 ruling 2), one fold over and for the third time in this panel: #625 for
+   * *"Awaiting Materials"*, this line for the money the queue is waiting on, and
+   * that block for the money the game has already spent. A readout the player
+   * must not have to go looking for is appended beside a fold, never inside one.
    *
    * `hud-build__queue-shortfall` as well as `hud-build__note`, for exactly the
    * reason `hud-build__queue-more` carries its own class: `.hud-build__note`
@@ -1865,6 +2040,24 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         targetBlock,
         armHint,
         buyRow,
+        /*
+         * Outside `buyRow` and immediately below it (issue #703 ruling 2,
+         * 2026-08-31). See the block's own docblock above for the ruling and
+         * what it cost the panel's height budget; the placement is the same
+         * argument `queueShortfall` carries at the foot of this body -- a
+         * readout the player must not have to open a fold to read is appended
+         * beside the fold rather than inside it.
+         *
+         * Here rather than at the foot of the body, which was the other
+         * candidate: this block reports money the *placement* gesture spent, so
+         * it belongs with the placement controls the player is looking at, and
+         * `.hud-build__map`'s padding is the box the block was measured in when
+         * it lived one level deeper. The cost of that choice, stated: a
+         * delivery appearing pushes the coordinates section and the queue down,
+         * which the foot of the body would not have done. The arm button, the
+         * target readout and the hint stay where the player's finger left them.
+         */
+        deliveriesBlock,
       ],
     }),
     coordinates.element,
