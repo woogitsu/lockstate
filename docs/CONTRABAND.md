@@ -258,6 +258,31 @@ declines to `drain()`, so `drain` still has no caller in `src/`)
 would take ownership of pending events without the ledger growing
 unbounded across a long session.
 
+**Added 2026-08-31: the ledger now has a second reader, and it is the status
+strip.** The owner's ruling 3 on issue #703 — *"The message names what
+contraband was found."* — is answered by
+`StatusStripViewModel.counts.contrabandNameKey`, which publishes the contraband
+catalog's own `nameKey` so the **Contraband** chip carries a badge reading
+"Weapon", "Drugs", "Phone", "Currency" or "Tool". No new copy: those five
+strings are the `nameKey`s this document's *Contraband categories* section
+already describes, and until then nothing on screen read one.
+
+Two properties of that reader are worth stating here, because they are
+statements about this ledger rather than about the HUD:
+
+- **It calls `all()` and never `drain()`**, for `projectContraband`'s reason:
+  draining would consume the evidence a readout is built from.
+- **The name is published only when the ledger still accounts for the count.**
+  The chip's figure comes from `SearchSystem.getMetrics().itemsDiscovered` and
+  the name comes from this ledger; a drain would empty the second and leave the
+  first standing, so one surviving row could otherwise name a count of thirty. A
+  badge qualifies the whole count, so a mixed haul is published with **no** name
+  as well — naming one category would be a claim about the other.
+
+The remaining half of that ruling — naming *each* find rather than a haul that
+happens to be uniform — needs a per-discovery sentence nobody has authored, and
+a sentence is the owner's (`AGENTS.md`, the fourth exclusion). It is open.
+
 ## Snapshot/restore
 
 `ContrabandRegistry`, `IntelligenceLedger`, `InformantRegistry` and

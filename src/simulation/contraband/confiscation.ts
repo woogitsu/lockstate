@@ -24,6 +24,23 @@ export interface ConfiscationEvent {
  * without this ledger growing unbounded across a long session; `all`
  * stays available for read-only inspection/tests that shouldn't mutate
  * consumption state.
+ *
+ * **"read-only inspection/tests" is narrower than what reads it now, and the
+ * sentence is corrected rather than replaced (2026-08-31, issue #703 ruling
+ * 3).** `all()` has two *production* readers on the presentation side:
+ * `projectContraband` (`hud/contraband`, which has a route and no panel yet)
+ * and `projectStatusStrip`, which reads it to name the contraband the status
+ * strip's **Contraband** chip is counting -- a surface that is on screen at
+ * every viewport with nothing opened. Neither may call `drain`, and both say so
+ * at their own sites; what the original sentence was distinguishing --
+ * inspection from consumption -- is exactly the distinction that keeps them
+ * safe, so it stands.
+ *
+ * **`drain` still has no caller in `src/`**, which is what makes the strip's
+ * reading of this ledger sound today. It is not assumed:
+ * `projectStatusStrip` publishes a category name only while
+ * `all().length` matches the count `SearchSystem` reports, so a future
+ * consumer that does drain makes the badge disappear rather than lie.
  */
 export class ConfiscationLedger {
   private readonly events: ConfiscationEvent[] = [];

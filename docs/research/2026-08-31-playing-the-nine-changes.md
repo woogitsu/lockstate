@@ -540,6 +540,32 @@ rather than about a bug:
 - **Not filed, and it is the owner's**: the fix is either a ninth strip item or a
   panel, both layout and copy.
 
+> **Corrected 2026-08-31, and both directions are marked rather than
+> overwritten.** The owner ruled on this row the same day — ruling 3 on #703,
+> *"The message names what contraband was found."* Two sentences above are now
+> false and one is still true, and it matters which:
+>
+> - ***"`grep -rn "contraband\.weapon\.name" src/ui/` returns nothing"* is
+>   false.** `src/ui/hud/projection.ts` reads the key, out of
+>   `HudCountsViewModel.contrabandNameKey`, and paints it as the contraband
+>   chip's badge — the same shape #506 finding 2 gave the incidents chip. It
+>   was true when written.
+> - ***"a found weapon and a found phone render identically: `1`"* is false for
+>   a prison whose finds are all one category, and still true for a mixed
+>   haul.** A badge qualifies the whole count, so naming a category the count
+>   is only partly made of would be a false statement about the prison; the
+>   projection withholds the name instead. Measured over thirteen seeds of a
+>   played prison at sixteen in-game days: **seven name a category and six are
+>   mixed** (`tests/integration/contraband-search-duty.test.ts` carries the
+>   table).
+> - ***"the fix is either a ninth strip item or a panel, both layout and copy"*
+>   survives as the statement about the remaining half**, and the estimate of
+>   what it needs was right. Naming *each* of several finds requires a
+>   per-discovery message, that message requires a sentence joining a name to
+>   what happened, no such sentence is authored, and a sentence is the owner's
+>   (`AGENTS.md`, the fourth exclusion). The half that needed no sentence is
+>   shipped; the half that needs one is proposed, not written.
+
 ### 2e. What the same mechanism gives the player when the two events are 70 ticks apart
 
 **MEASURED**, §6: assault-opened at 29,151, all-clear at 29,221, and the opening
@@ -1131,9 +1157,19 @@ to leave alone.
 | --- | --- | --- | --- |
 | 1 | Should a successful escape's sentence survive the all-clear that lands on the same tick? **This is the one item that is a miss rather than a product question.** | `lapse` records the escape (`response-system.ts:620`) and then `reportAllClearIfCalm` (`:625`); the band keeps the newest event only (`simulation-events.ts:356`); the alerts list that holds both starts folded (`hud-state.ts:53`) and caps at 8 rows | **Measured: written three times, painted zero times.** The player reads *"A prisoner is trying to break out."* for 7.6 s and then the all-clear, which says the attempt was contained; the log had dropped the row by the time it could be opened. §2c |
 | 2 | Should the money the game spends for the player be reported outside the *Buy* fold — and should the control that reverses it be? | `deliveriesBlock` is the last child of `buyRow` and `buyRow.hidden = true` (`build-panel.ts:1293-1311`); the row and its `Cancel` measure `0x0` | #640 removed the need to open the fold and #693 fixed a refund whose only trigger is inside it. §1 |
-| 3 | Should a discovered contraband item be named, now that a weapon is reachable? | the strip shows `itemsDiscovered` as a bare count (`status-strip-projection.ts:552`); all five `contraband.*.name` keys are authored and `grep -rn "contraband\.weapon\.name" src/ui/` returns nothing | a found weapon and a found phone render as the same character. §2d |
+| 3 | Should a discovered contraband item be named, now that a weapon is reachable? **Ruled 2026-08-31 and half implemented — see the note under the table.** | the strip shows `itemsDiscovered` as a bare count (`status-strip-projection.ts:552`); all five `contraband.*.name` keys are authored and `grep -rn "contraband\.weapon\.name" src/ui/` returns nothing | a found weapon and a found phone render as the same character. §2d |
 | 4 | Should `prisonersHighRisk` reach the screen, and should the Regime roster show more than four rows or sort by tier? | the count crosses the protocol and no strip item reads it; `PRISONER_ROSTER_ROW_LIMIT = 4` (`regime-panel.ts:156`) and the projection pages by entity index with no sort | after #681 the tier is the gate on a weapon and on an escape, and the player's view of it is four rows in arrival order. §10 |
 | 5 | Should the refusal band have a lifetime, or a removal refusal a coarser key? | the counts payload carries `RefusalLog.last` for ever (`state-machine.ts:559`) and a removal's supersession key is the tile (`refusal-log.ts:538`) | one misclick with *Remove* armed leaves a red sentence up for the rest of the session. §9 |
+
+> **Row 3, corrected 2026-08-31.** The row's "What the code does today" column
+> is left exactly as written, because a row in a table of open decisions is a
+> record of what was put to the owner. What the code does *now* is in the note
+> at the end of §2d: the contraband chip carries a badge naming the category
+> when one word is true of the whole count, built out of the five authored
+> `contraband.*.name` keys with no new copy, and it stays silent on a mixed
+> haul because a badge qualifies the count beside it. The remaining half — a
+> message naming *each* find — still needs one sentence the owner has to
+> approve, so the row is not closed.
 
 **Two more, smaller, and both wording rather than plumbing**: the duplicate-order
 sentence names an *order* where the player sees a *wall* (§1d), and a refused
