@@ -746,61 +746,7 @@ what the player gets to read when an incident opens and closes 70 ticks apart.
 
 ---
 
-# Part C — this pass's own instrumentation, corrected in the open
-
-## 7. Four things this pass got wrong, each paid for once
-
-**7a. `:not([hidden])` is not "visible", and it cost two runs in two different
-panels.** `paintDeliveries` sets `row.element.hidden = false`
-(`src/ui/hud/build-panel.ts:1430`) and the Rooms panel's Confirm is a *hidden*
-but *enabled* button, so both `Locator.count()` on `:not([hidden])` and
-`isEnabled()` said yes to a control with no box. Playwright then polled
-actionability for twenty seconds saying `element is not visible`. The gate that
-answers the player's question is `isVisible()`, and both acts use it now. **This
-is worth more than the runs it cost**: the same wrong gate in a `.spec.ts` would
-be a test that passes for the wrong reason, and the fact that two unrelated
-panels both present this shape is the class rather than the instance.
-
-**7b. `counts.tick` is not the tick.** Act 1 logged `tick=0` three times while
-the clock read `{"mode":"running","speed":4}` and the build queue visibly drained
-from 24 waiting to empty. That is `playtest-harness.ts`'s documented trap read
-from the other end: the worker skips a `simulation/status-counts` publication
-whose payload equals the last one, the tick rides the envelope rather than the
-counts, and wall construction changes no counts field — so the tick froze at the
-last publication while the prison worked. `currentTick` (which reads
-`simulation/clock-state`) is the one to use, and the harness says so; act 1's
-progress lines quote the counts tick and are labelled here rather than corrected
-in the log, because the log is the evidence.
-
-**7c. Five rooms inside one room is four refusals.** Act 1's Rooms measurement
-designated the whole enclosed 6x6 as room 1 and then tried to subdivide it, so
-`rooms` never left 1. The press counts it produced are still valid — the panel
-does the same four presses whether the designation is accepted or refused — but
-the *designation* measurement had to be re-run against four disjoint enclosures,
-which is act 2.
-
-**7d. `pkill -f "vite/bin/vite"` killed another agent's dev server.** Recorded in
-the front matter with the remedy: on a shared box, kill by PID. This one was not
-paid for by this pass; it was paid for by somebody else's run.
-
-**7f. The playtest file was committed as a binary blob for eight commits.** The
-frame sampler's sentinel was written as `let lastFrameText = ' ';` and a heredoc
-turned the space into a literal **NUL byte**, one of them, at offset 7,812.
-`git diff` then reported the whole file as `Bin 0 -> 44968 bytes` and showed
-none of its 907 lines. It *worked* — a NUL is as good a sentinel as a space —
-and it made the only artefact this pass produced under `tests/` unreviewable,
-which is the worse half of the trade. It is `string | undefined` now, and the
-comment beside it says why.
-
-**7e. The bare-world probe in act 2 was too shallow to answer its own question.**
-It walked `.hud > *` and filtered `pointer-events: none`, which returns only
-`hud-strip 0,0 1440x48` — the rail *containers* inherit `pointer-events: none`
-from `.hud` and the panels inside them re-enable it, so the panels are invisible
-to that query. Act 4 asks the browser instead, with `elementFromPoint`.
-
----
-
-# Part B — the surfaces #690 and #691 are about
+# Part B — the surfaces around them, and the changes that need no argument
 
 ## 8. Where the world is at 1440x900, asked of the browser
 
@@ -1019,6 +965,108 @@ HUD action failed {"actionId":"admit-prisoner","error":{"message":
   "This prison has no room to hold a prisoner, so nobody can be admitted into it."}}
 ```
 
+### 12a. The one thing act 5 turned up on its way past: a refused *Admit* names no cause, and the sentence that would exists
+
+**MEASURED**, act5a. Pressing *Admit a prisoner* in a prison with a wall and no
+designated room produced two different messages in two different places:
+
+```
+HUD action failed {"actionId":"admit-prisoner","error":{"message":
+  "This prison has no room to hold a prisoner, so nobody can be admitted into it."}}   ← console only
+
+[act5] refusal at the end: "Nobody was admitted — the request was refused."           ← the band
+[act5] after one Admit: ["INTAKE","Collapse","Admit a prisoner","A prison needs a cell
+  before it can admit anyone. It does not need a free bed: an arrival with none waits
+  until a bed is free."]                                                              ← the panel's standing hint
+```
+
+**VERIFIED, read**, and this is why the two differ rather than one being broken:
+
+- `src/main.ts:2530-2531` — the refusal is a **client-side pre-flight**:
+  `if (viewModel.counts.rooms === 0) throw new Error('This prison has no room to
+  hold a prisoner, so nobody can be admitted into it.')`. It never reaches the
+  worker.
+- `src/content/default-locale-en.ts:943` — the band's sentence is
+  `hud.refusal.admit-prisoner`, *"Nobody was admitted — the request was
+  refused."*, and the family's own comment states the design: *"No sentence here
+  names a cause … The cause travels to the host as the thrown `Error`, which is
+  English diagnostic text and therefore must not reach the screen."*
+- `src/content/default-locale-en.ts:238` — and the sentence that **does** name
+  this cause is already authored: `hud.alert.refusal.admit.no-accommodation`,
+  *"Nobody was admitted — there is no room to put a prisoner in yet."* It is
+  produced only by a **simulation** refusal, which this press never became.
+
+- **Observation.** For the one refusal the main thread diagnoses *itself*, the
+  player is told the outcome and not the cause, while a localised sentence naming
+  exactly that cause ships in the same file.
+- **What would establish the impact**: the Intake panel's standing hint says the
+  same thing in advance and is on screen unfolded, so a player who reads the
+  panel is not stuck. Whether they read it before pressing is **UNKNOWN**.
+- **Not filed as a defect, and no wording proposed.** The generic family exists
+  for a stated reason and the fix — routing a *known* pre-flight cause to its
+  existing key — is a change to how refusals are reported, which touches copy
+  the owner approved.
+
+---
+
+# Part C — this pass's own instrumentation, corrected in the open
+
+## 7. Six things this pass got wrong, each paid for once
+
+**This heading said "Four" for eleven commits and the list had six items by
+then**, which is the tally-rot `docs/AGENT_WORKFLOW.md` §4 names — *"a sentence
+asserting an absence or a count rots first"*. Corrected rather than overwritten,
+because the count was accurate when it was written and adding 7e and 7f never
+touched the word.
+
+**7a. `:not([hidden])` is not "visible", and it cost two runs in two different
+panels.** `paintDeliveries` sets `row.element.hidden = false`
+(`src/ui/hud/build-panel.ts:1430`) and the Rooms panel's Confirm is a *hidden*
+but *enabled* button, so both `Locator.count()` on `:not([hidden])` and
+`isEnabled()` said yes to a control with no box. Playwright then polled
+actionability for twenty seconds saying `element is not visible`. The gate that
+answers the player's question is `isVisible()`, and both acts use it now. **This
+is worth more than the runs it cost**: the same wrong gate in a `.spec.ts` would
+be a test that passes for the wrong reason, and the fact that two unrelated
+panels both present this shape is the class rather than the instance.
+
+**7b. `counts.tick` is not the tick.** Act 1 logged `tick=0` three times while
+the clock read `{"mode":"running","speed":4}` and the build queue visibly drained
+from 24 waiting to empty. That is `playtest-harness.ts`'s documented trap read
+from the other end: the worker skips a `simulation/status-counts` publication
+whose payload equals the last one, the tick rides the envelope rather than the
+counts, and wall construction changes no counts field — so the tick froze at the
+last publication while the prison worked. `currentTick` (which reads
+`simulation/clock-state`) is the one to use, and the harness says so; act 1's
+progress lines quote the counts tick and are labelled here rather than corrected
+in the log, because the log is the evidence.
+
+**7c. Five rooms inside one room is four refusals.** Act 1's Rooms measurement
+designated the whole enclosed 6x6 as room 1 and then tried to subdivide it, so
+`rooms` never left 1. The press counts it produced are still valid — the panel
+does the same four presses whether the designation is accepted or refused — but
+the *designation* measurement had to be re-run against four disjoint enclosures,
+which is act 2.
+
+**7d. `pkill -f "vite/bin/vite"` killed another agent's dev server.** Recorded in
+the front matter with the remedy: on a shared box, kill by PID. This one was not
+paid for by this pass; it was paid for by somebody else's run.
+
+**7f. The playtest file was committed as a binary blob for eight commits.** The
+frame sampler's sentinel was written as `let lastFrameText = ' ';` and a heredoc
+turned the space into a literal **NUL byte**, one of them, at offset 7,812.
+`git diff` then reported the whole file as `Bin 0 -> 44968 bytes` and showed
+none of its 907 lines. It *worked* — a NUL is as good a sentinel as a space —
+and it made the only artefact this pass produced under `tests/` unreviewable,
+which is the worse half of the trade. It is `string | undefined` now, and the
+comment beside it says why.
+
+**7e. The bare-world probe in act 2 was too shallow to answer its own question.**
+It walked `.hud > *` and filtered `pointer-events: none`, which returns only
+`hud-strip 0,0 1440x48` — the rail *containers* inherit `pointer-events: none`
+from `.hud` and the panels inside them re-enable it, so the panels are invisible
+to that query. Act 4 asks the browser instead, with `elementFromPoint`.
+
 ---
 
 # Part D — what this pass did not reach, and its weakest claim
@@ -1069,48 +1117,6 @@ direction: a session that spends into ADR 0075's lock and needs the refund to ge
 out — which
 [`2026-08-30-playing-into-the-lock.md`](./2026-08-30-playing-into-the-lock.md)
 has already played, and which is the reason this is reported at all.
-
-### 12a. The one thing act 5 turned up on its way past: a refused *Admit* names no cause, and the sentence that would exists
-
-**MEASURED**, act5a. Pressing *Admit a prisoner* in a prison with a wall and no
-designated room produced two different messages in two different places:
-
-```
-HUD action failed {"actionId":"admit-prisoner","error":{"message":
-  "This prison has no room to hold a prisoner, so nobody can be admitted into it."}}   ← console only
-
-[act5] refusal at the end: "Nobody was admitted — the request was refused."           ← the band
-[act5] after one Admit: ["INTAKE","Collapse","Admit a prisoner","A prison needs a cell
-  before it can admit anyone. It does not need a free bed: an arrival with none waits
-  until a bed is free."]                                                              ← the panel's standing hint
-```
-
-**VERIFIED, read**, and this is why the two differ rather than one being broken:
-
-- `src/main.ts:2530-2531` — the refusal is a **client-side pre-flight**:
-  `if (viewModel.counts.rooms === 0) throw new Error('This prison has no room to
-  hold a prisoner, so nobody can be admitted into it.')`. It never reaches the
-  worker.
-- `src/content/default-locale-en.ts:943` — the band's sentence is
-  `hud.refusal.admit-prisoner`, *"Nobody was admitted — the request was
-  refused."*, and the family's own comment states the design: *"No sentence here
-  names a cause … The cause travels to the host as the thrown `Error`, which is
-  English diagnostic text and therefore must not reach the screen."*
-- `src/content/default-locale-en.ts:238` — and the sentence that **does** name
-  this cause is already authored: `hud.alert.refusal.admit.no-accommodation`,
-  *"Nobody was admitted — there is no room to put a prisoner in yet."* It is
-  produced only by a **simulation** refusal, which this press never became.
-
-- **Observation.** For the one refusal the main thread diagnoses *itself*, the
-  player is told the outcome and not the cause, while a localised sentence naming
-  exactly that cause ships in the same file.
-- **What would establish the impact**: the Intake panel's standing hint says the
-  same thing in advance and is on screen unfolded, so a player who reads the
-  panel is not stuck. Whether they read it before pressing is **UNKNOWN**.
-- **Not filed as a defect, and no wording proposed.** The generic family exists
-  for a stated reason and the fix — routing a *known* pre-flight cause to its
-  existing key — is a change to how refusals are reported, which touches copy
-  the owner approved.
 
 ---
 
