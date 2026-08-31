@@ -777,6 +777,15 @@ which is act 2.
 the front matter with the remedy: on a shared box, kill by PID. This one was not
 paid for by this pass; it was paid for by somebody else's run.
 
+**7f. The playtest file was committed as a binary blob for eight commits.** The
+frame sampler's sentinel was written as `let lastFrameText = ' ';` and a heredoc
+turned the space into a literal **NUL byte**, one of them, at offset 7,812.
+`git diff` then reported the whole file as `Bin 0 -> 44968 bytes` and showed
+none of its 907 lines. It *worked* — a NUL is as good a sentinel as a space —
+and it made the only artefact this pass produced under `tests/` unreviewable,
+which is the worse half of the trade. It is `string | undefined` now, and the
+comment beside it says why.
+
 **7e. The bare-world probe in act 2 was too shallow to answer its own question.**
 It walked `.hud > *` and filtered `pointer-events: none`, which returns only
 `hud-strip 0,0 1440x48` — the rail *containers* inherit `pointer-events: none`
