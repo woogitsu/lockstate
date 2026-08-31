@@ -18,8 +18,15 @@ import {
 import type { HudLocalizer, HudViewModel } from './view-model';
 
 /**
- * The dense top row: six metrics on the left, the clock and transport
+ * The dense top row: the metrics on the left, the clock and transport
  * controls on the right, one hairline underneath and nothing in the middle.
+ *
+ * **That first clause read "six metrics" and was a tally rather than a
+ * subject**, which is the sentence shape `docs/AGENT_WORKFLOW.md` §4 says rots
+ * first: the row has been eight chips since #29 added `earned-today` and is
+ * nine since #703 added `HIGH RISK`, and neither change touched the comment
+ * counting them. The number lives in one place now -- `projectStatusMetrics`
+ * in `./projection.ts`, which this file walks and never second-guesses.
  *
  * It is built once and updated in place. Rebuilding a strip that changes
  * every tick would churn the DOM and drop focus out of a transport button
@@ -93,6 +100,7 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
     prisonersCovered: 0,
     prisonersUnderstaffed: 0,
     prisonersUnguarded: 0,
+    prisonersHighRisk: 0,
     activeIncidents: 0,
     contrabandFound: 0,
     treasuryMinorUnits: 0,

@@ -66,6 +66,7 @@ async function setOccupancy(page: Page, prisoners: number, prisonerCapacity: num
           prisonersCovered: 0,
           prisonersUnderstaffed: 0,
           prisonersUnguarded: 0,
+          prisonersHighRisk: 0,
           activeIncidents: 0,
           contrabandFound: 0,
           treasuryMinorUnits: 0,

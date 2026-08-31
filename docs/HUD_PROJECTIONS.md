@@ -22,8 +22,10 @@ hash unchanged.
 ### 2. Deterministic iteration
 
 Every list is ordered by a key derived from **state** — ascending entity id,
-ascending string id in code-unit order, or a fixed declared catalog order —
-never `Map`/`Set` insertion order and never `localeCompare`
+ascending string id in code-unit order, a fixed declared catalog order, or a
+declared component field with entity index as the tie-break (the prisoner
+roster's descending `riskTier`, issue #703) — never `Map`/`Set` insertion order
+and never `localeCompare`
 (`docs/DETERMINISM.md`). The test suite builds the same scenario twice with
 every incidental registration order reversed and requires byte-identical
 canonical JSON from every projection.
@@ -119,6 +121,15 @@ indices `0..maxActiveIndex` (one `Uint8Array` liveness read each, the walk
 ADR 0005 measured at ~0.6 ms for 5,000 entities) and allocates a row object
 only for rows inside the window.
 
+**Since 2026-08-31 (issue #703, the owner's fourth ruling) that is two such
+walks rather than one**, and the sentence above is amended rather than replaced
+because its point — a row object is allocated only for the window — is exactly
+what the second walk was written to preserve. The roster is ordered by
+descending `riskTier` with ties on ascending entity index, so the first walk
+counts the population into one bucket per rank and the second hands each
+prisoner its position out of that bucket's cursor. See section 2 below for why
+that is not the arbitrary-column sort this document still refuses.
+
 Measured at the actor tiers, page limit 25
 (`tests/unit/hud-projections-scale.test.ts`, reported not asserted —
 `docs/BENCHMARKING.md` forbids timing assertions):
@@ -211,6 +222,22 @@ Rows are **not** sortable by an arbitrary column. Sorting 5,000 prisoners
 by need or by cell is `O(n log n)` plus a full materialisation each time the
 key changes; that needs an indexed accessor on the prisoner runtime, not a
 workaround in the projection.
+
+**The prisoner roster has one fixed ordering key as of 2026-08-31, and the
+paragraph above is narrowed rather than withdrawn** (issue #703, the owner's
+fourth ruling: *"the Regime roster sorts by tier instead of by arrival
+order"*). `projectPrisonerRoster` orders by descending `riskTier`, ties on
+ascending entity index. What the refusal above prices is a **comparison** sort
+over a key with as many distinct values as there are prisoners, chosen at
+request time; `riskTier` is `0 | 1 | 2 | 3` plus one rank for a prisoner
+classification has not run on yet, which is a bucket count rather than a
+comparison — `O(n)`, two arrays of at most five numbers, and one extra liveness
+walk. Neither an arbitrary column nor a *requested* order exists, and a filter
+still does not: the reasons this document gives for both are untouched. What
+changed is that after ADR 0080 the tier gates both a contraband introduction
+and an escape attempt, so the four rows the Regime panel draws
+(`PRISONER_ROSTER_ROW_LIMIT`) had to be the four that matter rather than the
+four oldest.
 
 ### 6. Withheld state
 

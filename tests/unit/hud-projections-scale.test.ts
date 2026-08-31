@@ -107,21 +107,62 @@ describe.each<Tier>([
     30_000,
   );
 
+  /**
+   * **This asserted "in ascending entity id" until 2026-08-31, and that clause
+   * is the half issue #703 changed.** The roster's canonical order is now
+   * highest risk tier first, ties on ascending entity index, so the old
+   * assertion is false of a population whose classification draw produced more
+   * than one tier -- which every one of these fixtures does.
+   *
+   * It is replaced by the property it was a proxy for, in three parts, and the
+   * replacement is stronger rather than looser: the old check would pass for a
+   * projection that had quietly reordered *between pages* as long as the result
+   * came out ascending, and part 2 below is what rules that out.
+   *
+   * 1. Every prisoner appears exactly once across the windows -- unchanged.
+   * 2. The concatenated windows equal one unpaged projection of the same
+   *    population, so paging partitions a single order rather than sorting each
+   *    page on its own.
+   * 3. That order is non-increasing in risk tier, and ascending in entity id
+   *    within a tier -- the contract `projectPrisonerRoster` now states.
+   */
   it(
-    'walks the whole population in windows, visiting every prisoner exactly once in ascending entity id',
+    'walks the whole population in windows, visiting every prisoner exactly once in the roster order',
     () => {
       const fixture = buildPopulation(actorCount);
       const seen: number[] = [];
+      const tiers: number[] = [];
       for (let offset = 0; offset < actorCount; offset += pageLimit) {
         const page = projectPrisonerRoster(fixture.prisoners, { offset, limit: pageLimit });
         expect(page.total).toBe(actorCount);
         expect(page.offset).toBe(offset);
-        for (const row of page.rows) seen.push(row.entityId);
+        for (const row of page.rows) {
+          seen.push(row.entityId);
+          tiers.push(row.riskTier ?? -1);
+        }
       }
 
       expect(seen).toHaveLength(actorCount);
       expect(new Set(seen).size).toBe(actorCount);
-      expect([...seen].sort((left, right) => left - right)).toEqual(seen);
+
+      const unpaged = projectPrisonerRoster(fixture.prisoners, { limit: actorCount });
+      expect(unpaged.rows.map((row) => row.entityId)).toEqual(seen);
+
+      // Non-vacuity: a population that came out at one tier would satisfy the
+      // ordering check below by accident, and would also have satisfied the
+      // ascending-id assertion this replaces.
+      expect(new Set(tiers).size).toBeGreaterThan(1);
+
+      for (let position = 1; position < seen.length; position += 1) {
+        const tier = tiers[position]!;
+        const previousTier = tiers[position - 1]!;
+        expect(tier, `tier rose at position ${position}`).toBeLessThanOrEqual(previousTier);
+        if (tier === previousTier) {
+          expect(seen[position]!, `entity id fell within tier ${tier} at position ${position}`).toBeGreaterThan(
+            seen[position - 1]!,
+          );
+        }
+      }
     },
     30_000,
   );
