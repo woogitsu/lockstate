@@ -197,3 +197,76 @@ describe('the census the status strip reads', () => {
     expect(system.getCensus()).toEqual({ covered: 2, understaffed: 0, unguarded: 0 });
   });
 });
+
+/**
+ * **`takeCensus` is the census walk with the provisioning turned off, for a
+ * restore.**
+ *
+ * A restored session arrives paused and its status counts are published before
+ * any tick runs, so `getCensus`'s "empty until the first update" is not a
+ * ten-tick staleness there -- it is however long the player leaves the game
+ * paused, and a twelve-prisoner prison reading `0 COVERAGE` under the green
+ * `Covered` badge for all of it. `src/simulation/runtime/restore-session.ts`
+ * is the caller; `tests/integration/session-save-round-trip.test.ts` measures
+ * it on a real save. These four are the properties that call depends on.
+ */
+describe('the census a restore takes', () => {
+  it('answers the same thing an update would, without an update', () => {
+    const walked = harness([{ sectorId: SECTOR, required: 2, assigned: 1, shortage: 1 }], [0, 1, 2, 3]);
+    const restored = harness([{ sectorId: SECTOR, required: 2, assigned: 1, shortage: 1 }], [0, 1, 2, 3]);
+
+    walked.system.update(context(10));
+    restored.system.takeCensus(10);
+
+    // Against the walk rather than against a literal: the two are required to
+    // agree, and a copied `{ understaffed: 4 }` would hold for an
+    // implementation where they did not.
+    expect(restored.system.getCensus()).toEqual(walked.system.getCensus());
+  });
+
+  it('provisions nothing, because no time passed between the save and the load', () => {
+    const { needs, system } = harness([{ sectorId: SECTOR, required: 1, assigned: 1, shortage: 0 }], [0]);
+    // Below the ceiling on purpose: `provisionSafety` clamps, so a covered
+    // prisoner already at `NEED_MAX_SCALED` would hide a spurious provision.
+    needs.setScaled(0, 'safety', NEED_MAX_SCALED / 2);
+    const before = needs.getScaled(0, 'safety');
+
+    system.takeCensus(10);
+
+    expect(needs.getScaled(0, 'safety')).toBe(before);
+    expect(system.getCensus()).toEqual({ covered: 1, understaffed: 0, unguarded: 0 });
+  });
+
+  it('asks the deployment report about the tick it was given', () => {
+    const needs = new NeedsComponent(8);
+    const asked: number[] = [];
+    const system = new SafetyCoverageSystem(
+      {
+        getCoverageReport: (tick: number) => {
+          asked.push(tick);
+          // A security schedule whose blocks differ across the day is the
+          // reason the tick is a parameter at all: the same sector is covered
+          // at one hour and unguarded at another, so a restore that asked
+          // about tick 0 instead of the tick it restored to would report the
+          // wrong rung for the prison the player is looking at.
+          return [{ sectorId: SECTOR, required: 1, assigned: tick >= 5_000 ? 1 : 0, shortage: tick >= 5_000 ? 0 : 1 }];
+        },
+      },
+      (sectorId) => (sectorId === SECTOR ? [0, 1] : []),
+      { getIndex: (entityId: number) => entityId },
+      needs,
+    );
+
+    system.takeCensus(7_000);
+
+    expect(asked).toEqual([7_000]);
+    expect(system.getCensus()).toEqual({ covered: 2, understaffed: 0, unguarded: 0 });
+  });
+
+  it('replaces the census rather than adding to it, so a second load is not a double count', () => {
+    const { system } = harness([{ sectorId: SECTOR, required: 1, assigned: 1, shortage: 0 }], [0, 1]);
+    system.takeCensus(10);
+    system.takeCensus(20);
+    expect(system.getCensus()).toEqual({ covered: 2, understaffed: 0, unguarded: 0 });
+  });
+});
