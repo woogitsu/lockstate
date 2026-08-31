@@ -1543,6 +1543,25 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * direction because the class it has to beat is shared.
    */
   const queueMore = eyebrowText('', 'hud-build__note hud-build__queue-more');
+  /*
+   * The queue's one sentence about money (#627, #629, #640), and the only part
+   * of this block that is **not** inside the fold.
+   *
+   * `queueSection` opens collapsed, on purpose and with a measurement behind it
+   * (`BUILD_QUEUE_ROW_LIMIT`) -- and #625 is the record of what that costs when
+   * the thing inside is a requirement rather than a detail: *"Awaiting
+   * Materials"* was there, in this fold, and reached nobody. So this line is
+   * appended to the panel body *after* `queueSection.element` rather than to
+   * `queueSection.body`. A player who never opens the fold still reads it.
+   *
+   * `hud-build__queue-shortfall` as well as `hud-build__note`, for exactly the
+   * reason `hud-build__queue-more` carries its own class: `.hud-build__note`
+   * gets an author `display: -webkit-box` under `max-height: 700px` in
+   * `hud.css`, which beats the user agent's `[hidden] { display: none }`, so
+   * without a rule of its own this line would lay out empty at every short
+   * viewport. See `.hud-build__queue-shortfall[hidden]` there.
+   */
+  const queueShortfall = eyebrowText('', 'hud-build__note hud-build__queue-shortfall');
 
   /**
    * One pooled row: what the order is, what it is waiting for, and the one
@@ -1640,6 +1659,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       }
       queueCount.textContent = '';
       queueMore.textContent = '';
+      // Nothing queued is nothing to wait for. The line goes with the block it
+      // is about rather than standing over an empty queue.
+      queueShortfall.textContent = '';
+      queueShortfall.hidden = true;
       delete panel.element.dataset['queued'];
       return;
     }
@@ -1699,6 +1722,29 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     const unlisted = Math.max(0, shown.total - shown.orders.length);
     queueMore.textContent = unlisted === 0 ? '' : t(HUD_MESSAGE_KEY.buildQueueMore, { count: unlisted });
     queueMore.hidden = unlisted === 0;
+
+    /*
+     * What the queue is short of, when it is short of money at all.
+     *
+     * **Driven by `unfunded` and not by `shortfallMinorUnits > 0`.** The two
+     * agree in every session the simulation can produce, and they are not the
+     * same claim: the flag is the projection's answer to "is this queue stalled
+     * on money", and reading the figure instead would put this panel in the
+     * business of deciding that from a number -- which is the second source of
+     * truth `AGENTS.md` boundary 1 forbids, in miniature.
+     *
+     * The figure is in the same minor units as the status strip's Funds chip
+     * and is formatted the same way, which is the comparison
+     * `BuildQueueMaterialsFundingViewModel` says it exists for: what is left is
+     * on the strip, what is missing is here, and neither divides by a currency
+     * nobody has chosen.
+     */
+    queueShortfall.textContent = shown.materialsFunding.unfunded
+      ? t(HUD_MESSAGE_KEY.buildQueueShortfall, {
+          total: localizer.formatNumber(shown.materialsFunding.shortfallMinorUnits),
+        })
+      : '';
+    queueShortfall.hidden = !shown.materialsFunding.unfunded;
   }
 
   // ---- the numeric route (secondary) --------------------------------
@@ -1826,6 +1872,9 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     // button, the target readout and the hint stay exactly where the player's
     // finger left them, and the panel grows downward into its own scroll.
     queueSection.element,
+    // Below the block and outside it, so the fold's collapsed state cannot hide
+    // it. See `queueShortfall` for why that placement is the whole point.
+    queueShortfall,
   );
   paintCatalogue();
   paintArmed();

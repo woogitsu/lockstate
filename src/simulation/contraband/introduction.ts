@@ -160,10 +160,42 @@ export interface ContrabandIntroductionPolicy {
  *     did not move; the range crossed it, deliberately, which is the decision
  *     `sentence.ts`'s docblock had named and declined.
  *
- * So `riskTier` is, today, exactly the dice roll this sentence said it was not:
- * reachable tiers are `[0, 1]` and which one a prisoner gets is the draw alone.
- * The policy below is still the right shape for the game this comment describes
- * -- it is the reading of the *present tense* that was wrong.
+ * **This paragraph read *"So `riskTier` is, today, exactly the dice roll this
+ * sentence said it was not: reachable tiers are `[0, 1]` and which one a
+ * prisoner gets is the draw alone."* It contradicted item 3 directly above it
+ * and item 3 is the true one** -- the sweep that corrected item 3 for the
+ * owner's #593 ruling stopped at the numbered list and did not come back down
+ * here. Kept rather than overwritten, because it is what the paragraph
+ * asserted and because a reader who arrives by way of the old sentence is owed
+ * the reason it changed rather than a bare replacement.
+ *
+ * What is true now, enumerated over the whole draw space rather than sampled:
+ * **the reachable tiers from an ordinary admission are `[0, 1]` for sentences
+ * below 84 in-game days and `[0, 1, 2]` at or above it.** The draw is still
+ * doing most of the work -- `priorIncidents` is still pinned at `0`, so the
+ * only other term is the sentence point, and only 9.1% of drawable lengths
+ * carry it -- but "the draw alone" is no longer accurate, and tier 2 is no
+ * longer out of reach.
+ *
+ * **What that buys this policy, stated as the categories rather than as the
+ * tier, because the categories are what a player meets.** The eligibility band
+ * below is a prefix of the severity ordering, so a tier is a *list*: tier 0 is
+ * currency and phone, tier 1 adds a tool, tier 2 adds drugs, tier 3 adds a
+ * weapon. So **drugs became reachable from an ordinary admission and weapons
+ * did not.** Weapons still need tier 3, an ordinary admission still tops out
+ * at 2 (one sentence point plus a screening draw of at most `+1`, clamped),
+ * and tier 3 is still reachable only through `ClassificationReviewSystem`
+ * revising somebody upward or through a wider `AdmitPrisoner` carrying two
+ * prior incidents. **`categoriesPerRiskTier` therefore has a producer for its
+ * third and fourth steps for the first time, and still none for its fifth** --
+ * which is a smaller version of exactly the gap this whole comment is about,
+ * and is recorded here rather than fixed, because fixing it means moving
+ * `priorIncidents` and that is [#540](https://github.com/matmaxalez/lockstate/issues/540)'s
+ * decision, not this file's.
+ *
+ * The policy below is still the right shape for the game this comment
+ * describes -- it was the reading of the *present tense* that was wrong, and it
+ * has been wrong in both directions now.
  */
 export const DEFAULT_CONTRABAND_INTRODUCTION_POLICY: ContrabandIntroductionPolicy = {
   baseProbability: 0.1,

@@ -457,6 +457,7 @@ test.describe('the Build panel deliveries block', () => {
             { orderId: 'order-01', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 4, y: 5 }, edge: 'north', state: 'assigned' },
             { orderId: 'order-02', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 4, y: 6 }, edge: 'north', state: 'assigned' },
           ],
+          materialsFunding: { unfunded: false, shortfallMinorUnits: 0 },
         }),
       pending(5),
     );

@@ -997,7 +997,22 @@ const MAX_PENDING_DELIVERIES = 4_096;
 const economySectionSchema = z
   .object({
     treasury: z
-      .object({ balanceMinorUnits: z.number().int().nonnegative().safe() })
+      /*
+       * **`.safe()` and not `.nonnegative()` since ADR 0075 decision 2**, and
+       * the loosening is the point rather than a slip. A balance may now be
+       * negative -- the decision's own headline is *"the balance may go
+       * negative … and nothing ends the session"* -- so a prison that saved
+       * while under water has to load while under water, or a reload is a way
+       * out of the debt. `Treasury.restore`'s validator was widened in the
+       * same change, because a boundary the runtime accepts and the file
+       * refuses is a window rather than a stricter check.
+       *
+       * The bound that mattered is unchanged: `.int().safe()` still refuses a
+       * fraction and still refuses a hand-edited figure outside the safe
+       * range, which is what #105 finding 4 and #191 asked of a
+       * client-writable number.
+       */
+      .object({ balanceMinorUnits: z.number().int().safe() })
       .strict(),
     procurement: z
       .object({
