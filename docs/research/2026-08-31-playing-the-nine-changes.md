@@ -15,10 +15,10 @@ file under `tests/browser/` and changes nothing under `src/`.
 
 **`main` moved once underneath this pass and it does not touch anything here.**
 By the time the runs finished, `main` was **v0.0.274**, and
-`git diff --stat 6b5dc8d..origin/main -- src/` is two files:
-`src/services/localization/chunk-catalog-loader.ts` (new) and
-`src/services/localization/index.ts` (one line). No finding below rests on
-either.
+`git diff --stat 6b5dc8d..origin/main -- src/` is two files, both under
+`src/services/localization/` — a new chunked catalogue loader and a one-line
+export beside it. Neither is named by a rooted path here, because neither exists
+in the tree this record was written in. No finding below rests on either.
 
 **Reproduction:** `tests/browser/playtest-2026-08-31.playtest.ts`, run with
 
@@ -353,7 +353,7 @@ before it:
 ```
 
 `0 CONTRABAND`, in a prison where eleven prisoners had just been raised into tier
-3 — the step that draws contraband under [ADR 0080](../adr/0080-the-prison-asks-what-a-prisoner-is-carrying.md)
+3 — the step that draws contraband under [ADR 0080](../adr/0080-when-the-prison-asks-what-a-prisoner-is-carrying.md)
 — and where an escape then succeeded, which `canAttemptEscape`
 (`src/simulation/incidents/flashpoint.ts`) gates on `contrabandSeverity > 0`. So
 something was being carried, by the escape's own precondition, and the only
