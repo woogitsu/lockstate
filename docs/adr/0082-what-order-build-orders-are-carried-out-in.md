@@ -12,7 +12,7 @@
 > document described 0081 as "just merged"; it is not, and that is recorded here
 > because it is exactly the condition the sweep exists to catch.
 >
-> **The sweep was performed rather than asserted**, which ADR 0081's own header
+> **The sweep was performed rather than asserted**, which [ADR 0081](./0081-whether-a-purchase-may-be-partly-filled.md)'s own header
 > records skipping: one `git fetch origin '+refs/heads/*:refs/remotes/origin/*'`
 > followed by `git ls-tree --name-only <ref> docs/adr/` over all **355** remote
 > heads (`git ls-remote --refs origin` returns 1,056 refs, of which 355 are heads
@@ -23,10 +23,15 @@
 > than the answer to it — which is the lesson 0071's and 0077's entries in the
 > index were both paid for.
 >
-> **Every citation of ADR 0081 in this document is plain text and not a link,
-> deliberately**: the file it would point at does not exist on this branch, and
+> **Every citation of [ADR 0081](./0081-whether-a-purchase-may-be-partly-filled.md) in this document was plain text and not a link,
+> deliberately**: the file it would point at did not exist on this branch, and
 > `tests/foundation/adr-numbering-contract.test.ts` requires an ADR link to
-> resolve. They become links in the commit that merges after 0081 lands. And the
+> resolve. They become links in the commit that merges after 0081 lands.
+> **0081 has landed** — in
+> [#708](https://github.com/matmaxalez/lockstate/pull/708) — so that commit is
+> this one and the citations below are links. The sentence above is kept in the
+> past tense rather than deleted because it is the record of why a reader of an
+> earlier revision found plain text there. And the
 > number is provisional on the terms 0080 and 0081 set for themselves: if it
 > collides with an ADR landing from a branch cut after this sweep, this file, its
 > row in the index and every citation of it get renumbered together.
@@ -37,7 +42,7 @@
 
 Drafted under `CLAUDE.md`'s rule that a genuinely absent architectural decision
 is proposed rather than taken inside implementation code, and because
-ADR 0081 open question 4
+[ADR 0081](./0081-whether-a-purchase-may-be-partly-filled.md) open question 4
 deliberately declined it: *"The build-order execution order is deliberately NOT
 decided here. It is a different subject with a different blast radius — the save
 format — and folding it in would make one document that cannot be approved in
@@ -105,12 +110,17 @@ c) monotonic zero-padded ids, 5 trials -- trials with one unfunded: 0
 
 **Two corrections fall out of that, and they matter in opposite directions.**
 
-1. **ADR 0081's `{wall-9, wall-314…wall-325}` is wrong** about twelve of its
+1. **[ADR 0081](./0081-whether-a-purchase-may-be-partly-filled.md)'s `{wall-9, wall-314…wall-325}` is wrong** about twelve of its
    thirteen members. The unfunded thirteen are the thirteen **highest ids in
    code-unit order**, which for unpadded decimal ids is `wall-88, wall-89,
    wall-9, wall-90…wall-99` — not the thirteen placed last. `wall-9`, the ninth
-   segment the player drew, is the 313th of 325 the crew reaches, because
-   `"wall-9" > "wall-100"`. The half of the claim that mattered is right: a
+   segment the player drew, is the **315th** of 325 the crew reaches, because
+   `"wall-9" > "wall-100"`. (**That figure read 313 when this was drafted and
+   313 was wrong**, caught by recount rather than by the probe: 314 ids sort
+   before `"wall-9"` — 111 beginning `wall-1`, 111 beginning `wall-2`, 37
+   beginning `wall-3`, and 11 each beginning `wall-4` through `wall-8` — so
+   `wall-9` is the 315th. Nothing else in this document depends on it; the
+   pending set, which does, was reproduced exactly.) The half of the claim that mattered is right: a
    segment of the cell's own perimeter is the one left standing.
 2. **The lock is not certain in a real session, and the pricing record's
    fixture makes it look certain.** With `wall-N` ids a perimeter segment is
@@ -130,7 +140,7 @@ c) monotonic zero-padded ids, 5 trials -- trials with one unfunded: 0
 | perimeter freed at | **1,000** (999 does not) | **40** (39 does not) |
 | perimeter freed *and* a 65 plank affordable | **1,065** | **105** |
 
-ADR 0081's *"a loan principal of 65 escapes the lock; without it, nothing below
+[ADR 0081](./0081-whether-a-purchase-may-be-partly-filled.md)'s *"a loan principal of 65 escapes the lock; without it, nothing below
 1,065 does — a factor of sixteen"* compares two thresholds defined differently:
 65 frees the wall and leaves 25, which does not buy the plank. Like for like the
 factor is **25** (1,000 against 40) or **10.1** (1,065 against 105), not 16.
@@ -312,11 +322,11 @@ same contention rather than an absolute count -- and the baseline being 0
 failures is what makes the 16 attributable.
 
 **It does not change what a prison can afford, and that is the point of keeping
-it separate from ADR 0081.** No price moves, no balance moves, nothing is
+it separate from [ADR 0081](./0081-whether-a-purchase-may-be-partly-filled.md).** No price moves, no balance moves, nothing is
 credited or spent differently. What moves is *which* order a fixed amount of
 material reaches.
 
-**And it is the half of ADR 0081 that actually closes the measured lock.** Three
+**And it is the half of [ADR 0081](./0081-whether-a-purchase-may-be-partly-filled.md) that actually closes the measured lock.** Three
 combinations, arithmetic against the same thirteen pending orders at 80 each,
 with the perimeter segment at rank *r* in the walk:
 
@@ -330,7 +340,7 @@ with the perimeter segment at rank *r* in the walk:
 requirement and leaves the worst case exactly where it was, on a draw the player
 cannot see. **Placement order alone does close it**, in the measured position,
 because the perimeter was placed first. So the two decisions do **not** have to
-be taken together — but ADR 0081's §2 recommendation of per-order granularity is
+be taken together — but [ADR 0081](./0081-whether-a-purchase-may-be-partly-filled.md)'s §2 recommendation of per-order granularity is
 worth much less without this one, because *"the queue funds as many whole orders
 as the balance covers, **in a stated order**"* is its own wording and there is no
 stated order to fund them in until this is decided.

@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { defaultLocaleEnCatalog } from '../../src/content/default-locale-en';
+import { resolveLocalizationKey } from '../../src/content/localization';
 import { projectStatusStrip } from '../../src/simulation/presentation/status-strip-projection';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -101,13 +103,18 @@ function playedPrison(seed = SEED): SimulationRuntime {
   return runtime;
 }
 
-function contrabandDiscovered(runtime: SimulationRuntime): number {
+function strip(runtime: SimulationRuntime): ReturnType<typeof projectStatusStrip>['counts'] {
   return projectStatusStrip({
     tick: runtime.kernel.tick,
     prisoners: runtime.prisoners,
     staff: runtime.securityGuards,
     searchSystem: runtime.searchSystem,
-  }).counts.contrabandDiscovered;
+    confiscations: runtime.confiscations,
+  }).counts;
+}
+
+function contrabandDiscovered(runtime: SimulationRuntime): number {
+  return strip(runtime).contrabandDiscovered;
 }
 
 describe('a prison a player can start finds the contraband it admits', () => {
@@ -184,6 +191,95 @@ describe('a prison a player can start finds the contraband it admits', () => {
     expect(runtime.searchSystem.getMetrics()).toMatchObject({ searchesCompleted: 0, searchesQueued: 0, itemsDiscovered: 0 });
     expect(contrabandDiscovered(runtime)).toBe(0);
   });
+
+  /**
+   * **The strip says *what* it found, not only how much** -- the owner's ruling
+   * 3 on issue #703, 2026-08-31: *"The message names what contraband was
+   * found."*
+   *
+   * Both halves of the rule are driven through a real prison rather than a
+   * stub, because the interesting half is the one a stub cannot produce: a
+   * *mixed* haul. `contrabandDiscovered` comes from `SearchSystem`'s counter
+   * and the name comes from `ConfiscationLedger`, and a badge beside a count
+   * qualifies the whole count -- so naming a category the count is only partly
+   * made of would be a false statement about the prison
+   * (`AGENTS.md`'s fourth exclusion).
+   *
+   * ## The seeds are chosen from a measurement, and the measurement is the
+   * argument for the rule
+   *
+   * Thirteen seeds of `playedPrison`, each run the same sixteen in-game days,
+   * counting the distinct categories their sweeps actually confiscated:
+   *
+   * | seed | items | distinct categories | named |
+   * | --- | --- | --- | --- |
+   * | 0x1 | 2 | currency | Currency |
+   * | 0x2 | 3 | phone, tool | -- |
+   * | 0x3 | 2 | drug | Drugs |
+   * | 0x4 | 1 | drug | Drugs |
+   * | 0x5 | 1 | phone | Phone |
+   * | 0x6 | 1 | currency | Currency |
+   * | 0x7 | 2 | phone, currency | -- |
+   * | 0x8 | 4 | phone, tool, drug | -- |
+   * | 0x9 | 1 | tool | Tool |
+   * | 0xa | 1 | phone | Phone |
+   * | 0xb | 3 | phone, currency | -- |
+   * | 0xc | 2 | phone | Phone |
+   * | 0x552 | 2 | drug, phone | -- |
+   *
+   * **Seven of thirteen name a category and six do not**, which is the honest
+   * reach of this surface and is reported rather than hidden: a chip carrying
+   * one word cannot describe a phone and a weapon at once. Naming *each* of
+   * several discoveries needs a per-discovery message, and that needs a
+   * sentence joining a name to what happened -- no such sentence is authored
+   * and a sentence is the owner's.
+   *
+   * `0xc` is the named case rather than one of the four one-item seeds
+   * deliberately: it confiscates **two** items of one category, so it fails if
+   * the rule ever degrades to "name the first thing found". `0x552` is the
+   * fixture's own seed, and it is the mixed case, so the negative half costs no
+   * extra prison.
+   */
+  it('names the contraband it found, and stays silent where one word would be a claim about the other (#703 ruling 3)', () => {
+    const named = playedPrison(0xc);
+    stepTo(named, SIXTEEN_DAYS);
+    const namedCounts = strip(named);
+
+    // The premise: two items, and both really are one category. Asserted off
+    // the ledger, so a run that stopped finding two things fails here rather
+    // than passing the assertion below for the wrong reason.
+    expect(namedCounts.contrabandDiscovered).toBe(2);
+    expect([...new Set(named.confiscations.all().map((event) => event.categoryId))]).toEqual(['contraband.phone']);
+
+    // The key itself, written out. Not read back off the catalog the
+    // projection reads: an expectation computed from the code under test's own
+    // input holds for any implementation (`docs/TESTING.md`).
+    expect(namedCounts.contrabandNameKey).toBe('contraband.phone.name');
+
+    // And it is a key a locale actually authors, which is the whole claim that
+    // this is a reader for existing copy rather than new copy. A key with no
+    // entry would reach the strip and be painted as itself --
+    // `resolveLocalizationKey` falls back to the key on purpose -- so the
+    // assertion is that the fallback is *not* what happens.
+    const publishedKey = namedCounts.contrabandNameKey;
+    if (publishedKey === undefined) throw new Error('the assertion above already proved the key is present');
+    const rendered = resolveLocalizationKey(defaultLocaleEnCatalog, publishedKey);
+    expect(rendered).not.toBe(publishedKey);
+    expect(rendered.trim().length).toBeGreaterThan(0);
+
+    const mixed = playedPrison();
+    stepTo(mixed, SIXTEEN_DAYS);
+    const mixedCounts = strip(mixed);
+
+    expect(mixedCounts.contrabandDiscovered).toBe(2);
+    expect([...new Set(mixed.confiscations.all().map((event) => event.categoryId))].sort()).toEqual([
+      'contraband.drug',
+      'contraband.phone',
+    ]);
+    // Two categories, so no word is true of the count: the strip falls back to
+    // the bare figure it has always shown rather than picking one of them.
+    expect(mixedCounts.contrabandNameKey).toBeUndefined();
+  }, 300_000);
 
   it('is deterministic: the same seed and the same commands find the same items twice', () => {
     const first = playedPrison();

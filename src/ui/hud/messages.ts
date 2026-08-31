@@ -283,6 +283,15 @@ export const HUD_MESSAGE_KEY = {
    * decided that, which is a fact about the panel's height rather than a
    * preference about layout.
    *
+   * **Corrected 2026-08-31 (issue #703 ruling 2): they are no longer inside that
+   * disclosure**, and the words are unchanged by the move -- no key here was
+   * added, removed or re-authored. What changed is that they are now read
+   * without a press, so *"what cancelling it gives back"* is the sentence a
+   * player meets on arrival at a prison that has bought its own bricks (#640)
+   * rather than one they went looking for. `beside the control that spent it` is
+   * still true of a purchase the player pressed *Buy* for and no longer true of
+   * one the game made for them, which is the reason the block moved.
+   *
    * `buildDeliveries` labels the group and `buildDeliveriesCount` is the figure
    * beside it: how many purchases are out and what they would refund. The refund
    * total is the number #285 is about -- the status strip says what is left, and

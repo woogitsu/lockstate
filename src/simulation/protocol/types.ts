@@ -882,6 +882,39 @@ export const statusCountsSchema = z
     activeIncidentType: statusCountsIncidentTypeSchema.optional(),
     contrabandDiscovered: countSchema,
     /**
+     * What `contrabandDiscovered` above is a count of, as the contraband
+     * catalog's own `nameKey`, when the projection can name one category for
+     * the whole count -- the owner's ruling 3 on issue #703, *"The message
+     * names what contraband was found."* See
+     * `StatusStripViewModel.counts.contrabandNameKey`
+     * (`src/simulation/presentation/status-strip-projection.ts`) for the full
+     * argument, including the two conditions that make it absent.
+     *
+     * **The second field in this object that is not a `countSchema` member,
+     * and the first that is a *key* rather than a stable id.**
+     * `identifierSchema`, not a locale-key union: `LocalizationKey` is
+     * `string` by declaration (`src/content/localization.ts`), the value comes
+     * out of `ContrabandCategoryDefinition.nameKey` which this same schema
+     * already validates with `identifierSchema` in
+     * `src/content/contraband-catalog.ts`, and the `prisoners.relocated`
+     * event's `roomNameKey` crosses the same boundary the same way. A key is
+     * not text: ADR 0011 keeps *translated text* off the wire, and the HUD
+     * still resolves this one.
+     *
+     * `.optional()` rather than a required possibly-`undefined` union, for the
+     * measured reason `activeIncidentType` above gives: this view model also
+     * crosses the pulled `hud/status-strip` route validated by the generic
+     * `jsonValueSchema`, and `isJsonValue` accepts a missing key but not an
+     * explicit `undefined` value.
+     *
+     * **`HUD_VIEW_MODEL_SCHEMA_VERSION` is deliberately not bumped**, for the
+     * reason `treasuryMinorUnits` below gives: one constant covers every
+     * projection in `src/simulation/presentation/`, so raising it because the
+     * status strip gained a field would assert that the other three changed
+     * too.
+     */
+    contrabandNameKey: identifierSchema.optional(),
+    /**
      * The treasury balance, in the minor units `Treasury` holds it in (#96).
      *
      * A count rather than a `BoundedValue`: it has no maximum to be a share

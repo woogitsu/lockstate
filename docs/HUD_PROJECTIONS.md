@@ -1226,6 +1226,18 @@ decision about what to build next.
       conservation equation across the whole sequence by the `#687` case in
       `tests/integration/economy-money-conservation.test.ts`.
 
+      **"The fold" in the paragraph above stopped being a fold on 2026-08-31**
+      (issue #703 ruling 2). It is kept as written, because what it describes is
+      where those rows were and the sentence *"15 bought · 1,200 back if
+      cancelled"* is unchanged copy — but that list, that sentence and the
+      `Cancel` #687's fix hangs on are now laid out on the Build panel itself,
+      with nothing opened. Measured before the move, on the real page with a
+      six-segment wall run and the fold shut: `data-pending="24"`, three filled
+      rows, the correct refundable total, and a `0x0` box
+      (`docs/research/2026-08-31-playing-the-nine-changes.md` §1b) — so for a
+      `jit:` delivery, which is the only kind #687's withdrawal applies to, the
+      refund had no trigger a player could reach.
+
       **Two things about that were asserted without a measurement behind them
       and have since been measured; both are corrections to the claims rather
       than to the behaviour.** *Which* segment a player watches disappear was
@@ -1443,6 +1455,14 @@ decision about what to build next.
       *"Awaiting Materials"* was there and reached nobody. Asserted at all six
       viewports in `tests/browser/ui-build-queue.spec.ts` with the fold shut and
       never toggled.
+
+      **The third application of that rule in this panel landed on 2026-08-31**
+      (issue #703 ruling 2): the pending-deliveries block came out of the *Buy*
+      fold the same way and for the same reason, so the spend #640 makes for the
+      player and the `Cancel` that reverses it are laid out without a press.
+      Asserted at 1920x1080, 1440x900, 1280x800, 900x600 and 375x812 in
+      `tests/browser/build-deliveries-outside-the-fold.spec.ts`, on `/index.html`
+      with the fold never opened.
     - **Kept off screen entirely when the queue is paid for**, box and all.
       `.hud-build__note` carries an author `display: -webkit-box`, which beats
       the user agent's `[hidden] { display: none }`, so the line needs

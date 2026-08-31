@@ -203,6 +203,46 @@ export interface HudCountsViewModel {
   readonly activeIncidentTypeLabelKey?: LocalizationKey;
   readonly contrabandFound: number;
   /**
+   * What `contrabandFound` above is a count of, as an already-finished message
+   * key -- the owner's ruling 3 on issue #703, *"The message names what
+   * contraband was found."*
+   *
+   * One of the five `contraband.*.name` labels the contraband catalog authors
+   * ("Weapon", "Drugs", "Phone", "Currency", "Tool"), which were shipped and
+   * read by nothing until this field, so a found phone and a found weapon
+   * rendered as the same character. Not new copy -- the strings are authored,
+   * and this is the reader they never had.
+   *
+   * **The key itself never appears as a literal in this directory, which is
+   * the point of the field.** The HUD may not hand-write a content key; it
+   * arrives from `ContrabandCategoryDefinition.nameKey` through the projection,
+   * exactly as `PrisonerRoomRefViewModel.roomNameKey` does, so a scenario
+   * running its own contraband catalog names its own categories. Issue #703's
+   * evidence for the gap was `grep -rn "contraband\.weapon\.name" src/ui/`
+   * returning nothing; that grep returns nothing after the gap is closed too,
+   * and `grep -rn "contrabandNameKey" src/ui/` is the one that answers it.
+   *
+   * **Absent whenever no one word is true of the whole count** -- nothing
+   * found, several categories found, or a confiscation ledger that no longer
+   * accounts for the count. All three are "cannot name one category", which is
+   * one fact rather than three, and the strip's badge simply does not appear;
+   * the count beside it says whether anything was found at all. The full
+   * argument, including why a badge may not qualify a count it is not true of,
+   * is on `StatusStripViewModel.counts.contrabandNameKey`
+   * (`src/simulation/presentation/status-strip-projection.ts`).
+   *
+   * Optional rather than a required `LocalizationKey | undefined`, for
+   * `activeIncidentTypeLabelKey`'s reason above: the field one layer down
+   * crosses a channel where a present-but-`undefined` value fails to decode.
+   *
+   * Unlike `activeIncidentTypeLabelKey`, nothing derives this: it arrives as
+   * the contraband catalog's own `nameKey` and `src/ui/simulation-counts.ts`
+   * passes it straight through. A catalog entry owns the key for its own name,
+   * the way `PrisonerRoomRefViewModel.roomNameKey` does, so there is no
+   * namespace for a translator to compose.
+   */
+  readonly contrabandNameKey?: LocalizationKey;
+  /**
    * The treasury balance in minor units (#96).
    *
    * Minor units all the way to the DOM, and converted for display at the

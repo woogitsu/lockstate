@@ -38,6 +38,16 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  * panel, at every viewport, and the panel scrolls to the ones that are not"**.
  * Both numbers are measured below rather than asserted as adequate.
  *
+ * **The difference this section is named for closed on 2026-08-31, and from the
+ * other side.** Issue #703 ruling 2 took the delivery rows out of the buy
+ * disclosure, so they no longer cost the Build panel nothing until it is opened;
+ * `build-deliveries-outside-the-fold.spec.ts` now makes of them exactly the
+ * claim the paragraph above makes of these Release controls -- laid out, a real
+ * tap target, on screen where they fit and reached by the panel's own scroll
+ * where they do not. Nothing about *this* block changed; what changed is that
+ * the two surfaces are now measured the same way, which is the better end for
+ * this section to have.
+ *
  * ## What each block measures
  *
  * - **Nothing until something is asked**, and a sentence rather than a blank
