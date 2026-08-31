@@ -339,6 +339,72 @@ later:
 sentence held the band for **744 ms** at ×4. The escape pair is **zero** ticks
 apart.
 
+### 2d. A weapon: nothing, in the prison where weapons exist
+
+**The brief asked what the player sees when a weapon becomes reachable. In the
+prison that produces weapons, the answer is a zero.**
+
+**MEASURED**, act3b's status strip on the day of the escape, and every reading
+before it:
+
+```
+| 11 | PRISONERS | 9 with no bed | 0 | STAFF | 0 | COVERAGE | 0 understaffed · 11 unguarded
+| 1 | ROOMS | 0 | INCIDENTS | Clear | 0 | CONTRABAND | 29,620 | FUNDS | …
+```
+
+`0 CONTRABAND`, in a prison where eleven prisoners had just been raised into tier
+3 — the step that draws contraband under [ADR 0080](../adr/0080-the-prison-asks-what-a-prisoner-is-carrying.md)
+— and where an escape then succeeded, which `canAttemptEscape`
+(`src/simulation/incidents/flashpoint.ts`) gates on `contrabandSeverity > 0`. So
+something was being carried, by the escape's own precondition, and the only
+contraband surface in the game read `0`.
+
+**MEASURED**, act1d's strip, the well-run prison with four guards, for contrast:
+
+```
+| 10 | PRISONERS | 4 with no bed | 4 | STAFF | 10 | COVERAGE | Covered
+| 1 | ROOMS | 0 | INCIDENTS | Clear | 1 | CONTRABAND | 25,310 | FUNDS | …
+```
+
+`1 CONTRABAND` — a search found something in the prison with guards, and
+`highRisk` was `0` there throughout, so that item came in at intake and was not
+a weapon (only tier 3 draws one).
+
+**VERIFIED, read**, why the two runs differ:
+
+- `src/simulation/presentation/status-strip-projection.ts:552` —
+  `contrabandDiscovered: source.searchSystem?.getMetrics().itemsDiscovered ?? 0`.
+  The strip counts items **discovered**, never items held.
+- `src/simulation/contraband/sector-search-duty.ts:124-126` — a sweep is ordered
+  only if the sector has an assigned guard **and**
+  `claimableGuardIds(this.guards).length >= policy.requiredGuardCount`. Its own
+  docblock says it: *"a spare guard walks them."*
+
+So the two facts compose into one sentence, and it is a statement about the game
+rather than about a bug:
+
+> **The prison that manufactures weapons is, by construction, the prison with no
+> spare guard to find them.** Tier 3 is reached by neglect; discovery needs
+> slack. A player who under-guards gets the weapon and never hears about it —
+> the first they know is a prisoner missing.
+
+- **What would establish the impact**: a product decision about whether an
+  undiscovered weapon should be visible at all. There is a real argument that it
+  should not — a prison that has not searched has not found anything, and saying
+  otherwise would be the player knowing something the prison does not. **This is
+  not filed as a defect** for exactly that reason.
+- **What is a gap regardless of that argument**: even when a search *does* find
+  something, the strip shows a **bare count with no name**. `contraband.weapon.name`
+  ('Weapon'), `contraband.drug.name`, `contraband.phone.name`,
+  `contraband.currency.name` and `contraband.tool.name` are all authored
+  (`src/content/default-locale-en.ts:127-131`), and
+  `grep -rn "contraband\.weapon\.name" src/ui/` returns nothing. So a found
+  weapon and a found phone render identically: `1`. **After #681 that is the
+  difference between "somebody had a mobile" and "somebody is armed"**, and it is
+  the first change that makes the distinction reachable.
+- **Not filed, and it is the owner's**: the fix is either a ninth strip item or a
+  panel, both layout and copy.
+
 ## 3. #690 measured: four presses per room, uniform, and nothing swallowed
 
 **This is the measurement #690 asked for by name.** Its own weakest claim was
