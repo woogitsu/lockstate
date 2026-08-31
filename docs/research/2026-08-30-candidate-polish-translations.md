@@ -6,16 +6,6 @@
 
 ## 0. Nothing here is approved
 
-> **Amended 2026-08-30, after the owner ruled on Q1.** One of the thirteen questions
-> has been answered — the mixed register: *osadzony* in official labels, *więzień* in
-> event text and flavour. **Twelve remain open and nothing else here is approved.**
-> This document is left as the record of what was recommended *before* that ruling;
-> every place the ruling changes something is marked in both directions rather than
-> overwritten, and the criterion that decides which word any key takes lives in its own
-> record, [which word for a prisoner](./2026-08-30-which-word-for-a-prisoner.md). That
-> record also re-took one measurement this document leans on — Q5's tab bar — and it
-> came back different; §3's Q5 and §7's third claim carry the correction.
-
 **Every Polish string in this document is a candidate. None of it is a
 translation this project has agreed to ship, and none of it may be wired up.**
 
@@ -426,19 +416,6 @@ is not a translator's call. They are ordered by how much of the catalogue moves
 with the answer.
 
 **Q1 — *więzień* or *osadzony*, and what to do about the masculine.**
-**RULED ON, 2026-08-30, and the first half is answered: the mix — *osadzony* in
-official labels, *więzień* in event text and flavour
-([#661 comment](https://github.com/matmaxalez/lockstate/issues/661#issuecomment-5470901583)).**
-The paragraph below is kept exactly as it was written, because it is what was
-recommended *before* the ruling and because the ruling is a choice against it. What
-changed: the criterion that decides any key, the eleven keys that move and the one
-that stays, and the width measurement the ruling asked for, are all in
-[2026-08-30 which word for a prisoner](./2026-08-30-which-word-for-a-prisoner.md).
-Its finding on the count: **eleven move to *osadzony* and one stays *więzień*** —
-`hud.alert.event.incidents.assault-opened`, the only key in 579 on the narrating
-side. The paragraph's *"about 12 keys move"* is the right size and the wrong split.
-**Its second half — the masculine — is untouched by the ruling and remains open.**
-
 Every prisoner-facing key uses **więzień** below: `hud.status.prisoners`
 (*Więźniowie*), `hud.regime.roster-unnamed` (*Więzień {id}*),
 `actor-kind.prisoner`, `contraband-holder-kind.prisoner`,
@@ -473,19 +450,6 @@ keys move.**
 chip. **About 6 keys move.**
 
 **Q5 — the tab bar does not fit, and this is a measurement, not a preference.**
-**The measurement this rests on was re-taken on 2026-08-30 and no longer says what
-this paragraph says it says.** Measured at 375×812 on this branch, `.hud-tabs__inner`
-spans x = 12.0 … 363.0, and substituting the 13-character *Pomieszczenia* leaves it at
-**12.0 … 363.0** — both assertions the paragraph below relies on (`tabs.x >= 0`,
-`tabs.right <= 375`) **pass**. What happens instead is silent: `Overview`'s label is
-drawn at x = 9.8, 2.2px outside the bar's own left edge and clipped by
-`.hud-tabs__inner`'s `overflow: hidden`, and *Pomieszczenia*'s label overlaps
-`Security`'s by 10.3px. The paragraph is kept as written because its *conclusion* may
-still stand — thirteen characters do not fit — while its *reason* has changed. Details,
-method and the mechanism (`max-width: 100%` on `.hud__tabs`, added by `2a00f98`) are in
-[which word for a prisoner](./2026-08-30-which-word-for-a-prisoner.md) §5. **Q5 stays
-open and is re-asked there rather than answered.**
-
 ADR 0022 measured the tab bar at 375×812 spanning x = 1.8 … 373.2 with a fifth
 tab, and `default-locale-en.ts` records the consequence: *"a nine-character label
 such as 'Logistics' would put the bar at x = −9.5 and fail the assertions in
@@ -744,7 +708,7 @@ The always-visible shell. Two rows are reshaped (marked **R**) and one whole fam
 | Key | English today | Polish candidate | Note |
 | --- | --- | --- | --- |
 | `hud.status.title` | Prison status | **Stan więzienia** |  |
-| `hud.status.prisoners` | Prisoners | **Więźniowie** | **Q1** — masculine-personal plural against a mixed-gender name pool. **Q1 ruled 2026-08-30: this is a label, so it becomes *Osadzeni*** — see [which word for a prisoner](./2026-08-30-which-word-for-a-prisoner.md) §3.1. Measured 15.1px *narrower* than the candidate, §4.2 there |
+| `hud.status.prisoners` | Prisoners | **Więźniowie** | **Q1** — masculine-personal plural against a mixed-gender name pool |
 | `hud.status.prisoners-without-bed` | {count} with no bed | **{count} bez łóżka** | "bez" takes the genitive singular and never changes with the count |
 | `hud.status.staff` | Staff | **Personel** |  |
 | `hud.status.rooms` | Rooms | **Pomieszczenia** |  |
@@ -858,7 +822,7 @@ Two of the seven are reshaped, and they are the two sharpest cases in the whole 
 | `hud.alert.event.economy.wages-unpaid` | Payday went unpaid — your staff are owed {total}. | **Wypłata nie doszła do skutku — personelowi należy się {total}.** |  |
 | `hud.alert.event.prisoners.relocated` | {name} had nowhere to sleep and moved to {room}. | **{name} — nie było gdzie spać. Nowe miejsce: {room}.** | **R1**, the sharpest reshape in the catalogue. The owner wrote this English sentence; the Polish cannot keep its shape. |
 | `hud.alert.event.incidents.riot-opened` | A riot has broken out — {count} prisoners have stopped taking orders. | **Wybuchł bunt — liczba uczestników: {count}.** | **R2** |
-| `hud.alert.event.incidents.assault-opened` | A fight has broken out between two prisoners. | **Doszło do bójki między dwoma więźniami.** | **Q1 ruled: unchanged.** An `event-` row — the game narrating — and the only key in the 579 that carries *więzień* under the ruling |
+| `hud.alert.event.incidents.assault-opened` | A fight has broken out between two prisoners. | **Doszło do bójki między dwoma więźniami.** |  |
 | `hud.alert.event.incidents.escape-attempt-opened` | A prisoner is trying to break out. | **Ktoś próbuje się stąd wydostać.** | "Więzień próbuje uciec" is the literal rendering and is masculine; the impersonal "ktoś" holds for a prisoner of either gender — see R1 |
 | `hud.alert.event.incidents.gang-retaliation-opened` | Two gangs are settling a score. | **Dwa gangi wyrównują rachunki.** |  |
 | `hud.alert.event.incidents.all-clear` | The prison is under control again — no incident is still open. | **Więzienie znowu jest pod kontrolą — żadne zajście nie jest już otwarte.** |  |
@@ -923,7 +887,7 @@ Three of the seven are reshaped, all for the same reason: a Polish verb agrees i
 | Key | English today | Polish candidate | Note |
 | --- | --- | --- | --- |
 | `hud.intake.title` | Intake | **Przyjęcia** |  |
-| `hud.intake.admit` | Admit a prisoner | **Przyjmij więźnia** | **Q1 ruled**: read as a control's label, so ***Przyjmij osadzonego*** — and this is the one key of the eleven where the criterion is *applied* rather than read off. Named as the weakest claim of [which word for a prisoner](./2026-08-30-which-word-for-a-prisoner.md) §8 |
+| `hud.intake.admit` | Admit a prisoner | **Przyjmij więźnia** |  |
 | `hud.intake.hint` | A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits until a bed is free. | **Zanim więzienie kogokolwiek przyjmie, potrzebuje celi. Nie potrzebuje wolnego łóżka: przybysz bez łóżka czeka, aż któreś się zwolni.** |  |
 | `hud.intake.no-place` | {count} waiting with no bed to sleep in | **Bez łóżka do spania: {count}** | **R5** |
 | `hud.intake.pipeline` | In intake | **W przyjęciach** |  |
@@ -970,10 +934,10 @@ Three of the seven are reshaped, all for the same reason: a Polish verb agrees i
 | `hud.regime.block-allows` | Allows {categories} | **Dozwolone: {categories}** | **R8** |
 | `hud.regime.block-progress` | {percent}% through | **Postęp bloku: {percent}%** | **R8** |
 | `hud.regime.category-separator` | ,  | **, ** | unchanged — Polish uses the same list separator as English, unlike the Arabic and Japanese cases the English comment names |
-| `hud.regime.roster` | Prisoners | **Więźniowie** | **Q1 ruled**: a label, so ***Osadzeni*** |
+| `hud.regime.roster` | Prisoners | **Więźniowie** | **Q1** |
 | `hud.regime.roster-count` | {shown} of {total} | **{shown} z {total}** |  |
 | `hud.regime.roster-name` | {given} {family} | **{given} {family}** | unchanged — Polish puts the given name first, as English does (ADR 0015 makes the order a locale decision, and this locale agrees) |
-| `hud.regime.roster-unnamed` | Prisoner {id} | **Więzień {id}** | **Q1 ruled**: a record identifier, so ***Osadzony {id}***. One monospace character wider, against 49.4px of column slack — measured |
+| `hud.regime.roster-unnamed` | Prisoner {id} | **Więzień {id}** | **Q1** |
 | `hud.regime.roster-heading` | Heading to {activity} | **W drodze: {activity}** | **R8** — "Idzie do stołówki / na spacerniak" needs a different preposition *and* a different case per destination |
 | `hud.regime.roster-more` | and {count} more | **i jeszcze {count}** |  |
 | `hud.regime.roster-empty` | Nobody has been admitted yet. | **Nikogo jeszcze nie przyjęto.** |  |
@@ -1102,12 +1066,12 @@ Its own namespace, its own module, and the only family where `{detail}` is delib
 | `save.scope.world` | world terrain and ownership | **teren świata i własność gruntu** |  |
 | `save.scope.construction` | construction orders and undo/redo | **zlecenia budowy oraz cofanie i ponawianie** |  |
 | `save.scope.entity-liveness` | entity id liveness | **żywotność identyfikatorów bytów** |  |
-| `save.scope.prisoners` | prisoners, needs, actions and cell assignments | **więźniowie, potrzeby, czynności i przydziały cel** | **Q1 ruled**: a save-manifest label, so ***osadzeni*, potrzeby, czynności i przydziały cel** |
+| `save.scope.prisoners` | prisoners, needs, actions and cell assignments | **więźniowie, potrzeby, czynności i przydziały cel** |  |
 | `save.scope.operations` | jobs, containers and utility networks | **zadania, pojemniki i sieci instalacji** |  |
 | `save.scope.security` | doors, security sectors, guards and patrols | **drzwi, sektory ochrony, strażnicy i patrole** |  |
 | `save.scope.contraband` | contraband, intelligence and searches | **kontrabanda, informacje i przeszukania** |  |
 | `save.scope.incidents` | incidents, gangs and tunnels | **zajścia, gangi i tunele** |  |
-| `save.scope.names` | prisoner and staff names | **imiona i nazwiska więźniów oraz personelu** | **Q1 ruled**: a save-manifest label, so **imiona i nazwiska *osadzonych* oraz personelu** |
+| `save.scope.names` | prisoner and staff names | **imiona i nazwiska więźniów oraz personelu** |  |
 | `save.scope.room-caches` | room and topology caches (recomputed from the world) | **pamięci podręczne pomieszczeń i topologii (przeliczane ze świata)** |  |
 | `save.scope.navigation-caches` | navigation caches and in-flight path requests (re-issued on the next tick) | **pamięci podręczne nawigacji i trwające żądania tras (wysyłane ponownie w następnym takcie)** |  |
 
@@ -1147,7 +1111,7 @@ These have no definition object; `simulationEnumMessages()` computes the key fro
 
 | Key | English today | Polish candidate | Note |
 | --- | --- | --- | --- |
-| `actor-kind.prisoner.name` | Prisoner | **Więzień** | **Q1 ruled**: derived by `SIMULATION_ENUM_GROUPS`, labels-not-prose by construction, so ***Osadzony*** |
+| `actor-kind.prisoner.name` | Prisoner | **Więzień** | **Q1** |
 | `actor-kind.staff.name` | Staff | **Personel** |  |
 | `need.hunger.name` | Hunger | **Głód** |  |
 | `need.sleep.name` | Sleep | **Sen** |  |
@@ -1243,26 +1207,26 @@ These have no definition object; `simulationEnumMessages()` computes the key fro
 | `search-order-state.queued.name` | Queued | **W kolejce** |  |
 | `search-order-state.travelling.name` | Travelling | **W drodze** |  |
 | `search-order-state.searching.name` | Searching | **Przeszukiwanie** |  |
-| `contraband-holder-kind.prisoner.name` | Prisoner | **Więzień** | **Q1 ruled**: derived, so ***Osadzony*** |
+| `contraband-holder-kind.prisoner.name` | Prisoner | **Więzień** | **Q1** |
 | `contraband-holder-kind.staff.name` | Staff | **Personel** |  |
 | `contraband-holder-kind.cell.name` | Cell | **Cela** |  |
 | `contraband-holder-kind.container.name` | Container | **Pojemnik** |  |
 | `contraband-source.delivery.name` | Delivery | **Dostawa** |  |
 | `contraband-source.visit.name` | Visit | **Widzenie** | the Polish penitentiary term of art for a prison visit |
 | `contraband-source.staff.name` | Staff | **Personel** |  |
-| `contraband-source.prisoner.name` | Prisoner | **Więzień** | **Q1 ruled**: derived, so ***Osadzony*** |
+| `contraband-source.prisoner.name` | Prisoner | **Więzień** |  |
 | `contraband-source.room-object.name` | Room Object | **Wyposażenie pomieszczenia** |  |
 | `contraband-state.concealed.name` | Concealed | **Ukryta** | the three agree with *kontrabanda* (feminine) — **Q3** changes all three if the noun changes |
 | `contraband-state.confiscated.name` | Confiscated | **Skonfiskowana** | **Q3** |
 | `contraband-state.departed.name` | Left With Holder | **Wyniesiona przez posiadacza** | **Q3** |
-| `intelligence-target.prisoner.name` | Prisoner | **Więzień** | **Q1 ruled**: derived, so ***Osadzony*** |
+| `intelligence-target.prisoner.name` | Prisoner | **Więzień** |  |
 | `intelligence-target.staff.name` | Staff | **Personel** |  |
 | `intelligence-target.cell.name` | Cell | **Cela** |  |
 | `intelligence-target.sector.name` | Sector | **Sektor** |  |
 | `intelligence-source.informant.name` | Informant | **Informator** |  |
 | `intelligence-source.observation.name` | Observation | **Obserwacja** |  |
 | `intelligence-source.search-residue.name` | Search Residue | **Ślad po przeszukaniu** |  |
-| `informant-holder-kind.prisoner.name` | Prisoner | **Więzień** | **Q1 ruled**: derived, so ***Osadzony*** |
+| `informant-holder-kind.prisoner.name` | Prisoner | **Więzień** |  |
 | `informant-holder-kind.staff.name` | Staff | **Personel** |  |
 
 ### 5.24 Simulation enumerations, operations, construction and world — derived keys (28)
@@ -1441,16 +1405,7 @@ their own evidence.
   arithmetic). I proposed the colon because the accident is invisible and would
   break silently. A reviewer who prefers the shorter aria-label is not wrong, and
   the answer is a naming rule on field labels rather than a colon.
-- **That `Strefy` is an acceptable `hud.tab.rooms`.** **Corrected in one direction on
-  2026-08-30, and only one: the browser assertion this claim was fitted to does not
-  fire.** A 13-character label leaves the bar at 12.0 … 363.0 at 375×812 with `tabs.x
-  >= 0` and `tabs.right <= 375` both passing; it clips and overlaps instead
-  ([which word for a prisoner](./2026-08-30-which-word-for-a-prisoner.md) §5.2). So the
-  sentence below overstates what enforces the six-character budget — nothing does —
-  while its preference for being overruled stands unchanged, and is now better founded:
-  a word picked to fit an assertion that cannot fail is worse than one picked to fit a
-  measured overlap. The claim as written:
-  It is six characters because
+- **That `Strefy` is an acceptable `hud.tab.rooms`.** It is six characters because
   ADR 0022's measurement leaves room for six, and it is *not* what the panel
   designates — the panel zones rooms, and "strefa" is closer to "zone" than to
   "room". If the owner rejects it, the honest word is *Pomieszczenia* and the tab
