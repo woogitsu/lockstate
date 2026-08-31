@@ -561,6 +561,24 @@ const deltaMessageSchema = z
 const countSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 
 /**
+ * A figure on this channel that may be negative, which `countSchema` may not.
+ *
+ * One member uses it -- `statusCountsSchema.treasuryMinorUnits` -- and it is a
+ * separate schema rather than a loosening of `countSchema` deliberately.
+ * Fourteen other members of that object are counts whose floor of `0` is a
+ * real invariant (a prisoner count, a coverage share, an incident tally), and
+ * a shared schema relaxed for one of them stops checking the rest. See the
+ * field's own comment for what moved and why.
+ *
+ * The same bound the save format settled on for the same quantity
+ * (`src/persistence/save-schema.ts`, `economySectionSchema.treasury`):
+ * `.int().safe()` still refuses a fraction and still refuses a magnitude
+ * outside the safe integer range, which are the two things that were ever
+ * load-bearing here. Only the sign moved.
+ */
+const signedMinorUnitsSchema = z.number().int().safe();
+
+/**
  * Mirrors `IncidentType` (`src/simulation/incidents/incident.ts`) rather than
  * importing its runtime values, exactly as `REFUSAL_REASONS` above mirrors
  * ten domain unions rather than importing them: this file's vocabularies are
@@ -917,11 +935,42 @@ export const statusCountsSchema = z
     /**
      * The treasury balance, in the minor units `Treasury` holds it in (#96).
      *
-     * A count rather than a `BoundedValue`: it has no maximum to be a share
-     * of. `countSchema`'s floor of 0 is the treasury's own invariant, not an
-     * assumption made here -- `Treasury.spend` refuses rather than
-     * overdrawing, so a negative balance is unreachable, and a schema that
-     * admitted one would be describing a state the simulation cannot be in.
+     * Not a count, because it may be negative: `signedMinorUnitsSchema`, which
+     * is `z.number().int().safe()`. It has no maximum to be a share of either,
+     * so it is not a `BoundedValue`.
+     *
+     * **This field was `countSchema` until #703 ruling A, and the sentence that
+     * stood here is kept because a reader who meets it elsewhere has to be able
+     * to find this one:**
+     *
+     * > `countSchema`'s floor of 0 is the treasury's own invariant, not an
+     * > assumption made here -- `Treasury.spend` refuses rather than
+     * > overdrawing, so a negative balance is unreachable, and a schema that
+     * > admitted one would be describing a state the simulation cannot be in.
+     *
+     * **Every clause of that was true when it was written and the premise is
+     * now false.**
+     * [ADR 0075](../../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+     * decision 2 said *"the balance may go negative"* without the schema
+     * moving, and #703's ruling of 2026-08-31 -- a standing overdraft every
+     * prison has, recorded in
+     * [ADR 0083](../../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+     * §2 -- makes it reachable in a shipped session:
+     * `createNewSimulationRuntime` opens `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`
+     * on every `Treasury` it builds. So `Treasury.spend` still refuses rather
+     * than overdrawing; what it refuses *at* is no longer zero.
+     *
+     * **What the old bound cost is why this is not a tidy-up.** This object is
+     * `.strict()` and carries fifteen other figures, so a prison one minor unit
+     * under water published a `simulation/status-counts` the main thread's
+     * decoder refused `invalid-payload` -- and a refused message takes the
+     * prisoner count, the coverage, the incidents and the arrears down with the
+     * balance. A player would not have seen a funds chip showing a minus; they
+     * would have seen the whole status strip freeze, which is the *"invisible
+     * stall"* [ADR 0017](../../../docs/adr/0017-money-primary-resource-model.md)
+     * decision 8 names as the failure to avoid.
+     * `tests/integration/economy-negative-balance-readers.test.ts` pins both
+     * directions of that boundary.
      *
      * **`HUD_VIEW_MODEL_SCHEMA_VERSION` is deliberately not bumped for this**,
      * and the reason is a limitation of that constant rather than a judgement
@@ -937,7 +986,7 @@ export const statusCountsSchema = z
      * and that is the change to make then rather than a bump now that would
      * be wrong about three of the four.
      */
-    treasuryMinorUnits: countSchema,
+    treasuryMinorUnits: signedMinorUnitsSchema,
     /**
      * What the in-game day in progress has earned so far, in the same minor
      * units (#29, ADR 0017 decision 3).
