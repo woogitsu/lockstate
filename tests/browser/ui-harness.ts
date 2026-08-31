@@ -303,6 +303,7 @@ const BASE_VIEW_MODEL: HudViewModel = {
     prisonersCovered: 100,
     prisonersUnderstaffed: 30,
     prisonersUnguarded: 12,
+    prisonersHighRisk: 0,
     activeIncidents: 0,
     contrabandFound: 4,
     treasuryMinorUnits: 24_920,

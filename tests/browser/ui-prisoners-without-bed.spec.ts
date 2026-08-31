@@ -67,6 +67,7 @@ async function setCounts(
           prisonersCovered: 100,
           prisonersUnderstaffed: 30,
           prisonersUnguarded: 12,
+          prisonersHighRisk: 0,
           activeIncidents: 2,
           contrabandFound: 4,
           treasuryMinorUnits: 24_920,

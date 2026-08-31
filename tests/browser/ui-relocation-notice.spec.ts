@@ -180,6 +180,7 @@ function viewModelWith(parts: {
       prisonersCovered: 0,
       prisonersUnderstaffed: 0,
       prisonersUnguarded: 1,
+      prisonersHighRisk: 0,
       activeIncidents: 0,
       contrabandFound: 0,
       treasuryMinorUnits: 24_870,

@@ -153,12 +153,30 @@ function prisonerRow(row: PrisonerRosterRowViewModel): HudPrisonerRowViewModel {
  * way round would make the panel report its own row budget as the size of the
  * prison, which is the failure mode a "N of M" readout exists to prevent.
  *
- * The window's order is the projection's -- ascending entity index, the same
- * canonical walk `EntityQuery.execute()` uses (ADR 0005) -- and is not re-sorted
- * here. A main-thread sort of one page would order that page and claim to have
- * ordered the prison; `projectPrisonerRoster` says in its own header that rows
- * are not sortable by an arbitrary column there either, and that the answer is
- * an indexed accessor in the prisoner runtime rather than a sort anywhere.
+ * The window's order is the projection's and is not re-sorted here. A
+ * main-thread sort of one page would order that page and claim to have ordered
+ * the prison -- this reader asks for `PRISONER_ROSTER_ROW_LIMIT` rows and gets
+ * four, so a sort here could only ever rearrange four rows out of a prison of
+ * up to `DEFAULT_PRISONER_CAPACITY`.
+ *
+ * **What that order is changed on 2026-08-31 (issue #703, the owner's fourth
+ * ruling), and this paragraph is corrected rather than replaced.** It used to
+ * read: *"ascending entity index, the same canonical walk
+ * `EntityQuery.execute()` uses (ADR 0005) ... `projectPrisonerRoster` says in
+ * its own header that rows are not sortable by an arbitrary column there
+ * either, and that the answer is an indexed accessor in the prisoner runtime
+ * rather than a sort anywhere."* The order is now **highest risk tier first,
+ * ties broken by ascending entity index**, decided in the projection where the
+ * whole population is visible. Both halves of the old sentence were true when
+ * written and only the first is now false: entity index survives as the
+ * tie-break, and the refusal of an *arbitrary-column* sort survives too -- what
+ * changed is that one fixed key with five values turned out to be a counting
+ * sort rather than a comparison sort, which `projectPrisonerRoster`'s header
+ * now prices.
+ *
+ * The rule this module has to keep either way is unchanged: the order is a
+ * function of simulation state, and the main thread neither chooses it nor
+ * recomputes it.
  */
 export function prisonerRosterFromProjection(view: PrisonerRosterPage): HudPrisonerRosterViewModel {
   return { total: view.total, rows: view.rows.map(prisonerRow), everAdmitted: view.everAdmitted };
@@ -191,10 +209,20 @@ export class PrisonerRosterReader {
    * name for a set of people across ticks -- "page 3" would silently be a
    * different three prisoners after a release. Paging an unsorted 5,000-row
    * list four at a time is not a way to find a prisoner in any case; what would
-   * make one is a filter or an ordering, and `projectPrisonerRoster` records
-   * that neither exists and that the fix is an indexed accessor in the prisoner
-   * runtime. So this asks for the first window and reports the true total
-   * beside it.
+   * make one is a filter or an ordering.
+   *
+   * **The second of those exists as of 2026-08-31 and the sentence that denied
+   * it is corrected here rather than deleted.** It read: *"and
+   * `projectPrisonerRoster` records that neither exists and that the fix is an
+   * indexed accessor in the prisoner runtime."* An ordering exists now --
+   * highest risk tier first, ties on ascending entity index (issue #703, the
+   * owner's fourth ruling) -- so the four rows this reader asks for are the four
+   * highest-tier prisoners in the prison rather than the four oldest. A
+   * **filter** still does not exist, and neither does an indexed accessor, so
+   * the half of that sentence about finding *a particular* prisoner is
+   * untouched. So this still asks for the first window and reports the true
+   * total beside it; what changed is that the first window is now the window
+   * worth having.
    *
    * `undefined` while another read is in flight, exactly as every other reader
    * on this channel answers.

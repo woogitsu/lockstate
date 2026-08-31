@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { deriveSimulationMessageKey } from '../../src/content/simulation-message-keys';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 import {
   dayProgressPercent,
@@ -48,6 +49,7 @@ function counts(overrides: Partial<HudCountsViewModel> = {}): HudCountsViewModel
     prisonersCovered: 0,
     prisonersUnderstaffed: 0,
     prisonersUnguarded: 0,
+    prisonersHighRisk: 0,
     activeIncidents: 0,
     contrabandFound: 0,
     treasuryMinorUnits: 0,
@@ -57,7 +59,7 @@ function counts(overrides: Partial<HudCountsViewModel> = {}): HudCountsViewModel
 }
 
 describe('status strip: which metrics exist, in what order', () => {
-  it('projects exactly the eight declared metrics, in a fixed order', () => {
+  it('projects exactly the nine declared metrics, in a fixed order', () => {
     // Order is part of the contract: a HUD whose metrics move between builds
     // is one a player has to re-read every time. It was five until the
     // treasury balance joined them (#96), and six until #29's "earned today"
@@ -72,8 +74,19 @@ describe('status strip: which metrics exist, in what order', () => {
     // each moved one column right, once, in an interface no player has
     // learned yet. The convention is not withdrawn -- an *unrelated* new chip
     // still belongs on the end.
+    //
+    // **Issue #703's `high-risk` is the second, and it went in at position two
+    // for `coverage`'s reason plus one this file can state as a number.** It is
+    // `prisoners` at a second grain, so the two read as one sentence; and the
+    // strip's metrics row holds nine chips only while the money figures are
+    // narrow (`hud.css` measures the row at 1233.8px of content against 1256px
+    // available at 1280x720, with `FUNDS` growing 24.4px by seven figures), so
+    // the **last** chip is the one that leaves a narrow desktop. Appending
+    // would have put the chip this ruling exists for in that seat. Seven chips
+    // each moved one column right, once.
     expect(projectStatusMetrics(counts()).map((metric) => metric.id)).toEqual([
       'prisoners',
+      'high-risk',
       'staff',
       'coverage',
       'rooms',
@@ -87,9 +100,25 @@ describe('status strip: which metrics exist, in what order', () => {
   it('carries message keys, never text', () => {
     // ADR 0011: the view layer holds keys; a translated string never becomes
     // an identifier and never travels back toward the simulation.
+    //
+    // **Eight of the nine are `hud.*` and one is not** (#703). The `high-risk`
+    // chip's label is `classification-group.high-risk.name`, the key
+    // `src/content/simulation-message-keys.ts` already authors for that group
+    // and the Regime panel already resolves for its restricted-block heading:
+    // reusing it is what stops the strip and the panel drifting to two
+    // spellings of one group's name, and authoring a second `hud.status.*`
+    // string for words the game already ships would be a new player-facing
+    // string, which `AGENTS.md`'s fourth exclusion reserves to the owner.
+    //
+    // The pattern assertion below is therefore split rather than relaxed: the
+    // eight keep the `hud.` shape exactly as before, and the ninth is required
+    // to be the derived simulation key -- not merely "something else".
+    // `tests/unit/ui-hud-messages.test.ts` is where both registries are
+    // resolved against the bundled catalog.
     const labels = projectStatusMetrics(counts()).map((metric) => metric.labelKey);
     expect(labels).toEqual([
       HUD_MESSAGE_KEY.prisoners,
+      deriveSimulationMessageKey('classification-group', 'high-risk'),
       HUD_MESSAGE_KEY.staff,
       HUD_MESSAGE_KEY.coverage,
       HUD_MESSAGE_KEY.rooms,
@@ -98,7 +127,10 @@ describe('status strip: which metrics exist, in what order', () => {
       HUD_MESSAGE_KEY.funds,
       HUD_MESSAGE_KEY.earnedToday,
     ]);
-    for (const label of labels) expect(label).toMatch(/^hud\.[a-z.-]+$/);
+    for (const label of labels) {
+      expect(label).toMatch(/^(?:hud|classification-group)\.[a-z.-]+$/);
+    }
+    expect(labels.filter((label) => label.startsWith('hud.'))).toHaveLength(8);
   });
 
   it('renders a balance and no budget, cost or income metric', () => {
@@ -143,6 +175,11 @@ describe('status strip: which metrics exist, in what order', () => {
     const metrics = projectStatusMetrics(
       counts({
         prisoners: 142,
+        // Distinct from `prisoners` and not a factor of it, for the reason
+        // stated above: the high-risk chip counts a *subset* of the population,
+        // so a projection reading `prisoners` into it would look plausible
+        // against any round figure (#703).
+        prisonersHighRisk: 19,
         staff: 27,
         rooms: 61,
         contrabandFound: 8,
@@ -150,7 +187,7 @@ describe('status strip: which metrics exist, in what order', () => {
         stateIncomeAccruedTodayMinorUnits: 10_667,
       }),
     );
-    expect(metrics.map((metric) => metric.value)).toEqual([142, 27, 0, 61, 0, 8, 24_920, 10_667]);
+    expect(metrics.map((metric) => metric.value)).toEqual([142, 19, 27, 0, 61, 0, 8, 24_920, 10_667]);
   });
 });
 

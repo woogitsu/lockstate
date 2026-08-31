@@ -95,6 +95,24 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
         prisonersCovered: counts.prisonersCovered,
         prisonersUnderstaffed: counts.prisonersUnderstaffed,
         prisonersUnguarded: counts.prisonersUnguarded,
+        /**
+         * Straight through, for `accommodationCapacity`'s reason above, and it
+         * is the figure the strip's `HIGH RISK` chip states (issue #703, the
+         * owner's fourth ruling of 2026-08-31).
+         *
+         * **It has crossed the protocol since ADR 0032 and until this line
+         * nothing in `src/ui/` read it**, which is the shape
+         * `dailyWageBillMinorUnits` below records for its own field. The
+         * measurement is worth keeping because the grep that establishes it is
+         * easy to get wrong: `grep -rn 'highRisk' src/ui/` returns nothing --
+         * and so does `grep -rn 'highRisk' src/`, because the field is
+         * `prisonersHighRisk` with a capital `H` and the substring never
+         * appears anywhere. The grep that says something is
+         * `grep -rni 'high.risk' src/ui/`, which finds four sites, all of them
+         * comments or the `classificationGroupId === 'high-risk'` tone rule in
+         * `hud/regime-panel.ts`, and none of them this count.
+         */
+        prisonersHighRisk: counts.prisonersHighRisk,
         activeIncidents: counts.activeIncidents,
         /**
          * The one label this module derives rather than reads straight

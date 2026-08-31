@@ -538,14 +538,36 @@ describe('status strip', () => {
 });
 
 describe('prisoner roster and detail', () => {
-  it('lists every live prisoner in ascending entity id, and pages without changing the order', () => {
+  /**
+   * **The name of this case read "in ascending entity id" until 2026-08-31.**
+   * Issue #703's fourth ruling made the roster's order highest risk tier first,
+   * ties on ascending entity index, so the whole-list order is asserted against
+   * that pair now. The *paging* half is unchanged and is the half this case was
+   * always mostly about.
+   */
+  it('lists every live prisoner by descending tier then ascending id, and pages without changing the order', () => {
     const runtime = runScenario();
     const all = projectPrisonerRoster(runtime.prisoners);
     expect(all.total).toBe(4);
     expect(all.rows).toHaveLength(4);
 
-    const ids = all.rows.map((row) => row.entityId);
-    expect([...ids].sort((left, right) => left - right)).toEqual(ids);
+    // The order the projection promises, written out independently of it: the
+    // rows sorted by `(-riskTier, entityId)` must be the rows as they arrived.
+    const key = (row: { readonly riskTier?: number; readonly entityId: number }): readonly [number, number] => [
+      -(row.riskTier ?? -1),
+      row.entityId,
+    ];
+    const expectedOrder = [...all.rows].sort((left, right) => {
+      const [leftTier, leftId] = key(left);
+      const [rightTier, rightId] = key(right);
+      return leftTier === rightTier ? leftId - rightId : leftTier - rightTier;
+    });
+    expect(all.rows.map((row) => row.entityId)).toEqual(expectedOrder.map((row) => row.entityId));
+
+    // Non-vacuity: this scenario really does hold more than one tier, so the
+    // check above is not satisfied by a single-tier population in which any
+    // ascending-id order would pass.
+    expect(new Set(all.rows.map((row) => row.riskTier)).size).toBeGreaterThan(1);
 
     const windowed = projectPrisonerRoster(runtime.prisoners, { offset: 2, limit: 1 });
     expect(windowed).toMatchObject({ total: 4, offset: 2, limit: 1 });

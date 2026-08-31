@@ -121,6 +121,7 @@ function viewModel(options: { readonly hired: number; readonly bill?: number }):
       prisonersCovered: 100,
       prisonersUnderstaffed: 30,
       prisonersUnguarded: 12,
+      prisonersHighRisk: 0,
       activeIncidents: 0,
       contrabandFound: 4,
       treasuryMinorUnits: 24_920,
