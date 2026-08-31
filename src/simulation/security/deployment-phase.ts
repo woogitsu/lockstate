@@ -45,12 +45,18 @@ export interface SectorPostSource {
  * previous `NavigationSystem` instance's queue, so the restore drops the
  * request and settles the guard on `'on-post'` -- correctly, because there is
  * nothing left to wait for -- while its tile stays wherever the walk had got
- * to. Nothing else in `src/` produces a guard that is `'on-post'` away from
- * its post: `DeploymentSystem` sets the phase either on a guard already
- * standing there or immediately after moving it there, and `PatrolSystem`
- * sets it on a guard that has just completed a loop at the post or has had a
- * leg fail (which it re-paths from wherever the guard is, on its next
- * scheduled tick).
+ * to.
+ *
+ * **Two producers of that state exist today and the word is true of both.**
+ * The restore is the one the ruling is about. The other is a patrol leg whose
+ * route failed: `PatrolSystem` records the miss, settles the guard on
+ * `'on-post'` and re-paths from wherever it actually stands on its next
+ * scheduled tick -- deliberately, and its own comment says so. Such a guard
+ * is idle off its post and about to be walked somewhere, which is what the
+ * word says, and it holds the word for at most one patrol cadence.
+ * `DeploymentSystem`, by contrast, only ever sets `'on-post'` on a guard
+ * already standing on the post tile or immediately after moving it there, so
+ * it is not a third.
  *
  * ## What it costs, which is nothing that is persisted
  *
