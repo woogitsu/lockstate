@@ -14,6 +14,7 @@ import {
   hudEventNoticeFromWorkerMessage,
 } from '../../src/ui/simulation-events';
 import type { HudAlertViewModel } from '../../src/ui/hud/view-model';
+import { resolveHudLabelParameters } from '../../src/ui/hud/label-parameters';
 
 /**
  * The main thread's event translation: the channel that gave `HudSeverity`'s
@@ -44,8 +45,23 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   'incidents.riot-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.riot-opened', participantCount: 12 }),
   'incidents.assault-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.assault-opened' }),
   'incidents.escape-attempt-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.escape-attempt-opened' }),
+  'incidents.escape-succeeded': (sequence) => ({
+    sequence,
+    tick: 100,
+    type: 'incidents.escape-succeeded',
+    entityId: 3,
+    name: { givenName: 'Ada', familyName: 'Bell' },
+  }),
   'incidents.gang-retaliation-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.gang-retaliation-opened' }),
   'incidents.all-clear': (sequence) => ({ sequence, tick: 100, type: 'incidents.all-clear' }),
+  'prisoners.relocated': (sequence) => ({
+    sequence,
+    tick: 100,
+    type: 'prisoners.relocated',
+    entityId: 3,
+    name: { givenName: 'Ada', familyName: 'Bell' },
+    roomNameKey: 'room.cell.name',
+  }),
 };
 
 /**
@@ -87,11 +103,59 @@ describe('what the prison says when nothing went wrong', () => {
     for (const type of SIMULATION_EVENT_TYPES) {
       const notice = hudEventNoticeFromWorkerMessage(publication(SAMPLE[type](1)));
       if (notice === undefined || notice === 'none') throw new Error(`${type} produced no notice`);
-      const sentence = localizer.format(notice.labelKey, notice.labelParameters);
+      // Through `resolveHudLabelParameters`, which is what `hud.ts` renders
+      // with: since ADR 0076's relocation notice a sentence's parameters are
+      // not all plain values, and formatting from `labelParameters` alone
+      // would leave `{name}` and `{room}` on screen while this test passed.
+      const sentence = localizer.format(
+        notice.labelKey,
+        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+      );
       expect(sentence, `${type} reaches the player as its own key`).not.toContain('hud.alert.event');
       expect(sentence.trim().length, `${type} says nothing at all`).toBeGreaterThan(0);
+      // **The one assertion in this loop that is not about the catalog, and
+      // the one that guards a path the compiler does not.** `EVENT_PRESENTATION`,
+      // `eventParameters` and `SAMPLE` above all fail to compile for an event
+      // type nobody has decided about; `eventParameterMessages` opened with an
+      // early return on a single type, so a sentence carrying `{name}` whose
+      // branch nobody added rendered the literal placeholder -- and the two
+      // assertions above passed on it, because "{name} broke out" contains
+      // neither `hud.alert.event` nor nothing at all. `interpolate`
+      // (`src/services/localization/format.ts`) deliberately leaves an
+      // unsubstituted placeholder visible, so this is what a player would
+      // actually read. Asserted for **every** type rather than for the one
+      // that provoked it (#683), which is the half `not.toContain('{')` in the
+      // ADR 0076 test below could not do.
+      expect(sentence, `${type} leaves a placeholder on screen`).not.toContain('{');
     }
     expect(missing, 'every event key must be in the catalog that ships').toEqual([]);
+  });
+
+  it('names a prisoner the prison never named by their entity id, rather than saying nothing (ADR 0076)', () => {
+    /*
+     * The relocation notice's `name` is optional on the wire, exactly as
+     * `PrisonerRosterRowViewModel.name` is, and for the same reason: a session
+     * wired without an identity registry mints nobody. No path in `src/` can
+     * produce that -- `createNewSimulationRuntime` always wires one -- which is
+     * why this is pinned here rather than in
+     * `tests/integration/relocation-notice-loop.test.ts`.
+     *
+     * The fallback reuses `hud.regime.roster-unnamed`, which is what
+     * `formatPrisonerName` shows for an unnamed roster row. **No new copy is
+     * authored for it**, and the alternative -- dropping the notice -- is the
+     * silence issue #629 outlaws.
+     */
+    const anonymous = { ...SAMPLE['prisoners.relocated'](1) } as Record<string, unknown>;
+    delete anonymous['name'];
+    const notice = hudEventNoticeFromWorkerMessage(publication(anonymous as never));
+    if (notice === undefined || notice === 'none') throw new Error('an unnamed prisoner still moved');
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const sentence = localizer.format(
+      notice.labelKey,
+      resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+    );
+    expect(sentence).toBe('Prisoner 3 had nowhere to sleep and moved to Cell.');
+    expect(sentence, 'and no placeholder survives the fallback').not.toContain('{');
   });
 
   it('carries a severity that says whether anything is wrong, which is the whole point of #507', () => {
@@ -112,7 +176,7 @@ describe('what the prison says when nothing went wrong', () => {
    * (issue #555).
    *
    * **Not a restatement of `EVENT_PRESENTATION`.** The claim being pinned is
-   * the *shape* of the table rather than its five entries: an incident that
+   * the *shape* of the table rather than its entries: an incident that
    * can take the prison out of the player's hands is painted differently from
    * one that cannot, and the simulation decides which is which. `assault` is
    * the only kind capped below `IncidentResponsePolicy.lockdownSeverityThreshold`
@@ -143,6 +207,19 @@ describe('what the prison says when nothing went wrong', () => {
     // so without an `'info'` counterpart the three rows above would leave the
     // band red over a prison that is calm again.
     expect(severityOf('incidents.all-clear')).toBe('info');
+
+    /*
+     * The one member about an outcome rather than an opening (#683), and the
+     * only place in this suite that says which band it takes. The line the
+     * test above draws is about severity and lockdown, and it does not decide
+     * this one: an escape that succeeded has no severity left to weigh. It is
+     * `'danger'` on the argument `EVENT_PRESENTATION` already made for the
+     * *attempt* -- ADR 0061 decision 5 makes the failure a prisoner who is
+     * gone, and nothing about that is recoverable -- which is more true of the
+     * success than of the attempt. Grading it `'info'` beside the all-clear
+     * would paint losing somebody as the loop working.
+     */
+    expect(severityOf('incidents.escape-succeeded')).toBe('danger');
   });
 
   it('puts the numbers the sentence needs where the sentence can reach them', () => {
@@ -160,10 +237,19 @@ describe('what the prison says when nothing went wrong', () => {
 
     /*
      * The riot's participant count is the only figure the incident events
-     * carry, and it must reach the finished sentence too. The four others
-     * carry none, and each of their sentences must still be a whole sentence
-     * rather than one with a hole where a placeholder went unsubstituted --
-     * which is what a `{count}` left in an unparameterised message looks like.
+     * carry, and it must reach the finished sentence too. The openings listed
+     * below carry none, and each of their sentences must still be a whole
+     * sentence rather than one with a hole where a placeholder went
+     * unsubstituted -- which is what a `{count}` left in an unparameterised
+     * message looks like.
+     *
+     * **`incidents.escape-succeeded` is deliberately not in that list**, and
+     * the reason is the distinction this whole `it` is about: its `{name}` is
+     * a *message-valued* parameter, so formatting from `labelParameters` alone
+     * -- which is what this loop does on purpose -- leaves the placeholder
+     * standing, correctly. The corresponding assertion for it goes through
+     * `resolveHudLabelParameters` in the first test in this file, which makes
+     * it for every event type at once.
      */
     const riot = hudEventNoticeFromWorkerMessage(publication(SAMPLE['incidents.riot-opened'](1)));
     if (riot === undefined || riot === 'none') throw new Error('a riot must produce a notice');

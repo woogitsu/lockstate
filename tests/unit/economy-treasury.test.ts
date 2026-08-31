@@ -123,3 +123,89 @@ describe('Treasury: the exact-balance boundary', () => {
     expect(treasury.balanceMinorUnits).toBe(BALANCE);
   });
 });
+
+/**
+ * The other end of the same comparison, opened by
+ * [ADR 0075](../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+ * decision 2: **the balance may go negative.**
+ *
+ * The block above is untouched and that is the load-bearing half of this one.
+ * `canAfford` was `amountMinorUnits <= this.balance` and is now
+ * `this.balance - amountMinorUnits >= this.floor`; with the default floor of
+ * `0` those are the same comparison, so every boundary #416 pinned still holds
+ * to the minor unit and a session that has borrowed nothing is unchanged.
+ *
+ * **What the old code asserted three times and this file asserted nowhere.**
+ * The non-negative invariant was written out in the constructor, in `restore`
+ * and in `save-schema.ts`, and removing all three broke **no test in the
+ * repository** — measured, 349 files green. So the invariant that had to be
+ * removed was guarded only at the spend boundary, which is preserved, and the
+ * cases below are the guard the other two ends never had.
+ */
+describe('Treasury: the room a facility opens below zero', () => {
+  it('refuses to go below zero while no facility is open, which is every shipped session', () => {
+    const treasury = new Treasury(40);
+
+    expect(treasury.overdraftFloorMinorUnits, 'a prison that has borrowed nothing has no room').toBe(0);
+    // A plank is 65 and the prison holds 40: ADR 0075's lock, unchanged.
+    expect(treasury.spend(65)).toBe(false);
+    expect(treasury.balanceMinorUnits).toBe(40);
+  });
+
+  it('spends into the room a facility opened, and stops at its far edge', () => {
+    const treasury = new Treasury(40);
+    treasury.setOverdraftFloor(-100);
+
+    // 40 - 65 = -25, which is above -100.
+    expect(treasury.canAfford(65)).toBe(true);
+    expect(treasury.spend(65)).toBe(true);
+    expect(treasury.balanceMinorUnits).toBe(-25);
+
+    // 75 more lands exactly on the floor and is allowed; 76 is not.
+    expect(treasury.canAfford(75)).toBe(true);
+    expect(treasury.canAfford(76)).toBe(false);
+    expect(treasury.spend(76)).toBe(false);
+    expect(treasury.balanceMinorUnits, 'a refusal at the floor changes nothing').toBe(-25);
+    expect(treasury.spend(75)).toBe(true);
+    expect(treasury.balanceMinorUnits).toBe(-100);
+  });
+
+  it('credits a negative balance upward without any special case', () => {
+    const treasury = new Treasury(-500);
+
+    treasury.credit(300);
+    expect(treasury.balanceMinorUnits).toBe(-200);
+    treasury.credit(300);
+    expect(treasury.balanceMinorUnits).toBe(100);
+  });
+
+  it('carries a negative balance through a snapshot and back', () => {
+    // ADR 0075: a prison that saved under water must load under water, or a
+    // reload is a way out of the debt.
+    const treasury = new Treasury(0);
+    treasury.restore({ balanceMinorUnits: -1_234 });
+
+    expect(treasury.balanceMinorUnits).toBe(-1_234);
+    expect(treasury.snapshot()).toEqual({ balanceMinorUnits: -1_234 });
+  });
+
+  it('refuses a floor above zero, which would be a minimum balance and a different mechanic', () => {
+    const treasury = new Treasury(1_000);
+
+    expect(() => treasury.setOverdraftFloor(1)).toThrow(RangeError);
+    expect(() => treasury.setOverdraftFloor(-0.5)).toThrow(RangeError);
+    expect(treasury.overdraftFloorMinorUnits).toBe(0);
+  });
+
+  it('still refuses a fractional or negative amount with a facility open', () => {
+    // The other two terms of `canAfford`'s chain survive the change: a floor
+    // must not turn "spend minus one" into a credit.
+    const treasury = new Treasury(1_000);
+    treasury.setOverdraftFloor(-1_000);
+
+    expect(treasury.canAfford(-1)).toBe(false);
+    expect(treasury.spend(-1)).toBe(false);
+    expect(treasury.canAfford(0.5)).toBe(false);
+    expect(treasury.balanceMinorUnits).toBe(1_000);
+  });
+});

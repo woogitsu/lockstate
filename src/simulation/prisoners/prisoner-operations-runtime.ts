@@ -32,7 +32,7 @@ import {
 import { NeedsComponent } from './needs';
 import { NeedsDecaySystem } from './needs-system';
 import { combineRegimeOverrides, DEFAULT_REGIME_SCHEDULES, HIGH_RISK_REGIME, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
-import { RoomInstanceRegistry } from './room-instance-registry';
+import { residentsWithoutExistingPlace, RoomInstanceRegistry } from './room-instance-registry';
 import { DEFAULT_SANCTION_POLICY, SanctionSystem, SOLITARY_SANCTION_ROOM_CATALOG_ID, type SanctionPolicy } from './sanction-system';
 
 const PRISONER_COMPONENT_ID = 0;
@@ -58,6 +58,61 @@ export type AdmitPrisonerOutcome =
   | { readonly kind: 'admitted'; readonly entityId: EntityId }
   | { readonly kind: 'refused'; readonly reason: AdmitPrisonerRefusalReason };
 
+/**
+ * What `relocateExcessResidentsOf` did, resident by resident: who now lives
+ * somewhere their bed exists, and who could not be moved and is therefore
+ * still occupying a place that is not there.
+ *
+ * Two arrays rather than a `'relocated' | 'no-vacancy'` verdict, because this
+ * call has no all-or-nothing outcome to report (see the method) and because
+ * *which* residents moved is the only thing a reader can check against the
+ * money: `stranded` is precisely the set
+ * `RoomInstanceRegistry.residentIdsWithExistingPlace` will still be leaving
+ * out of the day's grant. Both are ascending by entity id, and `stranded`
+ * empty is the ordinary case for any prison with a spare furnished bed.
+ *
+ * **`relocated` is what the player is told about and `stranded` is not**, and
+ * that asymmetry is a gap rather than a decision. ADR 0076 decision A(i)'s
+ * notice reaches the player once per entry in `relocated`
+ * (`SimulationEventLog.recordResidentRelocated`); the owner has approved no
+ * wording for a resident left sleeping in a room with no bed in it, and this
+ * repository does not write player-facing copy. So a stranded resident is
+ * still silent -- visible in the room's own occupancy readout and in the
+ * income A(ii) withholds, and nowhere else.
+ *
+ * Nothing on the wire and nothing in a snapshot: the caller is a command
+ * dispatch, and the state this reports is already carried by residency and
+ * cold-state accommodation.
+ */
+export interface ExcessRelocationOutcome {
+  readonly relocated: readonly ExcessResidentRelocation[];
+  readonly stranded: readonly EntityId[];
+}
+
+/**
+ * One resident who moved, and the instance they moved **into**.
+ *
+ * **`relocated` was `readonly EntityId[]` until the notice ADR 0076 owed was
+ * built, and this is the re-reading that PR #637 said its own weakest claim
+ * would need.** That claim was that a per-resident split is the right *shape*
+ * and not merely the convenient one, resting on there being no consumer for an
+ * all-or-nothing verdict -- and it named the condition that would settle it:
+ * *"If that notice wants one verdict per removal rather than a per-resident
+ * split, `{relocated, stranded}` is at the wrong grain."*
+ *
+ * The wording the owner approved is **"{name} had nowhere to sleep and moved
+ * to {room}."** It names one prisoner and one room, so the grain was right and
+ * the *fields* were short by one: an entity id says who moved and cannot say
+ * where to, and the destination is knowable only here, inside the walk that
+ * chose it. Reading it back off `coldState` afterwards would have been a
+ * second answer to a question this method already had.
+ */
+export interface ExcessResidentRelocation {
+  readonly entityId: EntityId;
+  /** The room instance they now live in -- `findBestAvailable`'s choice, not a re-derivation of it. */
+  readonly toInstanceId: string;
+}
+
 export interface PrisonerOperationsRuntimeOptions {
   readonly capacity: number;
   readonly navigation: NavigationSystem;
@@ -68,7 +123,8 @@ export interface PrisonerOperationsRuntimeOptions {
    * *sink* rather than a capability: a runtime handed no log discharges
    * prisoners silently, and every fixture that steps this runtime past a
    * sentence end would then be asserting against a prison that cannot say so.
-   * The two constructors in the repository -- `createNewSession` and
+   * The two constructors in the repository -- `createNewSimulationRuntime`
+   * (`src/simulation/runtime/new-session.ts`) and
    * `tests/helpers/prisoner-fixture.ts` -- each pass the session's own log.
    */
   readonly events: SimulationEventLog;
@@ -140,6 +196,15 @@ export interface PrisonerOperationsRuntimeOptions {
   /**
    * What an arrival brings in with them, called by `IntakeSystem` at the
    * classification stage. Absent, intake introduces nothing and draws nothing.
+   *
+   * **Two systems hold this port since ADR 0080, not one**, and the sentence
+   * above is kept because it is still the whole of what happens to most
+   * prisoners. `ClassificationReviewSystem` takes the same port and asks the
+   * same question at the one review that raises somebody *into* tier 3 --
+   * which is the only way the fifth entry of the `2 + tier` eligible band ever
+   * gets a producer, `classifyPrisoner` at `priorIncidents: 0` being unable to
+   * score 3 ([#677](https://github.com/matmaxalez/lockstate/issues/677)).
+   * Absent, neither introduces anything and neither draws.
    */
   readonly contrabandIntroducer?: IntakeContrabandIntroducer;
   /** The named stream `contrabandIntroducer` draws from. Only read when one is supplied. */
@@ -292,6 +357,8 @@ export class PrisonerOperationsRuntime {
       this.query,
       this.records,
       options.disciplinaryEvidence,
+      options.contrabandIntroducer,
+      options.contrabandRngStreamName,
     );
     this.sanctionPolicy = options.sanctionPolicy ?? DEFAULT_SANCTION_POLICY;
     this.sanctionSystem = new SanctionSystem(this.entityStore, this.query, this.records, this.coldState, this.roomInstances, this.accommodationPolicy);
@@ -565,6 +632,130 @@ export class PrisonerOperationsRuntime {
     }
 
     return 'relocated';
+  }
+
+  /**
+   * Moves the residents of `instanceIds` who hold **no place that currently
+   * exists** into accommodation that does, so a room whose furniture was taken
+   * away stops housing more people than it can sleep
+   * ([ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+   * decision A(i)).
+   *
+   * `ObjectPlacementService` is the one caller, on both routes that can take a
+   * standing object out of a room -- the `RemoveObject` press and the `Undo`
+   * of a completed object order -- because both drop a `residentCapacity` and
+   * ADR 0028 decision 2 leaves the occupants where they are. That decision is
+   * not withdrawn and this does not withdraw it: nobody is put on the street,
+   * and a resident with nowhere to go stays exactly where ADR 0028 left them.
+   * What changes is that "there is a free bed one cell over" now moves them
+   * into it instead of leaving a prison that has quietly stopped making sense.
+   *
+   * ## The two ways this differs from `relocateResidentsOutOf`, and why
+   *
+   * **It moves the excess, not everybody.** `relocateResidentsOutOf` empties
+   * whole instances because `unzone` is about to unregister them; here the
+   * room goes on existing and goes on housing whoever it can still sleep. The
+   * split is `residentsWithoutExistingPlace`, which is by construction the
+   * complement of the set `StateIncomeSystem` pays for
+   * (`residentIdsWithExistingPlace`, decision A(ii)) -- so the residents this
+   * tries to move are exactly the residents the state has stopped paying for,
+   * and a room losing one of two beds moves one resident rather than two.
+   *
+   * **It is best-effort, where the sibling is all-or-nothing.** The sibling
+   * rolls every move back on the first resident with nowhere to go, because
+   * its caller can still *refuse* -- a partially emptied room would be an
+   * `unzone` that half happened. No caller here can refuse: ADR 0076 records
+   * "refusing the removal while a resident depends on the object" as **not
+   * taken**, for #478's reason, so the object is gone by the time this is
+   * asked. Rolling a successful move back would then put a resident into a
+   * bedless room deliberately, to preserve an atomicity nobody reads, and
+   * would cost the prison the income A(ii) withholds for exactly that state.
+   * So each resident is moved if there is somewhere for them and left where
+   * ADR 0028 put them if there is not, and the caller is told which happened
+   * to whom.
+   *
+   * ## What it shares with the sibling, deliberately
+   *
+   * The target rule is identical and is not restated: one call to
+   * `firstAvailableAccommodationTarget` for the resident's *own* classification
+   * group, then `findBestAvailable` rating each candidate by
+   * `rateCellSharing` -- the same question `IntakeSystem` asks for an arrival
+   * and `SanctionSystem` asks for a prisoner leaving solitary. A resident is
+   * never offered a second room type because the first is full, so a
+   * high-risk prisoner is not quietly moved into general population to spare
+   * the caller an unhoused entity.
+   *
+   * **`findBestAvailable` is given no exclusion set, where the sibling gives
+   * it every instance it was handed, and the difference is the difference
+   * between the two callers.** `unzone` is about to *unregister* those
+   * instances, so relocating into one would strand the resident a second
+   * time; nothing is unregistered here, so there is nothing to exclude. The
+   * room the excess is being taken out of cannot be chosen anyway -- it reads
+   * occupancy at or above its capacity, which is what made these residents
+   * excess in the first place, and `findBestAvailable` skips exactly that.
+   *
+   * **An exclusion set was written here first and taken out again**, and this
+   * is what mutation testing is for: emptying it changed nothing any test
+   * could see, and nothing any test *could* have seen for a call naming one
+   * instance. It was also latently wrong for a call naming two -- an
+   * under-capacity instance in `instanceIds` is a perfectly good destination
+   * for another's excess, and excluding it would refuse a move the prison can
+   * make. The honest fix is to delete the line rather than to write a test
+   * that pins a redundancy, which is the reasoning
+   * `residentsWithExistingPlace`'s own comment records for its deleted fast
+   * path.
+   *
+   * **Determinism.** No RNG stream and no clock, exactly as the sibling reads
+   * neither. The visit order is ascending entity id over a set selected by an
+   * ascending-entity-id partition, so both the *who* and the *in what order*
+   * are functions of the prison rather than of its history, and a restored
+   * save folds the same way (`docs/DETERMINISM.md`).
+   */
+  public relocateExcessResidentsOf(instanceIds: readonly string[]): ExcessRelocationOutcome {
+    const pending: Array<{ readonly entityId: EntityId; readonly fromInstanceId: string }> = [];
+    for (const instanceId of instanceIds) {
+      const instance = this.roomInstances.getById(instanceId);
+      if (instance === undefined) continue;
+      for (const entityId of residentsWithoutExistingPlace(this.roomInstances.occupantsOf(instanceId), instance.residentCapacity)) {
+        pending.push({ entityId, fromInstanceId: instanceId });
+      }
+    }
+    // One residency claim per resident, so no id repeats across two
+    // `instanceId`s and the sort is total -- the sibling's argument, unchanged.
+    pending.sort((a, b) => a.entityId - b.entityId);
+
+    const relocated: ExcessResidentRelocation[] = [];
+    const stranded: EntityId[] = [];
+    for (const { entityId, fromInstanceId } of pending) {
+      const index = this.entityStore.getIndex(entityId);
+      const groupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
+      const target = firstAvailableAccommodationTarget(this.accommodationPolicy, this.roomInstances, groupId);
+      const arrival = this.sharingViewOf(entityId, index);
+      const instance =
+        target === undefined
+          ? undefined
+          : this.roomInstances.findBestAvailable(
+              target.roomCatalogId,
+              (occupants) => rateCellSharing(arrival, this.sharingViewsOf(occupants)),
+              target.requiredObjectCapability,
+            );
+
+      if (instance === undefined) {
+        // ADR 0028 decision 2's state, now reached only when the prison really
+        // has nowhere else -- and the branch decision A(ii) is unconditional
+        // for, because this resident goes on occupying a place that is not
+        // there and the state goes on declining to pay for it.
+        stranded.push(entityId);
+        continue;
+      }
+
+      this.roomInstances.release(fromInstanceId, entityId);
+      this.roomInstances.assign(instance.instanceId, entityId);
+      this.coldState.setAccommodation(entityId, instance.instanceId);
+      relocated.push({ entityId, toInstanceId: instance.instanceId });
+    }
+
+    return { relocated, stranded };
   }
 
   /**

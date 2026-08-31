@@ -8,6 +8,7 @@ import {
   type RiskTier,
 } from './classification';
 import { classificationGroupIndex, intakeStageFromIndex, type PrisonerRecordComponent } from './components';
+import type { IntakeContrabandIntroducer } from './intake-system';
 import {
   buildDisciplinaryIndex,
   CLEAN_DISCIPLINARY_RECORD,
@@ -88,6 +89,17 @@ export function classifiedAtTickOf(sentenceEndTick: number, sentenceLengthTicks:
 const REVIEWABLE_STAGES: readonly string[] = ['accommodation-assignment', 'completed'];
 
 /**
+ * The tier a review has to *reach* before it asks what the prisoner is
+ * carrying (ADR 0080).
+ *
+ * 3 rather than 1, and it is not a balance number: it is the tier at which the
+ * eligible-category band `2 + tier` first admits a fifth entry, which on the
+ * shipped catalogue is `contraband.weapon`. Every lower step of that band
+ * already has a producer at intake.
+ */
+const ESCALATION_INTRODUCTION_MINIMUM_TIER = 3;
+
+/**
  * Periodic classification review -- issue #78's "periodic review that can move
  * someone in either direction", driven by issue #80's consequence for the
  * prisoner involved in an incident or a contraband find.
@@ -122,10 +134,20 @@ const REVIEWABLE_STAGES: readonly string[] = ['accommodation-assignment', 'compl
  *
  * ## Determinism
  *
- * - **No RNG.** `context.rng` is not touched, so no named stream advances and
- *   the `prisoners.classification` sequence a later admission draws from is
- *   untouched. See `reviewClassification`'s note for why a draw here would be
- *   worse than it looks.
+ * - **The `prisoners.classification` stream is not touched**, so the sequence a
+ *   later admission draws its screening variance from is untouched. See
+ *   `reviewClassification`'s note for why a draw *there* would be worse than it
+ *   looks.
+ *
+ *   **This bullet read "No RNG. `context.rng` is not touched" until ADR 0080,
+ *   and half of it is now false.** A review that raises a prisoner into tier 3
+ *   draws from `contraband.introduction` -- a different stream, registered by
+ *   the session, and the same one intake draws from. Both halves are kept
+ *   rather than overwritten because the reason the original said it has not
+ *   gone away: what must never happen here is a draw on the *classification*
+ *   stream, and that is still what does not happen. What changed is that
+ *   "no stream at all" was a stronger claim than the reason required, and the
+ *   weapon nobody could smuggle was the price of it.
  * - **No clock.** Every temporal input is `context.tick` or a persisted tick.
  * - **Canonical iteration.** `EntityQuery.execute()`, ascending entity index,
  *   the same walk `IntakeSystem` and `ActionSystem` use. The disciplinary index
@@ -150,10 +172,84 @@ export class ClassificationReviewSystem implements SystemRegistration {
   public readonly order = 55;
   /**
    * The last tick of every review period, mirroring `economy.state-income`'s
-   * end-of-day phase. The phase matters more than it looks: at
-   * `phaseTicks: 0` the first run is tick 0, where nobody is classified and
-   * every prisoner is skipped, so the readout would be a system that has
-   * "run" and done nothing.
+   * end-of-day phase.
+   *
+   * ## The reason this comment gave welds two claims together, and the phase
+   * ## delivers only one of them
+   *
+   * Kept rather than replaced, because a true premise carrying a false
+   * conclusion is the harder kind to spot and the shape is the thing worth
+   * recording. It read:
+   *
+   * > The phase matters more than it looks: at `phaseTicks: 0` the first run
+   * > is tick 0, **where nobody is classified** and every prisoner is skipped,
+   * > so the readout would be a system that has "run" and done nothing.
+   *
+   * **Claim one -- "nobody is classified" at tick 0 -- is true, and the phase
+   * does fix it.** Measured in a real session that submits its admission at
+   * tick 0: after executing tick 0 there is **1 prisoner entity alive and 0
+   * classified** -- the command dispatched at the head of `step(0)` has already
+   * spawned the entity, but `IntakeSystem` has not reached the
+   * `'classification'` stage and `'queued'` is not in `REVIEWABLE_STAGES`.
+   * After executing tick 23,999 the same session has **1 alive and 1
+   * classified**. So the phase does buy a run over a classified population
+   * rather than an unclassified one.
+   *
+   * **Claim two -- "a system that has run and done nothing" -- the phase does
+   * not fix, and never did.** `update`'s guard is
+   * `context.tick - classifiedAtTick < CLASSIFICATION_REVIEW_INTERVAL_TICKS`,
+   * and `classifiedAtTickOf` returns either `undefined` or the difference of
+   * two `Uint32Array` reads it has already guarded against wrapping, so
+   * `classifiedAtTick` is never negative. The whole proof is one line --
+   * **`23,999 - 0 = 23,999 < 24,000`** -- so even a prisoner classified on the
+   * very first tick is skipped, and **every prisoner is skipped on the first
+   * run whatever the phase is**. The phase moves the empty run from tick 0 to
+   * tick 23,999; it does not remove it. The stated benefit is not delivered by
+   * the mechanism credited with it.
+   *
+   * Measured rather than argued, through this system in the real kernel:
+   * 24,000 prisoners alive at once, one per possible classification tick in
+   * `[0, 23,999]`, gives `reviewsCompleted === 0` after the run at 23,999 and
+   * `24,000` after the run at 47,999. Found by the owner's read-only audit of
+   * `origin/main` at v0.0.242 and confirmed at the lines before anything here
+   * was changed.
+   *
+   * ## What the phase costs and buys, on the same 24,000 cases
+   *
+   * One tick, against one degenerate regression. Compared with
+   * `phaseTicks: 0`, this phase reviews **23,999 of the 24,000 one tick
+   * earlier**, and reviews **one of them 23,999 ticks later** -- the prisoner
+   * whose `classifiedAtTick` is exactly `0`, who becomes due at 24,000, which
+   * is on phase 0's grid and one past this one's. That case is not a fresh
+   * session's first admission, which is classified at tick **15**; it is
+   * reachable from a fixture or a restore.
+   *
+   * **And it is not load-bearing for what the first period now looks like.**
+   * The arithmetic above has not changed, but the world it runs in has: since
+   * [#593](https://github.com/matmaxalez/lockstate/issues/593) re-ranged
+   * sentences to 14-90 in-game days, **97.27%** of prisoners reach a first
+   * review where **14.00%** used to. Re-derived against those numbers rather
+   * than inherited from the old ones: on the same 7,700-case cross-section
+   * (every drawable length at 100 arrival phases) `phaseTicks: 0` gives
+   * **97.35%** -- six prisoners in 7,700 apart. Nothing about that ruling's
+   * purpose turns on the phase in either direction.
+   *
+   * ## What the phase rests on now
+   *
+   * Two things, and claim two is not one of them. **The first sentence of this
+   * docblock**: this is the last tick of a period, which is exactly what
+   * `economy.state-income` does for a day, and a period-end system running at
+   * period end is legible without having to be load-bearing. **And claim one**,
+   * narrowed to what it actually says: the first run happens over a classified
+   * population rather than an unclassified one, which is a better readout even
+   * though neither run reviews anybody.
+   *
+   * **The value is deliberately left alone.** Moving it would shift when every
+   * review in every session fires, underneath a balance change (#593) that is
+   * already large, and a one-tick argument is not a reason to take that on.
+   * `tests/unit/prisoners-classification-review.test.ts` pins the
+   * empty-first-run fact at its extremal case, so claim two's refutation is
+   * checkable rather than another sentence that can rot.
    */
   public readonly schedule = {
     intervalTicks: CLASSIFICATION_REVIEW_INTERVAL_TICKS,
@@ -176,6 +272,22 @@ export class ClassificationReviewSystem implements SystemRegistration {
      * needs no evidence to accrue.
      */
     private readonly evidence: DisciplinaryEvidenceSource = NO_DISCIPLINARY_EVIDENCE,
+    /**
+     * The same introduction port `IntakeSystem` takes, asked again at the one
+     * review that carries a prisoner **into** tier 3 -- ADR 0080, issue
+     * [#677](https://github.com/matmaxalez/lockstate/issues/677).
+     *
+     * The same port and not a second one, deliberately: the rule stays in
+     * `src/simulation/contraband/introduction.ts`, this system supplies only
+     * the tier and the tick, and a session that wires no introducer keeps
+     * exactly the behaviour it had.
+     *
+     * **Omitted, nothing changes and no stream advances**, which is what every
+     * fixture in `tests/` relies on.
+     */
+    private readonly contrabandIntroducer?: IntakeContrabandIntroducer,
+    /** The named stream the introduction draws from. Only read when an introducer is supplied. */
+    private readonly contrabandRngStreamName: string = 'contraband.introduction',
   ) {}
 
   public getMetrics(): ClassificationReviewMetrics {
@@ -249,8 +361,25 @@ export class ClassificationReviewSystem implements SystemRegistration {
       this.records.classificationGroupIndex[index] = nextGroupIndex;
 
       this.reviewsCompleted += 1;
-      if (assessment.riskTier > previousTier) this.tierIncreases += 1;
-      else if (assessment.riskTier < previousTier) this.tierDecreases += 1;
+      if (assessment.riskTier > previousTier) {
+        this.tierIncreases += 1;
+        // ADR 0080. The contraband band is `2 + tier` categories of an
+        // ascending-severity ordering, so the fifth slot -- the weapon -- opens
+        // at tier 3 alone, and intake at `priorIncidents: 0` cannot score one
+        // (`1 + 0 + 1`, clamped). Asking the introduction question here, at the
+        // review that *raises* somebody into tier 3, is what gives that slot a
+        // producer without moving a single balance number.
+        //
+        // **Only the step into 3, and not every increase.** A draw on a 0 -> 1
+        // review would advance this stream in prisons where no band has
+        // changed hands, and a well-run prison would stop being
+        // bit-identical to the one it is today for no gain: measured over four
+        // seeds of a 40-cell, 8-guard prison, this condition leaves the
+        // contraband it produces exactly as it was.
+        if (assessment.riskTier >= ESCALATION_INTRODUCTION_MINIMUM_TIER && this.contrabandIntroducer !== undefined) {
+          this.contrabandIntroducer.introduce(entityId, assessment.riskTier, context.tick, context.rng.get(this.contrabandRngStreamName));
+        }
+      } else if (assessment.riskTier < previousTier) this.tierDecreases += 1;
       if (nextGroupIndex !== previousGroupIndex) this.groupChanges += 1;
     }
   }

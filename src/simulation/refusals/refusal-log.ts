@@ -14,7 +14,7 @@ import type { StaffHireRefusalReason } from '../staff/hiring';
  * ## The gap this closes
  *
  * A player command travels through two acceptances. The worker accepts the
- * *message* -- `WorkerStateMachine.handleSubmitCommand` answers
+ * *message* -- `SimulationWorkerStateMachine.handleSubmitCommand` answers
  * `status: 'queued'` the moment the kernel takes it -- and ADR 0003 decision
  * 9 is explicit that this "never reports a command as applied". The kernel
  * then dispatches it at its tick and a system decides what it means. Between
@@ -490,6 +490,32 @@ export function unzoneSupersessionKey(x: number, y: number, width: number, heigh
 /** `purchase.*`'s key: the item and the quantity, not the order id -- see the section comment. */
 export function purchaseSupersessionKey(itemId: string, quantity: number): string {
   return `purchase:${itemId}:${quantity}`;
+}
+
+/**
+ * The key a just-in-time materials shortfall stands under (#627).
+ *
+ * **Domain-wide rather than per target**, which makes it the second key of
+ * that shape beside `admitSupersessionKey`, and for the same reason the class
+ * comment gives for that one: its refusal is a *session-global fact* that a
+ * differently-parameterised success still disproves. "The build queue cannot
+ * be paid for" is a statement about the treasury against everything queued,
+ * not about the wall the player last pressed, so the next order that *is*
+ * funded genuinely withdraws it.
+ *
+ * It is deliberately **not** `purchaseSupersessionKey(itemId, quantity)`, even
+ * though the reason recorded under it is `purchase.insufficient-funds`. That
+ * key names one purchase, and the quantity a build queue needs grows with the
+ * queue: an order refused when the deficit was 2 bricks would never be
+ * withdrawn by the order that succeeded when the deficit was 4. Measured, and
+ * it is why this key exists.
+ *
+ * A function taking no arguments rather than a bare constant, so it reads like
+ * every other key at its call sites and so it has somewhere to grow an
+ * argument if the fact ever stops being session-global.
+ */
+export function materialsFundingSupersessionKey(): string {
+  return 'materials-funding';
 }
 
 /** `cancel-purchase.*`'s key: the order id, which is the one thing `CancelMaterialPurchase` names. */

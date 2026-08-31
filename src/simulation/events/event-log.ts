@@ -58,7 +58,8 @@ export const MAX_BUFFERED_SIMULATION_EVENTS = 64;
  * wall-clock time, so a tick that behaved differently because a publication
  * had happened would make the simulation depend on how fast the machine ran.
  * A `drain()` would be exactly that. So the watermark lives on the publisher
- * -- `WorkerStateMachine._publishedEventSequence`, beside the refusal and
+ * -- `SimulationWorkerStateMachine._publishedEventSequence`, beside the
+ * refusal and
  * zoning sequences it already keeps for the same purpose -- and this class is
  * append-and-read only.
  *
@@ -81,10 +82,32 @@ export const MAX_BUFFERED_SIMULATION_EVENTS = 64;
  *   see rather than a fact the player loses. Recorded in
  *   `docs/PERSISTENCE.md` and `docs/HUD_PROJECTIONS.md` beside `RefusalLog`'s
  *   own entry rather than left to be discovered.
- * - **It carries no identity.** No entity id, no name, no tile -- the same
- *   line `SimulationRefusal` holds, and for a sharper reason here: the
- *   subject of a discharge event does not exist by the time the main thread
- *   reads it.
+ * - **It carries no identity where the subject may be gone.** No entity id,
+ *   no name, no tile -- the same line `SimulationRefusal` holds, and for a
+ *   sharper reason here: the subject of a discharge event does not exist by
+ *   the time the main thread reads it.
+ *
+ *   **This read "It carries no identity", flatly, until `recordResidentRelocated`
+ *   below.** The sentence is narrowed rather than withdrawn, because the
+ *   reason it gave is the whole of it and that reason is about *discharge*: a
+ *   relocated resident is alive, housed, and already on the roster projection
+ *   under the same entity id and the same two name halves. An event whose
+ *   subject survives it may name them; one whose subject does not, may not.
+ *   Both directions are marked here rather than overwritten
+ *   (`docs/AGENT_WORKFLOW.md` section 4).
+ *
+ *   **And the second half of that narrowed sentence did not survive
+ *   `recordEscapeSucceeded` below**, which names a subject who is emphatically
+ *   gone -- `releasePrisoner` destroys the entity and releases the name before
+ *   the main thread reads the event. Marked rather than overwritten, again,
+ *   because the rule's *reason* is what moved: what a departed subject cannot
+ *   support is a **lookup**, and neither of these two events looks anything
+ *   up. Both carry the halves in the payload, so the sentence renders from
+ *   what was true when it was recorded. The rule that survives all three
+ *   readings is therefore: **this channel may name a subject whose name it
+ *   carries, and may never carry an id a reader is invited to resolve.**
+ *   `prisoners.discharged` still carries neither, and its schema still gives
+ *   the original reason.
  *
  * Writing to it is deterministic: it is written only from scheduled system
  * updates, at the tick the thing happened, from values those systems decided.
@@ -119,6 +142,90 @@ export class SimulationEventLog {
   public recordDischarge(count: number, tick: number): void {
     if (!Number.isSafeInteger(count) || count < 1) return;
     this.append({ sequence: this._sequence + 1, tick, type: 'prisoners.discharged', count });
+  }
+
+  /**
+   * Records that one resident whose bed was taken away has been moved into
+   * accommodation that exists
+   * ([ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+   * decision A(i)).
+   *
+   * **One call per resident, not one per removal**, which is the opposite of
+   * `recordDischarge` above and is decided by the sentence rather than by
+   * this class: the owner's approved wording names one prisoner and one room,
+   * so a removal that rehouses two residents says so twice. The caller is
+   * `ObjectPlacementService`'s notice port, which is handed exactly the
+   * per-resident split `PrisonerOperationsRuntime.relocateExcessResidentsOf`
+   * returns.
+   *
+   * **Nothing is recorded for a resident who could *not* be moved.** ADR 0076
+   * decision A(i) leaves them exactly where ADR 0028 decision 2 put them and
+   * the owner has approved no sentence for that state, so saying anything here
+   * would be inventing one. What the prison owes the player about a resident
+   * sleeping in a bedless cell is an open question, not this method's silence
+   * by oversight -- see `ExcessRelocationOutcome.stranded`.
+   *
+   * @param relocation Who moved and where to. `name` is absent only in a
+   * session wired without an identity registry; the HUD then names them by
+   * entity id, which is what the roster already does for the same case.
+   */
+  public recordResidentRelocated(
+    relocation: {
+      readonly entityId: number;
+      readonly name?: { readonly givenName: string; readonly familyName: string };
+      readonly roomNameKey: string;
+    },
+    tick: number,
+  ): void {
+    this.append({
+      sequence: this._sequence + 1,
+      tick,
+      type: 'prisoners.relocated',
+      entityId: relocation.entityId,
+      ...(relocation.name === undefined ? {} : { name: { ...relocation.name } }),
+      roomNameKey: relocation.roomNameKey,
+    });
+  }
+
+  /**
+   * Records that a prisoner got out
+   * ([#683](https://github.com/matmaxalez/lockstate/issues/683)).
+   *
+   * **One call per escapee**, like `recordResidentRelocated` above and unlike
+   * `recordDischarge`, and decided the same way: the owner's approved sentence
+   * names one prisoner. An escape attempt has exactly one participant
+   * (`IncidentTriggerSystem.tryOpenEscapeAttempt`), so today that grain and
+   * the incident's are the same; if an incident type ever lost more than one
+   * person at once, this would say so once per person rather than aggregate
+   * them behind a count the sentence has no placeholder for.
+   *
+   * **Unguarded, because there is no figure to guard, and the caller is what
+   * bounds it.** `IncidentResponseSystem.lapse` records this only for a
+   * participant its departure port confirms actually left -- the same shape
+   * `recordIncidentsAllClear` below relies on, and for the same reason: a
+   * second, weaker copy of the caller's rule here is how the two would come to
+   * disagree.
+   *
+   * @param escape Who left. `name` is absent only in a session wired without
+   * an identity registry, exactly as it is for a relocation; the HUD then
+   * names them by entity id. The name must be read **before** the departure --
+   * `releasePrisoner` releases it -- which is why the caller is handed it by
+   * the port that performs the departure rather than looking it up here.
+   */
+  public recordEscapeSucceeded(
+    escape: {
+      readonly entityId: number;
+      readonly name?: { readonly givenName: string; readonly familyName: string };
+    },
+    tick: number,
+  ): void {
+    this.append({
+      sequence: this._sequence + 1,
+      tick,
+      type: 'incidents.escape-succeeded',
+      entityId: escape.entityId,
+      ...(escape.name === undefined ? {} : { name: { ...escape.name } }),
+    });
   }
 
   /**

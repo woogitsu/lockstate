@@ -73,8 +73,10 @@ const sourceRoot = pathToFileURL(path.join(repositoryRoot, 'src', path.sep)).hre
  */
 
 /**
- * @typedef {Pick<typeof import('../src/simulation/runtime/new-session'), 'createNewSimulationRuntime'>
- *   & Pick<typeof import('../src/simulation/kernel/kernel'), 'Kernel'>} SimulationRuntimeModules
+ * @typedef {Pick<typeof import('../src/simulation/runtime/new-session'), 'createNewSimulationRuntime' | 'CONSTRUCTION_MATERIALS_CONTAINER_ID'>
+ *   & Pick<typeof import('../src/simulation/kernel/kernel'), 'Kernel'>
+ *   & Pick<typeof import('../src/simulation/protocol/commands'), 'packCommand'>
+ *   & Pick<typeof import('../src/simulation/prisoners/regime'), 'DAY_LENGTH_TICKS'>} SimulationRuntimeModules
  */
 
 /**
@@ -228,13 +230,26 @@ export async function loadSimulationRuntimeModules() {
   registerTypeScriptResolution();
 
   runtimePromise ??= (async () => {
-    const [newSession, kernel] = await Promise.all([
+    /*
+     * `packCommand` and `DAY_LENGTH_TICKS` were added for
+     * `scripts/report-loan-recovery-pricing.mjs`, which has to *play* a
+     * session rather than tick an idle one: a report that reached into
+     * `runtime.construction` directly would be measuring a hand-assembled
+     * sequence, and the whole point of that measurement is that it goes
+     * through the same command boundary a press does.
+     */
+    const [newSession, kernel, commands, regime] = await Promise.all([
       importSimulation('runtime/new-session.ts'),
       importSimulation('kernel/kernel.ts'),
+      importSimulation('protocol/commands.ts'),
+      importSimulation('prisoners/regime.ts'),
     ]);
     return Object.freeze({
       createNewSimulationRuntime: newSession.createNewSimulationRuntime,
+      CONSTRUCTION_MATERIALS_CONTAINER_ID: newSession.CONSTRUCTION_MATERIALS_CONTAINER_ID,
       Kernel: kernel.Kernel,
+      packCommand: commands.packCommand,
+      DAY_LENGTH_TICKS: regime.DAY_LENGTH_TICKS,
     });
   })();
   return runtimePromise;

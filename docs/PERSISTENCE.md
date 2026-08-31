@@ -579,8 +579,11 @@ work are not.**
   rather than what it would cost. Also recorded in
   `docs/HUD_PROJECTIONS.md` gap 33.
 - **`SimulationEventLog`** (`SimulationRuntime.events`, #507). What the prison
-  just did — a sentence that ended, a payday it could not meet — published on
-  `simulation/event` and rendered on the events band and in the alerts list.
+  just did — a sentence that ended, a payday it could not meet, a prisoner
+  moved into a bed that exists after the player took theirs away
+  ([ADR 0076](./adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+  decision A(i)) — published on `simulation/event` and rendered on the events
+  band and in the alerts list.
   Excluded on `RefusalLog`'s reasoning above and one addition of its own: an
   event is a statement that something happened *now*, so a loaded prison
   announcing last week's discharges would be describing a tick the player is
@@ -593,6 +596,11 @@ work are not.**
   sentence ticks are carried in the prisoner component arrays, so a sentence
   that ends after a load is announced when it ends. The log is therefore
   derivable-forward rather than lost.
+  ADR 0076's relocation notice is the one member where the *outcome* rather
+  than the condition is what persists — the resident's new accommodation is in
+  the save — so a restored prison has nothing to re-announce and nothing to
+  say: the move already happened and the player was told at the time, or the
+  session it happened in has gone.
   **The incident events of issue #555 are the one member of the channel this
   argument holds less neatly for, and it is worth stating rather than
   discovering.** `IncidentLog` *is* persisted, so an incident that was open
@@ -601,7 +609,9 @@ work are not.**
   already happened. What the restored player has is the status strip's
   incidents badge, which names the kind (issue #506 finding 2) and is a level
   rather than an occurrence, so it does carry across a save; and, when the
-  restored incident reaches a terminal state, `incidents.all-clear`. So the
+  restored incident reaches a terminal state, `incidents.all-clear` — and, if
+  that terminal state is a lapsed escape attempt,
+  `incidents.escape-succeeded` naming the prisoner who got out (#683). So the
   sequence a restored session shows is the end of an incident it never
   announced the start of. That is a smaller version of the same shape the
   arrears case has, and the same reasoning covers it: the *condition* is on
@@ -1418,6 +1428,17 @@ payload is declared as `jsonValue`. `SESSION_SNAPSHOT_SCHEMA_VERSION` is
 bumped to 2 alongside it — ADR 0003 gives a snapshot its own version for
 exactly this, and a build handed the other shape now faults
 `snapshot-incompatible` instead of restoring a corrupt ledger.
+
+> **That "2" is this section's own history and has not been the live value
+> since 2026-08-23.** `a5ec448` (#50) raised it 1 → 2, which is the change this
+> section narrates; `01536a3` (#70, *"persist the whole prison, not just its
+> terrain and walls"*) raised it 2 → 3 the same day, and
+> `src/simulation/runtime/restore-session.ts:104` has read
+> `export const SESSION_SNAPSHOT_SCHEMA_VERSION = 3;` ever since. The number is
+> left standing rather than swapped because a `## V2:` section describing the
+> bump *it* made is the correct record; what was wrong is that it read as the
+> current value with nothing beside it. Any later section that needs the live
+> figure should read the constant, not this line.
 
 **Cost is now proportional to the structure of liveness** — the number of
 live/dead runs, bounded by the live population — rather than to the

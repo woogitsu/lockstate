@@ -391,7 +391,7 @@ describe('subsystem snapshot / restore fidelity', () => {
    * expect(toJsonValue(read())).toEqual(before)` for all twelve subsystems --
    * a round trip against its own inverse, which **`write` being a no-op
    * satisfies**, for every one of them. Measured on this file alone: gutting
-   * `ConfiscationLog.loadSnapshot` to `return;` left it 11/11 green, and so did
+   * `ConfiscationLedger.loadSnapshot` to `return;` left it 11/11 green, and so did
    * gutting `TunnelRegistry.loadSnapshot`. Both are killed elsewhere in the
    * suite, so the mutation is not a survivor -- but this test, the one that
    * names those subsystems, contributed nothing to the kill. That is the shape
@@ -513,8 +513,12 @@ describe('subsystem snapshot / restore fidelity', () => {
      * Never stepped, which is what makes the strong form of the adoption
      * assertion available here despite the reset: a session with no in-flight
      * travel has nothing for `loadSnapshot` to reset, so its snapshot must come
-     * back *exactly*. `hasNoInFlightTravel` asserts that premise rather than
-     * assuming it.
+     * back *exactly*. That premise is asserted rather than assumed, by the
+     * second of the two `expect` lines below `resetIsIdempotent` -- every
+     * guard in `donorSession` answers `undefined` to `getPathRequestId`. (This
+     * paragraph named a `hasNoInFlightTravel`, which has never existed in this
+     * file or anywhere else in the repository; the assertion is inline and has
+     * no name to grep for.)
      */
     const donorSession = buildDeterminismScenario(SCENARIO_SEED);
 

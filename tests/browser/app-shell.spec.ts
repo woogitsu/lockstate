@@ -484,7 +484,7 @@ async function openApp(page: Page): Promise<void> {
  * the player has no way to detect".
  *
  * So a Play pressed inside that window throws `No simulation session is
- * running yet, so the clock cannot be changed.`, `createHud`'s `reportError`
+ * running yet, so the clock cannot be changed.`, `mountHud`'s `reportError`
  * marks the button `data-action-failed="true"` and points its
  * `aria-describedby` at the refusal line -- and **nothing retries the press**,
  * because a host refusal clears only when the same action later succeeds. The
@@ -2394,15 +2394,29 @@ test.describe('the assembled application', () => {
     const setupBuy = page.locator('.hud-build__buy-submit');
     await expect(setupBuy).toBeVisible();
     for (let press = 0; press < 3; press += 1) await setupBuy.click();
-    // `data-pending` rather than a box: the block is inside a disclosure whose
-    // own state this setup is about to change back, and the attribute is what the
-    // panel writes when the projection answers with a non-empty list.
+    /*
+     * **Nine, and it was three until #627.** `data-pending` counts every
+     * delivery on its way, and since ADR 0017 decision 7 was implemented a
+     * build order buys its own materials: the six orders queued above each
+     * bought their two bricks the moment the clock let their command dispatch,
+     * which is six lorries before this setup pressed Buy at all. Three presses
+     * of a control that buys two bricks a press make nine.
+     *
+     * Written out rather than read off the panel and added to, because a
+     * relative count would pass on a build where the orders bought nothing --
+     * which is precisely the state #627 is about. If this figure ever reads
+     * three again, a wall has stopped paying for itself.
+     *
+     * `data-pending` rather than a box: the block is inside a disclosure whose
+     * own state this setup is about to change back, and the attribute is what
+     * the panel writes when the projection answers with a non-empty list.
+     */
     await expect
       .poll(async () => page.locator('.hud-build__deliveries').getAttribute('data-pending'), {
-        message: 'three purchases never reached the Build panel as pending deliveries',
+        message: 'the six queued orders and three purchases never reached the Build panel as pending deliveries',
         timeout: 20_000,
       })
-      .toBe('3');
+      .toBe('9');
     await setupBuyToggle.click();
     await expect(page.locator('.hud-build__buy')).toBeHidden();
 
@@ -4417,7 +4431,7 @@ test.describe('the assembled application', () => {
 
       // Vacuity guard, before a single pixel is trusted: the page really is
       // showing the Rooms panel of the real application, with the real
-      // catalogue behind it. Eighteen is `ROOM_CATALOG`'s own length; a harness
+      // catalogue behind it. Eighteen is `defaultRoomCatalog`'s own length; a harness
       // page has three.
       expect(
         await page.locator('.hud-rooms__list [data-room]').count(),
@@ -4562,7 +4576,7 @@ test.describe('the assembled application', () => {
 
     // Vacuity guard, before a single pixel is trusted: this is the shipped
     // application with the shipped catalogue behind it, not a harness.
-    // Eighteen is `ROOM_CATALOG`'s own length.
+    // Eighteen is `defaultRoomCatalog`'s own length.
     expect(
       await page.locator('.hud-rooms__list [data-room]').count(),
       'the Rooms catalogue is not the shipped one',
@@ -4724,21 +4738,46 @@ test.describe('the assembled application', () => {
      * only when a tab is selected would sit there saying "needs a bed" after the
      * bed was built.
      *
-     * The panel is folded here -- confirming leaves the tool armed, so the
-     * drawing pass resumes -- so the header control is what brings the body
-     * back, exactly as a player reaching for it would.
+     * **This block used to press the panel's header control first**, under the
+     * sentence *"the panel is folded here -- confirming leaves the tool armed,
+     * so the drawing pass resumes -- so the header control is what brings the
+     * body back, exactly as a player reaching for it would."* That was an
+     * accurate reading of the code and of what a player had to do, and it is
+     * exactly the reach issue #684 was filed about: the fold took the one
+     * control that reports the tool's state off the screen at the moment the
+     * state changed. Since the confirm stands the tool down, the drawing pass
+     * ends with it and the panel is already back -- so the assertion is the
+     * same one pointed the other way, and the press it used to need is gone.
      */
-    await expect(page.locator('.hud-rooms')).toHaveAttribute('data-collapsed', 'true');
-    await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    await expect(page.locator('.hud-rooms')).toHaveAttribute('data-collapsed', 'false');
     await expect(
       page.locator('.hud-rooms__needs'),
       'the readout never arrived on the counts cadence, only on a tab change',
     ).toBeVisible();
     expect((await needsProbe()).unfinished).toBe('1');
 
-    // A second cell, lower down so it cannot overlap the first. The tool stays
-    // armed through a confirm, so this is another drag and nothing else -- and
-    // two rooms are what make the readout have more needs than rows.
+    /*
+     * A second cell, lower down so it cannot overlap the first -- and this is
+     * the route issue #684 is about, walked end to end on the assembled page.
+     *
+     * **It used to be a drag and nothing else**, under *"the tool stays armed
+     * through a confirm"*, which was true. The arm press below is what a player
+     * actually does between two rooms, and on the old behaviour it *disarmed*:
+     * the drag after it produced no rectangle at all, so `pendingRoomRectangle`
+     * had nothing to read and this test failed here. That is the whole defect,
+     * and it is asserted rather than assumed -- the control has to be reading
+     * "Draw on map" before it is pressed, or the press means the opposite.
+     */
+    await expect(
+      page.locator('.hud-rooms__arm'),
+      'the confirm left the arm control offering to stop something',
+    ).toHaveText(localeText('hud.rooms.arm'));
+    await expect(page.locator('.hud-rooms__arm')).toHaveAttribute('aria-pressed', 'false');
+    await page.locator('.hud-rooms__arm').click();
+    await expect(
+      page.locator('.hud-rooms__arm'),
+      'pressing the arm control for a second room disarmed the tool',
+    ).toHaveAttribute('aria-pressed', 'true');
     expect(await dragRectangleOnWorld(page, { minY: 320 }), 'a second room drag found no bare world').toBe(
       true,
     );
@@ -5289,7 +5328,7 @@ test.describe('the assembled application', () => {
    *
    * A press that was quietly refused would drop focus the same way, so a test
    * that did not check would prove nothing about the working case. Each record
-   * carries the control's own `data-action-failed`, which `createHud` sets on
+   * carries the control's own `data-action-failed`, which `mountHud` sets on
    * a host refusal, and the refusal line is asserted hidden -- and the prison,
    * the walls, the room and the admission are each asserted to have happened.
    */
@@ -8410,6 +8449,55 @@ test.describe('the assembled application', () => {
       expect(reading!.fullyVisible, `${at}: not one status chip is on screen`).toBeGreaterThan(0);
     }
   });
+
+  /**
+   * Issue #680: the first thing a player does, after the other first thing a
+   * player does.
+   *
+   * The game's opening interaction is "click around, then start", and clicking
+   * around used to cost the start: one press on any `.ui-tab` before the first
+   * **New prison** made that press fail with
+   * `Could not create a prison: Simulation worker fault (already-initialized):
+   * Kernel is already initialized.`, and only a second press worked.
+   *
+   * Why it needs a browser. Every layer of the cause is composition:
+   * `src/main.ts` builds the panel readers over the *channel* at boot rather
+   * than over a session (#149), the `select-tab` intent fires their
+   * `refresh*()` reads on the first tab press, and the worker they read from
+   * is the **boot worker** the channel keeps for the first session. Only the
+   * assembled page has all three. The unit and integration halves live in
+   * `tests/unit/worker-state-machine.test.ts` and
+   * `tests/integration/session-first-create-after-a-panel-read.test.ts`; what
+   * they stand in for is a real `Worker`, which is exactly what this file
+   * exists for.
+   *
+   * Every tab, from `HUD_TAB_IDS` rather than a copy of it, for the reason the
+   * reachability sweep above reads the same list: the sweep found it on five
+   * of five, and a sixth tab must not be able to reintroduce it unseen.
+   */
+  for (const tab of HUD_TAB_IDS) {
+    test(`the first New prison works after one press on the ${tab} tab (#680)`, async ({ page }) => {
+      await openApp(page);
+
+      await page.locator(`.ui-tab[data-tab="${tab}"]`).click();
+      await page.getByRole('button', { name: localeText('save.action.create') }).click();
+
+      // The status line, not the prison list: a create that faulted still
+      // writes and then deletes its slot row (`discardFailedCreation`), so an
+      // empty list and a failed create look alike for a moment. The status is
+      // what the player reads and what the sweep measured.
+      const status = page.locator('.save-panel__status');
+      // The catalogue's own sentence up to its first parameter, so this
+      // pins what the player reads without pinning the generation id.
+      await expect(status).toContainText(localeText('save.status.saved').split('{')[0]!.trim());
+      // Named separately so a regression says which half broke, and asserted
+      // as an absence because that is the shape the defect had: the first
+      // press produced a sentence, it was just the wrong one.
+      await expect(status).not.toContainText('already');
+      await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+      await waitForSession(page);
+    });
+  }
 });
 
 interface CentreHitCounters {

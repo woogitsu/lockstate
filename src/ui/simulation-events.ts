@@ -1,6 +1,8 @@
 import type { LocalizationKey } from '../content/localization';
 import type { SimulationEvent, SimulationEventType, WorkerToMainMessage } from '../simulation/protocol/types';
 import type { HudAlertViewModel, HudEventNoticeViewModel, HudSeverity } from './hud/view-model';
+import type { HudMessageParameterViewModel } from './hud/label-parameters';
+import { HUD_MESSAGE_KEY } from './hud/messages';
 
 /**
  * What the player is told about each thing the prison does, and how loudly.
@@ -97,11 +99,39 @@ import type { HudAlertViewModel, HudEventNoticeViewModel, HudSeverity } from './
  *   three guards, and by `ASSAULT_SEVERITY_CEILING` it can never reach the
  *   threshold that seals a door. It is bad, and the prison is still the
  *   player's.
+ * - **`incidents.escape-succeeded` is `'danger'`, and it is the row the
+ *   paragraph above was already arguing for without having one to point at
+ *   (#683).** Every word of the escape-attempt entry -- irreversible, ADR 0061
+ *   decision 5, *"a prisoner who is gone"*, nothing about it recoverable -- is
+ *   a description of the *failure*, and until this row the channel only ever
+ *   graded the attempt. The attempt keeps `'danger'`, because at the moment it
+ *   opens the prison cannot know which way it ends; this is what the band says
+ *   when it ended the bad way. It is the only member of this table about an
+ *   outcome rather than an opening or a return to calm.
  * - **`incidents.all-clear` is `'info'`.** Nothing is wrong any more, which is
  *   the same thing `prisoners.discharged` says about a served sentence. It is
  *   also what stops a `'danger'` band standing over a calm prison for the rest
  *   of a session; see the schema's own comment in
  *   `src/simulation/protocol/types.ts`.
+ *
+ * ## `prisoners.relocated` is `'info'`, and the grade is arguable (ADR 0076)
+ *
+ * A prisoner moved cell without the player asking, because the player took
+ * their bed away. Read as a *consequence* it sounds like a warning; read as a
+ * *state* it is not one, and this table grades states: the prisoner now sleeps
+ * on a bed that exists, the prison pays for a place it really furnished
+ * (decision A(ii)), and there is nothing left for the player to put right. An
+ * unpaid payday is `'warning'` because the arrears are still owed on the next
+ * tick; this is closer to `prisoners.discharged`, where the loop worked.
+ *
+ * **What it must not be is silent**, which is what it was between PR #637 and
+ * this change and what issue #629 puts in the same class as a promise the code
+ * does not keep. The band is the surface that reaches the player at every
+ * viewport with nothing opened, and `'info'` still lands on it.
+ *
+ * The resident relocation could *not* rehouse is a different fact with no
+ * approved sentence, so it has no row here and no key. See
+ * `SimulationEventLog.recordResidentRelocated`.
  */
 const EVENT_PRESENTATION: Readonly<
   Record<SimulationEventType, { readonly labelKey: LocalizationKey; readonly severity: HudSeverity }>
@@ -113,12 +143,17 @@ const EVENT_PRESENTATION: Readonly<
     labelKey: 'hud.alert.event.incidents.escape-attempt-opened',
     severity: 'danger',
   },
+  'incidents.escape-succeeded': {
+    labelKey: 'hud.alert.event.incidents.escape-succeeded',
+    severity: 'danger',
+  },
   'incidents.gang-retaliation-opened': {
     labelKey: 'hud.alert.event.incidents.gang-retaliation-opened',
     severity: 'danger',
   },
   'incidents.riot-opened': { labelKey: 'hud.alert.event.incidents.riot-opened', severity: 'danger' },
   'prisoners.discharged': { labelKey: 'hud.alert.event.prisoners.discharged', severity: 'info' },
+  'prisoners.relocated': { labelKey: 'hud.alert.event.prisoners.relocated', severity: 'info' },
 };
 
 /**
@@ -164,8 +199,16 @@ const EVENT_ROW_PREFIX = 'event-';
  * `src/main.ts` asks for `sentenceLengthTicks: 10_000`, which ADR 0050 records
  * as about four in-game days"*. Since ADR 0069 that constant is
  * `{ priorIncidents: 0 }` and carries no sentence at all: the length is drawn
- * **inside the worker**, uniformly over whole in-game days in `[2, 16]`, so
- * 4,800..38,400 ticks with a mean of 21,600 -- nine days rather than four.
+ * **inside the worker**, uniformly over whole in-game days.
+ *
+ * **The range that sentence quoted, `[2, 16]` -- 4,800..38,400 ticks, mean
+ * 21,600 -- is itself gone since the owner's 2026-08-30 ruling on
+ * [#593](https://github.com/matmaxalez/lockstate/issues/593)
+ * ([ADR 0079](../../docs/adr/0079-a-sentence-long-enough-to-be-a-history.md)).**
+ * It is `[14, 90]` now: 33,600..216,000 ticks, mean 124,800 -- **52** in-game
+ * days rather than nine, and 5.8x the spread. The old figures are kept above
+ * because the worked example below is written in them, and because this
+ * paragraph's subject is a measurement that has now been re-based twice.
  *
  * **The conclusion drawn from that is withdrawn too, and it was mine.** It read
  * *"the wider spread strengthens it: cohorts leave further apart than the old
@@ -179,6 +222,12 @@ const EVENT_ROW_PREFIX = 'event-';
  * **38,400 as well** -- merged onto a single tick, where the old fixed 10,000
  * would have left them 2,400 apart. `PrisonerDischargeSystem` aggregates only
  * those due on the *same tick*, so both directions really do move the count.
+ *
+ * The worked example is in the old range's numbers and is left in them: the
+ * shape of the argument is what it is for, and it survives the re-range
+ * unchanged except that both effects get larger. Under `[14, 90]` the split
+ * case is 182,400 ticks rather than 33,600, and the merge case still needs
+ * only that two arrival ticks and two draws sum to the same number.
  *
  * So **eight rows is no longer an argued figure, it is an unmeasured one**.
  * What would settle it is the number of discharge events a real admission
@@ -311,7 +360,14 @@ export function hudEventNoticeFromWorkerMessage(
     case 'simulation/event': {
       const { event } = message.payload;
       const { labelKey, severity } = EVENT_PRESENTATION[event.type];
-      return { sequence: event.sequence, labelKey, severity, labelParameters: eventParameters(event) };
+      const messages = eventParameterMessages(event);
+      return {
+        sequence: event.sequence,
+        labelKey,
+        severity,
+        labelParameters: eventParameters(event),
+        ...(messages === undefined ? {} : { labelParameterMessages: messages }),
+      };
     }
 
     // The session is over, so the band empties -- the same thing the alerts
@@ -327,6 +383,7 @@ export function hudEventNoticeFromWorkerMessage(
 
 function eventAlertRow(event: SimulationEvent): HudAlertViewModel {
   const { labelKey, severity } = EVENT_PRESENTATION[event.type];
+  const messages = eventParameterMessages(event);
   return {
     // The event's own ordinal, so every event is its own row rather than
     // rewriting the previous one -- the opposite of what a refusal's ordinal
@@ -336,6 +393,7 @@ function eventAlertRow(event: SimulationEvent): HudAlertViewModel {
     id: `${EVENT_ROW_PREFIX}${event.sequence}`,
     labelKey,
     labelParameters: eventParameters(event),
+    ...(messages === undefined ? {} : { labelParameterMessages: messages }),
     severity,
   };
 }
@@ -369,6 +427,11 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
       return { count: event.count };
     case 'incidents.riot-opened':
       return { count: event.participantCount };
+    // Both of this one's parameters are messages rather than figures, so they
+    // are resolved at render time by `eventParameterMessages` below. Nothing
+    // is substituted from here.
+    case 'prisoners.relocated':
+      return {};
     // Four members with nothing to substitute, and an empty object rather than
     // `undefined`: a `switch` that sometimes returned nothing would make an
     // absent `labelParameters` mean two different things at the two call
@@ -376,10 +439,135 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     // two prisoners, an escape attempt always one, a retaliation's count has
     // no plural rule to render it with, and "all clear" is the absence of one
     // -- is argued in the schemas in `src/simulation/protocol/types.ts`.
+    // The escape's own sentence carries `{name}`, which is a message rather
+    // than a figure and is supplied by `eventParameterMessages` below --
+    // exactly as the relocation notice's two are, and for the same reason.
+    case 'incidents.escape-succeeded':
+      return {};
     case 'incidents.gang-retaliation-opened':
     case 'incidents.assault-opened':
     case 'incidents.escape-attempt-opened':
     case 'incidents.all-clear':
       return {};
   }
+}
+
+/**
+ * The parameters whose value is another message, keyed by the placeholder its
+ * sentence uses.
+ *
+ * The counterpart of `eventParameters` for text a localizer has to produce,
+ * and the reason both exist is that `MessageParameters` cannot carry a
+ * *deferred* translation. See `HudMessageParameterViewModel` for why the view
+ * model must not carry the finished text instead.
+ *
+ * **A `switch` over the discriminant rather than an early return, and that is
+ * the correction #683 paid for.** This opened with
+ * `if (event.type !== 'prisoners.relocated') return undefined;` while the
+ * relocation notice was the only member with a message-valued parameter. The
+ * research that settled #683's plumbing
+ * (`docs/research/2026-08-30-what-an-escape-says.md`) enumerated the sites a
+ * new event type forces -- `EVENT_PRESENTATION` above, `eventParameters`
+ * above, and the test fixture's `SAMPLE` -- and named this one as the site the
+ * compiler does **not** force: an event whose sentence carries `{name}` and
+ * whose branch nobody added here renders the literal placeholder, because
+ * `interpolate` deliberately leaves an unsubstituted one visible. It was
+ * handed over rather than fixed, on the reasoning that the change authoring
+ * such a sentence is the change that should close it. This is that change.
+ *
+ * The `switch` is the readable half; the `default` branch is the half that
+ * actually forces the next decision, and it says at its own site why the
+ * `switch` alone does not. The measurement that the fix is real rather than
+ * stylistic: `tests/unit/ui-simulation-events.test.ts` asserts no rendered
+ * sentence contains `{`, for every type at once, and was watched failing on
+ * `incidents.escape-succeeded` before either half existed.
+ *
+ * **Two members have message-valued parameters.** ADR 0076's relocation notice
+ * has two, message-valued for different reasons:
+ *
+ * - **`{room}`** is a room type, and `roomNameKey` is the catalog's own
+ *   `nameKey` -- the same field `PrisonerRoomRefViewModel` already carries to
+ *   the roster panel. This module resolves nothing and authors nothing; it
+ *   passes the key through to the renderer.
+ * - **`{name}`** is a person, and the two halves cross the wire as state
+ *   (ADR 0015: a name is never translated and is identical in every locale)
+ *   while the *order* they are read in is a locale decision. That decision is
+ *   already made once, in `hud.regime.roster-name`, and this reuses it rather
+ *   than authoring a second one: two keys spelling "{given} {family}" would be
+ *   two answers to one question, and the second locale to disagree with
+ *   English would find only one of them.
+ *
+ * #683's escape notice has one, and it is the second bullet's `{name}` again
+ * rather than a third kind of thing: the same halves, the same
+ * `hud.regime.roster-name`, shared through `prisonerName` below so the two
+ * cannot drift about the fallback. What differs is only the subject's fate --
+ * this one is gone. Nothing here looks anybody up, both halves being in the
+ * payload, so a departed entity id costs the sentence nothing; see the schema
+ * in `src/simulation/protocol/types.ts` for why naming them is nonetheless a
+ * narrowing of a rule rather than a free extension of one.
+ *
+ * A prisoner with no name falls back to `hud.regime.roster-unnamed` --
+ * "Prisoner 3" -- which is exactly what `formatPrisonerName` does for a roster
+ * row, and is why neither sentence goes silent for a session wired without an
+ * identity registry. **No key here is new copy.** The only strings these two
+ * changes author are the two sentences the owner approved.
+ */
+function eventParameterMessages(
+  event: SimulationEvent,
+): Readonly<Record<string, HudMessageParameterViewModel>> | undefined {
+  switch (event.type) {
+    case 'prisoners.relocated':
+      return { name: prisonerName(event.entityId, event.name), room: { key: event.roomNameKey } };
+    case 'incidents.escape-succeeded':
+      return { name: prisonerName(event.entityId, event.name) };
+    // Every sentence whose parameters are figures or nothing at all.
+    // `eventParameters` above is where those are decided; they are listed
+    // one by one rather than left to the `default` so that the decision is
+    // visible for each, and so the `default` below is reached only by a type
+    // nobody has considered.
+    case 'economy.wages-unpaid':
+    case 'prisoners.discharged':
+    case 'incidents.riot-opened':
+    case 'incidents.gang-retaliation-opened':
+    case 'incidents.assault-opened':
+    case 'incidents.escape-attempt-opened':
+    case 'incidents.all-clear':
+      return undefined;
+    default: {
+      // **This branch is the exhaustiveness, and it is here because the
+      // obvious version does not work.** `eventParameters` above needs no
+      // `default`: it returns an object, so a missing case makes the function
+      // fall off the end and TypeScript rejects it with TS2366. This one may
+      // legitimately return `undefined`, so falling off the end is *valid* --
+      // a new event type would silently take the `undefined` branch and its
+      // `{name}` would reach a player as the literal placeholder. Measured
+      // rather than assumed: with the `incidents.escape-succeeded` case
+      // deleted and no `default`, `tsc -b` exits 0.
+      //
+      // `never` is what restores the guarantee, in the idiom
+      // `SessionController` uses for snapshot refusal reasons. The throw is
+      // unreachable while the union and this `switch` agree, which is the
+      // point of it.
+      const unhandled: never = event;
+      throw new Error(`Unhandled simulation event: ${JSON.stringify(unhandled)}.`);
+    }
+  }
+}
+
+/**
+ * One prisoner, as the sentence around them needs to read them.
+ *
+ * Shared by the two members that name somebody rather than duplicated into
+ * both, because the fallback is the part that would drift: a second copy that
+ * dropped the notice for an unnamed prisoner, or named them some other way,
+ * would be a second answer to a question `formatPrisonerName` already
+ * answered once for the roster.
+ */
+function prisonerName(
+  entityId: number,
+  name: { readonly givenName: string; readonly familyName: string } | undefined,
+): HudMessageParameterViewModel {
+  return name === undefined
+    ? { key: HUD_MESSAGE_KEY.regimeRosterUnnamed, parameters: { id: entityId } }
+    : { key: HUD_MESSAGE_KEY.regimeRosterName, parameters: { given: name.givenName, family: name.familyName } };
 }

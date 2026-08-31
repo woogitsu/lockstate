@@ -264,6 +264,30 @@ export interface BuildQueueProbe {
   readonly rows: readonly BuildQueueRowProbe[];
   /** The "and N more" line, empty when every queued order has a row. */
   readonly moreText: string;
+  /**
+   * The money line below the block (#627, #629, #640): what the queue could not
+   * buy, as a rendered sentence with the figure substituted.
+   *
+   * Empty whenever the queue is paid for, which is every session that never
+   * runs out. Read from outside `.hud-build__queue`, because that is where the
+   * node is: the fold starts collapsed and #625 is the record of what putting a
+   * requirement inside it costs.
+   */
+  readonly shortfallText: string;
+  /**
+   * Whether the browser laid that line out, and whether it has an
+   * `offsetParent`.
+   *
+   * Both, for the reason `cancelBox`/`cancelHasOffsetParent` below are both:
+   * `offsetParent` is `null` inside a `display: none` ancestor, and a node can
+   * have one and still be 0x0. `.hud-build__note` carries an author `display`
+   * that beats `[hidden]`, so "the attribute says hidden" is exactly the claim
+   * that must not be trusted here.
+   */
+  readonly shortfallLaidOut: boolean;
+  readonly shortfallHasOffsetParent: boolean;
+  /** Its box, so a spec can say it is inside the panel's visible one rather than below the fold (#220). */
+  readonly shortfallBox: LayoutBox | null;
 }
 
 export interface BuildQueueRowProbe {
@@ -333,7 +357,7 @@ export interface PendingDeliveryRowProbe {
  * that is laid out, hit-tests to itself and is not on screen is a feature that
  * does not exist. Unlike the delivery rows one panel over these are not inside a
  * disclosure, so the arrival state has a box the moment the simulation reports a
- * held guard -- which is what makes `heldPanelBox` and `panelVisibleBottom` the
+ * held guard -- which is what makes `blockBox` and `panelVisibleBottom` the
  * pair the reachability assertions turn on.
  */
 export interface HeldGuardsProbe {
@@ -703,6 +727,17 @@ export interface RoomsProbe {
   /** `data-collapsed` on the typed route's disclosure. */
   readonly coordinatesFolded: string;
   readonly armPressed: string;
+  /**
+   * The arm control's rendered label -- "Draw on map" disarmed, "Stop drawing"
+   * armed.
+   *
+   * `aria-pressed` beside it says the same thing to a screen reader, and both
+   * are read because they are two different promises: one is what the player
+   * sees, the other what the toggle announces, and issue #684 is about the
+   * moment the seen half was folded off the screen while the state changed
+   * underneath it.
+   */
+  readonly armText: string;
   readonly removePressed: string;
   /**
    * `data-collapsed` on the panel, and whether its body has a box at all.

@@ -1,5 +1,6 @@
 import type { LocalizationKey } from '../../content/localization';
 import type { MessageParameters } from '../../services/localization/format';
+import type { HudLabelParametersViewModel } from './label-parameters';
 
 /**
  * What the HUD needs in order to draw itself -- and nothing else.
@@ -83,9 +84,25 @@ export interface HudClockViewModel {
  * prisoner-day, accrued per occupied place) and `StateIncomeSystem` implements
  * it, crediting the balance at the end of each in-game day, so the second
  * figure below is a day's accrual against a real payment rather than a number
- * with nothing behind it. There is still **no** budget, forecast, payroll or
+ * with nothing behind it.
+ *
+ * **This paragraph ended "There is still **no** budget, forecast, payroll or
  * running cost: nothing debits the treasury on a schedule, and nothing
- * projects anything forward.
+ * projects anything forward", and half of it went false on 2026-08-28.** It
+ * was written at `4f711d5` (#311), when it was true of the whole tree.
+ * `916ac46` (#455, ADR 0049) then added `PayrollSystem`
+ * (`src/simulation/economy/payroll.ts`), whose `schedule` is
+ * `{ intervalTicks: DAY_LENGTH_TICKS, phaseTicks: DAY_LENGTH_TICKS - 1 }` and
+ * whose `update` calls `Treasury.spend` -- a payroll, and a debit on a
+ * schedule, which is two of the four things that sentence denied. What
+ * survives is the other two: **there is still no budget and no forecast, and
+ * nothing projects anything forward**, which is the half the rule below
+ * actually rests on, because a forecast is the figure with nothing behind it.
+ *
+ * Both directions are kept rather than the sentence rewritten, because the
+ * reason it was written has not changed and because this is the shape
+ * `docs/AGENT_WORKFLOW.md` §4 names: a sentence asserting an absence rots
+ * first, and adding the thing it denies never touches the sentence denying it.
  *
  * It is no longer the only money *the HUD* carries, and the difference is
  * #89's: `HudBuildMaterialViewModel` below carries a unit price, so the Build
@@ -207,16 +224,37 @@ export interface HudCountsViewModel {
    * what the prison has earned.
    */
   readonly stateIncomeAccruedTodayMinorUnits: number;
+  /**
+   * What one in-game day of the current roster will cost, in the same minor
+   * units -- or **absent because nothing has published counts yet** (issue
+   * #639 ruling 2).
+   *
+   * The counterweight to `stateIncomeAccruedTodayMinorUnits` above, and the
+   * first standing *cost* this view model can carry: until payroll existed
+   * every debit was a purchase the player chose, so there was no rate to show.
+   * It is published, never computed here, for that field's reason -- which end
+   * of an authored wage band is money owed is a simulation fact
+   * (`src/simulation/economy/wages.ts`), and a HUD that decided it again would
+   * be a second definition of the charge.
+   *
+   * **Optional, and the absence is a real state rather than a defensive
+   * default.** Absent is "no session has said anything", which is what
+   * `EMPTY_HUD_VIEW_MODEL` and a first paint hold; a published `0` is a prison
+   * that employs nobody. The Staff panel draws those two differently, on the
+   * same terms `setHeldGuards`, `setCoverage` and `setStaffRoster` already
+   * draw them, and a required field defaulted to `0` would have collapsed the
+   * distinction at the one moment it matters.
+   */
+  readonly dailyWageBillMinorUnits?: number;
 }
 
 export type HudSeverity = 'info' | 'warning' | 'danger';
 
-export interface HudAlertViewModel {
+export interface HudAlertViewModel extends HudLabelParametersViewModel {
   /** Stable identity for the row, so a list update is not a full rebuild. */
   readonly id: string;
   /** A message key, never text. */
   readonly labelKey: LocalizationKey;
-  readonly labelParameters?: MessageParameters;
   readonly severity: HudSeverity;
 }
 
@@ -445,6 +483,52 @@ export interface HudBuildOrderViewModel {
  * the rows it drew would tell a player with thirty queued walls that they have
  * twelve.
  */
+/**
+ * Whether the queue is stalled on money, and by how much (#627, #629).
+ *
+ * The main-thread half of `BuildQueueMaterialsFundingViewModel`, which the
+ * projection has computed since #627 and which stopped at
+ * `buildQueueFromProjection`: the field reached this thread on the wire and
+ * had nowhere to land, so no surface could read it and no test could assert
+ * it above the worker boundary. Measured on this branch by the #640 playtest
+ * (PR #655, section "The shortfall figure exists on the wire and reaches no
+ * pixel" -- its research document is cited by title rather than by path
+ * because it lives on that branch and not on this one).
+ *
+ * **Not derivable from `orders`, and that is the whole reason it is here.**
+ * Since a build order buys its own materials (ADR 0017 decision 7), a row
+ * reading `'materials-pending'` means two things a player cannot tell apart:
+ * the lorry is on its way, which resolves itself, or the prison could not pay,
+ * which does not. Both draw the identical row.
+ *
+ * **Two scalars and not the projection's per-item list.** The projection also
+ * carries `items` -- `{ itemId, quantity, costMinorUnits }` per unfunded
+ * material -- and a row built from one would need the same catalogue lookup
+ * `HudPendingDeliveryViewModel.labelKey` needs, injected across the same two
+ * boundaries. Nothing on this thread asks for that yet, and carrying it would
+ * be a second field with no reader beside the one this closes. It is added the
+ * day a surface names an item.
+ */
+export interface HudBuildQueueMaterialsFundingViewModel {
+  /**
+   * `false` when the last purchase pass bought everything the queue wanted,
+   * wanted nothing, or ran in a session with no economy at all -- see
+   * `BuildQueueMaterialsFundingViewModel.unfunded` for why the third is folded
+   * into the first two rather than reported as a third state.
+   */
+  readonly unfunded: boolean;
+  /**
+   * What the queue could not buy, in minor units. `0` whenever `unfunded` is
+   * `false`.
+   *
+   * The same minor units as the status strip's Funds chip, deliberately: the
+   * projection's own comment says this figure exists so that it can be
+   * compared against that balance, and every price in
+   * `src/content/procurement-catalog.ts` is a whole number of them.
+   */
+  readonly shortfallMinorUnits: number;
+}
+
 export interface HudBuildQueueViewModel {
   /** Every pending order, however many rows there was room to carry. */
   readonly total: number;
@@ -460,6 +544,14 @@ export interface HudBuildQueueViewModel {
   readonly started: number;
   /** The window, in the order the crew will reach them. */
   readonly orders: readonly HudBuildOrderViewModel[];
+  /**
+   * Whether the queue is stalled on money, and by how much.
+   *
+   * Always present, never optional, exactly as it is on the projection: absent
+   * would mean "this build cannot answer", and every build that reaches this
+   * translator can.
+   */
+  readonly materialsFunding: HudBuildQueueMaterialsFundingViewModel;
 }
 
 /**
@@ -958,6 +1050,20 @@ export interface HudStaffRoleViewModel {
    * the player can compare them without a conversion nobody has chosen.
    */
   readonly hireChargeMinorUnits: number;
+  /**
+   * What the same guard costs at every in-game day boundary afterwards, in the
+   * same minor units (issue #639 ruling 2).
+   *
+   * A second figure and not a copy of the first, even though `wages.ts` makes
+   * the two equal today. `staffHireCostMinorUnits` answers *what does one press
+   * spend* and `staffDailyWageMinorUnits` answers *what does keeping this
+   * person cost*, and both delegate to `staffDailyWageForRole` -- so "the hire
+   * charge is one day of the wage the payroll bills" is true by construction on
+   * the simulation's side and is not re-asserted here. A panel that rendered
+   * `hireChargeMinorUnits` twice would be the HUD deciding that, and would go
+   * on saying it silently the day ADR 0025 decision 2 was revised.
+   */
+  readonly dailyWageMinorUnits: number;
 }
 
 /**
@@ -1061,11 +1167,10 @@ export interface HudRefusalNoticeViewModel {
  * this band, and its `'danger'` member had none outside an unrecoverable
  * protocol fault until the incident events joined it.
  */
-export interface HudEventNoticeViewModel {
+export interface HudEventNoticeViewModel extends HudLabelParametersViewModel {
   readonly sequence: number;
   /** A message key, never text. */
   readonly labelKey: LocalizationKey;
-  readonly labelParameters?: MessageParameters;
   readonly severity: HudSeverity;
 }
 
