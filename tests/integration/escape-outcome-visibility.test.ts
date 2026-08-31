@@ -257,16 +257,41 @@ describe('a prisoner who got out, and one the guards stopped (#683)', () => {
      * under test would pass for any string at all: this is the one assertion
      * whose subject is *what a player reads*, so it is written the way a player
      * reads it. It is the owner's wording, reproduced exactly.
+     *
+     * **THE ESCAPE ARM LOST ITS ALL-CLEAR ON 2026-08-31 (#703, ruling 6), and
+     * this assertion is the record of why.** It read three rows, ending with
+     * *"The prison is under control again -- no incident is still open."*, and
+     * that row was true about `openIncidentCount` and false about the screen:
+     * the HUD's event band keeps the newest event only, so on this very tick
+     * the all-clear replaced the escape sentence above it. Measured on
+     * 2026-08-31: written three times, painted zero times. The owner ruled that
+     * the all-clear is not emitted on a tick that recorded a successful escape,
+     * in preference to authoring a new sentence for the case -- so the fix
+     * removes a row rather than adding one, and this test now pins **two** rows
+     * on the escape arm where it pinned three.
+     *
+     * **The contained arm is deliberately untouched**, and that is the half
+     * that makes this a scoped change rather than a deleted feature: an attempt
+     * the guards stopped still says it started and still says it ended. Only
+     * the arm where the prison *lost somebody* stops claiming to be under
+     * control, which is the only arm where that claim was wrong.
      */
     expect(sentencesFor(contained.events), 'a contained attempt still says only that it started and that it ended').toEqual([
       'danger: A prisoner is trying to break out.',
       'info: The prison is under control again — no incident is still open.',
     ]);
-    expect(sentencesFor(gotOut.events), 'and an escape says so, in the moment, with a name and a cause').toEqual([
+    expect(sentencesFor(gotOut.events), 'and an escape says so, in the moment, with a name and a cause -- and does NOT then claim control').toEqual([
       'danger: A prisoner is trying to break out.',
       'danger: Ada Bell broke out — no guard reached them in time.',
-      'info: The prison is under control again — no incident is still open.',
     ]);
+
+    /*
+     * The two arms differ by exactly the two rows the ruling is about, asserted
+     * as a difference rather than only as two lists, so a future change that
+     * moved both arms the same way could not pass this test quietly.
+     */
+    expect(sentencesFor(gotOut.events).some((sentence) => sentence.includes('under control again'))).toBe(false);
+    expect(sentencesFor(contained.events).some((sentence) => sentence.includes('under control again'))).toBe(true);
   });
 
   it('names them by entity id rather than saying nothing, when the session minted no name', () => {

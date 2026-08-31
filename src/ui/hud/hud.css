@@ -294,7 +294,129 @@
    leaves a sighted player guessing. */
 .hud-minimap__placeholder { white-space: normal; }
 
-.hud-alerts__list { display: flex; flex-direction: column; }
+/*
+ * THE ALERTS LIST SCROLLS, AND UNTIL 2026-08-31 IT CLIPPED THE NEWEST ROW.
+ *
+ * This rule was `display: flex; flex-direction: column;` and nothing else --
+ * no `overflow`, no bound. Its nearest bounded ancestor is `.hud-minimap`,
+ * a `.ui-panel`, and `primitives.css` gives every panel `overflow: hidden`.
+ * So the list grew past the panel and the panel silently cut it off, with no
+ * scrollbar to say so. **The rows it cut were the newest**, because
+ * `hudEventAlertsFromWorkerMessage` appends (`simulation-events.ts`,
+ * `[...previous, eventAlertRow(...)]`) and the DOM keeps view-model order.
+ *
+ * Measured before this rule, on the harness with the fold open, eight rows in
+ * the list: at 900x600 **four** rows were inside the panel's client box and
+ * they were indices 1-4; at 1280x800, 600x800 and 375x812, **eight of twenty**,
+ * again the oldest eight. `scrollHeight`/`clientHeight` read 617/457 at
+ * 900x600 and 1061/629 at 375x812 with computed `overflow-y: hidden` --
+ * content present, unreachable, and unannounced.
+ *
+ * **That is why unfolding the list was not by itself enough to make an escape
+ * readable** (#703, ruling 1). The fold and the 720px `display: none` were the
+ * first two barriers; this was the third and the only one nobody had named.
+ * A cap of twenty would have made it worse, not better: it pushes the newest
+ * row further under the cut while adding a row of world occlusion each time.
+ *
+ * Two things are needed and neither works alone. `overflow-y: auto` gives the
+ * overflow somewhere to go, and `min-height: 0` down the flex chain below is
+ * what lets this box be *smaller than its content* in the first place -- a
+ * flex item's automatic minimum size is its content, which is what kept the
+ * list at full height and pushed the excess under the panel's `overflow:
+ * hidden`. This is the same pairing `.hud-build__catalogue`, `.hud-staff__list`
+ * and `.hud-rooms` already use, so the list stops being the one HUD list that
+ * cannot be scrolled.
+ *
+ * `overscroll-behavior: contain` so a flick that reaches the end of the log
+ * does not then scroll the page underneath it.
+ */
+.hud-alerts__list {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/*
+ * A row keeps its height and the list scrolls, which is not what happened
+ * first and is the second thing here that had to be measured.
+ *
+ * With the flex chain above in place and no `flex-shrink` on the rows, the
+ * *rows* absorbed the shortfall instead of the list: twenty rows measured
+ * `scrollHeight` 638 at 1920x1080 and 480 at 900x600, against 740 at their
+ * natural 37px, so each row had been squeezed to 32px and then to 24px. The
+ * list was bounded and the newest row was reachable -- and every row's text
+ * was being clipped to buy it. `flex-shrink: 0` is what makes the overflow
+ * land on the scroll container that now exists to take it.
+ */
+.hud-alerts__list > .ui-row {
+  flex: 0 0 auto;
+}
+
+/*
+ * The `min-height: 0` chain the rule above depends on, scoped to this panel.
+ *
+ * Every ancestor between `.hud-alerts__list` and the corner has to be allowed
+ * to shrink, or the innermost `min-height: 0` is overruled by an ancestor that
+ * insists on its content height. `.hud__corner` and `.hud-minimap` already
+ * carry theirs (see above); these are the three in between.
+ *
+ * **`min-height: 0` alone does nothing here, and that was measured before this
+ * rule grew a `display`.** With only the min-heights, the list reported
+ * `overflow-y: auto` and `scrollHeight === clientHeight` at 739/739 with twenty
+ * rows, while the corner around it was 483 -- so the box was still its full
+ * content height, nothing scrolled, and the panel went on clipping. The reason
+ * is that `min-height: 0` is a release valve for a *flex item*: `.ui-panel__body`
+ * is a block, so `.ui-section` inside it was in normal flow and grew to its
+ * content regardless. The chain has to be flex the whole way down or the
+ * innermost bound is unreachable.
+ *
+ * **All three, and the third was found by measuring rather than by reading.**
+ * With `display: flex` on the body and the section but not on
+ * `.ui-section__body`, the section body bounded correctly at 256 while the list
+ * inside it still measured 739 -- the same failure one level deeper, because
+ * `.ui-section__body` was then the block in the chain. Each of the three had to
+ * be a flex container with `min-height: 0` before the innermost
+ * `overflow-y: auto` had a box small enough to scroll in.
+ *
+ * **The `display: flex` here is the thing `primitives.css` warns about, the
+ * warning was read, and reading it was still not enough.** That file's note
+ * records `hud.css` giving `.hud-build > .ui-panel__body` and
+ * `.hud-rooms > .ui-panel__body` a flex `display`, which broke both panels'
+ * collapse controls: `createPanel` collapses by setting `body.hidden`, and a
+ * flex `display` from the later-imported file overrode `[hidden]`'s
+ * `display: none`. Its fix is `.ui-panel > .ui-panel__body[hidden]` -- two
+ * classes **and an attribute** -- so for the panel body `[hidden]` wins on
+ * specificity (0,3,0 against 0,2,0) rather than on source order.
+ *
+ * **`.ui-section__body` has no such rule, and a first version of this block
+ * broke the alerts fold because of it.** `primitives.css`'s `[hidden]` list
+ * covers `.ui-panel`, `.ui-panel__body`, `.ui-choice`, `.ui-number`,
+ * `.ui-action` and `.ui-row` -- and not `.ui-section__body`, which relies on
+ * the `hidden` attribute's *user-agent* `display: none`. Any author `display`
+ * beats a UA one outright, at any specificity. So with a bare
+ * `.hud-minimap .ui-section__body { display: flex }` the section reported
+ * `data-collapsed="true"`, set `body.hidden`, announced
+ * `aria-expanded="false"` -- and the rows stayed on screen.
+ * `app-shell.spec.ts`'s *"a build order the simulation refuses reaches the
+ * alerts list (#261)"* caught it: the row was still `visible` after the
+ * collapsing press. **That is the third time this repository has paid for the
+ * same trap**, and the first two are the ones `primitives.css` records.
+ *
+ * `:not([hidden])` on all three selectors is the fix, and it is the right shape
+ * rather than a second `[hidden]` override: a collapsed body is given no
+ * `display` at all, so nothing has to out-specify anything. Verified rather
+ * than reasoned -- the fold is pressed both ways on the assembled page in that
+ * spec, and the rows appear and disappear with it.
+ */
+.hud-minimap > .ui-panel__body:not([hidden]),
+.hud-minimap .ui-section:not([hidden]),
+.hud-minimap .ui-section__body:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
 
 /* ------------------------------------------------------------------ */
 /* The unavailable line: this page has no simulation (issue #220)      */
@@ -309,6 +431,16 @@
  * folded, so a row in it was `offsetParent === null` with a 0x0 box at every
  * viewport, not merely on a phone (measured in Chromium at 1280x800 and
  * 375x812 with `Worker` blocked, #220).
+ *
+ * **Both reasons are past tense as of 2026-08-31 (#703, rulings 1 and 5), and
+ * the band stays.** `.hud__corner` is no longer hidden below 720px, the alerts
+ * section starts open, and the list now scrolls instead of clipping -- so a row
+ * in it is laid out and reachable at 1920, 1440, 1280, 900, 768, 600 and 375
+ * CSS px, measured at all seven. What has not changed is that this row survives
+ * every breakpoint *unconditionally* and needs nothing opened, and that a band
+ * carrying one sentence is a different job from a list keeping several: #701
+ * measured the band losing a message to another from the same tick, which is
+ * the failure a log answers and a second band would not.
  *
  * `pointer-events` stays `none` (inherited from `.hud`): the line carries no
  * control, so a click on it belongs to the world underneath.
@@ -351,6 +483,17 @@
  * section it lands in starts folded so it was invisible at *every* viewport.
  * One line, so one sentence at a time; `hud.ts` holds the rule.
  *
+ * **Both reasons are past tense as of 2026-08-31 (#703, rulings 1 and 5), and
+ * the band stays.** `.hud__corner` is no longer hidden below 720px, the alerts
+ * section starts open, and the list now scrolls instead of clipping -- so a row
+ * in it is laid out and reachable at 1920, 1440, 1280, 900, 768, 600 and 375
+ * CSS px, measured at all seven. What has not changed is that this row survives
+ * every breakpoint *unconditionally* and needs nothing opened, and that a band
+ * carrying one sentence is a different job from a list keeping several: #701
+ * measured the band losing a message to another from the same tick, which is
+ * the failure a log answers and a second band would not.
+
+ *
  * `pointer-events` stays `none` (inherited from `.hud`): the line carries no
  * control, so a click on it belongs to the world underneath, exactly like the
  * empty middle. It is `hidden` whenever it has nothing to say, which
@@ -389,6 +532,17 @@
  * sentence routed only there is invisible at every viewport. `hud.ts` holds
  * the argument for why an event is a third class rather than a second use of
  * the refusal line.
+ *
+ * **Both reasons are past tense as of 2026-08-31 (#703, rulings 1 and 5), and
+ * the band stays.** `.hud__corner` is no longer hidden below 720px, the alerts
+ * section starts open, and the list now scrolls instead of clipping -- so a row
+ * in it is laid out and reachable at 1920, 1440, 1280, 900, 768, 600 and 375
+ * CSS px, measured at all seven. What has not changed is that this row survives
+ * every breakpoint *unconditionally* and needs nothing opened, and that a band
+ * carrying one sentence is a different job from a list keeping several: #701
+ * measured the band losing a message to another from the same tick, which is
+ * the failure a log answers and a second band would not.
+
  *
  * **Toned by `data-severity` rather than by class**, which is the one way this
  * band differs from its neighbours. Both of those are permanently red because
@@ -2777,8 +2931,58 @@
     --hud-strip-height: calc(88px * var(--ui-scale));
   }
 
-  /* The minimap would collide with the tab bar; the bar wins, because it is
-     how the game is operated. */
+  /*
+   * THE MINIMAP WOULD COLLIDE -- AND IT IS THE RAIL IT COLLIDES WITH, NOT THE
+   * TAB BAR. THE RULE STAYS; ONLY ITS REASON IS CORRECTED.
+   *
+   * This rule read `.hud__corner { display: none; }` under the comment *"The
+   * minimap would collide with the tab bar; the bar wins, because it is how the
+   * game is operated."* **The rule is right and that reason is wrong**, and the
+   * difference cost a full attempt at removing it (#703, ruling 5), so it is
+   * written out here rather than left for somebody to rediscover.
+   *
+   * The tab bar is not what it collides with. `.hud__corner` is `grid-area:
+   * middle` with `align-self: end`, and this file's own note at `.hud__corner`
+   * says the region is *"The row above the tab bar, not the same one"*, stacked
+   * precisely so that *"a collision [is] impossible at any width instead of at
+   * the widths someone remembered to check"*. Measured with the rule removed,
+   * at nine widths from 1920 down to 375: **no overlap with the tab bar at any
+   * of them**, and at 375x812 the corner's bottom edge landed exactly on the
+   * tab bar's top.
+   *
+   * **What it collides with is `.hud__rail`.** At this breakpoint the rail
+   * stops being a fixed-width column and stretches (`justify-self: stretch`,
+   * three rules below), and the rail and the corner then occupy the same grid
+   * area. Measured on the assembled page at 375x812 with the rule removed and
+   * the minimap placeholder hidden: the corner sat at 250x127 @0,616 and the
+   * Alerts fold header at 208x44 @21,638 -- and `elementFromPoint` at the
+   * centre of that header returned the **Intake panel's Admit button**
+   * (`button.ui-action.hud-intake__admit` inside `.hud__side` inside
+   * `.hud__rail`). `app-shell.spec.ts`'s *"every control can actually be
+   * pressed, on every tab and at every viewport (#88)"* reported it as
+   * *"controls covered by something else on the overview tab at 375x812"*,
+   * which is the gate doing its job.
+   *
+   * A first attempt also brought the corner back whole, and a second gate
+   * caught that: at 375x812 the corner was 250x380 @0,363 and covered the
+   * centre pixel a player taps to reach the world (187, 406), failing *"a click
+   * in the middle of the screen reaches the world, not the HUD"*. Hiding the
+   * minimap placeholder and the panel heading fixed that one and left the rail
+   * collision standing.
+   *
+   * **So bringing the alerts log to a phone is a mobile LAYOUT job, not a
+   * breakpoint edit** -- the corner and the stretched rail need somewhere
+   * separate to live below 720px. The owner's ruling 5 asked for the corner
+   * here; their standing steer of the same day is that the desktop browser
+   * comes first and mobile is refined later. Deferred to that pass on both
+   * counts, with the measurements above so it starts from a diagnosis rather
+   * than from this rule.
+   *
+   * Rulings 1 and 6 do not depend on any of this and are live: the alerts
+   * section starts open, the list scrolls instead of clipping its newest row,
+   * and no all-clear is emitted on a tick that recorded an escape. On a phone
+   * the log is still out of reach; on every viewport above 720px it is not.
+   */
   .hud__corner { display: none; }
 
   /* The rail stays -- it is the only way to build, and the only way to save

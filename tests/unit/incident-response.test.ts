@@ -247,6 +247,79 @@ describe('IncidentResponseSystem: real guards, real routes, real lockdown', () =
     expect(incidents.get('incident-escape')!.outcome).toEqual({ injuredEntityIds: [9], propertyDamage: 7, escaped: true });
   });
 
+  /**
+   * The owner's ruling 6 of 2026-08-31 (#703), at the layer that decides it.
+   *
+   * **The defect it fixes is not visible from this file, which is why the case
+   * needs writing out.** `reportAllClearIfCalm` was right about
+   * `openIncidentCount` and wrong about the screen: the HUD's event band keeps
+   * the newest event only, so on the tick where `lapse` recorded an escape and
+   * then reported all-clear, the all-clear replaced the escape sentence. The
+   * owner's own approved wording -- *"{name} broke out -- no guard reached them
+   * in time."* -- was written three times and painted zero times, measured on
+   * 2026-08-31.
+   *
+   * **WHAT THIS FILE CAN PROVE IS THE SCOPE OF THE GUARD, NOT THE FIX, AND THE
+   * DIFFERENCE IS THE POINT.** `buildHarness` constructs
+   * `IncidentResponseSystem` without an `onPrisonerEscaped` port, so it takes
+   * the default `() => undefined` -- nobody actually leaves. The guard is on
+   * the **announcement** rather than on `outcome.escaped`, so in this harness
+   * an escape-attempt lapse writes `escaped: true`, announces nothing, and the
+   * all-clear is still emitted. That is correct and deliberate: with no
+   * sentence written there is nothing for the all-clear to overwrite, which is
+   * #683's *"nobody actually left and the prison says nothing"* read from the
+   * other side.
+   *
+   * **A guard written against `outcome.escaped` would suppress the all-clear
+   * here, and this test is what fails it.** That is the mutation worth killing
+   * at this layer, and it is a mutation a reader would think was equivalent.
+   * The fix itself -- an announced escape suppressing the all-clear -- needs a
+   * real departure port and is proven in
+   * `tests/integration/escape-outcome-visibility.test.ts`, which drives one and
+   * asserts both arms of the sentence pair.
+   *
+   * The third arm is the ordinary lapse, so the pair also shows the guard is
+   * not simply "suppress every lapse".
+   */
+  it('gates the all-clear on the escape being ANNOUNCED, not on the outcome flag (#703)', () => {
+    const escape = buildHarness({ ...DEFAULT_INCIDENT_RESPONSE_POLICY, responseDeadlineTicks: 100 });
+    escape.incidents.open(
+      { id: 'incident-escape', type: 'escape-attempt', sectorId: 'block-a', participantIds: [9], severity: 7, causeFactors: [] },
+      0,
+    );
+    for (let tick = 0; tick < 300 && escape.response.getMetrics().incidentsLapsed < 1; tick += 1) escape.kernel.step();
+
+    // The premise, in the prison's own terms: without it the assertions below
+    // would hold for a run where nothing lapsed at all.
+    expect(escape.response.getMetrics().incidentsLapsed, 'the attempt must have lapsed for this to measure anything').toBe(1);
+    expect(escape.incidents.get('incident-escape')!.outcome!.escaped, 'the outcome flag IS set').toBe(true);
+    expect(escape.incidents.openIncidentCount, 'and nothing is still open, which is what licenses the all-clear').toBe(0);
+
+    const escapeTypes = escape.events.since(0).map((event) => event.type);
+    // No departure port, so nobody left and nothing was announced...
+    expect(escapeTypes, 'no port means no escape sentence').not.toContain('incidents.escape-succeeded');
+    // ...and therefore the all-clear stands. A guard keyed on `outcome.escaped`
+    // rather than on the announcement fails exactly here.
+    expect(escapeTypes, 'with no sentence written there is nothing to overwrite, so the return to calm is reported').toContain(
+      'incidents.all-clear',
+    );
+
+    // And the ordinary lapse, so the guard is visibly not "suppress every
+    // lapse": same method, same terminal transition, same empty prison.
+    const assault = buildHarness({ ...DEFAULT_INCIDENT_RESPONSE_POLICY, responseDeadlineTicks: 100 });
+    assault.incidents.open(
+      { id: 'incident-assault', type: 'assault', sectorId: 'block-a', participantIds: [1, 2], severity: 7, causeFactors: [] },
+      0,
+    );
+    for (let tick = 0; tick < 300 && assault.response.getMetrics().incidentsLapsed < 1; tick += 1) assault.kernel.step();
+
+    expect(assault.response.getMetrics().incidentsLapsed).toBe(1);
+    expect(assault.incidents.get('incident-assault')!.outcome!.escaped, 'an assault is the arm that cannot set this').toBe(false);
+    const assaultTypes = assault.events.since(0).map((event) => event.type);
+    expect(assaultTypes, 'a lapse that lost nobody still reports the return to calm').toContain('incidents.all-clear');
+    expect(assaultTypes).not.toContain('incidents.escape-succeeded');
+  });
+
   it('a contained incident produces a materially better outcome than a lapsed one of identical severity', () => {
     const severity = 6;
 
