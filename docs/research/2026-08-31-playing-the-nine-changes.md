@@ -49,11 +49,14 @@ ukryte funkcje"*.
 | run | act | result | what it added, or what it cost |
 | --- | --- | --- | --- |
 | act1 (first) | 1 | abandoned | hung on `click()` of a `Cancel` that is in the DOM and has no box — **that hang is finding 1** |
-| act1c | 1 | `1 failed (1.7m)` | the same hang with a 20 s cap, which produced the timeout log quoted in §1 |
-| **act1d** | 1 | **`1 passed (8.3m)`** | the whole money route, the hire control, the band's first painted sentence |
-| act2a | 2 | see §3 | five disjoint enclosed rooms, four presses each |
-| act3a | 3 | killed at 2 min | killed deliberately: the instrument was wrong and §2 explains why |
-| **act3b** | 3 | see §2 | the same act with a `MutationObserver` and a frame sampler |
+| act1c | 1 | `1 failed (1.7m)` | the same hang with a 20 s cap, which produced the timeout log quoted in §1c |
+| **act1d** | 1 | **`1 passed (8.3m)`** | the whole money route, the hire control, and the band's first painted sentence |
+| act2a | 2 | `1 failed (3.8m)` | five cells in a terrace: two designated, one refused on my wall geometry, the fourth's drag lost under the rail — **that loss is §8** |
+| **act2b** | 2 | **`1 passed (3.6m)`** | four disjoint enclosed rooms, four presses each, every field identical |
+| act3a | 3 | killed at 2 min | killed deliberately: the instrument was wrong, and §2c is why it mattered |
+| **act3b** | 3 | **`1 passed (21.8m)`** | tick 100,404, three escapes, the write log and the frame log |
+| **act4a** | 4 | **`1 passed (22.5s)`** | where the world is at 1440x900, asked of `elementFromPoint` |
+| **act5a** | 5 | **`1 passed (47.5s)`** | #685, and the refused *Admit* in §12a |
 
 **Contention, sampled rather than assumed.** A sampler wrote
 `ps -eo args | grep -c "[p]laywright/test/cli"` and the load average every 60 s
@@ -62,9 +65,24 @@ for the whole session. What was on the machine:
 - Another agent's `vitest run` was live for most of act1c and act1d
   (`vitest=3` to `vitest=8`, load 2.25 → 4.34 on 4 cores).
 - Another agent's `app-shell.spec.ts -g "what a zoned room is missing"` run was
-  live for part of it.
-- **This pass ran act 2 and act 3 concurrently on ports 5202 and 5201**, which
-  is two Playwright runs of its own, both mine and both known.
+  live for part of it, twice.
+- **This pass ran up to three of its own Playwright runs at once** — act3b on
+  port 5201 for its whole 21.8 minutes, with act2b (5202), act4a (5203) and
+  act5a (5204) overlapping it. All four are mine and all four are named here.
+
+**What the contention did to act 3, measured rather than assumed, and the answer
+is nothing.** The escape sentence's own write timestamps give the rate for free,
+because each is paired with a tick: the first escape wrote at page t=655,850 ms
+on tick 48,611 and the third at t=955,858 ms on tick 72,611. That is **24,000
+ticks in 300,008 ms — 79.998 ticks per wall second**, against the ×4 ideal of
+exactly 80. Measured across the window that contains all three escapes, with
+other suites on the machine for part of it.
+
+And the figure the finding actually turns on is a *difference* inside one frame
+budget: the escape write and the all-clear write are **1 ms, 0 ms and 0 ms**
+apart. No amount of scheduler pressure closes a gap that is already zero, and
+pressure would if anything *widen* it — so contention can only have made this
+pass's result more conservative, never less.
 
 **So no wall-clock duration below is load-bearing.** Every figure this record
 rests on is a tick, a treasury value, a press count, a DOM box in CSS pixels or
