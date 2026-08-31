@@ -425,17 +425,30 @@ describe('identity reaches the HUD through the projections', () => {
 
     // The pipeline named every arrival, and it handed them the ids the
     // literals below are written against.
+    //
+    // **Sorted before comparing, since 2026-08-31.** This read
+    // `minted.rows.map(...)` against the literal list directly, which also
+    // asserted the roster's *order* -- and issue #703's fourth ruling made that
+    // order highest risk tier first rather than ascending entity id, so eight
+    // named prisoners come back in a tier order this file has no business
+    // pinning. The claim here is which *population* was named, and it is
+    // unweakened: both sides are still the full set of eight ids, and
+    // `hud-projections.test.ts` is where the order itself is asserted.
     const minted = projectPrisonerRoster(fixture.prisoners, { limit: 50 }, { identity: registry });
     expect(minted.rows).toHaveLength(PRISONER_COUNT);
     expect(minted.rows.every((row) => row.name !== undefined)).toBe(true);
-    expect(minted.rows.map((row) => row.entityId)).toEqual(LABELLED_PRISONERS.map((entry) => entry.entityId));
+    expect([...minted.rows.map((row) => row.entityId)].sort((left, right) => left - right)).toEqual(
+      LABELLED_PRISONERS.map((entry) => entry.entityId),
+    );
 
     for (const { entityId, name } of LABELLED_PRISONERS) registry.rename('prisoner', entityId, name);
 
     const named = projectPrisonerRoster(fixture.prisoners, { limit: 50 }, { identity: registry });
-    expect(named.rows.map((row) => ({ entityId: row.entityId, name: row.name }))).toEqual(
-      LABELLED_PRISONERS.map((entry) => ({ entityId: entry.entityId, name: { ...entry.name } })),
-    );
+    expect(
+      [...named.rows]
+        .sort((left, right) => left.entityId - right.entityId)
+        .map((row) => ({ entityId: row.entityId, name: row.name })),
+    ).toEqual(LABELLED_PRISONERS.map((entry) => ({ entityId: entry.entityId, name: { ...entry.name } })));
 
     // Not the first prisoner, so a detail view that reads any entry of the
     // right *kind* rather than this actor's own is a failure and not a

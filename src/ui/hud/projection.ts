@@ -1,4 +1,5 @@
 import type { LocalizationKey } from '../../content/localization';
+import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
 import type { IconId } from '../primitives/icon';
 import type { BadgeTone } from '../primitives/status-badge';
@@ -105,7 +106,52 @@ export function transportPressedStates(clock: HudClockViewModel): TransportPress
   return { pause: false, play: !fast, fastForward: fast };
 }
 
-export type HudMetricId = 'prisoners' | 'staff' | 'coverage' | 'rooms' | 'incidents' | 'contraband' | 'funds' | 'earned-today';
+export type HudMetricId =
+  | 'prisoners'
+  | 'high-risk'
+  | 'staff'
+  | 'coverage'
+  | 'rooms'
+  | 'incidents'
+  | 'contraband'
+  | 'funds'
+  | 'earned-today';
+
+/**
+ * The `HIGH RISK` chip's label, and it is **not a new player-facing string**
+ * (issue #703, the owner's fourth ruling of 2026-08-31).
+ *
+ * `classification-group.high-risk.name` is the key
+ * `src/content/simulation-message-keys.ts` already authors for this exact
+ * group -- "High Risk" -- and it is already on screen: the Regime panel's
+ * timetable block heads the restricted block with it, resolved from the same
+ * key through the same catalog. The chip counts the members of the group that
+ * line names, so a second `hud.status.*` spelling of the same two words would
+ * be the drift ADR 0011 separates its three namespaces to prevent, and
+ * `AGENTS.md`'s fourth exclusion would make authoring one the owner's call
+ * rather than this change's.
+ *
+ * Derived, never spelled out, which is `simulation-message-keys.ts`'s own rule:
+ * renaming the group id renames the key and the pair stays one edit.
+ *
+ * **This is the first chip on the strip whose label is not a `hud.*` key**, and
+ * it is not the first *label* -- the incidents badge has read an
+ * `incident-type.*.name` since issue #506 finding 2, for the same reason and
+ * with the same import. `tests/unit/ui-hud-messages.test.ts` walks every
+ * descriptor's `labelKey` and used to require the HUD's own registry; it now
+ * accepts either registry and resolves the key either way, which is the check
+ * that actually matters (that the player sees words rather than a dotted id).
+ *
+ * The `'high-risk'` id is spelled here for the reason `describePrisonerRow`
+ * spells it in `regime-panel.ts`: `CLASSIFICATION_GROUP_IDS` lives in
+ * `src/simulation/prisoners/components.ts` and the HUD may not import the
+ * simulation (`AGENTS.md` boundary 1). A wrong id would resolve to nothing and
+ * render as the raw key, which `tests/browser/app-shell.spec.ts` asserts
+ * against on the real page -- *paints the high-risk chip and orders the Regime
+ * roster by tier (#703)*, which reads the chip's label and refuses any dotted
+ * identifier anywhere in the strip.
+ */
+const HIGH_RISK_LABEL_KEY: LocalizationKey = deriveSimulationMessageKey('classification-group', 'high-risk');
 
 export interface HudMetricBadge {
   readonly tone: BadgeTone;
@@ -209,7 +255,8 @@ function prisonersWithoutBed(counts: HudCountsViewModel): number {
  * now: *"a status strip where several things are always amber teaches players
  * to ignore amber"*, and that note already extends it to green. A permanent
  * badge on the busiest chip on the strip is the same failure in the shape of
- * reassurance -- eight chips compete for one glance, and a line that is
+ * reassurance -- nine chips compete for one glance (eight when this was
+ * written; #703 added the ninth), and a line that is
  * present in every screenshot is a line nobody reads in the one screenshot it
  * matters in.
  *
@@ -236,7 +283,7 @@ function prisonersWithoutBedBadge(counts: HudCountsViewModel): HudMetricBadge | 
  * `describeStaffCoverage`'s reason: a prison with somebody unguarded is not a
  * worse version of an understaffed one, it is the rung where the cheapest
  * possible action changes the outcome. `undefined` -- not `success` -- when
- * nobody is on either lower rung, because this is a strip of eight chips
+ * nobody is on either lower rung, because this is a strip of nine chips
  * competing for one glance and *"a status strip where several things are
  * always amber teaches players to ignore amber"* applies to green as well;
  * the badge still says "Covered" in words, so the state is never carried by
@@ -306,6 +353,80 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
        * sleeping prisoner in a room that still has spare places elsewhere.
        */
       badge: prisonersWithoutBedBadge(counts),
+    },
+    {
+      /**
+       * **How many of the prisoners the chip to its left counts are on the
+       * high-risk regime** (issue #703, the owner's fourth ruling of
+       * 2026-08-31: *"`prisonersHighRisk` reaches the screen"*).
+       *
+       * The count crossed the worker boundary from ADR 0032 onward and nothing
+       * in `src/ui/` read it; after ADR 0080 the tier behind it is the gate on
+       * both a contraband introduction and an escape attempt, so it stopped
+       * being a label on a roster row and became a fact about the prison.
+       *
+       * **Placed second rather than appended after `earned-today`**, against
+       * the convention that descriptor records ("a new chip at the end adds a
+       * column without moving one"). Two reasons, and the second is a
+       * measurement rather than a preference:
+       *
+       * - It is the `coverage` chip's own argument one population over. This is
+       *   `prisoners` at a second grain -- the same set of people, and the
+       *   subset the prison has to staff and search for -- so reading
+       *   "12 prisoners, 3 high risk" left to right is the whole statement,
+       *   exactly as "5 staff, 12 covered, 4 unguarded" is.
+       * - **The end of the row is where a chip goes to be invisible**, on the
+       *   narrow viewports where the row scrolls: at 768x1024 the metrics row is
+       *   744px and holds five of the nine chips, with the scrollbar suppressed
+       *   so nothing says the other four exist (#634). Second is inside that
+       *   five and last is not.
+       *
+       * **A third reason was written here and the measurement refuted it**, so
+       * it is recorded rather than quietly dropped. It read that nine chips are
+       * ~1234px of content against 1256px of metrics row at 1280x720, that
+       * `hud.css` records `FUNDS` growing 85.8px -> 110.2px by a seven-figure
+       * treasury, and that "a mid-game prison at 1280 overflows the row by a few
+       * pixels and the *last* chip is the one that leaves". Measured on the real
+       * page instead of arithmetic: the nine chips and their eight 16px gaps are
+       * **1227.6px**, and with `FUNDS` set to `1,284,500` and `Earned today` to
+       * `284,500` the row is **1252.0px against 1256px** -- so all nine are on
+       * screen at 1280x720 at a mid-game treasury, with 4px to spare. (`Earned
+       * today` does not grow at all: its *label* is wider than any value it can
+       * hold.) The forward-looking half of that reason survives and the
+       * conclusion does not: 4px is the whole of the desktop headroom left, so
+       * the next chip, or a longer label in another locale, takes the last one
+       * off screen -- but nothing is off screen today because of where this chip
+       * was put.
+       *
+       * What the placement does cost, stated rather than implied: at 768x1024
+       * five chips fit and the fifth is now `rooms` instead of `incidents`, so
+       * `incidents` moves off screen at that width. #634 already measured 3 of 8
+       * off screen there, the alerts region names an open incident in words, and
+       * the owner's steer of the same day is that the desktop browser comes
+       * first. Appending instead would leave 768 exactly as it was and put this
+       * chip among the four nobody sees there.
+       *
+       * **No tone and no badge**, which is `funds`' reason rather than
+       * `contraband`'s. A count of high-risk prisoners is not a failure -- it is
+       * the population the prison has -- and nobody has set the number at which
+       * it becomes one, so a permanent amber chip on a mature prison would be
+       * exactly the *"status strip where several things are always amber"*
+       * `coverageTone` refuses. `describePrisonerRow` in `regime-panel.ts`
+       * already draws the line for the row badge: *"`warning` for high risk is
+       * not a claim that the prisoner is a problem. It is that they are on the
+       * restricted timetable"* -- a distinction a per-prisoner badge can carry
+       * and a prison-wide counter cannot.
+       */
+      id: 'high-risk',
+      // The Regime tab's own icon: this chip is the count of the prison that
+      // tab's restricted timetable applies to, and pressing it is what a player
+      // reading the chip would go on to do.
+      icon: 'regime',
+      labelKey: HIGH_RISK_LABEL_KEY,
+      value: counts.prisonersHighRisk,
+      capacity: undefined,
+      tone: undefined,
+      badge: undefined,
     },
     {
       id: 'staff',
