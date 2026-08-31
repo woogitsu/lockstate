@@ -222,9 +222,26 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
         continue;
       }
       switch (outcome.reason) {
-        case 'insufficient-funds':
-          unfunded.push({ itemId: requirement.itemId, quantity: deficit, costMinorUnits });
+        case 'insufficient-funds': {
+          let affordable = deficit - 1;
+          let bought = false;
+          while (affordable > 0) {
+            const retry = this.procurement.purchase(
+              justInTimePurchaseOrderId(tick, requirement.itemId, inFlight) + `:${affordable}`,
+              requirement.itemId,
+              affordable,
+              tick,
+            );
+            if (retry.ok) {
+              purchased.push({ itemId: requirement.itemId, quantity: affordable, costMinorUnits: retry.paidMinorUnits });
+              bought = true;
+              break;
+            }
+            affordable -= 1;
+          }
+          if (!bought) unfunded.push({ itemId: requirement.itemId, quantity: deficit, costMinorUnits });
           break;
+        }
         case 'invalid-quantity':
           unprocurable.push({ itemId: requirement.itemId, quantity: deficit, reason: 'quantity-refused' });
           break;
