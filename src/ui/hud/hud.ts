@@ -28,6 +28,13 @@ import {
 } from './hud-state';
 import { HUD_MESSAGE_KEY } from './messages';
 import { nextFastForwardSpeed, refusalMessageKey, severityLabelKey, severityTone } from './projection';
+import {
+  EMPTY_REFUSAL_LINE,
+  type RefusalLineState,
+  refusalLineAfterCommandIssued,
+  refusalLineAfterHostRefusal,
+  refusalLineAfterSimulationNotice,
+} from './refusal-line';
 import { createStaffPanel, type StaffPanel } from './staff-panel';
 import { type TransportIntentKind, createStatusStrip } from './status-strip';
 import {
@@ -861,10 +868,14 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    *
    * The third reason #207 gave does **not** apply here and is why this is a
    * second row rather than a second use of the first: a refusal is a fact
-   * about this HUD's own interaction and clears the moment the same action
-   * succeeds (`clearRefusal`), whereas "this browser cannot start a worker"
+   * about this HUD's own interaction and is retired by the player's next
+   * command (`./refusal-line`), whereas "this browser cannot start a worker"
    * belongs to no control and cannot stop being true while the page is
    * loaded. Sharing one band would need a rule deciding which sentence wins.
+   * **That sentence read "clears the moment the same action succeeds" until
+   * 2026-08-31**, and the narrower rule it names is still true of the moment a
+   * refusal stops being *true*; what changed is that the band no longer waits
+   * for it.
    *
    * Set at mount *and* settable afterwards (`setUnavailable`). It used to be
    * mount-only, on the argument that the host learns this before it mounts the
@@ -957,9 +968,8 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * the one on the line**, and taking the line unmarks whatever control the
    * previous occupant had, because `aria-describedby` must not point at a
    * sentence about something else. Nothing is stacked and nothing is
-   * restored: when a host refusal clears because that action later succeeded,
-   * an older simulation refusal does not come back, exactly as an older host
-   * refusal has never come back. It is still in the log.
+   * restored: when a refusal leaves the line, an older one does not come back.
+   * It is still in the log.
    *
    * This is deliberately *not* a second use of `.hud__unavailable`, and the
    * reason that band is separate survives untouched: a refusal stops being
@@ -968,11 +978,29 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * cannot stop being true while the page is loaded. Sharing one band would
    * need a rule about which sentence wins; two bands need none.
    *
-   * It does **not** auto-dismiss. A message that clears itself on a timer is
-   * a race against how fast the player reads, and there is no press to
-   * acknowledge it -- so a host refusal stays until the same action later
-   * succeeds, and a simulation refusal until another replaces it or the
-   * session ends, which are the first moments each sentence stops being true.
+   * ## How long it stands
+   *
+   * It does **not** auto-dismiss, and that half is unchanged: a message that
+   * clears itself on a timer is a race against how fast the player reads, and
+   * there is no press to acknowledge it. Nothing here moves without the
+   * player.
+   *
+   * **The other half of this paragraph was wrong for four months and is
+   * corrected rather than overwritten.** It read: *"so a host refusal stays
+   * until the same action later succeeds, and a simulation refusal until
+   * another replaces it or the session ends, which are the first moments each
+   * sentence stops being true."* Every clause of that is a true statement
+   * about when a refusal stops being **true**, and #492 later added a fourth
+   * such moment -- the simulation withdrawing a refusal it has since accepted.
+   * What the final clause got wrong is the implication that those moments
+   * arrive: for the class of refusal whose condition is a permanent property
+   * of its target, no later success can exist, and the playtest of 2026-08-31
+   * measured one standing over the world four in-game days after the press
+   * (the record under `docs/research/` titled *Playing the twelve changes of
+   * 2026-08-31*, §9). So the band gained a second retirement that is about
+   * attention rather than truth -- **the player's next command retires it** --
+   * and `./refusal-line` is where that is argued and where it can be watched
+   * going red.
    */
   const refusalId = nextUiId('hud-refusal');
   const refusalText = element('span', { className: 'hud-refusal__text' });
@@ -1019,9 +1047,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    *
    * The third reason those two bands are separate applies here too and is why
    * this is a third row rather than a reuse: a refusal is a fact about a
-   * control the player just used and clears when that action succeeds, and
-   * "this browser cannot start a worker" cannot stop being true while the page
-   * is loaded. An event is neither -- it belongs to no control, and it never
+   * command the player just issued and is retired by the next one they issue
+   * (`./refusal-line`; this read "and clears when that action succeeds" until
+   * 2026-08-31, which was the narrower rule that preceded it), and "this
+   * browser cannot start a worker" cannot stop being true while the page is
+   * loaded. An event is neither -- it belongs to no control, and it never
    * stops being true. Three lifetimes, three bands, and no rule about which
    * sentence wins is needed because no two of them ever compete for a line.
    *
@@ -1095,26 +1125,20 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   /**
    * One refusal at a time, because there is one line to say it in.
    *
-   * `refusalSource` says which producer the standing sentence came from, and
-   * it is what keeps the two clearing rules from reaching each other: a host
-   * command that later succeeds must not clear a simulation refusal it knows
-   * nothing about, and a session that has refused nothing must not clear a
-   * host refusal decided a moment ago on this thread.
+   * **The state, and every rule that moves it, live in `./refusal-line`; this
+   * is the DOM half.** They were three `let`s and three closures here until
+   * 2026-08-31, and the reason they moved is that `vitest.config.ts` runs
+   * `environment: 'node'` with no jsdom: nothing inside `mountHud` is
+   * reachable from the unit suite, so the band's *lifetime* -- the one thing
+   * about it a player complains about -- could not be watched going red
+   * anywhere but in a browser. That module carries the whole argument: which
+   * producer owns the line, why an ordinal is needed against a republishing
+   * cadence, and why the player's next command retires the sentence.
    *
-   * `refusedAction` is the command kind behind a *host* refusal and is set
-   * only while `refusalSource` is `'host'` -- a simulation refusal names no
-   * control, because the command it answers was accepted and may have been
-   * decided many ticks after the press.
-   *
-   * `simulationRefusalSequence` is the ordinal of the simulation refusal last
-   * taken from the view model. The counts channel republishes an unchanged
-   * refusal beside a changed count up to twice a second, so without it every
-   * republication would steal the line back from a host refusal the player
-   * caused since.
+   * What stays here is everything that touches an element: the text, the two
+   * data attributes, `hidden`, and the mark on the control that was pressed.
    */
-  let refusalSource: 'host' | 'simulation' | undefined;
-  let refusedAction: string | undefined;
-  let simulationRefusalSequence: number | undefined;
+  let refusalLine: RefusalLineState = EMPTY_REFUSAL_LINE;
 
   const markControl = (actionId: string, refused: boolean): void => {
     const control = commandControls.get(actionId);
@@ -1129,29 +1153,48 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   };
 
   /**
-   * Hands the line to `source`, leaving nothing of the previous occupant
-   * behind.
+   * Puts whatever `./refusal-line` decided on screen, and nothing else.
    *
-   * The unmarking is the whole of it: a control still carrying
-   * `aria-describedby` would point a screen reader at a sentence that is now
-   * about something else, which is worse than pointing at nothing.
+   * Two properties of this function are the ones the band's contract rests on.
+   *
+   * **The previous occupant's control is unmarked first.** A control still
+   * carrying `aria-describedby` would point a screen reader at a sentence that
+   * is now about something else, which is worse than pointing at nothing.
+   *
+   * **An unchanged state writes nothing.** The decision functions answer the
+   * state object they were given when nothing moved, and this returns on that
+   * identity, so the snapshot cadence -- twice a second, carrying the same
+   * refusal -- cannot re-set the live region's text. Re-setting it is an
+   * announcement, and announcing the same sentence twice a second is the
+   * defect that `aria-live` makes easy to write.
    */
-  const takeRefusalLine = (source: 'host' | 'simulation'): void => {
-    if (refusedAction !== undefined) markControl(refusedAction, false);
-    refusedAction = undefined;
-    refusalSource = source;
-    refusal.dataset['source'] = source;
-  };
-
-  /** Empties the line, whichever producer was holding it. */
-  const clearRefusalLine = (): void => {
-    if (refusedAction !== undefined) markControl(refusedAction, false);
-    refusedAction = undefined;
-    refusalSource = undefined;
-    refusalText.textContent = '';
-    delete refusal.dataset['action'];
-    delete refusal.dataset['source'];
-    refusal.hidden = true;
+  const applyRefusalLine = (next: RefusalLineState): void => {
+    if (next === refusalLine) return;
+    const previous = refusalLine.notice;
+    refusalLine = next;
+    const notice = next.notice;
+    if (previous?.action !== undefined && previous.action !== notice?.action) {
+      markControl(previous.action, false);
+    }
+    if (notice === undefined) {
+      refusalText.textContent = '';
+      delete refusal.dataset['action'];
+      delete refusal.dataset['source'];
+      refusal.hidden = true;
+      return;
+    }
+    refusalText.textContent = t(notice.labelKey);
+    refusal.dataset['source'] = notice.source;
+    if (notice.action === undefined) {
+      // No `data-action`: this is a simulation refusal, so the command was
+      // accepted, and the control that sent it -- if there even was one,
+      // rather than a drag on the world -- is not what this sentence is about.
+      delete refusal.dataset['action'];
+    } else {
+      refusal.dataset['action'] = notice.action;
+      markControl(notice.action, true);
+    }
+    refusal.hidden = false;
   };
 
   /**
@@ -1165,64 +1208,21 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // `undefined` is a chrome intent, which has already been applied locally
     // -- see `refusalMessageKey`. Nothing is shown, and the host still hears.
     if (messageKey !== undefined) {
-      takeRefusalLine('host');
-      refusedAction = failure.actionId;
-      refusalText.textContent = t(messageKey);
-      refusal.dataset['action'] = failure.actionId;
-      refusal.hidden = false;
-      markControl(failure.actionId, true);
+      applyRefusalLine(refusalLineAfterHostRefusal(refusalLine, failure.actionId, messageKey));
     }
     options.onError?.(failure);
-  };
-
-  /**
-   * The refusal stops being true the moment the same action succeeds.
-   *
-   * Scoped to a *host* refusal of that exact action. A successful build order
-   * says nothing about a refusal the simulation decided -- that command was
-   * accepted too, and was refused on its content several ticks later -- so a
-   * later success may not clear it. What clears a simulation refusal is
-   * another one, or the session ending; see `applySimulationRefusal`.
-   */
-  const clearRefusal = (actionId: string): void => {
-    if (refusalSource !== 'host' || refusedAction !== actionId) return;
-    clearRefusalLine();
   };
 
   /**
    * Puts what the *simulation* last refused on the same line (issue #220,
    * made structural).
    *
-   * Called from `update`, so it runs at mount and on every published
-   * snapshot. Three cases, and the ordinal is what separates the middle one:
-   *
-   *   - **No refusal** -- the session has refused nothing, or has ended and
-   *     the translator returned `'none'`. The line is cleared only if the
-   *     simulation is what is on it; a host refusal decided on this thread is
-   *     not the session's to withdraw.
-   *   - **The same refusal again.** The counts channel is a snapshot on a
-   *     cadence, so an unchanged refusal is republished beside a changed
-   *     count. Nothing happens -- in particular the line is *not* taken back
-   *     from a host refusal the player has caused since, which is the whole
-   *     reason `RefusalLog` carries an ordinal.
-   *   - **A new one.** It is the most recently decided refusal, so it takes
-   *     the line under the rule the band already had.
+   * Called from `update`, so it runs at mount and on every published snapshot.
+   * The three cases and the ordinal that separates them are
+   * `refusalLineAfterSimulationNotice`'s; this line decides nothing.
    */
   const applySimulationRefusal = (notice: HudRefusalNoticeViewModel | undefined): void => {
-    if (notice === undefined) {
-      simulationRefusalSequence = undefined;
-      if (refusalSource === 'simulation') clearRefusalLine();
-      return;
-    }
-    if (notice.sequence === simulationRefusalSequence) return;
-    simulationRefusalSequence = notice.sequence;
-    takeRefusalLine('simulation');
-    refusalText.textContent = t(notice.labelKey);
-    // No `data-action`: the command was accepted, and the control that sent
-    // it -- if there even was one, rather than a drag on the world -- is not
-    // what this sentence is about.
-    delete refusal.dataset['action'];
-    refusal.hidden = false;
+    applyRefusalLine(refusalLineAfterSimulationNotice(refusalLine, notice));
   };
 
   const busy = createBusyGroup();
@@ -1247,10 +1247,27 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       commandControls.delete(intent.kind);
     } else commandControls.set(intent.kind, control);
     gate.run(intent.kind, async () => {
+      /*
+       * The band is about the player's most recent command, and this is it.
+       *
+       * Inside the action rather than beside `gate.run`, because the action
+       * runs only when the gate actually started one: a press refused as busy
+       * asked the prison for nothing and must retire nothing. It runs
+       * *synchronously* -- everything before the first `await` does -- so
+       * "issued" is the press, not the reply.
+       *
+       * **This replaces a narrower rule and the narrow one is worth keeping in
+       * writing**: the line used to be cleared here, after `onIntent`
+       * resolved, and only for a *host* refusal of this same kind, under the
+       * comment "the one moment a standing refusal for this action becomes
+       * false". That is still the moment it becomes false. It is not the
+       * moment it stops being worth saying, and for the class of refusal whose
+       * condition can never be re-attempted -- an empty tile has nothing to
+       * remove, and always will not -- there was no later moment at all. See
+       * `./refusal-line` for the measurement.
+       */
+      applyRefusalLine(refusalLineAfterCommandIssued(refusalLine));
       await options.onIntent?.(intent);
-      // Reached only when the host did not throw or reject, which is the one
-      // moment a standing refusal for this action becomes false.
-      clearRefusal(intent.kind);
     });
   };
 

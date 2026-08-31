@@ -1230,11 +1230,13 @@ export interface HudRefusalNoticeViewModel {
  * a rule about which sentence wins". The two classes there are "whatever
  * refused a player command" and "this page has no simulation". An event is
  * neither. It is not a refusal -- nothing was refused, and in the
- * `'info'` case nothing is even wrong -- and it does not belong to a control,
- * so it cannot clear the way a refusal clears when the same action later
- * succeeds. Putting a discharge notice on the refusal line would silently
- * evict a refusal the player has not read yet, which is the eviction that rule
- * exists to prevent.
+ * `'info'` case nothing is even wrong -- and it does not answer a command the
+ * player issued, so it cannot be retired the way a refusal is retired by the
+ * next command (`src/ui/hud/refusal-line.ts`; this clause read "the way a
+ * refusal clears when the same action later succeeds" until 2026-08-31, which
+ * was the narrower rule that preceded it). Putting a discharge notice on the
+ * refusal line would silently evict a refusal the player has not read yet,
+ * which is the eviction that rule exists to prevent.
  *
  * ## Why the band exists at all, when the alerts list already renders these
  *

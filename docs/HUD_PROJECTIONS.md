@@ -369,6 +369,17 @@ that reached a bounded in-worker window and stopped there.
   succeeds — a wall built at the tile it was refused for, a room zoned over
   the rectangle it was refused for. Recorded as gap 34 below, amended rather
   than invented here.
+  - **The sentence above is about the wire and is unchanged; the *band* is
+    shorter-lived than it since 2026-08-31.** `.hud__refusal` now also retires
+    the sentence when the player issues their next command, whatever that
+    command is (`src/ui/hud/refusal-line.ts`). That is main-thread bookkeeping
+    over this channel's snapshot and nothing crosses the boundary for it: the
+    wire still carries the same standing refusal, the alerts row still stands
+    under its ordinal, and a *new* refusal still takes the line. What it
+    closes is the class of refusal `supersede` can never withdraw, because the
+    condition is a permanent property of the target — an empty tile has
+    nothing to remove and always will not — measured standing over the world
+    four in-game days after the press in the playtest of 2026-08-31.
 - **Not snapshotted.** A restored session starts with none — see gap 33.
 
 #### The zoning notice it also carries (ADR 0022, amended)
@@ -1661,9 +1672,21 @@ decision about what to build next.
     One line means one sentence, so the rule is the one the band already had:
     **the most recently decided refusal is the one on the line**, whichever
     side decided it, and taking the line unmarks the previous occupant's
-    control. Nothing is stacked and nothing is restored — when a host refusal
-    clears because that action later succeeded, an older simulation refusal
-    does not come back. It is still in the log.
+    control. Nothing is stacked and nothing is restored — when a refusal
+    leaves the line, an older one does not come back. It is still in the log.
+
+    **Amended 2026-08-31: the band also empties on the player's next command,
+    and the "cannot be dismissed" clause above is now about the log alone.**
+    There is still no gesture that *dismisses* a refusal — no close button, no
+    main-to-worker message, and the alerts row keeps standing under its
+    ordinal — but the band is the notice rather than the log, and a notice
+    about the previous press is stale once there is a later press to be about.
+    `src/ui/hud/refusal-line.ts` holds the rule and the argument for why it is
+    a press and not a timer; the defect it answers is a refused *Remove* that
+    was measured still on screen four in-game days later, at 1280x800 and at
+    1920x1080. A *chrome* change — a tab, a fold — deliberately does not
+    retire it: the tab a player switches to is often the one the refusal sent
+    them to.
 
     **The alerts list keeps a role, and it is the log.** It holds the refusal
     row under its ordinal *beside* the rows the band deliberately does not
