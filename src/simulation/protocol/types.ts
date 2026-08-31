@@ -1416,6 +1416,7 @@ const snapshotMessageSchema = z
  * and the distinction is the same one `refusalSchema` draws.
  */
 export const SIMULATION_EVENT_TYPES = [
+  'contraband.discovered',
   'economy.wages-unpaid',
   'incidents.all-clear',
   'incidents.assault-opened',
@@ -1728,7 +1729,76 @@ const incidentsAllClearEventSchema = z
   })
   .strict();
 
+/**
+ * A search found one contraband item (the owner's **ruling 13** of 2026-08-31
+ * on [#703](https://github.com/matmaxalez/lockstate/issues/703)).
+ *
+ * The half of ruling 3 that `StatusStripViewModel.contrabandNameKey` could not
+ * carry, and that field's own comment says so at its site: a badge beside a
+ * count qualifies the *whole* count, so it names a category only while every
+ * confiscation on the ledger is that category, and *"only a per-discovery
+ * message can name each of several"*. It also recorded what stood in the way --
+ * *"that message needs a sentence joining a name to what happened, no such
+ * sentence is authored, and a sentence is the owner's"*. Ruling 13 authored it:
+ * `hud.alert.event.contraband.discovered`, "Contraband found: {item}.".
+ *
+ * ## What it carries
+ *
+ * `categoryNameKey` is the contraband catalog's own
+ * `ContrabandCategoryDefinition.nameKey` -- one of the five
+ * `contraband.*.name` labels ("Weapon", "Drugs", "Phone", "Currency", "Tool")
+ * that #707 gave their first reader on the status chip. The **key** crosses,
+ * never the word: ADR 0011 keeps translated text off the wire, and this is the
+ * same kind of value `prisoners.relocated` carries as `roomNameKey` and the
+ * strip carries as `contrabandNameKey`. The main thread resolves it, in
+ * `eventParameterMessages` (`src/ui/simulation-events.ts`).
+ *
+ * **No category id, no item id, no holder, no guard, no order.** The
+ * confiscation record already carries all five (`ConfiscationEvent`) and is
+ * persisted; this channel *"carries no identity"* (`SimulationEventLog`), and
+ * an item id would additionally be a handle on a thing whose state the very
+ * event that reports it has just changed to `'confiscated'`. The category id
+ * is not carried either, and that is not the same judgement as the incident
+ * union's: there a *member per kind* was chosen so the severity band could
+ * differ per kind, and here it deliberately must not -- ruling 13 puts a weapon
+ * *"in the same band as any other item"*, so one member with the name as a
+ * parameter is the shape that says that, and five members would invite five
+ * bands.
+ *
+ * ## One event per item found, not one per search
+ *
+ * `SearchSystem.runDetectionForCurrentTarget` runs an independent detection
+ * draw per concealed item at the target, so "what a search found" is not one
+ * fact and a count would have no sentence -- `{item}` names a category and a
+ * mixed pair has no single name, which is exactly the corner
+ * `soleDiscoveredContrabandNameKey` refuses. The grain is therefore the item,
+ * as `prisoners.relocated` and `incidents.escape-succeeded` are per subject
+ * rather than per cause.
+ *
+ * **Measured rather than assumed to be safe against the alerts list's 8-row
+ * cap** (`MAX_EVENT_ALERT_ROWS`): 48 prisons built by real commands and run 60
+ * in-game days each produced 463 confiscations, and **the most that landed on
+ * any single tick was one**. Only one sector is registered (ADR 0036) and
+ * `SectorSearchDutySystem.hasOutstandingSweep` allows one sweep per sector at a
+ * time, so one job advances one target per tick; the only route to two is one
+ * holder carrying two items and both draws succeeding on the same visit, which
+ * a holder can do -- ADR 0080's escalation introduction gives a prisoner a
+ * second item -- and did not do once in that sample. So nothing coalesces here.
+ *
+ * `sequence` and `tick` are the envelope every member carries, and the tick is
+ * the tick the search dwelt on rather than the one the publication rode out on.
+ */
+const contrabandDiscoveredEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('contraband.discovered'),
+    /** The found item's category, as the catalog's own `nameKey`. A key, resolved on the main thread -- never the English word. */
+    categoryNameKey: identifierSchema,
+  })
+  .strict();
+
 const simulationEventSchema = z.discriminatedUnion('type', [
+  contrabandDiscoveredEventSchema,
   wagesUnpaidEventSchema,
   dischargedEventSchema,
   residentRelocatedEventSchema,

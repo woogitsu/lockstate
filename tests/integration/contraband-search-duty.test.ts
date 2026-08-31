@@ -1,8 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { defaultLocaleEnCatalog } from '../../src/content/default-locale-en';
-import { resolveLocalizationKey } from '../../src/content/localization';
+import { DEFAULT_LOCALE, resolveLocalizationKey } from '../../src/content/localization';
+import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import { projectStatusStrip } from '../../src/simulation/presentation/status-strip-projection';
 import { packCommand } from '../../src/simulation/protocol/commands';
+import {
+  SIMULATION_PROTOCOL_VERSION,
+  workerToMainMessageSchema,
+  type SimulationEvent,
+  type WorkerToMainMessage,
+} from '../../src/simulation/protocol/types';
+import { resolveHudLabelParameters } from '../../src/ui/hud/label-parameters';
+import type { HudAlertViewModel } from '../../src/ui/hud/view-model';
+import { MAX_EVENT_ALERT_ROWS, hudEventAlertsFromWorkerMessage } from '../../src/ui/simulation-events';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import {
   captureSessionSnapshot,
@@ -115,6 +125,28 @@ function strip(runtime: SimulationRuntime): ReturnType<typeof projectStatusStrip
 
 function contrabandDiscovered(runtime: SimulationRuntime): number {
   return strip(runtime).contrabandDiscovered;
+}
+
+/** Every contraband discovery this session has announced, narrowed to that member so its own fields are readable. */
+function discoveriesIn(runtime: SimulationRuntime): readonly Extract<SimulationEvent, { type: 'contraband.discovered' }>[] {
+  return runtime.events
+    .since(0)
+    .filter((event): event is Extract<SimulationEvent, { type: 'contraband.discovered' }> => event.type === 'contraband.discovered');
+}
+
+/**
+ * One `simulation/event` publication, parsed by the production wire schema
+ * rather than hand-shaped, so an event the worker boundary would reject cannot
+ * reach an assertion. `messageId` is a fixed v4 UUID: the envelope's identity is
+ * not what any case here is about.
+ */
+function publish(event: SimulationEvent): WorkerToMainMessage {
+  return workerToMainMessageSchema.parse({
+    protocolVersion: SIMULATION_PROTOCOL_VERSION,
+    messageId: '00000000-0000-4000-8000-000000000703',
+    kind: 'simulation/event',
+    payload: { tick: event.tick + 1, event },
+  }) as WorkerToMainMessage;
 }
 
 describe('a prison a player can start finds the contraband it admits', () => {
@@ -280,6 +312,118 @@ describe('a prison a player can start finds the contraband it admits', () => {
     // the bare figure it has always shown rather than picking one of them.
     expect(mixedCounts.contrabandNameKey).toBeUndefined();
   }, 300_000);
+
+  /**
+   * **The alerts list says what was found** -- the owner's **ruling 13** on
+   * issue #703, 2026-08-31: *"Contraband found: {item}."*, at `'warning'`, with
+   * a weapon in the same band as any other item.
+   *
+   * The case above is the honest limit of the status chip and says so: a badge
+   * beside a count can name a category only while the whole count is that
+   * category, so six of thirteen measured prisons render the bare figure. This
+   * is the surface that names *each* discovery, and the ruling is what authored
+   * the sentence the chip could not have.
+   *
+   * ## Why it starts at `createNewSimulationRuntime` and ends at a rendered
+   * string
+   *
+   * Every link in the chain is a place the key could be dropped, and the unit
+   * tests can each see only one of them. `SearchSystem` resolves the catalog's
+   * `nameKey` and records the event; `simulationEventSchema` must accept it at
+   * the worker boundary; `eventParameterMessages` must map it onto `{item}`; and
+   * `hud.alert.event.contraband.discovered` must exist in the catalog that
+   * ships. A missing branch anywhere in that list renders the literal
+   * placeholder or a dotted key on screen -- `interpolate` and
+   * `resolveLocalizationKey` both leave one visible on purpose -- so the
+   * assertion is the finished English sentence, assembled through
+   * `resolveHudLabelParameters`, which is what `hud.ts` renders with.
+   *
+   * Seed `0xc` is the two-phone prison the case above measured, so the sentence
+   * under test is a real find rather than a hand-built payload.
+   */
+  it('tells the player what a search found, in a sentence, by name (#703 ruling 13)', () => {
+    // The premise: a session announces nothing about contraband on its own, so
+    // a row below is a consequence of a search rather than of session setup.
+    // Asserted per type, because `events.count` is every event of any kind.
+    expect(discoveriesIn(createNewSimulationRuntime(0xc))).toEqual([]);
+
+    const runtime = playedPrison(0xc);
+    stepTo(runtime, SIXTEEN_DAYS);
+
+    const discoveries = discoveriesIn(runtime);
+    // One row per item found, and the ledger is the independent count of that.
+    expect(runtime.searchSystem.getMetrics().itemsDiscovered).toBe(2);
+    expect(discoveries).toHaveLength(2);
+    expect(discoveries.map((event) => event.categoryNameKey)).toEqual([
+      'contraband.phone.name',
+      'contraband.phone.name',
+    ]);
+    // The ticks are the ticks the searches dwelt on, which the ledger also
+    // recorded -- so the sentence a player reads is dated by the find and not
+    // by the publication that carried it.
+    expect(discoveries.map((event) => event.tick)).toEqual(runtime.confiscations.all().map((record) => record.tick));
+
+    // Through the real wire schema, so an event this boundary would reject
+    // cannot reach the assertion below.
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const rows = discoveries.reduce<readonly HudAlertViewModel[]>(
+      (list, event) => hudEventAlertsFromWorkerMessage(publish(event), list) ?? list,
+      [],
+    );
+
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      expect(row.severity, 'ruling 13: warning, and a weapon is not louder').toBe('warning');
+      const sentence = localizer.format(
+        row.labelKey,
+        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), row),
+      );
+      expect(sentence).toBe('Contraband found: Phone.');
+    }
+  });
+
+  /**
+   * **How many of these rows one tick can produce, in a prison a player could
+   * have** -- the arithmetic the 8-row alerts list makes load-bearing.
+   *
+   * `MAX_EVENT_ALERT_ROWS` is 8 and the cap evicts the least severe row first
+   * (#703 ruling 11), so a search posting several `'warning'` rows on one tick
+   * would evict other warnings rather than the `'info'` rows the rule is tuned
+   * to sacrifice. `runDetectionForCurrentTarget` really can do that -- it draws
+   * once per concealed item at the target, and
+   * `tests/unit/contraband-search-system.test.ts` drives five items on one
+   * holder and gets five events on one tick.
+   *
+   * **In real play it does not.** Measured over 48 prisons built by real
+   * commands (13 seeds at 12 admissions / 3 guards, 8 more at 12, and 8 at 40
+   * admissions / 8 guards), 60 in-game days each: **463 confiscations, and the
+   * most that landed on any one tick was one.** The two structural reasons are
+   * both checkable rather than lucky -- one sector is registered (ADR 0036) and
+   * `SectorSearchDutySystem.hasOutstandingSweep` allows one outstanding sweep
+   * per sector, so a single job advances a single target per tick; and the only
+   * route to a holder with two items is ADR 0080's escalation introduction,
+   * which needs a review that raises somebody into risk tier 3.
+   *
+   * So **nothing coalesces**, and this case is what would notice if that stopped
+   * being safe. It asserts the measured ceiling for the prison it builds rather
+   * than a number pulled from the sweep above, and it asserts the consequence
+   * the cap actually cares about: a tick's worth of discoveries cannot fill the
+   * list on its own.
+   */
+  it('does not put a tick`s worth of discoveries on the list at once, so nothing needs coalescing (#703 ruling 13)', () => {
+    const runtime = playedPrison();
+    stepTo(runtime, DAY_LENGTH * 60);
+
+    const discoveries = discoveriesIn(runtime);
+    expect(discoveries.length, 'the premise: this prison really found things to announce').toBeGreaterThan(1);
+
+    const perTick = new Map<number, number>();
+    for (const event of discoveries) perTick.set(event.tick, (perTick.get(event.tick) ?? 0) + 1);
+    const busiest = Math.max(...perTick.values());
+
+    expect(busiest, 'one sector, one outstanding sweep, one target per tick').toBe(1);
+    expect(busiest, 'a single tick must not be able to fill the alerts list by itself').toBeLessThan(MAX_EVENT_ALERT_ROWS);
+  }, 120_000);
 
   it('is deterministic: the same seed and the same commands find the same items twice', () => {
     const first = playedPrison();

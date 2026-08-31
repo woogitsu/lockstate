@@ -11,6 +11,7 @@ import {
   applyDefaultSearchPolicies,
   introduceContrabandOnIntake,
   type CategoryConcealmentResolver,
+  type CategoryNameKeyResolver,
   type SearchPolicyDefinition,
   type SearchTarget,
   type TargetLocationResolver,
@@ -966,6 +967,22 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     return category.baseConcealment;
   };
 
+  /*
+   * What a found item is *called*, for the sentence the alerts list says about
+   * it (#703 ruling 13). The same registry the concealment lookup above reads,
+   * so the two cannot disagree about which categories exist, and the catalog's
+   * own `nameKey` rather than a key derived from the id -- the catalog owns that
+   * mapping and `soleDiscoveredContrabandNameKey` gives the argument.
+   *
+   * `undefined` rather than a throw for an unknown id, which is *not* the call
+   * the line above makes and the difference is which way each failure points: a
+   * concealment this session cannot answer would make the detection draw a lie,
+   * while a name it cannot answer costs only the sentence. Unreachable from
+   * here either way -- the concealment lookup runs first, on the same id, for
+   * the same item.
+   */
+  const categoryNameKey: CategoryNameKeyResolver = (categoryId) => defaultContrabandRegistry.getById(categoryId)?.nameKey;
+
   const locateSearchTarget: TargetLocationResolver = (target: SearchTarget) => {
     if (target.holderKind === 'prisoner') {
       const index = prisoners.entityStore.getIndex(Number(target.holderId));
@@ -984,7 +1001,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     return location;
   };
 
-  const searchSystem = new SearchSystem(securityGuards, navigation, contraband, intelligence, confiscations, searchPolicies, categoryConcealment, locateSearchTarget);
+  const searchSystem = new SearchSystem(securityGuards, navigation, contraband, intelligence, confiscations, searchPolicies, categoryConcealment, categoryNameKey, locateSearchTarget, events);
 
   // Issue #28's incident pipeline: no gangs, no tunnels and no incidents until
   // a session/scenario registers them -- same "no fabricated default content"

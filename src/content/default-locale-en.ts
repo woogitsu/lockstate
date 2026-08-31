@@ -528,6 +528,41 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // unmodelled" rather than as a style choice.
   'hud.alert.event.incidents.escape-succeeded': '{name} broke out — no guard reached them in time.',
 
+  // What a search found, named (the owner's **ruling 13** on issue #703,
+  // 2026-08-31). Until this key the alerts list said nothing at all about a
+  // search: `SIMULATION_EVENT_TYPES` carried no contraband member at all, so a
+  // sweep that turned up a phone posted nothing to the log the player reads,
+  // and the only sign of it was the status chip's figure moving by one.
+  //
+  // **This sentence is the owner's, ruled on 2026-08-31, and is reproduced
+  // exactly** -- including the colon, which none of the ten sentences above
+  // uses. The others are written in an em-dash voice ("what happened — why or
+  // how much"); this one is a label and its subject, and it is deliberately not
+  // edited into that voice, for the same reason ADR 0076's relocation notice
+  // above is not.
+  //
+  // **`{item}` is the whole of the ruling's point.** #707 authored the five
+  // `contraband.*.name` labels a reader on the status chip's badge, and that
+  // chip can only name a category while *every* confiscation is the same one
+  // (`soleDiscoveredContrabandNameKey`), so a prison that has found a phone and
+  // a knife renders the bare figure `2`. This row is per discovery, so each is
+  // named. The placeholder is filled by a `HudMessageParameterViewModel` rather
+  // than by plain `labelParameters`, exactly as `{room}` is above: the word
+  // lives in the catalog under a `nameKey` and only a localizer can produce it.
+  //
+  // **The same severity for every category, `'warning'`, and that is the second
+  // half of the ruling rather than an oversight**: a weapon sits in the same
+  // band as a phone. The argument is in `EVENT_PRESENTATION`
+  // (`src/ui/simulation-events.ts`); what matters here is that no second
+  // sentence is authored for a weapon and none may be added without the owner.
+  //
+  // **It promises nothing about what happens next**, which is the constraint
+  // the five incident sentences above state. The item is already confiscated
+  // when this is recorded -- `SearchSystem` writes the ledger first -- so the
+  // sentence is about a completed fact and says nothing about punishment, which
+  // no system in this repository administers.
+  'hud.alert.event.contraband.discovered': 'Contraband found: {item}.',
+
   // A browser that cannot start a Worker gets a page with no simulation
   // behind it. Saying so is the whole point: the failure was previously
   // reported to the console only, so the player saw an empty world and had

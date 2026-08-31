@@ -24,7 +24,16 @@ and over writing an ADR first. That settles **whether**. It does not settle **at
 what granularity**, and no ADR in this corpus ever has.
 
 This document is offered so the owner can settle the second question with the
-first, rather than have it decided in implementation code. `CLAUDE.md`'s rule is
+first, rather than have it decided in implementation code.
+
+> **THE SECOND QUESTION WAS RULED ON LATER THE SAME DAY, and the paragraph above
+> is kept because it is what this document was written to do rather than a claim
+> about where things stand.** In #703 ruling 12 the owner chose **per order** —
+> *"na zlecenie"* — over per item across the whole queue and over per queue.
+> Decision §2 below records that ruling in place of its recommendation. The
+> status line above is still **Proposed** and stays that way until the owner
+> signs it: a ruling on one section is not a signature on the document, and
+> nothing in this corpus is self-approved. `CLAUDE.md`'s rule is
 *"If a necessary architectural decision is genuinely absent, create or propose an
 ADR instead of silently deciding inside implementation code."*
 
@@ -107,9 +116,11 @@ records that *"both branches then reach three walls"* under partial fill.
 
 ### 2. The unit of atomicity is the ORDER, not the item and not the queue
 
-**This is the half the owner has not ruled on, and it is offered as a
-recommendation.** Three candidates, and the argument is about what the player
-can predict:
+**This was the half the owner had not ruled on when this file was written, and
+it was offered as a recommendation. It has since been ruled on and the ruling is
+what §2 now says**, in #703 ruling 12 of 2026-08-31: **per order**, in the
+owner's words *"na zlecenie"*. The three candidates and the argument between them
+are kept below because the ruling is only legible against what it chose over:
 
 - **Per item across the whole queue** (today's granularity, with partial fill
   added). Cheapest to build and the worst to play: a partial buy is allocated by
@@ -125,9 +136,29 @@ can predict:
 - **Per queue, all-or-nothing** (today, without partial fill). Rejected by the
   owner's ruling.
 
-**Recommended: per order.** It is the only one of the three at which the answer
-to *"why did that get built and not this?"* is a sentence the player could have
-predicted before pressing.
+**Ruled: per order** (#703 ruling 12, 2026-08-31). It is the only one of the
+three at which the answer to *"why did that get built and not this?"* is a
+sentence the player could have predicted before pressing — and that was the
+recommendation this section carried before the ruling, so the ruling and the
+argument agree.
+
+**What per order does NOT settle, and the arithmetic says so.** Per order fixes
+which *unit* is funded whole; it does not fix **which** unit is reached first,
+because that is `orderedOrders()`'s ascending-id walk either way. Measured over
+the thirteen pending orders of the locked position below, at 80 each, with the
+perimeter segment at rank *r* in the walk:
+
+| granularity and order | credit the perimeter needs |
+|---|---|
+| per queue, all-or-nothing, id order (today) | **1,000** flat |
+| **per order**, id order (this ruling) | `80r − 40`, so **40 to 1,000**, expected 520 |
+| per order, placement order | **0** — never in the unfunded tail |
+
+So this ruling halves the *expected* requirement and **leaves the worst case
+exactly where it is**, on a draw the player cannot see. §2's own wording is *"the
+queue funds as many whole orders as the balance covers, **in a stated order**"* —
+and there is no stated order to fund them in until the execution-order question
+in open question 4 is settled.
 
 ### 3. The player is told what was bought, and that is a precondition rather than a nicety
 
@@ -163,6 +194,42 @@ player cannot predict, and fixing it needs a persisted placement ordinal on
 a loan principal of **65** escapes the lock; without it, nothing below **1,065**
 does — a factor of sixteen, and every unit of it is this defect plus today's
 granularity.
+
+> **BOTH FIGURES IN THAT PARAGRAPH ARE WRONG AND ARE CORRECTED HERE RATHER THAN
+> OVERWRITTEN**, because the half that mattered is right — a perimeter segment
+> is the one that starves — and because a decision record's errors are worth
+> more visible than tidied away. Re-measured 2026-08-31 through the real
+> `createSaveEnvelope` and the real command router.
+>
+> **The pending set is wrong about twelve of its thirteen members.** The walk is
+> ascending **code-unit** order, and `"wall-9" > "wall-100"`, so the thirteen
+> unfunded orders are the thirteen highest ids in that order:
+> `{wall-88, wall-89, wall-9, wall-90…wall-99}`. There is no `wall-314` in the
+> pending set at all — it is funded and built. `wall-9`, the ninth segment the
+> player drew, is the **315th of 325** the crew reaches.
+>
+> **"A factor of sixteen" compares two thresholds defined differently** — 65
+> with the backlog cancelled against 1,065 with it standing, and 65 frees the
+> wall but leaves 25, which does not buy the 65 plank. Like for like:
+>
+> | | backlog standing | twelve non-perimeter orders cancelled first |
+> |---|---|---|
+> | perimeter freed | **1,000** (999 does not) | **40** (39 does not) |
+> | perimeter freed *and* a 65 plank affordable | **1,065** | **105** |
+>
+> So the factor is **25** (1,000 against 40) or **10.1** (1,065 against 105).
+> Both halves of the original sentence are individually true; their ratio was
+> not a measurement.
+>
+> **And the lock is not certain in a real session.** It starves a perimeter
+> segment every time with `wall-N` fixture ids; with the `order-${crypto.randomUUID()}`
+> ids a player actually gets it is **18 of 60 pooled trials, 30%** (closed form
+> `1 − (312/325)⁹ = 31%`). With placement-ordered ids it was unreachable — 0 of
+> 15 — because the perimeter is placed first and so is never in the unfunded
+> tail. `docs/research/2026-08-30-pricing-the-way-out.md` §1 presents its locked
+> position as *the* locked position; it is a certainty of that fixture's ids and
+> a ~30% event with real ones. That record is dated evidence and is left as
+> written.
 
 **This ADR supersedes the "recorded rather than fixed" paragraph** at
 `just-in-time-materials.ts:155-166`, which is currently the only place the

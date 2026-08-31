@@ -601,6 +601,17 @@ work are not.**
   the save — so a restored prison has nothing to re-announce and nothing to
   say: the move already happened and the player was told at the time, or the
   session it happened in has gone.
+  **#703 ruling 13's `contraband.discovered` is a second member on the
+  relocation notice's terms rather than the arrears'**, and it needs no
+  argument of its own: the *outcome* is what the save carries. The item is
+  `'confiscated'` in `simulation.contraband.items`, the evidence is in
+  `simulation.contraband.confiscations`, and the figure the status chip reads is
+  `...search.metrics.itemsDiscovered` — so a restored prison has nothing to
+  re-announce and says nothing, exactly as it says nothing about a relocation
+  that already happened. No field is added anywhere for it and
+  `SAVE_SCHEMA_VERSION` does not move; the event exists only on the wire and in
+  the unsnapshotted log.
+
   **The incident events of issue #555 are the one member of the channel this
   argument holds less neatly for, and it is worth stating rather than
   discovering.** `IncidentLog` *is* persisted, so an incident that was open

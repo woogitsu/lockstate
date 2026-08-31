@@ -229,6 +229,43 @@ export class SimulationEventLog {
   }
 
   /**
+   * Records that a search found one contraband item (the owner's **ruling 13**
+   * of 2026-08-31 on [#703](https://github.com/matmaxalez/lockstate/issues/703)).
+   *
+   * **One call per item found**, like `recordResidentRelocated` and
+   * `recordEscapeSucceeded` above and unlike `recordDischarge`, and decided the
+   * same way -- by the sentence: "Contraband found: {item}." names *one*
+   * category, and a search that turns up a phone and a knife has no single word
+   * for the pair. That is the corner `soleDiscoveredContrabandNameKey`
+   * (`src/simulation/presentation/status-strip-projection.ts`) refuses to guess
+   * at for the status chip, and naming each of several is the whole reason this
+   * event exists beside that chip.
+   *
+   * **Unguarded, because there is no figure to guard and the caller is what
+   * bounds it** -- the sentence `recordEscapeSucceeded` above uses, and the
+   * shape `createResidentRelocationNotice` takes for the same problem one event
+   * over. `SearchSystem` resolves the key through an injected catalog lookup
+   * that may answer `undefined`, and it is *there* that a nameless category is
+   * dropped, before this is called at all. A second check here would be a
+   * weaker copy of that rule and is how the two would come to disagree.
+   *
+   * What stops a malformed key reaching a player is therefore the boundary
+   * rather than this method: `categoryNameKey` is `identifierSchema` on the
+   * wire, so an empty or space-bearing key is refused there -- pinned in
+   * `tests/unit/ui-simulation-events.test.ts`. The alternative is worse than a
+   * refusal, which is why it is checked somewhere:
+   * `resolveLocalizationKey` renders an unknown key as itself, so the player
+   * would read `contraband.unknown.name` inside an authored sentence.
+   *
+   * @param categoryNameKey The found item's category as the contraband
+   * catalog's own `nameKey` -- one of the five `contraband.*.name` labels. A
+   * key, never a word: ADR 0011, and the main thread resolves it.
+   */
+  public recordContrabandDiscovered(categoryNameKey: string, tick: number): void {
+    this.append({ sequence: this._sequence + 1, tick, type: 'contraband.discovered', categoryNameKey });
+  }
+
+  /**
    * Records that a payday could not be met in full (ADR 0049).
    *
    * @param unpaidWagesMinorUnits The arrears *after* this payday, which is
