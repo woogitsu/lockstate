@@ -10,7 +10,7 @@ import {
   unmetNeedCount,
   type PrisonerDayGrantSource,
 } from '../../src/simulation/economy';
-import { Treasury } from '../../src/simulation/economy';
+import { LoanBook, Treasury } from '../../src/simulation/economy';
 import { Kernel } from '../../src/simulation/kernel';
 import { NEED_IDS, NEED_MAX, NeedsComponent, type NeedId } from '../../src/simulation/prisoners/needs';
 import {
@@ -592,5 +592,92 @@ describe('a place the prison no longer has is not an occupied place', () => {
     const registry = registryWithOccupiedCells(4, 2);
     expect(registry.residentIdsWithExistingPlace()).toEqual(registry.residentIds());
     expect(stateIncomeForCompletedDay(prisonOf(registry))).toBe(4 * STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS);
+  });
+});
+
+/**
+ * [ADR 0075](../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+ * decision 2: **a loan is repaid by diverting a fixed percentage of positive
+ * inflows**, and this line is the prison's only positive inflow today. So the
+ * income system is where the diversion happens, and the two properties that
+ * matter are that it happens *here* and that it does not happen at all when
+ * nothing has been borrowed.
+ *
+ * The rate below is a fixture value chosen so the arithmetic is checkable by
+ * eye. The rate a session should ship is
+ * [#29](https://github.com/matmaxalez/lockstate/issues/29)'s.
+ */
+describe('a day`s income pays the debt before it pays the prison', () => {
+  /** Half of every inflow to the debt, a tenth of the principal as the fee, no escalation inside this file`s horizon. */
+  const TERMS = {
+    diversionRateBasisPoints: 5_000,
+    feeRateBasisPoints: 1_000,
+    maximumDurationDays: 1_000,
+    escalatedDiversionRateBasisPoints: 10_000,
+  } as const;
+
+  function borrowedKernel(prison: PrisonerDayGrantSource, principal: number): { kernel: Kernel; treasury: Treasury; loans: LoanBook } {
+    const treasury = new Treasury(0);
+    const loans = new LoanBook(treasury, TERMS);
+    loans.draw(principal, 0);
+    const kernel = new Kernel();
+    kernel.registerSystem(new StateIncomeSystem(treasury, prison, loans));
+    return { kernel, treasury, loans };
+  }
+
+  it('credits the whole day when no loan is outstanding', () => {
+    // The control. Four occupied places at 300 is 1,200, exactly as above.
+    const treasury = new Treasury(0);
+    const loans = new LoanBook(treasury, TERMS);
+    const kernel = new Kernel();
+    kernel.registerSystem(new StateIncomeSystem(treasury, wellRunPrison(4), loans));
+
+    step(kernel, DAY_LENGTH_TICKS);
+    expect(treasury.balanceMinorUnits).toBe(1_200);
+    expect(loans.divertedTotalMinorUnits).toBe(0);
+  });
+
+  it('splits one day`s payment between the debt and the prison', () => {
+    const { kernel, treasury, loans } = borrowedKernel(wellRunPrison(4), 1_000);
+    // 1,000 in hand, 1,100 owed.
+    expect(treasury.balanceMinorUnits).toBe(1_000);
+    expect(loans.outstandingMinorUnits).toBe(1_100);
+
+    step(kernel, DAY_LENGTH_TICKS);
+
+    // 1,200 earned: 600 to the debt, 600 to the prison on top of the 1,000.
+    expect(treasury.balanceMinorUnits).toBe(1_600);
+    expect(loans.outstandingMinorUnits).toBe(500);
+    expect(loans.divertedTotalMinorUnits).toBe(600);
+  });
+
+  it('clears the debt and hands the whole of the next day back', () => {
+    const { kernel, treasury, loans } = borrowedKernel(wellRunPrison(4), 1_000);
+
+    step(kernel, DAY_LENGTH_TICKS * 2);
+    // Day two earns 1,200 against 500 still owed: the debt takes 500 and the
+    // prison keeps 700, because a diversion never overshoots what is owed.
+    expect(loans.outstandingMinorUnits).toBe(0);
+    expect(treasury.balanceMinorUnits).toBe(2_300);
+
+    step(kernel, DAY_LENGTH_TICKS);
+    expect(treasury.balanceMinorUnits, 'a cleared debt takes nothing').toBe(3_500);
+    expect(loans.divertedTotalMinorUnits).toBe(1_100);
+  });
+
+  it('takes nothing at all from a prison earning nothing, however long the debt is held', () => {
+    /*
+     * The property the owner's ruling rests on: *"a repayment that takes a
+     * share of what arrives cannot bill a prison that is earning nothing."*
+     * Ten in-game days of an empty prison, and the balance is exactly the
+     * principal it borrowed.
+     */
+    const registry = new RoomInstanceRegistry();
+    const { kernel, treasury, loans } = borrowedKernel(prisonOf(registry), 1_000);
+
+    step(kernel, DAY_LENGTH_TICKS * 10);
+
+    expect(treasury.balanceMinorUnits).toBe(1_000);
+    expect(loans.outstandingMinorUnits).toBe(1_100);
   });
 });

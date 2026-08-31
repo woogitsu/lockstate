@@ -259,17 +259,30 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
      * asked for, and the reason this list is an enumeration rather than a cap
      * of one.
      *
-     * A third entry is still a real event and still has to pass through here.
-     * ADR 0017 decision 3 names grants and prison labour as the *secondary*
-     * lines, and neither exists; the degradation ladder of decision 8 debits
-     * rather than credits.
+     * **The third entry has now arrived, and it is not an income line.**
+     * `LoanBook.draw` (ADR 0075 decision 2) hands over a principal, and that
+     * decision requires the difference to stay visible: *"a ledger where the
+     * operating net is negative while cash rises is a loan masking a deficit,
+     * and the player should be able to see the difference."* So the
+     * allow-list grows by one and gap 21 was rewritten in the same change to
+     * say which of the three are income and which are not -- the same
+     * treatment `StateIncomeSystem` got, and the reason this list is an
+     * enumeration rather than a cap of two.
+     *
+     * A fourth entry is still a real event and still has to pass through
+     * here. ADR 0017 decision 3 names grants and prison labour as the
+     * *secondary* income lines and neither exists; ADR 0075 decision 1's
+     * threshold grants would be the first of them, and a grant *is* an inflow
+     * a loan takes its share of, so whoever adds one routes it through
+     * `LoanBook.divert` as well as through here.
      */
     const crediting = await sourceFilesMatching(/\.\s*credit\s*\(/u);
     expect(
       crediting,
-      'something other than ProcurementSystem.cancel and StateIncomeSystem now credits the treasury. If that is a new income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change',
+      'something other than ProcurementSystem.cancel, StateIncomeSystem and LoanBook.draw now credits the treasury. If that is a new income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change -- and route it through LoanBook.divert, because ADR 0075 decision 2 repays a loan out of every positive inflow',
     ).toEqual([
       path.join('src', 'simulation', 'economy', 'income.ts'),
+      path.join('src', 'simulation', 'economy', 'loans.ts'),
       path.join('src', 'simulation', 'economy', 'procurement.ts'),
     ]);
   });
