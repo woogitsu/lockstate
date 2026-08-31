@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS } from '../../src/content/procurement-catalog';
-import type { MaterialRequirement } from '../../src/simulation/construction';
+import type { MaterialRequirement, QueuedOrderDemand } from '../../src/simulation/construction';
 import {
   JUST_IN_TIME_ORDER_ID_PREFIX,
   JustInTimeMaterialsService,
@@ -38,6 +38,26 @@ const SINK = 'item.sink';
 
 const need = (itemId: string, quantity: number): MaterialRequirement => ({ itemId, quantity });
 
+/**
+ * One build order in the walk the sink is handed, since #703 ruling 12 made the
+ * ORDER the unit a partly filled purchase is atomic at.
+ *
+ * Ids are written out (`order-1`, `order-2`) rather than generated, because the
+ * walk order is what an insufficient balance funds along and a generated id
+ * would make which order got the money a property of the generator.
+ */
+const order = (orderId: string, ...requirements: MaterialRequirement[]): QueuedOrderDemand => ({ orderId, requirements });
+
+/**
+ * The whole demand as a single order.
+ *
+ * Most cases below are about the *deficit arithmetic* -- stock, in-flight, the
+ * catalogue -- which ruling 12 did not touch, so one order carrying the whole
+ * requirement keeps them measuring what they were written to measure. The cases
+ * that are about the funding decision spell out several orders instead.
+ */
+const oneOrder = (...requirements: MaterialRequirement[]): QueuedOrderDemand[] => [order('order-1', ...requirements)];
+
 function fixture(startingBalance = 25_000) {
   const treasury = new Treasury();
   if (startingBalance < 25_000) {
@@ -45,7 +65,7 @@ function fixture(startingBalance = 25_000) {
   }
   const stock = new Container('construction-materials');
   const procurement = new ProcurementSystem(treasury, stock);
-  const service = new JustInTimeMaterialsService(procurement, stock);
+  const service = new JustInTimeMaterialsService(procurement, stock, treasury);
   return { treasury, stock, procurement, service };
 }
 
@@ -53,7 +73,7 @@ describe('what a just-in-time pass buys', () => {
   it('buys the whole requirement when the prison holds nothing', () => {
     const { treasury, service, procurement } = fixture();
 
-    const report = service.procureForPendingOrders([need(BRICK, 8)], 0);
+    const report = service.procureForPendingOrders(oneOrder(need(BRICK, 8)), 0);
 
     expect(report.purchased).toEqual([{ itemId: BRICK, quantity: 8, costMinorUnits: 320 }]);
     expect(report.unfunded).toEqual([]);
@@ -69,7 +89,7 @@ describe('what a just-in-time pass buys', () => {
     const { treasury, stock, service } = fixture();
     stock.deposit(BRICK, 6);
 
-    const report = service.procureForPendingOrders([need(BRICK, 8)], 0);
+    const report = service.procureForPendingOrders(oneOrder(need(BRICK, 8)), 0);
 
     expect(report.purchased).toEqual([{ itemId: BRICK, quantity: 2, costMinorUnits: 80 }]);
     expect(treasury.balanceMinorUnits).toBe(25_000 - 80);
@@ -86,7 +106,7 @@ describe('what a just-in-time pass buys', () => {
     stock.deposit(BRICK, 6);
     expect(stock.reserve(BRICK, 4).ok).toBe(true);
 
-    expect(service.procureForPendingOrders([need(BRICK, 8)], 0).purchased).toEqual([
+    expect(service.procureForPendingOrders(oneOrder(need(BRICK, 8)), 0).purchased).toEqual([
       { itemId: BRICK, quantity: 6, costMinorUnits: 240 },
     ]);
   });
@@ -99,10 +119,10 @@ describe('what a just-in-time pass buys', () => {
      */
     const { treasury, service } = fixture();
 
-    service.procureForPendingOrders([need(BRICK, 8)], 0);
+    service.procureForPendingOrders(oneOrder(need(BRICK, 8)), 0);
     const afterFirstPass = treasury.balanceMinorUnits;
 
-    const second = service.procureForPendingOrders([need(BRICK, 8)], 10);
+    const second = service.procureForPendingOrders(oneOrder(need(BRICK, 8)), 10);
     expect(second.purchased, 'the bricks are already bought and on their way').toEqual([]);
     expect(second.unfunded).toEqual([]);
     expect(treasury.balanceMinorUnits).toBe(afterFirstPass);
@@ -112,9 +132,9 @@ describe('what a just-in-time pass buys', () => {
     // The same term from the other side: netting in-flight off must not mean
     // ignoring demand that arrived after it.
     const { treasury, service } = fixture();
-    service.procureForPendingOrders([need(BRICK, 8)], 0);
+    service.procureForPendingOrders(oneOrder(need(BRICK, 8)), 0);
 
-    const second = service.procureForPendingOrders([need(BRICK, 12)], 10);
+    const second = service.procureForPendingOrders(oneOrder(need(BRICK, 12)), 10);
     expect(second.purchased).toEqual([{ itemId: BRICK, quantity: 4, costMinorUnits: 160 }]);
     expect(treasury.balanceMinorUnits).toBe(25_000 - 320 - 160);
   });
@@ -137,8 +157,8 @@ describe('what a just-in-time pass buys', () => {
      */
     const { service, procurement } = fixture();
 
-    service.procureForPendingOrders([need(BRICK, 2)], 7);
-    service.procureForPendingOrders([need(BRICK, 4)], 7);
+    service.procureForPendingOrders(oneOrder(need(BRICK, 2)), 7);
+    service.procureForPendingOrders(oneOrder(need(BRICK, 4)), 7);
 
     expect(procurement.pendingDeliveries.map((delivery) => [delivery.orderId, delivery.quantity])).toEqual([
       ['jit:7:item.brick:0', 2],
@@ -154,7 +174,7 @@ describe('what a just-in-time pass buys', () => {
     // refuses. Handed in the wrong order on purpose.
     const { service } = fixture();
 
-    const report = service.procureForPendingOrders([need(PLANK, 3), need(BRICK, 2)], 0);
+    const report = service.procureForPendingOrders(oneOrder(need(PLANK, 3), need(BRICK, 2)), 0);
 
     expect(report.purchased).toEqual([
       { itemId: BRICK, quantity: 2, costMinorUnits: 80 },
@@ -170,7 +190,7 @@ describe('what a just-in-time pass cannot buy', () => {
     // rather than overdrawing.
     const { treasury, service, procurement } = fixture(40);
 
-    const report = service.procureForPendingOrders([need(BRICK, 2)], 0);
+    const report = service.procureForPendingOrders(oneOrder(need(BRICK, 2)), 0);
 
     expect(report.unfunded).toEqual([{ itemId: BRICK, quantity: 2, costMinorUnits: 80 }]);
     expect(report.purchased).toEqual([]);
@@ -180,14 +200,22 @@ describe('what a just-in-time pass cannot buy', () => {
 
   it('buys what it can afford and reports what it cannot, in the same pass', () => {
     /*
-     * All-or-nothing **per item**, not per pass. 120 buys the bricks (80) and
-     * leaves 40 against a plank's 65, so the report has to carry both halves:
-     * a pass that gave up entirely on the first refusal would leave the wall
-     * unbuilt as well as the bed.
+     * **This case read *"All-or-nothing per item, not per pass"* and the two
+     * requirements were one argument, because a pass was handed one aggregated
+     * figure per item id. #703 ruling 12 made the ORDER the unit, so the same
+     * measurement is now two orders -- a wall and a bed -- and it is kept
+     * because the property it pins did not move: a pass that gave up entirely
+     * on the first refusal would leave the wall unbuilt as well as the bed.**
+     *
+     * 120 buys the wall (80) and leaves 40 against a bed's 65, so the report
+     * has to carry both halves.
      */
     const { treasury, service } = fixture(120);
 
-    const report = service.procureForPendingOrders([need(BRICK, 2), need(PLANK, 1)], 0);
+    const report = service.procureForPendingOrders(
+      [order('order-1', need(BRICK, 2)), order('order-2', need(PLANK, 1))],
+      0,
+    );
 
     expect(report.purchased).toEqual([{ itemId: BRICK, quantity: 2, costMinorUnits: 80 }]);
     expect(report.unfunded).toEqual([{ itemId: PLANK, quantity: 1, costMinorUnits: 65 }]);
@@ -203,7 +231,7 @@ describe('what a just-in-time pass cannot buy', () => {
      */
     const { treasury, service } = fixture();
 
-    const report = service.procureForPendingOrders([need(SINK, 1)], 0);
+    const report = service.procureForPendingOrders(oneOrder(need(SINK, 1)), 0);
 
     expect(report.unprocurable).toEqual([{ itemId: SINK, quantity: 1, reason: 'unpurchasable' }]);
     expect(report.unfunded).toEqual([]);
@@ -215,7 +243,7 @@ describe('what a just-in-time pass cannot buy', () => {
     // price cannot leave the safe integers. Past it the answer is not money.
     const { treasury, service } = fixture();
 
-    const report = service.procureForPendingOrders([need(BRICK, 100_001)], 0);
+    const report = service.procureForPendingOrders(oneOrder(need(BRICK, 100_001)), 0);
 
     expect(report.unprocurable).toEqual([{ itemId: BRICK, quantity: 100_001, reason: 'quantity-refused' }]);
     expect(report.unfunded).toEqual([]);
@@ -249,8 +277,8 @@ describe('the one way a just-in-time purchase id can collide', () => {
      */
     const { treasury, service, procurement } = fixture();
 
-    service.procureForPendingOrders([need(BRICK, 2)], 7);
-    service.procureForPendingOrders([need(BRICK, 4)], 7);
+    service.procureForPendingOrders(oneOrder(need(BRICK, 2)), 7);
+    service.procureForPendingOrders(oneOrder(need(BRICK, 4)), 7);
     expect(procurement.pendingDeliveries.map((delivery) => delivery.orderId)).toEqual([
       'jit:7:item.brick:0',
       'jit:7:item.brick:2',
@@ -259,14 +287,14 @@ describe('the one way a just-in-time purchase id can collide', () => {
     expect(procurement.cancel('jit:7:item.brick:0').ok).toBe(true);
     const afterCancel = treasury.balanceMinorUnits;
 
-    const collided = service.procureForPendingOrders([need(BRICK, 6)], 7);
+    const collided = service.procureForPendingOrders(oneOrder(need(BRICK, 6)), 7);
     expect(collided.unfunded, 'nothing is owed: the bricks are on the road under that id').toEqual([]);
     expect(collided.unprocurable, 'and this is not a content problem either').toEqual([]);
     expect(collided.purchased).toEqual([]);
     expect(treasury.balanceMinorUnits).toBe(afterCancel);
 
     // The next tick composes a different id, so the shortfall is bought.
-    expect(service.procureForPendingOrders([need(BRICK, 6)], 8).purchased).toEqual([
+    expect(service.procureForPendingOrders(oneOrder(need(BRICK, 6)), 8).purchased).toEqual([
       { itemId: BRICK, quantity: 4, costMinorUnits: 160 },
     ]);
   });
@@ -285,7 +313,7 @@ describe('the report the queue is read through', () => {
      * a notice about a queue that emptied ten minutes ago.
      */
     const { service } = fixture(40);
-    expect(service.procureForPendingOrders([need(BRICK, 2)], 0).unfunded).toHaveLength(1);
+    expect(service.procureForPendingOrders(oneOrder(need(BRICK, 2)), 0).unfunded).toHaveLength(1);
     expect(service.lastReport.unfunded).toHaveLength(1);
 
     service.procureForPendingOrders([], 10);

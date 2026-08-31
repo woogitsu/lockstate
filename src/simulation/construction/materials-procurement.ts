@@ -40,12 +40,43 @@ export interface UnprocurableMaterial {
  * Every list is in ascending item id, because the pass that produces it walks
  * demand in that order and a purchase writes simulation state
  * (`docs/DETERMINISM.md`).
+ *
+ * **`purchased` and `unfunded` can now both be non-empty for one pass, and
+ * before #703 ruling 9 they could not.** A pass used to buy a per-item lump or
+ * refuse it, so an item appeared in exactly one of the two lists; it now funds
+ * whole orders one at a time out of what the treasury covers, so the same item
+ * id is routinely bought for one order and refused for the next. A consumer
+ * that read a non-empty `purchased` as "the queue is paid for" was correct
+ * until that ruling and is not any more --
+ * `construction/handler.ts`'s `reportMaterialsFunding` reads `unfunded` alone
+ * and is therefore unaffected, which is the reason it is worth saying here.
+ *
+ * The two lists are still **per item id**, aggregated across every order the
+ * pass walked, rather than per order. That keeps `shortfallMinorUnits` on
+ * `BuildQueueMaterialsFundingViewModel` meaning what it has always meant --
+ * what the queue still needs, whole -- so no player-facing figure changed its
+ * subject under ruling 9.
  */
 export interface MaterialsProcurementReport {
   readonly tick: number;
-  /** Bought on this pass. Empty when the prison already held, or already had coming, everything the queue wants. */
+  /**
+   * Bought on this pass, summed per item id over every order that was funded.
+   * Empty when the prison already held, or already had coming, everything the
+   * queue wants -- and, since ruling 9, also empty when the very first order
+   * the walk reached was already beyond the balance.
+   */
   readonly purchased: readonly UnfundedMaterial[];
-  /** Wanted, priced, and refused by the treasury. This is ADR 0017 decision 2's refusal, made observable. */
+  /**
+   * Wanted, priced, and not bought because the treasury did not cover the
+   * order it belonged to. This is ADR 0017 decision 2's refusal, made
+   * observable.
+   *
+   * **Summed over every order the pass left unfunded, not only the first.** A
+   * partly filled pass funds a subset of the queue, and the figure the panel
+   * shows has to stay "what the queue still needs" rather than becoming "what
+   * the next order needs" -- otherwise ruling 9 would have quietly shrunk a
+   * number the player reads without anybody deciding that it should.
+   */
   readonly unfunded: readonly UnfundedMaterial[];
   /** Wanted and not buyable at all, for a reason that is not money. */
   readonly unprocurable: readonly UnprocurableMaterial[];
@@ -58,6 +89,34 @@ export const EMPTY_MATERIALS_PROCUREMENT_REPORT: MaterialsProcurementReport = Ob
   unfunded: Object.freeze([]),
   unprocurable: Object.freeze([]),
 });
+
+/**
+ * One order in the build queue's walk, and everything it still has to be given
+ * before it can be built.
+ *
+ * **The unit of atomicity for a partly filled purchase** (#703 ruling 12, in
+ * the owner's words *"na zlecenie"*;
+ * [ADR 0081](../../../docs/adr/0081-whether-a-purchase-may-be-partly-filled.md)
+ * Decision 2). A sink funds an order's `requirements` whole or not at all, so a
+ * door never takes delivery of its bricks and waits for ever on a plank the
+ * treasury could not cover.
+ *
+ * `requirements` is the buildable's own `materialsRequired`, unreduced: what
+ * the *prison* already holds or has already paid for is the sink's subtraction
+ * to make, exactly as it was when this port carried one aggregated figure per
+ * item id, and a caller that pre-reduced would be making it twice.
+ *
+ * `orderId` is carried for the walk's identity rather than for arithmetic --
+ * nothing keys money off it, and no purchase this produces records it. It is
+ * here because "which order was funded" is the question ruling 12 makes
+ * answerable, and because a report that could not name the order would leave
+ * `docs/AGENT_WORKFLOW.md`'s *"why did that get built and not this?"* answerable
+ * only by re-deriving the walk.
+ */
+export interface QueuedOrderDemand {
+  readonly orderId: string;
+  readonly requirements: readonly MaterialRequirement[];
+}
 
 /**
  * Where the build queue's unmet material demand goes to be bought.
@@ -81,6 +140,13 @@ export const EMPTY_MATERIALS_PROCUREMENT_REPORT: MaterialsProcurementReport = Ob
  *
  * ## Why demand is aggregate rather than per order
  *
+ * **This heading is kept and the paragraph under it is still the reason the
+ * *supply* side is aggregate. What stopped being true on 2026-08-31 is the
+ * heading itself: `demand` is now per order.** #703 ruling 12 made the ORDER
+ * the unit of atomicity (ADR 0081 Decision 2), so what follows is the half that
+ * survives, and the half that replaced it is stated after it rather than
+ * instead of it.
+ *
  * The obvious shape -- "the order that could not allocate buys what it needs"
  * -- double-buys, and not in a corner case. A purchase takes
  * `PROCUREMENT_DELIVERY_DELAY_TICKS` to arrive, which is ten construction
@@ -92,18 +158,41 @@ export const EMPTY_MATERIALS_PROCUREMENT_REPORT: MaterialsProcurementReport = Ob
  * what does everything still waiting need, against what the prison holds *and*
  * what it has already paid for and not yet received.
  *
+ * **And it is still asked once over the whole queue.** Splitting `demand` by
+ * order did not split the subtraction: an implementation reads
+ * `availableOf + inFlight` **once per item id per pass** and walks the orders
+ * handing that supply out, so the total it buys in a pass is the same
+ * aggregate deficit it bought before. Nothing an order is already owed is
+ * bought twice, because the supply an earlier order in the walk claimed is
+ * gone from the pool the later ones see. What is per order is only the
+ * *funding decision* -- whether the treasury covers this order's remainder
+ * whole -- which is precisely what ruling 12 chose and nothing more.
+ *
  * It also means no new field on `BuildOrder` -- and therefore none in
  * `src/persistence/save-schema.ts` -- to remember what an order has already
  * ordered. What an order is owed is a function of the order book, the
  * container and the pending deliveries, all three of which are already in the
- * save.
+ * save. **That is unchanged by the split and is the reason `SAVE_SCHEMA_VERSION`
+ * did not move for ruling 12**: an order's share of the supply is recomputed
+ * from the walk on every pass and never stored.
  *
  * ## The contract
  *
- * - `demand` is the total requirement of every order in `'approved'` or
- *   `'materials-pending'`, summed per item id, in ascending item id. An
- *   implementation re-sorts it rather than trusting it, because which item is
- *   bought first is what an insufficient balance decides between.
+ * - `demand` is every order in `'approved'` or `'materials-pending'`, in the
+ *   canonical walk `ConstructionSystem.orderedOrders()` produces, each carrying
+ *   its buildable's whole `materialsRequired`. **The walk order decides which
+ *   orders an insufficient balance funds**, so it is a fact about money and not
+ *   about presentation. It is ascending order **id**, which for the
+ *   `order-${crypto.randomUUID()}` ids a session mints is *not* placement
+ *   order -- ADR 0081 Decision 2 records that this ruling therefore *"halves
+ *   the expected requirement and leaves the worst case exactly where it is"*,
+ *   and ADR 0082 is where a persisted placement ordinal is put to the owner.
+ *   Until that is signed, "as many whole orders as the balance covers" means
+ *   *as many as it covers along a walk the player cannot predict*, and an
+ *   implementation must not paper over that by re-sorting on anything else.
+ * - Within one order, requirements are funded in ascending item id, and that
+ *   choice decides nothing: the order is atomic, so either every line is bought
+ *   or none is.
  * - It is called on **every** scheduled construction tick, including with an
  *   empty `demand`, so the record of what could not be funded has a defined
  *   moment to be cleared. A queue that drains must stop reporting a shortfall.
@@ -122,7 +211,7 @@ export const EMPTY_MATERIALS_PROCUREMENT_REPORT: MaterialsProcurementReport = Ob
  *   lands. Only the command handler reads it, and only to tell the player.
  */
 export interface ConstructionProcurementSink {
-  procureForPendingOrders(demand: readonly MaterialRequirement[], tick: number): MaterialsProcurementReport;
+  procureForPendingOrders(demand: readonly QueuedOrderDemand[], tick: number): MaterialsProcurementReport;
   /**
    * How much of `itemId` the prison already holds or has already paid for,
    * and therefore will not buy again.
