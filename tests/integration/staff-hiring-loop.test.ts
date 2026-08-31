@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { defaultStaffRoleRegistry } from '../../src/content/staff-role-catalog';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
-import { Treasury, TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
+import {
+  Treasury,
+  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  TREASURY_STARTING_BALANCE_MINOR_UNITS,
+} from '../../src/simulation/economy';
 import { projectStaff } from '../../src/simulation/presentation/staff-projection';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { SIMULATION_PROTOCOL_VERSION, type WorkerToMainMessage } from '../../src/simulation/protocol/types';
@@ -187,12 +191,25 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
   it('refuses a hire the treasury cannot cover with exactly one player-visible message, and hires nobody', () => {
     const runtime = createNewSimulationRuntime(SEED);
 
-    // The precondition, and the one thing here that is set up by hand rather
-    // than driven: spend the treasury down to one unit under the wage. Doing
-    // it with `Treasury.spend` rather than by hiring 312 guards keeps the
-    // measurement about the refusal instead of about the roster.
-    expect(runtime.treasury.spend(TREASURY_STARTING_BALANCE_MINOR_UNITS - (WAGE - 1))).toBe(true);
-    expect(runtime.treasury.balanceMinorUnits).toBe(WAGE - 1);
+    /*
+     * The precondition, and the one thing here that is set up by hand rather
+     * than driven: spend the treasury down to one unit under the wage. Doing it
+     * with `Treasury.spend` rather than by hiring 312 guards keeps the
+     * measurement about the refusal instead of about the roster.
+     *
+     * **This spent to `WAGE - 1` and stopped**, which was one unit under what a
+     * hire costs while `Treasury`'s floor was zero. Since #703 ruling A every
+     * session opens a standing overdraft of `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`
+     * ([ADR 0083](../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+     * §2), so the position one unit under a hire is `floor + WAGE - 1` and the
+     * old line left the prison able to hire thirty more guards. The boundary is
+     * the same boundary -- `canAfford` is `balance - amount >= floor` -- and this
+     * is it, expressed against the floor the prison has.
+     */
+    const oneUnderAHire = TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS + WAGE - 1;
+    expect(runtime.treasury.spend(TREASURY_STARTING_BALANCE_MINOR_UNITS - oneUnderAHire)).toBe(true);
+    expect(runtime.treasury.balanceMinorUnits).toBe(oneUnderAHire);
+    expect(runtime.treasury.canAfford(WAGE), 'one minor unit under, and it is the floor that says so').toBe(false);
 
     // The tick the command is *dispatched* at, which is the one the refusal
     // carries -- not the tick the kernel has reached by the time it is read.
@@ -207,7 +224,7 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
     // money -- a refusal that spent the wage and hired nobody would satisfy
     // the roster assertion alone.
     expect(runtime.securityGuards.allGuardIds()).toEqual([]);
-    expect(runtime.treasury.balanceMinorUnits).toBe(WAGE - 1);
+    expect(runtime.treasury.balanceMinorUnits).toBe(oneUnderAHire);
     expect(projectStatusCounts(runtime, runtime.kernel.tick).staff).toBe(0);
 
     // Exactly one refusal, and it is this one. `sequence` is both the ordinal

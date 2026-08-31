@@ -24,7 +24,7 @@ export {
   justInTimePurchaseOrderId,
 } from './just-in-time-materials';
 export { BASIS_POINTS_PER_UNIT, LoanBook, type LoanSnapshot, type LoanTerms } from './loans';
-export { Treasury, TREASURY_STARTING_BALANCE_MINOR_UNITS, type TreasurySnapshot } from './treasury';
+export { Treasury, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, TREASURY_STARTING_BALANCE_MINOR_UNITS, type TreasurySnapshot } from './treasury';
 export { staffDailyWageMinorUnits } from './wages';
 export {
   MAX_PURCHASE_QUANTITY,

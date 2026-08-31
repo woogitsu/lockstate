@@ -383,8 +383,18 @@ describe('cancelling one order by id, which is the command this read model exist
      * *"Awaiting Materials"* was present the whole time and said nothing
      * actionable.
      *
-     * The prison here is spent down to 40 on planks -- which no wall can use --
-     * so a wall's 2 bricks at 40 is 80 against 40 in the bank.
+     * The prison here is spent down to seventy minor units of *spending power*
+     * on planks -- which no wall can use -- so a wall's 2 bricks at 40 is 80
+     * against 70.
+     *
+     * **This bought 384 planks and left 40 in the bank**, which was the whole of
+     * what it could spend while `Treasury`'s floor was zero. #703 ruling A opens
+     * a standing overdraft of 2,500 in every session
+     * ([ADR 0083](../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+     * §2), so 40 in the bank funds thirty-one walls and this case measured
+     * nothing. 422 planks at 65 is 27,430 of the 27,500 a new prison can spend,
+     * leaving 70 -- the same relationship to a wall's 80, expressed against the
+     * floor the prison has.
      */
     const runtime = createNewSimulationRuntime(SEED);
     // Both at tick 0 and neither stepped in between, because `orderWall`
@@ -395,11 +405,11 @@ describe('cancelling one order by id, which is the command this read model exist
       'cmd-buy',
       runtime.kernel.expectedSequence,
       0,
-      packCommand({ type: 'PurchaseMaterials', orderId: 'order-buy', itemId: 'item.wood-plank', quantity: 384 }),
+      packCommand({ type: 'PurchaseMaterials', orderId: 'order-buy', itemId: 'item.wood-plank', quantity: 422 }),
     );
     orderWall(runtime, 'order-a', 3, 3);
     runTo(runtime, 30);
-    expect(runtime.treasury.balanceMinorUnits, '25,000 - 384 x 65, and the wall bought nothing').toBe(40);
+    expect(runtime.treasury.balanceMinorUnits, '25,000 - 422 x 65, and the wall bought nothing').toBe(-2_430);
 
     const view = queue(runtime);
     expect(view.orders.rows.map((row) => row.state)).toEqual(['materials-pending']);

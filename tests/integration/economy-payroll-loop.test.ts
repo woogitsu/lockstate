@@ -346,20 +346,75 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_840);
   });
 
-  it('refuses a delivery first, which is the ladder`s top rung and needed no new code', () => {
+  /**
+   * **This case was titled *"refuses a delivery first, which is the ladder's top
+   * rung and needed no new code"*, and #703 ruling A inverted the ladder it
+   * measured. The inversion is a finding, not a fixture repair, and it is the
+   * reason this docblock is long.**
+   *
+   * What stood here, and every line of it was measured:
+   *
+   * > ```
+   * > stepTo(runtime, DAY_LENGTH_TICKS * 5);
+   * > expect(runtime.treasury.balanceMinorUnits).toBe(0);
+   * > submit(... PurchaseMaterials, quantity: 1);
+   * > expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
+   * > submit(... HireStaff);
+   * > expect(runtime.refusals.last?.reason).toBe('hire.insufficient-funds');
+   * > ```
+   *
+   * [ADR 0017](../../docs/adr/0017-money-primary-resource-model.md) decision 8
+   * reads *"At a negative balance the state stops paying for discretionary
+   * things in a defined order"* -- deliveries refused, then construction
+   * halted, then wages unpaid. The old assertions are that ladder's first two
+   * rungs firing at a balance of zero, which is where they had to fire while
+   * `Treasury`'s floor was zero.
+   *
+   * **`Treasury.canAfford` is one comparison over every spend**
+   * (`balance - amount >= floor`), so a standing overdraft moves *all* of the
+   * discretionary refusals to the floor at once. A prison that cannot pay its
+   * staff now buys bricks and hires guards for another 2,500 -- the third rung
+   * fires first, because `PayrollSystem` is bounded by the balance and the other
+   * two are bounded by the floor. The ladder runs backwards.
+   *
+   * ADR 0083 §2 records that an amendment to decision 8 is owed and that it is
+   * the owner's to sign: either the order is amended to say this, or decision 8
+   * is narrowed to a prison that has spent its overdraft. **This case does not
+   * choose between those**; it pins what the code now does, at both ends of the
+   * facility, so the amendment is written against a measurement.
+   */
+  it('refuses a delivery only once the overdraft is gone, which runs ADR 0017 decision 8`s ladder backwards', () => {
     const runtime = overcommitted();
     stepTo(runtime, DAY_LENGTH_TICKS * 5);
     expect(runtime.treasury.balanceMinorUnits).toBe(0);
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'the third rung has already fired').toBe(360);
 
+    /*
+     * The inversion itself: wages are unpaid and both discretionary spends go
+     * through anyway.
+     */
     const before = runtime.refusals.count;
     submit(runtime, 'buy-more', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-more', itemId: 'item.brick', quantity: 1 }));
-    expect(runtime.refusals.count).toBe(before + 1);
-    expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
+    expect(runtime.refusals.count, 'a delivery is bought out of the overdraft, with wages owed').toBe(before);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-40);
 
-    // And a hire is refused on the same balance, so a prison that cannot pay
-    // the staff it has cannot take on more.
     submit(runtime, 'hire-more', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
+    expect(runtime.refusals.count, 'and so is another guard the prison cannot pay').toBe(before);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-120);
+
+    /*
+     * And the rungs do fire, at the floor rather than at zero. 2,500 less the
+     * 120 already spent is 2,380 of room: 59 bricks at 40 is 2,360, leaving 20 --
+     * below a brick and below a guard-day.
+     */
+    submit(runtime, 'buy-the-room', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-the-room', itemId: 'item.brick', quantity: 59 }));
+    expect(runtime.treasury.balanceMinorUnits).toBe(-2_480);
+
+    submit(runtime, 'buy-past-it', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-past-it', itemId: 'item.brick', quantity: 1 }));
+    expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
+    submit(runtime, 'hire-past-it', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
     expect(runtime.refusals.last?.reason).toBe('hire.insufficient-funds');
+    expect(runtime.treasury.balanceMinorUnits, 'and neither refusal took a minor unit').toBe(-2_480);
   });
 
   it('says so on the status channel rather than accruing an invisible debt', () => {

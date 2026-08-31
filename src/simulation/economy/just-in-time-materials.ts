@@ -144,13 +144,33 @@ export function justInTimePurchaseOrderId(tick: number, itemId: string, inFlight
  * the *player* bought was covering part of the queue -- because such a delivery
  * is a purchase already made at a price the prison could once afford, which
  * this pass can no longer reproduce. Cancelling it therefore hands back money
- * the queue cannot spend: measured, a prison drained to 300 that buys six
- * bricks, draws four wall segments and then cancels the purchase ends with
- * **300 held and no walls**, where the same prison that does not cancel ends
- * with 60 held and three walls standing
+ * the queue cannot spend: measured, a prison drained to **265 of spending
+ * power** that buys six bricks, draws four wall segments and then cancels the
+ * purchase ends with **all 265 and no walls**, where the same prison that does
+ * not cancel ends with 25 and three walls standing
  * (`tests/integration/economy-refund-survives-the-clock.test.ts`, *"stalls a
  * whole queue the prison can no longer fund in one lump, and one press undoes
  * that"*).
+ *
+ * **Those two figures read *"300 held"* and *"60 held"* until 2026-08-31, and
+ * the paragraph above is otherwise unchanged.** #703 ruling A opened a standing
+ * overdraft on every treasury, so "held" and "can spend" came apart; the fixture
+ * reaches the same relationship -- 265 against a 320 deficit -- at a balance of
+ * `-2,235`. The clause *"a prison holding 300 against a deficit of eight bricks
+ * at 40 buys nothing, not seven"* is the general statement and it is unaffected:
+ * `Treasury.spend` still refuses what it cannot cover entirely, and only the
+ * number it compares against moved.
+ *
+ * **What the ruling does add here, and it is the load-bearing half for whoever
+ * takes ADR 0081's partial fill.** This all-or-nothing refusal is currently the
+ * only thing bounding how much of a prison's overdraft an unfunded build queue
+ * can eat with no press: a queue costing more than the facility buys **nothing**
+ * and the prison sits where it is. Measured,
+ * `scripts/report-loan-recovery-pricing.mjs` §10c: at the shipped floor of
+ * `-2,500`, a twenty-order tail costing 1,600 already strands a prison at
+ * `-1,625` with no capacity and no income, and a forty-order tail costing 3,200
+ * strands nothing at all because this pass refuses the lump. Buying what the
+ * prison *can* afford would remove that bound in both directions.
  *
  * **Recorded rather than fixed, and the reason is that the remedy is a
  * decision about money.** No value is lost and no promise is broken -- the
@@ -164,6 +184,11 @@ export function justInTimePurchaseOrderId(tick: number, itemId: string, inFlight
  * [ADR 0075](../../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
  * is about. Which of the two a prison is owed is that ADR's question and
  * `issue #29`'s numbers, so it is put up rather than taken here.
+ *
+ * **"Toward the floor" was a figure of speech and is now literal**, which is
+ * the one thing #703 ruling A changed about this paragraph: the floor is
+ * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` and there is 2,500 of it under every
+ * prison. The decision is still ADR 0081's and still not taken here.
  *
  * See `justInTimePurchaseOrderId` for why two purchases of one item at one
  * tick do not collide.

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { computeSaveChecksum } from '../../src/persistence/checksum';
 import type { JsonValue } from '../../src/shared/json';
-import type { LoanTerms } from '../../src/simulation/economy';
+import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, type LoanTerms } from '../../src/simulation/economy';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -258,26 +258,43 @@ describe('a negative balance survives a save, and the debt that produced it does
     expect(payload.includes('4400'), 'the outstanding figure is nowhere in the save').toBe(false);
   }, 30_000);
 
-  it('drops the overdraft floor too, so the restored prison cannot spend the room its loan opened', () => {
+  it('drops the room a loan opened and restores the standing overdraft instead', () => {
     /*
      * `TreasurySnapshot` is `{ balanceMinorUnits }` and nothing else, so the
-     * floor `setOverdraftFloor` opened is not in the file. The consequence is
+     * floor a session is running with is not in the file. The consequence is
      * sharper than "a field is missing": the restored prison holds the
      * borrowed money and has lost the permission that made borrowing usable,
      * so a spend the pre-save session allowed is refused after a reload.
+     *
+     * **This case asserted the restored floor was `0`, and it was, and the
+     * sentence beside it was *"when this starts failing, the floor became part
+     * of the save and this test should assert it came back"*. It started failing
+     * for the other reason.** #703 ruling A made the floor a standing facility
+     * applied where the `Treasury` is built
+     * (`createNewSimulationRuntime`), and `restoreSimulationRuntime` builds
+     * through that function -- so a restored prison comes back with
+     * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` and *nothing was persisted*
+     * ([ADR 0083](../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+     * §(e)). The finding is unchanged and is still the one worth pinning: the
+     * room a *loan* opened does not survive, because no loan state does. The
+     * probe floor is therefore deeper than the standing one, so the loss is
+     * still observable.
      */
     const runtime = earningSession({ loanTerms: PROBE_TERMS });
-    const floor = -20 * WALL_COST;
+    const floor = TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS - 20 * WALL_COST;
     runtime.treasury.setOverdraftFloor(floor);
-    // Spend to exactly zero, so what remains affordable is only the room the
-    // floor opened.
-    expect(runtime.treasury.spend(runtime.treasury.balanceMinorUnits)).toBe(true);
-    expect(runtime.treasury.balanceMinorUnits).toBe(0);
+    // Spend to exactly the standing floor, so what remains affordable is only
+    // the extra room the loan's own floor opened.
+    expect(runtime.treasury.spend(runtime.treasury.balanceMinorUnits - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)).toBe(true);
+    expect(runtime.treasury.balanceMinorUnits).toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
     expect(runtime.treasury.canAfford(WALL_COST), 'the pre-save session can spend into the overdraft').toBe(true);
 
     const restored = roundTrip(runtime);
-    expect(restored.treasury.balanceMinorUnits).toBe(0);
-    expect(restored.treasury.overdraftFloorMinorUnits, 'the floor is not in `TreasurySnapshot`').toBe(0);
+    expect(restored.treasury.balanceMinorUnits).toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+    expect(
+      restored.treasury.overdraftFloorMinorUnits,
+      'the composition root applied it; the save carries no floor at all',
+    ).toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
     expect(
       restored.treasury.canAfford(WALL_COST),
       'when this starts failing, the floor became part of the save and this test should assert it came back',
