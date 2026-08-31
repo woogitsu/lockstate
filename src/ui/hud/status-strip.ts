@@ -95,12 +95,12 @@ interface MetricParts {
  * one argument and a key with no placeholders takes the path it always took.
  */
 function badgeParameters(badge: HudMetricBadge, localizer: HudLocalizer): MessageParameters | undefined {
-  if (badge.numberParameters === undefined) return badge.parameters;
+  if (badge.numberParameters === undefined) return undefined;
   const formatted: Record<string, string> = {};
   for (const [name, value] of Object.entries(badge.numberParameters)) {
     formatted[name] = localizer.formatNumber(value);
   }
-  return { ...badge.parameters, ...formatted };
+  return formatted;
 }
 
 export function createStatusStrip(options: StatusStripOptions): StatusStrip {

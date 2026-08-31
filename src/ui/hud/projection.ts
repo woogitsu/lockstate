@@ -1,6 +1,5 @@
 import type { LocalizationKey } from '../../content/localization';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
-import type { MessageParameters } from '../../services/localization/format';
 import type { HostRefusalReason } from '../host-refusal';
 import type { IconId } from '../primitives/icon';
 import type { BadgeTone } from '../primitives/status-badge';
@@ -158,37 +157,33 @@ export interface HudMetricBadge {
   readonly tone: BadgeTone;
   readonly textKey: LocalizationKey;
   /**
-   * Placeholders for `textKey`, when the badge states a quantity rather than a
-   * condition (issue #588's `Covered N / Understaffed N / Unguarded N`).
+   * Placeholders for `textKey`, for a badge that states a **quantity** rather
+   * than a condition -- rendered by `status-strip.ts` through the same
+   * `HudLocalizer.formatNumber` a chip's own value goes through, so the two
+   * group and localise identically (the owner's ruling 18 of 2026-08-31).
    *
-   * Absent for every badge that names a state in one word, which is what a
-   * badge was for until the coverage chip: a key with no placeholders and an
-   * empty parameter object are the same rendered string, so "absent" carries
-   * the distinction rather than an empty literal. `status-strip.ts` formats
-   * with them only when they are present, so no existing badge changes call.
-   */
-  readonly parameters?: MessageParameters;
-  /**
-   * Placeholders whose value is a **quantity the strip must render the way it
-   * renders a chip's own value** -- through `HudLocalizer.formatNumber`, so it
-   * groups and localises identically (the owner's ruling 18 of 2026-08-31).
+   * Absent for every badge that names a state in one word, which is most of
+   * them: a key with no placeholders and an empty parameter object are the same
+   * rendered string, so "absent" carries the distinction rather than an empty
+   * literal.
    *
-   * A separate channel from `parameters` because this layer has no localizer
-   * and must not acquire one: `projection.ts` is a pure mapping proven in the
-   * `node` environment, and resolving a number here would put an `Intl` call
-   * on the wrong side of that line. So the projection names the quantity and
-   * `status-strip.ts` formats it, which is the same division `labelKey` and
-   * `textKey` already make for text.
+   * ## Why the values are numbers and this layer does not render them
    *
-   * **Why it matters, with the case that forced it:** `hud.status.funds-remaining`
-   * renders under a chip showing `-100`, and the remainder there is 2,400. A
-   * raw number goes through `String()` and reads `2400 left` beside a chip
-   * reading `-100`; the same figure formatted reads `2,400 left`. One of the
-   * two is the strip contradicting itself about how it writes a number.
+   * `projection.ts` is a pure mapping proven in the `node` environment and has
+   * no localizer; acquiring one would put an `Intl` call on the wrong side of
+   * that line. So the projection names the quantity and the strip formats it,
+   * which is the same division `labelKey` and `textKey` already make for text.
    *
-   * `parameters` is still the channel for anything that is not a quantity, and
-   * the two are merged with this one last. Absent for a badge that states a
-   * condition in one word, which is most of them.
+   * **The field this replaced took `MessageParameters` and rendered through
+   * `String()`,** which is `interpolate`'s fallback: `hud.status.funds-remaining`
+   * under a chip reading `-100` would have said `2400 left` where the chip said
+   * `-100`, and `{count} with no bed` said `1240` under a chip reading `1,240`.
+   * Identical below a thousand in `en`, which is why the older of the two ran
+   * for two issues without anybody seeing it. The old field is gone rather than
+   * kept beside this one: after issue #703's ruling 21 shortened the coverage
+   * badge, no badge on this strip states anything but a number, so a second
+   * channel would have had no producer. A badge that needs a *word* interpolated
+   * is what would bring it back.
    */
   readonly numberParameters?: Readonly<Record<string, number>>;
 }

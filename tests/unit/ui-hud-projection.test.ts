@@ -342,7 +342,7 @@ describe('status strip: tone and badges', () => {
      * numbers, and the ruling is about a width.
      */
     for (const state of [covered, short, dark, unguardedOnly]) {
-      expect(state.badge?.parameters, 'a coverage badge states a rung, never a count').toBeUndefined();
+      expect(state.badge?.numberParameters, 'a coverage badge states a rung, never a count').toBeUndefined();
     }
   });
 
