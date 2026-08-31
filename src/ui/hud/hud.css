@@ -380,22 +380,39 @@
  * be a flex container with `min-height: 0` before the innermost
  * `overflow-y: auto` had a box small enough to scroll in.
  *
- * **The `display: flex` on `.ui-panel__body` is the thing `primitives.css`
- * warns about, and the warning was read before this was written.** That file's
- * note records `hud.css` giving `.hud-build > .ui-panel__body` and
+ * **The `display: flex` here is the thing `primitives.css` warns about, the
+ * warning was read, and reading it was still not enough.** That file's note
+ * records `hud.css` giving `.hud-build > .ui-panel__body` and
  * `.hud-rooms > .ui-panel__body` a flex `display`, which broke both panels'
  * collapse controls: `createPanel` collapses by setting `body.hidden`, and a
  * flex `display` from the later-imported file overrode `[hidden]`'s
- * `display: none`. The fix that file settled on is
- * `.ui-panel > .ui-panel__body[hidden]` -- two classes **and an attribute**,
- * so specificity (0,3,0) beats this rule's (0,2,0) and `[hidden]` wins on
- * merit rather than on source order. Verified rather than reasoned: the
- * minimap panel's collapse control is measured in the pull request, hiding the
- * body with this rule in place.
+ * `display: none`. Its fix is `.ui-panel > .ui-panel__body[hidden]` -- two
+ * classes **and an attribute** -- so for the panel body `[hidden]` wins on
+ * specificity (0,3,0 against 0,2,0) rather than on source order.
+ *
+ * **`.ui-section__body` has no such rule, and a first version of this block
+ * broke the alerts fold because of it.** `primitives.css`'s `[hidden]` list
+ * covers `.ui-panel`, `.ui-panel__body`, `.ui-choice`, `.ui-number`,
+ * `.ui-action` and `.ui-row` -- and not `.ui-section__body`, which relies on
+ * the `hidden` attribute's *user-agent* `display: none`. Any author `display`
+ * beats a UA one outright, at any specificity. So with a bare
+ * `.hud-minimap .ui-section__body { display: flex }` the section reported
+ * `data-collapsed="true"`, set `body.hidden`, announced
+ * `aria-expanded="false"` -- and the rows stayed on screen.
+ * `app-shell.spec.ts`'s *"a build order the simulation refuses reaches the
+ * alerts list (#261)"* caught it: the row was still `visible` after the
+ * collapsing press. **That is the third time this repository has paid for the
+ * same trap**, and the first two are the ones `primitives.css` records.
+ *
+ * `:not([hidden])` on all three selectors is the fix, and it is the right shape
+ * rather than a second `[hidden]` override: a collapsed body is given no
+ * `display` at all, so nothing has to out-specify anything. Verified rather
+ * than reasoned -- the fold is pressed both ways on the assembled page in that
+ * spec, and the rows appear and disappear with it.
  */
-.hud-minimap > .ui-panel__body,
-.hud-minimap .ui-section,
-.hud-minimap .ui-section__body {
+.hud-minimap > .ui-panel__body:not([hidden]),
+.hud-minimap .ui-section:not([hidden]),
+.hud-minimap .ui-section__body:not([hidden]) {
   display: flex;
   flex-direction: column;
   min-height: 0;

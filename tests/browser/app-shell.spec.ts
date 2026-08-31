@@ -6695,17 +6695,33 @@ test.describe('the assembled application', () => {
     // The empty-state row goes when there is something to say.
     await expect(emptyRow).toHaveCount(0);
 
-    // **Visible, not merely present.** The alerts section starts folded
-    // (`INITIAL_HUD_SHELL_STATE`), so the row is in the DOM with a 0x0 box
-    // until the player opens it -- which is exactly the state #220 measured
-    // and moved the "simulation unavailable" sentence out of. A
-    // `toContainText` here without the fold being opened would pass against
-    // an invisible row and prove nothing.
-    await expect(alertRow).toBeHidden();
+    // **Visible, not merely present**, and as of 2026-08-31 visible *without a
+    // press*. This block read `toBeHidden()`, then `data-collapsed: 'true'`,
+    // then a click, then `'false'` -- because the alerts section started folded
+    // (`INITIAL_HUD_SHELL_STATE`), so the row was in the DOM with a 0x0 box
+    // until the player opened it, which is exactly the state #220 measured and
+    // moved the "simulation unavailable" sentence out of.
+    //
+    // **The owner's ruling 1 of #703 opened it**, and the same change gave the
+    // list a bounded box with `overflow-y: auto` so it scrolls rather than
+    // letting its `.ui-panel` ancestor clip the newest row. So the row is
+    // visible here on arrival. The precaution the old comment names is
+    // unchanged and still worth stating: a `toContainText` on a row nobody can
+    // see proves nothing, which is why the visibility assertion below is the
+    // load-bearing one either way.
+    //
+    // The fold is still exercised, in the direction it now moves: one press
+    // shuts it and the row goes away. That keeps a real toggle in this test
+    // rather than deleting the only place it was checked on the assembled page.
+    await expect(alertsSection).toHaveAttribute('data-collapsed', 'false');
+    await expect(alertRow).toBeVisible();
+
+    await page.locator('.hud-minimap .ui-section__header').click();
     await expect(alertsSection).toHaveAttribute('data-collapsed', 'true');
+    await expect(alertRow).toBeHidden();
+
     await page.locator('.hud-minimap .ui-section__header').click();
     await expect(alertsSection).toHaveAttribute('data-collapsed', 'false');
-
     await expect(alertRow).toBeVisible();
     // The sentence for the reason the simulation actually gave: the tile is
     // outside the one chunk a new prison has, so `submitOrder`'s bounds check
@@ -7428,7 +7444,11 @@ test.describe('the assembled application', () => {
     // on the very message an alert row would have arrived on.
     await expect(alertRow).toHaveCount(0);
     await expect(emptyRow).toHaveCount(1);
-    await page.locator('.hud-minimap .ui-section__header').click();
+    // **No click.** This read `.click()` then `data-collapsed: 'false'`,
+    // because the section started folded and the empty row had to be revealed
+    // before its visibility could mean anything. The section starts open as of
+    // #703 ruling 1, so a click here would *shut* it and the assertion below
+    // would be measuring a hidden row.
     await expect(alertsSection).toHaveAttribute('data-collapsed', 'false');
     await expect(emptyRow).toBeVisible();
     // Nothing on the band claims the simulation decided this one.
@@ -7501,7 +7521,8 @@ test.describe('the assembled application', () => {
     // places, for one press of one button.
     await expect(alertRow).toHaveCount(0);
     await expect(emptyRow).toHaveCount(1);
-    await page.locator('.hud-minimap .ui-section__header').click();
+    // No click, for the reason given at the sibling assertion above: the
+    // section starts open as of #703 ruling 1, so a press would shut it.
     await expect(alertsSection).toHaveAttribute('data-collapsed', 'false');
     await expect(emptyRow).toBeVisible();
 

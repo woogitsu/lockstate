@@ -1185,9 +1185,14 @@ test.describe('HUD shell', () => {
 
       // And back to none: the empty-list row is not an alert row, so the
       // probe reports an empty list rather than a list of one.
+      //
+      // **The toggle is gone as of #703 ruling 1.** It was here to *open* the
+      // section before the visibility assertion below could mean anything; the
+      // section starts open now, so the press would shut it and the row would
+      // be hidden -- which is exactly how this failed when the initial state
+      // moved. The visibility assertion is the point and it is kept.
       await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts([]));
       expect((await page.evaluate(() => window.lockstateUiHarness.alertProbe())).order).toEqual([]);
-      await page.evaluate(() => window.lockstateUiHarness.toggleAlerts());
       await expect(page.locator('.hud-alerts__list [data-alert="empty"]')).toBeVisible();
     });
 
