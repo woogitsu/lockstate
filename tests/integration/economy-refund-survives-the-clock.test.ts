@@ -236,20 +236,27 @@ describe('a refund survives the clock (#687)', () => {
     expect(stockOf(runtime, BRICK) + 2 * (orderStates(runtime).completed ?? 0)).toBeGreaterThanOrEqual(2);
   });
 
-  it('takes the back of the crew walk, which is the last id and not the last drawn', () => {
+  it('takes the back of the crew walk', () => {
     const runtime = createNewSimulationRuntime(SEED);
     // `placeWalls` mints `order-000`, `order-001`, `order-002` in that order,
-    // so ascending id and placement order coincide *here* and nowhere a player
-    // is: `src/main.ts` mints `order-${crypto.randomUUID()}`. What is being
-    // gated is the walk, and the fixture is what makes the walk legible.
+    // so ascending id and placement order coincide here -- which is what makes
+    // the walk legible in this fixture and is exactly why it cannot be the
+    // case that gates *which* key the walk sorts on. The sibling case below,
+    // with ids that disagree, is that one.
+    //
+    // **This test was called *"takes the back of the crew walk, which is the
+    // last id and not the last drawn"* until 2026-08-31.** Since ADR 0082
+    // (#722) the back of the walk *is* the last drawn, so the second half of
+    // the old name is no longer a distinction this fixture can draw. What is
+    // gated here is unchanged: that the withdrawal comes off the back.
     placeWalls(runtime, 3);
 
     const [first] = deliveryIds(runtime);
     send(runtime, { type: 'CancelMaterialPurchase', orderId: first! });
 
-    // The greatest id: the work the crew's ascending-id walk reaches last, and
-    // therefore the order it was furthest from starting. Withdrawing from the
-    // front would take the one it is about to pick up.
+    // The work the crew's walk reaches last, and therefore the order it was
+    // furthest from starting. Withdrawing from the front would take the one it
+    // is about to pick up.
     expect(runtime.construction.getOrder('order-002')!.state).toBe('cancelled');
     expect(runtime.construction.getOrder('order-000')!.state).not.toBe('cancelled');
     expect(runtime.construction.getOrder('order-001')!.state).not.toBe('cancelled');
@@ -702,11 +709,14 @@ describe('a refund survives the clock (#687)', () => {
      * until #703 ruling 9.** Eight bricks at 40 is 320 and the prison can spend
      * 265, so the pass used to buy nothing at all. It now walks the four wall
      * orders and funds three of them whole -- 3 x 80 = 240 of the 265 -- and
-     * leaves the fourth, which is the last one placed and, in this fixture
-     * alone, also the last one in the walk: `placeWalls` mints
-     * `order-000..order-003`, so ascending id happens to be placement order
-     * here. A session mints `order-${crypto.randomUUID()}` and gets neither
-     * (ADR 0081 Decision 2, ADR 0082).
+     * leaves the fourth, which is the last one placed and also the last one in
+     * the walk. **Those were two different facts that happened to coincide in
+     * this fixture until 2026-08-31**, because `placeWalls` mints
+     * `order-000..order-003` so ascending id happened to be placement order
+     * here while a session minting `order-${crypto.randomUUID()}` got neither
+     * (ADR 0081 Decision 2). ADR 0082 (#722) made the walk placement order, so
+     * "the last one placed" and "the last one in the walk" are now the same
+     * fact in every session and not only in this fixture.
      */
     expect(orderStates(withCancel).completed).toBe(3);
     expect(queued(withCancel)).toBe(1);

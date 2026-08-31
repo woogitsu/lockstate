@@ -566,8 +566,11 @@ worth doing only as a record of having been wrong about it.**
 than filed as entries, because every one of them is `Proposed` and none is yet a
 disagreement between an accepted decision and the code:** ADR 0081 (partial fill
 — the owner ruled *whether* and, on 2026-08-31, *at what granularity*: per
-order; status line still unsigned), ADR 0082 (build-order execution order,
-Proposed), and ADR 0083 (what opens the negative balance — the owner ruled a
+order; status line still unsigned), ADR 0082 (build-order execution order —
+**since accepted by the owner on 2026-08-31 and implemented in #722**, so it is
+no longer one of the `Proposed` documents this paragraph is listing; the
+sentence is corrected rather than rewritten because the window it describes is
+what it is), and ADR 0083 (what opens the negative balance — the owner ruled a
 standing overdraft and 50% escalated diversion on 2026-08-31; **not on `main`**
 at this anchor, so it is named and not cited).
 

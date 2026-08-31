@@ -507,8 +507,11 @@ describe('the arithmetic ADR 0081 section 2 states', () => {
         0,
       );
       /*
-       * The walk is ascending id and the ids are zero-padded, so the orders
-       * funded are a prefix and their count is the deepest rank reached. Read
+       * The walk is the caller's own order here: these are hand-built
+       * `QueuedOrderDemand` rows with no `placementSequence`, so ADR 0082's
+       * comparator ties them at its sentinel and the id decides -- ascending
+       * id, and the ids are zero-padded. So the orders funded are a prefix and
+       * their count is the deepest rank reached. Read
        * off the deliveries the real `ProcurementSystem` holds, never off the
        * report, so a report that lied would not be able to answer this.
        */

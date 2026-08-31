@@ -288,8 +288,11 @@ describe('a room becomes enclosed because walls were built', () => {
         0,
         packCommand({
           type: 'PlaceBuildOrder',
-          // Zero-padded so the canonical (ascending id) processing order is
-          // also the readable order.
+          // Zero-padded so the canonical processing order is also the
+          // readable order. Since ADR 0082 (#722) that canonical order is
+          // placement order, and these are submitted in index order through
+          // the kernel, so the two agree here as they did when this order was
+          // ascending id alone.
           orderId: `wall-${String(index).padStart(2, '0')}`,
           definitionId: 'wall-brick',
           x: segment.x,

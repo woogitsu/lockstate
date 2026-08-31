@@ -1247,7 +1247,12 @@ decision about what to build next.
       **withdraws** queued build orders -- the fewest that make the prison stop
       having to buy the material back, decided against what it already holds and
       has coming rather than against the cancelled quantity, and taken from the
-      back of the crew's ascending-id walk. **Only for a delivery the build
+      back of the crew's own walk. **That walk was ascending id when this
+      paragraph was written and is placement order with id as the tie-break
+      since [ADR 0082](./adr/0082-what-order-build-orders-are-carried-out-in.md)
+      (#722)**, so the back of it is now the segment the player drew last rather
+      than the one holding the greatest id; the method is unchanged, only what
+      "the back" means. **Only for a delivery the build
       queue bought** (`isJustInTimePurchaseOrderId`): a delivery the player
       pressed *Buy* for is stock they chose to hold, and no order is waiting on
       it by name. Gated by
@@ -1270,11 +1275,15 @@ decision about what to build next.
       **Two things about that were asserted without a measurement behind them
       and have since been measured; both are corrections to the claims rather
       than to the behaviour.** *Which* segment a player watches disappear was
-      guessed to be *"somewhere in the middle of the line"* -- it is the tile
-      holding the greatest id, whose ordinal position in a run of
-      `order-${crypto.randomUUID()}` ids is uniform, so it is as likely to be
-      either end, and the measured fixture takes the segment the player drew
-      **first**. And *"cancelling a delivery the player pressed Buy for is
+      guessed to be *"somewhere in the middle of the line"* -- it **was** the
+      tile holding the greatest id, whose ordinal position in a run of
+      `order-${crypto.randomUUID()}` ids is uniform, so it was as likely to be
+      either end, and the measured fixture took the segment the player drew
+      **first**. **ADR 0082 (#722) closed that on 2026-08-31 and it is now the
+      segment the player drew last**, which is what #693 had claimed and could
+      not deliver; the account above is kept because it is what every build
+      before that did, and is still what a save carrying no placement ordinals
+      does. And *"cancelling a delivery the player pressed Buy for is
       correct, only the fold's sentence is false"* holds in a prison that can
       pay: the refund goes out again at the same price, the same segments stand,
       and the whole cost is one delivery delay restarted. It does **not** hold

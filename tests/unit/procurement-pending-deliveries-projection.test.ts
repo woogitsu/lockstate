@@ -70,9 +70,13 @@ describe('projectPendingDeliveries', () => {
   it('orders by arrival and not by id, which is the opposite of the build queue', () => {
     /*
      * The one ordering assertion that can fail for the right reason. Sorting by
-     * id -- which `projectBuildQueue` does, because ascending id *is* the crew's
-     * walk order -- would put `aaa-late` first, and it is the delivery that lands
-     * last but one. The list is the delivery schedule: row one is the next thing
+     * id would put `aaa-late` first, and it is the delivery that lands last but
+     * one. (**This sentence said "which `projectBuildQueue` does, because
+     * ascending id *is* the crew's walk order", and that was true until ADR
+     * 0082 (#722)**: the build queue now sorts on a placement ordinal with the
+     * id as its tie-break. A delivery has no placement ordinal at all, so
+     * nothing here changes -- what the two lists must not share is the sort,
+     * whatever the build queue's is.) The list is the delivery schedule: row one is the next thing
      * to arrive, and therefore the row whose refund is about to stop being
      * available.
      *

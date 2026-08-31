@@ -522,8 +522,12 @@ test('acts 1 and 2: the descent from 25,000, and every escape a mouse can reach 
   /*
    * **Escape B: the Queued fold, and how many orders it offers to cancel.**
    * `BUILD_QUEUE_ROW_LIMIT` is 3 (`src/ui/hud/build-panel.ts:545`) and rows are
-   * ordered by ascending order id, which is a uuid -- so this counts the rows a
-   * player is actually offered against the orders that exist.
+   * ordered by the crew's own walk -- **ascending order id, which is a uuid,
+   * when this was written; placement order with the id as tie-break since ADR
+   * 0082 (#722)** -- so this counts the rows a player is actually offered
+   * against the orders that exist. The count is unaffected by which; what the
+   * old reading made arbitrary was *which three* a player is offered to
+   * cancel, and that is now the three drawn first.
    */
   await tab(page, 'build').click();
   const queueWasCollapsed = await openQueueFold(page);
