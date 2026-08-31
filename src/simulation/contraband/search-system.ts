@@ -1,4 +1,5 @@
 import type { EntityId } from '../entity/entity-store';
+import type { SimulationEventLog } from '../events';
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { NavigationSystem } from '../navigation/navigation-system';
 import type { RouteContext } from '../navigation/route-context';
@@ -51,6 +52,19 @@ export interface SearchMetrics {
 export type TargetLocationResolver = (target: SearchTarget) => TilePosition;
 /** Category concealment lookup, injected rather than importing the content catalog directly -- keeps this system usable against any catalog a session provides, matching `DeploymentSystem`'s own decoupling from a specific staff-role source. */
 export type CategoryConcealmentResolver = (categoryId: string) => number;
+/**
+ * Category name-key lookup, injected beside `CategoryConcealmentResolver` above
+ * and for the same reason it is: this system reads a catalog it does not import.
+ *
+ * `undefined` for a category the supplied catalog does not define, rather than a
+ * fabricated `${categoryId}.name`. `soleDiscoveredContrabandNameKey`
+ * (`src/simulation/presentation/status-strip-projection.ts`) makes the same call
+ * in the same words -- *"a projection that guessed `${categoryId}.name` would be
+ * authoring keys the locale need not contain"* -- and
+ * `runDetectionForCurrentTarget` then records the confiscation and says nothing,
+ * which is what `createResidentRelocationNotice` does for an unresolvable room.
+ */
+export type CategoryNameKeyResolver = (categoryId: string) => string | undefined;
 
 function sameTile(a: TilePosition, b: TilePosition): boolean {
   return a.x === b.x && a.y === b.y;
@@ -71,6 +85,10 @@ function intelligenceTargetKindFor(holderKind: SearchTarget['holderKind']): Inte
  * `NavigationSystem` to each target in turn (no-teleport), dwells for the
  * policy's duration, then runs one deterministic named-RNG detection check
  * per concealed item found at that target.
+ *
+ * Every item it finds is confiscated, recorded on the `ConfiscationLedger` as
+ * evidence, counted on `itemsDiscovered`, **and named to the player** on the
+ * events channel (#703 ruling 13) -- see `runDetectionForCurrentTarget`.
  */
 export class SearchSystem implements SystemRegistration {
   public readonly id = 'contraband.search';
@@ -93,7 +111,18 @@ export class SearchSystem implements SystemRegistration {
     private readonly confiscations: ConfiscationLedger,
     private readonly policies: readonly SearchPolicyDefinition[],
     private readonly categoryConcealment: CategoryConcealmentResolver,
+    private readonly categoryNameKey: CategoryNameKeyResolver,
     private readonly locateTarget: TargetLocationResolver,
+    /**
+     * The session's `SimulationEventLog`, and required rather than defaulted for
+     * the reason `PrisonerDischargeSystem`, `PayrollSystem`,
+     * `IncidentTriggerSystem` and `IncidentResponseSystem` all state at their
+     * own constructors: an optional sink is a system that can be wired to say
+     * nothing, and a fixture that forgot it would silently be measuring a prison
+     * that tells the player nothing about what its searches find. Issue #703
+     * ruling 13 is the sentence; this is the only route it has.
+     */
+    private readonly events: SimulationEventLog,
     private readonly routeContextResolver: (staffRoleId: string) => RouteContext = (staffRoleId) => resolveStaffRouteContext(staffRoleId),
   ) {}
 
@@ -406,6 +435,29 @@ export class SearchSystem implements SystemRegistration {
         foundByGuardId: job.guardIds[0]!,
         tick: context.tick,
       });
+      /*
+       * And the player is told, by name (#703 ruling 13).
+       *
+       * **After the ledger and the counter, never before.** The event is a
+       * report of a confiscation that has happened; recording it first would
+       * put a sentence on the alerts list for an item this loop could still
+       * fail to confiscate. It is also the order that keeps the two figures the
+       * status strip compares -- `itemsDiscovered` and the ledger's length --
+       * written together, which is the guard
+       * `soleDiscoveredContrabandNameKey` depends on.
+       *
+       * `undefined` says nothing rather than throwing, and rather than naming
+       * the raw category id. A `RangeError` out of a scheduled system update is
+       * the failure mode `SectorSearchDutySystem` refuses at its own site for
+       * its missing policy; the confiscation itself is real either way, so the
+       * count still moves and the ledger still holds the evidence. Nothing in
+       * `src/` can reach it: `new-session.ts` resolves both this and
+       * `categoryConcealment` from `defaultContrabandRegistry`, and the
+       * concealment lookup one screen up already threw for a category id that
+       * catalog does not hold.
+       */
+      const categoryNameKey = this.categoryNameKey(item.categoryId);
+      if (categoryNameKey !== undefined) this.events.recordContrabandDiscovered(categoryNameKey, context.tick);
     }
   }
 

@@ -7,6 +7,7 @@ import { buildCellBlockFixture } from '../helpers/navigation-fixture';
 import { ContrabandRegistry } from '../../src/simulation/contraband/item';
 import { IntelligenceLedger } from '../../src/simulation/contraband/intelligence';
 import { ConfiscationLedger } from '../../src/simulation/contraband/confiscation';
+import { SimulationEventLog } from '../../src/simulation/events';
 import { SearchSystem } from '../../src/simulation/contraband/search-system';
 import type { SearchPolicyDefinition, SearchTarget } from '../../src/simulation/contraband/search-policy';
 import { GuardRoster } from '../../src/simulation/security/guard-roster';
@@ -49,6 +50,7 @@ describe('contraband scale: many items across a sector sweep', () => {
     const policy: SearchPolicyDefinition = { scope: 'sector', requiredGuardCount: 1, dwellTicksPerTarget: 3, baseDetectionProbability: 1, concealmentPenaltyPerPoint: 0, intelligenceConfidenceBonus: 0 };
     const intelligence = new IntelligenceLedger();
     const confiscations = new ConfiscationLedger();
+    const events = new SimulationEventLog();
     const targets: SearchTarget[] = openCellIndices.map((cellIndex) => ({ holderKind: 'cell', holderId: String(cellIndex) }));
     const search = new SearchSystem(
       guards,
@@ -58,7 +60,9 @@ describe('contraband scale: many items across a sector sweep', () => {
       confiscations,
       [policy],
       () => 0,
+      () => 'contraband.phone.name',
       (target) => cellBlock.cellTiles[Number(target.holderId)]!,
+      events,
     );
     search.submitOrder({ id: 'full-sweep', scope: 'sector', targets });
 
