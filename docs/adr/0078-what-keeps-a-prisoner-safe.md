@@ -217,6 +217,18 @@ be a second chance to disagree with it — and it rides the existing
 `hud.status.coverage` and `hud.status.coverage-detail`; the all-covered case
 falls back to the Staff panel's existing `hud.security.coverage-met`.
 
+**Amended 2026-08-31, and the sentence above is left standing because it was
+true for the whole life of the decision it records.** The owner's ruling 21 of
+that day deleted `hud.status.coverage-detail`: the badge now reads the Staff
+panel's own one-word `hud.security.coverage-short` or
+`hud.security.coverage-unguarded`, so the chip still names the rung and no
+longer names the two counts. The attribution this section is about therefore
+survives only on the Staff panel, and the strip's half of it is gone. The
+ruling's reason is a width rather than a change of mind about the readout: at
+1280 a strip carrying every badge is 1,627px of content in a 1,256px row, and
+this sentence was the second-largest single contributor. Nothing else in this
+decision changes — the census, the channel and the chip are as recorded.
+
 **No income term and no incident fine.** The 300/40/60 schedule is untouched;
 what changed is whether `safety` is one of the needs the existing 40 fires on.
 The source of the ruling is explicit: *"Do not also add an incident fine on top

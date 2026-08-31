@@ -281,16 +281,26 @@ describe('status strip: tone and badges', () => {
     expect(metric(counts({ contrabandFound: 2 }), 'contraband').badge).toBeUndefined();
   });
 
-  it('escalates the coverage chip one rung at a time, and says which rung in words', () => {
+  it('escalates the coverage chip one rung at a time, and says which rung in one word', () => {
     /*
-     * Issue #588's `Covered N / Understaffed N / Unguarded N`, as the three
-     * things the chip can say. The value is the covered count and the badge
-     * carries the other two, so all three numbers are on the strip without one
-     * of them being stated twice.
+     * **The owner's ruling 21 of 2026-08-31, and it is a narrowing of what this
+     * test used to require.**
      *
-     * The ladder is `describeStaffCoverage`'s and the reason is its: a prison
-     * with somebody unguarded is not a worse version of an understaffed one,
-     * so `unguarded` is checked first and wins even when both are non-zero.
+     * Issue #588 put `Covered N / Understaffed N / Unguarded N` on the strip so
+     * that the value carried the top rung and the badge carried the other two
+     * *with their counts*, and the paragraph that stood here said all three
+     * numbers were on the strip without one of them being stated twice. That
+     * was true and it is now false: the badge states the worst rung in the one
+     * authored word the Staff panel already uses, and the two counts are not on
+     * the strip at all. The ruling's own reason is width -- at 1280 a strip
+     * carrying every badge is 1,627px of content in a 1,256px row, and this
+     * badge is the second-largest single contributor -- and the cost it accepts
+     * is exactly the sentence #588 asked for.
+     *
+     * The ladder itself is untouched, and it is still `describeStaffCoverage`'s
+     * for its reason: a prison with somebody unguarded is not a worse version of
+     * an understaffed one, so `unguarded` is checked first and wins even when
+     * both are non-zero. What changed is only how many words say so.
      */
     const covered = metric(counts({ prisonersCovered: 8 }), 'coverage');
     expect(covered.value).toBe(8);
@@ -299,28 +309,41 @@ describe('status strip: tone and badges', () => {
     // copy of it -- so the strip and the Staff panel cannot come to disagree.
     expect(covered.badge).toEqual({ tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet });
 
+    // And the other two rungs now reuse the Staff panel's words for the same
+    // reason the top rung always has: `hud.security.coverage-short` and
+    // `hud.security.coverage-unguarded` are already authored and already on
+    // screen, so ruling 21 authors no string at all.
     const short = metric(counts({ prisonersCovered: 8, prisonersUnderstaffed: 3 }), 'coverage');
     expect(short.tone).toBe('warning');
-    expect(short.badge).toEqual({
-      tone: 'warning',
-      textKey: HUD_MESSAGE_KEY.coverageDetail,
-      parameters: { understaffed: 3, unguarded: 0 },
-    });
+    expect(short.badge).toEqual({ tone: 'warning', textKey: HUD_MESSAGE_KEY.securityCoverageShort });
 
+    /*
+     * **The worst rung, and only the worst rung.** This used to require both
+     * counts, on the argument that a player who fixed the unguarded rung would
+     * not otherwise know there was a second one underneath it. That argument is
+     * not refuted, it is outweighed -- and what answers it is that the rung
+     * underneath is still on screen the moment the one above is cleared, on this
+     * same badge, because the ladder is re-evaluated on every publication.
+     */
     const dark = metric(counts({ prisonersCovered: 8, prisonersUnderstaffed: 3, prisonersUnguarded: 1 }), 'coverage');
     expect(dark.tone).toBe('danger');
-    // Both counts, not only the one that set the tone: the badge is the whole
-    // of the remainder, and a player who fixed the unguarded rung would
-    // otherwise not know there was a second one underneath it.
-    expect(dark.badge).toEqual({
-      tone: 'danger',
-      textKey: HUD_MESSAGE_KEY.coverageDetail,
-      parameters: { understaffed: 3, unguarded: 1 },
-    });
+    expect(dark.badge).toEqual({ tone: 'danger', textKey: HUD_MESSAGE_KEY.securityCoverageUnguarded });
 
     // Unguarded with nobody understaffed still reads danger, so the two rungs
     // are independent rather than a two-step scale one has to climb.
-    expect(metric(counts({ prisonersUnguarded: 2 }), 'coverage').tone).toBe('danger');
+    const unguardedOnly = metric(counts({ prisonersUnguarded: 2 }), 'coverage');
+    expect(unguardedOnly.tone).toBe('danger');
+    expect(unguardedOnly.badge).toEqual({ tone: 'danger', textKey: HUD_MESSAGE_KEY.securityCoverageUnguarded });
+
+    /*
+     * **No badge on this chip carries a parameter any more**, which is the
+     * property that makes the saving real rather than a shorter default: a key
+     * with a placeholder is a key whose rendered width follows the prison's
+     * numbers, and the ruling is about a width.
+     */
+    for (const state of [covered, short, dark, unguardedOnly]) {
+      expect(state.badge?.parameters, 'a coverage badge states a rung, never a count').toBeUndefined();
+    }
   });
 
   it('reads the empty prison as covered, which is what a prison with nobody in a sector is', () => {

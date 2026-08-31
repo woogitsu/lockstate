@@ -39,8 +39,11 @@ import './ui-harness-api';
  * than of how big its numbers are. There are four badges the strip can draw:
  *
  *   - `prisoners`: `{count} with no bed` (#609), when anybody is unhoused
- *   - `coverage`: `{understaffed} understaffed · {unguarded} unguarded` (#588),
- *     or the authored word `Covered` when nobody is on either rung
+ *   - `coverage`: the authored one word for the worst rung anybody is standing
+ *     on -- `Unguarded`, `Understaffed`, or `Covered` when nobody is on either
+ *     lower rung. **This read `{understaffed} understaffed · {unguarded}
+ *     unguarded` (#588) until the owner's ruling 21 of 2026-08-31**, which is
+ *     the change the figures further down this docblock predate.
  *   - `incidents`: the `incident-type.*.name` of the one open kind (#506
  *     finding 2), or `Active`, or the authored word `Clear`
  *   - `contraband`: the `contraband.*.name` of the one found category (#703
@@ -70,6 +73,49 @@ import './ui-harness-api';
  * screen**. The arithmetic of the remaining deficit, and the four candidate
  * cures with what each costs, are written out in `src/ui/hud/hud.css`'s two-row
  * block.
+ *
+ * ## Every measured figure above predates the owner's ruling 21, and what
+ * replaces them is *derived* rather than measured
+ *
+ * The 1,627px, the 6-of-9 and the 140px this docblock and the comments below
+ * quote were all measured on the strip **before** 2026-08-31, when the coverage
+ * badge still rendered `{understaffed} understaffed · {unguarded} unguarded`.
+ * They are left standing rather than overwritten, because they are what the
+ * ruling was decided against; what follows is arithmetic on top of them by an
+ * agent that could not run a browser, and it is labelled so that nobody quotes
+ * it as a reading.
+ *
+ * **The model.** A badge is drawn in this state either way, so the only thing
+ * ruling 21 changes is the badge's *text*: its padding, its box and the row gap
+ * are identical before and after and cancel. The owner's `+140px` is the cost of
+ * `42 understaffed · 36 unguarded` (30 characters) over the `Covered` (7) an
+ * all-covered prison draws -- 23 characters -- which is **≈6.1px per character**
+ * at this row's `--text-size-label` of 11px with 0.04em of letter-spacing.
+ * Ruling 21 renders `Unguarded` (9 characters) in the same state, 21 characters
+ * fewer than the sentence, so the saving is **≈128px** and the badged row falls
+ * from 1,627px to **≈1,499px** against the same 1,256px.
+ *
+ * **The weak claim, named.** The two costs the ruling quotes are not consistent
+ * with one linear model, so the per-character figure is anchored on the coverage
+ * badge's own published number and not on the other. `{count} with no bed`
+ * renders 14 characters and is published at `+170.5px`; that badge *appears*
+ * rather than changing text, so its fixed box is 2×8px of `.ui-badge` padding
+ * plus the 8px `.hud-metric__trailing` gap, which would make it ≈10.5px per
+ * character -- and the same rate applied to the coverage badge's own 30
+ * characters gives 340px, not 140. Under that second anchor the saving is
+ * ≈220px and the row ≈1,407px. **What does not depend on the model is the
+ * conclusion**: at either end of that range the badged row still overflows
+ * 1,256px at 1280 by 150-250px, so ruling 21 alone does not put `FUNDS` and
+ * `EARNED TODAY` back on screen. How many chips it does return is a
+ * measurement, not an arithmetic, and this file is where it should be taken.
+ *
+ * **And one badge was added the same day.** The owner's ruling 18 gives the
+ * `funds` chip a `{remaining} left` badge whenever the balance is negative, so
+ * there are five badges the strip can draw and not four. It is deliberately not
+ * folded into `EVERY_BADGE`: that fixture's `funds` chip is at seven figures
+ * because that is the widest that chip can be, and a chip cannot be at seven
+ * figures and below zero at once. The two worst cases are therefore different
+ * states, and the second one is `tests/browser/ui-overdraft-badge.spec.ts`.
  */
 
 const HARNESS_URL = '/tests/browser/ui-harness.html';
@@ -234,7 +280,10 @@ test.describe('the status strip carries nine chips and the prison’s own state 
       expect(badged.badges.length, `the four-badge state drew ${badged.badges.length} badges at ${at}`).toBe(4);
       expect(badged.badges.map((text) => text.trim()), `the badges drawn at ${at}`).toEqual([
         '36 with no bed',
-        '42 understaffed · 36 unguarded',
+        // Ruling 21: the worst rung, in one word. `EVERY_BADGE` has 36
+        // unguarded as well as 42 understaffed, and `Unguarded` is what the
+        // ladder says of that prison.
+        'Unguarded',
         'Gang Retaliation',
         'Currency',
       ]);
@@ -282,9 +331,12 @@ test.describe('the status strip carries nine chips and the prison’s own state 
        * equals how many the row's width has room for, both read off the same
        * page. It is what fails if anything ever squeezes this row again, and it
        * is deliberately satisfiable while the row overflows: at 1280 with every
-       * badge drawn, 6 of 9 chips are on screen because 1627px of content does
+       * badge drawn, 6 of 9 chips were on screen because 1627px of content does
        * not fit 1256px, which is the standing defect `hud.css` hands to the
-       * owner rather than a number this file endorses.
+       * owner rather than a number this file endorses. **Both figures are
+       * pre-ruling-21 readings** -- see the derived ≈1,499px in this file's
+       * docblock -- and the property below is asserted from the page rather
+       * than from either of them, which is why it needs no update.
        */
       expect(
         badged.fullyVisible,
@@ -306,7 +358,9 @@ test.describe('the status strip carries nine chips and the prison’s own state 
      * 1627px of content in 1896px of row, nine chips and four badges, nothing
      * scrolled. It is a real gate rather than a restatement of the loop above
      * -- 269px of slack is what the next chip, the next badge and the next
-     * locale spend, and this fails when they have spent it.
+     * locale spend, and this fails when they have spent it. **The 1627px is a
+     * pre-ruling-21 reading**; the slack is wider now by whatever the coverage
+     * badge gave back, which this file is the place to measure.
      */
     expect(
       badged.contentWidth,

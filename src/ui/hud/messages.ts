@@ -60,23 +60,33 @@ export const HUD_MESSAGE_KEY = {
    * panel are recognisably about one thing.
    */
   coverage: 'hud.status.coverage',
-  /**
-   * The two rungs that are *not* covered, as a sentence under the chip.
+  /*
+   * **`coverageDetail` stood here and is gone** -- `hud.status.coverage-detail`,
+   * `'{understaffed} understaffed · {unguarded} unguarded'`, removed by the
+   * owner's ruling 21 of 2026-08-31 along with its default-locale entry.
    *
-   * The chip's own value is how many prisoners are covered; this names the
-   * remainder and splits it, which is what issue #588 asks the strip for --
-   * `Covered N / Understaffed N / Unguarded N`, *"so the 40s are
-   * attributable"*. A player whose prisoner-day grant is short of the headline
-   * 300 can read off this line how much of the population is paying the
-   * `safety` withholding and which of the two reasons each part of it is
-   * paying for.
+   * Both directions are recorded rather than the entry simply vanishing,
+   * because the reason it existed has not gone away. Issue #588 authored it so
+   * that the chip's value carried the top rung while this line carried the
+   * whole of the remainder *with its counts*, "so the 40s are attributable":
+   * since ADR 0064 the state withholds part of the prisoner-day grant per unmet
+   * need, and those two numbers are how much of the population is paying the
+   * `safety` withholding and for which of the two reasons. That is a real
+   * readout and the strip no longer has it.
    *
-   * Not rendered when both are zero: the badge falls back to
-   * `securityCoverageMet` ("Covered"), which is a sentence this repository
-   * already ships and which an all-covered prison should read as. A line of
-   * two zeroes would be noise on the one strip a player glances at.
+   * What removed it is a width the owner measured rather than a change of mind
+   * about the readout: at 1280 a strip carrying every badge is 1,627px of
+   * content in a 1,256px row, and this sentence was the second-largest single
+   * contributor. `coverageBadge` (`./projection.ts`) now reuses
+   * `securityCoverageShort` and `securityCoverageUnguarded`, which are authored
+   * already and already on screen in the Staff panel -- so the ruling costs the
+   * two counts and authors no string. The counts stay readable in full on that
+   * panel.
+   *
+   * The key was deleted rather than left unread because an entry nobody renders
+   * is content a translator will still translate: `docs/research/2026-08-30-candidate-polish-translations.md`
+   * already carries a proposed Polish rendering of this exact sentence.
    */
-  coverageDetail: 'hud.status.coverage-detail',
   contraband: 'hud.status.contraband',
   /**
    * The treasury balance chip (#96).

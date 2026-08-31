@@ -296,23 +296,57 @@ function coverageTone(counts: HudCountsViewModel): BadgeTone | undefined {
 }
 
 /**
- * The sentence under the coverage chip: the two rungs that are not covered,
- * with their counts, or the one word an all-covered prison should read.
+ * The word under the coverage chip: the worst rung anybody is standing on, in
+ * the Staff panel's own vocabulary.
  *
- * The fallback is `securityCoverageMet` -- "Covered", the Staff panel's own
- * word for the top rung -- rather than a second copy of it, so the panel and
- * the strip cannot come to disagree about what the top rung is called. It is
- * also what an *empty* prison reads, which is correct for the same reason it
- * is correct on the panel: a prison with nobody in a sector has all the
- * coverage it needs.
+ * The three words are `securityCoverageMet`, `securityCoverageShort` and
+ * `securityCoverageUnguarded` -- "Covered", "Understaffed", "Unguarded" --
+ * rather than second copies of them, so the panel and the strip cannot come to
+ * disagree about what a rung is called. "Covered" is also what an *empty*
+ * prison reads, which is correct for the same reason it is correct on the
+ * panel: a prison with nobody in a sector has all the coverage it needs.
+ *
+ * ## What this badge used to say, and what the change costs
+ *
+ * Until the owner's **ruling 21 of 2026-08-31** the two lower rungs rendered
+ * `hud.status.coverage-detail` -- `'{understaffed} understaffed · {unguarded}
+ * unguarded'` -- and that sentence was not decoration. Issue #588 put it there
+ * so that the chip's *value* carried the top rung while the badge carried the
+ * whole of the remainder with its counts, *"so the 40s are attributable"*: since
+ * ADR 0064 the state withholds part of the prisoner-day grant per unmet need,
+ * and those two numbers are how many prisoners each rung is costing. The
+ * `coverageTone` docblock above still argues the other half of it -- the badge
+ * states the condition in words so colour is never the only signal -- and that
+ * half is untouched, because a word is still what it states.
+ *
+ * **What the ruling weighed it against is a width.** At 1280 a strip carrying
+ * every badge is 1,627px of content in a 1,256px row -- 6 of 9 chips on screen,
+ * and the two that go are `FUNDS` and `EARNED TODAY`, exactly when the prison is
+ * in trouble. This badge is the second-largest single contributor to that
+ * excess, and shortening it authors **no new string**: both words already exist
+ * and are already on screen in the Staff panel's coverage block
+ * (`staff-panel.ts`, `describeStaffCoverage`'s `badgeKey`).
+ *
+ * **So the two counts are gone from the strip, and that is a real loss stated
+ * rather than glossed.** What answers #588's argument only partly: the rung
+ * underneath is on this same badge the moment the rung above it is cleared,
+ * because the ladder is re-evaluated on every publication -- so the *sequence*
+ * of rungs is still discoverable, and only the two magnitudes are not. Where
+ * they remain readable in full is the Staff panel, which states the coverage
+ * census with its counts and has done since #588.
  */
 function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
   const tone = coverageTone(counts);
   if (tone === undefined) return { tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet };
+  // One ladder, read once: the tone and the word come off the same two rungs in
+  // the same order, so a rung that changes the colour cannot fail to change the
+  // word with it.
   return {
     tone,
-    textKey: HUD_MESSAGE_KEY.coverageDetail,
-    parameters: { understaffed: counts.prisonersUnderstaffed, unguarded: counts.prisonersUnguarded },
+    textKey:
+      counts.prisonersUnguarded > 0
+        ? HUD_MESSAGE_KEY.securityCoverageUnguarded
+        : HUD_MESSAGE_KEY.securityCoverageShort,
   };
 }
 

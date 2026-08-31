@@ -8,6 +8,7 @@ import { Localizer, defaultMessageCatalogEn } from '../../src/services/localizat
 import { HUD_TABS } from '../../src/ui/hud/hud';
 import { HUD_MESSAGE_KEY, HUD_MESSAGE_KEYS } from '../../src/ui/hud/messages';
 import { projectStatusMetrics } from '../../src/ui/hud/projection';
+import type { HudCountsViewModel } from '../../src/ui/hud/view-model';
 
 /**
  * ADR 0011, applied to the HUD.
@@ -242,7 +243,7 @@ describe('message keys live in one registry', () => {
       return text !== key && text.trim().length > 0;
     };
     const registry = new Set<string>(HUD_MESSAGE_KEYS);
-    for (const metric of projectStatusMetrics({
+    const busyPrison: HudCountsViewModel = {
       prisoners: 1,
       prisonerCapacity: 2,
       // One prisoner and no place, so the `PRISONERS` chip takes its
@@ -252,13 +253,16 @@ describe('message keys live in one registry', () => {
       occupiedPlaces: 0,
       staff: 1,
       rooms: 1,
-      // Non-zero on both lower rungs, so the coverage chip takes its
-      // `coverageDetail` branch rather than the `securityCoverageMet`
-      // fallback: this case walks every label the strip can render, and a
-      // fixture that never left the fallback would leave one unwalked.
+      // Non-zero on the understaffed rung, so the coverage chip takes its
+      // `securityCoverageShort` branch rather than the `securityCoverageMet`
+      // fallback. **The owner's ruling 21 of 2026-08-31 made that badge one of
+      // three words where it had been one of two** -- it used to render
+      // `coverageDetail` for either lower rung -- so one fixture can no longer
+      // walk every word this chip can say, and the loop below runs a second
+      // state for the rung this one does not reach.
       prisonersCovered: 1,
       prisonersUnderstaffed: 1,
-      prisonersUnguarded: 1,
+      prisonersUnguarded: 0,
       // Non-zero, so the `high-risk` chip is walked with a real value (#703).
       // The chip carries no tone and no badge at any value, so this figure
       // changes no branch -- it is here because a count of 0 would leave the
@@ -273,13 +277,40 @@ describe('message keys live in one registry', () => {
       contrabandFound: 1,
       treasuryMinorUnits: 0,
       stateIncomeAccruedTodayMinorUnits: 0,
-    })) {
-      expect(registered(metric.labelKey), `${metric.labelKey} is in neither registry`).toBe(true);
-      expect(resolves(metric.labelKey), `${metric.labelKey} does not resolve to text`).toBe(true);
-      if (metric.badge !== undefined) {
-        expect(registered(metric.badge.textKey), `${metric.badge.textKey} is in neither registry`).toBe(true);
-        expect(resolves(metric.badge.textKey), `${metric.badge.textKey} does not resolve to text`).toBe(true);
+    };
+
+    /*
+     * The three coverage states, because the chip says a different authored
+     * word in each and a walk that stopped at one would leave two unchecked.
+     * The third is the all-covered fallback, which is the state a healthy
+     * prison is in and therefore the one a regression would hide in longest.
+     */
+    const walked: string[] = [];
+    for (const counts of [
+      busyPrison,
+      { ...busyPrison, prisonersUnguarded: 1 },
+      { ...busyPrison, prisonersUnderstaffed: 0, prisonersUnguarded: 0 },
+    ]) {
+      for (const metric of projectStatusMetrics(counts)) {
+        expect(registered(metric.labelKey), `${metric.labelKey} is in neither registry`).toBe(true);
+        expect(resolves(metric.labelKey), `${metric.labelKey} does not resolve to text`).toBe(true);
+        if (metric.badge !== undefined) {
+          walked.push(metric.badge.textKey);
+          expect(registered(metric.badge.textKey), `${metric.badge.textKey} is in neither registry`).toBe(true);
+          expect(resolves(metric.badge.textKey), `${metric.badge.textKey} does not resolve to text`).toBe(true);
+        }
       }
+    }
+
+    // Non-vacuity for the loop above, and the assertion that ruling 21's three
+    // words are all really reached: a fixture that stopped saying one of them
+    // would leave this list short and the walk would pass anyway.
+    for (const rung of [
+      HUD_MESSAGE_KEY.securityCoverageMet,
+      HUD_MESSAGE_KEY.securityCoverageShort,
+      HUD_MESSAGE_KEY.securityCoverageUnguarded,
+    ]) {
+      expect(walked, `${rung} is never rendered by the coverage chip in this walk`).toContain(rung);
     }
     expect(HUD_TABS.map((tab) => tab.id)).toEqual(['overview', 'build', 'rooms', 'security', 'regime']);
     for (const tab of HUD_TABS) expect(registry.has(tab.labelKey), tab.labelKey).toBe(true);

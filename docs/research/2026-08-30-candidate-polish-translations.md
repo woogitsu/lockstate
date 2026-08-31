@@ -168,7 +168,9 @@ is why `hud.build.buy-quantity` is proposed as **Ilość** and not **Liczba**.
 ### R4 — the two-figure summary rows · Class A · 4 keys
 
 `hud.build.queue-count`, `hud.build.deliveries-count`,
-`hud.security.held-summary`, `hud.status.coverage-detail`
+`hud.security.held-summary`, `hud.status.coverage-detail` (**the last of these
+was deleted on 2026-08-31** by the owner's ruling 21 and is kept in this list
+because the rule below was derived from all four)
 
 > `{count} waiting · {started} being built` · `{held} held · {unassigned} free`
 
@@ -750,7 +752,7 @@ The always-visible shell. Two rows are reshaped (marked **R**) and one whole fam
 | `hud.status.rooms` | Rooms | **Pomieszczenia** |  |
 | `hud.status.incidents` | Incidents | **Zajścia** | **Q4** |
 | `hud.status.coverage` | Coverage | **Obsada** |  |
-| `hud.status.coverage-detail` | {understaffed} understaffed · {unguarded} unguarded | **Niedobór obsady: {understaffed} · Bez obsady: {unguarded}** | **R7** |
+| `hud.status.coverage-detail` | {understaffed} understaffed · {unguarded} unguarded | **Niedobór obsady: {understaffed} · Bez obsady: {unguarded}** | **R7**. **Key deleted 2026-08-31** by the owner's ruling 21: the strip's coverage badge now reuses `hud.security.coverage-short` / `hud.security.coverage-unguarded`, so there is nothing left to translate here. Row kept because the R7 reasoning about numeral-first summary rows is still what `hud.build.queue-count` and `hud.security.held-summary` need |
 | `hud.status.contraband` | Contraband | **Kontrabanda** | **Q3** |
 | `hud.status.funds` | Funds | **Środki** | **Q11** |
 | `hud.status.earned-today` | Earned today | **Zarobione dziś** |  |
