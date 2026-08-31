@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "locale": "pl",
+  "messages": {
+    "ui.start": "Rozpocznij",
+    "ui.prisoners": {
+      "one": "{count} więzień",
+      "few": "{count} więźniów",
+      "many": "{count} więźniów",
+      "other": "{count} więźnia"
+    }
+  }
+}
