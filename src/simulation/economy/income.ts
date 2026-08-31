@@ -1,5 +1,6 @@
 import type { EntityId } from '../entity/entity-store';
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
+import type { LoanBook } from './loans';
 import { NEED_IDS, NEED_MAX, type NeedsComponent } from '../prisoners/needs';
 import { DAY_LENGTH_TICKS } from '../prisoners/regime';
 import type { Treasury } from './treasury';
@@ -91,7 +92,18 @@ import type { Treasury } from './treasury';
  * cost of that choice, stated so it is not later mistaken for an oversight: at
  * 300 with no operating costs at all, a standalone cell pays back in 3.7
  * in-game days rather than 5.5, so expansion is cheaper than the record
- * intended for exactly as long as nothing charges the prison anything.
+ * intended for exactly as long as the prison has no outgoing side.
+ *
+ * **That condition has expired, and the clause is corrected here rather than
+ * left standing.** It read "for exactly as long as" precisely so that it would
+ * stop being true, and it did, twice: `916ac46` (#455) made wages recurring, so
+ * `PayrollSystem` bills `wageBand.minPerDay` at every in-game day boundary; and
+ * `a87b0d3` (#640) made a `PlaceBuildOrder` buy its own materials at the press,
+ * at 80 a wall segment. So the 3.7-day payback above is the figure for a
+ * prison with no staff, and a real one is slower by whatever its wage bill is.
+ * **The rate is not re-opened by this note** -- 300 is the owner's figure and
+ * every value here is #29's under ADR 0017 decision 5. What is corrected is a
+ * sentence that would otherwise read as a standing fact about the game.
  *
  * An integer, and not a formatting preference: it multiplies into a balance a
  * save carries and a determinism fingerprint hashes, and `docs/DETERMINISM.md`
@@ -634,9 +646,15 @@ export class StateIncomeSystem implements SystemRegistration {
   /** Once per in-game day, on its last tick. See the class comment for why not phase 0. */
   public readonly schedule = { intervalTicks: DAY_LENGTH_TICKS, phaseTicks: DAY_LENGTH_TICKS - 1 };
 
+  /**
+   * `loans` is optional, and its absence is the ordinary case rather than a
+   * degraded one: a prison that has borrowed nothing has no book, and this
+   * system then credits exactly what it credited before ADR 0075 decision 2.
+   */
   public constructor(
     private readonly treasury: Treasury,
     private readonly prison: PrisonerDayGrantSource,
+    private readonly loans?: LoanBook,
   ) {}
 
   /**
@@ -653,6 +671,21 @@ export class StateIncomeSystem implements SystemRegistration {
     // by crediting zero: `Treasury.credit(0)` is legal and pointless, and a
     // future ledger (#29) should not have to filter out entries for no money.
     if (amount === 0) return;
-    this.treasury.credit(amount);
+    /*
+     * ADR 0075 decision 2: a loan is repaid by **diverting a fixed percentage
+     * of positive inflows**, and this is the prison's only positive inflow
+     * today. The diversion happens here rather than inside `Treasury.credit`
+     * because a refund is a credit too and returning the prison's own money is
+     * not an inflow the debt has a share of -- `ProcurementSystem.cancel`
+     * must stay untouched by this.
+     *
+     * Decision 1's threshold grants and any later contract reward are the two
+     * inflows the ruling names that do not exist yet. Each will have to route
+     * through a `divert` of its own, and this comment is where a reader is
+     * told so.
+     */
+    const diverted = this.loans?.divert(amount, context.tick) ?? 0;
+    const kept = amount - diverted;
+    if (kept > 0) this.treasury.credit(kept);
   }
 }

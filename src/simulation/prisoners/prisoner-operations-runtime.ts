@@ -196,6 +196,15 @@ export interface PrisonerOperationsRuntimeOptions {
   /**
    * What an arrival brings in with them, called by `IntakeSystem` at the
    * classification stage. Absent, intake introduces nothing and draws nothing.
+   *
+   * **Two systems hold this port since ADR 0080, not one**, and the sentence
+   * above is kept because it is still the whole of what happens to most
+   * prisoners. `ClassificationReviewSystem` takes the same port and asks the
+   * same question at the one review that raises somebody *into* tier 3 --
+   * which is the only way the fifth entry of the `2 + tier` eligible band ever
+   * gets a producer, `classifyPrisoner` at `priorIncidents: 0` being unable to
+   * score 3 ([#677](https://github.com/matmaxalez/lockstate/issues/677)).
+   * Absent, neither introduces anything and neither draws.
    */
   readonly contrabandIntroducer?: IntakeContrabandIntroducer;
   /** The named stream `contrabandIntroducer` draws from. Only read when one is supplied. */
@@ -348,6 +357,8 @@ export class PrisonerOperationsRuntime {
       this.query,
       this.records,
       options.disciplinaryEvidence,
+      options.contrabandIntroducer,
+      options.contrabandRngStreamName,
     );
     this.sanctionPolicy = options.sanctionPolicy ?? DEFAULT_SANCTION_POLICY;
     this.sanctionSystem = new SanctionSystem(this.entityStore, this.query, this.records, this.coldState, this.roomInstances, this.accommodationPolicy);

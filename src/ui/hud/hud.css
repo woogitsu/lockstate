@@ -1093,6 +1093,18 @@
 
 .hud-staff__held-more[hidden] { display: none; }
 
+/* The standing daily wage bill, in the `On the payroll` header (issue #639
+   ruling 2). Exactly `.hud-build__queue-count`'s treatment one panel over, and
+   for its reasons: the header is the only part of a collapsed section a player
+   sees, and `tabular-nums` stops the figure jittering as guards are hired and
+   dismissed. No `margin-left: auto` -- the queue count sits beside its eyebrow
+   rather than at the panel edge, and two section headers in one rail that
+   placed their figures differently would read as two designs. */
+.hud-staff__roster-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-subtle);
+}
+
 .hud-build__coords {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1193,15 +1205,31 @@
 
 .hud-build__buy > .ui-action { width: 100%; }
 
-/* Armed is a state, not a moment: the control has to keep saying so while the
-   player's attention is out on the world. */
-.hud-build .ui-action[data-armed='true'] {
+/*
+ * Armed is a state, not a moment: the control has to keep saying so while the
+ * player's attention is out on the world.
+ *
+ * **The Rooms panel was named here only from #684**, and it had set
+ * `data-armed` on its own arm control since the day it shipped -- the attribute
+ * was written and no stylesheet in this repository read it, so the two panels
+ * carried the identical DOM contract and only one of them looked any different
+ * armed. Both are named now rather than the selector being widened to
+ * `.hud .ui-action`, because what earns the tint is a control that hands the
+ * pointer to the world, not any toggle that happens to use the attribute.
+ *
+ * The label is what *says* the state -- "Stop drawing", "Stop placing" -- and
+ * `aria-pressed` is what announces it; this is the half a player reads without
+ * reading, which is the half that was missing.
+ */
+.hud-build .ui-action[data-armed='true'],
+.hud-rooms .ui-action[data-armed='true'] {
   background: var(--accent-soft);
   border-color: var(--accent);
   color: var(--accent);
 }
 
-.hud-build .ui-action[data-armed='true']:hover {
+.hud-build .ui-action[data-armed='true']:hover,
+.hud-rooms .ui-action[data-armed='true']:hover {
   background: var(--surface-active);
   color: var(--text-heading);
 }
@@ -1352,6 +1380,13 @@
    `.hud-build__buy:not([hidden])`, closed from the other side because the class
    being beaten is shared. */
 .hud-build__queue-more[hidden] { display: none; }
+
+/* The same trap, closed the same way, for the money line below the block. This
+   one is hidden far more often than it is shown -- a solvent prison never sees
+   it -- so an author `display` winning over `[hidden]` would put a permanent
+   empty line under the queue at every short viewport, which is the height this
+   panel has least of. */
+.hud-build__queue-shortfall[hidden] { display: none; }
 
 /*
  * What has been bought and has not arrived (#285), inside the buy disclosure.
@@ -1952,6 +1987,37 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
     overflow: hidden;
+  }
+
+  /* The one `.hud-staff__note` that is not clamped (#639, the owner's ruling of
+     2026-08-30). The shape is PR #647's, which exempts `.hud-build__order-note`
+     from this same block for the same kind of sentence -- that branch is not
+     merged as this is written, so the selector it adds is not in this file yet
+     and the citation is to the pull request rather than to a rule below.
+     `hud.security.hire-unassigned` -- "A new guard
+     starts unassigned." -- is the half of the old hire hint the approved
+     wording displaced, and the measurement that displaced it is why it comes
+     back as its own element rather than as a second sentence: run on after
+     "Costs {total} now and {wage} a day in wages." the note delivered
+     `scrollHeight` 26 against `clientHeight` 13 at 900x600, and the clause that
+     was cut was this one.
+
+     The clamp's own reason is the rail's height budget (#174), and this panel
+     pays it in the currency it has: `.ui-panel.hud-staff` is `overflow-y: auto`,
+     so one more line of `--font-size-eyebrow` moves the scroll threshold and
+     loses nothing. The notes that stay clamped are the ones a clipped line
+     still leaves usable -- a coverage hint reads as an instruction with its
+     tail cut. This one is a whole clause or nothing.
+
+     `.hud-staff__note[hidden]` above still wins over this rule -- it is a class
+     and an attribute against one class -- so the guard that keeps a hidden note
+     hidden under the author `display` this block sets is not weakened here.
+     This note is never hidden in any case: it quotes no figure, so there is no
+     state in which it is unsafe to say. */
+  .hud-staff__hire-unassigned {
+    display: block;
+    -webkit-line-clamp: none;
+    overflow: visible;
   }
 
   /* The Regime panel's own note, on the same terms and for the same

@@ -28,23 +28,32 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *   after  A(ii)             26,395    26,395
  * ```
  *
- * The recycled prison now ends on the control's balance, which is a stronger
- * statement than "the exploit is smaller": the same plank, the same three
- * cells, the same ticks and the same three admissions earn what playing it
- * straight earns. `StateIncomeSystem` pays for
- * `min(occupancy, residentCapacity)` per room instance
- * (`RoomInstanceRegistry.residentIdsWithExistingPlace`), and the two cells the
- * loop leaves bedless have a capacity of 0.
+ * **The two arms are 40 minor units apart, and the recycling gains nothing by
+ * being recycling.** This arm reads **26,235** and the recycled one **26,275**.
+ * The gap is an unmet-need `safety` withholding from ADR 0078: the control's
+ * paying resident arrives 805 ticks earlier and crosses that line on the
+ * earlier side of a day boundary. It does not come from a place, it does not
+ * scale with the loop, and it would be there between any two prisons whose
+ * residents arrive at different ticks. The derivation is at the measurement
+ * below.
  *
- * **This header said "to the minor unit" until 2026-08-30, and its own body
- * already disagreed with it.** ADR 0078 (`What keeps a prisoner safe`) put 40
- * minor units between the two arms -- this one reads **26,235** and the
- * recycled one **26,275** -- because the control's paying resident arrives 805
- * ticks earlier and crosses the `safety` line on the earlier side of a day
- * boundary. The derivation is at the measurement below, where it has been
- * correct since ADR 0078 landed. The equality claim is withdrawn; the argument
- * it was making is not, because 40 minor units of an unmet-need withholding is
- * not the exploit and does not scale with the loop.
+ * What A(ii) removes is the *income* the loop was manufacturing:
+ * `StateIncomeSystem` pays for `min(occupancy, residentCapacity)` per room
+ * instance (`RoomInstanceRegistry.residentIdsWithExistingPlace`), and the two
+ * cells the loop leaves bedless have a capacity of 0. The same plank, the same
+ * three cells, the same ticks and the same three admissions earn what playing
+ * it straight earns, to within a withholding that has nothing to do with the
+ * exploit.
+ *
+ * **This paragraph has been corrected twice and both directions are kept.** It
+ * said "on the control's balance **to the minor unit**" until 2026-08-30; the
+ * first correction that day removed the three words and left the equality
+ * standing, which softened a false claim rather than withdrawing it -- with the
+ * withdrawal sitting two sentences below, in the same header, contradicting
+ * what the reader had just been told. That is the defect this file's own body
+ * had already recorded and the header had not. The equality is withdrawn here.
+ * The argument it was making survives, and is stated above without resting on
+ * an equality that is not true.
  *
  * **The three residents are still housed and this file still asserts it.** ADR
  * 0028 decision 2 is untouched: nobody is evicted and `totalOccupancy` still

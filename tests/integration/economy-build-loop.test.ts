@@ -101,7 +101,7 @@ function stepUntil(runtime: SimulationRuntime, predicate: () => boolean, limit =
 }
 
 describe('money buys materials and a wall gets built (#89, #96)', () => {
-  it('completes a build order that no starting stock paid for', () => {
+  it('completes a build order the player bought the materials for first', () => {
     const runtime = createNewSimulationRuntime(7);
 
     // The prison starts with money and no materials. Both halves asserted:
@@ -111,15 +111,6 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
     const materials = runtime.containers.getById(CONSTRUCTION_MATERIALS_CONTAINER_ID);
     expect(materials, 'the construction container must exist').toBeDefined();
     expect(materials!.quantityOf('item.brick'), 'the prison must start with no bricks').toBe(0);
-
-    // Order the wall first, so it is genuinely waiting on materials rather
-    // than being placed into a stocked prison.
-    const order = createBuildOrder('wall-1', WALL, tile(4, 6), 'north');
-    runtime.construction.submitOrder(order);
-    expect(order.state, 'the order must be approved -- the land is owned (#215)').toBe('approved');
-
-    runtime.kernel.step();
-    expect(runtime.construction.getOrder('wall-1')?.state).toBe('materials-pending');
 
     // Buy the bricks through the real command path, not by calling the
     // system: the decoder and the session command router are part of what is
@@ -147,19 +138,52 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
     );
     runtime.kernel.step();
 
+    /*
+     * **The order is placed second, and it used to be placed first.**
+     *
+     * The old comment here read *"Order the wall first, so it is genuinely
+     * waiting on materials rather than being placed into a stocked prison"*,
+     * and that ordering stopped being available on the change that implemented
+     * ADR 0017 decision 7 (#627): an order placed against an empty prison now
+     * *buys* its own materials, so ordering first and then pressing Buy is two
+     * purchases for one wall. That is not a defect -- the player asked for
+     * both -- but it is no longer this case's subject.
+     *
+     * This case is now the **holding** half of decision 7, *"holding is
+     * permitted"*: a player who pre-buys sees exactly the behaviour they saw
+     * before #627, one purchase and one wall. The just-in-time half is
+     * `pays for a wall the player never pressed Buy for` below, and that one is
+     * #627's own subject.
+     */
+    const order = createBuildOrder('wall-1', WALL, tile(4, 6), 'north');
+    runtime.construction.submitOrder(order);
+    expect(order.state, 'the order must be approved -- the land is owned (#215)').toBe('approved');
+
+    // To the next scheduled construction tick rather than one step: the order
+    // is now submitted at tick 1 rather than tick 0, and `ConstructionSystem`
+    // runs every ten ticks, so a single step lands between two of them.
+    expect(stepUntil(runtime, () => runtime.construction.getOrder('wall-1')?.state !== 'approved'))
+      .toBeGreaterThanOrEqual(0);
+    expect(runtime.construction.getOrder('wall-1')?.state).toBe('materials-pending');
+
     // Paid now, delivered later. Both are asserted because the money leaving
     // immediately is what makes a save taken mid-flight matter -- and the
     // amount is asserted exactly, because "less than the starting balance" is
-    // also true of a purchase that charged the wrong price.
+    // also true of a purchase that charged the wrong price. Exactly one
+    // purchase, so nothing bought the same bricks twice.
     expect(runtime.treasury.balanceMinorUnits).toBe(
       TREASURY_STARTING_BALANCE_MINOR_UNITS - BRICK_PRICE! * BRICKS_PER_WALL,
     );
     expect(runtime.procurement.pendingDeliveries).toHaveLength(1);
     expect(materials!.quantityOf('item.brick'), 'nothing arrives on the tick it is bought').toBe(0);
+    // The tick the lorry is due, read off the queue rather than recomputed:
+    // "it arrived early" has to be measured against the purchase's own tick,
+    // and the order is no longer placed on the same tick as the purchase.
+    const arrivesAtTick = runtime.procurement.pendingDeliveries[0]!.arrivesAtTick;
 
-    const stepsToDelivery = stepUntil(runtime, () => materials!.quantityOf(WALL_REQUIREMENT.itemId) > 0);
-    expect(stepsToDelivery, 'the delivery never arrived').toBeGreaterThan(0);
-    expect(stepsToDelivery, 'it arrived early').toBeGreaterThanOrEqual(PROCUREMENT_DELIVERY_DELAY_TICKS - 2);
+    expect(stepUntil(runtime, () => materials!.quantityOf(WALL_REQUIREMENT.itemId) > 0), 'the delivery never arrived')
+      .toBeGreaterThan(0);
+    expect(runtime.kernel.tick, 'it arrived early').toBeGreaterThanOrEqual(arrivesAtTick);
     expect(runtime.procurement.pendingDeliveries, 'an arrived delivery must leave the queue').toHaveLength(0);
 
     const stepsToCompletion = stepUntil(runtime, () => runtime.construction.getOrder('wall-1')?.state === 'completed');
