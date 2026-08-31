@@ -394,7 +394,49 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       value: counts.contrabandFound,
       capacity: undefined,
       tone: counts.contrabandFound > 0 ? 'warning' : undefined,
-      badge: undefined,
+      /*
+       * **The chip says what was found, not only how much** -- the owner's
+       * ruling 3 on issue #703, *"The message names what contraband was
+       * found."*
+       *
+       * The incidents chip immediately above is the precedent, verbatim:
+       * `contrabandNameKey` is one of the five `contraband.*.name` labels
+       * `src/content/contraband-catalog.ts` already authors -- "Weapon",
+       * "Drugs", "Phone", "Currency", "Tool" -- reused as-is rather than new
+       * copy, exactly as issue #506 finding 2 reused `incident-type.*.name`.
+       * Until this line nothing on screen read one of them (`grep -rn
+       * "contraband\.weapon\.name" src/ui/` returned nothing), so a found
+       * phone and a found weapon both rendered as the character `1`, and after
+       * ADR 0080 a weapon is something a player's own neglect can produce.
+       *
+       * **Where it differs from the incidents chip, and why there is no
+       * fallback word.** That badge falls back to the generic "Active" for a
+       * count it cannot name a single kind for. This one falls back to *no
+       * badge*, because the generic word here would be the chip's own label:
+       * a pill reading "Contraband" under a label reading "CONTRABAND" is not
+       * a second channel, it is the same word twice. Absent is also what the
+       * chip has always shown, so nothing regresses -- and the count beside it
+       * still says whether anything was found.
+       *
+       * **The badge qualifies the whole count, which is why the projection
+       * withholds the key rather than this deciding to ignore it.** A pill
+       * reading "Phone" beside a `3` that includes a weapon would be a
+       * statement about the prison that is false, which is `AGENTS.md`'s
+       * fourth exclusion; the two conditions that keep it true are argued on
+       * `StatusStripViewModel.counts.contrabandNameKey`.
+       *
+       * `'warning'`, the tone the chip itself already takes for any find, so
+       * the pill does not grade a discovery differently from the number it
+       * annotates. Severity is in the catalogue (`severity: 9` for a weapon,
+       * `2` for currency) and is deliberately not read here: a badge that went
+       * red for a weapon and amber for cash would be teaching a ranking the
+       * game never states, which is the hidden mechanic the owner's standing
+       * design directive rules out.
+       */
+      badge:
+        counts.contrabandNameKey === undefined
+          ? undefined
+          : { tone: 'warning', textKey: counts.contrabandNameKey },
     },
     {
       id: 'funds',
