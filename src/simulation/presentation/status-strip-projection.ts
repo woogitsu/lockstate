@@ -108,7 +108,20 @@ export interface StatusStripSource {
    * without an economy had -- not a guess, and not a hidden default: a
    * runtime that has no treasury genuinely has no money.
    */
-  readonly treasury?: { readonly balanceMinorUnits: number };
+  readonly treasury?: {
+    readonly balanceMinorUnits: number;
+    /**
+     * How far below zero this treasury may be taken, as a non-positive integer
+     * -- `Treasury.overdraftFloorMinorUnits`, the object's own field and never
+     * the constant the composition root sets it from (the owner's ruling 18 of
+     * 2026-08-31).
+     *
+     * Optional so that the fixtures in this repository that supply a bare
+     * `{ balanceMinorUnits }` still type-check; absent reports the closed floor
+     * a `new Treasury()` has, which is `0`.
+     */
+    readonly overdraftFloorMinorUnits?: number;
+  };
   /**
    * What the prison pays its staff, and what it has failed to pay them
    * ([ADR 0042](../../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
@@ -397,6 +410,17 @@ export interface StatusStripViewModel {
     readonly contrabandNameKey?: string;
     /** The treasury balance in minor units (#96). `0` when no treasury was supplied. */
     readonly treasuryMinorUnits: number;
+    /**
+     * How far below zero the balance above may be taken (the owner's ruling 18
+     * of 2026-08-31). `0` -- the closed floor -- when no treasury was supplied
+     * or the treasury has no facility open, which is the same statement and is
+     * what the strip reads as "there is no remainder to state".
+     *
+     * Always published, though the wire schema admits it as optional: see
+     * `statusCountsSchema.treasuryOverdraftFloorMinorUnits` for why a required
+     * member would drop every payload written before the field existed.
+     */
+    readonly treasuryOverdraftFloorMinorUnits: number;
     /**
      * What the in-game day in progress has earned the prison so far, in the
      * same minor units, at `tick` (#29, ADR 0017 decision 3).
@@ -716,6 +740,10 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       contrabandDiscovered,
       ...(contrabandNameKey === undefined ? {} : { contrabandNameKey }),
       treasuryMinorUnits: source.treasury?.balanceMinorUnits ?? 0,
+      // The treasury's own floor, on the same `?? 0` reading its balance takes
+      // one line up: a runtime with no treasury has no facility, and `0` is
+      // exactly what a `Treasury` with none reports.
+      treasuryOverdraftFloorMinorUnits: source.treasury?.overdraftFloorMinorUnits ?? 0,
       // The registry's own total, not `roomOccupants` above: that count is
       // built from the catalog fan-out and cannot see an instance registered
       // under an unknown room-catalog id (gap 15), while the income line is

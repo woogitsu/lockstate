@@ -988,6 +988,45 @@ export const statusCountsSchema = z
      */
     treasuryMinorUnits: signedMinorUnitsSchema,
     /**
+     * **How far below zero this prison's treasury may be taken**, as a
+     * non-positive integer of the same minor units -- the owner's ruling 18 of
+     * 2026-08-31.
+     *
+     * The balance above became a signed figure under #703 ruling A and reached
+     * the chip as a bare minus sign: nothing on screen said a facility existed,
+     * what it was worth, or how much of it was left. The badge that says so
+     * (`hud.status.funds-remaining`, "{remaining} left") needs one number the
+     * balance cannot supply, and this is it.
+     *
+     * **The treasury's own `overdraftFloorMinorUnits`, never
+     * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` restated on the other side.** The
+     * constant is what `createNewSimulationRuntime` happens to set today; the
+     * field is a property of the `Treasury` with a setter, and a badge computed
+     * from a constant would keep stating a facility the prison no longer had.
+     * The alternative considered and rejected was a second copy of the constant
+     * in `src/ui/`, which `src/ui/affordability.ts` already argues against for
+     * the host's own pre-check: one definition, read from the object that owns
+     * it.
+     *
+     * **Optional, and absent means "no facility is known".** `0` -- a treasury
+     * with the floor closed, and a `source` with no treasury at all -- says the
+     * same thing, and the strip draws no badge for either: with no room below
+     * zero there is no remainder to state, and the chip's own minus sign is the
+     * whole story. It is optional rather than required because this object is
+     * `.strict()` and fixtures written before the field exists are decoded
+     * whole; a required member would drop each of them and take fifteen other
+     * counts down with it, which is the failure `treasuryMinorUnits` above
+     * records from the other side.
+     *
+     * `.max(0)` is `Treasury.setOverdraftFloor`'s own invariant, stated where
+     * the wire can enforce it: a floor above zero would be a *minimum balance*,
+     * which is a different mechanic nothing here asks for.
+     *
+     * **`HUD_VIEW_MODEL_SCHEMA_VERSION` is deliberately not bumped**, for the
+     * reason spelled out on `treasuryMinorUnits` above.
+     */
+    treasuryOverdraftFloorMinorUnits: z.number().int().safe().max(0).optional(),
+    /**
      * What the in-game day in progress has earned so far, in the same minor
      * units (#29, ADR 0017 decision 3).
      *

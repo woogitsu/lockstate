@@ -187,14 +187,15 @@ the byte figure never moving off 380-382 -- which is exactly why
 `docs/BENCHMARKING.md` keeps this evidence reported rather than gated, and why
 the byte figure is the half of it worth quoting.
 
-What the test *asserts* is the shape and not any of these numbers -- nineteen
+What the test *asserts* is the shape and not any of these numbers -- twenty
 integers of counts, every one of them an integer scalar rather than a list, a
 refusal of exactly three scalars, and a serialized payload under a byte
 ceiling -- because the shape is the
 property that makes the cadence safe, and the population cannot move it.
 
-*(The tally reads nineteen since issue #585 added `occupiedPlaces`, the
-residency places that currently exist. It has been corrected on this line
+*(The tally reads twenty since the owner's ruling 18 of 2026-08-31 added
+`treasuryOverdraftFloorMinorUnits`, how far below zero the balance may be
+taken, on top of issue #585's `occupiedPlaces`. It has been corrected on this line
 every time a count landed, which is why the sentence now names the ceiling
 rather than quoting it: the byte figure has been raised from 436 to 493 to 533
 to 603 to 622 while this paragraph quoted one of them, and

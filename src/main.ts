@@ -92,6 +92,7 @@ import {
 import { MAX_PURCHASE_QUANTITY, staffDailyWageMinorUnits } from './simulation/economy';
 import { staffHireCostMinorUnits } from './simulation/staff';
 import { judgeAffordability } from './ui/affordability';
+import { HostRefusalError } from './ui/host-refusal';
 import { defaultStaffRoleRegistry } from './content/staff-role-catalog';
 import { defaultItemRegistry } from './content/item-catalog';
 import { procurableMaterial } from './content/procurement-catalog';
@@ -2442,9 +2443,26 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           const total = priced.unitPriceMinorUnits * intent.quantity;
           const verdict = judgeAffordability(total, viewModel.counts.treasuryMinorUnits);
           if (verdict.refused) {
-            throw new Error(
-              `The last reported balance of ${viewModel.counts.treasuryMinorUnits} cannot cover ${total}.`,
-            );
+            /*
+             * **The refusal now says which kind it is** -- the owner's ruling
+             * 18 of 2026-08-31.
+             *
+             * `HostRefusalError` carries the reason to `reportError` in
+             * `src/ui/hud/hud.ts`, which picks the sentence; a plain `Error`
+             * would land on the generic *"the purchase was refused and no money
+             * was spent"*, which is what a player saw for a limit they had no
+             * other way of learning about. Only `'past-the-floor'` is promoted:
+             * a malformed charge is a defect on this thread, and telling the
+             * player the state will not carry it would be a claim about the
+             * prison's finances that is false.
+             *
+             * The message itself is diagnostic English and reaches the host
+             * through `MountHudOptions.onError`, never the screen (ADR 0011).
+             */
+            const message = `The last reported balance of ${viewModel.counts.treasuryMinorUnits} cannot cover ${total}.`;
+            throw verdict.refusal === 'past-the-floor'
+              ? new HostRefusalError('past-the-overdraft-floor', message)
+              : new Error(message);
           }
           sender.submit({
             type: 'PurchaseMaterials',
@@ -2625,10 +2643,15 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           if (hireChargeMinorUnits === undefined) {
             throw new Error(`No staff role ${intent.staffRoleId} is declared, so nobody can be hired into it.`);
           }
-          if (judgeAffordability(hireChargeMinorUnits, viewModel.counts.treasuryMinorUnits).refused) {
-            throw new Error(
-              `The last reported balance of ${viewModel.counts.treasuryMinorUnits} cannot cover ${hireChargeMinorUnits}.`,
-            );
+          // The same two-sentence split as the purchase case above, and for the
+          // same reason (ruling 18): a wage the facility cannot carry is a
+          // limit, not the prison being out of money.
+          const hireVerdict = judgeAffordability(hireChargeMinorUnits, viewModel.counts.treasuryMinorUnits);
+          if (hireVerdict.refused) {
+            const message = `The last reported balance of ${viewModel.counts.treasuryMinorUnits} cannot cover ${hireChargeMinorUnits}.`;
+            throw hireVerdict.refusal === 'past-the-floor'
+              ? new HostRefusalError('past-the-overdraft-floor', message)
+              : new Error(message);
           }
           sender.submit({
             type: 'HireStaff',

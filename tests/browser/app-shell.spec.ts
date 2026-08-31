@@ -7892,7 +7892,12 @@ test.describe('the assembled application', () => {
     await buy.click();
     await expect(refusal).toBeVisible();
     await expect(refusal).toHaveAttribute('data-action', 'purchase-materials');
-    await expect(refusal).toContainText(localeText('hud.refusal.purchase-materials'));
+    // **The sentence changed on 2026-08-31 (#703 ruling 18) and the key did
+    // with it.** A charge the standing overdraft cannot carry is no longer
+    // answered by the generic refusal: `hud.refusal.purchase-materials` is
+    // what is left for the refusals that are not about money at all. This read
+    // the generic key until that ruling.
+    await expect(refusal).toContainText(localeText('hud.refusal.purchase-materials-past-floor'));
     // The thrown English never reaches the screen (ADR 0011).
     await expect(refusal).not.toContainText('cannot cover');
     // On the control that was pressed, as well as in the line.
@@ -7990,9 +7995,22 @@ test.describe('the assembled application', () => {
       .poll(async () => funds.textContent(), { timeout: 20_000 })
       .toBe(fundsText(settled));
 
-    // No tone, no badge: see the docblock. `data-tone` is what `setTone` sets
-    // and deletes, so its absence is the assertion.
-    await expect(page.locator('[data-metric="funds"]')).not.toHaveAttribute('data-tone', /.+/u);
+    /*
+     * **This asserted the ABSENCE of a tone and a badge, and it fired exactly
+     * as it was written to.** Its own note read: *"the minus is the whole of
+     * what a player is told ... it will go red the day somebody adds a tone
+     * without a decision behind it."* There is a decision behind it now --
+     * #703 ruling 18, on 2026-08-31 -- so the absence becomes a presence and
+     * the sentence above is kept as the record of what it used to pin.
+     *
+     * `-2,480` of 2,500 leaves 20, which is `warning` and not `danger`: room
+     * left, however little. The badge states the remainder in words, so colour
+     * is never the only signal.
+     */
+    await expect(page.locator('[data-metric="funds"]')).toHaveAttribute('data-tone', 'warning');
+    await expect(page.locator('[data-metric="funds"] .ui-badge')).toHaveText(
+      `${fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)} left`,
+    );
     await expect(page.locator('.hud__refusal')).toBeHidden();
   });
 
@@ -8031,7 +8049,12 @@ test.describe('the assembled application', () => {
 
     await expect(refusal).toBeVisible();
     await expect(refusal).toHaveAttribute('data-action', 'purchase-materials');
-    await expect(refusal).toContainText(localeText('hud.refusal.purchase-materials'));
+    // **The sentence changed on 2026-08-31 (#703 ruling 18) and the key did
+    // with it.** A charge the standing overdraft cannot carry is no longer
+    // answered by the generic refusal: `hud.refusal.purchase-materials` is
+    // what is left for the refusals that are not about money at all. This read
+    // the generic key until that ruling.
+    await expect(refusal).toContainText(localeText('hud.refusal.purchase-materials-past-floor'));
     // The thrown English never reaches the screen (ADR 0011).
     await expect(refusal).not.toContainText('cannot cover');
     // On the control that was pressed, as well as in the line -- which is the

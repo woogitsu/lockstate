@@ -9,6 +9,7 @@ import { type StatusBadge, createStatusBadge } from '../primitives/status-badge'
 import { HUD_MESSAGE_KEY } from './messages';
 import {
   CLOCK_UNKNOWN_TEXT,
+  type HudMetricBadge,
   type HudMetricId,
   dayProgressPercent,
   displayDay,
@@ -78,6 +79,28 @@ interface MetricParts {
   readonly trailing: HTMLElement;
   badge: StatusBadge | undefined;
   bar: SegmentedBar | undefined;
+}
+
+/**
+ * The parameters a badge's message is formatted with, with every
+ * `numberParameters` entry rendered through the strip's own number formatter.
+ *
+ * A function rather than three lines inline because it is the one place the
+ * strip decides that a badge's number is written the way a chip's value is. A
+ * badge reading `2400 left` under a chip reading `-100` is the strip
+ * contradicting itself about how it writes a number, and that is exactly what
+ * `String(value)` in `interpolate` produces for a raw one.
+ *
+ * `undefined` when the badge names no parameter at all, so `t` is called with
+ * one argument and a key with no placeholders takes the path it always took.
+ */
+function badgeParameters(badge: HudMetricBadge, localizer: HudLocalizer): MessageParameters | undefined {
+  if (badge.numberParameters === undefined) return undefined;
+  const formatted: Record<string, string> = {};
+  for (const [name, value] of Object.entries(badge.numberParameters)) {
+    formatted[name] = localizer.formatNumber(value);
+  }
+  return formatted;
 }
 
 export function createStatusStrip(options: StatusStripOptions): StatusStrip {
@@ -193,14 +216,22 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
         parts.badge?.element.remove();
         parts.badge = undefined;
       } else {
-        // `parameters` is present only for a badge that states a quantity
-        // (issue #588's coverage chip). Passed through `t`'s two-argument form
-        // rather than always calling it with an object, so a key with no
-        // placeholders is formatted exactly as it was before this field
-        // existed.
+        /*
+         * `numberParameters` is present only for a badge that states a
+         * quantity, and the quantity is rendered here rather than by the
+         * projection: grouped and localised the way this chip's own value is,
+         * which is the owner's ruling 18 of 2026-08-31 for `{remaining} left`.
+         * The projection has no localizer and must not acquire one, so it names
+         * the number and this line writes it.
+         *
+         * Passed through `t`'s two-argument form only when something is there,
+         * so a key with no placeholders is formatted exactly as it was before
+         * the field existed.
+         */
+        const parameters = badgeParameters(descriptor.badge, localizer);
         const next = {
           tone: descriptor.badge.tone,
-          text: t(descriptor.badge.textKey, descriptor.badge.parameters),
+          text: t(descriptor.badge.textKey, parameters),
         };
         if (parts.badge === undefined) {
           parts.badge = createStatusBadge(next);

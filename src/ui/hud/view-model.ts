@@ -286,17 +286,50 @@ export interface HudCountsViewModel {
    * `formatNumber('en', -4000)` is `-4,000`, pinned in
    * `tests/integration/economy-negative-balance-readers.test.ts`.
    *
-   * **And that is the whole of what a player is told, which is a gap and not a
-   * design.** There is no tone, no badge and no sentence anywhere saying the
-   * facility exists, what it is worth, or that spending it can strand a prison
-   * -- so a player meets the overdraft by hitting it. Whatever copy would
-   * explain it is the owner's under `AGENTS.md`'s fourth exclusion (*"anything
-   * that reaches a player as a promise the code does not keep"*), and the two
-   * places it would have to go are **here**, as a tone or badge on the `funds`
-   * chip, and the Build panel's own refusal sentence. Both are deliberately
-   * left empty rather than filled in with an invented string.
+   * **That used to be the whole of what a player was told, and the paragraph
+   * that said so is kept because it is what the owner ruled on.** It read: there
+   * is no tone, no badge and no sentence anywhere saying the facility exists,
+   * what it is worth, or that spending it can strand a prison -- so a player
+   * meets the overdraft by hitting it; whatever copy would explain it is the
+   * owner's under `AGENTS.md`'s fourth exclusion (*"anything that reaches a
+   * player as a promise the code does not keep"*), and the two places it would
+   * have to go are **here**, as a tone or badge on the `funds` chip, and the
+   * Build panel's own refusal sentence.
+   *
+   * **The owner ruled on both places on 2026-08-31 (ruling 18) and authored
+   * both strings**, so neither is empty any more. The chip takes a tone and a
+   * `{remaining} left` badge whenever the balance is negative (`overdraftTone`
+   * and `overdraftBadge` in `./projection.ts`), and a charge the facility
+   * cannot carry reads *"that would go past what the state will carry"* rather
+   * than the generic refusal (`hud.refusal.purchase-materials-past-floor`).
+   * What is still nowhere on screen, and is worth naming rather than assuming
+   * closed: nothing says the facility exists **before** a player goes negative.
    */
   readonly treasuryMinorUnits: number;
+  /**
+   * How far below zero `treasuryMinorUnits` may be taken, as a non-positive
+   * integer of the same units -- the treasury's own
+   * `overdraftFloorMinorUnits`, published since the owner's ruling 18 of
+   * 2026-08-31 (`statusCountsSchema.treasuryOverdraftFloorMinorUnits`).
+   *
+   * It is what makes `{remaining} left` computable: the remainder is
+   * `treasuryMinorUnits - treasuryOverdraftFloorMinorUnits`, and there is no
+   * other figure on this view model it can be derived from.
+   *
+   * **Read, never assumed.** The HUD may not import the simulation
+   * (`AGENTS.md` boundary 1), so the alternative to publishing it was a second
+   * copy of `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` inside `src/ui/`, which
+   * `src/ui/affordability.ts` argues against for the host's own pre-check --
+   * and which would go on stating a facility a prison had stopped having.
+   *
+   * Optional for the reason `contrabandNameKey` above is: the field one layer
+   * down crosses a channel where a present-but-`undefined` value fails to
+   * decode, and every fixture written before the field existed carries neither.
+   * Absent and `0` say the same thing -- no facility is known -- and the strip
+   * draws no badge for either, because with no room below zero there is no
+   * remainder to state.
+   */
+  readonly treasuryOverdraftFloorMinorUnits?: number;
   /**
    * What the in-game day in progress has earned so far, in the same minor
    * units (#29).

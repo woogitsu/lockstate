@@ -281,16 +281,26 @@ describe('status strip: tone and badges', () => {
     expect(metric(counts({ contrabandFound: 2 }), 'contraband').badge).toBeUndefined();
   });
 
-  it('escalates the coverage chip one rung at a time, and says which rung in words', () => {
+  it('escalates the coverage chip one rung at a time, and says which rung in one word', () => {
     /*
-     * Issue #588's `Covered N / Understaffed N / Unguarded N`, as the three
-     * things the chip can say. The value is the covered count and the badge
-     * carries the other two, so all three numbers are on the strip without one
-     * of them being stated twice.
+     * **The owner's ruling 21 of 2026-08-31, and it is a narrowing of what this
+     * test used to require.**
      *
-     * The ladder is `describeStaffCoverage`'s and the reason is its: a prison
-     * with somebody unguarded is not a worse version of an understaffed one,
-     * so `unguarded` is checked first and wins even when both are non-zero.
+     * Issue #588 put `Covered N / Understaffed N / Unguarded N` on the strip so
+     * that the value carried the top rung and the badge carried the other two
+     * *with their counts*, and the paragraph that stood here said all three
+     * numbers were on the strip without one of them being stated twice. That
+     * was true and it is now false: the badge states the worst rung in the one
+     * authored word the Staff panel already uses, and the two counts are not on
+     * the strip at all. The ruling's own reason is width -- at 1280 a strip
+     * carrying every badge is 1,627px of content in a 1,256px row, and this
+     * badge is the second-largest single contributor -- and the cost it accepts
+     * is exactly the sentence #588 asked for.
+     *
+     * The ladder itself is untouched, and it is still `describeStaffCoverage`'s
+     * for its reason: a prison with somebody unguarded is not a worse version of
+     * an understaffed one, so `unguarded` is checked first and wins even when
+     * both are non-zero. What changed is only how many words say so.
      */
     const covered = metric(counts({ prisonersCovered: 8 }), 'coverage');
     expect(covered.value).toBe(8);
@@ -299,28 +309,41 @@ describe('status strip: tone and badges', () => {
     // copy of it -- so the strip and the Staff panel cannot come to disagree.
     expect(covered.badge).toEqual({ tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet });
 
+    // And the other two rungs now reuse the Staff panel's words for the same
+    // reason the top rung always has: `hud.security.coverage-short` and
+    // `hud.security.coverage-unguarded` are already authored and already on
+    // screen, so ruling 21 authors no string at all.
     const short = metric(counts({ prisonersCovered: 8, prisonersUnderstaffed: 3 }), 'coverage');
     expect(short.tone).toBe('warning');
-    expect(short.badge).toEqual({
-      tone: 'warning',
-      textKey: HUD_MESSAGE_KEY.coverageDetail,
-      parameters: { understaffed: 3, unguarded: 0 },
-    });
+    expect(short.badge).toEqual({ tone: 'warning', textKey: HUD_MESSAGE_KEY.securityCoverageShort });
 
+    /*
+     * **The worst rung, and only the worst rung.** This used to require both
+     * counts, on the argument that a player who fixed the unguarded rung would
+     * not otherwise know there was a second one underneath it. That argument is
+     * not refuted, it is outweighed -- and what answers it is that the rung
+     * underneath is still on screen the moment the one above is cleared, on this
+     * same badge, because the ladder is re-evaluated on every publication.
+     */
     const dark = metric(counts({ prisonersCovered: 8, prisonersUnderstaffed: 3, prisonersUnguarded: 1 }), 'coverage');
     expect(dark.tone).toBe('danger');
-    // Both counts, not only the one that set the tone: the badge is the whole
-    // of the remainder, and a player who fixed the unguarded rung would
-    // otherwise not know there was a second one underneath it.
-    expect(dark.badge).toEqual({
-      tone: 'danger',
-      textKey: HUD_MESSAGE_KEY.coverageDetail,
-      parameters: { understaffed: 3, unguarded: 1 },
-    });
+    expect(dark.badge).toEqual({ tone: 'danger', textKey: HUD_MESSAGE_KEY.securityCoverageUnguarded });
 
     // Unguarded with nobody understaffed still reads danger, so the two rungs
     // are independent rather than a two-step scale one has to climb.
-    expect(metric(counts({ prisonersUnguarded: 2 }), 'coverage').tone).toBe('danger');
+    const unguardedOnly = metric(counts({ prisonersUnguarded: 2 }), 'coverage');
+    expect(unguardedOnly.tone).toBe('danger');
+    expect(unguardedOnly.badge).toEqual({ tone: 'danger', textKey: HUD_MESSAGE_KEY.securityCoverageUnguarded });
+
+    /*
+     * **No badge on this chip carries a parameter any more**, which is the
+     * property that makes the saving real rather than a shorter default: a key
+     * with a placeholder is a key whose rendered width follows the prison's
+     * numbers, and the ruling is about a width.
+     */
+    for (const state of [covered, short, dark, unguardedOnly]) {
+      expect(state.badge?.numberParameters, 'a coverage badge states a rung, never a count').toBeUndefined();
+    }
   });
 
   it('reads the empty prison as covered, which is what a prison with nobody in a sector is', () => {
@@ -330,6 +353,120 @@ describe('status strip: tone and badges', () => {
     const empty = metric(counts(), 'coverage');
     expect(empty.value).toBe(0);
     expect(empty.badge).toEqual({ tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet });
+  });
+
+  /**
+   * **The owner's ruling 18 of 2026-08-31, and the arithmetic in it is the one
+   * number here that can be wrong in a way a player would believe.**
+   *
+   * `{remaining}` is *"how much of the facility is still spendable"*, i.e.
+   * `balance - floor`. A badge that were one unit generous would send a player
+   * to press a control the simulation is going to refuse; one that were one
+   * unit mean would hide a purchase they can afford, which is the failure #82
+   * and #207 are about. So the boundary is pinned from both sides, and the
+   * fixtures never compute the expected figure from the code under test.
+   */
+  it('says how much of the overdraft is left, and never a number below zero', () => {
+    const FLOOR = -2_500;
+    const badge = (treasuryMinorUnits: number, floor: number | undefined = FLOOR) =>
+      metric(
+        counts({
+          treasuryMinorUnits,
+          ...(floor === undefined ? {} : { treasuryOverdraftFloorMinorUnits: floor }),
+        }),
+        'funds',
+      );
+
+    // The remainder, spelled out rather than subtracted, so the fixture cannot
+    // agree with a wrong implementation: at -2,480 the owner's own worked
+    // example is 20.
+    expect(badge(-2_480).badge).toEqual({
+      tone: 'warning',
+      textKey: HUD_MESSAGE_KEY.fundsRemaining,
+      numberParameters: { remaining: 20 },
+    });
+    expect(badge(-1).badge?.numberParameters).toEqual({ remaining: 2_499 });
+    expect(badge(-1_250).badge?.numberParameters).toEqual({ remaining: 1_250 });
+
+    /*
+     * **Exactly at the floor reads `0 left`, not a negative.** This is the
+     * boundary the ruling names: the prison can spend nothing, and a badge
+     * reading `-0` or `0` are different sentences to a player only if one of
+     * them is wrong.
+     */
+    expect(badge(FLOOR).badge).toEqual({
+      tone: 'danger',
+      textKey: HUD_MESSAGE_KEY.fundsRemaining,
+      numberParameters: { remaining: 0 },
+    });
+
+    /*
+     * And **below** the floor, which `Treasury.spend` will not produce but a
+     * restored save or a future charge that bypasses `canAfford` could: the
+     * remainder is clamped, for `prisonersWithoutBed`'s reason -- a negative
+     * remainder is a nonsense sentence on screen, and the worst case here is a
+     * badge that understates by saying the truth of the floor.
+     */
+    expect(badge(-3_000).badge?.numberParameters).toEqual({ remaining: 0 });
+    expect(badge(-3_000).badge?.tone).toBe('danger');
+  });
+
+  it('leaves the funds chip exactly as it was while the prison is solvent', () => {
+    // No badge and no tone at zero or above, which is the state a player
+    // spends the game in. `coverageTone`'s rule applied to the busiest number
+    // on the strip: a chip that always carries a pill is a pill nobody reads
+    // in the one screenshot it matters in.
+    for (const balance of [0, 1, 25_000, 1_284_500]) {
+      const chip = metric(counts({ treasuryMinorUnits: balance, treasuryOverdraftFloorMinorUnits: -2_500 }), 'funds');
+      expect(chip.badge, `balance ${String(balance)}`).toBeUndefined();
+      expect(chip.tone, `balance ${String(balance)}`).toBeUndefined();
+      expect(chip.value).toBe(balance);
+    }
+  });
+
+  it('says nothing about a facility it was not told about', () => {
+    /*
+     * Absent and `0` are the same statement -- no room below zero is known --
+     * and there is no remainder to state for either. A badge here would have to
+     * invent the floor, which is exactly what publishing it exists to avoid.
+     * Every payload written before ruling 18 is in this case.
+     */
+    expect(metric(counts({ treasuryMinorUnits: -2_480 }), 'funds').badge).toBeUndefined();
+    expect(metric(counts({ treasuryMinorUnits: -2_480 }), 'funds').tone).toBeUndefined();
+    expect(
+      metric(counts({ treasuryMinorUnits: -2_480, treasuryOverdraftFloorMinorUnits: 0 }), 'funds').badge,
+    ).toBeUndefined();
+  });
+
+  /**
+   * **Two tones, not one, and the split is `coverageTone`'s argument applied to
+   * money.**
+   *
+   * A prison at -100 and a prison at -2,500 are not the same state told louder:
+   * the first can still buy the plank that finishes the cell, and the second
+   * can buy nothing at all until the state pays it. That is the same
+   * distinction `coverageTone` draws between understaffed and unguarded -- the
+   * rung where the cheapest available action stops changing the outcome -- and
+   * it is why `danger` is reserved for the floor rather than spent on the first
+   * minus sign.
+   *
+   * Colour is never the only signal in either: the badge states the remainder
+   * in words, and at the floor those words are `0 left`.
+   */
+  it('reserves danger for the floor itself, and paints the chip and its badge alike', () => {
+    const at = (treasuryMinorUnits: number) =>
+      metric(counts({ treasuryMinorUnits, treasuryOverdraftFloorMinorUnits: -2_500 }), 'funds');
+
+    expect(at(-1).tone).toBe('warning');
+    expect(at(-2_499).tone, 'one unit of room left is still room').toBe('warning');
+    expect(at(-2_500).tone, 'and none at all is not').toBe('danger');
+
+    // One decision, two channels: the chip and its badge cannot disagree about
+    // how bad this is.
+    for (const balance of [-1, -2_499, -2_500, -4_000]) {
+      const chip = at(balance);
+      expect(chip.badge?.tone, `balance ${String(balance)}`).toBe(chip.tone);
+    }
   });
 
   it('sets no capacity on the coverage chip, because the population is not its denominator', () => {
@@ -373,7 +510,7 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
     expect(chip.badge).toEqual({
       tone: 'warning',
       textKey: HUD_MESSAGE_KEY.prisonersWithoutBed,
-      parameters: { count: 9 },
+      numberParameters: { count: 9 },
     });
     // The same 9 the Intake panel already says out loud in this prison --
     // "9 waiting with no bed to sleep in" -- which is why the strip uses the
@@ -396,7 +533,7 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
     expect(metric(counts({ prisoners: 4, occupiedPlaces: 2, prisonerCapacity: 4 }), 'prisoners').badge).toEqual({
       tone: 'warning',
       textKey: HUD_MESSAGE_KEY.prisonersWithoutBed,
-      parameters: { count: 2 },
+      numberParameters: { count: 2 },
     });
   });
 
@@ -415,7 +552,7 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
     expect(metric(counts({ prisoners: 1, occupiedPlaces: 0 }), 'prisoners').badge).toEqual({
       tone: 'warning',
       textKey: HUD_MESSAGE_KEY.prisonersWithoutBed,
-      parameters: { count: 1 },
+      numberParameters: { count: 1 },
     });
   });
 
@@ -440,7 +577,7 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
     expect(afterRemoval.badge).toEqual({
       tone: 'warning',
       textKey: HUD_MESSAGE_KEY.prisonersWithoutBed,
-      parameters: { count: 1 },
+      numberParameters: { count: 1 },
     });
 
     // What the rejected field would have produced from the same prison:
@@ -467,7 +604,7 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
     // else still has a prisoner whose own bed was removed.
     const spareBeds = metric(counts({ prisoners: 4, occupiedPlaces: 2, prisonerCapacity: 8 }), 'prisoners');
     expect(spareBeds.tone, 'four prisoners in a prison with eight beds is nowhere near capacity').toBeUndefined();
-    expect(spareBeds.badge?.parameters, 'and two of them still have nowhere to sleep').toEqual({ count: 2 });
+    expect(spareBeds.badge?.numberParameters, 'and two of them still have nowhere to sleep').toEqual({ count: 2 });
   });
 
   it('never prints a negative shortfall, however the two counts arrive', () => {
@@ -696,5 +833,47 @@ describe('refusalMessageKey: what a refused control says', () => {
 
   it('says nothing about an action it has never heard of', () => {
     expect(refusalMessageKey('teleport-prisoner')).toBeUndefined();
+  });
+
+  /**
+   * **The owner's ruling 18 of 2026-08-31.** A charge the standing overdraft
+   * cannot carry is a *limit* being reached, and until this branch existed the
+   * player was told only that the purchase "was refused and no money was
+   * spent" -- true, and silent about the one fact that would change what they
+   * do next.
+   */
+  it('names the floor when the floor is what refused, on both intents that cost money', () => {
+    expect(refusalMessageKey('purchase-materials', 'past-the-overdraft-floor')).toBe(
+      HUD_MESSAGE_KEY.refusalPurchaseMaterialsPastFloor,
+    );
+    expect(refusalMessageKey('hire-staff', 'past-the-overdraft-floor')).toBe(
+      HUD_MESSAGE_KEY.refusalHireStaffPastFloor,
+    );
+
+    // And the two are distinct sentences, for the reason every member of this
+    // family is: one prison has no materials on the way and the other has no
+    // new staff member, and reading the wrong one sends the player to the
+    // wrong panel.
+    expect(refusalMessageKey('purchase-materials', 'past-the-overdraft-floor')).not.toBe(
+      refusalMessageKey('hire-staff', 'past-the-overdraft-floor'),
+    );
+
+    // The generic sentence is what a refusal with no reason still reads, which
+    // is every refusal the interface had before the ruling.
+    expect(refusalMessageKey('purchase-materials')).toBe(HUD_MESSAGE_KEY.refusalPurchaseMaterials);
+    expect(refusalMessageKey('hire-staff')).toBe(HUD_MESSAGE_KEY.refusalHireStaff);
+    expect(refusalMessageKey('purchase-materials', undefined)).toBe(HUD_MESSAGE_KEY.refusalPurchaseMaterials);
+  });
+
+  it('does not let the reason invent a sentence for a control that has none', () => {
+    /*
+     * A reason is attached by the composition root to two intents and could be
+     * attached to a third by mistake. Falling through to the control's own
+     * sentence is the answer that cannot put a claim about money on a control
+     * that never spends any -- and a chrome intent still says nothing at all.
+     */
+    expect(refusalMessageKey('set-clock', 'past-the-overdraft-floor')).toBe(HUD_MESSAGE_KEY.refusalSetClock);
+    expect(refusalMessageKey('undo', 'past-the-overdraft-floor')).toBe(HUD_MESSAGE_KEY.refusalUndo);
+    expect(refusalMessageKey('select-tab', 'past-the-overdraft-floor')).toBeUndefined();
   });
 });

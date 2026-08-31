@@ -159,6 +159,21 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
          */
         ...(counts.contrabandNameKey === undefined ? {} : { contrabandNameKey: counts.contrabandNameKey }),
         treasuryMinorUnits: counts.treasuryMinorUnits,
+        /*
+         * Straight through and conditionally spread, exactly as
+         * `contrabandNameKey` below is: the field is optional on both sides,
+         * and writing `treasuryOverdraftFloorMinorUnits: counts.…` unguarded
+         * would put a present-but-`undefined` key on the view model for every
+         * payload that carries no floor.
+         *
+         * The treasury's own floor (the owner's ruling 18 of 2026-08-31), never
+         * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` restated here -- which is what
+         * keeps this module's simulation dependency type-only and the HUD's
+         * `{remaining} left` badge a reading rather than an assumption.
+         */
+        ...(counts.treasuryOverdraftFloorMinorUnits === undefined
+          ? {}
+          : { treasuryOverdraftFloorMinorUnits: counts.treasuryOverdraftFloorMinorUnits }),
         stateIncomeAccruedTodayMinorUnits: counts.stateIncomeAccruedTodayMinorUnits,
         /**
          * Straight through, for `accommodationCapacity`'s reason above, and it

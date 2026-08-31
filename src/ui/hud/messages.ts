@@ -60,23 +60,33 @@ export const HUD_MESSAGE_KEY = {
    * panel are recognisably about one thing.
    */
   coverage: 'hud.status.coverage',
-  /**
-   * The two rungs that are *not* covered, as a sentence under the chip.
+  /*
+   * **`coverageDetail` stood here and is gone** -- `hud.status.coverage-detail`,
+   * `'{understaffed} understaffed · {unguarded} unguarded'`, removed by the
+   * owner's ruling 21 of 2026-08-31 along with its default-locale entry.
    *
-   * The chip's own value is how many prisoners are covered; this names the
-   * remainder and splits it, which is what issue #588 asks the strip for --
-   * `Covered N / Understaffed N / Unguarded N`, *"so the 40s are
-   * attributable"*. A player whose prisoner-day grant is short of the headline
-   * 300 can read off this line how much of the population is paying the
-   * `safety` withholding and which of the two reasons each part of it is
-   * paying for.
+   * Both directions are recorded rather than the entry simply vanishing,
+   * because the reason it existed has not gone away. Issue #588 authored it so
+   * that the chip's value carried the top rung while this line carried the
+   * whole of the remainder *with its counts*, "so the 40s are attributable":
+   * since ADR 0064 the state withholds part of the prisoner-day grant per unmet
+   * need, and those two numbers are how much of the population is paying the
+   * `safety` withholding and for which of the two reasons. That is a real
+   * readout and the strip no longer has it.
    *
-   * Not rendered when both are zero: the badge falls back to
-   * `securityCoverageMet` ("Covered"), which is a sentence this repository
-   * already ships and which an all-covered prison should read as. A line of
-   * two zeroes would be noise on the one strip a player glances at.
+   * What removed it is a width the owner measured rather than a change of mind
+   * about the readout: at 1280 a strip carrying every badge is 1,627px of
+   * content in a 1,256px row, and this sentence was the second-largest single
+   * contributor. `coverageBadge` (`./projection.ts`) now reuses
+   * `securityCoverageShort` and `securityCoverageUnguarded`, which are authored
+   * already and already on screen in the Staff panel -- so the ruling costs the
+   * two counts and authors no string. The counts stay readable in full on that
+   * panel.
+   *
+   * The key was deleted rather than left unread because an entry nobody renders
+   * is content a translator will still translate: `docs/research/2026-08-30-candidate-polish-translations.md`
+   * already carries a proposed Polish rendering of this exact sentence.
    */
-  coverageDetail: 'hud.status.coverage-detail',
   contraband: 'hud.status.contraband',
   /**
    * The treasury balance chip (#96).
@@ -87,6 +97,25 @@ export const HUD_MESSAGE_KEY = {
    * the number be shown honestly without inventing one.
    */
   funds: 'hud.status.funds',
+  /**
+   * How much of the standing overdraft is still spendable, under the `FUNDS`
+   * chip while the balance is negative -- the owner's ruling 18 of 2026-08-31,
+   * and the owner's own words: `{remaining} left`.
+   *
+   * `{remaining}` is `balance - overdraftFloor`, rendered through the strip's
+   * own number formatter so it groups exactly as the figure above it does
+   * (`HudMetricBadge.numberParameters`). At the floor it is `0`, which is the
+   * true sentence for a prison that can spend nothing.
+   *
+   * **The one key in this registry named after a quantity of money besides the
+   * chip's own label**, and the allow-list in
+   * `tests/unit/ui-hud-messages.test.ts` is extended for it rather than the
+   * rule relaxed. What that rule guards against is a string inviting a number
+   * no system produces; this number is produced by `Treasury` and published on
+   * `simulation/status-counts`, and the rule's own exception for
+   * `hud.status.funds` is the same exception one field wider.
+   */
+  fundsRemaining: 'hud.status.funds-remaining',
   /**
    * The rising "earned today" chip beside the balance (#29).
    *
@@ -901,6 +930,37 @@ export const HUD_MESSAGE_KEY = {
    * wrong panel.
    */
   refusalHireStaff: 'hud.refusal.hire-staff',
+  /**
+   * The two sentences for the one refusal that is a **limit** rather than an
+   * absence -- the owner's ruling 18 of 2026-08-31, and both are the owner's
+   * own words.
+   *
+   * Every prison has a standing overdraft of one tenth of its opening grant
+   * (`TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`, #703 ruling A, ADR 0083 §2), so a
+   * charge this thread refuses on money has not run the prison out of money: it
+   * has reached the end of what the state will carry. The pair above cannot say
+   * that -- they are chosen from the `actionId`, which names the control and not
+   * the reason -- and until this pair existed the player read *"the purchase was
+   * refused and no money was spent"* for a limit they had no other way of
+   * learning about.
+   *
+   * **Two keys and not one, for the reason the pair above is two keys**: one
+   * prison has no materials on the way and the other has no new staff member.
+   * The reason travels from `src/main.ts` as a `HostRefusalError`
+   * (`src/ui/host-refusal.ts`) and `refusalMessageKey` in `./projection.ts`
+   * chooses between the four.
+   *
+   * **They do not cover the same refusal decided a tick later.** A charge the
+   * *worker* refuses arrives as `hud.alert.refusal.purchase.insufficient-funds`
+   * or `hud.alert.refusal.hire.insufficient-funds` through the alerts list --
+   * the simulation's own vocabulary, which as of this ruling still says "there
+   * are not enough funds" for a refusal that is also always the floor. Ruling 18
+   * authored no replacement for those two, so they are unchanged; the two sit on
+   * opposite sides of `sender.submit`, so one press produces exactly one of
+   * them.
+   */
+  refusalPurchaseMaterialsPastFloor: 'hud.refusal.purchase-materials-past-floor',
+  refusalHireStaffPastFloor: 'hud.refusal.hire-staff-past-floor',
   refusalUndo: 'hud.refusal.undo',
   refusalRedo: 'hud.refusal.redo',
   /**

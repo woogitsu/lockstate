@@ -1,5 +1,6 @@
 import type { LocalizationKey } from '../../content/localization';
 import type { MessageParameters } from '../../services/localization/format';
+import { hostRefusalReason } from '../host-refusal';
 import {
   type AsyncActionFailure,
   AsyncActionGate,
@@ -1161,7 +1162,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * to swallow the player's half of the report.
    */
   const reportError = (failure: AsyncActionFailure): void => {
-    const messageKey = refusalMessageKey(failure.actionId);
+    // The reason, when the thrown value named one -- the owner's ruling 18 of
+    // 2026-08-31. `hostRefusalReason` answers `undefined` for every value that
+    // did not, which is every refusal this line has ever handled, so the
+    // sentence a control read before the ruling is what it goes on reading.
+    const messageKey = refusalMessageKey(failure.actionId, hostRefusalReason(failure.error));
     // `undefined` is a chrome intent, which has already been applied locally
     // -- see `refusalMessageKey`. Nothing is shown, and the host still hears.
     if (messageKey !== undefined) {

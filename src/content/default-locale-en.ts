@@ -169,13 +169,18 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.status.rooms': 'Rooms',
   'hud.status.incidents': 'Incidents',
   'hud.status.coverage': 'Coverage',
-  'hud.status.coverage-detail': '{understaffed} understaffed · {unguarded} unguarded',
   'hud.status.contraband': 'Contraband',
   // The treasury balance (#96). "Funds" names no currency on purpose: #96
   // settled that money is primary and did not name a unit, and the number is
   // shown as a plain count of the units the simulation holds it in rather
   // than converted into a major unit nobody has chosen yet.
   'hud.status.funds': 'Funds',
+  // How much of the standing overdraft is left, under the balance while it is
+  // negative (the owner's ruling 18 of 2026-08-31, in the owner's own words).
+  // No unit and no currency, for the same reason the label above names none:
+  // the number is in the minor units the simulation holds, and the chip's own
+  // figure is beside it in the same units.
+  'hud.status.funds-remaining': '{remaining} left',
   // What this in-game day has earned so far (#29). The state pays per
   // prisoner-day at the end of the day, so this is the day's accrual and the
   // wording says so: "Earned today", never "Income" -- there is no rate, no
@@ -295,6 +300,19 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // reason the `zone.*` pair further down does: the treasury refuses a hire
   // and a purchase alike, and somebody who pressed Hire must not be told the
   // materials were not ordered.
+  //
+  // **Both of these say "not enough funds" for a refusal that is, since #703
+  // ruling A, always the overdraft floor** -- and that is recorded here rather
+  // than fixed. `GuardRoster.hire` refuses at `src/simulation/staff/hiring.ts:199`
+  // and `ProcurementSystem.purchase` at `src/simulation/economy/procurement.ts:166`,
+  // both on a `Treasury.spend` that is one `canAfford` comparison against the
+  // floor, so the worker-side sentence carries exactly the conflation the
+  // owner's ruling 18 of 2026-08-31 removed from the *host* side
+  // (`hud.refusal.purchase-materials-past-floor` and its hire twin). Ruling 18
+  // authored two sentences and these are not them, and a replacement is
+  // player-facing copy -- `AGENTS.md`'s fourth exclusion -- so the two halves of
+  // one refusal currently read differently depending on which side of
+  // `sender.submit` decided it.
   'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — there are not enough funds.',
   // ADR 0053: the only work a staff member can be sent to do today is a
   // security duty, so a role outside the security department is a wage with
@@ -988,6 +1006,13 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.refusal.place-build-order': 'The build order was not placed — the request was refused.',
   'hud.refusal.purchase-materials': 'Nothing was bought — the purchase was refused and no money was spent.',
   'hud.refusal.hire-staff': 'Nobody was hired — the request was refused and no money was spent.',
+  // The owner's ruling 18 of 2026-08-31, in the owner's own words. Every prison
+  // has a standing overdraft (#703 ruling A), so a charge this thread refuses
+  // on money has reached the end of what the state will carry rather than run
+  // the prison out of money -- and the two sentences above cannot say which,
+  // because they are chosen from the control that was pressed.
+  'hud.refusal.purchase-materials-past-floor': 'Nothing was bought — that would go past what the state will carry.',
+  'hud.refusal.hire-staff-past-floor': 'Nobody was hired — that would go past what the state will carry.',
   'hud.refusal.undo': 'Nothing was undone — the request was refused.',
   'hud.refusal.redo': 'Nothing was redone — the request was refused.',
   'hud.refusal.zone-room': 'The room was not designated — the request was refused.',

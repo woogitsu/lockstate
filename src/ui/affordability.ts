@@ -37,17 +37,46 @@ import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS } from '../simulation/economy';
  *
  * ## Why the floor is a default argument and not read from a view model
  *
- * The status channel publishes the *balance* and no floor
- * (`statusCountsSchema`), so the host has nothing to read one from and adding a
- * field would put a second copy of a constant on the wire. The default is the
- * same constant the composition root applies to the `Treasury`, so both sides
- * of the boundary derive from one definition -- and it stays a parameter so
- * that the boundary cases below can be driven at a floor of `0`, which is what
- * a session had before the ruling and what a bare `new Treasury()` still has.
+ * The default is the same constant the composition root applies to the
+ * `Treasury`, so both sides of the boundary derive from one definition -- and it
+ * stays a parameter so that the boundary cases below can be driven at a floor of
+ * `0`, which is what a session had before the ruling and what a bare
+ * `new Treasury()` still has.
+ *
+ * **The reason this paragraph used to give is now false and is kept rather than
+ * overwritten.** It read: *"The status channel publishes the balance and no
+ * floor (`statusCountsSchema`), so the host has nothing to read one from and
+ * adding a field would put a second copy of a constant on the wire."* That was
+ * true when it was written and stopped being true the same week: the owner's
+ * ruling 18 of 2026-08-31 needed the floor **in the interface** -- the `FUNDS`
+ * chip's `{remaining} left` badge cannot be computed without it -- and the
+ * choice was between publishing it and keeping a second copy of the constant
+ * inside `src/ui/`, which is exactly what this paragraph refused. So
+ * `statusCountsSchema.treasuryOverdraftFloorMinorUnits` exists, and it carries
+ * the treasury's **own** `overdraftFloorMinorUnits` rather than the constant --
+ * which is why it is not the second copy the old sentence feared.
+ *
+ * **This function still does not read it, and that is a decision rather than an
+ * oversight.** Reading a floor off the view model here would make the host's
+ * pre-flight depend on a *published* value that is at most 500ms old, where the
+ * default argument is the same definition the treasury was built from and cannot
+ * lag. If the floor ever becomes something a session changes, that trade
+ * reverses and this parameter should be fed from `HudCountsViewModel`.
  */
 export interface AffordabilityVerdict {
-  /** Whether the charge should be refused before the command is sent. */
+  /**
+   * Whether the charge should be refused before the command is sent.
+   *
+   * Exactly `refusal !== undefined`, kept as its own field because it is what
+   * every call site asks and reading it should not require knowing the
+   * vocabulary.
+   */
   readonly refused: boolean;
+  /**
+   * Which branch refused, or `undefined` when none did. See
+   * `AffordabilityRefusal`.
+   */
+  readonly refusal: AffordabilityRefusal | undefined;
   /** The charge that was tested, echoed so a caller can report it without recomputing it. */
   readonly chargeMinorUnits: number;
   /** The balance it was tested against. */
@@ -61,6 +90,34 @@ export interface AffordabilityVerdict {
    */
   readonly spendableMinorUnits: number;
 }
+
+/**
+ * Which branch of `judgeAffordability` refused, so the caller can choose a
+ * sentence for it (the owner's ruling 18 of 2026-08-31).
+ *
+ * ## Why two members and not three
+ *
+ * The obvious vocabulary is "the money ran out" against "a limit was reached",
+ * and **with a facility open those are not two events**. `refused` is
+ * `balance - charge < floor` and nothing else, so every money refusal a player
+ * can provoke is a floor crossing: a prison at 25,000 asked for 30,000 is
+ * refused for the same reason, and by the same comparison, as one at -2,480
+ * asked for 65. There is no branch left for "no money" to be.
+ *
+ * What that leaves the generic refusal covering is every refusal that is *not*
+ * about money -- no session at all, an item nothing sells, and the malformed
+ * charge below -- which is what `hud.refusal.purchase-materials` says today and
+ * goes on saying.
+ *
+ * ## `'past-the-floor'` at a floor of zero
+ *
+ * A bare `new Treasury()` has no facility, so there the same branch really does
+ * mean the money ran out. The branch is still named the same, deliberately: a
+ * reason whose meaning changed with the floor would be a reason no caller could
+ * map to a string. Choosing the sentence is the composition root's, and the
+ * only floor it ever passes is the shipped constant.
+ */
+export type AffordabilityRefusal = 'past-the-floor' | 'malformed-charge';
 
 /**
  * The one comparison, and it is deliberately the same shape as
@@ -82,8 +139,17 @@ export function judgeAffordability(
 ): AffordabilityVerdict {
   const spendableMinorUnits = balanceMinorUnits - overdraftFloorMinorUnits;
   const wellFormed = Number.isSafeInteger(chargeMinorUnits) && chargeMinorUnits >= 0;
+  // Well-formedness first, and the order is the sentence's: a `NaN` quantity is
+  // a defect on this thread, and answering it with "the state will not carry
+  // that" would be a statement about the prison's finances that is false.
+  const refusal: AffordabilityRefusal | undefined = !wellFormed
+    ? 'malformed-charge'
+    : balanceMinorUnits - chargeMinorUnits < overdraftFloorMinorUnits
+      ? 'past-the-floor'
+      : undefined;
   return {
-    refused: !wellFormed || balanceMinorUnits - chargeMinorUnits < overdraftFloorMinorUnits,
+    refused: refusal !== undefined,
+    refusal,
     chargeMinorUnits,
     balanceMinorUnits,
     spendableMinorUnits,
