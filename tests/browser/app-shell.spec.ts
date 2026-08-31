@@ -2742,6 +2742,15 @@ test.describe('the assembled application', () => {
      * button. The disclosure is closed again afterwards, because the loop's own
      * assertions start from the arrival state and one of them is that opening it
      * is what reveals the row.
+     *
+     * **The first clause of that stopped being true on 2026-08-31** (issue #703
+     * ruling 2): the rows are laid out with the fold shut, so the sweep meets
+     * them on its first pass rather than only in the state that opens the
+     * disclosure. Everything else stands -- the list still has to be made
+     * non-empty, still through the real application, and the fold is still shut
+     * again afterwards. What the fold now reveals is the stepper and the buy
+     * button, which is the pair the loop's own opened-state assertions are
+     * about.
      */
     const setupBuyToggle = page.locator('.hud-build__buy-toggle');
     await setupBuyToggle.click();
@@ -2764,6 +2773,11 @@ test.describe('the assembled application', () => {
      * `data-pending` rather than a box: the block is inside a disclosure whose
      * own state this setup is about to change back, and the attribute is what
      * the panel writes when the projection answers with a non-empty list.
+     *
+     * Since #703 ruling 2 the block would answer a box question here too, and
+     * the attribute is still the right one to poll: it is the count, and this
+     * poll is about the count being **nine** rather than about anything being
+     * painted.
      */
     await expect
       .poll(async () => page.locator('.hud-build__deliveries').getAttribute('data-pending'), {

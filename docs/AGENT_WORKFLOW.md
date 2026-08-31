@@ -144,6 +144,14 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   and `ui-shell.spec.ts` *"the Rooms panel says what a zoned room is missing …
   (#331)"*. All three wait on the simulation to produce something, so they are the
   first to give up when the machine is busy.
+  The second of those was renamed on 2026-08-31 by issue #703 ruling 2 and is now
+  *"a pending delivery is on the panel with the fold shut, and costs it nothing
+  while none is … (#285, #703)"* — same test, same poll, same canary; the old
+  title is kept here because it is what earlier logs say. Both it and the #88
+  sweep flaked on this class again that day, at load average 10.7 with two other
+  agents' browser suites running: the sweep's own setup poll for
+  `data-pending="9"` read `null` twice, which is every delivery having landed
+  before the first poll rather than none having been made.
   **This bullet said the opposite for one merge**, on 2026-08-28: that the three
   were "a property of where the suite runs and not of the diff", confirmed by
   running each *alone* on plain `main`. Both halves are withdrawn. On a genuinely

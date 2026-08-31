@@ -656,6 +656,15 @@ function buildOrderStateLabelKey(state: HudBuildOrderViewModel['state']): Locali
  * the figures above are unchanged and "costs the panel nothing" remains the only
  * way a block gets into this panel.
  *
+ * **That last clause is withdrawn as of 2026-08-31 (issue #703 ruling 2), and
+ * the correction at the foot of this docblock says what replaced it.** A second
+ * way into this panel now exists and the owner opened it: a block may cost the
+ * panel height when the *simulation* has something the player has to be told,
+ * as long as it costs nothing in the state the panel arrives in. The rule the
+ * clause was defending is intact -- nothing here donates from the catalogue --
+ * and what it got wrong was treating "nothing at all, ever" as the only price
+ * this panel could pay.
+ *
  * The rows are **pooled** for both of `BUILD_QUEUE_ROW_LIMIT`'s reasons, and the
  * second is not about allocation: each row's cancel button joins the HUD's busy
  * group, `createBusyGroup` has `add` and no `remove`, and a block that built a
@@ -1713,6 +1722,12 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * Materials"* was there, in this fold, and reached nobody. So this line is
    * appended to the panel body *after* `queueSection.element` rather than to
    * `queueSection.body`. A player who never opens the fold still reads it.
+   *
+   * That is the rule `deliveriesBlock` was moved to obey on 2026-08-31 (issue
+   * #703 ruling 2), one fold over and for the third time in this panel: #625 for
+   * *"Awaiting Materials"*, this line for the money the queue is waiting on, and
+   * that block for the money the game has already spent. A readout the player
+   * must not have to go looking for is appended beside a fold, never inside one.
    *
    * `hud-build__queue-shortfall` as well as `hud-build__note`, for exactly the
    * reason `hud-build__queue-more` carries its own class: `.hud-build__note`
