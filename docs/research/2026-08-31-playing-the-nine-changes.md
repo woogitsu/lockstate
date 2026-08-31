@@ -243,3 +243,309 @@ command layer and is not from the chair.
 - **What would establish the impact**: whether players re-drag. This pass did it
   because the cancellation had left a hole; **UNKNOWN** how common that is.
 - No new wording is proposed here: a replacement sentence is copy.
+
+## 3. #690 measured: four presses per room, uniform, and nothing swallowed
+
+**This is the measurement #690 asked for by name.** Its own weakest claim was
+that standing the tool down is the right trade, and that *"it costs one press per
+extra room, paid by the player who already knew the tool stayed armed"* might
+read as friction rather than as confirmation.
+
+**MEASURED**, act2b, `1 passed (3.6m)`: a 2x2 grid of four 3x3 cells inside a
+48-segment wall grid, all four clear of the rails, designated one after another:
+
+```
+[act2] cell 1: 4 press(es) + 1 drag in 11907ms -> rooms=1 | Confirm visible=true
+  | fold on arrival=false mid-drag={"collapsed":"true","armBox":"0x0"}
+  | after drag={"collapsed":"false","confirmBox":"147x44","confirmHidden":"false"}
+  | arm "Draw on map data-armed=false" -> "Stop drawing data-armed=true"
+  -> after confirm data-armed=false
+[act2] cell 2: 4 press(es) + 1 drag in 11626ms -> rooms=2   … identical fields
+[act2] cell 3: 4 press(es) + 1 drag in 11462ms -> rooms=3   … identical fields
+[act2] cell 4: 4 press(es) + 1 drag in 11927ms -> rooms=4   … identical fields
+[act2] four designations later: rooms=4 roomCapacity=0 treasury=21160
+```
+
+Every field is identical across all four rooms. Read as a verdict on #690:
+
+1. **Four presses and one drag, every time**: the tab, the room type, *Draw on
+   map*, *Designate*. No press was ever swallowed, which is precisely the
+   failure #684 describes — the old behaviour's second press sent
+   `armed: false` and the next drag did nothing.
+2. **The arm control tells the truth at every step and always has a box when it
+   is the thing to press.** `Draw on map / data-armed=false` before,
+   `Stop drawing / data-armed=true` after, and `data-armed=false` again after
+   the confirm. The panel comes back reading what the player is about to press
+   next, which is exactly what `standDownAfterConfirm`'s docblock promises.
+3. **The fold behaves as claimed and the arm control's disappearance is real.**
+   `mid-drag={"collapsed":"true","armBox":"0x0"}` — while the rectangle is being
+   dragged the panel is folded to its header and the arm control has no box at
+   all. That is the state #684 was about; the difference #690 makes is that the
+   state the player comes back to is *disarmed*, so the control they find is the
+   one they want.
+
+**The judgement the brief asked for, stated as a judgement.** Four presses for a
+room, with the fourth being a *Designate* the player is looking at, reads as
+confirmation and not as friction. Two things make it so, and both are
+measurements above rather than taste: the count is **uniform** — a player who
+does it once has learned it for every room — and the panel's state on return is
+never the state they left it in mid-gesture, so there is no press that does
+nothing. The old three-press loop was cheaper only for a player who already knew
+an invisible fact.
+
+**What would change my mind**: a room count high enough that the fourth press
+compounds. This pass did four. At forty, "one extra press per room" is forty
+extra presses and the arithmetic starts to matter; **UNKNOWN**, and it is
+measurable by extending act 2.
+
+### 3a. The Rooms panel's enclosure verdict disagreed with the outcome, in both directions
+
+**MEASURED.** The panel text read immediately after the drag and before the
+confirm, beside what the confirm then did:
+
+| designation | panel said | outcome |
+| --- | --- | --- |
+| act2b cell 1 | `OPEN ON AT LEAST ONE SIDE` | **accepted**, `rooms=1` |
+| act2a cell 3 | `OPEN ON AT LEAST ONE SIDE` | refused: *"this room type must be enclosed, and the area you drew is open on at least one side"* |
+
+So at the moment the player is looking at the *Designate* button, the verdict
+beside it is not a reliable predictor of what pressing it will do. It was wrong
+about an enclosed rectangle and right about an open one, in two runs.
+
+- **Observation.** The live verdict and the command's answer are computed from
+  different reads of the world.
+- **What would establish the cause**: this is the shape
+  [`2026-08-29-playtest-ordering-and-the-second-room.md`](./2026-08-29-playtest-ordering-and-the-second-room.md)
+  §7 already recorded — *"the Rooms panel's enclosure verdict is read off a world
+  view a snapshot replaces and a completed wall does not mark dirty"* — and
+  `playtest-harness.ts`'s `buildAndPopulate` still carries a twelve-attempt retry
+  loop written for it. **This pass did not re-derive that cause and does not
+  claim it.** What it adds is that the verdict is now wrong in the *permissive*
+  direction too, which a retry loop cannot paper over: a retry fixes "it said no
+  and meant yes", not "it said no and the room went in anyway".
+- **What would establish the impact**: whether a player reads the verdict before
+  pressing. Both of this pass's runs pressed regardless, so **UNKNOWN**.
+
+### 3b. Four designated cells report `roomCapacity=0`, and the panel says why
+
+`rooms=4 roomCapacity=0`, and the Rooms panel closes with:
+
+```
+"NOT READY","4 of 4","Cell at 12, 12 is missing","1 × Bed","1 × Toilet",…
+```
+
+Four rooms, none of them usable, and the panel names the missing objects per
+room with a count of how many rooms are in that state. **No finding** — this is
+the surface working. Recorded because "I designated four cells and the prison
+still holds nobody" is the next thing an ambitious player asks, and the answer is
+on screen.
+
+## 4. #650's hire control is right, laid out, and reads plainly
+
+**MEASURED**, act1d, the Security tab of a prison with one furnished cell, at
+1440x900, with nothing folded by hand:
+
+```
+[act1] hire control reads: "Hire Guard · 80"
+[act1] staff panel text: ["STAFF","GUARD COVERAGE","0 of 0","Covered",
+  "This prison has the guards it asks for.","WHO TO HIRE","Guard","Selected",
+  "Hire Guard · 80","Costs 80 now and 80 a day in wages.",
+  "A new guard starts unassigned.","ON DUTY","0 held · 0 free",
+  "Nobody is assigned right now.",
+  "A released guard stays hired and goes back to the pool."]
+```
+
+All three of #650's strings are on screen at once, unclipped: the button's own
+`Hire Guard · 80`, the owner's approved sentence *"Costs 80 now and 80 a day in
+wages."*, and the displaced clause *"A new guard starts unassigned."* restored
+as its own line.
+
+And after four presses:
+
+```
+[act1] after four hires: staff=4 dailyWageBill=320 treasury=22370
+[act1] staff panel after hiring: [… "ON DUTY","0 held · 4 free", …,
+  "ON THE PAYROLL","320 a day"]
+```
+
+22,690 → 22,370 is 320 taken at the press for four guards, and the payroll badge
+reads **"320 a day"** — the word #650's later commit added, so the figure is not
+a bare number beside a header that names people. #650's own weakest claim was
+that a bare figure there would read as a headcount; it is not bare, and this run
+had no trouble with it.
+
+**No finding against #650.** Recorded so it is not re-checked.
+
+## 5. What a well-run prison sees over thirteen in-game days
+
+**MEASURED**, act1d, one 6x6 cell with six beds and a toilet, four guards, ten
+admissions, run to tick 30,153 (day 13):
+
+```
+[act1] tick=26214 prisoners=10 highRisk=0 residents=6 treasury=22350
+[act1] tick=27521 prisoners=10 highRisk=0 residents=6 treasury=23830
+[act1] tick=28803 prisoners=10 highRisk=0 residents=6 treasury=25310
+[act1] tick=30153 prisoners=10 highRisk=0 residents=6 treasury=25310
+```
+
+Three things worth having:
+
+1. **The economy is legible and the prison is solvent.** The balance opens at
+   25,000, bottoms at 22,350 having paid for a perimeter, twelve beds, a toilet
+   and four guards, and is back above its opening by day 13 — roughly 1,480 per
+   in-game day net with ten prisoners and a 320 wage bill.
+2. **`highRisk=0` throughout, past the first review boundary.** #681's own
+   commit says a well-run prison cannot tell the contraband draw happened, and
+   over thirteen days this one could not: no prisoner was raised into tier 3.
+3. **`4 with no bed` stood on the status strip for the whole run** and the
+   Intake panel said why, unfolded:
+
+```
+["INTAKE","Collapse","Admit a prisoner","4 waiting with no bed to sleep in",
+ "A prison needs a cell before it can admit anyone. It does not need a free
+ bed: an arrival with none waits until a bed is free.","IN INTAKE","4 of 10",
+ "4 at Cell Assignment"]
+```
+
+Twelve bed *orders* were accepted and the room reported
+`roomCapacity=6 accommodationCapacity=6`, so six of the twelve beds are what the
+room could hold. The panel tells the player the consequence in one sentence and
+does not say the cell is full — **UNKNOWN** whether that matters, and it is not
+one of this pass's targets.
+
+## 6. The events band paints, and here is the sentence that proves it
+
+**MEASURED**, act1d, from the in-page sampler, the only two events the well-run
+prison produced:
+
+```
+[act1] events: [{"sequence":1,"type":"incidents.assault-opened","tick":29151},
+                {"sequence":2,"type":"incidents.all-clear","tick":29221}]
+[act1] band samples:
+ [{"t":2867,   "text":"", "severity":"", "hidden":"true",  "width":0,   "height":0,
+   "color":"rgb(134, 178, 207)","background":"rgba(134, 178, 207, 0.14)"},
+  {"t":479234, "text":"A fight has broken out between two prisoners.",
+   "severity":"warning","hidden":"false","width":1440,"height":32,
+   "color":"rgb(232, 180, 99)","background":"rgba(232, 180, 99, 0.14)"},
+  {"t":479978, "text":"The prison is under control again — no incident is still open.",
+   "severity":"info","hidden":"false","width":1440,"height":32,
+   "color":"rgb(134, 178, 207)","background":"rgba(134, 178, 207, 0.14)"}]
+```
+
+So at 1440x900 the band is **1440x32**, the `warning` tone resolves to a real
+amber (`rgb(232, 180, 99)` on `rgba(232, 180, 99, 0.14)`) distinct from the
+`info` blue, and the sentence is full-width and unclipped. Nothing about the band
+mechanism is broken.
+
+**And the number that matters for §2: the opening sentence held the line for 744
+ms.** The two events are **70 ticks** apart (29,151 → 29,221) and the clock was
+at ×4, which is 875 ms of simulated time; the sampler saw 744 ms of it. That is
+what the player gets to read when an incident opens and closes 70 ticks apart.
+
+---
+
+# Part C — this pass's own instrumentation, corrected in the open
+
+## 7. Four things this pass got wrong, each paid for once
+
+**7a. `:not([hidden])` is not "visible", and it cost two runs in two different
+panels.** `paintDeliveries` sets `row.element.hidden = false`
+(`src/ui/hud/build-panel.ts:1430`) and the Rooms panel's Confirm is a *hidden*
+but *enabled* button, so both `Locator.count()` on `:not([hidden])` and
+`isEnabled()` said yes to a control with no box. Playwright then polled
+actionability for twenty seconds saying `element is not visible`. The gate that
+answers the player's question is `isVisible()`, and both acts use it now. **This
+is worth more than the runs it cost**: the same wrong gate in a `.spec.ts` would
+be a test that passes for the wrong reason, and the fact that two unrelated
+panels both present this shape is the class rather than the instance.
+
+**7b. `counts.tick` is not the tick.** Act 1 logged `tick=0` three times while
+the clock read `{"mode":"running","speed":4}` and the build queue visibly drained
+from 24 waiting to empty. That is `playtest-harness.ts`'s documented trap read
+from the other end: the worker skips a `simulation/status-counts` publication
+whose payload equals the last one, the tick rides the envelope rather than the
+counts, and wall construction changes no counts field — so the tick froze at the
+last publication while the prison worked. `currentTick` (which reads
+`simulation/clock-state`) is the one to use, and the harness says so; act 1's
+progress lines quote the counts tick and are labelled here rather than corrected
+in the log, because the log is the evidence.
+
+**7c. Five rooms inside one room is four refusals.** Act 1's Rooms measurement
+designated the whole enclosed 6x6 as room 1 and then tried to subdivide it, so
+`rooms` never left 1. The press counts it produced are still valid — the panel
+does the same four presses whether the designation is accepted or refused — but
+the *designation* measurement had to be re-run against four disjoint enclosures,
+which is act 2.
+
+**7d. `pkill -f "vite/bin/vite"` killed another agent's dev server.** Recorded in
+the front matter with the remedy: on a shared box, kill by PID. This one was not
+paid for by this pass; it was paid for by somebody else's run.
+
+**7e. The bare-world probe in act 2 was too shallow to answer its own question.**
+It walked `.hud > *` and filtered `pointer-events: none`, which returns only
+`hud-strip 0,0 1440x48` — the rail *containers* inherit `pointer-events: none`
+from `.hud` and the panels inside them re-enable it, so the panels are invisible
+to that query. Act 4 asks the browser instead, with `elementFromPoint`.
+
+---
+
+# Part B — the surfaces #690 and #691 are about
+
+## 8. Where the world is at 1440x900, asked of the browser
+
+**MEASURED**, act 4, `1 passed (22.5s)`. Every `.ui-panel` box that takes the
+pointer, and then a sweep of `document.elementFromPoint` over a 100 px grid,
+`.` where a press reaches the world canvas and `#` where it reaches the HUD:
+
+```
+--- Build tab showing at 1440x900 ---
+  panel: hud-strip   0,0      1440x48  pointer-events=auto
+  panel: hud-minimap 12,503   226x316  pointer-events=auto
+  panel: hud-build   1164,264 264x555  pointer-events=auto
+  y=100 ...........###
+  y=200 ...........###
+  y=300 ...........###
+  y=400 ...........###
+  y=500 ...........###
+  y=600 ##.........###
+  y=700 ##.........###
+  y=800 ##.........###
+
+--- Rooms tool armed (the panel folds itself to its header) at 1440x900 ---
+  panel: hud-rooms   1164,772 264x47
+  y=100 ...........###
+  y=200 ...........###
+  y=300 ...........###
+  y=400 ..............
+  y=500 ..............
+  y=600 ##............
+  y=700 ##............
+  y=800 ##.........###
+```
+
+Three facts fall out, and the first is act 2's own cause.
+
+1. **With the Build tab showing, no press at x ≥ 1164 reaches the world**, at
+   any height. Act 2's fourth designation drew its rectangle from screen
+   x=1232: the drag reached `hud-build` and the world never saw it, so no
+   rectangle existed and the Confirm stayed hidden. *"The HUD covered it"* was
+   the guess; this is the measurement, and it rules out the alternatives
+   (unowned land, an off-map tile) because `elementFromPoint` answers the
+   browser's own question about which element takes the press.
+2. **The press is consumed silently.** No command was submitted and no refusal
+   band appeared — correctly, since nothing refused anything. A player dragging
+   a wall along the right-hand quarter of the screen gets no wall and no
+   sentence. The camera pans, so this is recoverable rather than a lock, and it
+   is what a panel over a world always does; it is recorded because it is the
+   thing that cost this pass two runs and because nobody had the number.
+3. **#690's fold does what its docblock claims, and this is the payoff.** With
+   the Rooms tool armed the panel shrinks from `264x555` to `264x47` and the
+   whole rail column at y=400..700 becomes world. That is `drawingFolded`
+   earning its place, measured at a desktop viewport for the first time — the
+   commit's own figure was *"the largest square of bare world … is 16px"* at
+   375x812.
+
+**What this does not establish**: whether the same is true at any other
+viewport, and whether the top-right band (`###` at y=100..300 with the Rooms
+panel folded away) is the host's save panel or something else. **UNKNOWN** —
+the sweep names the `.ui-panel` boxes and that band is not one of them.
