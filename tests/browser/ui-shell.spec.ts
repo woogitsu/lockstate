@@ -1353,28 +1353,47 @@ test.describe('HUD shell', () => {
      * Deliberately not `expectNotClipped`, which would only tell us that
      * *something* was found. The figures are what say it found the right
      * thing.
+     *
+     * Both kinds are controlled, because the probe reports two and a version
+     * that saw only one swept clean over three of the four labels
+     * the playtest record of 2026-08-31, "playing the twelve", §12 measured:
+     * `overflow: hidden` hides the overflow (`cut`), `overflow: visible`
+     * paints it on the neighbours (`spilled`), and the third state --
+     * `overflow: auto`, which a player can scroll -- must produce no finding
+     * at all or every scrolling list in the HUD becomes one.
      */
     test('the clipping probe reports a deliberately clipped element', async ({ page }) => {
+      // One box per state, same content: fifty monospace characters, which is
+      // several hundred pixels of text in a 40px box.
       await page.evaluate(() => {
-        const clippable = document.createElement('div');
-        clippable.className = 'lockstate-clipping-control';
-        clippable.setAttribute(
-          'style',
-          'position:fixed;left:0;top:0;width:40px;height:20px;overflow:hidden;white-space:nowrap;font:16px monospace',
-        );
-        clippable.textContent = 'x'.repeat(50);
-        document.body.append(clippable);
+        for (const [name, overflow] of [
+          ['cut', 'hidden'],
+          ['spilled', 'visible'],
+          ['scrollable', 'auto'],
+        ] as const) {
+          const control = document.createElement('div');
+          control.className = `lockstate-clipping-control lockstate-clipping-${name}`;
+          control.setAttribute(
+            'style',
+            `position:fixed;left:0;top:0;width:40px;height:20px;overflow:${overflow};white-space:nowrap;font:16px monospace`,
+          );
+          control.textContent = 'x'.repeat(50);
+          document.body.append(control);
+        }
       });
 
       const probe = await page.evaluate(probeClipping, '.lockstate-clipping-control');
 
-      expect(probe.matched, 'the control element was not found, so nothing was measured').toBe(1);
-      expect(probe.clipped).toHaveLength(1);
-      const [only] = probe.clipped;
-      expect(only?.clientWidth, 'the control box is the 40px this test set').toBe(40);
-      expect(only?.scrollWidth, 'fifty monospace characters are far wider than 40px').toBeGreaterThan(300);
-      expect(only?.hiddenX, 'the horizontal overflow is what the probe reports').toBeGreaterThan(260);
-      expect(only?.hiddenY, 'one line of 16px text fits in a 20px box, so nothing is cut vertically').toBe(0);
+      expect(probe.matched, 'the three control elements were not found, so nothing was measured').toBe(3);
+      // The scrollable one is deliberately absent: its overflow is reachable.
+      expect(probe.clipped.map((one) => one.kind)).toEqual(['cut', 'spilled']);
+
+      for (const found of probe.clipped) {
+        expect(found.clientWidth, 'the control box is the 40px this test set').toBe(40);
+        expect(found.scrollWidth, 'fifty monospace characters are far wider than 40px').toBeGreaterThan(300);
+        expect(found.hiddenX, 'the horizontal overflow is what the probe reports').toBeGreaterThan(260);
+        expect(found.hiddenY, 'one line of 16px text fits in a 20px box, so nothing leaves it vertically').toBe(0);
+      }
     });
   });
 

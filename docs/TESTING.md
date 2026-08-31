@@ -173,6 +173,39 @@ Measured on this branch rather than argued: with the signature fabricated throug
 
 Use the lowest layer that proves the behavior. Do not use a browser test to cover logic that can be proven by a fast headless unit or contract test.
 
+### Reading the text is not seeing it (#720)
+
+A rendered-text assertion at the browser layer answers less than it looks like
+it does. `textContent`, `innerText`, `toHaveText` and `toContainText` all read
+the DOM, and `overflow: hidden` is a painting decision that never touches the
+text node — so an element showing ten characters of a sentence satisfies every
+one of them. `ui-shell.spec.ts`'s `expectLaidOut` closes a *different* hole,
+that the element is laid out at all; a clipped element is laid out.
+
+On 2026-08-31 the HUD's alerts log showed about ten characters of every
+sentence in it, at every viewport, with the whole suite green. Four separate
+acts of DOM probing during a playtest reported it correct and **only a
+screenshot found it** (#720).
+
+`tests/browser/clipping.ts` is the assertion that was missing.
+`expectNotClipped(page, selector, what)` compares `scrollWidth`/`scrollHeight`
+against `clientWidth`/`clientHeight` and reports an element in two states —
+`cut`, where the overflowing axis is `overflow: hidden` or `clip` and the
+content is never painted, and `spilled`, where it is `visible` and the content
+is painted outside the element's own box, over whatever sits beside it. An
+`auto` or `scroll` box is not a finding: there is overflow and the player can
+reach it, which is what the scrolling alerts list is for. Pair it with a text
+assertion the way `expectLaidOut` is paired with one; all three answer
+different questions.
+
+Two things it deliberately does **not** cover, so a green result is not read
+as more than it is. `.ui-sr-only` is excluded, because the visually-hidden
+pattern is a clipped 1x1 box on purpose. And a scroll container that hides
+content below its own fold with no scrollbar drawn to say so is reachable, so
+this check is silent about it — that is an affordance defect and needs its own
+assertion (`.save-panel` on the Build and Rooms tabs; the playtest record of
+2026-08-31, "playing the twelve", §11).
+
 ### Comments are not executed, and one shape of them is now gated
 
 `tests/foundation/comment-symbol-existence-contract.test.ts` reads every
