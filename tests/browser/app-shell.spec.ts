@@ -2341,77 +2341,26 @@ function railInvariants(integrity: RailIntegrity): Pick<RailIntegrity, 'railOver
 }
 
 /**
- * The viewports the #88 sweep visits: the one the issue was measured at, a wide
- * desktop, a small laptop, a short window and a phone. The collision it is about
- * is a layout collision, so which sizes are checked is the whole question -- it
- * was invisible at 1440x900 and fatal at 1280x720.
+ * The viewports the Build panel's layout claims are measured at: the one #88 was
+ * measured at, a wide desktop, a small laptop, a short window and a phone. The
+ * collision those tests are about is a layout collision, so which sizes are
+ * checked is the whole question -- it was invisible at 1440x900 and fatal at
+ * 1280x720.
  *
- * One list, read by both of that test's loops (2026-08-31): the arrival-state
- * fold gate and the loaded-state sweep have to cover the same sizes or the first
- * is not the counterpart of the second.
+ * **One list since 2026-08-31, read by the #88 sweep and by the #174 arrival
+ * test, and that is load-bearing rather than tidy.** Since issue #703 ruling 2
+ * the sweep's loaded state legitimately scrolls this panel, so "the panel
+ * arrives inside its own fold" is asserted only by the #174 test -- which makes
+ * it the sweep's counterpart, and only if the two cover the same sizes. Two
+ * copies of five viewports could drift apart without either test failing.
  */
-const ARRIVAL_FOLD_VIEWPORTS = [
+const HUD_LAYOUT_VIEWPORTS = [
   [1280, 720],
   [1440, 900],
   [1024, 768],
   [900, 600],
   [375, 812],
 ] as const;
-
-/**
- * Where the Build panel's numeric-fallback header and its last *visible*
- * section sit, measured with the panel scrolled back to the top.
- *
- * Two headers and not one, and the second is an addition rather than a
- * replacement. `.hud-build__coordinates` is named because the queue block
- * (#348) is a `.ui-section` appended after the numeric fallback, so position no
- * longer identifies it; the *last visible* section is measured as well, because
- * "the panel's last section is above its fold" is the property #174 is about and
- * it has to hold for whichever section that turns out to be.
- *
- * `scrollTop` is returned before it is reset, because a sweep that reaches
- * controls with `scrollIntoView` leaves the panel scrolled -- and with #174's
- * defect present that scroll was enough to carry the header back inside the fold
- * and make the measurement pass for exactly the reason the defect is a defect.
- * Reading it, resetting it, and measuring from zero is what keeps the fold
- * assertion about the layout rather than about the sweep.
- *
- * **Extracted 2026-08-31 (issue #703 ruling 2).** It was inline in the #88
- * sweep, and the ruling gave it a second caller: with the deliveries block now
- * laid out whenever something is on its way, the panel's *loaded* state
- * legitimately scrolls, so the fold claims #174 is about have to be taken in the
- * state #174 was about -- the arrival state -- as well.
- */
-async function buildPanelFold(page: Page): Promise<{
-  readonly text: string;
-  readonly bottom: number;
-  readonly lastText: string;
-  readonly lastBottom: number;
-  readonly fold: number;
-  readonly scrollTop: number;
-} | null> {
-  return page.evaluate(() => {
-    const panel = document.querySelector('.hud-build');
-    const named = document.querySelector('.hud-build__coordinates > .ui-section__header');
-    const sections = [...document.querySelectorAll('.hud-build .ui-section')].filter(
-      (section) => section.getClientRects().length > 0,
-    );
-    const last = sections.at(-1)?.querySelector('.ui-section__header') ?? null;
-    if (panel === null || named === null || last === null) return null;
-    const scrollTop = panel.scrollTop;
-    panel.scrollTop = 0;
-    const p = panel.getBoundingClientRect();
-    const fold = p.top + panel.clientTop + panel.clientHeight;
-    return {
-      text: named.textContent?.trim() ?? '',
-      bottom: named.getBoundingClientRect().bottom,
-      lastText: last.textContent?.trim() ?? '',
-      lastBottom: last.getBoundingClientRect().bottom,
-      fold,
-      scrollTop,
-    };
-  });
-}
 
 test.describe('the assembled application', () => {
   test('the renderer canvas is the size of the window, and stays that way across resizes', async ({ page }) => {
@@ -2619,71 +2568,35 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
 
     /*
-     * ---- #174's own gate, in the state #174 was about (added 2026-08-31) ----
+     * ---- where #174's own gate lives, and why not here (2026-08-31) --------
      *
-     * **Why this loop exists at all: because the loop below stopped being able
-     * to make this claim.** Everything after this point loads the Build panel
-     * up on purpose -- six orders queued and nine deliveries on their way -- so
-     * that the queue block's and the deliveries block's controls are laid out
-     * somewhere for the sweep to hit-test. Until issue #703 ruling 2 the second
-     * of those cost the panel nothing at all, because it was inside a `hidden`
-     * row; now it is laid out whenever something is on its way, and the panel's
-     * always-visible budget at 1280x720 was **8px**. Measured with the ruling
-     * in: the loaded panel scrolls at 1280x720, which is a state this test used
-     * to assert could not happen.
+     * Everything after this point loads the Build panel up on purpose -- six
+     * orders queued and nine deliveries on their way -- so that the queue
+     * block's and the deliveries block's controls are laid out somewhere for
+     * this sweep to hit-test. Until issue #703 ruling 2 the second of those cost
+     * the panel nothing at all, because it was inside a `hidden` row; it is laid
+     * out whenever something is on its way now, and this panel's always-visible
+     * budget at 1280x720 is **8px**. So the loaded panel scrolls, measured --
+     * a state this test used to assert could not happen.
      *
-     * That assertion is not weakened, it is *moved to the state it is about*.
-     * #174 is a defect about the panel a player **arrives** at -- one prison,
-     * nothing queued, nothing bought, no fold opened -- and this loop takes it
-     * there at every viewport the loaded loop visits, which is one viewport more
-     * than #174 itself was measured at. What the loaded loop asserts instead is
-     * that nothing is *clipped*: the rail invariants, no box shorter than its own
-     * content, and both section headers reachable by the panel's own scroll.
+     * **That claim is not weakened and it is not moved either: it was already
+     * asserted in the test named for it**, `the Build panel arrives inside its
+     * own fold, with nothing queued (#174)`, at these same five viewports and
+     * with more teeth than this test ever had -- `scrollTop` 0, `panelOverflow`
+     * 0, "Enter coordinates" inside the unscrolled fold, no box in the shrink
+     * chain shorter than its own content, and a guard that fails if anything
+     * *is* queued. A first pass at this branch added a duplicate of it here,
+     * before the setup below; it was withdrawn when the sweep timed out at 180s
+     * having previously passed at 174s -- the duplicate cost 15s of a budget its
+     * own comment already calls tight, and bought nothing that test does not
+     * already assert.
+     *
+     * What this test asserts in the loaded state is therefore what the loaded
+     * state is about: nothing *clipped*. The rail invariants, the two catalogue
+     * boxes containing their content, both section headers reachable by the
+     * panel's own scroll, and the body's spill being scrollable and being the
+     * deliveries block.
      */
-    await page.locator('.ui-tab[data-tab="build"]').click();
-    await expect(page.locator('.hud-build')).toBeVisible();
-    for (const [width, height] of ARRIVAL_FOLD_VIEWPORTS) {
-      await page.setViewportSize({ width, height });
-      await expect
-        .poll(async () => (await canvasMetrics(page))?.cssWidth, { message: `canvas did not follow ${width}px` })
-        .toBe(width);
-
-      const arrivalRail = await railIntegrity(page);
-      expect(railInvariants(arrivalRail), `the rail on arrival at ${width}x${height}`).toEqual({
-        railOverflow: 0,
-        offScreen: [],
-        stuck: [],
-      });
-      expect(
-        [...new Set(arrivalRail.widths)],
-        `the rail's panels are not all one width on arrival at ${width}x${height}`,
-      ).toHaveLength(1);
-      expect(
-        arrivalRail.buildPanelScrolls,
-        `the Build panel scrolls on arrival at ${width}x${height}`,
-      ).toBe(false);
-
-      const arrivalFold = await buildPanelFold(page);
-      expect(arrivalFold, `the Build panel's last section has no box on arrival at ${width}x${height}`).not.toBeNull();
-      expect(arrivalFold?.text, `the panel's numeric fallback section on arrival at ${width}x${height}`).toBe(
-        'Enter coordinates',
-      );
-      expect(
-        arrivalFold?.bottom ?? Number.POSITIVE_INFINITY,
-        `"Enter coordinates" is below the Build panel's fold on arrival at ${width}x${height}: it ends at y=${Math.round(arrivalFold?.bottom ?? 0)} in a panel clipped at y=${Math.round(arrivalFold?.fold ?? 0)}`,
-      ).toBeLessThanOrEqual(arrivalFold?.fold ?? 0);
-      expect(
-        arrivalFold?.lastBottom ?? Number.POSITIVE_INFINITY,
-        `the Build panel's last visible section ("${arrivalFold?.lastText ?? ''}") is below its fold on arrival at ${width}x${height}`,
-      ).toBeLessThanOrEqual(arrivalFold?.fold ?? 0);
-      // Non-vacuity: an empty deliveries block would satisfy every line above
-      // and is the state this whole loop is the counterpart of.
-      expect(
-        await page.locator('.hud-build__deliveries').boundingBox(),
-        `something was already on its way at ${width}x${height}, so this is not the arrival state`,
-      ).toBeNull();
-    }
-    await page.setViewportSize({ width: 1280, height: 720 });
 
     /*
      * A queue, once, and then the clock is stopped so it stays one for the rest
@@ -2708,11 +2621,12 @@ test.describe('the assembled application', () => {
      * one arrives, tick or no tick, so the block survives every viewport and
      * every tab change below.
      */
-    // `.ui-tab[data-tab="build"]`, not `getByRole('button', { name: 'Build' })`:
-    // the loop above leaves the Build panel mounted, and the catalogue's own
-    // section header ("What to build") then matches that accessible name too --
-    // a strict-mode violation rather than a selection. Measured exactly that way
-    // when the arrival-fold loop was added on 2026-08-31.
+    // `.ui-tab[data-tab="build"]`, which is what the sweep's own tab loop below
+    // uses, and not `getByRole('button', { name: 'Build' })`: that name is only
+    // unambiguous while this panel is *not* mounted, because the catalogue's own
+    // section header ("What to build") matches it as a substring too. Measured on
+    // 2026-08-31 as `strict mode violation ... resolved to 2 elements` -- from a
+    // first pass that had opened the panel earlier in the test.
     await page.locator('.ui-tab[data-tab="build"]').click();
     const queueSetupCoordinates = page.locator('.hud-build__coordinates > .ui-section__header');
     if ((await queueSetupCoordinates.getAttribute('aria-expanded')) === 'false') await queueSetupCoordinates.click();
@@ -2805,7 +2719,7 @@ test.describe('the assembled application', () => {
     /** Every viewport where the loaded panel's body spills, and by how much. */
     const spilled: string[] = [];
 
-    for (const [width, height] of ARRIVAL_FOLD_VIEWPORTS) {
+    for (const [width, height] of HUD_LAYOUT_VIEWPORTS) {
       await page.setViewportSize({ width, height });
       await expect
         .poll(async () => (await canvasMetrics(page))?.cssWidth, { message: `canvas did not follow ${width}px` })
@@ -2898,9 +2812,10 @@ test.describe('the assembled application', () => {
       // of this loaded state until issue #703 ruling 2 gave the deliveries block
       // a box of its own: nine deliveries on their way put three 44px rows and a
       // header on a panel whose always-visible budget at 1280x720 is 8px, so it
-      // scrolls, measured. The claim now lives in the `ARRIVAL_FOLD_VIEWPORTS`
-      // loop at the top of this test, in the state #174 is about, at these same
-      // five viewports -- and what is asserted here instead is that the panel is
+      // scrolls, measured. The claim lives in `the Build panel arrives inside
+      // its own fold, with nothing queued (#174)`, in the state #174 is about,
+      // over the same `HUD_LAYOUT_VIEWPORTS` -- and what is asserted here
+      // instead is that the panel is
       // *scrolling* rather than *clipping*: the rail invariants above, the
       // box-chain check below, and both headers reachable from the panel's own
       // scroll.
@@ -2944,7 +2859,27 @@ test.describe('the assembled application', () => {
       // reaches them.** Measured from the panel's own scroll rather than from
       // wherever the sweep happened to leave it, which is why `buildPanelFold`
       // still resets `scrollTop` before it measures.
-      const lastSection = await buildPanelFold(page);
+      const lastSection = await page.evaluate(() => {
+        const panel = document.querySelector('.hud-build');
+        const named = document.querySelector('.hud-build__coordinates > .ui-section__header');
+        const sections = [...document.querySelectorAll('.hud-build .ui-section')].filter(
+          (section) => section.getClientRects().length > 0,
+        );
+        const last = sections.at(-1)?.querySelector('.ui-section__header') ?? null;
+        if (panel === null || named === null || last === null) return null;
+        const scrollTop = panel.scrollTop;
+        panel.scrollTop = 0;
+        const p = panel.getBoundingClientRect();
+        const fold = p.top + panel.clientTop + panel.clientHeight;
+        return {
+          text: named.textContent?.trim() ?? '',
+          bottom: named.getBoundingClientRect().bottom,
+          lastText: last.textContent?.trim() ?? '',
+          lastBottom: last.getBoundingClientRect().bottom,
+          fold,
+          scrollTop,
+        };
+      });
       expect(lastSection, `the Build panel's last section has no box at ${width}x${height}`).not.toBeNull();
       expect(lastSection?.text, `the panel's numeric fallback section at ${width}x${height}`).toBe(
         'Enter coordinates',
@@ -3673,13 +3608,12 @@ test.describe('the assembled application', () => {
     await page.getByRole('button', { name: 'Build' }).click();
     await expect(page.locator('.hud-build')).toBeVisible();
 
-    for (const [width, height] of [
-      [1280, 720],
-      [1440, 900],
-      [1024, 768],
-      [900, 600],
-      [375, 812],
-    ] as const) {
+    // `HUD_LAYOUT_VIEWPORTS`, shared with the #88 sweep since 2026-08-31 rather
+    // than copied: that sweep no longer asserts this panel arrives unscrolled --
+    // its state carries a deliveries block now (#703 ruling 2) -- so this test is
+    // where the claim lives, and it is only the sweep's counterpart while the two
+    // cover the same sizes.
+    for (const [width, height] of HUD_LAYOUT_VIEWPORTS) {
       await page.setViewportSize({ width, height });
       await expect
         .poll(async () => (await canvasMetrics(page))?.cssWidth, { message: `canvas did not follow ${width}px` })
