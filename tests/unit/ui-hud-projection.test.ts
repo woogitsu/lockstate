@@ -76,14 +76,16 @@ describe('status strip: which metrics exist, in what order', () => {
     // still belongs on the end.
     //
     // **Issue #703's `high-risk` is the second, and it went in at position two
-    // for `coverage`'s reason plus one this file can state as a number.** It is
-    // `prisoners` at a second grain, so the two read as one sentence; and the
-    // strip's metrics row holds nine chips only while the money figures are
-    // narrow (`hud.css` measures the row at 1233.8px of content against 1256px
-    // available at 1280x720, with `FUNDS` growing 24.4px by seven figures), so
-    // the **last** chip is the one that leaves a narrow desktop. Appending
-    // would have put the chip this ruling exists for in that seat. Seven chips
-    // each moved one column right, once.
+    // for `coverage`'s reason.** It is `prisoners` at a second grain -- the same
+    // people, and the subset the prison has to staff and search for -- so the
+    // two read as one sentence. Seven chips each moved one column right, once.
+    //
+    // The measured half of that decision is in `projection.ts`'s own descriptor
+    // comment, including a third reason written there and then refuted by the
+    // measurement (the row does *not* overflow at 1280x720 at a seven-figure
+    // treasury: 1252.0px of content in 1256px). What survives is where a chip
+    // goes to be invisible on a narrow viewport -- 768x1024 shows the first five
+    // of the nine -- and the 4px that is all the desktop headroom left.
     expect(projectStatusMetrics(counts()).map((metric) => metric.id)).toEqual([
       'prisoners',
       'high-risk',

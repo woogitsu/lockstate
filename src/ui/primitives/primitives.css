@@ -154,7 +154,7 @@
   /*
    * `border-box` so the over-capacity hairlines below cost no geometry. A bar
    * that changed size when the prison went over capacity would be a layout
-   * change fired by a game state, on a strip of eight chips at the binding
+   * change fired by a game state, on a strip of nine chips at the binding
    * 900x600 viewport; `tests/browser/ui-occupancy-overflow.spec.ts` measures
    * both dimensions across four occupancy states for exactly that reason.
    */

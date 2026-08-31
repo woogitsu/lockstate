@@ -8856,16 +8856,25 @@ test.describe('the assembled application', () => {
 
     /*
      * And no raw key anywhere in the strip, which is the check that makes the
-     * label assertion above more than a spelling test.
+     * label assertion above more than a spelling test. An unresolved key renders
+     * as itself (ADR 0011), so a leak is a dotted lowercase identifier on
+     * screen.
      *
-     * An unresolved key renders as itself (ADR 0011), so the shape to refuse is
-     * a dotted lowercase identifier. The pattern is deliberately narrow enough
-     * to allow a decimal number and a grouped figure: `1,234` and `12.5` are
-     * not keys, and `hud.status.prisoners` and
-     * `classification-group.high-risk.name` both are.
+     * **Scoped to the namespaces a key can come from, and the first version of
+     * this assertion was not.** "Any dotted lowercase identifier" is the obvious
+     * pattern and it fails on the real page for a reason that is not a defect:
+     * the strip's brand slot is filled by `src/ui/brand-badge.ts`, and measured
+     * here the row's `innerText` begins
+     * `"LockState.io\nPRE-ALPHA\nv0.0.282 · c5016ee\n..."`. The pattern matched
+     * `tate.io`. A wordmark is not a message key, so the check names the two
+     * registries a HUD label really can be spelled from -- `hud.*`
+     * (`src/ui/hud/messages.ts`) and the simulation-enum namespaces
+     * (`src/content/simulation-message-keys.ts`, of which
+     * `classification-group` is this chip's) -- rather than being widened until
+     * it passes.
      */
     expect(chip!.stripText, `a message key leaked into the strip: ${chip!.stripText}`).not.toMatch(
-      /[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?:\.[a-z][a-z0-9-]*)+/,
+      /\b(?:hud|classification-group|risk-tier|incident-type|incident-state|action|action-phase|intake-stage|need)\.[a-z0-9][a-z0-9.-]*/,
     );
 
     // ---- a prison with a population in it ------------------------------
@@ -8919,29 +8928,62 @@ test.describe('the assembled application', () => {
     await page.locator('.ui-tab[data-tab="regime"]').click();
     const roster = page.locator('.hud-regime__roster');
     await expect(roster).toBeVisible();
+
+    /*
+     * **The roster has to be re-*read*, not merely re-read from the DOM, and
+     * this cost a run to find.**
+     *
+     * `hud/prisoner-roster` is a pull. `src/main.ts` fires
+     * `refreshPrisonerRoster()` on a `select-tab` intent and on each
+     * `simulation/status-counts` publication -- and that channel publishes only
+     * when a count *changes* (`STATUS_COUNTS_PUBLISH_INTERVAL_MS` is a ceiling,
+     * not a rate). The one count that moves every tick is
+     * `stateIncomeAccruedTodayMinorUnits`, and it moves only while some place is
+     * occupied. This prison's cell has no bed in it, so nothing is occupied, the
+     * accrual is a constant zero, the channel falls silent after the last
+     * admission -- and the roster on screen stays the one painted at that
+     * moment, when the newest arrivals were still `queued`.
+     *
+     * Measured: polling the DOM alone for four rows carrying `data-risk-tier`
+     * spent its whole 30 s budget at 0. So each poll re-selects the tab, which
+     * is the intent that asks the worker again.
+     */
+    const rereadRoster = async (): Promise<void> => {
+      await page.locator('.ui-tab[data-tab="overview"]').click();
+      await page.locator('.ui-tab[data-tab="regime"]').click();
+    };
+
     // The whole population reached the projection's `total`, so the four rows
     // below really are a window on eight people and not the prison entire.
     await expect
-      .poll(async () => roster.getAttribute('data-total'), {
-        message: 'the roster never reported the population the strip is showing',
-        timeout: 20_000,
-      })
+      .poll(
+        async () => {
+          await rereadRoster();
+          return roster.getAttribute('data-total');
+        },
+        {
+          message: 'the roster never reported the population the strip is showing',
+          timeout: 30_000,
+        },
+      )
       .toBe(String(ADMISSIONS));
 
     /*
      * Every arrival has to have been *classified* before the order means
-     * anything: `IntakeSystem` advances at most one stage per scheduled tick, so
-     * a row read too early carries an intake-stage word and no tier at all, and
-     * an ordering assertion over four `undefined`s would pass for any
-     * implementation. Polled on the count of rows carrying `data-risk-tier`.
+     * anything: `IntakeSystem` advances at most one stage per scheduled tick and
+     * `accommodation-assignment` is the first classified one, so a row read too
+     * early carries an intake-stage word and no tier at all -- and an ordering
+     * assertion over four `undefined`s would pass for any implementation.
      */
     await expect
       .poll(
-        async () =>
-          page.locator('.hud-regime__roster-row:not([hidden])[data-risk-tier]').count(),
+        async () => {
+          await rereadRoster();
+          return page.locator('.hud-regime__roster-row:not([hidden])[data-risk-tier]').count();
+        },
         {
           message: 'the roster never showed four classified prisoners',
-          timeout: 30_000,
+          timeout: 60_000,
         },
       )
       .toBe(PRISONER_ROSTER_ROW_LIMIT);

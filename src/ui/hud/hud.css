@@ -2728,21 +2728,28 @@
  * the growth is roughly twice the slack that was reserved for it.
  *
  * Re-measured in the real application, Chromium, 100% interface scale, first
- * paint, with the ninth chip present:
+ * paint, with the ninth chip present (`HIGH RISK` measures 110.8px):
  *
- *   the nine chips             1105.8px  (sum of `getBoundingClientRect`)
+ *   the nine chips             1099.6px  (sum of `getBoundingClientRect`)
  *   eight 16px gaps           + 128.0px
  *   ------------------------------------
- *   the metrics row's content  1233.8px
+ *   the metrics row's content  1227.6px  (`scrollWidth` reports 1228)
  *
  * The chrome is unchanged at 727.4px, so the one-row layout stops being a
- * readout below 1233.8 + 727.4 = **1961.2px** -- above 1920, which is why the
- * breakpoint had to move rather than being left alone. Adding `FUNDS` growing
- * to 110.2px at a seven-figure treasury puts a mid-game row at ~1258px and the
- * zero-margin boundary at ~1985px, and 2560 is the next ordinary desktop width
- * above it. Measured at 1920x1080 before the change: **8 of 9 chips on screen,
- * `earned-today` off**, with the readout 1170px of 1234px of content. After:
- * 9 of 9, the readout 1896px.
+ * readout below 1227.6 + 727.4 = **1955.0px** -- above 1920, which is why the
+ * breakpoint had to move rather than being left alone. `FUNDS` growing to
+ * 110.2px at a seven-figure treasury puts a mid-game row at **1252.0px**
+ * (measured, by setting that chip's value on the real page) and the zero-margin
+ * boundary at ~1979px, and 2560 is the next ordinary desktop width above it.
+ *
+ * Measured at 1920x1080 with the ninth chip and this breakpoint still at 1919:
+ * **8 of 9 chips on screen, `earned-today` off**, the readout 1170px of 1228px
+ * of content. With the breakpoint at 2559: **9 of 9**, the readout 1896px. At
+ * 1440x900 and 1280x720 it is 9 of 9 either way -- those viewports were already
+ * inside the block -- and 1280 holds all nine at a mid-game treasury too, with
+ * 1252.0px of content in 1256px. **That 4px is the whole of the desktop
+ * headroom this file has left**, so the next chip is a real cost and not a
+ * column.
  *
  * What it costs is the same 30.5px named above, now also at 1920-2559: those
  * viewports join 1280 and 1440 in giving the metrics a row of their own. No
@@ -2751,7 +2758,7 @@
  * viewport that already pays it.
  *
  * WHAT DID NOT CHANGE, so nobody reads the new number as a fix for it. The
- * chips need 1234px and a 375px phone still has 359px; 900x600 is still one row
+ * chips need 1228px and a 375px phone still has 359px; 900x600 is still one row
  * showing 1 of 9, for the height reason two paragraphs up; and 768x1024 still
  * shows the five chips its 744px holds -- which are now `prisoners`,
  * `high-risk`, `staff`, `coverage`, `rooms`, so `incidents` is the chip that

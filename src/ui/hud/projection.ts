@@ -146,8 +146,10 @@ export type HudMetricId =
  * spells it in `regime-panel.ts`: `CLASSIFICATION_GROUP_IDS` lives in
  * `src/simulation/prisoners/components.ts` and the HUD may not import the
  * simulation (`AGENTS.md` boundary 1). A wrong id would resolve to nothing and
- * render as the raw key, which `tests/browser/ui-high-risk-roster.spec.ts`
- * asserts against on the real page.
+ * render as the raw key, which `tests/browser/app-shell.spec.ts` asserts
+ * against on the real page -- *paints the high-risk chip and orders the Regime
+ * roster by tier (#703)*, which reads the chip's label and refuses any dotted
+ * identifier anywhere in the strip.
  */
 const HIGH_RISK_LABEL_KEY: LocalizationKey = deriveSimulationMessageKey('classification-group', 'high-risk');
 
@@ -253,7 +255,8 @@ function prisonersWithoutBed(counts: HudCountsViewModel): number {
  * now: *"a status strip where several things are always amber teaches players
  * to ignore amber"*, and that note already extends it to green. A permanent
  * badge on the busiest chip on the strip is the same failure in the shape of
- * reassurance -- eight chips compete for one glance, and a line that is
+ * reassurance -- nine chips compete for one glance (eight when this was
+ * written; #703 added the ninth), and a line that is
  * present in every screenshot is a line nobody reads in the one screenshot it
  * matters in.
  *
@@ -280,7 +283,7 @@ function prisonersWithoutBedBadge(counts: HudCountsViewModel): HudMetricBadge | 
  * `describeStaffCoverage`'s reason: a prison with somebody unguarded is not a
  * worse version of an understaffed one, it is the rung where the cheapest
  * possible action changes the outcome. `undefined` -- not `success` -- when
- * nobody is on either lower rung, because this is a strip of eight chips
+ * nobody is on either lower rung, because this is a strip of nine chips
  * competing for one glance and *"a status strip where several things are
  * always amber teaches players to ignore amber"* applies to green as well;
  * the badge still says "Covered" in words, so the state is never carried by
@@ -372,24 +375,36 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
        *   subset the prison has to staff and search for -- so reading
        *   "12 prisoners, 3 high risk" left to right is the whole statement,
        *   exactly as "5 staff, 12 covered, 4 unguarded" is.
-       * - **The end of the row is where a chip goes to be invisible.** Measured
-       *   in the real application at first paint, Chromium, 100% interface
-       *   scale: the nine chips and their eight 16px gaps are ~1234px of
-       *   content, and the metrics row is 1256px at 1280x720, 1416px at
-       *   1440x900 and 1896px at 1920x1080 (the last of those after this change
-       *   moved the strip's two-row breakpoint -- see `hud.css`). At 1280 that
-       *   is 22px of slack, and `hud.css` records `FUNDS` growing 85.8px ->
-       *   110.2px as the treasury reaches seven figures, so a mid-game prison
-       *   at 1280 overflows the row by a few pixels and the *last* chip is the
-       *   one that leaves. Appending would have made the chip this ruling asks
-       *   for the first casualty at the narrowest desktop width; second, the
-       *   chip that leaves there is `earned-today`.
+       * - **The end of the row is where a chip goes to be invisible**, on the
+       *   narrow viewports where the row scrolls: at 768x1024 the metrics row is
+       *   744px and holds five of the nine chips, with the scrollbar suppressed
+       *   so nothing says the other four exist (#634). Second is inside that
+       *   five and last is not.
        *
-       * What that costs, stated rather than implied: at 768x1024 five chips fit
-       * and the fifth is now `rooms` instead of `incidents`, so `incidents`
-       * moves off screen at that width. #634 already measured 3 of 8 off screen
-       * there, the alerts region names an open incident in words, and the
-       * owner's steer of the same day is that the desktop browser comes first.
+       * **A third reason was written here and the measurement refuted it**, so
+       * it is recorded rather than quietly dropped. It read that nine chips are
+       * ~1234px of content against 1256px of metrics row at 1280x720, that
+       * `hud.css` records `FUNDS` growing 85.8px -> 110.2px by a seven-figure
+       * treasury, and that "a mid-game prison at 1280 overflows the row by a few
+       * pixels and the *last* chip is the one that leaves". Measured on the real
+       * page instead of arithmetic: the nine chips and their eight 16px gaps are
+       * **1227.6px**, and with `FUNDS` set to `1,284,500` and `Earned today` to
+       * `284,500` the row is **1252.0px against 1256px** -- so all nine are on
+       * screen at 1280x720 at a mid-game treasury, with 4px to spare. (`Earned
+       * today` does not grow at all: its *label* is wider than any value it can
+       * hold.) The forward-looking half of that reason survives and the
+       * conclusion does not: 4px is the whole of the desktop headroom left, so
+       * the next chip, or a longer label in another locale, takes the last one
+       * off screen -- but nothing is off screen today because of where this chip
+       * was put.
+       *
+       * What the placement does cost, stated rather than implied: at 768x1024
+       * five chips fit and the fifth is now `rooms` instead of `incidents`, so
+       * `incidents` moves off screen at that width. #634 already measured 3 of 8
+       * off screen there, the alerts region names an open incident in words, and
+       * the owner's steer of the same day is that the desktop browser comes
+       * first. Appending instead would leave 768 exactly as it was and put this
+       * chip among the four nobody sees there.
        *
        * **No tone and no badge**, which is `funds`' reason rather than
        * `contraband`'s. A count of high-risk prisoners is not a failure -- it is
