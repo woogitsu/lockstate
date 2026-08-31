@@ -3,7 +3,9 @@ import { fileURLToPath } from 'node:url';
 import { expect, test, type Locator, type Page } from './network-changed-fixture';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { procurableMaterial } from '../../src/content/procurement-catalog';
+import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
 import { SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
+import { TILE_SIZE_PX } from '../../src/rendering/tile-metrics';
 import { defaultMessageCatalogEn, formatNumber } from '../../src/services/localization';
 import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { HUD_TAB_IDS, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
@@ -768,11 +770,20 @@ async function dragOnWorld(page: Page): Promise<void> {
  * plausible pixel figure taken from a page that was not showing what the test
  * assumed is exactly the failure this file exists to avoid.
  *
- * `TILE_SIZE_PX` is 64 and the camera starts at zoom 1, so 192px is a three-tile
- * side and 128px a two-tile one -- both rectangles with two real axes, which is
- * what is being proven. `steps` matters for the same reason it does above: the
- * scene reads the gesture from pointer *movement*, so a single jump would work
- * and would not resemble a hand.
+ * `TILE_SIZE_PX` is 64 and the camera starts at zoom 1, so 192px is three tiles
+ * of *travel* and 128px two -- both rectangles with two real axes, which is what
+ * is being proven. `steps` matters for the same reason it does above: the scene
+ * reads the gesture from pointer *movement*, so a single jump would work and
+ * would not resemble a hand.
+ *
+ * **That sentence read "192px is a three-tile side" and the side is four.**
+ * Both corners of a drag are inclusive (`tileRectFromDrag`), so three tiles of
+ * travel covers four tile columns -- measured, `6,11 4x4` from a 192px gesture
+ * at 1280x800. The half about travel is kept because it is the number this
+ * constant is in, and the correction is marked rather than overwritten because
+ * the two are one step apart and the wrong one was read off this comment. What
+ * makes it checkable rather than a promise is `tileSpanOfGesture`, which every
+ * drag through `drawRoomRectangle` is now asserted against.
  */
 const ROOM_DRAG_DELTAS_PX = [192, 128] as const;
 
@@ -986,8 +997,25 @@ async function roomWorldGeometry(page: Page): Promise<RoomWorldGeometry> {
  * is already zoned is still the canvas, so a second call with no offset finds
  * the same point and the designation is refused as `overlaps-existing-room`.
  * Optional, so every existing caller is unchanged.
+ *
+ * ### Why it hands back the gesture rather than a yes
+ *
+ * It used to answer `boolean`, and a caller could then only ask *whether* a
+ * rectangle was drawn -- never where the hand went or how far. That is the
+ * missing half of every question in this area: the gesture is in **CSS pixels**
+ * and every rule a room is judged by is in **tiles**, so a caller that cannot
+ * see the pixels cannot check the conversion, and one that cannot see where the
+ * press landed cannot place a second rectangle clear of the first. Both of
+ * those went wrong at once in #658 (see `drawRoomRectangle` below), and neither
+ * was visible from a `true`.
+ *
+ * `null` still means what `false` meant: there was no square of bare world to
+ * draw in, which is a measurement and not a failure -- see the paragraph above.
  */
-async function dragRectangleOnWorld(page: Page, options: { readonly minY?: number } = {}): Promise<boolean> {
+async function dragRectangleOnWorld(
+  page: Page,
+  options: { readonly minY?: number } = {},
+): Promise<WorldDragGesture | null> {
   const viewport = page.viewportSize();
   if (viewport === null) throw new Error('the viewport size is needed to aim the drag');
 
@@ -1013,14 +1041,195 @@ async function dragRectangleOnWorld(page: Page, options: { readonly minY?: numbe
     { width: viewport.width, height: viewport.height, deltas: [...ROOM_DRAG_DELTAS_PX], minY: options.minY ?? 8 },
   );
 
-  if (aim === null) return false;
+  if (aim === null) return null;
 
   await page.mouse.move(aim.x, aim.y);
   await page.mouse.down({ button: 'left' });
   await page.mouse.move(aim.x + aim.delta / 2, aim.y + aim.delta / 2, { steps: 6 });
   await page.mouse.move(aim.x + aim.delta, aim.y + aim.delta, { steps: 6 });
   await page.mouse.up({ button: 'left' });
-  return true;
+  return aim;
+}
+
+/**
+ * The gesture `dragRectangleOnWorld` actually made, in **CSS pixels**.
+ *
+ * Where the press landed and how far the hand travelled on each axis -- the
+ * square's side, taken from `ROOM_DRAG_DELTAS_PX`. This is the one thing in
+ * this area that is measured in pixels; everything the game then says about
+ * the rectangle is measured in tiles, and `drawRoomRectangle` is where the two
+ * are made to agree in public rather than by assumption.
+ */
+interface WorldDragGesture {
+  readonly x: number;
+  readonly y: number;
+  /** The side of the square gesture, in CSS pixels. */
+  readonly delta: number;
+}
+
+/**
+ * How many tiles a gesture of `delta` CSS pixels must span, and the whole of the
+ * pixel-to-tile relationship anything in this file is allowed to assume.
+ *
+ * `TILE_SIZE_PX` is the renderer's own constant and the camera starts at zoom 1,
+ * which `docs/CAMERA.md` defines as "screen pixels per world unit" -- so one
+ * tile is `TILE_SIZE_PX` CSS pixels, and `Phaser.Scale.RESIZE` (see
+ * `src/main.ts`'s game config) keeps the game's coordinate space the same size
+ * as the canvas's CSS box, with no letterboxing between them. Both corners of a
+ * drag are **inclusive** (`tileRectFromDrag`), so a gesture of exactly `n` tiles
+ * of travel covers `n + 1` tile columns and rows.
+ *
+ * Every clause of that is a property of production code, not of this file, and
+ * each is an assumption this file used to make silently. So the number this
+ * returns is *asserted* against what the panel says it drew, once per drag,
+ * rather than trusted -- a camera that arrived zoomed, a scale mode that
+ * letterboxed, or an off-by-one in the inclusive corners would each change the
+ * rectangle a fixed gesture produces, and each used to be invisible here.
+ */
+function tileSpanOfGesture(delta: number): number {
+  return delta / TILE_SIZE_PX + 1;
+}
+
+/**
+ * Where a *second* room drag may start so that the rectangle it draws cannot
+ * share a tile row with the first one, whatever the camera is doing.
+ *
+ * The first gesture's lowest tile row is the row containing the screen point it
+ * released on, `gesture.y + gesture.delta`. One tile is `TILE_SIZE_PX` CSS
+ * pixels (see `tileSpanOfGesture`), so a press that is a further `TILE_SIZE_PX`
+ * down the screen is in a strictly lower row no matter where the tile grid
+ * happens to fall -- the worst case is a release one pixel inside a row, and
+ * `TILE_SIZE_PX` more still clears it.
+ *
+ * **This replaces a hard-coded `minY: 320`, and the constant is what #658 broke
+ * itself against.** That branch gives the status metrics their own row below
+ * 1920px, which makes `.hud-strip` 30.5px taller at 1280x800, which pushes the
+ * *first* drag 32px further down the page (the scan steps in 16s) -- while 320
+ * stayed where it was. The gap between the first rectangle's last row and the
+ * second's first row closed from 72px to 40px, both rectangles landed in tile
+ * row 14, and the second designation was refused `overlaps-existing-room`. The
+ * game was right and the test was aiming at a number.
+ *
+ * A number derived from the first gesture cannot close that way, and it is not
+ * trusted either: `drawRoomRectangle`'s `clearOf` asserts the two rectangles
+ * really are disjoint, in tiles, which is the space the refusal is in.
+ */
+function belowGesture(gesture: WorldDragGesture): number {
+  return gesture.y + gesture.delta + TILE_SIZE_PX;
+}
+
+/**
+ * The authored minimum size for a room type, off the shipped catalogue.
+ *
+ * `RoomZoningService.zone` refuses `below-minimum-size` against exactly this
+ * requirement, so it is the game's own floor rather than a number this file
+ * chose -- and it is read from `src/content/room-catalog.ts` for the same
+ * reason the catalogue count above is asserted to be 18: a test that hard-coded
+ * "2x3" would keep passing after the content changed underneath it.
+ */
+function authoredRoomMinimum(roomCatalogId: string): {
+  readonly minWidth: number;
+  readonly minHeight: number;
+  readonly minTiles: number;
+} {
+  const definition = defaultRoomContentRegistry.getById(roomCatalogId);
+  if (definition === undefined) throw new Error(`${roomCatalogId} is not in the shipped room catalogue`);
+  for (const requirement of definition.requirements) {
+    if (requirement.type === 'minimum-size') return requirement;
+  }
+  throw new Error(`${roomCatalogId} authors no minimum-size requirement to check a drag against`);
+}
+
+/** Do two tile rectangles share a tile? Half-open on both axes, which is what a tile count means. */
+function tileRectanglesOverlap(left: TileRectangle, right: TileRectangle): boolean {
+  return (
+    left.x < right.x + right.width &&
+    right.x < left.x + left.width &&
+    left.y < right.y + right.height &&
+    right.y < left.y + left.height
+  );
+}
+
+/** `x,y wxh` -- the shape `data-area` prints, for a message a reader can act on. */
+function describeTileRectangle(rectangle: TileRectangle): string {
+  return `${rectangle.x},${rectangle.y} ${rectangle.width}x${rectangle.height}`;
+}
+
+/**
+ * Draw a room rectangle on the world and check it against the game's own rules
+ * **before** anything is asked to accept it.
+ *
+ * ### The defect this exists to close
+ *
+ * The Rooms specs used to drag a rectangle, read it back with
+ * `pendingRoomRectangle`, and compare that to a value *also* read back with
+ * `pendingRoomRectangle` -- the probe drag's. Both sides of the comparison came
+ * from the same helper on the same page, so when the geometry moved they moved
+ * together and the assertion still passed. That is `AGENTS.md`'s *"never write
+ * a fixture that supplies both sides of a comparison"*, in the one form that
+ * looks like a real assertion, and it is why #658 -- a CSS change -- surfaced
+ * three assertions later as `[data-metric="rooms"]` stuck at `1Rooms`, with the
+ * drag, the rectangle and the arming all reported green.
+ *
+ * The gesture aims in **CSS pixels**; every refusal is in **tiles**. So the two
+ * facts nothing checked are checked here, per drag:
+ *
+ * 1. **The conversion.** The rectangle is `tileSpanOfGesture(delta)` on a side,
+ *    or the pixel-to-tile relationship this file assumes is not the one the
+ *    renderer has.
+ * 2. **The rules the rectangle will be judged by.** The authored minimum for
+ *    this room type (`below-minimum-size`), and disjointness from rectangles the
+ *    caller names (`overlaps-existing-room`). A drag that draws something the
+ *    simulation can only refuse fails *here*, saying which rule and by how much,
+ *    instead of becoming a mystery about Designate further down.
+ *
+ * Deliberately **not** an assertion about *where* the rectangle is: that is a
+ * function of the HUD's layout at this viewport and is allowed to move. What is
+ * not allowed to move is whether the thing drawn is a room the game would take.
+ */
+async function drawRoomRectangle(
+  page: Page,
+  what: string,
+  options: { readonly roomCatalogId: string; readonly minY?: number; readonly clearOf?: readonly TileRectangle[] },
+): Promise<{ readonly rectangle: TileRectangle; readonly gesture: WorldDragGesture }> {
+  const gesture = await dragRectangleOnWorld(page, options.minY === undefined ? {} : { minY: options.minY });
+  if (gesture === null) {
+    throw new Error(
+      `${what}: no square of bare world to draw a room in, from y=${String(options.minY ?? 8)} down` +
+        ` (deltas ${ROOM_DRAG_DELTAS_PX.join(', ')}px at ${JSON.stringify(page.viewportSize())})`,
+    );
+  }
+
+  const rectangle = await pendingRoomRectangle(page);
+  const span = tileSpanOfGesture(gesture.delta);
+  expect(
+    { width: rectangle.width, height: rectangle.height },
+    `${what}: a ${gesture.delta}px gesture from (${gesture.x},${gesture.y}) drew` +
+      ` ${describeTileRectangle(rectangle)}, and a ${TILE_SIZE_PX}px tile at zoom 1 makes that ${span}x${span}` +
+      ` -- so the camera, the scale mode or the inclusive corners are not what this file assumes`,
+  ).toEqual({ width: span, height: span });
+
+  const minimum = authoredRoomMinimum(options.roomCatalogId);
+  expect(
+    {
+      wideEnough: rectangle.width >= minimum.minWidth,
+      tallEnough: rectangle.height >= minimum.minHeight,
+      bigEnough: rectangle.width * rectangle.height >= minimum.minTiles,
+    },
+    `${what}: ${describeTileRectangle(rectangle)} is below ${options.roomCatalogId}'s authored minimum of` +
+      ` ${minimum.minWidth}x${minimum.minHeight} (${minimum.minTiles} tiles), so the drag drew a room the` +
+      ` simulation can only refuse below-minimum-size`,
+  ).toEqual({ wideEnough: true, tallEnough: true, bigEnough: true });
+
+  for (const other of options.clearOf ?? []) {
+    expect(
+      tileRectanglesOverlap(rectangle, other),
+      `${what}: ${describeTileRectangle(rectangle)} shares tiles with ${describeTileRectangle(other)}, so the` +
+        ` drag drew a room the simulation can only refuse overlaps-existing-room`,
+    ).toBe(false);
+  }
+
+  return { rectangle, gesture };
 }
 
 /**
@@ -2950,7 +3159,7 @@ test.describe('the assembled application', () => {
       // there to be drawn on. Asserted rather than tolerated, so a layout change
       // that took the world away again -- at any viewport -- fails here instead
       // of quietly changing what this test covers.
-      expect(dragged, `a room drag found no bare world at ${width}x${height}`).toBe(true);
+      expect(dragged, `a room drag found no bare world at ${width}x${height}`).not.toBeNull();
 
       const roomConfirm = page.locator('.hud-rooms__confirm');
       await expect(
@@ -4485,7 +4694,7 @@ test.describe('the assembled application', () => {
       expect(
         await dragRectangleOnWorld(page),
         `a room drag found no bare world at ${width}x${height}`,
-      ).toBe(true);
+      ).not.toBeNull();
       await expect(
         page.locator('.hud-rooms__area'),
         `the dragged area is not a rectangle at ${width}x${height}`,
@@ -4688,21 +4897,46 @@ test.describe('the assembled application', () => {
      * quietly, the second gesture's rectangle is asserted to be the first's.
      * A drag that landed somewhere else fails here, naming both rectangles,
      * instead of failing forty seconds later as a room that would not zone.
+     *
+     * **That last sentence was only half true, and #658 collected the other
+     * half.** Comparing the real drag's rectangle to the probe's compares two
+     * readings of the same helper on the same page: when the HUD's layout moves
+     * both readings move with it, the assertion still passes, and what reaches
+     * the player -- a rectangle the simulation refuses -- is reported four
+     * assertions later as a Designate that did nothing. So each drag now goes
+     * through `drawRoomRectangle`, which checks the rectangle against the
+     * pixel-to-tile conversion and against `room.cell`'s own authored rules
+     * before the panel is asked to do anything with it. The probe-to-real
+     * comparison is kept, because reproducibility is still worth asserting; it
+     * is simply no longer the only thing asserted.
+     *
+     * The second drag's floor is `belowGesture(...)` and no longer a constant,
+     * for the reason recorded on that function: the constant it replaces was
+     * measured against a strip one row tall and #658 makes the strip two.
      */
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.locator('.ui-tab[data-tab="rooms"]').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
-    expect(await dragRectangleOnWorld(page), 'a room drag found no bare world').toBe(true);
-    const firstCell = await pendingRoomRectangle(page);
+    const firstProbe = await drawRoomRectangle(page, 'the probe drag for the first cell', {
+      roomCatalogId: 'room.cell',
+    });
+    const firstCell = firstProbe.rectangle;
     await page.locator('.hud-rooms__cancel').click();
-    expect(await dragRectangleOnWorld(page, { minY: 320 }), 'a second room drag found no bare world').toBe(
-      true,
-    );
-    const secondCell = await pendingRoomRectangle(page);
+    // Below the first gesture by a whole tile, so the two rectangles cannot
+    // share a row however the camera is framed -- and asserted disjoint rather
+    // than assumed, which is what `clearOf` is.
+    const secondCellFloor = belowGesture(firstProbe.gesture);
+    const secondCell = (
+      await drawRoomRectangle(page, 'the probe drag for the second cell', {
+        roomCatalogId: 'room.cell',
+        minY: secondCellFloor,
+        clearOf: [firstCell],
+      })
+    ).rectangle;
     await page.locator('.hud-rooms__cancel').click();
     // Two rooms and not one rectangle drawn twice, which is what the second
-    // drag's `minY` is for -- and if they were the same the second zoning
+    // drag's floor is for -- and if they were the same the second zoning
     // below would be refused `overlaps-existing-room`.
     expect(secondCell, 'both room drags found the same rectangle').not.toEqual(firstCell);
 
@@ -4712,9 +4946,8 @@ test.describe('the assembled application', () => {
     await page.locator('.ui-tab[data-tab="rooms"]').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
-    expect(await dragRectangleOnWorld(page), 'a room drag found no bare world').toBe(true);
     expect(
-      await pendingRoomRectangle(page),
+      (await drawRoomRectangle(page, 'the drag for the first cell', { roomCatalogId: 'room.cell' })).rectangle,
       'the drag no longer lands on the rectangle its walls were built around',
     ).toEqual(firstCell);
     await page.locator('.hud-rooms__confirm').click();
@@ -4778,14 +5011,26 @@ test.describe('the assembled application', () => {
       page.locator('.hud-rooms__arm'),
       'pressing the arm control for a second room disarmed the tool',
     ).toHaveAttribute('aria-pressed', 'true');
-    expect(await dragRectangleOnWorld(page, { minY: 320 }), 'a second room drag found no bare world').toBe(
-      true,
-    );
     expect(
-      await pendingRoomRectangle(page),
+      (
+        await drawRoomRectangle(page, 'the drag for the second cell', {
+          roomCatalogId: 'room.cell',
+          minY: secondCellFloor,
+          clearOf: [firstCell],
+        })
+      ).rectangle,
       'the second drag no longer lands on the rectangle its walls were built around',
     ).toEqual(secondCell);
     await page.locator('.hud-rooms__confirm').click();
+    // What Designate said, before the count is asked about. A refused
+    // designation paints `.hud__refusal` (`src/ui/hud/hud.ts`), so the sentence
+    // the player would have read is the first thing reported when this stops
+    // working -- rather than a metric that stayed at 1 with no reason attached,
+    // which is what #658 spent a day on.
+    await expect(
+      page.locator('.hud__refusal'),
+      'Designate refused the second cell',
+    ).toBeHidden();
     await expect(page.locator('[data-metric="rooms"]')).toContainText('2');
 
     for (const [width, height] of [
