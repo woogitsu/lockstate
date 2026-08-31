@@ -187,6 +187,34 @@ export function justInTimePurchaseOrderId(tick: number, itemId: string, inFlight
  * fund in one lump leaves unspent -- and that is what `procureForPendingOrders`
  * below says it moves, and by how much.
  *
+ * **THAT CORRECTION IS ITSELF TOO STRONG, AND ITS OWN MEASUREMENT IS WHY.**
+ * *"The scheduled pass spends 0"* is true of §10c and false in general, and the
+ * reason is a property of that fixture rather than of the code: **§10c never
+ * gives a prison money after its queue is standing**, so the press is the only
+ * moment money exists there. A fixture that agrees with any implementation is
+ * the defect `docs/TESTING.md` names, and this one agreed with two.
+ *
+ * The general statement is narrower: **the scheduled pass spends nothing while
+ * no money arrives after placement, and spends whatever does arrive as soon as
+ * it covers one whole order.** Measured, ten wall orders at 80 placed against a
+ * treasury drained to the floor, then credited with no command at all --
+ * `tests/integration/construction-just-in-time-materials.test.ts`, *"spends
+ * income that arrives after placement, with nothing pressed in between"*:
+ *
+ * ```
+ * credited   0    79    80   240   400   799   800   5,000
+ * spent      0     0    80   240   400   720   800     800
+ * ```
+ *
+ * **This is not a defect in this class and it must not be "fixed" here.** Every
+ * one of those orders was placed by the player, and funding it later is ADR 0017
+ * decision 7 doing what the owner asked for in #627 -- *"it should buy itself
+ * when I place a wall"*. What it is, is a **cost the player is not shown**, and
+ * one that only became reachable when #703 ruling A opened a standing overdraft:
+ * a player who drags a perimeter while broke and then forgets watches their
+ * income turn into wall with nothing on screen relating the two. The sentence
+ * that would relate them is ADR 0081 open question 2 and is the owner's.
+ *
  * **Recorded rather than fixed, and the reason is that the remedy is a
  * decision about money.** No value is lost and no promise is broken -- the
  * refund is not reversed in that sequence, so the procurement fold's sentence
@@ -336,6 +364,14 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
    * for, one order at a time, because the deficit a press sees is the increment
    * its own order added and an increment is one wall.
    *
+   * **That paragraph is kept and it is narrower than it reads: the 0 holds
+   * because §10c never gives a prison money after its queue is standing.** Give
+   * it some, and the scheduled pass spends it -- see the class docblock above
+   * for the sweep and for why that is ADR 0017 decision 7 rather than a defect.
+   * So the sentence is *"the scheduled pass spends nothing while no money
+   * arrives after placement"*, and what follows about bounds is unaffected,
+   * because both bounds below are about totals rather than about who spends.
+   *
    * Two things do bound it, and both are outside this method:
    *
    * - **The queue's own cost.** A pass buys the aggregate deficit or a subset
@@ -356,6 +392,16 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
    * ADR 0081's Consequences ask *"whether that needs a bound of its own"* and
    * leave it open; this method is written so that adding one later is a
    * condition on `canAfford` and nothing else.
+   *
+   * **And the residual is exactly what the income case measures.** With income
+   * arriving after placement, the threshold at which a standing queue starts
+   * taking it falls from the whole queue's cost to the cheapest single order --
+   * 800 to 80, measured on both trees -- so the total and the endpoint are
+   * identical to the minor unit and only the *timing* moves. Ten orders at 80
+   * against 300 an in-game day: all-or-nothing leaves the prison holding 300,
+   * then 600, then 100 with ten walls up; per order leaves it holding 60, then
+   * 40, then 100 with the same ten walls up two days earlier. Both 60 and 40 are
+   * below the 65 a plank costs, which is ADR 0075's whole subject.
    *
    * ## Determinism
    *

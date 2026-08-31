@@ -58,6 +58,20 @@ const BRICK_PRICE = procurableMaterial(BRICK)!.unitPriceMinorUnits;
 const PLANK_PRICE = procurableMaterial(PLANK)!.unitPriceMinorUnits;
 /** One wall segment, all in: 2 bricks at 40. */
 const WALL_COST = 80;
+
+/**
+ * One arrival of money with no command behind it, and the ticks that follow
+ * it, for the case that characterises what a standing queue does with income.
+ *
+ * 300 is `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS`, used here as a *shape*
+ * rather than as an income model -- this prison has no prisoners and earns
+ * nothing, so the credit is applied directly. `INSTALMENT_TICKS` is twenty
+ * scheduled construction ticks, which is far more than the queue needs and is
+ * chosen so the case measures what the pass settles at rather than where it
+ * had got to.
+ */
+const INSTALMENT = 300;
+const INSTALMENT_TICKS = 200;
 /** `room.cell`'s authored minimum, the rectangle every object fixture in this repository uses. */
 const CELL_RECT = { x: 4, y: 6, width: 2, height: 3 } as const;
 
@@ -612,6 +626,151 @@ describe('the order the queue is funded in (#703 ruling 12)', () => {
 });
 
 describe('what auto-procurement costs, measured rather than assumed', () => {
+  /**
+   * **A standing build queue spends money that arrives after it was placed,
+   * with no press between the two. Characterised, not judged.**
+   *
+   * ## Why this exists, and it is a correction
+   *
+   * The agent that implemented #703 ruling 9 measured
+   * `scripts/report-loan-recovery-pricing.mjs` §10c by tagging every
+   * `ConstructionSystem.procureQueuedMaterials` call with its caller, found the
+   * scheduled pass spending **0** in all five runs against the presses' 27,440,
+   * and concluded that the scheduled pass does not spend. **The measurement was
+   * right and the conclusion generalised past it.** §10c never gives a prison
+   * money *after* its queue is standing, so the press is the only moment money
+   * exists there -- a fixture agreeing with any implementation, which
+   * `docs/TESTING.md` names as its own defect class. This case is the shape §10c
+   * cannot produce.
+   *
+   * ## What it is NOT
+   *
+   * Not a defect in procurement. Every order below was **placed by the player**,
+   * and buying for it later is ADR 0017 decision 7 doing exactly what the owner
+   * asked for in #627 -- *"it should buy itself when I place a wall"*. A queue
+   * that forgot its orders the moment the money ran out is the behaviour #627
+   * was filed against.
+   *
+   * ## What it is
+   *
+   * A **cost the player is not shown**, and it only became reachable when #703
+   * ruling A opened a standing overdraft. A player who drags a perimeter while
+   * broke and then forgets watches their income turn into wall over the
+   * following days, with nothing on screen relating the two. The sentence that
+   * would relate them is ADR 0081 open question 2 and is the owner's; this case
+   * is the measurement that sentence would be written against.
+   *
+   * ## The figures, and what per-order fill changed about them
+   *
+   * Measured on both trees with one probe -- ten wall orders at 80, drained to
+   * the floor, then 300 credited per in-game day with nothing pressed, walls
+   * counted at dusk:
+   *
+   * ```
+   *          all-or-nothing (c6cd3e3)      per order (this branch)
+   *   day     room left    walls standing   room left    walls standing
+   *     1        300            0               60             3
+   *     2        600            0               40             7
+   *     3        100           10              100            10
+   *    4-6    identical     identical       identical      identical
+   * ```
+   *
+   * The case below is the same shape at a shorter interval, and it counts
+   * **money out** rather than walls up -- see the comment on `boughtAtDusk` for
+   * why the two are not the same measurement.
+   *
+   * **The endpoint and the total are identical to the minor unit**: 800, which
+   * is the queue's own cost, and the floor is never reached under either rule.
+   * What ruling 9 moved is *when*: the threshold at which the queue starts
+   * taking income falls from the whole queue's cost to the cheapest single
+   * order -- 800 to 80 here -- so the prison gets its walls two instalments
+   * sooner and holds 60 and 40 where it used to hold 300 and 600. Both of those
+   * are below the 65 a plank costs, which is
+   * [ADR 0075](../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)'s
+   * whole subject, and it is the trade ruling 9 chose rather than a side effect
+   * of it.
+   */
+  it('spends income that arrives after placement, with nothing pressed in between (#703)', () => {
+    const runtime = createNewSimulationRuntime(SEED);
+    const roomOf = (): number => runtime.treasury.balanceMinorUnits - runtime.treasury.overdraftFloorMinorUnits;
+
+    /*
+     * Drained to exactly the floor, so no order can be funded by the press that
+     * places it and the press path is out of the picture entirely. Through
+     * `Treasury.spend` rather than the Buy control, because a purchase would
+     * land materials in the container and the queue would then need none.
+     */
+    expect(runtime.treasury.spend(roomOf())).toBe(true);
+    expect(roomOf()).toBe(0);
+
+    const orders = placeWalls(runtime, 10);
+    expect(runtime.treasury.balanceMinorUnits, 'nothing was funded at any press').toBe(
+      runtime.treasury.overdraftFloorMinorUnits,
+    );
+    expect(runtime.procurement.pendingDeliveries).toEqual([]);
+    /*
+     * One `materials-pending` and nine `approved`: `update` promotes the first
+     * eligible order per scheduled tick and only one tick has run. Both states
+     * count toward demand (`pendingMaterialDemand`), which is why one pending
+     * order draws ten walls' worth of purchasing.
+     */
+    expect(statesOf(runtime)).toEqual({ 'materials-pending': 1, approved: 9 });
+
+    /*
+     * Below one order's cost, nothing at all happens -- the residual bound, at
+     * the top of the range this time rather than the bottom.
+     */
+    runtime.treasury.credit(WALL_COST - 1);
+    step(runtime, INSTALMENT_TICKS);
+    expect(runtime.treasury.balanceMinorUnits, '79 buys no part of an 80 order').toBe(
+      runtime.treasury.overdraftFloorMinorUnits + WALL_COST - 1,
+    );
+    expect(statesOf(runtime).completed ?? 0).toBe(0);
+
+    /*
+     * And now money arrives the way income arrives: with no command, while the
+     * clock runs. Nothing below presses anything.
+     */
+    const walletAtDusk: number[] = [];
+    const boughtAtDusk: number[] = [];
+    let spentUnpressed = 0;
+    for (let instalment = 0; instalment < 3; instalment += 1) {
+      const before = runtime.treasury.balanceMinorUnits;
+      runtime.treasury.credit(INSTALMENT);
+      step(runtime, INSTALMENT_TICKS);
+      spentUnpressed += before + INSTALMENT - runtime.treasury.balanceMinorUnits;
+      walletAtDusk.push(roomOf());
+      boughtAtDusk.push(spentUnpressed);
+    }
+
+    /*
+     * **Money spent, not walls standing**, and the distinction cost this case
+     * one revision: `completed` lags funding by however long the crew takes,
+     * one order at a time, so a case asserting walls would have been measuring
+     * `ConstructionSystem`'s throughput and calling it procurement. What this
+     * case is about is what leaves the treasury.
+     *
+     * Four orders per instalment: the 79 left over from the boundary above
+     * rides along, so 379 covers four whole 80s with 59 to spare.
+     */
+    expect(boughtAtDusk, 'four orders, four more, then the last two').toEqual([320, 640, 800]);
+    expect(walletAtDusk, 'and what the player is left holding while it happens').toEqual([59, 39, 179]);
+
+    // The whole of what the queue can ever take, and it is the queue's own cost.
+    expect(spentUnpressed).toBe(orders.length * WALL_COST);
+    expect(spentUnpressed).toBe(800);
+    expect(runtime.justInTimeMaterials.lastReport.unfunded, 'every order is paid for').toEqual([]);
+
+    // It stops. A drained queue takes nothing more, however long the clock runs.
+    const settled = runtime.treasury.balanceMinorUnits;
+    runtime.treasury.credit(INSTALMENT);
+    step(runtime, INSTALMENT_TICKS * 3);
+    expect(runtime.treasury.balanceMinorUnits, 'an empty queue is not a standing charge').toBe(settled + INSTALMENT);
+
+    // And no route through any of it got under the floor.
+    expect(runtime.treasury.balanceMinorUnits).toBeGreaterThanOrEqual(runtime.treasury.overdraftFloorMinorUnits);
+  });
+
   it('makes ADR 0075\'s hard lock reachable by a drag gesture, and this is a finding for the owner', () => {
     /*
      * **ADR 0075 is about a prison that cannot afford its first bed**, and

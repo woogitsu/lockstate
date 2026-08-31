@@ -273,6 +273,58 @@ reason the player did not choose.
 > change, and `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`, which every spend passes
 > through one comparison in `Treasury.canAfford`.
 >
+> **AND THE CORRECTION ABOVE OVERREACHED IN ITS TURN, WHICH IS RECORDED HERE
+> RATHER THAN EDITED INTO IT.** *"The scheduled pass spent 0"* is true of §10c
+> and does not generalise, and the reason is a property of that instrument:
+> **no run in it earns money with a queue standing.** A prison there places its
+> orders out of the opening grant and then has no capacity and no income, so the
+> press is the only moment money exists — which means the sweep agrees with
+> all-or-nothing and with partial fill equally, the shape `docs/TESTING.md`
+> names as a fixture that supplies both sides.
+>
+> Measured on the shape §10c cannot produce — ten `wall-brick` orders placed
+> against a treasury drained to the floor, then credited **with no command at
+> all**, then the clock run with nothing pressed:
+>
+> | credited | 0 | 79 | 80 | 240 | 400 | 799 | 800 | 5,000 |
+> |---|---|---|---|---|---|---|---|---|
+> | spent, unpressed | 0 | 0 | **80** | **240** | **400** | **720** | **800** | **800** |
+>
+> **This is not a defect and must not be read as one.** Every one of those
+> orders was placed by the player, and funding it later is ADR 0017 decision 7
+> doing what the owner asked for in [#627](https://github.com/matmaxalez/lockstate/issues/627)
+> — *"it should buy itself when I place a wall"*. What it is, is a **cost the
+> player is not shown**, reachable only since ruling A opened the overdraft: a
+> player who drags a perimeter while broke and forgets can be carried from
+> `+2,500` to the floor over the following days with nothing pressed and nothing
+> on screen relating the two. That is the same "hidden mechanic" class Decision 3
+> and open question 2 are about, and it is the strongest argument yet that
+> question 2 is a precondition rather than a nicety.
+>
+> **What ruling 9 changed about it, measured on both trees with one probe** —
+> ten orders at 80, 300 credited per in-game day, nothing pressed:
+>
+> | day | all-or-nothing: room left / walls | per order: room left / walls |
+> |---|---|---|
+> | 1 | 300 / 0 | **60 / 3** |
+> | 2 | 600 / 0 | **40 / 7** |
+> | 3 | 100 / 10 | 100 / 10 |
+> | 4–6 | identical | identical |
+>
+> **The total and the endpoint are identical to the minor unit** — 800, the
+> queue's own cost — and the floor is reached under neither. What moves is the
+> threshold at which the queue starts taking income, from the whole queue's cost
+> to the cheapest single order: **800 to 80**. So the walk is not deeper and not
+> faster to the floor; it is *earlier*, and the prison holds 60 and 40 where it
+> used to hold 300 and 600. **Both are below the 65 a plank costs**, which is
+> ADR 0075's whole subject — so per-order fill buys the player their walls two
+> days sooner at the price of two days without the liquidity to buy their way
+> out. That is the trade this ruling makes, stated so it can be argued with.
+>
+> Pinned as a characterisation test at
+> `tests/integration/construction-just-in-time-materials.test.ts`, *"spends
+> income that arrives after placement, with nothing pressed in between"*.
+>
 > This correction changes no decision in this document, and the Status line
 > above is untouched: this ADR is still unsigned.
 

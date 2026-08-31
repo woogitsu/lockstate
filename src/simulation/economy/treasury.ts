@@ -243,6 +243,31 @@ export const TREASURY_STARTING_BALANCE_MINOR_UNITS = 25_000;
  * pass still spending 0. It cannot spend the residual those runs leave, because
  * 60 of room is short of the 80 a wall costs and an order is funded whole or not
  * at all.
+ *
+ * **BOTH ZEROES ABOVE ARE PROPERTIES OF §10c'S FIXTURE AND NOT OF THE CODE, AND
+ * THEY ARE KEPT BECAUSE THE TABLE THEY DESCRIBE IS REAL.** §10c never gives a
+ * prison money *after* its queue is standing, so the press is the only moment
+ * money exists in it. Give a prison with a standing queue some income and the
+ * scheduled pass does spend it, with no press between the two -- measured, ten
+ * wall orders at 80 against a treasury drained to this floor, credited with no
+ * command at all:
+ *
+ * ```
+ * credited   0    79    80   240   400   799   800   5,000
+ * spent      0     0    80   240   400   720   800     800
+ * ```
+ *
+ * (`tests/integration/construction-just-in-time-materials.test.ts`, *"spends
+ * income that arrives after placement, with nothing pressed in between"*.)
+ *
+ * **What that means for this constant is the sharper version of the paragraph
+ * above rather than a new claim.** The queue can only ever take what its own
+ * orders cost, so this number does not bound a runaway -- it bounds how much
+ * wall a player can place *before* the money exists, and every unit of it will
+ * be taken out of income later, with nothing on screen relating the two. That
+ * is the "hidden cost" reading of the same 2,500, and it is still a reason not
+ * to raise it. What the player is told about it is ADR 0081 open question 2 and
+ * is the owner's.
  */
 export const TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS = -Math.trunc(TREASURY_STARTING_BALANCE_MINOR_UNITS / 10);
 
