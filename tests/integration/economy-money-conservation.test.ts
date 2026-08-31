@@ -1009,18 +1009,13 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
     expect(session.runtime.treasury.balanceMinorUnits).toBe(afterPurchase);
   });
 
-  it('leaves the orders behind it funded: a delivery bigger than the surplus is not cancelled', () => {
+  it('takes back one wall\'s money and leaves the other wall\'s alone', () => {
     /*
-     * The bound that stops this becoming #687 in reverse. Cancelling a
-     * delivery the rest of the queue still needs part of would refund money the
-     * very next scheduled pass spends again -- and, at a balance that can no
-     * longer fund it in one order, would strand the queue instead.
-     *
-     * Two walls share one delivery here only if the deficit was bought in one
-     * lump; since ruling 12 a press buys its own order's increment, so the
-     * measurement below is of what the runtime actually produces rather than of
-     * a fixture's assumption: whatever the shape, cancelling one of the two
-     * walls must leave the other one able to finish.
+     * Two orders, two deliveries -- which is what a session produces since #703
+     * ruling 12 made the *order* the unit a purchase is atomic at. Cancelling
+     * one must take back exactly its own delivery and leave the other queue
+     * member able to finish, rather than refunding the pair and re-buying on
+     * the next scheduled pass.
      */
     const session = createSession();
     session.place('order-wall-1', WALL, 4, 6, 'build-1', 'first wall');
@@ -1040,5 +1035,61 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
       TREASURY_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits,
       'and it was not bought a second time',
     ).toBe(wallCost);
+  });
+
+  it('will not cancel one lorry two orders are waiting on, which is a save written before ruling 12', () => {
+    /*
+     * **The bound that stops this becoming #687 in reverse, and the only route
+     * that still reaches it.** A delivery covering more than one order cannot
+     * be produced by a session on this build: #703 ruling 12 made the order the
+     * unit a purchase is atomic at, so `procureForPendingOrders` makes one
+     * purchase per item **per funded order** and every `jit:` delivery is
+     * exactly one order's worth. Cancelling a delivery the rest of the queue
+     * still needs part of is therefore unreachable by placing walls -- and it
+     * is reachable from a **save**, because `pendingDeliveries` is persisted
+     * (`economySectionSchema`) and a save written by any build before
+     * 2026-08-31 can hold an aggregated lump.
+     *
+     * So this restores one, which is what that save looks like when it loads,
+     * and asserts the surplus half of a lorry is not a reason to turn the whole
+     * lorry around: the second wall still gets its bricks and is not paid for
+     * twice.
+     *
+     * Measured: without the `delivery.quantity > surplus` guard in
+     * `largestSurplusDelivery`, this reads `160` where it expects `80` -- the
+     * whole lump refunded for one cancelled wall -- and the second wall is then
+     * re-bought by the next scheduled pass.
+     */
+    const session = createSession();
+    session.place('order-wall-1', WALL, 4, 6, 'build-1', 'first wall');
+    session.place('order-wall-2', WALL, 5, 6, 'build-2', 'second wall');
+    const pending = session.runtime.procurement.pendingDeliveries;
+    expect(pending, 'this build makes one delivery per order').toHaveLength(2);
+
+    // The pre-ruling-12 shape: one purchase for the pair, under one `jit:` id,
+    // carrying what the two together cost. Restoring is how such a delivery
+    // enters a session, and it is exactly what loading that save does.
+    session.runtime.procurement.restore({
+      pending: [
+        {
+          orderId: 'jit:0:item.brick:0',
+          itemId: WALL_REQUIREMENT.itemId,
+          quantity: 2 * WALL_REQUIREMENT.quantity,
+          arrivesAtTick: pending[0]!.arrivesAtTick,
+          paidMinorUnits: 2 * wallCost,
+        },
+      ],
+    });
+    session.conserved('one lorry for the pair, as a pre-ruling-12 save carries it');
+
+    session.cancel('order-wall-1', 'cancel one of the two');
+    expect(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits,
+      'the lorry the other wall is waiting on must not be turned around',
+    ).toBe(2 * wallCost);
+    expect(session.runtime.procurement.pendingDeliveries, 'so it is still on its way').toHaveLength(1);
+
+    session.buildUntilComplete(['order-wall-2'], 'and the survivor builds off it');
+    expect(session.runtime.world.getTopEdge(tile(5, 6))).toBeGreaterThan(0);
   });
 });
