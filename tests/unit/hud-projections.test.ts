@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { defaultContrabandRegistry } from '../../src/content/contraband-catalog';
 import { defaultLocaleEnCatalog } from '../../src/content/default-locale-en';
 import { canonicalJson } from '../../src/simulation/determinism/canonical';
 import { NEED_IDS, NEED_MAX } from '../../src/simulation/prisoners/needs';
@@ -16,6 +17,7 @@ import {
   projectSecurity,
   projectStaff,
   projectStatusStrip,
+  soleDiscoveredContrabandNameKey,
   toBoundedValue,
 } from '../../src/simulation/presentation';
 import type { RoomDetailViewModel, RoomListViewModel } from '../../src/simulation/presentation/room-projection';
@@ -282,6 +284,77 @@ describe('status strip', () => {
     const backToOne = strip();
     expect(backToOne.counts.activeIncidents).toBe(1);
     expect(backToOne.counts.activeIncidentType).toBe('assault');
+  });
+
+  /**
+   * The rule behind `counts.contrabandNameKey`, at the lowest layer that
+   * proves it -- the owner's ruling 3 on issue #703, *"The message names what
+   * contraband was found."*
+   *
+   * `soleDiscoveredContrabandNameKey` is exported and pure for the reason
+   * `occupancyTone` and `orderPrisonsForDisplay` are: it is a rule about not
+   * making a false statement, and a rule that only exists inside a function
+   * needing a session is a rule no test can put under pressure. Two of the
+   * four cases below are unreachable from a real prison at all -- a drained
+   * ledger and a category the catalog does not know -- which is exactly why
+   * they are here rather than in
+   * `tests/integration/contraband-search-duty.test.ts`, where the two
+   * reachable ones are driven through real searches.
+   *
+   * The literal keys are the shipped catalog's own `nameKey`s
+   * (`src/content/contraband-catalog.ts`); they are written out rather than
+   * read back off the registry so the expectation does not come from the same
+   * lookup the function performs.
+   */
+  it('names one contraband category for a whole count, and refuses to name a count it is not true of', () => {
+    const catalog = defaultContrabandRegistry;
+
+    // One category, however many items: the word is true of the count.
+    expect(soleDiscoveredContrabandNameKey([{ categoryId: 'contraband.weapon' }], 1, catalog)).toBe('contraband.weapon.name');
+    expect(
+      soleDiscoveredContrabandNameKey(
+        [{ categoryId: 'contraband.phone' }, { categoryId: 'contraband.phone' }, { categoryId: 'contraband.phone' }],
+        3,
+        catalog,
+      ),
+    ).toBe('contraband.phone.name');
+
+    // Nothing found names nothing. Not the same fact as the two below, and the
+    // same rendering: the chip shows `0` and no badge.
+    expect(soleDiscoveredContrabandNameKey([], 0, catalog)).toBeUndefined();
+
+    // Two categories. Naming either would be a claim about the other, so
+    // neither is named -- and the *first* is not preferred, which is what the
+    // second ordering pins.
+    expect(
+      soleDiscoveredContrabandNameKey([{ categoryId: 'contraband.phone' }, { categoryId: 'contraband.weapon' }], 2, catalog),
+    ).toBeUndefined();
+    expect(
+      soleDiscoveredContrabandNameKey([{ categoryId: 'contraband.weapon' }, { categoryId: 'contraband.phone' }], 2, catalog),
+    ).toBeUndefined();
+
+    /*
+     * **A ledger that no longer accounts for the count.** The count comes from
+     * `SearchSystem`'s own counter and the records come from
+     * `ConfiscationLedger`; `drain()` empties the second and leaves the first
+     * standing, so one surviving row must not be allowed to name a count of
+     * thirty. Nothing in `src/` drains it today, which is why this case can
+     * only be reached here -- and why the guard is a statement about what the
+     * two numbers mean rather than a defence against a caller that exists.
+     */
+    expect(soleDiscoveredContrabandNameKey([{ categoryId: 'contraband.weapon' }], 30, catalog)).toBeUndefined();
+    // The other direction of the same disagreement: more records than the
+    // counter admits to.
+    expect(
+      soleDiscoveredContrabandNameKey([{ categoryId: 'contraband.weapon' }, { categoryId: 'contraband.weapon' }], 1, catalog),
+    ).toBeUndefined();
+
+    // A category the supplied catalog does not know yields nothing rather than
+    // a fabricated `${categoryId}.name`: the catalog owns the mapping from a
+    // stable id to a message key, and a projection that guessed one would be
+    // authoring keys no locale need contain -- which is the promise
+    // `AGENTS.md`'s fourth exclusion forbids, arrived at by accident.
+    expect(soleDiscoveredContrabandNameKey([{ categoryId: 'contraband.nothing-like-this' }], 1, catalog)).toBeUndefined();
   });
 
   /**

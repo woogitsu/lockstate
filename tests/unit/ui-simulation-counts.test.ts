@@ -53,6 +53,11 @@ const COUNTS = {
   // no particular grounds beyond needing one real `IncidentType` member.
   activeIncidentType: 'riot',
   contrabandDiscovered: 5,
+  // What those five items are, as the contraband catalog's own `nameKey`
+  // (issue #703 ruling 3). `'contraband.weapon'` rather than a milder category
+  // on purpose: it is the entry ADR 0080 gave a producer, and it is the one
+  // whose name a player most needs to be able to tell from a phone's.
+  contrabandNameKey: 'contraband.weapon.name',
   treasuryMinorUnits: 24_920,
   // Deliberately a different figure from the balance beside it, and not a
   // round fraction of it (#29): two count fields in the same minor units are
@@ -108,6 +113,17 @@ describe('the HUD counts are read from the worker', () => {
       // The publication names this `contrabandDiscovered`, because that is
       // what the search system counts; the HUD field is `contrabandFound`.
       contrabandFound: 5,
+      // **Straight through, and the field beside it is derived** -- the pair
+      // is the whole distinction (issue #703 ruling 3).
+      // `activeIncidentTypeLabelKey` above had to be composed from a namespace
+      // and a stable id because an `IncidentType` is an enum with no
+      // definition object to hang a key on; a contraband category is a content
+      // definition that carries its own `nameKey`, so the projection sends the
+      // finished key and composing a second one here would be a second answer
+      // to a question the catalog already answered. Same publication, two
+      // message keys, two different rules, and the reason is which side owns
+      // the mapping.
+      contrabandNameKey: 'contraband.weapon.name',
       // Straight through, in minor units, and that is the whole mapping:
       // the strip formats it for display and nothing upstream of the
       // formatter knows what a major unit is (#96). A conversion here would
@@ -192,9 +208,17 @@ describe('the HUD counts are read from the worker', () => {
     // `activeIncidentType` is the one key this blanket zero-fill cannot cover
     // sensibly: `0` is not a member of `IncidentType`, and "nothing open" is
     // `undefined`, not a numeric zero (issue #506 finding 2).
+    //
+    // **`contrabandNameKey` is the second such key** (issue #703 ruling 3), and
+    // it is the same shape of fact: `0` is not a message key, and an empty
+    // prison has found nothing to name rather than having found a category
+    // called zero. Both are spelled out rather than folded into the zero-fill,
+    // so a third non-numeric count arriving later fails this case instead of
+    // reaching the HUD as the number `0`.
     const empty = {
       ...Object.fromEntries(Object.keys(COUNTS).map((key) => [key, 0])),
       activeIncidentType: undefined,
+      contrabandNameKey: undefined,
     };
 
     /*
@@ -265,11 +289,20 @@ describe('the HUD counts are read from the worker', () => {
     // it is named explicitly below rather than silently exempted, so a
     // second non-integer field arriving later still fails this test until it
     // is named here too.
+    //
+    // **The second one arrived and this is the record of it**:
+    // `contrabandNameKey` (issue #703 ruling 3), the contraband catalog's own
+    // `nameKey` for what a search found. The exception is therefore no longer
+    // "the one labelled exception" the case title says, and the title is left
+    // alone rather than re-counted -- a tally is the part that rots
+    // (`docs/AGENT_WORKFLOW.md` section 4), and the durable claim is the one
+    // below: the payload is flat scalars, and every field that is not an
+    // integer is named here by name.
     const counts = hudCountsFromWorkerMessage(statusCounts());
 
     expect(counts).toBeDefined();
     for (const [key, value] of Object.entries(counts ?? {})) {
-      if (key === 'activeIncidentTypeLabelKey') {
+      if (key === 'activeIncidentTypeLabelKey' || key === 'contrabandNameKey') {
         expect(typeof value === 'string' || value === undefined, `counts.${key} is not a string or undefined`).toBe(
           true,
         );

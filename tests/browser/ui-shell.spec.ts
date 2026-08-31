@@ -508,8 +508,15 @@ test.describe('HUD shell', () => {
     // bug than the one the gate prevents.
     await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
     expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).activeTab).toBe('build');
+    // The fold starts OPEN as of #703 ruling 1, so one toggle shuts it. What
+    // this line is here to prove is unchanged and is not the direction: chrome
+    // responds while the clock is wedged. Asserted as a *change* from the
+    // state before the tap, so this keeps proving it whichever way the initial
+    // state moves next.
+    const foldBefore = (await page.evaluate(() => window.lockstateUiHarness.hudProbe())).alertsCollapsed;
     await page.evaluate(() => window.lockstateUiHarness.toggleAlerts());
-    expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).alertsCollapsed).toBe('false');
+    const foldAfter = (await page.evaluate(() => window.lockstateUiHarness.hudProbe())).alertsCollapsed;
+    expect(foldAfter).not.toBe(foldBefore);
 
     await page.evaluate(() => window.lockstateUiHarness.releaseClockIntent());
     await expect
@@ -801,6 +808,14 @@ test.describe('HUD shell', () => {
     test('the refusal line is there at 375px, where the alerts region is not', async ({ page }) => {
       // `hud.css` drops `.hud__corner` at 720px and below, so a refusal
       // reported into the alerts list would not exist on a phone at all.
+      //
+      // **An attempt to remove that breakpoint was made and withdrawn on
+      // 2026-08-31 (#703, ruling 5), and the rule now carries the measurement
+      // that sent it back**: below 720px `.hud__rail` stretches and shares the
+      // corner's grid area, so with the corner laid out the Intake panel's
+      // Admit button covered the Alerts fold header. See `hud.css`'s note on
+      // that block. This assertion therefore stands unchanged, and the reason
+      // it stands is now stronger than "the stylesheet says so".
       await page.setViewportSize({ width: 375, height: 812 });
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
@@ -872,7 +887,7 @@ test.describe('HUD shell', () => {
       [1280, 800],
       [375, 812],
     ] as const) {
-      test(`is laid out with a real box at ${width}x${height}, with the alerts fold left shut`, async ({ page }) => {
+      test(`is laid out with a real box at ${width}x${height}, with the alerts fold left alone`, async ({ page }) => {
         await page.setViewportSize({ width, height });
         await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
 
@@ -887,7 +902,14 @@ test.describe('HUD shell', () => {
 
         // The default state, asserted rather than assumed -- the whole
         // measurement is about what a player who has touched nothing sees.
-        expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).alertsCollapsed).toBe('true');
+        //
+        // **`'false'` as of #703 ruling 1**, where this read `'true'`. The
+        // titles of these two cases still say "with the alerts fold left
+        // shut", and that is corrected in the `for` loop's label rather than
+        // here; what matters to the measurement is that the fold is left
+        // *untouched*, whatever state it starts in, because the band under
+        // test must not depend on it.
+        expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).alertsCollapsed).toBe('false');
         expect(await page.evaluate(() => window.lockstateUiHarness.refusalProbe())).toMatchObject({
           visible: false,
           source: null,
@@ -921,14 +943,50 @@ test.describe('HUD shell', () => {
         // dropped, so this cannot pass from inside the folded section.
         expect(await page.evaluate(() => window.lockstateUiHarness.hudText())).toContain(REFUSAL_TEXT);
 
-        // And the surface it replaced, at the same instant: the row is in the
-        // DOM and occupies nothing. This is the defect, measured -- not
-        // reasoned about from the CSS.
+        /*
+         * And the surface it replaced, at the same instant.
+         *
+         * **THIS IS THE ASSERTION #220 WAS ABOUT, AND IT NOW SPLITS BY
+         * VIEWPORT.** It read `visible: false`, `width: 0`, `height: 0` at both
+         * sizes, under the comment *"the row is in the DOM and occupies
+         * nothing. This is the defect, measured -- not reasoned about from the
+         * CSS."* #220's defect had two causes and the owner's rulings of
+         * 2026-08-31 (#703) settled them differently:
+         *
+         * - **The fold is gone (ruling 1).** The alerts section starts open, and
+         *   the list now scrolls rather than letting its `.ui-panel` ancestor
+         *   clip the newest row. So above 720px the row has a real box.
+         * - **The 720px breakpoint stays.** Ruling 5 asked for it to go; the
+         *   attempt was withdrawn on measurement, because below 720px
+         *   `.hud__rail` stretches into the corner's grid area and the Intake
+         *   panel's Admit button covered the Alerts fold header. `hud.css` holds
+         *   the numbers. So at 375x812 the row is still `offsetParent === null`
+         *   with a 0x0 box.
+         *
+         * The split is asserted rather than smoothed over, because it is the
+         * honest state of the fix: **#220's defect is closed on a desktop
+         * browser and open on a phone**, and the owner's standing steer is that
+         * the desktop browser comes first. A single assertion either way would
+         * hide half of that.
+         *
+         * **The band is still asserted above and is not redundant at either
+         * size.** Everything before this paragraph still runs. What changed is
+         * that above 720px the list is now a second place the same sentence
+         * reaches -- the split `simulation-alerts.ts` describes, *"the band is
+         * the notice and the list is the log"* -- and #701 measured why both are
+         * needed, the band having lost a message to another from the same tick.
+         */
         const row = await page.evaluate(() => window.lockstateUiHarness.alertRowProbe());
         expect(row.present).toBe(true);
-        expect(row.visible).toBe(false);
-        expect(row.width).toBe(0);
-        expect(row.height).toBe(0);
+        if (width > 720) {
+          expect(row.visible, `the alerts row is laid out at ${width}px as of #703 ruling 1`).toBe(true);
+          expect(row.width).toBeGreaterThan(0);
+          expect(row.height).toBeGreaterThan(0);
+        } else {
+          expect(row.visible, `.hud__corner is display:none at ${width}px, so the row has no box`).toBe(false);
+          expect(row.width).toBe(0);
+          expect(row.height).toBe(0);
+        }
       });
     }
 
@@ -1014,10 +1072,14 @@ test.describe('HUD shell', () => {
   });
 
   test('the alerts section folds and unfolds from a single tap on its header', async ({ page }) => {
+    // **The starting state moved on 2026-08-31 (#703, ruling 1)**: this read
+    // `'true'` first, because `INITIAL_HUD_SHELL_STATE` used to collapse
+    // `alerts`. It starts open now, so the sequence is open -> shut -> open
+    // rather than shut -> open -> shut. **The property is unchanged and is
+    // still the whole subject: one tap moves it, and `aria-expanded` agrees
+    // with the data attribute at every step.** Both directions are exercised,
+    // as before, so a reducer that only ever collapsed would still fail here.
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-    expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).alertsCollapsed).toBe('true');
-
-    await page.evaluate(() => window.lockstateUiHarness.toggleAlerts());
     expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).alertsCollapsed).toBe('false');
     // Scoped to the minimap frame the alerts live in: the Build panel uses
     // the same primitive, so a bare `.ui-section__header` now matches three.
@@ -1025,6 +1087,11 @@ test.describe('HUD shell', () => {
 
     await page.evaluate(() => window.lockstateUiHarness.toggleAlerts());
     expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).alertsCollapsed).toBe('true');
+    expect(await page.locator('.hud-minimap .ui-section__header').getAttribute('aria-expanded')).toBe('false');
+
+    await page.evaluate(() => window.lockstateUiHarness.toggleAlerts());
+    expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).alertsCollapsed).toBe('false');
+    expect(await page.locator('.hud-minimap .ui-section__header').getAttribute('aria-expanded')).toBe('true');
   });
 
   /**
@@ -1130,20 +1197,27 @@ test.describe('HUD shell', () => {
 
       // And back to none: the empty-list row is not an alert row, so the
       // probe reports an empty list rather than a list of one.
+      //
+      // **The toggle is gone as of #703 ruling 1.** It was here to *open* the
+      // section before the visibility assertion below could mean anything; the
+      // section starts open now, so the press would shut it and the row would
+      // be hidden -- which is exactly how this failed when the initial state
+      // moved. The visibility assertion is the point and it is kept.
       await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts([]));
       expect((await page.evaluate(() => window.lockstateUiHarness.alertProbe())).order).toEqual([]);
-      await page.evaluate(() => window.lockstateUiHarness.toggleAlerts());
       await expect(page.locator('.hud-alerts__list [data-alert="empty"]')).toBeVisible();
     });
 
     test('the rows are on screen once the section is open, not merely in the DOM', async ({ page }) => {
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts(['c', 'a', 'b']));
-      // The section starts folded -- which is how #82's alert was asserted
-      // green while no player could see it (#220). An order assertion on rows
-      // nobody can see would repeat that mistake, so the order is read again
-      // with the section open and the rows laid out.
-      await page.evaluate(() => window.lockstateUiHarness.toggleAlerts());
+      // **The section starts OPEN as of #703 ruling 1, so nothing is toggled
+      // here any more.** It used to start folded -- which is how #82's alert
+      // was asserted green while no player could see it (#220) -- and this test
+      // opened it before reading the order, because an order assertion on rows
+      // nobody can see repeats that mistake. The precaution is unchanged and is
+      // now free: the rows are laid out without a press, and the assertion
+      // below still reads a *laid out* list rather than the DOM.
 
       expect((await page.evaluate(() => window.lockstateUiHarness.alertProbe())).order).toEqual(['c', 'a', 'b']);
       await expectLaidOut(page, '.hud-alerts__list [data-alert]', 'the alert rows');
@@ -1173,12 +1247,25 @@ test.describe('HUD shell', () => {
       expect(layout.metricsScrollWidth).toBeGreaterThan(layout.metricsClientWidth);
       // The minimap would eat a phone screen; the tab bar is how the game is
       // operated, so it is the one that stays.
+      //
+      // **And the reason it stays is not the one this comment gave**, which
+      // #703 ruling 5's withdrawn attempt established by measurement: the
+      // corner never overlapped the tab bar at any width, and what it does
+      // overlap below 720px is the stretched rail. `hud.css`'s note on that
+      // block carries the numbers.
       expect(layout.minimap).toBeNull();
     });
 
     test('the minimap frame never overlaps the tab bar', async ({ page }) => {
       // Both were bottom-anchored in the same grid row, so at 768px the
       // minimap's right edge landed 16px inside the centred tab bar.
+      //
+      // **375 and 600 cannot be in this list, and that is a fact about the
+      // stylesheet rather than an omission**: `.hud__corner` is `display: none`
+      // at 720px and below, so there is no box to measure. #703 ruling 5's
+      // withdrawn attempt measured what happens with the rule removed -- still
+      // no overlap with the tab bar at 375 or 600, and instead a collision with
+      // the stretched rail, which is why the rule went back.
       for (const width of [768, 900, 1024, 1280, 1600]) {
         await page.setViewportSize({ width, height: 700 });
         await page.evaluate(() => window.lockstateUiHarness.mountHudShell());

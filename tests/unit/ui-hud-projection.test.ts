@@ -238,6 +238,49 @@ describe('status strip: tone and badges', () => {
     expect(mixed?.badge).toEqual({ tone: 'danger', textKey: HUD_MESSAGE_KEY.incidentsActive });
   });
 
+  it('names what contraband was found on the badge, and draws no badge when it cannot (#703 ruling 3)', () => {
+    /*
+     * The owner's ruling 3 on issue #703, 2026-08-31: *"The message names what
+     * contraband was found."* Before this the chip could only say `1`, so a
+     * found phone and a found weapon rendered as the same character -- and
+     * after ADR 0080 a weapon is something a player's own neglect produces.
+     *
+     * `'contraband.weapon.name'` is written out as a plain string, the way the
+     * incident case above writes its key out, so this file stays in
+     * `environment: 'node'` with no content or simulation import. It is one of
+     * the five keys `src/content/contraband-catalog.ts` has authored since #27
+     * and nothing on screen read until this chip.
+     */
+    const weapon = metric(counts({ contrabandFound: 1, contrabandNameKey: 'contraband.weapon.name' }), 'contraband');
+    expect(weapon?.badge).toEqual({ tone: 'warning', textKey: 'contraband.weapon.name' });
+    expect(weapon?.value).toBe(1);
+    // The chip's own tone, unchanged: the pill is a second channel for the
+    // same fact, not a second severity. A weapon and a phone are both
+    // `'warning'` here, deliberately -- `severity` is in the catalogue and
+    // grading the badge by it would teach a ranking the game never states.
+    expect(weapon?.tone).toBe('warning');
+    const phone = metric(counts({ contrabandFound: 3, contrabandNameKey: 'contraband.phone.name' }), 'contraband');
+    expect(phone?.badge).toEqual({ tone: 'warning', textKey: 'contraband.phone.name' });
+    expect(phone?.tone).toBe('warning');
+
+    /*
+     * **No badge, rather than a generic word, when no one word is true of the
+     * count.** This is where the contraband chip parts company with the
+     * incidents chip above: that one falls back to "Active", and the generic
+     * word here would be the chip's own label, so a pill reading "Contraband"
+     * under a label reading "CONTRABAND" would be the same word twice rather
+     * than a second channel.
+     *
+     * Both absences are covered, because they are different facts about the
+     * prison and the same rendering: nothing found at all, and several
+     * categories found (measured as roughly half of played prisons at sixteen
+     * in-game days -- `tests/integration/contraband-search-duty.test.ts`),
+     * which the projection reports by withholding the key.
+     */
+    expect(metric(counts(), 'contraband').badge).toBeUndefined();
+    expect(metric(counts({ contrabandFound: 2 }), 'contraband').badge).toBeUndefined();
+  });
+
   it('escalates the coverage chip one rung at a time, and says which rung in words', () => {
     /*
      * Issue #588's `Covered N / Understaffed N / Unguarded N`, as the three

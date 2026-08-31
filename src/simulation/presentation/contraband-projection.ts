@@ -39,7 +39,17 @@ export interface ContrabandSearchSource {
 }
 
 export interface ContrabandConfiscationSource {
-  /** Read-only; never `drain()`, which would consume the evidence a panel is showing. */
+  /**
+   * Read-only; never `drain()`, which would consume the evidence a panel is
+   * showing.
+   *
+   * **This said "a panel", and since issue #703 ruling 3 it is two surfaces.**
+   * `StatusStripSource.confiscations` takes this same interface to name the
+   * contraband the **Contraband** chip is counting, so the ledger now has a
+   * reader on a surface that is on screen with nothing opened. The sentence is
+   * widened rather than replaced: the reason is unchanged and it is the reason
+   * that matters.
+   */
   all(): readonly ConfiscationEvent[];
 }
 

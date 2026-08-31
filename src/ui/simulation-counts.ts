@@ -136,6 +136,28 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
           ? {}
           : { activeIncidentTypeLabelKey: deriveSimulationMessageKey('incident-type', counts.activeIncidentType) }),
         contrabandFound: counts.contrabandDiscovered,
+        /**
+         * Straight through, and **not** derived the way
+         * `activeIncidentTypeLabelKey` above is -- the difference is where the
+         * key comes from (issue #703 ruling 3). An incident type is an *enum*
+         * with no definition object, so its key has to be composed from a
+         * namespace and an id by `deriveSimulationMessageKey`. A contraband
+         * category is a content definition that carries its own `nameKey`
+         * (`src/content/contraband-catalog.ts`), so the projection sends the
+         * finished key and composing a second one here would be a second
+         * answer to a question the catalog already answered -- exactly the
+         * drift `src/content/simulation-message-keys.ts` says its derivation
+         * rule exists to prevent, arrived at from the other side.
+         *
+         * **Omitted, not set to `undefined`**, for the reason the incident
+         * label above is: `HudCountsViewModel.contrabandNameKey` is optional
+         * because the channel one layer down cannot carry a
+         * present-but-`undefined` value, and a spread is what keeps "absent"
+         * the only spelling of "cannot name one category" on both sides. The
+         * strip decides what that reads as
+         * (`src/ui/hud/projection.ts`), not this translator.
+         */
+        ...(counts.contrabandNameKey === undefined ? {} : { contrabandNameKey: counts.contrabandNameKey }),
         treasuryMinorUnits: counts.treasuryMinorUnits,
         stateIncomeAccruedTodayMinorUnits: counts.stateIncomeAccruedTodayMinorUnits,
         /**

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { defaultContrabandRegistry } from '../../src/content/contraband-catalog';
 import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
 import { decodeWorkerToMainMessage } from '../../src/simulation/protocol/decode';
@@ -19,6 +20,22 @@ import { packCommand } from '../../src/simulation/protocol/commands';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
+
+/**
+ * The longest string `counts.contrabandNameKey` can carry, read off the real
+ * catalog rather than written out here.
+ *
+ * Derived, because a literal would stop being the longest the moment a sixth
+ * category with a longer id was authored, and the payload bound below is only
+ * a bound if it was measured at the worst case. It is not a fixture supplying
+ * both sides of a comparison (`docs/TESTING.md`): nothing under test computes
+ * it -- the projection publishes whichever `nameKey` the confiscations name,
+ * and this picks the largest of the five for a size measurement.
+ */
+const LONGEST_CONTRABAND_NAME_KEY: string = defaultContrabandRegistry
+  .all()
+  .map((category) => category.nameKey)
+  .reduce((longest, nameKey) => (nameKey.length > longest.length ? nameKey : longest));
 
 /**
  * The `simulation/status-counts` channel: the worker telling the main thread
@@ -636,10 +653,23 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // may not have an incident open, but the size bound has to hold for the
       // publication that does, so the worst case is forced here rather than
       // measured from whatever this run happened to produce.
+      //
+      // **And since issue #703 ruling 3 the same forcing covers
+      // `contrabandNameKey`**, the second optional field on this payload and
+      // the longest string it can carry: `'contraband.currency.name'` is the
+      // longest of the five `nameKey`s in
+      // `src/content/contraband-catalog.ts`. This scenario runs no searches, so
+      // the field is absent in what `projectStatusCounts` returned; the bound
+      // has to hold for the publication that names a category, so the worst
+      // case is forced here for the same reason the incident kind is.
       const payload = {
         tick: runtime.kernel.tick,
         schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
-        counts: { ...counts, activeIncidentType: 'gang-retaliation' as const },
+        counts: {
+          ...counts,
+          activeIncidentType: 'gang-retaliation' as const,
+          contrabandNameKey: LONGEST_CONTRABAND_NAME_KEY,
+        },
         refusal: {
           sequence: Number.MAX_SAFE_INTEGER,
           tick: runtime.kernel.tick,
@@ -674,6 +704,16 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // It was 18 and 19 until issue #585's `occupiedPlaces` -- the residency
       // places that currently exist, published beside `roomOccupants` because
       // the two stopped being the same number.
+      //
+      // **`contrabandNameKey` is the second conditional key** (issue #703
+      // ruling 3): the contraband catalog's own `nameKey` when every item the
+      // count reports shares one category, omitted otherwise. This scenario
+      // runs no searches and confiscates nothing, so it too is absent here and
+      // 19 is still 19 -- a session that has found one category reads 20, and
+      // one that has found a phone and a weapon reads 19 again. The two
+      // conditional keys are independent, so the reachable counts are 19, 20
+      // and 21; the expression below states each key's own contribution rather
+      // than enumerating the four combinations.
       // The exact count is still pinned rather than bounded so that a *list*
       // arriving here -- the thing this channel is shaped to exclude --
       // cannot slip in as "one more field". A scalar being added is a
@@ -683,7 +723,9 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       //
       // This is what a status-counts
       // payload is, and why it needs no paging.
-      expect(Object.keys(counts)).toHaveLength(counts.activeIncidentType === undefined ? 19 : 20);
+      expect(Object.keys(counts)).toHaveLength(
+        19 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
+      );
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a
       // field that *stayed* one key and became a list, and the size bound
@@ -702,10 +744,10 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // three guard-coverage rungs the population is standing on, nineteen
       // since issue #585 added `occupiedPlaces`.
       for (const [key, value] of Object.entries(counts)) {
-        if (key === 'activeIncidentType') {
+        if (key === 'activeIncidentType' || key === 'contrabandNameKey') {
           expect(
             typeof value === 'string' || value === undefined,
-            `counts.${key} is not a stable id or undefined`,
+            `counts.${key} is not a stable id, a message key or undefined`,
           ).toBe(true);
           continue;
         }
@@ -717,31 +759,66 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // (`RefusalLog`). A queue would put the one growing thing this channel
       // is designed to exclude right next to the counts.
       expect(Object.keys(payload.refusal)).toHaveLength(3);
-      // 622 and not 603, and the raise is derived from a run rather than
-      // chosen -- the same way 603 replaced 533, 533 replaced 493 and 493
-      // replaced 436. **The bound it replaces predicted this raise in as many
-      // words**: it said a *nineteenth* count would breach it "and the
-      // channel's soft limit goes on being felt one field at a time". Issue
-      // #585 added the nineteenth, `occupiedPlaces` -- the residency places
-      // that currently exist, which is what the state actually pays for and
-      // which nothing published. Re-measured on this tree with it, at the same
-      // worst case every previous raise used (`activeIncidentType` forced to
-      // `'gang-retaliation'`, the longest `IncidentType` spelling, and the
-      // longest refusal reason forced into `payload.refusal`):
-      // `payloadJsonBytes=602` at 250 actors and `604` at 1,000, 2,500 and
+      // **669 and not 622, and the raise is derived from a run rather than
+      // chosen** -- the same way 622 replaced 603, 603 replaced 533, 533
+      // replaced 493 and 493 replaced 436. The bound it replaces predicted
+      // this one too, in as many words: it said a *twentieth* count would
+      // breach it "and the soft limit goes on being felt one field at a
+      // time". Issue #703 ruling 3 added the twentieth, `contrabandNameKey`
+      // -- the name of what a search actually took off somebody, which this
+      // channel counted and never named. Re-measured on this tree with it, at
+      // the same worst case every previous raise used and with the new field
+      // forced to the longest of the five catalog `nameKey`s:
+      // `payloadJsonBytes=649` at 250 actors and `651` at 1,000, 2,500 and
       // 5,000 -- still flat in the population, which is the property this
-      // bound exists to protect and the one the new field had to keep: a count
-      // of occupied places is one integer whether the prison holds four
-      // prisoners or five thousand. The two-byte spread between the tiers is
-      // the same digit-count spread the 583/585 pair had, not growth.
-      // 604 + 18 = **622**, which leaves the same 18 bytes of head room every
-      // previous bound was set to leave, so a *twentieth* count breaches this
-      // one too and the soft limit goes on being felt one field at a time.
+      // bound exists to protect and the one the new field had to keep: a
+      // category name is one string whether the prison holds four prisoners
+      // or five thousand. 651 + 18 = **669**, the same 18 bytes of head room
+      // every previous bound was set to leave, so a *twenty-first* count
+      // breaches this one too.
+      //
+      // **This is the first field whose worst case is not a digit count**,
+      // and it is worth naming because it costs 27 bytes rather than the one
+      // or two a scalar costs: a key is as long as the id behind it. A sixth
+      // contraband category with a longer id widens this payload without any
+      // count changing, which is what the derived
+      // `LONGEST_CONTRABAND_NAME_KEY` above makes visible here rather than in
+      // production.
+      //
+      // **What the 622 bound recorded about its own raise, kept whole because
+      // it is the worked example this one is written against:**
+      //
+      //   622 and not 603, and the raise is derived from a run rather than
+      //   chosen -- the same way 603 replaced 533, 533 replaced 493 and 493
+      //   replaced 436. **The bound it replaces predicted this raise in as
+      //   many words**: it said a *nineteenth* count would breach it "and the
+      //   channel's soft limit goes on being felt one field at a time". Issue
+      //   #585 added the nineteenth, `occupiedPlaces` -- the residency places
+      //   that currently exist, which is what the state actually pays for and
+      //   which nothing published. Re-measured on this tree with it, at the
+      //   same worst case every previous raise used (`activeIncidentType`
+      //   forced to `'gang-retaliation'`, the longest `IncidentType`
+      //   spelling, and the longest refusal reason forced into
+      //   `payload.refusal`): `payloadJsonBytes=602` at 250 actors and `604`
+      //   at 1,000, 2,500 and 5,000 -- still flat in the population, which is
+      //   the property this bound exists to protect and the one the new field
+      //   had to keep: a count of occupied places is one integer whether the
+      //   prison holds four prisoners or five thousand. The two-byte spread
+      //   between the tiers is the same digit-count spread the 583/585 pair
+      //   had, not growth. 604 + 18 = **622**, which leaves the same 18 bytes
+      //   of head room every previous bound was set to leave, so a
+      //   *twentieth* count breaches this one too and the soft limit goes on
+      //   being felt one field at a time.
+      //
+      // That last sentence came true, which is why the paragraph above it
+      // exists. The two-byte spread it describes is still what the tiers show
+      // (649 / 651), so the raise is one field's worth of string and not
+      // population growth.
       //
       // The bound is not what stops a list arriving -- the scalar assertion
       // above is, at any length, which is why that was added the last time
       // this bound was relaxed.
-      expect(JSON.stringify(payload).length).toBeLessThan(622);
+      expect(JSON.stringify(payload).length).toBeLessThan(669);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(

@@ -537,6 +537,13 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // not rendered in the alerts list: it goes to the HUD's own always-laid-out
   // band, `.hud__unavailable` (issue #220). In the alerts list it was in the
   // DOM and painted at no viewport, because that section starts folded.
+  //
+  // That section starts OPEN as of 2026-08-31 (#703, rulings 1 and 5), and the
+  // corner holding it is no longer hidden below 720px -- so the past tense
+  // above is now the only correct tense, and this key keeps its namespace
+  // anyway. The band exists because a browser that cannot start a worker has
+  // no simulation to log events from at all, which is a stronger reason than
+  // the fold ever was: an empty list, open or shut, says nothing.
   'hud.unavailable.simulation': 'Simulation unavailable — this browser could not start it, so nothing can run or be saved',
 
   'hud.panel.collapse': 'Collapse',
@@ -625,6 +632,11 @@ const authoredMessages: Readonly<Record<string, string>> = {
   /*
    * What has been bought and has not arrived (#285), inside the buy disclosure
    * and beside the control that spent the money.
+   *
+   * Corrected 2026-08-31 (issue #703 ruling 2): the block is out of that
+   * disclosure and laid out on the panel. **No sentence below changed**, and
+   * that is worth saying in a locale file -- the ruling moved authored copy into
+   * view, it did not ask for new copy, and none was written.
    *
    * `deliveries-count` carries the figure this whole surface exists for: what a
    * cancellation would give back. The strip's Funds readout says what is left,

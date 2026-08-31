@@ -1765,9 +1765,16 @@ window.lockstateUiHarness = {
     const row = document.querySelector<HTMLElement>(`.hud-build__delivery-row[data-delivery="${orderId}"]`);
     const cancel = row?.querySelector<HTMLButtonElement>('.ui-action');
     if (cancel === undefined || cancel === null) return false;
-    // `offsetParent`, not the attribute: the row sits inside the buy disclosure,
-    // which carries `hidden` while closed, and a press on a control the player
-    // cannot see must not count as reaching it.
+    // `offsetParent`, not the attribute: a press on a control the player cannot
+    // see must not count as reaching it.
+    //
+    // The reason used to be that "the row sits inside the buy disclosure, which
+    // carries `hidden` while closed". It does not any more -- issue #703 ruling
+    // 2, 2026-08-31, moved the block out of that fold -- and the check is
+    // *more* useful now rather than redundant: with the block laid out on the
+    // panel itself, what hides a row is `paintDeliveries` hiding the pooled row
+    // it is not using, and a press on one of those would name a delivery that
+    // has already landed.
     if (cancel.offsetParent === null) return false;
     cancel.click();
     return true;

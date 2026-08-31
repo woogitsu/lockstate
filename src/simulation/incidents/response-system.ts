@@ -236,9 +236,38 @@ export class IncidentResponseSystem implements SystemRegistration {
    * escape attempt means somebody is gone -- but the prison does have nothing
    * open, and that is all this claims. What it cost is `IncidentOutcome`, which
    * the `hud/incidents` projection renders per incident.
+   *
+   * **That paragraph was true about this method and false about the screen,
+   * and the owner ruled on it on 2026-08-31 (#703, ruling 6).** "Nothing is
+   * open" is honest; what the player reads is not. The HUD's event band keeps
+   * the newest event only, so on a tick where `lapse` recorded an escape and
+   * then called this, the escape sentence -- the owner's own approved
+   * `hud.alert.event.incidents.escape-succeeded`, *"{name} broke out -- no
+   * guard reached them in time."* -- was overwritten in the same tick by a line
+   * saying the prison is under control. Measured: written three times, painted
+   * zero times. So the paragraph above stands as a claim about
+   * `openIncidentCount` and this one scopes it: the count being zero does not
+   * make "all clear" the only true thing to *say*, because a sentence competes
+   * with whatever shares its tick.
+   *
+   * `escapeAnnounced` is the gate, and it is the emission rather than the
+   * outcome. `lapse` sets `escaped: true` for every escape-attempt it closes,
+   * but `onPrisonerEscaped` can answer `undefined` -- nobody actually left --
+   * and in that case no sentence was written and there is nothing for the
+   * all-clear to overwrite (#683). Gating on `outcome.escaped` would suppress
+   * a true all-clear for an escape the prison never announced; gating on the
+   * announcement suppresses it exactly when a competing sentence exists.
+   *
+   * **The suppression is silence, not a substitute sentence.** No wording is
+   * invented here: the owner rejected a new "incident closed, the prisoner is
+   * gone" line in favour of removing the contradicting one, so this method
+   * emits one event fewer rather than a different one. A future route to
+   * `escaped: true` that wants its own closing sentence owes the owner that
+   * sentence first, exactly as `lapse`'s own comment says of the escape line.
    */
-  private reportAllClearIfCalm(tick: number): void {
+  private reportAllClearIfCalm(tick: number, escapeAnnounced: boolean): void {
     if (this.incidents.openIncidentCount > 0) return;
+    if (escapeAnnounced) return;
     this.events.recordIncidentsAllClear(tick);
   }
 
@@ -608,6 +637,10 @@ export class IncidentResponseSystem implements SystemRegistration {
     // The participant list is what it is scanned over rather than
     // `injuredEntityIds`: the two are the same list here, and the first is the
     // one that means "was in this incident".
+    // Whether this transition actually *told the player* somebody left, which
+    // is not the same question as `outcome.escaped` -- see
+    // `reportAllClearIfCalm`, which is the only reader.
+    let escapeAnnounced = false;
     if (outcome.escaped) {
       for (const entityId of incident.participantIds) {
         // The departure first, then the sentence about it, and the return
@@ -618,11 +651,12 @@ export class IncidentResponseSystem implements SystemRegistration {
         const escapee = this.onPrisonerEscaped(entityId, tick);
         if (escapee === undefined) continue;
         this.events.recordEscapeSucceeded({ entityId, ...(escapee.name === undefined ? {} : { name: escapee.name }) }, tick);
+        escapeAnnounced = true;
       }
     }
 
     this.adjudicateAssaultIfAny(incident, tick);
-    this.reportAllClearIfCalm(tick);
+    this.reportAllClearIfCalm(tick, escapeAnnounced);
 
     // The one close `releaseResponse` cannot serve, because there is no record
     // for it to read: an incident whose response was interrupted by a save
@@ -807,7 +841,13 @@ export class IncidentResponseSystem implements SystemRegistration {
     this.incidents.transition(incident.id, 'resolved', tick, outcome);
     this.incidentsResolved += 1;
     this.adjudicateAssaultIfAny(incident, tick);
-    this.reportAllClearIfCalm(tick);
+    // `false` and not a variable: this is the `'resolved'` branch, the other
+    // and only other terminal transition, and it writes `escaped: false` by
+    // construction a few lines above -- so it can never have announced an
+    // escape. Written as the literal rather than threaded from a variable so
+    // that anyone adding an escape route to this branch has to touch this line
+    // to keep it honest, instead of a `false` flowing through unexamined.
+    this.reportAllClearIfCalm(tick, false);
   }
 
   public getSnapshot(): { readonly metrics: IncidentResponseMetrics } {

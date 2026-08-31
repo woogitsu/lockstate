@@ -59,6 +59,12 @@ export function projectStatusCounts(runtime: SimulationRuntime, tick: number): S
     coverage: runtime.safetyCoverage,
     incidents: runtime.incidents,
     searchSystem: runtime.searchSystem,
+    // The evidence log, read-only, so the strip can say *what* was found and
+    // not only how much (issue #703 ruling 3). `ConfiscationLedger` itself
+    // rather than a captured copy, for `payroll`'s reason below: the answer is
+    // a live read over the ledger, so a confiscation between two publications
+    // changes it without anything here having to notice.
+    confiscations: runtime.confiscations,
     treasury: runtime.treasury,
     // The system itself rather than a captured pair of numbers: the bill is a
     // live read over the roster, so a hire between two publications changes it
@@ -71,20 +77,36 @@ export function projectStatusCounts(runtime: SimulationRuntime, tick: number): S
  * Whether two readouts say the same thing.
  *
  * **Every field of `SimulationStatusCounts` used to be a number, and this
- * comment said so outright.** `activeIncidentType` (issue #506 finding 2) is
- * a stable id or `undefined`, not a number, and `!==` still compares it
+ * comment said so outright.** Two are not, now: `activeIncidentType` (issue
+ * #506 finding 2) is a stable id or absent, and `contrabandNameKey` (issue
+ * #703 ruling 3) is a message key or absent. `!==` still compares both
  * correctly -- string/string, `undefined`/`undefined` and the mixed cases all
  * compare exactly as a change-detector needs. What the old sentence was
  * really claiming still holds and is the part worth keeping: there is no
  * nested object or array to miss, so comparing the keys of one payload
- * against the other's compares the whole of it. Both arguments come from
- * `projectStatusCounts` within one worker, so they always have the same key
- * set.
+ * against the other's compares the whole of it.
+ *
+ * **The sentence that stood here next, kept because it records what was
+ * believed:** *"Both arguments come from `projectStatusCounts` within one
+ * worker, so they always have the same key set."* Corrected 2026-08-31 (issue
+ * #703 ruling 3): they do not, and have not since `activeIncidentType` became
+ * optional. `.optional()` on this payload means *absent*, deliberately -- the
+ * pulled `hud/status-strip` route rejects an explicit `undefined` value -- so
+ * a readout that can name a kind and one that cannot differ by a whole key.
+ *
+ * The loop walks `left`, so a key present only in `right` was invisible to it.
+ * Nothing reachable was mis-skipped -- both optional keys appear and disappear
+ * only on a tick where a count beside them also moved, `activeIncidents` for
+ * one and `contrabandDiscovered` for the other -- but "no caller can currently
+ * reach it" is not the property a change-detector should rest on, so the key
+ * counts are compared outright. `docs/AGENT_WORKFLOW.md` §3: fix the class,
+ * not the instance.
  *
  * This is what makes a steady prison cost the boundary nothing: the
  * publication is skipped when nothing it reports has changed.
  */
 export function statusCountsEqual(left: SimulationStatusCounts, right: SimulationStatusCounts): boolean {
+  if (Object.keys(left).length !== Object.keys(right).length) return false;
   for (const key of Object.keys(left) as readonly (keyof SimulationStatusCounts)[]) {
     if (left[key] !== right[key]) return false;
   }
