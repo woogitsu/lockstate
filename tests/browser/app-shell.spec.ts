@@ -9110,8 +9110,30 @@ test.describe('the assembled application', () => {
       'the clock did not stop, so a save cannot be compared with the rows above',
     ).toHaveAttribute('aria-pressed', 'true');
 
+    /*
+     * **Saved first, and this is the second thing the full-file run taught this
+     * test rather than a precaution.**
+     *
+     * `Export` writes the bytes of the **stored** save row, not the live
+     * worker's state, so a prison whose population has not reached storage
+     * exports as the prison it was at its last write. Run alone this test passed
+     * anyway -- it takes about three minutes, so #146's 30-second interval
+     * autosave had captured the population several times over. Run inside the
+     * whole file it failed with `records.activeLength` at **0**: an exported
+     * save carrying no prisoners at all, against twelve on the strip.
+     *
+     * `Save now` makes it a statement rather than a coincidence: the clock is
+     * already paused, so the generation this writes is exactly the prison the
+     * rows above were painted from.
+     */
+    await page.getByRole('button', { name: localeText('save.action.save') }).click();
+    await expect(
+      page.locator('.save-panel__status'),
+      'the save the export is about to read was never written',
+    ).toContainText(localeText('save.status.saved').split('{')[0]!.trim());
+
     const downloading = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Export' }).click();
+    await page.getByRole('button', { name: localeText('save.action.export') }).click();
     const download = await downloading;
     const stream = await download.createReadStream();
     const chunks: Buffer[] = [];
