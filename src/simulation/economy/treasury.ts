@@ -74,12 +74,26 @@
  *
  * ## Integer minor units, and why that is not a formatting choice
  *
- * The balance is authoritative simulation state: a save carries it and
- * `docs/DETERMINISM.md`'s fingerprint hashes it. A fractional currency would
- * put a float there, and floating-point addition is not associative — two
- * runs that applied the same purchases in a different order could disagree.
- * `docs/DETERMINISM.md` states its rule for simulation state without an
- * exception for money.
+ * The balance is authoritative simulation state and a save carries it. A
+ * fractional currency would put a float there, and floating-point addition is
+ * not associative — two runs that applied the same purchases in a different
+ * order could disagree. `docs/DETERMINISM.md` states its rule for simulation
+ * state without an exception for money.
+ *
+ * **This paragraph used to add *"and `docs/DETERMINISM.md`'s fingerprint
+ * hashes it"*, and that half was false when it was written.** Measured
+ * 2026-08-31: `tests/helpers/determinism-state.ts`'s `fullRuntimeState` reads
+ * no economy surface at all — neither the word `treasury` nor `balance` occurs
+ * in that file — so no runtime fingerprint has ever hashed the balance, and
+ * `#697` pins that with two sessions differing only in balance hashing
+ * identically as runtimes. **The conclusion is unaffected and is the half that
+ * mattered**: the surface that *does* see money is the save checksum, which
+ * `#697` pins in the other direction, and the rule about simulation state
+ * holds on its own without a fingerprint to appeal to. The false clause is
+ * marked rather than deleted because
+ * [ADR 0075](../../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)'s
+ * Consequences carry the same premise — *"the balance a fingerprint hashes"* —
+ * and a reader meeting that sentence needs to find this one.
  *
  * "Minor units" rather than a named currency because naming one is a product
  * decision this slice does not need. The HUD will have to choose a symbol and
