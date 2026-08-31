@@ -217,16 +217,16 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
         parts.badge = undefined;
       } else {
         /*
-         * `parameters` is present only for a badge that states a quantity, and
-         * `numberParameters` only for one whose quantity has to be *formatted*
-         * -- grouped and localised the way this chip's own value is, which is
-         * the owner's ruling 18 of 2026-08-31 for `{remaining} left`. The
-         * projection has no localizer and must not acquire one, so it names the
-         * number and this line renders it.
+         * `numberParameters` is present only for a badge that states a
+         * quantity, and the quantity is rendered here rather than by the
+         * projection: grouped and localised the way this chip's own value is,
+         * which is the owner's ruling 18 of 2026-08-31 for `{remaining} left`.
+         * The projection has no localizer and must not acquire one, so it names
+         * the number and this line writes it.
          *
-         * Both are passed through `t`'s two-argument form only when something
-         * is there, so a key with no placeholders is formatted exactly as it was
-         * before either field existed.
+         * Passed through `t`'s two-argument form only when something is there,
+         * so a key with no placeholders is formatted exactly as it was before
+         * the field existed.
          */
         const parameters = badgeParameters(descriptor.badge, localizer);
         const next = {
