@@ -62,8 +62,10 @@ ukryte funkcje"*.
 `ps -eo args | grep -c "[p]laywright/test/cli"` and the load average every 60 s
 for the whole session. What was on the machine:
 
-- Another agent's `vitest run` was live for most of act1c and act1d
-  (`vitest=3` to `vitest=8`, load 2.25 → 4.34 on 4 cores).
+- **Another agent's `vitest` processes were on the machine for the whole
+  session**, sampled every 60 s: `vitest=3` at the quietest and `vitest=9` at
+  the busiest, never zero. The one-minute load average on 4 cores ran 2.25 →
+  **9.89**, peaking at 07:20 in the middle of act3b's escape window.
 - Another agent's `app-shell.spec.ts -g "what a zoned room is missing"` run was
   live for part of it, twice.
 - **This pass ran up to three of its own Playwright runs at once** — act3b on
@@ -75,8 +77,12 @@ is nothing.** The escape sentence's own write timestamps give the rate for free,
 because each is paired with a tick: the first escape wrote at page t=655,850 ms
 on tick 48,611 and the third at t=955,858 ms on tick 72,611. That is **24,000
 ticks in 300,008 ms — 79.998 ticks per wall second**, against the ×4 ideal of
-exactly 80. Measured across the window that contains all three escapes, with
-other suites on the machine for part of it.
+exactly 80 — measured across the window that contains all three escapes, on a
+machine whose load average was between 3.9 and 9.9 throughout it. **A ×4 clock
+under load 9.9 lost 0.003% of its ticks**, which is a useful number in its own
+right and is the second time this repository has measured contention costing a
+playtest nothing (`2026-08-30-playing-main-after-fifteen-changes.md` measured
+80.005 against 79.991).
 
 And the figure the finding actually turns on is a *difference* inside one frame
 budget: the escape write and the all-clear write are **1 ms, 0 ms and 0 ms**
