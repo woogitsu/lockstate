@@ -164,14 +164,30 @@ describe('the build crew builds one order at a time', () => {
     expect(second()?.assignedWorkerId).toBe('mock-worker-1');
   });
 
-  it('picks the next order by ascending id, not by the order the player queued them in', () => {
+  it('picks the next order by placement order, against ids that sort the other way (#722)', () => {
     /*
-     * The canonical sequence is the one `orderedOrders()` already walks, and it
-     * is what makes a restored session agree with the session it came from:
-     * insertion order is a property of how a session happened to be built, and
-     * a restore re-inserts from a snapshot rather than replaying that history
-     * (`docs/DETERMINISM.md`, "Canonical iteration order"). So the wall
-     * submitted *second* here is the one that gets built first.
+     * **This test asserted the opposite until 2026-08-31**, under the name
+     * *"picks the next order by ascending id, not by the order the player
+     * queued them in"*, and it was right about what the code did: the two ids
+     * here are chosen so that ascending id and placement order disagree, and
+     * the wall submitted *second* was the one that got built first.
+     *
+     * ADR 0082 decisions 1 and 2 changed that, and #722 is the defect it
+     * closes: with `order-${crypto.randomUUID()}` ids the build schedule was a
+     * uniformly random permutation of the player's own gestures. So `wall-z`,
+     * drawn first, is now built first even though `wall-a` sorts before it.
+     *
+     * **What the old test was defending is untouched and is asserted by the
+     * round trip below.** The canonical sequence still makes a restored session
+     * agree with the session it came from: insertion order is a property of how
+     * a session happened to be built and a restore re-inserts from a snapshot
+     * rather than replaying that history (`docs/DETERMINISM.md`, "Canonical
+     * iteration order"). Placement order is not insertion order -- it is
+     * `QueuedCommand.sequence`, persisted on the order itself.
+     *
+     * The ids still disagree with the ordinal on purpose, because an
+     * implementation that quietly fell back to sorting by id would pass a test
+     * whose ids ascend.
      */
     const runtime = session();
     orderWall(runtime, 'wall-z', 3, 3);
@@ -179,10 +195,28 @@ describe('the build crew builds one order at a time', () => {
 
     expect(completionTicks(runtime, ['wall-a', 'wall-z'], 300)).toEqual(
       new Map([
-        ['wall-a', 70],
-        ['wall-z', 130],
+        ['wall-z', 70],
+        ['wall-a', 130],
       ]),
     );
+  });
+
+  it('stamps the placement ordinal from the kernel and nowhere else', () => {
+    /*
+     * The ordinal is `QueuedCommand.sequence` (ADR 0082 decision 2), so it is
+     * the kernel's own counter and not a number the construction system mints.
+     * Asserted directly, because every other test in this file reads the
+     * ordinal only through the schedule it produces -- and a stamp taken from
+     * some other monotonic source would satisfy all of those.
+     */
+    const runtime = session();
+    const first = runtime.kernel.expectedSequence;
+    orderWall(runtime, 'wall-z', 3, 3);
+    orderWall(runtime, 'wall-a', 3, 4);
+    runtime.kernel.step();
+
+    expect(runtime.construction.getOrder('wall-z')?.placementSequence).toBe(first);
+    expect(runtime.construction.getOrder('wall-a')?.placementSequence).toBe(first + 1);
   });
 
   it('keeps a five-wall gesture in single file, so the whole queue is the sum of its parts', () => {
