@@ -62,15 +62,35 @@
  * - **`spend` still refuses by default, and that is not a hedge.** It refuses
  *   what would take the balance below `overdraftFloorMinorUnits`, and that
  *   floor is `0` unless something sets it — so a session that has borrowed
- *   nothing behaves exactly as it did before, to the minor unit. The floor is
- *   ADR 0075 decision 2's *"accrual cap"*, expressed as the one number that
- *   decides how far under water a prison can go, and **what that number
- *   should be is not decided here**: ADR 0017 decision 5 reserves it to
+ *   nothing behaves exactly as it did before, to the minor unit. **What the
+ *   floor should be is not decided here**: ADR 0017 decision 5 reserves it to
  *   [#29](https://github.com/matmaxalez/lockstate/issues/29), with the rest
  *   of the loan's magnitudes.
- * - **The way out is `LoanBook`** (`./loans.ts`), which is the instrument
+ *
+ *   **This bullet said the floor *is* ADR 0075 decision 2's *"accrual cap"*,
+ *   "expressed as the one number that decides how far under water a prison can
+ *   go", and that identification is wrong.** Both directions are kept because
+ *   the mistake is the reason `setOverdraftFloor` reads as though it has an
+ *   obvious caller and has none. Decision 2's sentence is about a different
+ *   quantity: *"An accrual cap, because interest against a negative balance can
+ *   otherwise escalate without limit"* — a bound on **what a debt grows to**,
+ *   where this is a bound on **what a prison may spend**. And the accrual cap
+ *   is already satisfied without this field: `LoanBook` applies its fee exactly
+ *   once, in `draw`, and no branch there raises `outstanding` afterwards, which
+ *   is the *"fixed fee rather than compounding interest"* decision 2 chose in
+ *   the same paragraph. So no accepted decision in this corpus says how far
+ *   under water a prison may spend, or that it may at all —
+ *   [ADR 0083](../../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+ *   is where that is put to the owner, with the measurement that the floor's
+ *   boundaries come out as `65n - 40`: the price of a plank, not a property of
+ *   the loan's terms.
+ * - **The way back up is `LoanBook`** (`./loans.ts`), which is the instrument
  *   decision 2 makes load-bearing: *"the loan is not a nice-to-have beside
- *   the ladder. It is what keeps decision 8 honest."*
+ *   the ladder. It is what keeps decision 8 honest."* **Up, and this word was
+ *   "out" until 2026-08-31**, which read as though a drawdown were what opens
+ *   the room below zero. It is not: `LoanBook.draw` calls `credit`, so a loan
+ *   hands the prison *money* and touches no floor. Whether it *should* open one
+ *   is ADR 0083's decision 2, and it is the owner's.
  *
  * ## Integer minor units, and why that is not a formatting choice
  *
