@@ -189,6 +189,114 @@ this paragraph**, and two of the three anchors it was false for — `104d078` an
 is nothing to report, which is the only moment at which extending it costs
 anything.
 
+**And thirty is TWENTY-NINE at `df46980` (v0.0.281), and it is the first FALL
+in this sequence that this file named in advance — in a handover it wrote
+itself, at the `85c1c29` anchor, and re-read at anchors ever since.** The one
+earlier prediction of this kind, at `898a16a`, named an *arrival* (0079, #659)
+and its arithmetic; this one names a departure. **And it named the document
+rather than the pull request**, which is why it was still legible nine anchors
+later: `85c1c29`, `82ae630`, `e1813b7`, `53e1405`, `0637ab1`, `104d078`,
+`eb1f040`, `898a16a`, `feb46af` and `004f799`, read off the anchor accounts
+kept below. A prediction naming a branch would have expired the moment the
+branch was squashed. ADR **0051** was accepted — `**Accepted, 2026-08-30, by the
+repository owner.**` at `docs/adr/0051-…md:22` — by `445f546`/#647, five
+releases after the `004f799` anchor, and nothing joined. So the count is
+**twenty-nine** on disk and twenty-nine in the index's status column, and the
+enumeration is §3's thirty minus 0051: `0042`, `0043`, `0046`, `0047`,
+`0048`, `0049`, `0050`, `0052`, `0053`, `0054`, `0056`, `0057`, `0059`, `0061`,
+`0062`, `0063`, `0064`, `0065`, `0066`, `0067`, `0068`, `0069`, `0070`, `0071`,
+`0073`, `0074`, `0077`, `0078`, `0079`. Counted on disk by the method every
+reading in this sequence has used — the first non-blank line under each
+document's own status statement, `## Status` heading or `- Status:` bullet
+alike, **twenty-seven** under a heading and **two** (0064, 0067, still the only
+two) under a bullet, out of **74** documents. Split on the status column the
+index agrees: **29 `Proposed`, 45 `Accepted`, 74 rows**, and **Next free
+number: 0081**, unmoved.
+
+**And a new instance of this file's oldest trap arrived with #647, in the index
+rather than in a document, and the anchored grep this file already uses is
+immune to it.** #647 corrected 0051's index cell **in both directions**, so the
+word `Proposed` now survives inside the clause saying what the cell used to
+read. A whole-row match — `grep '^| \[' docs/adr/README.md | grep -c
+Proposed` — therefore returns **30**, one too many. The regex §3's opening has
+used since `0637ab1`, `grep -cE '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md`,
+returns **29**, because it anchors on the status cell rather than the row.
+**Both were run here rather than reasoned about**, and the anchored one being
+right is luck this file should not spend: correcting a cell in both directions
+is now the standing convention, so every future acceptance adds another row
+that a loose grep miscounts.
+
+**This commit is not a re-anchor and deliberately does not move the anchor
+span**, which is the shape the paragraph immediately above argues for: the
+value moved for a reason a diff *can* state, so the correction is owed by the
+commit that can state it rather than by the next sweep. All four counting
+sites are moved together here, and the sentences saying thirty are left
+standing beside them.
+
+**And the gate this file names for exactly this class EXEMPTS THIS FILE BY
+NAME, which makes the sentence naming it false about the only document it was
+written into.** The handover below says both of §5's assertions about a
+handed-over status *"go false the moment the acceptance lands, and
+`tests/foundation/adr-status-reference-contract.test.ts` is the gate for exactly
+that class."* That test's own `EXEMPT` predicate reads
+`path === 'docs/adr/STATUS-QUEUE.md'`, with a reason stated in its docblock:
+this file *"exists to **quote stale sentences verbatim** so the owner can see
+what is stale. Every entry in its §6 is a false claim reproduced on purpose,
+and its whole value is that it says so."* **The exemption is right and the
+sentence citing it was wrong**, and both are left standing: a gate that failed
+on §6 would be a gate demanding this file stop doing its job, and the handover
+below promised a check that could never have run.
+
+**Measured in both directions rather than read off the source, because a
+predicate is not a behaviour.** The gate was run on `df46980` **before any line
+below was edited** — the tree in which 0051 is accepted and all four counting
+sites still said thirty — and **passed, four tests**, as did
+`adr-status-queue-anchor-contract` and `adr-numbering-contract`: twenty tests,
+three files, green. Then a probe was written **into this file** asserting *ADR
+0051 is still Proposed*, which is flatly false on this tree: the gate **still
+passed**, four tests. The same probe appended to `docs/ARCHITECTURE.md` — a
+scanned, non-exempt document — failed it in one line, reporting *"is still
+Proposed" -- but ADR 0051 is Accepted*. Both probes were removed by hand and
+both files verified byte-identical against copies taken before them. So the
+gate works exactly as documented, and the coverage of this file is **zero**.
+
+**What that leaves uncovered here is two things and not one.** A stale *count*
+of statuses is uncovered everywhere, in this file and outside it, because a
+claim that names no ADR has no subject to resolve — the gate's docblock says so
+in terms and names `income.ts` as the instance. And a stale *cited status* is
+uncovered **in this file specifically**, by the exemption. So all four counting
+sites and both of §5's 0054 sentences are held by nothing mechanical whatever;
+what holds them is the check this header prescribes, reading the file's own
+paragraphs against each other, which is the method that found this.
+
+**A DIFFERENT gate did catch something in this pass, and it is worth naming
+because it is the one gate in this repository that reads this file's prose for
+rot.** `tests/foundation/documentation-version-claim-contract.test.ts` failed on
+the first draft of the sentences above, naming this file and one line of §5's
+new bullet, which said a move *"landed at"* the current release with no commit
+beside the number. Its message states the rule: *"a version beside a sha
+identifies a tree and cannot rot"*. Three version claims drafted here were
+pinned to commits in response — `df46980`, `cd2c7c5` and `966560f`, each
+carrying its version in parentheses — and it passes, five tests. **So the gate
+coverage over this file is real but orthogonal**: a bare version is caught, a
+stale count of statuses is not, and both facts were measured in the same run
+rather than reasoned about.
+
+**And writing that failure down re-tripped the same gate, which is the sharpest
+thing this pass learned about gates over prose.** A first draft of the
+paragraph you are reading quoted the test's output verbatim, bare version token
+and all, and the suite came back red a second time on **this** paragraph rather
+than on §5's — two hits on one line, because the token appeared twice in the
+quotation. **That is the identical failure mode #647 had to work around one
+document over**: `adr-status-reference-contract` *"reads English claims and
+cannot tell a quotation from an assertion"*, and neither can this one. #647's
+answer was to replace the number in the quoted clause with a pronoun; the
+answer here is to describe the output instead of reproducing it. **Both are the
+same trade** — a gate that cannot parse quotation marks is still worth having,
+and the cost is paid by whoever writes about it — and it is recorded because
+this file's whole method is quoting sentences that went false, which is
+precisely the method these two gates penalise.
+
 **And it inverts the sentence immediately below, which is the more useful
 half.** That sentence says this header's paragraph is *"the only one of the
 four that anyone had been moving"*, with §3's opening, §5's first bullet and
@@ -240,6 +348,67 @@ down rather than rediscovered. A fourth live assertion of the same shape sits
 outside this file, in `docs/adr/0056-…md`: *"it does not edit ADR 0051,
 because ADR 0051 is itself Proposed"*. Same expiry, same owner, recorded for
 the same reason.
+
+**That handover is A THIRD DISCHARGED at `445f546`/#647, and the two halves
+came apart in a way worth naming.** ADR **0051** is now `**Accepted,
+2026-08-30, by the repository owner.**` on disk; **0052** and **0054** still
+read `**Proposed, 2026-08-28.** Not self-approved.`, re-read here rather than
+carried. So of the three ADRs the owner decided on 2026-08-29 to accept, one
+document has been moved and two have not — and the sentence above saying *"all
+three"* is left standing rather than reworded, because the split is the
+finding: a single ruling covering three documents was discharged one document
+at a time by the change that had a reason to open one of them, and nothing
+tracks the remaining two except this paragraph.
+
+**And 0051 was accepted by a DIFFERENT ruling from the one this handover
+names, which is why the two halves came apart.** `docs/adr/0051-…md:30-42`
+records the acceptance as arriving in
+[#639](https://github.com/matmaxalez/lockstate/issues/639) — *"OWNER RULINGS
+2026-08-30: four calls on what the game tells the player"*, whose first ruling
+reads *"**ADR 0051 is accepted.** It has been `Proposed, 2026-08-28. Not
+self-approved.` while **its behaviour already ships**"* — and not in #535. So
+the document that moved is the one the owner ruled on **twice**, a day apart,
+and the two that did not move are the ones covered only by the earlier ruling.
+**That is a mechanism rather than a coincidence**, and it is the useful half:
+this handover has been standing since `85c1c29`, and what discharged a third of
+it was not anybody reading the handover but the owner raising the same subject
+again in their own words.
+
+**The earlier ruling was conditional, and the condition is why the remaining
+two are not a debt anybody may simply pay.** #535 decision 8 reads *"accept,
+with a review pass first"* and states the instruction in terms: *"accept them,
+**but report back rather than quietly approving any ADR that describes
+something the code does not actually do.** A status is supposed to describe
+reality; that cuts both ways."* So moving 0052 or 0054 requires measuring the
+document against `main` first and reporting, not editing a status line — and
+`AGENTS.md`'s *"never self-approve"* means the report goes to the owner either
+way. **#639 supplied exactly that for 0051** by naming the ADR as *"a decision
+the code already keeps, waiting on a signature"*; nothing has yet supplied it
+for the other two.
+
+**The fourth live assertion, outside this file, was discharged by the same
+commit and in the shape this file asks for.** `docs/adr/0056-…md`'s open
+question 3 no longer asserts 0051 is Proposed: #647 replaced the ADR number in
+the quoted clause with a pronoun and wrote the reason out — *"The reason this
+bullet gave expired on 2026-08-30 and is marked rather than overwritten"* —
+and named why the pronoun rather than the number: `adr-status-reference-contract`
+*"reads English claims and cannot tell a quotation from an assertion"*. That is
+the acceptance commit owning the correction in both directions, which is what
+the paragraph above said it should do, and it is the first time a handover
+recorded here has been honoured by the commit it was addressed to rather than
+by the integrator afterwards.
+
+**§5's two assertions about 0054 are still TRUE and are deliberately not
+touched.** Both were re-read at `df46980`: 0054 is still `Proposed` on disk, so
+the sentences saying *"ADR 0054 remains `Proposed, not self-approved` while its
+code is merged and live"* are still correct. **The gate named above would not
+have failed on them either way**, and the header now records why: it exempts
+this file by name, so the promise that it covers this class was never true of
+the document the promise was written into. **The expiry is unchanged, not
+cleared** — the owner's 2026-08-29 ruling still covers 0054, so both sentences
+go false the moment the second and third documents move, nothing mechanical
+will say so, and this paragraph is now the only place that says which two are
+left.
 
 **This sentence and the title above it were both false, and this is the second
 time this file's title has rotted the same way.** They read *"One decision is
@@ -4428,6 +4597,71 @@ the count from the last number written would be arithmetic over a gap, and a
 streak figure nobody re-derives is the shape of sentence §4 of
 `docs/AGENT_WORKFLOW.md` warns rots first.
 
+**Thirty is TWENTY-NINE again at `df46980` (v0.0.281), and this is the second
+fall in the sequence and the first with a single cause.** **0051** left the set
+by being *decided* — `**Accepted, 2026-08-30, by the repository owner.**`,
+moved onto disk by `445f546`/#647 — and nothing joined. **Both rulings that
+cover it are older than the move**: #535 decision 8 was filed with `main` at
+`966560f` (**v0.0.184**) and #639's first ruling with `main` at `cd2c7c5`
+(**v0.0.236**), read off the release commit standing at each issue's creation
+time, so the status line moved **97** and **45** releases behind them
+respectively. So the count has been zero, nine, thirteen, seventeen,
+twenty-one, twenty-two, twenty-seven, thirty, twenty-nine, thirty and
+twenty-nine across **one hundred and sixty** releases, measured from the same
+base as every span above, `54418b6` (v0.0.121), to `df46980` (v0.0.281). The
+sentence saying thirty is corrected in place beside the ones saying
+twenty-nine, thirty, twenty-seven, twenty-two, twenty-one, seventeen, thirteen,
+nine and one, for the same reason every earlier one was.
+
+**The two falls are not the same shape, and that is the part worth reading.**
+`0637ab1`'s fall netted minus one out of three movements — two accepted, one
+arriving — so the number moved for reasons that partly cancelled. This one is
+one document leaving and nothing else: the first reading in the sequence whose
+whole cause is a single acceptance. **And it is the first fall this file saw
+coming**, because the handover in the header names 0051 by number and says the
+acceptance would land after a re-anchor; what it did not say, and could not,
+is that the ruling covering three documents would be discharged one at a time.
+
+So the enumeration is now `0042`, `0043`, `0046`, `0047`, `0048`, `0049`,
+`0050`, `0052`, `0053`, `0054`, `0056`, `0057`, `0059`, `0061`, `0062`, `0063`,
+`0064`, `0065`, `0066`, `0067`, `0068`, `0069`, `0070`, `0071`, `0073`, `0074`,
+`0077`, `0078`, `0079` — **twenty-nine**, plus 0013's split and with 0022 still
+excluded, counted on disk at `df46980` by the method every reading in this
+sequence has used: **twenty-seven** under a `## Status` heading and **two**
+(0064, 0067) under a `- Status:` bullet, out of **74** documents.
+**0080 is not a member and never was** — it landed already `Accepted`, its
+status reading *"**Accepted, 2026-08-30, on the owner's ruling…**"* at
+`402c466`/#681, verified by reading `## Status` out of the commit that added
+the document rather than out of the tip, so it moved the index's *Next free
+number* to 0081 without ever touching this count. **A first draft of that
+sentence called it the first ADR in this corpus to arrive already decided, and
+that is false**: nineteen have, checked by reading `## Status` out of the
+adding commit for all seventy-four documents — 0001-0011, 0020, 0037-0041,
+0044 and 0080 — of which **two arrived inside this sequence's span**, 0044 at
+`4ae2e39`/#378 and 0080. So the true claim is the narrow one: 0080 is the
+**second** ADR to arrive already decided since the zero at `54418b6` was read,
+and the first in the **145** releases since 0044 — which arrived in the same
+release window as that zero, `4ae2e39` carrying version `0.0.121` and not being
+an ancestor of `54418b6`, so the two readings are one release apart and the gap
+after them is the whole of the sequence. The wrong draft is
+recorded rather than deleted because it is the same error class this section
+already holds two instances of — a count asserted from what a pass expected to
+find rather than from a scan — and this time the scan was cheap and the
+assertion was one command away from being checked. `docs/adr/README.md`
+agrees when its **status column** is read rather than its rows: **twenty-nine**
+`Proposed`, **forty-five** `Accepted`, seventy-four rows. **The regex this
+section has used since `0637ab1` still returns the right answer** —
+`grep -cE '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **29** — and
+a looser whole-row match does not: `grep '^| \[' docs/adr/README.md | grep -c
+Proposed` returns **30**, because 0051's cell now carries its own correction in
+both directions and the word survives inside the clause saying what the cell
+used to read. Both were run. That is a new instance of the grep trap this
+section already records for 0022, in the index rather than in a document, and
+it will get worse rather than better as more cells are corrected in place —
+the anchored regex is what keeps it from mattering, and it is recorded here so
+that nobody replaces it with something shorter. **0072 is still not on disk**, and
+it remains held for the events-persistence decision.
+
 **A miscount this pass made and caught, recorded because the next reader will
 make it.** A first scan of this set returned **thirty-one** at `53e1405`,
 disagreeing with the anchor that wrote thirty, and the disagreement was
@@ -5005,6 +5239,53 @@ one direction.
   has used, `## Status` heading or `- Status:` bullet alike, 0064 and 0067
   still the only two in bullet form and 0022 still checked and still excluded;
   `docs/adr/README.md` reports the same thirty, checked row against document.
+
+  **TWENTY-NINE at `df46980` (v0.0.281), five releases later, and the ratio
+  improved without a single row being filed.** One document left and none
+  joined: **0051** (what a player sees for an order given while the clock is
+  paused) moved to `**Accepted, 2026-08-30, by the repository owner.**` at
+  `445f546`/#647. So the directory holds **0042, 0043, 0046, 0047, 0048, 0049,
+  0050, 0052, 0053, 0054, 0056, 0057, 0059, 0061, 0062, 0063, 0064, 0065,
+  0066, 0067, 0068, 0069, 0070, 0071, 0073, 0074, 0077, 0078 and 0079**, plus
+  0013's split; **0072 is still held rather than missing**. §2 gained no entry
+  in this window — its heading still opens *"## 2. Eight entries"* — so the
+  ratio is **four of twenty-nine**, the same four (0056, 0059, 0074 and 0077),
+  and **twenty-five decisions are now outstanding with no entry**, down from
+  twenty-six. Counted on disk at `df46980` by the method every reading in this
+  sequence has used, `## Status` heading or `- Status:` bullet alike, 0064 and
+  0067 still the only two and 0022 still checked and still excluded;
+  `docs/adr/README.md`'s **status column** reports the same twenty-nine — a
+  row-level `grep` reports thirty, for the reason §3's opening now records.
+
+  **The ratio improved by the weaker of the two mechanisms, for the second
+  time in this bullet's history, and this instance is cleaner than the first.**
+  Four of twenty-nine is better than four of thirty, and no row was written to
+  earn it: 0051 left the denominator. The `0637ab1` reading recorded the same
+  shape and had to split it — *"partly because a row was filed and partly
+  because two documents left the denominator, and only the first of those is
+  the rule working"* — while here there is nothing to split. **The rule was
+  neither obeyed nor abandoned in this window**, because no ADR arrived to
+  obey it about, so the abandonment streak is untouched and this reading, like
+  the `feb46af` one before it, establishes nothing whatever about it. That is
+  worth writing down rather than leaving to arithmetic, because a ratio that
+  improves while nobody does anything is exactly the figure a reader will
+  mistake for progress.
+
+  **0051 is the third document ever to leave this count by being decided, and
+  the first to leave it alone.** 0075 and 0076 left together at `f0b98aa`/#606,
+  inside a window that also gained 0078, so their departure was netted against
+  an arrival. This one is not netted against anything. **And the status line
+  moved 45 releases behind the ruling it cites and 97 behind the earlier one**
+  — #639 was filed with `main` at `cd2c7c5` (v0.0.236) and #535 at `966560f`
+  (v0.0.184), both read off the release commit standing at the issue's creation
+  time, and the move landed at `df46980` (v0.0.281). The owner decided on 2026-08-29 (issue #535, decision 8) to
+  accept 0051, 0052 and 0054, and `445f546` moved one of the three — so the
+  header's handover now names two
+  documents rather than three, and the two remaining are the reason **0054's
+  two assertions in this section are still true** and are left standing. **The
+  acceptance came from #639 rather than from #535 decision 8**, which is what
+  the header now records: the document that moved is the one the owner ruled on
+  twice.
 
   **0079 is the second consecutive arrival with no §2 row, after 0078, and the
   two are not the same case.** 0078 arrived inside a window this bullet was
@@ -6576,6 +6857,44 @@ never recorded before this round:
   and `none`.** The live consequence in §5's first bullet has
   moved with it in one term only: thirty outstanding decisions and still
   **four** §2 rows.
+
+  **FALSIFIED a fourteenth time, at `df46980` (v0.0.281), five releases later:
+  it is twenty-nine.** 0051 left the thirty by being accepted at
+  `445f546`/#647 and nothing joined, derived the same way. **So the count has
+  now been nine, one, one, none, nine, thirteen, seventeen, twenty-one,
+  twenty-two, twenty-seven, thirty, twenty-nine, thirty and twenty-nine —
+  fourteen readings of one sentence in one file, across eleven anchors and one
+  correction commit that is deliberately not an anchor, and the third time the
+  run has returned to a value it already held.** `nine`
+  recurred at the fifth reading and `thirty` at the thirteenth; `twenty-nine`
+  now recurs at the fourteenth. **A count that has returned to an earlier
+  value three times in fourteen readings is not a trend at all**, which is
+  this bullet's own subject stated as arithmetic rather than as prose: the
+  sentence in `income.ts` never named an ADR, so no reading of it has ever
+  been able to say *which* decision it meant, and the number moving up and
+  back tells a reader nothing they could act on. The live consequence in §5's
+  first bullet has moved with it in one term only, and in the improving
+  direction for the first time since `0637ab1`: **twenty-five** outstanding
+  decisions and still **four** §2 rows.
+
+  **`income.ts` did NOT change in this window, and the absence is inherited
+  rather than re-established.** It is not among the **17** files
+  `git diff --name-only 004f799..df46980` reports — narrower than any window
+  this bullet records, the next narrowest being the 27 files at `004f799` — and `grep -c "Proposed"
+  src/simulation/economy/income.ts` returns **0** at `df46980`, re-grepped
+  rather than assumed but against a file nothing touched. That is the weaker of
+  the two results and is reported as such, for the reason the `898a16a` reading
+  gave: a grep over an untouched file rests on the file not having moved.
+
+  **And this reading is not a lag either, which makes four consecutive passes
+  without one.** The `898a16a` pass moved this bullet with the header, the
+  `feb46af` and `004f799` passes each opened it and found it correct, and this
+  commit moves it with the other three sites in the same change. **Four passes
+  of agreement is the longest run this file has recorded** and it is
+  still not a habit — the mechanism that broke them is not prevented by
+  anything mechanical, and the header now records what was measured this time:
+  `adr-status-reference-contract` passes with all four sites stale, so nothing
+  in this repository can fail when they come apart.
 
   **`income.ts` did NOT change in this window, which ends a run of three
   anchors at which it had**, so the absence is inherited rather than
