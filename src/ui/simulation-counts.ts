@@ -108,9 +108,11 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
          * and so does `grep -rn 'highRisk' src/`, because the field is
          * `prisonersHighRisk` with a capital `H` and the substring never
          * appears anywhere. The grep that says something is
-         * `grep -rni 'high.risk' src/ui/`, which finds four sites, all of them
-         * comments or the `classificationGroupId === 'high-risk'` tone rule in
-         * `hud/regime-panel.ts`, and none of them this count.
+         * `grep -rni 'high.risk' src/ui/`; before this change every hit it
+         * returned was a comment or the `classificationGroupId === 'high-risk'`
+         * tone rule in `hud/regime-panel.ts`, and none of them was this count.
+         * No tally is given, because the point is the *spelling* of the grep and
+         * a count of hits would rot on the next comment anybody writes.
          */
         prisonersHighRisk: counts.prisonersHighRisk,
         activeIncidents: counts.activeIncidents,

@@ -8924,6 +8924,32 @@ test.describe('the assembled application', () => {
     }
     await expect(metric('prisoners'), 'the admissions were refused').toHaveText(String(ADMISSIONS));
 
+    /*
+     * **And the clock, which is the step whose absence cost the first run of
+     * this test.**
+     *
+     * `wallRectanglesFromTheKeyboard` ends by pressing *Pause*, deliberately --
+     * its own comment says it leaves the caller "the paused session a new prison
+     * arrives as". Since ADR 0051 a *due* command is dispatched during a pause,
+     * which is why the eight admissions above landed and the strip reads 8; but
+     * `IntakeSystem` is a scheduled system, so with the clock stopped no arrival
+     * ever leaves `queued` and no row can carry a tier. Measured: the poll below
+     * spent its whole budget at zero classified rows, on a prison of eight.
+     *
+     * Fast forward twice, because there are three intake stages to walk before
+     * `accommodation-assignment` and the pipeline runs every five ticks.
+     */
+    const transport = page.locator('.hud-strip__transport');
+    await transport.getByRole('button', { name: localeText('hud.transport.play') }).click();
+    await expect(
+      transport.getByRole('button', { name: localeText('hud.transport.play') }),
+      'the worker never accepted the set-clock, so intake cannot advance',
+    ).toHaveAttribute('aria-pressed', 'true');
+    await transport.getByRole('button', { name: localeText('hud.transport.fast-forward') }).click();
+    await expect(page.locator('.hud-clock__speed')).toHaveText(`×${fundsText(2)}`);
+    await transport.getByRole('button', { name: localeText('hud.transport.fast-forward') }).click();
+    await expect(page.locator('.hud-clock__speed')).toHaveText(`×${fundsText(4)}`);
+
     // ---- and the four rows the Regime panel draws ----------------------
     await page.locator('.ui-tab[data-tab="regime"]').click();
     const roster = page.locator('.hud-regime__roster');
@@ -8944,9 +8970,11 @@ test.describe('the assembled application', () => {
      * admission -- and the roster on screen stays the one painted at that
      * moment, when the newest arrivals were still `queued`.
      *
-     * Measured: polling the DOM alone for four rows carrying `data-risk-tier`
-     * spent its whole 30 s budget at 0. So each poll re-selects the tab, which
-     * is the intent that asks the worker again.
+     * `prisonersInIntake` does move as the pipeline walks, so the channel is not
+     * silent for the whole of this wait -- but it goes quiet again the moment the
+     * last arrival settles, and "the roster is refreshed by something" is not a
+     * thing to leave to a count that may or may not be moving. So each poll
+     * re-selects the tab, which is the intent that asks the worker again.
      */
     const rereadRoster = async (): Promise<void> => {
       await page.locator('.ui-tab[data-tab="overview"]').click();
