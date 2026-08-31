@@ -30,7 +30,14 @@ import { staffDailyWageMinorUnits } from './wages';
  *
  * This is that charge.
  *
- * ## The unpayable case, and why the balance still cannot go negative
+ * ## The unpayable case, and why *this system* cannot take the balance negative
+ *
+ * **This heading read *"why the balance still cannot go negative"* and it was
+ * exact for the life of the section under it.** Since #703 ruling A of
+ * 2026-08-31 the balance can go negative in any session; what is still true, and
+ * is what the section actually establishes, is that **nothing here** takes it
+ * there. Both readings are kept because the argument below is what a reader
+ * would otherwise reconstruct from ADR 0049 and believe.
  *
  * **The decision is
  * [ADR 0049](../../../docs/adr/0049-what-a-prison-that-cannot-make-payroll-owes.md)'s,
@@ -98,6 +105,17 @@ import { staffDailyWageMinorUnits } from './wages';
  * should be refused **first**. That inversion, and what to do about it, is
  * [ADR 0083](../../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md).
  *
+ * **The paragraph above was written while the inversion was still hypothetical
+ * -- *"with a floor open"* -- and it is kept as written because that is the
+ * condition it reasons from. The condition now holds in every session.** #703
+ * ruled reading A on 2026-08-31 and `createNewSimulationRuntime` opens
+ * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` on the treasury it builds, so the
+ * numbered ladder above runs 3, then 1, then 2: this system stops at zero while
+ * `ProcurementSystem` and `StaffHiringService` carry on to the floor.
+ * `tests/integration/economy-payroll-loop.test.ts` pins that at both ends. The
+ * amendment ADR 0083 §2 says is owed to decision 8 is still owed, and it is the
+ * owner's.
+ *
  * What is carried instead is **arrears**: the part of the bill the prison could
  * not pay, in the same minor units, owed until it is earned. Decision 8 calls
  * the interesting part of insolvency *"digging out"*, and digging out needs a
@@ -108,8 +126,13 @@ import { staffDailyWageMinorUnits } from './wages';
  *
  * The balance falls by the bill every in-game day, so a hire is a standing cost
  * rather than a one-off, and the Funds readout says so before anything goes
- * wrong. When the bill cannot be met the balance sits at **0** and the arrears
- * figure climbs instead. **This sentence carried "-- it never goes red, because
+ * wrong. When the bill cannot be met the balance sits **where it was** and the
+ * arrears figure climbs instead -- at **0** for a prison that has not spent into
+ * its overdraft, and at whatever negative figure it reached for one that has,
+ * because this system pays `Math.min(due, balance)` and a negative balance pays
+ * nothing. **This sentence said "sits at 0" without the qualification**, which
+ * was exact while no session could be under water and is now the common case
+ * rather than the only one. **This sentence carried "-- it never goes red, because
  * it cannot --" and the reason is gone**: a balance may be negative since ADR
  * 0075 decision 2. What is still true is the *behaviour* rather than the
  * impossibility, and it is true for a narrower reason -- this system stops at

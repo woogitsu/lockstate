@@ -13,7 +13,11 @@
  * omission against a settled answer rather than against an open question:
  *
  * - **The balance still cannot go negative, and that is now a decision rather
- *   than a gap.** This paragraph used to say: *"Decision 8 settles that a
+ *   than a gap.** **Both this heading and the ADR 0075 correction under it were
+ *   overtaken on 2026-08-31: the balance can now go negative in any session,
+ *   and the ladder this bullet defends runs backwards. See the last bullet of
+ *   the next section for what replaced it.** The paragraph used to say:
+ *   *"Decision 8 settles that a
  *   negative balance should degrade the prison in a defined order rather than
  *   end the run, and that ladder is unbuilt — and still unreachable, because
  *   `spend` refuses rather than overdrawing and nothing debits the balance on a
@@ -67,6 +71,19 @@
  *   [#29](https://github.com/matmaxalez/lockstate/issues/29), with the rest
  *   of the loan's magnitudes.
  *
+ *   **Both halves of that bullet expired on 2026-08-31 and it is kept because
+ *   the whole of this file's reasoning was written under them.** #703 ruled
+ *   reading A -- a standing overdraft *every* prison has, not one a drawdown
+ *   opens -- so `createNewSimulationRuntime` calls `setOverdraftFloor` on the
+ *   treasury it builds and there is no longer a session behaving as it did
+ *   before. And the floor *is* decided: it is
+ *   `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`, one tenth of the opening grant,
+ *   which satisfies decision 5's reservation by a ruling rather than bypassing
+ *   it. The sentence *"a session that has borrowed nothing behaves exactly as it
+ *   did before"* is now true only of a `Treasury` built by hand, which is every
+ *   `new Treasury()` in `tests/unit/economy-treasury.test.ts` and nothing in
+ *   `src/`.
+ *
  *   **This bullet said the floor *is* ADR 0075 decision 2's *"accrual cap"*,
  *   "expressed as the one number that decides how far under water a prison can
  *   go", and that identification is wrong.** Both directions are kept because
@@ -90,7 +107,23 @@
  *   "out" until 2026-08-31**, which read as though a drawdown were what opens
  *   the room below zero. It is not: `LoanBook.draw` calls `credit`, so a loan
  *   hands the prison *money* and touches no floor. Whether it *should* open one
- *   is ADR 0083's decision 2, and it is the owner's.
+ *   was ADR 0083's decision 2, and the owner ruled that it should not: the room
+ *   is standing and the loan opens nothing. `LoanBook` is still built only when
+ *   `loanTerms` is supplied and nothing in `src/` supplies it, so the way back
+ *   up is at present the income line and nothing else.
+ * - **And ADR 0017 decision 8's ladder is now inverted, which is owed an
+ *   amendment nobody has written.** Decision 8 orders the refusals *"deliveries
+ *   refused first, then construction halted, then staff unpaid"*, and the
+ *   bullet at the top of this docblock argues at length that a floored balance
+ *   produces exactly that order. `canAfford` is **one comparison** over every
+ *   spend, so a standing floor moves the first two rungs to the floor while
+ *   `PayrollSystem`'s `Math.min(due, balance)` keeps the third at zero: a prison
+ *   with wages unpaid still buys deliveries and hires staff for another 2,500.
+ *   ADR 0083 §2 records that either the order is amended or decision 8 is
+ *   narrowed to a prison that has spent its overdraft, and that choosing between
+ *   those is the owner's.
+ *   `tests/integration/economy-payroll-loop.test.ts` pins the inversion at both
+ *   ends of the facility so the amendment is written against a measurement.
  *
  * ## Integer minor units, and why that is not a formatting choice
  *

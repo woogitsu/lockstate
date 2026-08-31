@@ -181,6 +181,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       '**This entry read `type-only` until #432**, and the one value it now names is `readableGenerationIds` from `src/persistence/local/generation-policy` -- the predicate saying which of a prison\'s retained generations this build can actually offer. A generation this build has refused as unreadable and kept for a build that can read it (#432) is still a record in `generationIds`, so the row\'s "N saves" count would silently include a save the player cannot load: a promise the code does not keep, which is `AGENTS.md`\'s fourth exclusion. The alternative to importing the predicate is restating the quarantine convention here, which would put a second definition of a persistence format in a view -- the same contamination `cloud-slot-availability.ts` records for the five-slot ladder, and the reason that entry is `value` too. What the old `type-only` kind was protecting is named and still true: `generation-policy.ts` imports nothing at all -- **that is the load-bearing fact of this entry, and it is the one that can go stale silently.** A `value` import is only as narrow as the module it names, so the moment `generation-policy.ts` gains an import of its own this reason is wrong and nothing here will say so: this gate compares kinds, not transitive reachability. Anyone adding an import to that module is adding it to this tier too, and should either not, or come back and rewrite this entry. A value import from `repository.ts`, `store.ts` or `save-schema.ts` would be the erosion this entry exists to catch, and would still fail review. The erased names are unchanged: `SaveResult`, `SaveImportResult`, `PrisonSlotMetadata`, `SaveEnvelope`, `ActiveSession` and `SessionLoadOutcome`. The save panel renders the outcomes the persistence layer reports and calls nothing itself -- the host wires the actions. `SaveImportResult` arrived with the Import control (#287) and is the same kind of dependency as the rest: the panel names what an import reported, and the decoding, migration and checksum verification behind it all happen in `src/persistence/**`. This is the dependency the HUD proper keeps out by laying out the host panel through `asideSlot` and never rendering into or reading it (`HudHandle.asideSlot` in `src/ui/hud/hud.ts` states the rule and names both layers), which is exactly why the panel may type-import persistence while `src/ui/hud/**` may not.',
   },
   {
+    file: 'src/ui/affordability.ts',
+    tree: 'simulation',
+    kind: 'value',
+    reason:
+      "Value: `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` from `src/simulation/economy`, and nothing else -- one integer constant, used as a default argument. This module is the host's pre-flight on the two intents that cost money, and it exists because the comparison it makes lived inline in `src/main.ts`, which `vitest.config.ts` cannot reach at all (`environment: 'node'`, and that file touches `document`), so #703 ruling A silently made it wrong: it refused presses the simulation accepts. Importing the constant rather than restating `-2_500` is the point of the entry -- the host's echo and the treasury's own floor derive from one definition, which is the same argument `simulation-clock.ts` makes below about the calendar. It runs no simulation code, holds no state, constructs nothing and has no dependency on the runtime: a value import of `Treasury` itself, or of anything that could build one, would mean the interface had started keeping a second treasury instead of echoing the published balance, and that is the erosion this entry exists to catch.",
+  },
+  {
     file: 'src/ui/save-panel.ts',
     tree: 'simulation',
     kind: 'type-only',
@@ -522,6 +529,7 @@ describe('UI orchestration boundaries', () => {
     // avoid, and the one `rendering-module-boundaries.test.ts` and
     // `ui-hud-messages.test.ts` both carry a guard for.
     expect(orchestrationFiles.map(({ file }) => file)).toEqual([
+      'src/ui/affordability.ts',
       'src/ui/brand-badge.ts',
       'src/ui/brand-messages.ts',
       'src/ui/build-tool.ts',

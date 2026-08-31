@@ -243,13 +243,32 @@ export interface HudCountsViewModel {
    */
   readonly contrabandNameKey?: LocalizationKey;
   /**
-   * The treasury balance in minor units (#96).
+   * The treasury balance in minor units (#96). **May be negative** since #703
+   * ruling A.
    *
    * Minor units all the way to the DOM, and converted for display at the
    * last possible moment, for the same reason the simulation holds it that
    * way: an integer is exact and a fraction of a currency is not. The strip
    * formats it; nothing upstream of the formatter knows what a "major unit"
    * is, which is what keeps a currency decision out of the view model.
+   *
+   * **Every prison has a standing overdraft of one tenth of its opening grant**
+   * (`TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`, #703 ruling A of 2026-08-31,
+   * [ADR 0083](../../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+   * §2), so this figure reaches the chip negative for any player who overspends.
+   * `Intl.NumberFormat` renders the sign, so **no string was authored for it**:
+   * `formatNumber('en', -4000)` is `-4,000`, pinned in
+   * `tests/integration/economy-negative-balance-readers.test.ts`.
+   *
+   * **And that is the whole of what a player is told, which is a gap and not a
+   * design.** There is no tone, no badge and no sentence anywhere saying the
+   * facility exists, what it is worth, or that spending it can strand a prison
+   * -- so a player meets the overdraft by hitting it. Whatever copy would
+   * explain it is the owner's under `AGENTS.md`'s fourth exclusion (*"anything
+   * that reaches a player as a promise the code does not keep"*), and the two
+   * places it would have to go are **here**, as a tone or badge on the `funds`
+   * chip, and the Build panel's own refusal sentence. Both are deliberately
+   * left empty rather than filled in with an invented string.
    */
   readonly treasuryMinorUnits: number;
   /**

@@ -254,6 +254,7 @@ describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () =
    * to the stricter registry rule; everything else here was ungated.
    */
   const MODULES = [
+    'affordability.ts',
     'brand-badge.ts',
     'brand-messages.ts',
     'build-tool.ts',
