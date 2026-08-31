@@ -464,6 +464,135 @@ test('act 1: an ambitious first prison, buying nothing on purpose (#640, #693, #
 });
 
 /* ------------------------------------------------------------------ */
+/* Act 2: five rooms in a row, the measurement #690 asked for          */
+/* ------------------------------------------------------------------ */
+
+test('act 2: five rooms in a row, none overlapping (#690)', async ({ page }) => {
+  test.setTimeout(1_200_000);
+  const log = (line: string) => console.log(`[act2] ${line}`);
+
+  await installTee(page);
+  await installSamplers(page);
+  await openApp(page);
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.waitForTimeout(1000);
+  await tab(page, 'build').click();
+  const origin = await calibrate(page);
+  log(`calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
+
+  /*
+   * **Five 3x3 cells in a terrace, sharing their party walls.** Act 1's version
+   * of this measured one designation and four refusals, because it designated
+   * the whole 6x6 and then tried to subdivide it -- `ZoneRoom` refuses a
+   * rectangle a room already claims, twice, in two different sentences. A room
+   * has to be *enclosed*, so five rooms means five enclosures, and a terrace is
+   * the cheapest five: two long runs and six short ones, 48 segments.
+   *
+   * Interiors are x=[12..14], [16..18], [20..22], [24..26], [28..30] at
+   * y=[12..14], with the vertical walls on the odd columns between them.
+   */
+  await armBuildable(page, 'wall-brick');
+  const y = (tileY: number) => origin.originY + tileY * TILE;
+  const x = (tileX: number) => origin.originX + tileX * TILE;
+  const runs: readonly { readonly name: string; readonly a: { x: number; y: number }; readonly b: { x: number; y: number } }[] = [
+    { name: 'north', a: { x: x(12) + TILE / 2, y: y(12) }, b: { x: x(31) - TILE / 2, y: y(12) } },
+    { name: 'south', a: { x: x(12) + TILE / 2, y: y(15) }, b: { x: x(31) - TILE / 2, y: y(15) } },
+    ...[12, 15, 16, 19, 20, 23, 24, 27, 28, 31].map((column) => ({
+      name: `wall at x=${column}`,
+      a: { x: x(column), y: y(12) + TILE / 2 },
+      b: { x: x(column), y: y(15) - TILE / 2 },
+    })),
+  ];
+  for (const run of runs) {
+    await drag(page, run.a, run.b);
+  }
+  log(`after the terrace runs: treasury=${(await latestCounts(page))?.treasuryMinorUnits} queue=${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+  await fastForwardToMax(page);
+  for (let index = 0; index < 24; index += 1) {
+    await page.waitForTimeout(5000);
+    const queue = await panelText(page, '.hud-build__queue');
+    if (/(?<![0-9])0 waiting . 0 being built/.test(queue) || queue.includes('not laid out')) break;
+  }
+  log(`terrace built at tick ${await currentTick(page)}: treasury=${(await latestCounts(page))?.treasuryMinorUnits}`);
+
+  const cells: readonly { readonly name: string; readonly a: readonly [number, number]; readonly b: readonly [number, number] }[] = [
+    { name: 'cell 1', a: [12, 12], b: [14, 14] },
+    { name: 'cell 2', a: [16, 12], b: [18, 14] },
+    { name: 'cell 3', a: [20, 12], b: [22, 14] },
+    { name: 'cell 4', a: [24, 12], b: [26, 14] },
+    { name: 'cell 5', a: [28, 12], b: [30, 14] },
+  ];
+
+  for (const cell of cells) {
+    const started = Date.now();
+    let presses = 0;
+    await tab(page, 'rooms').click();
+    presses += 1;
+    const collapsedOnArrival = await page.locator('.hud-rooms').getAttribute('data-collapsed');
+    if (collapsedOnArrival === 'true') {
+      await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+      presses += 1;
+    }
+    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+    presses += 1;
+    const armBefore = `${(await page.locator('.hud-rooms__arm').innerText()).trim()} data-armed=${await page.locator('.hud-rooms__arm').getAttribute('data-armed')}`;
+    await page.locator('.hud-rooms__arm').click();
+    presses += 1;
+    const armAfter = `${(await page.locator('.hud-rooms__arm').innerText()).trim()} data-armed=${await page.locator('.hud-rooms__arm').getAttribute('data-armed')}`;
+    /*
+     * #690's own claim is that the panel "gets out of the way" while the tool is
+     * armed and comes back afterwards saying what the player is about to press.
+     * So the fold state and the arm control's *box* are read at the two moments
+     * that claim is about: mid-drag, and after the confirm.
+     */
+    await page.mouse.move(centreOf(origin, cell.a[0], cell.a[1]).x, centreOf(origin, cell.a[0], cell.a[1]).y);
+    await page.mouse.down({ button: 'left' });
+    await page.mouse.move(centreOf(origin, cell.b[0], cell.b[1]).x, centreOf(origin, cell.b[0], cell.b[1]).y, { steps: 8 });
+    const midDrag = await page.evaluate(() => {
+      const panel = document.querySelector<HTMLElement>('.hud-rooms');
+      const armNode = document.querySelector<HTMLElement>('.hud-rooms__arm');
+      const rect = armNode?.getBoundingClientRect();
+      return {
+        collapsed: panel?.dataset['collapsed'] ?? 'ABSENT',
+        armBox: rect === undefined ? 'ABSENT' : `${Math.round(rect.width)}x${Math.round(rect.height)}`,
+      };
+    });
+    await page.mouse.up({ button: 'left' });
+    await page.waitForTimeout(200);
+    const afterDrag = await page.evaluate(() => {
+      const panel = document.querySelector<HTMLElement>('.hud-rooms');
+      const confirmNode = document.querySelector<HTMLElement>('.hud-rooms__confirm');
+      const rect = confirmNode?.getBoundingClientRect();
+      return {
+        collapsed: panel?.dataset['collapsed'] ?? 'ABSENT',
+        confirmBox: rect === undefined ? 'ABSENT' : `${Math.round(rect.width)}x${Math.round(rect.height)}`,
+      };
+    });
+    const note = await panelText(page, '.hud-rooms');
+    const confirmEnabled = await page.locator('.hud-rooms__confirm').isEnabled();
+    if (confirmEnabled) {
+      await page.locator('.hud-rooms__confirm').click({ timeout: 20_000 });
+      presses += 1;
+    }
+    await page.waitForTimeout(1200);
+    const counts = await latestCounts(page);
+    log(
+      `${cell.name}: ${presses} press(es) + 1 drag in ${Date.now() - started}ms -> rooms=${counts?.rooms}` +
+        ` | fold on arrival=${collapsedOnArrival} mid-drag=${JSON.stringify(midDrag)} after drag=${JSON.stringify(afterDrag)}` +
+        ` | arm ${JSON.stringify(armBefore)} -> ${JSON.stringify(armAfter)}` +
+        ` -> after confirm data-armed=${await page.locator('.hud-rooms__arm').getAttribute('data-armed')}`,
+    );
+    log(`${cell.name}: enclosure verdict lines = ${JSON.stringify(note.split('\n').filter((line) => /OPEN|ENCLOS|MISSING|NEEDS/i.test(line)))}`);
+    log(`${cell.name}: refusal band = ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  }
+
+  const zoned = await latestCounts(page);
+  log(`five designations later: rooms=${zoned?.rooms} roomCapacity=${zoned?.roomCapacity} treasury=${zoned?.treasuryMinorUnits}`);
+  await tab(page, 'rooms').click();
+  log(`rooms panel at the end: ${JSON.stringify((await panelText(page, '.hud-rooms')).split('\n'))}`);
+});
+
+/* ------------------------------------------------------------------ */
 /* Act 3: the same prison, under-guarded on purpose                    */
 /* ------------------------------------------------------------------ */
 
@@ -505,6 +634,20 @@ test('act 3: a deliberately neglected prison — the escape sentence and a weapo
     );
     log(`  strip: ${await strip(page)}`);
     log(`  band now: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
+    /*
+     * What the player can see about *who* is dangerous. The Regime tab's
+     * Prisoners roster carries a tier word per row -- Minimal, Low, Medium,
+     * High -- and `describePrisonerRow` tones the high-risk group `warning`.
+     * That badge is the only surface in the game that says a review has raised
+     * somebody, and #681 makes tier 3 the gate on both a weapon and an escape,
+     * so it is the one place a weapon could show up indirectly.
+     */
+    if ((counts?.tick ?? 0) > 20_000) {
+      await tab(page, 'regime').click();
+      await page.waitForTimeout(800);
+      log(`  regime roster: ${JSON.stringify((await panelText(page, '.hud-regime')).split('\n').slice(0, 24))}`);
+      await tab(page, 'overview').click();
+    }
   }
 
   log(`=== EVENTS, all of them ===`);
