@@ -805,6 +805,14 @@ if (wanted('9')) {
  *  - **`ConstructionSystem.procureQueuedMaterials` / `JustInTimeMaterials`**:
  *    `deepest unfunded` and `orders standing`. The queue is the one thing that
  *    spends with no press, so it is the runaway candidate.
+ *    **Measured on 2026-08-31 and it is not: the scheduled pass spends 0 in
+ *    every run of 10c, and every minor unit of the drain is a `PlaceBuildOrder`
+ *    press buying the increment its own order adds** -- 27,440 over 343
+ *    purchases against the scheduled pass's 0, tagged by caller. So the queue
+ *    is the runaway candidate for the right magnitude and the wrong reason: a
+ *    drag spends 40 times in one gesture, which the player cannot see, rather
+ *    than a queue spending while nobody is looking. The clause above is kept
+ *    because the table it explains is unchanged.
  *  - **`PayrollSystem`**: `deepest arrears`. Section 9 has no staff at all, so
  *    the staffed control below is the only place in this file where payroll
  *    meets an open floor.
@@ -867,6 +875,19 @@ if (wanted('10')) {
  * (`src/simulation/construction/system.ts:988`), from its own scheduled
  * `update` -- so the honest question is not "does 2,500 run away" but "what
  * does a *bigger* standing queue do with 2,500 of room".
+ *
+ * **The premise in that sentence was measured on 2026-08-31 and is false; the
+ * question it asks is still the right one and the table still answers it.**
+ * `procureQueuedMaterials` has two callers and the scheduled one spends
+ * nothing: tagging every call across this sweep gives 0 spent from
+ * `ConstructionSystem.update` and 27,440 from the `PlaceBuildOrder` command
+ * handler, over 343 purchases, in all five runs. What a bigger standing queue
+ * does with 2,500 of room, it does at the presses that place it.
+ *
+ * **Re-run after #703 rulings 9 and 12 landed per-order partial fill: every
+ * figure in this table is identical**, including `floor breaches` of 0 and the
+ * scheduled pass's 0. A residual of 60 is short of the 80 a wall costs, and an
+ * order is funded whole or not at all.
  *
  * The room is held at the proposed −2,500 and the standing tail is swept.
  * `room used` against `overdraft room` is the answer: if it tracks the tail

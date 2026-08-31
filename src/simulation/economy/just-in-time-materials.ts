@@ -262,8 +262,8 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
    * refuses (#703 ruling 12). `ProcurementSystem.purchase` cannot answer that
    * question -- it decides one line at a time, which is the granularity ruling
    * 12 chose *against* -- and asking it by buying and rolling back would put a
-   * credit path in this class, which the "What it does not do" section below
-   * forbids for a reason that has not changed.
+   * credit path in this class, which the "What it does not do" section of the
+   * class docblock above forbids for a reason that has not changed.
    */
   public constructor(
     private readonly procurement: ProcurementSystem,
