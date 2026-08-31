@@ -352,11 +352,103 @@ later:
 [act3]   band now: "The prison is under control again — no incident is still open."
 ```
 
-### 2c. What the same mechanism gives the player when the two events are 70 ticks apart
+### 2c. The answer: written three times, painted zero times
 
-**MEASURED**, §6: assault-opened at 29,151, all-clear at 29,221, and the opening
-sentence held the band for **744 ms** at ×4. The escape pair is **zero** ticks
-apart.
+**MEASURED**, act3b, `1 passed (21.8m)`, tick 100,404, three escapes.
+
+**The `MutationObserver` saw the sentence every time, correct in every
+particular** — 14,875 writes recorded, and these are the three that matter with
+their immediate neighbours:
+
+```
+{"t": 655697, "text": "A prisoner is trying to break out.",                             "severity": "danger", "hidden": "false"}
+{"t": 655850, "text": "Delia Cabrera broke out — no guard reached them in time.",       "severity": "danger", "hidden": "false"}
+{"t": 655851, "text": "The prison is under control again — no incident is still open.", "severity": "info",   "hidden": "false"}
+
+{"t": 805865, "text": "A prisoner is trying to break out.",                             "severity": "danger", "hidden": "false"}
+{"t": 805867, "text": "Ursula Sandoval broke out — no guard reached them in time.",     "severity": "danger", "hidden": "false"}
+{"t": 805867, "text": "The prison is under control again — no incident is still open.", "severity": "info",   "hidden": "false"}
+
+{"t": 955857, "text": "A prisoner is trying to break out.",                             "severity": "danger", "hidden": "false"}
+{"t": 955858, "text": "Ewan Abara broke out — no guard reached them in time.",         "severity": "danger", "hidden": "false"}
+{"t": 955858, "text": "The prison is under control again — no incident is still open.", "severity": "info",   "hidden": "false"}
+```
+
+The sentence renders. It names somebody. `data-severity` is `danger`. `hidden`
+is `false`. **It stands for 1 ms, then 0 ms, then 0 ms** before the all-clear
+takes the line.
+
+**The `requestAnimationFrame` log — every distinct text the browser actually
+produced a frame for, across 21.8 minutes — has 52 entries and the escape
+sentence is not one of them.** What the frames show at each escape:
+
+```
+{"t": 648209, "text": "A prisoner is trying to break out.",                             "severity": "danger"}
+{"t": 655852, "text": "The prison is under control again — no incident is still open.", "severity": "info"}
+{"t": 798224, "text": "A prisoner is trying to break out.",                             "severity": "danger"}
+{"t": 805868, "text": "The prison is under control again — no incident is still open.", "severity": "info"}
+{"t": 948248, "text": "A prisoner is trying to break out.",                             "severity": "danger"}
+{"t": 955859, "text": "The prison is under control again — no incident is still open.", "severity": "info"}
+```
+
+`grep` over the frame log for `broke out` returns the riot sentence (*"A riot has
+broken out"*) and nothing else. The 100 ms poll's 52 samples do not contain it
+either, exactly as §7 predicted before the run.
+
+**So the statement, and the cause and the impact separately.**
+
+> **Observation.** `{name} broke out — no guard reached them in time.` is
+> produced, correct, named, `danger`-banded and unhidden, and in three escapes
+> across 21.8 real minutes of play it reached **zero frames**. What the player
+> sees at an escape is *"A prisoner is trying to break out."* for **7.6
+> seconds**, and then *"The prison is under control again — no incident is still
+> open."*
+
+- **What establishes the cause**, and it is read rather than inferred: the two
+  events share a tick (§2b, and measured three times), `publishEvents` posts them
+  back to back in one worker task
+  (`src/simulation/worker/state-machine.ts:701-723`), and the band keeps only the
+  newest (`src/ui/simulation-events.ts:356`). Two DOM writes inside one frame
+  budget produce one paint, and it is the second one.
+- **What establishes the impact.** The sequence a player reads — a danger
+  sentence about an *attempt*, then an all-clear — is *"the attempt was
+  contained"*. It was not; somebody is gone and the population count drops. That
+  is the exact reading issue #683 was filed against and that #691 was written to
+  end: the escape's own research record says the all-clear *"is also what stops a
+  `'danger'` band standing over a calm prison for the rest of a session"*, and
+  here it stops the danger band before it exists.
+- **And the log is not the fallback it is described as.** `simulation-events.ts`
+  says *"an event pushed off the line is still in the log"*. MEASURED, the alerts
+  fold opened by hand at the end of the run:
+
+  ```
+  [act3] alerts section data-collapsed on arrival = true
+  [act3] alerts list while folded: ".hud-alerts__list: not laid out"
+  [act3] alerts list after opening it: ["A riot has broken out — 6 prisoners have
+    stopped taking orders.","Critical","The prison is under control again — no
+    incident is still open.","Info", … four such pairs … ,"Nothing was removed —
+    there is no object on that tile, and none being built there.","Warning"]
+  ```
+
+  Eight rows, four riot/all-clear pairs and the stale removal refusal. **No
+  escape row survived.** `MAX_EVENT_ALERT_ROWS` is 8
+  (`src/ui/simulation-events.ts`), the last escape was at tick 72,611, and the
+  four riots between then and tick 100,404 filled the cap. So a player who
+  notices the population fall and goes looking finds nothing about it — twelve
+  in-game days later.
+
+**This is the one finding in this record that is a straightforward miss rather
+than a product question**, and it is worth saying why it slipped: it is not
+reachable by any assertion. #691's own author noted the sentence had not been
+seen painted and left it to CI, and CI cannot see this — a test that reads the
+DOM after the event sees the all-clear and passes; a test that reads it *during*
+would have to know to look between two message tasks. The instrument that finds
+it is a frame log, and nothing in the repository had one.
+
+**What would change my mind**: a frame log at a different speed. All three
+escapes here were at ×4. At ×1 the two events are still the same *tick*, so the
+arithmetic does not change — but that is a prediction, not a measurement, and
+this pass did not take it.
 
 ### 2d. A weapon: nothing, in the prison where weapons exist
 
@@ -423,6 +515,12 @@ rather than about a bug:
   the first change that makes the distinction reachable.
 - **Not filed, and it is the owner's**: the fix is either a ninth strip item or a
   panel, both layout and copy.
+
+### 2e. What the same mechanism gives the player when the two events are 70 ticks apart
+
+**MEASURED**, §6: assault-opened at 29,151, all-clear at 29,221, and the opening
+sentence held the band for **744 ms** at ×4. The escape pair is **zero** ticks
+apart.
 
 ## 3. #690 measured: four presses per room, uniform, and nothing swallowed
 
@@ -801,10 +899,23 @@ by entity index, and the panel says `4 of 14`.
 - **What would establish the cause**: done — the limit is a constant and the
   order is entity index, both read above, and the projection's docblock names
   paging as the intended answer rather than sorting.
+- **What the badge does when there *is* a tier-3 prisoner: it says so.**
+  MEASURED, act3b's last roster read, after the reviews had raised everybody:
+
+  ```
+  "PRISONERS","4 of 6","Rafal Zielen","Sleeping","Hygiene","High",
+  "Bram Lindqvist","Sleeping","Hygiene","High","Omar Duarte","Idle","Hunger","High",
+  "Samir Gruber"
+  ```
+
+  Three `High` badges where the same panel read `Low, Minimal, Minimal` twenty
+  in-game days earlier. So the surface works; the question is only its size and
+  its order.
 - **What would establish the impact**: whether a prison ever holds a tier-3
-  prisoner outside the first four indices in ordinary play. **UNKNOWN here** —
-  act3b's roster showed `Low`, `Minimal`, `Minimal` and never a `High` while
-  this record was written, so this pass never had a tier-3 row to look for.
+  prisoner *outside* the first four entity indices in ordinary play. This run
+  cannot say, because by the time it had tier-3 prisoners it had **six**, and
+  four of six is most of them. A population of thirty with one raised prisoner is
+  the case that matters and this pass did not reach it. **UNKNOWN.**
 - The status strip publishes `prisonersHighRisk` and does **not** show it. The
   strip's eight items are prisoners, staff, coverage, rooms, incidents,
   contraband, funds and earned-today (`src/ui/hud/projection.ts`). So "how many
@@ -883,17 +994,19 @@ HUD action failed {"actionId":"admit-prisoner","error":{"message":
 
 - **#694's negative balance and its loan.** Never approached; §11 has the
   balances. Both prisons ended richer than they started.
-- **A tier-3 prisoner in the Regime roster's four visible rows.** The roster read
-  `Low, Minimal, Minimal` while act 3 was still below the review boundary, and
-  the run's later roster reads were not captured before this record was written.
-  So §10's *impact* half is genuinely open.
+- **A tier-3 prisoner outside the roster's four visible rows.** Reached the
+  easier half — §10 now quotes three `High` badges — and not the hard half: act 3
+  had six prisoners by the time it had tier-3 ones, so "four of fourteen hides
+  the dangerous one" was never actually tested. A larger population would.
 - **The Rooms tool at a room count where "one extra press per room" compounds.**
   Four rooms; §3 says what forty would need.
 - **Any viewport other than 1440x900.** §8's sweep is one viewport. #690's own
   argument is about 375x812 and this pass did not go there.
-- **The alerts fold as a way back to a lost sentence.** Act 3 opens it at the end
-  of the run; whether the escape sentence is legible *in the list* after the band
-  has moved on is answered by that dump and not by anything above it.
+- **Reached, and the answer is in §2c**: the alerts fold is not a way back. It
+  held eight rows, four riot/all-clear pairs and a stale refusal, and no escape
+  row at all. What this pass did *not* try is opening the fold **immediately**
+  after an escape, which is the only window in which the row could still be
+  there.
 - **A save/restore across an escape.** Not attempted.
 - **Anything about rendering the world.** LFS content was present, and no claim
   here is about a sprite.
@@ -901,7 +1014,9 @@ HUD action failed {"actionId":"admit-prisoner","error":{"message":
 ## 14. Weakest claim, and what would change my mind
 
 **The weakest claim in this record is §3's judgement that four presses per room
-reads as confirmation rather than friction.** Everything else here is a tick, a
+reads as confirmation rather than friction.** (§2c, the escape sentence, is the
+strongest: three escapes, a write log and a frame log, and the sentence in one
+and not the other.) Everything else here is a tick, a
 box, a string or a treasury value; that one is a reading of an experience, taken
 by an agent driving a mouse through a script, which is exactly the population
 whose judgement about friction is least like a player's. The count is solid — 4,
@@ -975,7 +1090,7 @@ to leave alone.
 
 | # | The decision | What the code does today | If left alone |
 | --- | --- | --- | --- |
-| 1 | Should a successful escape's sentence survive the all-clear that lands on the same tick? | `lapse` records the escape (`response-system.ts:620`) and then `reportAllClearIfCalm` (`:625`); the band keeps the newest event only (`simulation-events.ts:356`); the alerts list that holds both starts folded (`hud-state.ts:53`) | The one irreversible thing the prison can tell the player is the one thing the band is least likely to be showing. §2 has the measurement |
+| 1 | Should a successful escape's sentence survive the all-clear that lands on the same tick? **This is the one item that is a miss rather than a product question.** | `lapse` records the escape (`response-system.ts:620`) and then `reportAllClearIfCalm` (`:625`); the band keeps the newest event only (`simulation-events.ts:356`); the alerts list that holds both starts folded (`hud-state.ts:53`) and caps at 8 rows | **Measured: written three times, painted zero times.** The player reads *"A prisoner is trying to break out."* for 7.6 s and then the all-clear, which says the attempt was contained; the log had dropped the row by the time it could be opened. §2c |
 | 2 | Should the money the game spends for the player be reported outside the *Buy* fold — and should the control that reverses it be? | `deliveriesBlock` is the last child of `buyRow` and `buyRow.hidden = true` (`build-panel.ts:1293-1311`); the row and its `Cancel` measure `0x0` | #640 removed the need to open the fold and #693 fixed a refund whose only trigger is inside it. §1 |
 | 3 | Should a discovered contraband item be named, now that a weapon is reachable? | the strip shows `itemsDiscovered` as a bare count (`status-strip-projection.ts:552`); all five `contraband.*.name` keys are authored and `grep -rn "contraband\.weapon\.name" src/ui/` returns nothing | a found weapon and a found phone render as the same character. §2d |
 | 4 | Should `prisonersHighRisk` reach the screen, and should the Regime roster show more than four rows or sort by tier? | the count crosses the protocol and no strip item reads it; `PRISONER_ROSTER_ROW_LIMIT = 4` (`regime-panel.ts:156`) and the projection pages by entity index with no sort | after #681 the tier is the gate on a weapon and on an escape, and the player's view of it is four rows in arrival order. §10 |
