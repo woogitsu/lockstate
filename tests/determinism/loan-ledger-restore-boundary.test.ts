@@ -216,10 +216,9 @@ describe('a negative balance survives a save, and the debt that produced it does
 
     const principal = 4_000;
     expect(book.draw(principal, runtime.kernel.tick), 'the drawdown must succeed').toBe(true);
-    const owed = book.outstandingMinorUnits;
-    expect(owed, 'principal plus the probe fee, and nothing else touches it upward').toBe(
-      principal + book.feeFor(principal),
-    );
+    // Written out rather than taken from `feeFor`, which is the code under
+    // test: 4,000 at the probe's 1,000 basis points is 400.
+    expect(book.outstandingMinorUnits, 'principal plus the probe fee, and nothing else touches it upward').toBe(4_400);
 
     const restored = roundTrip(runtime);
 
