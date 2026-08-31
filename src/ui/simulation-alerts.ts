@@ -1,5 +1,6 @@
 import type { LocalizationKey } from '../content/localization';
 import type { ProtocolFaultCode, RefusalReason, WorkerToMainMessage } from '../simulation/protocol/types';
+import { PROTOCOL_FAULT_CODES } from '../simulation/protocol/types';
 import type { HudAlertViewModel, HudRefusalNoticeViewModel } from './hud/view-model';
 
 /**
@@ -113,6 +114,59 @@ const PROTOCOL_FAULT_LABEL_KEYS: Readonly<Record<ProtocolFaultCode, Localization
   'shutting-down': 'hud.alert.fault.shutting-down',
   'internal-error': 'hud.alert.fault.internal-error',
 };
+
+/**
+ * The sentence this catalogue already ships for a fault an *action* failed
+ * with, found by walking a thrown value.
+ *
+ * ## Why this is here and not beside the thing that throws
+ *
+ * `PROTOCOL_FAULT_LABEL_KEYS` above is the one table in the repository that
+ * says what a fault code means to a player, and it is exhaustive over the
+ * closed twelve-member vocabulary by construction. A second lookup written
+ * anywhere else would be the drift `tests/unit/ui-simulation-alerts.test.ts`
+ * exists to prevent, and the one that drifted would be the one still passing.
+ * So the map stays private and this is the accessor.
+ *
+ * ## Why it walks the `cause` chain
+ *
+ * Because the layers between the worker and a panel wrap rather than
+ * flatten, deliberately. `WorkerSessionHost` raises `WorkerFaultError`
+ * carrying the code; `startFromSnapshot` re-raises it as
+ * `SnapshotRestoreRejectedError` or `SnapshotRestoreFaultError` with the
+ * original as `cause`; `WorkerPerSessionHost.beginSession` wraps a worker
+ * that could not be constructed the same way. Reading only the outermost
+ * value would lose the code on exactly the paths that have one.
+ *
+ * ## Why it duck-types instead of importing the error classes
+ *
+ * A `code` that is a member of `PROTOCOL_FAULT_CODES` is the whole contract,
+ * and it is the contract the protocol declares. Importing
+ * `src/persistence/session/worker-session-host.ts` for an `instanceof` would
+ * make a UI module depend on the persistence seam to read a protocol value,
+ * and would still miss `ProjectionRequestError`, which carries the same codes
+ * from a different module. The closed set is what makes the check safe: an
+ * arbitrary object with a `code` of `'not-found'` matches nothing.
+ *
+ * Returns `undefined` when nothing in the chain declared a protocol fault --
+ * a storage `DOMException`, a reply timeout, a file the browser would not
+ * read. Those carry no code, so there is no catalogue sentence to find and
+ * the caller has to decide what to say instead.
+ */
+export function protocolFaultMessageKeyOf(error: unknown): LocalizationKey | undefined {
+  const codes: readonly string[] = PROTOCOL_FAULT_CODES;
+  // Bounded rather than `while (true)`: a `cause` cycle is possible in
+  // principle and a UI helper must not be the thing that hangs the page.
+  let current: unknown = error;
+  for (let depth = 0; depth < 8 && current !== null && typeof current === 'object'; depth += 1) {
+    const code = (current as { readonly code?: unknown }).code;
+    if (typeof code === 'string' && codes.includes(code)) {
+      return PROTOCOL_FAULT_LABEL_KEYS[code as ProtocolFaultCode];
+    }
+    current = (current as { readonly cause?: unknown }).cause;
+  }
+  return undefined;
+}
 
 /**
  * The two row families this module produces, as prefixes on

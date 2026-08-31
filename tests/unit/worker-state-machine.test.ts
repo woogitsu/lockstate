@@ -8,7 +8,7 @@ import { decodeWorkerToMainMessage } from '../../src/simulation/protocol/decode'
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { procurableMaterial } from '../../src/content/procurement-catalog';
 import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
-import { SIMULATION_PROTOCOL_VERSION } from '../../src/simulation/protocol/types';
+import { SIMULATION_PROTOCOL_VERSION, type MainToWorkerMessage } from '../../src/simulation/protocol/types';
 
 class MockPort implements MessagePortLike {
   public messages: any[] = [];
@@ -91,10 +91,121 @@ test('StateMachine rejects commands before initialize', () => {
     }
   });
   
-  expect(machine.state).toBe('faulted');
+  // **This assertion used to read `expect(machine.state).toBe('faulted')`,
+  // and the refusal it describes is unchanged: the command is still rejected,
+  // still with `not-initialized`, and still without reaching a kernel.** What
+  // changed is what the refusal costs the worker (#680). Spending the worker
+  // on a request that touched no simulation state is what made the first
+  // "New prison" of a page fail `already-initialized` after any panel had
+  // read from the boot worker; `SimulationWorkerStateMachine.fault` documents
+  // `recoverable: true` for exactly this condition, and ADR 0024 §1 settled
+  // the same argument for the decode path.
+  expect(machine.state).toBe('uninitialized');
   expect(port.messages.length).toBe(1);
   expect(port.messages[0].kind).toBe('protocol/error');
   expect(port.messages[0].payload.code).toBe('not-initialized');
+  expect(port.messages[0].payload.recoverable).toBe(true);
+});
+
+/**
+ * Issue #680: a request refused *because there is no simulation yet* must not
+ * spend the worker.
+ *
+ * The page's panel readers are built at boot over the channel, not over a
+ * session (#149), so the very first `.ui-tab` press asks the **boot worker**
+ * -- the one `SimulationWorkerChannel.claimForSession` hands to the first
+ * session -- for a projection it cannot have. Answering that with a
+ * non-recoverable fault moved the worker to `faulted`, and `faulted` is not
+ * `uninitialized`, so `handleInitialize` then refused the player's first
+ * "New prison" with `already-initialized` and the message *"Kernel is already
+ * initialized."* -- about a worker that had no kernel and never had one.
+ *
+ * The rule this asserts is `fault()`'s own: `recoverable` is true "where the
+ * fault rejected a request *without* touching simulation state, so leaving the
+ * worker unusable would strand the session for a failure it did not cause". A
+ * guard that fires *before* any kernel exists cannot have touched one.
+ *
+ * `tests/integration/session-first-create-after-a-panel-read.test.ts` carries
+ * the composition half.
+ */
+describe('a request refused before there is a simulation (#680)', () => {
+  const REFUSED_BEFORE_INITIALIZE: readonly {
+    readonly what: string;
+    readonly code: string;
+    readonly message: MainToWorkerMessage;
+  }[] = [
+    {
+      what: 'a projection read, which is what every tab press fires',
+      code: 'not-initialized',
+      message: {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'projection-1',
+        kind: 'simulation/request-projection',
+        payload: { projectionId: 'hud/prisoner-population' },
+      },
+    },
+    {
+      what: 'a snapshot request',
+      code: 'not-initialized',
+      message: {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'snapshot-1',
+        kind: 'simulation/request-snapshot',
+        payload: { reason: 'manual-save' },
+      },
+    },
+    {
+      what: 'a submitted command',
+      code: 'not-initialized',
+      message: {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'command-1',
+        kind: 'simulation/submit-command',
+        payload: {
+          commandId: 'cmd-1',
+          sequence: 0,
+          executeAtTick: 5,
+          command: { transport: 'structured-clone', schemaId: 'test', schemaVersion: 1, data: null },
+        },
+      },
+    },
+    {
+      what: 'a clock control',
+      code: 'invalid-state',
+      message: {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'clock-1',
+        kind: 'simulation/set-clock',
+        payload: { mode: 'running', speed: 1 },
+      },
+    },
+  ];
+
+  for (const { what, code, message } of REFUSED_BEFORE_INITIALIZE) {
+    test(`${what} is refused, reported as recoverable, and leaves the worker able to start a session`, () => {
+      const port = new MockPort();
+      const machine = new SimulationWorkerStateMachine(port, 'test-build', () => 0);
+
+      machine.handleMessage(message);
+
+      expect(port.messages.map((m) => m.kind)).toEqual(['protocol/error']);
+      expect(port.messages[0].payload.code).toBe(code);
+      // The half that costs the player their first prison: a fault the worker
+      // survives, rather than one that spends it.
+      expect(port.messages[0].payload.recoverable).toBe(true);
+      expect(machine.state).toBe('uninitialized');
+
+      machine.handleMessage({
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'init-1',
+        kind: 'simulation/initialize',
+        payload: { sessionId: 'session-1', source: { kind: 'new', masterSeed: 1234 } },
+      });
+
+      expect(machine.state).toBe('paused');
+      expect(port.messages[1].kind).toBe('simulation/ready');
+    });
+  }
 });
 
 test('StateMachine handles clock controls', () => {

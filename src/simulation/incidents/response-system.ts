@@ -55,6 +55,19 @@ function sameTile(a: TilePosition, b: TilePosition): boolean {
 }
 
 /**
+ * Who the prison just lost, as the departure itself reports them
+ * ([#683](https://github.com/matmaxalez/lockstate/issues/683)).
+ *
+ * The return of `IncidentResponseSystem`'s `onPrisonerEscaped` port. Carries
+ * only the name, because the entity id is already what the caller passed in;
+ * absent for a session wired without an identity registry, exactly as
+ * `PrisonerRosterRowViewModel.name` is absent for the same session.
+ */
+export interface EscapedPrisoner {
+  readonly name?: { readonly givenName: string; readonly familyName: string };
+}
+
+/**
  * Issue #28's response half: dispatches real guards, moves them through
  * the real `NavigationSystem` (never teleporting into an incident), drives
  * the incident's validated lifecycle, applies a real `'lockdown'` control
@@ -158,10 +171,26 @@ export class IncidentResponseSystem implements SystemRegistration {
      * reason `DisciplinaryEvidenceSource` is a port one module over:
      * `PrisonerOperationsRuntime` is constructed *before* this system in
      * `new-session.ts`, so a hard dependency would invert the order. Defaults
-     * to doing nothing, which is right for a fixture with no prisoner slice --
-     * and means every existing test of this system is unchanged.
+     * to naming nobody, which is right for a fixture with no prisoner slice.
+     *
+     * **It answers with who left, and that return value is not a convenience
+     * (#683).** The prison now says a sentence naming the escapee, and the
+     * name is readable for exactly as long as the prisoner exists:
+     * `releasePrisoner` calls `identity.release('prisoner', entityId)` on its
+     * way through. So the one piece of code that may read the name is the one
+     * that destroys it, and this port is that code. A separate name-resolving
+     * port called beside this one would work only while somebody remembered
+     * which of the two lines came first -- and would degrade silently to
+     * *"Prisoner 3 broke out"* the day they were swapped. Returning it makes
+     * the order impossible to get wrong.
+     *
+     * `undefined` means **nobody left**: `releasePrisoner` answers `false` for
+     * an entity that is not a live prisoner, and this system does not say the
+     * prison lost somebody it did not lose. An empty object means they left
+     * and the session mints no names, which is the case
+     * `hud.regime.roster-unnamed` covers for a roster row.
      */
-    private readonly onPrisonerEscaped: (entityId: EntityId, tick: number) => void = () => {},
+    private readonly onPrisonerEscaped: (entityId: EntityId, tick: number) => EscapedPrisoner | undefined = () => undefined,
     /**
      * What an assault costs the prisoner it was scored against (issue #80,
      * ADR 00XX -- number not yet assigned). Called once, for `'assault'`
@@ -548,6 +577,22 @@ export class IncidentResponseSystem implements SystemRegistration {
     const outcome: IncidentOutcome = {
       injuredEntityIds: [...incident.participantIds].sort((a, b) => a - b),
       propertyDamage: Math.min(10, incident.severity),
+      // **This line is the whole of what the player is told, and a sentence
+      // depends on it (#683).** `lapse` is the path an incident takes when it
+      // times out without sufficient responders, and it is the *only* route to
+      // `escaped: true` -- `advanceResponse`'s `'resolved'` branch, the other
+      // and only other terminal transition, writes `false`. That is why the
+      // owner's approved sentence can assert a cause rather than only a fact:
+      // "{name} broke out -- no guard reached them in time."
+      // (`hud.alert.event.incidents.escape-succeeded`).
+      //
+      // **So if a second route to `escaped: true` ever appears -- a tunnel
+      // that completes, an escape during a transfer, a resolved response that
+      // still loses somebody -- that sentence becomes a claim the code does
+      // not keep**, which `AGENTS.md` reserves to the owner. Whoever writes
+      // that route owes the owner a new sentence before it ships, not
+      // afterwards. Recorded here rather than only in the catalogue because
+      // this is the line such a change would be written next to.
       escaped: incident.type === 'escape-attempt',
     };
     const hadRecord = this.responses.has(incident.id);
@@ -564,7 +609,16 @@ export class IncidentResponseSystem implements SystemRegistration {
     // `injuredEntityIds`: the two are the same list here, and the first is the
     // one that means "was in this incident".
     if (outcome.escaped) {
-      for (const entityId of incident.participantIds) this.onPrisonerEscaped(entityId, tick);
+      for (const entityId of incident.participantIds) {
+        // The departure first, then the sentence about it, and the return
+        // value is why they are in that order: the escapee's name is readable
+        // only until `releasePrisoner` releases it, so the port that performs
+        // the departure is what hands it back. An `undefined` answer means
+        // nobody actually left and the prison says nothing (#683).
+        const escapee = this.onPrisonerEscaped(entityId, tick);
+        if (escapee === undefined) continue;
+        this.events.recordEscapeSucceeded({ entityId, ...(escapee.name === undefined ? {} : { name: escapee.name }) }, tick);
+      }
     }
 
     this.adjudicateAssaultIfAny(incident, tick);

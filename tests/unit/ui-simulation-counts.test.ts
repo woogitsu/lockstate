@@ -59,6 +59,13 @@ const COUNTS = {
   // exactly where an adapter that read the wrong one would still look
   // plausible.
   stateIncomeAccruedTodayMinorUnits: 9_300,
+  // What one in-game day of the roster costs (issue #639 ruling 2). A third
+  // figure in the same minor units and deliberately unlike the two above it in
+  // both directions -- it is neither a fraction nor a multiple of either -- for
+  // the reason the income line gives: three money fields on one payload are
+  // exactly where an adapter that read the wrong one still looks plausible.
+  // 4,800 is issue #636's own prison, sixty guards at the catalogue's 80.
+  dailyWageBillMinorUnits: 4_800,
 } as const;
 
 function statusCounts(counts: Record<string, number | string | undefined> = { ...COUNTS }): WorkerToMainMessage {
@@ -107,6 +114,13 @@ describe('the HUD counts are read from the worker', () => {
       // happens to hold would be a second authority on what the prison has
       // earned (#29).
       stateIncomeAccruedTodayMinorUnits: 9_300,
+      // Straight through, on the income line's terms and for its reason: which
+      // end of an authored wage band is money owed is a simulation fact
+      // (`src/simulation/economy/wages.ts`), so a main thread that summed the
+      // roster itself would be a second authority on what the prison pays.
+      // Published since ADR 0042 step 3 and read by nothing in `src/ui/` until
+      // issue #639 ruling 2.
+      dailyWageBillMinorUnits: 4_800,
     });
   });
 
@@ -178,7 +192,27 @@ describe('the HUD counts are read from the worker', () => {
       activeIncidentType: undefined,
     };
 
-    expect(hudCountsFromWorkerMessage(statusCounts(empty))).toEqual(EMPTY_HUD_VIEW_MODEL.counts);
+    /*
+     * **Not `EMPTY_HUD_VIEW_MODEL.counts` on its own**, since issue #639
+     * ruling 2, and the difference is the point rather than an accommodation.
+     *
+     * `dailyWageBillMinorUnits` is optional on `HudCountsViewModel`, and its
+     * two states are different facts: **absent** is "no session has said
+     * anything", which is what `EMPTY_HUD_VIEW_MODEL` holds and what a first
+     * paint and a stopped session get; **`0`** is a running prison that has
+     * published a payroll of nothing. The Staff panel draws those differently
+     * -- a header badge stating `0` against no badge at all -- so a translator
+     * that dropped the published zero to match the empty model would erase the
+     * distinction at the one moment it is observable.
+     *
+     * Spelled out here rather than folded into `EMPTY_HUD_VIEW_MODEL`, so that
+     * moving the field into that constant fails this case instead of passing
+     * silently.
+     */
+    expect(hudCountsFromWorkerMessage(statusCounts(empty))).toEqual({
+      ...EMPTY_HUD_VIEW_MODEL.counts,
+      dailyWageBillMinorUnits: 0,
+    });
   });
 
   it('forgets the counts when the session stops', () => {

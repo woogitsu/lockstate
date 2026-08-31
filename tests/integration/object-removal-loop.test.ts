@@ -233,17 +233,29 @@ describe('a removed object takes its capacity and its capability with it', () =>
     expect(captureSessionSnapshot(runtime).world.chunks.length).toBe(chunksBefore);
   });
 
-  it('cancels a placement still being built, so a tile under a stalled order is not claimed for the session', () => {
+  it('cancels a placement still being built, so a tile under an unfinished order is not claimed for the session', () => {
     const runtime = createNewSimulationRuntime(SEED);
     wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
     submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
-    // No plank bought, so the order waits in `materials-pending` for ever. This
-    // is the trap: nothing stands on the tile, so a removal that only looked at
-    // standing objects would answer `nothing-to-remove`, and `PlaceObject`
-    // refuses `tile-occupied` against the footprints of orders in flight -- so
-    // the tile would be unusable and unrecoverable without a keyboard.
+    /*
+     * **The stall this used to rely on no longer exists, and the case is the
+     * same one.** It read *"No plank bought, so the order waits in
+     * `materials-pending` for ever"* -- true until ADR 0017 decision 7 was
+     * implemented (#627), which has the order buy its own plank at the press.
+     * The order therefore waits for a *delivery* now, for
+     * `PROCUREMENT_DELIVERY_DELAY_TICKS`, and then builds.
+     *
+     * The trap being guarded is untouched by that: nothing stands on the tile
+     * while the order is in flight, so a removal that only looked at standing
+     * objects would answer `nothing-to-remove`, and `PlaceObject` refuses
+     * `tile-occupied` against the footprints of orders in flight -- so the tile
+     * would be unusable and unrecoverable without a keyboard. What changes is
+     * *when* the window is open, so the measurements below happen inside it
+     * rather than at an arbitrary tick 200 that used to be safe because the
+     * window never closed.
+     */
     submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
-    stepTo(runtime, 200);
+    stepTo(runtime, 20);
     expect(runtime.construction.getOrder('bed-1')?.state).toBe('materials-pending');
     expect(runtime.placedObjects.size).toBe(0);
 
@@ -256,11 +268,14 @@ describe('a removed object takes its capacity and its capability with it', () =>
     submit(runtime, 'place-again', packCommand({ type: 'PlaceObject', orderId: 'bed-2', definitionId: 'bed-wooden', ...BED_TILE }));
     expect(runtime.refusals.count).toBe(0);
     // One `ConstructionSystem` cycle on, so the new order has been through
-    // approval and is waiting on the same empty container the first one was --
-    // which is the state that proves the tile, and not the money, was the thing
-    // the removal freed.
-    stepTo(runtime, 240);
+    // approval and is waiting on its own delivery -- which is the state that
+    // proves the tile, and not the money, was the thing the removal freed. The
+    // second order buys nothing: the first order's plank is still in flight and
+    // the deficit nets it off, which is why the balance is asserted too.
+    const balanceAfterOnePlank = runtime.treasury.balanceMinorUnits;
+    stepTo(runtime, 60);
     expect(runtime.construction.getOrder('bed-2')?.state).toBe('materials-pending');
+    expect(runtime.treasury.balanceMinorUnits, 'a re-placed order must not buy a second plank').toBe(balanceAfterOnePlank);
   });
 
   it('gives back the materials a cancelled order had allocated, and does not refund a built object', () => {

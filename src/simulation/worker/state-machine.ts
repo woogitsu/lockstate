@@ -170,6 +170,44 @@ function rejectedSnapshotFault(requestMessageId: string): { readonly replyTo: st
 }
 
 /**
+ * Why every `not-initialized` guard reports a fault this worker survives.
+ *
+ * A guard that fires because there is **no kernel** cannot have touched
+ * simulation state: it is the first line of its handler and the runtime does
+ * not exist yet. That is the condition `fault()` documents `recoverable: true`
+ * for -- *"a caller passes true only where the fault rejected a request
+ * without touching simulation state, so leaving the worker unusable would
+ * strand the session for a failure it did not cause"* -- and the same argument
+ * ADR 0024 §1 accepted for a message that failed to decode: *"There is nothing
+ * half-applied to protect and nothing to fail closed against."*
+ *
+ * **Issue #680 is what happens when it is taken by omission instead.** The
+ * page's panel readers are built once at boot, over the channel rather than
+ * over a session, because they have to keep working across a worker swap
+ * (#149). So the very first `.ui-tab` a player presses asks the **boot
+ * worker** -- the one `SimulationWorkerChannel.claimForSession` hands to the
+ * first session -- for a projection, `handleRequestProjection` refuses it, and
+ * with the default `recoverable: false` that refusal moved the worker to
+ * `faulted`. `faulted` is not `uninitialized`, so `handleInitialize`'s first
+ * line then refused the player's first "New prison" with `already-initialized`
+ * and the message *"Kernel is already initialized."* -- said about a worker
+ * that had no kernel and never had one. The second press worked because the
+ * first had already *claimed* that worker, so the channel threw it away and
+ * built a fresh one. Measured on five of five tabs.
+ *
+ * Named rather than written as a bare `true` at each of the three sites,
+ * because the three are one decision and a reader who changes one should see
+ * the other two.
+ *
+ * This is deliberately **not** extended to `already-initialized` or to
+ * `internal-error`. ADR 0024 §1 names both as real faults and the reason holds:
+ * `internal-error` follows a caught exception that may have left a system
+ * part-way through its work, and `already-initialized` is refused *because*
+ * there is authoritative state to protect.
+ */
+const RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND = true;
+
+/**
  * Which fault code each kernel refusal reports.
  *
  * A `Record` over `CommandRejectionKind` rather than a `switch` with a
@@ -986,7 +1024,14 @@ export class SimulationWorkerStateMachine {
 
   private handleSetClock(msg: Extract<MainToWorkerMessage, { kind: 'simulation/set-clock' }>): void {
     if (this._state !== 'paused' && this._state !== 'running') {
-      return this.fault('invalid-state', 'Cannot set clock in current state.', { replyTo: msg.messageId });
+      // Recoverable, for the reason stated once at the three `not-initialized`
+      // guards and applying unchanged here: no clock was set, so no simulation
+      // state was touched, and there is nothing half-applied to fail closed
+      // against.
+      return this.fault('invalid-state', 'Cannot set clock in current state.', {
+        replyTo: msg.messageId,
+        recoverable: true,
+      });
     }
 
     const now = this.performanceNow();
@@ -1010,7 +1055,10 @@ export class SimulationWorkerStateMachine {
 
   private handleSubmitCommand(msg: Extract<MainToWorkerMessage, { kind: 'simulation/submit-command' }>): void {
     if (!this._kernel) {
-      return this.fault('not-initialized', 'Kernel is not initialized.', { replyTo: msg.messageId });
+      return this.fault('not-initialized', 'Kernel is not initialized.', {
+        replyTo: msg.messageId,
+        recoverable: RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND,
+      });
     }
     if (this._state === 'shutting-down' || this._state === 'faulted') {
       return; // Ignore commands during shutdown
@@ -1116,7 +1164,10 @@ export class SimulationWorkerStateMachine {
    */
   private handleRequestSnapshot(msg: Extract<MainToWorkerMessage, { kind: 'simulation/request-snapshot' }>): void {
     if (!this._kernel || !this._runtime) {
-      return this.fault('not-initialized', 'Kernel is not initialized.', { replyTo: msg.messageId });
+      return this.fault('not-initialized', 'Kernel is not initialized.', {
+        replyTo: msg.messageId,
+        recoverable: RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND,
+      });
     }
 
     const bundle = captureSessionSnapshot(this._runtime);
@@ -1204,7 +1255,10 @@ export class SimulationWorkerStateMachine {
    */
   private handleRequestProjection(msg: Extract<MainToWorkerMessage, { kind: 'simulation/request-projection' }>): void {
     if (!this._kernel || !this._runtime) {
-      return this.fault('not-initialized', 'Kernel is not initialized.', { replyTo: msg.messageId });
+      return this.fault('not-initialized', 'Kernel is not initialized.', {
+        replyTo: msg.messageId,
+        recoverable: RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND,
+      });
     }
 
     const { projectionId, offset, limit, target } = msg.payload;

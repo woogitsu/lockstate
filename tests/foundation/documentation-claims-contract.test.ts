@@ -259,17 +259,30 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
      * asked for, and the reason this list is an enumeration rather than a cap
      * of one.
      *
-     * A third entry is still a real event and still has to pass through here.
-     * ADR 0017 decision 3 names grants and prison labour as the *secondary*
-     * lines, and neither exists; the degradation ladder of decision 8 debits
-     * rather than credits.
+     * **The third entry has now arrived, and it is not an income line.**
+     * `LoanBook.draw` (ADR 0075 decision 2) hands over a principal, and that
+     * decision requires the difference to stay visible: *"a ledger where the
+     * operating net is negative while cash rises is a loan masking a deficit,
+     * and the player should be able to see the difference."* So the
+     * allow-list grows by one and gap 21 was rewritten in the same change to
+     * say which of the three are income and which are not -- the same
+     * treatment `StateIncomeSystem` got, and the reason this list is an
+     * enumeration rather than a cap of two.
+     *
+     * A fourth entry is still a real event and still has to pass through
+     * here. ADR 0017 decision 3 names grants and prison labour as the
+     * *secondary* income lines and neither exists; ADR 0075 decision 1's
+     * threshold grants would be the first of them, and a grant *is* an inflow
+     * a loan takes its share of, so whoever adds one routes it through
+     * `LoanBook.divert` as well as through here.
      */
     const crediting = await sourceFilesMatching(/\.\s*credit\s*\(/u);
     expect(
       crediting,
-      'something other than ProcurementSystem.cancel and StateIncomeSystem now credits the treasury. If that is a new income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change',
+      'something other than ProcurementSystem.cancel, StateIncomeSystem and LoanBook.draw now credits the treasury. If that is a new income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change -- and route it through LoanBook.divert, because ADR 0075 decision 2 repays a loan out of every positive inflow',
     ).toEqual([
       path.join('src', 'simulation', 'economy', 'income.ts'),
+      path.join('src', 'simulation', 'economy', 'loans.ts'),
       path.join('src', 'simulation', 'economy', 'procurement.ts'),
     ]);
   });
@@ -328,6 +341,58 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
     expect(
       denials.map(([file, sentence]) => `${file}: ${sentence.trim()}`),
       'this sentence denies that anything credits the treasury. Since #29 that is false however it is qualified: the state pays per occupied place once a day, so an income line exists and a refund is not the only credit. Delete the claim rather than adding "on a schedule" to it',
+    ).toEqual([]);
+  });
+
+  it('does not claim in prose that nothing charges the treasury', async () => {
+    /**
+     * **The mirror of the assertion above, and it is here because the gate
+     * above could not see its own reflection.**
+     *
+     * That one pins the *income* direction: no module may write that nothing
+     * credits the treasury. The identical claim exists with the sign flipped --
+     * that nothing takes money *out* -- and until this check it was ungated and
+     * false. `src/ui/hud/projection.ts` reasoned, in the comment that decides
+     * the Funds chip has no warning tone, that "the state now pays in once a
+     * day and nothing at all is charged, so a warning here would describe a
+     * slope that runs the wrong way."
+     *
+     * That was true when it was written, on 2026-08-25 in `4f711d5` (#311),
+     * and it has since been falsified twice, in the two ways money can leave a
+     * treasury:
+     *
+     * - **A charge the player cannot decline.** `916ac46` (#455, 2026-08-28)
+     *   made wages recurring: `PayrollSystem` bills every employee's
+     *   `wageBand.minPerDay` at each in-game day boundary.
+     * - **A charge the player makes without meaning to.** `a87b0d3` (#640)
+     *   made a `PlaceBuildOrder` buy its own materials at the press, so one
+     *   drag along a tile edge takes 80 per segment out of the balance.
+     *
+     * `git merge-base --is-ancestor 4f711d5 916ac46` holds, so the order is
+     * settled rather than inferred: the sentence predates the first thing that
+     * made it false by three days.
+     *
+     * **What this gate is not.** It does not say the Funds chip should have a
+     * tone. Whether a balance is "low", and at what number, is a threshold, and
+     * ADR 0017 decision 5 reserves every such value to #29. It says only that a
+     * module may not *reason from* an absolute that the code contradicts --
+     * which is the same thing the assertion above says, and the reason that one
+     * exists is that the phrase had by then been written wrong twice.
+     */
+    const denials = await sourceProseMatching(/\bnothing\s+(?:\w+\s+){0,3}(?:charges|is\s+charged|charged)\b[^.]*/giu);
+
+    // Non-vacuity first, exactly as the assertion above does it and for the
+    // same reason: a scan handed nothing reports no violations and reads
+    // identically to compliance.
+    const CONTROL = 'The state pays in once a day and nothing at all is charged.';
+    expect(
+      CONTROL.match(/\bnothing\s+(?:\w+\s+){0,3}(?:charges|is\s+charged|charged)\b[^.]*/giu),
+      'the pattern no longer recognises the sentence this check exists to catch, so its empty result below proves nothing',
+    ).not.toBeNull();
+
+    expect(
+      denials.map(([file, sentence]) => `${file}: ${sentence.trim()}`),
+      'this sentence denies that anything charges the treasury. Two changes have falsified it: PayrollSystem bills a wage at every in-game day boundary (#455), and a build order buys its own materials at the press (#640). Delete the claim rather than qualifying it, and do not replace it with a threshold -- what counts as a low balance is #29\'s under ADR 0017 decision 5',
     ).toEqual([]);
   });
 
