@@ -103,8 +103,20 @@ const lineSet = (visibleText: string): ReadonlySet<string> =>
 const newLines = (baseline: ReadonlySet<string>, visibleText: string): readonly string[] =>
   [...lineSet(visibleText)].filter((line) => !baseline.has(line));
 
-/** The refusal ADR 0075 predicts, and the only sentence the descent ever produces. */
-const FUNDS_SENTENCE = /not enough funds/i;
+/**
+ * The refusal ADR 0075 predicts, and the only sentence the descent ever
+ * produces.
+ *
+ * **This read `/not enough funds/i` until the owner's ruling 23 of
+ * 2026-08-31**, which gave `hud.alert.refusal.purchase.insufficient-funds` the
+ * host's words -- *"Nothing was bought — that would go past what the state will
+ * carry."* -- and took the word "funds" out of the sentence entirely. The old
+ * alternative is kept rather than replaced so that this instrument still reads
+ * a log or a branch cut before that ruling; a probe that silently stopped
+ * matching would report "the descent produced no money refusal", which is the
+ * opposite of what happened.
+ */
+const FUNDS_SENTENCE = /not enough funds|past what the state will carry/i;
 
 interface HudDump {
   readonly visibleText: string;

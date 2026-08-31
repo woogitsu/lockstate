@@ -958,6 +958,21 @@ export const HUD_MESSAGE_KEY = {
    * authored no replacement for those two, so they are unchanged; the two sit on
    * opposite sides of `sender.submit`, so one press produces exactly one of
    * them.
+   *
+   * **The last part of that paragraph is past tense as of the owner's ruling 23
+   * of the same day, and the rest of it still holds.** Ruling 23 -- *"Te same
+   * słowa co host"* -- gave those two worker keys these two sentences verbatim,
+   * so the alerts-list vocabulary no longer says "there are not enough funds"
+   * for a refusal that is the floor. What is unchanged is the *shape*: they are
+   * still separate keys in a separate namespace, still chosen by
+   * `REFUSAL_LABEL_KEYS` from a `RefusalReason` rather than by
+   * `refusalMessageKey` from an `actionId`, and one press still produces
+   * exactly one of the four. The two directions are marked rather than
+   * overwritten because the reason ruling 18 left them alone -- new
+   * player-facing copy is the owner's (`AGENTS.md`) -- is exactly why ruling 23
+   * had to be the thing that changed them.
+   * `tests/unit/ui-simulation-alerts.test.ts` pins the equality of text, which
+   * is what keeps the four in step now that no key is shared.
    */
   refusalPurchaseMaterialsPastFloor: 'hud.refusal.purchase-materials-past-floor',
   refusalHireStaffPastFloor: 'hud.refusal.hire-staff-past-floor',

@@ -9,6 +9,7 @@ import {
   type WorkerToMainMessage,
 } from '../../src/simulation/protocol/types';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
+import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from '../../src/ui/simulation-alerts';
 
 /**
@@ -158,6 +159,43 @@ describe('what the player is told is a key, and the key is real', () => {
       expect(text.trim().length).toBeGreaterThan(0);
     }
     expect(missing).toEqual([]);
+  });
+
+  /*
+   * **The owner's ruling 23 of 2026-08-31: the worker says the same words as
+   * the host.** One refusal is decided on either side of `sender.submit` --
+   * `src/main.ts` checks a purchase and a hire against the balance the worker
+   * last published and throws `HostRefusalError` instead of submitting, and a
+   * charge that check let through is refused a tick later by `Treasury.spend`
+   * and arrives here. Both land on the *same* `.hud__refusal` band
+   * (`applySimulationRefusal` in `src/ui/hud/hud.ts` arbitrates one line
+   * between the two producers), so two wordings for one fact is a difference
+   * the player reads as a difference in what happened.
+   *
+   * Pinned as an equality of **text** and not of key, because they are four
+   * keys on purpose -- see `src/content/default-locale-en.ts` for why the
+   * worker keys are not made to reference the host's -- and an equality of
+   * text is then the only thing that keeps the four in step when one is
+   * edited.
+   */
+  it("says the host's words for the refusal both sides of the submit can decide (ruling 23)", () => {
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const alertSentence = (reason: RefusalReason): string =>
+      localizer.format(
+        String(hudAlertsFromWorkerMessage(publication({ sequence: 1, tick: 1, reason }))?.[0]?.labelKey),
+      );
+
+    expect(alertSentence('hire.insufficient-funds')).toBe(
+      localizer.format(HUD_MESSAGE_KEY.refusalHireStaffPastFloor),
+    );
+    expect(alertSentence('purchase.insufficient-funds')).toBe(
+      localizer.format(HUD_MESSAGE_KEY.refusalPurchaseMaterialsPastFloor),
+    );
+
+    // And still not each other's. The namespace exists so that somebody who
+    // pressed Hire is not sent to the Build panel to look for materials they
+    // never ordered, and saying the host's words must not collapse that.
+    expect(alertSentence('hire.insufficient-funds')).not.toBe(alertSentence('purchase.insufficient-funds'));
   });
 
   it('carries no simulation text and no reason id into the view model', () => {

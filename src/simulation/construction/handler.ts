@@ -135,6 +135,13 @@ export function createConstructionCommandHandler(
  * this change authors **no player-facing string**, which `AGENTS.md` reserves
  * to the owner.
  *
+ * **That sentence is not the shipped one any more.** The owner's ruling 23 of
+ * 2026-08-31 replaced it with *"Nothing was bought — that would go past what
+ * the state will carry."*, the host's own words for the same refusal. The
+ * argument above is unaffected and is quoted as it stood: the point was that
+ * this route reuses whatever `purchase.insufficient-funds` says rather than
+ * authoring a string of its own, and it still does.
+ *
  * The namespace argument in `src/simulation/protocol/types.ts` is what makes
  * that sound rather than convenient: the namespaces exist so that "somebody who
  * pressed Cancel on a delivery must not read that the materials were not
@@ -150,7 +157,7 @@ export function createConstructionCommandHandler(
  *
  * **AND SINCE #703 RULING 9 THE SHIPPED SENTENCE IS PARTLY FALSE, WHICH IS
  * WHAT IS NOW OWED RATHER THAN WHAT WOULD MERELY SAY MORE.** The English text
- * behind `purchase.insufficient-funds` is *"The materials were not ordered —
+ * behind `purchase.insufficient-funds` was *"The materials were not ordered —
  * there are not enough funds."* (`src/content/default-locale-en.ts`), and it
  * was true word for word while a pass bought the whole per-item lump or none of
  * it. A pass now funds as many whole build orders as the balance covers, so the
@@ -158,6 +165,16 @@ export function createConstructionCommandHandler(
  * not* -- and the first clause of that sentence denies the half that happened.
  * The money left the treasury, which is precisely why ADR 0081 Decision 3 calls
  * telling the player *"a precondition rather than a nicety"*.
+ *
+ * **Ruling 23 changed the sentence and did not close this**, which is worth
+ * saying explicitly rather than leaving to be re-discovered. It now reads
+ * *"Nothing was bought — that would go past what the state will carry."*, so
+ * the *reason* clause became true of this route as well -- `unfunded` is
+ * populated behind `Treasury.canAfford` and nowhere else, and every non-money
+ * refusal goes to `unprocurable` instead -- while the *outcome* clause is
+ * denying the same half it denied before, in the same way and for the same
+ * reason. The three ways out below are unchanged and so is the open question
+ * they end at.
  *
  * **Left as it is, deliberately, and named here rather than patched around.**
  * The three ways out are all worse or not this change's:

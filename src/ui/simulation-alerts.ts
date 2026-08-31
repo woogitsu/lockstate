@@ -253,6 +253,18 @@ const FAULT_ROW_PREFIX = 'fault-';
  * `hire.insufficient-funds` and `purchase.insufficient-funds` are the fourth
  * (ADR 0025): the treasury refuses both, and only the command says which panel
  * the player should be looking at.
+ *
+ * **Those two now resolve to the host's own sentences** -- the owner's ruling
+ * 23 of 2026-08-31, *"Te same słowa co host"*. One refusal is decided on either
+ * side of `sender.submit` and both land on the same `.hud__refusal` band, so a
+ * charge the standing overdraft cannot carry says the same thing whichever side
+ * caught it. They stay two rows here rather than becoming references to
+ * `hud.refusal.hire-staff-past-floor` and
+ * `hud.refusal.purchase-materials-past-floor`, because this table's contract is
+ * one authored `hud.alert.refusal.*` key per `RefusalReason` and the
+ * `hud.refusal.*` namespace belongs to a control on this thread, not to the
+ * wire -- and because the fourth-instance rule above still applies to them: the
+ * two sentences share their tail and differ in what did not happen.
  */
 export function hudAlertsFromWorkerMessage(
   message: WorkerToMainMessage,

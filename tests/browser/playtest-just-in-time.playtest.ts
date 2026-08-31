@@ -533,7 +533,15 @@ test('act 3: how much wall 25,000 buys, and what the game says when it runs out'
   const lastRow = Math.floor((900 - origin.originY) / TILE) - 1;
   log(act, `visible tile window: columns ${firstColumn}..${lastColumn}, rows ${firstRow}..${lastRow}`);
 
-  const FUNDS_SENTENCE = /not enough funds/i;
+  /*
+   * **`/not enough funds/i` until the owner's ruling 23 of 2026-08-31**, which
+   * gave `hud.alert.refusal.purchase.insufficient-funds` the host's words --
+   * *"Nothing was bought — that would go past what the state will carry."* --
+   * and took the word "funds" out of it. Both alternatives, so this instrument
+   * still reads a branch or a log from before the ruling instead of reporting
+   * that the band never named money.
+   */
+  const FUNDS_SENTENCE = /not enough funds|past what the state will carry/i;
   let ordered = 0;
   let fundsRefusalAtSegment = -1;
   let fundsRefusalText = '';

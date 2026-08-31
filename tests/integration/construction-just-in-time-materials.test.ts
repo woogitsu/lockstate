@@ -431,7 +431,9 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
     /*
      * The second half of #640's playtest, and it is worse than that pass could
      * see from outside. It measured the band saying *"The materials were not
-     * ordered — there are not enough funds."* unchanged for four minutes while
+     * ordered — there are not enough funds."* -- the sentence this key carried
+     * until the owner's ruling 23 of 2026-08-31, quoted as the playtest
+     * recorded it -- unchanged for four minutes while
      * eighty-one walls went up behind it, and named the cause:
      * `ConstructionSystem.update` called `procureQueuedMaterials` and threw the
      * report away, so only the two press paths -- `construction/handler.ts` and
