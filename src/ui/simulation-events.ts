@@ -234,6 +234,42 @@ const EVENT_ROW_PREFIX = 'event-';
  * cadence produces, and nobody has run that. Recorded as open rather than
  * defended, because a cap justified by reasoning that has been withdrawn twice
  * is a cap nobody is checking.
+ *
+ * **THAT MEASUREMENT HAS NOW BEEN RUN, ON 2026-08-31, AND IT ANSWERS THE
+ * QUESTION BY MOVING IT.** Prisons were driven to 103 and 289 residents through
+ * real commands and every event drained per tick. The discharge rate is
+ * **population / 52 per in-game day** -- 52 because a sentence is drawn
+ * uniformly over `MIN_SENTENCE_DAYS` 14 to `MAX_SENTENCE_DAYS` 90 and the mean
+ * of that range is 52, which is arithmetic rather than a fit. Measured 1.31 a
+ * day while a population climbed past 103, and 4.76 a day climbing to 289.
+ *
+ * **So the paragraph below is refuted: the incident producers are NOT the
+ * fastest thing on this channel.** They are capped by their quiet periods at
+ * roughly 1.2 openings a day whatever the population, while discharges scale
+ * with it and pass them at about 62 residents. In the 289-resident prison the
+ * severity mix was **danger 14.5 %, warning 0.3 %, info 85.3 %** -- five rows
+ * in six are a discharge or an all-clear.
+ *
+ * **And that is why the cap is not what was wrong.** A well-run
+ * eight-prisoner prison produced **one row in twenty in-game days**, so the cap
+ * never binds where a player actually is; and where it does bind, what it
+ * evicted was the wrong row. Measured worst case in the 289-resident prison
+ * under the old evict-oldest rule, an escape row survived **1,340 ticks -- 67
+ * seconds at x1, 17 at x4.** Raising the cap is the obvious answer and it is
+ * the weaker one: cap 20 with the age rule gives a 4,500-tick worst case, while
+ * **cap 8 evicting the least severe first gives 23,390** -- 2.5x better on the
+ * median than cap 24 and 4.8x on the worst case, at no cost in screen height.
+ *
+ * **A single tick cannot evict an escape at all, and that was checked rather
+ * than assumed.** Payday runs at `tick % 2400 === 2399`, and 2,399 is not
+ * divisible by 20, 10 or 50, so a wages row never shares a tick with a
+ * discharge check, a trigger pass or a response pass. A trigger pass skips a
+ * sector that already has an open incident, so a tick carries an opening or a
+ * closing and never both. Measured maximum on one tick across 2,433 events:
+ * **two.** The constructible ceiling is three. So the escape row is always the
+ * newest of its tick, and the rule below only ever reaches older rows.
+ *
+ * The cap therefore stays at eight, and what changed is what it drops.
  * `DISCHARGE_CHECK_INTERVAL_TICKS` is how often anybody can leave. A
  * prison admitting steadily therefore produces discharge events on the order
  * of one per admission cohort rather than one per prisoner -- the aggregation
@@ -263,6 +299,19 @@ const EVENT_ROW_PREFIX = 'event-';
  * the player must act on *now* is on the line above the list, not in it.
  */
 export const MAX_EVENT_ALERT_ROWS = 8;
+
+/**
+ * Which row the cap sacrifices first: the least severe.
+ *
+ * Lower evicts earlier. Written out rather than derived from `HudSeverity`'s
+ * union order, so that reordering that type cannot silently re-rank what the
+ * player loses.
+ */
+const SEVERITY_EVICTION_ORDER: Readonly<Record<HudSeverity, number>> = {
+  info: 0,
+  warning: 1,
+  danger: 2,
+};
 
 /**
  * Turns what the prison just did into the rows the HUD's alerts list paints.
@@ -326,9 +375,38 @@ export function hudEventAlertsFromWorkerMessage(
    * So this filters in place: every surviving row keeps its index relative to
    * the others, and the new event goes on the end.
    */
-  const eventIds = next.filter((existing) => existing.id.startsWith(EVENT_ROW_PREFIX)).map((existing) => existing.id);
-  if (eventIds.length <= MAX_EVENT_ALERT_ROWS) return next;
-  const dropped = new Set(eventIds.slice(0, eventIds.length - MAX_EVENT_ALERT_ROWS));
+  const eventRows = next.filter((existing) => existing.id.startsWith(EVENT_ROW_PREFIX));
+  if (eventRows.length <= MAX_EVENT_ALERT_ROWS) return next;
+
+  /*
+   * **The least severe rows go first, and the oldest within a severity band.**
+   * The owner's ruling 11 of 2026-08-31 (#703). This line used to read
+   * `eventIds.slice(0, eventIds.length - MAX_EVENT_ALERT_ROWS)` -- drop the
+   * oldest, whatever they were -- and the constant's docblock above carries the
+   * measurements that moved it: in a large prison five rows in six are `'info'`,
+   * and those were what evicted an escape 67 seconds after it happened.
+   *
+   * **Sorting a copy, and filtering `next` in place, is what keeps issue #209's
+   * property.** `simulation-alerts.ts` states it -- *"the position of a row the
+   * player is already reading must not change under them"* -- and it survives
+   * because this only chooses a *set* to remove. Nothing is reordered on screen:
+   * the surviving rows keep their indices relative to each other, exactly as
+   * they did under the slice, and the new event is still on the end.
+   *
+   * `SEVERITY_EVICTION_ORDER` is an explicit map rather than an index into
+   * `HudSeverity`'s union, because a union's member order is not a promise and
+   * an eviction rule that silently re-ranked itself when somebody reordered a
+   * type declaration would be the worst kind of bug to look for.
+   */
+  const byEvictionPriority = [...eventRows].sort((left, right) => {
+    const bySeverity = SEVERITY_EVICTION_ORDER[left.severity] - SEVERITY_EVICTION_ORDER[right.severity];
+    if (bySeverity !== 0) return bySeverity;
+    // Same band: the older row goes first. `next` is in arrival order, so the
+    // index in it *is* the age, and reading it here avoids parsing the id.
+    return eventRows.indexOf(left) - eventRows.indexOf(right);
+  });
+
+  const dropped = new Set(byEvictionPriority.slice(0, eventRows.length - MAX_EVENT_ALERT_ROWS).map((row) => row.id));
   return next.filter((existing) => !dropped.has(existing.id));
 }
 
