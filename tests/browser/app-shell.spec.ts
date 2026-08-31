@@ -6936,9 +6936,19 @@ test.describe('the assembled application', () => {
       })
       .toBe(1);
 
-    // Opened, because the alerts section arrives folded and a `toContainText`
-    // against a 0x0 box proves nothing.
-    await page.locator('.hud-minimap .ui-section__header').click();
+    // **No press: the section arrives OPEN as of #703 ruling 1.** This read
+    // `.click()` first, under the comment "Opened, because the alerts section
+    // arrives folded and a `toContainText` against a 0x0 box proves nothing."
+    // The precaution is right and is still enforced by the visibility assertion
+    // below; what changed is that it costs nothing.
+    //
+    // **This is the case that only CI caught, and the reason is worth keeping.**
+    // The press survived the first pass of this branch because the flex chain
+    // added for the scroll fix was overriding `[hidden]` -- so collapsing the
+    // section hid nothing and `toBeVisible` passed *after* the click, by
+    // accident. Fixing that with `:not([hidden])` made the press do what it
+    // says, and this assertion went red on the clean run. A latent break
+    // masked by a second break, and the sequence is the record of it.
     await expect(alertRow).toBeVisible();
     // The sentence the bundled catalogue gives the id the worker sent, read out
     // of that catalogue rather than typed here: ADR 0011 puts the key on one
