@@ -7,7 +7,10 @@ import {
 import { decodeWorkerToMainMessage } from '../../src/simulation/protocol/decode';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { procurableMaterial } from '../../src/content/procurement-catalog';
-import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
+import {
+  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  TREASURY_STARTING_BALANCE_MINOR_UNITS,
+} from '../../src/simulation/economy';
 import { SIMULATION_PROTOCOL_VERSION, type MainToWorkerMessage } from '../../src/simulation/protocol/types';
 
 class MockPort implements MessagePortLike {
@@ -684,10 +687,23 @@ describe('a command submitted against a paused clock', () => {
     const { port, machine } = start();
     const unitPrice = procurableMaterial('item.brick')?.unitPriceMinorUnits;
     if (unitPrice === undefined) return expect.unreachable('item.brick is not for sale, so no purchase can be driven');
-    // Half the treasury plus one unit: affordable once, never twice.
-    const quantity = Math.floor(TREASURY_STARTING_BALANCE_MINOR_UNITS / unitPrice / 2) + 1;
-    expect(quantity * unitPrice).toBeLessThanOrEqual(TREASURY_STARTING_BALANCE_MINOR_UNITS);
-    expect(2 * quantity * unitPrice).toBeGreaterThan(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    /*
+     * Half of what the prison can *spend*, plus one unit: affordable once,
+     * never twice.
+     *
+     * **This divided `TREASURY_STARTING_BALANCE_MINOR_UNITS` and that was the
+     * whole of spending power** while `Treasury`'s floor was zero. #703 ruling A
+     * opens a standing overdraft in every session
+     * ([ADR 0083](../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+     * §2), so half the opening balance was affordable twice over and the second
+     * purchase was not refused at all. The two bounds asserted below are the
+     * property the case needs and they are unchanged; only what they are
+     * measured against moved.
+     */
+    const spendable = TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
+    const quantity = Math.floor(spendable / unitPrice / 2) + 1;
+    expect(quantity * unitPrice).toBeLessThanOrEqual(spendable);
+    expect(2 * quantity * unitPrice).toBeGreaterThan(spendable);
 
     const purchase = (sequence: number): void => {
       machine.handleMessage({

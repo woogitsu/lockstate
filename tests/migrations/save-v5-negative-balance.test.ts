@@ -13,7 +13,10 @@ import {
   type SaveEnvelopeV1,
 } from '../../src/persistence/save-schema';
 import type { JsonValue } from '../../src/shared/json';
-import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
+import {
+  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  TREASURY_STARTING_BALANCE_MINOR_UNITS,
+} from '../../src/simulation/economy';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import {
@@ -208,7 +211,26 @@ describe('every balance a build older than ADR 0075 decision 2 could write still
       if (!decoded.ok) throw new Error('the shipped V1 fixtures must still decode');
       const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
       expect(restored.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
-      expect(restored.treasury.overdraftFloorMinorUnits, 'a prison that predates money owes nobody room').toBe(0);
+      /*
+       * **This asserted `0`** -- *"a prison that predates money owes nobody
+       * room"* -- and it was right about the file and is now wrong about the
+       * session. #703 ruling A applies the standing overdraft where the
+       * `Treasury` is built, and `restoreSimulationRuntime` builds through
+       * `createNewSimulationRuntime`, so a V1 save restores with the facility
+       * every new prison has. The half that still matters is that the *file*
+       * carries no floor and none was migrated: the figure below comes from the
+       * composition root, which is exactly why no `SAVE_SCHEMA_VERSION` bump was
+       * needed ([ADR 0083](../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+       * §(e)).
+       */
+      expect(
+        restored.treasury.overdraftFloorMinorUnits,
+        'the facility comes from the composition root, not from the save',
+      ).toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+      expect(
+        JSON.stringify(v5.payload),
+        'and nothing about a floor is in the file, at any age',
+      ).not.toContain('overdraft');
     }
   });
 });

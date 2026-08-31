@@ -5,7 +5,7 @@ import {
   createNewSimulationRuntime,
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
-import type { LoanTerms } from '../../src/simulation/economy';
+import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, type LoanTerms } from '../../src/simulation/economy';
 
 /**
  * **Playing out of [ADR 0075](../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)'s
@@ -26,17 +26,44 @@ import type { LoanTerms } from '../../src/simulation/economy';
  * in-game days each costs -- are priced in
  * `scripts/report-loan-recovery-pricing.mjs` and recorded in
  * `docs/research/2026-08-30-pricing-the-way-out.md`. What is pinned is the
- * *shape*: that the position is reachable and stationary, that a loan smaller
- * than what the build queue already owes buys nothing at all, and that one
- * larger than it houses a prisoner.
+ * *shape*: that the position is reachable and stationary, what the standing
+ * overdraft does to it with no loan at all, and that a loan larger than the
+ * standing shortfall houses a prisoner.
+ *
+ * ## What #703 ruling A did to this file, which is more than move a figure
+ *
+ * **The paragraph above ended *"that a loan smaller than what the build queue
+ * already owes buys nothing at all"*, and that was the finding this file was
+ * written for.** It is kept because it was measured and because the *mechanism*
+ * it names is unchanged: `ConstructionSystem.procureQueuedMaterials` spends the
+ * first 1,040 of any money that arrives, before the player can spend a minor
+ * unit of it on a plank.
+ *
+ * What changed is **when money arrives**. #703 ruled a standing overdraft of
+ * 2,500 in every session
+ * ([ADR 0083](../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+ * §2), so the queue is funded out of the facility at the moment it is placed and
+ * the position at the bottom is **-1,000 with all 325 segments standing**,
+ * rather than 40 with thirteen `materials-pending`. From there a door and a bed
+ * are affordable out of the 1,500 of room that is left, and the prison houses a
+ * prisoner on day 1.63 with **no loan of any kind** --
+ * `scripts/report-loan-recovery-pricing.mjs` §9 measures the same run and the
+ * first case below plays it.
+ *
+ * So the position ADR 0075 decision 2 exists to dissolve is dissolved by the
+ * ruling's own half of that decision, in this reproduction. It is not dissolved
+ * in general: a player who keeps pressing until something is refused is locked
+ * at the floor instead of at 40, which
+ * `tests/integration/construction-just-in-time-materials.test.ts` measures on
+ * the drag gesture.
  *
  * ## Why the position is built by playing rather than by assignment
  *
  * Every wall below goes through `packCommand` and the real command router, so
- * the treasury reaches 40 the way a player's does: 312 funded segments at 80,
- * and the thirteen behind them that the money ran out on. A fixture that set
- * the balance to 40 would be testing a number rather than a prison, and the
- * thirteen unfunded orders are the whole of the second case.
+ * the treasury reaches the bottom the way a player's does: 312 funded segments
+ * at 80, and the thirteen behind them that the *balance* ran out on. A fixture
+ * that set the balance would be testing a number rather than a prison, and the
+ * thirteen orders past the opening grant are the whole of the second case.
  */
 
 /**
@@ -170,24 +197,46 @@ function furnishCell(runtime: SimulationRuntime, doorway: Edge, beds: number): {
 }
 
 describe('the locked position, reached by playing into it', () => {
-  it('is 40 in the bank against a 65 plank, and stays there', () => {
+  /**
+   * **This case was titled *"is 40 in the bank against a 65 plank, and stays
+   * there"* and it asserted the lock. Every figure in it was measured:**
+   *
+   * > ```
+   * > expect(runtime.treasury.balanceMinorUnits).toBe(40);          // 312 x 80 of 25,000
+   * > expect(states).toEqual({ completed: 312, 'materials-pending': 13 });
+   * > send(... PurchaseMaterials 'item.wood-plank' x1);
+   * > expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
+   * > ```
+   *
+   * #703 ruling A funds those thirteen orders out of the standing overdraft, so
+   * the position is 1,040 lower and 1,500 of the facility is still unspent --
+   * which is enough for the 65 plank the old assertion watched being refused.
+   * The property the file's docblock names is the one kept below: the position
+   * is *reachable and stationary*. It is no longer terminal.
+   */
+  it('funds its own tail out of the standing overdraft and is not locked at all', () => {
     const { runtime } = lockedPosition();
 
-    // 312 x 80 = 24,960 of 25,000.
-    expect(runtime.treasury.balanceMinorUnits).toBe(40);
+    // 325 x 80 = 26,000, against 25,000 of grant: 1,000 of the facility spent.
+    expect(runtime.treasury.balanceMinorUnits).toBe(-STANDING_SHORTFALL + 40);
     expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(0);
     const states: Record<string, number> = {};
     for (const order of runtime.construction.snapshot().orders) states[order.state] = (states[order.state] ?? 0) + 1;
-    expect(states, 'every funded segment is standing and the tail never starts').toEqual({
-      completed: 312,
-      'materials-pending': UNFUNDED_TAIL,
+    expect(states, 'the tail the grant could not reach was bought with no press').toEqual({
+      completed: 312 + UNFUNDED_TAIL,
     });
 
+    // The press the old case watched being refused.
     send(runtime, { type: 'PurchaseMaterials', orderId: 'plank', itemId: 'item.wood-plank', quantity: 1 });
-    expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
+    expect(runtime.refusals.last, 'a plank is affordable out of the 1,500 of room left').toBeUndefined();
+    expect(runtime.treasury.balanceMinorUnits).toBe(-STANDING_SHORTFALL + 40 - 65);
 
+    // Stationary, which is the half that has not changed: no bed, so no income,
+    // so nothing moves the balance in either direction.
     stepDays(runtime, 20);
-    expect(runtime.treasury.balanceMinorUnits, 'twenty more in-game days and nothing moves').toBe(40);
+    expect(runtime.treasury.balanceMinorUnits, 'twenty more in-game days and nothing moves').toBe(
+      -STANDING_SHORTFALL + 40 - 65,
+    );
   }, 30_000);
 
   it('takes nothing back from a prison that borrows and never starts earning', () => {
@@ -213,35 +262,89 @@ describe('the locked position, reached by playing into it', () => {
 });
 
 describe('what a loan does to the locked position, and what it does not', () => {
-  it('buys nothing at all when the standing build queue can swallow it whole', () => {
-    /*
-     * **The finding this file exists for.** At the bottom the prison already
-     * owes 1,040 to thirteen wall orders it could not fund, and
-     * `ConstructionSystem.update` calls `procureForPendingOrders` on every
-     * scheduled tick -- so the first 1,040 of any money that arrives is spent
-     * on walls before the player can spend a minor unit of it on a plank.
-     *
-     * A loan of 1,000 against that queue therefore leaves the prison exactly
-     * where it was, with the balance back at zero and the cell still not
-     * enclosed. Nothing in the interface says so.
-     */
+  /**
+   * **The finding this file exists for, and #703 ruling A changed which money it
+   * eats.** What stood here, measured:
+   *
+   * > At the bottom the prison already owes 1,040 to thirteen wall orders it
+   * > could not fund, and `ConstructionSystem.update` calls
+   * > `procureForPendingOrders` on every scheduled tick -- so the first 1,040 of
+   * > any money that arrives is spent on walls before the player can spend a
+   * > minor unit of it on a plank. A loan of 1,000 against that queue therefore
+   * > leaves the prison exactly where it was, with the balance back at zero and
+   * > the cell still not enclosed. Nothing in the interface says so.
+   *
+   * **The mechanism is untouched and the victim is different.** With a standing
+   * overdraft the money that arrives first is the *facility*, at the moment the
+   * order is placed -- so the queue is paid before any loan is drawn, and a loan
+   * of 1,000 on top of that is ordinary cash the player can spend on a plank.
+   * There is no longer a principal small enough for the queue to swallow,
+   * because the queue has already been fed.
+   *
+   * What is measured below is the half a player still meets: **the 1,040 is
+   * spent with no press and nothing in the interface says so.** It is the same
+   * silence, moved from "after you borrow" to "before you have done anything",
+   * and it is why the overdraft is a hidden feature until somebody writes the
+   * sentence -- which is the owner's under `AGENTS.md`.
+   */
+  it('spends the standing shortfall with no press, out of the facility rather than out of a loan', () => {
     const { runtime, doorway } = lockedPosition();
     expect(STANDING_SHORTFALL).toBe(1_040);
 
+    /*
+     * Half of what the old case drew, and it makes no difference to the queue:
+     * the queue is already funded, so nothing diverts this and all of it is
+     * spendable.
+     */
     runtime.loans?.draw(1_000, runtime.kernel.tick);
-    expect(runtime.treasury.balanceMinorUnits, 'the principal, on top of the 40').toBe(1_040);
+    expect(runtime.treasury.balanceMinorUnits, 'the principal, on top of -1,000').toBe(0);
 
     const { zoneRefusal } = furnishCell(runtime, doorway, 1);
 
-    expect(runtime.treasury.balanceMinorUnits, 'every minor unit went into wall').toBe(0);
-    expect(zoneRefusal, 'the door was never built, so the rectangle is not a room').toBe('zone.not-enclosed');
-    expect(runtime.refusals.last?.reason, 'and the bed is then refused for a reason that is not about money').toBe('place-object.outside-room');
-    expect(runtime.prisoners.roomInstances.getById(CELL_INSTANCE_ID)).toBeUndefined();
+    expect(zoneRefusal, 'the door is affordable now, so the rectangle is a room').toBeUndefined();
+    expect(runtime.prisoners.roomInstances.getById(CELL_INSTANCE_ID)?.residentCapacity).toBe(1);
+    expect(runtime.treasury.balanceMinorUnits, 'a door at 65 and a bed at 65, out of the principal').toBe(-130);
 
-    stepDays(runtime, 20);
-    expect(runtime.prisoners.roomInstances.totalOccupancy, 'and the prison is still locked').toBe(0);
-    expect(runtime.loans?.outstandingMinorUnits, 'owing 1,150 it can never repay').toBe(1_150);
+    send(runtime, { type: 'AdmitPrisoner', ...ARRIVAL, sentenceLengthTicks: 5_000_000, priorIncidents: 0 });
+    stepDays(runtime, 5);
+    expect(runtime.prisoners.roomInstances.totalOccupancy, 'and the prison is earning').toBe(1);
+    expect(runtime.treasury.balanceMinorUnits).toBeGreaterThan(0);
   }, 30_000);
+
+  /**
+   * The control the case above needs, and the one that says the 1,040 was spent
+   * by the thirteen orders and by nothing else: the same 312 segments without
+   * the tail leave the facility untouched at 40.
+   *
+   * **`CancelBuildOrder` is not the control**, and the attempt is recorded
+   * rather than dropped: cancelling all thirteen immediately after placing them
+   * still ends at -1,000, because `procureQueuedMaterials` buys on the placing
+   * tick and `cancelOrder` returns *bricks*, never money (ADR 0076). So a player
+   * who draws thirteen segments too many and undoes them keeps the debt and gets
+   * a pile of brick -- which is the same silence this describe is about, one step
+   * further on.
+   */
+  it('leaves the facility untouched when the thirteen orders are never placed', () => {
+    const runtime = createNewSimulationRuntime(SEED, { loanTerms: PROBE_TERMS });
+    const ring = cellRingEdges();
+    const order = [...ring.slice(0, ring.length - 1), ...fillerEdges(ring)];
+    for (let index = 0; index < 312; index += 1) {
+      send(runtime, { type: 'PlaceBuildOrder', orderId: `wall-${String(index)}`, definitionId: 'wall-brick', ...(order[index] as Edge) });
+    }
+    stepDays(runtime, 20);
+    expect(runtime.treasury.balanceMinorUnits, '312 x 80 of 25,000, and the facility untouched').toBe(40);
+    expect(runtime.treasury.overdraftFloorMinorUnits, 'the whole of it still standing').toBe(
+      TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+    );
+
+    // And the cancelling player, measured rather than assumed.
+    const cancelled = lockedPosition();
+    for (const orderId of cancelled.unfunded) send(cancelled.runtime, { type: 'CancelBuildOrder', orderId });
+    expect(
+      cancelled.runtime.treasury.balanceMinorUnits,
+      'cancelling after the fact gives bricks back, never money',
+    ).toBe(-STANDING_SHORTFALL + 40);
+  }, 60_000);
 
   it('houses a prisoner on the second day once the loan clears the queue as well as the plank', () => {
     /*
