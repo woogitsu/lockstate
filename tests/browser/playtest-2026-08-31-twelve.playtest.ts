@@ -26,6 +26,7 @@ import {
   latestCounts,
   openApp,
   panelText,
+  runUntilTick,
   tab,
 } from './playtest-harness';
 
@@ -426,6 +427,258 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
   });
 
   /**
+   * Act 7b -- the same question with the page's own clock instead of
+   * Playwright's. A `MutationObserver` on the Admit control records exactly
+   * when it goes disabled and when it comes back, so the number is the button's
+   * and not the driver's.
+   */
+  test('act 7b: how long Admit is disabled, measured in the page', async ({ page }) => {
+    test.setTimeout(900_000);
+    const label = 'act7b';
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    await buildAndPopulate(page, { beds: 4, admits: 0, guards: 0, label });
+    await tab(page, 'overview').click();
+
+    await page.evaluate(() => {
+      const button = document.querySelector<HTMLButtonElement>('.hud-intake__admit');
+      if (button === null) throw new Error('no admit control');
+      const log: { at: number; disabled: boolean }[] = [{ at: performance.now(), disabled: button.disabled }];
+      const observer = new MutationObserver(() => {
+        const disabled = button.disabled;
+        const previous = log[log.length - 1];
+        if (previous !== undefined && previous.disabled === disabled) return;
+        log.push({ at: performance.now(), disabled });
+      });
+      observer.observe(button, { attributes: true, attributeFilter: ['disabled', 'aria-disabled'] });
+      (window as unknown as { lockstateAdmitLog: typeof log }).lockstateAdmitLog = log;
+    });
+
+    // Press with the page's own dispatch, so nothing waits on actionability:
+    // a player clicking fast is exactly this.
+    for (let index = 0; index < 12; index += 1) {
+      await page.evaluate(() => {
+        document.querySelector<HTMLButtonElement>('.hud-intake__admit')?.click();
+      });
+      await page.waitForTimeout(1500);
+    }
+    const transitions = await page.evaluate(() => (window as unknown as { lockstateAdmitLog: { at: number; disabled: boolean }[] }).lockstateAdmitLog);
+    await log(label, 'disabled transitions on the Admit control (performance.now ms)', transitions);
+    const windows: number[] = [];
+    for (let index = 0; index + 1 < transitions.length; index += 1) {
+      const from = transitions[index];
+      const to = transitions[index + 1];
+      if (from !== undefined && to !== undefined && from.disabled && !to.disabled) windows.push(Math.round(to.at - from.at));
+    }
+    await log(label, 'how long the control stayed disabled each time (ms)', windows);
+    await log(label, 'counts after twelve page-dispatched presses', await latestCounts(page));
+  });
+
+  /**
+   * Act 8 -- why a press took nearly a second when the control was disabled for
+   * none of it. Playwright waits for a control's box to hold still across two
+   * animation frames before it clicks; this samples the box every frame and
+   * says whether it holds still.
+   */
+  test('act 8: does the HUD hold still under a running clock', async ({ page }) => {
+    test.setTimeout(900_000);
+    const label = 'act8';
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    await buildAndPopulate(page, { beds: 4, admits: 4, guards: 2, label });
+    await tab(page, 'overview').click();
+    await page.waitForTimeout(2000);
+
+    const sample = async (selectors: readonly string[], ms: number): Promise<unknown> =>
+      page.evaluate(
+        async ({ selectors: list, ms: duration }) => {
+          const seen = new Map<string, { boxes: Set<string>; frames: number; first: string | null; last: string | null }>();
+          for (const selector of list) seen.set(selector, { boxes: new Set(), frames: 0, first: null, last: null });
+          const deadline = performance.now() + duration;
+          await new Promise<void>((resolve) => {
+            const step = (): void => {
+              for (const selector of list) {
+                const node = document.querySelector<HTMLElement>(selector);
+                const record = seen.get(selector);
+                if (record === undefined) continue;
+                record.frames += 1;
+                if (node === null) {
+                  record.boxes.add('ABSENT');
+                  continue;
+                }
+                const r = node.getBoundingClientRect();
+                const key = `${r.left.toFixed(1)},${r.top.toFixed(1)},${r.width.toFixed(1)},${r.height.toFixed(1)}`;
+                if (record.first === null) record.first = key;
+                record.last = key;
+                record.boxes.add(key);
+              }
+              if (performance.now() < deadline) requestAnimationFrame(step);
+              else resolve();
+            };
+            requestAnimationFrame(step);
+          });
+          const out: Record<string, unknown> = {};
+          for (const [selector, record] of seen) {
+            out[selector] = {
+              frames: record.frames,
+              distinctBoxes: record.boxes.size,
+              boxes: [...record.boxes].slice(0, 6),
+              first: record.first,
+              last: record.last,
+            };
+          }
+          return out;
+        },
+        { selectors, ms },
+      );
+
+    const watched = ['.hud-intake__admit', '.hud-staff__hire', '.hud-build__arm', '.hud-strip__transport button', '.hud-regime__roster-row'];
+    await log(label, 'boxes over 3s at x4', await sample(watched, 3000));
+    await page.locator('.hud-strip__transport button').nth(0).click();
+    await page.waitForTimeout(1000);
+    await log(label, 'boxes over 3s with the clock PAUSED', await sample(watched, 3000));
+    await page.locator('.hud-strip__transport button').nth(1).click();
+    await page.waitForTimeout(1000);
+    await log(label, 'boxes over 3s at x1', await sample(watched, 3000));
+    await page.screenshot({ path: `${SHOTS}/act8-overview-1280x800.png` });
+  });
+
+  /**
+   * Act 9 -- the right-hand rail. A screenshot from act 5 showed the Build
+   * panel's own controls cut off mid-word at 1280x800 and the Prisons panel
+   * reduced to two clipped buttons; this measures both, at both widths, and on
+   * every tab.
+   */
+  test('act 9: what the right rail cuts off', async ({ page }) => {
+    test.setTimeout(600_000);
+    for (const size of [
+      { width: 1280, height: 800 },
+      { width: 1920, height: 1080 },
+    ]) {
+      const label = `act9-${String(size.width)}`;
+      await page.setViewportSize(size);
+      await openApp(page);
+      await page.getByRole('button', { name: 'New prison' }).click();
+      await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+      for (const which of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+        await tab(page, which).click();
+        await page.waitForTimeout(400);
+        const report = await page.evaluate(() => {
+          const clipped: unknown[] = [];
+          const panels: Record<string, unknown> = {};
+          const viewportWidth = window.innerWidth;
+          const viewportHeight = window.innerHeight;
+          for (const selector of ['.save-panel', '.display-scale', '.hud-build', '.hud-rooms', '.hud-staff', '.hud-regime', '.hud-intake', '.hud-minimap']) {
+            const node = document.querySelector<HTMLElement>(selector);
+            if (node === null || node.getClientRects().length === 0) continue;
+            const r = node.getBoundingClientRect();
+            panels[selector] = {
+              box: { left: Math.round(r.left), top: Math.round(r.top), right: Math.round(r.right), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) },
+              scrollHeight: node.scrollHeight,
+              clientHeight: node.clientHeight,
+              hiddenBelowFold: node.scrollHeight - node.clientHeight,
+              overflowY: getComputedStyle(node).overflowY,
+              offVieport: Math.round(r.right) > viewportWidth || Math.round(r.bottom) > viewportHeight,
+            };
+          }
+          // Any element whose own text is wider than the box it is drawn in.
+          for (const node of document.querySelectorAll<HTMLElement>('.hud button, .hud .ui-badge, .hud .ui-eyebrow, .hud .ui-value, .save-panel button, .hud-build__delivery-text, .hud-build__note')) {
+            if (node.getClientRects().length === 0) continue;
+            if (node.scrollWidth <= node.clientWidth + 1) continue;
+            const r = node.getBoundingClientRect();
+            clipped.push({
+              className: node.className,
+              text: (node.innerText ?? node.textContent ?? '').replace(/\n+/g, ' ').trim().slice(0, 60),
+              scrollWidth: node.scrollWidth,
+              clientWidth: node.clientWidth,
+              box: { left: Math.round(r.left), top: Math.round(r.top), width: Math.round(r.width) },
+            });
+          }
+          return { viewport: `${String(viewportWidth)}x${String(viewportHeight)}`, panels, clippedCount: clipped.length, clipped: clipped.slice(0, 12) };
+        });
+        await log(label, `tab ${which}`, report);
+        await page.screenshot({ path: `${SHOTS}/act9-${which}-${String(size.width)}x${String(size.height)}.png` });
+      }
+    }
+  });
+
+  /**
+   * Act 10 -- can the alerts log actually be read? A screenshot from act 4b
+   * showed every row ellipsised to about a dozen characters at 1280x800, which
+   * `innerText` does not reveal. This measures the label element itself, and
+   * asks the same of the refusal band's lifetime.
+   */
+  test('act 10: is an alert sentence readable, and does a refusal ever clear', async ({ page }) => {
+    test.setTimeout(900_000);
+    const label = 'act10';
+
+    const rowReport = async (): Promise<unknown> =>
+      page.evaluate(() => {
+        const list = document.querySelector<HTMLElement>('.hud-alerts__list');
+        if (list === null) return { absent: true };
+        const listBox = list.getBoundingClientRect();
+        return {
+          listWidth: Math.round(listBox.width),
+          scrollTop: list.scrollTop,
+          scrollHeight: list.scrollHeight,
+          clientHeight: list.clientHeight,
+          rows: [...list.querySelectorAll<HTMLElement>('.ui-row')]
+            .filter((row) => !row.hidden)
+            .map((row) => {
+              const labelNode = row.querySelector<HTMLElement>('.ui-row__label') ?? row.querySelector<HTMLElement>('span');
+              const box = row.getBoundingClientRect();
+              return {
+                full: (row.innerText ?? '').replace(/\n+/g, ' ').trim(),
+                labelClass: labelNode?.className ?? null,
+                labelScrollWidth: labelNode?.scrollWidth ?? null,
+                labelClientWidth: labelNode?.clientWidth ?? null,
+                truncated: labelNode !== null && labelNode !== undefined && labelNode.scrollWidth > labelNode.clientWidth + 1,
+                textOverflow: labelNode === null || labelNode === undefined ? null : getComputedStyle(labelNode).textOverflow,
+                whiteSpace: labelNode === null || labelNode === undefined ? null : getComputedStyle(labelNode).whiteSpace,
+                insideList: box.top >= listBox.top - 1 && box.bottom <= listBox.bottom + 1,
+              };
+            }),
+        };
+      });
+
+    for (const size of [
+      { width: 1280, height: 800 },
+      { width: 1920, height: 1080 },
+    ]) {
+      await page.setViewportSize(size);
+      await openApp(page);
+      await page.getByRole('button', { name: 'New prison' }).click();
+      await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+      // One refused removal, exactly as a mis-click produces.
+      await tab(page, 'build').click();
+      await page.locator('.hud-build__remove').click();
+      await page.mouse.click(600, 400);
+      await page.waitForTimeout(800);
+      await log(`${label}-${String(size.width)}`, 'refusal band right after one refused removal', await panelText(page, '.hud__refusal'));
+      await log(`${label}-${String(size.width)}`, 'alert rows right after it', await rowReport());
+
+      // Now play on for four in-game days and see whether the band clears.
+      await page.locator('.hud-build__remove').click();
+      await tab(page, 'overview').click();
+      await page.locator('.hud-strip__transport button').nth(2).click();
+      await page.waitForTimeout(200);
+      await page.locator('.hud-strip__transport button').nth(2).click();
+      await runUntilTick(page, 9600, 300_000);
+      await log(`${label}-${String(size.width)}`, 'refusal band four in-game days later', await panelText(page, '.hud__refusal'));
+      await log(`${label}-${String(size.width)}`, 'refusal band element box', await page.evaluate(() => {
+        const node = document.querySelector<HTMLElement>('.hud__refusal');
+        if (node === null) return null;
+        const r = node.getBoundingClientRect();
+        return { hidden: node.hidden, top: Math.round(r.top), left: Math.round(r.left), width: Math.round(r.width), height: Math.round(r.height) };
+      }));
+      await log(`${label}-${String(size.width)}`, 'alert rows four in-game days later', await rowReport());
+      await page.screenshot({ path: `${SHOTS}/act10-refusal-persists-${String(size.width)}x${String(size.height)}.png` });
+    }
+  });
+
+  /**
    * Act 5 -- ruling 2, met as a player meets it: buy something, shut the Buy
    * fold, and see whether the money spent and its Cancel are still on screen.
    * The clock stays paused, because a landed delivery is no longer pending.
@@ -490,6 +743,50 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
         await log(label, 'the first Cancel was not visible with the fold shut', await buyReport(page));
       }
     }
+  });
+
+  /**
+   * Act 5b -- the order three purchases appear in, six times over. The clock
+   * is paused throughout, so all three land on the same tick and the panel's
+   * documented `(arrivesAtTick, orderId)` rule has only the id left to break
+   * the tie.
+   */
+  test('act 5b: what order three same-tick purchases are listed in', async ({ page }) => {
+    test.setTimeout(600_000);
+    const label = 'act5b';
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const orders: string[] = [];
+    for (let round = 0; round < 6; round += 1) {
+      await openApp(page);
+      await page.getByRole('button', { name: 'New prison' }).click();
+      await expect(page.locator('.hud-clock__day')).toHaveText('1');
+      await tab(page, 'build').click();
+      // Three distinct quantities, bought in this order: 30 brick, 10 brick,
+      // 4 planks. Whatever the panel shows is the panel's own ordering.
+      await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+      if (await page.locator('.hud-build__buy').isHidden()) await page.locator('.hud-build__buy-toggle').click();
+      await page.locator('.hud-build__buy .ui-number__input').fill('30');
+      await page.locator('.hud-build__buy-submit').click();
+      await page.waitForTimeout(400);
+      await page.locator('.hud-build__buy .ui-number__input').fill('10');
+      await page.locator('.hud-build__buy-submit').click();
+      await page.waitForTimeout(400);
+      await page.locator('.hud-build__list [data-buildable="bed-wooden"]').click();
+      if (await page.locator('.hud-build__buy').isHidden()) await page.locator('.hud-build__buy-toggle').click();
+      await page.locator('.hud-build__buy .ui-number__input').fill('4');
+      await page.locator('.hud-build__buy-submit').click();
+      await page.waitForTimeout(700);
+      const listed = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.hud-build__delivery-list .hud-build__delivery-row')]
+          .filter((row) => !row.hidden)
+          .map((row) => (row.innerText ?? '').replace(/\n+/g, ' ').replace(' Cancel', '').trim()),
+      );
+      const clock = await currentClock(page);
+      orders.push(JSON.stringify(listed));
+      await log(label, `round ${String(round + 1)} listed order (clock ${JSON.stringify(clock)})`, listed);
+    }
+    await log(label, 'distinct orders seen in six rounds', [...new Set(orders)]);
+    await log(label, 'bought order was always', ['30 × Brick', '10 × Brick', '4 × Wood Plank']);
   });
 
   /**
