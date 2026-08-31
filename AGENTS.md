@@ -163,6 +163,19 @@ every edit, and the ladder below is measured on this repository, at v0.0.262:
   a performance-sensitive path, `pnpm verify:sql` for `supabase/`,
   `pnpm verify:assets` for the runtime atlases.
 
+**In a worktree the gate needs assembling by hand, and half of it is easy to
+miss.** `pnpm <script>` aborts there (`ERR_PNPM_UNSAFE_MODULES_DIR`), so the
+binaries are called directly — and `./node_modules/.bin/tsc -b` is **not**
+`pnpm typecheck`. That script runs **two** projects: the second,
+`tsconfig.tools.json`, is the one covering `benchmarks/`, `scripts/` and
+`tooling/` under `checkJs`, and it exists because a production signature change
+in exactly those directories was once invisible to both `pnpm typecheck` and
+`pnpm test` (#602, `docs/TESTING.md`). Run
+`./node_modules/.bin/tsc -b tsconfig.tools.json` beside the first, every time a
+worktree branch touches those directories. Measured cost of forgetting it:
+eighteen errors that reached CI on a branch whose author had run `tsc -b` and
+called it a typecheck.
+
 Work at the smallest rung that can fail for the reason you care about, and climb
 when the change stops being local. A full run after a two-line edit is 80 times
 the wait for the same information.
