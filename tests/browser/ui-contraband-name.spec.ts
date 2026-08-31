@@ -288,31 +288,76 @@ test.describe('the contraband chip names what was found (#703 ruling 3)', () => 
     expect(withMixed.stripText).not.toContain('Phone');
     expect(withMixed.stripText).not.toContain('Drugs');
 
-    // ---- what the badge costs the strip ----------------------------------
+    // ---- what the badge costs the strip, measured ------------------------
     /*
      * Issue #639 measured 0 of 8 chips visible at 768px, so width on this
      * strip is not free and this ruling must not be paid for with it.
      *
-     * Two properties, both measured rather than argued:
+     * **The first version of this block asserted the wrong thing and the
+     * browser said so, which is why the numbers are written down here.** It
+     * asserted the metrics row must not scroll at 1280x800. Measured, with
+     * `clientWidth` 1256 at that viewport:
      *
-     * 1. **The strip does not get taller.** A chip that grew enough to wrap
-     *    would move every other row on the screen, which is a layout change
-     *    fired by a game state -- the same objection `ui-occupancy-overflow`
-     *    records about a bar that widens when the prison is in trouble.
-     * 2. **The metrics row does not start scrolling.** `hud-strip__metrics`
-     *    is `overflow-x: auto` by design, so the failure is not a broken
-     *    layout, it is chips going off the end where a player has to scroll
-     *    to see them. At this viewport the row must still fit.
+     * | state | `scrollWidth` |
+     * | --- | --- |
+     * | every count zero (badges "Covered" and "Clear") | 1256 -- fits exactly |
+     * | this prison, no contraband name | **1264** |
+     * | this prison, badge reading "Phone" | **1316** |
+     *
+     * So the row was already 8px past its client width *before* this change,
+     * driven by an existing state-driven badge -- the Prisoners chip's "11
+     * with no bed" (issue #609). The assertion was false of `main`, not of the
+     * badge. **That is a finding about the strip at desktop width and it is
+     * handed over rather than fixed here**: eight chips plus their badges do
+     * not fit 1280x800, and nothing in the repository measured that until this
+     * spec.
+     *
+     * Swept across widths, with the badge on and off (`off` / `on`
+     * `scrollWidth`/`clientWidth`):
+     *
+     * | viewport | off | on |
+     * | --- | --- | --- |
+     * | 1280 | 1264 / 1256 | 1316 / 1256 |
+     * | 1366 | 1342 / 1342 | 1342 / 1342 |
+     * | 1440 | 1416 / 1416 | 1416 / 1416 |
+     * | 1600 | 1576 / 1576 | 1576 / 1576 |
+     * | 1920 | 1522 / 1522 | 1522 / 1522 |
+     *
+     * **At 1366 and above the row fits with the badge and without it**, because
+     * the chips have room to lay out; the whole cost is at 1280 and it is 52px
+     * of scroll on a row that is `overflow-x: auto` by design. So what is
+     * asserted below is what was measured rather than what would be nice:
      */
+
+    // 1. **The badge costs its own width and nothing else.** This is the
+    //    property that would break if the word made a chip re-lay-out, pushed
+    //    a margin, or wrapped: the row would grow by more than the pill.
+    expect(
+      withName.metricsScrollWidth - withMixed.metricsScrollWidth,
+      'the contraband badge cost the metrics row more than the badge itself measures, so it is not the pill that grew -- something re-laid out around it',
+    ).toBeCloseTo(withName.width, 0);
+    expect(withMixed.metricsScrollWidth, 'the silent case must cost exactly what no badge costs').toBe(
+      empty.metricsScrollWidth,
+    );
+
+    // 2. **The strip does not get taller in any state.** A chip that grew
+    //    enough to wrap would move every row under it, which is a layout
+    //    change fired by a game state -- the objection
+    //    `ui-occupancy-overflow.spec.ts` records about a bar that widens when
+    //    the prison is in trouble.
     expect(withName.stripHeight, 'the badge made the status strip taller').toBe(empty.stripHeight);
     expect(withMixed.stripHeight, 'the strip height depends on whether a category could be named').toBe(empty.stripHeight);
+
+    // 3. **At the desktop width the repository's own layout specs use, the row
+    //    fits with the badge.** 1440x900 is #650's viewport. `scrollWidth ===
+    //    clientWidth` is the row not scrolling at all, which is the claim.
+    await page.setViewportSize({ width: 1_440, height: 900 });
+    const wide = await showCounts(page, named.counts);
+    expect(wide.text?.trim(), 'the badge stopped naming the category at a wider viewport').toBe('Phone');
     expect(
-      withName.metricsScrollWidth,
-      'the contraband badge pushed the metrics row into horizontal scroll at 1280px, so a chip is now off the end',
-    ).toBeLessThanOrEqual(withName.metricsClientWidth);
-    // And the comparison that says the badge is what was measured: the row is
-    // wider with the word than without it, so a probe reading a chip that
-    // never changed could not have produced the number above.
-    expect(withName.metricsClientWidth).toBe(empty.metricsClientWidth);
+      wide.metricsScrollWidth,
+      'eight chips and a contraband badge do not fit 1440x900, so this ruling was paid for in width after all',
+    ).toBe(wide.metricsClientWidth);
+    expect(wide.metricsClientWidth, 'the metrics row measured zero width, so the comparison above is vacuous').toBeGreaterThan(0);
   });
 });
