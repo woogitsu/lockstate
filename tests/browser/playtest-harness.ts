@@ -288,7 +288,25 @@ export async function waitForQueueEmpty(page: Page, timeoutMs = 240_000): Promis
   await tab(page, 'build').click();
   for (;;) {
     const text = await panelText(page, '.hud-build__queue');
-    if (/0 waiting . 0 being built/.test(text) || text.includes('not laid out') || text.includes('ABSENT')) {
+    /*
+     * **`(?<![0-9])` is load-bearing, and its absence was a measured defect.**
+     * The readout is `hud.build.queue-count`, `'{count} waiting · {started}
+     * being built'`, so a queue of ten renders `10 waiting · 0 being built` --
+     * and the unanchored `/0 waiting . 0 being built/` this line carried until
+     * 2026-08-30 matches that as a substring of `1`+`0 waiting · 0 being
+     * built`. So did 20, 30, 40 and every other multiple of ten.
+     *
+     * What that cost, measured on `agent/640-playtest-just-in-time`: a
+     * 24-segment perimeter reported "the queue is empty" at 10 still waiting,
+     * the designation that followed was refused `zone.not-enclosed` because
+     * the wall genuinely was not up, and the retry loop then hung on a control
+     * that never became actionable. The reading it produced -- "zoning is
+     * refused after the queue empties" -- was an artifact of this regex.
+     *
+     * Every caller inherits it: `buildAndPopulate` waits on this twice, and
+     * its own perimeter passes through exactly `10 waiting` on the way down.
+     */
+    if (/(?<![0-9])0 waiting . 0 being built/.test(text) || text.includes('not laid out') || text.includes('ABSENT')) {
       return Date.now() - started;
     }
     if (Date.now() - started > timeoutMs) throw new Error(`the build queue never emptied: ${text}`);

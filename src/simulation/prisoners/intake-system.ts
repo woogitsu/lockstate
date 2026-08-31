@@ -477,9 +477,22 @@ export class IntakeSystem implements SystemRegistration {
         //     every seed has ever produced, one admission onward, for a reason
         //     that has nothing to do with screening variance. Isolated streams
         //     are what `docs/DETERMINISM.md` asks for and this is the case they
-        //     are for: with the drawn range entirely below
+        //     are for.
+        //
+        //     This bullet used to end: *"with the drawn range entirely below
         //     `LONG_SENTENCE_THRESHOLD_TICKS`, the tier this stage assigns is
-        //     bit-identical to the one it assigned before this line existed.
+        //     bit-identical to the one it assigned before this line existed."*
+        //     **That stopped being true when the owner ruled on #593** and
+        //     `MIN_SENTENCE_DAYS`/`MAX_SENTENCE_DAYS` became 14 and 90 (ADR
+        //     0079): 90 days is 216,000 ticks and the threshold is 200,000, so
+        //     the seven drawable lengths from 84 days up now score the
+        //     long-sentence point and the tier this stage assigns is *not*
+        //     bit-identical to the pre-#541 one. The property was spent on
+        //     purpose, and it is marked rather than deleted because it is the
+        //     reason the stream is separate -- **what the separate stream still
+        //     buys is unchanged and is the half that mattered**: the sentence
+        //     draw does not move `prisoners.classification`'s position, so the
+        //     screening variance of every seed is where it always was.
         if (this.records.sentenceLengthTicks[index] === SENTENCE_UNSET_TICKS) {
           this.records.sentenceLengthTicks[index] = drawSentenceLengthTicks(context.rng.get(this.sentenceRngStreamName));
         }
