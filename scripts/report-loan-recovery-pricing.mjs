@@ -116,6 +116,22 @@ class Session {
   get occupancy() { return this.runtime.prisoners.roomInstances.totalOccupancy; }
   get bricks() { return this.runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID).quantityOf('item.brick'); }
 
+  /**
+   * The loan ledger this run was built with.
+   *
+   * `runtime.loans` is optional because a session restored from a snapshot
+   * that predates ADR 0075 decision 2 has none, so the type is honest and the
+   * narrowing belongs here rather than at each of the twelve read sites. Every
+   * run that reaches this getter passed `loanTerms` to the constructor; a
+   * throw is the right answer for one that did not, because the alternative is
+   * a table of zeroes that looks like a measurement.
+   */
+  get loans() {
+    const ledger = this.runtime.loans;
+    if (ledger === undefined) throw new Error('this session was built without loan terms, so it has no ledger to read');
+    return ledger;
+  }
+
   /** One command through the real packer and the real router, exactly as a press does. */
   send(command) {
     const sequence = this.runtime.kernel.expectedSequence;
@@ -203,8 +219,8 @@ function playRecovery({ candidate, principal, plan, seed = 0x692, horizonDays = 
 
   let drawnFee = 0;
   if (useLoan) {
-    session.runtime.loans.draw(principal, session.tick);
-    drawnFee = session.runtime.loans.outstandingMinorUnits - principal;
+    session.loans.draw(principal, session.tick);
+    drawnFee = session.loans.outstandingMinorUnits - principal;
   } else {
     // The control: no loan at all, only ADR 0075 decision 2's other half --
     // the balance may go negative, as far as the facility the owner opens.
@@ -244,9 +260,13 @@ function playRecovery({ candidate, principal, plan, seed = 0x692, horizonDays = 
 
   // --- and from here the player presses nothing ---
   const firstDayPressedNothing = session.tick;
+  /** @type {number | null} */
   let dayHoused = null;
+  /** @type {number | null} */
   let dayDebtCleared = null;
+  /** @type {number | null} */
   let dayOutOfTheLock = null;
+  /** @type {number | null} */
   let escalationDay = null;
   let peakBalance = session.balance;
   let minBalance = session.balance;
@@ -259,11 +279,11 @@ function playRecovery({ candidate, principal, plan, seed = 0x692, horizonDays = 
     if (dayHoused === null && session.occupancy > 0) dayHoused = dayOf(session.tick);
     if (dayOutOfTheLock === null && balance >= 65 && session.occupancy > 0) dayOutOfTheLock = dayOf(session.tick);
     if (useLoan) {
-      if (escalationDay === null && session.runtime.loans.diversionRateBasisPointsAt(session.tick) === candidate.escalated
-        && session.runtime.loans.outstandingMinorUnits > 0) {
+      if (escalationDay === null && session.loans.diversionRateBasisPointsAt(session.tick) === candidate.escalated
+        && session.loans.outstandingMinorUnits > 0) {
         escalationDay = dayOf(session.tick);
       }
-      if (dayDebtCleared === null && session.runtime.loans.outstandingMinorUnits === 0) dayDebtCleared = dayOf(session.tick);
+      if (dayDebtCleared === null && session.loans.outstandingMinorUnits === 0) dayDebtCleared = dayOf(session.tick);
     }
     if (day < 12) dailyIncome.push(balance);
     if (dayDebtCleared !== null && dayOutOfTheLock !== null && day > 2) break;
@@ -299,8 +319,8 @@ function playRecovery({ candidate, principal, plan, seed = 0x692, horizonDays = 
     dayOutOfTheLock,
     dayDebtCleared,
     escalationDay,
-    diverted: useLoan ? session.runtime.loans.divertedTotalMinorUnits : 0,
-    outstanding: useLoan ? session.runtime.loans.outstandingMinorUnits : 0,
+    diverted: useLoan ? session.loans.divertedTotalMinorUnits : 0,
+    outstanding: useLoan ? session.loans.outstandingMinorUnits : 0,
     finalBalance: session.balance,
     minBalance,
     peakBalance,
@@ -411,7 +431,7 @@ function playStaffedRecovery({ candidate, principal, guards, drainFirst, cancelB
       backlogCancelled += 1;
     }
   }
-  session.runtime.loans.draw(principal, session.tick);
+  session.loans.draw(principal, session.tick);
   session.send({ type: 'PlaceBuildOrder', orderId: 'door', definitionId: 'door-wooden', ...doorway });
   session.step(600);
   session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
@@ -427,16 +447,18 @@ function playStaffedRecovery({ candidate, principal, guards, drainFirst, cancelB
   }
 
   let minBalance = session.balance;
+  /** @type {number | null} */
   let dayDebtCleared = null;
+  /** @type {number | null} */
   let escalationDay = null;
   for (let day = 0; day < horizonDays; day += 1) {
     stepDays(session, 1);
     minBalance = Math.min(minBalance, session.balance);
-    if (escalationDay === null && session.runtime.loans.outstandingMinorUnits > 0
-      && session.runtime.loans.diversionRateBasisPointsAt(session.tick) === candidate.escalated) {
+    if (escalationDay === null && session.loans.outstandingMinorUnits > 0
+      && session.loans.diversionRateBasisPointsAt(session.tick) === candidate.escalated) {
       escalationDay = dayOf(session.tick);
     }
-    if (dayDebtCleared === null && session.runtime.loans.outstandingMinorUnits === 0) dayDebtCleared = dayOf(session.tick);
+    if (dayDebtCleared === null && session.loans.outstandingMinorUnits === 0) dayDebtCleared = dayOf(session.tick);
     if (dayDebtCleared !== null && day > 3) break;
   }
 
@@ -456,7 +478,7 @@ function playStaffedRecovery({ candidate, principal, guards, drainFirst, cancelB
     minBalance,
     dayDebtCleared,
     escalationDay,
-    outstanding: session.runtime.loans.outstandingMinorUnits,
+    outstanding: session.loans.outstandingMinorUnits,
     arrears: session.runtime.payroll.unpaidWagesMinorUnits,
     finalBalance: session.balance,
     finalDay: dayOf(session.tick),
