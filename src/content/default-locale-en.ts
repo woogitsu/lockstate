@@ -300,6 +300,19 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // reason the `zone.*` pair further down does: the treasury refuses a hire
   // and a purchase alike, and somebody who pressed Hire must not be told the
   // materials were not ordered.
+  //
+  // **Both of these say "not enough funds" for a refusal that is, since #703
+  // ruling A, always the overdraft floor** -- and that is recorded here rather
+  // than fixed. `GuardRoster.hire` refuses at `src/simulation/staff/hiring.ts:199`
+  // and `ProcurementSystem.purchase` at `src/simulation/economy/procurement.ts:166`,
+  // both on a `Treasury.spend` that is one `canAfford` comparison against the
+  // floor, so the worker-side sentence carries exactly the conflation the
+  // owner's ruling 18 of 2026-08-31 removed from the *host* side
+  // (`hud.refusal.purchase-materials-past-floor` and its hire twin). Ruling 18
+  // authored two sentences and these are not them, and a replacement is
+  // player-facing copy -- `AGENTS.md`'s fourth exclusion -- so the two halves of
+  // one refusal currently read differently depending on which side of
+  // `sender.submit` decided it.
   'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — there are not enough funds.',
   // ADR 0053: the only work a staff member can be sent to do today is a
   // security duty, so a role outside the security department is a wage with
