@@ -333,6 +333,43 @@ describe('what the prison says when nothing went wrong', () => {
   });
 });
 
+/**
+ * The wire's own refusal, which is what stands between a malformed
+ * `categoryNameKey` and a player reading a dotted key inside an authored
+ * sentence (#703 ruling 13).
+ *
+ * `SimulationEventLog.recordContrabandDiscovered` is deliberately unguarded --
+ * its caller drops a category it cannot name, and a second copy of that rule in
+ * the log is how the two would come to disagree -- so the schema is the only
+ * check, and this is where it is pinned. Without this case the field could be
+ * weakened to a bare `z.string()` and the whole suite would stay green: measured.
+ *
+ * `interpolate` and `resolveLocalizationKey` are why it matters rather than
+ * being hygiene. Both deliberately render what they cannot resolve: a sentence
+ * built from `''` or from `'not a key'` reaches the screen as
+ * "Contraband found: not a key." with no error anywhere.
+ */
+describe('what the events boundary refuses', () => {
+  const parse = (categoryNameKey: unknown): boolean =>
+    workerToMainMessageSchema.safeParse({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: '00000000-0000-4000-8000-000000000703',
+      kind: 'simulation/event',
+      payload: { tick: 101, event: { sequence: 1, tick: 100, type: 'contraband.discovered', categoryNameKey } },
+    }).success;
+
+  it('takes a contraband category`s name key and refuses anything that is not one (#703 ruling 13)', () => {
+    // The premise: a real catalog key crosses, so the cases below fail for
+    // being malformed rather than for the member being unreachable.
+    expect(parse('contraband.weapon.name')).toBe(true);
+
+    expect(parse(''), 'an empty key renders as an empty word inside the sentence').toBe(false);
+    expect(parse('not a key'), 'a space is not in an identifier, and this would reach the screen verbatim').toBe(false);
+    expect(parse('.contraband.weapon.name'), 'an identifier starts with an alphanumeric').toBe(false);
+    expect(parse(7), 'and it is a key, not a figure').toBe(false);
+  });
+});
+
 describe('the log beside the notice', () => {
   it('gives every event its own row rather than rewriting the last one', () => {
     const first = hudEventAlertsFromWorkerMessage(publication(SAMPLE['prisoners.discharged'](1)), []);

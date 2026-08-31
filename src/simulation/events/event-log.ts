@@ -241,24 +241,27 @@ export class SimulationEventLog {
    * at for the status chip, and naming each of several is the whole reason this
    * event exists beside that chip.
    *
-   * **Guarded on the key being present rather than on a figure**, which is the
-   * shape `recordDischarge`'s `min(1)` guard takes for a count: an empty or
-   * malformed key would fail `identifierSchema` at the protocol boundary and
-   * take the whole publication with it, and the caller cannot always answer --
-   * `SearchSystem` resolves the key through an injected catalog lookup that may
-   * not know a category id. Skipping is the same call
-   * `createResidentRelocationNotice` makes for a room whose `nameKey` it cannot
-   * resolve, and for the same reason: a sentence with `{item}` left
-   * unsubstituted is what a player would otherwise read
-   * (`src/services/localization/format.ts` leaves a placeholder visible on
-   * purpose).
+   * **Unguarded, because there is no figure to guard and the caller is what
+   * bounds it** -- the sentence `recordEscapeSucceeded` above uses, and the
+   * shape `createResidentRelocationNotice` takes for the same problem one event
+   * over. `SearchSystem` resolves the key through an injected catalog lookup
+   * that may answer `undefined`, and it is *there* that a nameless category is
+   * dropped, before this is called at all. A second check here would be a
+   * weaker copy of that rule and is how the two would come to disagree.
+   *
+   * What stops a malformed key reaching a player is therefore the boundary
+   * rather than this method: `categoryNameKey` is `identifierSchema` on the
+   * wire, so an empty or space-bearing key is refused there -- pinned in
+   * `tests/unit/ui-simulation-events.test.ts`. The alternative is worse than a
+   * refusal, which is why it is checked somewhere:
+   * `resolveLocalizationKey` renders an unknown key as itself, so the player
+   * would read `contraband.unknown.name` inside an authored sentence.
    *
    * @param categoryNameKey The found item's category as the contraband
    * catalog's own `nameKey` -- one of the five `contraband.*.name` labels. A
    * key, never a word: ADR 0011, and the main thread resolves it.
    */
   public recordContrabandDiscovered(categoryNameKey: string, tick: number): void {
-    if (categoryNameKey.length === 0) return;
     this.append({ sequence: this._sequence + 1, tick, type: 'contraband.discovered', categoryNameKey });
   }
 

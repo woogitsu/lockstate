@@ -4,12 +4,14 @@ import { packCommand } from '../../src/simulation/protocol/commands';
 import {
   SIMULATION_PROTOCOL_VERSION,
   workerToMainMessageSchema,
+  type SimulationEvent,
   type SimulationStatusCounts,
   type WorkerToMainMessage,
 } from '../../src/simulation/protocol/types';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
-import type { HudCountsViewModel, HudViewModel } from '../../src/ui/hud';
+import type { HudAlertViewModel, HudCountsViewModel, HudEventNoticeViewModel, HudViewModel } from '../../src/ui/hud';
 import { hudCountsFromWorkerMessage } from '../../src/ui/simulation-counts';
+import { hudEventAlertsFromWorkerMessage, hudEventNoticeFromWorkerMessage } from '../../src/ui/simulation-events';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 import { type Page, expect, test } from './network-changed-fixture';
 import './ui-harness-api';
@@ -130,7 +132,12 @@ function playedPrison(seed: number): SimulationRuntime {
  * schema validates the publication, and the translator produces the counts.
  * Nothing here writes a key or a count by hand.
  */
-function countsFor(seed: number): { readonly counts: HudCountsViewModel; readonly categories: readonly string[] } {
+function countsFor(seed: number): {
+  readonly counts: HudCountsViewModel;
+  readonly categories: readonly string[];
+  /** The session itself, so a caller that also needs what it *announced* does not build a second prison for it (#703 ruling 13). */
+  readonly runtime: SimulationRuntime;
+} {
   const runtime = playedPrison(seed);
   const projected: SimulationStatusCounts = projectStatusStrip({
     tick: runtime.kernel.tick,
@@ -154,6 +161,7 @@ function countsFor(seed: number): { readonly counts: HudCountsViewModel; readonl
   return {
     counts,
     categories: [...new Set(runtime.confiscations.all().map((event) => event.categoryId))].sort(),
+    runtime,
   };
 }
 
@@ -359,5 +367,124 @@ test.describe('the contraband chip names what was found (#703 ruling 3)', () => 
       'eight chips and a contraband badge do not fit 1440x900, so this ruling was paid for in width after all',
     ).toBe(wide.metricsClientWidth);
     expect(wide.metricsClientWidth, 'the metrics row measured zero width, so the comparison above is vacuous').toBeGreaterThan(0);
+  });
+});
+
+/**
+ * **The alerts list says what a search found** -- the owner's **ruling 13** on
+ * issue #703, 2026-08-31: the list gains *"Contraband found: {item}."*, at
+ * severity `warning`, with a weapon in the same band as any other item.
+ *
+ * ## Why this is here rather than in `pnpm test`
+ *
+ * `tests/integration/contraband-search-duty.test.ts` and
+ * `tests/unit/ui-simulation-events.test.ts` prove the whole main-thread chain
+ * headlessly: a real prison emits the event, the wire schema accepts it, the
+ * translator maps `categoryNameKey` onto `{item}`, and the localizer resolves
+ * the pair to "Contraband found: Phone.". What they cannot reach is the DOM.
+ * `vitest.config.ts` is `environment: 'node'` with no jsdom, so `hud.ts` -- the
+ * module that turns a row into an element, and the **only** place
+ * `resolveHudLabelParameters` is actually called for an alerts row -- is
+ * unreachable from `pnpm test` rather than merely untested. A row the
+ * translator describes perfectly and the list never paints would pass every
+ * headless test in this repository, and so would one painted with `{item}`
+ * still in it.
+ *
+ * That is not hypothetical for this sentence in particular: `{item}` is a
+ * *message-valued* parameter, the third in the repository after ADR 0076's
+ * `{room}`/`{name}`, and the mechanism that fills one in is a line in `hud.ts`
+ * that nothing headless executes.
+ *
+ * ## The prison is real, and the alerts section is deliberately opened
+ *
+ * `playedPrison` above is the fixture the chip cases use, so the row under test
+ * is a find a real sweep made rather than a hand-built payload; seed
+ * `ONE_CATEGORY_SEED` is the two-phone prison. The events come off the
+ * session's own `SimulationEventLog`, go through the production wire schema and
+ * the production translator, and only the finished view model crosses into the
+ * page -- which is what `src/main.ts` puts there.
+ *
+ * `alertProbe().texts` reads `textContent`, which is populated whether or not
+ * the section is folded (the probe's own comment says so), so the text
+ * assertions hold without opening it. The band is asserted beside the list
+ * because it is the surface laid out at every viewport, and because it is a
+ * *second* call site for the same nested parameter: one filled in for the band
+ * and not for the row would put "Contraband found: {item}." in the log alone.
+ */
+test.describe('the alerts list says what a search found (#703 ruling 13)', () => {
+  test.use({ viewport: { width: 1_280, height: 800 } });
+
+  test('paints the sentence with the found item`s own word in it, at warning, and leaks no key', async ({ page }) => {
+    const { counts, runtime } = countsFor(ONE_CATEGORY_SEED);
+    const discoveries = runtime.events
+      .since(0)
+      .filter((event): event is Extract<SimulationEvent, { type: 'contraband.discovered' }> => event.type === 'contraband.discovered');
+    // The premise: this prison really found something, and it really is a
+    // phone, so the word below is the catalog's answer rather than a constant.
+    expect(discoveries.length, 'the fixture prison announced no contraband discovery to paint').toBeGreaterThan(0);
+    expect([...new Set(discoveries.map((event) => event.categoryNameKey))]).toEqual(['contraband.phone.name']);
+
+    const publications = discoveries.map(
+      (event) =>
+        workerToMainMessageSchema.parse({
+          protocolVersion: SIMULATION_PROTOCOL_VERSION,
+          messageId: '00000000-0000-4000-8000-000000000713',
+          kind: 'simulation/event',
+          payload: { tick: event.tick + 1, event },
+        }) as WorkerToMainMessage,
+    );
+
+    let alerts: readonly HudAlertViewModel[] = [];
+    let notice: HudEventNoticeViewModel | undefined;
+    for (const message of publications) {
+      alerts = hudEventAlertsFromWorkerMessage(message, alerts) ?? alerts;
+      const next = hudEventNoticeFromWorkerMessage(message);
+      if (next !== undefined && next !== 'none') notice = next;
+    }
+    if (notice === undefined) throw new Error('the band was given nothing to say');
+    expect(alerts.length).toBe(discoveries.length);
+
+    await page.goto(HARNESS_URL);
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+    await page.evaluate(
+      (model) => {
+        window.lockstateUiHarness.setHudViewModel(model);
+      },
+      { ...viewModelFor(counts), alerts: [...alerts], event: notice } satisfies HudViewModel,
+    );
+
+    const probe = await page.evaluate(() => window.lockstateUiHarness.alertProbe());
+    expect(probe.order, 'the discoveries must reach the alerts list').toEqual(alerts.map((row) => row.id));
+    for (const text of probe.texts) {
+      // `textContent` runs the row's label and its severity badge together with
+      // no separator, which is why this contains rather than equals.
+      expect(text, 'the sentence the owner ruled on, whole').toContain('Contraband found: Phone.');
+      expect(text, 'an unfilled placeholder is what a nested parameter fails as').not.toContain('{');
+      expect(text, 'a key that resolves to itself is what an unauthored sentence looks like').not.toContain('hud.alert.event');
+    }
+
+    // The band, which is the same sentence through a second call site, plus the
+    // grade: ruling 13 puts every category in one band, so this is `warning`
+    // for a phone and would be `warning` for a weapon.
+    const band = await page.evaluate(() => {
+      const element = document.querySelector<HTMLElement>('.hud__event');
+      if (element === null) throw new Error('the mounted HUD has no events band');
+      const box = element.getBoundingClientRect();
+      return {
+        text: element.textContent,
+        severity: element.dataset['severity'] ?? null,
+        hidden: element.hidden === true,
+        onScreen: element.offsetParent !== null,
+        width: Math.round(box.width * 100) / 100,
+        height: Math.round(box.height * 100) / 100,
+      };
+    });
+
+    expect(band.text).toBe('Contraband found: Phone.');
+    expect(band.severity, 'ruling 13: warning, and a weapon is not louder').toBe('warning');
+    expect(band.hidden, 'the band was left hidden, so the sentence is in the page and on nobody`s screen').toBe(false);
+    expect(band.onScreen, 'the band has no offset parent: it is inside something that is not displayed').toBe(true);
+    expect(band.width, 'the band measured zero width').toBeGreaterThan(0);
+    expect(band.height, 'the band measured zero height').toBeGreaterThan(0);
   });
 });
