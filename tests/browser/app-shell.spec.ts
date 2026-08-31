@@ -2620,6 +2620,13 @@ test.describe('the assembled application', () => {
      * paused, which freezes the queue: the projection answers a request whenever
      * one arrives, tick or no tick, so the block survives every viewport and
      * every tab change below.
+     *
+     * **The clause about starting the clock is out of date as of 2026-08-31 and
+     * the press has moved**, not because the queue stopped needing to exist but
+     * because ADR 0051 gave the worker a paused drain: a command submitted
+     * against a stopped clock is executed and published without a tick. Six is
+     * still six, for the reason above. See the block at the end of this setup
+     * for what the press was costing while it sat here.
      */
     // `.ui-tab[data-tab="build"]`, which is what the sweep's own tab loop below
     // uses, and not `getByRole('button', { name: 'Build' })`: that name is only
@@ -2637,7 +2644,6 @@ test.describe('the assembled application', () => {
       await queueSetupSubmit.click();
     }
     if ((await queueSetupCoordinates.getAttribute('aria-expanded')) === 'true') await queueSetupCoordinates.click();
-    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
 
     /*
      * Three purchases, in the same one clock run, and for exactly the reason the
@@ -2710,11 +2716,51 @@ test.describe('the assembled application', () => {
         timeout: 20_000,
       })
       .toBe(true);
-    // Paused, which freezes both: the projections answer a request whenever one
-    // arrives, tick or no tick, so the queue *and* the deliveries survive every
-    // viewport and every tab change below. The deliveries would otherwise land
-    // 100 ticks after they were bought and take their own controls with them.
+    /*
+     * ---- the clock, and why it is no longer running by now (2026-08-31) ----
+     *
+     * This setup used to press **Play** immediately after placing the six orders
+     * and before buying anything, with the reason written where the queue is
+     * built: *"a command is dispatched at a tick and a paused simulation would
+     * leave all six in the kernel's queue with no order to show"*. It then
+     * pressed Pause here, with the reason *"the deliveries would otherwise land
+     * 100 ticks after they were bought and take their own controls with them"*.
+     *
+     * Both sentences describe the same window, and it is the window this test
+     * kept flaking in: at x1 a delivery lands 5s after it is bought, the three
+     * `Buy` presses and the poll sit inside those 5s, and on a loaded machine
+     * they do not fit. Measured twice on 2026-08-31 -- `data-pending` read
+     * `null` where `"9"` was required, which is every one of the nine having
+     * landed rather than none having been bought. `docs/AGENT_WORKFLOW.md` lists
+     * this test as a contention canary; this is one of the two mechanisms behind
+     * that.
+     *
+     * **ADR 0051 removed the need for the first press**, and this is the first
+     * test to take it up: the worker drains commands submitted against a paused
+     * clock and publishes after them, so the six orders and the three purchases
+     * all reach the panel with the clock stopped and **no tick can land a
+     * delivery while the setup is still measuring**. The order of this block is
+     * therefore the fix: place, buy, poll, and only then let the clock move at
+     * all. Nothing above needs a tick and nothing below wants one.
+     *
+     * The press pair is kept rather than deleted, and reduced to a beat: the
+     * sweep's later states include a hire and a room, both of which want a
+     * simulation that has actually run, and *"paused"* is the state the rest of
+     * this test is measured in.
+     */
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
     await page.locator('.hud-strip__transport [title="Pause"]').click();
+    // And the state survived the beat: nine still on their way, and the queue
+    // still drawn. Either one gone would make every measurement below a
+    // measurement of a different panel.
+    expect(
+      await page.locator('.hud-build__deliveries').getAttribute('data-pending'),
+      'the deliveries landed while the clock was let go, so the block is gone',
+    ).toBe('9');
+    expect(
+      await page.locator('.hud-build__queue').boundingBox(),
+      'the queue is gone, so there is no queue block for the sweep to reach',
+    ).not.toBeNull();
 
     /** Every viewport where the loaded panel's body spills, and by how much. */
     const spilled: string[] = [];
@@ -2849,44 +2895,20 @@ test.describe('the assembled application', () => {
       //
       // **Corrected 2026-08-31 (issue #703 ruling 2), and the two claims part
       // company.** The paragraph above holds in the arrival state and is asserted
-      // there, at these same viewports, by the loop at the top of this test. In
-      // *this* state -- nine deliveries on their way, six orders queued -- the
-      // panel scrolls, so "the header sits above the unscrolled fold" is no
-      // longer a property this state has, and `scrollTop` after the sweep is no
-      // longer zero either: reaching a delivery Cancel below the fold is exactly
-      // what `scrollIntoView` is for. What is asserted here is the claim that
-      // survives, and it is the one the first #88 fix failed -- **the scroll
-      // reaches them.** Measured from the panel's own scroll rather than from
-      // wherever the sweep happened to leave it, which is why `buildPanelFold`
-      // still resets `scrollTop` before it measures.
-      const lastSection = await page.evaluate(() => {
-        const panel = document.querySelector('.hud-build');
-        const named = document.querySelector('.hud-build__coordinates > .ui-section__header');
-        const sections = [...document.querySelectorAll('.hud-build .ui-section')].filter(
-          (section) => section.getClientRects().length > 0,
-        );
-        const last = sections.at(-1)?.querySelector('.ui-section__header') ?? null;
-        if (panel === null || named === null || last === null) return null;
-        const scrollTop = panel.scrollTop;
-        panel.scrollTop = 0;
-        const p = panel.getBoundingClientRect();
-        const fold = p.top + panel.clientTop + panel.clientHeight;
-        return {
-          text: named.textContent?.trim() ?? '',
-          bottom: named.getBoundingClientRect().bottom,
-          lastText: last.textContent?.trim() ?? '',
-          lastBottom: last.getBoundingClientRect().bottom,
-          fold,
-          scrollTop,
-        };
-      });
-      expect(lastSection, `the Build panel's last section has no box at ${width}x${height}`).not.toBeNull();
-      expect(lastSection?.text, `the panel's numeric fallback section at ${width}x${height}`).toBe(
-        'Enter coordinates',
-      );
+      // there, over the same `HUD_LAYOUT_VIEWPORTS`, by `the Build panel arrives
+      // inside its own fold, with nothing queued (#174)`. In *this* state -- nine
+      // deliveries on their way, six orders queued -- the panel scrolls, so "the
+      // header sits above the unscrolled fold" is no longer a property this state
+      // has, and `scrollTop` after the sweep is not zero either: reaching a
+      // delivery Cancel below the fold is exactly what `scrollIntoView` is for.
+      // What is asserted here is the claim that survives, and it is the one the
+      // first #88 fix failed -- **the scroll reaches them** -- computed from the
+      // panel's scroll content so that where the sweep left the scroll cannot
+      // flatter it.
       /*
-       * Both headers, brought into view by the panel's own scroll and then
-       * measured against the fold.
+       * Both headers, and the question asked of each is whether the panel's own
+       * scroll reaches it -- computed from the scroll content rather than by
+       * performing a scroll, for the reason written inside the loop.
        *
        * The second of them is whatever *is* last. With a queue that is the queue
        * block's own header, and it is the header that says a queue exists at all
@@ -2897,48 +2919,103 @@ test.describe('the assembled application', () => {
        * reached it. `hud.css`'s `.hud-build[data-queued]` is what pays for it,
        * out of the catalogue's floor.
        */
-      for (const selector of ['.hud-build__coordinates > .ui-section__header', '.hud-build .ui-section']) {
-        const reached = await page.evaluate((target) => {
-          const panel = document.querySelector('.hud-build');
-          if (panel === null) return null;
-          const sections = [...document.querySelectorAll(target)].filter(
-            (node) => node.getClientRects().length > 0,
-          );
-          const header =
-            target === '.hud-build .ui-section'
-              ? (sections.at(-1)?.querySelector('.ui-section__header') ?? null)
-              : (sections.at(0) ?? null);
+      const reach = await page.evaluate(() => {
+        const panel = document.querySelector('.hud-build');
+        if (panel === null) return null;
+        const named = document.querySelector('.hud-build__coordinates > .ui-section__header');
+        const sections = [...document.querySelectorAll('.hud-build .ui-section')].filter(
+          (section) => section.getClientRects().length > 0,
+        );
+        const last = sections.at(-1)?.querySelector('.ui-section__header') ?? null;
+        const panelTop = panel.getBoundingClientRect().top + panel.clientTop;
+        const scrollTop = panel.scrollTop;
+        const round = (value: number): number => Math.round(value * 100) / 100;
+        /*
+         * Where a header sits in the panel's **scroll content**, not on the
+         * screen: its distance from the top of everything the panel can scroll
+         * through.
+         *
+         * Arithmetic rather than a performed scroll, and that is a correction of
+         * this block's own first draft. It called
+         * `scrollIntoView({ block: 'nearest' })` and measured the box against
+         * the fold with half a pixel of tolerance -- and the browser's scroll
+         * arithmetic overshot by 0.047px on one run and 0.609px on the next,
+         * from the same page at the same viewport, because where
+         * `scrollIntoView` lands depends on the fractional scroll position it
+         * starts from. A tolerance that has to be widened per run is not
+         * measuring the layout. What is measured instead says the same thing
+         * without moving anything: the header lies inside the scrollable
+         * content, and it is shorter than the box that has to show it, so some
+         * scroll position shows all of it.
+         *
+         * One `evaluate` for both headers and the spill below, because this test
+         * spends 174s of its 180s budget and a round trip is not free.
+         */
+        const place = (header: Element | null) => {
           if (header === null) return null;
-          header.scrollIntoView({ block: 'nearest' });
-          const p = panel.getBoundingClientRect();
           const rect = header.getBoundingClientRect();
+          const top = rect.top - panelTop + scrollTop;
           return {
             text: header.textContent?.trim() ?? '',
-            top: rect.top,
-            bottom: rect.bottom,
-            fold: p.top + panel.clientTop + panel.clientHeight,
-            panelTop: p.top,
+            top: round(top),
+            bottom: round(top + rect.height),
+            height: round(rect.height),
           };
-        }, selector);
-        expect(reached, `${selector} has no box at ${width}x${height}`).not.toBeNull();
-        // Half a pixel of tolerance, which is what this file's own `measure()`
-        // uses for the identical question one test down ("is this box inside the
-        // panel's visible box"). `scrollIntoView` lands 0.047px past the fold at
-        // 1280x720 -- measured -- and a fractional overshoot from the browser's
-        // own scroll arithmetic is not a control below the fold.
-        expect(
-          reached?.bottom ?? Number.POSITIVE_INFINITY,
-          `the Build panel's scroll does not reach "${reached?.text ?? selector}" at ${width}x${height}: it ends at y=${Math.round(reached?.bottom ?? 0)} in a panel clipped at y=${Math.round(reached?.fold ?? 0)}`,
-        ).toBeLessThanOrEqual((reached?.fold ?? 0) + 0.5);
-        expect(
-          reached?.top ?? Number.NEGATIVE_INFINITY,
-          `the Build panel's scroll carried "${reached?.text ?? selector}" above its own top at ${width}x${height}`,
-        ).toBeGreaterThanOrEqual((reached?.panelTop ?? 0) - 0.5);
-      }
-      await page.evaluate(() => {
-        const panel = document.querySelector<HTMLElement>('.hud-build');
-        if (panel !== null) panel.scrollTop = 0;
+        };
+        const block = document.querySelector('.hud-build__deliveries');
+        const headers = [place(named), place(last)];
+        // Back to the top before anything else in this loop measures: the sweep
+        // above reaches controls with `scrollIntoView` and leaves the panel
+        // wherever the last one was. The arithmetic in `place` does not care,
+        // and the states below this line do.
+        panel.scrollTop = 0;
+        return {
+          headers,
+          scrollContent: panel.scrollHeight,
+          visible: panel.clientHeight,
+          panelOverflow: panel.scrollHeight - panel.clientHeight,
+          bodyShortfall: (() => {
+            const body = document.querySelector('.hud-build > .ui-panel__body');
+            return body === null ? -1 : body.scrollHeight - body.clientHeight;
+          })(),
+          blockHeight: round(block?.getBoundingClientRect().height ?? 0),
+        };
       });
+      expect(reach, `the Build panel has no box at ${width}x${height}`).not.toBeNull();
+      // The numeric fallback is still the section this names, read from the
+      // bundled catalog rather than typed as English (ADR 0011), and it is the
+      // first of the two headers below.
+      expect(reach?.headers[0]?.text, `the panel's numeric fallback section at ${width}x${height}`).toBe(
+        localeText('hud.build.coordinates'),
+      );
+      /*
+       * Both headers, and the question asked of each is whether the panel's own
+       * scroll reaches it.
+       *
+       * The second of them is whatever *is* last. With a queue that is the queue
+       * block's own header, and it is the header that says a queue exists at all
+       * -- so a player who cannot reach it has not been told. Measured before an
+       * assertion existed for it: the collapsed block is 45px and the rail had
+       * 8px to spare at 1280x720 and none at 900x600, so the header ended **14px
+       * and 37px below the fold** with nothing scrolled and no scroll that
+       * reached it. `hud.css`'s `.hud-build[data-queued]` is what pays for it,
+       * out of the catalogue's floor.
+       */
+      for (const header of reach?.headers ?? []) {
+        expect(header, `a Build panel section header has no box at ${width}x${height}`).not.toBeNull();
+        expect(
+          header?.top ?? -1,
+          `"${header?.text ?? ''}" starts above the Build panel's scroll content at ${width}x${height}`,
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          header?.bottom ?? Number.POSITIVE_INFINITY,
+          `the Build panel's scroll does not reach "${header?.text ?? ''}" at ${width}x${height}: it ends ${Math.round((header?.bottom ?? 0) - (reach?.scrollContent ?? 0))}px past the ${reach?.scrollContent ?? 0}px the panel can scroll through`,
+        ).toBeLessThanOrEqual(reach?.scrollContent ?? 0);
+        expect(
+          header?.height ?? Number.POSITIVE_INFINITY,
+          `"${header?.text ?? ''}" is taller than the Build panel's visible box at ${width}x${height}, so no scroll position shows all of it`,
+        ).toBeLessThanOrEqual(reach?.visible ?? 0);
+      }
 
       // And no box that carries the Build panel's height is shorter than its
       // own content *in the state the panel arrives in* -- every box in the
@@ -3043,31 +3120,20 @@ test.describe('the assembled application', () => {
         `boxes in the Build panel shorter than their own content at ${width}x${height}`,
       ).toEqual([]);
 
-      const spill = await page.evaluate(() => {
-        const panel = document.querySelector('.hud-build');
-        const body = document.querySelector('.hud-build > .ui-panel__body');
-        const block = document.querySelector('.hud-build__deliveries');
-        if (panel === null || body === null) return null;
-        return {
-          panelOverflow: panel.scrollHeight - panel.clientHeight,
-          bodyShortfall: body.scrollHeight - body.clientHeight,
-          blockHeight: Math.round((block?.getBoundingClientRect().height ?? 0) * 10) / 10,
-        };
-      });
-      expect(spill, `the Build panel's body has no box at ${width}x${height}`).not.toBeNull();
-      if ((spill?.bodyShortfall ?? 0) > 0) {
-        spilled.push(`${width}x${height}:${spill?.bodyShortfall ?? 0}`);
+      expect(reach?.bodyShortfall ?? -1, `the Build panel's body has no box at ${width}x${height}`).toBeGreaterThanOrEqual(0);
+      if ((reach?.bodyShortfall ?? 0) > 0) {
+        spilled.push(`${width}x${height}:${reach?.bodyShortfall ?? 0}`);
         expect(
-          spill?.panelOverflow ?? 0,
+          reach?.panelOverflow ?? 0,
           `the Build panel cannot scroll everything its body spills at ${width}x${height}`,
-        ).toBeGreaterThanOrEqual(spill?.bodyShortfall ?? 0);
+        ).toBeGreaterThanOrEqual(reach?.bodyShortfall ?? 0);
         // One gutter of slack: `--hud-build-map-gutter` is what sits between the
         // block and the hint above it, and it is 8px at the tall viewports and
         // `--space-1` under `max-height: 700px`.
         expect(
-          spill?.bodyShortfall ?? 0,
-          `the Build panel's body spills more than the deliveries block at ${width}x${height}: ${spill?.bodyShortfall ?? 0}px against a ${spill?.blockHeight ?? 0}px block`,
-        ).toBeLessThanOrEqual(Math.ceil(spill?.blockHeight ?? 0) + 8);
+          reach?.bodyShortfall ?? 0,
+          `the Build panel's body spills more than the deliveries block at ${width}x${height}: ${reach?.bodyShortfall ?? 0}px against a ${reach?.blockHeight ?? 0}px block`,
+        ).toBeLessThanOrEqual(Math.ceil(reach?.blockHeight ?? 0) + 8);
       }
 
       // The numeric fallback expanded: the tallest the Build panel gets, and
