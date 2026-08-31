@@ -15,6 +15,14 @@ that carries the last of the day's twelve merges —
 The branch adds one file under `tests/browser/` and one directory under
 `docs/research/`. **It changes nothing under `src/`.**
 
+**Two commits were played, and the difference between them is the spec file.**
+Acts 1 through 5b ran on `ea97c6d` itself; acts 6 through 10 ran on `e5c38f8`,
+this branch's first commit, which adds
+`tests/browser/playtest-2026-08-31-twelve.playtest.ts` and nothing else — the
+version line in every screenshot from act 6 onward reads `v0.0.294 · e5c38f8`
+and every earlier one reads `v0.0.294 · ea97c6d`, which is how it is known
+rather than assumed. `git diff --stat ea97c6d..e5c38f8 -- src/` is empty.
+
 **The brief, in the owner's words:** *"Znajdź bugi i błędy grając"* — find
 defects **by playing** — under the standing design directive of the same day,
 *"gra ma być łatwa przyjazna do grania, a nie jakieś ukryte funkcje"*, and the
@@ -761,3 +769,30 @@ confident that a player is hurt by it, because I did not watch a person try to
 cancel the wrong purchase; I inferred the cost from the panel's own docblock
 about which row matters. A single session of somebody actually buying and
 cancelling would settle it either way.
+
+---
+
+# What was fixed here: nothing, and why
+
+The brief's bar is *"fix nothing that is not obviously and locally a bug"*, and
+on that bar this pass fixed nothing. Each finding above was weighed against it
+and each fails it for a stated reason:
+
+| finding | why it is not a local fix |
+| --- | --- |
+| §1 the log's 88px labels | Wrapping changes every row's height, which `src/ui/hud/hud.css:353` and its docblock exist to hold fixed against the list's scroll, and `ui-shell.spec.ts` measures it. How many rows a 270px box should hold at what legibility is a design call. |
+| §5 / §6 the panel and strip overflows | Both are allocation decisions the merged pull requests already weighed and recorded costs for; changing either moves a budget somebody argued over today. |
+| §8 the random delivery order | The fix is a monotonic order id or a purchase sequence in the sort. Both touch an identifier `docs/DETERMINISM.md` and ADR 0012 have positions on. |
+| §9 the standing refusal | Retiring it needs a rule for *when* — a timer, a tick count, a next-press. That is new behaviour, not a repair. |
+| §11 the sliced Prisons panel | Rail height allocation, same class as §5. |
+| §12 the four clipped labels | `white-space: normal` on those rules changes three panels' heights; see §1. |
+| §13's green `Covered` over a 0 | Needs a rule nobody has written: is "0 covered, 0 unguarded, 12 prisoners" a success or a state with no verdict yet? |
+
+Two more sit outside the fix question entirely: **§4's four-row window is an
+explicit owner ruling of the same day**, and **§13's `everAdmitted` reset is
+recorded as a known consequence in the source that causes it.**
+
+Every one of these is copy, layout or a decision, which `AGENTS.md`'s fourth
+exclusion and the standing mandate's "propose an ADR rather than deciding
+architecture inside implementation code" both reserve. They are here as
+proposals, with their reproductions, rather than as commits.
