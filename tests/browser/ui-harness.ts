@@ -467,7 +467,32 @@ const BUILD_MODEL: HudBuildViewModel = {
  * `tests/browser/app-shell.spec.ts` is where the real projection is driven.
  */
 const STAFF_MODEL: HudStaffViewModel = {
-  roles: [{ staffRoleId: 'staff-role.guard', labelKey: 'staff-role.guard.name', hireChargeMinorUnits: 80 }],
+  /*
+   * **The two money figures are deliberately different, and content makes them
+   * the same** (issue #639 ruling 2).
+   *
+   * The shipped guard is authored `wageBand: { minPerDay: 80 }`, and both
+   * `staffHireCostMinorUnits` and `staffDailyWageMinorUnits` read it -- so in
+   * the real application a hire costs 80 and bills 80 a day, which is what
+   * `app-shell.spec.ts` drives through the real projection and what
+   * `ui-shell.spec.ts` pins as `Hire Guard · 80`.
+   *
+   * A fixture that copied that pair would let a panel render
+   * `hireChargeMinorUnits` twice and never read the wage at all, and every
+   * assertion would still pass -- a fixture supplying both sides of the
+   * comparison, which `docs/TESTING.md` forbids. So `hireChargeMinorUnits`
+   * stays 80, because specs in this file assert the button's own label against
+   * it, and the daily wage is 55: a figure no catalogue authors, chosen so that
+   * one standing in for the other is a visible failure.
+   */
+  roles: [
+    {
+      staffRoleId: 'staff-role.guard',
+      labelKey: 'staff-role.guard.name',
+      hireChargeMinorUnits: 80,
+      dailyWageMinorUnits: 55,
+    },
+  ],
 };
 
 /**
@@ -574,6 +599,7 @@ function layoutBoxOf(node: Element | null): LayoutBox | null {
 function buildQueueProbe(): BuildQueueProbe {
   const section = document.querySelector<HTMLElement>('.hud-build__queue');
   const header = section?.querySelector<HTMLButtonElement>('.ui-section__header') ?? null;
+  const shortfall = document.querySelector<HTMLElement>('.hud-build__queue-shortfall');
   const rows = [...document.querySelectorAll<HTMLElement>('.hud-build__queue-row')].filter(
     // Laid out, not merely present: the rows are pooled, so the ones with no
     // order in them are `hidden` and still in the DOM. A probe that reported
@@ -603,6 +629,14 @@ function buildQueueProbe(): BuildQueueProbe {
         .filter((line) => line.getClientRects().length > 0)
         .map((line) => (line.textContent ?? '').trim())
         .find((text) => text.length > 0) ?? '',
+    // Queried from the document and not from `section`, deliberately: the node
+    // is a sibling of the block rather than a child of it, so that a collapsed
+    // fold cannot hide it. A probe that looked inside `section` would report
+    // this line as absent while it was on screen.
+    shortfallText: shortfall?.textContent?.trim() ?? '',
+    shortfallLaidOut: shortfall !== null && shortfall.getClientRects().length > 0,
+    shortfallHasOffsetParent: shortfall !== null && shortfall.offsetParent !== null,
+    shortfallBox: layoutBoxOf(shortfall),
   };
 }
 
@@ -1818,6 +1852,7 @@ window.lockstateUiHarness = {
       coordinatesFolded:
         document.querySelector<HTMLElement>('.hud-rooms__coordinates')?.dataset['collapsed'] ?? '',
       armPressed: document.querySelector<HTMLElement>('.hud-rooms__arm')?.getAttribute('aria-pressed') ?? '',
+      armText: document.querySelector<HTMLElement>('.hud-rooms__arm')?.textContent?.trim() ?? '',
       removePressed:
         document.querySelector<HTMLElement>('.hud-rooms__remove')?.getAttribute('aria-pressed') ?? '',
       folded: panel?.dataset['collapsed'] ?? '',

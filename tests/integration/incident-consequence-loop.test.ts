@@ -111,12 +111,41 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
 }
 
 /** A prison with one furnished cell and one prisoner housed in it. */
-function housedPrisoner(seed = SEED): { readonly runtime: SimulationRuntime; readonly entityId: number } {
+/**
+ * `guards` exists because of [ADR 0080](../../docs/adr/0080-when-the-prison-asks-what-a-prisoner-is-carrying.md),
+ * and the reason is worth stating where the fixture is built rather than at
+ * the two call sites that pass 1.
+ *
+ * A review that raises a prisoner into tier 3 now asks the contraband
+ * introduction question, so the reclassified prisoner in this file can be
+ * carrying something -- and `canAttemptEscape` is exactly
+ * "tier >= 3 and carrying something". In an **unguarded** prison the
+ * escape-attempt pressure then clears its threshold and the subject of the
+ * next two assertions leaves the prison: measured on this fixture's own seed,
+ * `escape-attempt` `escaped: true` between ticks 48,000 and 72,000, after
+ * which `projectPrisonerDetail` returns `undefined` and the record slot holds
+ * a stale 3.
+ *
+ * **One guard is the whole difference**, and that is the finding rather than a
+ * workaround: with `guards: 1` this fixture reproduces the exact tier ladder
+ * it asserted before (3 at the first review, 2 one credit period later, 1 at
+ * the cap, 1 for ever), because `staffingShortfall` leaves the pressure score
+ * under the line. With `guards: 2` the phone is *confiscated*, which is a
+ * finding worth a point and delays the come-down by one period -- so 1 is the
+ * value, chosen for what it restores and not for what it hides.
+ *
+ * Every other test in this file keeps `guards: 0`, because an unguarded prison
+ * is what a fixture about incidents should be.
+ */
+function housedPrisoner(seed = SEED, guards = 0): { readonly runtime: SimulationRuntime; readonly entityId: number } {
   const runtime = createNewSimulationRuntime(seed);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
   submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
+  for (let index = 0; index < guards; index += 1) {
+    submit(runtime, `hire-${String(index)}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ARRIVAL }));
+  }
   // The bed is standing by tick 150 (100 ticks of delivery delay plus three
   // progress ticks on a ten-tick schedule); 200 is the same margin
   // `furnished-cell-loop.test.ts` admits after.
@@ -203,8 +232,11 @@ describe('an incident has a consequence for the prisoner who was in it', () => {
     // identical prisons, identical seed, identical commands; the only difference
     // is one riot record, and it is a record neither prison reads until the
     // review at 47,999.
-    const withIncident = housedPrisoner();
-    const clean = housedPrisoner();
+    // One guard in **both** arms, so the only difference between the two
+    // sessions is still the riot record. See `housedPrisoner`: without it the
+    // reclassified prisoner escapes before tick 70,000 under ADR 0080.
+    const withIncident = housedPrisoner(SEED, 1);
+    const clean = housedPrisoner(SEED, 1);
     lapsedRiot(withIncident.runtime, withIncident.entityId, 'incident-riot-1', 30_000);
 
     const needs = (run: { readonly runtime: SimulationRuntime; readonly entityId: number }): readonly number[] =>
@@ -299,12 +331,27 @@ describe('an incident has a consequence for the prisoner who was in it', () => {
      * from. Hiring a guard would put it back at 1,000 and would change nothing
      * else this file asserts; it is left unhired because an unguarded prison is
      * what a fixture about incidents should be.
+     *
+     * **The paragraph above is kept and its last clause is now false, and both
+     * halves matter.** This test hires **one guard in both arms** under
+     * [ADR 0080](../../docs/adr/0080-when-the-prison-asks-what-a-prisoner-is-carrying.md),
+     * because without one the reclassified prisoner is carrying something,
+     * `canAttemptEscape` is satisfied, and they are gone before tick 70,000.
+     * So the prediction the old paragraph made was **exactly right** -- 1,000
+     * is what a guard buys and it is the only value in this test that moved,
+     * measured rather than assumed -- and the reason for leaving the prison
+     * unguarded is what stopped applying, not the arithmetic. `safety` is
+     * still not where the divergence comes from: it is 1,000 in **both** arms,
+     * which is the property this pin exists for.
      */
-    expect(hardSafety).toBe(0);
+    expect(hardSafety).toBe(1_000);
   });
 
   it('brings them back down as clean time accrues, so the loop does not only ratchet one way', () => {
-    const { runtime, entityId } = housedPrisoner();
+    // One guard, so the prisoner this measures is still in the prison at the
+    // third review. See `housedPrisoner` for why, and for what two guards
+    // would do instead.
+    const { runtime, entityId } = housedPrisoner(SEED, 1);
     stepTo(runtime, 30_000);
     lapsedRiot(runtime, entityId, 'incident-riot-1', 30_000);
 
