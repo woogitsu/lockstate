@@ -275,6 +275,37 @@ describe('the unit a partly filled purchase is atomic at (#703 ruling 12)', () =
     expect(procurement.pendingDeliveries.map((delivery) => delivery.quantity)).toEqual([2, 2, 2]);
   });
 
+  it('leaves the residual alone when it is short of one whole order, however many orders are queued', () => {
+    /*
+     * **The bound that survived ruling 9, measured.** All-or-nothing left a
+     * prison whose queue it could not fund in one lump with the *whole* balance
+     * unspent; per-order fill leaves it with less than one order costs. That is
+     * the change, and it is a change in the residual rather than in the total:
+     * the queue's own cost is what it can ever spend, before and after.
+     *
+     * 79 against four wall orders at 80: nothing is bought, four times over. A
+     * per-*item* partial fill would buy one brick of the eight and leave the
+     * prison with 39 and half a wall on the road.
+     *
+     * This is what makes the whole of `scripts/report-loan-recovery-pricing.mjs`
+     * §10c come out **identical** before and after the ruling -- measured, every
+     * figure in that table unchanged, and the scheduled pass still spending 0.
+     * The presses had already taken those prisons to -2,440, and 60 of room is
+     * short of a wall.
+     */
+    const { treasury, service, procurement } = fixture(79);
+
+    const report = service.procureForPendingOrders(
+      [1, 2, 3, 4].map((index) => order(`order-${String(index)}`, need(BRICK, 2))),
+      0,
+    );
+
+    expect(report.purchased).toEqual([]);
+    expect(report.unfunded).toEqual([{ itemId: BRICK, quantity: 8, costMinorUnits: 320 }]);
+    expect(treasury.balanceMinorUnits).toBe(79);
+    expect(procurement.pendingDeliveries).toEqual([]);
+  });
+
   it('buys an order whole or not at all, never the half of it the balance covers', () => {
     /*
      * **The one new bound `procureForPendingOrders` adds, and the reason the

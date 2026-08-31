@@ -200,6 +200,26 @@ export interface BuildQueueViewModel {
   /**
    * Whether the queue is stalled on money, and by how much (#627, #629).
    *
+   * **`shortfallMinorUnits` still means what it has always meant -- what the
+   * queue as a whole still needs -- and #703 ruling 9 did not move it.** A
+   * partly filled pass funds a subset of the queue and reports **every** order
+   * it left unfunded in `MaterialsProcurementReport.unfunded`, not only the
+   * next one, precisely so this figure's subject did not change under the
+   * player without anybody deciding that it should.
+   *
+   * **What is NOT here, and it is named rather than added:** what the pass
+   * *bought*. `MaterialsProcurementReport.purchased` carries it and this
+   * projection reads only `unfunded`, so a pass that spends the prison's last
+   * 240 on three wall segments moves the funds chip and says nothing about
+   * why. ADR 0081 Decision 3 calls that *"a precondition rather than a
+   * nicety"* -- *"a partial buy that silently spends the treasury and moves one
+   * segment forward is worse than a refusal, because the money is gone"* -- and
+   * its open question 2 leaves **what the player is told** to the owner, which
+   * `AGENTS.md`'s fourth exclusion reserves. A `purchasedMinorUnits` beside
+   * `shortfallMinorUnits` would be one field and one sentence; the field
+   * without the sentence is a number nobody can read, so neither was added.
+   * This comment is the empty place.
+   *
    * **Not derivable from `orders`, and that is the whole reason it is here.**
    * Every order in this list reads `'materials-pending'` whether its materials
    * are on a lorry or were never bought, so a consumer reading the rows alone

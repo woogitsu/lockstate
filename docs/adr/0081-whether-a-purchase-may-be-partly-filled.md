@@ -232,6 +232,49 @@ reason the player did not choose.
 > "safe now"; it widens the band of queue sizes that can silently strand a
 > prison from `(1,040, 2,500)` to everything above 1,040.** Whether that needs a
 > bound of its own is a question for this document and is not answered here.
+>
+> **THAT PARAGRAPH'S PREMISE WAS MEASURED WHEN PARTIAL FILL WAS IMPLEMENTED AND
+> IT DOES NOT HOLD. It is kept because it is what the implementing agent was
+> briefed against, and because a decision record's wrong turns are worth more
+> visible than tidied away.** Re-measured 2026-08-31 on `c6cd3e3` by tagging
+> every `ConstructionSystem.procureQueuedMaterials` call with whether it came
+> from `ConstructionSystem.update` or from the `PlaceBuildOrder` command
+> handler, over §10c's whole sweep (tails of 13, 20, 31, 40 and 60 orders):
+>
+> | | spent | purchases |
+> |---|---|---|
+> | the scheduled pass — the one with no press | **0** | **0** |
+> | the `PlaceBuildOrder` presses | **27,440** | **343** |
+>
+> in every one of the five runs. **The all-or-nothing refusal was not bounding
+> an unpressed drain, because there was no unpressed drain to bound.** A press
+> buys the *increment* its own order adds and an increment is one wall, so the
+> walk to −2,440 that §10c reports was already per order and already pressed
+> for. The sentence *"a forty-order tail costing 3,200 strands nothing at all"*
+> is also not what that section prints: it prints a final balance of −2,440 with
+> ten orders still standing, and the `-25` above appears in no run of it.
+>
+> **And the sweep was re-run after partial fill landed: every figure in §10c is
+> identical.** Same `room used`, same `floor breaches` of 0, same `min balance`,
+> same `orders standing`, same `final balance`; the scheduled pass still spends
+> 0. It cannot spend what those runs leave, because 60 of room is short of the
+> 80 a wall costs and ruling 12 funds an order whole or not at all.
+>
+> **What partial fill does move is the residual, and no bound was invented for
+> it.** All-or-nothing left a prison whose queue it could not fund in one lump
+> with the *whole* balance unspent; per-order fill leaves it with less than the
+> cheapest unfunded order costs. That residual is the liquidity ADR 0075's
+> locked position needs, so the question this paragraph asks is real — but
+> **naming how much of it a prison is owed is a balance value**, which ADR 0017
+> decision 5 reserves to the owner with the rest of
+> [#29](https://github.com/matmaxalez/lockstate/issues/29). So it is left open
+> rather than answered in implementation code, and the two things that do bound
+> the queue are named instead: its own finite cost, which partial fill does not
+> change, and `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`, which every spend passes
+> through one comparison in `Treasury.canAfford`.
+>
+> This correction changes no decision in this document, and the Status line
+> above is untouched: this ADR is still unsigned.
 
 **And it does NOT fix the room-enclosure failure it looks like it should.** In
 the measured locked position the pending set is `{wall-9, wall-314…wall-325}` and
