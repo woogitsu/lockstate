@@ -244,6 +244,101 @@ command layer and is not from the chair.
   because the cancellation had left a hole; **UNKNOWN** how common that is.
 - No new wording is proposed here: a replacement sentence is copy.
 
+## 2. The escape sentence: it exists, it fires, and the all-clear lands on the same tick
+
+**This is what act 3 was built for, and the answer needed an instrument that no
+CI assertion has.**
+
+### 2a. A neglected prison really does lose somebody, and the route is the one #681 opened
+
+**MEASURED**, act3b: one 6x6 cell with **two** beds for **fourteen** prisoners
+and **zero** guards, run at ×4 from tick 360. The status strip states the
+neglect plainly and continuously:
+
+```
+| 14 | PRISONERS | 12 with no bed | 0 | STAFF | 0 | COVERAGE | 0 understaffed · 14 unguarded | 1 | ROOMS | …
+```
+
+Every event the prison produced, in order, from the worker tee:
+
+```
+assault-opened            5601   all-clear   6211
+riot-opened               8501   all-clear   9111
+riot-opened              13301   all-clear  13911
+riot-opened              18101   all-clear  18711
+riot-opened              22901   all-clear  23511
+riot-opened              27701   all-clear  28311
+riot-opened              32501   all-clear  33111
+riot-opened              37301   all-clear  37911
+riot-opened              42101   all-clear  42711
+prisoners.discharged     43621
+prisoners.discharged     44201
+riot-opened              46901   all-clear  47511
+incidents.escape-attempt-opened   48001
+incidents.escape-succeeded        48611
+incidents.all-clear               48611
+```
+
+A riot every **4,800 ticks** exactly, each lapsing **610 ticks** after it opens
+because nobody comes. And then, at tick 48,832:
+
+```
+[act3] tick=48832 prisoners=11 highRisk=11 residents=2 staff=0 treasury=29620
+```
+
+**`highRisk=11` of 11**, having been `highRisk=0` for the previous twenty in-game
+days. That is `ClassificationReviewSystem` firing at tick **47,999** — its
+schedule is `intervalTicks: 24_000, phaseTicks: 23_999`
+(`src/simulation/prisoners/classification-review-system.ts:255`) and every
+prisoner classified before tick 23,999 was eligible for the first time — and
+raising the whole population into tier 3 off nine lapsed riots' worth of
+disciplinary findings.
+
+**So the chain #681 built is real and a player can walk into it by neglect**:
+overcrowd, hire nobody, let riots lapse, and at the second review boundary the
+prison is told its whole population is high risk. Two ticks of game time later
+the first escape attempt opens, and 610 ticks after that somebody is gone. This
+is the first record of an escape reached by *playing* rather than by a fixture.
+
+### 2b. The escape and the all-clear are recorded on the same tick, and the band holds one sentence
+
+**MEASURED**, from the list above: `incidents.escape-succeeded` and
+`incidents.all-clear` both carry **tick 48611**.
+
+**VERIFIED, read**, and this was predicted from the code before the run
+confirmed it:
+
+- `src/simulation/incidents/response-system.ts:620` — `lapse` records the escape
+  inside the `if (outcome.escaped)` loop.
+- `src/simulation/incidents/response-system.ts:625` — the next statement is
+  `this.reportAllClearIfCalm(tick)`, and `:240-243` shows it fires whenever
+  `openIncidentCount === 0`. The escape's own lapse is what makes the prison
+  calm, so it *always* fires straight after the last open incident lapses.
+- `src/simulation/worker/state-machine.ts:701-723` — `publishEvents` posts one
+  `simulation/event` per event in a single loop.
+- `src/ui/simulation-events.ts:356` — `hudEventNoticeFromWorkerMessage`, whose
+  docblock is explicit: *"**The newest event is the one on the line.** … Nothing
+  is stacked and nothing comes back: an event pushed off the line is still in the
+  log."*
+
+**And the log the player can read is behind a fold that starts shut.**
+**VERIFIED, read** — `src/ui/hud/hud-state.ts:53`: `collapsedPanels: ['alerts']`,
+and the alerts list is a `ui-section` inside the minimap panel
+(`src/ui/hud/hud.ts:1253-1283`).
+
+**MEASURED**, the test process's own poll right after the escape, one tick-loop
+later:
+
+```
+[act3]   band now: "The prison is under control again — no incident is still open."
+```
+
+### 2c. What the same mechanism gives the player when the two events are 70 ticks apart
+
+**MEASURED**, §6: assault-opened at 29,151, all-clear at 29,221, and the opening
+sentence held the band for **744 ms** at ×4. The escape pair is **zero** ticks
+apart.
+
 ## 3. #690 measured: four presses per room, uniform, and nothing swallowed
 
 **This is the measurement #690 asked for by name.** Its own weakest claim was
@@ -591,3 +686,43 @@ returns to, neither happens.
   something coarser than a tile. `refusal-log.ts:454` already argues the
   keying direction deliberately — *"does not withdraw a refusal that is still
   true"* — so the narrow key is a decision, not an oversight.
+
+## 10. The only surface that names a risk tier shows four rows of fourteen, in entity order
+
+**MEASURED**, act3b, the Regime tab of a fourteen-prisoner prison:
+
+```
+[act3]   regime roster: ["REGIME","Collapse","TODAY'S BLOCKS","General Population",
+  "43% THROUGH","Allows Work, Education, Free Association","High Risk","36% THROUGH",
+  "Allows Sleep, Meal, Hygiene","PRISONERS","4 of 14","Ewan Abara","Association",
+  "Hygiene","Low","Rafal Zielen","Association","Hygiene","Minimal",
+  "Bram Lindqvist","Idle","Hunger","Minimal","Nadia Xavier"]
+```
+
+**VERIFIED, read**: `src/ui/hud/regime-panel.ts:156` —
+`PRISONER_ROSTER_ROW_LIMIT = 4`, and `:546` slices to it. And
+`src/simulation/presentation/prisoner-projection.ts:406-420`: the projection
+walks the entity store by index and pages by position, with the docblock stating
+the rule outright — *"Rows are **not** sortable by an arbitrary column here."*
+
+So the badge that carries a prisoner's tier — the one `describePrisonerRow`
+tones `warning` for the high-risk group — is shown for the first four prisoners
+by entity index, and the panel says `4 of 14`.
+
+- **Observation.** #681 makes tier 3 reachable by review, and the tier is the
+  gate on both a weapon and an escape. The player's only per-prisoner view of
+  that tier is four rows in arrival order out of a population that this pass ran
+  at fourteen.
+- **What would establish the cause**: done — the limit is a constant and the
+  order is entity index, both read above, and the projection's docblock names
+  paging as the intended answer rather than sorting.
+- **What would establish the impact**: whether a prison ever holds a tier-3
+  prisoner outside the first four indices in ordinary play. **UNKNOWN here** —
+  act3b's roster showed `Low`, `Minimal`, `Minimal` and never a `High` while
+  this record was written, so this pass never had a tier-3 row to look for.
+- The status strip publishes `prisonersHighRisk` and does **not** show it. The
+  strip's eight items are prisoners, staff, coverage, rooms, incidents,
+  contraband, funds and earned-today (`src/ui/hud/projection.ts`). So "how many
+  of my prisoners are high risk" has a count on the wire and no pixel — the
+  shape #629 puts in the same class as a promise the code does not keep. **Not
+  filed**: a ninth strip item is layout and copy, which is the owner's.
