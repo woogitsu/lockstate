@@ -989,10 +989,20 @@ const MAX_PENDING_DELIVERIES = 4_096;
  * **Bounded, because these are client-writable numbers.** A save is a file the
  * player's browser produced and could have edited, and the same reasoning that
  * bounds the trusted tier's columns (#105 finding 4, #191) applies to a
- * balance and a delivery queue: `nonnegative().int()` on the money, a
+ * balance and a delivery queue: `int()` on every figure, a
  * `max` on the queue so a hand-edited save cannot ask the runtime to hold
  * a million pending deliveries, and `safe()` so an arithmetic overflow cannot
  * be smuggled in as a starting condition.
+ *
+ * **This paragraph said `nonnegative().int()` on the money, and that half of
+ * it stopped being true at ADR 0075 decision 2** -- marked rather than
+ * overwritten, because the sign bound was load-bearing for the argument the
+ * `payroll` field below makes and a reader needs to see it go. `nonnegative()`
+ * survives on `payroll.unpaidWagesMinorUnits` and on the delivery queue's
+ * `arrivesAtTick` and `paidMinorUnits`; it is gone from the balance, and that
+ * field's own comment says why.
+ * What did not change is the part this paragraph was actually about: a
+ * hand-edited figure still has to be an integer inside the safe range.
  */
 const economySectionSchema = z
   .object({
@@ -1011,6 +1021,46 @@ const economySectionSchema = z
        * fraction and still refuses a hand-edited figure outside the safe
        * range, which is what #105 finding 4 and #191 asked of a
        * client-writable number.
+       *
+       * **Why no migration step, and it is not this file's optional-field
+       * pattern.** That pattern is about *absence*, and this field is
+       * required: absence is not a case a reader can be in. What settles it is
+       * ADR 0038 decision 1's other clause -- *"a value the build cannot
+       * interpret is a fact about the blob and is refused"* -- and the line
+       * moved outward. The balances this build interprets are a strict
+       * superset of the ones the previous build could write, so there is
+       * nothing for a step to do: every save in the corpus is already valid
+       * under the new bound, and a step that rewrote a balance would be
+       * inventing a figure the file records correctly.
+       *
+       * **The cost, in the shape `masterSeed` and `payroll` state theirs.**
+       * Those two record that an *older* build refuses a save carrying their
+       * key as `invalid-shape` where a V6 bump would have said
+       * `unsupported-version`. A loosened *value* bound costs the same thing
+       * in a narrower case: a save whose balance is negative is refused
+       * `invalid-shape` by every build older than this one, and a negative
+       * balance is the only thing this loosening makes unreadable to them. It
+       * is one-directional, which is why it is acceptable and not why it is
+       * free.
+       *
+       * **Proven rather than asserted.**
+       * `tests/migrations/save-v5-negative-balance.test.ts` walks the boundary
+       * from both sides: every balance the previous bound accepted still
+       * decodes unmigrated and restores to itself, a negative one decodes and
+       * restores under water, the V1 fixtures with no economy section at all
+       * still land on the starting balance, and a fraction or an unsafe
+       * magnitude of either sign is still refused behind a valid checksum.
+       *
+       * **What is not here, and is a gap rather than a boundary:** ADR 0075
+       * decision 2's other half. There is no loan section in this schema, so
+       * an outstanding principal does not survive a save, and neither does
+       * the overdraft floor that let the prison spend it -- `TreasurySnapshot`
+       * is `{ balanceMinorUnits }` and nothing else. `src/simulation/economy/loans.ts`
+       * says so first and calls it a gap;
+       * `tests/determinism/loan-ledger-restore-boundary.test.ts` measures what
+       * a reload currently forgives, and is written to fail the moment a
+       * ledger starts surviving so that whoever adds the section has to come
+       * through here.
        */
       .object({ balanceMinorUnits: z.number().int().safe() })
       .strict(),
@@ -1046,13 +1096,23 @@ const economySectionSchema = z
      * build reading a save that carries this key refuses it as `invalid-shape`
      * where a V6 would have said `unsupported-version`.
      *
-     * **`nonnegative()` here is the same invariant the balance above carries,
-     * and it points the other way.** A negative balance is what a debt would be
-     * if the treasury could overdraw; it cannot, deliberately, because
-     * ADR 0017 decision 8's ladder ends in *"staff unpaid"* and a treasury that
-     * overdrew would pay them. So the money the prison holds and the money it
-     * owes are two non-negative integers rather than one signed one, and this
-     * is the second.
+     * **`nonnegative()` here used to be "the same invariant the balance above
+     * carries, and it points the other way", and since ADR 0075 decision 2 it
+     * is not.** The paragraph that stood here argued: a negative balance is
+     * what a debt would be if the treasury could overdraw; it cannot,
+     * deliberately, because ADR 0017 decision 8's ladder ends in *"staff
+     * unpaid"* and a treasury that overdrew would pay them. The premise is
+     * gone -- the treasury *can* overdraw now, as far as
+     * `Treasury.overdraftFloorMinorUnits` allows, and the balance above no
+     * longer carries a sign bound at all.
+     *
+     * Both directions are kept because the *conclusion* survives its own
+     * premise and a reader should be able to see that it does. This field is
+     * still non-negative, and now for a reason of its own rather than by
+     * symmetry: arrears are what the prison **owes its staff**, a magnitude
+     * with no meaningful negative reading, and a negative one would mean the
+     * staff owed the prison wages. A prison under water expresses that in the
+     * balance, which is the field that gained the sign.
      *
      * `.safe()` for the reason the fields above carry it: a save is a file the
      * player's browser produced and could have edited, and
