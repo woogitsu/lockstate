@@ -135,6 +135,21 @@ factor is **25** (1,000 against 40) or **10.1** (1,065 against 105), not 16.
 Both halves of the sentence are individually true; their ratio is not a
 measurement.
 
+### Where the player actually meets it, which is a control and not a cosmetic list
+
+`BUILD_QUEUE_ROW_LIMIT` is **3** (`src/ui/hud/build-panel.ts:545`) and the
+Queued fold lays out the first three rows of `projectBuildQueue`, which is
+ascending id (`construction-projection.ts:236-266`). Those rows are *Cancel*
+buttons. So a player standing in the locked position with thirteen orders
+pending is offered **three of them to cancel, chosen at random relative to the
+order they drew them in** — and `tests/browser/playtest-into-the-lock.playtest.ts:525`
+already says so in its own words: *"rows are ordered by ascending order id,
+which is a uuid"*. The escape from the lock is thirteen `Cancel` presses
+(`docs/research/2026-08-30-pricing-the-way-out.md` §7 counts them), taken three
+at a time, and the player cannot tell which segment each press is about to
+take away except by reading its tile. This is the part of the defect that is
+not a projection detail: it is a destructive control aimed by a hidden number.
+
 ### The determinism question, which is what makes this affordable
 
 **The id is minted on the main thread and crosses the protocol as an opaque
@@ -256,17 +271,43 @@ persisted field and therefore a save-format decision, not a better sort."* This
 is that field, and #693's own doubt — the withdrawn segment can be the tile the
 player drew **first** — is closed by it.
 
-**Six or so places that assert ascending id have to be re-pinned, and that is a
-contract change rather than a weakened test.** The ones found:
-`tests/unit/construction-build-queue-projection.test.ts:142-170` (*"which is
-ascending id and not submission order"*),
-`tests/unit/construction-crew-capacity.test.ts:169`,
-`tests/integration/furnished-cell-loop.test.ts:488`,
-`tests/integration/economy-refund-survives-the-clock.test.ts` (the greatest-id
-withdrawal), and the docblocks at `system.ts:655`,
-`materials-procurement.ts:86-90` and `construction-projection.ts:225-234`.
-`tests/determinism/canonical-iteration-contract.test.ts` needs no change: it
-requires that the enumeration reach *a* sort, and it still does.
+**The blast radius is 16 tests in 8 files, measured rather than grepped, and
+every one of them is a contract change rather than a weakened test.** The sort
+was replaced with *descending* id -- still total, still deterministic, still not
+placement order -- and the whole non-browser suite run before and after under
+identical conditions:
+
+```
+baseline: Test Files 296 passed (296)          Tests 3478 passed | 1 skipped
+mutated:  Test Files   8 failed | 288 passed   Tests   16 failed | 3462 passed
+```
+
+| file | failed |
+| --- | --- |
+| `tests/unit/construction-crew-capacity.test.ts` | 5 |
+| `tests/integration/object-removal-loop.test.ts` | 3 |
+| `tests/integration/yard-and-common-room.test.ts` | 2 |
+| `tests/integration/economy-refund-survives-the-clock.test.ts` | 2 |
+| `tests/integration/economy-loan-recovery.test.ts` | 1 |
+| `tests/unit/construction-geometry.test.ts` | 1 |
+| `tests/unit/construction-build-queue-projection.test.ts` | 1 |
+| `tests/unit/operations-construction-integration.test.ts` | 1 |
+
+The named one is the contract itself:
+`construction-build-queue-projection.test.ts` *"lists the queue in the order the
+crew will reach it, **which is ascending id and not submission order**"*. That
+sentence is what this ADR changes, and re-pinning it is the change rather than a
+casualty of it. `tests/determinism/canonical-iteration-contract.test.ts` needs no
+change at all and did not fail: it requires the enumeration to reach *a* sort,
+and it still does. Four docblocks state the old order in prose and go with it:
+`system.ts:655-658`, `materials-procurement.ts:86-90`,
+`construction-projection.ts:225-234` and `src/ui/simulation-build-queue.ts:79`.
+
+**The mutation was reverted and nothing in `src/` is changed by this commit.**
+A Playwright suite belonging to another agent was running throughout both runs,
+which is why the measurement is a *difference* between two runs taken under the
+same contention rather than an absolute count -- and the baseline being 0
+failures is what makes the 16 attributable.
 
 **It does not change what a prison can afford, and that is the point of keeping
 it separate from ADR 0081.** No price moves, no balance moves, nothing is
