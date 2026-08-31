@@ -1213,9 +1213,24 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
      * out of the prison as any other way of leaving. Nothing about *why* they
      * left is recorded on the prisoner, because ADR 0050 decision 4 and #31 own
      * that: the incident log is where the reason lives, and it keeps it.
+     *
+     * **The name is read before the release and answered back, and the order
+     * is load-bearing (#683).** `releasePrisoner` calls
+     * `identity.release('prisoner', entityId)`, so after it returns there is
+     * nobody left to ask -- and the sentence the prison now says about an
+     * escape names the escapee. This callback is the only place that holds
+     * both the registry and the departure, which is why the port answers with
+     * the name instead of the response system resolving one.
+     *
+     * A refused release answers `undefined` and the prison says nothing: the
+     * incident record still reads `escaped: true` for a participant who was
+     * not a live prisoner, and announcing a loss the prison did not take would
+     * be the promise-the-code-does-not-keep case rather than a tidier branch.
      */
     (entityId, tick) => {
-      prisoners.releasePrisoner(entityId, tick);
+      const name = actorIdentity.getName('prisoner', entityId);
+      if (!prisoners.releasePrisoner(entityId, tick)) return undefined;
+      return name === undefined ? {} : { name: { givenName: name.givenName, familyName: name.familyName } };
     },
     /*
      * Issue #80, ADR 00XX (number not yet assigned): the assault's instigator
