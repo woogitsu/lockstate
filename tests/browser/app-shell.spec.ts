@@ -4661,8 +4661,25 @@ test.describe('the assembled application', () => {
      * money spent on a delivery a player had changed their mind about was
      * unrecoverable by any means the interface offered.
      */
+    /*
+     * **Pressed against a paused clock since 2026-08-31, and the press that used
+     * to be here is why.** This block read
+     * `await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();`
+     * before the `Cancel`, and `docs/AGENT_WORKFLOW.md` lists this test as a
+     * contention canary with exactly that mechanism: *"the refund misses a
+     * 20-second poll"*. Measured twice today -- the poll below for
+     * `data-pending === "4"` read `null`, which is the four deliveries that were
+     * *not* cancelled having landed inside the 20s rather than the refund having
+     * failed. At x1 a delivery lands 5s after it is bought, and the click, the
+     * treasury poll and this poll all sit inside that window.
+     *
+     * ADR 0051's paused drain is what makes the press unnecessary: a command
+     * submitted against a stopped clock is executed and published without a
+     * tick, so the refund arrives and **nothing can land while it is being
+     * measured**. `tests/browser/build-deliveries-outside-the-fold.spec.ts`
+     * takes the same route for the same reason and records the same measurement.
+     */
     const refundOf = 2 * unitPriceOf('item.brick');
-    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
     await page.locator('.hud-build__delivery-row .ui-action').first().click();
     await expect
       .poll(async () => funds.textContent(), {
@@ -4690,9 +4707,13 @@ test.describe('the assembled application', () => {
      * that one line is now the whole of what protects the height issue #174
      * closed, rather than the second of two mechanisms.
      *
-     * The clock is already running from the refund above, so this only waits.
+     * The clock has to run for this one, and it is the only part of this test
+     * that needs it: a delivery lands on a tick. It is stopped again as soon as
+     * the block is gone, because the geometry below is measured in the state the
+     * panel arrives in and that state is paused.
      */
     await page.setViewportSize({ width: 900, height: 600 });
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
     await expect
       .poll(async () => deliveries.getAttribute('data-pending'), {
         message: 'the deliveries never landed, so the empty state could not be measured',
