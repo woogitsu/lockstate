@@ -1038,9 +1038,10 @@ const economySectionSchema = z
        * key as `invalid-shape` where a V6 bump would have said
        * `unsupported-version`. A loosened *value* bound costs the same thing
        * in a narrower case: a save whose balance is negative is refused
-       * `invalid-shape` by every build older than this one, and only such a
-       * save is. It is one-directional, which is why it is acceptable and not
-       * why it is free.
+       * `invalid-shape` by every build older than this one, and a negative
+       * balance is the only thing this loosening makes unreadable to them. It
+       * is one-directional, which is why it is acceptable and not why it is
+       * free.
        *
        * **Proven rather than asserted.**
        * `tests/migrations/save-v5-negative-balance.test.ts` walks the boundary
