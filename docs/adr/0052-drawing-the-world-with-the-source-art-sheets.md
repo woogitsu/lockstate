@@ -23,8 +23,12 @@ README row and every citation of it must be renumbered again.
 > it are held on branches rather than on disk: **0082** by
 > `adr/0082-build-order-execution-order` and **0083** by
 > `agent/703-negative-balance-first`, while **0081** has landed on `main` and
-> `docs/adr/README.md`'s *Next free number* line reads 0082. So the renumbering
-> this paragraph promised is not owed. Two older numbers *are* duplicated
+> `docs/adr/README.md`'s *Next free number* line reads 0082. **0082 landed on
+> `main` while this note was being written** — at `c5f2db5` (v0.0.290), minutes
+> later — which is worth marking rather than editing out, because it is the
+> reason a sweep is a sweep and not a fact: the answer was true when taken and
+> two releases old when read. So the renumbering this paragraph promised is not
+> owed. Two older numbers *are* duplicated
 > somewhere in the refs — `0004` and `0030` each name two different files —
 > and neither involves 0052; both are drafts that lost the number, recorded
 > here only so a later sweep does not read the pair as new.
