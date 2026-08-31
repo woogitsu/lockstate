@@ -132,6 +132,14 @@ const ESCALATION_INTRODUCTION_MINIMUM_TIER = 3;
  *   `projectStatusStrip`'s `prisonersHighRisk`, which are published already.
  *   That count could previously only ever change on an admission.
  *
+ *   **"Published" was as far as it went until 2026-08-31, and this bullet is
+ *   extended rather than corrected because nothing it said was wrong.** Issue
+ *   #703's fourth owner ruling gave both a reader: the status strip's second
+ *   chip states `prisonersHighRisk`, and `projectPrisonerRoster` now orders by
+ *   descending tier, so a prisoner this system raises to tier 3 moves to the
+ *   top of the Regime panel's four-row window on the next publication instead
+ *   of changing a number nothing displayed.
+ *
  * ## Determinism
  *
  * - **The `prisoners.classification` stream is not touched**, so the sequence a

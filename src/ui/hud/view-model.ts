@@ -173,6 +173,32 @@ export interface HudCountsViewModel {
   readonly prisonersCovered: number;
   readonly prisonersUnderstaffed: number;
   readonly prisonersUnguarded: number;
+  /**
+   * How many prisoners are on the high-risk regime (issue #703, the owner's
+   * fourth ruling of 2026-08-31).
+   *
+   * Published, never derived here, for `prisonerCapacity`'s reason above: it is
+   * `counts.prisonersHighRisk`, which the projection takes off
+   * `population.byClassificationGroupId` -- the same walk that produces
+   * `prisoners` -- so the chip and the Regime panel's own timetable cannot come
+   * to disagree about who is in the group. It is a count of the
+   * *classification group*, so it is `riskTier >= 3`
+   * (`classificationGroupIdForTier`) and not a count of tier-3 badges the
+   * roster happens to be showing.
+   *
+   * **It crossed the protocol from ADR 0032 onward and nothing in `src/ui/`
+   * read it until this line** -- `grep -rn 'prisonersHighRisk' src/ui/`
+   * returned nothing, which is issue #629's class rather than a missing
+   * feature: after ADR 0080 the tier gates both a contraband introduction and
+   * an escape attempt, so the prison's whole count of restricted-regime
+   * prisoners was computed, published twice a second and shown to nobody.
+   *
+   * `0` is a real state and not "unknown": it is every prison before its first
+   * tier-3 assessment, which `docs/research/2026-08-29-what-a-day-actually-pays.md`
+   * measured as *"0 at every sample of every run"* -- so the chip reads zero
+   * for a long time in an ordinary game, and carries no tone while it does.
+   */
+  readonly prisonersHighRisk: number;
   readonly activeIncidents: number;
   /**
    * A message key naming the kind of the incident `activeIncidents` counts,
@@ -1578,6 +1604,7 @@ export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {
     prisonersCovered: 0,
     prisonersUnderstaffed: 0,
     prisonersUnguarded: 0,
+    prisonersHighRisk: 0,
     activeIncidents: 0,
     // No key at all -- an empty prison has nothing to name (issue #506
     // finding 2), and this field's own doc comment says why `undefined` is

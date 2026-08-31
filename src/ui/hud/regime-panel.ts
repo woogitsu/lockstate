@@ -152,6 +152,24 @@ import type {
  * so no panel and no single reply could carry a full roster whatever height it
  * had. The count beside the header is what says so, and the total it divides
  * by is the projection's rather than this panel's.
+ *
+ * **Four is still four after issue #703, and the owner ruled it explicitly**
+ * (fourth ruling of 2026-08-31): the alternative on the table was showing more
+ * rows, and what shipped instead is that the four rows are now the four
+ * *highest-tier* prisoners rather than the four oldest arrivals
+ * (`projectPrisonerRoster`). So none of the arithmetic above is spent -- the
+ * row heights, the 219.0px budget and the 54.75px ceiling are untouched,
+ * because the change is to which four prisoners fill the same four boxes.
+ *
+ * That reordering is bound by the rule issue #209 left standing --
+ * *"the position of a row the player is already reading must not change under
+ * them"* (`src/ui/simulation-alerts.ts`, `replaceOrAppend`) -- and the
+ * projection keeps it the only way a repainted list can: the order is a total
+ * order over state, `(descending riskTier, ascending entity index)`, so a row
+ * moves only when that prisoner's tier changes or somebody above them leaves.
+ * Two prisoners at the same tier can never swap between publications, which is
+ * the failure a "stable sort" would only avoid by accident. Nothing in the
+ * block is focusable, so a move cannot take focus with it either.
  */
 export const PRISONER_ROSTER_ROW_LIMIT = 4;
 

@@ -8,7 +8,7 @@ import { SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
 import { TILE_SIZE_PX } from '../../src/rendering/tile-metrics';
 import { defaultMessageCatalogEn, formatNumber } from '../../src/services/localization';
 import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
-import { HUD_TAB_IDS, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
+import { HUD_TAB_IDS, PRISONER_ROSTER_ROW_LIMIT, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
 
 /**
  * Real-browser verification for the *assembled application* — `index.html`
@@ -6865,6 +6865,13 @@ test.describe('the assembled application', () => {
     expect(delivered).toBe(true);
 
     await expect(metric('prisoners')).toHaveText('37');
+    // The count this fixture has carried since it was written and that nothing
+    // read until #703's fourth owner ruling: `prisonersHighRisk` crossed the
+    // protocol from ADR 0032 onward and `hudCountsFromWorkerMessage` dropped it,
+    // so a chip reading 9 here is the whole of that ruling's first half arriving
+    // over the real decoder. Deliberately not 37 and not 4: a chip wired to the
+    // population or to the intake queue would be plausible and wrong.
+    await expect(metric('high-risk')).toHaveText('9');
     await expect(metric('staff')).toHaveText('6');
     await expect(metric('rooms')).toHaveText('12');
     await expect(metric('incidents')).toHaveText('2');
@@ -9239,6 +9246,441 @@ test.describe('the assembled application', () => {
       await waitForSession(page);
     });
   }
+
+  /**
+   * **The high-risk chip is on screen, and the Regime roster's four rows are
+   * the prison's highest tiers** (issue #703, the owner's fourth ruling of
+   * 2026-08-31).
+   *
+   * ### Why the assembled page, and what only it can settle
+   *
+   * Both halves of the ruling are decided in pure functions that are proven
+   * headlessly beside this test -- `projectStatusMetrics` in
+   * `tests/unit/ui-hud-projection.test.ts`, `projectPrisonerRoster`'s ordering
+   * in `tests/unit/hud-roster-tier-order.test.ts` (which writes tier patterns
+   * this page cannot produce, tier 3 included, and pins the whole order and its
+   * stability). What is left over is what a browser is for, and each piece of it
+   * has a defect in this repository's history behind it:
+   *
+   * - **That the chip has a box.** `docs/TESTING.md`: *"A text assertion does
+   *   not imply visibility"* -- `toContainText` passes inside a `display: none`
+   *   subtree and on a 0x0 box, which is how the #82 alert stayed green while no
+   *   player could see it (#220). The strip is worse than most: it is
+   *   `overflow-x: auto` with the scrollbar suppressed in both engines, so a
+   *   ninth chip that does not fit is *absent with nothing saying so* (#634).
+   *   The chip's own box is therefore read against the metrics row's box, and
+   *   `offsetParent` with it.
+   * - **That its label resolves.** The label is
+   *   `classification-group.high-risk.name`, deliberately not a `hud.*` key --
+   *   it is the string the game already authors for this group, reused so the
+   *   chip and the Regime panel's restricted-block heading cannot drift apart.
+   *   An unresolved key renders as itself (ADR 0011), so the assertion is on the
+   *   words and on the absence of anything dotted anywhere in the strip.
+   * - **That the reordering reaches painted rows.** The roster is a *pull* over
+   *   the projection channel, refreshed on the counts cadence while the Regime
+   *   tab is showing, painted into four pooled rows. Nothing below this page has
+   *   all of that at once.
+   *
+   * ### What the prison here can and cannot produce
+   *
+   * `ADMISSION_REQUEST` in `src/main.ts` is `{ priorIncidents: 0 }` and its own
+   * comment records the consequence: the tiers reachable from the Admit control
+   * are `[0, 1]` below an 84-day sentence and `[0, 1, 2]` at or above it, and
+   * **the panel cannot produce a tier-3 prisoner at all** -- one sentence point
+   * plus a maximum screening draw clamps at 2. So `prisonersHighRisk` is
+   * honestly 0 in any prison this test can build, and the chip's *value* is
+   * proven from a real worker publication in *the HUD counts come from the
+   * worker rather than from zeros baked into the page* above, which injects a 9
+   * through the real decoder. This test proves the chip is *seen*.
+   *
+   * The cell is zoned and left **empty**, with no bed in it, which is the
+   * cheapest prison that admits: `src/main.ts` refuses `AdmitPrisoner` only when
+   * the prison has no accommodation-target instance at all, and an arrival then
+   * waits at `accommodation-assignment` -- which is a *classified* stage
+   * (`CLASSIFIED_STAGES` in `prisoner-projection.ts`), so every prisoner here
+   * carries a real drawn tier and a real badge word.
+   */
+  test('paints the high-risk chip and orders the Regime roster by tier (#703)', async ({ page }) => {
+    /*
+     * **Five minutes, and the number is measured rather than generous.**
+     *
+     * Slow for the reason the keyboard loop above is slow: ADR 0045 makes an
+     * enclosed perimeter a precondition of zoning, so the shortest route to a
+     * prison that admits anybody is buy, order, build ten wall segments, zone,
+     * admit -- and this test then runs the intake pipeline and exports a save.
+     * Measured green at **3.0m** on this container, twice; `test.slow()` alone
+     * is 180 s and would have been decided by whatever else the machine was
+     * doing.
+     *
+     * That is a budget for work this test really does, not a timeout raised over
+     * a race: nothing here waits on a coincidence. Every wait is on a state the
+     * game reports -- the build queue emptying, `[data-metric="rooms"]` moving,
+     * the roster's own `data-total`, four rows carrying a tier -- and each names
+     * what did not happen when it gives up.
+     */
+    test.setTimeout(300_000);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openApp(page);
+
+    const metric = (id: string) => page.locator(`[data-metric="${id}"] .ui-stat__value`);
+
+    // ---- the chip, before any prison exists ---------------------------
+    /*
+     * Read as geometry rather than as text, and against the metrics row's own
+     * box rather than against the viewport: the row is the scroll container, so
+     * "on screen" for a chip means inside *that* box. Both edges, because half
+     * a chip is #634's failure and not a partial success.
+     */
+    const chip = await page.evaluate(() => {
+      const metrics = document.querySelector<HTMLElement>('.hud-strip__metrics');
+      const node = document.querySelector<HTMLElement>('.hud-strip [data-metric="high-risk"]');
+      if (metrics === null || node === null) return null;
+      const box = node.getBoundingClientRect();
+      const row = metrics.getBoundingClientRect();
+      return {
+        width: box.width,
+        height: box.height,
+        insideTheRow: box.left >= row.left - 0.5 && box.right <= row.right + 0.5,
+        detached: node.offsetParent === null,
+        label: node.querySelector<HTMLElement>('.ui-stat__label')?.textContent ?? '',
+        value: node.querySelector<HTMLElement>('.ui-stat__value')?.textContent ?? '',
+        stripText: document.querySelector<HTMLElement>('.hud-strip')?.innerText ?? '',
+      };
+    });
+
+    expect(chip, 'there is no [data-metric="high-risk"] chip on the strip').not.toBeNull();
+    expect(chip!.width, 'the high-risk chip has no width').toBeGreaterThan(0);
+    expect(chip!.height, 'the high-risk chip has no height').toBeGreaterThan(0);
+    expect(chip!.detached, 'the high-risk chip is in the DOM with no layout box').toBe(false);
+    expect(chip!.insideTheRow, 'the high-risk chip is off the end of the metrics row').toBe(true);
+
+    // The authored words, not the key that names them. `toBe` and not
+    // `toContain`: a label that still carried its key would contain the words.
+    expect(chip!.label).toBe(localeText('classification-group.high-risk.name'));
+    expect(chip!.label).toBe('High Risk');
+    expect(chip!.value, 'no prison exists, so nobody is on the restricted regime').toBe('0');
+
+    /*
+     * And no raw key anywhere in the strip, which is the check that makes the
+     * label assertion above more than a spelling test. An unresolved key renders
+     * as itself (ADR 0011), so a leak is a dotted lowercase identifier on
+     * screen.
+     *
+     * **Scoped to the namespaces a key can come from, and the first version of
+     * this assertion was not.** "Any dotted lowercase identifier" is the obvious
+     * pattern and it fails on the real page for a reason that is not a defect:
+     * the strip's brand slot is filled by `src/ui/brand-badge.ts`, and measured
+     * here the row's `innerText` begins
+     * `"LockState.io\nPRE-ALPHA\nv0.0.282 · c5016ee\n..."`. The pattern matched
+     * `tate.io`. A wordmark is not a message key, so the check names the two
+     * registries a HUD label really can be spelled from -- `hud.*`
+     * (`src/ui/hud/messages.ts`) and the simulation-enum namespaces
+     * (`src/content/simulation-message-keys.ts`, of which
+     * `classification-group` is this chip's) -- rather than being widened until
+     * it passes.
+     */
+    expect(chip!.stripText, `a message key leaked into the strip: ${chip!.stripText}`).not.toMatch(
+      /\b(?:hud|classification-group|risk-tier|incident-type|incident-state|action|action-phase|intake-stage|need)\.[a-z0-9][a-z0-9.-]*/,
+    );
+
+    // ---- a prison with a population in it ------------------------------
+    await page.getByRole('button', { name: localeText('save.action.create') }).click();
+    await waitForSession(page);
+    await expect(metric('prisoners'), 'a prisoner leaked from an earlier test').toHaveText('0');
+
+    // `room.cell`'s authored minimum exactly (2x3), because every tile of
+    // perimeter beyond it is another wall order this test has to place.
+    const cell: TileRectangle = { x: 4, y: 4, width: 2, height: 3 };
+    await wallRectanglesFromTheKeyboard(page, [cell]);
+
+    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+    await page.locator('.hud-rooms__coordinates > .ui-section__header').click();
+    await expect(page.locator('.hud-rooms__coordinates')).toHaveAttribute('data-collapsed', 'false');
+    for (const [field, value] of [
+      ['x', cell.x],
+      ['y', cell.y],
+      ['width', cell.width],
+      ['height', cell.height],
+    ] as const) {
+      await page.locator(`.hud-rooms__coord-${field} input`).fill(String(value));
+    }
+    await page.locator('.hud-rooms__coordinates-submit').click();
+    await expect(page.locator('.hud-rooms__area')).toHaveAttribute(
+      'data-area',
+      `${cell.x},${cell.y},${cell.width},${cell.height}`,
+    );
+    await page.locator('.hud-rooms__confirm').click();
+    await expect(metric('rooms'), 'the typed rectangle never reached the worker').toHaveText('1');
+
+    /*
+     * Twelve arrivals, three times the roster's window.
+     *
+     * The claim is about *which* four of the population fill four boxes, so the
+     * population has to be several times the window for the choice to be a
+     * choice. Three times rather than twice for one measured reason: with eight
+     * prisoners a run came out with the four highest tiers sitting at entity
+     * indices 0, 1, 2 and 6 -- close enough to the arrival order that a
+     * *broken* sort would have been within one row of the right answer. Twelve
+     * puts eight prisoners outside the window instead of four.
+     */
+    const ADMISSIONS = 12;
+    await page.locator('.ui-tab[data-tab="overview"]').click();
+    for (let admission = 0; admission < ADMISSIONS; admission += 1) {
+      await page.locator('.hud-intake__admit').click();
+    }
+    await expect(metric('prisoners'), 'the admissions were refused').toHaveText(String(ADMISSIONS));
+
+    /*
+     * **And the clock, which is the step whose absence cost the first run of
+     * this test.**
+     *
+     * `wallRectanglesFromTheKeyboard` ends by pressing *Pause*, deliberately --
+     * its own comment says it leaves the caller "the paused session a new prison
+     * arrives as". Since ADR 0051 a *due* command is dispatched during a pause,
+     * which is why the admissions above landed and the strip reads the whole
+     * population; but
+     * `IntakeSystem` is a scheduled system, so with the clock stopped no arrival
+     * ever leaves `queued` and no row can carry a tier. Measured: the poll below
+     * spent its whole budget at zero classified rows, on the prison of eight
+     * this fixture admitted before it was widened to twelve.
+     *
+     * Fast forward twice, because there are three intake stages to walk before
+     * `accommodation-assignment` and the pipeline runs every five ticks.
+     */
+    const transport = page.locator('.hud-strip__transport');
+    await transport.getByRole('button', { name: localeText('hud.transport.play') }).click();
+    await expect(
+      transport.getByRole('button', { name: localeText('hud.transport.play') }),
+      'the worker never accepted the set-clock, so intake cannot advance',
+    ).toHaveAttribute('aria-pressed', 'true');
+    await transport.getByRole('button', { name: localeText('hud.transport.fast-forward') }).click();
+    await expect(page.locator('.hud-clock__speed')).toHaveText(`×${fundsText(2)}`);
+    await transport.getByRole('button', { name: localeText('hud.transport.fast-forward') }).click();
+    await expect(page.locator('.hud-clock__speed')).toHaveText(`×${fundsText(4)}`);
+
+    // ---- and the four rows the Regime panel draws ----------------------
+    await page.locator('.ui-tab[data-tab="regime"]').click();
+    const roster = page.locator('.hud-regime__roster');
+    await expect(roster).toBeVisible();
+
+    /*
+     * **The roster has to be re-*read*, not merely re-read from the DOM, and
+     * this cost a run to find.**
+     *
+     * `hud/prisoner-roster` is a pull. `src/main.ts` fires
+     * `refreshPrisonerRoster()` on a `select-tab` intent and on each
+     * `simulation/status-counts` publication -- and that channel publishes only
+     * when a count *changes* (`STATUS_COUNTS_PUBLISH_INTERVAL_MS` is a ceiling,
+     * not a rate). The one count that moves every tick is
+     * `stateIncomeAccruedTodayMinorUnits`, and it moves only while some place is
+     * occupied. This prison's cell has no bed in it, so nothing is occupied, the
+     * accrual is a constant zero, the channel falls silent after the last
+     * admission -- and the roster on screen stays the one painted at that
+     * moment, when the newest arrivals were still `queued`.
+     *
+     * `prisonersInIntake` does move as the pipeline walks, so the channel is not
+     * silent for the whole of this wait -- but it goes quiet again the moment the
+     * last arrival settles, and "the roster is refreshed by something" is not a
+     * thing to leave to a count that may or may not be moving. So each poll
+     * re-selects the tab, which is the intent that asks the worker again.
+     */
+    const rereadRoster = async (): Promise<void> => {
+      await page.locator('.ui-tab[data-tab="overview"]').click();
+      await page.locator('.ui-tab[data-tab="regime"]').click();
+    };
+
+    // The whole population reached the projection's `total`, so the four rows
+    // below really are a window on eight people and not the prison entire.
+    await expect
+      .poll(
+        async () => {
+          await rereadRoster();
+          return roster.getAttribute('data-total');
+        },
+        {
+          message: 'the roster never reported the population the strip is showing',
+          timeout: 30_000,
+        },
+      )
+      .toBe(String(ADMISSIONS));
+
+    /*
+     * Every arrival has to have been *classified* before the order means
+     * anything: `IntakeSystem` advances at most one stage per scheduled tick and
+     * `accommodation-assignment` is the first classified one, so a row read too
+     * early carries an intake-stage word and no tier at all -- and an ordering
+     * assertion over four `undefined`s would pass for any implementation.
+     */
+    await expect
+      .poll(
+        async () => {
+          await rereadRoster();
+          return page.locator('.hud-regime__roster-row:not([hidden])[data-risk-tier]').count();
+        },
+        {
+          message: 'the roster never showed four classified prisoners',
+          timeout: 60_000,
+        },
+      )
+      .toBe(PRISONER_ROSTER_ROW_LIMIT);
+
+    const painted = await page.evaluate(() => {
+      const nodes = [...document.querySelectorAll<HTMLElement>('.hud-regime__roster-row:not([hidden])')];
+      return nodes.map((node) => {
+        const box = node.getBoundingClientRect();
+        return {
+          prisoner: Number.parseInt(node.dataset['prisoner'] ?? '-1', 10),
+          tier: Number.parseInt(node.dataset['riskTier'] ?? '-1', 10),
+          group: node.dataset['classificationGroup'] ?? '',
+          badge: node.querySelector<HTMLElement>('.ui-badge')?.textContent ?? '',
+          width: box.width,
+          height: box.height,
+          detached: node.offsetParent === null,
+        };
+      });
+    });
+
+    expect(painted).toHaveLength(PRISONER_ROSTER_ROW_LIMIT);
+    console.log(`[#703 roster] ${JSON.stringify(painted.map((row) => ({ id: row.prisoner, tier: row.tier })))}`);
+
+    // Painted, not merely present -- `docs/TESTING.md`'s rule, applied to the
+    // rows this ruling reorders.
+    for (const row of painted) {
+      expect(row.width, `row for prisoner ${row.prisoner} has no width`).toBeGreaterThan(0);
+      expect(row.height, `row for prisoner ${row.prisoner} has no height`).toBeGreaterThan(0);
+      expect(row.detached, `row for prisoner ${row.prisoner} has no layout box`).toBe(false);
+      // The badge is the word beside the colour, so the tier never reaches the
+      // player as a tone alone -- and it is a real word rather than a key.
+      expect(row.badge.length, `row for prisoner ${row.prisoner} has an empty badge`).toBeGreaterThan(0);
+      expect(row.badge).not.toContain('.');
+    }
+
+    // The ruling's shape, on the painted page: highest tier first.
+    const tiers = painted.map((row) => row.tier);
+    for (let position = 1; position < tiers.length; position += 1) {
+      expect(
+        tiers[position]!,
+        `the roster is not in descending tier order: ${JSON.stringify(tiers)}`,
+      ).toBeLessThanOrEqual(tiers[position - 1]!);
+    }
+
+    /*
+     * **And the whole of it: these four are the four highest tiers in the
+     * prison, checked against the population read out of the game's own save
+     * file.**
+     *
+     * The panel is a four-row window on twelve people, so nothing on screen can
+     * say what the other eight are -- and a first version of this test tried to
+     * stand in for that with "the window holds more than one distinct tier",
+     * which is not the claim and is not even reliable. It failed on a run whose
+     * window was `[{0,1},{1,1},{2,1},{6,1}]`: four prisoners at tier 1, which is
+     * a **correct** top-four window (id 6 is there and ids 3, 4 and 5 are not,
+     * so those three are at tier 0) and exactly the case where the sort is
+     * working hardest. A guard that rejects a correct answer is worse than no
+     * guard.
+     *
+     * Export gives the real thing. `payload.prisoners.components.riskTier` is
+     * the tier of every prisoner by entity index, from the same snapshot a
+     * player's save file carries, so the expected window can be *computed
+     * independently of the projection* and written against it. That is the
+     * fixture rule `docs/TESTING.md` states from the other side: the expected
+     * side of this comparison must not be the code under test, and here it is a
+     * sort this file performs over bytes the persistence layer produced.
+     *
+     * Two things make it airtight rather than nearly so:
+     *
+     * - **The clock is paused first.** A save taken while the simulation runs
+     *   could disagree with the rows painted a moment earlier.
+     * - **Every prisoner is at the same intake stage**, asserted rather than
+     *   assumed. Nobody can be housed (the cell has no bed), so all twelve sit
+     *   at the same stage -- and *that* is what lets the expected order be a
+     *   plain sort on `riskTier` with no re-derivation of which stages count as
+     *   classified. The panel showing four tiers is what proves that stage is a
+     *   classified one; this file never restates the rule.
+     */
+    await transport.getByRole('button', { name: localeText('hud.transport.pause') }).click();
+    await expect(
+      transport.getByRole('button', { name: localeText('hud.transport.pause') }),
+      'the clock did not stop, so a save cannot be compared with the rows above',
+    ).toHaveAttribute('aria-pressed', 'true');
+
+    /*
+     * **Saved first, and this is the second thing the full-file run taught this
+     * test rather than a precaution.**
+     *
+     * `Export` writes the bytes of the **stored** save row, not the live
+     * worker's state, so a prison whose population has not reached storage
+     * exports as the prison it was at its last write. Run alone this test passed
+     * anyway -- it takes about three minutes, so #146's 30-second interval
+     * autosave had captured the population several times over. Run inside the
+     * whole file it failed with `records.activeLength` at **0**: an exported
+     * save carrying no prisoners at all, against twelve on the strip.
+     *
+     * `Save now` makes it a statement rather than a coincidence: the clock is
+     * already paused, so the generation this writes is exactly the prison the
+     * rows above were painted from.
+     */
+    await page.getByRole('button', { name: localeText('save.action.save') }).click();
+    await expect(
+      page.locator('.save-panel__status'),
+      'the save the export is about to read was never written',
+    ).toContainText(localeText('save.status.saved').split('{')[0]!.trim());
+
+    const downloading = page.waitForEvent('download');
+    await page.getByRole('button', { name: localeText('save.action.export') }).click();
+    const download = await downloading;
+    const stream = await download.createReadStream();
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+    const saved = JSON.parse(chunks.join('')) as {
+      readonly payload: {
+        // `simulation` is optional in the schema, because a save written by a
+        // pre-V3 build genuinely does not carry it (`save-schema.ts`). This
+        // save was written by this build a moment ago, so it does -- and the
+        // assertion below says so rather than reaching through an `any`.
+        readonly simulation?: {
+          readonly prisoners: {
+            readonly components: {
+              readonly activeLength: number;
+              readonly riskTier: readonly number[];
+              readonly intakeStage: readonly number[];
+            };
+          };
+        };
+      };
+    };
+
+    expect(saved.payload.simulation, 'the exported save carries no simulation section').toBeDefined();
+    const records = saved.payload.simulation!.prisoners.components;
+    expect(records.activeLength, 'the save does not hold the population that was admitted').toBe(ADMISSIONS);
+    const stages = records.intakeStage.slice(0, ADMISSIONS);
+    expect(
+      new Set(stages).size,
+      `the population is spread across intake stages ${JSON.stringify([...new Set(stages)])}, so a plain sort on the tier is not the roster's order`,
+    ).toBe(1);
+
+    const tierByIndex = records.riskTier.slice(0, ADMISSIONS);
+    console.log(`[#703 population] ${JSON.stringify(tierByIndex)}`);
+    const expectedWindow = [...tierByIndex.keys()]
+      .sort((left, right) => tierByIndex[right]! - tierByIndex[left]! || left - right)
+      .slice(0, PRISONER_ROSTER_ROW_LIMIT);
+
+    expect(
+      painted.map((row) => row.prisoner),
+      `the four rows are not the four highest tiers of ${JSON.stringify(tierByIndex)}`,
+    ).toEqual(expectedWindow);
+    expect(tiers).toEqual(expectedWindow.map((index) => tierByIndex[index]));
+
+    // And the badge word agrees with the tier the row carries, so the
+    // reordering and the readout are the same fact.
+    expect(painted[0]!.badge).toBe(localeText(`risk-tier.${String(painted[0]!.tier)}.name`));
+    // The group is the tier's other grain, and the panel's tone reads it: no
+    // prisoner this page can admit is high-risk (see the header), so a
+    // `high-risk` group here would mean the two had come apart.
+    for (const row of painted) expect(row.group).toBe('general-population');
+  });
 });
 
 interface CentreHitCounters {

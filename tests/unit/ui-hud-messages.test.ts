@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { stripComments } from '../helpers/canonical-iteration';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
+import { simulationEnumMessageKeys } from '../../src/content/simulation-message-keys';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import { HUD_TABS } from '../../src/ui/hud/hud';
 import { HUD_MESSAGE_KEY, HUD_MESSAGE_KEYS } from '../../src/ui/hud/messages';
@@ -197,7 +198,49 @@ describe('message keys live in one registry', () => {
     }
   });
 
-  it('the strip and tab bar draw their labels from the registry', () => {
+  /**
+   * **This used to require every strip label to be in the HUD's own registry,
+   * and #703 made that too narrow rather than wrong.**
+   *
+   * The rule it enforces is the one that matters and is unchanged: a label the
+   * strip renders must resolve to real words in the bundled catalog, never to a
+   * dotted id on a player's screen. What changed is that there are two
+   * registries a HUD label can legitimately come from, and this file already
+   * said so twenty lines down -- the `activeIncidentTypeLabelKey` note explains
+   * that a real `incident-type.*.name` key "lives in the simulation content
+   * catalogue's registry instead -- a different, and correctly not-this,
+   * contract", and left that field out of the fixture rather than let the
+   * assertion meet one.
+   *
+   * #703's `HIGH RISK` chip is a *label* rather than a badge and cannot be left
+   * out: it is `classification-group.high-risk.name`, the same authored key the
+   * Regime panel's restricted-block heading already resolves, reused so the
+   * strip and the panel cannot come to disagree about what the group is called
+   * (see `HIGH_RISK_LABEL_KEY` in `src/ui/hud/projection.ts`).
+   *
+   * So the check now accepts either registry **and resolves the key either
+   * way**, which is stronger than the membership test it replaces for the keys
+   * it already covered: a `hud.*` key in `HUD_MESSAGE_KEYS` with no
+   * default-locale entry passed this assertion before and fails it now. What
+   * stays refused is a key belonging to neither registry -- a label spelled
+   * inline in a descriptor, which is what the sibling assertion above forbids
+   * for `hud.*` keys and what nothing but this one would catch for the rest.
+   */
+  it('the strip and tab bar draw their labels from a registry, and every one of them resolves', () => {
+    const hudRegistry = new Set<string>(HUD_MESSAGE_KEYS);
+    const simulationRegistry = new Set<string>(simulationEnumMessageKeys());
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+
+    // Non-vacuity: the second registry has to be a real, populated set, or
+    // "in one registry or the other" would be satisfied by the first alone.
+    expect(simulationRegistry.size).toBeGreaterThan(20);
+    expect(simulationRegistry.has('classification-group.high-risk.name')).toBe(true);
+
+    const registered = (key: string): boolean => hudRegistry.has(key) || simulationRegistry.has(key);
+    const resolves = (key: string): boolean => {
+      const text = localizer.format(key);
+      return text !== key && text.trim().length > 0;
+    };
     const registry = new Set<string>(HUD_MESSAGE_KEYS);
     for (const metric of projectStatusMetrics({
       prisoners: 1,
@@ -216,6 +259,11 @@ describe('message keys live in one registry', () => {
       prisonersCovered: 1,
       prisonersUnderstaffed: 1,
       prisonersUnguarded: 1,
+      // Non-zero, so the `high-risk` chip is walked with a real value (#703).
+      // The chip carries no tone and no badge at any value, so this figure
+      // changes no branch -- it is here because a count of 0 would leave the
+      // fixture unable to tell "the chip exists" from "the chip is blank".
+      prisonersHighRisk: 1,
       activeIncidents: 1,
       // No `activeIncidentTypeLabelKey` here on purpose: the label this test
       // walks against is the HUD's own closed registry, and a real
@@ -226,8 +274,12 @@ describe('message keys live in one registry', () => {
       treasuryMinorUnits: 0,
       stateIncomeAccruedTodayMinorUnits: 0,
     })) {
-      expect(registry.has(metric.labelKey), metric.labelKey).toBe(true);
-      if (metric.badge !== undefined) expect(registry.has(metric.badge.textKey), metric.badge.textKey).toBe(true);
+      expect(registered(metric.labelKey), `${metric.labelKey} is in neither registry`).toBe(true);
+      expect(resolves(metric.labelKey), `${metric.labelKey} does not resolve to text`).toBe(true);
+      if (metric.badge !== undefined) {
+        expect(registered(metric.badge.textKey), `${metric.badge.textKey} is in neither registry`).toBe(true);
+        expect(resolves(metric.badge.textKey), `${metric.badge.textKey} does not resolve to text`).toBe(true);
+      }
     }
     expect(HUD_TABS.map((tab) => tab.id)).toEqual(['overview', 'build', 'rooms', 'security', 'regime']);
     for (const tab of HUD_TABS) expect(registry.has(tab.labelKey), tab.labelKey).toBe(true);

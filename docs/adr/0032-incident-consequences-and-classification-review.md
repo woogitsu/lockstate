@@ -303,6 +303,18 @@ and two of which were being edited by other work in the same hour. The mechanic
 is observable today through the projection channel the worker already publishes;
 the chip is owed.
 
+**The chip was paid on 2026-08-31, and this paragraph is kept because it is the
+debt it settles.** Issue #703's fourth owner ruling put `prisonersHighRisk` on
+the status strip as its second chip and made the Regime panel's four-row roster
+sort by descending tier, so a reclassification this ADR's review system performs
+now moves a prisoner to the top of a panel a player is looking at. The
+`src/content/default-locale-en.ts` edit the paragraph anticipated turned out not
+to be needed: the chip's label is
+`classification-group.high-risk.name` — the string
+`src/content/simulation-message-keys.ts` already authors for this group, which
+the Regime panel's own timetable heading already resolves — so the change added
+no player-facing string and needed no owner sign-off for one.
+
 ## ADR 0027's three questions
 
 ADR 0027 left three open and this change touches all three. Two are answered in
