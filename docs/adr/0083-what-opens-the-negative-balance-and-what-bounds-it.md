@@ -36,6 +36,29 @@ It answers a sequencing instruction the owner gave on
 [#703](https://github.com/matmaxalez/lockstate/issues/703) that **cannot be
 executed as stated**, and says what is missing rather than choosing it.
 
+> **THE TWO THINGS IT SAID WERE MISSING HAVE SINCE BEEN RULED ON, and the
+> sentence above is kept because it is what this document was written to do
+> rather than a claim about where things stand.** On 2026-08-31 the owner
+> answered both questions this document put:
+>
+> - **Decision §2: reading A** — a standing overdraft every prison has, chosen
+>   over the floor being opened by a drawdown and over staying floored at zero.
+> - **Decision §3: 5,000 bp (50%)** for `escalatedDiversionRateBasisPoints`,
+>   chosen over 45%.
+>
+> Both sections below record the rulings in place of their recommendations,
+> with the arguments they chose over kept intact. **The status line above is
+> still `Proposed` and stays that way until the owner signs it**: a ruling on
+> two sections is not a signature on the document, and nothing in this corpus
+> is self-approved.
+>
+> **Two things the rulings create rather than settle**, both named at their own
+> sites and neither taken here: an amendment is owed to ADR 0017 decision 8's
+> ladder ordering, which reading A inverts; and the floor's magnitude, which
+> reading A leaves open and for which §2 proposes a rule (one tenth of the
+> opening grant) that is **unmeasured below −1,500** and must be swept before
+> it ships.
+
 ## Context
 
 ### The two rulings, and the gap between them and the code
@@ -376,20 +399,59 @@ different games:
   *"the balance may go negative"* was ruled without the ladder's ordering in
   front of the ruler.
 
-**Recommended: B, with the floor equal to the outstanding balance of the loan
+**RULED: A — a standing overdraft every prison has** (#703, 2026-08-31, on this
+document's own question). The paragraphs above are kept as written, including the
+recommendation this section carried, because a ruling is only legible against
+what it chose over and because the recommendation's cost is now the ruling's
+cost.
+
+**Recommended was B, with the floor equal to the outstanding balance of the loan
 that opened it**, on the single ground that it is the only one of the three that
 keeps ADR 0017 decision 8's ladder in the order that ADR says it runs in. A
 prison that has borrowed nothing behaves exactly as it does today, to the minor
 unit; a prison that has borrowed has bought the right to overspend and can be
-told so. **This is a recommendation and not a decision**, because the mechanism
+told so. **That was a recommendation and not a decision**, because the mechanism
 is not in decision 2's text and inventing it in implementation code is what
 `CLAUDE.md` forbids.
 
-**What would change this recommendation:** if the owner's *"tylko minus i
-pożyczki"* means the minus is a facility the player has from the start rather
-than one borrowing opens, A is right and the ladder ordering in ADR 0017
-decision 8 is what needs amending. That is a question about intent and no
-measurement here can answer it.
+**And the paragraph below said in advance what the ruling settles**, which is
+why it is quoted rather than deleted: *"if the owner's `tylko minus i pożyczki`
+means the minus is a facility the player has from the start rather than one
+borrowing opens, A is right and **the ladder ordering in ADR 0017 decision 8 is
+what needs amending**."* The ruling is that reading. **So the amendment is owed,
+and it is the owner's to sign rather than this document's to take**: ADR 0017
+decision 8 states that at a negative balance the state stops paying for
+discretionary things — a sequence of three rungs — and `canAfford` is one
+comparison over every spend, so with a standing floor open the first two rungs
+cannot fire until the room is gone. Either the ladder's order is amended to say
+so, or decision 8 is narrowed to a prison that has spent its overdraft. **This
+document does not choose between those two**; it records that one of them is now
+required and that the code cannot express the ladder faithfully until it is
+taken.
+
+**The magnitude, which reading A leaves open and (b) shows has no permitted
+derivation.** (b) measures every boundary at `65n − 40` — a door and a bed are
+one `item.wood-plank` each at 65, and the locked prison holds 40 — which is
+exactly the *"threshold backstop keyed to the price of a plank"* ADR 0075
+rejects by name. So a floor read off the measurement is a content price wearing
+a decision's clothes. **Proposed instead as a rule rather than a lookup: the
+floor is one tenth of the opening grant, `-2_500`**, derived from
+`TREASURY_STARTING_BALANCE_MINOR_UNITS` rather than from any catalogue entry.
+Three things recommend it and one warns against it:
+
+- It clears the measured worst case with margin. (b) measures the deepest a
+  locked prison goes to house anybody at **−1,130** with its material queue
+  standing and **−90** with the queue cancelled, saturating at **−285**.
+- It moves when the opening grant moves, so it cannot rot against a price
+  change the way a plank-keyed number would.
+- It is a sentence a player could be told: the state carries you up to a tenth
+  of what it gave you.
+- **It is not measured above −1,500.** (b)'s sweep records *"unchanged up to
+  1,500"* and stops there, so what a prison does between −1,500 and −2,500 —
+  in particular whether payroll, procurement and the construction queue stay
+  bounded — is a claim nobody has checked. **The number is a hypothesis until
+  that sweep is run**, and whoever implements this must run it and report if
+  −2,500 is wrong rather than shipping it on this paragraph's authority.
 
 ### 3. `escalatedDiversionRateBasisPoints` is proposed at **5,000 bp (50%)**, and is not set here
 
@@ -399,8 +461,19 @@ diversion doubles"* and halves the remaining repayment time exactly (83 days to
 by two test files. Anything at or below 30% is decoration: 2 days off a 128-day
 tail at 26%.
 
-**Not shipped as a constant**, because ADR 0017 decision 5 reserves the
-magnitude to #29 and two values are defensible rather than one.
+**RULED: 5,000 bp (50%)** (#703, 2026-08-31). The owner chose *"the diversion
+doubles"* over the priced 45% alternative. The sentence above is kept because
+the argument between the two is what makes 50% a rule rather than a number: it
+halves the remaining repayment time exactly, which is a thing that can be said
+in one clause before a player borrows.
+
+**The paragraph that stood here said it was not shipped as a constant**, on the
+ground that ADR 0017 decision 5 reserves the magnitude to #29 and that two
+values were defensible rather than one. The first half still holds and the
+second no longer does: the owner has chosen, so the reservation is satisfied by
+a ruling rather than bypassed. **The constant is still not set by this document**
+— the loan remains disabled under ruling 10, so 50% is a recorded magnitude
+waiting on the loan being enabled, not a wiring task.
 
 ### 4. Two preconditions, and neither is optional
 
