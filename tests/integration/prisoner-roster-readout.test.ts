@@ -11,6 +11,7 @@ import {
   formatPrisonerActivity,
   formatPrisonerName,
   formatRegimeAllowsText,
+  type HudPrisonerRowViewModel,
 } from '../../src/ui/hud';
 import { prisonerRosterFromProjection } from '../../src/ui/simulation-prisoner-roster';
 import { regimeFromProjection } from '../../src/ui/simulation-regime';
@@ -126,6 +127,38 @@ function roster(runtime: SimulationRuntime) {
   );
 }
 
+/**
+ * The two rows `twoClassifications` produces, **found by their classification
+ * group rather than by their position in the window**.
+ *
+ * The three cases below destructured `const [ordinary, restricted] = rows`
+ * until 2026-08-31, which read the roster in arrival order and was correct
+ * while that was the order. Issue #703's fourth ruling made the order highest
+ * risk tier first, so the restricted prisoner is now row 0 and all three cases
+ * failed on a position none of them meant to assert -- the same failure
+ * `ui-hud-projection.test.ts` records for `coverage` landing third, with the
+ * same fix: address the thing by its id and pin the order in exactly one place.
+ *
+ * That one place is `hud-projections.test.ts`'s *"lists every live prisoner by
+ * descending tier then ascending id"*, and the sort is exercised here too, by
+ * the assertion below that the restricted row really does come first.
+ */
+function twoRows(runtime: SimulationRuntime): {
+  readonly ordinary: HudPrisonerRowViewModel;
+  readonly restricted: HudPrisonerRowViewModel;
+} {
+  const rows = roster(runtime).rows;
+  expect(rows).toHaveLength(2);
+  const ordinary = rows.find((row) => row.classificationGroupId === 'general-population');
+  const restricted = rows.find((row) => row.classificationGroupId === 'high-risk');
+  expect(ordinary, 'no general-population row in the window').toBeDefined();
+  expect(restricted, 'no high-risk row in the window').toBeDefined();
+  // And the ruling itself, on the two rows this fixture makes: the tier-3
+  // prisoner is the one the four-row window shows first.
+  expect(rows[0]?.classificationGroupId).toBe('high-risk');
+  return { ordinary: ordinary!, restricted: restricted! };
+}
+
 function regime(runtime: SimulationRuntime) {
   return regimeFromProjection(
     projectStatusStrip({
@@ -232,19 +265,17 @@ describe('two prisoners on two timetables read differently at the same tick', ()
     // permit disjoint things at this instant.
     stepTo(runtime, 1_100);
 
-    const rows = roster(runtime).rows;
-    expect(rows).toHaveLength(2);
-    const [ordinary, restricted] = rows;
+    const { ordinary, restricted } = twoRows(runtime);
 
-    expect(ordinary?.classificationGroupId).toBe('general-population');
-    expect(ordinary?.riskTier).toBe(1);
-    expect(ordinary?.standingLabelKey).toBe('risk-tier.1.name');
-    expect(describePrisonerRow(ordinary!).tone).toBe('neutral');
+    expect(ordinary.classificationGroupId).toBe('general-population');
+    expect(ordinary.riskTier).toBe(1);
+    expect(ordinary.standingLabelKey).toBe('risk-tier.1.name');
+    expect(describePrisonerRow(ordinary).tone).toBe('neutral');
 
-    expect(restricted?.classificationGroupId).toBe('high-risk');
-    expect(restricted?.riskTier).toBe(3);
-    expect(restricted?.standingLabelKey).toBe('risk-tier.3.name');
-    expect(describePrisonerRow(restricted!).tone).toBe('warning');
+    expect(restricted.classificationGroupId).toBe('high-risk');
+    expect(restricted.riskTier).toBe(3);
+    expect(restricted.standingLabelKey).toBe('risk-tier.3.name');
+    expect(describePrisonerRow(restricted).tone).toBe('warning');
   });
 
   it('separates them by what they are doing, which is the regime deciding it', () => {
@@ -252,7 +283,7 @@ describe('two prisoners on two timetables read differently at the same tick', ()
     twoClassifications(runtime);
     stepTo(runtime, 1_100);
 
-    const [ordinary, restricted] = roster(runtime).rows;
+    const { ordinary, restricted } = twoRows(runtime);
     // The invariant, first: `sleep` is not a category general population's
     // block allows at this tick, so no reconsideration can select a sleep
     // action for them -- while high risk's block allows nothing else all day.
@@ -276,8 +307,8 @@ describe('two prisoners on two timetables read differently at the same tick', ()
     // And then what the two prisoners are actually doing, measured on this
     // build rather than inferred from the block: the confined one is asleep,
     // and the other is not.
-    expect(restricted?.activityLabelKey).toBe('action.sleep.name');
-    expect(ordinary?.activityLabelKey).not.toBe(restricted?.activityLabelKey);
+    expect(restricted.activityLabelKey).toBe('action.sleep.name');
+    expect(ordinary.activityLabelKey).not.toBe(restricted.activityLabelKey);
   });
 
   it('renders both rows as sentences from the bundled catalog', () => {
@@ -285,8 +316,8 @@ describe('two prisoners on two timetables read differently at the same tick', ()
     twoClassifications(runtime);
     stepTo(runtime, 1_100);
 
-    const [ordinary, restricted] = roster(runtime).rows;
-    for (const row of [ordinary!, restricted!]) {
+    const { ordinary, restricted } = twoRows(runtime);
+    for (const row of [ordinary, restricted]) {
       const name = formatPrisonerName(t, row);
       const activity = formatPrisonerActivity(t, row);
       const badge = t(describePrisonerRow(row).badgeKey);
@@ -305,7 +336,10 @@ describe('two prisoners on two timetables read differently at the same tick', ()
     // The one place a tier word and a group word could disagree: the badge says
     // "High" and the block above says "High Risk", and both are the same
     // prisoner's classification at two grains.
-    expect(t(describePrisonerRow(restricted!).badgeKey)).toBe('High');
+    expect(t(describePrisonerRow(restricted).badgeKey)).toBe('High');
+    // And the same key the status strip's `HIGH RISK` chip labels itself with
+    // since #703 (`HIGH_RISK_LABEL_KEY` in `src/ui/hud/projection.ts`), which
+    // is why that chip needed no new string authored for it.
     expect(t('classification-group.high-risk.name')).toBe('High Risk');
   });
 

@@ -1131,6 +1131,19 @@ strip has no high-risk chip and there is no prisoner roster panel at all --
 the same "shipping the system before the surface" state the *out of scope*
 section at the end of this document records.
 
+**Both halves of that paragraph are now closed, and it is kept because the gap
+it names is the reason two later changes exist.** The roster panel landed with
+issue #451 (the Regime tab's roster block, four rows of
+`PRISONER_ROSTER_ROW_LIMIT` showing each prisoner's tier as a word and a badge
+tone), and the count landed with issue #703 -- the owner's fourth ruling of
+2026-08-31, which is where *"`hudCountsFromWorkerMessage` drops it"* stopped
+being true: the strip's second chip reads `HIGH RISK` and states the figure,
+labelled with `classification-group.high-risk.name` rather than a new string.
+The same ruling made the roster's four rows the four **highest tiers** rather
+than the four oldest arrivals, which is what makes a reclassification visible
+in the panel rather than merely published: a prisoner this system moves to
+tier 3 moves to the top of the roster on the next publication.
+
 **And nothing relocates a prisoner, which is why this is the classification
 consequence and not the sanction.** `room.solitary-cell` is an intake
 destination: `DEFAULT_ACCOMMODATION_POLICY` sends high-risk *arrivals*

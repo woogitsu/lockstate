@@ -101,6 +101,11 @@ describe('the HUD counts are read from the worker', () => {
       prisonersCovered: 25,
       prisonersUnderstaffed: 13,
       prisonersUnguarded: 4,
+      // Straight through as well, and the fixture's `7` is deliberately not a
+      // share of `prisoners: 42` or of any coverage rung: this is the count of
+      // the high-risk classification *group*, published since ADR 0032 and
+      // read by nothing in `src/ui/` until #703's ruling put it on the strip.
+      prisonersHighRisk: 7,
       activeIncidents: 1,
       // Derived, not read straight through: `deriveSimulationMessageKey`
       // composed from the worker's stable `'riot'` id (issue #506 finding 2).
