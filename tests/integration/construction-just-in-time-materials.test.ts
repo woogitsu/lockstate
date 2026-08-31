@@ -533,6 +533,84 @@ describe('a placed object is a build order too (ADR 0028 decision 4)', () => {
   });
 });
 
+describe('the order the queue is funded in (#703 ruling 12)', () => {
+  /** A walled, zoned cell, so a bed order is accepted rather than refused `outside-room`. */
+  function prisonWithACell(): SimulationRuntime {
+    const runtime = createNewSimulationRuntime(SEED);
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
+    send(runtime, { type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
+    return runtime;
+  }
+
+  it('funds the earlier order in the crew\'s own walk, not the cheaper one and not the later one', () => {
+    /*
+     * **The one property of ruling 12 that nothing else in this repository
+     * measures**, and it was found by mutation: reversing the walk
+     * `ConstructionSystem.pendingOrderDemand` hands the sink left the whole
+     * suite green (4,095 passed), because a queue of identical wall orders
+     * cannot tell which of them the money was spent on -- every purchase lands
+     * in one shared container and `ContainerMaterialsProvider.tryAllocate`
+     * decides which order gets it, by its own ascending-id walk.
+     *
+     * A **mixed** queue can tell, because the two orders want different
+     * materials. A wall wants 2 bricks (80) and a bed wants 1 plank (65). With
+     * exactly 80 of spending room and both already queued, the ascending walk
+     * funds the wall and leaves the bed; a reversed walk funds the bed, is left
+     * with 15, and leaves the wall. The container's contents are the answer.
+     *
+     * This is also where the honest limit of ruling 12 shows, and it is ADR
+     * 0081 Decision 2's own: the ids here are chosen so that ascending id is a
+     * fact this case can state. A session mints
+     * `order-${crypto.randomUUID()}`, so which of a player's two orders is
+     * `order-aa` and which is `order-zz` is a draw they cannot see. ADR 0082
+     * proposes the persisted placement ordinal that would fix it and is
+     * unsigned.
+     */
+    const runtime = prisonWithACell();
+
+    /*
+     * Drained through `Treasury.spend` rather than through the *Buy* control on
+     * purpose: a purchase would land materials in the container ten seconds
+     * later, and a wall order with bricks in stock needs no purchase at all --
+     * which would make this a case about stock instead of about the walk.
+     */
+    const roomBefore = runtime.treasury.balanceMinorUnits - runtime.treasury.overdraftFloorMinorUnits;
+    expect(runtime.treasury.spend(roomBefore), 'the prison starts this case with nothing to spend').toBe(true);
+    expect(runtime.treasury.canAfford(1)).toBe(false);
+
+    // Both are placed while nothing is affordable, so neither is funded by its
+    // own press and both are waiting when the money arrives.
+    send(runtime, { type: 'PlaceObject', orderId: 'order-zz', definitionId: 'bed-wooden', x: CELL_RECT.x, y: CELL_RECT.y });
+    send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-aa', definitionId: WALL, x: 20, y: 20 });
+    expect(runtime.procurement.pendingDeliveries, 'nothing was bought at either press').toEqual([]);
+
+    // Exactly one wall, and 15 short of the wall plus the bed.
+    runtime.treasury.credit(WALL_COST);
+    expect(runtime.treasury.balanceMinorUnits - runtime.treasury.overdraftFloorMinorUnits).toBe(80);
+
+    /*
+     * One scheduled construction tick, and no more: `lastReport` is rewritten
+     * by every pass, so the pass *after* the buying one reports an empty
+     * `purchased` -- the bricks are in flight by then and nothing is left to
+     * buy. The buying pass is the one this case is about.
+     */
+    const buyingTick = 10;
+    step(runtime, buyingTick);
+
+    expect(runtime.justInTimeMaterials.lastReport.purchased).toEqual([
+      { itemId: BRICK, quantity: BRICKS_PER_WALL, costMinorUnits: WALL_COST },
+    ]);
+    expect(runtime.justInTimeMaterials.lastReport.unfunded).toEqual([
+      { itemId: PLANK, quantity: 1, costMinorUnits: PLANK_PRICE },
+    ]);
+    expect(
+      runtime.procurement.pendingDeliveries.map((delivery) => delivery.itemId),
+      'bricks for order-aa, and no plank for order-zz',
+    ).toEqual([BRICK]);
+    expect(runtime.treasury.canAfford(1), 'the wall took all 80').toBe(false);
+  });
+});
+
 describe('what auto-procurement costs, measured rather than assumed', () => {
   it('makes ADR 0075\'s hard lock reachable by a drag gesture, and this is a finding for the owner', () => {
     /*

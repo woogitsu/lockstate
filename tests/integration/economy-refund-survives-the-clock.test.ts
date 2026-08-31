@@ -598,6 +598,41 @@ describe('a refund survives the clock (#687)', () => {
    * is about -- and it is put up rather than taken. If it is ruled on, this
    * case changes, and it is written so that the change is visible rather than
    * silent.
+   *
+   * ## IT WAS RULED ON, AND THIS IS THE CHANGE
+   *
+   * **Everything above is kept exactly as it was written, because it is the
+   * argument the owner ruled on and because the sentence directly above
+   * promised this.** #703 ruling 9 chose partial fill -- *"kupować tyle, ile
+   * stać"* -- and ruling 12 chose the ORDER as the unit
+   * ([ADR 0081](../../docs/adr/0081-whether-a-purchase-may-be-partly-filled.md)
+   * Decision 1 and 2). The table above now reads:
+   *
+   * ```
+   * Buy 6 bricks, draw 4 walls (8 bricks), cancel the Buy    25 of room, 3 walls, 1 order stalled
+   * the same prison that does not cancel                     25 of room, 3 walls, 1 order stalled
+   * the same prison that never bought                        25 of room, 3 walls, 1 order stalled
+   * ```
+   *
+   * **The asymmetry is gone: all three rows are the same row.** Cancelling a
+   * delivery no longer leaves a prison richer in unspendable money and worse at
+   * building, because the 265 it gets back now buys three whole wall orders at
+   * 80 instead of being refused as one 320 lump. That is ADR 0081 Decision 1's
+   * *"measured basis"*, and the number it predicted -- *"both branches then
+   * reach three walls"* -- is what this case now measures.
+   *
+   * **And it costs the 240 the ADR's Consequences warn about.** The prison ends
+   * at 25 of room rather than 265, which is below the 65 a plank costs. The
+   * money went into wall that stands, so nothing is lost and the trade is the
+   * one the ruling chose; what is *not* stated to the player anywhere is that
+   * it happened. `MaterialsProcurementReport.purchased` carries it and
+   * `projectBuildQueue` reads only `unfunded`, which ADR 0081 Decision 3 calls
+   * a precondition and open question 2 leaves to the owner as copy.
+   *
+   * **The last press in this case is now redundant and is kept.** It used to be
+   * *"the way back, which is one press and is nowhere stated"*; the way back is
+   * no longer needed, and the press is asserted to change nothing, so the day
+   * partial fill is reverted this line fails rather than quietly passing.
    */
   it('stalls a whole queue the prison can no longer fund in one lump, and one press undoes that', () => {
     const withCancel = drainedPrison();
@@ -610,14 +645,25 @@ describe('a refund survives the clock (#687)', () => {
     expect(balanceOf(withCancel)).toBe(DRAINED_BALANCE);
     step(withCancel, PROCUREMENT_DELIVERY_DELAY_TICKS * 6);
 
-    // Eight bricks at 40 is 320 and the prison can spend 265: the pass buys
-    // nothing at all, where the cancelled delivery had already paid for six.
-    expect(orderStates(withCancel).completed ?? 0).toBe(0);
-    expect(queued(withCancel)).toBe(4);
-    expect(balanceOf(withCancel)).toBe(DRAINED_BALANCE);
+    /*
+     * **These four assertions read `0` completed, `4` queued, the whole
+     * `DRAINED_BALANCE` untouched and an unfunded lump of 8 bricks at 320,
+     * until #703 ruling 9.** Eight bricks at 40 is 320 and the prison can spend
+     * 265, so the pass used to buy nothing at all. It now walks the four wall
+     * orders and funds three of them whole -- 3 x 80 = 240 of the 265 -- and
+     * leaves the fourth, which is the last one placed and, in this fixture
+     * alone, also the last one in the walk: `placeWalls` mints
+     * `order-000..order-003`, so ascending id happens to be placement order
+     * here. A session mints `order-${crypto.randomUUID()}` and gets neither
+     * (ADR 0081 Decision 2, ADR 0082).
+     */
+    expect(orderStates(withCancel).completed).toBe(3);
+    expect(queued(withCancel)).toBe(1);
+    expect(balanceOf(withCancel)).toBe(DRAINED_AFTER_SIX_BRICKS);
     expect(withCancel.justInTimeMaterials.lastReport.unfunded).toEqual([
-      { itemId: BRICK, quantity: 8, costMinorUnits: 320 },
+      { itemId: BRICK, quantity: 2, costMinorUnits: 80 },
     ]);
+    expect(withCancel.construction.getOrder('order-003')!.state).toBe('materials-pending');
 
     const withoutCancel = drainedPrison();
     send(withoutCancel, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 6 });
@@ -628,11 +674,17 @@ describe('a refund survives the clock (#687)', () => {
     expect(orderStates(withoutCancel).completed).toBe(3);
     expect(balanceOf(withoutCancel)).toBe(DRAINED_AFTER_SIX_BRICKS);
 
-    // And the way back, which is one press and is nowhere stated: bring the
-    // demand under what the prison can pay in one lump.
+    /*
+     * **The way back, which used to be one press and nowhere stated.** It is no
+     * longer needed -- the two branches already agree -- and the press is kept
+     * so that it is asserted to change nothing. `ids[3]` is `order-003`, the
+     * one order still stalled.
+     */
+    expect(ids[3]).toBe('order-003');
     send(withCancel, { type: 'CancelBuildOrder', orderId: ids[3]! });
     step(withCancel, PROCUREMENT_DELIVERY_DELAY_TICKS * 6);
     expect(orderStates(withCancel).completed).toBe(3);
     expect(balanceOf(withCancel)).toBe(DRAINED_AFTER_SIX_BRICKS);
+    expect(balanceOf(withCancel), 'both branches now end in the same place').toBe(balanceOf(withoutCancel));
   });
 });

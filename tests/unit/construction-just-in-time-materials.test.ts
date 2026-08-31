@@ -251,6 +251,272 @@ describe('what a just-in-time pass cannot buy', () => {
   });
 });
 
+describe('the unit a partly filled purchase is atomic at (#703 ruling 12)', () => {
+  it('funds as many whole orders as the balance covers and skips the one it cannot', () => {
+    /*
+     * ADR 0081 Decision 1 and 2 together, at the smallest size that can show
+     * both. Four wall orders at 80 against 265 of spending power: three are
+     * funded whole, the fourth is not, and the report carries both halves.
+     *
+     * The mutation this catches is the ruling being reverted -- an
+     * all-or-nothing pass over the aggregate would price the four at 320,
+     * refuse them together, and buy nothing.
+     */
+    const { treasury, service, procurement } = fixture(265);
+
+    const report = service.procureForPendingOrders(
+      [1, 2, 3, 4].map((index) => order(`order-${String(index)}`, need(BRICK, 2))),
+      0,
+    );
+
+    expect(report.purchased).toEqual([{ itemId: BRICK, quantity: 6, costMinorUnits: 240 }]);
+    expect(report.unfunded).toEqual([{ itemId: BRICK, quantity: 2, costMinorUnits: 80 }]);
+    expect(treasury.balanceMinorUnits).toBe(25);
+    expect(procurement.pendingDeliveries.map((delivery) => delivery.quantity)).toEqual([2, 2, 2]);
+  });
+
+  it('buys an order whole or not at all, never the half of it the balance covers', () => {
+    /*
+     * **The one new bound `procureForPendingOrders` adds, and the reason the
+     * service holds the treasury at all.** An order wanting a brick (40) and a
+     * plank (65) costs 105. At 80 the balance covers the brick and not the
+     * plank, and buying the brick would spend 40 on a thing that can never
+     * finish: ruling 12's *"na zlecenie"* is exactly the refusal of that trade.
+     *
+     * Mutation: replace the `canAfford(orderCostMinorUnits)` guard with a
+     * per-line one and this reads `purchased: [{ item.brick, 1, 40 }]` and a
+     * balance of 40.
+     *
+     * No shipped buildable requires two materials
+     * (`src/simulation/construction/definition.ts`), so this is asserted at the
+     * sink's own contract rather than through a fixture buildable that would
+     * only prove itself. The contract is what a second material would meet.
+     */
+    const { treasury, service, procurement } = fixture(80);
+
+    const report = service.procureForPendingOrders([order('order-1', need(BRICK, 1), need(PLANK, 1))], 0);
+
+    expect(report.purchased, 'not the half of it that fits').toEqual([]);
+    expect(report.unfunded).toEqual([
+      { itemId: BRICK, quantity: 1, costMinorUnits: 40 },
+      { itemId: PLANK, quantity: 1, costMinorUnits: 65 },
+    ]);
+    expect(treasury.balanceMinorUnits, 'a refused order spends nothing').toBe(80);
+    expect(procurement.pendingDeliveries).toEqual([]);
+  });
+
+  it('buys that same order whole the moment the balance covers all of it', () => {
+    // The other side of the boundary, so the case above is a bound and not a
+    // pass that never buys a two-material order.
+    const { treasury, service } = fixture(105);
+
+    const report = service.procureForPendingOrders([order('order-1', need(BRICK, 1), need(PLANK, 1))], 0);
+
+    expect(report.purchased).toEqual([
+      { itemId: BRICK, quantity: 1, costMinorUnits: 40 },
+      { itemId: PLANK, quantity: 1, costMinorUnits: 65 },
+    ]);
+    expect(report.unfunded).toEqual([]);
+    expect(treasury.balanceMinorUnits).toBe(0);
+  });
+
+  it('lets a later order it can afford through, rather than stopping at the first it cannot', () => {
+    /*
+     * Rule 2, and it is a decision rather than a detail. ADR 0081 Decision 2's
+     * own criterion for choosing per order is that *"the answer to 'why did
+     * that get built and not this?' is a sentence the player could have
+     * predicted before pressing"*. Skipping answers *"because you could afford
+     * that one"*; stopping answers *"because of where it fell in an ascending
+     * order-id walk"*, which for `order-${crypto.randomUUID()}` ids is a draw
+     * the player cannot see.
+     *
+     * It is also the rule that never funds **less** than the aggregate pass it
+     * replaced: at 70, the old per-item walk bought the plank and refused the
+     * bricks, and so does this.
+     *
+     * Mutation: stop the walk on the first unaffordable order and the bed is
+     * never bought -- `purchased` comes back empty.
+     */
+    const { treasury, service } = fixture(70);
+
+    const report = service.procureForPendingOrders(
+      [order('order-1', need(BRICK, 2)), order('order-2', need(PLANK, 1))],
+      0,
+    );
+
+    expect(report.purchased, 'the 65 the balance covers, even though the 80 before it did not').toEqual([
+      { itemId: PLANK, quantity: 1, costMinorUnits: 65 },
+    ]);
+    expect(report.unfunded).toEqual([{ itemId: BRICK, quantity: 2, costMinorUnits: 80 }]);
+    expect(treasury.balanceMinorUnits).toBe(5);
+  });
+
+  it('reports every order it left unfunded, not only the first', () => {
+    /*
+     * Why: `projectBuildQueue` sums `unfunded` into
+     * `BuildQueueMaterialsFundingViewModel.shortfallMinorUnits`, which is the
+     * figure the Build panel shows. Reporting only the order the walk stopped
+     * being able to fund would silently change that number's subject from
+     * "what the queue still needs" to "what the next order needs", which is a
+     * player-facing change nobody decided.
+     */
+    const { service } = fixture(0);
+
+    const report = service.procureForPendingOrders(
+      [order('order-1', need(BRICK, 2)), order('order-2', need(BRICK, 2)), order('order-3', need(PLANK, 1))],
+      0,
+    );
+
+    expect(report.unfunded).toEqual([
+      { itemId: BRICK, quantity: 4, costMinorUnits: 160 },
+      { itemId: PLANK, quantity: 1, costMinorUnits: 65 },
+    ]);
+  });
+
+  it('hands the supply out along the walk instead of letting every order count it', () => {
+    /*
+     * The anti-double-buy property the aggregate shape was chosen for, which
+     * splitting demand by order had to keep
+     * (`materials-procurement.ts`, "Why demand is aggregate rather than per
+     * order"). Six bricks in stock against four two-brick orders: the first
+     * three are already covered and cost nothing, and only the fourth is
+     * bought.
+     *
+     * Mutation: read the supply per order instead of once per pass, and every
+     * one of the four sees six bricks, nothing is bought, and three walls never
+     * get their materials.
+     */
+    const { treasury, stock, service } = fixture();
+    stock.deposit(BRICK, 6);
+
+    const report = service.procureForPendingOrders(
+      [1, 2, 3, 4].map((index) => order(`order-${String(index)}`, need(BRICK, 2))),
+      0,
+    );
+
+    expect(report.purchased).toEqual([{ itemId: BRICK, quantity: 2, costMinorUnits: 80 }]);
+    expect(treasury.balanceMinorUnits).toBe(25_000 - 80);
+  });
+
+  it('lets an item nobody sells block its own order and no other', () => {
+    /*
+     * Rule 3. A content defect -- a buildable requiring `item.sink`, which
+     * `validateBuildableItemReferences` permits -- must not be able to stop a
+     * prison from building anything else. So the sink order is reported
+     * unprocurable, is not called unfunded (the prison is not short of money
+     * for it), and the wall behind it is still bought.
+     */
+    const { treasury, service } = fixture();
+
+    const report = service.procureForPendingOrders(
+      [order('order-1', need(SINK, 1)), order('order-2', need(BRICK, 2))],
+      0,
+    );
+
+    expect(report.unprocurable).toEqual([{ itemId: SINK, quantity: 1, reason: 'unpurchasable' }]);
+    expect(report.unfunded).toEqual([]);
+    expect(report.purchased).toEqual([{ itemId: BRICK, quantity: 2, costMinorUnits: 80 }]);
+    expect(treasury.balanceMinorUnits).toBe(25_000 - 80);
+  });
+
+  it('does not buy the affordable half of an order whose other half nobody sells', () => {
+    // The same rule from inside one order: atomicity is about the order, not
+    // about money, so a line that cannot be bought at any price stops the
+    // lines beside it exactly as an unaffordable total would.
+    const { treasury, service } = fixture();
+
+    const report = service.procureForPendingOrders([order('order-1', need(BRICK, 2), need(SINK, 1))], 0);
+
+    expect(report.purchased).toEqual([]);
+    expect(report.unprocurable).toEqual([{ itemId: SINK, quantity: 1, reason: 'unpurchasable' }]);
+    expect(treasury.balanceMinorUnits).toBe(25_000);
+  });
+});
+
+describe('the arithmetic ADR 0081 section 2 states', () => {
+  /**
+   * *"This ruling halves the expected requirement and leaves the worst case
+   * exactly where it is."*
+   *
+   * ADR 0081 Decision 2 states that as a table over the thirteen pending wall
+   * orders of ADR 0075's locked position, at 80 each, with the segment the
+   * player actually needs at rank *r* in the walk and 40 already in the bank:
+   *
+   * | rule | credit that segment needs |
+   * |---|---|
+   * | per queue, all-or-nothing (before this ruling) | **1,000** flat |
+   * | per order (this ruling) | `80r - 40`, so **40 to 1,000**, expected 520 |
+   *
+   * Measured here rather than restated as a comment. The credits are found by
+   * scanning what the real service and the real `Treasury` actually do, one
+   * minor unit at a time; only the three summary figures are literals, and the
+   * all-or-nothing figure is the queue's own cost less the 40, which the case
+   * above pins from the shipped catalogue.
+   */
+  const QUEUE = 13;
+  const HELD = 40;
+  const WALL_COST = 80;
+
+  /**
+   * The least credit at which the order at rank `rank` (1-based) is funded,
+   * found by scanning what the service actually does rather than by computing
+   * it. One minor unit at a time, so the answer is a boundary and not a
+   * sampling.
+   */
+  const creditToFund = (rank: number): number => {
+    for (let credit = 0; credit <= QUEUE * WALL_COST; credit += 1) {
+      const treasury = new Treasury(HELD + credit);
+      const stock = new Container('construction-materials');
+      const procurement = new ProcurementSystem(treasury, stock);
+      const service = new JustInTimeMaterialsService(procurement, stock, treasury);
+      service.procureForPendingOrders(
+        Array.from({ length: QUEUE }, (_unused, index) =>
+          order(`order-${String(index + 1).padStart(2, '0')}`, need(BRICK, 2)),
+        ),
+        0,
+      );
+      /*
+       * The walk is ascending id and the ids are zero-padded, so the orders
+       * funded are a prefix and their count is the deepest rank reached. Read
+       * off the deliveries the real `ProcurementSystem` holds, never off the
+       * report, so a report that lied would not be able to answer this.
+       */
+      if (procurement.pendingDeliveries.length >= rank) return credit;
+    }
+    throw new Error('the whole queue is fundable at the queue\'s own cost, so this cannot be reached');
+  };
+
+  it('costs 80r - 40 to reach the order at rank r, from 40 at the front to 1,000 at the back', () => {
+    const credits = Array.from({ length: QUEUE }, (_unused, index) => creditToFund(index + 1));
+
+    expect(credits).toEqual([40, 120, 200, 280, 360, 440, 520, 600, 680, 760, 840, 920, 1_000]);
+  });
+
+  it('roughly halves the expected requirement and leaves the worst case exactly where it is', () => {
+    const credits = Array.from({ length: QUEUE }, (_unused, index) => creditToFund(index + 1));
+    const expectedRequirement = credits.reduce((total, credit) => total + credit, 0) / QUEUE;
+
+    /*
+     * All-or-nothing needed the whole queue funded before any of it was, so the
+     * credit was the queue's cost less what the prison held -- the same figure
+     * whatever rank the segment sat at.
+     */
+    const allOrNothing = QUEUE * WALL_COST - HELD;
+    expect(allOrNothing).toBe(1_000);
+
+    /*
+     * **"Halves" is the ADR's word and it is 52%, not 50%**, because the mean
+     * of `80r - 40` over thirteen ranks is `80 x 7 - 40`. The exact figure is
+     * asserted rather than the round one, so this case cannot be satisfied by
+     * an implementation that merely got the order of magnitude right.
+     */
+    expect(expectedRequirement).toBe(520);
+    expect(expectedRequirement / allOrNothing).toBeCloseTo(0.52, 10);
+
+    expect(Math.max(...credits), 'and the worst case did not move').toBe(allOrNothing);
+  });
+});
+
 describe('the one way a just-in-time purchase id can collide', () => {
   it('treats a purchase that already stands as satisfied rather than as a shortfall, and recovers on the next tick', () => {
     /*
