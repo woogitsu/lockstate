@@ -1055,6 +1055,50 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   const armHint = eyebrowText(t(HUD_MESSAGE_KEY.buildArmHint), 'hud-build__note');
 
+  /*
+   * `hud.build.note` -- "An order is queued now and built while the clock
+   * runs." -- is in the shipped locale and in `HUD_MESSAGE_KEY` and is rendered
+   * by nothing. It has been that way since `67e366e` (2026-08-23), which
+   * replaced the coordinate steppers with pointing at the world and, in moving
+   * the submit button into the folded "Enter coordinates" section, deleted the
+   * `.hud-build__footer` the sentence shared with it.
+   *
+   * **The owner ruled on 2026-08-30 (#639) that it should render again, and it
+   * still does not, because this panel has no room for it. That is a
+   * measurement, not an opinion, and it is written here because the next reader
+   * of #639 will reach for exactly this spot.** Taken on the assembled page
+   * (issue #647), one prison saved, Build tab, nothing scrolled, the sentence
+   * appended to the map block below `armHint`:
+   *
+   * | viewport | sentence | panel overflow | why |
+   * | --- | --- | --- | --- |
+   * | 1440x900 | 26.4px, 2 lines | 0 | the catalogue list absorbs it whole |
+   * | 1024x768 | 26.4px, 2 lines | 0 | same |
+   * | 375x812 | 13.2px, 1 line | 0 | same |
+   * | 1280x720 | 26.4px, 2 lines | **4px** | list absorbs 22.4 of 26.4, then hits its floor |
+   * | 900x600 | 26.4px, 2 lines | **23px** | list is *already* on its floor and absorbs nothing |
+   *
+   * The catalogue list is this panel's only flexible member -- the thing
+   * `hud.css` lets it take height from, which ADR 0031 decision 3 already
+   * spends 45px of on the queue. At 900x600 it is on its two-row floor on
+   * arrival and its one-row floor with a queue, so there is nothing left to
+   * take: the panel's whole always-visible budget there is **7.8px** on arrival
+   * and **6.8px** queued.
+   *
+   * **And one clipped line does not fit either**, which is what makes this
+   * structural rather than tunable. Clamped to a single line by the
+   * `max-height: 700px` trims, the sentence still costs 17.2px against that
+   * 7.8px -- 9px of overflow on arrival and 10px queued. There is no smaller
+   * version of it.
+   *
+   * So it is not rendered here, and it is deliberately **not** put in a fold
+   * instead: a fold that starts shut is what #627 measured reaching nobody. The
+   * height has to come from somewhere, every candidate is a number pinned by
+   * `tests/browser/app-shell.spec.ts` under #88, #174, #285 and #390, and
+   * moving one of those is a decision with #174 attached rather than an
+   * implementation detail. Issue #647 carries the options and their costs.
+   */
+
   function paintArmed(): void {
     // "Armed" on the arm button means armed *to place*, which is what its label
     // and its pressed state are about. A tool armed to remove is armed, and this

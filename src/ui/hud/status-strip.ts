@@ -235,7 +235,31 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
           // player's locale. The *value* is already floored to a whole
           // percent, so this only formats it.
           localizer.formatNumber(percent / 100, { style: 'percent', maximumFractionDigits: 0 });
-    speed.textContent = `×${localizer.formatNumber(viewModel.clock.speed)}`;
+    /*
+     * A stopped clock says so, in two channels (#639).
+     *
+     * `×${speed}` was written from the speed alone, so it printed identically
+     * whether time was moving or not: `Day 1 / 0% / ×1` was the same screen
+     * stopped as running, and the owner placed 40 build orders and spent 2,400
+     * against it with every readout agreeing with them (#627, #636). The only
+     * paused cue was an accent tint on a 44px icon.
+     *
+     * The word is the owner's ruling and is the one new string this change
+     * carries. The second channel is the greying, which is `hud.css`'s rule on
+     * the `data-clock-mode` this function already stamps below -- so a player
+     * who does not read the word still sees the readout go dim, which is the
+     * whole point of it being two channels rather than one.
+     *
+     * `speedLabel` keeps saying the speed, because the speed is still what it
+     * says: `mode` and `speed` are separate fields, a paused clock at ×2 is a
+     * real state that `transportPressedStates` already distinguishes, and a
+     * screen reader reads the label and then the value -- "Speed 1x, PAUSED"
+     * -- which is both facts and invents no string to join them.
+     */
+    const paused = viewModel.clock.mode === 'paused';
+    speed.textContent = paused
+      ? t(HUD_MESSAGE_KEY.clockPaused)
+      : `×${localizer.formatNumber(viewModel.clock.speed)}`;
     speedLabel.textContent = t(HUD_MESSAGE_KEY.clockSpeed, { speed: viewModel.clock.speed });
 
     const pressed = transportPressedStates(viewModel.clock);

@@ -201,6 +201,27 @@
 
 .hud-clock__speed { color: var(--text-subtle); }
 
+/* The second channel for a stopped clock (#639), and the reason there are two.
+   The word `PAUSED` replaces `×1` in `status-strip.ts`; this dims the numbers
+   beside it, so the state does not depend on reading one word -- a player who
+   only glances at the strip sees the whole clock readout go quiet.
+
+   It is a colour step and nothing else, which is the vocabulary this
+   stylesheet has: `tests/unit/ui-design-tokens.test.ts` refuses
+   `filter`, a gradient and every kind of shadow across `src/ui/**`, on the
+   ground that separation comes from a hairline and a colour step. `--text-muted`
+   is the ramp's dimmest text alias, so the day number falls two steps from
+   `--text-heading` and the two subordinate readouts one from `--text-subtle`.
+
+   All three, not only the readout that changed: while the clock is stopped the
+   day and the position within it are frozen too, and dimming the one value that
+   already carries the word would be the same single channel twice. */
+.hud-strip[data-clock-mode='paused'] .hud-clock__day,
+.hud-strip[data-clock-mode='paused'] .hud-clock__day-progress,
+.hud-strip[data-clock-mode='paused'] .hud-clock__speed {
+  color: var(--text-muted);
+}
+
 /* ------------------------------------------------------------------ */
 /* Bottom-left minimap frame                                           */
 /* ------------------------------------------------------------------ */

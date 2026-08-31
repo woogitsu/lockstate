@@ -124,6 +124,17 @@ export const HUD_MESSAGE_KEY = {
   clockDayProgress: 'hud.clock.day-progress',
   clockDay: 'hud.clock.day',
   clockSpeed: 'hud.clock.speed',
+  /**
+   * What the speed readout says instead of `×1` while the clock is stopped.
+   *
+   * `×1` printed identically whether the clock ran or not -- the readout was
+   * written from the speed alone -- so `Day 1 / 0% / ×1` was the same screen
+   * stopped as running, and the owner played a whole session against it
+   * (#627, #636). The ruling on #639 is this word plus a second visual
+   * channel; the greying is in `hud.css` off `data-clock-mode`, so the state
+   * never rests on reading one word.
+   */
+  clockPaused: 'hud.clock.paused',
   transportPause: 'hud.transport.pause',
   transportPlay: 'hud.transport.play',
   transportFastForward: 'hud.transport.fast-forward',

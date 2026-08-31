@@ -19,7 +19,49 @@
 
 ## Status
 
-**Proposed, 2026-08-28. Not self-approved.**
+**Accepted, 2026-08-30, by the repository owner.**
+
+**This clause read `Proposed, 2026-08-28. Not self-approved.` until the owner
+accepted it on 2026-08-30.** The paragraph that stood under it is kept below,
+unedited, because everything it says is still true: the amendment it names is
+still an amendment, and the rule it cites is still the rule. What had not
+happened was the acceptance step, and it has now happened.
+
+**How the acceptance arrived, recorded because a reader checking this status
+later deserves to know its weight.** It arrived in
+[#639](https://github.com/matmaxalez/lockstate/issues/639), *"OWNER RULINGS
+2026-08-30: four calls on what the game tells the player"*, filed by the owner
+in their own words after they hit a stopped clock live. Its first ruling reads:
+*"**ADR 0051 is accepted.** It has been `Proposed, 2026-08-28. Not
+self-approved.` while **its behaviour already ships** — a decision the code
+already keeps, waiting on a signature."* It was one of four rulings in that
+issue and was given against the issue's own summary of this ADR's subject and
+its stated cost, not against the full text of this document. `AGENTS.md`'s rule
+is *"never self-approve"*; the owner accepted, and this paragraph exists so
+that nobody mistakes the **recording** of that acceptance — which is all the
+commit carrying it does — for an approval given here.
+
+**Acceptance closes none of the three open questions at the foot of this
+document**, and they are left standing rather than tidied away. It does not
+decide whether a purchase should spend money during a pause, and that is still
+the sharpest one.
+
+**Open question 3 — "does the game ever tell a new player that it starts
+paused?" — is half answered by the same issue that accepted this ADR, and the
+other half is measured and blocked.** #639's second ruling ships in this commit:
+the clock readout says `PAUSED` instead of `×1` and the day, the day progress
+and the speed are dimmed while the clock is stopped, so the sentence below —
+*"The Pause button is accented and `data-clock-mode` says `paused`, which is
+honest but quiet"* — is no longer true of the readout. Its first ruling does
+not ship: restoring a renderer for `hud.build.note` was measured against the
+assembled page and the Build panel has no room for the sentence at 900x600,
+9px short even clipped to a single line. The numbers are in
+`src/ui/hud/build-panel.ts` where the renderer would go, and the decision they
+need belongs to #174 rather than here.
+
+So the sentence below, *"it does not make the pause more discoverable, and that
+is a separate piece of work"*, was right that the work was separate; the work
+exists, it is #639, and it is partly done.
 
 This amends the "Ordered Command Queue" heading of
 [ADR 0020](./0020-deterministic-kernel.md), which is the deterministic

@@ -193,6 +193,11 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.clock.day-progress': 'Through the day',
   'hud.clock.day': 'Day',
   'hud.clock.speed': 'Speed {speed}x',
+  // Uppercase in the string rather than by `text-transform`, because the
+  // readout it replaces is `×1` -- a value, not an eyebrow -- and the strip's
+  // value styling carries no case transform. The word is the owner's, ruled on
+  // 2026-08-30 (#639); nothing here may pick a different one.
+  'hud.clock.paused': 'PAUSED',
   'hud.transport.pause': 'Pause',
   'hud.transport.play': 'Play at normal speed',
   'hud.transport.fast-forward': 'Fast forward',
