@@ -404,10 +404,14 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
        * `src/content/contraband-catalog.ts` already authors -- "Weapon",
        * "Drugs", "Phone", "Currency", "Tool" -- reused as-is rather than new
        * copy, exactly as issue #506 finding 2 reused `incident-type.*.name`.
-       * Until this line nothing on screen read one of them (`grep -rn
-       * "contraband\.weapon\.name" src/ui/` returned nothing), so a found
-       * phone and a found weapon both rendered as the character `1`, and after
+       * Until this line nothing on screen read one of them, so a found phone
+       * and a found weapon both rendered as the character `1`, and after
        * ADR 0080 a weapon is something a player's own neglect can produce.
+       *
+       * The key is not written here and must not be: it arrives from the
+       * catalog through `HudCountsViewModel.contrabandNameKey`, so #703's own
+       * `grep -rn "contraband\.weapon\.name" src/ui/` goes on returning
+       * nothing and is not the check for whether this reader exists.
        *
        * **Where it differs from the incidents chip, and why there is no
        * fallback word.** That badge falls back to the generic "Active" for a

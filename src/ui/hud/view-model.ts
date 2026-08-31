@@ -209,10 +209,18 @@ export interface HudCountsViewModel {
    *
    * One of the five `contraband.*.name` labels the contraband catalog authors
    * ("Weapon", "Drugs", "Phone", "Currency", "Tool"), which were shipped and
-   * read by nothing until this field: `grep -rn "contraband\.weapon\.name"
-   * src/ui/` returned nothing, so a found phone and a found weapon rendered as
-   * the same character. Not new copy -- the strings are authored, and this is
-   * the reader they never had.
+   * read by nothing until this field, so a found phone and a found weapon
+   * rendered as the same character. Not new copy -- the strings are authored,
+   * and this is the reader they never had.
+   *
+   * **The key itself never appears as a literal in this directory, which is
+   * the point of the field.** The HUD may not hand-write a content key; it
+   * arrives from `ContrabandCategoryDefinition.nameKey` through the projection,
+   * exactly as `PrisonerRoomRefViewModel.roomNameKey` does, so a scenario
+   * running its own contraband catalog names its own categories. Issue #703's
+   * evidence for the gap was `grep -rn "contraband\.weapon\.name" src/ui/`
+   * returning nothing; that grep returns nothing after the gap is closed too,
+   * and `grep -rn "contrabandNameKey" src/ui/` is the one that answers it.
    *
    * **Absent whenever no one word is true of the whole count** -- nothing
    * found, several categories found, or a confiscation ledger that no longer

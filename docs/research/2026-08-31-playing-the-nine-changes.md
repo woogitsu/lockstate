@@ -542,14 +542,23 @@ rather than about a bug:
 
 > **Corrected 2026-08-31, and both directions are marked rather than
 > overwritten.** The owner ruled on this row the same day — ruling 3 on #703,
-> *"The message names what contraband was found."* Two sentences above are now
-> false and one is still true, and it matters which:
+> *"The message names what contraband was found."* Three sentences above are
+> worth going through one at a time, because only one of them is simply false
+> and the other two fail in more interesting ways:
 >
 > - ***"`grep -rn "contraband\.weapon\.name" src/ui/` returns nothing"* is
->   false.** `src/ui/hud/projection.ts` reads the key, out of
->   `HudCountsViewModel.contrabandNameKey`, and paints it as the contraband
->   chip's badge — the same shape #506 finding 2 gave the incidents chip. It
->   was true when written.
+>   still true, and it was the wrong grep — that is the sharper correction.**
+>   The keys now have a reader: `src/ui/hud/projection.ts` paints
+>   `HudCountsViewModel.contrabandNameKey` as the contraband chip's badge, the
+>   same shape #506 finding 2 gave the incidents chip. The *literal* is
+>   deliberately still absent from `src/ui/`, because the HUD may not
+>   hand-write a content key — the key arrives from
+>   `ContrabandCategoryDefinition.nameKey` through the projection, exactly as
+>   `roomNameKey` reaches the roster panel. So a grep for the literal cannot
+>   distinguish "no reader" from "correctly plumbed", and the grep that answers
+>   the question is `grep -rn "contrabandNameKey" src/ui/`. **The evidence in
+>   this row was sound about the gap and would have gone on reading as a gap
+>   after it was closed**, which is the durable lesson here.
 > - ***"a found weapon and a found phone render identically: `1`"* is false for
 >   a prison whose finds are all one category, and still true for a mixed
 >   haul.** A badge qualifies the whole count, so naming a category the count

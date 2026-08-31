@@ -267,6 +267,14 @@ catalog's own `nameKey` so the **Contraband** chip carries a badge reading
 strings are the `nameKey`s this document's *Contraband categories* section
 already describes, and until then nothing on screen read one.
 
+**The key never appears as a literal in `src/ui/`, and that is deliberate.** The
+HUD may not hand-write a content key: the projection publishes
+`ContrabandCategoryDefinition.nameKey` and the HUD resolves whatever it is
+handed, the same arrangement `PrisonerRoomRefViewModel.roomNameKey` already has.
+So a scenario running its own contraband catalog names its own categories, and
+`grep -rn "contraband\.weapon\.name" src/ui/` answers nothing useful either way
+-- `grep -rn "contrabandNameKey" src/ui/` is the grep that finds the reader.
+
 Two properties of that reader are worth stating here, because they are
 statements about this ledger rather than about the HUD:
 

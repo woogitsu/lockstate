@@ -74,6 +74,33 @@ export interface StatusStripSource {
    * genuinely has: nothing has been confiscated anywhere it could be read
    * from. The same reading `treasury` and `coverage` above take of their own
    * absent case.
+   *
+   * ## What this costs, and the part of it that is not measured
+   *
+   * `ConfiscationLedger.all()` copies the whole ledger, and
+   * `contraband-projection.ts` reports that as a gap about itself -- the ledger
+   * has no indexed or windowed accessor. **This puts that copy on a cadence
+   * where it was previously on-demand**: `hud/contraband` is a pulled route
+   * with no panel, while this projection runs every 500 ms
+   * (`STATUS_COUNTS_PUBLISH_INTERVAL_MS`), so the walk is now O(confiscations)
+   * twice a second for the life of a session.
+   *
+   * **Not measured, and bounded by two figures that are.** The size: sixteen
+   * in-game days of a played prison confiscate **2** items
+   * (`tests/integration/contraband-search-duty.test.ts`, thirteen seeds; the
+   * largest was 4). Against that, the same projection already allocates a
+   * sorted regime array, a fresh record per open incident
+   * (`IncidentLog.openIncidents`) and a walk of every occupied place
+   * (`stateIncomeForOccupiedPlaces`), and measures 0.28--1.2 ms whole at 250
+   * to 5,000 actors (`tests/unit/worker-status-counts.test.ts`). A copy of a
+   * handful of records is orders of magnitude below the walk already in there.
+   *
+   * What would settle it rather than bound it is that perf case run against a
+   * populated ledger, which nobody has done. **It is a real question for a
+   * prison left running for days**, because the ledger is unbounded in the
+   * session by construction and this cadence is not -- and the fix if it ever
+   * bites is the accessor `contraband-projection.ts` already asked for, not a
+   * change here.
    */
   readonly confiscations?: ContrabandConfiscationSource;
   /**
@@ -313,9 +340,15 @@ export interface StatusStripViewModel {
      * `activeIncidentType` makes one field up.** The five categories are
      * authored -- `contraband.weapon.name` ("Weapon"), `.drug`, `.phone`,
      * `.currency`, `.tool` (`src/content/default-locale-en.ts`) -- and until
-     * this field nothing on screen read one: `grep -rn
-     * "contraband\.weapon\.name" src/ui/` returned nothing, so a found phone
-     * and a found weapon both rendered as the character `1`. After
+     * this field nothing on screen read one, so a found phone and a found
+     * weapon both rendered as the character `1`.
+     *
+     * (Issue #703's own evidence for that was `grep -rn
+     * "contraband\.weapon\.name" src/ui/` returning nothing. **That grep still
+     * returns nothing and always will**, because the HUD may not hand-write a
+     * content key: the key travels from `ContrabandCategoryDefinition.nameKey`
+     * through this field. `grep -rn "contrabandNameKey" src/ui/` is the one
+     * that finds the reader.) After
      * [ADR 0080](../../../docs/adr/0080-when-the-prison-asks-what-a-prisoner-is-carrying.md)
      * a weapon has a producer a player can reach, which is what turns that
      * from a dormant catalogue into the difference between "somebody had a
