@@ -119,12 +119,23 @@ class Session {
   /**
    * The loan ledger this run was built with.
    *
-   * `runtime.loans` is optional because a session restored from a snapshot
-   * that predates ADR 0075 decision 2 has none, so the type is honest and the
-   * narrowing belongs here rather than at each of the twelve read sites. Every
-   * run that reaches this getter passed `loanTerms` to the constructor; a
-   * throw is the right answer for one that did not, because the alternative is
-   * a table of zeroes that looks like a measurement.
+   * `runtime.loans` is optional because **nothing in `src/` supplies
+   * `loanTerms`** (`SimulationRuntimeOptions.loanTerms`), so the type is
+   * honest and the narrowing belongs here rather than at each of the twelve
+   * read sites. Every run that reaches this getter passed `loanTerms` to the
+   * constructor; a throw is the right answer for one that did not, because the
+   * alternative is a table of zeroes that looks like a measurement.
+   *
+   * **This said the optionality was there "because a session restored from a
+   * snapshot that predates ADR 0075 decision 2 has none", and that reason is
+   * wrong in a way worth marking rather than overwriting**: it reads as though
+   * a *later* snapshot would carry one. None does. There is no loan section in
+   * the save payload at all, so a restored session has no ledger whatever the
+   * save's age -- `restoreSimulationRuntime` builds its runtime with
+   * `{ world }` and has no channel for terms.
+   * `tests/determinism/loan-ledger-restore-boundary.test.ts` measures both
+   * halves, and `src/simulation/economy/loans.ts` names the missing section a
+   * gap.
    */
   get loans() {
     const ledger = this.runtime.loans;
