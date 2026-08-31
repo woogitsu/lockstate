@@ -8806,12 +8806,23 @@ test.describe('the assembled application', () => {
    */
   test('paints the high-risk chip and orders the Regime roster by tier (#703)', async ({ page }) => {
     /*
-     * Slow for the reason the keyboard loop above is slow, and it is the same
-     * reason: ADR 0045 makes an enclosed perimeter a precondition of zoning, so
-     * the shortest route to a prison that admits anybody is buy, order, build,
-     * zone, admit.
+     * **Five minutes, and the number is measured rather than generous.**
+     *
+     * Slow for the reason the keyboard loop above is slow: ADR 0045 makes an
+     * enclosed perimeter a precondition of zoning, so the shortest route to a
+     * prison that admits anybody is buy, order, build ten wall segments, zone,
+     * admit -- and this test then runs the intake pipeline and exports a save.
+     * Measured green at **3.0m** on this container, twice; `test.slow()` alone
+     * is 180 s and would have been decided by whatever else the machine was
+     * doing.
+     *
+     * That is a budget for work this test really does, not a timeout raised over
+     * a race: nothing here waits on a coincidence. Every wait is on a state the
+     * game reports -- the build queue emptying, `[data-metric="rooms"]` moving,
+     * the roster's own `data-total`, four rows carrying a tier -- and each names
+     * what did not happen when it gives up.
      */
-    test.slow();
+    test.setTimeout(300_000);
 
     await page.setViewportSize({ width: 1440, height: 900 });
     await openApp(page);
@@ -8908,16 +8919,17 @@ test.describe('the assembled application', () => {
     await expect(metric('rooms'), 'the typed rectangle never reached the worker').toHaveText('1');
 
     /*
-     * Eight arrivals, which is twice the roster's window.
+     * Twelve arrivals, three times the roster's window.
      *
-     * Twice, and not five: the claim is about *which* four of the population
-     * fill four boxes, and the drawn tiers have to have enough spread for that
-     * to be a claim at all. Both halves are asserted below rather than assumed
-     * -- the total is read off the panel and the number of distinct tiers in the
-     * window is checked -- so a population that came out single-tier fails here
-     * with a message saying so instead of passing vacuously.
+     * The claim is about *which* four of the population fill four boxes, so the
+     * population has to be several times the window for the choice to be a
+     * choice. Three times rather than twice for one measured reason: with eight
+     * prisoners a run came out with the four highest tiers sitting at entity
+     * indices 0, 1, 2 and 6 -- close enough to the arrival order that a
+     * *broken* sort would have been within one row of the right answer. Twelve
+     * puts eight prisoners outside the window instead of four.
      */
-    const ADMISSIONS = 8;
+    const ADMISSIONS = 12;
     await page.locator('.ui-tab[data-tab="overview"]').click();
     for (let admission = 0; admission < ADMISSIONS; admission += 1) {
       await page.locator('.hud-intake__admit').click();
@@ -8931,10 +8943,12 @@ test.describe('the assembled application', () => {
      * `wallRectanglesFromTheKeyboard` ends by pressing *Pause*, deliberately --
      * its own comment says it leaves the caller "the paused session a new prison
      * arrives as". Since ADR 0051 a *due* command is dispatched during a pause,
-     * which is why the eight admissions above landed and the strip reads 8; but
+     * which is why the admissions above landed and the strip reads the whole
+     * population; but
      * `IntakeSystem` is a scheduled system, so with the clock stopped no arrival
      * ever leaves `queued` and no row can carry a tier. Measured: the poll below
-     * spent its whole budget at zero classified rows, on a prison of eight.
+     * spent its whole budget at zero classified rows, on the prison of eight
+     * this fixture admitted before it was widened to twelve.
      *
      * Fast forward twice, because there are three intake stages to walk before
      * `accommodation-assignment` and the pipeline runs every five ticks.
@@ -9047,24 +9061,99 @@ test.describe('the assembled application', () => {
       expect(row.badge).not.toContain('.');
     }
 
-    /*
-     * Non-vacuity, and it is the assertion that gives the one below its teeth:
-     * with every prisoner at one tier, *any* order is non-increasing and the
-     * arrival order this ruling replaced would pass.
-     */
+    // The ruling's shape, on the painted page: highest tier first.
     const tiers = painted.map((row) => row.tier);
-    expect(
-      new Set(tiers).size,
-      `every row is at tier ${String(tiers[0])}, so this run cannot tell tier order from arrival order`,
-    ).toBeGreaterThan(1);
-
-    // The ruling, on the painted page: highest tier first.
     for (let position = 1; position < tiers.length; position += 1) {
       expect(
         tiers[position]!,
         `the roster is not in descending tier order: ${JSON.stringify(tiers)}`,
       ).toBeLessThanOrEqual(tiers[position - 1]!);
     }
+
+    /*
+     * **And the whole of it: these four are the four highest tiers in the
+     * prison, checked against the population read out of the game's own save
+     * file.**
+     *
+     * The panel is a four-row window on twelve people, so nothing on screen can
+     * say what the other eight are -- and a first version of this test tried to
+     * stand in for that with "the window holds more than one distinct tier",
+     * which is not the claim and is not even reliable. It failed on a run whose
+     * window was `[{0,1},{1,1},{2,1},{6,1}]`: four prisoners at tier 1, which is
+     * a **correct** top-four window (id 6 is there and ids 3, 4 and 5 are not,
+     * so those three are at tier 0) and exactly the case where the sort is
+     * working hardest. A guard that rejects a correct answer is worse than no
+     * guard.
+     *
+     * Export gives the real thing. `payload.prisoners.components.riskTier` is
+     * the tier of every prisoner by entity index, from the same snapshot a
+     * player's save file carries, so the expected window can be *computed
+     * independently of the projection* and written against it. That is the
+     * fixture rule `docs/TESTING.md` states from the other side: the expected
+     * side of this comparison must not be the code under test, and here it is a
+     * sort this file performs over bytes the persistence layer produced.
+     *
+     * Two things make it airtight rather than nearly so:
+     *
+     * - **The clock is paused first.** A save taken while the simulation runs
+     *   could disagree with the rows painted a moment earlier.
+     * - **Every prisoner is at the same intake stage**, asserted rather than
+     *   assumed. Nobody can be housed (the cell has no bed), so all twelve sit
+     *   at the same stage -- and *that* is what lets the expected order be a
+     *   plain sort on `riskTier` with no re-derivation of which stages count as
+     *   classified. The panel showing four tiers is what proves that stage is a
+     *   classified one; this file never restates the rule.
+     */
+    await transport.getByRole('button', { name: localeText('hud.transport.pause') }).click();
+    await expect(
+      transport.getByRole('button', { name: localeText('hud.transport.pause') }),
+      'the clock did not stop, so a save cannot be compared with the rows above',
+    ).toHaveAttribute('aria-pressed', 'true');
+
+    const downloading = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Export' }).click();
+    const download = await downloading;
+    const stream = await download.createReadStream();
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+    const saved = JSON.parse(chunks.join('')) as {
+      readonly payload: {
+        // `simulation` is optional in the schema, because a save written by a
+        // pre-V3 build genuinely does not carry it (`save-schema.ts`). This
+        // save was written by this build a moment ago, so it does -- and the
+        // assertion below says so rather than reaching through an `any`.
+        readonly simulation?: {
+          readonly prisoners: {
+            readonly components: {
+              readonly activeLength: number;
+              readonly riskTier: readonly number[];
+              readonly intakeStage: readonly number[];
+            };
+          };
+        };
+      };
+    };
+
+    expect(saved.payload.simulation, 'the exported save carries no simulation section').toBeDefined();
+    const records = saved.payload.simulation!.prisoners.components;
+    expect(records.activeLength, 'the save does not hold the population that was admitted').toBe(ADMISSIONS);
+    const stages = records.intakeStage.slice(0, ADMISSIONS);
+    expect(
+      new Set(stages).size,
+      `the population is spread across intake stages ${JSON.stringify([...new Set(stages)])}, so a plain sort on the tier is not the roster's order`,
+    ).toBe(1);
+
+    const tierByIndex = records.riskTier.slice(0, ADMISSIONS);
+    console.log(`[#703 population] ${JSON.stringify(tierByIndex)}`);
+    const expectedWindow = [...tierByIndex.keys()]
+      .sort((left, right) => tierByIndex[right]! - tierByIndex[left]! || left - right)
+      .slice(0, PRISONER_ROSTER_ROW_LIMIT);
+
+    expect(
+      painted.map((row) => row.prisoner),
+      `the four rows are not the four highest tiers of ${JSON.stringify(tierByIndex)}`,
+    ).toEqual(expectedWindow);
+    expect(tiers).toEqual(expectedWindow.map((index) => tierByIndex[index]));
 
     // And the badge word agrees with the tier the row carries, so the
     // reordering and the readout are the same fact.
