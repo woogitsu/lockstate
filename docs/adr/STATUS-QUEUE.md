@@ -513,14 +513,72 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `58220f7` (**v0.0.284**) by the delta method this
-header describes, from the v0.0.276 anchor described below. **Eight of the ten
+Re-anchored at `main` @ `a54899a` (**v0.0.291**) by the delta method this
+header describes, from the v0.0.284 anchor described below. **Seven of the ten
 releases the budget allows, counted on the tree this commit is written
-against**: `package.json` ships `0.0.284` and the anchor being replaced named
-v0.0.276. Two releases of headroom are left as of this commit — the **same
-figure as the previous anchor, from an identically sized window**, which is a
-coincidence worth naming rather than a pattern: eight releases carrying eight
-merged pull requests, twice running.
+against**: `package.json` ships `0.0.291` and the anchor being replaced named
+v0.0.284. Three releases of headroom are left as of this commit.
+
+**The window: 41 files, six merged pull requests, and one drifted citation.**
+`git diff --name-only 58220f7..a54899a` reports 41 files. The merges are #707,
+#708, #709, #711, #712 and #713 — the owner's rulings 3, 2, 12 and 13 of
+[#703](https://github.com/matmaxalez/lockstate/issues/703) plus ADRs 0081 and
+0082. **The delta intersection is four files** — `src/simulation/protocol/types.ts`
+(13 citations here), `src/ui/hud/messages.ts` (11 plus one line-numbered),
+`src/ui/hud/build-panel.ts` (9) and `src/ui/hud/projection.ts` (6 plus one
+line-numbered) — and only **three citations in the whole file carry a line
+number** into any of them, which is recommendation 1 at the foot of §6 working
+as intended: a symbolic citation does not rot when a docblock above it grows.
+
+Those three were re-read one at a time and **one had drifted**:
+
+- `types.ts:173` still reads
+  `protocolVersion: z.literal(SIMULATION_PROTOCOL_VERSION)`. **Holds.**
+- `messages.ts:85` still reads *"ADR 0017 -- Accepted"*. **Holds.**
+- **`projection.ts:408` no longer reads what §6 says it reads.** #707 inserted
+  the contraband-name docblock above it and the sentence *"ADR 0017 is Accepted
+  without naming one either"* moved to **`:454`**, +46. Corrected at its own
+  site, with the old number kept as history in the form the `types.ts` anchors
+  above use. **The claim itself is unharmed** — the label rests on neither file
+  naming a currency, and neither does.
+
+**Both absences below were re-verified at this anchor and neither could have
+moved**, which the delta says rather than a grep: no path under `supabase/` or
+`.github/` appears in the 41, `supabase/migrations/*.sql` still counts 23, and
+`migrate-database.yml`'s three properties still land.
+
+**THE PREVIOUS ANCHOR'S PREDICTION MISSED IN THE SAME DIRECTION FOR THE THIRD
+CONSECUTIVE WINDOW, AND THAT IS NOW A PATTERN RATHER THAN AN OBSERVATION.** It
+was written at eight of ten *because* three changes were in flight on disjoint
+surfaces — the owner's rulings 2, 3 and 4 — and said three merges would be three
+releases, which is eleven. **Two of those three landed** (#707 for ruling 3,
+#709 for ruling 2); ruling 4's is open and red at the time of writing. **Four of
+the six merges in this window did not exist when that sentence was written**:
+#708, #711, #712 and #713. So the anchor was again right about the count and
+wrong about the cause, and the finding the last two anchors each recorded once is
+confirmed a third time: **what spends this budget is not the queue anybody can
+see, it is the work the window generates.** The practical consequence, stated so
+the next pass can act on it rather than re-derive it: **the trigger to dispatch
+should be the release count alone, and naming the queue that will spend it is
+worth doing only as a record of having been wrong about it.**
+
+**What this window created that §§3-6 will have to carry, listed here rather
+than filed as entries, because every one of them is `Proposed` and none is yet a
+disagreement between an accepted decision and the code:** ADR 0081 (partial fill
+— the owner ruled *whether* and, on 2026-08-31, *at what granularity*: per
+order; status line still unsigned), ADR 0082 (build-order execution order,
+Proposed), and ADR 0083 (what opens the negative balance — the owner ruled a
+standing overdraft and 50% escalated diversion on 2026-08-31; **not on `main`**
+at this anchor, so it is named and not cited).
+
+**One genuine disagreement was found in this window and is not filed above
+because the ADR that would carry it is on an unmerged branch**, so it is
+recorded here as the thing to file next: `Treasury.setOverdraftFloor` has zero
+production callers, `LoanBook.draw` credits the treasury and never opens the
+floor, and no session is given a `LoanBook` at all — while `treasury.ts`'s own
+docblock says the floor **is** ADR 0075 decision 2's *"accrual cap"* and that
+*"the way out is `LoanBook`"*. ADR 0075 is **Accepted**. That is a §5 entry the
+moment ADR 0083 lands.
 
 **This is the second anchor here written before the budget forced it, and the
 first written because a queue that does not exist yet would have overrun it.**
@@ -1332,7 +1390,7 @@ the next reader has it without re-deriving it.
 
 **`messages.ts` and `projection.ts` both changed and both of §6's ADR 0017
 corrections hold.** `src/ui/hud/messages.ts:85` reads *"ADR 0017 -- Accepted"*
-and `src/ui/hud/projection.ts:408` *"ADR 0017 is Accepted without naming one
+and `src/ui/hud/projection.ts:454` (read `:408` at `58220f7`; #707 inserted the contraband-name docblock above it, the same +46 recorded in the header) *"ADR 0017 is Accepted without naming one
 either"*; neither file names a currency, which is what the label rests on.
 
 **Two ADRs changed and neither change reaches a claim §§3-6 make about them.**
@@ -1999,7 +2057,19 @@ nothing about what gets re-read.** The delta method covers the citations; the
 counts in the header are not citations, nothing in the method reaches them, and
 no amount of scheduling would have.
 
-**The previous anchor's account, kept.** It read: *"Re-anchored at `main` @
+**The previous anchor's account, kept -- v0.0.284.** It read: *"Re-anchored at `main` @
+`58220f7` (**v0.0.284**) by the delta method this
+header describes, from the v0.0.276 anchor described below. **Eight of the ten
+releases the budget allows** … Two releases of headroom are left as of this
+commit -- the **same figure as the previous anchor, from an identically sized
+window**."* **It is the first anchor in this series dispatched because of work
+that had not landed rather than work that had**, and the account in the header
+records what became of that: two of its three named changes merged inside this
+window and four merges it could not have named did. Its own tally -- 44 files,
+eight merges, a delta intersection of eleven, one drift found in ADR 0056's
+entry -- stands as written.
+
+**The anchor before that, kept.** It read: *"Re-anchored at `main` @
 `82ae630` (**v0.0.195**) by the delta method this
 header describes, from `85c1c29` (v0.0.187). **Dispatched at eight of the ten
 releases the budget allows, with four pull requests already green and waiting**
@@ -4803,7 +4873,7 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `58220f7`, unchanged since the previous anchor,
+absences were re-verified at `a54899a`, unchanged since the previous anchor,
 the one before it, the one before that, the one before that, the one before
 that, and the one before that — the directory has not moved across any of those
 windows and still holds twenty-three files, counted again here (`ls
@@ -4979,7 +5049,7 @@ is recommendation 1 at the foot of §6 producing a measurable result rather than
 being restated: **three of the four citations into the fastest-moving document
 in the set survived an edit that moved every line of them.**
 
-The half of the decision that *is* in this repository stays verified at `58220f7`:
+The half of the decision that *is* in this repository stays verified at `a54899a`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` (`:34`) with no
 `push:`, requires a typed `confirm_project_ref` (`:41`), and its apply job is
 environment-gated (`:65`) — all three re-read at this anchor and all three still
