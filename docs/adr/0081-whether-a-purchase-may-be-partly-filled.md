@@ -53,6 +53,20 @@ if (!this.treasury.spend(paidMinorUnits)) return { ok: false, reason: 'insuffici
 (`src/simulation/economy/treasury.ts`), and `setOverdraftFloor` has **zero
 production callers**, so the floor is `0` in every session a player can start.
 
+> **Both halves of that sentence stopped being true on 2026-08-31, and it is
+> kept because this document's measurements were taken under it.** #703 ruling A
+> made the negative balance a standing overdraft every prison has, and
+> `createNewSimulationRuntime` now calls
+> `setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)` — `-2_500`, one tenth
+> of the opening grant — on the treasury it builds
+> ([ADR 0083](./0083-what-opens-the-negative-balance-and-what-bounds-it.md) §2).
+> **`Treasury.spend` is still strictly all-or-nothing**, which is the half this
+> section's argument actually rests on; what moved is the number it is
+> all-or-nothing *against*. The figures below that were measured against a floor
+> of `0` are each marked where they stand. This correction is written by the
+> agent that opened the floor and **changes no decision in this document**; the
+> recommendation, the open question and the Status line are untouched.
+
 **And the granularity is coarser than an order.**
 `ConstructionSystem.pendingMaterialDemand`
 (`src/simulation/construction/system.ts:1026-1040`) sums every `approved` and
@@ -64,16 +78,29 @@ deficit in a single call
 So thirteen pending wall orders become **one 26-brick purchase for 1,040**, and a
 prison holding **1,039 buys nothing**. The service's own docblock says so at
 `:139-142`, in its own words: *"a prison holding 300 against a deficit of eight
-bricks at 40 buys nothing, not seven."*
+bricks at 40 buys nothing, not seven."* (That sentence is a `drainedPrison`
+comment and the helper's arithmetic moved with #703 ruling A; the relationship it
+describes — 265 of spending power against a 320 deficit — did not.)
 
 ### The measured cost, which is a control the interface offers making things worse
 
-`tests/integration/economy-refund-survives-the-clock.test.ts:575-610` pins it:
+`tests/integration/economy-refund-survives-the-clock.test.ts`, the case *"stalls
+a whole queue the prison can no longer fund in one lump, and one press undoes
+that"*, pins it:
 
-| the player | holds | walls standing |
+| the player | can still spend | walls standing |
 | --- | --- | --- |
-| cancels the delivery | **300** | **0** |
-| does not cancel | 60 | **3** |
+| cancels the delivery | **265** | **0** |
+| does not cancel | 25 | **3** |
+
+> **This table read 300 and 60, in the *balance*, and the two figures moved on
+> 2026-08-31 without the finding moving at all.** #703 ruling A opened a standing
+> overdraft, so spending power and the balance stopped being the same number; the
+> fixture now reaches the same 265-against-320 relationship at a balance of
+> `-2,235`, and the row that used to say 60 is a balance of `-2,475`. The
+> citation was also `:575-610`, which the same change moved — quoting the case's
+> title instead, because a line number into a file under edit is the least
+> durable citation this repository has (`docs/AGENT_WORKFLOW.md` §4).
 
 **Cancelling a delivery leaves the prison richer in cash and strictly worse at
 building**, because the money it got back can no longer be spent in one lump.
@@ -183,6 +210,28 @@ without asking.
 **Accepted and not enabled** — nothing calls `setOverdraftFloor`. Shipping
 partial fill before that half is live would make the lock arrive sooner and for a
 reason the player did not choose.
+
+> **The precondition in that paragraph is now met, and the *reason* for it has
+> come back sharper rather than gone away.** #703 ruling A enabled the negative
+> balance on 2026-08-31 (see the correction in the Context above), so
+> "not enabled" is false and the two figures moved: the fixture the 300-to-60
+> measurement came from is now `-2,235` to `-2,475` in
+> `tests/integration/economy-refund-survives-the-clock.test.ts`, which is the
+> same 265-against-320 relationship expressed against the floor the prison has.
+>
+> **What the agent who implements partial fill needs from that same sweep**, and
+> it is measured rather than argued —
+> `scripts/report-loan-recovery-pricing.mjs` §10c, on this branch: today
+> `procureForPendingOrders` issues one purchase per item id for the whole
+> aggregated deficit, so a standing queue costing **more** than the facility buys
+> **nothing at all** and the prison sits at `-25`. That all-or-nothing refusal is
+> currently the only thing bounding how much of the overdraft an unfunded queue
+> can eat. Remove it, and a queue whose cost exceeds 2,500 walks the prison to
+> the floor with no press — where a 20-order tail costing 1,600 already strands
+> it at `-1,625` with no capacity and no income. **So partial fill is not merely
+> "safe now"; it widens the band of queue sizes that can silently strand a
+> prison from `(1,040, 2,500)` to everything above 1,040.** Whether that needs a
+> bound of its own is a question for this document and is not answered here.
 
 **And it does NOT fix the room-enclosure failure it looks like it should.** In
 the measured locked position the pending set is `{wall-9, wall-314…wall-325}` and

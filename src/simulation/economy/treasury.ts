@@ -87,8 +87,11 @@
  *   **This bullet said the floor *is* ADR 0075 decision 2's *"accrual cap"*,
  *   "expressed as the one number that decides how far under water a prison can
  *   go", and that identification is wrong.** Both directions are kept because
- *   the mistake is the reason `setOverdraftFloor` reads as though it has an
- *   obvious caller and has none. Decision 2's sentence is about a different
+ *   the mistake is the reason `setOverdraftFloor` read, for its whole life
+ *   before 2026-08-31, as though it had an obvious caller and had none. **It has
+ *   one now** -- `createNewSimulationRuntime` -- and the sentence is marked
+ *   rather than rewritten because the conflation it explains is what made the
+ *   absence look deliberate for as long as it lasted. Decision 2's sentence is about a different
  *   quantity: *"An accrual cap, because interest against a negative balance can
  *   otherwise escalate without limit"* — a bound on **what a debt grows to**,
  *   where this is a bound on **what a prison may spend**. And the accrual cap
