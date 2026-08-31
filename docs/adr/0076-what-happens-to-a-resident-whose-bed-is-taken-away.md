@@ -16,6 +16,17 @@
 
 **Accepted, 2026-08-29, by the repository owner.**
 
+**Decision B is under a proposed amendment as of 2026-08-31, and that amendment
+is not signed.** See §*Amendment, 2026-08-31: cancelling a build order gives back
+money, not materials, and only while the crew has not started* at the foot of
+this file. It records the owner's ruling 20 of 2026-08-31, supersedes the
+premise decision B rests on for four of the six cancellable states, leaves B's
+own sentence about a **completed** object standing, and marks what B governs and
+ruling 20 does not answer — `RemoveObject` on a completed object — as undecided
+and the owner's. **Until it is signed, decision B as written above is what this
+document decides**; the amendment is a proposal with an implementation beside it,
+not a change of status.
+
 **This clause read `Proposed, 2026-08-29. Not self-approved.` until the owner
 accepted it later the same day.** As with [ADR 0075](./0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md),
 the two rulings below were always the owner's and the acceptance step is what
@@ -517,3 +528,214 @@ ADR 0028 decision 2's derivation and not this ADR's. If a future room type earne
 income from something other than a sleep surface, `min(occupancy,
 residentCapacity)` would start withholding money the prison had earned, and this
 decision would need re-reading rather than extending.
+
+## Amendment, 2026-08-31: cancelling a build order gives back money, not materials, and only while the crew has not started
+
+**Proposed amendment, not self-approved — awaiting the owner's signature.**
+Drafted 2026-08-31 against `72b29c4` (v0.0.299). The two rulings quoted below
+are the owner's; **everything this amendment derives from them is not**, and
+nothing here is accepted until the owner signs it. The implementation on the
+same branch exists so that what is being signed can be seen running; it must
+not merge before the signature.
+
+### The source: the owner's ruling 20 of 2026-08-31
+
+Two clickable decisions were put to the owner and both were answered:
+
+> **"Anulowanie zwraca pieniądze zamiast cegieł"**
+
+> **"Pieniądze dopóki ekipa nie zaczęła"**
+
+*Cancelling gives back money instead of bricks*, and *money until the crew has
+started*. Against `BuildOrderLifecycleState`
+(`src/simulation/construction/build-order.ts`), whose members are
+`planned | approved | materials-pending | assigned | in-progress | completed | cancelled | failed`,
+the second ruling draws its line between `assigned` and `in-progress`:
+
+| state | ruling 20 |
+| --- | --- |
+| `planned` | a refund |
+| `approved` | a refund |
+| `materials-pending` | a refund |
+| `assigned` | a refund |
+| `in-progress` | **nothing** |
+| `completed` | *not addressed — see "What ruling 20 does not decide" below* |
+| `cancelled`, `failed` | terminal; `cancelOrder` throws on both (`src/simulation/construction/system.ts:594`) |
+
+### Which part of decision B this supersedes, and which part survives
+
+Decision B above is one sentence about a finished object and one premise about
+how cancellation already works. Ruling 20 reaches the premise and not the
+sentence.
+
+**Superseded — the premise, for four states.** Decision B's Context establishes,
+as the fact its argument rests on, that *"`Undo` refunds the plank in full.
+`ConstructionSystem.cancelOrder` releases `materialsAllocated`"*, and its
+Decision reads it forward as *"the same as `Undo` already does"*. From the
+moment ruling 20 ships that is false for an order in `planned`, `approved`,
+`materials-pending` or `assigned`: `cancelOrder` returns **money** in those four
+states and puts nothing back into the container.
+
+**Superseded — and this part decision B never contemplated at all.** An
+`in-progress` order holds a live allocation (`system.ts:937` is where it is
+written), and ruling 20 gives it back neither as materials nor as money. That is
+the first place in this repository's money loop where value deliberately leaves
+the economy rather than changing form. It is not a defect and it is the point of
+the second ruling: cancelling late is meant to cost something, and if the
+materials came back in either currency it would cost nothing at all.
+
+**Survives — decision B's own sentence.** *"A finished object un-builds into its
+full materials, by either route"* is a decision about a `completed` order, and
+ruling 20 enumerates the states up to `in-progress` and stops. Nothing here
+withdraws it: `cancelOrder` on a `completed` order still releases
+`materialsAllocated` into the container, `Undo` of a finished wall still gives
+the plank back, and B's outstanding half — bringing `RemoveObject` into line
+with that — is neither implemented by this change nor cancelled by it.
+
+**Survives, in a different currency — decision B's hazard, which is the reason
+this amendment is longer than the ruling.** B put it this way:
+
+> **The implementation hazard, named because the measurement in the Context
+> found it.** The allocation record is what a refund draws from, and
+> `RemoveObject` does not clear it. A refund added to `RemoveObject` that leaves
+> `materialsAllocated` populated is refunded **a second time** by a subsequent
+> `Undo` — value created from nothing […] So this decision is not "add a release
+> call to `RemoveObject`": it is **one refund per order, whichever command
+> triggers it, with the allocation emptied in the same step** exactly as
+> `cancelOrder` already empties it. **A conservation test over `Remove` → `Undo`
+> and `Undo` → `Remove` is the gate**, and it is not optional.
+
+Every clause of that is still in force, with *materials* replaced by *money*,
+and the hazard is **sharper** than it was rather than milder. Under B the
+double-refund needed two presses. Under ruling 20 it needs one:
+
+- **The old shape, in the new currency.** A refund route that pays money and
+  leaves `materialsAllocated` populated is paid a second time by whatever
+  cancels the order next — and, before that even happens, the standing
+  allocation is still counted as prison value by
+  `tests/integration/economy-money-conservation.test.ts`'s valuation, so the
+  money is created at the instant it is paid.
+- **The new shape, and it is one press.** A route that pays the money **and**
+  releases the materials into the container returns the plank and pays for it in
+  the same step. This is the failure mode `AGENTS.md`'s brief for this work
+  states as a rule — *a refund must never both return the plank to stock and pay
+  for it* — and it is the reason the four refundable states are not implemented
+  as "credit the treasury, then do what we did before".
+
+So the gate B made non-optional is inherited unchanged in shape and widened in
+scope: **one refund per order, in exactly one currency, with the allocation
+emptied in the same step**, and a conservation test that drives every state the
+ruling names, in both orders of operations.
+
+### Where the money for a refund actually is, which is what bounds the ruling
+
+Materials are just-in-time (ADR 0017 decision 7, ADR 0081,
+`src/simulation/economy/just-in-time-materials.ts`), and that decides what a
+cancellation can honestly hand back. Nothing records what a *single order* cost:
+`procureForPendingOrders` (`just-in-time-materials.ts:416`) buys the
+**deficit** — demand less stock less everything already in flight — so an order
+placed against a full container costs nothing at all, and one placed against an
+empty one costs the catalogue price. The money an order caused to leave the
+treasury is therefore in one of exactly three places, and only two of them can
+be given back:
+
+1. **In a delivery still in flight.** `ProcurementSystem.cancel`
+   (`src/simulation/economy/procurement.ts:226`) refunds the recorded
+   `paidMinorUnits` exactly. This is real money and it is recoverable — and it
+   is where the money is in the ordinary case, because a `PlaceBuildOrder`
+   press buys at the press and the goods take `PROCUREMENT_DELIVERY_DELAY_TICKS`
+   to land, so an order cancelled soon after it is placed has its money on the
+   road.
+2. **In the order's own `materialsAllocated`.** Goods `tryAllocate` withdrew
+   from the container, owned by nothing but this order. Valuing them at the
+   catalogue price and crediting that, without returning them, is an exact
+   exchange under the conservation sum.
+3. **In stock in the container.** The goods arrived, the order had not yet
+   allocated them, and they belong to the prison rather than to the order. Here
+   a refund can pay **nothing**: the plank is in the container, and paying for
+   it as well is the one-press hazard above. A player who cancels in this window
+   keeps the material and does not get the money, and that is a real asymmetry
+   rather than an oversight — it is what "never both" costs. The window is one
+   scheduled construction tick wide, because the next `update` allocates and
+   moves the order to `assigned`.
+
+**So a `planned` order refunds nothing, and that is arithmetic rather than
+policy.** `pendingOrderDemand` (`system.ts:1021`) counts `approved` and
+`materials-pending` only, so nothing is ever bought for a `planned` order; there
+is no money to give back because none was spent. `submitOrder` writes `approved`
+or `failed` and never leaves an order in `planned` (`system.ts:398`), so the
+state is reachable only from a hand-written save.
+
+### What ruling 20 does not decide, and is put to the owner rather than settled here
+
+**`RemoveObject` on a completed object.** Decision B governs it, it is the one
+part of B that never shipped, and ruling 20 says nothing about it. It is marked
+**undecided** here rather than resolved, because three answers are now live and
+the ruling does not choose between them:
+
+1. **B as accepted:** the full materials come back.
+2. **B in ruling 20's currency:** the money comes back instead of the materials.
+3. **Nothing, on the second ruling's own logic:** a finished object is on the far
+   side of `in-progress`, and if abandoning a half-built wall returns nothing at
+   all then demolishing a finished one is the harder case to be generous to.
+
+**The question is sharper than it looks, because ruling 20 as implemented makes
+it pay to let the crew finish.** Cancel at `in-progress` and the materials are
+gone; wait for `completed` and `Undo` returns them in full. That inversion did
+not exist before — every state used to return the materials — and it is created
+by the ruling rather than by this implementation, which is why it is reported
+and not designed around. Whichever of the three the owner takes, the answer also
+decides whether `Undo` of a `completed` order keeps returning materials or joins
+the money rule.
+
+**Not decided either: whether surplus stock can be sold back.** Case 3 above —
+the delivery landed, the order had not allocated, the player gets bricks rather
+than money — closes only if a prison can sell material back to the catalogue.
+That is a new economic surface and a price question (ADR 0017 decision 5
+reserves prices with the rest of #29), so it is named and not taken.
+
+### What this amendment costs, stated rather than argued away
+
+- **The early game gets its pressure back, and then some.** Decision B's own
+  Consequences accepted that dismantling becomes free and reversible. Ruling 20
+  moves in the other direction for orders in flight: changing your mind after
+  the crew has started now costs the whole of the materials, which is a stronger
+  penalty than the pre-B behaviour ever had, and it is the owner's ruling
+  knowingly.
+- **A player-facing sentence becomes false.**
+  `'hud.build.remove-hint'` (`src/content/default-locale-en.ts:630`) promises
+  *"One still being built is cancelled and its materials come back"*. Under
+  ruling 20 the materials do not come back; money does, and only before the crew
+  starts. Replacement copy is **not written here** — `AGENTS.md`'s fourth
+  exclusion reserves it — and the string is reported to the owner with the
+  branch.
+- **`docs/OPERATIONS.md`'s justification for the `release` seam narrows.** It
+  argues that *"against a finite stock a cancelled order that had already
+  allocated would destroy its materials permanently"*. That stays exactly true
+  as a statement about a `completed` order and about the seam itself, and stops
+  being the whole story for the states ruling 20 covers: an `assigned` order's
+  materials are now converted to money rather than returned, and an
+  `in-progress` order's really are destroyed, deliberately.
+- **A fourth thing credits the treasury.**
+  `docs/HUD_PROJECTIONS.md` gap 21 enumerates the three that do, and
+  `tests/foundation/documentation-claims-contract.test.ts` pins the
+  enumeration. A build-order refund is a fourth, it is not an income line, and
+  like `ProcurementSystem.cancel` it is a refund of the prison's own money
+  rather than an inflow ADR 0075 decision 2 diverts to a loan.
+- **No save format moves.** The refund is computed from `materialsAllocated`,
+  the order book and the pending deliveries, all three of which the save already
+  carries. No field is added to `BuildOrder`.
+- **A determinism fingerprint moves for any prison that cancels an order**, for
+  the reason the Consequences above give for B: the balance and the stock a
+  fingerprint hashes both change. A prison that never cancels is unaffected.
+
+### The gate
+
+`tests/integration/economy-money-conservation.test.ts` is the file decision B
+named and this amendment inherits it. It has to drive a cancellation in every
+one of the five states ruling 20 names, in both orders of operations, and assert
+the treasury and the stock **together**. Its invariant needs one honest change
+and no weakening: value is no longer conserved absolutely, because `in-progress`
+consumes it on purpose, so the sum is conserved against a separately derived
+total of what was deliberately consumed — derived from the buildable catalogue
+and the procurement catalogue, never from the code under test.
