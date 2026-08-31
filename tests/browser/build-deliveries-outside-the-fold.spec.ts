@@ -53,11 +53,13 @@ const APP_URL = '/index.html';
  *
  * 900x600 and 375x812 are here anyway, and they are here because the same steer
  * says not to *break* the phone. They are the two viewports where this block
- * costs the panel the most, and what they measure is not the same claim: at
- * those two the block does not fit the panel's visible box, so what is asserted
- * of the rows below the fold is that the panel's own scroll reaches them, by
- * scrolling and re-measuring. Both were green when this spec landed; if a later
- * mobile pass changes the answer, the numbers below say what it changed from.
+ * costs the panel the most -- two of its three rows below the fold at 900x600,
+ * one at 375x812 -- and what they measure is therefore not quite the same
+ * claim: where a row does not fit the panel's visible box, what is asserted of
+ * it is that the panel's own scroll reaches it, by scrolling and re-measuring.
+ * 1280x800 needs that once as well. All five were green when this spec landed;
+ * if a later mobile pass changes the answer, the table below says what it
+ * changed from.
  */
 
 /** Desktop first, per the owner's steer of 2026-08-31; the two tight viewports follow. */

@@ -3936,7 +3936,42 @@ test.describe('the assembled application', () => {
             timeout: 20_000,
           })
           .toBe(true);
+        /*
+         * **And then the materials those orders bought have to arrive, which is
+         * new on 2026-08-31 (issue #703 ruling 2).**
+         *
+         * Since #640 a `PlaceBuildOrder` buys its own materials, so the six
+         * orders above put six deliveries in transit -- and since the ruling the
+         * deliveries block has a box of its own, which costs this panel 181px at
+         * 1280x720 and makes every absolute figure below a measurement of a
+         * *third* state rather than of "the panel with a queue". Measured with
+         * the wait absent: `panelOverflow` 181 against the 0 asserted below,
+         * `.hud-build > .ui-panel__body` 181px shorter than its own content, and
+         * the queue header past the fold -- all of it the deliveries block and
+         * none of it the filter, which is what this test is about.
+         *
+         * The state this test needs is therefore a queue whose materials have
+         * *landed*: reachable, because a delivery arrives 100 ticks after it is
+         * bought while six orders take about 370 to build, so the clock runs on
+         * until the block is gone and the queue is still there. Both are
+         * asserted rather than assumed -- the second is what would go wrong if
+         * construction ever outran procurement.
+         */
+        await expect
+          .poll(async () => page.locator('.hud-build__deliveries').getAttribute('data-pending'), {
+            message: 'the materials the six orders bought never arrived, so the panel still carries a deliveries block',
+            timeout: 30_000,
+          })
+          .toBeNull();
         await page.locator('.hud-strip__transport [title="Pause"]').click();
+        expect(
+          await page.locator('.hud-build__deliveries').boundingBox(),
+          'the deliveries block still has a box, so this is not the state this test measures',
+        ).toBeNull();
+        expect(
+          await page.locator('.hud-build__queue').boundingBox(),
+          'the crew emptied the queue while the materials were arriving, so there is no queue to measure',
+        ).not.toBeNull();
       }
       const state = queued ? 'with a queue' : 'with nothing queued';
 
@@ -4655,6 +4690,18 @@ test.describe('the assembled application', () => {
       })
       .toBeNull();
     await page.locator('.hud-strip__transport [title="Pause"]').click();
+    // The fold is shut again and the panel scrolled back, because both are part
+    // of "the state the panel arrives in" and the measurement above opened one
+    // and scrolled the other. Measured with them left as they were: the body
+    // holds 416px of content against its 291.2px box, the panel is 125px over
+    // and sitting at `scrollTop` 125 -- which is the open disclosure, not this
+    // block.
+    await page.locator('.hud-build__buy-toggle').click();
+    await expect(page.locator('.hud-build__buy')).toBeHidden();
+    await page.evaluate(() => {
+      const panel = document.querySelector<HTMLElement>('.hud-build');
+      if (panel !== null) panel.scrollTop = 0;
+    });
     expect(await deliveries.boundingBox(), 'an empty deliveries block kept its box').toBeNull();
     expect(await geometry(), 'the panel did not return to its arrival geometry once nothing was on its way').toEqual(
       before,
