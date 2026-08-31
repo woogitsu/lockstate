@@ -197,7 +197,9 @@ Every figure is a real kernel run at `DAY_LENGTH_TICKS` 2,400.
 door and one bed is `130 − 40 = 90`; four beds and a door is `325 − 40 = 285`,
 which is where the room **saturates** — every value above it changes nothing at
 all. With the thirteen unfunded wall orders left standing,
-`ConstructionSystem.update`'s `procureForPendingOrders` spends the standing
+`ConstructionSystem.procureQueuedMaterials`
+(`src/simulation/construction/system.ts:988`), called from its own scheduled
+`update` (`src/simulation/construction/system.ts:868`), spends the standing
 **1,040** first, so the boundary moves to `1,040 + 90 = 1,130`, and at exactly
 1,040 the prison spends the whole room on wall nobody is watching and ends at
 −1,000 with no capacity — the same trap the loan showed at a principal of 1,000
