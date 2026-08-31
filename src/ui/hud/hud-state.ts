@@ -44,13 +44,42 @@ export interface HudShellState {
 }
 
 /**
- * Alerts start folded. The HUD frames the world and must not cover it; a
- * list that is empty most of the time should not hold open a rectangle over
- * the prison to say so.
+ * Alerts start OPEN, on the owner's ruling of 2026-08-31 (#703, ruling 1).
+ *
+ * **This constant read `collapsedPanels: ['alerts']` until then**, under this
+ * reason, which is kept because it is still a true statement about screen
+ * space: *"Alerts start folded. The HUD frames the world and must not cover
+ * it; a list that is empty most of the time should not hold open a rectangle
+ * over the prison to say so."*
+ *
+ * What that reason weighed was an empty list against a rectangle. What it did
+ * not weigh is a **full** one nobody can see. Measured on 2026-08-31: a
+ * successful escape was written to the event log three times and painted zero
+ * times -- the band keeps only the newest event and the all-clear on the same
+ * tick replaced it, while the row that would have survived was in a list this
+ * constant kept shut.
+ *
+ * **The same fold is cited as a reason not to route anything to that list in
+ * TWELVE places in `src/` alone**, counted rather than estimated:
+ * `view-model.ts:1090` and `:1146`, `hud.ts:842`, `:896` and `:974`,
+ * `rooms-panel.ts:1355`, `simulation-zoning.ts:26`,
+ * `content/default-locale-en.ts:539`, `main.ts:1100` and `:1667`, and
+ * `hud.css:351` and `:388`. Each is a true record of issue #220's defect -- a
+ * message that reaches the player at *no* viewport -- and each is why some
+ * sentence got a HUD row of its own instead. **Opening the list by default is
+ * the one change that addresses all twelve at once**, which is why the ruling
+ * went this way rather than giving the escape sentence a thirteenth row.
+ * Every one of the twelve is corrected in both directions by the change that
+ * carries this one, because a docblock naming a reason that no longer holds is
+ * how the next reader gets talked out of using the list again.
+ *
+ * The accepted cost, stated by the owner: a fixed slice of screen height at
+ * every width. The fold itself is untouched -- a player who wants the world
+ * back closes it, and `toggle-panel` remembers that for the session.
  */
 export const INITIAL_HUD_SHELL_STATE: HudShellState = {
   activeTab: 'overview',
-  collapsedPanels: ['alerts'],
+  collapsedPanels: [],
 };
 
 export type HudShellAction =

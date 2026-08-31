@@ -1357,6 +1357,15 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * and painted at no viewport, which is exactly the defect #220 moved
    * "simulation unavailable" out of that list to fix.
    *
+   * **That last clause stopped being true on 2026-08-31 (#703, rulings 1 and
+   * 5)**: the section starts open and `.hud__corner` is no longer hidden below
+   * 720px, so a row in the list is laid out at every width -- see
+   * `INITIAL_HUD_SHELL_STATE`. **The placement does not change**, because the
+   * clause was the weaker of the two reasons given: the load-bearing one is the
+   * sentence above it, that this is a fact about the room the player made and
+   * belongs beside the control that made it. A list of refusals is still the
+   * wrong home for something that was not refused.
+   *
    * ### Why the panel decides nothing about it
    *
    * Every word comes from somewhere else. Which rooms are unfinished and what

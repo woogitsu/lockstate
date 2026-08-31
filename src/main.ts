@@ -1104,6 +1104,16 @@ const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMess
  * always-laid-out band instead, which needs no section opened and survives
  * every breakpoint in `hud.css`.
  *
+ * **The premise stopped being false on 2026-08-31 (#703, rulings 1 and 5), and
+ * the routing does not move back.** `.hud__corner` is no longer dropped below
+ * 720px, the alerts section starts open, and the list scrolls rather than
+ * clipping its newest row -- so a row there is now laid out and reachable at
+ * every viewport measured. The band keeps this sentence for the reason that
+ * never depended on the fold: a browser that cannot start a worker has no
+ * simulation to log events from, so the list it would go in is empty, and an
+ * empty list says nothing whether it is open or shut. See
+ * `INITIAL_HUD_SHELL_STATE` for the full account of what changed.
+ *
  * Module scope rather than local to `mountInterface`, because there are two
  * moments this page can end up with no simulation and they must say the same
  * thing: the boot construction failing, and -- since a session boundary is a
@@ -1672,6 +1682,16 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * read a second time, for `HudViewModel.refusal` and the band that carries
    * it. The list stays: it is the log, and it holds the refusal beside
    * standing protocol faults, which one line cannot.
+   *
+   * **The measurement in that paragraph expired on 2026-08-31 (#703, rulings 1
+   * and 5)**: the corner is no longer dropped below 720px, the section starts
+   * open, and the list scrolls instead of clipping, so the row it paints is
+   * laid out and reachable without a wide viewport or a press. **The second
+   * reading is kept**, and the reason is the sentence that closes the paragraph
+   * rather than the one that opens it: the list is the log and one line cannot
+   * hold a refusal beside standing protocol faults. #701 then measured the
+   * other half of the same argument from the band's side -- two sentences on
+   * one tick, newest wins -- so neither surface subsumes the other.
    *
    * One listener for all four, because they land on one view model: a
    * message that says nothing about any of them leaves the HUD alone rather
