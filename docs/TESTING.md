@@ -203,8 +203,8 @@ as more than it is. `.ui-sr-only` is excluded, because the visually-hidden
 pattern is a clipped 1x1 box on purpose. And a scroll container that hides
 content below its own fold with no scrollbar drawn to say so is reachable, so
 this check is silent about it — that is an affordance defect and needs its own
-assertion (`.save-panel` on the Build and Rooms tabs; the playtest record of
-2026-08-31, "playing the twelve", §11).
+assertion (`.save-panel` on the Build and Rooms tabs;
+`docs/research/2026-08-31-playing-the-twelve.md` §11).
 
 ### Comments are not executed, and one shape of them is now gated
 

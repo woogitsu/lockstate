@@ -40,8 +40,8 @@ import { type Page, expect } from './network-changed-fixture';
  *
  * **`spilled` is reported because a narrower check missed half the defect.**
  * The first version of this file counted only `cut`, and swept clean over
- * three of the four labels the playtest record of 2026-08-31, "playing the
- * twelve", §12 measured painting outside their boxes -- it reported the *panel* that
+ * three of the four labels `docs/research/2026-08-31-playing-the-twelve.md`
+ * §12 measured painting outside their boxes -- it reported the *panel* that
  * eventually clipped them and never the label, and where no ancestor clipped
  * it reported nothing at all. A check that only sees content that vanished
  * cannot see content that landed on its neighbour.

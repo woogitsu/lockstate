@@ -1356,7 +1356,7 @@ test.describe('HUD shell', () => {
      *
      * Both kinds are controlled, because the probe reports two and a version
      * that saw only one swept clean over three of the four labels
-     * the playtest record of 2026-08-31, "playing the twelve", §12 measured:
+     * `docs/research/2026-08-31-playing-the-twelve.md` §12 measured:
      * `overflow: hidden` hides the overflow (`cut`), `overflow: visible`
      * paints it on the neighbours (`spilled`), and the third state --
      * `overflow: auto`, which a player can scroll -- must produce no finding
