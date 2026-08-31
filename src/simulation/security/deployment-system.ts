@@ -3,6 +3,7 @@ import type { NavigationSystem } from '../navigation/navigation-system';
 import type { RouteContext } from '../navigation/route-context';
 import type { TilePosition } from '../world/coordinates';
 import { resolveStaffRouteContext } from './access-policy';
+import { isAtPost } from './deployment-phase';
 import { resolveRequiredGuardCount, type DeploymentSchedule } from './deployment-schedule';
 import { claimableGuardIds } from './post-eligibility';
 import { resolveOccupancyScaledGuardCount, sectorOccupantCountIsComplete, type SectorOccupantCountResolver } from './sector-staffing';
@@ -16,10 +17,6 @@ export interface CoverageReportEntry {
   /** Guards assigned to the sector, whether already on-post or still travelling there. */
   readonly assigned: number;
   readonly shortage: number;
-}
-
-function sameTile(a: TilePosition, b: TilePosition): boolean {
-  return a.x === b.x && a.y === b.y;
 }
 
 function findSchedule(schedules: readonly DeploymentSchedule[], sectorId: string): DeploymentSchedule | undefined {
@@ -129,10 +126,54 @@ export class DeploymentSystem implements SystemRegistration {
   public update(context: SimulationContext): void {
     this.assignUnassignedGuards(context.tick);
     for (const guardId of this.guards.allGuardIds()) {
-      if (this.guards.getDeploymentPhase(guardId) !== 'travelling') continue;
+      const phase = this.guards.getDeploymentPhase(guardId);
+      if (phase === 'on-post') {
+        this.walkBackToPost(guardId, context.tick);
+        continue;
+      }
+      if (phase !== 'travelling') continue;
       if (this.guards.getPatrolWaypointIndex(guardId) !== undefined) continue; // owned by PatrolSystem
       this.continueDeploymentTravel(guardId, context.tick);
     }
+  }
+
+  /**
+   * A guard that holds a post it is not standing on is sent back to it
+   * (owner's ruling 24 of 2026-08-31).
+   *
+   * **The state this exists for is a reload.** `GuardRoster.loadSnapshot`
+   * settles a guard who was `'travelling'` at save time on `'on-post'` --
+   * its path request named the previous `NavigationSystem` instance's queue
+   * and nothing would ever resolve it -- and leaves its tile wherever the
+   * walk had got to. Before this, in a sector with no patrol route, that
+   * guard stood there for the rest of the session: `assignUnassignedGuards`
+   * only draws from `'unassigned'` guards and the loop above only continues
+   * `'travelling'` ones, so nothing in `src/` moved it and nothing ever
+   * would. **Since ADR 0036 that is every session a player can start**, the
+   * derived sector having no route by decision.
+   *
+   * So this is a behaviour change and not only a label change, and it is the
+   * half that makes the label honest: `src/simulation/presentation/`'s
+   * `'returning'` is a word about a walk, and without this there would be no
+   * walk for it to be about -- the row would say `Returning` for ever, which
+   * is a different lie from the one being fixed.
+   *
+   * **A sector with a patrol route is left alone**, exactly as
+   * `PatrolSystem.update` requires: it treats an `'on-post'` guard with no
+   * waypoint index as "idle, start the loop" and re-paths from wherever the
+   * guard actually stands, deliberately (see the missed-leg comment in
+   * `patrol-system.ts`). Two systems both re-homing one guard would be the
+   * ownership collision `guard-roster.ts`'s header is careful about; this
+   * takes the case that system declines.
+   */
+  private walkBackToPost(guardId: EntityId, tick: number): void {
+    const sectorId = this.guards.getSectorId(guardId);
+    if (sectorId === undefined) return;
+    const sector = this.sectors.getDefinition(sectorId);
+    if (sector === undefined) return; // a sector the session no longer registers is not this system's to invent
+    if (sector.patrolRoute !== undefined && sector.patrolRoute.length > 0) return; // PatrolSystem's guard
+    if (isAtPost(this.guards.getTile(guardId), sector.postTile)) return;
+    this.beginDeployment(guardId, sectorId, sector.postTile, tick);
   }
 
   private assignUnassignedGuards(tick: number): void {
@@ -161,7 +202,7 @@ export class DeploymentSystem implements SystemRegistration {
     this.guards.assignToSector(guardId, sectorId);
     const currentTile = this.guards.getTile(guardId);
 
-    if (sameTile(currentTile, postTile)) {
+    if (isAtPost(currentTile, postTile)) {
       this.guards.setDeploymentPhase(guardId, 'on-post');
       return;
     }

@@ -437,7 +437,13 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // waits with the two beside it.
       // 175 at #532: `action.kitchen-work` is one label added to the existing
       // `action` namespace, so `namespaces` does not move.
-      labels: 175,
+      // 176 at the owner's ruling 24 of 2026-08-31: `deployment-phase.returning`,
+      // for a guard restored from a save taken mid-journey. One label added to
+      // an existing namespace again, so `namespaces` does not move -- and this
+      // one is an `additionalIds` member rather than a `DeploymentPhase` the
+      // simulation stores, which is why the census counts a label the source
+      // declaration does not declare.
+      labels: 176,
       // 11 on `main` before issue #533, which itself moved this line from 10;
       // #533 gives `deployment-phase` its first call site, so it is 12. The
       // Staff panel's roster block labels what each staff member is doing, and

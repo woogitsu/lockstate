@@ -1129,11 +1129,16 @@ describe('staff', () => {
     expect(staff.countsByRoleId.find((entry) => entry.staffRoleId === 'staff-role.guard')?.count).toBe(5);
     expect(staff.countsByRoleId.find((entry) => entry.staffRoleId === 'staff-role.nurse')?.count).toBe(0);
 
+    // The four `DeploymentPhase` declares, in its own order, then the derived
+    // fifth (`src/simulation/security/deployment-phase.ts`). `'returning'` is
+    // a word a row can hold, so the list has to hold it too or the sum below
+    // would lose a head the moment a save taken mid-journey is reloaded.
     expect(staff.countsByDeploymentPhase.map((entry) => entry.deploymentPhase)).toEqual([
       'unassigned',
       'travelling',
       'on-post',
       'on-search',
+      'returning',
     ]);
     expect(staff.countsByDeploymentPhase.reduce((sum, entry) => sum + entry.count, 0)).toBe(5);
 
