@@ -2,7 +2,75 @@
 
 ## Status
 
-**Proposed, 2026-08-28.** Not self-approved.
+**Accepted for decisions 2-6, 2026-08-31, by the repository owner.
+[ADR 0075](./0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+decision 2 replaces decision 1 below.**
+
+**This clause read `Proposed, 2026-08-28. Not self-approved.` until 2026-08-31**,
+while decisions 2-6 were shipped, live and unchallenged. The paragraph that
+stood under it is kept below, unedited, because everything it says about *why*
+this document exists is still true. What had not happened was the acceptance
+step, and it has now happened.
+
+**How the acceptance arrived, and why it is split.** The owner ruled on
+2026-08-31 (issue [#703](https://github.com/matmaxalez/lockstate/issues/703),
+ruling 15) after the integrator reported that this document was in a state no
+gate in this repository can detect: **`Proposed` with five of its six decisions
+in production, and its sixth contradicted by an `Accepted` document with no note
+of the contradiction anywhere.** The ruling was to accept 2-6 and record that
+ADR 0075 decision 2 replaces decision 1, in preference to a note alone or to
+recording a documentation debt.
+
+**ADR 0075 DECISION 2 REPLACES DECISION 1, AND THE ARGUMENT THAT CARRIED IT IS
+WITHDRAWN.**
+It reads *"The balance stays floored at zero. The five validators above stand,
+and `Treasury` is not given a signed balance, an overdraft or a loan."* ADR 0075
+decision 2 — **Accepted, 2026-08-29** — gives the treasury exactly that. Both
+halves: a credit (`LoanBook`) and a relaxed floor (`Treasury.setOverdraftFloor`).
+
+**This document named its own reversal in advance, which is the part worth
+reading.** Its own *"What would change my mind"* said: *"A loan or grant
+surface. … A loan is an overdraft in different clothes, and if one is ever
+wanted, it should be a *credit* with its own repayment schedule rather than a
+relaxation of the balance's floor — **otherwise the argument above
+collapses.**"* ADR 0075 decision 2 did **both** — it added a credit *and*
+relaxed the floor — so the condition this document set for its own collapse was
+met exactly, and by the letter rather than the spirit.
+
+**And nothing said so for two days.** `grep 0075 docs/adr/0049-*.md` returned
+**zero** until this edit.
+
+**The wording here was changed to satisfy `adr-status-reference-contract`, and
+that is worth two sentences.** A first draft put decision 1 in the passive with
+that other document as the agent, and the gate read it as a claim that **the
+other document** holds the status the passive names -- which it does not; it is
+`Accepted`. That is the *object of a relation rather than its subject* case the
+gate's own docblock names as a known limit. The phrasing is now active -- ADR
+0075 decision 2 **replaces** decision 1 -- which removes the ambiguity for the
+gate and for a reader at the same time, and is the better sentence on its own
+merits.
+
+**And the sentence you are reading was itself rewritten for the same gate, one
+turn later, which is the finding.** Quoting the rejected draft verbatim
+re-tripped it: the gate reads English claims and cannot tell a quotation from an
+assertion. So the number is replaced by a description above, exactly as
+`docs/adr/0056-...md` open question 3 does after #647 hit this on 2026-08-30 --
+*"so that quoting a sentence that expired does not re-assert a status the ADR no
+longer holds"*. **Third recorded instance of that limitation in two days**, and
+the trade is the right one: a gate whose whole subject is sentences going stale
+is worth keeping, and the cost is paid by whoever writes about it. `adr-status-reference-contract.test.ts` cannot catch
+this class: it compares a *cited* status to the document that holds it, and no
+sentence anywhere claimed a false status about 0049 — the defect was a decision
+contradicted with no citation at all. Recorded because the next document to
+collapse this way will do it the same silent way.
+
+**What is NOT replaced**: decisions 2-6, which are what this document is
+accepted for. Arrears are still a second non-negative integer beside the
+balance, they still accrue rather than overdrawing the wage bill, and
+`PayrollSystem` still pays `min(due, balance)`. The negative balance ADR 0075
+licenses is a *floor the owner may lower*, not a licence for payroll to overdraw
+— those are different mechanisms and this document's still-live half is the
+second one.
 
 It answers [ADR 0042](./0042-attaching-consequences-to-the-simulation-loop.md)
 open question 3 — *"Does a recurring debit charge, or accrue? Step 3's shape
