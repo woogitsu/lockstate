@@ -1,5 +1,5 @@
 import { type SystemRegistration, type SimulationContext } from '../kernel/system';
-import { type BuildEdge, type BuildOrder, type BuildOrderFailReason, resolveBuildEdge } from './build-order';
+import { type BuildEdge, type BuildOrder, type BuildOrderFailReason, compareBuildOrderExecution, resolveBuildEdge } from './build-order';
 import { BUILDABLE_REGISTRY, type BuildableDefinition, type MaterialRequirement, edgeNumericIdFor, getBuildableDefinition, occupiesTileEdge } from './definition';
 import { type ConstructionMaterialsProvider, UNLIMITED_MATERIALS_PROVIDER } from './materials-provider';
 import { type ConstructionProcurementSink, type MaterialsProcurementReport, type QueuedOrderDemand } from './materials-procurement';
@@ -646,41 +646,57 @@ export class ConstructionSystem implements SystemRegistration {
    *
    * ## Which order goes
    *
-   * The **greatest id** among those still waiting on materials, which is the
-   * back of the crew's own walk: `update` iterates `orderedOrders()` ascending
-   * and starts the first eligible order, so the last id is the work furthest
-   * from being reached. Withdrawing from the back therefore never takes an
-   * order the crew was about to start, and it is a function of the order book
-   * alone -- no clock, no insertion order, no RNG (`docs/DETERMINISM.md`,
-   * "Canonical iteration order"). Ids are `order-${crypto.randomUUID()}` on the
-   * main thread, so this is **not** placement order and the segment that goes
-   * is not the last one drawn; what it is, is the same segment on every
-   * machine and after every restore, which is the property this has to have.
+   * The **last order in the crew's own walk** among those still waiting on
+   * materials: `update` iterates `orderedOrders()` and starts the first
+   * eligible order, so the last one is the work furthest from being reached.
+   * Withdrawing from the back therefore never takes an order the crew was
+   * about to start, and it is a function of the order book alone -- no clock,
+   * no insertion order, no RNG (`docs/DETERMINISM.md`, "Canonical iteration
+   * order").
+   *
+   * **Since ADR 0082 (#722) that is the segment the player drew last, and the
+   * three paragraphs below are the record of what it was before.** The walk is
+   * `(placementSequence ?? -1, id)`, so the back of it is the newest gesture,
+   * and "withdraw the one the player drew last" is now exactly what this does
+   * for any order placed through a command. What is unchanged is the property
+   * the old text was defending: the answer is still the same segment on every
+   * machine and after every restore, because the ordinal is persisted and
+   * `restore()` brings it back with the order.
+   *
+   * **Until 2026-08-31 it was the greatest id**, and ids are
+   * `order-${crypto.randomUUID()}` on the main thread, so it was **not**
+   * placement order and the segment that went was not the last one drawn.
    *
    * **#693 called this "the least surprising segment to take" and named its own
    * doubt about that; the doubt was right and its guess about what a player
    * sees was wrong in the direction that matters.** It expected a segment to
    * vanish *"from somewhere in the middle of the line"*. A UUID's ordinal
-   * position within a run is uniform, so the greatest id is as likely to be
-   * either end of the row as the middle -- and the extreme case is reachable
+   * position within a run is uniform, so the greatest id was as likely to be
+   * either end of the row as the middle -- and the extreme case was reachable
    * rather than theoretical: with ids that do not follow placement order the
-   * segment withdrawn is the tile the player drew **first**, at the far left of
-   * a left-to-right drag. Measured, no browser needed, because a `BuildOrder`
-   * carries its own `location`:
-   * `tests/integration/economy-refund-survives-the-clock.test.ts`, *"takes
-   * whichever segment holds the greatest id, which can be the first one
-   * drawn"*. The determinism argument above is untouched -- it was never a
-   * claim about surprise -- and the paragraph is kept rather than rewritten
-   * because everything in it is still true.
+   * segment withdrawn could be the tile the player drew **first**, at the far
+   * left of a left-to-right drag. Measured, no browser needed, because a
+   * `BuildOrder` carries its own `location`:
+   * `tests/integration/economy-refund-survives-the-clock.test.ts`, which used
+   * to assert *"takes whichever segment holds the greatest id, which can be
+   * the first one drawn"* and now asserts the placement-ordered answer for a
+   * stamped queue beside the unchanged id-ordered answer for one that carries
+   * no ordinals. **#693's doubt is closed by that, not merely acknowledged.**
    *
    * **What would change it is a persisted field and therefore a save-format
-   * decision, not a better sort.** Nothing on `BuildOrder`
-   * (`src/simulation/construction/build-order.ts`) records when or in what
-   * order it was placed -- there is no tick, no sequence and no drag index --
-   * so "withdraw the one the player drew last" cannot be computed from the
-   * order book at all. `Map` insertion order is not it either: `orderedOrders`
-   * re-sorts by id precisely so that a restore cannot change the answer, and a
-   * snapshot is not required to preserve insertion order.
+   * decision, not a better sort.** That sentence was true when it was written
+   * and `BuildOrder.placementSequence` is that field -- one optional key in
+   * `buildOrderSchema`, no `SAVE_SCHEMA_VERSION` bump, argued in ADR 0082's
+   * "The save-format cost". The rest of the old paragraph still holds and is
+   * why the fix took that shape rather than another: `Map` insertion order is
+   * not available, because `orderedOrders` re-sorts precisely so that a
+   * restore cannot change the answer, and a snapshot is not required to
+   * preserve insertion order.
+   *
+   * **An order book with no ordinals behaves exactly as it did**, which is
+   * every save written before the field and every fixture that builds orders
+   * directly: they tie at the `-1` sentinel and the id decides, so this still
+   * withdraws the greatest id there.
    *
    * ## What it cannot create
    *
@@ -729,6 +745,11 @@ export class ConstructionSystem implements SystemRegistration {
   /**
    * The last order in the crew's walk that is still waiting for `itemId`.
    *
+   * "Last in the walk" is the whole of the rule and it is deliberately not
+   * spelled out as an id or as an ordinal: `orderedOrders()` owns what the
+   * walk is, and this loop reads it backwards. That is why ADR 0082 changed
+   * which segment is withdrawn without changing a line of this method.
+   *
    * The candidate set is exactly `pendingMaterialDemand`'s -- `'approved'` or
    * `'materials-pending'`, a definition the registry still holds, a positive
    * requirement for this item -- because withdrawing an order that contributes
@@ -754,8 +775,15 @@ export class ConstructionSystem implements SystemRegistration {
   }
 
   /**
-   * Every order, in ascending id (code-unit order), never `Map` insertion
-   * order.
+   * Every order, in placement order with ascending id as the tie-break, never
+   * `Map` insertion order.
+   *
+   * **This read "ascending id (code-unit order)" until 2026-08-31, and that is
+   * what it did.** ADR 0082 decisions 1 and 2 changed the first key and kept
+   * the second: the walk is now `(placementSequence ?? -1, id)`, which is
+   * `compareBuildOrderExecution`. The old sentence is kept because the rest of
+   * this docblock is an argument about why the sort exists at all, and that
+   * argument is untouched by which key it sorts on.
    *
    * This stopped being cosmetic the moment `finalizeConstruction` began
    * writing world geometry: two orders that finish on the same scheduled tick
@@ -765,15 +793,19 @@ export class ConstructionSystem implements SystemRegistration {
    * `restore()` re-inserts from a snapshot rather than replaying that
    * history -- so a restored session could disagree with the live one it came
    * from. See `docs/DETERMINISM.md`, "Canonical iteration order".
+   *
+   * **Sorting on a persisted field keeps every word of that.**
+   * `placementSequence` is in the snapshot and comes back through `restore()`
+   * with the order it belongs to, so the sequence a restored session answers
+   * is the same one the live session answered -- which is the property the
+   * sort has to have, and the one `Map` insertion order does not.
    */
   private orderedOrders(): readonly BuildOrder[] {
-    return [...this.orders.values()].sort((left, right) =>
-      left.id < right.id ? -1 : left.id > right.id ? 1 : 0,
-    );
+    return [...this.orders.values()].sort(compareBuildOrderExecution);
   }
 
   /**
-   * Every order, in the same ascending-id order every internal walk uses.
+   * Every order, in the same placement order every internal walk uses.
    *
    * Public because the object placement boundary has to know which tiles orders
    * *in flight* have already claimed: two beds ordered onto one tile inside the
@@ -807,8 +839,9 @@ export class ConstructionSystem implements SystemRegistration {
    * used to.
    *
    * **Whether the crew is free is decided once, before the walk, and not
-   * re-decided as it proceeds.** The walk is `orderedOrders()`, ascending id,
-   * which is the canonical sequence the whole class uses. If occupancy were
+   * re-decided as it proceeds.** The walk is `orderedOrders()` -- placement
+   * order with id as the tie-break since ADR 0082 (#722), ascending id alone
+   * before it -- which is the canonical sequence the whole class uses. If occupancy were
    * re-read per order, then an order finishing during this pass would free the
    * crew for any waiting order sorting *after* it and not for one sorting
    * before -- so whether a queue lost a tick at each handover would depend on
@@ -942,9 +975,17 @@ export class ConstructionSystem implements SystemRegistration {
         case 'assigned':
           // The crew is the constraint. A waiting order keeps its allocated
           // materials and is retried on the next scheduled tick, exactly as a
-          // `materials-pending` order waits on the container above; because
-          // the walk is by ascending id, the one that starts is always the
-          // first eligible id and never the first submission.
+          // `materials-pending` order waits on the container above; the one
+          // that starts is always the first eligible order in the walk.
+          //
+          // **That walk was ascending id until ADR 0082 (#722), and this
+          // comment used to end "always the first eligible id and never the
+          // first submission" -- which was true and was the defect.** The walk
+          // is now placement order, so for orders placed through a command the
+          // first eligible one *is* the earliest still-eligible submission.
+          // For an order book carrying no ordinals -- a save written before
+          // the field, a fixture -- the old sentence still describes it
+          // exactly.
           if (crewBusy) break;
           crewBusy = true;
           order.assignedWorkerId = MOCK_CREW_WORKER_ID;

@@ -76,8 +76,11 @@ export type BuildableLabelLookup = (definitionId: string) => LocalizationKey | u
  * What the panel renders, from one projection reply.
  *
  * Pure, and it decides nothing the simulation decided: the rows are the
- * projection's own window in the projection's own order (ascending order id,
- * which is the order the crew will reach them in), the counts are the
+ * projection's own window in the projection's own order (placement order with
+ * ascending order id as the tie-break since ADR 0082 (#722) -- it read
+ * "ascending order id" alone before that, and still is exactly that for a save
+ * carrying no placement ordinals -- which either way is the order the crew will
+ * reach them in), the counts are the
  * projection's, and the only thing added is the name -- which is the one fact
  * neither side of the boundary is allowed to hold.
  *

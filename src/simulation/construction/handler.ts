@@ -40,6 +40,19 @@ export function createConstructionCommandHandler(
         // order that carries no edge resolves to `DEFAULT_BUILD_EDGE` at the
         // point of use, so the command, the order and the world all agree
         // without this layer inventing a value.
+        //
+        // `command.sequence` is the placement ordinal (ADR 0082 decision 2,
+        // #722), and this is the line that stamps it. It is the kernel's own
+        // counter, not a number this layer invents: the kernel refuses a
+        // command whose sequence is not exactly the one it expects, so the
+        // value is strictly increasing across the whole session with no gaps
+        // and no duplicates, and it is persisted as
+        // `KernelSnapshot.expectedSequence` so a session that reloads carries
+        // on above every ordinal in the save. Taking it here rather than
+        // inside `ConstructionSystem` is what keeps the construction system a
+        // function of the order book -- it never reads the clock or the
+        // command queue, and an order built by a fixture simply has no
+        // ordinal.
         const order = createBuildOrder(
           simCommand.orderId,
           simCommand.definitionId,
@@ -48,6 +61,7 @@ export function createConstructionCommandHandler(
             y: tileCoordinate(simCommand.y),
           },
           simCommand.edge,
+          command.sequence,
         );
         constructionSystem.submitOrder(order);
         // Read straight off the order the system just decided on, rather than

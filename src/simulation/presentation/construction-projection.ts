@@ -1,4 +1,5 @@
 import {
+  compareBuildOrderExecution,
   resolveBuildEdge,
   type BuildEdge,
   type BuildOrder,
@@ -6,7 +7,6 @@ import {
 } from '../construction/build-order';
 import type { MaterialsProcurementReport } from '../construction/materials-procurement';
 import {
-  compareStableIds,
   HUD_VIEW_MODEL_SCHEMA_VERSION,
   pageOf,
   toTileViewModel,
@@ -235,20 +235,28 @@ export interface BuildQueueViewModel {
 /**
  * Every order still waiting, in the order the crew will reach them.
  *
- * **Ascending id, which is `ConstructionSystem`'s own canonical order and not a
- * choice made here.** That system walks `orderedOrders()` and the first
- * eligible id is the one that starts, so ascending id *is* the build sequence --
- * the list is the schedule, not merely a stable enumeration. Re-sorted here
- * anyway rather than trusted, for the reason `docs/DETERMINISM.md` gives about
- * canonical iteration: a source that changed its mind about ordering would
- * otherwise silently reorder a player-facing list, and the sort is over rows
- * this function is already materialising.
+ * **Placement order, ties by id -- `ConstructionSystem`'s own canonical order
+ * and not a choice made here.** That system walks `orderedOrders()` and the
+ * first eligible order is the one that starts, so this sequence *is* the build
+ * schedule, not merely a stable enumeration. Re-sorted here anyway rather than
+ * trusted, for the reason `docs/DETERMINISM.md` gives about canonical
+ * iteration: a source that changed its mind about ordering would otherwise
+ * silently reorder a player-facing list, and the sort is over rows this
+ * function is already materialising. `compareBuildOrderExecution` is that one
+ * rule, imported rather than restated, so the panel and the crew cannot come
+ * to disagree about what is next.
  *
- * One consequence, stated because a player meets it: an order id is minted at
- * the composition root as `order-${crypto.randomUUID()}`, so ascending id
- * within one dragged run is **not** the order the run was drawn in. The
- * sequence is real -- it is what the crew does -- and it is not the player's
- * gesture replayed, which is why every row carries its tile and its edge. A
+ * **Until 2026-08-31 this paragraph read "Ascending id", and it went on to
+ * state the consequence:** an order id is minted at the composition root as
+ * `order-${crypto.randomUUID()}`, so ascending id within one dragged run was
+ * **not** the order the run was drawn in. Both sentences are kept because they
+ * are what a save written before ADR 0082 still does -- an order carrying no
+ * `placementSequence` sorts by id, exactly as before -- and because the
+ * consequence is what the ADR was written to remove (#722). What has changed
+ * is that for orders a current session places, the list is the player's own
+ * gesture order.
+ *
+ * What has *not* changed: every row carries its tile and its edge, because a
  * player aims at a wall by where it is, never by how far down the list it sits.
  */
 export function projectBuildQueue(
@@ -256,9 +264,16 @@ export function projectBuildQueue(
   request: PageRequest = {},
   funding?: BuildQueueFundingSource,
 ): BuildQueueViewModel {
-  const pending = source
-    .allOrders()
+  // Sorted before the map rather than after it, because the key is no longer
+  // on the row: `placementSequence` is a fact about the order and deliberately
+  // not published in `BuildQueueOrderViewModel` -- a consumer aims at a row by
+  // its tile, and an ordinal it could sort on is an invitation to re-derive
+  // the schedule on the far side of the boundary. `compareStableIds` used to
+  // do this job on `orderId` alone and is still what settles the tie, inside
+  // `compareBuildOrderExecution`.
+  const pending = [...source.allOrders()]
     .filter((order) => isPendingBuildOrderState(order.state))
+    .sort(compareBuildOrderExecution)
     .map(
       (order): BuildQueueOrderViewModel => ({
         orderId: order.id,
@@ -267,8 +282,7 @@ export function projectBuildQueue(
         edge: resolveBuildEdge(order),
         state: order.state as PendingBuildOrderState,
       }),
-    )
-    .sort((left, right) => compareStableIds(left.orderId, right.orderId));
+    );
 
   const unfundedItems = (funding?.lastReport.unfunded ?? []).map((item) => ({
     itemId: item.itemId,

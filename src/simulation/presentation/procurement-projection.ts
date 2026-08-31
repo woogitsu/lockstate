@@ -47,10 +47,12 @@ import {
  * `ProcurementSystem.sortPending` keeps the queue in `(arrivesAtTick, orderId)`
  * order and drains it in that order, so **this list is the delivery schedule**:
  * row one is the next thing to land, which is also the row whose refund is
- * about to stop being available. Sorting by id — which is what
- * `projectBuildQueue` does, because ascending id *is* the crew's own walk
- * order — would reorder this list and put a delivery arriving in 90 ticks above
- * one arriving in 3.
+ * about to stop being available. Sorting the way `projectBuildQueue` does —
+ * by the crew's own walk order, which was ascending id until ADR 0082 (#722)
+ * and is placement order with id as the tie-break since — would reorder this
+ * list and put a delivery arriving in 90 ticks above one arriving in 3. That
+ * has never been about *which* key the build queue uses; a delivery is not a
+ * build order and has no placement ordinal at all.
  *
  * The comparator is restated here rather than trusted, for the reason
  * `docs/DETERMINISM.md` gives about canonical iteration: a source that changed
