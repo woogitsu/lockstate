@@ -158,4 +158,47 @@ report_unprovisioned() {
 
 report_unprovisioned
 
+# ---------------------------------------------------------------------------
+# The agent-worktree snapshotter, restarted because THIS HOOK is what stops it.
+#
+# `scripts/wip-sweep.sh` pushes every agent worktree to a `wip/` ref every
+# three minutes, so a session cut off by a usage limit does not take an agent's
+# uncommitted work with it. It is started by hand, and a session `resume`
+# replaces the process tree it was started in -- so the very event that means
+# "somebody is about to run agents again" is the event that leaves them
+# unprotected.
+#
+# Measured on 2026-08-31: it died twice in one day, both times to a resume and
+# neither time to a crash, and on both occasions three or more agents were
+# working with no snapshots being taken. Restarting it by hand needs somebody
+# to notice, which is exactly what did not happen.
+#
+# Idempotent, like every other step here: `pgrep -f` is matched against the
+# script path rather than a bare name, and `-x`-style exactness is not
+# available for a `bash script.sh` invocation, so the pattern is the full
+# relative path the launch below uses. Nothing is started if one is already up
+# -- two sweepers would push the same refs twice, which is waste rather than
+# damage, but it is still waste and it happened once today.
+start_wip_sweep() {
+  local script="${PROJECT_DIR}/scripts/wip-sweep.sh"
+
+  if [ ! -x "$script" ]; then
+    log "No scripts/wip-sweep.sh to start; agent worktrees are NOT being snapshotted."
+    return 0
+  fi
+
+  # `[w]ip-sweep` keeps this check from matching its own `pgrep`, the way the
+  # repository's own docs write the idiom.
+  if pgrep -f "[w]ip-sweep.sh" >/dev/null 2>&1; then
+    log "wip-sweep is already running; leaving it alone."
+    return 0
+  fi
+
+  nohup bash "$script" "$PROJECT_DIR" >/dev/null 2>&1 &
+  disown 2>/dev/null || true
+  log "Started scripts/wip-sweep.sh (pid $!) -- agent worktrees snapshot to wip/ every 3 min."
+}
+
+start_wip_sweep
+
 log "done"
