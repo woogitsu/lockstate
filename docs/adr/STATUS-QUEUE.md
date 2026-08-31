@@ -330,12 +330,12 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `feb46af` (**v0.0.259**) by the delta method this
-header describes, from the v0.0.252 anchor described below. **Seven of the ten
+Re-anchored at `main` @ `c0a3a6b` (**v0.0.268**) by the delta method this
+header describes, from the v0.0.259 anchor described below. **Nine of the ten
 releases the budget allows, counted on the tree this commit is written
-against**: `package.json` ships `0.0.259` and the anchor being replaced named
-v0.0.252. Three releases of headroom are left as of this commit, where the
-previous anchor had none at all.
+against**: `package.json` ships `0.0.268` and the anchor being replaced named
+v0.0.259. One release of headroom is left as of this commit, which is the
+narrowest any anchor has been written at except the one that had none.
 
 **That figure is a fact about this commit and it is not a claim about the
 merge, and this is the third anchor running to scope it that way — but the
@@ -367,40 +367,70 @@ index's *Next free number* residue by becoming a member — the same movement
 0078 and 0079 each made. Which way that goes is not something this pass can
 record.
 
-`feb46af` is `origin/main`'s tip at the time of writing and is itself the
-**v0.0.259 release commit**, named deliberately rather than the merge commit
+`c0a3a6b` is `origin/main`'s tip at the time of writing and is itself the
+**v0.0.268 release commit**, named deliberately rather than the merge commit
 beneath it, for the reason every previous anchor gives: it is cut after the last
-merge in the window (#650, `0276e4b`), contains every sentence below, and is the
+merge in the window (#694, `d34c573`), contains every sentence below, and is the
 exact tree every citation here was re-derived from.
 
-**The delta note for `feb46af`.** `git diff --name-only 898a16a..feb46af` is
-**52 files**, of which **ten are members**: `docs/HUD_PROJECTIONS.md`,
-`docs/research/README.md`, `package.json`, `src/main.ts`,
-`src/ui/hud/build-panel.ts`, `src/ui/hud/hud.css`, `src/ui/hud/hud.ts`,
-`src/ui/hud/messages.ts`, `tests/unit/ui-hud-messages.test.ts` and ADR
-**0073**. `docs/adr/STATUS-QUEUE.md` is an eleventh changed file that §§3-6 name
-and is deliberately outside its own set. **Nothing under
-`supabase/migrations/`, `src/services/telemetry/**` or `src/ui/primitives/**`
-changed**, so those three glob members contributed none, and
-`src/services/telemetry/` still holds **fifteen** modules, counted rather than
-carried. **`docs/adr/README.md` did not change either**, which is why the count
-below is unchanged rather than re-derived and moved; the `eb1f040` window was
-the same shape. **One member joins the set in this commit** — a research record
-cited by the new §5 entry described below — and it joins in the same commit that
-creates the citation, which is the order this header's derivation subsection
-asks for and the order the `eb1f040` pass found broken twice.
+**The delta note for `c0a3a6b`.** `git diff --name-only feb46af..c0a3a6b` is
+**61 files**, of which **twelve are members**: `docs/HUD_PROJECTIONS.md`,
+`docs/PERSISTENCE.md`, `docs/adr/0006-simulation-worker-adapter.md`,
+`docs/adr/README.md`, `docs/research/README.md`, `package.json`,
+`src/persistence/save-schema.ts`, `src/simulation/economy/income.ts`,
+`src/simulation/protocol/types.ts`, `src/simulation/worker/state-machine.ts`,
+`src/ui/hud/hud.css` and `src/ui/hud/projection.ts`.
+`docs/adr/STATUS-QUEUE.md` is a thirteenth changed file that §§3-6 name and is
+deliberately outside its own set.
 
-**The window is seven releases carrying seven merged pull requests** — #674,
-#640, #672, #673, #655, #668 and #650 — read off `git log --oneline
---first-parent 898a16a..feb46af` (excluding the seven release-bump commits).
-**One of the seven edits this file and it is not new drift**: `fc11269`/#674 is
+**This is the widest member intersection any anchor here has had, and three of
+the twelve end runs of inheritance rather than merely changing.**
+`docs/adr/README.md` changed — 0080 landed and the *Next free number* line moved
+0080 → 0081 — so the ADR counts below are **re-derived rather than carried**:
+**74 rows, 44 `Accepted`, 30 `Proposed`**, each from
+`grep "^| \[" docs/adr/README.md` split on the status column rather than from a
+whole-file `grep -c`, which counts prose. `src/simulation/protocol/types.ts` and
+`src/simulation/worker/state-machine.ts` both changed, so §5's handshake claim is
+**re-established** rather than inherited — the previous anchor recorded that a
+five-anchor run of re-running it *"ends here by the window not touching it"*, and
+this window touches it, so the run resumes rather than ends.
+`src/simulation/economy/income.ts` changed for the first time in three windows,
+ending the "inherited for the second anchor running" the previous anchor
+recorded.
+
+**Nothing under `supabase/migrations/`, `src/services/telemetry/**` or
+`src/ui/primitives/**` changed**, so those three glob members contributed none,
+and `src/services/telemetry/` still holds **fifteen** modules, counted rather
+than carried. **Four members join the set in this commit** — the research records
+cited by the entries this window's merges wrote — each in the commit that creates
+its citation, which is the order this header's derivation subsection asks for.
+
+**The window is nine releases carrying nine merged pull requests** — #686,
+#685, #690, #688, #693, #682, #691, #681 and #694 — read off `git log --oneline
+--first-parent feb46af..c0a3a6b` (excluding the nine release-bump commits).
+**One of the nine edits this file and it is not new drift**: `951d7a5`/#686 is
 the previous anchor's own writing commit, kept below as that anchor's account.
+
+**The previous anchor named a consequence in advance and it did not arrive, and
+the direction it missed in is the instructive one.** That pass wrote: *"If #681
+merges before this does, the count is thirty-one and all four `Proposed`
+counting sites need it"*, because #681 carried **ADR 0080** as `Proposed` and a
+branch nobody has merged is invisible from disk. **#681 did merge, inside this
+window — and the count is thirty.** ADR 0080 landed **`Accepted`**, on the
+owner's 2026-08-30 ruling, which the branch could not have known when the
+sentence was written and which the sentence's arithmetic did not allow for: it
+reasoned about *whether the row arrives*, and the thing that decides a `Proposed`
+count is *which column it arrives in*. So all four `Proposed` sites stay at
+thirty, re-derived rather than carried. The residue half of that prediction **was**
+right: 0080 became a member and moved *Next free number* 0080 → 0081, the same
+movement 0078 and 0079 each made.
+
 **No commit in this window filed a §2 entry**, so all four places that count §2
 stay at eight: this header's paragraph, the title (which states a subject and no
 count), §2's own heading *"## 2. Eight entries"*, and §5's preamble's *"EIGHT at
-#615"*. All four were opened rather than assumed. That is the **fourth**
+#615"*. All four were opened rather than assumed. That is the **fifth**
 consecutive window in which the split those four places keep coming apart on has
-not been exercised at all, so this sweep, like the three before it, confirms
+not been exercised at all, so this sweep, like the four before it, confirms
 nothing about it.
 
 **THIRTY at `feb46af`, unmoved.** No ADR arrived, none left, and no status
@@ -489,9 +519,11 @@ reads *"ADR 0017 -- Accepted"*. `src/ui/hud/build-panel.ts` and
 `src/ui/`, re-derived with `git ls-tree -r HEAD -- src/ui`, so that entry's
 own hand count stays right.
 
-**`docs/HUD_PROJECTIONS.md` gained 92 lines and §5's quotation of gap 13
-survives verbatim** — *"Object placement exists, and `minQuantity` is counted"*,
-now at `:883`. The 92 lines are #640's amendment, inserted at `:1288`, below
+**§5's quotation of gap 13 survives verbatim** — *"Object placement exists, and
+`minQuantity` is counted"* — and moved `:883` → **`:885`**, two lines, which is
+the second consecutive window in which that quotation has held while its line
+number has not. The account of the 92 lines it gained in the previous window is
+kept below. The 92 lines are #640's amendment, inserted at `:1288`, below
 every line §5 depends on. **This is the case §6's recommendation 1 is for**: the
 document §5 quotes changed underneath it, in the section §5's subject is about,
 and the quotation needed nothing.
@@ -508,8 +540,10 @@ every line the rule occupies.
 carries a count rather than a line and a count is cheap to re-take.**
 `src/persistence/save-schema.ts`, `src/simulation/protocol/commands.ts` and
 `src/simulation/construction/definition.ts` are untouched in this window, and
-all four figures hold: `masterSeedSchema`'s comment is still at
-`save-schema.ts:1214`; `simulationCommandSchema` still discriminates
+three of the four figures hold and one drifted. **`masterSeedSchema`'s comment
+moved `save-schema.ts:1214` → `:1229`**, fifteen lines, because #694 added the
+loan section to that file above it; the sentence it anchors is unchanged and the
+citation is corrected rather than the claim. The rest: `simulationCommandSchema` still discriminates
 **fourteen**, declared at `commands.ts:542`; and `grep -rno "'object\.[a-z-]*'"
 src/ --include=*.ts | grep -v '^src/content/'` still returns **39** hits in
 **two** files, **nineteen** in `definition.ts` and **twenty** in
@@ -522,13 +556,18 @@ this window is not.
 **Two claims are INHERITED rather than re-established, and in both cases that is
 the weaker of the two results.** §5's handshake claim still returns **nine**
 hits from `grep -rn "protocol/handshake" src/ --include=*.ts`, still split **4 /
-2 / 3**, every line number unmoved — but none of `types.ts`,
-`transferables.ts` or `state-machine.ts` is in this window at all, where each of
-the previous five anchors had at least one of them, so **the run of five
-consecutive anchors at which the claim had to be re-run ends here by the window
-not touching it.** And §6's `income.ts` absence is inherited for the **second**
-anchor running: `grep -c "Proposed" src/simulation/economy/income.ts` returns
-**0**, re-grepped rather than assumed, against a file nothing touched.
+2 / 3** across `types.ts`, `transferables.ts` and `state-machine.ts` — and this
+time it is **re-established rather than inherited**: two of those three files
+changed in this window (#685 touched `state-machine.ts`, #691 touched
+`types.ts`). The previous anchor recorded that *"the run of five consecutive
+anchors at which the claim had to be re-run ends here by the window not touching
+it"* — **that account is true of its own window and the run did not end; it
+resumes at six here**, and both halves are kept because a run declared over and
+then continuing is exactly the shape this file asks to be marked rather than
+overwritten. §6's `income.ts` absence is likewise **re-established**:
+`grep -c "Proposed" src/simulation/economy/income.ts` returns **0**, against a
+file #694 *did* change, ending the two anchors of inheritance the previous pass
+recorded.
 
 **The two live `verified at` claims were re-run rather than carried.** Neither
 `supabase/migrations/` nor `.github/workflows/` appears anywhere in this
@@ -4436,7 +4475,7 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `feb46af`, unchanged since the previous anchor,
+absences were re-verified at `c0a3a6b`, unchanged since the previous anchor,
 the one before it, the one before that, the one before that, and the one
 before that — the directory has not moved across any of those windows and
 still holds twenty-three files, counted again here (`ls
@@ -4612,7 +4651,7 @@ is recommendation 1 at the foot of §6 producing a measurable result rather than
 being restated: **three of the four citations into the fastest-moving document
 in the set survived an edit that moved every line of them.**
 
-The half of the decision that *is* in this repository stays verified at `feb46af`:
+The half of the decision that *is* in this repository stays verified at `c0a3a6b`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` (`:34`) with no
 `push:`, requires a typed `confirm_project_ref` (`:41`), and its apply job is
 environment-gated (`:65`) — all three re-read at this anchor and all three still
