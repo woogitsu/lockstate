@@ -334,10 +334,62 @@ describe('the log beside the notice', () => {
       rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['prisoners.discharged'](sequence)), rows) ?? rows;
     }
     expect(rows.length, 'the alerts list must not grow with the session').toBe(MAX_EVENT_ALERT_ROWS);
-    // The newest are the ones kept: the oldest is dropped, because a log whose
-    // most recent entry had fallen off would be showing stale news.
+    // The newest are the ones kept: within one severity band the oldest is
+    // dropped, because a log whose most recent entry had fallen off would be
+    // showing stale news. Every row here is `'info'`, which is what makes this
+    // a test of the age half of the rule rather than of the severity half --
+    // the case below drives the other one.
     expect(rows.at(-1)?.id).toBe(`event-${String(total)}`);
     expect(rows[0]?.id).toBe(`event-${String(total - MAX_EVENT_ALERT_ROWS + 1)}`);
+  });
+
+  it('sacrifices the least severe row rather than the oldest one (#703 ruling 11)', () => {
+    /*
+     * The owner's ruling 11 of 2026-08-31, and the case the test above cannot
+     * make: it drives one severity, so evict-oldest and evict-least-severe are
+     * indistinguishable under it.
+     *
+     * **What the ruling is for, in the numbers that bought it.** In a
+     * 289-resident prison the severity mix measured `danger` 14.5 %, `warning`
+     * 0.3 %, `info` 85.3 % -- five rows in six are a discharge or an all-clear,
+     * because the discharge rate is population / 52 an in-game day while the
+     * incident producers are capped by their quiet periods. Under the old rule
+     * an escape row survived a worst case of 1,340 ticks: **67 seconds at x1,
+     * 17 at x4.** Under this one, 23,390.
+     *
+     * The list is driven with one `danger` row FIRST and then filled past the
+     * cap with `info` rows, which is the shape that separates the two rules: the
+     * escape is the oldest row in the list, so evict-oldest drops it and
+     * evict-least-severe keeps it. Asserted as the surviving **set**, not as a
+     * window, because the rule no longer produces a contiguous window.
+     */
+    let rows: readonly HudAlertViewModel[] = [];
+    rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.escape-succeeded'](1)), rows) ?? rows;
+
+    const total = MAX_EVENT_ALERT_ROWS + 5;
+    for (let sequence = 2; sequence <= total; sequence += 1) {
+      rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['prisoners.discharged'](sequence)), rows) ?? rows;
+    }
+
+    expect(rows.length, 'the cap still holds').toBe(MAX_EVENT_ALERT_ROWS);
+
+    // The escape is the oldest row in the list and it is still there. This is
+    // the assertion the old rule fails.
+    const survivors = rows.map((row) => row.id);
+    expect(survivors, 'the escape outlives twelve discharges that arrived after it').toContain('event-1');
+    expect(rows.find((row) => row.id === 'event-1')?.severity).toBe('danger');
+
+    // And the `info` rows that went are the oldest of their own band, so the
+    // age rule still governs inside a band.
+    expect(survivors, 'the oldest discharge is the one sacrificed').not.toContain('event-2');
+    expect(survivors.at(-1), 'the newest row is always kept').toBe(`event-${String(total)}`);
+
+    // **Position is preserved**, which is issue #209's property and the thing a
+    // sort could easily have broken: the escape arrived first and is still
+    // drawn first, and the survivors are in arrival order.
+    expect(survivors[0]).toBe('event-1');
+    const sequences = survivors.map((id) => Number(id.replace('event-', '')));
+    expect(sequences, 'the surviving rows keep arrival order').toEqual([...sequences].sort((a, b) => a - b));
   });
 
   it('says nothing about a message that is not an event', () => {

@@ -847,6 +847,18 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    *     existed: `.hud` innerText did not contain the sentence at either
    *     size (#220).
    *
+   * **Both bullets above are past tense as of 2026-08-31 (#703, rulings 1 and
+   * 5).** `INITIAL_HUD_SHELL_STATE.collapsedPanels` is now empty and the
+   * `@media (max-width: 720px)` block no longer hides `.hud__corner`, so the
+   * alerts list is laid out with `offsetParent` non-null at 1920, 1440, 1280,
+   * 900, 768, 721, 720, 600 and 375 CSS px -- measured on the real application
+   * at all nine. The bullets are kept because they are the record of why this
+   * band exists, and **the band is not withdrawn**: a band shows one message
+   * and replaces it, a list keeps several and scrolls back, and what the
+   * escape sentence measured on 2026-08-31 is that the *band alone* loses a
+   * message to whatever shares its tick. See `INITIAL_HUD_SHELL_STATE` for the
+   * full account and the citation list.
+   *
    * The third reason #207 gave does **not** apply here and is why this is a
    * second row rather than a second use of the first: a refusal is a fact
    * about this HUD's own interaction and clears the moment the same action
@@ -895,6 +907,18 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    *   - **It is there without being opened.** The alerts section starts
    *     folded (`INITIAL_HUD_SHELL_STATE`) and its body is `hidden` while it
    *     is, so appending a row to it changes nothing a player can see.
+   *
+   * **Both bullets above are past tense as of 2026-08-31 (#703, rulings 1 and
+   * 5).** `INITIAL_HUD_SHELL_STATE.collapsedPanels` is now empty and the
+   * `@media (max-width: 720px)` block no longer hides `.hud__corner`, so the
+   * alerts list is laid out with `offsetParent` non-null at 1920, 1440, 1280,
+   * 900, 768, 721, 720, 600 and 375 CSS px -- measured on the real application
+   * at all nine. The bullets are kept because they are the record of why this
+   * band exists, and **the band is not withdrawn**: a band shows one message
+   * and replaces it, a list keeps several and scrolls back, and what the
+   * escape sentence measured on 2026-08-31 is that the *band alone* loses a
+   * message to whatever shares its tick. See `INITIAL_HUD_SHELL_STATE` for the
+   * full account and the citation list.
    *
    * ## Two producers, because a refusal is a refusal
    *
@@ -974,6 +998,18 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    *   - **It is there without being opened.** The alerts section starts folded
    *     (`INITIAL_HUD_SHELL_STATE`), so a row appended to that list is a 0x0
    *     box at every viewport until somebody opens it.
+   *
+   * **Both bullets above are past tense as of 2026-08-31 (#703, rulings 1 and
+   * 5).** `INITIAL_HUD_SHELL_STATE.collapsedPanels` is now empty and the
+   * `@media (max-width: 720px)` block no longer hides `.hud__corner`, so the
+   * alerts list is laid out with `offsetParent` non-null at 1920, 1440, 1280,
+   * 900, 768, 721, 720, 600 and 375 CSS px -- measured on the real application
+   * at all nine. The bullets are kept because they are the record of why this
+   * band exists, and **the band is not withdrawn**: a band shows one message
+   * and replaces it, a list keeps several and scrolls back, and what the
+   * escape sentence measured on 2026-08-31 is that the *band alone* loses a
+   * message to whatever shares its tick. See `INITIAL_HUD_SHELL_STATE` for the
+   * full account and the citation list.
    *
    * Those two properties are why #207 gave refusals a band and #220 gave "no
    * simulation" a second one, and an `'info'` producer that only reached the

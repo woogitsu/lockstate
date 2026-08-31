@@ -7133,17 +7133,33 @@ test.describe('the assembled application', () => {
     // The empty-state row goes when there is something to say.
     await expect(emptyRow).toHaveCount(0);
 
-    // **Visible, not merely present.** The alerts section starts folded
-    // (`INITIAL_HUD_SHELL_STATE`), so the row is in the DOM with a 0x0 box
-    // until the player opens it -- which is exactly the state #220 measured
-    // and moved the "simulation unavailable" sentence out of. A
-    // `toContainText` here without the fold being opened would pass against
-    // an invisible row and prove nothing.
-    await expect(alertRow).toBeHidden();
+    // **Visible, not merely present**, and as of 2026-08-31 visible *without a
+    // press*. This block read `toBeHidden()`, then `data-collapsed: 'true'`,
+    // then a click, then `'false'` -- because the alerts section started folded
+    // (`INITIAL_HUD_SHELL_STATE`), so the row was in the DOM with a 0x0 box
+    // until the player opened it, which is exactly the state #220 measured and
+    // moved the "simulation unavailable" sentence out of.
+    //
+    // **The owner's ruling 1 of #703 opened it**, and the same change gave the
+    // list a bounded box with `overflow-y: auto` so it scrolls rather than
+    // letting its `.ui-panel` ancestor clip the newest row. So the row is
+    // visible here on arrival. The precaution the old comment names is
+    // unchanged and still worth stating: a `toContainText` on a row nobody can
+    // see proves nothing, which is why the visibility assertion below is the
+    // load-bearing one either way.
+    //
+    // The fold is still exercised, in the direction it now moves: one press
+    // shuts it and the row goes away. That keeps a real toggle in this test
+    // rather than deleting the only place it was checked on the assembled page.
+    await expect(alertsSection).toHaveAttribute('data-collapsed', 'false');
+    await expect(alertRow).toBeVisible();
+
+    await page.locator('.hud-minimap .ui-section__header').click();
     await expect(alertsSection).toHaveAttribute('data-collapsed', 'true');
+    await expect(alertRow).toBeHidden();
+
     await page.locator('.hud-minimap .ui-section__header').click();
     await expect(alertsSection).toHaveAttribute('data-collapsed', 'false');
-
     await expect(alertRow).toBeVisible();
     // The sentence for the reason the simulation actually gave: the tile is
     // outside the one chunk a new prison has, so `submitOrder`'s bounds check
@@ -7358,9 +7374,19 @@ test.describe('the assembled application', () => {
       })
       .toBe(1);
 
-    // Opened, because the alerts section arrives folded and a `toContainText`
-    // against a 0x0 box proves nothing.
-    await page.locator('.hud-minimap .ui-section__header').click();
+    // **No press: the section arrives OPEN as of #703 ruling 1.** This read
+    // `.click()` first, under the comment "Opened, because the alerts section
+    // arrives folded and a `toContainText` against a 0x0 box proves nothing."
+    // The precaution is right and is still enforced by the visibility assertion
+    // below; what changed is that it costs nothing.
+    //
+    // **This is the case that only CI caught, and the reason is worth keeping.**
+    // The press survived the first pass of this branch because the flex chain
+    // added for the scroll fix was overriding `[hidden]` -- so collapsing the
+    // section hid nothing and `toBeVisible` passed *after* the click, by
+    // accident. Fixing that with `:not([hidden])` made the press do what it
+    // says, and this assertion went red on the clean run. A latent break
+    // masked by a second break, and the sequence is the record of it.
     await expect(alertRow).toBeVisible();
     // The sentence the bundled catalogue gives the id the worker sent, read out
     // of that catalogue rather than typed here: ADR 0011 puts the key on one
@@ -7422,6 +7448,14 @@ test.describe('the assembled application', () => {
 
     // The region really is gone at this viewport, asserted rather than taken
     // from the stylesheet -- it is the premise of the whole test.
+    //
+    // **An attempt to remove that breakpoint was made and withdrawn on
+    // 2026-08-31 (#703, ruling 5)**: below 720px `.hud__rail` stretches into
+    // the corner's grid area, so with the corner laid out the Intake panel's
+    // Admit button covered the Alerts fold header, and bringing the corner back
+    // whole also covered the centre pixel a player taps to reach the world.
+    // `hud.css`'s note on that block carries both measurements. So the premise
+    // holds, and now for a measured reason rather than a stylesheet reading.
     await expect(page.locator('.hud__corner')).toBeHidden();
     await expect(page.locator('.hud__refusal')).toBeHidden();
 
@@ -7467,10 +7501,23 @@ test.describe('the assembled application', () => {
     // `innerText` excludes a subtree the layout dropped, which is the
     // measurement #220 established as the honest one.
     expect(measured.hudMentionsIt).toBe(true);
-    // And the surface it replaced, at the same instant and at this viewport:
-    // the row is built and is on screen nowhere.
+    /*
+     * And the surface it replaced, at the same instant and at this viewport.
+     *
+     * The row is built and is on screen nowhere -- the second half of #220's
+     * measurement, at 375x812, the viewport it was found at.
+     *
+     * **#220's defect had two causes and only one of them is gone.** The fold
+     * is (ruling 1: the section starts open, and the list now scrolls rather
+     * than letting its panel clip the newest row), so above 720px the row has a
+     * real box and `ui-shell.spec.ts` asserts exactly that. The 720px
+     * breakpoint is not: ruling 5 asked for it and the attempt was withdrawn on
+     * measurement, because below 720px `.hud__rail` stretches into the corner's
+     * grid area. So this assertion stands **at this viewport only**, and it is
+     * the record that the phone half of #220 is still open.
+     */
     expect(measured.alertRowPresent).toBe(true);
-    expect(measured.alertRowLaidOut).toBe(false);
+    expect(measured.alertRowLaidOut, 'the corner is display:none at 375px, so the row has no box').toBe(false);
 
     await expect(band).toContainText(localeText('hud.alert.refusal.remove-object.nothing-to-remove'));
     await expect(band).not.toContainText('remove-object.');
@@ -7845,7 +7892,11 @@ test.describe('the assembled application', () => {
     // on the very message an alert row would have arrived on.
     await expect(alertRow).toHaveCount(0);
     await expect(emptyRow).toHaveCount(1);
-    await page.locator('.hud-minimap .ui-section__header').click();
+    // **No click.** This read `.click()` then `data-collapsed: 'false'`,
+    // because the section started folded and the empty row had to be revealed
+    // before its visibility could mean anything. The section starts open as of
+    // #703 ruling 1, so a click here would *shut* it and the assertion below
+    // would be measuring a hidden row.
     await expect(alertsSection).toHaveAttribute('data-collapsed', 'false');
     await expect(emptyRow).toBeVisible();
     // Nothing on the band claims the simulation decided this one.
@@ -7918,7 +7969,8 @@ test.describe('the assembled application', () => {
     // places, for one press of one button.
     await expect(alertRow).toHaveCount(0);
     await expect(emptyRow).toHaveCount(1);
-    await page.locator('.hud-minimap .ui-section__header').click();
+    // No click, for the reason given at the sibling assertion above: the
+    // section starts open as of #703 ruling 1, so a press would shut it.
     await expect(alertsSection).toHaveAttribute('data-collapsed', 'false');
     await expect(emptyRow).toBeVisible();
 
@@ -8467,10 +8519,16 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud-alerts__list')).not.toContainText('Simulation unavailable');
 
     // A phone. `hud.css` drops `.hud__corner` entirely at 720px and below, so
-    // under the old routing no interaction could put the sentence on screen
-    // here at all: with the whole region `display: none`, opening the Alerts
-    // section inside it still leaves its rows unlaid-out (#220 measured
-    // exactly that, at this viewport). This row survives the breakpoint.
+    // no interaction can put the sentence on screen here through the alerts
+    // list: with the whole region `display: none`, opening the Alerts section
+    // inside it still leaves its rows unlaid-out (#220 measured exactly that,
+    // at this viewport). This row survives the breakpoint.
+    //
+    // **The Alerts section itself starts OPEN as of #703 ruling 1**, which is
+    // why the sentence above about "opening" is now about a fold nobody has to
+    // open -- and it changes nothing here, because the region containing it is
+    // still not laid out at this width. #703 ruling 5 asked for that to change
+    // and the attempt was withdrawn on measurement; `hud.css` holds why.
     await page.setViewportSize({ width: 375, height: 812 });
     await expect(unavailable).toBeVisible();
     await expect(unavailable).toContainText('Simulation unavailable');

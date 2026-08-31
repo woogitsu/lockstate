@@ -358,6 +358,23 @@ That distinction is not cosmetic. The alerts section starts folded
 designation would be in the DOM and painted at no viewport — the exact defect
 #220 moved "simulation unavailable" out of that list to fix.
 
+**The second sentence expired on 2026-08-31 and the first one did not, which is
+the useful half.** The owner ruled (issue #703, ruling 1) that the alerts
+section starts *open*, and the same change gave the list a bounded box with
+`overflow-y: auto` so it scrolls instead of letting its `.ui-panel` ancestor
+clip the newest row — measured before that fix: at 900×600 four of eight rows
+were inside the panel and they were the four **oldest**. So above 720px a row in
+that list is now laid out and reachable. **Below 720px it still is not**:
+`hud.css` still drops `.hud__corner`, and ruling 5 asked for that to change
+before the attempt was withdrawn on measurement — the stretched rail shares the
+corner's grid area there, so the Intake panel's *Admit* button covered the
+Alerts fold header. `hud.css` carries the numbers.
+
+**None of that moves the distinction above.** The alerts list carries refusals;
+an accepted designation is not one. Visibility is what made the taxonomy
+*urgent* in 2026-08; the taxonomy is what makes it right, and that argument
+never depended on the fold.
+
 - **Two enums and two integers, and no room id.** `{ sequence, tick,
   enclosure, requirement }`, where `enclosure` is what the world answered for
   the rectangle (`'sealed'` / `'open'`) and `requirement` is what the room

@@ -19,12 +19,23 @@ import {
  */
 
 describe('initial shell state', () => {
-  it('opens on the overview tab with the alerts list folded away', () => {
-    // The HUD frames the world and must not cover it: a list that is empty
-    // most of the time should not hold open a rectangle over the prison.
+  it('opens on the overview tab with NOTHING folded away', () => {
+    // This assertion read `alerts` collapsed `true` until 2026-08-31, under the
+    // reason the constant carried: "The HUD frames the world and must not cover
+    // it: a list that is empty most of the time should not hold open a
+    // rectangle over the prison." The owner ruled the other way (#703, ruling
+    // 1) on a measurement that reason could not see -- a successful escape was
+    // written to the event log three times and painted zero times, because the
+    // band that shows it is replaced within the tick and the list that keeps it
+    // was shut. See `INITIAL_HUD_SHELL_STATE` for the account.
+    //
+    // Asserted as "no panel is collapsed" rather than as an empty array, so
+    // this test keeps working if a third panel is added, and so the failure
+    // message names the panel rather than a shape.
     expect(INITIAL_HUD_SHELL_STATE.activeTab).toBe('overview');
-    expect(isPanelCollapsed(INITIAL_HUD_SHELL_STATE, 'alerts')).toBe(true);
+    expect(isPanelCollapsed(INITIAL_HUD_SHELL_STATE, 'alerts')).toBe(false);
     expect(isPanelCollapsed(INITIAL_HUD_SHELL_STATE, 'minimap')).toBe(false);
+    for (const panel of HUD_PANEL_IDS) expect(isPanelCollapsed(INITIAL_HUD_SHELL_STATE, panel)).toBe(false);
   });
 
   it('exposes five tabs and the panels the shell owns', () => {
@@ -64,13 +75,24 @@ describe('tab selection', () => {
 
 describe('panel collapse', () => {
   it('toggles one panel without disturbing the other', () => {
+    // Both panels start open as of #703 ruling 1, so the pair this drives is
+    // "collapse the minimap, then collapse alerts" rather than the old
+    // "collapse the minimap, then *open* alerts". The property under test is
+    // unchanged and is the only thing asserted: one toggle moves one panel.
     const collapsedMinimap = hudShellReducer(INITIAL_HUD_SHELL_STATE, { kind: 'toggle-panel', panel: 'minimap' });
     expect(isPanelCollapsed(collapsedMinimap, 'minimap')).toBe(true);
-    expect(isPanelCollapsed(collapsedMinimap, 'alerts')).toBe(true);
+    expect(isPanelCollapsed(collapsedMinimap, 'alerts')).toBe(false);
 
-    const openAlerts = hudShellReducer(collapsedMinimap, { kind: 'toggle-panel', panel: 'alerts' });
-    expect(isPanelCollapsed(openAlerts, 'minimap')).toBe(true);
-    expect(isPanelCollapsed(openAlerts, 'alerts')).toBe(false);
+    const collapsedAlerts = hudShellReducer(collapsedMinimap, { kind: 'toggle-panel', panel: 'alerts' });
+    expect(isPanelCollapsed(collapsedAlerts, 'minimap')).toBe(true);
+    expect(isPanelCollapsed(collapsedAlerts, 'alerts')).toBe(true);
+
+    // And back the other way, so the test still exercises an *opening* toggle
+    // rather than only closing ones -- which is what it exercised before the
+    // initial state moved, and is the half that would otherwise be lost.
+    const reopenedAlerts = hudShellReducer(collapsedAlerts, { kind: 'toggle-panel', panel: 'alerts' });
+    expect(isPanelCollapsed(reopenedAlerts, 'minimap')).toBe(true);
+    expect(isPanelCollapsed(reopenedAlerts, 'alerts')).toBe(false);
   });
 
   it('round-trips back to the state it started from', () => {
@@ -80,12 +102,25 @@ describe('panel collapse', () => {
   });
 
   it('setting a panel to the state it is already in changes nothing', () => {
+    // `collapsed: false` now, because that is the state `alerts` starts in
+    // (#703, ruling 1). Identity, not equality: the shell skips a repaint on a
+    // no-op, and that is the property this pins.
     const same = hudShellReducer(INITIAL_HUD_SHELL_STATE, {
+      kind: 'set-panel-collapsed',
+      panel: 'alerts',
+      collapsed: false,
+    });
+    expect(same).toBe(INITIAL_HUD_SHELL_STATE);
+
+    // The other direction is a real change and must NOT be identity, or the
+    // assertion above would pass for a reducer that ignores this action.
+    const changed = hudShellReducer(INITIAL_HUD_SHELL_STATE, {
       kind: 'set-panel-collapsed',
       panel: 'alerts',
       collapsed: true,
     });
-    expect(same).toBe(INITIAL_HUD_SHELL_STATE);
+    expect(changed).not.toBe(INITIAL_HUD_SHELL_STATE);
+    expect(isPanelCollapsed(changed, 'alerts')).toBe(true);
   });
 
   it('set-panel-collapsed is absolute, so restoring a saved UI state is not a toggle', () => {

@@ -1,3 +1,5 @@
+import type { ContrabandCategoryDefinition } from '../../content/contraband-catalog';
+import { defaultContrabandRegistry } from '../../content/contraband-catalog';
 import type { ContentRegistry } from '../../content/registry';
 import type { RoomCatalogDefinition } from '../../content/room-catalog';
 import { defaultRoomContentRegistry } from '../../content/room-catalog';
@@ -19,7 +21,7 @@ import {
 import { stateIncomeAccruedByTick, stateIncomeForOccupiedPlaces } from '../economy/income';
 import { EMPTY_SAFETY_COVERAGE_CENSUS, type SafetyCoverageCensus } from '../prisoners/safety-coverage-system';
 import { projectClockPosition } from './clock-projection';
-import type { ContrabandSearchSource } from './contraband-projection';
+import type { ContrabandConfiscationSource, ContrabandSearchSource } from './contraband-projection';
 import { projectPrisonerPopulationCounts, type PrisonerProjectionSource } from './prisoner-projection';
 import { collectRoomInstances, type RoomProjectionSource } from './room-projection';
 import type { StaffRosterSource } from './staff-projection';
@@ -55,6 +57,52 @@ export interface StatusStripSource {
   readonly staff?: StaffRosterSource;
   readonly incidents?: StatusStripIncidentSource;
   readonly searchSystem?: ContrabandSearchSource;
+  /**
+   * The evidence log of what searches have actually taken off somebody --
+   * `ConfiscationLedger`, the same read-only `all()` view
+   * `projectContraband` takes, and never `drain()`, which would consume the
+   * evidence this readout is built from (issue #703 ruling 3).
+   *
+   * **It is here to name what was found, and for nothing else.**
+   * `contrabandDiscovered` below still comes from the search system's own
+   * counter, exactly as it always did: the count and the name have different
+   * sources on purpose, because the counter survives a drain and the ledger
+   * does not. `contrabandNameKey` states the agreement between them rather
+   * than assuming it -- see that field's own doc comment.
+   *
+   * Absent reports no name at all, which is what a session with no ledger
+   * genuinely has: nothing has been confiscated anywhere it could be read
+   * from. The same reading `treasury` and `coverage` above take of their own
+   * absent case.
+   *
+   * ## What this costs, and the part of it that is not measured
+   *
+   * `ConfiscationLedger.all()` copies the whole ledger, and
+   * `contraband-projection.ts` reports that as a gap about itself -- the ledger
+   * has no indexed or windowed accessor. **This puts that copy on a cadence
+   * where it was previously on-demand**: `hud/contraband` is a pulled route
+   * with no panel, while this projection runs every 500 ms
+   * (`STATUS_COUNTS_PUBLISH_INTERVAL_MS`), so the walk is now O(confiscations)
+   * twice a second for the life of a session.
+   *
+   * **Not measured, and bounded by two figures that are.** The size: sixteen
+   * in-game days of a played prison confiscate **2** items
+   * (`tests/integration/contraband-search-duty.test.ts`, thirteen seeds; the
+   * largest was 4). Against that, the same projection already allocates a
+   * sorted regime array, a fresh record per open incident
+   * (`IncidentLog.openIncidents`) and a walk of every occupied place
+   * (`stateIncomeForOccupiedPlaces`), and measures 0.28--1.2 ms whole at 250
+   * to 5,000 actors (`tests/unit/worker-status-counts.test.ts`). A copy of a
+   * handful of records is orders of magnitude below the walk already in there.
+   *
+   * What would settle it rather than bound it is that perf case run against a
+   * populated ledger, which nobody has done. **It is a real question for a
+   * prison left running for days**, because the ledger is unbounded in the
+   * session by construction and this cadence is not -- and the fix if it ever
+   * bites is the accessor `contraband-projection.ts` already asked for, not a
+   * change here.
+   */
+  readonly confiscations?: ContrabandConfiscationSource;
   /**
    * The prison's money (#96). Absent reports `0`, which is what a session
    * without an economy had -- not a guess, and not a hidden default: a
@@ -116,6 +164,13 @@ export interface StatusStripSource {
 
 export interface StatusStripOptions {
   readonly rooms?: ContentRegistry<RoomCatalogDefinition>;
+  /**
+   * The contraband catalog whose `nameKey` the strip publishes for a found
+   * category. Defaults to the shipped registry, exactly as `rooms` above
+   * does, so a scenario running its own catalog names its own categories
+   * rather than the default ones.
+   */
+  readonly contraband?: ContentRegistry<ContrabandCategoryDefinition>;
 }
 
 export interface ClockViewModel {
@@ -275,6 +330,71 @@ export interface StatusStripViewModel {
     readonly activeIncidentType?: IncidentType;
     /** Cumulative items found by searches this session. Read from the search system's own counter, not from the drainable confiscation ledger. */
     readonly contrabandDiscovered: number;
+    /**
+     * What `contrabandDiscovered` above is a count *of*, as the contraband
+     * catalog's own `nameKey`, when the strip can name one category for the
+     * whole of it -- the owner's ruling 3 on issue #703, *"The message names
+     * what contraband was found."*
+     *
+     * **Why a bare count could never say this, which is the same argument
+     * `activeIncidentType` makes one field up.** The five categories are
+     * authored -- `contraband.weapon.name` ("Weapon"), `.drug`, `.phone`,
+     * `.currency`, `.tool` (`src/content/default-locale-en.ts`) -- and until
+     * this field nothing on screen read one, so a found phone and a found
+     * weapon both rendered as the character `1`.
+     *
+     * (Issue #703's own evidence for that was `grep -rn
+     * "contraband\.weapon\.name" src/ui/` returning nothing. **That grep still
+     * returns nothing and always will**, because the HUD may not hand-write a
+     * content key: the key travels from `ContrabandCategoryDefinition.nameKey`
+     * through this field. `grep -rn "contrabandNameKey" src/ui/` is the one
+     * that finds the reader.) After
+     * [ADR 0080](../../../docs/adr/0080-when-the-prison-asks-what-a-prisoner-is-carrying.md)
+     * a weapon has a producer a player can reach, which is what turns that
+     * from a dormant catalogue into the difference between "somebody had a
+     * mobile" and "somebody is armed".
+     *
+     * **Not new copy.** The key crosses as the catalog's `nameKey`, the same
+     * field `DiscoveredContrabandViewModel.categoryNameKey` already carries on
+     * the `hud/contraband` route and the same kind of value the
+     * `prisoners.relocated` event carries as `roomNameKey`. ADR 0011 keeps
+     * *text* off the wire, never keys; nothing here authors a string and the
+     * HUD resolves it.
+     *
+     * ## What it deliberately cannot say, and the guard that keeps it honest
+     *
+     * A badge beside a count qualifies the whole count -- that is what the
+     * incidents chip's does -- so this is present only when it is true of
+     * **every** item the count reports:
+     *
+     * - **Every confiscation on the ledger names one category.** A prison that
+     *   has found a phone and a weapon is not describable by one word, and
+     *   picking either would be a claim about the other. Absent, exactly as
+     *   `activeIncidentType` is absent for two open incidents of different
+     *   kinds.
+     * - **The ledger accounts for the count.** `contrabandDiscovered` comes
+     *   from `SearchSystem`'s own counter and this comes from
+     *   `ConfiscationLedger`; `drain()` empties the second and leaves the
+     *   first standing, so a drained ledger would let one surviving row name
+     *   a count of thirty. Nothing in `src/` drains it today -- `grep -rn
+     *   "\.drain()" src/` returns nothing -- and the guard is a statement
+     *   about what the two numbers mean rather than a defence against a caller
+     *   that exists.
+     *
+     * So a mixed haul falls back to the bare count the strip has always shown,
+     * which is honest but is *not* the whole of ruling 3: the ruling asks that
+     * a discovery be named, and only a per-discovery message can name each of
+     * several. That message needs a sentence joining a name to what happened,
+     * no such sentence is authored, and a sentence is the owner's
+     * (`AGENTS.md`, the fourth exclusion). This field is the half that needs
+     * no sentence.
+     *
+     * **Absent, not present-and-`undefined`**, for the measured reason
+     * `activeIncidentType` gives above: this same view model crosses the
+     * pulled `hud/status-strip` route, where `isJsonValue` accepts a missing
+     * key but not an explicit `undefined` value.
+     */
+    readonly contrabandNameKey?: string;
     /** The treasury balance in minor units (#96). `0` when no treasury was supplied. */
     readonly treasuryMinorUnits: number;
     /**
@@ -445,6 +565,43 @@ function accommodationCapacityOf(source: RoomProjectionSource, policy: Accommoda
  */
 const EMPTY_OCCUPIED_PLACES: readonly EntityId[] = [];
 
+/**
+ * The one contraband category a whole confiscation ledger is describing, as
+ * the catalog's own `nameKey` -- or nothing, when no one word is true of it.
+ *
+ * Exported and pure so the decision can be proved without a session, a worker
+ * or a DOM, the way `occupancyTone` and `orderPrisonsForDisplay` are: it is a
+ * rule about honesty rather than an arrangement of pixels, and
+ * `docs/AGENT_WORKFLOW.md` §3 records why a decision that only exists inside a
+ * DOM-touching function is a decision no test can reach.
+ *
+ * Three ways to answer "no name", and each is a different fact:
+ *
+ * 1. **Nothing has been found.** An empty ledger names nothing; the chip shows
+ *    `0` and no badge, which is what it showed before this existed.
+ * 2. **The ledger disagrees with the count.** `itemsDiscovered` is
+ *    `SearchSystem`'s counter and `records` is the ledger, and `drain()`
+ *    empties one without touching the other. Naming a category from a subset
+ *    of a count is the false statement this refuses to make.
+ * 3. **Several categories.** One word cannot describe a phone and a weapon,
+ *    and choosing one would be a claim about the other.
+ *
+ * A category the supplied catalog does not know also yields nothing rather
+ * than a fabricated key: the confiscation carries a stable id, the catalog owns
+ * the mapping from that id to a message key, and a projection that guessed
+ * `${categoryId}.name` would be authoring keys the locale need not contain.
+ */
+export function soleDiscoveredContrabandNameKey(
+  records: readonly { readonly categoryId: string }[],
+  itemsDiscovered: number,
+  categories: ContentRegistry<ContrabandCategoryDefinition>,
+): string | undefined {
+  if (records.length === 0 || records.length !== itemsDiscovered) return undefined;
+  const first = records[0]!.categoryId;
+  if (records.some((record) => record.categoryId !== first)) return undefined;
+  return categories.getById(first)?.nameKey;
+}
+
 export function projectStatusStrip(source: StatusStripSource, options: StatusStripOptions = {}): StatusStripViewModel {
   const rooms = options.rooms ?? defaultRoomContentRegistry;
   const population = projectPrisonerPopulationCounts(source.prisoners);
@@ -516,6 +673,13 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
   // see the field's own doc comment for why "several" is not an arbitrary pick.
   const activeIncidentType = distinctOpenIncidentTypes.size === 1 ? openIncidents[0]!.type : undefined;
 
+  const contrabandDiscovered = source.searchSystem?.getMetrics().itemsDiscovered ?? 0;
+  const contrabandNameKey = soleDiscoveredContrabandNameKey(
+    source.confiscations?.all() ?? [],
+    contrabandDiscovered,
+    options.contraband ?? defaultContrabandRegistry,
+  );
+
   return {
     schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
     clock: clockViewModel(source.tick, source.clockControl),
@@ -549,7 +713,8 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       prisonersUnguarded: coverageCensus.unguarded,
       activeIncidents: openIncidents.length,
       ...(activeIncidentType !== undefined ? { activeIncidentType } : {}),
-      contrabandDiscovered: source.searchSystem?.getMetrics().itemsDiscovered ?? 0,
+      contrabandDiscovered,
+      ...(contrabandNameKey === undefined ? {} : { contrabandNameKey }),
       treasuryMinorUnits: source.treasury?.balanceMinorUnits ?? 0,
       // The registry's own total, not `roomOccupants` above: that count is
       // built from the catalog fan-out and cannot see an instance registered
