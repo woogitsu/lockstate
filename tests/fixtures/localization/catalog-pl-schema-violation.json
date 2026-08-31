@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "locale": "pl",
+  "messages": {
+    "ui.start": "Rozpocznij",
+    "ui.only-in-bad-catalog": "Nie powinno się pojawić",
+    "ui.prisoners": { "one": "{count} więzień" }
+  }
+}

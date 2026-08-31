@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "locale": "pl",
+  "messages": {
+    "ui.start": "Rozpocznij",
+    "ui.only-in-bad-catalog": "Nie powinno się pojawić"
+  }
+}

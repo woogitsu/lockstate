@@ -1,4 +1,5 @@
 export * from './catalog';
+export * from './chunk-catalog-loader';
 export * from './default-catalog';
 export * from './format';
 export * from './locale';
