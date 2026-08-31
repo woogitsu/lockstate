@@ -169,7 +169,10 @@ test.describe('the FUNDS chip says how much of the overdraft is left (ruling 18)
     expect(stuck.badgeText).toBe('0 left');
     expect(stuck.badgeTone).toBe('danger');
     expect(stuck.chipTone).toBe('danger');
-    expect(stuck.badgeOnScreen).toBe(true);
+    // Off the edge for the same reason as the shallow case above, and for a
+    // reason that has nothing to do with the tone: at 900x600 the FUNDS chip
+    // is the eighth of nine on a row that shows one. See #719.
+    expect(stuck.badgeOnScreen, 'still off the edge at 900x600 -- see #719').toBe(false);
 
     // And solvent is exactly what it was: no badge, no tone, nothing added to
     // the row a player spends the game looking at.
