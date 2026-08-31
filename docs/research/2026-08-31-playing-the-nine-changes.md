@@ -300,6 +300,25 @@ prison is told its whole population is high risk. Two ticks of game time later
 the first escape attempt opens, and 610 ticks after that somebody is gone. This
 is the first record of an escape reached by *playing* rather than by a fixture.
 
+**And it happens three times, on a clock.** The run's complete escape record:
+
+| attempt opened | succeeded | all-clear |
+| --- | --- | --- |
+| 48,001 | 48,611 | 48,611 |
+| 60,001 | 60,611 | 60,611 |
+| 72,001 | 72,611 | 72,611 |
+
+**Exactly 12,000 ticks apart**, which is
+`DEFAULT_SECTOR_QUIET_TICKS_AFTER_ESCAPE_ATTEMPT`
+(`src/simulation/incidents/trigger-system.ts:123`) — the trigger system's own
+cooldown — and **610 ticks from opening to gone** every time, which is the
+response deadline running out with nobody to answer it. So a neglected prison
+loses one prisoner every five in-game days, indefinitely; the population fell
+from fourteen to six over the run, between escapes and served sentences.
+
+**In all three, the escape and the all-clear carry the same tick.** That is not
+one run's coincidence; it is what §2b shows the code doing.
+
 ### 2b. The escape and the all-clear are recorded on the same tick, and the band holds one sentence
 
 **MEASURED**, from the list above: `incidents.escape-succeeded` and
