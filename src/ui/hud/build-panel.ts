@@ -1341,15 +1341,26 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       buySubmit.element,
       eyebrowText(t(HUD_MESSAGE_KEY.buildBuyHint), 'hud-build__note'),
       /*
-       * Last in the row, and the order is the argument. The stepper and the
-       * button are what the player opened this for; the deliveries are what they
-       * come back for. `paintBuy` scrolls the row into view when it opens, and
-       * `block: 'nearest'` aligns the row's own leading edge when the row is
-       * taller than the panel's visible box -- so the controls that buy stay
-       * where the player expects them and the rows below them are reached by the
-       * scroll the panel already performs.
+       * `deliveriesBlock` used to be the last child of this row, and the
+       * paragraph that put it here read:
+       *
+       * > Last in the row, and the order is the argument. The stepper and the
+       * > button are what the player opened this for; the deliveries are what
+       * > they come back for. `paintBuy` scrolls the row into view when it
+       * > opens, and `block: 'nearest'` aligns the row's own leading edge when
+       * > the row is taller than the panel's visible box -- so the controls
+       * > that buy stay where the player expects them and the rows below them
+       * > are reached by the scroll the panel already performs.
+       *
+       * **Moved out of this row on 2026-08-31 (issue #703 ruling 2).** It is
+       * now the last child of `.hud-build__map`, immediately after this row --
+       * see the `panel.body.append` below. The argument above was sound while
+       * every delivery was one the player had pressed *Buy* for; #640 made the
+       * game buy materials on the player's behalf, so the row that reports a
+       * spend is no longer a row they came back for. The owner's words:
+       * *"The spent amount and the control that reverses it both come out of
+       * the Buy fold."*
        */
-      deliveriesBlock,
     ],
   });
   buyRow.hidden = true;
@@ -1865,6 +1876,24 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         targetBlock,
         armHint,
         buyRow,
+        /*
+         * Outside `buyRow` and immediately below it (issue #703 ruling 2,
+         * 2026-08-31). See the block's own docblock above for the ruling and
+         * what it cost the panel's height budget; the placement is the same
+         * argument `queueShortfall` carries at the foot of this body -- a
+         * readout the player must not have to open a fold to read is appended
+         * beside the fold rather than inside it.
+         *
+         * Here rather than at the foot of the body, which was the other
+         * candidate: this block reports money the *placement* gesture spent, so
+         * it belongs with the placement controls the player is looking at, and
+         * `.hud-build__map`'s padding is the box the block was measured in when
+         * it lived one level deeper. The cost of that choice, stated: a
+         * delivery appearing pushes the coordinates section and the queue down,
+         * which the foot of the body would not have done. The arm button, the
+         * target readout and the hint stay where the player's finger left them.
+         */
+        deliveriesBlock,
       ],
     }),
     coordinates.element,
