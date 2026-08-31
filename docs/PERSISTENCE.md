@@ -551,6 +551,46 @@ work are not.**
   costs anything; it would not remove the cost, because the window either side
   of it already does. A schema version is the wrong instrument for that, and
   the test is the right one. Also recorded in `docs/DETERMINISM.md`.
+- **`SafetyCoverageSystem`'s census** (`Covered N / Understaffed N /
+  Unguarded N`, issue #588). A pure function of the sectors, the guards
+  assigned to them and where the prisoners are standing, all three of which
+  the payload carries, so there is no independent state to persist and the
+  system has no snapshot pair.
+
+  **Where this entry is not a repetition of the two above it is *when* the
+  derivation happens, and the answer used to be wrong.** The census was
+  rebuilt on the system's first scheduled `update`, ten ticks after the load —
+  the same bound "Navigation caches" accepts, and the right answer for every
+  cache that no one is looking at. This one is looked at immediately: a
+  restored session arrives `paused` and
+  `SimulationStateMachine.handleInitialize` publishes one
+  `simulation/status-counts` before any tick runs, deliberately, *"so a prison
+  that has a population on screen [is not] the same row of zeros this channel
+  exists to remove"*. Nothing then steps the kernel until the player presses
+  play, so the ten ticks were unbounded in wall time — and what stood there was
+  worse than a stale number, because `coverageBadge`
+  (`src/ui/hud/projection.ts`) prints the green **Covered** pill whenever no
+  rung is short, and an all-zero census is not short. A twelve-prisoner prison
+  came back reading `0 COVERAGE` under a green *Covered*
+  (`docs/research/2026-08-31-playing-the-twelve.md` §13, reproduced headlessly
+  in `tests/integration/session-save-round-trip.test.ts`).
+
+  So `restoreSimulationRuntime` now calls `SafetyCoverageSystem.takeCensus`
+  after every population is in place. **Nothing is written to the save and no
+  version is bumped** — this is `IncidentResponseSystem`'s shape above, a
+  repair recomputed from the payload on every load — and the census walk is
+  run at zero elapsed ticks, so it provisions nobody a tick of `safety` they
+  did not live through.
+
+  **The general rule this entry adds to the list, because it is the one the
+  list did not have:** "derived state is recomputed rather than persisted"
+  needs a second half where the deriving system is scheduled — *and recomputed
+  by the restore itself where a paused session would otherwise show the
+  underived value*. Every other entry above satisfies that second half by
+  accident: a route cache, a bitset and a request-sequence counter have no
+  readout, and `IncidentResponseSystem`'s reconciliation is invisible until the
+  clock runs. A census on the status strip is the first derived value with a
+  chip of its own.
 - **`EntityQuery`'s `ComponentBitset`.** A pure function of "is this index
   alive", which the entity ledger already carries;
   `PrisonerOperationsRuntime.loadSnapshot` re-derives it. Persisting it would

@@ -13,10 +13,11 @@ import {
   restoreSimulationRuntime,
   type SessionSnapshotBundle,
 } from '../../src/simulation/runtime/restore-session';
-import { NEED_IDS, NEED_MAX, type NeedId } from '../../src/simulation/prisoners/needs';
+import { NEED_IDS, NEED_MAX, NEED_MAX_SCALED, type NeedId } from '../../src/simulation/prisoners/needs';
 import { ACTOR_IDENTITY_RNG_STREAM } from '../../src/simulation/identity';
 import { projectPrisonerRoster } from '../../src/simulation/presentation/prisoner-projection';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
 
 /**
@@ -221,6 +222,80 @@ describe('a populated prison survives save -> load', () => {
     const coverage = restored.deploymentSystem.getCoverageReport(restored.kernel.tick);
     expect(coverage.length).toBeGreaterThan(0);
     expect(coverage.every((entry) => entry.shortage === 0)).toBe(true);
+  });
+
+  /**
+   * **The status strip's coverage figure is right on the tick the load
+   * finishes, not ten ticks later.**
+   *
+   * `SafetyCoverageSystem` holds a census rather than deriving one per read,
+   * and it is the only projection source on this strip that does. A restored
+   * session arrives `paused` and `handleInitialize` publishes one
+   * `simulation/status-counts` immediately -- deliberately, so a prison with a
+   * population is not shown as a row of zeros -- so the census has to be true
+   * at that moment. Nothing steps the kernel until the player presses play, so
+   * "the first scheduled update fixes it" is not a bound here: it is a state a
+   * player can sit in for as long as they like.
+   *
+   * Asserted through `projectStatusCounts` rather than `getCensus`, because
+   * what a player meets is a chip and a badge: with all three rungs at 0
+   * `coverageTone` returns `undefined` and `coverageBadge` prints the green
+   * "Covered" pill (`src/ui/hud/projection.ts`), so an empty census does not
+   * read as missing information -- it reads as a reassurance.
+   */
+  it('publishes the coverage the prison actually has on the tick it is restored, before any tick runs', () => {
+    const runtime = buildPopulatedPrison();
+
+    const before = projectStatusCounts(runtime, runtime.kernel.tick);
+    // Not vacuous: this prison has people standing on a covered rung, so a
+    // reset census is visible rather than indistinguishable from the truth.
+    expect(before.prisonersCovered).toBeGreaterThan(0);
+
+    const restored = saveAndLoad(runtime);
+    const after = projectStatusCounts(restored, restored.kernel.tick);
+
+    expect(after.prisoners).toBe(before.prisoners);
+    expect(after.prisonersCovered).toBe(before.prisonersCovered);
+    expect(after.prisonersUnderstaffed).toBe(before.prisonersUnderstaffed);
+    expect(after.prisonersUnguarded).toBe(before.prisonersUnguarded);
+  });
+
+  /**
+   * The census walk is the provisioning walk, so taking one at restore must
+   * not provision anything: no time passed between the save and the load, and
+   * a prisoner whose `safety` moved across a reload would be a prisoner the
+   * save and the reload disagree about.
+   */
+  it('takes that census without paying anybody a tick of safety they did not live through', () => {
+    const runtime = buildPopulatedPrison();
+
+    const ids = [...Array(runtime.prisoners.entityStore.maxActiveIndex + 1).keys()]
+      .filter((index) => runtime.prisoners.entityStore.isIndexAlive(index))
+      .map((index) => runtime.prisoners.entityStore.getIdByIndex(index));
+    expect(ids.length).toBeGreaterThan(0);
+
+    /*
+     * Put every prisoner's `safety` well below `NEED_MAX_SCALED` first, and
+     * this line is the whole test.
+     *
+     * A covered prison holds `safety` at the ceiling -- provisioning is
+     * 0.08 a tick against a 0.05 decay -- and `provisionSafety` clamps, so at
+     * the ceiling a spurious ten ticks of provisioning is invisible. Measured:
+     * without this line the mutant that hands `takeCensus` the system's own
+     * `intervalTicks` instead of 0 passes. Half of the range is arbitrary and
+     * only has to be far enough from the clamp that ten ticks of either rung's
+     * provisioning would show.
+     */
+    for (const id of ids) runtime.prisoners.needs.setScaled(runtime.prisoners.entityStore.getIndex(id), 'safety', Math.floor(NEED_MAX_SCALED / 2));
+
+    const safetyBefore = ids.map((id) => runtime.prisoners.needs.getScaled(runtime.prisoners.entityStore.getIndex(id), 'safety'));
+    expect(safetyBefore.every((level) => level < NEED_MAX_SCALED)).toBe(true);
+
+    const restored = saveAndLoad(runtime);
+
+    for (const [position, id] of ids.entries()) {
+      expect(restored.prisoners.needs.getScaled(restored.prisoners.entityStore.getIndex(id), 'safety')).toBe(safetyBefore[position]);
+    }
   });
 
   it('keeps an active incident active, and the restored session keeps driving it to a terminal state', () => {

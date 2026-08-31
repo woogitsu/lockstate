@@ -404,5 +404,33 @@ export function restoreSimulationRuntime(bundle: SessionSnapshotBundle, masterSe
     runtime.actorIdentity.loadSnapshot(bundle.identity);
   }
 
+  /*
+   * Last, after every population this reads is in place: the guard coverage
+   * census, re-derived rather than restored.
+   *
+   * `SafetyCoverageSystem` holds no snapshot -- its census is a pure function
+   * of the sectors, the guards on them and where the prisoners are standing,
+   * all three of which the bundle carries -- so `docs/PERSISTENCE.md`'s rule
+   * ("authoritative state is persisted; derived state and in-flight work are
+   * not") is kept exactly as it was, and no field is added to any payload.
+   * What changes is *when* the derivation happens.
+   *
+   * It used to happen on the system's first scheduled update, ten ticks in,
+   * and for every other ten-tick cadence in the kernel that is the right
+   * answer. It is the wrong one here because **a restored session does not
+   * tick**: `SimulationStateMachine.handleInitialize` transitions to `paused`
+   * and then publishes one `simulation/status-counts` immediately -- on
+   * purpose, so that a prison with a population is not shown as a row of
+   * zeros -- and the next tick is whenever the player presses play. So the
+   * strip's coverage chip read `0` on a prison holding twelve people, under
+   * the green `Covered` badge `coverageBadge` prints whenever no rung is
+   * short, for as long as the player left it paused. Measured in
+   * `tests/integration/session-save-round-trip.test.ts`.
+   *
+   * `takeCensus` provisions nothing: no time passed between the save and the
+   * load, and the same test asserts no prisoner's `safety` moves across it.
+   */
+  runtime.safetyCoverage.takeCensus(runtime.kernel.tick);
+
   return { runtime, scope: restoredScopeFor(bundle) };
 }

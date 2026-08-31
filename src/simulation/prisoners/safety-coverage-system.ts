@@ -90,10 +90,15 @@ export interface SafetyCoverageReportSource {
  * No RNG stream, no clock and no `Map`/`Set` iteration: it walks the coverage
  * report (`getCoverageReport` is sorted by sector id) and, inside each sector,
  * `resolveOccupants`'s ascending-entity-id list. **Nothing is persisted.** The
- * census is derived from state the save already carries and is rebuilt on the
- * first update after a load, which is why this system has no snapshot pair --
- * the same argument `IncidentTriggerSystem` makes for reading its extra
- * counters off the log rather than adding fields to a `.strict()` schema.
+ * census is derived from state the save already carries, which is why this
+ * system has no snapshot pair -- the same argument `IncidentTriggerSystem`
+ * makes for reading its extra counters off the log rather than adding fields
+ * to a `.strict()` schema.
+ *
+ * **It is rebuilt by the restore itself, not by "the first update after a
+ * load", and that correction is the point of `takeCensus` below.** A restored
+ * session is paused and publishes its status counts before any tick runs, so
+ * there is no first update to wait for until the player presses play.
  */
 export class SafetyCoverageSystem implements SystemRegistration {
   public readonly id = 'prisoners.safety-coverage';
@@ -110,32 +115,81 @@ export class SafetyCoverageSystem implements SystemRegistration {
   ) {}
 
   /**
-   * The rungs the population stood on at the last update.
+   * The rungs the population stood on at the last walk.
    *
    * A **live read of the last walk's answer**, not a recomputation: the status
    * strip is projected on every publication and re-walking the population
    * there would pay `resolveOccupants` again for an answer this system already
-   * has. It is at most `intervalTicks - 1` ticks old, and after a load it is
-   * the empty census until the first update -- ten ticks, which is the same
-   * staleness every other ten-tick cadence in the kernel carries.
+   * has. It is at most `intervalTicks - 1` ticks old.
+   *
+   * **This used to end "and after a load it is the empty census until the
+   * first update -- ten ticks, which is the same staleness every other
+   * ten-tick cadence in the kernel carries", and that sentence was false in
+   * the one place it was about.** A restored session arrives `paused`
+   * (`SimulationStateMachine.handleInitialize` sets `mode: 'paused'` and then
+   * publishes one `simulation/status-counts` straight away, so a prison with a
+   * population is not shown as a row of zeros). Nothing steps the kernel until
+   * the player presses play, so the "ten ticks" was unbounded in wall time --
+   * a twelve-prisoner prison came back reading `0 COVERAGE` under the green
+   * `Covered` badge `coverageBadge` prints for an all-zero census, and stood
+   * there. `takeCensus`, called by `restoreSimulationRuntime`, is why the
+   * clause is gone rather than merely corrected.
    */
   public getCensus(): SafetyCoverageCensus {
     return this.census;
   }
 
+  /**
+   * Re-derive the census now, at `tick`, provisioning nothing.
+   *
+   * For **a restore**, and `src/simulation/runtime/restore-session.ts` is the
+   * only caller. The census is derived state -- `docs/PERSISTENCE.md`'s rule
+   * is that derived state is recomputed rather than carried -- but "recomputed
+   * on the first update after the load" is not recomputation a paused session
+   * ever reaches, so the recompute has to happen at the load itself. No field
+   * is added to any payload and `SAVE_SCHEMA_VERSION` does not move.
+   *
+   * **Zero elapsed ticks is what keeps this from being a second walk that can
+   * disagree with the first.** It is `walk`, the same loop `update` runs, at
+   * `ticksElapsed: 0`; `provisionSafety` is exactly linear in `ticksElapsed`
+   * (`./needs.ts`), so every `setScaled` writes back the level it just read
+   * and no prisoner is paid for time they did not live through. That is
+   * asserted rather than assumed, in
+   * `tests/integration/session-save-round-trip.test.ts` -- "takes that census
+   * without paying anybody a tick of safety they did not live through".
+   */
+  public takeCensus(tick: number): void {
+    this.census = this.walk(tick, 0);
+  }
+
   public update(context: SimulationContext): void {
+    this.census = this.walk(context.tick, this.schedule.intervalTicks);
+  }
+
+  /**
+   * One pass over the sectors: count each occupant onto their sector's rung
+   * and provision them for `ticksElapsed` at it.
+   *
+   * The counting and the provisioning are one loop on purpose, and the type
+   * docblock above says why -- *"a second pass to count what the first pass
+   * just decided would be a second chance to disagree with it"*. Extracting
+   * the loop so a restore can run it at zero ticks keeps that property: there
+   * is still exactly one place that decides which rung a prisoner is standing
+   * on.
+   */
+  private walk(tick: number, ticksElapsed: number): SafetyCoverageCensus {
     const census: Record<SectorCoverageState, number> = { covered: 0, understaffed: 0, unguarded: 0 };
 
-    for (const entry of this.deployment.getCoverageReport(context.tick)) {
+    for (const entry of this.deployment.getCoverageReport(tick)) {
       const state = resolveSectorCoverageState(entry);
       for (const entityId of this.resolveOccupants(entry.sectorId)) {
         census[state] += 1;
         const index = this.entityStore.getIndex(entityId);
-        this.needs.setScaled(index, 'safety', provisionSafety(this.needs.getScaled(index, 'safety'), state, this.schedule.intervalTicks));
+        this.needs.setScaled(index, 'safety', provisionSafety(this.needs.getScaled(index, 'safety'), state, ticksElapsed));
       }
     }
 
-    this.census = Object.freeze(census);
+    return Object.freeze(census);
   }
 }
 
