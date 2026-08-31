@@ -3,7 +3,9 @@ import { fileURLToPath } from 'node:url';
 import { expect, test, type Locator, type Page } from './network-changed-fixture';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { procurableMaterial } from '../../src/content/procurement-catalog';
+import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
 import { SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
+import { TILE_SIZE_PX } from '../../src/rendering/tile-metrics';
 import { defaultMessageCatalogEn, formatNumber } from '../../src/services/localization';
 import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { HUD_TAB_IDS, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
@@ -156,16 +158,36 @@ import { HUD_TAB_IDS, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
  *    opposite reason: it hides itself before it dispatches, so the group never
  *    sees it hold focus and the hand-off has to come from the panel.
  *
+ * 16. **The status strip shows every chip the screen has room for.** The
+ *    metrics row is the strip's only flexible member, so everything else on
+ *    that line is subtracted from it -- and on the assembled page that is
+ *    727.4px, a third of it the brand slot `src/main.ts` fills and
+ *    `ui-harness.ts` leaves empty. At 768px the row was 41px wide and showed
+ *    **none** of its eight chips, with the scrollbar suppressed in both
+ *    engines so nothing said so (#634). Only the assembled page carries the
+ *    chrome that causes it: #634 measured 524px on the harness against 173px
+ *    here, same viewport.
+ *
  * Deliberately NOT here, because a headless test already proves it and a
  * browser test that repeats one costs a minute of CI and adds no evidence:
  * the tab/collapse state machine, the view-model → display mapping and the
  * async-action gate (`tests/unit/ui-*.test.ts`); the HUD's computed font
- * stack, responsive layout and intent reporting
- * (`tests/browser/ui-shell.spec.ts`, which drives the same real `mountHud`);
+ * stack and intent reporting (`tests/browser/ui-shell.spec.ts`, which drives
+ * the same real `mountHud`);
  * camera transforms, depth ordering, pose selection, pivot placement and the
  * world projection (`src/rendering/**` unit tests, all Phaser-free by
  * design); and atlas manifest/registry schema rejection
  * (`tests/contract/runtime-atlas-validation.test.ts`).
+ *
+ * **That list used to include "responsive layout", and #634 refuted it rather
+ * than carving out an exception.** The reason it was there is sound -- the
+ * harness "drives the same real `mountHud`" -- and it is not sufficient: the
+ * harness mounts the same *HUD* into a different *page*, and the strip's
+ * layout is decided by what the page put in `brandSlot`. It is marked here
+ * rather than overwritten because the reasoning that put it there will look
+ * correct again to the next reader. Responsive claims that do not depend on
+ * the composition root still belong in `ui-shell.spec.ts`; claim 16 is the
+ * one that does.
  *
  * The one case this file previously left open is now closed. `src/main.ts`
  * promises, in its own comments, that a browser which cannot start the
@@ -748,11 +770,20 @@ async function dragOnWorld(page: Page): Promise<void> {
  * plausible pixel figure taken from a page that was not showing what the test
  * assumed is exactly the failure this file exists to avoid.
  *
- * `TILE_SIZE_PX` is 64 and the camera starts at zoom 1, so 192px is a three-tile
- * side and 128px a two-tile one -- both rectangles with two real axes, which is
- * what is being proven. `steps` matters for the same reason it does above: the
- * scene reads the gesture from pointer *movement*, so a single jump would work
- * and would not resemble a hand.
+ * `TILE_SIZE_PX` is 64 and the camera starts at zoom 1, so 192px is three tiles
+ * of *travel* and 128px two -- both rectangles with two real axes, which is what
+ * is being proven. `steps` matters for the same reason it does above: the scene
+ * reads the gesture from pointer *movement*, so a single jump would work and
+ * would not resemble a hand.
+ *
+ * **That sentence read "192px is a three-tile side" and the side is four.**
+ * Both corners of a drag are inclusive (`tileRectFromDrag`), so three tiles of
+ * travel covers four tile columns -- measured, `6,11 4x4` from a 192px gesture
+ * at 1280x800. The half about travel is kept because it is the number this
+ * constant is in, and the correction is marked rather than overwritten because
+ * the two are one step apart and the wrong one was read off this comment. What
+ * makes it checkable rather than a promise is `tileSpanOfGesture`, which every
+ * drag through `drawRoomRectangle` is now asserted against.
  */
 const ROOM_DRAG_DELTAS_PX = [192, 128] as const;
 
@@ -798,9 +829,24 @@ const ROOM_DRAG_DELTAS_PX = [192, 128] as const;
  *
  * The other two viewports are unchanged: the strip does not wrap at 900px or
  * 1280px, so it never overflowed there.
+ *
+ * **`1280x720` moved from 420.1 to 397.3 in #634, and the sentence above is
+ * now half true.** It still does not *overflow* at either width -- that was
+ * #545's point and it holds -- but it does now **wrap** at 1280, deliberately:
+ * `hud.css` gives `.hud-strip__metrics` a row of its own below 1920px, because
+ * on one row the readout was 553px of 1101px there and 41px at 768. The strip
+ * is 48px on one row and 78.5px on two, and 22.8px of that 30.5px lands on
+ * this panel by the same `min-height: 25%` route the paragraph above
+ * describes. 900x600 keeps 338.1 because the rule carries `min-height: 701px`
+ * -- see `hud.css` for why a short viewport cannot pay for the second row --
+ * and 375x812 keeps 441 because that viewport already wrapped.
+ *
+ * The sentence above is left standing rather than rewritten because its
+ * *reason* is still the reason, and a reader who meets only the correction
+ * would not know what 900x600 is still exempt from.
  */
 const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
-  '1280x720': 420.1,
+  '1280x720': 397.3,
   '900x600': 338.1,
   '375x812': 441,
 };
@@ -951,8 +997,25 @@ async function roomWorldGeometry(page: Page): Promise<RoomWorldGeometry> {
  * is already zoned is still the canvas, so a second call with no offset finds
  * the same point and the designation is refused as `overlaps-existing-room`.
  * Optional, so every existing caller is unchanged.
+ *
+ * ### Why it hands back the gesture rather than a yes
+ *
+ * It used to answer `boolean`, and a caller could then only ask *whether* a
+ * rectangle was drawn -- never where the hand went or how far. That is the
+ * missing half of every question in this area: the gesture is in **CSS pixels**
+ * and every rule a room is judged by is in **tiles**, so a caller that cannot
+ * see the pixels cannot check the conversion, and one that cannot see where the
+ * press landed cannot place a second rectangle clear of the first. Both of
+ * those went wrong at once in #658 (see `drawRoomRectangle` below), and neither
+ * was visible from a `true`.
+ *
+ * `null` still means what `false` meant: there was no square of bare world to
+ * draw in, which is a measurement and not a failure -- see the paragraph above.
  */
-async function dragRectangleOnWorld(page: Page, options: { readonly minY?: number } = {}): Promise<boolean> {
+async function dragRectangleOnWorld(
+  page: Page,
+  options: { readonly minY?: number } = {},
+): Promise<WorldDragGesture | null> {
   const viewport = page.viewportSize();
   if (viewport === null) throw new Error('the viewport size is needed to aim the drag');
 
@@ -978,14 +1041,195 @@ async function dragRectangleOnWorld(page: Page, options: { readonly minY?: numbe
     { width: viewport.width, height: viewport.height, deltas: [...ROOM_DRAG_DELTAS_PX], minY: options.minY ?? 8 },
   );
 
-  if (aim === null) return false;
+  if (aim === null) return null;
 
   await page.mouse.move(aim.x, aim.y);
   await page.mouse.down({ button: 'left' });
   await page.mouse.move(aim.x + aim.delta / 2, aim.y + aim.delta / 2, { steps: 6 });
   await page.mouse.move(aim.x + aim.delta, aim.y + aim.delta, { steps: 6 });
   await page.mouse.up({ button: 'left' });
-  return true;
+  return aim;
+}
+
+/**
+ * The gesture `dragRectangleOnWorld` actually made, in **CSS pixels**.
+ *
+ * Where the press landed and how far the hand travelled on each axis -- the
+ * square's side, taken from `ROOM_DRAG_DELTAS_PX`. This is the one thing in
+ * this area that is measured in pixels; everything the game then says about
+ * the rectangle is measured in tiles, and `drawRoomRectangle` is where the two
+ * are made to agree in public rather than by assumption.
+ */
+interface WorldDragGesture {
+  readonly x: number;
+  readonly y: number;
+  /** The side of the square gesture, in CSS pixels. */
+  readonly delta: number;
+}
+
+/**
+ * How many tiles a gesture of `delta` CSS pixels must span, and the whole of the
+ * pixel-to-tile relationship anything in this file is allowed to assume.
+ *
+ * `TILE_SIZE_PX` is the renderer's own constant and the camera starts at zoom 1,
+ * which `docs/CAMERA.md` defines as "screen pixels per world unit" -- so one
+ * tile is `TILE_SIZE_PX` CSS pixels, and `Phaser.Scale.RESIZE` (see
+ * `src/main.ts`'s game config) keeps the game's coordinate space the same size
+ * as the canvas's CSS box, with no letterboxing between them. Both corners of a
+ * drag are **inclusive** (`tileRectFromDrag`), so a gesture of exactly `n` tiles
+ * of travel covers `n + 1` tile columns and rows.
+ *
+ * Every clause of that is a property of production code, not of this file, and
+ * each is an assumption this file used to make silently. So the number this
+ * returns is *asserted* against what the panel says it drew, once per drag,
+ * rather than trusted -- a camera that arrived zoomed, a scale mode that
+ * letterboxed, or an off-by-one in the inclusive corners would each change the
+ * rectangle a fixed gesture produces, and each used to be invisible here.
+ */
+function tileSpanOfGesture(delta: number): number {
+  return delta / TILE_SIZE_PX + 1;
+}
+
+/**
+ * Where a *second* room drag may start so that the rectangle it draws cannot
+ * share a tile row with the first one, whatever the camera is doing.
+ *
+ * The first gesture's lowest tile row is the row containing the screen point it
+ * released on, `gesture.y + gesture.delta`. One tile is `TILE_SIZE_PX` CSS
+ * pixels (see `tileSpanOfGesture`), so a press that is a further `TILE_SIZE_PX`
+ * down the screen is in a strictly lower row no matter where the tile grid
+ * happens to fall -- the worst case is a release one pixel inside a row, and
+ * `TILE_SIZE_PX` more still clears it.
+ *
+ * **This replaces a hard-coded `minY: 320`, and the constant is what #658 broke
+ * itself against.** That branch gives the status metrics their own row below
+ * 1920px, which makes `.hud-strip` 30.5px taller at 1280x800, which pushes the
+ * *first* drag 32px further down the page (the scan steps in 16s) -- while 320
+ * stayed where it was. The gap between the first rectangle's last row and the
+ * second's first row closed from 72px to 40px, both rectangles landed in tile
+ * row 14, and the second designation was refused `overlaps-existing-room`. The
+ * game was right and the test was aiming at a number.
+ *
+ * A number derived from the first gesture cannot close that way, and it is not
+ * trusted either: `drawRoomRectangle`'s `clearOf` asserts the two rectangles
+ * really are disjoint, in tiles, which is the space the refusal is in.
+ */
+function belowGesture(gesture: WorldDragGesture): number {
+  return gesture.y + gesture.delta + TILE_SIZE_PX;
+}
+
+/**
+ * The authored minimum size for a room type, off the shipped catalogue.
+ *
+ * `RoomZoningService.zone` refuses `below-minimum-size` against exactly this
+ * requirement, so it is the game's own floor rather than a number this file
+ * chose -- and it is read from `src/content/room-catalog.ts` for the same
+ * reason the catalogue count above is asserted to be 18: a test that hard-coded
+ * "2x3" would keep passing after the content changed underneath it.
+ */
+function authoredRoomMinimum(roomCatalogId: string): {
+  readonly minWidth: number;
+  readonly minHeight: number;
+  readonly minTiles: number;
+} {
+  const definition = defaultRoomContentRegistry.getById(roomCatalogId);
+  if (definition === undefined) throw new Error(`${roomCatalogId} is not in the shipped room catalogue`);
+  for (const requirement of definition.requirements) {
+    if (requirement.type === 'minimum-size') return requirement;
+  }
+  throw new Error(`${roomCatalogId} authors no minimum-size requirement to check a drag against`);
+}
+
+/** Do two tile rectangles share a tile? Half-open on both axes, which is what a tile count means. */
+function tileRectanglesOverlap(left: TileRectangle, right: TileRectangle): boolean {
+  return (
+    left.x < right.x + right.width &&
+    right.x < left.x + left.width &&
+    left.y < right.y + right.height &&
+    right.y < left.y + left.height
+  );
+}
+
+/** `x,y wxh` -- the shape `data-area` prints, for a message a reader can act on. */
+function describeTileRectangle(rectangle: TileRectangle): string {
+  return `${rectangle.x},${rectangle.y} ${rectangle.width}x${rectangle.height}`;
+}
+
+/**
+ * Draw a room rectangle on the world and check it against the game's own rules
+ * **before** anything is asked to accept it.
+ *
+ * ### The defect this exists to close
+ *
+ * The Rooms specs used to drag a rectangle, read it back with
+ * `pendingRoomRectangle`, and compare that to a value *also* read back with
+ * `pendingRoomRectangle` -- the probe drag's. Both sides of the comparison came
+ * from the same helper on the same page, so when the geometry moved they moved
+ * together and the assertion still passed. That is `AGENTS.md`'s *"never write
+ * a fixture that supplies both sides of a comparison"*, in the one form that
+ * looks like a real assertion, and it is why #658 -- a CSS change -- surfaced
+ * three assertions later as `[data-metric="rooms"]` stuck at `1Rooms`, with the
+ * drag, the rectangle and the arming all reported green.
+ *
+ * The gesture aims in **CSS pixels**; every refusal is in **tiles**. So the two
+ * facts nothing checked are checked here, per drag:
+ *
+ * 1. **The conversion.** The rectangle is `tileSpanOfGesture(delta)` on a side,
+ *    or the pixel-to-tile relationship this file assumes is not the one the
+ *    renderer has.
+ * 2. **The rules the rectangle will be judged by.** The authored minimum for
+ *    this room type (`below-minimum-size`), and disjointness from rectangles the
+ *    caller names (`overlaps-existing-room`). A drag that draws something the
+ *    simulation can only refuse fails *here*, saying which rule and by how much,
+ *    instead of becoming a mystery about Designate further down.
+ *
+ * Deliberately **not** an assertion about *where* the rectangle is: that is a
+ * function of the HUD's layout at this viewport and is allowed to move. What is
+ * not allowed to move is whether the thing drawn is a room the game would take.
+ */
+async function drawRoomRectangle(
+  page: Page,
+  what: string,
+  options: { readonly roomCatalogId: string; readonly minY?: number; readonly clearOf?: readonly TileRectangle[] },
+): Promise<{ readonly rectangle: TileRectangle; readonly gesture: WorldDragGesture }> {
+  const gesture = await dragRectangleOnWorld(page, options.minY === undefined ? {} : { minY: options.minY });
+  if (gesture === null) {
+    throw new Error(
+      `${what}: no square of bare world to draw a room in, from y=${String(options.minY ?? 8)} down` +
+        ` (deltas ${ROOM_DRAG_DELTAS_PX.join(', ')}px at ${JSON.stringify(page.viewportSize())})`,
+    );
+  }
+
+  const rectangle = await pendingRoomRectangle(page);
+  const span = tileSpanOfGesture(gesture.delta);
+  expect(
+    { width: rectangle.width, height: rectangle.height },
+    `${what}: a ${gesture.delta}px gesture from (${gesture.x},${gesture.y}) drew` +
+      ` ${describeTileRectangle(rectangle)}, and a ${TILE_SIZE_PX}px tile at zoom 1 makes that ${span}x${span}` +
+      ` -- so the camera, the scale mode or the inclusive corners are not what this file assumes`,
+  ).toEqual({ width: span, height: span });
+
+  const minimum = authoredRoomMinimum(options.roomCatalogId);
+  expect(
+    {
+      wideEnough: rectangle.width >= minimum.minWidth,
+      tallEnough: rectangle.height >= minimum.minHeight,
+      bigEnough: rectangle.width * rectangle.height >= minimum.minTiles,
+    },
+    `${what}: ${describeTileRectangle(rectangle)} is below ${options.roomCatalogId}'s authored minimum of` +
+      ` ${minimum.minWidth}x${minimum.minHeight} (${minimum.minTiles} tiles), so the drag drew a room the` +
+      ` simulation can only refuse below-minimum-size`,
+  ).toEqual({ wideEnough: true, tallEnough: true, bigEnough: true });
+
+  for (const other of options.clearOf ?? []) {
+    expect(
+      tileRectanglesOverlap(rectangle, other),
+      `${what}: ${describeTileRectangle(rectangle)} shares tiles with ${describeTileRectangle(other)}, so the` +
+        ` drag drew a room the simulation can only refuse overlaps-existing-room`,
+    ).toBe(false);
+  }
+
+  return { rectangle, gesture };
 }
 
 /**
@@ -2915,7 +3159,7 @@ test.describe('the assembled application', () => {
       // there to be drawn on. Asserted rather than tolerated, so a layout change
       // that took the world away again -- at any viewport -- fails here instead
       // of quietly changing what this test covers.
-      expect(dragged, `a room drag found no bare world at ${width}x${height}`).toBe(true);
+      expect(dragged, `a room drag found no bare world at ${width}x${height}`).not.toBeNull();
 
       const roomConfirm = page.locator('.hud-rooms__confirm');
       await expect(
@@ -4450,7 +4694,7 @@ test.describe('the assembled application', () => {
       expect(
         await dragRectangleOnWorld(page),
         `a room drag found no bare world at ${width}x${height}`,
-      ).toBe(true);
+      ).not.toBeNull();
       await expect(
         page.locator('.hud-rooms__area'),
         `the dragged area is not a rectangle at ${width}x${height}`,
@@ -4653,21 +4897,46 @@ test.describe('the assembled application', () => {
      * quietly, the second gesture's rectangle is asserted to be the first's.
      * A drag that landed somewhere else fails here, naming both rectangles,
      * instead of failing forty seconds later as a room that would not zone.
+     *
+     * **That last sentence was only half true, and #658 collected the other
+     * half.** Comparing the real drag's rectangle to the probe's compares two
+     * readings of the same helper on the same page: when the HUD's layout moves
+     * both readings move with it, the assertion still passes, and what reaches
+     * the player -- a rectangle the simulation refuses -- is reported four
+     * assertions later as a Designate that did nothing. So each drag now goes
+     * through `drawRoomRectangle`, which checks the rectangle against the
+     * pixel-to-tile conversion and against `room.cell`'s own authored rules
+     * before the panel is asked to do anything with it. The probe-to-real
+     * comparison is kept, because reproducibility is still worth asserting; it
+     * is simply no longer the only thing asserted.
+     *
+     * The second drag's floor is `belowGesture(...)` and no longer a constant,
+     * for the reason recorded on that function: the constant it replaces was
+     * measured against a strip one row tall and #658 makes the strip two.
      */
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.locator('.ui-tab[data-tab="rooms"]').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
-    expect(await dragRectangleOnWorld(page), 'a room drag found no bare world').toBe(true);
-    const firstCell = await pendingRoomRectangle(page);
+    const firstProbe = await drawRoomRectangle(page, 'the probe drag for the first cell', {
+      roomCatalogId: 'room.cell',
+    });
+    const firstCell = firstProbe.rectangle;
     await page.locator('.hud-rooms__cancel').click();
-    expect(await dragRectangleOnWorld(page, { minY: 320 }), 'a second room drag found no bare world').toBe(
-      true,
-    );
-    const secondCell = await pendingRoomRectangle(page);
+    // Below the first gesture by a whole tile, so the two rectangles cannot
+    // share a row however the camera is framed -- and asserted disjoint rather
+    // than assumed, which is what `clearOf` is.
+    const secondCellFloor = belowGesture(firstProbe.gesture);
+    const secondCell = (
+      await drawRoomRectangle(page, 'the probe drag for the second cell', {
+        roomCatalogId: 'room.cell',
+        minY: secondCellFloor,
+        clearOf: [firstCell],
+      })
+    ).rectangle;
     await page.locator('.hud-rooms__cancel').click();
     // Two rooms and not one rectangle drawn twice, which is what the second
-    // drag's `minY` is for -- and if they were the same the second zoning
+    // drag's floor is for -- and if they were the same the second zoning
     // below would be refused `overlaps-existing-room`.
     expect(secondCell, 'both room drags found the same rectangle').not.toEqual(firstCell);
 
@@ -4677,9 +4946,8 @@ test.describe('the assembled application', () => {
     await page.locator('.ui-tab[data-tab="rooms"]').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
-    expect(await dragRectangleOnWorld(page), 'a room drag found no bare world').toBe(true);
     expect(
-      await pendingRoomRectangle(page),
+      (await drawRoomRectangle(page, 'the drag for the first cell', { roomCatalogId: 'room.cell' })).rectangle,
       'the drag no longer lands on the rectangle its walls were built around',
     ).toEqual(firstCell);
     await page.locator('.hud-rooms__confirm').click();
@@ -4743,14 +5011,26 @@ test.describe('the assembled application', () => {
       page.locator('.hud-rooms__arm'),
       'pressing the arm control for a second room disarmed the tool',
     ).toHaveAttribute('aria-pressed', 'true');
-    expect(await dragRectangleOnWorld(page, { minY: 320 }), 'a second room drag found no bare world').toBe(
-      true,
-    );
     expect(
-      await pendingRoomRectangle(page),
+      (
+        await drawRoomRectangle(page, 'the drag for the second cell', {
+          roomCatalogId: 'room.cell',
+          minY: secondCellFloor,
+          clearOf: [firstCell],
+        })
+      ).rectangle,
       'the second drag no longer lands on the rectangle its walls were built around',
     ).toEqual(secondCell);
     await page.locator('.hud-rooms__confirm').click();
+    // What Designate said, before the count is asked about. A refused
+    // designation paints `.hud__refusal` (`src/ui/hud/hud.ts`), so the sentence
+    // the player would have read is the first thing reported when this stops
+    // working -- rather than a metric that stayed at 1 with no reason attached,
+    // which is what #658 spent a day on.
+    await expect(
+      page.locator('.hud__refusal'),
+      'Designate refused the second cell',
+    ).toBeHidden();
     await expect(page.locator('[data-metric="rooms"]')).toContainText('2');
 
     for (const [width, height] of [
@@ -7818,10 +8098,27 @@ test.describe('the assembled application', () => {
         left: rect.left,
         top: rect.top,
         width: rect.width,
-        // Whether it overlaps the metrics it sits beside. Two independently
-        // positioned layers competing for one corner is the #88 defect, and the
-        // reason this badge is in the strip's own flex row rather than `fixed`.
-        overlapsMetrics: metrics === undefined ? null : rect.right > metrics.left,
+        // Whether it overlaps the metrics. Two independently positioned layers
+        // competing for one corner is the #88 defect, and the reason this
+        // badge is in the strip's own flex row rather than `fixed`.
+        //
+        // **This was `rect.right > metrics.left` and that stopped being the
+        // question in #634.** A horizontal comparison is a valid overlap test
+        // only while the two are guaranteed to share a line, which they were
+        // for as long as the strip was one row. Once the metrics take a row of
+        // their own the badge's right edge is *of course* past the metrics'
+        // left edge -- they both start at the strip's padding -- and the test
+        // failed while nothing was drawn over anything. A rectangle
+        // intersection asks what the comment above always meant, holds in
+        // either layout, and is the assertion that would still catch a badge
+        // that went back to `position: fixed`.
+        overlapsMetrics:
+          metrics === undefined
+            ? null
+            : rect.right > metrics.left &&
+              metrics.right > rect.left &&
+              rect.bottom > metrics.top &&
+              metrics.bottom > rect.top,
         insideStrip: strip === undefined ? null : rect.top >= strip.top && rect.bottom <= strip.bottom,
       };
     });
@@ -8231,6 +8528,170 @@ test.describe('the assembled application', () => {
           `the status strip lays its own rows outside its box at ${width}x${height} and ${scale * 100}%`,
         ).toBe(0);
       }
+    }
+  });
+
+  /**
+   * **The status strip is a readout at every viewport (#634).**
+   *
+   * WHY THIS IS HERE AND NOT IN `ui-shell.spec.ts`. That file owns the HUD's
+   * responsive layout, and the header of this one says so -- *"the HUD's
+   * computed font stack, responsive layout and intent reporting"* is listed
+   * under "Deliberately NOT here". **For the status strip that sentence is
+   * wrong, and this test is the correction rather than an exception to it.**
+   * `ui-harness.ts`'s `mountHudShell` never touches `HudHandle.brandSlot` --
+   * measured, that slot is **0px wide with 0 children** on the harness page --
+   * while `src/main.ts` puts the brand badge *and* the interface-scale
+   * control in it, which measures **351.9px** on the assembled page. That is
+   * a third of the strip's fixed chrome (727.4px in total) present on one
+   * page and absent from the other, and it is why #634 read the metrics row
+   * at 524px on the harness and **173px on the real page at the same
+   * viewport**. A responsive claim about the strip is therefore a claim about
+   * the assembled page, and only this file loads one.
+   *
+   * WHAT IT ASSERTS, AND WHY NOT A PIXEL COUNT. `.hud-strip__metrics` is
+   * `overflow-x: auto` with the scrollbar suppressed in both engines
+   * (`hud.css`), so a chip that does not fit is not merely small -- it is
+   * *absent*, with nothing on screen saying so. Before this test existed the
+   * strip showed **zero of its eight chips at 768px** in a 41px box, and
+   * every browser test in the repository was green.
+   *
+   * So the property, not the number:
+   *
+   *   > **no chip is cut off by anything except the width of the screen.**
+   *
+   * The screen's width is what the strip's own content box says it is, and
+   * how many chips fit in it is computed from the chips' own measured widths
+   * -- so `fitsInStripWidth` and `fullyVisible` are two independent readings
+   * of the same page that must agree. An assertion on `clientWidth === 1193`
+   * would pin an accident of eight labels in one locale; this one holds for
+   * any number of chips of any width, and fails the moment something on the
+   * strip takes room the readout needed.
+   *
+   * It is deliberately satisfiable at 375px, where eight chips *cannot* fit:
+   * 1101px of content into 359px is not a breakpoint problem, and #634 rules
+   * out both a scroll affordance and prioritising a subset. What the property
+   * demands there is that the row shows every chip the phone has room for --
+   * two -- rather than being squeezed to a fifth of that by a clock and a
+   * transport sharing its line.
+   */
+  test('shows every status chip the screen has room for, at every viewport (#634)', async ({ page }) => {
+    await openApp(page);
+
+    /**
+     * Nine viewports, not the five the rest of this suite visits.
+     *
+     * #634's curve is not monotonic -- it recovers *below* the old 720px
+     * breakpoint (600px showed 4 chips where 900px showed 1) -- so a list
+     * that skipped the middle would have reported the two ends looking fine.
+     * 768 and 1440 are the two that matter: the first is the worst point on
+     * that curve and the second is an ordinary laptop that still lost three
+     * chips.
+     *
+     * **900x600 is here to record what #634 did NOT buy, and it is marked
+     * rather than dropped.** The metrics only get their own row where the
+     * layout can pay 30.5px for it, and at 900x600 the Build panel's
+     * always-visible budget is 7.81px: granting the row there overdrew it by
+     * 23px and turned #174's *"the Build panel arrives inside its own fold"*
+     * red. `hud.css` chooses the fold, so this viewport is still one row and
+     * still shows 1 of 8 chips. A list that omitted it would read as coverage
+     * of the shipped viewports; this one says what happens at each.
+     */
+    const STRIP_VIEWPORTS = [
+      [1920, 1080],
+      [1600, 900],
+      [1440, 900],
+      [1280, 720],
+      [1024, 768],
+      [900, 600],
+      [768, 1024],
+      [600, 800],
+      [375, 812],
+    ] as const;
+
+    /**
+     * The one viewport where the property below does not hold, named by the
+     * thing that stops it rather than by a flag.
+     *
+     * `hud.css`'s two-row rule carries `min-height: 701px`, so a viewport
+     * shorter than that keeps the one-row layout and the squeeze that comes
+     * with it. Deriving the exception from the same number the stylesheet
+     * uses is what stops this list quietly growing: a second short viewport
+     * added to `STRIP_VIEWPORTS` is exempted for the same stated reason, and
+     * a viewport that stops being short stops being exempt.
+     */
+    const SHORT_VIEWPORT_HEIGHT_PX = 701;
+
+    for (const [width, height] of STRIP_VIEWPORTS) {
+      await page.setViewportSize({ width, height });
+
+      const reading = await page.evaluate(() => {
+        const strip = document.querySelector<HTMLElement>('.hud-strip');
+        const metrics = document.querySelector<HTMLElement>('.hud-strip__metrics');
+        if (strip === null || metrics === null) return null;
+
+        const chips = [...metrics.querySelectorAll<HTMLElement>('[data-metric]')];
+        const metricsBox = metrics.getBoundingClientRect();
+
+        // A chip counts as on screen only if *both* its edges are inside the
+        // scroll container's visible box. Half a chip is the failure #634 is
+        // about, not a partial success. The half-pixel tolerance is for
+        // subpixel layout, and is far below one character of a label.
+        const fullyVisible = chips.filter((chip) => {
+          const box = chip.getBoundingClientRect();
+          return box.left >= metricsBox.left - 0.5 && box.right <= metricsBox.right + 0.5;
+        }).length;
+
+        // How many chips the *strip* has room for, from the chips' own
+        // measured widths and the gap the stylesheet actually resolved --
+        // nothing here is copied from `hud.css`. Leading chips, because the
+        // row is laid left to right and a chip is only reachable by scrolling
+        // past the ones before it.
+        const stripStyle = getComputedStyle(strip);
+        const stripContentWidth =
+          strip.getBoundingClientRect().width -
+          Number.parseFloat(stripStyle.paddingLeft) -
+          Number.parseFloat(stripStyle.paddingRight);
+        const gap = Number.parseFloat(getComputedStyle(metrics).columnGap);
+
+        let used = 0;
+        let fitsInStripWidth = 0;
+        for (const chip of chips) {
+          const next = used === 0 ? chip.getBoundingClientRect().width : used + gap + chip.getBoundingClientRect().width;
+          if (next > stripContentWidth + 0.5) break;
+          used = next;
+          fitsInStripWidth += 1;
+        }
+
+        return {
+          chips: chips.length,
+          fullyVisible,
+          fitsInStripWidth,
+          metricsClientWidth: metrics.clientWidth,
+          metricsScrollWidth: metrics.scrollWidth,
+          stripContentWidth: Math.round(stripContentWidth * 10) / 10,
+        };
+      });
+
+      expect(reading, `the status strip is not on the page at ${width}x${height}`).not.toBeNull();
+      const at = `${width}x${height}`;
+
+      // The property. Every chip the strip is wide enough to show is shown --
+      // so nothing else on the strip is taking room the readout needed.
+      if (height >= SHORT_VIEWPORT_HEIGHT_PX) {
+        expect(
+          reading!.fullyVisible,
+          `${at}: ${reading!.fullyVisible} of ${reading!.chips} chips are on screen, but the strip is ` +
+            `${reading!.stripContentWidth}px wide and has room for ${reading!.fitsInStripWidth}. The readout ` +
+            `is ${reading!.metricsClientWidth}px of ${reading!.metricsScrollWidth}px of content.`,
+        ).toBe(reading!.fitsInStripWidth);
+      }
+
+      // And #634's headline, refutable on its own: at 768px this was zero.
+      // Implied by the line above only while the strip is wider than one
+      // chip, which is a thing that could stop being true; stated separately
+      // so the failure names what a player would see.
+      expect(reading!.fullyVisible, `${at}: not one status chip is on screen`).toBeGreaterThan(0);
     }
   });
 

@@ -2602,12 +2602,178 @@
 .hud-rooms__enclosure-value { font-variant-numeric: tabular-nums; }
 
 /* ------------------------------------------------------------------ */
+/* The status strip gives the metrics their own row (#634)             */
+/* ------------------------------------------------------------------ */
+
+/*
+ * WHY THIS BLOCK EXISTS SEPARATELY FROM THE 720px ONE BELOW.
+ *
+ * The rule that fixes #634 -- `.hud-strip__metrics { flex: 1 0 100%; }` --
+ * already existed, inside `@media (max-width: 720px)`, under a comment saying
+ * *"Squeezing all three onto one line left the metrics about 50px wide, which
+ * is not a readout."* That diagnosis was right and the threshold was far too
+ * low: at **768px the metrics row measured 41px and showed zero of the eight
+ * chips**, which is the state that comment describes, forty-eight pixels
+ * outside the block that cures it.
+ *
+ * It is a *separate* block rather than a raised `max-width` on that one
+ * because the 720px block is not only about the strip. It also hides the
+ * minimap, stretches the rail and takes every rail panel to `width: 100%` --
+ * decisions about a phone, not about a readout. Raising that block to this
+ * breakpoint would delete the minimap from every laptop and stretch the Build
+ * panel across a 1600px screen, and `ui-shell.spec.ts` pins the minimap as
+ * present at 768, 900, 1024, 1280 and 1600. So the strip gets its own
+ * breakpoint and the narrow-viewport block keeps its own. **One breakpoint
+ * was the wrong shape; two is the answer**, and this paragraph is here so the
+ * next person does not merge them back.
+ *
+ * HOW 1919px WAS DERIVED. Measured in the real application (`index.html` +
+ * `src/main.ts`, not the harness page, which reports a different and much
+ * milder number), Chromium, 100% interface scale, at first paint:
+ *
+ *   the eight chips             988.8px   (sum of `getBoundingClientRect`)
+ *   seven 16px gaps            + 112.0px  (`--space-4` between chips)
+ *   ------------------------------------
+ *   the metrics row's content   1100.8px
+ *
+ *   strip padding (12 + 12)      24.0px
+ *   the brand slot              351.9px   (brand badge + interface scale)
+ *   three 16px strip gaps        48.0px
+ *   the clock                   131.5px
+ *   the transport               172.0px
+ *   ------------------------------------
+ *   everything else on the row  727.4px
+ *
+ * `viewport - 727.4` is what the one-row layout hands the metrics, and it is
+ * a constant: measured 41px at 768, 713 at 1440, 1193 at 1920 and 1833 at
+ * 2560, each exactly `width - 727`. So the one-row layout stops being a
+ * readout below **1100.8 + 727.4 = 1828.2px**, and 1828 is where a
+ * zero-margin breakpoint would go.
+ *
+ * IT IS NOT PUT AT 1828, and the margin is measured rather than taste. Chip
+ * width is set by the *label*, not the value, for seven of the eight -- but
+ * FUNDS is `85.8px` at a treasury of 0 and **`110.2px` at 1,284,500**, so a
+ * mid-game prison's row is about 1125px, not 1101, and a 1828px breakpoint
+ * would let #634 back in the moment the treasury reaches seven figures. 1920
+ * is the nearest ordinary desktop width above that (1125 + 727 = 1852), it is
+ * the one width #634 measured as fully working, and it leaves **68px** of
+ * slack for whatever the chips grow next.
+ *
+ * WHAT THIS DOES NOT FIX, so nobody re-derives it as an absence. The chips
+ * need 1101px and a 375px phone has 359px: no breakpoint makes eight chips
+ * fit a phone. The row gets `viewport - 24` here, so all eight are on screen
+ * from **1125px** up (measured: 8 of 8 at 1280, 7 of 8 at 1120) and below
+ * that it still scrolls sideways with the scrollbar suppressed. What the
+ * breakpoint buys is that the row is never *squeezed* -- it always gets the
+ * whole strip width, so it shows every chip that width can hold. At 768 that
+ * is 5 of 8 instead of 0, and at 900 it is 6 of 8 instead of 1. The remainder
+ * is a scroll-affordance question and #634 rules that out explicitly.
+ *
+ * AND IT IS A VIEWPORT BREAKPOINT, so it cannot see `--ui-scale`. At 200%
+ * the row needs 2202px and the chrome more than doubles, so the one-row layout is
+ * not a readout at any viewport that exists; at 1920/200% the chrome takes
+ * 1453px and the metrics measure 467px against 2202px of content. That was true before this block and is
+ * still true above 1920 -- the honest fix for it is a container-relative rule,
+ * not a bigger number here.
+ *
+ * AND WHY THERE IS A HEIGHT CONDITION, WHICH IS THE PART OF #634'S RULING
+ * THAT DOES NOT FIT. A second row costs 30.5px (48px to 78.5px, measured on
+ * the assembled page) and a short viewport does not have it. At 900x600 --
+ * the shortest viewport the browser suite visits, and the one every layout
+ * budget in this file is quoted against -- the Build panel's always-visible
+ * budget is **7.81px**, so the second row overdrew it by 23px and
+ * `app-shell.spec.ts` reported *"the Build panel arrives with more content
+ * than box at 900x600"* by exactly that, with #285's budget going 7.8 ->
+ * -15.2. That is #174's guarantee -- the panel arrives inside its own fold --
+ * and it is not something a breakpoint gets to spend.
+ *
+ * There is no third option in the strip itself: two rows are a 44px transport
+ * (`--tap-target`) plus a 30.5px chip row plus a 4px gap, and none of the
+ * three is negotiable. So at 900x600 the metrics readout and the Build
+ * panel's fold cannot both be had, and **this file chooses the fold and says
+ * so rather than quietly failing the other one.** The consequence is real and
+ * is #634's, not a detail: at 900x600 the strip is still one row and still
+ * shows 1 of 8 chips. `app-shell.spec.ts`'s #634 test carries the same
+ * numbers and does not pretend otherwise.
+ *
+ * 701px is `@media (max-height: 700px)`'s boundary, three blocks up -- the
+ * line this file already draws for "a viewport too short to pay for things"
+ * -- rather than a bisected one. Both ends are measured (720 pays for it, 600
+ * does not); nothing between 601 and 700 was tested, so if that matters,
+ * bisect rather than trusting this number.
+ *
+ * THE FIRST HALF OF THE QUERY IS NOT REDUNDANT AND WAS A BUG FOR ONE EDIT.
+ * `(max-width: 720px)` alone, with no height term, is where these rules have
+ * always applied -- a phone in landscape is 812x375, which is short, and
+ * gating the whole block on `min-height: 701px` took the two-row layout away
+ * from exactly the viewport that has needed it since before #634. The height
+ * condition is a limit on how far *up* the breakpoint reaches, not a new
+ * floor under the layout that already existed.
+ *
+ * WHAT IT COSTS WHERE IT APPLIES. The strip goes from one row to two --
+ * the badge with the clock and the transport, then the metrics under them --
+ * measured 48px to 78.5px, so **30.5px less height for the world** at every
+ * viewport this block reaches. #634's ruling accepts that cost;
+ * `ARRIVAL_PANEL_HEIGHT_PX` in `app-shell.spec.ts` is where it is paid out of
+ * the rail, and that constant moved with this change rather than being
+ * re-derived.
+ */
+@media (max-width: 720px), (max-width: 1919px) and (min-height: 701px) {
+  /*
+   * The metrics take a row whole and scroll sideways within it.
+   *
+   * `order: 1` IS LOAD-BEARING AND COST TEN PIXELS TO FIND. `flex-basis: 100%`
+   * breaks the line *before* this item as well as after it, so in DOM order --
+   * brand, metrics, clock, transport -- the strip becomes **three** rows on
+   * the assembled page, where `src/main.ts` fills the brand slot: the badge
+   * alone, then the metrics, then the clock beside the transport. Measured
+   * 101.5px against 48px, and 53.5px is more than the rail can lend: at
+   * 1280x720 `app-shell.spec.ts` reported *"the Build panel arrives with more
+   * content than box"* by exactly 10px, which is #174's defect returning.
+   *
+   * Laying the metrics *last* puts the badge, the clock and the transport on
+   * one row together -- their content is 351.9 + 131.5 + 172 plus three gaps,
+   * 687px of the 1256px a 1280px viewport has -- and the metrics on the
+   * second. Measured **78.5px**, so the cost is 30.5px rather than 53.5px,
+   * and the Build panel arrives inside its own fold again at 1280x720.
+   *
+   * Last rather than first, and that is measured too: `order: -1` also gives
+   * two rows, and it puts the brand badge on the second one. `app-shell.spec.ts`
+   * requires `.brand` at `top < 24` -- the top-left corner is where a bug
+   * report reads the build id from.
+   *
+   * The reordering is visual only. `order` does not move DOM order, so the
+   * reading order stays brand, metrics, clock, transport -- and nothing in the
+   * metrics row is focusable, so no keyboard user meets a focus order that
+   * disagrees with what is on screen. That is the check `order` needs and it
+   * is why it is safe here and would not be around the transport buttons.
+   */
+  .hud-strip__metrics {
+    flex: 1 0 100%;
+    order: 1;
+  }
+
+  /* The clock shares the first row with the badge and the transport now, and
+     the border it draws on its left would sit against the badge rather than
+     between two readouts. */
+  .hud-strip__clock {
+    flex: 1;
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Narrow viewports                                                    */
 /* ------------------------------------------------------------------ */
 
 @media (max-width: 720px) {
   :root {
-    /* The strip wraps to two rows here. */
+    /* The strip wraps to three rows here -- the badge, the clock beside the
+       transport, then the metrics -- and this is its floor. The block above
+       deliberately does NOT raise it: between 721 and 1919 the strip is two
+       rows of its own content (84px) and an 88px floor would spend four
+       pixels of rail on nothing. */
     --hud-strip-height: calc(88px * var(--ui-scale));
   }
 
@@ -2658,16 +2824,14 @@
     padding: 0 var(--space-2);
   }
 
-  /* Metrics take the first row whole and scroll sideways within it; the
-     clock and transport share the second. Squeezing all three onto one line
-     left the metrics about 50px wide, which is not a readout. */
-  .hud-strip__metrics { flex: 1 0 100%; }
-
-  .hud-strip__clock {
-    flex: 1;
-    padding-left: 0;
-    border-left: 0;
-  }
+  /* `.hud-strip__metrics` and `.hud-strip__clock` used to be laid out here,
+     under the comment *"Squeezing all three onto one line left the metrics
+     about 50px wide, which is not a readout."* That comment was right about
+     the failure and this block was the wrong place for the cure: the same
+     squeeze measured **41px at 768** (#634), just outside it. Both rules now
+     live in the block above, which contains this range. Only the padding and
+     gap tightening above -- a phone concession, not a readout one -- stays
+     here. */
 
   .ui-tab { min-width: calc(64px * var(--ui-scale)); padding: var(--space-2); }
 }
