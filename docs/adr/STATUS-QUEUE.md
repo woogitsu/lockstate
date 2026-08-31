@@ -233,6 +233,20 @@ commit that can state it rather than by the next sweep. All four counting
 sites are moved together here, and the sentences saying thirty are left
 standing beside them.
 
+**And twenty-nine is TWENTY-NINE at `58220f7` (v0.0.284), unmoved, which is the
+first reading this sequence has taken one anchor after a correction rather than
+after a drift.** No ADR was added or removed in the eight releases since: the
+only movement in `docs/adr/` was `e6cad72`/#702 rewriting 0051's index cell in
+both directions, and 0051 had already left the count at `445f546`/#647. Counted
+on disk by the method every reading here has used — **twenty-seven** under a
+`## Status` heading and **two** (0064, 0067, still the only two) under a
+`- Status:` bullet, out of **74** documents — and the index's status column
+agrees at twenty-nine against forty-five `Accepted`. **All four counting sites
+were opened and all four read twenty-nine**, which is what a window that moves
+no count can establish and no more: it exercises none of them, so this sweep
+confirms they agree and nothing whatever about the mechanism that splits them.
+That is the weaker of the two possible results and is reported as such.
+
 **And the gate this file names for exactly this class EXEMPTS THIS FILE BY
 NAME, which makes the sentence naming it false about the only document it was
 written into.** The handover below says both of §5's assertions about a
@@ -499,14 +513,39 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `004f799` (**v0.0.276**) by the delta method this
-header describes, from the v0.0.268 anchor described below. **Eight of the ten
+Re-anchored at `main` @ `58220f7` (**v0.0.284**) by the delta method this
+header describes, from the v0.0.276 anchor described below. **Eight of the ten
 releases the budget allows, counted on the tree this commit is written
-against**: `package.json` ships `0.0.276` and the anchor being replaced named
-v0.0.268. Two releases of headroom are left as of this commit, and this is the
-first anchor here written *before* the budget forced it rather than after — the
-previous two were each written at nine or ten, and the one at ten had blocked
-seven pull requests behind it.
+against**: `package.json` ships `0.0.284` and the anchor being replaced named
+v0.0.276. Two releases of headroom are left as of this commit — the **same
+figure as the previous anchor, from an identically sized window**, which is a
+coincidence worth naming rather than a pattern: eight releases carrying eight
+merged pull requests, twice running.
+
+**This is the second anchor here written before the budget forced it, and the
+first written because a queue that does not exist yet would have overrun it.**
+The previous one was written at eight with nothing pending. This one is written
+at eight with **three changes in flight on disjoint surfaces** — the owner's
+rulings 2, 3 and 4 of [#703](https://github.com/matmaxalez/lockstate/issues/703),
+each in its own worktree. Three merges are three releases, which is eleven, so
+the arithmetic that forced this pass is about work that has not landed rather
+than work that has. That is a better reason than either of the two before it,
+and it is the first time this budget has been spent forward rather than
+recovered.
+
+**The previous anchor's own prediction is the thing worth recording, and it
+missed in the same direction the one before it did.** It named ten open pull
+requests — #685, #682, #681, #679, #678, #676, #675, #658, #653 and #647 — and
+said **all ten landing first would put the budget at seventeen**. **Two of the
+ten merged inside this window**, #647 and #658; the other eight did not, so the
+seventeen never happened. Counted against the window's own merge list — #698,
+#699, #701, #658, #647, #702, #704 and #705 — **six of the eight merges here
+were work that did not exist when that list was written**, which is why the
+budget still reached eight. **So the count was right and the named cause was
+wrong, for the second consecutive anchor**: what spends this budget is not the
+queue anybody can see, it is the work the window generates. That is the finding,
+and it is the reason this pass looked forward at three unlanded changes instead
+of backward at an open list.
 
 **That figure is a fact about this commit and it is not a claim about the
 merge, and this is the third anchor running to scope it that way — but the
@@ -538,11 +577,77 @@ index's *Next free number* residue by becoming a member — the same movement
 0078 and 0079 each made. Which way that goes is not something this pass can
 record.
 
-`004f799` is `origin/main`'s tip at the time of writing and is itself the
-**v0.0.276 release commit**, named deliberately rather than the merge commit
+`58220f7` is `origin/main`'s tip at the time of writing and is itself the
+**v0.0.284 release commit**, named deliberately rather than the merge commit
 beneath it, for the reason every previous anchor gives: it is cut after the last
-merge in the window (#697, `7dd66a4`), contains every sentence below, and is the
+merge in the window (#705, `9529b04`), contains every sentence below, and is the
 exact tree every citation here was re-derived from.
+
+**The delta note for `58220f7`.** `git diff --name-only 004f799..58220f7` is
+**32 files**, of which **seven are members**: `docs/HUD_PROJECTIONS.md`,
+`docs/adr/README.md`, `docs/research/README.md`, `src/main.ts`,
+`src/ui/hud/build-panel.ts`, `src/ui/hud/hud.css` and `src/ui/hud/messages.ts`.
+`docs/adr/STATUS-QUEUE.md` is an eighth changed file that §§3-6 name and is
+deliberately outside its own set. The member set was **computed rather than
+recalled**: scanning §§3-6 for backticked rooted paths gives 74 distinct spans,
+of which **46 exist on disk**, and the intersection with the diff is the seven
+above.
+
+**The `src/ui/hud/**` glob member is what makes this window wide, and it is the
+first window in which that glob has done real work.** Eight files under it
+changed — `build-panel.ts`, `hud.css`, `hud-state.ts`, `hud.ts`, `messages.ts`,
+`rooms-panel.ts`, `status-strip.ts` and `view-model.ts` — three of them named
+individually as members and five caught only by the glob. A member set that
+enumerates files and then adds a directory glob over the same directory will
+under-report its own intersection to anybody who reads only the named list, and
+this is the first anchor where the difference is five files rather than none.
+
+**`docs/adr/README.md` DID change in this window**, which is the first time in
+several, so the ADR counts below are **moved rather than carried** — and they
+moved by a correction rather than by an arrival. `e6cad72`/#702 rewrote ADR
+0051's index cell in both directions after `445f546`/#647 accepted the document.
+Split on the status column: **74 rows, 45 `Accepted`, 29 `Proposed`**, against
+44 and 30 at the previous anchor. **No ADR was added or removed**; `Next free
+number: 0081`, unmoved, and 0080 is still the newest on disk.
+
+**And that correction created a grep trap in the index, recorded because it will
+recur.** A whole-row match — `grep '^| \[' docs/adr/README.md | grep -c
+Proposed` — returns **30**, because 0051's cell now carries the clause saying
+what it used to read. The anchored regex §3's opening has used since `0637ab1`
+returns **29**. Both were run. Correcting a cell in both directions is the
+standing convention here, so every future acceptance adds another row a loose
+grep miscounts.
+
+**Nothing under `supabase/migrations/`, `src/services/telemetry/**` or
+`src/ui/primitives/**` changed**, so those three glob members contributed none,
+and `src/services/telemetry/` still holds **fifteen** modules, counted rather
+than carried.
+
+**The window is eight releases carrying eight merged pull requests** — #698,
+#699, #701, #658, #647, #702, #704 and #705 — read off `git log --oneline
+--first-parent 004f799..58220f7` (excluding the eight release-bump commits).
+**Two of the eight edit this file**: `6911df1`/#699 is the previous anchor's own
+writing commit, kept below as that anchor's account, and `e6cad72`/#702 is a
+correction pass this file asked for in terms — its handover said *"the
+acceptance commit should own the correction in both directions"*, #647 did not,
+and #702 discharged it.
+
+**Five of the eight are behaviour rather than records, which inverts the
+previous window.** That one was seven records against one behaviour change; this
+one is #658 (the status-strip breakpoint and the room-drag check), #647 (the
+paused clock readout), #704 (the alerts log opens, scrolls, and stops claiming
+control after an escape) and #705 (what the alerts cap sacrifices), against #699,
+#702 and #701 as records. **So the widest member intersection this file has
+recorded comes from the window with the most behaviour in it**, which is the
+correlation a delta method should show and had not until now.
+
+**#704 is the one worth naming, because it is the first pull request in this
+file's history whose own branch found a defect in the fix it was carrying.** The
+flex chain it added to make the alerts list scroll overrode `[hidden]` and broke
+the fold that the same ruling depends on; a browser assertion caught it; and
+fixing that exposed a second, latent break in a different test that only CI's
+idle run could see. Recorded here rather than in an entry because it is a fact
+about how this repository's gates compose, not about a decision the owner owes.
 
 **The delta note for `004f799`.** `git diff --name-only c0a3a6b..004f799` is
 **27 files**, of which **five are members**: `docs/HUD_PROJECTIONS.md`,
@@ -4698,10 +4803,10 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `004f799`, unchanged since the previous anchor,
-the one before it, the one before that, the one before that, and the one
-before that — the directory has not moved across any of those windows and
-still holds twenty-three files, counted again here (`ls
+absences were re-verified at `58220f7`, unchanged since the previous anchor,
+the one before it, the one before that, the one before that, the one before
+that, and the one before that — the directory has not moved across any of those
+windows and still holds twenty-three files, counted again here (`ls
 supabase/migrations/*.sql | wc -l` returns 23) — by grepping the
 whole `supabase/migrations/` tree for a total-bytes, retention or pruning
 mechanism (`total_bytes`, `retention`, `prune`, `268435456`, `max_revisions`).
@@ -4874,11 +4979,12 @@ is recommendation 1 at the foot of §6 producing a measurable result rather than
 being restated: **three of the four citations into the fastest-moving document
 in the set survived an edit that moved every line of them.**
 
-The half of the decision that *is* in this repository stays verified at `004f799`:
+The half of the decision that *is* in this repository stays verified at `58220f7`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` (`:34`) with no
 `push:`, requires a typed `confirm_project_ref` (`:41`), and its apply job is
 environment-gated (`:65`) — all three re-read at this anchor and all three still
-land, on a file `git diff` reports as untouched since `54418b6`. The `on:` key
+land, on a file `git diff --name-only 54418b6..58220f7` reports as untouched, run rather than
+recalled. The `on:` key
 at `:33` has `workflow_dispatch:` as its only child, re-read here rather than
 inferred from the absence of a `push:` match, and `grep -c '^\s*push:'` over
 the file returns **0**, which is the absence stated as a command rather than as
