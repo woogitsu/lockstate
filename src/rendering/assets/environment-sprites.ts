@@ -3,9 +3,19 @@ import type { SourceArtRect } from './source-art-catalog';
 /**
  * The reviewed extraction manifest for the environment sheets.
  *
- * `docs/ART_PIPELINE.md` ("Delivery and caching") says of the 23 owner-supplied
- * sheets: *"They remain a whole-sheet atlas until a later reviewed extraction
- * manifest selects individual variants."* This is that manifest. The generated
+ * `docs/ART_PIPELINE.md` ("Delivery and caching") used to say of the 23
+ * owner-supplied sheets: *"They remain a whole-sheet atlas until a later
+ * reviewed extraction manifest selects individual variants."* This is that
+ * manifest.
+ *
+ * **The present tense in that first sentence expired, and it is corrected here
+ * rather than dropped (2026-08-31).** That document has since retracted the
+ * quoted sentence in place — its paragraph now opens *"**The reviewed
+ * extraction manifest this used to promise now exists**"*, quotes the old
+ * sentence as a thing it used to say, and names this module — so a reader who
+ * went looking for the promise in `ART_PIPELINE.md` would have found the
+ * retraction and not the promise. The quotation is kept because it is what this
+ * file exists to answer. The generated
  * catalog (`public/game-content/source-art.v1.json`) describes each sheet as one
  * whole-sheet rectangle -- `tooling/build-source-art-catalog.mjs` writes
  * `sourceRectPx: {0, 0, 1448, 1086}` for every entry -- so which pixels of a

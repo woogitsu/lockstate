@@ -55,6 +55,19 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *    the difference between three riots and none. The numbers are pinned here
  *    so that a later change to `DEFAULT_SECTOR_RISK_POLICY` has to move them in
  *    the open.
+ *
+ *    **Issue #588 moved them in the open, exactly as that last sentence asked,
+ *    and this paragraph did not follow.** Corrected 2026-08-31; both directions
+ *    are kept because the argument is unchanged and the figures are not. The
+ *    assertions below now read **0.4742** for the staffed prison of eight and
+ *    **0.9661** with four riots for the unguarded one, each with the reason
+ *    beside it: `safety` is provisioned by guard coverage rather than by a bed
+ *    (ADR 0078), so a covered prison holds it at `NEED_MAX` and an uncovered
+ *    one has three needs on the floor instead of two. **`0.4837` — the
+ *    one-prisoner figure — is asserted nowhere in this file and nowhere in the
+ *    repository**; it survives only in this sentence and in ADR 0054, so it is
+ *    a figure to re-measure rather than to quote. What the ruling rests on got
+ *    stronger: the gap one hire makes was 0.0142 and is 0.4919.
  */
 
 /** Distinct from every other seed in the suite, so no shared fixture can make these figures true by accident. */
@@ -382,7 +395,7 @@ describe('what the neglect costs, and how much of it is the staffing term', () =
    */
   const BOTH_FLOORED = { prisoners: 8, shower: false, yard: false } as const;
 
-  it('two needs on the floor reach 0.4824 of a 0.65 threshold, so a staffed prison never riots', () => {
+  it('two needs on the floor reach 0.4742 of a 0.65 threshold, so a staffed prison never riots', () => {
     const watched = watch(build({ ...BOTH_FLOORED, guards: 1 }));
 
     // 0.4742 is `needsPressure` alone: `staffingShortfall` is 0 and
