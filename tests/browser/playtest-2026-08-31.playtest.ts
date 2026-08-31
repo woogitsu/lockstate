@@ -1,0 +1,403 @@
+import { test } from '@playwright/test';
+import {
+  TILE,
+  armBuildable,
+  buildAndPopulate,
+  calibrate,
+  centreOf,
+  currentClock,
+  currentTick,
+  drag,
+  fastForwardToMax,
+  installTee,
+  latestCounts,
+  openApp,
+  panelText,
+  press,
+  tab,
+} from './playtest-harness';
+
+/**
+ * **Playing `main` at v0.0.273, after nine changes nobody has played.**
+ *
+ * Not a gate. `tests/browser/playwright.playtest.config.ts` collects this file
+ * and nothing in CI runs that config; the deliverable is the console output and
+ * the record in `docs/research/` that quotes it.
+ *
+ * The brief is the owner's: *"znajdź bugi i błędy grając, bo ja nie mogłem
+ * postawić więzienia itp grając sam"* -- find defects by playing -- under the
+ * standing directive *"gra ma być łatwa przyjazna do grania, a nie jakieś
+ * ukryte funkcje"*.
+ *
+ * Four things landed on 2026-08-30/31 that no session has met:
+ *
+ * - **#690** stands the Rooms tool down at the confirm. Its own weakest claim
+ *   is that the extra press per room reads as confirmation rather than
+ *   friction. Act 2 builds five rooms in a row and counts every press.
+ * - **#640 / #693** buy a build order's materials at the press and withdraw the
+ *   orders behind a cancelled delivery. Act 1 plays the money story with the
+ *   Buy fold never opened, then cancels and presses Play.
+ * - **#650** quotes both halves of a hire. Act 1 reads the control.
+ * - **#691** gives a successful escape a sentence, band `danger`. Act 3
+ *   under-guards a prison on purpose and samples the band every 100 ms, because
+ *   nobody has checked that the sentence is ever *painted*.
+ *
+ * The band sampler is the one piece of apparatus worth explaining. The events
+ * band holds **one** sentence and the newest event replaces it
+ * (`hudEventNoticeFromWorkerMessage`, *"The newest event is the one on the
+ * line"*), so a sentence can arrive and be gone before any poll from the test
+ * process sees it. Sampling from inside the page at 100 ms, recording only
+ * *changes*, is what makes "the player could have read it" a measurement rather
+ * than an inference.
+ */
+
+interface BandSample {
+  readonly t: number;
+  readonly text: string;
+  readonly severity: string;
+  readonly hidden: string;
+  readonly width: number;
+  readonly height: number;
+  readonly color: string;
+  readonly background: string;
+}
+
+interface SamplerWindow {
+  lockstateBandSamples?: BandSample[];
+}
+
+/** Records every *change* of the events band from inside the page, at 100 ms. */
+async function installBandSampler(page: import('@playwright/test').Page): Promise<void> {
+  await page.addInitScript(() => {
+    const samples: BandSample[] = [];
+    (window as unknown as SamplerWindow).lockstateBandSamples = samples;
+    let last = '';
+    const started = Date.now();
+    setInterval(() => {
+      const node = document.querySelector<HTMLElement>('.hud__event');
+      if (node === null) return;
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      const sample: BandSample = {
+        t: Date.now() - started,
+        text: (node.textContent ?? '').trim(),
+        severity: node.dataset['severity'] ?? '',
+        hidden: String(node.hidden),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        color: style.color,
+        background: style.backgroundColor,
+      };
+      const key = `${sample.text}|${sample.severity}|${sample.hidden}|${sample.width}x${sample.height}`;
+      if (key === last) return;
+      last = key;
+      samples.push(sample);
+    }, 100);
+  });
+}
+
+async function bandSamples(page: import('@playwright/test').Page): Promise<readonly BandSample[]> {
+  return page.evaluate(() => (window as unknown as SamplerWindow).lockstateBandSamples ?? []);
+}
+
+/** Every `simulation/event` the worker has published, in order. */
+async function eventSeries(
+  page: import('@playwright/test').Page,
+): Promise<readonly { sequence: number; type: string; tick: number }[]> {
+  return page.evaluate(() =>
+    ((window as unknown as { lockstateFromWorker?: unknown[] }).lockstateFromWorker ?? [])
+      .filter((message) => (message as { kind?: string }).kind === 'simulation/event')
+      .map((message) => {
+        const payload = (message as { payload: { tick: number; event: { sequence: number; type: string } } }).payload;
+        return { sequence: payload.event.sequence, type: payload.event.type, tick: payload.tick };
+      }),
+  );
+}
+
+async function strip(page: import('@playwright/test').Page): Promise<string> {
+  return (await panelText(page, '.hud-strip')).replace(/\n/g, ' | ');
+}
+
+/* ------------------------------------------------------------------ */
+/* Act 1: the money story, with the Buy fold never opened              */
+/* ------------------------------------------------------------------ */
+
+test('act 1: an ambitious first prison, buying nothing on purpose (#640, #693, #650)', async ({ page }) => {
+  test.setTimeout(900_000);
+  const log = (line: string) => console.log(`[act1] ${line}`);
+
+  await installTee(page);
+  await installBandSampler(page);
+  await openApp(page);
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.waitForTimeout(1000);
+  log(`strip at day 1: ${await strip(page)}`);
+
+  await tab(page, 'build').click();
+  const origin = await calibrate(page);
+  log(`calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
+  log(`treasury before any order: ${(await latestCounts(page))?.treasuryMinorUnits}`);
+  log(`deliveries fold before any order: ${JSON.stringify(await panelText(page, '.hud-build__deliveries'))}`);
+
+  /*
+   * A 6x6 perimeter, dragged, with no purchase pressed first -- which is the
+   * whole of #640: the order buys its own bricks. Treasury read after each run
+   * so the money story is a series and not a difference.
+   */
+  await armBuildable(page, 'wall-brick');
+  const westX = origin.originX + 12 * TILE;
+  const eastX = origin.originX + 18 * TILE;
+  const northY = origin.originY + 12 * TILE;
+  const southY = origin.originY + 18 * TILE;
+  for (const run of [
+    { name: 'north', a: { x: westX + TILE / 2, y: northY }, b: { x: eastX - TILE / 2, y: northY } },
+    { name: 'south', a: { x: westX + TILE / 2, y: southY }, b: { x: eastX - TILE / 2, y: southY } },
+    { name: 'west', a: { x: westX, y: northY + TILE / 2 }, b: { x: westX, y: southY - TILE / 2 } },
+    { name: 'east', a: { x: eastX, y: northY + TILE / 2 }, b: { x: eastX, y: southY - TILE / 2 } },
+  ]) {
+    await drag(page, run.a, run.b);
+    const counts = await latestCounts(page);
+    log(`after the ${run.name} run: treasury=${counts?.treasuryMinorUnits} queue=${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+    log(`  deliveries fold: ${JSON.stringify(await panelText(page, '.hud-build__deliveries'))}`);
+    log(`  refusal band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  }
+
+  /*
+   * The cancellation, with the clock still stopped -- #693's own subject. Read
+   * the row's promise, press it, read the treasury, press Play, wait past the
+   * 20-second procurement poll, read it again.
+   */
+  const deliveryRows = page.locator('.hud-build__delivery-row');
+  const rowCount = await deliveryRows.count();
+  log(`delivery rows: ${rowCount}`);
+  if (rowCount > 0) {
+    const rowText = (await deliveryRows.first().innerText()).replace(/\n/g, ' | ');
+    const before = (await latestCounts(page))?.treasuryMinorUnits;
+    log(`cancelling the first delivery. row says: ${JSON.stringify(rowText)} | treasury before = ${before}`);
+    await deliveryRows.first().locator('button').click();
+    await page.waitForTimeout(1200);
+    const afterCancel = (await latestCounts(page))?.treasuryMinorUnits;
+    log(`treasury right after Cancel = ${afterCancel} (delta ${(afterCancel ?? 0) - (before ?? 0)})`);
+    log(`queue right after Cancel: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+    log(`deliveries right after Cancel: ${JSON.stringify(await panelText(page, '.hud-build__deliveries'))}`);
+
+    await fastForwardToMax(page);
+    log(`clock: ${JSON.stringify(await currentClock(page))}`);
+    for (const wait of [5000, 10_000, 15_000]) {
+      await page.waitForTimeout(wait);
+      const counts = await latestCounts(page);
+      log(`t+${wait}ms into Play: tick=${counts?.tick} treasury=${counts?.treasuryMinorUnits} queue=${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+    }
+    log(`deliveries after Play: ${JSON.stringify(await panelText(page, '.hud-build__deliveries'))}`);
+  }
+
+  /*
+   * The prison still has to go up, so the perimeter is re-dragged where the
+   * cancellation took orders out. This is what a player who changed their mind
+   * actually does next, and whether it is affordable is the measurement.
+   */
+  await tab(page, 'build').click();
+  await armBuildable(page, 'wall-brick');
+  for (const run of [
+    { name: 'north(again)', a: { x: westX + TILE / 2, y: northY }, b: { x: eastX - TILE / 2, y: northY } },
+    { name: 'south(again)', a: { x: westX + TILE / 2, y: southY }, b: { x: eastX - TILE / 2, y: southY } },
+    { name: 'west(again)', a: { x: westX, y: northY + TILE / 2 }, b: { x: westX, y: southY - TILE / 2 } },
+    { name: 'east(again)', a: { x: eastX, y: northY + TILE / 2 }, b: { x: eastX, y: southY - TILE / 2 } },
+  ]) {
+    await drag(page, run.a, run.b);
+    const counts = await latestCounts(page);
+    log(`${run.name}: treasury=${counts?.treasuryMinorUnits} queue=${JSON.stringify(await panelText(page, '.hud-build__queue'))} refusal=${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  }
+
+  // Let the crew work.
+  for (let index = 0; index < 12; index += 1) {
+    await page.waitForTimeout(5000);
+    const queue = await panelText(page, '.hud-build__queue');
+    if (/(?<![0-9])0 waiting . 0 being built/.test(queue)) break;
+  }
+  const walled = await latestCounts(page);
+  log(`perimeter done at tick ${walled?.tick}: treasury=${walled?.treasuryMinorUnits} queue=${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+
+  /* ---------------- Act 2, in the same session: five rooms in a row --------- */
+  log('=== ROOMS TOOL, five designations in a row (#690) ===');
+  const roomRects: readonly { readonly name: string; readonly a: readonly [number, number]; readonly b: readonly [number, number] }[] = [
+    { name: 'room 1 (the walled 6x6)', a: [12, 12], b: [17, 17] },
+    { name: 'room 2', a: [12, 12], b: [14, 14] },
+    { name: 'room 3', a: [15, 12], b: [17, 14] },
+    { name: 'room 4', a: [12, 15], b: [14, 17] },
+    { name: 'room 5', a: [15, 15], b: [17, 17] },
+  ];
+
+  for (const rect of roomRects) {
+    let presses = 0;
+    await tab(page, 'rooms').click();
+    presses += 1;
+    const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
+    log(`${rect.name}: Rooms panel data-collapsed on arrival = ${collapsed}`);
+    if (collapsed === 'true') {
+      await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+      presses += 1;
+    }
+    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+    presses += 1;
+    const armLabelBefore = (await page.locator('.hud-rooms__arm').innerText()).trim();
+    const armedBefore = await page.locator('.hud-rooms__arm').getAttribute('data-armed');
+    await page.locator('.hud-rooms__arm').click();
+    presses += 1;
+    const armedAfter = await page.locator('.hud-rooms__arm').getAttribute('data-armed');
+    const armLabelAfter = (await page.locator('.hud-rooms__arm').innerText().catch(() => 'NOT LAID OUT')).trim();
+    log(
+      `${rect.name}: arm control before = ${JSON.stringify(armLabelBefore)} data-armed=${armedBefore}` +
+        ` -> after = ${JSON.stringify(armLabelAfter)} data-armed=${armedAfter}`,
+    );
+    await drag(page, centreOf(origin, rect.a[0], rect.a[1]), centreOf(origin, rect.b[0], rect.b[1]));
+    const noteText = await panelText(page, '.hud-rooms');
+    const confirmEnabled = await page.locator('.hud-rooms__confirm').isEnabled();
+    log(`${rect.name}: after the drag the panel says ${JSON.stringify(noteText.split('\n').slice(0, 8))} | Confirm enabled=${confirmEnabled}`);
+    if (confirmEnabled) {
+      await page.locator('.hud-rooms__confirm').click();
+      presses += 1;
+    }
+    await page.waitForTimeout(1200);
+    const counts = await latestCounts(page);
+    const foldedAfter = await page.locator('.hud-rooms').getAttribute('data-collapsed');
+    const armedAfterConfirm = await page.locator('.hud-rooms__arm').getAttribute('data-armed').catch(() => 'NO BOX');
+    log(
+      `${rect.name}: DONE in ${presses} press(es) + 1 drag -> rooms=${counts?.rooms}` +
+        ` roomCapacity=${counts?.roomCapacity} | panel data-collapsed=${foldedAfter} arm data-armed=${armedAfterConfirm}`,
+    );
+    log(`${rect.name}: refusal band = ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+    log(`${rect.name}: rooms panel now = ${JSON.stringify((await panelText(page, '.hud-rooms')).split('\n').slice(0, 10))}`);
+  }
+
+  /* ---------------- Beds, then hiring (#650) -------------------------------- */
+  await tab(page, 'build').click();
+  await armBuildable(page, 'bed-wooden');
+  let bedsPlaced = 0;
+  for (const row of [12, 13]) {
+    for (let column = 12; column <= 17; column += 1) {
+      const point = centreOf(origin, column, row);
+      const produced = await press(page, point.x, point.y);
+      if (produced.length > 0) bedsPlaced += 1;
+      else log(`bed at (${column},${row}) produced NO command; refusal=${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+    }
+  }
+  log(`${bedsPlaced} bed order(s) accepted; treasury=${(await latestCounts(page))?.treasuryMinorUnits}`);
+  for (let index = 0; index < 10; index += 1) {
+    await page.waitForTimeout(5000);
+    const queue = await panelText(page, '.hud-build__queue');
+    if (/(?<![0-9])0 waiting . 0 being built/.test(queue)) break;
+  }
+  const furnished = await latestCounts(page);
+  log(`furnished at tick ${furnished?.tick}: rooms=${furnished?.rooms} roomCapacity=${furnished?.roomCapacity} accommodationCapacity=${furnished?.accommodationCapacity} treasury=${furnished?.treasuryMinorUnits}`);
+
+  await tab(page, 'security').click();
+  log(`staff panel, collapsed=${await page.locator('.hud-staff').getAttribute('data-collapsed')}`);
+  log(`hire control reads: ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);
+  log(`staff panel text: ${JSON.stringify((await panelText(page, '.hud-staff')).split('\n'))}`);
+  for (let index = 0; index < 4; index += 1) {
+    await page.locator('.hud-staff__hire').click();
+    await page.waitForTimeout(400);
+  }
+  await page.waitForTimeout(1500);
+  const hired = await latestCounts(page);
+  log(`after four hires: staff=${hired?.staff} dailyWageBill=${hired?.dailyWageBillMinorUnits} treasury=${hired?.treasuryMinorUnits}`);
+  log(`staff panel after hiring: ${JSON.stringify((await panelText(page, '.hud-staff')).split('\n'))}`);
+
+  await tab(page, 'overview').click();
+  for (let index = 0; index < 10; index += 1) {
+    await page.locator('.hud-intake__admit').click();
+    await page.waitForTimeout(200);
+  }
+  await page.waitForTimeout(2000);
+  log(`intake panel after ten admissions: ${JSON.stringify((await panelText(page, '.hud-intake')).split('\n'))}`);
+  log(`strip: ${await strip(page)}`);
+
+  // Run to the first classification review (tick 23,999) and a little past it.
+  const target = 30_000;
+  const started = Date.now();
+  for (;;) {
+    const tick = await currentTick(page);
+    if (tick >= target) break;
+    if (Date.now() - started > 600_000) {
+      log(`gave up waiting for tick ${target}, stuck at ${tick}`);
+      break;
+    }
+    await page.waitForTimeout(15_000);
+    const counts = await latestCounts(page);
+    log(
+      `tick=${counts?.tick} prisoners=${counts?.prisoners} highRisk=${counts?.prisonersHighRisk}` +
+        ` residents=${counts?.roomOccupants} treasury=${counts?.treasuryMinorUnits} | strip: ${await strip(page)}`,
+    );
+  }
+  log(`events: ${JSON.stringify(await eventSeries(page))}`);
+  log(`band samples: ${JSON.stringify(await bandSamples(page))}`);
+  log(`final strip: ${await strip(page)}`);
+});
+
+/* ------------------------------------------------------------------ */
+/* Act 3: the same prison, under-guarded on purpose                    */
+/* ------------------------------------------------------------------ */
+
+test('act 3: a deliberately neglected prison — the escape sentence and a weapon (#691, #681)', async ({ page }) => {
+  test.setTimeout(2_400_000);
+  const log = (line: string) => console.log(`[act3] ${line}`);
+
+  await installTee(page);
+  await installBandSampler(page);
+  await openApp(page);
+
+  // Two beds for fourteen people and nobody watching: the neglect the escape
+  // gate is measured against.
+  await buildAndPopulate(page, { beds: 2, admits: 14, guards: 0, label: 'act3' });
+
+  await fastForwardToMax(page);
+  log(`clock: ${JSON.stringify(await currentClock(page))} at tick ${await currentTick(page)}`);
+
+  const target = 100_000;
+  const started = Date.now();
+  let lastReported = -1;
+  for (;;) {
+    const tick = await currentTick(page);
+    if (tick >= target) break;
+    if (Date.now() - started > 2_100_000) {
+      log(`stopping at tick ${tick} rather than ${target}: wall-clock budget spent`);
+      break;
+    }
+    await page.waitForTimeout(20_000);
+    const counts = await latestCounts(page);
+    const events = await eventSeries(page);
+    if (events.length !== lastReported) {
+      log(`events so far (${events.length}): ${JSON.stringify(events)}`);
+      lastReported = events.length;
+    }
+    log(
+      `tick=${counts?.tick} prisoners=${counts?.prisoners} highRisk=${counts?.prisonersHighRisk}` +
+        ` residents=${counts?.roomOccupants} staff=${counts?.staff} treasury=${counts?.treasuryMinorUnits}`,
+    );
+    log(`  strip: ${await strip(page)}`);
+    log(`  band now: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
+  }
+
+  log(`=== EVENTS, all of them ===`);
+  log(JSON.stringify(await eventSeries(page), undefined, 1));
+  log(`=== BAND SAMPLES, every change ===`);
+  log(JSON.stringify(await bandSamples(page), undefined, 1));
+
+  /*
+   * The alerts list lives in a `ui-section` inside the minimap panel, and
+   * `hud-state.ts`'s `collapsedPanels: ['alerts']` folds that section on every
+   * fresh page. So this is the fold a player has to find to read back an event
+   * the band has already replaced.
+   */
+  const alertsSection = page.locator('.ui-section:has(.hud-alerts__list)');
+  log(`alerts section data-collapsed on arrival = ${await alertsSection.getAttribute('data-collapsed')}`);
+  log(`alerts list while folded: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+  await alertsSection.locator('> .ui-section__header, > .ui-section__header-row > .ui-section__header').first().click();
+  await page.waitForTimeout(500);
+  log(`alerts section data-collapsed after one press = ${await alertsSection.getAttribute('data-collapsed')}`);
+  log(`alerts list after opening it: ${JSON.stringify((await panelText(page, '.hud-alerts__list')).split('\n'))}`);
+
+  log(`final strip: ${await strip(page)}`);
+  log(`final counts: ${JSON.stringify(await latestCounts(page))}`);
+});
