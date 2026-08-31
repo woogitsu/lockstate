@@ -6984,6 +6984,14 @@ test.describe('the assembled application', () => {
 
     // The region really is gone at this viewport, asserted rather than taken
     // from the stylesheet -- it is the premise of the whole test.
+    //
+    // **An attempt to remove that breakpoint was made and withdrawn on
+    // 2026-08-31 (#703, ruling 5)**: below 720px `.hud__rail` stretches into
+    // the corner's grid area, so with the corner laid out the Intake panel's
+    // Admit button covered the Alerts fold header, and bringing the corner back
+    // whole also covered the centre pixel a player taps to reach the world.
+    // `hud.css`'s note on that block carries both measurements. So the premise
+    // holds, and now for a measured reason rather than a stylesheet reading.
     await expect(page.locator('.hud__corner')).toBeHidden();
     await expect(page.locator('.hud__refusal')).toBeHidden();
 
@@ -7029,10 +7037,23 @@ test.describe('the assembled application', () => {
     // `innerText` excludes a subtree the layout dropped, which is the
     // measurement #220 established as the honest one.
     expect(measured.hudMentionsIt).toBe(true);
-    // And the surface it replaced, at the same instant and at this viewport:
-    // the row is built and is on screen nowhere.
+    /*
+     * And the surface it replaced, at the same instant and at this viewport.
+     *
+     * The row is built and is on screen nowhere -- the second half of #220's
+     * measurement, at 375x812, the viewport it was found at.
+     *
+     * **#220's defect had two causes and only one of them is gone.** The fold
+     * is (ruling 1: the section starts open, and the list now scrolls rather
+     * than letting its panel clip the newest row), so above 720px the row has a
+     * real box and `ui-shell.spec.ts` asserts exactly that. The 720px
+     * breakpoint is not: ruling 5 asked for it and the attempt was withdrawn on
+     * measurement, because below 720px `.hud__rail` stretches into the corner's
+     * grid area. So this assertion stands **at this viewport only**, and it is
+     * the record that the phone half of #220 is still open.
+     */
     expect(measured.alertRowPresent).toBe(true);
-    expect(measured.alertRowLaidOut).toBe(false);
+    expect(measured.alertRowLaidOut, 'the corner is display:none at 375px, so the row has no box').toBe(false);
 
     await expect(band).toContainText(localeText('hud.alert.refusal.remove-object.nothing-to-remove'));
     await expect(band).not.toContainText('remove-object.');
@@ -8029,10 +8050,16 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud-alerts__list')).not.toContainText('Simulation unavailable');
 
     // A phone. `hud.css` drops `.hud__corner` entirely at 720px and below, so
-    // under the old routing no interaction could put the sentence on screen
-    // here at all: with the whole region `display: none`, opening the Alerts
-    // section inside it still leaves its rows unlaid-out (#220 measured
-    // exactly that, at this viewport). This row survives the breakpoint.
+    // no interaction can put the sentence on screen here through the alerts
+    // list: with the whole region `display: none`, opening the Alerts section
+    // inside it still leaves its rows unlaid-out (#220 measured exactly that,
+    // at this viewport). This row survives the breakpoint.
+    //
+    // **The Alerts section itself starts OPEN as of #703 ruling 1**, which is
+    // why the sentence above about "opening" is now about a fold nobody has to
+    // open -- and it changes nothing here, because the region containing it is
+    // still not laid out at this width. #703 ruling 5 asked for that to change
+    // and the attempt was withdrawn on measurement; `hud.css` holds why.
     await page.setViewportSize({ width: 375, height: 812 });
     await expect(unavailable).toBeVisible();
     await expect(unavailable).toContainText('Simulation unavailable');

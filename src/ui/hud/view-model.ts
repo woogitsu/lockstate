@@ -1089,7 +1089,19 @@ export interface HudStaffViewModel {
  * `.hud__corner` entirely at 720px and below, and the alerts section starts
  * folded (`INITIAL_HUD_SHELL_STATE`), so the row is `offsetParent === null`
  * with a 0x0 box at every size until the player opens it -- and moved one
- * message out. It moved that message and no other, so every refusal the
+ * message out.
+ *
+ * **Both halves of that measurement stopped being true on 2026-08-31 (#703,
+ * rulings 1 and 5), and the sentence above is kept because it is the record of
+ * why this field exists.** `INITIAL_HUD_SHELL_STATE.collapsedPanels` is now
+ * empty, so the section starts open, and the `@media (max-width: 720px)` block
+ * no longer hides `.hud__corner`. Measured on the real application after
+ * both: the corner is laid out at 1920, 1440, 1280, 900, 768, 721, 720, 600
+ * and 375 CSS px wide, and the alerts list is laid out with `offsetParent`
+ * non-null at all nine. **This field is not withdrawn.** The band and the list
+ * are still the notice and the log, which is the split
+ * `src/ui/simulation-alerts.ts` names and the reason a refusal needs a line of
+ * its own rather than a row in a scrollback. It moved that message and no other, so every refusal the
  * worker decided after accepting a command went on arriving in the same
  * invisible place: a wall on unowned land, a purchase the treasury cannot
  * cover, a room over one already there, and -- since ADR 0028 phase 3 -- a
@@ -1141,15 +1153,26 @@ export interface HudRefusalNoticeViewModel {
  *
  * ## Why the band exists at all, when the alerts list already renders these
  *
- * Because the alerts list does not reach the player. `hud.css` drops
+ * Because the alerts list did not reach the player. `hud.css` dropped
  * `.hud__corner` entirely at 720px and below, and the alerts section inside it
- * starts folded (`INITIAL_HUD_SHELL_STATE`), so a row appended there is
- * `offsetParent === null` at *every* viewport until somebody opens it --
+ * started folded (`INITIAL_HUD_SHELL_STATE`), so a row appended there was
+ * `offsetParent === null` at *every* viewport until somebody opened it --
  * measured in Chromium at 1280x800 and 375x812 for issue #220, which is the
  * defect that gave the refusal its own band and then gave "no simulation" a
  * second one. Routing `'info'` to the list alone would have been the third
  * repetition of that defect and would have made the channel's first producers
  * invisible in exactly the way the silent sentence-end already was.
+ *
+ * **That is past tense as of 2026-08-31 (#703): the list now reaches the
+ * player at every viewport, and the band still exists.** The two are not the
+ * same job and the reason is one the fold never bore on. A band shows one
+ * message and replaces it; a list keeps several and scrolls back. What the
+ * escape sentence measured on 2026-08-31 is that the *band alone* loses a
+ * message to whatever shares its tick -- the escape line was replaced by an
+ * all-clear from the same tick -- so the list is what makes a band-only
+ * message survivable, and the band is what makes a list-only message
+ * noticeable. Neither subsumes the other, and this heading's question now has
+ * a better answer than the one it was written with.
  *
  * So the split is the one `src/ui/simulation-alerts.ts` already names for
  * refusals: **the band is the notice and the list is the log**, and an event
