@@ -126,6 +126,37 @@ const cancelled = (runtime: SimulationRuntime): number =>
 const deliveryIds = (runtime: SimulationRuntime): string[] =>
   projectPendingDeliveries(runtime.procurement, { limit: 1000 }).deliveries.rows.map((row) => row.orderId);
 
+/**
+ * Ticks until every order has reached a terminal state, answering the tick it
+ * happened on. `-1` if it never does, so a case that stops building fails on
+ * the figure rather than hanging.
+ */
+function runToQuiet(runtime: SimulationRuntime, limit = 2_000): number {
+  for (let index = 0; index < limit; index += 1) {
+    runtime.kernel.step();
+    if (runtime.construction.allOrders().every((order) => order.state === 'completed' || order.state === 'cancelled')) {
+      return runtime.kernel.tick;
+    }
+  }
+  return -1;
+}
+
+/**
+ * A prison holding exactly 300, drained through the real *Buy* control.
+ *
+ * Planks and not bricks, and the choice is what makes the cases that use this
+ * legible: no `wall-brick` order asks for `item.wood-plank`, so the drained
+ * stock sits in the container without touching any brick demand or any brick
+ * delivery. 380 at 65 is 24,700, and 25,000 - 24,700 is 300 -- a balance that
+ * buys seven bricks and not eight.
+ */
+function drainedPrison(): SimulationRuntime {
+  const runtime = createNewSimulationRuntime(SEED);
+  send(runtime, { type: 'PurchaseMaterials', orderId: 'drain', itemId: 'item.wood-plank', quantity: 380 });
+  step(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS + 2);
+  return runtime;
+}
+
 describe('a refund survives the clock (#687)', () => {
   it('pins the three figures every balance below is written from', () => {
     expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
@@ -342,5 +373,239 @@ describe('a refund survives the clock (#687)', () => {
     // for a withdrawal to protect, and the queue keeps every order it had.
     expect(balanceOf(runtime)).toBe(before);
     expect(orderStates(runtime).cancelled ?? 0).toBe(0);
+  });
+  /**
+   * **The sequence PR #693 left open on purpose, priced.**
+   *
+   * #693's own weakest claim, second half, in its words: *"a player who
+   * presses **Buy** for bricks, then draws walls against that stock, then
+   * cancels the Buy delivery, still sees the refund reversed by the next pass
+   * -- correctly, since their walls genuinely need bricks the player took
+   * away. The fold's sentence is still literally false in that sequence."*
+   *
+   * The case above (*"leaves the queue alone when the delivery was one the
+   * player pressed Buy for"*) gates the withdrawal not happening. This gates
+   * what the *player* is left holding once the pass has run, which is the half
+   * the word "correctly" was asserting without a number behind it. Measured
+   * through the same kernel, decoder and router:
+   *
+   * ```
+   * cancel the Buy      25,000 -> 24,760, three walls, complete at tick 301
+   * never cancel        25,000 -> 24,760, three walls, complete at tick 291
+   * never buy at all    25,000 -> 24,760, three walls, complete at tick 291
+   * ```
+   *
+   * So the reversal is exact rather than merely correct-in-direction: the
+   * refund comes back and goes out again at the same price, the same three
+   * segments stand, and the whole of what the cancellation cost is **ten
+   * ticks** -- half a second -- of delivery delay restarted. That is what
+   * makes the remainder copy: nothing about the outcome is wrong, and the only
+   * false thing is a sentence.
+   *
+   * ## Why the absolute figure is asserted and not only the three-way equality
+   *
+   * Three runs of one implementation agree with each other for any
+   * implementation, which is `docs/TESTING.md`'s both-sides-of-the-comparison
+   * defect wearing a different hat. `24_760` is written from the figures the
+   * first case in this file pins -- 25,000 open, 2 bricks a segment, 40 a
+   * brick -- so a price change fails there rather than being absorbed here.
+   */
+  it('gives the money back and spends it again at the same price, and costs only the delivery delay', () => {
+    const withCancel = createNewSimulationRuntime(SEED);
+    send(withCancel, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 6 });
+    placeWalls(withCancel, 3);
+    expect(balanceOf(withCancel)).toBe(25_000 - 6 * 40);
+    // The fold's promise, read at the moment the player would read it.
+    expect(projectPendingDeliveries(withCancel.procurement).refundableMinorUnits).toBe(240);
+
+    send(withCancel, { type: 'CancelMaterialPurchase', orderId: 'buy-1' });
+    expect(balanceOf(withCancel)).toBe(25_000);
+
+    const cancelledCompletedAt = runToQuiet(withCancel);
+    const withoutCancel = createNewSimulationRuntime(SEED);
+    send(withoutCancel, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 6 });
+    placeWalls(withoutCancel, 3);
+    const keptCompletedAt = runToQuiet(withoutCancel);
+
+    const neverBought = createNewSimulationRuntime(SEED);
+    placeWalls(neverBought, 3);
+    const neverBoughtCompletedAt = runToQuiet(neverBought);
+
+    // 3 segments at 2 bricks at 40: the same 240, whichever way the player got there.
+    for (const runtime of [withCancel, withoutCancel, neverBought]) {
+      expect(balanceOf(runtime)).toBe(24_760);
+      expect(orderStates(runtime).completed).toBe(3);
+    }
+
+    // The one thing the cancellation did cost: a second delivery delay, begun
+    // when the pass re-bought. Asserted as a bound and not as the measured 10,
+    // because the exact figure is the construction schedule's cadence and not
+    // this behaviour.
+    expect(cancelledCompletedAt).toBeGreaterThan(keptCompletedAt);
+    expect(cancelledCompletedAt - keptCompletedAt).toBeLessThan(PROCUREMENT_DELIVERY_DELAY_TICKS);
+    expect(keptCompletedAt).toBe(neverBoughtCompletedAt);
+  });
+
+  /**
+   * **What withdrawing on a player-bought cancellation as well would cost**,
+   * measured rather than argued, because "deletes walls the player may not
+   * expect" is the reason #693 gave for the `jit:` gate and it carried no
+   * figure.
+   *
+   * The player buys more than the run needs, then changes their mind about the
+   * stock. With the gate, the surplus is the player's to shed: the four spare
+   * bricks are refunded and never re-bought, and the run still stands. The
+   * withdrawal is invoked directly here -- the same public method the
+   * `CancelMaterialPurchase` branch calls -- to show what the ungated shape
+   * does to the same state, so the two outcomes are one arithmetic apart
+   * rather than one code change apart.
+   */
+  it('would delete the whole run if a player-bought cancellation withdrew as well', () => {
+    const runtime = createNewSimulationRuntime(SEED);
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 10 });
+    placeWalls(runtime, 3);
+    // Ten bricks in flight against six of demand, so nothing just-in-time was
+    // bought and the only delivery is the player's.
+    expect(deliveryIds(runtime)).toEqual(['buy-1']);
+    expect(balanceOf(runtime)).toBe(25_000 - 10 * 40);
+
+    send(runtime, { type: 'CancelMaterialPurchase', orderId: 'buy-1' });
+    expect(balanceOf(runtime)).toBe(25_000);
+    expect(cancelled(runtime)).toBe(0);
+
+    // **This is the ungated shape, run against the state the gate protected.**
+    // Six bricks of demand against nothing held or coming, so the loop takes
+    // every order in the run -- three walls gone because the player shed four
+    // spare bricks.
+    expect(runtime.construction.withdrawOrdersAwaitingMaterial(BRICK)).toHaveLength(3);
+    expect(queued(runtime)).toBe(0);
+  });
+
+  /**
+   * **Which segment actually disappears** -- #693's weakest claim, checked.
+   *
+   * It claimed *"the back of the crew walk is the least surprising segment to
+   * take"*, and named its own doubt: ids are `order-${crypto.randomUUID()}`,
+   * so the greatest id is not the last segment drawn, and it guessed the
+   * player would *"watch a segment vanish from somewhere in the middle of the
+   * line"*. **Both halves are wrong, and the guess is wrong in the direction
+   * that matters.** With ids that do not follow placement order -- which is
+   * every run a player produces -- the greatest id is uniformly distributed
+   * over the run, so the segment that goes is as likely to be either end as
+   * the middle. The fixture below is the extreme case, and it is reachable:
+   * placement order left to right, and the segment withdrawn is the **first
+   * one drawn**, at the far left of the row.
+   *
+   * The case above (*"takes the back of the crew walk, which is the last id
+   * and not the last drawn"*) gates the walk with ids that ascend *with*
+   * placement, which is what makes the walk legible. This one gates what a
+   * player sees when they do not, and the two are kept apart deliberately:
+   * the first is about determinism and the second is about the row of tiles.
+   *
+   * **This needs no browser.** A build order carries its own `location`
+   * (`src/simulation/construction/build-order.ts`), so which tile vanishes is
+   * a fact about the order book and not about the renderer -- which is why
+   * #693 could have settled it and did not.
+   */
+  it('takes whichever segment holds the greatest id, which can be the first one drawn', () => {
+    const runtime = createNewSimulationRuntime(SEED);
+    // Ids deliberately unordered against x, the way a UUID is. Placement is
+    // left to right at x = 4..8, one drag down one row.
+    const plan = [
+      { id: 'order-ffff', x: 4 },
+      { id: 'order-1111', x: 5 },
+      { id: 'order-9999', x: 6 },
+      { id: 'order-0000', x: 7 },
+      { id: 'order-5555', x: 8 },
+    ] as const;
+    for (const { id, x } of plan) {
+      send(runtime, { type: 'PlaceBuildOrder', orderId: id, definitionId: WALL, x, y: 4 });
+    }
+
+    const justInTime = deliveryIds(runtime).filter((id) => id.startsWith(JUST_IN_TIME_ORDER_ID_PREFIX));
+    expect(justInTime).toHaveLength(5);
+    send(runtime, { type: 'CancelMaterialPurchase', orderId: justInTime[0]! });
+
+    const withdrawn = runtime.construction.allOrders().filter((order) => order.state === 'cancelled');
+    expect(withdrawn).toHaveLength(1);
+    // `order-ffff` is the greatest id and it is the tile the player drew
+    // **first**, at the left end of the row -- not the middle, and not the
+    // segment they drew last.
+    expect(withdrawn[0]!.id).toBe('order-ffff');
+    expect(withdrawn[0]!.location.x).toBe(4);
+    expect(runtime.construction.getOrder('order-5555')!.state).not.toBe('cancelled');
+  });
+
+  /**
+   * **The one place the remainder is not copy**, found by asking what the
+   * reversal costs a prison that cannot afford it.
+   *
+   * `JustInTimeMaterialsService.procureForPendingOrders` buys the whole
+   * per-item deficit in one `ProcurementSystem.purchase`, and `Treasury.spend`
+   * refuses a purchase it cannot cover **entirely**. So a player-bought
+   * delivery that was covering part of a queue is doing something the
+   * scheduled pass cannot do for itself: it is a purchase already paid for at
+   * a price the prison could once afford. Cancelling it hands the money back
+   * and asks the pass to buy the *aggregate*, which it then cannot afford at
+   * all.
+   *
+   * Measured, on a prison drained to 300 through the Buy control:
+   *
+   * ```
+   * Buy 6 bricks, draw 4 walls (8 bricks), cancel the Buy   300 held, 0 walls, 4 orders stalled for ever
+   * the same prison that does not cancel                     60 held, 3 walls, 1 order stalled
+   * the same prison that never bought                        60 held, 3 walls, 1 order stalled
+   * ```
+   *
+   * **No money is lost and no promise is broken** -- the refund is not
+   * reversed here, so the fold's sentence is true -- and the state is
+   * recoverable: one `CancelBuildOrder` brings the demand under what 300 buys
+   * and the pass funds the other three, reaching the non-cancelling outcome
+   * exactly. What the player is not told is that they have to.
+   *
+   * **This asserts the behaviour as measured, and the behaviour is the open
+   * question.** Whether the pass should buy what it can afford instead of
+   * refusing the lump is an economy decision -- it converts liquidity into
+   * stock, which is the trap
+   * [ADR 0075](../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+   * is about -- and it is put up rather than taken. If it is ruled on, this
+   * case changes, and it is written so that the change is visible rather than
+   * silent.
+   */
+  it('stalls a whole queue the prison can no longer fund in one lump, and one press undoes that', () => {
+    const withCancel = drainedPrison();
+    expect(balanceOf(withCancel)).toBe(300);
+    send(withCancel, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 6 });
+    const ids = placeWalls(withCancel, 4);
+    expect(balanceOf(withCancel)).toBe(60);
+
+    send(withCancel, { type: 'CancelMaterialPurchase', orderId: 'buy-1' });
+    expect(balanceOf(withCancel)).toBe(300);
+    step(withCancel, PROCUREMENT_DELIVERY_DELAY_TICKS * 6);
+
+    // Eight bricks at 40 is 320 and the prison holds 300: the pass buys
+    // nothing at all, where the cancelled delivery had already paid for six.
+    expect(orderStates(withCancel).completed ?? 0).toBe(0);
+    expect(queued(withCancel)).toBe(4);
+    expect(balanceOf(withCancel)).toBe(300);
+    expect(withCancel.justInTimeMaterials.lastReport.unfunded).toEqual([
+      { itemId: BRICK, quantity: 8, costMinorUnits: 320 },
+    ]);
+
+    const withoutCancel = drainedPrison();
+    send(withoutCancel, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 6 });
+    placeWalls(withoutCancel, 4);
+    step(withoutCancel, PROCUREMENT_DELIVERY_DELAY_TICKS * 6);
+
+    // Three of the four stand, out of bricks bought before the money ran out.
+    expect(orderStates(withoutCancel).completed).toBe(3);
+    expect(balanceOf(withoutCancel)).toBe(60);
+
+    // And the way back, which is one press and is nowhere stated: bring the
+    // demand under what the prison can pay in one lump.
+    send(withCancel, { type: 'CancelBuildOrder', orderId: ids[3]! });
+    step(withCancel, PROCUREMENT_DELIVERY_DELAY_TICKS * 6);
+    expect(orderStates(withCancel).completed).toBe(3);
+    expect(balanceOf(withCancel)).toBe(60);
   });
 });
