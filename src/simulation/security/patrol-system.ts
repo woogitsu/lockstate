@@ -112,7 +112,16 @@ export class PatrolSystem implements SystemRegistration {
   private continueLeg(guardId: EntityId, sector: SecuritySectorDefinition, tick: number): void {
     const requestId = this.guards.getPathRequestId(guardId);
     if (requestId === undefined) {
-      // Restored mid-leg (see GuardRoster.loadSnapshot) -- re-request the current leg rather than assuming arrival.
+      // **The restore this line was written for does not reach it, and never
+      // did.** The sentence here read "Restored mid-leg (see
+      // GuardRoster.loadSnapshot) -- re-request the current leg rather than
+      // assuming arrival," and `loadSnapshot` has cleared the waypoint index
+      // and settled the phase on `'on-post'` since the same commit that added
+      // both (#26), so a restored guard arrives at `update` through the
+      // `beginLoop` branch above instead. It is kept as what it actually is:
+      // a defensive re-request for a `'travelling'` guard that holds a
+      // waypoint and no request id, rather than an assumption that a leg
+      // nobody is routing has completed.
       this.requestLeg(guardId, sector, this.guards.getPatrolWaypointIndex(guardId) ?? 0, tick);
       return;
     }

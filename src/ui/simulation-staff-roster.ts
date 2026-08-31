@@ -52,6 +52,17 @@ import {
  * `On Search` already authored. So the status word on every roster row is a
  * string that already shipped, and this reader adds none.
  *
+ * **There are five words now, and the fifth did not already ship** (the
+ * owner's ruling 24 of 2026-08-31, which supplied it). `Returning` labels a
+ * guard restored from a save taken mid-journey: settled on `'on-post'` by
+ * `GuardRoster.loadSnapshot` while standing wherever the walk had got to, so
+ * `On Post` was an assertion about a tile it is not on. The sentence above
+ * still holds of *this module* -- the phase arrives on the row and the key is
+ * derived from it, so nothing here is hand-written, and the row picked up the
+ * new word without a line changing. The projection is what derives it
+ * (`src/simulation/security/deployment-phase.ts`): it is not a fifth
+ * `DeploymentPhase`, and no save carries it.
+ *
  * **Not `guard-claim`**, which is what the held rows use. That vocabulary
  * answers *which claimant is holding this guard* and its resolution needs both
  * `'on-search'` claimants asked live inside the simulation (ADR 0033 decision

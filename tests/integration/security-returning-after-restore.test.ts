@@ -92,8 +92,18 @@ function admitOne(runtime: SimulationRuntime): void {
   while (runtime.kernel.tick % 10 !== 0) runtime.kernel.step();
 }
 
-/** A session saved with its one guard halfway to its post: the state §C.1 measured. */
-function prisonSavedMidJourney(): SimulationRuntime {
+/**
+ * A session saved with guard 0 halfway to its post: the state §C.1 measured.
+ *
+ * `withSpareGuard` hires a second guard, standing on the post tile and
+ * `'unassigned'` because guard 0 already covers the sector's requirement of
+ * one. It is the coverage case's instrument rather than decoration: if a
+ * returning guard stopped counting, the reload would read a shortage of one
+ * and `assignUnassignedGuards` would post *that* guard on its next cycle --
+ * on the post tile, so instantly and visibly. Without a spare in the prison
+ * the same wrong decision would show only as an arithmetic difference.
+ */
+function prisonSavedMidJourney(withSpareGuard = false): SimulationRuntime {
   const live = createNewSimulationRuntime(SEED);
   admitOne(live);
   submit(live, 'hire-far', packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...FAR_TILE }));
@@ -103,6 +113,12 @@ function prisonSavedMidJourney(): SimulationRuntime {
   expect(live.securityGuards.getDeploymentPhase(0)).toBe('travelling');
   expect(live.securityGuards.getPathRequestId(0)).toBeDefined();
   expect(live.securityGuards.getTile(0)).toEqual(FAR_TILE);
+
+  if (withSpareGuard) {
+    submit(live, 'hire-spare', packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ORIGIN }));
+    expect(live.securityGuards.getDeploymentPhase(0)).toBe('travelling');
+    expect(live.securityGuards.getDeploymentPhase(1)).toBe('unassigned');
+  }
 
   return restoreSimulationRuntime(captureSessionSnapshot(live), SEED).runtime;
 }
@@ -151,8 +167,8 @@ describe('a guard who was walking when the prison was saved', () => {
     expect(rosterStatusWords(restored)).toEqual(['Returning']);
   });
 
-  it('still counts toward its sector, so a reload does not invent a shortage or post a second guard', () => {
-    const restored = prisonSavedMidJourney();
+  it('still counts toward its sector, so a reload invents no shortage and posts no second guard', () => {
+    const restored = prisonSavedMidJourney(true);
 
     // The decision, pinned in the direction it was taken: a returning guard is
     // an assigned guard. `assignedGuardCountFor` counts every guard whose
@@ -161,13 +177,14 @@ describe('a guard who was walking when the prison was saved', () => {
     expect(restored.deploymentSystem.getCoverageReport(restored.kernel.tick)).toEqual([
       { sectorId: DEFAULT_SECTOR_ID, required: 1, assigned: 1, shortage: 0 },
     ]);
+    expect(rosterPhases(restored)).toEqual(['returning', 'unassigned']);
 
     // And the consequence that would have been the real cost of deciding the
-    // other way: a shortage the reload invented would be filled on the next
-    // deployment cycle, so the prison would come back with one more guard
-    // posted than it was saved with.
+    // other way, run rather than argued: an invented shortage is filled on the
+    // next deployment cycle, so the prison would come back with two guards on
+    // one post it was saved with one on.
     stepBy(restored, 100);
-    expect(restored.securityGuards.allGuardIds()).toEqual([0]);
+    expect(rosterPhases(restored)).toEqual(['on-post', 'unassigned']);
     expect(restored.deploymentSystem.getCoverageReport(restored.kernel.tick)).toEqual([
       { sectorId: DEFAULT_SECTOR_ID, required: 1, assigned: 1, shortage: 0 },
     ]);
