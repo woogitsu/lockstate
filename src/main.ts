@@ -91,6 +91,7 @@ import {
 } from './simulation/rooms/requirements';
 import { MAX_PURCHASE_QUANTITY, staffDailyWageMinorUnits } from './simulation/economy';
 import { staffHireCostMinorUnits } from './simulation/staff';
+import { judgeAffordability } from './ui/affordability';
 import { defaultStaffRoleRegistry } from './content/staff-role-catalog';
 import { defaultItemRegistry } from './content/item-catalog';
 import { procurableMaterial } from './content/procurement-catalog';
@@ -2404,6 +2405,20 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * runs, so it is never the empty view model's zero while a session
            * exists.
            *
+           * **The comparison itself moved out of this file** (#703 ruling A).
+           * It read `if (total > viewModel.counts.treasuryMinorUnits)`, which is
+           * `Treasury.canAfford` with the floor hard-coded at zero -- correct
+           * for every session that existed when it was written, and wrong from
+           * the moment `createNewSimulationRuntime` opened a standing overdraft
+           * ([ADR 0083](../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+           * §2). It would then have refused presses the simulation *accepts*,
+           * which is #82's and #207's failure with the sign reversed. It is now
+           * `judgeAffordability` (`src/ui/affordability.ts`), a pure function
+           * with its own boundary cases, because nothing in this file is
+           * reachable from `pnpm test` -- `vitest.config.ts` sets
+           * `environment: 'node'` -- so a mutation here survives for want of an
+           * observer rather than for want of a test.
+           *
            * **It is an echo, not the authority, and two cases get past it.** A
            * command runs at a future tick, so several purchases pressed in a
            * row are each checked against a balance none of them has been
@@ -2425,7 +2440,8 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             throw new Error(`Nothing sells ${intent.itemId}, so it cannot be bought.`);
           }
           const total = priced.unitPriceMinorUnits * intent.quantity;
-          if (total > viewModel.counts.treasuryMinorUnits) {
+          const verdict = judgeAffordability(total, viewModel.counts.treasuryMinorUnits);
+          if (verdict.refused) {
             throw new Error(
               `The last reported balance of ${viewModel.counts.treasuryMinorUnits} cannot cover ${total}.`,
             );
@@ -2599,12 +2615,17 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * the view model's rendered figure, so the number checked here and
            * the number the treasury is debited come from one definition even
            * if a caller passed a role the panel never rendered.
+           *
+           * **And the comparison is `judgeAffordability`'s** rather than the
+           * `>` this line used to carry, for the reason spelled out on the
+           * purchase case above: the floor is no longer zero, and this file
+           * cannot be tested.
            */
           const hireChargeMinorUnits = staffHireCostMinorUnits(intent.staffRoleId);
           if (hireChargeMinorUnits === undefined) {
             throw new Error(`No staff role ${intent.staffRoleId} is declared, so nobody can be hired into it.`);
           }
-          if (hireChargeMinorUnits > viewModel.counts.treasuryMinorUnits) {
+          if (judgeAffordability(hireChargeMinorUnits, viewModel.counts.treasuryMinorUnits).refused) {
             throw new Error(
               `The last reported balance of ${viewModel.counts.treasuryMinorUnits} cannot cover ${hireChargeMinorUnits}.`,
             );

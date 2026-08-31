@@ -7,7 +7,7 @@ import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
 import { SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
 import { TILE_SIZE_PX } from '../../src/rendering/tile-metrics';
 import { defaultMessageCatalogEn, formatNumber } from '../../src/services/localization';
-import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
+import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { HUD_TAB_IDS, PRISONER_ROSTER_ROW_LIMIT, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
 
 /**
@@ -7841,11 +7841,21 @@ test.describe('the assembled application', () => {
     await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
 
     const unitPrice = unitPriceOf('item.brick');
-    const quantity = Math.floor(TREASURY_STARTING_BALANCE_MINOR_UNITS / unitPrice / 2) + 1;
+    // **What a prison can spend is no longer what it holds** (#703 ruling A):
+    // `createNewSimulationRuntime` opens a standing overdraft, and `canAfford`
+    // is `balance - amount >= floor`, so the affordability boundary this test
+    // straddles is the balance *plus* the facility. Derived rather than
+    // written out, so it moves with either constant.
+    const spendable = TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
+    const quantity = Math.floor(spendable / unitPrice / 2) + 1;
     // The arithmetic this test rests on, asserted rather than left to a
-    // reader: one is affordable against the published balance and two are not.
-    expect(quantity * unitPrice).toBeLessThanOrEqual(TREASURY_STARTING_BALANCE_MINOR_UNITS);
-    expect(2 * quantity * unitPrice).toBeGreaterThan(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    // reader: one is affordable against what the prison can spend and two are
+    // not. **This pair read `TREASURY_STARTING_BALANCE_MINOR_UNITS` until
+    // 2026-08-31**, which was the same number while the floor was 0 and is
+    // 2,500 short of it now -- the second press became affordable and the
+    // refusal this test exists for stopped happening.
+    expect(quantity * unitPrice).toBeLessThanOrEqual(spendable);
+    expect(2 * quantity * unitPrice).toBeGreaterThan(spendable);
 
     const alertsSection = page.locator('.hud-minimap .ui-section');
     const emptyRow = page.locator('.hud-alerts__list [data-alert="empty"]');
@@ -7925,6 +7935,67 @@ test.describe('the assembled application', () => {
    * made to publish again, with something observable, before emptiness is
    * asserted for the last time.
    */
+  /**
+   * The one claim about #703 ruling A that only a browser settles: a prison
+   * that has spent into its standing overdraft **shows the minus on the strip**.
+   *
+   * Everything else about the facility is provable headlessly and is proved
+   * there -- `Treasury.canAfford`'s comparison, the schema that carries a
+   * signed figure across the protocol, `judgeAffordability`'s decision. What
+   * no headless test reaches is `Intl.NumberFormat` rendering a negative into
+   * the chip on the assembled page, because `vitest.config.ts` is
+   * `environment: 'node'` and the chip is built by `status-strip.ts` against a
+   * real DOM.
+   *
+   * **And the second assertion is the ruling's cost written down.** The chip
+   * carries no tone and no badge, so the minus is the whole of what a player
+   * is told: not that a facility exists, not what it is worth, and not that
+   * spending it can strand a prison with no capacity. That sentence is the
+   * owner's to author (`AGENTS.md`: a promise to a player is theirs), so this
+   * asserts the absence rather than inventing the presence -- and it will go
+   * red the day somebody adds a tone without a decision behind it.
+   */
+  test('spends into the standing overdraft and shows the minus, with nothing else said (#703)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    const funds = page.locator('[data-metric="funds"] .ui-stat__value');
+    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+
+    // The largest whole purchase the facility covers, derived so it moves with
+    // either constant: 27,500 of spending power at 40 a brick is 687 bricks
+    // and 27,480, which lands the balance at -2,480.
+    const unitPrice = unitPriceOf('item.brick');
+    const spendable = TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
+    const quantity = Math.floor(spendable / unitPrice);
+    const settled = TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice;
+    // The state this test is about, asserted rather than assumed: the purchase
+    // is affordable and the balance it leaves is below zero.
+    expect(quantity * unitPrice).toBeLessThanOrEqual(spendable);
+    expect(settled).toBeLessThan(0);
+
+    await openBuyRow(page);
+    await setBuyQuantity(page, quantity);
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    await page.locator('.hud-build__buy-submit').click();
+
+    // Polled on the figure itself rather than on a wall clock: the balance
+    // arrives on `simulation/status-counts` whenever the worker next publishes.
+    await expect
+      .poll(async () => funds.textContent(), { timeout: 20_000 })
+      .toBe(fundsText(settled));
+
+    // No tone, no badge: see the docblock. `data-tone` is what `setTone` sets
+    // and deletes, so its absence is the assertion.
+    await expect(page.locator('[data-metric="funds"]')).not.toHaveAttribute('data-tone', /.+/u);
+    await expect(page.locator('.hud__refusal')).toBeHidden();
+  });
+
   test('a purchase this thread refuses reaches the refusal line, and raises no alert (#89, #261)', async ({
     page,
   }) => {
@@ -7939,8 +8010,12 @@ test.describe('the assembled application', () => {
     await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
 
     const unitPrice = unitPriceOf('item.brick');
-    const unaffordable = Math.floor(TREASURY_STARTING_BALANCE_MINOR_UNITS / unitPrice) + 1;
-    expect(unaffordable * unitPrice).toBeGreaterThan(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    // Past what the prison can spend, which is the balance plus the standing
+    // overdraft (#703 ruling A) rather than the balance alone -- see the
+    // `spendable` note in the test above.
+    const spendable = TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
+    const unaffordable = Math.floor(spendable / unitPrice) + 1;
+    expect(unaffordable * unitPrice).toBeGreaterThan(spendable);
 
     const alertsSection = page.locator('.hud-minimap .ui-section');
     const emptyRow = page.locator('.hud-alerts__list [data-alert="empty"]');

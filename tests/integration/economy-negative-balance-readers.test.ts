@@ -17,12 +17,27 @@ import { SimulationEventLog } from '../../src/simulation/events';
  * **What every reader of the balance does with a negative one.**
  *
  * [ADR 0075](../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
- * decision 2 is Accepted and says the balance may go negative;
- * `Treasury.setOverdraftFloor` is the one control that opens the room for it
- * and has no production caller, so **no shipped session can reach the state
- * this file measures**. That is exactly why it is worth measuring before one
- * can: the readers were all written against a floor of zero, and this file
- * establishes which of them survive the change and which do not.
+ * decision 2 is Accepted and says the balance may go negative.
+ *
+ * **This file was written as a characterisation of a state no shipped session
+ * could reach, and the sentence that said so is kept because the tables in
+ * [ADR 0083](../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+ * were measured under it:**
+ *
+ * > `Treasury.setOverdraftFloor` is the one control that opens the room for it
+ * > and has no production caller, so **no shipped session can reach the state
+ * > this file measures**.
+ *
+ * **That stopped being true on 2026-08-31.** #703 ruled reading A -- a standing
+ * overdraft every prison has -- and `createNewSimulationRuntime` now opens
+ * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` on the `Treasury` it builds, so every
+ * session reaches this state the moment a player overspends. The floor is still
+ * opened by hand in the probes below, because a probe that read the shipped
+ * constant would move silently when that constant did.
+ *
+ * The point of the file is unchanged and the reason it survives the ruling: the
+ * readers were all written against a floor of zero, and this establishes which
+ * of them survive the change and which do not.
  *
  * `tests/unit/economy-treasury.test.ts` covers the treasury itself,
  * `tests/migrations/save-v5-negative-balance.test.ts` the save format and
@@ -47,9 +62,14 @@ function submit(runtime: SimulationRuntime, id: string, command: Parameters<type
  * A prison spent exactly `depth` minor units under water, through the real
  * command router rather than by assigning a balance.
  *
- * The floor is opened by hand because nothing in `src/` opens one. The spend
- * is a single `PurchaseMaterials` sized so the balance lands on the floor to
- * the minor unit, which is the boundary `Treasury.canAfford` decides.
+ * The floor is opened by hand rather than read from
+ * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`, so the depths this file measures stay
+ * the depths ADR 0083 recorded even if the shipped magnitude moves.
+ * **The sentence here used to be *"because nothing in `src/` opens one"*, and
+ * that reason expired with #703 ruling A** -- the reason above is the one that
+ * still holds. The spend is a single `PurchaseMaterials` sized so the balance
+ * lands on the floor to the minor unit, which is the boundary
+ * `Treasury.canAfford` decides.
  */
 function prisonUnderWater(depth: number): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
@@ -61,27 +81,43 @@ function prisonUnderWater(depth: number): SimulationRuntime {
   return runtime;
 }
 
-describe('the status channel is the one reader a negative balance breaks', () => {
+describe('the status channel carries a negative balance instead of refusing the block', () => {
   /**
-   * `statusCountsSchema`'s `treasuryMinorUnits` is `countSchema`, which is
-   * `z.number().int().min(0)`. The field's own comment gives the reason --
-   * *"`countSchema`'s floor of 0 is the treasury's own invariant … a negative
-   * balance is unreachable, and a schema that admitted one would be describing
-   * a state the simulation cannot be in"* -- and ADR 0075 decision 2 falsified
-   * the premise without the schema moving.
+   * **Two assertions in this describe were inverted by #703 ruling A, and the
+   * inversion is the contract moving rather than the evidence being removed.**
+   *
+   * What this file measured before the ruling: `statusCountsSchema`'s
+   * `treasuryMinorUnits` was `countSchema` -- `z.number().int().min(0)` -- so a
+   * prison one minor unit under water published a `simulation/status-counts`
+   * the decoder refused `invalid-payload`, and the `.strict()` object's fifteen
+   * *other* figures went down with it. Those two assertions read
+   * `expect(parsed.success).toBe(false)` and `expect(decoded.ok).toBe(false)`,
+   * and each is now its own opposite because the field is
+   * `signedMinorUnitsSchema` (`z.number().int().safe()`).
+   *
+   * **What is deliberately not weakened, and is why this is not a deletion.**
+   * The finding the old assertions carried was never *"a negative is refused"*
+   * -- that was the defect. It was *"the refusal takes fifteen unrelated
+   * figures with it"*, and that is now pinned from the other side: the decoded
+   * message is walked for those figures rather than merely being asked whether
+   * it parsed. And the third test below is new: it holds `countSchema` itself
+   * to its floor, so widening the shared schema instead of the one field --
+   * the loosening ADR 0083 rejects by name -- goes red here.
    */
-  it('rejects the whole counts block, not merely the funds field', () => {
+  it('admits the balance the projection publishes, and refuses nothing else in the block', () => {
     const runtime = prisonUnderWater(2_000);
     const counts = projectStatusCounts(runtime, runtime.kernel.tick);
 
     expect(counts.treasuryMinorUnits, 'the projection publishes the balance verbatim').toBe(-2_000);
     const parsed = statusCountsSchema.safeParse(counts);
-    expect(parsed.success).toBe(false);
-    expect(parsed.error?.issues.map((issue) => issue.path.join('.'))).toEqual(['treasuryMinorUnits']);
+    expect(parsed.error?.issues.map((issue) => issue.path.join('.')) ?? []).toEqual([]);
+    expect(parsed.success).toBe(true);
+    expect(parsed.data?.treasuryMinorUnits, 'and the parse does not clamp it').toBe(-2_000);
   });
 
-  it('is refused at the decoder every worker message passes through', () => {
+  it('is accepted at the decoder every worker message passes through, with the whole block intact', () => {
     const runtime = prisonUnderWater(2_000);
+    const counts = projectStatusCounts(runtime, runtime.kernel.tick);
     const decoded = decodeWorkerToMainMessage({
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
       messageId: 'status-under-water',
@@ -89,30 +125,54 @@ describe('the status channel is the one reader a negative balance breaks', () =>
       payload: {
         tick: runtime.kernel.tick,
         schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
-        counts: projectStatusCounts(runtime, runtime.kernel.tick),
+        counts,
       },
     });
 
-    expect(decoded.ok).toBe(false);
+    expect(decoded.ok ? null : decoded.error.code).toBe(null);
+    expect(decoded.ok).toBe(true);
     /*
-     * The whole message, which is the finding rather than a detail: the counts
-     * block carries fifteen other figures, so a prison that goes one minor
-     * unit under water stops telling the main thread its prisoner count, its
-     * coverage, its incidents and its arrears as well as its balance. The
-     * `funds` chip would not show a minus -- the strip would freeze.
+     * The fifteen other figures, walked rather than assumed. This is the half
+     * of the old assertion that was the finding: the block is `.strict()`, so
+     * before the widening a single out-of-range member took the prisoner count,
+     * the coverage, the incidents and the arrears down with the balance, and a
+     * player would have watched the whole strip freeze rather than seen a minus.
+     * Asserting `decoded.ok` alone would not say that; comparing the delivered
+     * block to the projected one member by member does.
      */
-    expect(decoded.ok ? '' : decoded.error.code).toBe('invalid-payload');
-    expect(decoded.ok ? [] : decoded.error.issues.map((issue) => issue.path)).toEqual(['payload.counts.treasuryMinorUnits']);
+    const delivered = decoded.ok && decoded.value.kind === 'simulation/status-counts'
+      ? decoded.value.payload.counts
+      : undefined;
+    expect(delivered).toEqual(counts);
+    expect(Object.keys(counts).length, 'the balance is one member of a block that carries the rest of the strip')
+      .toBeGreaterThan(15);
   });
 
-  it('accepts the identical prison one minor unit above the boundary', () => {
+  it('still accepts the identical prison one minor unit above the boundary', () => {
     const runtime = createNewSimulationRuntime(SEED);
     runtime.treasury.setOverdraftFloor(-2_000);
     submit(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-to-zero', itemId: 'item.brick', quantity: 625 });
     expect(runtime.treasury.balanceMinorUnits).toBe(0);
 
     const parsed = statusCountsSchema.safeParse(projectStatusCounts(runtime, runtime.kernel.tick));
-    expect(parsed.success, 'a balance of zero is the boundary the schema was written for').toBe(true);
+    expect(parsed.success, 'a balance of zero was the old bound`s boundary and is still valid').toBe(true);
+  });
+
+  /**
+   * The guard on *how* the field was widened, and the reason it is here rather
+   * than in a schema unit test: ADR 0083's "considered and not taken" rejects
+   * widening `countSchema` itself, because fourteen other members of this
+   * object are counts whose floor of `0` is a real invariant. This asserts the
+   * floor is still enforced on one of them, so a future pass that reaches for
+   * the shared schema fails on this file instead of on nothing.
+   */
+  it('leaves the floor of zero standing on the counts that are counts', () => {
+    const runtime = prisonUnderWater(2_000);
+    const counts = projectStatusCounts(runtime, runtime.kernel.tick);
+    const parsed = statusCountsSchema.safeParse({ ...counts, prisoners: -1 });
+
+    expect(parsed.success, 'a negative prisoner count is not a state the simulation can be in').toBe(false);
+    expect(parsed.error?.issues.map((issue) => issue.path.join('.'))).toEqual(['prisoners']);
   });
 });
 

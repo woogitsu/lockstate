@@ -150,12 +150,33 @@ function runToQuiet(runtime: SimulationRuntime, limit = 2_000): number {
  * delivery. 380 at 65 is 24,700, and 25,000 - 24,700 is 300 -- a balance that
  * buys seven bricks and not eight.
  */
+/**
+ * A prison with **265 minor units of spending power left**, on planks no wall
+ * can use.
+ *
+ * **This bought 380 planks and left 300 in the bank**, and 300 was the whole of
+ * what it could spend while `Treasury`'s floor was zero. Since #703 ruling A
+ * every session opens a standing overdraft of 2,500
+ * ([ADR 0083](../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+ * §2), so a balance of 300 buys 2,800 of brick and the case below measured
+ * nothing at all.
+ *
+ * 419 planks at 65 is 27,235 of the 27,500 a new prison can spend, leaving
+ * **265** -- which is above the 240 that six bricks cost and below the 320 that
+ * eight cost, exactly as 300 was. That window is the whole fixture; the balance
+ * it corresponds to is -2,235 and is written out below rather than derived.
+ */
 function drainedPrison(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
-  send(runtime, { type: 'PurchaseMaterials', orderId: 'drain', itemId: 'item.wood-plank', quantity: 380 });
+  send(runtime, { type: 'PurchaseMaterials', orderId: 'drain', itemId: 'item.wood-plank', quantity: 419 });
   step(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS + 2);
   return runtime;
 }
+
+/** 25,000 - 419 x 65. 265 of the 2,500 facility is left. */
+const DRAINED_BALANCE = -2_235;
+/** `DRAINED_BALANCE` less six bricks at 40, which is 25 of room and below one more brick. */
+const DRAINED_AFTER_SIX_BRICKS = -2_475;
 
 describe('a refund survives the clock (#687)', () => {
   it('pins the three figures every balance below is written from', () => {
@@ -549,13 +570,19 @@ describe('a refund survives the clock (#687)', () => {
    * and asks the pass to buy the *aggregate*, which it then cannot afford at
    * all.
    *
-   * Measured, on a prison drained to 300 through the Buy control:
+   * Measured, on a prison drained to **265 of spending power** through the Buy
+   * control:
    *
    * ```
-   * Buy 6 bricks, draw 4 walls (8 bricks), cancel the Buy   300 held, 0 walls, 4 orders stalled for ever
-   * the same prison that does not cancel                     60 held, 3 walls, 1 order stalled
-   * the same prison that never bought                        60 held, 3 walls, 1 order stalled
+   * Buy 6 bricks, draw 4 walls (8 bricks), cancel the Buy   265 of room, 0 walls, 4 orders stalled for ever
+   * the same prison that does not cancel                     25 of room, 3 walls, 1 order stalled
+   * the same prison that never bought                        25 of room, 3 walls, 1 order stalled
    * ```
+   *
+   * **That table read *"300 held"* and *"60 held"* until #703 ruling A**, when
+   * spending power and the balance stopped being the same number. The rows are
+   * the same runs at the same relationship between the two prices; see
+   * `drainedPrison` for the arithmetic that moved.
    *
    * **No money is lost and no promise is broken** -- the refund is not
    * reversed here, so the fold's sentence is true -- and the state is
@@ -574,20 +601,20 @@ describe('a refund survives the clock (#687)', () => {
    */
   it('stalls a whole queue the prison can no longer fund in one lump, and one press undoes that', () => {
     const withCancel = drainedPrison();
-    expect(balanceOf(withCancel)).toBe(300);
+    expect(balanceOf(withCancel)).toBe(DRAINED_BALANCE);
     send(withCancel, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 6 });
     const ids = placeWalls(withCancel, 4);
-    expect(balanceOf(withCancel)).toBe(60);
+    expect(balanceOf(withCancel)).toBe(DRAINED_AFTER_SIX_BRICKS);
 
     send(withCancel, { type: 'CancelMaterialPurchase', orderId: 'buy-1' });
-    expect(balanceOf(withCancel)).toBe(300);
+    expect(balanceOf(withCancel)).toBe(DRAINED_BALANCE);
     step(withCancel, PROCUREMENT_DELIVERY_DELAY_TICKS * 6);
 
-    // Eight bricks at 40 is 320 and the prison holds 300: the pass buys
+    // Eight bricks at 40 is 320 and the prison can spend 265: the pass buys
     // nothing at all, where the cancelled delivery had already paid for six.
     expect(orderStates(withCancel).completed ?? 0).toBe(0);
     expect(queued(withCancel)).toBe(4);
-    expect(balanceOf(withCancel)).toBe(300);
+    expect(balanceOf(withCancel)).toBe(DRAINED_BALANCE);
     expect(withCancel.justInTimeMaterials.lastReport.unfunded).toEqual([
       { itemId: BRICK, quantity: 8, costMinorUnits: 320 },
     ]);
@@ -599,13 +626,13 @@ describe('a refund survives the clock (#687)', () => {
 
     // Three of the four stand, out of bricks bought before the money ran out.
     expect(orderStates(withoutCancel).completed).toBe(3);
-    expect(balanceOf(withoutCancel)).toBe(60);
+    expect(balanceOf(withoutCancel)).toBe(DRAINED_AFTER_SIX_BRICKS);
 
     // And the way back, which is one press and is nowhere stated: bring the
     // demand under what the prison can pay in one lump.
     send(withCancel, { type: 'CancelBuildOrder', orderId: ids[3]! });
     step(withCancel, PROCUREMENT_DELIVERY_DELAY_TICKS * 6);
     expect(orderStates(withCancel).completed).toBe(3);
-    expect(balanceOf(withCancel)).toBe(60);
+    expect(balanceOf(withCancel)).toBe(DRAINED_AFTER_SIX_BRICKS);
   });
 });

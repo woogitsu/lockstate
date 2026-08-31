@@ -59,6 +59,32 @@ import type { Treasury } from './treasury';
  * the priced alternative. It proposes rather than sets, because ADR 0017
  * decision 5 reserves the magnitude and two values are defensible.
  *
+ * **The fourth has now been ruled as well, and the paragraph above is kept
+ * because it is what the ADR was written under.** The owner chose **50%
+ * (5,000 basis points)** on 2026-08-31 -- *"the diversion doubles"* -- over the
+ * priced 45%, recorded in ADR 0083 §3. Two values were defensible and one is
+ * now chosen, so ADR 0017 decision 5's reservation is satisfied by a ruling
+ * rather than bypassed.
+ *
+ * **It is a recorded magnitude and not a default, and that is deliberate.**
+ * There is still no `LoanTerms` value anywhere in `src/`: ruling 10 chose the
+ * loan's *terms* and left the loan itself **disabled**, `LoanBook` is built
+ * only when `options.loanTerms !== undefined`
+ * (`src/simulation/runtime/new-session.ts`) and nothing in `src/` passes it, so
+ * no session has a ledger at all. Wiring one is a separate piece of work that
+ * needs the control, the refusal sentence and the readout ADR 0075 decision 2
+ * names -- all of which are the owner's copy under `AGENTS.md` -- plus the save
+ * section this module calls a gap below. The four ruled numbers are therefore
+ * written down here, where `LoanTerms` declares its members, so that whoever
+ * enables it does not have to re-derive them:
+ *
+ * | member | ruled value | basis points |
+ * | --- | --- | --- |
+ * | `diversionRateBasisPoints` | 25% | 2,500 |
+ * | `feeRateBasisPoints` | 15% | 1,500 |
+ * | `maximumDurationDays` | 45 in-game days | -- |
+ * | `escalatedDiversionRateBasisPoints` | **50%** | **5,000** |
+ *
  * **No command and no interface.** A player-facing loan needs a control, a
  * refusal sentence and a readout that keeps a drawdown distinguishable from
  * income, and `AGENTS.md` reserves that copy to the owner. Nothing here is
@@ -110,7 +136,26 @@ export interface LoanTerms {
    * linger a long time."*
    */
   readonly maximumDurationDays: number;
-  /** What the diversion rises to once `maximumDurationDays` have passed since drawdown. */
+  /**
+   * What the diversion rises to once `maximumDurationDays` have passed since
+   * drawdown.
+   *
+   * **Ruled at 5,000 basis points -- 50%, *"the diversion doubles"* -- on
+   * 2026-08-31 (#703, ADR 0083 §3), and not set as a default here.** It is the
+   * one member of the four that was never put to the owner with the other
+   * three, and it is the one whose value is hardest to argue from feel: at or
+   * below 30% the step is decoration (26% removes two days from a 128-day
+   * tail), while 50% halves the remaining repayment time exactly -- measured
+   * against the real `LoanBook` and the real `StateIncomeSystem`, not derived
+   * on paper.
+   *
+   * There is no default because **the loan is still disabled**: see this
+   * module's docblock for why the four ruled numbers are recorded rather than
+   * wired. The sweep the 50% comes from is ADR 0083 §(c)'s table -- three
+   * principals against seven escalated rates -- and
+   * `scripts/report-loan-recovery-pricing.mjs` §7 is the committed instrument
+   * for the half of it that asks whether the duration bites at all.
+   */
   readonly escalatedDiversionRateBasisPoints: number;
 }
 

@@ -33,7 +33,7 @@ import {
   type SectorOccupantResolver,
   type SectorRiskSampler,
 } from '../incidents';
-import { JustInTimeMaterialsService, LoanBook, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury, type LoanTerms } from '../economy';
+import { JustInTimeMaterialsService, LoanBook, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, type LoanTerms } from '../economy';
 import { SimulationEventLog } from '../events';
 import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
 import { RefusalLog, materialsFundingSupersessionKey } from '../refusals';
@@ -682,6 +682,31 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const refusals = new RefusalLog();
 
   const treasury = new Treasury();
+  /*
+   * #703 ruling A: the negative balance is a **standing** facility every prison
+   * has, not something a drawdown opens
+   * ([ADR 0083](../../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+   * §2). See `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` for the magnitude and the
+   * sweep behind it.
+   *
+   * **Here rather than in the `Treasury` constructor**, and the placement is
+   * what makes the restore path free. `restoreSimulationRuntime` builds its
+   * runtime through this function (`restore-session.ts`), and
+   * `Treasury.restore` writes the balance and never touches the floor — so a
+   * restored session gets this facility on exactly the same line a new one
+   * does, and nothing has to be persisted or migrated for it.
+   * `TreasurySnapshot` is still `{ balanceMinorUnits }`, which is why
+   * `SAVE_SCHEMA_VERSION` does not move
+   * (`docs/PERSISTENCE.md`, ADR 0083 §(e)).
+   *
+   * **What this does not do, stated because a reader will look for it.** It
+   * does not tell the player. A standing overdraft nobody is told about is a
+   * hidden feature, and the copy that would explain it is the owner's under
+   * `AGENTS.md`'s fourth exclusion — so the funds chip renders the minus
+   * `Intl.NumberFormat` gives it, with no tone and no badge, and no sentence
+   * has been authored here.
+   */
+  treasury.setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
   const procurement = new ProcurementSystem(treasury, constructionMaterials);
   const justInTimeMaterials = new JustInTimeMaterialsService(procurement, constructionMaterials);
   const construction = new ConstructionSystem(

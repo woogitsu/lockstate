@@ -230,19 +230,53 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
    * Materials"* was present the whole time, inside a fold that starts shut.
    */
 
-  /** Spends the treasury down to `remainder` on planks, which no wall can use. */
-  function prisonWith(remainder: number): SimulationRuntime {
+  /**
+   * Spends the treasury down to `balance` on planks, which no wall can use.
+   *
+   * **This helper took a positive `remainder` and every case below called it
+   * with `40`** -- *"40 in the bank against a wall that costs 80"*. That was the
+   * whole of "cannot pay" while `Treasury`'s floor was 0. Since #703 ruling A
+   * every session opens a standing overdraft of 2,500
+   * ([ADR 0083](../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+   * §2), so 40 in the bank buys 2,540 worth of wall and the refusal these cases
+   * are about is not reached at all.
+   *
+   * **The fixture moved and the subject did not.** What every case below
+   * measures is the refusal *machinery* -- that the player is told on the press,
+   * that the order is kept, that the shortfall figure reaches the view model --
+   * and none of that is about where the boundary sits. So the position is now
+   * `-2,430`: seventy minor units of room against a wall that costs eighty,
+   * which is the same relationship `40` against `80` expressed against the floor
+   * the prison actually has. `PLANK_PRICE` is 65 and 25,000 mod 65 is 40, so
+   * `-2,430` is the deepest balance a whole number of planks can reach that
+   * still cannot fund a wall: 422 planks, and 70 of the facility left.
+   *
+   * The floor is deliberately **not** closed with `setOverdraftFloor(0)` to make
+   * the old figures work again. That would leave every case here exercising a
+   * configuration no session has.
+   */
+  function prisonWith(balance: number): SimulationRuntime {
     const runtime = createNewSimulationRuntime(SEED);
-    const planks = (25_000 - remainder) / PLANK_PRICE;
+    const planks = (25_000 - balance) / PLANK_PRICE;
     expect(Number.isInteger(planks), 'the fixture must spend a whole number of planks').toBe(true);
     send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: PLANK, quantity: planks });
-    expect(runtime.treasury.balanceMinorUnits).toBe(remainder);
+    expect(runtime.treasury.balanceMinorUnits).toBe(balance);
+    expect(
+      runtime.treasury.canAfford(WALL_COST),
+      'the fixture only means anything if a wall is genuinely unaffordable from here',
+    ).toBe(false);
     return runtime;
   }
 
+  /**
+   * Seventy of room against an eighty-minor-unit wall: the position every case
+   * in this describe is written from. See `prisonWith`.
+   */
+  const CANNOT_FUND_A_WALL = -2_430;
+
   it('records the refusal on the press, keeps the order, and says how much is missing', () => {
     // 40 in the bank against a wall that costs 80.
-    const runtime = prisonWith(40);
+    const runtime = prisonWith(CANNOT_FUND_A_WALL);
 
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 });
 
@@ -252,7 +286,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
 
     // 2. The treasury is untouched: a refused purchase spends nothing, and
     //    nothing joined the queue behind the fixture's own plank order.
-    expect(runtime.treasury.balanceMinorUnits).toBe(40);
+    expect(runtime.treasury.balanceMinorUnits).toBe(CANNOT_FUND_A_WALL);
     expect(runtime.procurement.pendingDeliveries.map((delivery) => delivery.orderId)).toEqual(['order-buy']);
 
     // 3. The order is kept rather than thrown away, so the wall the player drew
@@ -317,7 +351,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
      * does not exist and that `AGENTS.md` reserves to the owner. See
      * `docs/HUD_PROJECTIONS.md` gap 32b.
      */
-    const runtime = prisonWith(40);
+    const runtime = prisonWith(CANNOT_FUND_A_WALL);
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 });
     step(runtime, 20);
 
@@ -353,7 +387,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
      * the union that credits the treasury — so this needs no population and no
      * day boundary.
      */
-    const runtime = prisonWith(40);
+    const runtime = prisonWith(CANNOT_FUND_A_WALL);
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 });
     expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
 
@@ -406,7 +440,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
      * issue, and the withdraw-only asymmetry in `createNewSimulationRuntime` is
      * where the reasoning lives.
      */
-    const runtime = prisonWith(40);
+    const runtime = prisonWith(CANNOT_FUND_A_WALL);
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 });
     expect(runtime.refusals.last?.reason, 'the press is what announced it').toBe('purchase.insufficient-funds');
 
@@ -427,7 +461,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
   it('withdraws the standing refusal when the same purchase later succeeds', () => {
     // #492's supersession, on this route: a shortfall the player has since
     // fixed must not keep a notice on screen.
-    const runtime = prisonWith(40);
+    const runtime = prisonWith(CANNOT_FUND_A_WALL);
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 });
     expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
 
@@ -475,14 +509,26 @@ describe('a placed object is a build order too (ADR 0028 decision 4)', () => {
 
   it('tells the player on the press when the prison cannot pay for it', () => {
     const runtime = prisonWithACell();
-    // Down to 40, on bricks a bed cannot use.
-    send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 624 });
-    expect(runtime.treasury.balanceMinorUnits).toBe(40);
+    /*
+     * **This bought 624 bricks and asserted a balance of 40** -- "down to 40, on
+     * bricks a bed cannot use". Since #703 ruling A a prison at 40 can afford a
+     * 65 plank out of its standing overdraft, so the press is not refused and
+     * the case measured nothing.
+     *
+     * The bed needs one plank at 65. 687 bricks is 27,480 of the 27,500 a new
+     * prison can spend, leaving **20** of the facility -- so a plank is
+     * unaffordable by 45 and the refusal this case is about is reached again.
+     * The prison holds bricks a bed cannot use either way, which is the property
+     * the fixture was chosen for.
+     */
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 687 });
+    expect(runtime.treasury.balanceMinorUnits).toBe(-2_480);
+    expect(runtime.treasury.canAfford(PLANK_PRICE), 'a plank is 65 and 20 of room is left').toBe(false);
 
     send(runtime, { type: 'PlaceObject', orderId: 'order-bed', definitionId: 'bed-wooden', x: CELL_RECT.x, y: CELL_RECT.y });
 
     expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
-    expect(runtime.treasury.balanceMinorUnits).toBe(40);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-2_480);
     expect(runtime.construction.getOrder('order-bed')?.state, 'and the bed is still the player\'s').not.toBe('failed');
   });
 });
@@ -498,31 +544,51 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
      * deliberate press of a control — 625 bricks for exactly 25,000.
      *
      * Before this change a wall order cost nothing, so **no amount of
-     * dragging could reach it**. It now can, and this case is the number:
+     * dragging could reach it**. It now can, and this case is the number.
      *
-     *   floor(25,000 / 80) = 312 wall segments, leaving 40.
+     * **What this case said until 2026-08-31, and it was measured:**
      *
-     * 40 is *the same figure* ADR 0075's own second case calls out — *"a
-     * positive balance on the status strip, and below the 65 that would end
-     * this"*. So the trap is entered on wall 312, and the first thing the game
-     * says about money is on wall **313**, when the prison is already locked.
+     * > floor(25,000 / 80) = 312 wall segments, leaving 40.
+     * >
+     * > 40 is *the same figure* ADR 0075's own second case calls out — *"a
+     * > positive balance on the status strip, and below the 65 that would end
+     * > this"*. So the trap is entered on wall 312, and the first thing the game
+     * > says about money is on wall **313**, when the prison is already locked.
      *
-     * **This is reported, not designed around.** ADR 0075's three accepted
-     * decisions — development grants at population thresholds, a balance that
-     * may go negative with loans as the way out, and sell-back at a loss — are
-     * the answer to it, and none of them is built. Doing anything else here
-     * (a reserve floor, a refusal above some balance) would be deciding
-     * economic policy inside implementation code.
+     * **#703 ruling A moved that number and did not remove it, and the
+     * distinction is the finding.** A standing overdraft of 2,500
+     * ([ADR 0083](../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+     * §2) makes spending power 27,500 rather than 25,000, so:
      *
-     * The gesture is 312 segments. The starter prison owns one 32x32 chunk,
-     * whose bare perimeter is 128 segments, so 312 is two or three rooms'
+     *   floor(27,500 / 80) = 343 wall segments, leaving 60 of the facility.
+     *
+     * `Treasury.canAfford` is `balance - amount >= floor`, so what ends a prison
+     * is `balance - 65 < floor` and a floor **translates** that condition rather
+     * than dissolving it. The drag still locks the prison; it locks it 31
+     * segments later, at −2,440 instead of at +40, and the first thing the game
+     * says about money is now on wall **344**. Whether the standing overdraft
+     * rescues a prison at all turns entirely on whether the player stops
+     * pressing before the room is gone -- `scripts/report-loan-recovery-pricing.mjs`
+     * §9 measures a prison that does stop and it escapes; this measures one that
+     * does not, and it does not.
+     *
+     * **This is reported, not designed around**, and that has not changed. ADR
+     * 0075's three accepted decisions — development grants at population
+     * thresholds, a balance that may go negative with loans as the way out, and
+     * sell-back at a loss — are the answer to it, and the second of the three is
+     * now built and is not sufficient on its own. Doing anything else here (a
+     * reserve floor, a refusal above some balance) would be deciding economic
+     * policy inside implementation code.
+     *
+     * The gesture is 343 segments. The starter prison owns one 32x32 chunk,
+     * whose bare perimeter is 128 segments, so it is two or three rooms'
      * worth of interior walls rather than an absurd figure.
      */
     const runtime = createNewSimulationRuntime(SEED);
 
     let funded = 0;
     let firstRefusedAt = -1;
-    for (let index = 0; index < 320; index += 1) {
+    for (let index = 0; index < 360; index += 1) {
       const orderId = `order-${String(index).padStart(3, '0')}`;
       send(
         runtime,
@@ -532,16 +598,19 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
       else if (firstRefusedAt < 0) firstRefusedAt = index;
     }
 
-    expect(funded, '25,000 / 80').toBe(312);
-    expect(firstRefusedAt, 'zero-based, so the 313th wall is the first the game refuses to buy for').toBe(312);
-    expect(runtime.treasury.balanceMinorUnits, 'and 40 is ADR 0075\'s own figure for the lock').toBe(40);
-    expect(runtime.treasury.balanceMinorUnits).toBeLessThan(PLANK_PRICE);
+    expect(funded, '(25,000 + 2,500) / 80').toBe(343);
+    expect(firstRefusedAt, 'zero-based, so the 344th wall is the first the game refuses to buy for').toBe(343);
+    expect(runtime.treasury.balanceMinorUnits, '25,000 - 343 x 80').toBe(-2_440);
+    expect(
+      runtime.treasury.canAfford(PLANK_PRICE),
+      'and the 60 of overdraft still standing is below the 65 that would end this',
+    ).toBe(false);
 
     // The lock itself, confirmed rather than inferred: the one thing that
     // would restart the income line is refused.
     send(runtime, { type: 'PurchaseMaterials', orderId: 'order-plank', itemId: PLANK, quantity: 1 });
     expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
-    expect(runtime.treasury.balanceMinorUnits).toBe(40);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-2_440);
   });
 });
 

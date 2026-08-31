@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, PROCURABLE_MATERIALS } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
-import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
+import {
+  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  TREASURY_STARTING_BALANCE_MINOR_UNITS,
+} from '../../src/simulation/economy';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import {
   CONSTRUCTION_MATERIALS_CONTAINER_ID,
@@ -519,12 +522,47 @@ describe('money is conserved across build orders and undo (#285)', () => {
       TREASURY_STARTING_BALANCE_MINOR_UNITS,
     );
 
-    // The other side of the same boundary, one minor unit past it, on a
-    // treasury that is now empty: still a refusal, and still no partial debit.
+    /*
+     * The other side of the same boundary -- and **since #703 ruling A the
+     * boundary is not here.**
+     *
+     * This case used to end with *"one brick too many"* against the empty
+     * treasury and assert `purchase.insufficient-funds`, on the ground that
+     * `canAfford` ended in `amountMinorUnits <= this.balance`. It ends in
+     * `this.balance - amountMinorUnits >= this.floor` and the floor is
+     * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` in every session, so a prison at
+     * zero can buy 62 more bricks and the old probe measured nothing.
+     *
+     * The exact boundary is now the *floor*, so the probe walks to it: spending
+     * power is 25,000 + 2,500 = 27,500, which is 681 bricks at 40 plus four
+     * planks at 65 to the minor unit. That purchase must go through -- a prison
+     * that cannot spend its last coin is the defect this case exists for, and
+     * the coin is now the last of the facility -- and the brick after it must
+     * not.
+     */
+    const roomToTheFloor = TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
+    const plankPrice = UNIT_PRICE.get(DOOR_REQUIREMENT.itemId)!;
+    expect(
+      681 * price + 4 * plankPrice,
+      'the two catalogue prices no longer reach the floor exactly, so this case can no longer land on it',
+    ).toBe(roomToTheFloor);
+
+    session.buy('order-buy-the-room', WALL_REQUIREMENT.itemId, 681 - wholeBalance, 'the rest of the room, in bricks');
+    session.buy('order-buy-the-last-coin', DOOR_REQUIREMENT.itemId, 4, 'a purchase for the exact remaining room');
+    expect(
+      session.runtime.refusals.count,
+      'a purchase that lands exactly on the floor must not be refused either',
+    ).toBe(0);
+    expect(session.runtime.treasury.balanceMinorUnits, 'the last coin of the facility was spent').toBe(
+      TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+    );
+
+    // One minor unit past it, on a facility that is now empty: still a refusal,
+    // and still no partial debit.
     session.buy('order-buy-one-more', WALL_REQUIREMENT.itemId, 1, 'one brick too many');
     expect(session.runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(0);
-    expect(session.runtime.procurement.pendingDeliveries).toHaveLength(1);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+    expect(session.runtime.procurement.pendingDeliveries).toHaveLength(3);
 
     // And the conservation equation is unmoved by all of it: `session.buy`
     // checks it after every command, so the balance reaching zero is a

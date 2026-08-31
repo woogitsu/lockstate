@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { Treasury, TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
+import {
+  Treasury,
+  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  TREASURY_STARTING_BALANCE_MINOR_UNITS,
+} from '../../src/simulation/economy';
+import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
 
 /**
  * The treasury's affordability boundary (#416).
@@ -143,10 +149,20 @@ describe('Treasury: the exact-balance boundary', () => {
  * cases below are the guard the other two ends never had.
  */
 describe('Treasury: the room a facility opens below zero', () => {
-  it('refuses to go below zero while no facility is open, which is every shipped session', () => {
+  /**
+   * **The title said *"which is every shipped session"* and that stopped being
+   * true on 2026-08-31.** It was correct for the whole life of this class:
+   * `setOverdraftFloor` had no caller in `src/`. #703 ruling A gave it one --
+   * `createNewSimulationRuntime` opens `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` on
+   * the treasury it builds -- so a *shipped session* now has a facility and a
+   * bare `new Treasury()` still does not. The default of `0` is what this case
+   * is about and it has not moved; the case below it is the one about the
+   * shipped configuration.
+   */
+  it('refuses to go below zero while no facility is open, which is a bare `new Treasury`', () => {
     const treasury = new Treasury(40);
 
-    expect(treasury.overdraftFloorMinorUnits, 'a prison that has borrowed nothing has no room').toBe(0);
+    expect(treasury.overdraftFloorMinorUnits, 'the class default is still no room at all').toBe(0);
     // A plank is 65 and the prison holds 40: ADR 0075's lock, unchanged.
     expect(treasury.spend(65)).toBe(false);
     expect(treasury.balanceMinorUnits).toBe(40);
@@ -207,5 +223,71 @@ describe('Treasury: the room a facility opens below zero', () => {
     expect(treasury.spend(-1)).toBe(false);
     expect(treasury.canAfford(0.5)).toBe(false);
     expect(treasury.balanceMinorUnits).toBe(1_000);
+  });
+});
+
+/**
+ * **The shipped configuration, which is a different claim from anything above.**
+ *
+ * Everything in this file until here is about `Treasury` in isolation, and every
+ * case builds one by hand. #703 ruling A of 2026-08-31 made the floor a standing
+ * facility applied at the composition root
+ * ([ADR 0083](../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+ * §2), so there is now a second question -- *what does a real session get* --
+ * and it is answered here rather than left to be inferred from the class default
+ * of `0`.
+ *
+ * Two things are pinned, and the reason for each:
+ *
+ * - **The magnitude, as a rule and not as a literal.** The constant is
+ *   `-TREASURY_STARTING_BALANCE_MINOR_UNITS / 10`, so the derivation is asserted
+ *   beside the value. A change to the opening grant should move the floor; a
+ *   change to the *ratio* is a decision and fails here.
+ * - **That a session actually gets it, on both paths.** Nine test files write
+ *   balances against this figure, and each of them would fail for its own
+ *   confusing reason if the composition root stopped calling
+ *   `setOverdraftFloor`. This is the case that says why.
+ */
+describe('what a shipped session gets (#703 ruling A)', () => {
+  it('is one tenth of the opening grant, derived rather than written down', () => {
+    expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS).toBe(-2_500);
+    expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS * 10).toBe(-TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(Number.isSafeInteger(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)).toBe(true);
+    expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, 'a floor above zero would be a minimum balance').toBeLessThan(0);
+  });
+
+  it('opens the facility on a new session, unpressed', () => {
+    const runtime = createNewSimulationRuntime(0x703);
+
+    expect(runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(runtime.treasury.overdraftFloorMinorUnits).toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+    expect(
+      runtime.treasury.canAfford(TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS),
+      'spending power is the grant plus the facility, to the minor unit',
+    ).toBe(true);
+    expect(
+      runtime.treasury.canAfford(TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS + 1),
+      'and not one unit more',
+    ).toBe(false);
+  });
+
+  it('opens it on a restored session too, with nothing persisted to carry it', () => {
+    /*
+     * `restoreSimulationRuntime` builds through `createNewSimulationRuntime`, and
+     * `Treasury.restore` writes the balance and never touches the floor -- which
+     * is the whole reason no `SAVE_SCHEMA_VERSION` bump was needed (ADR 0083
+     * §(e)). Asserted here as well as in `tests/migrations/`, because this is
+     * the claim the composition root's placement is *for*.
+     */
+    const runtime = createNewSimulationRuntime(0x703);
+    runtime.treasury.spend(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    const restored = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
+
+    expect(restored.treasury.balanceMinorUnits).toBe(0);
+    expect(restored.treasury.overdraftFloorMinorUnits).toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+    expect(
+      JSON.stringify(captureSessionSnapshot(runtime)),
+      'and no floor is written to the save, at any depth',
+    ).not.toContain('overdraft');
   });
 });

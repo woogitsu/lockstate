@@ -13,7 +13,11 @@
  * omission against a settled answer rather than against an open question:
  *
  * - **The balance still cannot go negative, and that is now a decision rather
- *   than a gap.** This paragraph used to say: *"Decision 8 settles that a
+ *   than a gap.** **Both this heading and the ADR 0075 correction under it were
+ *   overtaken on 2026-08-31: the balance can now go negative in any session,
+ *   and the ladder this bullet defends runs backwards. See the last bullet of
+ *   the next section for what replaced it.** The paragraph used to say:
+ *   *"Decision 8 settles that a
  *   negative balance should degrade the prison in a defined order rather than
  *   end the run, and that ladder is unbuilt — and still unreachable, because
  *   `spend` refuses rather than overdrawing and nothing debits the balance on a
@@ -67,11 +71,27 @@
  *   [#29](https://github.com/matmaxalez/lockstate/issues/29), with the rest
  *   of the loan's magnitudes.
  *
+ *   **Both halves of that bullet expired on 2026-08-31 and it is kept because
+ *   the whole of this file's reasoning was written under them.** #703 ruled
+ *   reading A -- a standing overdraft *every* prison has, not one a drawdown
+ *   opens -- so `createNewSimulationRuntime` calls `setOverdraftFloor` on the
+ *   treasury it builds and there is no longer a session behaving as it did
+ *   before. And the floor *is* decided: it is
+ *   `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`, one tenth of the opening grant,
+ *   which satisfies decision 5's reservation by a ruling rather than bypassing
+ *   it. The sentence *"a session that has borrowed nothing behaves exactly as it
+ *   did before"* is now true only of a `Treasury` built by hand, which is every
+ *   `new Treasury()` in `tests/unit/economy-treasury.test.ts` and nothing in
+ *   `src/`.
+ *
  *   **This bullet said the floor *is* ADR 0075 decision 2's *"accrual cap"*,
  *   "expressed as the one number that decides how far under water a prison can
  *   go", and that identification is wrong.** Both directions are kept because
- *   the mistake is the reason `setOverdraftFloor` reads as though it has an
- *   obvious caller and has none. Decision 2's sentence is about a different
+ *   the mistake is the reason `setOverdraftFloor` read, for its whole life
+ *   before 2026-08-31, as though it had an obvious caller and had none. **It has
+ *   one now** -- `createNewSimulationRuntime` -- and the sentence is marked
+ *   rather than rewritten because the conflation it explains is what made the
+ *   absence look deliberate for as long as it lasted. Decision 2's sentence is about a different
  *   quantity: *"An accrual cap, because interest against a negative balance can
  *   otherwise escalate without limit"* — a bound on **what a debt grows to**,
  *   where this is a bound on **what a prison may spend**. And the accrual cap
@@ -90,7 +110,23 @@
  *   "out" until 2026-08-31**, which read as though a drawdown were what opens
  *   the room below zero. It is not: `LoanBook.draw` calls `credit`, so a loan
  *   hands the prison *money* and touches no floor. Whether it *should* open one
- *   is ADR 0083's decision 2, and it is the owner's.
+ *   was ADR 0083's decision 2, and the owner ruled that it should not: the room
+ *   is standing and the loan opens nothing. `LoanBook` is still built only when
+ *   `loanTerms` is supplied and nothing in `src/` supplies it, so the way back
+ *   up is at present the income line and nothing else.
+ * - **And ADR 0017 decision 8's ladder is now inverted, which is owed an
+ *   amendment nobody has written.** Decision 8 orders the refusals *"deliveries
+ *   refused first, then construction halted, then staff unpaid"*, and the
+ *   bullet at the top of this docblock argues at length that a floored balance
+ *   produces exactly that order. `canAfford` is **one comparison** over every
+ *   spend, so a standing floor moves the first two rungs to the floor while
+ *   `PayrollSystem`'s `Math.min(due, balance)` keeps the third at zero: a prison
+ *   with wages unpaid still buys deliveries and hires staff for another 2,500.
+ *   ADR 0083 §2 records that either the order is amended or decision 8 is
+ *   narrowed to a prison that has spent its overdraft, and that choosing between
+ *   those is the owner's.
+ *   `tests/integration/economy-payroll-loop.test.ts` pins the inversion at both
+ *   ends of the facility so the amendment is written against a measurement.
  *
  * ## Integer minor units, and why that is not a formatting choice
  *
@@ -143,6 +179,53 @@
  */
 export const TREASURY_STARTING_BALANCE_MINOR_UNITS = 25_000;
 
+/**
+ * How far under water every prison may go, as a standing facility rather than
+ * something it has to ask for.
+ *
+ * **#703 ruling A, 2026-08-31, in the owner's words *"tylko minus i pożyczki"*
+ * read as a standing overdraft** — chosen over the floor being opened by a
+ * drawdown and over the balance staying floored at zero.
+ * [ADR 0083](../../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+ * §2 carries all three readings with what each costs; this is the one that was
+ * taken.
+ *
+ * **One tenth of the opening grant, and the derivation is the point.** It is
+ * `-TREASURY_STARTING_BALANCE_MINOR_UNITS / 10` and not a literal, so it moves
+ * when the grant moves and cannot rot against a price change. It is
+ * deliberately *not* read off any content price: every boundary the sweep
+ * measures is `65n − 40` — a plank at 65, and the 40 a locked prison holds —
+ * and ADR 0075's "considered and not taken" rejects *"a threshold backstop
+ * keyed to the price of a plank"* by name.
+ *
+ * **What it clears, measured rather than argued.**
+ * `scripts/report-loan-recovery-pricing.mjs` §9 and §10 play ADR 0075's locked
+ * position through the real command router with no loan of any kind, only this
+ * floor open. Every figure is a real kernel run at `DAY_LENGTH_TICKS` 2,400:
+ *
+ * - The deepest a locked prison goes to house anybody is **−1,130** with its
+ *   thirteen unfunded wall orders standing, and **−90** with them cancelled,
+ *   saturating at **−285**. So 2,500 clears the worst measured case by 2.2x.
+ * - §10a carries the sweep from 1,500 — where §9 stopped, and where ADR 0083
+ *   admitted the number was a hypothesis — to 25,000, the whole grant. The room
+ *   a prison *uses* is identical at every one of those: 285 cancelled, 1,130
+ *   standing. Offering more buys nothing.
+ * - `floor breaches` is 0 in every run of both sections, which is
+ *   `Treasury.canAfford` being the single comparison every spend passes.
+ * - §10b is the only shape in that instrument where `PayrollSystem` meets an
+ *   open floor. It never draws on it: `Math.min(due, balance)` bounds the day's
+ *   payment by the *balance*, so arrears is the sink and the room stays unused.
+ *
+ * **What does scale with this number, and it is the reason not to raise it**
+ * (§10c). `ConstructionSystem.procureQueuedMaterials` spends with no press, so
+ * a *standing build queue* will draw on this facility: a twenty-order tail
+ * costing 1,600 strands a prison at −1,625 with no capacity and no way back.
+ * The band of queue sizes that can do that is bounded by this constant — wider
+ * at 2,500 than at 1,500, empty at 0 — so the honest reading is that 2,500 is
+ * margin over the measured need and not headroom to be spent.
+ */
+export const TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS = -Math.trunc(TREASURY_STARTING_BALANCE_MINOR_UNITS / 10);
+
 export interface TreasurySnapshot {
   readonly balanceMinorUnits: number;
 }
@@ -152,20 +235,27 @@ export class Treasury {
 
   /**
    * How far below zero a spend may take the balance, as a non-positive
-   * integer. `0` is "not at all", which is what every session has until
-   * something opens a facility, and it makes this class behave exactly as it
+   * integer. `0` is "not at all", and it makes this class behave exactly as it
    * did before ADR 0075 decision 2.
    *
-   * **Not a chosen magnitude, and not a chosen mechanism either.** ADR 0017
-   * decision 5 reserves the number to
-   * [#29](https://github.com/matmaxalez/lockstate/issues/29). **This comment
-   * used to call it "ADR 0075 decision 2's accrual cap" and that is corrected
-   * in the class docblock above**: that cap bounds what a debt grows to and is
-   * already satisfied by `LoanBook`'s once-only fee, while this bounds what a
-   * prison may spend, which no accepted decision has authorised at any
-   * magnitude.
-   * [ADR 0083](../../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
-   * puts both the mechanism and the number to the owner.
+   * **The default stays `0` and the shipped floor is applied by the composition
+   * root, not here.** `createNewSimulationRuntime` calls
+   * `setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)` on the treasury
+   * it builds (`src/simulation/runtime/new-session.ts`), so a session has the
+   * facility and a bare `new Treasury()` in a test does not — which is what
+   * keeps the boundary cases in `tests/unit/economy-treasury.test.ts` about
+   * this class rather than about a magnitude somebody may move.
+   *
+   * **This comment said *"`0` … is what every session has until something opens
+   * a facility"*, and said the magnitude and the mechanism were both unchosen.
+   * Both halves are kept because they were true for the whole life of this
+   * field and because ADR 0083 was written under them, and both expired on
+   * 2026-08-31:** #703 ruled the mechanism (a standing overdraft every prison
+   * has, reading A) and the magnitude follows from the grant. What survives
+   * unchanged is the other correction this comment carries: the floor is **not**
+   * ADR 0075 decision 2's *"accrual cap"* — that cap bounds what a debt grows
+   * to and `LoanBook`'s once-only fee already satisfies it, while this bounds
+   * what a prison may spend. See the class docblock above.
    */
   private floor = 0;
 
