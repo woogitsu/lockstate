@@ -242,6 +242,26 @@ export interface RemoveObjectRemoved {
  * *standing* object is not refunded, and the asymmetry is the honest one: an
  * order that never finished gives its materials back, and a thing that was
  * built out of them does not.
+ *
+ * **The currency of the first half changed on 2026-08-31 and the asymmetry did
+ * not, which is why the paragraph is marked rather than rewritten.** The
+ * owner's ruling 20 -- *"Anulowanie zwraca pieniądze zamiast cegieł"* and
+ * *"Pieniądze dopóki ekipa nie zaczęła"*, recorded in
+ * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+ * amendment of that date -- has `cancelOrder` give back **money** for an order
+ * the crew has not started, and **nothing** for one it has. So *"refunds the
+ * materials the order had allocated"* is false of every state this method can
+ * reach, and *"an order that never finished gives its materials back"* is
+ * false with it. What is unchanged is the sentence those two exist to support:
+ * a standing object is still not refunded, this method still never reaches a
+ * `completed` order, and the removal a player presses on an unfinished bed
+ * still gives something back where the removal they press on a finished one
+ * gives nothing.
+ *
+ * **What is now undecided rather than merely asymmetric is the standing
+ * object**, which ADR 0076 decision B rules on and ruling 20 does not mention.
+ * That amendment marks it as the owner's and does not choose between the three
+ * answers now available.
  */
 export interface RemoveObjectOrderCancelled {
   readonly kind: 'order-cancelled';
@@ -278,7 +298,10 @@ export interface ObjectOrderSink {
   submitOrder(order: BuildOrder): void;
   registerTransactionOrder(orderId: string, transactionId?: string): void;
   /**
-   * Cancels an order and gives its allocated materials back.
+   * Cancels an order and gives back what ruling 20 says that order is owed --
+   * **money** while the crew has not started it, and nothing once it has
+   * (ADR 0076's amendment of 2026-08-31). This line read *"and gives its
+   * allocated materials back"* until that date.
    *
    * Added for removal (phase 3), and called only for an order this service has
    * established is **not** `completed`, `cancelled` or `failed` -- so the throw

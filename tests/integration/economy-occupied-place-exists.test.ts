@@ -234,6 +234,12 @@ describe('two residents over one remaining bed, in one cell', () => {
     // a room they built correctly, which refunds nothing. The exploit above
     // needs `Undo` because only `cancelOrder` releases `materialsAllocated`;
     // here the plank is irrelevant and the bed simply stops existing.
+    //
+    // The middle clause is narrower since the owner's ruling 20 of 2026-08-31
+    // (ADR 0076's amendment) and is still true of the path it is about:
+    // `cancelOrder` releases an allocation only for a `completed` order now,
+    // which is exactly the order the `Undo` above cancels. In the states the
+    // ruling covers it pays money instead.
     submit(runtime, 'remove-second-bed', packCommand({ type: 'RemoveObject', ...SECOND_BED }));
     stepBy(runtime, 5);
     return runtime;
