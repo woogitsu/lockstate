@@ -2941,6 +2941,37 @@
  * headroom this file has left**, so the next chip is a real cost and not a
  * column.
  *
+ * THE 4PX SENTENCE IS TRUE OF THE ROW IT MEASURED AND NOT OF THE ROW A PLAYER
+ * REACHES, and the sentence stays because the row it measured is a real state
+ * -- a prison with nobody unhoused, nobody uncovered and no incident running.
+ * What it leaves out is the badges. Measured on the same page, nine chips with
+ * every badge the strip can draw present at once (2 of 180 with no bed, 78
+ * short of covered, 3 incidents naming a kind, a seven-figure treasury):
+ *
+ *   prisoners  116.8 ->  287.3   the "N with no bed" badge (#609)
+ *   coverage   177.8 ->  317.8   the remainder badge
+ *   incidents  160.6 ->  166.3   the badge naming the kind of incident
+ *   the other six                unchanged
+ *   ------------------------------------------------------------------
+ *   the metrics row              **1568px** (`scrollWidth`), 316px more
+ *
+ * So at 1280 the row is **6 of 9 chips on screen** -- `contraband`, `funds`
+ * and `earned-today` off the edge, which is #634's own defect, `FUNDS`
+ * unreadable at a laptop width. At 1440 it is 8 of 9; at 1920 it is 9 of 9
+ * (1896px of 1896px), so this breakpoint's own band is the one width that
+ * holds the worst case.
+ *
+ * THIS BREAKPOINT IS NOT THE LEVER FOR 1280 AND MOVING IT AGAIN CANNOT BE.
+ * 1280 has been inside this block since #639; the metrics already have a row
+ * of their own there. The row is whole and the content is simply 312px wider
+ * than it. The overflow is older than the ninth chip -- eight badged chips are
+ * 1441px, also past 1256 -- so #703's chip made a standing defect 127px worse
+ * rather than causing it. What could answer it is a wrap inside the metrics
+ * row, a shorter badge, or fewer chips, and each of those is a decision with
+ * its own cost: a wrap takes a third row and this file's height is spent
+ * against `ARRIVAL_PANEL_HEIGHT_PX` and #174's box chain at 1280x720, where
+ * the always-visible budget is 8px. None of them is decided here.
+ *
  * What it costs is the same 30.5px named above, now also at 1920-2559: those
  * viewports join 1280 and 1440 in giving the metrics a row of their own. No
  * `ARRIVAL_PANEL_HEIGHT_PX` entry covers a viewport in that band, so nothing
