@@ -529,16 +529,20 @@ export class SimulationWorkerStateMachine {
    *
    * Every payload carries the tick it was read at, so a readout can never be
    * mistaken for a statement about a later state, and no list crosses at all
-   * -- nineteen integers of counts beside at most one refusal record, which is
+   * -- twenty integers of counts beside at most one refusal record, which is
    * why `docs/HUD_PROJECTIONS.md` contract 5 (paging) has nothing to bound
    * here yet. It was eleven until #29's income line added
    * `stateIncomeAccruedTodayMinorUnits`, twelve until `accommodationCapacity`
    * gave the strip's occupancy bar a denominator, thirteen until payroll
    * (ADR 0042 step 3) added the daily wage bill and the arrears beside it,
    * fifteen until issue #588 added the three guard-coverage rungs the
-   * population is standing on, and eighteen until issue #585 added
+   * population is standing on, eighteen until issue #585 added
    * `occupiedPlaces` -- the residency places that currently exist, which is
-   * what the state pays for and which nothing on this channel said. And
+   * what the state pays for and which nothing on this channel said -- and
+   * nineteen until the owner's ruling 18 of 2026-08-31 added
+   * `treasuryOverdraftFloorMinorUnits`, the treasury's own floor, without which
+   * the strip could say the balance was negative and not how much of the
+   * facility was left. And
    * the number is checked against the projection's own schema rather than
    * trusted (`tests/foundation/documentation-claims-contract.test.ts`).
    *

@@ -172,7 +172,20 @@ describe('every HUD message key resolves in the bundled default locale', () => {
      * (`hud.build.buy-submit`), which is a statement about the button that is
      * about to be pressed, not a price list the HUD keeps.
      */
-    const ALLOWED_MONEY_KEYS = new Set(['hud.status.funds', 'hud.security.roster-wage-bill']);
+    /*
+     * **`hud.status.funds-remaining` joins the list on 2026-08-31**, under the
+     * owner's ruling 18, and the list is extended rather than the rule relaxed.
+     * What the rule guards against is a string inviting a number no system
+     * produces; `{remaining} left` states `balance - overdraftFloor`, both
+     * published on `simulation/status-counts` from a `Treasury` that owns them.
+     * It is `hud.status.funds`'s own exception one field wider: the same chip,
+     * the same units, the same absence of a currency.
+     */
+    const ALLOWED_MONEY_KEYS = new Set([
+      'hud.status.funds',
+      'hud.status.funds-remaining',
+      'hud.security.roster-wage-bill',
+    ]);
 
     for (const key of HUD_MESSAGE_KEYS) {
       if (ALLOWED_MONEY_KEYS.has(key)) continue;

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { defaultContrabandRegistry } from '../../src/content/contraband-catalog';
-import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
+import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
 import { decodeWorkerToMainMessage } from '../../src/simulation/protocol/decode';
 import { REFUSAL_REASONS, SIMULATION_PROTOCOL_VERSION, type MainToWorkerMessage } from '../../src/simulation/protocol/types';
@@ -238,6 +238,13 @@ describe('publishing the status counts', () => {
       // number is `TREASURY_STARTING_BALANCE_MINOR_UNITS` and reads as one
       // rather than as an arbitrary constant (#96).
       treasuryMinorUnits: TREASURY_STARTING_BALANCE_MINOR_UNITS,
+      // The facility under it, published since the owner's ruling 18 of
+      // 2026-08-31 so the strip can say how much of it is left rather than only
+      // that the balance has gone negative. It is the treasury's own
+      // `overdraftFloorMinorUnits` -- `createNewSimulationRuntime` sets it to
+      // `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`, one tenth of the grant, so this
+      // reads as that constant rather than as an arbitrary -2,500.
+      treasuryOverdraftFloorMinorUnits: TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
       rooms: 6,
       // The **resident** capacity, derived from the objects standing in the
       // scenario's rooms rather than authored on the instances (ADR 0028
@@ -700,19 +707,22 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // gives (the pulled `hud/status-strip` route validates this same
       // object with `jsonValueSchema`, which accepts a missing key but not an
       // explicit `undefined` value). This scenario opens no incident, so it
-      // is absent here and the count is 19; a session with one open reads 20.
+      // is absent here and the count is 20; a session with one open reads 21.
       // It was 18 and 19 until issue #585's `occupiedPlaces` -- the residency
       // places that currently exist, published beside `roomOccupants` because
-      // the two stopped being the same number.
+      // the two stopped being the same number -- and 19 and 20 until the
+      // owner's ruling 18 of 2026-08-31 added `treasuryOverdraftFloorMinorUnits`,
+      // the treasury's own floor, without which the strip could say the balance
+      // was negative and not how much of the facility was left.
       //
       // **`contrabandNameKey` is the second conditional key** (issue #703
       // ruling 3): the contraband catalog's own `nameKey` when every item the
       // count reports shares one category, omitted otherwise. This scenario
       // runs no searches and confiscates nothing, so it too is absent here and
-      // 19 is still 19 -- a session that has found one category reads 20, and
-      // one that has found a phone and a weapon reads 19 again. The two
-      // conditional keys are independent, so the reachable counts are 19, 20
-      // and 21; the expression below states each key's own contribution rather
+      // 20 is still 20 -- a session that has found one category reads 21, and
+      // one that has found a phone and a weapon reads 20 again. The two
+      // conditional keys are independent, so the reachable counts are 20, 21
+      // and 22; the expression below states each key's own contribution rather
       // than enumerating the four combinations.
       // The exact count is still pinned rather than bounded so that a *list*
       // arriving here -- the thing this channel is shaped to exclude --
@@ -724,7 +734,7 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // This is what a status-counts
       // payload is, and why it needs no paging.
       expect(Object.keys(counts)).toHaveLength(
-        19 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
+        20 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
       );
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a
@@ -742,7 +752,8 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // slip in" true of the whole payload and not only of the fifteen
       // fields that predate this one. Eighteen since issue #588 added the
       // three guard-coverage rungs the population is standing on, nineteen
-      // since issue #585 added `occupiedPlaces`.
+      // since issue #585 added `occupiedPlaces`, and twenty since the owner's
+      // ruling 18 of 2026-08-31 added `treasuryOverdraftFloorMinorUnits`.
       for (const [key, value] of Object.entries(counts)) {
         if (key === 'activeIncidentType' || key === 'contrabandNameKey') {
           expect(
@@ -759,6 +770,30 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // (`RefusalLog`). A queue would put the one growing thing this channel
       // is designed to exclude right next to the counts.
       expect(Object.keys(payload.refusal)).toHaveLength(3);
+      // **710 and not 669, and the raise is derived from a run rather than
+      // chosen** -- the same way every bound below replaced the one before it.
+      // The bound it replaces predicted this raise in as many words: it said a
+      // *twenty-first* count would breach it. The owner's ruling 18 of
+      // 2026-08-31 added the twenty-first, `treasuryOverdraftFloorMinorUnits`
+      // -- the treasury's own floor, without which the strip could say the
+      // balance had gone negative and not how much of the facility was left.
+      // Re-measured on this tree with it, at the same worst case every previous
+      // raise used: `payloadJsonBytes=690` at 250 actors and `692` at 1,000,
+      // 2,500 and 5,000 -- still flat in the population, which is the property
+      // this bound exists to protect and the one the new field had to keep: a
+      // floor is one integer whether the prison holds four prisoners or five
+      // thousand. 692 + 18 = **710**, the same 18 bytes of head room every
+      // previous bound was set to leave, so a *twenty-second* count breaches
+      // this one too.
+      //
+      // The 41 bytes it costs are almost all key: `treasuryOverdraftFloorMinorUnits`
+      // is the longest name on this channel, which is the second time in this
+      // paragraph's history that a field's *spelling* rather than its magnitude
+      // moved the bound (`contrabandNameKey` was the first, for the opposite
+      // reason -- its value is a key).
+      //
+      // **What the 669 bound recorded about its own raise, kept whole:**
+      //
       // **669 and not 622, and the raise is derived from a run rather than
       // chosen** -- the same way 622 replaced 603, 603 replaced 533, 533
       // replaced 493 and 493 replaced 436. The bound it replaces predicted
@@ -818,7 +853,7 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // The bound is not what stops a list arriving -- the scalar assertion
       // above is, at any length, which is why that was added the last time
       // this bound was relaxed.
-      expect(JSON.stringify(payload).length).toBeLessThan(669);
+      expect(JSON.stringify(payload).length).toBeLessThan(710);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(

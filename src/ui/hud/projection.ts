@@ -1,6 +1,7 @@
 import type { LocalizationKey } from '../../content/localization';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
+import type { HostRefusalReason } from '../host-refusal';
 import type { IconId } from '../primitives/icon';
 import type { BadgeTone } from '../primitives/status-badge';
 import { HUD_MESSAGE_KEY } from './messages';
@@ -167,6 +168,29 @@ export interface HudMetricBadge {
    * with them only when they are present, so no existing badge changes call.
    */
   readonly parameters?: MessageParameters;
+  /**
+   * Placeholders whose value is a **quantity the strip must render the way it
+   * renders a chip's own value** -- through `HudLocalizer.formatNumber`, so it
+   * groups and localises identically (the owner's ruling 18 of 2026-08-31).
+   *
+   * A separate channel from `parameters` because this layer has no localizer
+   * and must not acquire one: `projection.ts` is a pure mapping proven in the
+   * `node` environment, and resolving a number here would put an `Intl` call
+   * on the wrong side of that line. So the projection names the quantity and
+   * `status-strip.ts` formats it, which is the same division `labelKey` and
+   * `textKey` already make for text.
+   *
+   * **Why it matters, with the case that forced it:** `hud.status.funds-remaining`
+   * renders under a chip showing `-100`, and the remainder there is 2,400. A
+   * raw number goes through `String()` and reads `2400 left` beside a chip
+   * reading `-100`; the same figure formatted reads `2,400 left`. One of the
+   * two is the strip contradicting itself about how it writes a number.
+   *
+   * `parameters` is still the channel for anything that is not a quantity, and
+   * the two are merged with this one last. Absent for a badge that states a
+   * condition in one word, which is most of them.
+   */
+  readonly numberParameters?: Readonly<Record<string, number>>;
 }
 
 export interface HudMetricDescriptor {
@@ -273,7 +297,18 @@ function prisonersWithoutBed(counts: HudCountsViewModel): number {
 function prisonersWithoutBedBadge(counts: HudCountsViewModel): HudMetricBadge | undefined {
   const withoutBed = prisonersWithoutBed(counts);
   if (withoutBed <= 0) return undefined;
-  return { tone: 'warning', textKey: HUD_MESSAGE_KEY.prisonersWithoutBed, parameters: { count: withoutBed } };
+  /*
+   * **`numberParameters`, and this moved on 2026-08-31 rather than being
+   * written that way.** It was `parameters: { count }`, which `interpolate`
+   * renders with `String()`: a prison with 1,240 unhoused read `1240 with no
+   * bed` under a chip reading `1,240`. Identical below a thousand, which is why
+   * nothing caught it, and the strip disagreeing with itself above one.
+   *
+   * Swept here rather than only at the badge that forced the channel
+   * (`{remaining} left`), because the defect is the class and not the
+   * instance: any badge stating a quantity has it.
+   */
+  return { tone: 'warning', textKey: HUD_MESSAGE_KEY.prisonersWithoutBed, numberParameters: { count: withoutBed } };
 }
 
 /**
@@ -348,6 +383,96 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
         ? HUD_MESSAGE_KEY.securityCoverageUnguarded
         : HUD_MESSAGE_KEY.securityCoverageShort,
   };
+}
+
+/**
+ * How much of the standing overdraft a prison can still spend, or `undefined`
+ * when there is no facility to have a remainder of.
+ *
+ * `balance - floor`, which is `judgeAffordability`'s `spendableMinorUnits` and
+ * `Treasury.canAfford`'s own subtraction, arrived at from the two figures the
+ * status channel publishes. The HUD may not import the simulation
+ * (`AGENTS.md` boundary 1) and does not need to: both operands come from the
+ * same payload, so this is an arithmetic identity over two published numbers
+ * and not a second authority on either -- the line `prisonersWithoutBed` above
+ * draws, applied to money.
+ *
+ * **`undefined` for a floor that is absent or `0`.** Both say no room below
+ * zero is known, and a facility of nothing has no remainder to state; the
+ * chip's own minus sign is then the whole story. Absent is every payload
+ * written before the owner's ruling 18 of 2026-08-31.
+ *
+ * **Clamped at zero, and the boundary is the point.** A balance exactly at the
+ * floor has `0` left, which is true and is what the ruling names. A balance
+ * *below* it -- which `Treasury.spend` will not produce, and a restored save or
+ * a charge that bypassed `canAfford` could -- would otherwise render a negative
+ * number after the word "left", which is a nonsense sentence on the one strip a
+ * player glances at. `Math.max` makes the worst case an understatement of a
+ * remainder that is already nothing.
+ */
+function overdraftRemaining(counts: HudCountsViewModel): number | undefined {
+  const floor = counts.treasuryOverdraftFloorMinorUnits;
+  if (floor === undefined || floor >= 0) return undefined;
+  return Math.max(0, counts.treasuryMinorUnits - floor);
+}
+
+/**
+ * The `FUNDS` chip's tone: nothing while the prison is solvent, `warning` while
+ * it is under water with room left, `danger` at the floor (the owner's ruling
+ * 18 of 2026-08-31).
+ *
+ * ## Why two tones and not one
+ *
+ * `coverageTone`'s argument, applied to money. A prison at -100 and a prison at
+ * -2,500 are not the same state told louder: the first can still buy the plank
+ * that finishes the cell, and the second can buy nothing at all until the state
+ * pays it -- deliveries refused, construction stalled, and no press that will
+ * change it. That is exactly the distinction the coverage ladder draws between
+ * understaffed and unguarded, *"the rung where the cheapest possible action
+ * changes the outcome"*, so `danger` is reserved for the floor rather than
+ * spent on the first minus sign. A strip where the worst state and an ordinary
+ * one paint the same is a strip that has nothing left to say when the prison is
+ * actually stuck.
+ *
+ * ## Why the chip takes a tone at all, when it has always refused one
+ *
+ * The `funds` descriptor's own comment refuses a tone at length, and that
+ * refusal is intact: *"low on money" is a threshold, and a threshold is a
+ * balance decision* reserved to #29 and ADR 0017 decision 5. **Nobody chose a
+ * threshold here.** Zero is not a number this file picked -- it is where the
+ * prison stops spending its own money and starts spending the state's -- and
+ * the floor is `Treasury.overdraftFloorMinorUnits`, published by the
+ * simulation. Both are states the economy defines; neither is a judgement
+ * about when a balance is "low".
+ *
+ * Colour is never the only signal: the badge beside it states the remainder in
+ * words, and at the floor those words are `0 left`.
+ */
+function overdraftTone(counts: HudCountsViewModel): BadgeTone | undefined {
+  const remaining = overdraftRemaining(counts);
+  if (remaining === undefined || counts.treasuryMinorUnits >= 0) return undefined;
+  return remaining <= 0 ? 'danger' : 'warning';
+}
+
+/**
+ * `{remaining} left` under the balance while it is negative, and nothing at all
+ * while it is not (the owner's ruling 18 of 2026-08-31, whose words these are).
+ *
+ * **Nothing while the prison is solvent**, which is `prisonersWithoutBedBadge`'s
+ * rule and `coverageTone`'s reason: nine chips compete for one glance, and a
+ * badge present in every screenshot is a badge nobody reads in the one
+ * screenshot it matters in. A prison in credit is not carrying a facility it is
+ * being asked to think about -- it is simply solvent, and the number above says
+ * so.
+ *
+ * The remainder rides `numberParameters` rather than `parameters` so the strip
+ * formats it exactly as it formats the balance it sits under; see that field.
+ */
+function overdraftBadge(counts: HudCountsViewModel): HudMetricBadge | undefined {
+  const tone = overdraftTone(counts);
+  const remaining = overdraftRemaining(counts);
+  if (tone === undefined || remaining === undefined) return undefined;
+  return { tone, textKey: HUD_MESSAGE_KEY.fundsRemaining, numberParameters: { remaining } };
 }
 
 /**
@@ -662,8 +787,20 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       // paragraph above was one of the two sites it found. Neither phrase is
       // spelled out here: those checks read comments, so quoting what they hunt
       // for would trip them.
-      tone: undefined,
-      badge: undefined,
+      //
+      // **And on 2026-08-31 the chip took a tone after all, without any of the
+      // above ceasing to be true.** The owner's ruling 18 paints it while the
+      // balance is *negative* and red at the floor -- see `overdraftTone`, which
+      // argues why that is not the threshold #29 reserves: nobody chose zero,
+      // and nobody chose the floor either. The paragraphs above are kept whole
+      // because what they refuse is still refused; there is no tone here for a
+      // balance that is merely low.
+      tone: overdraftTone(counts),
+      // `{remaining} left` while the balance is negative, and nothing at all
+      // while it is not. Until this line the standing overdraft (#703 ruling A)
+      // reached the player as a minus sign and nothing else -- no tone, no
+      // badge, no sentence -- so a player met the facility by hitting it.
+      badge: overdraftBadge(counts),
     },
     {
       id: 'earned-today',
@@ -729,8 +866,34 @@ export function severityLabelKey(severity: HudSeverity): LocalizationKey {
  * player did not get. Saying "that did not go through" about a tab that
  * visibly did would be a false statement on screen -- the failure still
  * reaches the host through `MountHudOptions.onError`.
+ *
+ * ## `reason`, and why the `actionId` alone stopped being enough
+ *
+ * The owner's ruling 18 of 2026-08-31. Every prison has a standing overdraft
+ * (#703 ruling A, ADR 0083 §2), so a purchase this thread refuses on money has
+ * reached the end of what the state will carry rather than run the prison out
+ * of it -- a **limit**, which is a different thing for a player to know and a
+ * different thing for them to do about. The `actionId` names the control and
+ * cannot carry that, so the composition root attaches the reason to what it
+ * throws (`src/ui/host-refusal.ts`) and it arrives here beside the control.
+ *
+ * **The reason narrows a sentence and never invents one.** A reason on a
+ * control this pair has no sentence for falls through to that control's own
+ * key, and a reason on a chrome intent still returns `undefined`: the mapping's
+ * subject is still the control, and a claim about money on a control that
+ * spends none would be exactly the false statement the paragraph above refuses.
  */
-export function refusalMessageKey(actionId: string): LocalizationKey | undefined {
+export function refusalMessageKey(actionId: string, reason?: HostRefusalReason): LocalizationKey | undefined {
+  if (reason === 'past-the-overdraft-floor') {
+    switch (actionId) {
+      case 'purchase-materials':
+        return HUD_MESSAGE_KEY.refusalPurchaseMaterialsPastFloor;
+      case 'hire-staff':
+        return HUD_MESSAGE_KEY.refusalHireStaffPastFloor;
+      default:
+        break;
+    }
+  }
   switch (actionId) {
     case 'set-clock':
       return HUD_MESSAGE_KEY.refusalSetClock;

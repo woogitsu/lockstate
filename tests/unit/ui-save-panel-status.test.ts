@@ -260,6 +260,7 @@ describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () =
     'build-tool.ts',
     'display-scale-messages.ts',
     'display-scale.ts',
+    'host-refusal.ts',
     'object-tool.ts',
     'room-tool.ts',
     'save-panel.ts',

@@ -535,6 +535,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/build-tool.ts',
       'src/ui/display-scale-messages.ts',
       'src/ui/display-scale.ts',
+      'src/ui/host-refusal.ts',
       'src/ui/object-tool.ts',
       'src/ui/room-tool.ts',
       'src/ui/save-panel-messages.ts',

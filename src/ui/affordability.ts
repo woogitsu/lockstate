@@ -45,9 +45,48 @@ import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS } from '../simulation/economy';
  * that the boundary cases below can be driven at a floor of `0`, which is what
  * a session had before the ruling and what a bare `new Treasury()` still has.
  */
+/**
+ * Which branch of `judgeAffordability` refused, so the caller can choose a
+ * sentence for it (the owner's ruling 18 of 2026-08-31).
+ *
+ * ## Why two members and not three
+ *
+ * The obvious vocabulary is "the money ran out" against "a limit was reached",
+ * and **with a facility open those are not two events**. `refused` is
+ * `balance - charge < floor` and nothing else, so every money refusal a player
+ * can provoke is a floor crossing: a prison at 25,000 asked for 30,000 is
+ * refused for the same reason, and by the same comparison, as one at -2,480
+ * asked for 65. There is no branch left for "no money" to be.
+ *
+ * What that leaves the generic refusal covering is every refusal that is *not*
+ * about money -- no session at all, an item nothing sells, and the malformed
+ * charge below -- which is what `hud.refusal.purchase-materials` says today and
+ * goes on saying.
+ *
+ * ## `'past-the-floor'` at a floor of zero
+ *
+ * A bare `new Treasury()` has no facility, so there the same branch really does
+ * mean the money ran out. The branch is still named the same, deliberately: a
+ * reason whose meaning changed with the floor would be a reason no caller could
+ * map to a string. Choosing the sentence is the composition root's, and the
+ * only floor it ever passes is the shipped constant.
+ */
+export type AffordabilityRefusal = 'past-the-floor' | 'malformed-charge';
+
 export interface AffordabilityVerdict {
-  /** Whether the charge should be refused before the command is sent. */
+  /**
+   * Whether the charge should be refused before the command is sent.
+   *
+   * Exactly `refusal !== undefined`, kept as its own field because it is what
+   * every call site asks and reading it should not require knowing the
+   * vocabulary.
+   */
   readonly refused: boolean;
+  /**
+   * Which branch refused, or `undefined` when none did. See
+   * `AffordabilityRefusal`.
+   */
+  readonly refusal: AffordabilityRefusal | undefined;
   /** The charge that was tested, echoed so a caller can report it without recomputing it. */
   readonly chargeMinorUnits: number;
   /** The balance it was tested against. */
@@ -82,8 +121,17 @@ export function judgeAffordability(
 ): AffordabilityVerdict {
   const spendableMinorUnits = balanceMinorUnits - overdraftFloorMinorUnits;
   const wellFormed = Number.isSafeInteger(chargeMinorUnits) && chargeMinorUnits >= 0;
+  // Well-formedness first, and the order is the sentence's: a `NaN` quantity is
+  // a defect on this thread, and answering it with "the state will not carry
+  // that" would be a statement about the prison's finances that is false.
+  const refusal: AffordabilityRefusal | undefined = !wellFormed
+    ? 'malformed-charge'
+    : balanceMinorUnits - chargeMinorUnits < overdraftFloorMinorUnits
+      ? 'past-the-floor'
+      : undefined;
   return {
-    refused: !wellFormed || balanceMinorUnits - chargeMinorUnits < overdraftFloorMinorUnits,
+    refused: refusal !== undefined,
+    refusal,
     chargeMinorUnits,
     balanceMinorUnits,
     spendableMinorUnits,

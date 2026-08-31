@@ -59,6 +59,13 @@ const COUNTS = {
   // whose name a player most needs to be able to tell from a phone's.
   contrabandNameKey: 'contraband.weapon.name',
   treasuryMinorUnits: 24_920,
+  // The treasury's own floor (the owner's ruling 18 of 2026-08-31).
+  // Deliberately **not** `-2_500`, the shipped constant, and deliberately not a
+  // round fraction of the balance above: an adapter that answered with the
+  // constant instead of the published figure -- which is exactly the second
+  // copy publishing this field exists to avoid -- would still look plausible
+  // against a fixture that used it.
+  treasuryOverdraftFloorMinorUnits: -1_750,
   // Deliberately a different figure from the balance beside it, and not a
   // round fraction of it (#29): two count fields in the same minor units are
   // exactly where an adapter that read the wrong one would still look
@@ -129,6 +136,12 @@ describe('the HUD counts are read from the worker', () => {
       // formatter knows what a major unit is (#96). A conversion here would
       // put a currency decision in a message adapter.
       treasuryMinorUnits: 24_920,
+      // Straight through as well, and it is the field that makes the strip's
+      // `{remaining} left` badge a reading rather than an assumption: the HUD
+      // may not import the simulation, so without this it would have to keep a
+      // second copy of `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` and go on stating
+      // a facility a prison had stopped having.
+      treasuryOverdraftFloorMinorUnits: -1_750,
       // Straight through as well, and for the stronger reason: the HUD may
       // not derive this figure. It is `300 x occupied places x ticks served
       // / day length`, and a main thread that recomputed it from a tick it
@@ -237,10 +250,21 @@ describe('the HUD counts are read from the worker', () => {
      * Spelled out here rather than folded into `EMPTY_HUD_VIEW_MODEL`, so that
      * moving the field into that constant fails this case instead of passing
      * silently.
+     *
+     * `treasuryOverdraftFloorMinorUnits` is the second field of that shape (the
+     * owner's ruling 18 of 2026-08-31) and its two states are the same kind of
+     * pair, though the strip currently draws them alike: **absent** is "no
+     * session has said anything", and **`0`** is a running prison whose
+     * treasury has no facility open. Both leave the `FUNDS` chip with no badge,
+     * because with no room below zero there is no remainder to state -- so the
+     * distinction is carried here rather than on screen, and this line is what
+     * would fail if the adapter started collapsing a published zero into the
+     * absent case.
      */
     expect(hudCountsFromWorkerMessage(statusCounts(empty))).toEqual({
       ...EMPTY_HUD_VIEW_MODEL.counts,
       dailyWageBillMinorUnits: 0,
+      treasuryOverdraftFloorMinorUnits: 0,
     });
   });
 

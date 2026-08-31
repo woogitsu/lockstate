@@ -98,6 +98,25 @@ export const HUD_MESSAGE_KEY = {
    */
   funds: 'hud.status.funds',
   /**
+   * How much of the standing overdraft is still spendable, under the `FUNDS`
+   * chip while the balance is negative -- the owner's ruling 18 of 2026-08-31,
+   * and the owner's own words: `{remaining} left`.
+   *
+   * `{remaining}` is `balance - overdraftFloor`, rendered through the strip's
+   * own number formatter so it groups exactly as the figure above it does
+   * (`HudMetricBadge.numberParameters`). At the floor it is `0`, which is the
+   * true sentence for a prison that can spend nothing.
+   *
+   * **The one key in this registry named after a quantity of money besides the
+   * chip's own label**, and the allow-list in
+   * `tests/unit/ui-hud-messages.test.ts` is extended for it rather than the
+   * rule relaxed. What that rule guards against is a string inviting a number
+   * no system produces; this number is produced by `Treasury` and published on
+   * `simulation/status-counts`, and the rule's own exception for
+   * `hud.status.funds` is the same exception one field wider.
+   */
+  fundsRemaining: 'hud.status.funds-remaining',
+  /**
    * The rising "earned today" chip beside the balance (#29).
    *
    * Named for what the number is -- what this in-game day has earned so far --
@@ -911,6 +930,37 @@ export const HUD_MESSAGE_KEY = {
    * wrong panel.
    */
   refusalHireStaff: 'hud.refusal.hire-staff',
+  /**
+   * The two sentences for the one refusal that is a **limit** rather than an
+   * absence -- the owner's ruling 18 of 2026-08-31, and both are the owner's
+   * own words.
+   *
+   * Every prison has a standing overdraft of one tenth of its opening grant
+   * (`TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`, #703 ruling A, ADR 0083 §2), so a
+   * charge this thread refuses on money has not run the prison out of money: it
+   * has reached the end of what the state will carry. The pair above cannot say
+   * that -- they are chosen from the `actionId`, which names the control and not
+   * the reason -- and until this pair existed the player read *"the purchase was
+   * refused and no money was spent"* for a limit they had no other way of
+   * learning about.
+   *
+   * **Two keys and not one, for the reason the pair above is two keys**: one
+   * prison has no materials on the way and the other has no new staff member.
+   * The reason travels from `src/main.ts` as a `HostRefusalError`
+   * (`src/ui/host-refusal.ts`) and `refusalMessageKey` in `./projection.ts`
+   * chooses between the four.
+   *
+   * **They do not cover the same refusal decided a tick later.** A charge the
+   * *worker* refuses arrives as `hud.alert.refusal.purchase.insufficient-funds`
+   * or `hud.alert.refusal.hire.insufficient-funds` through the alerts list --
+   * the simulation's own vocabulary, which as of this ruling still says "there
+   * are not enough funds" for a refusal that is also always the floor. Ruling 18
+   * authored no replacement for those two, so they are unchanged; the two sit on
+   * opposite sides of `sender.submit`, so one press produces exactly one of
+   * them.
+   */
+  refusalPurchaseMaterialsPastFloor: 'hud.refusal.purchase-materials-past-floor',
+  refusalHireStaffPastFloor: 'hud.refusal.hire-staff-past-floor',
   refusalUndo: 'hud.refusal.undo',
   refusalRedo: 'hud.refusal.redo',
   /**
