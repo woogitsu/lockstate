@@ -44,6 +44,21 @@ import type { Treasury } from './treasury';
  * `docs/research/2026-08-30-pricing-the-way-out.md`; the choice between them
  * is the owner's.
  *
+ * **Three of the four have since been chosen and the fourth was never asked
+ * for.** The owner's ruling 10 of 2026-08-31 on
+ * [#703](https://github.com/matmaxalez/lockstate/issues/703) sets the diversion
+ * at **25%**, the fee at **15%** and the duration at **45 in-game days** --
+ * which is that research record's candidate C. It says nothing about
+ * `escalatedDiversionRateBasisPoints`, because nobody put it to them, so the
+ * step this class implements still has no ruled magnitude and there is still no
+ * default here.
+ * [ADR 0083](../../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+ * measures what the step is worth at the ruled terms -- below about 30% it
+ * removes single days from a tail of a hundred -- and proposes 50% (*"the
+ * diversion doubles"*, which halves the remaining repayment time) with 45% as
+ * the priced alternative. It proposes rather than sets, because ADR 0017
+ * decision 5 reserves the magnitude and two values are defensible.
+ *
  * **No command and no interface.** A player-facing loan needs a control, a
  * refusal sentence and a readout that keeps a drawdown distinguishable from
  * income, and `AGENTS.md` reserves that copy to the owner. Nothing here is

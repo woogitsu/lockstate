@@ -69,6 +69,35 @@ import { staffDailyWageMinorUnits } from './wages';
  * validators on `Treasury` and the `nonnegative()` on the save schema are left
  * standing rather than relaxed.
  *
+ * ## Both halves of that paragraph are now false, and it is kept because the
+ * argument is what a reader will otherwise reconstruct and believe
+ *
+ * **The clause about the validators was falsified by a merge.**
+ * [ADR 0075](../../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+ * decision 2 is Accepted and relaxed exactly those bounds: `Treasury`'s
+ * constructor and `restore` now admit any safe integer, the save schema's
+ * `treasury.balanceMinorUnits` is `z.number().int().safe()`, and
+ * `Treasury.setOverdraftFloor` exists. The sentence stopped being true the day
+ * that landed and this file was not visited.
+ *
+ * **And the argument itself is false of this system**, which is the half worth
+ * the space, because it is the argument
+ * [ADR 0049](../../../docs/adr/0049-what-a-prison-that-cannot-make-payroll-owes.md)
+ * rests its whole decision on. `update` below bounds the day's payment by
+ * `Math.min(due, this.treasury.balanceMinorUnits)` -- by the **balance**, not by
+ * what `Treasury.spend` would allow -- so a floor being open does not make this
+ * system overdraw, and rung 3 survives it untouched. Measured rather than
+ * argued, in `tests/integration/economy-negative-balance-readers.test.ts`: with
+ * a thousand minor units of room standing open, a balance of 30 against a bill
+ * of 80 pays 30 and owes 50, and a balance already at -200 pays nothing and
+ * stays at -200.
+ *
+ * The consequence is not that ADR 0049 was wrong to prefer arrears. It is that
+ * with a floor open the *only* thing that can take a prison under water is a
+ * spend the player chose -- which is what ADR 0017 decision 8's ladder says
+ * should be refused **first**. That inversion, and what to do about it, is
+ * [ADR 0083](../../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md).
+ *
  * What is carried instead is **arrears**: the part of the bill the prison could
  * not pay, in the same minor units, owed until it is earned. Decision 8 calls
  * the interesting part of insolvency *"digging out"*, and digging out needs a
@@ -79,8 +108,13 @@ import { staffDailyWageMinorUnits } from './wages';
  *
  * The balance falls by the bill every in-game day, so a hire is a standing cost
  * rather than a one-off, and the Funds readout says so before anything goes
- * wrong. When the bill cannot be met the balance sits at **0** -- it never goes
- * red, because it cannot -- and the arrears figure climbs instead. Nothing is
+ * wrong. When the bill cannot be met the balance sits at **0** and the arrears
+ * figure climbs instead. **This sentence carried "-- it never goes red, because
+ * it cannot --" and the reason is gone**: a balance may be negative since ADR
+ * 0075 decision 2. What is still true is the *behaviour* rather than the
+ * impossibility, and it is true for a narrower reason -- this system stops at
+ * the balance whatever room a floor has opened, so nothing **here** can turn
+ * the readout red. Nothing is
  * confiscated, nobody is dismissed, and no run ends: ADR 0017 decision 8 is
  * explicit that insolvency is a state and not a loss condition.
  *

@@ -86,6 +86,36 @@ instrument of any kind.
 
 ---
 
+> **Correction, 2026-08-31: sections 6 through 11 of this record were never
+> written, and the answers above cite them.** This file ends at §5. The answers
+> numbered 2 through 6 above cite §6, §7, §8, §9, §10 and §11 as their evidence,
+> and none of those headings exists — `grep -n '^## '` returns §1 to §5 and
+> nothing more, on this file and on `agent/692-negative-balance-and-loans`, from
+> which it was merged at `d34c573`. So the summary is a summary of measurements
+> that are not in the document, and it is marked here rather than trimmed
+> because the *instrument* that produced them is committed and every one of them
+> can be re-run.
+>
+> `scripts/report-loan-recovery-pricing.mjs` carries the sections the numbering
+> above refers to; its own numbering is its own and does not match this file's.
+> `LOCKSTATE_PRICING_SECTIONS=4` is the capacity plan, `=5` the control with no
+> loan at all, `=6` and `=8` the payroll route with and without the backlog
+> cancelled, `=7` whether the maximum duration ever bites, and `=9` — added on
+> 2026-08-31 — the sweep that derives how much room below zero the way out
+> actually needs. §7's table is quoted in
+> [ADR 0083](../adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md),
+> and §9's is the derivation of the floor's magnitude that this record's
+> recommendation (a *"principal floor tied to the standing materials
+> shortfall"*) named and did not measure.
+>
+> **What is not claimed here:** that the missing sections' figures are the ones
+> the answers above state. They were not re-run for every row, only for §7 and
+> §9. Answer 3's *"25 commands"* and answer 4's *"between 17 and 101 in-game
+> days"* are unverified from this document and should be treated as untiered
+> until somebody runs the sections and writes them up.
+
+---
+
 ## 1. The locked position, reproduced through the real command router
 
 **MEASURED.** The sweep plays into the lock rather than assigning it: nine of a

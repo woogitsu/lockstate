@@ -69,7 +69,7 @@ const PRINCIPALS = [200, 500, 1_000, 1_500, 2_000];
  * minutes of real kernel ticks, and re-checking one table should not cost the
  * other six.
  */
-const SECTIONS = (process.env.LOCKSTATE_PRICING_SECTIONS ?? '1,2,3,4,5,6,7,8').split(',').map((part) => part.trim());
+const SECTIONS = (process.env.LOCKSTATE_PRICING_SECTIONS ?? '1,2,3,4,5,6,7,8,9').split(',').map((part) => part.trim());
 const wanted = (section) => SECTIONS.includes(section);
 
 const modules = await loadSimulationRuntimeModules();
@@ -675,6 +675,42 @@ if (wanted('7')) {
     { label: 'duration (days)', value: (row) => row.durationDays },
     { label: 'escalated day', value: (row) => row.escalationDay },
     { label: 'debt cleared day', value: (row) => row.dayDebtCleared },
+    { label: 'final balance', value: (row) => row.finalBalance },
+  ]);
+}
+
+
+/*
+ * ## 9. How much room below zero does the way out actually need?
+ *
+ * ADR 0075 decision 2 says the balance may go negative and bounds it with an
+ * *"accrual cap"*; `Treasury.overdraftFloorMinorUnits` is the one number that
+ * expresses how far. **Nothing had measured what that number has to be**, and
+ * section 5 measured only two values of it. This sweep is the derivation: the
+ * same control -- no loan of any kind, only the floor open -- at every room
+ * size around the boundary, with and without the thirteen `CancelBuildOrder`
+ * presses that clear the queue the lock leaves standing.
+ *
+ * Read `min balance` against `overdraft room`: the room the prison *uses* is
+ * what the way out costs, and every value above it buys nothing.
+ */
+if (wanted('9')) {
+  console.log('\n## 9. The smallest overdraft that dissolves the lock, with and without the queue cancelled\n');
+  const floorRows = [];
+  for (const plan of [PLANS.capacity, PLANS.minimum]) {
+    for (const room of [0, 65, 89, 90, 91, 130, 155, 219, 220, 285, 400, 1_040, 1_129, 1_130, 1_131, 1_500]) {
+      floorRows.push(playRecovery({ candidate: CANDIDATES[2], principal: room, plan, useLoan: false }));
+    }
+  }
+  table(floorRows, [
+    { label: 'queue cancelled', value: (row) => row.plan === PLANS.capacity.name },
+    { label: 'overdraft room', value: (row) => row.principal },
+    { label: 'capacity', value: (row) => row.capacity },
+    { label: 'housed day', value: (row) => row.dayHoused },
+    { label: 'out of lock day', value: (row) => row.dayOutOfTheLock },
+    { label: 'min balance', value: (row) => row.minBalance },
+    { label: 'zone refused', value: (row) => row.zoneRefused },
+    { label: 'beds refused', value: (row) => row.bedRefusals },
     { label: 'final balance', value: (row) => row.finalBalance },
   ]);
 }
