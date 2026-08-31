@@ -219,11 +219,50 @@
 /* Stat chip                                                           */
 /* ------------------------------------------------------------------ */
 
+/*
+ * ONE GUTTER BETWEEN CHIPS, NOT TWO (issue #703, and #707's promise).
+ *
+ * This rule read `padding: 0 var(--space-1)` and the horizontal half of it is
+ * gone. The vertical half never existed -- the declaration was `0` on that
+ * axis -- so nothing about the chip's height changes here, and no strip height
+ * anywhere in the suite moves.
+ *
+ * **What it was doing.** `createStatChip` has exactly one consumer,
+ * `src/ui/hud/status-strip.ts` (`grep -rn "createStatChip" src/` returns that
+ * file and this one), and it lays every chip inside `.hud-strip__metrics`,
+ * which declares `gap: var(--space-4)`. So the space between two chips was the
+ * row's 16px gap **plus** 4px of one chip's padding **plus** 4px of the next
+ * one's: 24px of gutter out of two declarations, one of which the row already
+ * owns. The chips at the two ends paid another 4px each into the strip's own
+ * `padding: 0 var(--space-3)`.
+ *
+ * **What removing it bought, measured** on `/tests/browser/ui-harness.html` via
+ * `mountHudShell()` + `setHudViewModel()`, Chromium, 100 % interface scale --
+ * nine chips, so 9 x 8px = 72px of row:
+ *
+ *   1440x900, the state `ui-contraband-name.spec.ts` measures (a "N with no
+ *   bed" badge and a named contraband find):
+ *       1443px of content in 1416px of row  ->  1371px in 1416px
+ *   1280x800, a mid-game prison drawing no warning badge at all:
+ *       1310px of content in 1256px of row  ->  1238px in 1256px
+ *
+ * The first of those is #707's ruling -- *naming the found contraband is not
+ * paid for in width* -- which #703's ninth chip had made false at 1440 by 27px.
+ * The second is `earned-today` coming back on screen at the commonest laptop
+ * width in an ordinary prison. `tests/browser/ui-strip-badged-width.spec.ts`
+ * pins both, and `src/ui/hud/hud.css`'s two-row block carries the rest of the
+ * arithmetic -- including what this does **not** fix, which is a row carrying
+ * every badge the strip can draw at once at 1280.
+ *
+ * **The gutter is still twice the space inside a chip** (16px between chips
+ * against `gap: var(--space-2)` = 8px from a chip's icon to its numbers), so
+ * the grouping that tells one chip from the next is unchanged in kind and only
+ * in size. Both numbers scale with `--ui-scale`, so the 72px is 144px at 200 %.
+ */
 .ui-stat {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 0 var(--space-1);
   color: var(--text-subtle);
 }
 
