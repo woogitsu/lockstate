@@ -223,6 +223,51 @@ export const TREASURY_STARTING_BALANCE_MINOR_UNITS = 25_000;
  * The band of queue sizes that can do that is bounded by this constant — wider
  * at 2,500 than at 1,500, empty at 0 — so the honest reading is that 2,500 is
  * margin over the measured need and not headroom to be spent.
+ *
+ * **The conclusion of that paragraph stands and its middle clause does not, so
+ * both are kept.** *"Spends with no press"* is what
+ * `procureQueuedMaterials` looks like from its scheduled caller, and it is not
+ * where the money goes. Measured on `c6cd3e3` by tagging every call to it with
+ * whether it came from `ConstructionSystem.update` or from the `PlaceBuildOrder`
+ * command handler, across §10c's whole sweep: **the scheduled pass spent 0 in
+ * every run** and the presses spent **27,440** over 343 purchases. A press buys
+ * the *increment* its own order adds, so a dragged run of forty walls draws on
+ * this facility forty times, once per press — which is the same 2,440 §10c
+ * reports and is the reason not to raise this number. It is not a queue
+ * spending unwatched; it is a gesture that spends more than the player can see
+ * it spending, which is a different problem with the same magnitude.
+ *
+ * **#703 ruling 9 did not move any figure in that table.** Partial fill per
+ * order (ADR 0081 Decision 1 and 2) was measured against the same sweep after
+ * it landed: every column identical, `floor breaches` still 0, the scheduled
+ * pass still spending 0. It cannot spend the residual those runs leave, because
+ * 60 of room is short of the 80 a wall costs and an order is funded whole or not
+ * at all.
+ *
+ * **BOTH ZEROES ABOVE ARE PROPERTIES OF §10c'S FIXTURE AND NOT OF THE CODE, AND
+ * THEY ARE KEPT BECAUSE THE TABLE THEY DESCRIBE IS REAL.** §10c never gives a
+ * prison money *after* its queue is standing, so the press is the only moment
+ * money exists in it. Give a prison with a standing queue some income and the
+ * scheduled pass does spend it, with no press between the two -- measured, ten
+ * wall orders at 80 against a treasury drained to this floor, credited with no
+ * command at all:
+ *
+ * ```
+ * credited   0    79    80   240   400   799   800   5,000
+ * spent      0     0    80   240   400   720   800     800
+ * ```
+ *
+ * (`tests/integration/construction-just-in-time-materials.test.ts`, *"spends
+ * income that arrives after placement, with nothing pressed in between"*.)
+ *
+ * **What that means for this constant is the sharper version of the paragraph
+ * above rather than a new claim.** The queue can only ever take what its own
+ * orders cost, so this number does not bound a runaway -- it bounds how much
+ * wall a player can place *before* the money exists, and every unit of it will
+ * be taken out of income later, with nothing on screen relating the two. That
+ * is the "hidden cost" reading of the same 2,500, and it is still a reason not
+ * to raise it. What the player is told about it is ADR 0081 open question 2 and
+ * is the owner's.
  */
 export const TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS = -Math.trunc(TREASURY_STARTING_BALANCE_MINOR_UNITS / 10);
 

@@ -332,9 +332,20 @@ with the perimeter segment at rank *r* in the walk:
 
 | | required credit for the perimeter |
 | --- | --- |
-| today: per-item, all-or-nothing, random order | **1,000** flat (measured) |
+| ~~today~~ until 2026-08-31: per-item, all-or-nothing, random order | **1,000** flat (measured) |
 | per-order partial fill, random order | `80r − 40`, *r* uniform on 1…13: **40 to 1,000**, expected 520 |
 | placement order, either granularity | **0** — the perimeter is never in the unfunded tail (measured) |
+
+> **The word *today* in the first row expired on 2026-08-31 and the row is
+> marked rather than rewritten, because the whole table is an argument about
+> what the *second* row buys over the first.** #703 rulings 9 and 12 landed
+> per-order partial fill, so the second row is now what the code does and the
+> first is history. The arithmetic is unchanged and is now measured rather than
+> derived: `tests/unit/construction-just-in-time-materials.test.ts`, *"costs
+> 80r - 40 to reach the order at rank r"*, scans the real service one minor unit
+> at a time and gets `[40, 120, … 1,000]` with a mean of 520 — so the paragraph
+> below is confirmed against the implementation and **this document's case is
+> unweakened**: the worst case did not move, and only a stated order moves it.
 
 **Per-order granularity alone does not close it**: it halves the expected
 requirement and leaves the worst case exactly where it was, on a draw the player

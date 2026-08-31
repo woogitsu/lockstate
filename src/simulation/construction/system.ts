@@ -2,7 +2,7 @@ import { type SystemRegistration, type SimulationContext } from '../kernel/syste
 import { type BuildEdge, type BuildOrder, type BuildOrderFailReason, resolveBuildEdge } from './build-order';
 import { BUILDABLE_REGISTRY, type BuildableDefinition, type MaterialRequirement, edgeNumericIdFor, getBuildableDefinition, occupiesTileEdge } from './definition';
 import { type ConstructionMaterialsProvider, UNLIMITED_MATERIALS_PROVIDER } from './materials-provider';
-import { type ConstructionProcurementSink, type MaterialsProcurementReport } from './materials-procurement';
+import { type ConstructionProcurementSink, type MaterialsProcurementReport, type QueuedOrderDemand } from './materials-procurement';
 import { SnapshotRefusedError } from '../runtime/restore-refusal';
 import { SparseWorld } from '../world/sparse-world';
 import { type BuildabilityRequirement, canBuildAt } from '../world/buildability';
@@ -987,14 +987,58 @@ export class ConstructionSystem implements SystemRegistration {
    */
   public procureQueuedMaterials(tick: number): MaterialsProcurementReport | undefined {
     return this.materialsProcurement?.procureForPendingOrders(
-      this.pendingMaterialDemand(this.orderedOrders()),
+      this.pendingOrderDemand(this.orderedOrders()),
       tick,
     );
   }
 
   /**
+   * Every order still waiting for materials, in the crew's own walk, each
+   * carrying the whole of what its buildable requires.
+   *
+   * **The shape #703 ruling 12 needs, and the one `pendingMaterialDemand`
+   * below is now computed from.** The ruling made the ORDER the unit a partly
+   * filled purchase is atomic at (ADR 0081 Decision 2), so the sink has to be
+   * handed the orders rather than one figure per item id -- it cannot recover
+   * "which two bricks belong to which wall" from a sum, and per-order
+   * atomicity is exactly that question.
+   *
+   * The membership rule is unchanged and is stated once, here, rather than
+   * twice: `'approved'` counts as well as `'materials-pending'`, `'planned'`
+   * does not, a definition the registry does not hold contributes nothing, and
+   * a non-positive requirement is dropped. `pendingMaterialDemand`'s docblock
+   * is where each of those is argued.
+   *
+   * **Walk order is `orderedOrders()`'s and is not re-sorted here.** It decides
+   * which orders an insufficient balance funds, which makes it a fact about
+   * money -- and it is ascending order **id**, which is not placement order for
+   * the `order-${crypto.randomUUID()}` ids a session mints. ADR 0081 Decision 2
+   * records what that costs: the ruling *"halves the expected requirement and
+   * leaves the worst case exactly where it is"*. ADR 0082 proposes a persisted
+   * placement ordinal and is unsigned, so nothing here anticipates it.
+   */
+  private pendingOrderDemand(orders: readonly BuildOrder[]): readonly QueuedOrderDemand[] {
+    const demand: QueuedOrderDemand[] = [];
+    for (const order of orders) {
+      if (order.state !== 'approved' && order.state !== 'materials-pending') continue;
+      const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+      if (definition === undefined) continue;
+      const requirements = definition.materialsRequired.filter((requirement) => requirement.quantity > 0);
+      if (requirements.length === 0) continue;
+      demand.push({ orderId: order.id, requirements });
+    }
+    return demand;
+  }
+
+  /**
    * What every order still waiting for materials will ask the container for,
    * summed per item.
+   *
+   * **No longer what the sink is handed** -- `pendingOrderDemand` above is,
+   * since #703 ruling 12 -- and this is now derived from it so the two cannot
+   * disagree, which is the property `demandedQuantityOf` depends on. Its one
+   * remaining caller is `withdrawOrdersAwaitingMaterial`'s loop (#687), which
+   * asks a per-item question and is right to.
    *
    * **`'approved'` counts as well as `'materials-pending'`**, because the two
    * are one tick apart -- `update` promotes `approved` to `materials-pending`
@@ -1025,12 +1069,8 @@ export class ConstructionSystem implements SystemRegistration {
    */
   private pendingMaterialDemand(orders: readonly BuildOrder[]): readonly MaterialRequirement[] {
     const demand = new Map<string, number>();
-    for (const order of orders) {
-      if (order.state !== 'approved' && order.state !== 'materials-pending') continue;
-      const definition = BUILDABLE_REGISTRY.get(order.definitionId);
-      if (definition === undefined) continue;
-      for (const requirement of definition.materialsRequired) {
-        if (requirement.quantity <= 0) continue;
+    for (const order of this.pendingOrderDemand(orders)) {
+      for (const requirement of order.requirements) {
         demand.set(requirement.itemId, (demand.get(requirement.itemId) ?? 0) + requirement.quantity);
       }
     }

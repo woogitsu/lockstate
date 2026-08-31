@@ -148,6 +148,36 @@ export function createConstructionCommandHandler(
  * it is not this change's to write. Reported on #627 rather than guessed at
  * here.
  *
+ * **AND SINCE #703 RULING 9 THE SHIPPED SENTENCE IS PARTLY FALSE, WHICH IS
+ * WHAT IS NOW OWED RATHER THAN WHAT WOULD MERELY SAY MORE.** The English text
+ * behind `purchase.insufficient-funds` is *"The materials were not ordered —
+ * there are not enough funds."* (`src/content/default-locale-en.ts`), and it
+ * was true word for word while a pass bought the whole per-item lump or none of
+ * it. A pass now funds as many whole build orders as the balance covers, so the
+ * common case this line reports is *some materials were ordered and some were
+ * not* -- and the first clause of that sentence denies the half that happened.
+ * The money left the treasury, which is precisely why ADR 0081 Decision 3 calls
+ * telling the player *"a precondition rather than a nicety"*.
+ *
+ * **Left as it is, deliberately, and named here rather than patched around.**
+ * The three ways out are all worse or not this change's:
+ *
+ * - Suppressing the refusal when `report.purchased` is non-empty would leave a
+ *   prison whose queue is stalled on money with nothing on the alert band at
+ *   all, which is the whole of #629 reintroduced.
+ * - Picking a different existing key would be reusing a sentence written about
+ *   something else, which the namespace argument in
+ *   `src/simulation/protocol/types.ts` exists to forbid.
+ * - A sentence that says what *was* bought and what was not is new copy.
+ *   `AGENTS.md`'s fourth exclusion reserves it, and ADR 0081's open question 2
+ *   -- *"what the player is told, and whether a partial fill is a
+ *   refusal-class sentence or an event-class one"* -- is exactly this question,
+ *   put to the owner and not answered.
+ *
+ * So: this is the place, it is empty, and the figure the owner would need is
+ * already carried -- `MaterialsProcurementReport.purchased`, summed per item id
+ * over every order the pass funded, beside the `unfunded` this function reads.
+ *
  * ## The supersession key
  *
  * `materialsFundingSupersessionKey()`, which is domain-wide -- see its own

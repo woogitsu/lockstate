@@ -151,6 +151,35 @@ export class ProcurementSystem implements SystemRegistration {
    * Every refusal leaves the treasury and the queue untouched, which is why
    * the affordability check happens before the spend rather than being
    * inferred from a failed one.
+   *
+   * ## All or nothing, and after #703 ruling 9 that is a decision rather than
+   * the only thing anybody had thought of
+   *
+   * **A purchase here still spends the whole figure or none of it.** Ruling 9
+   * -- *"kupować tyle, ile stać"* -- chose partial fill on 2026-08-31, and it
+   * did not reach this method, for a reason that is in
+   * [ADR 0081](../../../docs/adr/0081-whether-a-purchase-may-be-partly-filled.md)'s
+   * own text rather than inferred from silence. Every clause of its Decision is
+   * about the build queue: §1 says *"rather than refusing the whole per-item
+   * order"*, which names the aggregated per-item figure
+   * `JustInTimeMaterialsService` was buying; §2 is about which **build order**
+   * is funded; §3 is about `MaterialsProcurementReport`. The player's *Buy*
+   * press appears nowhere in it, and ruling 12's unit -- the order -- does not
+   * exist on this path at all: a press names an item and a quantity, and there
+   * is no order to be atomic about.
+   *
+   * **So the press keeps its meaning: you get what you asked for, or a refusal
+   * you can read.** Partly filling it would mean a player who asked for ten
+   * bricks silently receiving six, which needs a sentence saying so -- and that
+   * sentence is ADR 0081's open question 2, which `AGENTS.md`'s fourth
+   * exclusion reserves to the owner. Doing it here would have shipped the
+   * mechanic without the sentence.
+   *
+   * Partial fill therefore lives one layer up, in
+   * `JustInTimeMaterialsService.procureForPendingOrders`, which decides *how
+   * big a figure to hand this method* and calls it once per item per funded
+   * order. `Treasury.spend` is likewise untouched and still strictly
+   * all-or-nothing against its floor.
    */
   public purchase(orderId: string, itemId: string, quantity: number, tick: number): PurchaseOutcome {
     if (this.pending.some((delivery) => delivery.orderId === orderId)) {

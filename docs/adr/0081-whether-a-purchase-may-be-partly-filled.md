@@ -232,6 +232,101 @@ reason the player did not choose.
 > "safe now"; it widens the band of queue sizes that can silently strand a
 > prison from `(1,040, 2,500)` to everything above 1,040.** Whether that needs a
 > bound of its own is a question for this document and is not answered here.
+>
+> **THAT PARAGRAPH'S PREMISE WAS MEASURED WHEN PARTIAL FILL WAS IMPLEMENTED AND
+> IT DOES NOT HOLD. It is kept because it is what the implementing agent was
+> briefed against, and because a decision record's wrong turns are worth more
+> visible than tidied away.** Re-measured 2026-08-31 on `c6cd3e3` by tagging
+> every `ConstructionSystem.procureQueuedMaterials` call with whether it came
+> from `ConstructionSystem.update` or from the `PlaceBuildOrder` command
+> handler, over §10c's whole sweep (tails of 13, 20, 31, 40 and 60 orders):
+>
+> | | spent | purchases |
+> |---|---|---|
+> | the scheduled pass — the one with no press | **0** | **0** |
+> | the `PlaceBuildOrder` presses | **27,440** | **343** |
+>
+> in every one of the five runs. **The all-or-nothing refusal was not bounding
+> an unpressed drain, because there was no unpressed drain to bound.** A press
+> buys the *increment* its own order adds and an increment is one wall, so the
+> walk to −2,440 that §10c reports was already per order and already pressed
+> for. The sentence *"a forty-order tail costing 3,200 strands nothing at all"*
+> is also not what that section prints: it prints a final balance of −2,440 with
+> ten orders still standing, and the `-25` above appears in no run of it.
+>
+> **And the sweep was re-run after partial fill landed: every figure in §10c is
+> identical.** Same `room used`, same `floor breaches` of 0, same `min balance`,
+> same `orders standing`, same `final balance`; the scheduled pass still spends
+> 0. It cannot spend what those runs leave, because 60 of room is short of the
+> 80 a wall costs and ruling 12 funds an order whole or not at all.
+>
+> **What partial fill does move is the residual, and no bound was invented for
+> it.** All-or-nothing left a prison whose queue it could not fund in one lump
+> with the *whole* balance unspent; per-order fill leaves it with less than the
+> cheapest unfunded order costs. That residual is the liquidity ADR 0075's
+> locked position needs, so the question this paragraph asks is real — but
+> **naming how much of it a prison is owed is a balance value**, which ADR 0017
+> decision 5 reserves to the owner with the rest of
+> [#29](https://github.com/matmaxalez/lockstate/issues/29). So it is left open
+> rather than answered in implementation code, and the two things that do bound
+> the queue are named instead: its own finite cost, which partial fill does not
+> change, and `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`, which every spend passes
+> through one comparison in `Treasury.canAfford`.
+>
+> **AND THE CORRECTION ABOVE OVERREACHED IN ITS TURN, WHICH IS RECORDED HERE
+> RATHER THAN EDITED INTO IT.** *"The scheduled pass spent 0"* is true of §10c
+> and does not generalise, and the reason is a property of that instrument:
+> **no run in it earns money with a queue standing.** A prison there places its
+> orders out of the opening grant and then has no capacity and no income, so the
+> press is the only moment money exists — which means the sweep agrees with
+> all-or-nothing and with partial fill equally, the shape `docs/TESTING.md`
+> names as a fixture that supplies both sides.
+>
+> Measured on the shape §10c cannot produce — ten `wall-brick` orders placed
+> against a treasury drained to the floor, then credited **with no command at
+> all**, then the clock run with nothing pressed:
+>
+> | credited | 0 | 79 | 80 | 240 | 400 | 799 | 800 | 5,000 |
+> |---|---|---|---|---|---|---|---|---|
+> | spent, unpressed | 0 | 0 | **80** | **240** | **400** | **720** | **800** | **800** |
+>
+> **This is not a defect and must not be read as one.** Every one of those
+> orders was placed by the player, and funding it later is ADR 0017 decision 7
+> doing what the owner asked for in [#627](https://github.com/matmaxalez/lockstate/issues/627)
+> — *"it should buy itself when I place a wall"*. What it is, is a **cost the
+> player is not shown**, reachable only since ruling A opened the overdraft: a
+> player who drags a perimeter while broke and forgets can be carried from
+> `+2,500` to the floor over the following days with nothing pressed and nothing
+> on screen relating the two. That is the same "hidden mechanic" class Decision 3
+> and open question 2 are about, and it is the strongest argument yet that
+> question 2 is a precondition rather than a nicety.
+>
+> **What ruling 9 changed about it, measured on both trees with one probe** —
+> ten orders at 80, 300 credited per in-game day, nothing pressed:
+>
+> | day | all-or-nothing: room left / walls | per order: room left / walls |
+> |---|---|---|
+> | 1 | 300 / 0 | **60 / 3** |
+> | 2 | 600 / 0 | **40 / 7** |
+> | 3 | 100 / 10 | 100 / 10 |
+> | 4–6 | identical | identical |
+>
+> **The total and the endpoint are identical to the minor unit** — 800, the
+> queue's own cost — and the floor is reached under neither. What moves is the
+> threshold at which the queue starts taking income, from the whole queue's cost
+> to the cheapest single order: **800 to 80**. So the walk is not deeper and not
+> faster to the floor; it is *earlier*, and the prison holds 60 and 40 where it
+> used to hold 300 and 600. **Both are below the 65 a plank costs**, which is
+> ADR 0075's whole subject — so per-order fill buys the player their walls two
+> days sooner at the price of two days without the liquidity to buy their way
+> out. That is the trade this ruling makes, stated so it can be argued with.
+>
+> Pinned as a characterisation test at
+> `tests/integration/construction-just-in-time-materials.test.ts`, *"spends
+> income that arrives after placement, with nothing pressed in between"*.
+>
+> This correction changes no decision in this document, and the Status line
+> above is untouched: this ADR is still unsigned.
 
 **And it does NOT fix the room-enclosure failure it looks like it should.** In
 the measured locked position the pending set is `{wall-9, wall-314…wall-325}` and

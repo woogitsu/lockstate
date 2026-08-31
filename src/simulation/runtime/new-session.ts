@@ -708,7 +708,13 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    */
   treasury.setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
   const procurement = new ProcurementSystem(treasury, constructionMaterials);
-  const justInTimeMaterials = new JustInTimeMaterialsService(procurement, constructionMaterials);
+  /*
+   * The treasury is the third argument since #703 ruling 12: an order is funded
+   * whole or not at all, so the service has to ask whether the *order's* cost is
+   * affordable before it buys the first of its lines. It reads `canAfford` and
+   * never spends -- `ProcurementSystem` is still the only thing here that does.
+   */
+  const justInTimeMaterials = new JustInTimeMaterialsService(procurement, constructionMaterials, treasury);
   const construction = new ConstructionSystem(
     world,
     new ContainerMaterialsProvider(constructionMaterials),
