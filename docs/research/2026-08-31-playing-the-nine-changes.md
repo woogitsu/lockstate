@@ -549,3 +549,45 @@ Three facts fall out, and the first is act 2's own cause.
 viewport, and whether the top-right band (`###` at y=100..300 with the Rooms
 panel folded away) is the host's save panel or something else. **UNKNOWN** —
 the sweep names the `.ui-panel` boxes and that band is not one of them.
+
+## 9. One misclick with *Remove* armed leaves a red sentence up for the rest of the session
+
+**MEASURED**, and it turned up as noise in every act before it was recognised as
+a finding. `playtest-harness.ts`'s `calibrate` arms *Remove* and presses empty
+tiles — which is an ordinary misclick, not a test-only gesture. From that press
+onward, in act1d and in both act 2 runs, the refusal band read:
+
+```
+[act1]   refusal band: "Nothing was removed — there is no object on that tile, and none being built there."
+```
+
+after each of four wall runs, and in act2b it was still the band's text after
+**48 wall segments were ordered and built and four rooms were designated and
+accepted** — several minutes of successful play under a red sentence about
+something that failed once.
+
+**VERIFIED, read** — why, exactly, and the design is per-key rather than
+sticky-by-accident:
+
+- `src/simulation/worker/state-machine.ts:559`: `publishStatusCounts` puts
+  `this._runtime.refusals.last` on every counts payload.
+- `src/simulation/refusals/refusal-log.ts:149`: `supersede(key)` clears the
+  standing refusal **only if the key matches**.
+- `src/simulation/refusals/refusal-log.ts:538`: a removal's key is the *tile* —
+  `remove-object:${x}:${y}`.
+
+So the band clears when a removal on **that same tile** later succeeds, or when
+any other refusal replaces it. On a tile the player pressed by mistake and never
+returns to, neither happens.
+
+- **Observation.** The band is a "most recent refusal", not a "current problem",
+  and at the scale of a play session those differ by minutes.
+- **What would establish the cause**: done, above — the key is the tile.
+- **What would establish the impact**: whether a player reads a stale red band as
+  "something is wrong now". This pass cannot know that, and the sentence itself
+  is past-tense and accurate about the press it describes. **UNKNOWN.**
+- **Not filed as a defect and no wording proposed.** Two options exist and both
+  are the owner's: give the band a lifetime, or key a removal refusal to
+  something coarser than a tile. `refusal-log.ts:454` already argues the
+  keying direction deliberately — *"does not withdraw a refusal that is still
+  true"* — so the narrow key is a decision, not an oversight.
