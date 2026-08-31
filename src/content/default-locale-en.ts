@@ -626,6 +626,11 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * What has been bought and has not arrived (#285), inside the buy disclosure
    * and beside the control that spent the money.
    *
+   * Corrected 2026-08-31 (issue #703 ruling 2): the block is out of that
+   * disclosure and laid out on the panel. **No sentence below changed**, and
+   * that is worth saying in a locale file -- the ruling moved authored copy into
+   * view, it did not ask for new copy, and none was written.
+   *
    * `deliveries-count` carries the figure this whole surface exists for: what a
    * cancellation would give back. The strip's Funds readout says what is left,
    * and until this existed nothing said what was out — so money spent on a

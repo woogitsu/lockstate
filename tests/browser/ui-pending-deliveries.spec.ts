@@ -32,6 +32,14 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  *   that decided the placement: the catalogue is the only block this panel can
  *   take height from, ADR 0031 decision 3 already spends 45px of it on the queue,
  *   and its open question 4 asks whether that can go on.
+ *   **Corrected 2026-08-31, issue #703 ruling 2: the block is no longer inside
+ *   the buy disclosure**, so what that block of tests measures now is the
+ *   identity in the state that still has one -- nothing on its way -- plus the
+ *   ruling's own claim, that the spend and its `Cancel` are laid out with the
+ *   fold shut, plus what the panel pays for it. The bullet is kept rather than
+ *   rewritten because the argument it records is why the panel could not simply
+ *   grow a third block, and that constraint has not gone away: ADR 0031's open
+ *   question 4 is still open and this block still donates nothing.
  * - **Aiming.** Three deliveries, the *second* cancelled, and the assertion is
  *   about the two that were not pressed. There is no `Undo` for a purchase, so a
  *   control that cancelled "the next one" would be wrong in a way no other
@@ -143,24 +151,41 @@ test.describe('the Build panel deliveries block', () => {
     }
   });
 
-  test('costs the panel nothing while the disclosure is closed, which is what decided the placement', async ({
+  test('is drawn with the disclosure closed, and costs the panel nothing while nothing is on the way (#703)', async ({
     page,
   }) => {
     /*
-     * The load-bearing measurement of the whole placement, taken at every
-     * viewport. A block of its own -- the shape ADR 0031 gave the queue -- costs
-     * 45px whenever it is non-empty, and the only block this panel can take that
-     * from is the catalogue, which is already down to one row of twenty-one at
-     * 900x600 while a queue exists. This block lives inside a row that has no box
-     * until it is opened, so there is nothing to pay for and nothing to donate:
-     * the panel's arrival geometry with five purchases out is identical to its
-     * arrival geometry with none.
+     * **This test used to assert the opposite, and both halves are kept.** Until
+     * 2026-08-31 it was named *"costs the panel nothing while the disclosure is
+     * closed, which is what decided the placement"* and it asserted an identity:
      *
-     * Both figures are read here rather than asserted as constants, because what
-     * matters is the *difference*: this harness gives the panel the whole rail
-     * (128.7px more than the application does), so the absolute numbers are the
-     * harness's and only their equality is the claim. `app-shell.spec.ts` takes
-     * the same measurement on the assembled page, where the absolutes are real.
+     * > A block of its own -- the shape ADR 0031 gave the queue -- costs 45px
+     * > whenever it is non-empty, and the only block this panel can take that
+     * > from is the catalogue, which is already down to one row of twenty-one at
+     * > 900x600 while a queue exists. This block lives inside a row that has no
+     * > box until it is opened, so there is nothing to pay for and nothing to
+     * > donate: the panel's arrival geometry with five purchases out is
+     * > identical to its arrival geometry with none.
+     *
+     * Issue #703 ruling 2 overturned that placement: *"The spent amount and the
+     * control that reverses it both come out of the Buy fold."* #640 made a
+     * placement press buy its own materials, so "five purchases out" stopped
+     * being a state the player put the panel in, and the identity above was
+     * bought by painting a charge nobody ordered into a 0x0 box.
+     *
+     * **So the identity is not deleted, it is moved to the state where it is
+     * still true**: nothing on its way. That is the arrival state and the common
+     * one, `paintDeliveries` is what keeps it, and it is now the only mechanism
+     * doing so rather than the second of two. What replaces the old claim for a
+     * *pending* delivery is the ruling itself, asserted as boxes, plus the cost
+     * stated rather than hidden -- the panel absorbs the block by growing or by
+     * scrolling, and this says which.
+     *
+     * Figures are read rather than pinned, for the reason the old comment gave:
+     * this harness gives the panel the whole rail (128.7px more than the
+     * application does), so only the differences are the claim.
+     * `build-deliveries-outside-the-fold.spec.ts` takes the same measurement on
+     * the assembled page, where the absolutes are real.
      */
     for (const [width, height] of VIEWPORTS) {
       await page.setViewportSize({ width, height });
@@ -169,26 +194,40 @@ test.describe('the Build panel deliveries block', () => {
       const before = await layout(page);
       await report(page, pending(5));
       const after = await layout(page);
+      const at = `${width}x${height}`;
 
-      expect(after.panel?.height, `the panel changed height at ${width}x${height}`).toBe(before.panel?.height);
-      expect(after.panelOverflow, `the panel started scrolling at ${width}x${height}`).toBe(before.panelOverflow);
-      expect(after.panelScrollTop, `the panel scrolled itself at ${width}x${height}`).toBe(before.panelScrollTop);
-      expect(after.list?.height, `the catalogue donated height at ${width}x${height}`).toBe(before.list?.height);
-      expect(after.rows, `the catalogue lost a row at ${width}x${height}`).toBe(before.rows);
-      expect(after.lastSectionHeaderText, `the panel's last visible section at ${width}x${height}`).toBe(
-        'Enter coordinates',
-      );
-      // And no `data-queued`-style attribute on the panel: this block pays for
-      // nothing, so it moves no token.
-      expect((await probe(page)).blockLaidOut, `the block drew while closed at ${width}x${height}`).toBe(false);
+      // The ruling: laid out, with the disclosure never touched.
+      const closed = await probe(page);
+      expect(closed.blockLaidOut, `the block has no box while the fold is shut at ${at}`).toBe(true);
+      expect(closed.pending, `the block does not carry the count at ${at}`).toBe('5');
+      expect(closed.rows, `the block drew no rows while the fold is shut at ${at}`).toHaveLength(3);
+      for (const row of closed.rows) {
+        expect(row.cancelHasOffsetParent, `${row.orderId}'s cancel has no offsetParent at ${at}`).toBe(true);
+        expect(row.cancelBox?.height ?? 0, `${row.orderId}'s cancel is shorter than a tap target at ${at}`).toBeGreaterThanOrEqual(44);
+        expect(row.cancelBox?.width ?? 0, `${row.orderId}'s cancel is narrower than a tap target at ${at}`).toBeGreaterThanOrEqual(44);
+        expect(row.cancelDisabled, `${row.orderId}'s cancel is disabled at ${at}`).toBe(false);
+      }
 
-      // Non-vacuity, for the reason the previous test carries one: an identity
-      // between two states is satisfied by a feature that does not exist, so the
-      // block has to be there when the disclosure is opened.
-      expect(await page.evaluate(() => window.lockstateUiHarness.clickBuyToggle())).toBe(true);
-      const revealed = await probe(page);
-      expect(revealed.blockLaidOut, `the block is not drawn when opened at ${width}x${height}`).toBe(true);
-      expect(revealed.pending, `the block does not carry the count at ${width}x${height}`).toBe('5');
+      // What it costs, said out loud: the panel either grew or started
+      // scrolling. Either is the panel absorbing its own content, which is what
+      // `overflow-y: auto` on `.ui-panel.hud-build` is for; nothing changing at
+      // all would mean the block still has no box.
+      expect(
+        (after.panel?.height ?? 0) > (before.panel?.height ?? 0) || after.panelOverflow > before.panelOverflow,
+        `the panel absorbed the block without growing or scrolling at ${at}`,
+      ).toBe(true);
+      // The panel is still the panel: the catalogue keeps at least its floor and
+      // the numeric fallback is still the last section a player can see.
+      expect(after.rows, `the catalogue lost a row from its list at ${at}`).toBe(before.rows);
+      expect(after.lastSectionHeaderText, `the panel's last visible section at ${at}`).toBe('Enter coordinates');
+
+      // And the identity that survived the ruling, in the state it survived in:
+      // with nothing on its way the panel is byte-identical to the panel that
+      // was never told about a delivery at all.
+      await report(page, pending(0));
+      const emptied = await layout(page);
+      expect((await probe(page)).blockLaidOut, `an empty list kept a box at ${at}`).toBe(false);
+      expect(emptied, `the panel did not return to its arrival geometry at ${at}`).toEqual(before);
     }
   });
 
@@ -403,16 +442,41 @@ test.describe('the Build panel deliveries block', () => {
       .toEqual([JSON.stringify({ kind: 'cancel-material-purchase', orderId: 'buy-01' })]);
   });
 
-  test('cannot be pressed through the closed disclosure, so it reaches no purchase', async ({ page }) => {
-    // The other half of #220's lesson: a control inside a `hidden` row is in the
-    // DOM and is not on screen. This is also the stated cost of the placement --
-    // while the disclosure cannot be opened, the refunds cannot be reached.
+  test('can be pressed with the disclosure closed, and that is the whole of #703 ruling 2', async ({ page }) => {
+    /*
+     * **This test asserted the exact opposite until 2026-08-31, and the old
+     * assertion is worth keeping in view.** It was named *"cannot be pressed
+     * through the closed disclosure, so it reaches no purchase"* and it read:
+     *
+     * > The other half of #220's lesson: a control inside a `hidden` row is in
+     * > the DOM and is not on screen. This is also the stated cost of the
+     * > placement -- while the disclosure cannot be opened, the refunds cannot
+     * > be reached.
+     *
+     * Both sentences were true and the second was a cost the owner declined to
+     * go on paying (issue #703 ruling 2). The mechanism it describes is
+     * unchanged -- `pressPendingDeliveryCancel` still refuses on a null
+     * `offsetParent`, so this is a press that reached a control a player can
+     * see, not a synthetic `click()` through a `hidden` subtree.
+     *
+     * 375x812 because that is the viewport this repository has shipped
+     * laid-out-but-unreachable controls at, and the tightest one this block is
+     * measured in.
+     */
     await page.setViewportSize({ width: 375, height: 812 });
     await openBuildTab(page);
     await report(page, pending(5));
 
-    expect(await page.evaluate(() => window.lockstateUiHarness.pressPendingDeliveryCancel('buy-01'))).toBe(false);
-    expect((await intents(page)).filter((intent) => intent.includes('cancel-material-purchase'))).toEqual([]);
+    expect(await page.evaluate(() => window.lockstateUiHarness.pressPendingDeliveryCancel('buy-01'))).toBe(true);
+    await expect
+      .poll(async () => (await intents(page)).filter((intent) => intent.includes('cancel-material-purchase')))
+      .toEqual([JSON.stringify({ kind: 'cancel-material-purchase', orderId: 'buy-01' })]);
+    // The fold really was shut for all of that: the press is not a disclosure
+    // being opened by a side effect.
+    expect(
+      await page.evaluate(() => document.querySelector<HTMLElement>('.hud-build__buy')?.hidden ?? false),
+      'the buy disclosure was open, so this proves nothing about a closed one',
+    ).toBe(true);
   });
 
   test('takes the block off when the tab leaves, rather than leaving ids nothing answers for', async ({ page }) => {

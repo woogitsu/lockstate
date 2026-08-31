@@ -1412,6 +1412,37 @@
 /*
  * What has been bought and has not arrived (#285), inside the buy disclosure.
  *
+ * **Corrected 2026-08-31 -- issue #703 ruling 2: it is NOT inside the buy
+ * disclosure any more.** The heading above and the paragraph below are kept
+ * because the measurements in them were taken and are true of the state they
+ * describe; what the owner overturned is the placement. `deliveriesBlock` is now
+ * the last child of `.hud-build__map`, immediately after `.hud-build__buy`, and
+ * the owner's words are *"The spent amount and the control that reverses it both
+ * come out of the Buy fold."* #640 made a placement press buy its own materials,
+ * so the common case is a charge the player never ordered; #693 made cancelling
+ * one withdraw the queued orders behind it. Both were behind a fold that starts
+ * shut.
+ *
+ * **What that does to the rules below: nothing.** Every selector in this block
+ * is a class rather than a descendant of `.hud-build__buy`, so the block paints
+ * identically one level up -- and it keeps the same horizontal metrics, because
+ * `.hud-build__buy` has no padding of its own and `.hud-build__map`'s padding is
+ * the box these figures were measured in either way. Measured after the move, on
+ * the assembled page with six `jit:` deliveries pending and the fold never
+ * opened: 238x226.9 at 1920x1080, 1440x900 and 1280x800, 238x180.5 at 900x600
+ * where the "and N more" line is clamped to one line, and 333x213.7 at 375x812.
+ *
+ * **What it does to the paragraph below is the part to read.** "There is no rule
+ * here that pays for it" is still true of this stylesheet and no longer true of
+ * the panel: with something pending this block now costs the panel its own
+ * height, and the panel absorbs it by scrolling -- 0px of overflow at 1920x1080,
+ * 94px at 1440x900, 169px at 1280x800, 178px at 900x600, 158px at 375x812. The
+ * *arrival* height is still untouched, and `paintDeliveries`' `hidden` is now
+ * the only thing keeping it that way rather than the second of two mechanisms.
+ * `tests/browser/build-deliveries-outside-the-fold.spec.ts` holds the numbers
+ * and asserts that the rows the overflow puts below the fold are reached by the
+ * scroll this panel already performs.
+ *
  * **There is no rule here that pays for it, and that is the point.** The queue
  * block above had to buy its 45px out of `--hud-build-catalogue-floor`, and
  * ADR 0031's own open question 4 asks whether the catalogue should go on being
@@ -1435,6 +1466,11 @@
  * of thing -- a readout of what the simulation found, folded away when there is
  * nothing to report -- and the line is what separates "what you are buying" from
  * "what you already bought" inside one open row.
+ *
+ * That hairline separates the same two things a level up (2026-08-31): with the
+ * fold shut it runs under the arm hint, and with it open it runs where it always
+ * did, under the buy controls. It is the reason the block needed no new rule
+ * when it moved.
  */
 .hud-build__deliveries:not([hidden]) {
   display: flex;

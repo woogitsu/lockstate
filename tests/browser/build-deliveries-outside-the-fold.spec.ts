@@ -47,18 +47,26 @@ const APP_URL = '/index.html';
  *
  * ## Which viewports, and why these
  *
- * The owner's steer of the same day is that the desktop browser comes first
- * and mobile is refined in a later pass, so the three viewports here are
- * desktop ones and the tallest of them is the arrival state of a modern
- * laptop. `ui-pending-deliveries.spec.ts` keeps the phone and the tight
- * 900x600 viewport under measurement in the harness.
+ * The owner's steer of the same day is that **the desktop browser comes first
+ * and mobile is refined in a later pass** -- so the three desktop viewports are
+ * the ones this ruling is judged at, and they lead the list.
+ *
+ * 900x600 and 375x812 are here anyway, and they are here because the same steer
+ * says not to *break* the phone. They are the two viewports where this block
+ * costs the panel the most, and what they measure is not the same claim: at
+ * those two the block does not fit the panel's visible box, so what is asserted
+ * of the rows below the fold is that the panel's own scroll reaches them, by
+ * scrolling and re-measuring. Both were green when this spec landed; if a later
+ * mobile pass changes the answer, the numbers below say what it changed from.
  */
 
-/** Desktop-first, per the owner's steer of 2026-08-31. */
+/** Desktop first, per the owner's steer of 2026-08-31; the two tight viewports follow. */
 const VIEWPORTS = [
   [1920, 1080],
   [1440, 900],
   [1280, 800],
+  [900, 600],
+  [375, 812],
 ] as const;
 
 interface MeasuredBox {
@@ -72,7 +80,13 @@ interface MeasuredBox {
 
 interface DeliveriesGeometry {
   readonly pending: string | null;
-  readonly buyFoldHidden: boolean;
+  /**
+   * `HTMLElement.hidden` verbatim, and the type is `boolean | 'until-found'`
+   * because the DOM's is: the attribute takes that third value. Reported as it
+   * is found rather than coerced, so an element hidden the *other* way cannot be
+   * read here as `true`.
+   */
+  readonly buyFoldHidden: boolean | 'until-found';
   readonly buyFoldBoxes: number;
   readonly buyToggleExpanded: string | null;
   readonly block: MeasuredBox | null;
@@ -257,15 +271,18 @@ test.describe('the money the game spent for the player', () => {
        *
        * A box is not a place on the screen. The Build panel is a scroll
        * container (`.ui-panel.hud-build`) and this block is real height it did
-       * not have before, so at the narrower desktop viewports the *last* of
-       * three rows lands below the panel's own fold. Measured on this page with
-       * six deliveries pending, the block 226.9px:
+       * not have before, so from 1280x800 down the last rows land below the
+       * panel's own fold -- one row at 1280x800 and 375x812, two of the three at
+       * 900x600, which is the viewport this panel has least height at. Measured
+       * on this page with six `jit:` deliveries pending from one wall run:
        *
-       * | Viewport | panel overflow | rows inside the visible box |
-       * | --- | --- | --- |
-       * | 1920x1080 | 0px | 3 of 3 |
-       * | 1440x900 | 94px | 3 of 3 |
-       * | 1280x800 | 169px | 2 of 3 |
+       * | Viewport | block | panel overflow | rows inside the visible box |
+       * | --- | --- | --- | --- |
+       * | 1920x1080 | 238x226.9 | 0px | 3 of 3 |
+       * | 1440x900 | 238x226.9 | 94px | 3 of 3 |
+       * | 1280x800 | 238x226.9 | 169px | 2 of 3 |
+       * | 900x600 | 238x180.5 | 178px | 1 of 3 |
+       * | 375x812 | 333x213.7 | 158px | 2 of 3 |
        *
        * So the two halves are asserted separately and neither is softened.
        * **Without touching anything**, the spend and the first refund -- the
