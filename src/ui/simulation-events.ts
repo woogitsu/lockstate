@@ -114,6 +114,39 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  *   of a session; see the schema's own comment in
  *   `src/simulation/protocol/types.ts`.
  *
+ * ## `contraband.discovered` is `'warning'`, and a weapon is not louder (#703 ruling 13)
+ *
+ * The owner's ruling 13 of 2026-08-31 settles both halves, and the second half
+ * is a decision rather than an omission: the sentence is *"Contraband found:
+ * {item}."* at `'warning'`, and **a weapon sits in the same band as any other
+ * item.** There is no `'danger'` variant for a weapon and one must not be
+ * added.
+ *
+ * The band itself is the `economy.wages-unpaid` reading applied one system
+ * over: nobody pressed anything, the prison found something wrong with itself,
+ * and the state is recoverable -- the item is already confiscated by the time
+ * this row exists (`SearchSystem.runDetectionForCurrentTarget` records the
+ * confiscation first), so what the player is being told is that a search
+ * *worked*. It is not `'info'` for the reason a discharge is: a discharge is
+ * the loop working with nothing left over, and a found weapon means somebody
+ * walked in armed and the intake screening did not stop them.
+ *
+ * **Why the same band for a weapon is not a flattening of a real difference.**
+ * The difference exists and is authored -- `contraband-catalog.ts` gives a
+ * weapon `severity: 9` against a currency's `2` -- and the ruling puts it in
+ * the *word* rather than in the colour: `{item}` renders "Weapon" or
+ * "Currency", so the row already distinguishes them, and a second, louder
+ * channel for the same distinction would be the "two different colours on one
+ * fact" objection the `'danger'` section above makes about the incidents badge,
+ * run the other way. It also keeps this table's `'danger'` meaning what the
+ * section above argues it means: an event the player cannot undo. A confiscated
+ * weapon is the opposite -- it is the one that went right.
+ *
+ * `{item}` is the only member of this table whose sentence names a piece of
+ * *content* rather than a person, a room or a figure; it is resolved through
+ * `eventParameterMessages` below, from the catalog's own `nameKey`, and no key
+ * here is new copy.
+ *
  * ## `prisoners.relocated` is `'info'`, and the grade is arguable (ADR 0076)
  *
  * A prisoner moved cell without the player asking, because the player took
@@ -136,6 +169,7 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
 const EVENT_PRESENTATION: Readonly<
   Record<SimulationEventType, { readonly labelKey: LocalizationKey; readonly severity: HudSeverity }>
 > = {
+  'contraband.discovered': { labelKey: 'hud.alert.event.contraband.discovered', severity: 'warning' },
   'economy.wages-unpaid': { labelKey: 'hud.alert.event.economy.wages-unpaid', severity: 'warning' },
   'incidents.all-clear': { labelKey: 'hud.alert.event.incidents.all-clear', severity: 'info' },
   'incidents.assault-opened': { labelKey: 'hud.alert.event.incidents.assault-opened', severity: 'warning' },
@@ -510,6 +544,10 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     // is substituted from here.
     case 'prisoners.relocated':
       return {};
+    // And this one's single parameter is, for the same reason: `{item}` is a
+    // contraband category, whose word lives in the catalog under a `nameKey`.
+    case 'contraband.discovered':
+      return {};
     // Four members with nothing to substitute, and an empty object rather than
     // `undefined`: a `switch` that sometimes returned nothing would make an
     // absent `labelParameters` mean two different things at the two call
@@ -598,6 +636,13 @@ function eventParameterMessages(
       return { name: prisonerName(event.entityId, event.name), room: { key: event.roomNameKey } };
     case 'incidents.escape-succeeded':
       return { name: prisonerName(event.entityId, event.name) };
+    // #703 ruling 13's `{item}`: the contraband catalog's own `nameKey`, passed
+    // through exactly as the relocation notice's `{room}` is. This module
+    // resolves nothing and authors nothing -- the five words a player can read
+    // here (`contraband.weapon.name` and its four siblings) were authored for
+    // the status chip by #707 and are reused, not duplicated.
+    case 'contraband.discovered':
+      return { item: { key: event.categoryNameKey } };
     // Every sentence whose parameters are figures or nothing at all.
     // `eventParameters` above is where those are decided; they are listed
     // one by one rather than left to the `default` so that the decision is

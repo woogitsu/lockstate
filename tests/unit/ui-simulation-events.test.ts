@@ -40,6 +40,11 @@ import { resolveHudLabelParameters } from '../../src/ui/hud/label-parameters';
 
 /** Every event type, with a payload that satisfies its own member of the union. */
 const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => Extract<SimulationEvent, { type: K }> } = {
+  // `contraband.weapon.name` written out as a literal, because the point of
+  // #703 ruling 13 is the *loudest* item taking the ordinary band: a sample
+  // built from `defaultContrabandRegistry` would supply both sides of the
+  // comparison (`docs/TESTING.md`).
+  'contraband.discovered': (sequence) => ({ sequence, tick: 100, type: 'contraband.discovered', categoryNameKey: 'contraband.weapon.name' }),
   'economy.wages-unpaid': (sequence) => ({ sequence, tick: 100, type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 360 }),
   'prisoners.discharged': (sequence) => ({ sequence, tick: 100, type: 'prisoners.discharged', count: 2 }),
   'incidents.riot-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.riot-opened', participantCount: 12 }),
@@ -185,6 +190,72 @@ describe('what the prison says when nothing went wrong', () => {
    * the others, or split one of the others away from them, has to come here
    * and say so.
    */
+  /**
+   * **A weapon is not louder than a phone** -- the owner's ruling 13 of
+   * 2026-08-31 on issue #703, in two halves: the row is `'warning'`, and *"a
+   * weapon sits in the same band as any other item"*.
+   *
+   * The second half is the assertion worth having, and it is the one a reading
+   * of `EVENT_PRESENTATION` alone would not force: that table keys on the event
+   * `type`, and this event has exactly one type, so a future `danger` variant
+   * for a weapon would have to arrive as a *second member* of the union and a
+   * second sentence. What this case pins is that the band is a function of the
+   * event and not of the item in it, driven through the two ends of the
+   * catalog's authored severity range -- `contraband.weapon` is `severity: 9`
+   * and `contraband.currency` is `2` -- so a change that graded them apart has
+   * to come here and say so.
+   *
+   * The `'warning'` half is the `economy.wages-unpaid` reading one system over:
+   * nobody pressed anything, and the state is already put right (the item is
+   * confiscated before the event is recorded), so it is neither a refusal nor
+   * the `'danger'` this table reserves for what a player cannot undo.
+   */
+  it('grades a found weapon exactly as it grades found currency (#703 ruling 13)', () => {
+    const severityOf = (categoryNameKey: string): string => {
+      const notice = hudEventNoticeFromWorkerMessage(
+        publication({ sequence: 1, tick: 100, type: 'contraband.discovered', categoryNameKey }),
+      );
+      if (notice === undefined || notice === 'none') throw new Error(`${categoryNameKey} produced no notice`);
+      return notice.severity;
+    };
+
+    expect(severityOf('contraband.weapon.name')).toBe('warning');
+    expect(severityOf('contraband.currency.name')).toBe('warning');
+  });
+
+  /**
+   * The sentence, assembled the way `hud.ts` assembles it, with the found
+   * item's own word in it (#703 ruling 13).
+   *
+   * Not covered by the sweep at the top of this file: that one asserts every
+   * sentence resolves and leaves no `{` behind, which a row reading
+   * "Contraband found: Weapon." and a row reading "Contraband found: Phone."
+   * both satisfy identically. The claim here is that the *key the event
+   * carried* is what got resolved -- a translator that ignored
+   * `categoryNameKey` and hard-coded one word would pass the sweep and fail
+   * this.
+   *
+   * The expected words are written out rather than read back off the catalog,
+   * for the reason `docs/TESTING.md` gives: an expectation computed from the
+   * code under test's own input holds for any implementation.
+   */
+  it('puts the found item`s own name in the sentence, not a fixed word (#703 ruling 13)', () => {
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const sentenceFor = (categoryNameKey: string): string => {
+      const notice = hudEventNoticeFromWorkerMessage(
+        publication({ sequence: 1, tick: 100, type: 'contraband.discovered', categoryNameKey }),
+      );
+      if (notice === undefined || notice === 'none') throw new Error(`${categoryNameKey} produced no notice`);
+      return localizer.format(
+        notice.labelKey,
+        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+      );
+    };
+
+    expect(sentenceFor('contraband.weapon.name')).toBe('Contraband found: Weapon.');
+    expect(sentenceFor('contraband.phone.name')).toBe('Contraband found: Phone.');
+  });
+
   it('paints a fistfight and a riot differently, on the line the simulation already draws (#555)', () => {
     const severityOf = (type: keyof typeof SAMPLE): string => {
       const notice = hudEventNoticeFromWorkerMessage(publication(SAMPLE[type](1)));

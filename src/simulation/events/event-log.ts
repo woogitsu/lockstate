@@ -229,6 +229,40 @@ export class SimulationEventLog {
   }
 
   /**
+   * Records that a search found one contraband item (the owner's **ruling 13**
+   * of 2026-08-31 on [#703](https://github.com/matmaxalez/lockstate/issues/703)).
+   *
+   * **One call per item found**, like `recordResidentRelocated` and
+   * `recordEscapeSucceeded` above and unlike `recordDischarge`, and decided the
+   * same way -- by the sentence: "Contraband found: {item}." names *one*
+   * category, and a search that turns up a phone and a knife has no single word
+   * for the pair. That is the corner `soleDiscoveredContrabandNameKey`
+   * (`src/simulation/presentation/status-strip-projection.ts`) refuses to guess
+   * at for the status chip, and naming each of several is the whole reason this
+   * event exists beside that chip.
+   *
+   * **Guarded on the key being present rather than on a figure**, which is the
+   * shape `recordDischarge`'s `min(1)` guard takes for a count: an empty or
+   * malformed key would fail `identifierSchema` at the protocol boundary and
+   * take the whole publication with it, and the caller cannot always answer --
+   * `SearchSystem` resolves the key through an injected catalog lookup that may
+   * not know a category id. Skipping is the same call
+   * `createResidentRelocationNotice` makes for a room whose `nameKey` it cannot
+   * resolve, and for the same reason: a sentence with `{item}` left
+   * unsubstituted is what a player would otherwise read
+   * (`src/services/localization/format.ts` leaves a placeholder visible on
+   * purpose).
+   *
+   * @param categoryNameKey The found item's category as the contraband
+   * catalog's own `nameKey` -- one of the five `contraband.*.name` labels. A
+   * key, never a word: ADR 0011, and the main thread resolves it.
+   */
+  public recordContrabandDiscovered(categoryNameKey: string, tick: number): void {
+    if (categoryNameKey.length === 0) return;
+    this.append({ sequence: this._sequence + 1, tick, type: 'contraband.discovered', categoryNameKey });
+  }
+
+  /**
    * Records that a payday could not be met in full (ADR 0049).
    *
    * @param unpaidWagesMinorUnits The arrears *after* this payday, which is
