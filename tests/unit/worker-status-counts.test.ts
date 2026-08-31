@@ -226,14 +226,42 @@ describe('publishing the status counts', () => {
       prisonersHighRisk: 0,
       staff: 5,
       staffUnassigned: 5,
-      // All four prisoners in this scenario are still in intake and none of
-      // them is standing in a sector yet, so no rung holds anybody. Three
-      // zeroes here is a real state -- "nobody is in a sector" -- and not a
-      // missing reading; `tests/unit/prisoners-safety-coverage-system.test.ts`
-      // is where each rung is watched counting somebody (issue #588).
+      /*
+       * **All four are unguarded, and this used to read three zeroes.**
+       *
+       * The comment here said *"All four prisoners in this scenario are still
+       * in intake and none of them is standing in a sector yet, so no rung
+       * holds anybody. Three zeroes here is a real state -- 'nobody is in a
+       * sector' -- and not a missing reading."* The first clause is true and
+       * the conclusion drawn from it was not. Every session carries a derived
+       * default sector since
+       * [ADR 0036](../../docs/adr/0036-a-derived-default-security-sector.md),
+       * and `resolveSectorOccupants` counts the **whole prison** as its
+       * occupants -- so all four prisoners were standing in a sector all
+       * along, in the one sector nobody has to zone. That sector asks for a
+       * guard and this scenario's five are every one of them unassigned
+       * (`staffUnassigned: 5` above), so its rung is `unguarded` and the
+       * honest reading is four.
+       *
+       * The zeroes were the un-walked census, not a state.
+       * `SafetyCoverageSystem` filled its census on its first scheduled update
+       * and this harness restores a snapshot without running one, so what the
+       * assertion pinned was `EMPTY_SAFETY_COVERAGE_CENSUS` -- and pinning it
+       * made this fixture an example of the defect rather than a guard against
+       * it: `coverageTone` returns `undefined` for `0/0/0` and `coverageBadge`
+       * then prints the green **Covered** pill, so the strip this payload
+       * paints promised a covered prison over four unguarded people and five
+       * idle guards. `restoreSimulationRuntime` now takes the census at the
+       * load (`docs/PERSISTENCE.md`, "What is deliberately excluded from the
+       * payload").
+       *
+       * Marked rather than overwritten, because the old sentence was a
+       * reasonable reading of a real fact and the next person to meet an
+       * unexpected non-zero here should see why it moved.
+       */
       prisonersCovered: 0,
       prisonersUnderstaffed: 0,
-      prisonersUnguarded: 0,
+      prisonersUnguarded: 4,
       // The starting balance, unspent: this scenario buys nothing, so the
       // number is `TREASURY_STARTING_BALANCE_MINOR_UNITS` and reads as one
       // rather than as an arbitrary constant (#96).
