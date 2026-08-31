@@ -8,6 +8,7 @@ import {
   type RiskTier,
 } from './classification';
 import { classificationGroupIndex, intakeStageFromIndex, type PrisonerRecordComponent } from './components';
+import type { IntakeContrabandIntroducer } from './intake-system';
 import {
   buildDisciplinaryIndex,
   CLEAN_DISCIPLINARY_RECORD,
@@ -88,6 +89,17 @@ export function classifiedAtTickOf(sentenceEndTick: number, sentenceLengthTicks:
 const REVIEWABLE_STAGES: readonly string[] = ['accommodation-assignment', 'completed'];
 
 /**
+ * The tier a review has to *reach* before it asks what the prisoner is
+ * carrying (ADR 0080).
+ *
+ * 3 rather than 1, and it is not a balance number: it is the tier at which the
+ * eligible-category band `2 + tier` first admits a fifth entry, which on the
+ * shipped catalogue is `contraband.weapon`. Every lower step of that band
+ * already has a producer at intake.
+ */
+const ESCALATION_INTRODUCTION_MINIMUM_TIER = 3;
+
+/**
  * Periodic classification review -- issue #78's "periodic review that can move
  * someone in either direction", driven by issue #80's consequence for the
  * prisoner involved in an incident or a contraband find.
@@ -122,10 +134,20 @@ const REVIEWABLE_STAGES: readonly string[] = ['accommodation-assignment', 'compl
  *
  * ## Determinism
  *
- * - **No RNG.** `context.rng` is not touched, so no named stream advances and
- *   the `prisoners.classification` sequence a later admission draws from is
- *   untouched. See `reviewClassification`'s note for why a draw here would be
- *   worse than it looks.
+ * - **The `prisoners.classification` stream is not touched**, so the sequence a
+ *   later admission draws its screening variance from is untouched. See
+ *   `reviewClassification`'s note for why a draw *there* would be worse than it
+ *   looks.
+ *
+ *   **This bullet read "No RNG. `context.rng` is not touched" until ADR 0080,
+ *   and half of it is now false.** A review that raises a prisoner into tier 3
+ *   draws from `contraband.introduction` -- a different stream, registered by
+ *   the session, and the same one intake draws from. Both halves are kept
+ *   rather than overwritten because the reason the original said it has not
+ *   gone away: what must never happen here is a draw on the *classification*
+ *   stream, and that is still what does not happen. What changed is that
+ *   "no stream at all" was a stronger claim than the reason required, and the
+ *   weapon nobody could smuggle was the price of it.
  * - **No clock.** Every temporal input is `context.tick` or a persisted tick.
  * - **Canonical iteration.** `EntityQuery.execute()`, ascending entity index,
  *   the same walk `IntakeSystem` and `ActionSystem` use. The disciplinary index
@@ -250,6 +272,22 @@ export class ClassificationReviewSystem implements SystemRegistration {
      * needs no evidence to accrue.
      */
     private readonly evidence: DisciplinaryEvidenceSource = NO_DISCIPLINARY_EVIDENCE,
+    /**
+     * The same introduction port `IntakeSystem` takes, asked again at the one
+     * review that carries a prisoner **into** tier 3 -- ADR 0080, issue
+     * [#677](https://github.com/matmaxalez/lockstate/issues/677).
+     *
+     * The same port and not a second one, deliberately: the rule stays in
+     * `src/simulation/contraband/introduction.ts`, this system supplies only
+     * the tier and the tick, and a session that wires no introducer keeps
+     * exactly the behaviour it had.
+     *
+     * **Omitted, nothing changes and no stream advances**, which is what every
+     * fixture in `tests/` relies on.
+     */
+    private readonly contrabandIntroducer?: IntakeContrabandIntroducer,
+    /** The named stream the introduction draws from. Only read when an introducer is supplied. */
+    private readonly contrabandRngStreamName: string = 'contraband.introduction',
   ) {}
 
   public getMetrics(): ClassificationReviewMetrics {
@@ -323,8 +361,25 @@ export class ClassificationReviewSystem implements SystemRegistration {
       this.records.classificationGroupIndex[index] = nextGroupIndex;
 
       this.reviewsCompleted += 1;
-      if (assessment.riskTier > previousTier) this.tierIncreases += 1;
-      else if (assessment.riskTier < previousTier) this.tierDecreases += 1;
+      if (assessment.riskTier > previousTier) {
+        this.tierIncreases += 1;
+        // ADR 0080. The contraband band is `2 + tier` categories of an
+        // ascending-severity ordering, so the fifth slot -- the weapon -- opens
+        // at tier 3 alone, and intake at `priorIncidents: 0` cannot score one
+        // (`1 + 0 + 1`, clamped). Asking the introduction question here, at the
+        // review that *raises* somebody into tier 3, is what gives that slot a
+        // producer without moving a single balance number.
+        //
+        // **Only the step into 3, and not every increase.** A draw on a 0 -> 1
+        // review would advance this stream in prisons where no band has
+        // changed hands, and a well-run prison would stop being
+        // bit-identical to the one it is today for no gain: measured over four
+        // seeds of a 40-cell, 8-guard prison, this condition leaves the
+        // contraband it produces exactly as it was.
+        if (assessment.riskTier >= ESCALATION_INTRODUCTION_MINIMUM_TIER && this.contrabandIntroducer !== undefined) {
+          this.contrabandIntroducer.introduce(entityId, assessment.riskTier, context.tick, context.rng.get(this.contrabandRngStreamName));
+        }
+      } else if (assessment.riskTier < previousTier) this.tierDecreases += 1;
       if (nextGroupIndex !== previousGroupIndex) this.groupChanges += 1;
     }
   }

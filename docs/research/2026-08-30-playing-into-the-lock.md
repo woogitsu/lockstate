@@ -754,6 +754,52 @@ player-facing sentence or a balance value, and `AGENTS.md` reserves both.
    (b) are behaviour, not copy, and could be built under the mandate — but they
    change what a control does, and #640's author deliberately kept the two
    commands apart, so this is put up rather than taken.**
+
+   **Taken on [#687](https://github.com/matmaxalez/lockstate/issues/687), in a
+   shape closer to (a) than to (b), and the paragraph above is kept rather than
+   rewritten because the reasoning in it is what the fix was chosen against.**
+   Two things in it needed correcting once the code was opened, and both are
+   corrections to *this* file rather than to the code:
+
+   - **(a) as worded presumes a link that does not exist.** There is no "the
+     delivery for an order": `justInTimePurchaseOrderId(tick, itemId,
+     inFlightBefore)` composes a purchase id out of a tick, an item and an
+     in-flight total, and `PendingDelivery` carries no build-order reference in
+     memory or in `economySectionSchema`. A just-in-time purchase buys the
+     aggregate **deficit** across the whole queue, so in general it answers a
+     *set* of orders and in the wall-run case answers one only by arithmetic.
+     What landed therefore withdraws orders until the prison no longer has to
+     buy the material back — decided against what it already holds and has
+     coming, which is the same subtraction the next scheduled pass makes — and
+     takes them from the back of the crew's ascending-id walk. It needs no new
+     field, so no save-format change.
+   - **(b) leaves dead walls.** An order that stops asking is an order that
+     never builds, sitting in the queue with nothing on screen saying why —
+     which is the silent-failure class §11 is about, moved one step along
+     rather than closed.
+
+   The measured result, through the real kernel: `25,000 → 23,800` for fifteen
+   segments, `→ 25,000` on cancelling every delivery, and still `25,000` two
+   delivery delays after the clock starts. **And act 4 of this file's own
+   playtest re-run against the fix**, which is the same browser, the same
+   twelve presses and the same six seconds as §11 above:
+
+   ```
+   [L4 +42.5s] ACT 4 RESULT: 12 delivery cancellation(s) with the clock stopped; treasury 23800 -> 24760 (recovered 960 of the 1200 spent)
+   [L4 +43.1s] THE REFUND, ABOUT TO MEET THE CLOCK: treasury=24760, queue="QUEUED 3 waiting · 0 being built"
+   [L4 +51.8s] ACT 4 ADDENDUM: six seconds after pressing Play, treasury 24760 -> 24760 (0 taken back out); queue="QUEUED 3 waiting · 1 being built"
+   ```
+
+   The first line is unchanged from §11 character for character. The second is
+   where the fix is visible — `QUEUED 15 waiting` became `QUEUED 3 waiting`,
+   because twelve cancellations withdrew twelve segments — and the third is
+   `0 taken back out` where §11 measured `960`. The three segments still queued
+   are the ones the act never cancelled a delivery for; their bricks were paid
+   for before Play and are still in flight, so nothing new is spent on them.
+   **What it does not touch is §6's three-rows-against-224-orders**: the press
+   count is unchanged. What changes is that the presses now *accumulate* —
+   before, cancelling three rows of a 224-order run refunded 240 and the next
+   scheduled pass spent it again, so partial cancellation was worth nothing.
 2. **The refusal on the Buy control should say what the console already says
    (§8).** `hud.refusal.purchase-materials` is generic; the pre-check that fires
    it holds both numbers. New copy, so the owner's. It is the smallest change in

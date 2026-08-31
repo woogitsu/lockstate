@@ -612,6 +612,118 @@ export class ConstructionSystem implements SystemRegistration {
     }
   }
 
+  /**
+   * Takes queued orders back off the book until the prison no longer has to
+   * buy `itemId` again -- the demand-side answer to a cancelled just-in-time
+   * delivery (issue #687).
+   *
+   * ## What it is for
+   *
+   * `ProcurementSystem.cancel` refunds a delivery that has not landed, exactly,
+   * and #285 built the command that reaches it so a player could take money
+   * back. #640 then made a build order buy its own materials, and the two
+   * together produce a control that lies: the procurement fold offers *"15
+   * bought - 1,200 back if cancelled"*, the money really does come back
+   * (`23,800 -> 24,760`, measured on issue #687), and the first scheduled
+   * construction tick after *Play* spends it again, because the fifteen orders
+   * are still queued and `procureQueuedMaterials` still finds their deficit.
+   * Nothing is wrong in either half. What is missing is that cancelling the
+   * *supply* left the *demand* standing.
+   *
+   * So this removes exactly as much demand as it takes to make the refund
+   * survive the clock, and no more.
+   *
+   * ## Why the loop asks the sink rather than counting the delivery
+   *
+   * The cancelled quantity is the obvious measure and it is the wrong one. A
+   * just-in-time purchase buys the **deficit**, which is demand minus stock
+   * minus everything already in flight, so its quantity is not the demand it
+   * answers: cancel a two-brick delivery against a container that has since
+   * taken in ten bricks of its own and no order needs withdrawing at all.
+   * Asking `heldOrInFlightOf` is asking the same subtraction the next
+   * scheduled pass will make, so this stops at exactly the point that pass
+   * stops finding anything to buy.
+   *
+   * ## Which order goes
+   *
+   * The **greatest id** among those still waiting on materials, which is the
+   * back of the crew's own walk: `update` iterates `orderedOrders()` ascending
+   * and starts the first eligible order, so the last id is the work furthest
+   * from being reached. Withdrawing from the back therefore never takes an
+   * order the crew was about to start, and it is a function of the order book
+   * alone -- no clock, no insertion order, no RNG (`docs/DETERMINISM.md`,
+   * "Canonical iteration order"). Ids are `order-${crypto.randomUUID()}` on the
+   * main thread, so this is **not** placement order and the segment that goes
+   * is not the last one drawn; what it is, is the same segment on every
+   * machine and after every restore, which is the property this has to have.
+   *
+   * ## What it cannot create
+   *
+   * Only `'approved'` and `'materials-pending'` orders are candidates -- the
+   * two states `pendingMaterialDemand` counts, and the two that have **not**
+   * allocated anything. `cancelOrder` releases `materialsAllocated` back into
+   * the container, so withdrawing an order that had allocated would put stock
+   * back at the same moment the caller credited the treasury, which is
+   * `tests/integration/economy-money-conservation.test.ts`'s mutation M2 --
+   * value created out of a keystroke -- and is what #285 refused when it
+   * declined to wire a refund to `undo()`. An order in these two states holds
+   * an empty `materialsAllocated`, so the release is a no-op and the only
+   * thing that moves is the money the delivery itself carried.
+   *
+   * Answers the ids it withdrew, newest-walked first, so a caller can say what
+   * happened. `[]` when no sink is wired -- a bare `ConstructionSystem` buys
+   * nothing, so nothing can have been cancelled on its behalf.
+   */
+  public withdrawOrdersAwaitingMaterial(itemId: string): readonly string[] {
+    const sink = this.materialsProcurement;
+    if (sink === undefined) return [];
+
+    const withdrawn: string[] = [];
+    // Bounded by the order book: every pass either cancels one candidate --
+    // which removes it from the candidate set for ever, `cancelled` being
+    // terminal -- or stops. It cannot spin on an order it fails to remove.
+    for (;;) {
+      const demanded = this.demandedQuantityOf(itemId);
+      if (demanded <= sink.heldOrInFlightOf(itemId)) break;
+      const candidate = this.lastOrderAwaitingMaterial(itemId);
+      if (candidate === undefined) break;
+      this.cancelOrder(candidate.id);
+      withdrawn.push(candidate.id);
+    }
+    return withdrawn;
+  }
+
+  /** What the queue still wants of one item, read off `pendingMaterialDemand` so the two can never disagree. */
+  private demandedQuantityOf(itemId: string): number {
+    for (const requirement of this.pendingMaterialDemand(this.orderedOrders())) {
+      if (requirement.itemId === itemId) return requirement.quantity;
+    }
+    return 0;
+  }
+
+  /**
+   * The last order in the crew's walk that is still waiting for `itemId`.
+   *
+   * The candidate set is exactly `pendingMaterialDemand`'s -- `'approved'` or
+   * `'materials-pending'`, a definition the registry still holds, a positive
+   * requirement for this item -- because withdrawing an order that contributes
+   * nothing to the demand would not move the figure the caller is driving to
+   * zero, and the loop would then cancel the whole queue one order at a time.
+   */
+  private lastOrderAwaitingMaterial(itemId: string): BuildOrder | undefined {
+    const ordered = this.orderedOrders();
+    for (let index = ordered.length - 1; index >= 0; index -= 1) {
+      const order = ordered[index]!;
+      if (order.state !== 'approved' && order.state !== 'materials-pending') continue;
+      const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+      if (definition === undefined) continue;
+      if (definition.materialsRequired.some((requirement) => requirement.itemId === itemId && requirement.quantity > 0)) {
+        return order;
+      }
+    }
+    return undefined;
+  }
+
   public getOrder(id: string): BuildOrder | undefined {
     return this.orders.get(id);
   }

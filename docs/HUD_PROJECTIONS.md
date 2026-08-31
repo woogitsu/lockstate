@@ -592,8 +592,10 @@ default hundred -- and it is the second time this channel is what makes a
 was unreachable behind it: not a control, but a **credit**.
 
 `ProcurementSystem.cancel` refunds the recorded `paidMinorUnits` of a delivery
-that has not landed, exactly, and it is one of only two things in the simulation
-that credit the treasury at all (gap 21). Every caller in the repository was a
+that has not landed, exactly, and it is one of only three things in the simulation
+that credit the treasury at all (gap 21) — **this sentence read "only two" until
+ADR 0075 decision 2's `LoanBook.draw` became the third**, and gap 21 carries the
+enumeration. Every caller in the repository was a
 test -- `grep -rn "procurement\.cancel" src/` found nothing -- because no command
 named a purchase, and a command could not usefully have named one: a purchase
 `orderId` is minted on the main thread by the press that spends the money and then
@@ -1129,15 +1131,32 @@ decision about what to build next.
     panel does not.** A *forecast* — anything projecting the balance forward —
     is still a figure no system produces and must not be rendered.
 
-    **The two things that credit the treasury, and which of them is an income
-    line.** `StateIncomeSystem` (`src/simulation/economy/income.ts`) is the
-    income line: ADR 0017 decision 3, on decision 6's basis — the state pays
-    per prisoner-day, accrued per occupied place — at 300 minor units a
-    prisoner-day, credited once per in-game day on its last tick. The other is
-    a cancelled purchase's refund (`ProcurementSystem.cancel`), which is not
-    an income line and never was.
+    **The three things that credit the treasury, and which of them is an
+    income line.** `StateIncomeSystem` (`src/simulation/economy/income.ts`) is
+    the income line: ADR 0017 decision 3, on decision 6's basis — the state
+    pays per prisoner-day, accrued per occupied place — at 300 minor units a
+    prisoner-day less what unmet needs withhold, credited once per in-game day
+    on its last tick. The second is a cancelled purchase's refund
+    (`ProcurementSystem.cancel`), which is not an income line and never was.
+
+    **The third arrived with [ADR 0075](./adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+    decision 2 and is not an income line either: a loan drawdown**
+    (`LoanBook.draw`, `src/simulation/economy/loans.ts`). That decision
+    requires the distinction to reach the player rather than only this
+    paragraph — *"a ledger where the operating net is negative while cash
+    rises is a loan masking a deficit, and the player should be able to see
+    the difference"* — so a readout that adds a drawdown to income would be
+    the defect the sentence names, and **no such readout exists yet**: nothing
+    in `src/ui/` reads a loan, no locale key names one, and none may be added
+    before the figure it names is rendered. **Two of the three are still
+    unreachable from a session a player can drive**, and the loan is the one
+    that is unreachable at the *command* boundary: `simulationCommandSchema`
+    has no member that draws one, so a loan can only be opened by a fixture.
+    Whoever gives it a surface is choosing player-facing wording, which
+    `AGENTS.md` reserves to the owner.
+
     `tests/foundation/documentation-claims-contract.test.ts` pins that this
-    paragraph names both.
+    paragraph names all three.
 
     **Both are now reachable from a session a player can drive.** This section
     used to say neither was, then that one was: the income half was changed by
@@ -1166,6 +1185,29 @@ decision about what to build next.
       `tests/integration/economy-money-conservation.test.ts`. The balance
       returning to exactly its prior figure is asserted in integer minor units by
       `tests/integration/economy-purchase-cancellation.test.ts`.
+
+      **A third property was added by [#687](https://github.com/matmaxalez/lockstate/issues/687),
+      and the two above are kept rather than rewritten because neither has
+      stopped being true.** They describe the refund; what #687 measured is that
+      for one kind of delivery the refund did not *last*. #640 made a build
+      order buy its own materials, so the fold now lists deliveries the build
+      queue bought as well as ones the player pressed *Buy* for, and cancelling
+      one of the first kind left the order that had caused it queued and still
+      wanting the material: with the clock stopped a fifteen-segment wall run
+      refunded in full, `23,800 -> 24,760`, and six seconds after *Play* the
+      treasury read `23,800` again. The fold's own sentence, *"15 bought - 1,200
+      back if cancelled"*, was true when it was read and false a moment later,
+      and nothing on screen said so. So `CancelMaterialPurchase` now also
+      **withdraws** queued build orders -- the fewest that make the prison stop
+      having to buy the material back, decided against what it already holds and
+      has coming rather than against the cancelled quantity, and taken from the
+      back of the crew's ascending-id walk. **Only for a delivery the build
+      queue bought** (`isJustInTimePurchaseOrderId`): a delivery the player
+      pressed *Buy* for is stock they chose to hold, and no order is waiting on
+      it by name. Gated by
+      `tests/integration/economy-refund-survives-the-clock.test.ts`, and the
+      conservation equation across the whole sequence by the `#687` case in
+      `tests/integration/economy-money-conservation.test.ts`.
     - **The income line pays.** It used to have no occupied *place*:
       `RoomZoningService` registered a zoned room with `capacity: 0`, so a
       prisoner held no unit of any declared capacity and 300 × 0 was 0 in every

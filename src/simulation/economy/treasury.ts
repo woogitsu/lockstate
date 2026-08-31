@@ -38,8 +38,39 @@
  *   it, as `PayrollSystem`'s arrears
  *   ([ADR 0049](../../../docs/adr/0049-what-a-prison-that-cannot-make-payroll-owes.md),
  *   which records that choice, its alternatives and the 30-day measurement
- *   that sized it). `spend` still refuses rather than
- *   overdrawing, and nothing here has changed.
+ *   that sized it).
+ *
+ * ## The paragraph above is superseded, and it is kept because its argument is
+ * the reason anybody would have hesitated
+ *
+ * [ADR 0075](../../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+ * decision 2 is Accepted, and it says in its own words what has to happen to
+ * this file: *"`Treasury.spend` refuses rather than overdrawing … Building
+ * this means changing that."* It also says what to do with the reasoning
+ * above rather than deleting it — *"the validators were defending decision 8
+ * by preventing the debt; under this ruling decision 8 is defended by the
+ * loan instead"* — so both readings stand here, marked, and the second is the
+ * one in force.
+ *
+ * **What actually changed, and what deliberately did not:**
+ *
+ * - **A balance may be negative.** The constructor, `restore` and the save
+ *   schema's `treasury.balanceMinorUnits` all admitted only a non-negative
+ *   integer, and each of the three was the same invariant written out three
+ *   times. That invariant is gone: a negative balance is an ordinary state a
+ *   prison can be in and a save can carry.
+ * - **`spend` still refuses by default, and that is not a hedge.** It refuses
+ *   what would take the balance below `overdraftFloorMinorUnits`, and that
+ *   floor is `0` unless something sets it — so a session that has borrowed
+ *   nothing behaves exactly as it did before, to the minor unit. The floor is
+ *   ADR 0075 decision 2's *"accrual cap"*, expressed as the one number that
+ *   decides how far under water a prison can go, and **what that number
+ *   should be is not decided here**: ADR 0017 decision 5 reserves it to
+ *   [#29](https://github.com/matmaxalez/lockstate/issues/29), with the rest
+ *   of the loan's magnitudes.
+ * - **The way out is `LoanBook`** (`./loans.ts`), which is the instrument
+ *   decision 2 makes load-bearing: *"the loan is not a nice-to-have beside
+ *   the ladder. It is what keeps decision 8 honest."*
  *
  * ## Integer minor units, and why that is not a formatting choice
  *
@@ -85,9 +116,21 @@ export interface TreasurySnapshot {
 export class Treasury {
   private balance: number;
 
+  /**
+   * How far below zero a spend may take the balance, as a non-positive
+   * integer. `0` is "not at all", which is what every session has until
+   * something opens a facility, and it makes this class behave exactly as it
+   * did before ADR 0075 decision 2.
+   *
+   * **Not a chosen magnitude.** Whoever sets it is setting ADR 0075 decision
+   * 2's accrual cap, which ADR 0017 decision 5 reserves to
+   * [#29](https://github.com/matmaxalez/lockstate/issues/29).
+   */
+  private floor = 0;
+
   public constructor(startingBalanceMinorUnits: number = TREASURY_STARTING_BALANCE_MINOR_UNITS) {
-    if (!Number.isSafeInteger(startingBalanceMinorUnits) || startingBalanceMinorUnits < 0) {
-      throw new RangeError('Treasury balance must be a non-negative safe integer of minor units.');
+    if (!Number.isSafeInteger(startingBalanceMinorUnits)) {
+      throw new RangeError('Treasury balance must be a safe integer of minor units.');
     }
     this.balance = startingBalanceMinorUnits;
   }
@@ -96,8 +139,37 @@ export class Treasury {
     return this.balance;
   }
 
+  /** See `floor`. A prison with no facility open reports `0`. */
+  public get overdraftFloorMinorUnits(): number {
+    return this.floor;
+  }
+
+  /**
+   * Opens (or closes, at `0`) the room this treasury has to go negative in.
+   *
+   * Non-positive, because a floor above zero would be a *minimum* balance and
+   * that is a different mechanic nothing here asks for.
+   */
+  public setOverdraftFloor(floorMinorUnits: number): void {
+    if (!Number.isSafeInteger(floorMinorUnits) || floorMinorUnits > 0) {
+      throw new RangeError('An overdraft floor must be a non-positive safe integer of minor units.');
+    }
+    this.floor = floorMinorUnits;
+  }
+
+  /**
+   * Whether a spend is affordable.
+   *
+   * `this.balance - amountMinorUnits >= this.floor` rather than
+   * `amountMinorUnits <= this.balance`: with the default floor of `0` the two
+   * are the same comparison and the exact-balance boundary
+   * (`tests/unit/economy-treasury.test.ts`, #416) is untouched, and with a
+   * floor below zero this is the one that lets a prison spend into the room a
+   * loan opened.
+   */
   public canAfford(amountMinorUnits: number): boolean {
-    return Number.isSafeInteger(amountMinorUnits) && amountMinorUnits >= 0 && amountMinorUnits <= this.balance;
+    if (!Number.isSafeInteger(amountMinorUnits) || amountMinorUnits < 0) return false;
+    return this.balance - amountMinorUnits >= this.floor;
   }
 
   /**
@@ -128,9 +200,15 @@ export class Treasury {
    *   decision 3 on decision 6's basis, once per in-game day, per occupied
    *   place (#29).
    *
-   * `tests/foundation/documentation-claims-contract.test.ts` enumerates both
-   * against the source, so a third caller cannot arrive without this list and
-   * `docs/HUD_PROJECTIONS.md` gap 21 being brought with it.
+   * - `LoanBook.draw`, a **loan drawdown**. Not income either, and ADR 0075
+   *   decision 2 requires it to stay distinguishable from income at the
+   *   readout: *"a ledger where the operating net is negative while cash
+   *   rises is a loan masking a deficit, and the player should be able to see
+   *   the difference."*
+   *
+   * `tests/foundation/documentation-claims-contract.test.ts` enumerates all
+   * three against the source, so a fourth caller cannot arrive without this
+   * list and `docs/HUD_PROJECTIONS.md` gap 21 being brought with it.
    */
   public credit(amountMinorUnits: number): void {
     if (!Number.isSafeInteger(amountMinorUnits) || amountMinorUnits < 0) {
@@ -146,9 +224,18 @@ export class Treasury {
     return { balanceMinorUnits: this.balance };
   }
 
+  /**
+   * **A restored balance may be negative** since ADR 0075 decision 2, and the
+   * loosening is deliberate rather than incidental: a prison that saved while
+   * under water must load under water, or a reload is a way out of the debt.
+   * The save schema's own validator was widened in the same change, because a
+   * disagreement between the two boundaries is a window rather than a
+   * stricter check (`src/simulation/protocol/commands.ts` records that
+   * reading of a mismatched pair).
+   */
   public restore(snapshot: TreasurySnapshot): void {
-    if (!Number.isSafeInteger(snapshot.balanceMinorUnits) || snapshot.balanceMinorUnits < 0) {
-      throw new RangeError('A restored treasury balance must be a non-negative safe integer.');
+    if (!Number.isSafeInteger(snapshot.balanceMinorUnits)) {
+      throw new RangeError('A restored treasury balance must be a safe integer.');
     }
     this.balance = snapshot.balanceMinorUnits;
   }

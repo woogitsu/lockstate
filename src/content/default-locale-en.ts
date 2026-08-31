@@ -487,6 +487,42 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.event.incidents.gang-retaliation-opened': 'Two gangs are settling a score.',
   'hud.alert.event.incidents.all-clear': 'The prison is under control again — no incident is still open.',
 
+  // The one sentence in this family about an incident *ending*, and the one
+  // the five above made necessary: a successful escape and a contained attempt
+  // produced the same two rows, so the failure the whole security half of the
+  // game exists to prevent reached the player as nothing
+  // ([#683](https://github.com/matmaxalez/lockstate/issues/683)).
+  //
+  // **This sentence is the owner's, ruled on 2026-08-30, and is reproduced
+  // exactly.** It was chosen over two alternatives for a stated reason -- it
+  // names the escapee *and* it teaches the cause, where one alternative named
+  // without teaching and the other did neither -- so neither half of it is
+  // decoration to be trimmed.
+  //
+  // **The causal clause is true by mechanism, and that is what licenses it.**
+  // `IncidentResponseSystem.lapse` is the only route to `escaped: true`, and
+  // lapsing is what an incident does when it times out without sufficient
+  // responders; the resolved branch writes `false`. The rule this sentence
+  // therefore depends on is written where a change would meet it, at that
+  // write site, and not only here -- see the comment on `escaped` in
+  // `src/simulation/incidents/response-system.ts`. It is also the reason this
+  // one may promise what the opening sentences may not: they must not say
+  // guards are coming, because the code cannot keep that; this says only that
+  // none arrived, which is the condition that produced the event.
+  //
+  // `{name}` is filled by a `HudMessageParameterViewModel` rather than by
+  // plain `labelParameters`, on exactly the reasoning the relocation notice
+  // above gives: two halves of state assembled through
+  // `hud.regime.roster-name`, whose order is a locale decision made once. No
+  // second key is authored for it.
+  //
+  // **`them` is deliberate.** `src/simulation/identity/name-pool.ts` records
+  // that there is no gender model anywhere in the simulation, so a gendered
+  // pronoun would be a guess about a person the prison never assigned one. A
+  // future translator should read the singular `they` as "this person, gender
+  // unmodelled" rather than as a style choice.
+  'hud.alert.event.incidents.escape-succeeded': '{name} broke out — no guard reached them in time.',
+
   // A browser that cannot start a Worker gets a page with no simulation
   // behind it. Saying so is the whole point: the failure was previously
   // reported to the console only, so the player saw an empty world and had

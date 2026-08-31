@@ -123,4 +123,24 @@ export const EMPTY_MATERIALS_PROCUREMENT_REPORT: MaterialsProcurementReport = Ob
  */
 export interface ConstructionProcurementSink {
   procureForPendingOrders(demand: readonly MaterialRequirement[], tick: number): MaterialsProcurementReport;
+  /**
+   * How much of `itemId` the prison already holds or has already paid for,
+   * and therefore will not buy again.
+   *
+   * The *supply* half of `procureForPendingOrders`'s own subtraction, asked as
+   * a question instead of acted on: `deficit = demand - held - inFlight`, so a
+   * caller holding the demand can tell whether this sink is about to spend
+   * without making it spend. It buys nothing, records nothing, and leaves
+   * `lastReport` exactly where it was.
+   *
+   * It exists because a cancelled just-in-time delivery has to be answered on
+   * the *demand* side and not on the supply side (issue #687). Cancelling one
+   * refunds the money and removes the delivery; the build orders it was bought
+   * for are still queued, still want the material, and the very next scheduled
+   * pass buys it all back. `ConstructionSystem.withdrawOrdersAwaitingMaterial`
+   * withdraws just enough of that queue for this figure to cover what is left,
+   * which is the only way the refund survives the clock -- and it needs to know
+   * where the line is without crossing it.
+   */
+  heldOrInFlightOf(itemId: string): number;
 }

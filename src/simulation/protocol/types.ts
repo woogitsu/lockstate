@@ -1387,6 +1387,7 @@ export const SIMULATION_EVENT_TYPES = [
   'incidents.all-clear',
   'incidents.assault-opened',
   'incidents.escape-attempt-opened',
+  'incidents.escape-succeeded',
   'incidents.gang-retaliation-opened',
   'incidents.riot-opened',
   'prisoners.discharged',
@@ -1597,6 +1598,69 @@ const escapeAttemptOpenedEventSchema = z
   .strict();
 
 /**
+ * A prisoner got out
+ * ([#683](https://github.com/matmaxalez/lockstate/issues/683)).
+ *
+ * **The only member of this union that reports an *outcome* rather than an
+ * opening, and the reason it is a member at all is that nothing else on the
+ * channel could carry it.** Every schema above says an incident started; this
+ * one says how one of them ended, and #683 was filed because the two ways an
+ * escape attempt can end reached the player as the same pair of rows -- the
+ * opening, then the all-clear -- with no row whose subject was the escape.
+ *
+ * ## Why not a field on an event that already exists
+ *
+ * - **Not on `incidents.escape-attempt-opened`.** That is recorded at the tick
+ *   the incident *opens*, and the outcome does not exist yet. This channel
+ *   carries occurrences rather than levels -- *"there is no current value of
+ *   it to republish"* (`SimulationEventLog`) -- so nothing amends a published
+ *   event.
+ * - **Not on `incidents.all-clear`.** Its own comment below refuses the figure
+ *   and says why, and it is emitted only when `IncidentLog.openIncidentCount`
+ *   reaches zero: a second sector holding an open riot would swallow the
+ *   escape entirely, and a field on it with it.
+ *
+ * ## What it carries, and why this one names somebody
+ *
+ * `entityId` plus the two name halves, exactly as `prisoners.relocated` above
+ * carries them and for the reason set out there -- the halves are state
+ * (ADR 0015), the *order* they are read in is a locale decision made once in
+ * `hud.regime.roster-name`, and no sentence crosses the boundary.
+ *
+ * **The escapee is gone, though, and the relocation exception's reason does
+ * not cover them.** That exception rests on the subject being *"alive, housed,
+ * and already on the roster projection under the same entity id"*, which is
+ * false here: `releasePrisoner` has destroyed the entity and released the name
+ * by the time the main thread reads this. What makes naming them safe anyway
+ * is narrower and is a property of this payload rather than of the subject --
+ * **the name is carried, never looked up**, so there is nothing for a
+ * departed entity id to fail to resolve against. The id itself is here for the
+ * unnamed fallback (`hud.regime.roster-unnamed`, "Prisoner 3") that
+ * `prisoners.relocated` uses for a session wired without an identity registry,
+ * and for no other purpose: it is not a handle a panel may follow, and
+ * `projectPrisonerDetail` answers `undefined` for it.
+ *
+ * `name` is optional for the reason it is optional there. No participant
+ * count: `IncidentTriggerSystem.tryOpenEscapeAttempt` names exactly one
+ * participant, so a count would be a constant on the wire -- the same
+ * judgement the assault schema makes about its two.
+ */
+const escapeSucceededEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('incidents.escape-succeeded'),
+    entityId: sequenceSchema,
+    name: z
+      .object({
+        givenName: z.string().min(1).max(128),
+        familyName: z.string().min(1).max(128),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
+
+/**
  * Every incident the prison had open has reached a terminal state (#555).
  *
  * **The counterpart the four members above make mandatory rather than a
@@ -1639,6 +1703,7 @@ const simulationEventSchema = z.discriminatedUnion('type', [
   gangRetaliationOpenedEventSchema,
   assaultOpenedEventSchema,
   escapeAttemptOpenedEventSchema,
+  escapeSucceededEventSchema,
   incidentsAllClearEventSchema,
 ]);
 
