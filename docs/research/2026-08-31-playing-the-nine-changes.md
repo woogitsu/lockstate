@@ -792,3 +792,155 @@ by entity index, and the panel says `4 of 14`.
   of my prisoners are high risk" has a count on the wire and no pixel — the
   shape #629 puts in the same class as a promise the code does not keep. **Not
   filed**: a ninth strip item is layout and copy, which is the owner's.
+
+## 11. #694's negative balance was never approached, in either prison
+
+**MEASURED.** Neither prison this pass built came close to a negative balance,
+and the neglected one was the *richer* of the two:
+
+| run | opening | lowest reading | closing reading |
+| --- | --- | --- | --- |
+| act1d, four guards, ten prisoners | 25,000 | 22,350 (tick ~26,200) | 25,310 (tick 30,153) |
+| act3b, no guards, fourteen prisoners | 25,000 | 22,340 (after the build) | 31,780 and rising (tick 63,885) |
+
+The reason is not subtle and is worth stating because it is a *balance* fact
+rather than a bug: a prison with **no staff** has no wage bill, and state income
+per prisoner-day keeps arriving whatever the prison is like to live in. Act3b
+paid 2,660 to build, hired nobody, and then earned about 360 per in-game day
+while its population rioted every 4,800 ticks and lost three prisoners to the
+outside.
+
+- **So #694's loan surface was not exercised at all**, which matches the brief's
+  own note that it is *"not reachable from any player command yet"*. Nothing here
+  contradicts that; nothing here confirms it either. **This pass did not reach
+  it.**
+- **The observation worth passing on**: under-guarding is currently the
+  *profitable* strategy on the balance sheet. It costs prisoners, and prisoners
+  are the income, so the loss shows up eventually — three of fourteen gone by
+  tick 60,611 — but there is no point in the twenty-five in-game days played
+  where money pressed on the player at all. Whether that is the intended shape is
+  a balance question and **is not this pass's to answer**; ADR 0017 decision 5
+  routes magnitudes to [#29](https://github.com/matmaxalez/lockstate/issues/29).
+
+## 12. #685: a tab press before the first *New prison* costs nothing now
+
+**MEASURED**, act5a, three tab presses on a page that has never had a prison:
+
+```
+[act5] pressed the build tab before any prison exists:    refusal=".hud__refusal: not laid out" unavailable=".hud__unavailable: not laid out"
+[act5] pressed the rooms tab before any prison exists:    refusal=".hud__refusal: not laid out" unavailable=".hud__unavailable: not laid out"
+[act5] pressed the security tab before any prison exists: refusal=".hud__refusal: not laid out" unavailable=".hud__unavailable: not laid out"
+[act5] strip before New prison: … | 0 | PRISONERS | … | DAY | -- | Through the day | --
+```
+
+No band appeared, so there is no false message to read — which is the half of
+#685 that was about a sentence. The day readout is `--`, correctly: there is no
+prison.
+
+And the prison then works. **MEASURED**, the same run, a wall run dragged after
+those three presses:
+
+```
+[act5] day readout after New prison: "1"
+[act5] one wall run after a pre-boot tab press: treasury 25000 -> 24520 queue="QUEUED\n6 waiting · 0 being built"
+```
+
+The worker the tab press used to spend is alive: the order was accepted, priced
+and queued. **No finding against #685.**
+
+The admission that followed was refused, correctly, because one wall run is not a
+room — and the sentence is a real one rather than a code:
+
+```
+HUD action failed {"actionId":"admit-prisoner","error":{"message":
+  "This prison has no room to hold a prisoner, so nobody can be admitted into it."}}
+```
+
+---
+
+# Part D — what this pass did not reach, and its weakest claim
+
+## 13. Not reached
+
+- **#694's negative balance and its loan.** Never approached; §11 has the
+  balances. Both prisons ended richer than they started.
+- **A tier-3 prisoner in the Regime roster's four visible rows.** The roster read
+  `Low, Minimal, Minimal` while act 3 was still below the review boundary, and
+  the run's later roster reads were not captured before this record was written.
+  So §10's *impact* half is genuinely open.
+- **The Rooms tool at a room count where "one extra press per room" compounds.**
+  Four rooms; §3 says what forty would need.
+- **Any viewport other than 1440x900.** §8's sweep is one viewport. #690's own
+  argument is about 375x812 and this pass did not go there.
+- **The alerts fold as a way back to a lost sentence.** Act 3 opens it at the end
+  of the run; whether the escape sentence is legible *in the list* after the band
+  has moved on is answered by that dump and not by anything above it.
+- **A save/restore across an escape.** Not attempted.
+- **Anything about rendering the world.** LFS content was present, and no claim
+  here is about a sprite.
+
+## 14. Weakest claim, and what would change my mind
+
+**The weakest claim in this record is §3's judgement that four presses per room
+reads as confirmation rather than friction.** Everything else here is a tick, a
+box, a string or a treasury value; that one is a reading of an experience, taken
+by an agent driving a mouse through a script, which is exactly the population
+whose judgement about friction is least like a player's. The count is solid — 4,
+uniform, five times in act 1 and four in act 2 — and the inference from the count
+is not.
+
+**What would change my mind**: a session that designates ten or more rooms in
+one sitting and shows the fourth press being made *before* the panel has
+finished repainting, or the owner saying it feels like a nag. The measurement is
+cheap: extend act 2's `cells` array.
+
+**The second-weakest is §1c's framing** — that the delivery `Cancel` being inside
+the Buy fold matters. The box is `0x0` and that is measured, but a player who
+never cancels anything never needs the control, and #640's whole point is that
+they never need the fold either. What would change my mind in the other
+direction: a session that spends into ADR 0075's lock and needs the refund to get
+out — which
+[`2026-08-30-playing-into-the-lock.md`](./2026-08-30-playing-into-the-lock.md)
+has already played, and which is the reason this is reported at all.
+
+### 12a. The one thing act 5 turned up on its way past: a refused *Admit* names no cause, and the sentence that would exists
+
+**MEASURED**, act5a. Pressing *Admit a prisoner* in a prison with a wall and no
+designated room produced two different messages in two different places:
+
+```
+HUD action failed {"actionId":"admit-prisoner","error":{"message":
+  "This prison has no room to hold a prisoner, so nobody can be admitted into it."}}   ← console only
+
+[act5] refusal at the end: "Nobody was admitted — the request was refused."           ← the band
+[act5] after one Admit: ["INTAKE","Collapse","Admit a prisoner","A prison needs a cell
+  before it can admit anyone. It does not need a free bed: an arrival with none waits
+  until a bed is free."]                                                              ← the panel's standing hint
+```
+
+**VERIFIED, read**, and this is why the two differ rather than one being broken:
+
+- `src/main.ts:2530-2531` — the refusal is a **client-side pre-flight**:
+  `if (viewModel.counts.rooms === 0) throw new Error('This prison has no room to
+  hold a prisoner, so nobody can be admitted into it.')`. It never reaches the
+  worker.
+- `src/content/default-locale-en.ts:943` — the band's sentence is
+  `hud.refusal.admit-prisoner`, *"Nobody was admitted — the request was
+  refused."*, and the family's own comment states the design: *"No sentence here
+  names a cause … The cause travels to the host as the thrown `Error`, which is
+  English diagnostic text and therefore must not reach the screen."*
+- `src/content/default-locale-en.ts:238` — and the sentence that **does** name
+  this cause is already authored: `hud.alert.refusal.admit.no-accommodation`,
+  *"Nobody was admitted — there is no room to put a prisoner in yet."* It is
+  produced only by a **simulation** refusal, which this press never became.
+
+- **Observation.** For the one refusal the main thread diagnoses *itself*, the
+  player is told the outcome and not the cause, while a localised sentence naming
+  exactly that cause ships in the same file.
+- **What would establish the impact**: the Intake panel's standing hint says the
+  same thing in advance and is on screen unfolded, so a player who reads the
+  panel is not stuck. Whether they read it before pressing is **UNKNOWN**.
+- **Not filed as a defect, and no wording proposed.** The generic family exists
+  for a stated reason and the fix — routing a *known* pre-flight cause to its
+  existing key — is a change to how refusals are reported, which touches copy
+  the owner approved.
