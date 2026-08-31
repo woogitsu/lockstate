@@ -158,6 +158,19 @@ test.describe('the PRISONERS chip says how many have no bed (#609)', () => {
      *
      * The overflow itself is reported, not fixed: it is a layout decision
      * about a strip of eight chips and it predates this change.
+     *
+     * **All three of those numbers have moved since, and none of the reasoning
+     * above changes with them** -- they are re-measured here rather than
+     * overwritten, because the arithmetic of *why* they moved is the useful
+     * part. Measured on this page, this prison, 2026-08-31: `clientWidth` is
+     * **502px**, not 524 -- #639 replaced the clock's `x1` with the word
+     * `PAUSED`, which is 22px wider chrome on a one-row strip; and the same
+     * prison with everybody housed is **1,360px**, not 1,306 -- #703's ninth
+     * chip added 126.8px and dropping the chips' second gutter took 72px back
+     * (1306 + 126.8 - 72 = 1360.8). So it is now **six of the nine** chips past
+     * the visible edge rather than five of eight, and the badge this spec is
+     * about is still on the leftmost chip, which is what the assertions below
+     * actually rest on.
      */
     expect(
       shortfall.metricsRowOverflow,

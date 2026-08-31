@@ -2985,6 +2985,117 @@
  * `high-risk`, `staff`, `coverage`, `rooms`, so `incidents` is the chip that
  * moved off screen there. #703's ruling is a desktop ruling and the owner's
  * steer of the same day says the desktop browser comes first.
+ *
+ * THE ROW WAS CARRYING TWO GUTTERS AND NOW CARRIES ONE, WHICH IS 72PX, AND IT
+ * IS WHAT MADE #707'S PROMISE TRUE AGAIN AT 1440 (2026-08-31). Nothing above is
+ * withdrawn: this is width the row was spending twice and is not spending any
+ * more.
+ *
+ * `.ui-stat` in `src/ui/primitives/primitives.css` declared
+ * `padding: 0 var(--space-1)` while this row declares `gap: var(--space-4)`, so
+ * the space between two chips was 16 + 4 + 4 = **24px out of two
+ * declarations** -- and `createStatChip` is used nowhere but this row, so that
+ * padding was this row's own second gutter and nobody else's. It is gone; the
+ * row's gap is the only gutter now. Nine chips at 8px each is **72px of row**,
+ * and it scales with `--ui-scale` as both tokens do (144px at 200 %).
+ *
+ * Measured on `/tests/browser/ui-harness.html` via `mountHudShell()` +
+ * `setHudViewModel()`, Chromium, 100 %:
+ *
+ *   1440x900, one "N with no bed" badge and a named contraband find -- the
+ *   state `ui-contraband-name.spec.ts` measures:
+ *       1443px of content in a 1416px row  ->  1371px in 1416px
+ *   1280x800, a populated prison drawing no warning badge at all:
+ *       1310px in 1256px, 8 of 9 chips     ->  1238px in 1256px, 9 of 9
+ *   1280x800, the two badged states:
+ *       1568px, 6 of 9 -> 1496px, 7 of 9;  1699px, 6 of 9 -> 1627px, 6 of 9
+ *
+ * The first line is why it was done now rather than recorded. #707's ruling is
+ * that naming the found contraband is *not* paid for in width, that spec pins it
+ * at 1440x900, and this branch's ninth chip had made it false by 27px --
+ * `1443` against a `1416` row, reproduced red here and green on `main`, which
+ * has eight chips. So the ninth chip's width is the whole of that failure and
+ * the breakpoint move above is no part of it. The second line is `earned-today`
+ * coming back on screen at the commonest laptop width in an ordinary prison.
+ *
+ * AND THAT SECOND LINE IS WHY THE 4PX SENTENCE ABOVE IS WORSE THAN IT LOOKS:
+ * THE ROW IT MEASURED WAS AN EMPTY PRISON'S. `1252.0px` is the badge-free
+ * nine-chip row with `FUNDS` patched up to a seven-figure treasury -- but
+ * `PRISONERS` was left at the width it has when the prison holds **nobody**:
+ * **116.8px** with a `0` and no occupancy bar, against **174.8px** with `178`
+ * and a bar in it. Measured on one populated prison with no warning badge
+ * anywhere -- the state a player spends most of the game in -- the nine-chip row
+ * was **1310px in 1256px** at 1280 and `earned-today` was off the edge before
+ * any badge appeared at all. The headroom was not 4px, it was -54px. The one
+ * gutter above is what pays it back, and what is left is **18px**, which is less
+ * than any chip plus its gap: the tenth chip breaks the ordinary row at 1280
+ * again, and this time the sentence saying so was measured on a prison with
+ * people in it.
+ *
+ * AND THE WORST CASE IS 1627PX (1699PX BEFORE THE GUTTER), NOT 1568PX, BECAUSE
+ * TWO OF THE FOUR BADGES WERE MISSING FROM THE ROW THAT MEASURED 1568. That
+ * reading set a field named `activeIncidentKindKey`, which `HudCountsViewModel`
+ * does not declare -- the field is `activeIncidentTypeLabelKey` -- so the
+ * incidents badge fell back to the generic `Active` (52.7px) instead of naming a
+ * kind, and it set no `contrabandNameKey`, so the contraband chip drew no badge
+ * at all. With every badge the *content* can produce, each carrying the widest
+ * word its own namespace authors:
+ *
+ *   prisoners   "36 with no bed"                  104.4px
+ *   coverage    "42 understaffed · 36 unguarded"   204.9px
+ *   incidents   "Gang Retaliation"                 114.7px  (`Active` is 52.7)
+ *   contraband  "Currency"                          69.1px  (nothing, before)
+ *   --------------------------------------------------------------------------
+ *   the nine-chip row                            **1627px**
+ *
+ * against 1256px at 1280 and 1416px at 1440. At 1920 it fits whole -- 1627px in
+ * 1896px, 9 of 9, 269px of slack -- so the band this breakpoint opened is still
+ * the one width that holds the worst case, and
+ * `tests/browser/ui-strip-badged-width.spec.ts` pins that as well as the
+ * ordinary row.
+ *
+ * WHAT IS STILL BROKEN AT 1280, AND WHY THIS FILE DOES NOT DECIDE IT. 1627px in
+ * a 1256px row is **6 of 9 chips**: `contraband`, `funds` and `earned-today` off
+ * the edge of a container whose scrollbar this file suppresses, in a prison that
+ * is understaffed, holding somebody with no bed, running an incident and has
+ * just found something -- which is to say the readout fails in the state the
+ * player needs it. Every lever that costs no player-visible copy has now been
+ * measured and their sum does not close it:
+ *
+ *   one gutter instead of two (done)                        -72px
+ *   this row's gap from `--space-4` to `--space-2`           -64px
+ *   --------------------------------------------------------------------------
+ *   every no-copy lever there is                     1699 -> 1563px
+ *
+ * -- still 307px past 1256. The two levers that would close it both spend
+ * something that is not this file's to spend:
+ *
+ *   - **A third strip row** (`flex-wrap: wrap` here) fits everything: measured
+ *     **124px of strip against 78.5px**, so +45.5px, and the row grows it the
+ *     moment an incident starts. Two things already forbid that.
+ *     `ui-contraband-name.spec.ts` pins *"the strip does not get taller in any
+ *     state"* and `ui-strip-badged-width.spec.ts` now pins it at 1280, 1440 and
+ *     1920; and measured on the assembled page at **1280x720**, with the strip
+ *     forced to 108.5px and then to 124px and nothing else changed, the Build
+ *     panel arrives **15px and 27px over its own box** and "Enter coordinates"
+ *     ends **14.7px and 26.7px past the fold** -- #174's defect, fired by a game
+ *     state. At 1280x800 the same strip costs nothing measurable (7.8px of slack
+ *     becomes 8.3px and 7.9px), so a height-gated wrap is arithmetically
+ *     available; it is a breakpoint decision on top of a ruling, not instead of
+ *     one.
+ *   - **Shorter badge copy.** The coverage badge is the widest thing on the row
+ *     at 204.9px. Rendered as the Staff panel's own authored word `Unguarded`
+ *     (`hud.security.coverage-unguarded`, 80.8px) the row is 1575px -- -124px --
+ *     and still 319px past 1256. It also takes the two counts off the strip, and
+ *     they are nowhere else in the game, so that is #588's ruling being reversed
+ *     rather than a string being shortened.
+ *
+ * So at 1280 the four-badge row cannot be had, and it cannot be dropped either.
+ * Which of a third row, a shorter sentence, a chip fewer, or the scroll
+ * affordance #634 refused is right is the owner's, and the arithmetic above is
+ * what makes it their call rather than an implementation detail. What this file
+ * does instead of choosing is state the deficit and keep the two rows that *are*
+ * whole pinned: an ordinary prison at 1280, and every badge at once at 1920.
  */
 @media (max-width: 720px), (max-width: 2559px) and (min-height: 701px) {
   /*

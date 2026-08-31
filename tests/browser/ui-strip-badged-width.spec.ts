@@ -20,10 +20,12 @@ import './ui-harness-api';
  * fills it with 351.9px of brand badge and interface-scale control, and that
  * this is why a strip claim generally belongs on the assembled page. **In the
  * band this spec measures, that difference does not reach the metrics row**:
- * `hud.css` gives `.hud-strip__metrics` `flex: 1 0 100%` from 720px up to
- * 2559px, so the row is the strip's whole content box whatever else the strip
- * carries. Measured, 1280x800, both pages: the row's `clientWidth` is
- * **1256** on the harness and **1256** on the assembled page. What only the
+ * `hud.css` gives `.hud-strip__metrics` `flex: 1 0 100%` in a block whose
+ * query is `(max-width: 720px), (max-width: 2559px) and (min-height: 701px)`,
+ * so at every viewport this spec visits the row is the strip's whole content
+ * box whatever else the strip carries. Measured at 1280x800 on both pages, the
+ * row's `clientWidth` is **1256** on the harness and **1256** on the assembled
+ * page. What only the
  * harness has is a lever on the prison's state -- `setHudViewModel` -- and the
  * states this spec is about (178 prisoners, 36 of them unhoused, a named
  * incident, a named contraband find, a seven-figure treasury) are hours of play
@@ -31,9 +33,10 @@ import './ui-harness-api';
  *
  * ## The two states, and why exactly these
  *
- * Every chip is label-sized except `prisoners` and `funds`, so the row's width
- * is a property of *which badges the prison is drawing*, not of how big its
- * numbers are. There are four badges the strip can draw:
+ * At the values below, every chip is sized by its label except `prisoners`
+ * (three digits and an occupancy bar) and `funds` (seven figures), so the row's
+ * width is mostly a property of *which badges the prison is drawing* rather
+ * than of how big its numbers are. There are four badges the strip can draw:
  *
  *   - `prisoners`: `{count} with no bed` (#609), when anybody is unhoused
  *   - `coverage`: `{understaffed} understaffed · {unguarded} unguarded` (#588),
