@@ -2802,6 +2802,9 @@ test.describe('the assembled application', () => {
     // 100 ticks after they were bought and take their own controls with them.
     await page.locator('.hud-strip__transport [title="Pause"]').click();
 
+    /** Every viewport where the loaded panel's body spills, and by how much. */
+    const spilled: string[] = [];
+
     for (const [width, height] of ARRIVAL_FOLD_VIEWPORTS) {
       await page.setViewportSize({ width, height });
       await expect
@@ -3060,26 +3063,40 @@ test.describe('the assembled application', () => {
       // is *meant* to hold more than it shows, and `ui-shell.spec.ts` asserts
       // it absorbs the excess at twelve entries. Everything above it must
       // contain what it holds.
-      console.log(
-        `[probe] ${width}x${height} ` +
-          JSON.stringify(
-            await page.evaluate(() => {
-              const panel = document.querySelector('.hud-build');
-              const body = document.querySelector('.hud-build > .ui-panel__body');
-              const block = document.querySelector('.hud-build__deliveries');
-              return {
-                panelClient: panel?.clientHeight ?? 0,
-                panelScroll: panel?.scrollHeight ?? 0,
-                bodyClient: body?.clientHeight ?? 0,
-                bodyScroll: body?.scrollHeight ?? 0,
-                blockHeight: Math.round((block?.getBoundingClientRect().height ?? 0) * 10) / 10,
-              };
-            }),
-          ),
-      );
+      /*
+       * **Corrected 2026-08-31 (issue #703 ruling 2), and the body leaves this
+       * list.** `.hud-build > .ui-panel__body` was the first of the three
+       * selectors below and it is shorter than its own content in this state
+       * now, at every viewport. Measured at 1280x720: the panel is 395px of box
+       * over 576px of content and the body 350px over 531px -- and the
+       * deliveries block is 179.3px of that, so the spill *is* the block, to
+       * within a gutter, and it is exactly what the panel's own scroll covers.
+       * Panel overflow, body shortfall and block height across the five:
+       *
+       * | Viewport | overflow | shortfall | block |
+       * | --- | --- | --- | --- |
+       * | 1280x720 | 181px | 181px | 179.3px |
+       * | 1440x900 | 46px | 46px | 179.3px |
+       * | 1024x768 | 145px | 145px | 179.3px |
+       * | 900x600 | 160px | 160px | 163.3px |
+       * | 375x812 | 124px | 124px | 179.3px |
+       *
+       * The first two columns are equal at all five, which is the assertion
+       * below: nothing spills that the panel cannot scroll.
+       *
+       * That is the "harmless by coincidence" the paragraph above already
+       * records for an opened fold, reached now without the player opening
+       * anything -- which makes #174 item 2 a live question rather than a
+       * documented curiosity, and its answer (which box yields when the sum
+       * exceeds the rail) a layout decision this file cannot make. **What is
+       * asserted instead is the part that keeps it harmless**: the spill is
+       * scrollable, and it is this block rather than some other box quietly
+       * clipping. The two catalogue boxes stay on the strict check, because
+       * nothing about the ruling touches them.
+       */
       expect(
         await page.evaluate(() =>
-          ['.hud-build > .ui-panel__body', '.hud-build__catalogue', '.hud-build__catalogue > .ui-section__body']
+          ['.hud-build__catalogue', '.hud-build__catalogue > .ui-section__body']
             .map((selector) => {
               const box = document.querySelector(selector);
               if (box === null) return `${selector} has no box`;
@@ -3090,6 +3107,33 @@ test.describe('the assembled application', () => {
         ),
         `boxes in the Build panel shorter than their own content at ${width}x${height}`,
       ).toEqual([]);
+
+      const spill = await page.evaluate(() => {
+        const panel = document.querySelector('.hud-build');
+        const body = document.querySelector('.hud-build > .ui-panel__body');
+        const block = document.querySelector('.hud-build__deliveries');
+        if (panel === null || body === null) return null;
+        return {
+          panelOverflow: panel.scrollHeight - panel.clientHeight,
+          bodyShortfall: body.scrollHeight - body.clientHeight,
+          blockHeight: Math.round((block?.getBoundingClientRect().height ?? 0) * 10) / 10,
+        };
+      });
+      expect(spill, `the Build panel's body has no box at ${width}x${height}`).not.toBeNull();
+      if ((spill?.bodyShortfall ?? 0) > 0) {
+        spilled.push(`${width}x${height}:${spill?.bodyShortfall ?? 0}`);
+        expect(
+          spill?.panelOverflow ?? 0,
+          `the Build panel cannot scroll everything its body spills at ${width}x${height}`,
+        ).toBeGreaterThanOrEqual(spill?.bodyShortfall ?? 0);
+        // One gutter of slack: `--hud-build-map-gutter` is what sits between the
+        // block and the hint above it, and it is 8px at the tall viewports and
+        // `--space-1` under `max-height: 700px`.
+        expect(
+          spill?.bodyShortfall ?? 0,
+          `the Build panel's body spills more than the deliveries block at ${width}x${height}: ${spill?.bodyShortfall ?? 0}px against a ${spill?.blockHeight ?? 0}px block`,
+        ).toBeLessThanOrEqual(Math.ceil(spill?.blockHeight ?? 0) + 8);
+      }
 
       // The numeric fallback expanded: the tallest the Build panel gets, and
       // the state issue #88 was measured in.
@@ -3553,6 +3597,19 @@ test.describe('the assembled application', () => {
         `hit-tested only ${everMeasured.size} of ${inventory.length} controls at ${width}x${height}`,
       ).toBe(inventory.length - exempt.length);
     }
+
+    /*
+     * Non-vacuity for the spill assertions above: they sit behind a condition,
+     * so a build where the body never spills would satisfy them by never
+     * running them -- and that build is the one where the deliveries block has
+     * no box, which is what this ruling is about. Printed as well as asserted,
+     * because the figures are what a later mobile pass will want.
+     */
+    console.log(`[703] viewports where the loaded Build panel's body spills: ${JSON.stringify(spilled)}`);
+    expect(
+      spilled.length,
+      "no viewport put the loaded Build panel's body over its box, so the deliveries block has no height and the spill assertions never ran",
+    ).toBeGreaterThan(0);
   });
 
   /**
