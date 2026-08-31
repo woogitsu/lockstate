@@ -3007,10 +3007,15 @@ test.describe('the assembled application', () => {
           header?.top ?? -1,
           `"${header?.text ?? ''}" starts above the Build panel's scroll content at ${width}x${height}`,
         ).toBeGreaterThanOrEqual(0);
+        // One pixel, and it is a units conversion rather than a tolerance:
+        // `scrollHeight` is an integer and `getBoundingClientRect` is not, so a
+        // box that ends exactly at the end of the scroll content reads as a
+        // fraction past it. Measured at 375x812, where the queue header ends at
+        // 597.23 in 597px of scroll content.
         expect(
           header?.bottom ?? Number.POSITIVE_INFINITY,
           `the Build panel's scroll does not reach "${header?.text ?? ''}" at ${width}x${height}: it ends ${Math.round((header?.bottom ?? 0) - (reach?.scrollContent ?? 0))}px past the ${reach?.scrollContent ?? 0}px the panel can scroll through`,
-        ).toBeLessThanOrEqual(reach?.scrollContent ?? 0);
+        ).toBeLessThanOrEqual((reach?.scrollContent ?? 0) + 1);
         expect(
           header?.height ?? Number.POSITIVE_INFINITY,
           `"${header?.text ?? ''}" is taller than the Build panel's visible box at ${width}x${height}, so no scroll position shows all of it`,
@@ -3079,22 +3084,25 @@ test.describe('the assembled application', () => {
        * **Corrected 2026-08-31 (issue #703 ruling 2), and the body leaves this
        * list.** `.hud-build > .ui-panel__body` was the first of the three
        * selectors below and it is shorter than its own content in this state
-       * now, at every viewport. Measured at 1280x720: the panel is 395px of box
-       * over 576px of content and the body 350px over 531px -- and the
-       * deliveries block is 179.3px of that, so the spill *is* the block, to
-       * within a gutter, and it is exactly what the panel's own scroll covers.
-       * Panel overflow, body shortfall and block height across the five:
+       * now, at every viewport. Panel overflow, body shortfall and the
+       * deliveries block's own height, measured in this test's state (nine
+       * deliveries on their way, six orders queued, nothing opened):
        *
        * | Viewport | overflow | shortfall | block |
        * | --- | --- | --- | --- |
-       * | 1280x720 | 181px | 181px | 179.3px |
-       * | 1440x900 | 46px | 46px | 179.3px |
-       * | 1024x768 | 145px | 145px | 179.3px |
-       * | 900x600 | 160px | 160px | 163.3px |
-       * | 375x812 | 124px | 124px | 179.3px |
+       * | 1280x720 | 229px | 229px | 226.86px |
+       * | 1440x900 | 94px | 94px | 226.86px |
+       * | 1024x768 | 193px | 193px | 226.86px |
+       * | 900x600 | 178px | 178px | 180.48px |
+       * | 375x812 | 158px | 158px | 213.67px |
        *
-       * The first two columns are equal at all five, which is the assertion
-       * below: nothing spills that the panel cannot scroll.
+       * The first two columns are equal at all five and the third bounds them,
+       * which is what the two assertions below say: **the panel can scroll
+       * everything the body spills**, and **the spill is this block** rather than
+       * some other box quietly clipping. They are written as `>=` and as "within
+       * one gutter" rather than as those figures, because the figures move with
+       * the catalogue, the queue and the "and N more" line -- 1440x900 has enough
+       * slack that only 94px of a 226.86px block spills at all.
        *
        * That is the "harmless by coincidence" the paragraph above already
        * records for an opened fold, reached now without the player opening
@@ -3122,7 +3130,9 @@ test.describe('the assembled application', () => {
 
       expect(reach?.bodyShortfall ?? -1, `the Build panel's body has no box at ${width}x${height}`).toBeGreaterThanOrEqual(0);
       if ((reach?.bodyShortfall ?? 0) > 0) {
-        spilled.push(`${width}x${height}:${reach?.bodyShortfall ?? 0}`);
+        spilled.push(
+          `${width}x${height} overflow=${reach?.panelOverflow ?? 0} spill=${reach?.bodyShortfall ?? 0} block=${reach?.blockHeight ?? 0}`,
+        );
         expect(
           reach?.panelOverflow ?? 0,
           `the Build panel cannot scroll everything its body spills at ${width}x${height}`,

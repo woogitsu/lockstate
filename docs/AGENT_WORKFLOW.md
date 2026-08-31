@@ -147,11 +147,20 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   The second of those was renamed on 2026-08-31 by issue #703 ruling 2 and is now
   *"a pending delivery is on the panel with the fold shut, and costs it nothing
   while none is … (#285, #703)"* — same test, same poll, same canary; the old
-  title is kept here because it is what earlier logs say. Both it and the #88
-  sweep flaked on this class again that day, at load average 10.7 with two other
-  agents' browser suites running: the sweep's own setup poll for
-  `data-pending="9"` read `null` twice, which is every delivery having landed
-  before the first poll rather than none having been made.
+  title is kept here because it is what earlier logs say.
+  **That day added a number to the first of them, and the number is the point:
+  the #88 sweep passes at 2.9m against the 3.0m `test.slow()` gives it**, on this
+  container with other agents' suites running — so it does not fail on a
+  *finding*, it fails for being slow, and it did so four times that afternoon at
+  load averages between 5.6 and 10.7, timing out in four different places (a
+  staff-roster click, a wheel poll, a canvas poll, a page load). A red there is
+  worth reading for *where* it stopped before it is worth reading as a defect.
+  Its delivery setup also had a real race of its own — it pressed Play before
+  buying, so the three `Buy` presses and the poll for `data-pending="9"` sat
+  inside the 5s a delivery takes to land, and on a loaded machine they do not fit:
+  the poll read `null`, which is every delivery having landed rather than none
+  having been bought. ADR 0051's paused drain removed the need for that press and
+  the setup no longer runs the clock at all until it has finished measuring.
   **This bullet said the opposite for one merge**, on 2026-08-28: that the three
   were "a property of where the suite runs and not of the diff", confirmed by
   running each *alone* on plain `main`. Both halves are withdrawn. On a genuinely
