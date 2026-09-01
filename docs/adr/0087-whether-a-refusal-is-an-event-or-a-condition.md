@@ -32,9 +32,10 @@
 > file was pushed the worktree was fast-forwarded to `origin/main` at
 > `a64709f6` (v0.0.321), which carries **`8d04de84`** — the owner's acceptance
 > and implementation of [ADR 0084](./0084-what-the-alerts-channel-owes-a-player.md).
-> Neither fast-forward touched `docs/adr/` beyond that one file (`git diff
-> --stat b04e45f8 a64709f6 -- docs/adr/` shows only `0084`'s own file and
-> `README.md`'s next-free line), so no renumbering follows from it. The remote
+> Neither fast-forward added an ADR *file* (`git diff --stat b04e45f8 a64709f6
+> -- docs/adr/` touches exactly three: `0084`'s own file, `README.md`'s
+> next-free line, and `STATUS-QUEUE.md`'s owner-facing tracking — no new
+> `NNNN-*.md`), so no renumbering follows from it. The remote
 > sweep was repeated at the new tip regardless, rather than trusted from the
 > first pass: `git ls-remote --refs --heads origin` now returns **403** heads
 > (one more than the first sweep's 402), and `git ls-tree --name-only <head>
@@ -218,9 +219,17 @@ refusal.
 
 Seven assertions were run against this tree as a throwaway `vitest` probe and
 all seven pass, which is to say every claim below is true of the code as it
-stands. The probe was deleted before commit (`docs/AGENT_WORKFLOW.md` §2:
-never leave a scratch file under `tests/`); it is reproduced in full in the
-report that accompanies this branch. Run output:
+stood at `b04e45f8`. The probe was deleted before commit (`docs/AGENT_WORKFLOW.md`
+§2: never leave a scratch file under `tests/`); it is reproduced in full in the
+report that accompanies this branch. Costs 1 and 2 — the two the class
+`RefusalLog` itself is unaffected by ADR 0084 makes safe to re-check — were
+re-run as a second throwaway probe at `a64709f6` after the fast-forward
+(Cost 6), against `RefusalLog.record`/`supersede` and the two supersession-key
+functions directly: both pass unchanged (`2 passed (2)`), which is expected
+since neither `refusal-log.ts` nor `session-commands.ts`'s call sites changed
+behaviour, only line numbers. Costs 3 through 6 rest on citation rather than a
+probe and were re-verified by re-opening every `file:line` at the new tip
+(recorded throughout this document). Run output, first probe:
 
 ```
  RUN  v4.1.11 /workspace/lockstate/.claude/worktrees/refusal-ontology
