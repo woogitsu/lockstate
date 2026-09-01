@@ -84,10 +84,22 @@ test('a deployed guard: does it walk to its post? (#740)', async ({ page }) => {
   await buildAndPopulate(page, { beds: 4, admits: 4, guards: 4, label: act });
 
   // Open the roster fold so the rows are laid out and pollable.
+  //
+  // **Fixed a genuine hang here**: `.hud-staff__roster` is a
+  // `createCollapsibleSection` (`.ui-section`/`.ui-section__header`), not a
+  // `.ui-panel` (`.ui-panel__header > .ui-panel__toggle`) -- that selector
+  // pattern belongs to `.hud-rooms` and similar top-level panels
+  // (`src/ui/primitives/panel.ts`), a different primitive from the one
+  // `staff-panel.ts`'s roster section actually uses
+  // (`src/ui/primitives/collapsible-section.ts`). The wrong selector matched
+  // nothing, and an unconditional `.click()` on an empty locator waits for the
+  // element to appear for the whole test timeout rather than failing fast --
+  // confirmed hanging at exactly this line, three runs in a row, on a fresh
+  // worktree with nothing else editing it.
   await tab(page, 'security').click();
   const rosterSection = page.locator('.hud-staff__roster');
   if ((await rosterSection.getAttribute('data-collapsed')) === 'true') {
-    await rosterSection.locator('> .ui-panel__header > .ui-panel__toggle').click();
+    await rosterSection.locator('> .ui-section__header').click();
   }
 
   const phaseCounts = new Map<string, number>();
