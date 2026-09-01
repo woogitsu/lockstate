@@ -193,6 +193,38 @@ export function deliveriesRungFloorMinorUnits(overdraftFloorMinorUnits: number):
 }
 
 /**
+ * **The floor a press or a hire is judged against, for a session that may be
+ * a fresh, unfurnished prison** — the host-side twin of
+ * `Treasury.floorFor('deliveries' | 'hiring', floor, isFreshUnfurnishedPrison)`,
+ * composed the same way `HOST_PRESS_FLOOR_MINOR_UNITS` is, so the two sides of
+ * `sender.submit` cannot disagree about which threshold is in force.
+ *
+ * **Why this one reads a per-call flag where `HOST_PRESS_FLOOR_MINOR_UNITS`
+ * is a module-load constant.** That constant's own docblock argues at length
+ * that the pre-flight must not depend on a *published* value that can lag —
+ * but "fresh, unfurnished" is exactly as live as the balance the pre-flight
+ * already reads off `viewModel.counts.treasuryMinorUnits`, not a new category
+ * of staleness: both come from the same status-counts payload, at most 500ms
+ * old, and the pre-flight has always accepted that lag for the balance. What
+ * it must not do is invent a *second* definition of "fresh" — `roomCapacity`
+ * is `statusCountsSchema`'s own field, already on the wire for the Rooms
+ * panel, not a value minted for this call.
+ *
+ * **Leaving `HOST_PRESS_FLOOR_MINOR_UNITS` as the mature constant, rather than
+ * folding this into it, is deliberate.** The old constant is still what a
+ * caller gets by omitting the third argument to `judgeAffordability`
+ * (`tests/unit/ui-affordability.test.ts` pins several such calls), and a
+ * default that silently varied with a session's furnished state would be
+ * exactly the kind of defaulted safety-relevant parameter this corpus argues
+ * against elsewhere (`SpendClass`, `rungFloorMinorUnits`'s own docblock). This
+ * function is for the two call sites in `src/main.ts` that know which session
+ * they are asking about and can say so.
+ */
+export function pressFloorMinorUnits(overdraftFloorMinorUnits: number, isFreshUnfurnishedPrison: boolean): number {
+  return rungFloorMinorUnits('deliveries', overdraftFloorMinorUnits, isFreshUnfurnishedPrison);
+}
+
+/**
  * The one comparison, and it is deliberately the same shape as
  * `Treasury.canAfford`: `balance - charge >= floor`.
  *

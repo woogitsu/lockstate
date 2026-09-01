@@ -46,6 +46,7 @@ function counts(overrides: Partial<HudCountsViewModel> = {}): HudCountsViewModel
     occupiedPlaces: 0,
     staff: 0,
     rooms: 0,
+    roomCapacity: 0,
     prisonersCovered: 0,
     prisonersUnderstaffed: 0,
     prisonersUnguarded: 0,

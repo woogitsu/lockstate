@@ -156,6 +156,40 @@ export interface HudCountsViewModel {
   readonly staff: number;
   readonly rooms: number;
   /**
+   * The summed `residentCapacity` of **every** registered room instance --
+   * `counts.roomCapacity`, straight through -- not `prisonerCapacity` above.
+   *
+   * **Not the occupancy bar's denominator, and not derived here for the same
+   * reason `prisonerCapacity`'s own comment gives in the other direction.**
+   * That field is scoped to what `IntakeSystem`'s `AccommodationPolicy` would
+   * actually house someone in, which is the right question for a bar a player
+   * reads as "how full is the prison"; this field counts an infirmary's
+   * medical beds too, which is the right question for "has this prison built
+   * *any* plank-priced sleep surface yet" -- the one `pressFloorMinorUnits`
+   * (`src/ui/affordability.ts`) asks, to judge a press or a hire against the
+   * same starter rung the worker enforces for a fresh, unfurnished prison
+   * (ADR 0017's "Amendment, 2026-09-01: a starter rung…"). Reusing
+   * `prisonerCapacity` there would let a prison that furnished only an
+   * infirmary keep the starter rung on the host side after the worker had
+   * already moved it off -- a host stricter than the worker it echoes, never
+   * the dangerous direction, but not the one number both sides can agree on
+   * either.
+   *
+   * Not read by any HUD chip today. It exists on this view model solely so
+   * `src/main.ts` -- which may import the simulation, unlike `src/ui/hud/`
+   * (`AGENTS.md` boundary 1) -- has one definition of "furnished" to ask
+   * rather than inventing a second reading of the same published field.
+   *
+   * **Optional, the same shape as `treasuryOverdraftFloorMinorUnits` below and
+   * for the same reason**: every fixture and test double that built a
+   * `HudCountsViewModel` before this field existed stays valid without an
+   * update, and `undefined` reads as "no session has said anything" -- which
+   * `pressFloorMinorUnits`'s one caller treats as *not* fresh (the mature,
+   * already-shipped rung), since a session with nothing published yet cannot
+   * have a `PurchaseMaterials` or `HireStaff` control on screen to press.
+   */
+  readonly roomCapacity?: number;
+  /**
    * How many prisoners are standing in a sector on each rung of the guard
    * coverage ladder (issue #588): all the guards it asks for, some of them,
    * none of them.

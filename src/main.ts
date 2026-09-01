@@ -94,9 +94,9 @@ import {
   minimumSizeRequirement,
   objectRequirements,
 } from './simulation/rooms/requirements';
-import { MAX_PURCHASE_QUANTITY, staffDailyWageMinorUnits } from './simulation/economy';
+import { MAX_PURCHASE_QUANTITY, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, staffDailyWageMinorUnits } from './simulation/economy';
 import { staffHireCostMinorUnits } from './simulation/staff';
-import { judgeAffordability } from './ui/affordability';
+import { judgeAffordability, pressFloorMinorUnits } from './ui/affordability';
 import { HostRefusalError } from './ui/host-refusal';
 import { defaultStaffRoleRegistry } from './content/staff-role-catalog';
 import { defaultItemRegistry } from './content/item-catalog';
@@ -2523,7 +2523,22 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             throw new Error(`Nothing sells ${intent.itemId}, so it cannot be bought.`);
           }
           const total = priced.unitPriceMinorUnits * intent.quantity;
-          const verdict = judgeAffordability(total, viewModel.counts.treasuryMinorUnits);
+          /*
+           * **The third argument is the owner's second ruling on #771
+           * (2026-09-01).** A fresh, unfurnished prison's press is judged
+           * against a shallower rung than the shipped constant
+           * `HOST_PRESS_FLOOR_MINOR_UNITS` carries, so this pre-flight would
+           * otherwise accept a press the worker refuses -- the #82/#207
+           * failure this whole module exists to prevent, mirrored. "Fresh,
+           * unfurnished" is read off `viewModel.counts.roomCapacity`, the same
+           * published field the Rooms panel already renders, not a value
+           * minted for this call -- see `pressFloorMinorUnits`.
+           */
+          const verdict = judgeAffordability(
+            total,
+            viewModel.counts.treasuryMinorUnits,
+            pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, viewModel.counts.roomCapacity === 0),
+          );
           if (verdict.refused) {
             /*
              * **The refusal now says which kind it is** -- the owner's ruling
@@ -2727,8 +2742,14 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           }
           // The same two-sentence split as the purchase case above, and for the
           // same reason (ruling 18): a wage the facility cannot carry is a
-          // limit, not the prison being out of money.
-          const hireVerdict = judgeAffordability(hireChargeMinorUnits, viewModel.counts.treasuryMinorUnits);
+          // limit, not the prison being out of money. The third argument is
+          // the same starter-rung awareness the purchase case above carries --
+          // hiring shares the press's threshold, mature or starter alike.
+          const hireVerdict = judgeAffordability(
+            hireChargeMinorUnits,
+            viewModel.counts.treasuryMinorUnits,
+            pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, viewModel.counts.roomCapacity === 0),
+          );
           if (hireVerdict.refused) {
             const message = `The last reported balance of ${viewModel.counts.treasuryMinorUnits} cannot cover ${hireChargeMinorUnits}.`;
             throw hireVerdict.refusal === 'past-the-floor'

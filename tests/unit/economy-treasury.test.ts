@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { procurableMaterial } from '../../src/content/procurement-catalog';
 import {
   INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS,
   INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
+  INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS,
   Treasury,
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
@@ -446,5 +448,110 @@ describe('Treasury: the rungs inside the overdraft (ruling 19)', () => {
       expect(treasury.spend(-1, spendClass), spendClass).toBe(false);
     }
     expect(treasury.balanceMinorUnits).toBe(1_000);
+  });
+});
+
+/**
+ * **The starter rung: the owner's second ruling on #771 (2026-09-01)**, drafted
+ * as ADR 0017's "Amendment, 2026-09-01: a starter rung for a fresh,
+ * unfurnished prison" -- the second of the three remedies that amendment's §9
+ * named without choosing.
+ *
+ * `tests/integration/economy-liquidity-hard-lock.test.ts` is the gate that
+ * proves this closes ECON-002 through the real kernel; this file pins the
+ * arithmetic in isolation, the same division of labour every other rung in
+ * this file already keeps.
+ */
+describe('Treasury: the starter rung for a fresh, unfurnished prison (#771 remedy 2)', () => {
+  const PLANK_PRICE = procurableMaterial('item.wood-plank')!.unitPriceMinorUnits;
+
+  it('is the mature deliveries rung, shallower by exactly one plank', () => {
+    // Written out as the arithmetic rather than trusted as a name: the whole
+    // proof this rung closes ECON-002 rests on this being *exactly* one
+    // plank's price, no more and no less.
+    expect(PLANK_PRICE, 'the figure the hard-lock test pins').toBe(65);
+    expect(INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS).toBe(
+      INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS + PLANK_PRICE,
+    );
+    expect(INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS, 'shallower, not deeper').toBe(-1_185);
+  });
+
+  it('only moves deliveries and hiring -- construction and wages are exactly what a mature prison sees', () => {
+    const fresh = new Treasury(0);
+    fresh.setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+
+    expect(fresh.floorFor('deliveries', true), 'shallower while fresh').toBe(-1_185);
+    expect(fresh.floorFor('hiring', true), 'shares the shallower threshold, exactly as it shares the mature one').toBe(
+      -1_185,
+    );
+    expect(fresh.floorFor('construction', true), 'unaffected -- this is the room the starter rung reserves').toBe(
+      -1_250,
+    );
+    expect(fresh.floorFor('wages', true), 'unaffected -- the floor is the floor, fresh or not').toBe(-2_500);
+
+    // And the flag is what moves it: the same treasury, the same balance,
+    // asked without it, reads the mature rungs exactly as every test above
+    // this describe already pins.
+    expect(fresh.floorFor('deliveries', false)).toBe(-1_250);
+    expect(fresh.floorFor('hiring', false)).toBe(-1_250);
+  });
+
+  it('defaults to the mature rungs when the flag is omitted, on every class', () => {
+    // The property that makes the default safe despite not being required
+    // the way `SpendClass` is (see `rungFloorMinorUnits`'s own docblock):
+    // every existing caller and every test written before this rung existed
+    // gets the identical behaviour it always had.
+    const treasury = new Treasury(0);
+    treasury.setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+    const classes: readonly SpendClass[] = ['deliveries', 'construction', 'wages', 'hiring'];
+    for (const spendClass of classes) {
+      expect(treasury.floorFor(spendClass), spendClass).toBe(treasury.floorFor(spendClass, false));
+    }
+    expect(rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)).toBe(
+      rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, false),
+    );
+  });
+
+  it('proves the transition is never a cliff: any balance a fresh prison can reach can still afford one plank at the mature construction rung', () => {
+    /*
+     * The general proof, not a single fixture: `Treasury.canAfford` enforces
+     * `balance - amount >= floor` on *every* spend, so a `'deliveries'`/
+     * `'hiring'` balance can never go below whichever floor was active when
+     * it was spent. Sweeping every balance a fresh press could have reached
+     * -- the rung itself and every value above it -- and checking that a
+     * one-plank construction spend still clears the (unaffected, deeper)
+     * construction rung from there is the property, not an instance of it.
+     */
+    const overdraftFloor = TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
+    const freshFloor = rungFloorMinorUnits('deliveries', overdraftFloor, true);
+    const constructionFloor = rungFloorMinorUnits('construction', overdraftFloor, false);
+
+    for (let balance = freshFloor; balance <= freshFloor + 500; balance += 5) {
+      const treasury = new Treasury(balance);
+      treasury.setOverdraftFloor(overdraftFloor);
+      expect(
+        treasury.canAfford(PLANK_PRICE, 'construction'),
+        `balance ${String(balance)}, the worst case a fresh prison could reach or better`,
+      ).toBe(true);
+    }
+
+    // And the worst case, named rather than swept: exactly at the fresh
+    // floor, a plank spent at the construction rung lands exactly on it too
+    // -- the transition has zero margin at the boundary and never negative
+    // margin, which is what "not a cliff" means arithmetically.
+    expect(freshFloor - PLANK_PRICE, 'lands exactly on the unaffected construction rung').toBe(constructionFloor);
+  });
+
+  it('one minor unit below the fresh floor is exactly where the mature rung would already be refusing too', () => {
+    // The starter rung is *shallower*, so it cannot be reached from below --
+    // `canAfford` never lets a fresh 'deliveries'/'hiring' balance pass it in
+    // the first place. This pins that the one balance the sweep above does
+    // not cover -- one unit short of the fresh floor -- is unreachable via a
+    // fresh spend at all, which is what makes the sweep exhaustive rather
+    // than merely wide.
+    const treasury = new Treasury(rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true) + 1);
+    treasury.setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+    expect(treasury.canAfford(1, 'deliveries', true), 'the last minor unit before the fresh floor').toBe(true);
+    expect(treasury.canAfford(2, 'deliveries', true), 'one past it is refused, same as any other rung').toBe(false);
   });
 });
