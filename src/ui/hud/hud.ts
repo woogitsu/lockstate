@@ -1124,7 +1124,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * another class."* Both halves are still true of the *producer* and neither
    * is any longer true of the *band*. One producer was enough while the only
    * thing a sentence could lose to was a later one, and issue #700 is the case
-   * where it is not: `EventLog.recordIncidentsAllClear` and the escape it
+   * where it is not: `SimulationEventLog.recordIncidentsAllClear` and the escape it
    * closes were written on one tick, `publishEvents` posted them back to back
    * in one task, and the escape sentence reached zero animation frames across
    * three escapes in 21.8 minutes of play.
