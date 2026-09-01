@@ -93,6 +93,116 @@ trusted, and every one is as the brief stated.
 
 ---
 
+## Independent re-verification (second pass, same day)
+
+This document was drafted by a session killed mid-sentence, mid-write-up, and
+picked up by a second session per this branch's brief: *"do not trust this
+summary about the branch's state ... re-run it yourself before you build on
+it."* Every act above was re-run in this pass, one at a time, after merging
+`origin/main` (v0.0.323 → v0.0.325; the merge touched none of `src/ui/hud/`,
+`src/ui/affordability.ts`, `src/simulation/economy/`, or this file).
+
+**Every figure in D1 through D6 reproduced to the minor unit**, on a
+substantially *more* loaded box than the first pass — `uptime` read a
+one-minute load average of 25.4 against a stated 1.57 for the original run,
+with five to six other agents' Playwright and Vitest processes visible in
+`ps` throughout. Balances, badge text, tones, refusal bands, alert lines and
+sent-command lists all matched: act 1's `-1,235` / `"1,265 left"`; act 2's ten
+funded wall segments down to `-1,995` / `"505 left"` and the `320`-unit
+shortfall note; act 3's refund arithmetic; act 4's four-row table; act 5's
+`-1,220 → -2,180 → -2,500` double-rung crossing and the `640`-unit wage debt;
+act 6's clamping table. The two wall-clock durations in act 5 (`t+28s`/`t+59s`
+against the first pass's `t+31s`/`t+60s`) are the only numbers that moved, and
+they are timing, not the game's own arithmetic, so neither pass treats them as
+evidence of anything.
+
+One value was checked and is *not* a discrepancy worth flagging: act 6's own
+excerpt in D6 prints six of its seven typed values, dropping the first
+(`typed ""`). Re-running showed that case too: the field read `"2"` and the
+button `"Buy 2 × Brick · 80"` before any press, which is correct and not a
+clamp at all — `paintBuy` sets the quantity to `material.quantityPerPlacement`
+whenever the selected material changes (`src/ui/hud/build-panel.ts:1584-1587`),
+and a `wall-brick` placement needs two bricks, matching the pricing table's
+"2 bricks = 80" entry above. Reproduced identically twice, on two separate
+runs at two different ports, so it is the material default working as
+written, not contention.
+
+Also re-verified by reading rather than by re-running: every `SpendClass`
+constant and every `file:line` this document cites, against the current tree.
+`TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS = -2_500` (one tenth of the 25,000
+opening grant, `treasury.ts:293`), `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS
+= -1_250` (`treasury.ts:339`), `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS
+= -2_000` (`treasury.ts:351`), the `'wages'` rung is `Number.NEGATIVE_INFINITY`
+— the sentinel identity of `Math.max`, not a fourth threshold
+(`treasury.ts:380`, docblock at `treasury.ts:357-366`) — and `'hiring'` shares
+the deliveries rung (`treasury.ts:381`). `Treasury.canAfford` and
+`Treasury.spend` both take `spendClass: SpendClass` as a required, non-defaulted
+parameter (`treasury.ts:516`, `:533`). All five call sites that spend or check
+affordability were re-enumerated: `procurement.ts:230` (`'deliveries'` via the
+purchase path), `payroll.ts:319` (`'wages'`), `just-in-time-materials.ts:556`
+(`'construction'`), `staff/hiring.ts:213` (`'hiring'`) — the same four this
+document already named, confirming D5's enumeration is still exhaustive as of
+this commit.
+
+### The promise-to-the-player question this branch's brief asks for directly
+
+**The sentence a player sees**, on the `FUNDS` chip's badge, at any negative
+balance: **`"{n} left"`** — e.g. `"1,265 left"` at a balance of −1,235
+(`hud.status.funds-remaining` in the badge, rendered by `overdraftRemaining`,
+`src/ui/hud/projection.ts:437-440`, whose body is
+`Math.max(0, counts.treasuryMinorUnits - floor)` against
+`counts.treasuryOverdraftFloorMinorUnits` — the treasury's −2,500).
+
+**What it computes** — `src/ui/hud/projection.ts:440`: `balance - (-2,500)`.
+
+**What the purchase and hire paths actually refuse at** —
+`src/ui/affordability.ts:152`, `HOST_PRESS_FLOOR_MINOR_UNITS =
+rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)` = the
+deliveries rung, −1,250 — read on the host's pre-flight at
+`src/main.ts:2546` (purchase) and `src/main.ts:2735` (hire) — the two
+`HostRefusalError('past-the-overdraft-floor', …)` sites, located by
+`grep -n "HostRefusalError('past-the-overdraft-floor'" src/main.ts` rather than
+trusted from a Vite-transformed stack trace — and matched on
+the worker's own side by `Treasury.canAfford` at
+`src/simulation/economy/treasury.ts:516` against `floorFor('deliveries')` /
+`floorFor('hiring')`, both −1,250 (`treasury.ts:378,381`).
+
+**The exact balance, precisely stated, because "becomes false" undersells it.**
+The badge is `balance + 2,500`; the real room to spend on a delivery or a hire
+is `balance + 1,250`. Those two are off by exactly 1,250 at **every** balance
+below zero — the badge is not "true, then false past a threshold", it is wrong
+by the same constant from the first minor unit of overdraft. What changes at a
+threshold is not truth but *how fictitious*: while `balance + 1,250` is still
+positive (balance above −1,250), the real room merely doesn't match the
+badge's; once balance reaches **−1,250**, the real room is **zero** — nothing
+at all can be bought or anyone hired — and stays zero all the way to −2,500,
+while the badge keeps counting down a positive number the whole way
+(`"1,250 left"` at −1,250, `"320 left"` at −2,180, `"0 left"` only at −2,500).
+So the single balance most worth naming is **−1,250**: the point where the
+badge stops merely overstating the player's room and starts promising money
+that is not there at all, for every balance from there to the floor. Measured
+concretely in act 1 at −1,235 (one step short of that line): the badge said
+`"1,265 left"` and the cheapest catalogue item, a 40 brick, was already
+refused, on the host's own thread, with `HostRefusalError: The last reported
+balance of -1195 cannot cover 65.` never reaching the player (console only).
+
+**Is this a promise the code does not keep?** Yes, on this pass's reading of
+`AGENTS.md`'s fourth exclusion. `"{n} left"` is stated in the imperative,
+first-person-actionable voice a Buy or Hire button uses ("what you have to
+spend"), not hedged as "room before the deeper floor" or similar — and between
+−1,250 and −2,500 it is not a delayed truth or a rounding artifact, it is a
+number that is *wrong by a constant* (exactly 1,250, always, in the encouraging
+direction) about whether the very next press will work. `src/ui/affordability.ts`
+already reads it this way in its own source, in the paragraph headed *"What it
+does not fix, deliberately"*: *"between -1,250 and -2,500 that badge now
+offers a player room they cannot spend"* — written by the code that introduced
+the rung, not by this playtest. This pass adds the browser evidence that
+sentence lacked and treats the ruling as the owner's fourth-exclusion call,
+not something to patch here — consistent with `origin/feat/name-the-rung-on-screen`
+already being in flight to re-base this exact number.
+
+---
+
 # D1 — The FUNDS badge offers exactly 1,250 that no press can spend
 
 **MEASURED, act 1.** An empty prison — no prisoners, so the state pays nothing
