@@ -221,12 +221,38 @@ describe('the control that dismisses a row', () => {
      * key meaning both that and "I have read this notice" is two answers to one
      * question.
      *
-     * The key is deliberately unauthored, so this reads the key rather than the
-     * word; `tests/unit/ui-hud-messages.test.ts` is what fails by name until
-     * the owner supplies it.
+     * Asserted on the key as well as on the word below, because the key is the
+     * part that cannot drift into the roster's: a future sentence may be
+     * re-worded, and this must still not become that one.
      */
     const { t, rendered } = spyLocalizer();
     expect(hudAlertDismissLabel(t)).toBe('<hud.alert.dismiss>');
     expect(rendered).toEqual([{ key: HUD_MESSAGE_KEY.alertsDismiss, parameters: undefined }]);
+  });
+
+  it('says what it does without using the word that means something else here', () => {
+    /*
+     * The owner's sentence of 2026-09-01, chosen over "Dismiss this notice" for
+     * the reason above: leaving **dismiss** meaning two things in one interface
+     * is the defect, so the sentence avoids the verb rather than reusing it.
+     *
+     * The second assertion is the one that would catch the regression this key
+     * exists to prevent, and it is deliberately about the *word* rather than
+     * about the key -- a later re-wording that reached for "dismiss" again
+     * would pass every other check in this file.
+     */
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const label = hudAlertDismissLabel((key, parameters) => localizer.format(key, parameters));
+
+    expect(label).toBe('Clear this alert');
+    expect(
+      label.toLowerCase(),
+      'the roster`s word ends an employment; this control retires a notice, and one interface must not use it for both',
+    ).not.toContain('dismiss');
+    // And it is a real name rather than the glyph: `createIconButton` renders
+    // this as screen-reader text, and a button whose only content is an `x`
+    // reaches a screen reader as nothing at all.
+    expect(label).not.toBe('×');
+    expect(label.trim().length).toBeGreaterThan(1);
   });
 });

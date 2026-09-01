@@ -263,6 +263,35 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.occurrences': '{count}×',
   'hud.alert.time': 'Day {day}',
 
+  /*
+   * What the control on a dismissable alert row is called (the owner's
+   * decision 3 of 2026-09-01 on ADR 0084, with this sentence supplied by them
+   * on the same day).
+   *
+   * The control is an `×`, so this is not a caption -- it is the whole of what
+   * the control is called to anybody not looking at the glyph.
+   * `createIconButton` renders it as screen-reader text and as a `title`,
+   * because a button whose only content is a glyph reaches a screen reader as
+   * nothing at all.
+   *
+   * **"Clear this alert" and not "Dismiss this notice"**, and the reason is
+   * exactly the near miss that made a word necessary in the first place.
+   * `hud.security.roster-dismiss` is "Dismiss" and it ends a staff member's
+   * employment -- its own hint says *"a dismissed staff member leaves the
+   * prison for good, and their wage stops"*. Reusing that key here would have
+   * made one key mean both "sack this person" and "I have read this notice",
+   * which is two answers to one question; and authoring a *second* sentence
+   * around the same verb would have left the word **dismiss** meaning two
+   * different things in one interface, which is the same defect one step
+   * further on. So the sentence avoids the verb rather than reusing it.
+   *
+   * **"this alert" rather than "the alert"**: there is one control per row and
+   * several rows, so the word has to say *which*, and the demonstrative is what
+   * a player pressing one of eight rows needs. No parameter: the row's own
+   * sentence is beside it and the accessible name does not repeat it.
+   */
+  'hud.alert.dismiss': 'Clear this alert',
+
   // What the simulation refused, in the alerts list (issue #261).
   //
   // A command the worker accepted and a system then refused on its content:

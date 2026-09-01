@@ -375,7 +375,7 @@
  *
  * **This is not shrunk around.** The control stays at `--tap-target` because
  * that is what makes it reachable, and the three things that could give are all
- * decisions rather than styling, so they are named and left:
+ * decisions rather than styling, so they were named and put to the owner:
  *
  *   1. Drop the severity badge from *this* list and give the label its 64px
  *      back. The badge is how ruling 11's severity reaches a player, so
@@ -384,9 +384,30 @@
  *      of width, in the most constrained box chain in the interface (#174).
  *   3. Widen the rail, which is #174's own subject.
  *
- * The measurement that would settle it is `tests/browser/clipping.ts` pointed
- * at these rows with a dismissable alert in the list; no test in the `node`
- * suite can see a pixel.
+ * **THE OWNER ANSWERED ON 2026-09-01, AND THE ANSWER IS THE THIRD: THE WIDTH
+ * COMES FROM THE RAIL.** Nothing in the row gives way -- the badge stays, the
+ * control stays on the row's line, and the label keeps its subject -- and the
+ * corner widens instead, on ADR 0085 decision 1, which already recommends it
+ * for reasons of its own. This is a second and independent argument for the
+ * same change: a dismiss control does not fit beside a sentence in this rail.
+ *
+ * **So this list is knowingly over-subscribed until that lands, and the
+ * consequence is stated here rather than discovered.** At the current width a
+ * long sentence with a control beside it wraps past the list's box: about five
+ * characters a line, so one long alert can be taller than the box that holds
+ * it. The list scrolls (`.hud-alerts__list`, `overflow-y: auto`), so nothing is
+ * clipped and nothing is unreachable -- what a player gets is a log they scroll
+ * further through, which is the accepted cost of shipping the control before
+ * the corner moves. **Do not "fix" it here.** Narrowing the control, dropping
+ * the badge or stacking the row would each undo a decision the owner has taken.
+ *
+ * The measurement that would settle the 36px is `tests/browser/clipping.ts`
+ * pointed at these rows **with a dismissable alert in the list**; no test in
+ * the `node` suite can see a pixel, and the fixtures the existing check uses
+ * carry no control. Whoever measures the corner's new width should start from
+ * the chain above rather than re-deriving it: the label needs its 88px back
+ * *and* the 52px the control takes, so 226px of corner is short by about 52px
+ * before any other claim on the width is counted.
  */
 
 /*

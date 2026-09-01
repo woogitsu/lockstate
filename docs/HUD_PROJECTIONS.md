@@ -1707,8 +1707,25 @@ decision about what to build next.
     rule for this row: a press writes into the save and there is no undo, so a
     mis-tap that cannot be reversed was judged worse than a smaller target.
     What it costs the sentence beside it — 88px of label down to about 36px —
-    is derived in `src/ui/hud/hud.css` and is an open finding rather than a
-    solved problem.
+    is derived in `src/ui/hud/hud.css`, and **the owner answered it on the same
+    day by moving the question up a level: the width comes from the rail.**
+    Nothing in the row gives way — the severity badge stays, because it is how
+    ruling 11 reaches a player; the control stays on the row's line; the label
+    keeps its subject — and the corner widens instead, on
+    [ADR 0085](./adr/README.md) decision 1, which already recommends widening it
+    for reasons of its own. **This is a second and independent argument for that
+    change**, and it is recorded here so the pass that settles the corner's
+    width has it in front of it rather than re-deriving it: the label needs its
+    88px back *and* the 52px the control takes, so the present 226px is short by
+    about 52px before any other claim on the width is counted.
+
+    **Until that lands this list is knowingly over-subscribed**, and the
+    consequence is stated rather than left to be met: at the current width a
+    long sentence with a control beside it wraps past the list's box — about
+    five characters a line, so one long alert can be taller than the box holding
+    it. Nothing is clipped or unreachable, because the list scrolls (#703 ruling
+    1); what a player gets is a log they scroll further through, which is the
+    accepted cost of shipping the control before the corner moves.
     None of that reaches a refusal row, deliberately — a refusal is a *level*,
     republished unchanged up to twice a second, so suppressing one is a
     different mechanism from retiring a run of occurrences, and ADR 0084 says

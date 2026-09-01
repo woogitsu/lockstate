@@ -104,8 +104,7 @@ counting from one (`SimulationEventLog.dismiss`). The third — whether a dwell
 floor should reach `.hud__refusal` — is untouched, because the floor itself is
 untaken.
 
-**Every sentence a player reads here is the owner's own, and two of the three
-arrived the same day.** The mechanism was built with the keys declared and the
+**Every sentence a player reads here is the owner's own, all three of them.** The mechanism was built with the keys declared and the
 catalog deliberately empty, so the suite failed by name until the words
 existed -- `AGENTS.md`'s fourth exclusion held to rather than worked around.
 What the owner then supplied, and what they chose it against, because the
@@ -121,11 +120,13 @@ alternatives are what a later pass would otherwise re-propose:
   it has it; and what tells two events on the same day apart is the count
   beside them, which is the owner's own answer to that gap rather than a
   property the sentence claims.
-- **`hud.alert.dismiss` is still open**, and the code is waiting for it rather
-  than guessing. It names the `×` control, and it is not
-  `hud.security.roster-dismiss`: that word ends a staff member's employment,
-  and one key meaning both that and "I have read this notice" is two answers to
-  one question.
+- **`hud.alert.dismiss` is `Clear this alert`** — the name of the `×` control,
+  supplied last of the three. Chosen over "Dismiss this notice", and
+  `hud.security.roster-dismiss` ("Dismiss") is not reused: that word ends a
+  staff member's employment, one key meaning both that and "I have read this
+  notice" is two answers to one question, and a second sentence built on the
+  same verb would have left *dismiss* meaning two different things in one
+  interface. The sentence avoids the verb instead of reusing it.
 
 **And the owner ruled on the *shape* of the dismissal control on the same day,
 against this implementation's first reading of it.** It was built as the whole
@@ -133,11 +134,29 @@ row, on `createListRow`'s own rule that *"a row is the tap target on a touch
 screen"*; the owner overrode that for this row with the cost of the
 alternative in front of them — a press writes a mark into the save and there is
 no undo, so a mis-tap that cannot be reversed is worse than a smaller target.
-The control is its own element, and **what that costs the sentence beside it is
+The control is its own element, and **what that costs the sentence beside it was
 recorded rather than absorbed**: the label falls from 88px to about 36px, which
-is roughly five characters a line, and the arithmetic and the three things that
-could give are in `src/ui/hud/hud.css` above `.hud-alerts__list > .ui-row`.
-That is a finding for the owner, not a reason to shrink the target.
+is roughly five characters a line. The arithmetic and the three things that
+could give are in `src/ui/hud/hud.css` above `.hud-alerts__list > .ui-row`, and
+it was handed back as a finding rather than shrunk around.
+
+**The owner answered that too, on the same day, and answered it a level up:
+nothing in the row gives way and the rail widens.** The severity badge stays —
+it is how ruling 11 reaches a player — the control stays on the row's line, and
+the label keeps its subject; the corner is what moves, on **ADR 0085 decision
+1**, which already recommends widening it for reasons of its own. This
+measurement is a second and independent argument for the same change, and it is
+left in three places (`hud.css`, `docs/HUD_PROJECTIONS.md` gap 34, and here) so
+the pass that settles the corner's width does not have to re-derive it: the
+label needs its 88px back *and* the 52px the control takes, so 226px is short by
+about 52px before any other claim on that width is counted.
+
+**Until it lands, this list is knowingly over-subscribed, which is a stated cost
+rather than a defect to file.** A long sentence with a control beside it wraps
+past the list's box at the present width; the list scrolls, so nothing is
+clipped and nothing is unreachable, and what a player gets is a log they scroll
+further through. Narrowing the control, dropping the badge or stacking the row
+would each undo a decision the owner has taken.
 
 The paragraph this clause replaced, kept:
 
