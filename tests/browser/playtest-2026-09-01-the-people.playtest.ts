@@ -55,17 +55,42 @@ async function wallSide(
   dragA: { readonly x: number; readonly y: number },
   dragB: { readonly x: number; readonly y: number },
   pointFor: (tile: { readonly x: number; readonly y: number }) => { readonly x: number; readonly y: number },
-): Promise<{ readonly byDrag: number; readonly repaired: readonly string[] }> {
+): Promise<{ readonly byDrag: number; readonly repairs: readonly string[]; readonly stillMissing: readonly string[] }> {
+  const key = (t: { readonly x: number; readonly y: number }) => `${t.x},${t.y},${edge}`;
+  const missingOf = async (): Promise<readonly { readonly x: number; readonly y: number }[]> => {
+    const all = await sentCommands(page);
+    const got = new Set(all.map((c) => `${String(c['x'])},${String(c['y'])},${String(c['edge'])}`));
+    return tiles.filter((t) => !got.has(key(t)));
+  };
+
   const before = (await sentCommands(page)).length;
   await drag(page, dragA, dragB);
-  const produced = (await sentCommands(page)).slice(before);
-  const got = new Set(produced.map((c) => `${String(c['x'])},${String(c['y'])},${String(c['edge'])}`));
-  const missing = tiles.filter((t) => !got.has(`${t.x},${t.y},${edge}`));
-  for (const tile of missing) {
-    const point = pointFor(tile);
-    await press(page, point.x, point.y);
+  const byDrag = (await sentCommands(page)).length - before;
+
+  const repairs: string[] = [];
+  // Up to two narrower re-drags spanning exactly the still-missing tiles
+  // (the same gesture the original run used, just shorter), then a fallback
+  // of one press per tile if a re-drag still leaves a gap. Logged either way
+  // so a repair that does not actually close the gap is visible rather than
+  // assumed.
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const missing = await missingOf();
+    if (missing.length === 0) break;
+    const points = missing.map(pointFor);
+    const a = points[0]!;
+    const b = points[points.length - 1]!;
+    repairs.push(`re-drag attempt ${attempt + 1} over ${JSON.stringify(missing.map((t) => `${t.x},${t.y}`))}`);
+    await drag(page, a, b);
   }
-  return { byDrag: produced.length, repaired: missing.map((t) => `${t.x},${t.y}`) };
+  for (const tile of await missingOf()) {
+    const point = pointFor(tile);
+    const beforePress = (await sentCommands(page)).length;
+    await press(page, point.x, point.y);
+    const producedByPress = (await sentCommands(page)).slice(beforePress);
+    repairs.push(`press at ${tile.x},${tile.y} produced ${JSON.stringify(producedByPress)}`);
+  }
+  const stillMissing = (await missingOf()).map((t) => `${t.x},${t.y}`);
+  return { byDrag, repairs, stillMissing };
 }
 
 interface ResilientCellResult {
@@ -142,12 +167,14 @@ async function buildResilientCell(
     { x: eastX, y: southY - TILE / 2 },
     (t) => ({ x: eastX, y: centreOf(origin, t.x, t.y).y }),
   );
-  log(
-    `wall runs: north ${north.byDrag} by drag, repaired ${JSON.stringify(north.repaired)} | ` +
-      `south ${south.byDrag} by drag, repaired ${JSON.stringify(south.repaired)} | ` +
-      `west ${west.byDrag} by drag, repaired ${JSON.stringify(west.repaired)} | ` +
-      `east ${east.byDrag} by drag, repaired ${JSON.stringify(east.repaired)}`,
-  );
+  for (const [name, side] of [
+    ['north', north],
+    ['south', south],
+    ['west', west],
+    ['east', east],
+  ] as const) {
+    log(`wall ${name}: ${side.byDrag} by the original drag; repair steps: ${JSON.stringify(side.repairs)}; still missing: ${JSON.stringify(side.stillMissing)}`);
+  }
 
   await waitForQueueEmpty(page);
 
@@ -342,7 +369,8 @@ test('act 1: what a risk-tier badge says, and what it never explains', async ({ 
   log(act, `distinct classification-group names in the blocks above it: ${JSON.stringify(distinctGroupNames)}`);
   log(
     act,
-    `every roster badge carries a title attribute: ${roster.every((r) => r.badgeTitle !== null && r.badgeTitle !== '')}` +
+    `roster row count: ${roster.length} — ` +
+      `${roster.length > 0 ? (roster.every((r) => r.badgeTitle !== null && r.badgeTitle !== '') ? 'every badge carries a title attribute' : 'at least one badge carries NO title attribute') : 'vacuous, no rows to check'}` +
       ` (sampled titles: ${JSON.stringify(roster.map((r) => r.badgeTitle))})`,
   );
 });
