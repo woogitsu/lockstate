@@ -318,7 +318,7 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
      * `speedLabel` keeps saying the speed, because the speed is still what it
      * says: `mode` and `speed` are separate fields, a paused clock at ×2 is a
      * real state that `transportPressedStates` already distinguishes, and a
-     * screen reader reads the label and then the value -- "Speed 1x, PAUSED"
+     * screen reader reads the label and then the value -- "Speed 1×, PAUSED"
      * -- which is both facts and invents no string to join them.
      */
     const paused = viewModel.clock.mode === 'paused';

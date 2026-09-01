@@ -270,15 +270,71 @@
 .hud-minimap__surface { min-height: 0; }
 
 /* The frame scales with the rest of the interface (#545): it is a HUD panel
-   like any other, and a minimap that stayed 224px while the type inside it
-   grew would be the one island the scale did not reach. */
-.hud-minimap { width: calc(224px * var(--ui-scale)); background: var(--surface-raised); }
+   like any other, and a minimap that stayed a fixed width while the type
+   inside it grew would be the one island the scale did not reach.
+
+   THE 224PX BASE BECAME 396PX ON 2026-09-01, FOR #739. See the arithmetic
+   block below `.hud-alerts__list > .ui-row` for why 396 and not another
+   number -- this line is the one declaration that number lives in, and the
+   corner and the row label both move with it. **The minimap square does
+   not** -- see the cap on `.hud-minimap__surface` immediately below, and the
+   measurement that made capping it necessary rather than a style choice. */
+.hud-minimap { width: calc(396px * var(--ui-scale)); background: var(--surface-raised); }
 
 .hud-minimap__surface {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
+  /*
+   * `max-width`, not `width` -- capped at the panel's *pre-#739* footprint,
+   * not the widened one. Without this cap (ADR 0085 decision 1's literal
+   * recommendation, "widen the whole corner... a bigger minimap footprint is
+   * forward investment", candidate A with nothing held back) the square's
+   * `aspect-ratio: 1 / 1` reads off the new 396px width and asks for a
+   * ~380px-tall placeholder -- and `.hud-minimap`'s body is one flex column
+   * with `min-height: 0` down the whole chain (`.hud__corner`,
+   * `.ui-panel__body`, `.ui-section`, `.ui-section__body`, all above), so
+   * that demand is not idle: it is weighed against the alerts section for
+   * the same bounded height, and the square, asking for far more, gets far
+   * more.
+   *
+   * MEASURED, uncapped, on the `ui-harness` with one alert in the list (the
+   * best case: the least the list should ever need to show):
+   *
+   *     viewport    corner height   surface        list clientHeight   row
+   *     1280x720    572.33px        380x362.61px   70px                76px  OVER by 6
+   *     900x600     482.81px        380x296.88px   46px                76px  OVER by 30
+   *
+   * A single ordinary alert -- not #739's 109-character worst case, the
+   * *shortest* possible content the list can hold -- no longer fits its own
+   * box, at two of the five viewports this issue is measured at. Widening
+   * the corner to fix a height problem (one alert taller than its list box)
+   * by *also* growing something that eats the height the alerts section
+   * needs is the same mistake in a new shape, and this codebase's own
+   * instrument (`tests/browser/playtest-739-a-column-a-sentence-fits-in.playtest.ts`)
+   * says so in its own docblock before a single candidate was measured:
+   * "every pixel of width the sentence gains, the square takes back out of
+   * the height of the box the sentence sits in."
+   *
+   * **This is a deviation from ADR 0085 decision 1's literal text ("A gets
+   * the same alerts-box win... a bigger minimap footprint is forward
+   * investment, not waste"), recorded rather than made silently.** The
+   * decision to widen the corner stands -- `hud.css`'s own record above
+   * ("THE OWNER ANSWERED... THE WIDTH COMES FROM THE RAIL") already settled
+   * that question independently of this file. What this cap declines is
+   * only the *uncapped* shape of it, on evidence ADR 0085 did not have: the
+   * minimap and the alerts list are not independent line items sharing a
+   * width, they are two flex children sharing one bounded *height*, and
+   * `aspect-ratio` makes the square's height a function of whatever width it
+   * is given. Capping it at its pre-#739 footprint spends the width gain
+   * entirely on the row and none of it on a placeholder square that has no
+   * player-visible content yet to justify taking height back from a list
+   * that does. See `docs/adr/0085-*.md`'s Status section for the note this
+   * points back to.
+   */
+  max-width: calc(224px * var(--ui-scale));
+  align-self: center;
   /* Square: the renderer will draw a square region of the world here. */
   aspect-ratio: 1 / 1;
   padding: var(--space-3);
@@ -367,11 +423,22 @@
  * **In characters**: #720 measured `scrollWidth 218` for the 30-character
  * sentence "Contraband found: Mobile phone.", so ~7.3px a character, and it
  * measured a 109-character sentence wrapping into eleven line boxes of 88px at
- * 15px each. At 36px that is about **five characters a line** before wrapping,
- * so the same sentence needs roughly 22 line boxes -- **~330px of row height**,
- * derived rather than measured, in a list box that is about 200px at 1280x800
- * and 137px at 900x600 (`2026-09-01-playing-after-the-rulings`). One alert
- * would fill the log.
+ * 15px each. **This paragraph used to derive from there that 36px was "about
+ * five characters a line... roughly 22 line boxes... ~330px of row height", in
+ * a list box "about 200px at 1280x800 and 137px at 900x600". Every one of
+ * those four numbers was a derivation, and browser measurement corrected all
+ * four** (`docs/research/2026-09-01-the-measurements-that-were-owed.md` §1,
+ * PR #762, method: a dismissable row -- `ui-shell.spec.ts`'s own fixtures
+ * carry no `occurrences` and so never measured one): the wrap is **4.5
+ * characters a line, not five**, because `overflow-wrap: break-word` does not
+ * break at a whole-character boundary the way the derivation assumed; the
+ * sentence took **26-27 line boxes**, not 22; the row measured **407-422px**,
+ * not ~330; and the list box the row sat in measured **333px at 1280x800 and
+ * 212px at 900x600**, not 200 and 137 -- those two figures were the *pre-#726*
+ * clipped box, already stale when this paragraph was written. The gap between
+ * derivation and measurement was worse than the derivation itself admitted,
+ * which is exactly why this file no longer derives a line count without
+ * measuring it.
  *
  * **This is not shrunk around.** The control stays at `--tap-target` because
  * that is what makes it reachable, and the three things that could give are all
@@ -391,23 +458,40 @@
  * for reasons of its own. This is a second and independent argument for the
  * same change: a dismiss control does not fit beside a sentence in this rail.
  *
- * **So this list is knowingly over-subscribed until that lands, and the
- * consequence is stated here rather than discovered.** At the current width a
- * long sentence with a control beside it wraps past the list's box: about five
- * characters a line, so one long alert can be taller than the box that holds
- * it. The list scrolls (`.hud-alerts__list`, `overflow-y: auto`), so nothing is
- * clipped and nothing is unreachable -- what a player gets is a log they scroll
- * further through, which is the accepted cost of shipping the control before
- * the corner moves. **Do not "fix" it here.** Narrowing the control, dropping
- * the badge or stacking the row would each undo a decision the owner has taken.
+ * **DONE, 2026-09-01, FOR #739.** `.hud-minimap`'s width moved from 224px to
+ * **396px** (see that rule, above), which measures as a **422px corner**
+ * (`226px was short by about 52px before any other claim on the width was
+ * counted`, per this block's own arithmetic; 396 + 26px of panel-and-corner
+ * chrome = 422, matching that model exactly). 396 is not a round number and is
+ * not the 430px ADR 0085 names as its guardrail -- it is the *smallest* width
+ * at which the worst severity badge's row still holds the 109-character
+ * sentence to **4 line boxes**, measured 2px at a time
+ * (`playtest-739-a-column-a-sentence-fits-in.playtest.ts`, "where the line
+ * count actually flips"): 394px still wraps to 5, 396px is the first width
+ * that wraps to 4, and nothing between 396 and 430 buys a fifth line box back.
+ * Spending the other 34px the guardrail would allow buys **zero** additional
+ * line boxes and only **costs** world view (the arithmetic is in ADR 0085's
+ * Status section), so it is not spent.
  *
- * The measurement that would settle the 36px is `tests/browser/clipping.ts`
- * pointed at these rows **with a dismissable alert in the list**; no test in
- * the `node` suite can see a pixel, and the fixtures the existing check uses
- * carry no control. Whoever measures the corner's new width should start from
- * the chain above rather than re-deriving it: the label needs its 88px back
- * *and* the 52px the control takes, so 226px of corner is short by about 52px
- * before any other claim on the width is counted.
+ * **Measured, all three severities, the 109-character sentence, at every
+ * desktop viewport and 900x600 (identical at all five, as D1 predicted --
+ * the label is a function of the panel, not the viewport):** `danger` label
+ * 214px, `warning` (the narrowest, worst case) 208px, `info` 233px -- **4 line
+ * boxes, 76-77px of row**, against list boxes of 76px (one alert alone, every
+ * viewport) up to 579px (eight alerts, 1920x1080). **No alert is taller than
+ * its list box at any of the five viewports**, which was not true before this
+ * change at three of them (1280x800, 1280x720, 900x600) and is the property
+ * `tests/browser/ui-alerts-column.spec.ts` gates.
+ *
+ * **This did not come for free, and the world view is where it was found**:
+ * `.hud__rail` measures 288px on every viewport (unaffected -- this is the
+ * *other* edge). At 900x600 the world view was 362px before this change and
+ * is **190px** after (900 - 288 rail - 422 corner). Half of 362 is 181, so
+ * 190px keeps **9px more than half**, with headroom to spare against ADR
+ * 0085's own rule ("do not cut the 900x600 world-view budget by more than
+ * half") -- more headroom than the 430px guardrail would have left (182px,
+ * one pixel over half), because 396px is the minimum that clears 4 line
+ * boxes rather than the maximum the guardrail would tolerate.
  */
 
 /*
