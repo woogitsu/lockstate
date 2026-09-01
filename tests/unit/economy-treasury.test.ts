@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS,
+  INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
   Treasury,
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
+  rungFloorMinorUnits,
+  type SpendClass,
 } from '../../src/simulation/economy';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
@@ -35,6 +39,19 @@ import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simu
  * command for exactly the opening balance, through the real kernel -- is in
  * `tests/integration/economy-money-conservation.test.ts`, because what that
  * boundary must not break is the conservation equation.
+ *
+ * ## Why every call below passes `'wages'`
+ *
+ * The owner's ruling 19 of 2026-08-31 -- drafted as ADR 0017's "Amendment,
+ * 2026-09-01" -- made the `SpendClass` a **required** argument on `canAfford`
+ * and `spend`, so that no spend can reach the treasury without saying which of
+ * ADR 0017 decision 8's rungs it belongs to. Every case above the ruling's own
+ * describe is about the treasury's floor rather than about a rung, and
+ * `'wages'` is the class whose threshold **is** the floor -- so it reproduces
+ * every boundary this file has ever pinned, to the minor unit, and none of the
+ * expected values below moved.
+ *
+ * The last describe is the one about the rungs themselves.
  */
 describe('Treasury: the exact-balance boundary', () => {
   const BALANCE = 1_000;
@@ -289,5 +306,126 @@ describe('what a shipped session gets (#703 ruling A)', () => {
       JSON.stringify(captureSessionSnapshot(runtime)),
       'and no floor is written to the save, at any depth',
     ).not.toContain('overdraft');
+  });
+});
+
+
+/**
+ * **The rungs the owner's ruling 19 of 2026-08-31 gives ADR 0017 decision 8.**
+ *
+ * *"Dać szczeblom własne progi wewnątrz debetu"* -- give the rungs their own
+ * thresholds inside the overdraft -- at -1,250 (deliveries), -2,000
+ * (construction) and -2,500 (wages, the floor). Drafted at
+ * `docs/adr/0017-money-primary-resource-model.md` ("Amendment, 2026-09-01"),
+ * **Proposed and not self-approved**.
+ *
+ * Everything above this describe is about a treasury with no facility open, and
+ * every one of those expectations is unchanged -- which is the first thing
+ * asserted here, because it is what "inside the overdraft" has to mean.
+ */
+describe('Treasury: the rungs inside the overdraft (ruling 19)', () => {
+  const CLASSES: readonly SpendClass[] = ['deliveries', 'construction', 'wages', 'hiring'];
+
+  it('has no rungs at all while no facility is open, on any class', () => {
+    const treasury = new Treasury(100);
+
+    for (const spendClass of CLASSES) {
+      expect(treasury.floorFor(spendClass), spendClass).toBe(0);
+      expect(treasury.canAfford(100, spendClass), spendClass).toBe(true);
+      expect(treasury.canAfford(101, spendClass), spendClass).toBe(false);
+    }
+  });
+
+  it('is the owner`s three numbers at the shipped floor, and the third is the floor itself', () => {
+    const treasury = new Treasury(0);
+    treasury.setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+
+    expect(treasury.floorFor('deliveries')).toBe(-1_250);
+    expect(treasury.floorFor('construction')).toBe(-2_000);
+    expect(treasury.floorFor('wages')).toBe(-2_500);
+    // Not a fourth threshold and not the deepest: see `SpendClass`.
+    expect(treasury.floorFor('hiring')).toBe(-1_250);
+
+    // The two that are constants are the constants, so a literal moved in one
+    // place and not the other fails here.
+    expect(INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS).toBe(-1_250);
+    expect(INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS).toBe(-2_000);
+    // And the third carries no constant of its own -- it tracks the floor.
+    treasury.setOverdraftFloor(-4_000);
+    expect(treasury.floorFor('wages'), 'the wage rung is the floor, wherever the floor is').toBe(-4_000);
+  });
+
+  it('refuses each class one minor unit past its own rung, and not before', () => {
+    const boundaries = [
+      ['deliveries', -1_250],
+      ['construction', -2_000],
+      ['wages', -2_500],
+      ['hiring', -1_250],
+    ] as const;
+
+    for (const [spendClass, rung] of boundaries) {
+      const treasury = new Treasury(0);
+      treasury.setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+
+      expect(treasury.canAfford(-rung, spendClass), `${spendClass}: landing on the rung is legal`).toBe(true);
+      expect(treasury.canAfford(-rung + 1, spendClass), `${spendClass}: one unit past it is not`).toBe(false);
+      expect(treasury.spend(-rung + 1, spendClass), `${spendClass}: and the refusal changes nothing`).toBe(false);
+      expect(treasury.balanceMinorUnits).toBe(0);
+      expect(treasury.spend(-rung, spendClass)).toBe(true);
+      expect(treasury.balanceMinorUnits).toBe(rung);
+    }
+  });
+
+  it('clamps every rung to the floor, so a shallower floor cannot leave a rung unreachable below it', () => {
+    /*
+     * The property that keeps the ladder coherent if the floor is ever
+     * reconfigured. It is deliberately a clamp and **not** a scaling: ruling 19
+     * gave three magnitudes and no ratios, and whether the rungs should move
+     * with the floor is marked in the amendment as the owner's. What the clamp
+     * guarantees is only that no rung is ever deeper than the floor, so the
+     * rungs collapse onto it in order instead of two of them being dead.
+     */
+    const treasury = new Treasury(0);
+    treasury.setOverdraftFloor(-1_600);
+
+    expect(treasury.floorFor('deliveries'), 'the first rung is above this floor and stands').toBe(-1_250);
+    expect(treasury.floorFor('construction'), 'the second is below it and collapses onto it').toBe(-1_600);
+    expect(treasury.floorFor('wages')).toBe(-1_600);
+
+    // And the ordering survives the collapse, which is the point of the clamp.
+    expect(treasury.floorFor('deliveries')).toBeGreaterThanOrEqual(treasury.floorFor('construction'));
+    expect(treasury.floorFor('construction')).toBeGreaterThanOrEqual(treasury.floorFor('wages'));
+  });
+
+  it('is one definition of the clamp, shared with the host`s pre-flight', () => {
+    /*
+     * `judgeAffordability` (`src/ui/affordability.ts`) sits on the other side of
+     * `sender.submit` and has no `Treasury` to ask, so it composes its floor
+     * through `rungFloorMinorUnits`. This is the pin that says the two agree:
+     * that module exists because a second copy of this comparison was wrong for
+     * a whole ruling and nothing could see it.
+     */
+    for (const floor of [0, -100, -1_250, -1_600, -2_500, -10_000]) {
+      const treasury = new Treasury(0);
+      treasury.setOverdraftFloor(floor);
+      for (const spendClass of CLASSES) {
+        expect(treasury.floorFor(spendClass), `${spendClass} at ${String(floor)}`).toBe(
+          rungFloorMinorUnits(spendClass, floor),
+        );
+      }
+    }
+  });
+
+  it('still refuses a fractional or negative amount on every rung', () => {
+    const treasury = new Treasury(1_000);
+    treasury.setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+
+    for (const spendClass of CLASSES) {
+      expect(treasury.canAfford(-1, spendClass), spendClass).toBe(false);
+      expect(treasury.canAfford(0.5, spendClass), spendClass).toBe(false);
+      expect(treasury.canAfford(Number.NaN, spendClass), spendClass).toBe(false);
+      expect(treasury.spend(-1, spendClass), spendClass).toBe(false);
+    }
+    expect(treasury.balanceMinorUnits).toBe(1_000);
   });
 });

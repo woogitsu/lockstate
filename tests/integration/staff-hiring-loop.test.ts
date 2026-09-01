@@ -3,6 +3,7 @@ import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { defaultStaffRoleRegistry } from '../../src/content/staff-role-catalog';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import {
+  INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
   Treasury,
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
@@ -206,11 +207,29 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
      * old line left the prison able to hire thirty more guards. The boundary is
      * the same boundary -- `canAfford` is `balance - amount >= floor` -- and this
      * is it, expressed against the floor the prison has.
+     *
+     * **And the floor a *hire* is judged against moved again with the owner's
+     * ruling 19 of 2026-08-31.** The paragraph above is kept because the
+     * boundary is still the same boundary and only the number in it has changed.
+     * Ruling 19 (drafted as ADR 0017's "Amendment, 2026-09-01") gives ADR 0017
+     * decision 8's rungs their own thresholds inside the overdraft; taking on
+     * staff is not one of the three rungs and is given the *shallowest* of them,
+     * so a hire is refused below -1,250 rather than below -2,500 --
+     * `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`, argued at
+     * `src/simulation/staff/hiring.ts`. The drain itself is at the wage rung,
+     * because that is the only class that can reach an arbitrary depth.
      */
-    const oneUnderAHire = TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS + WAGE - 1;
-    expect(runtime.treasury.spend(TREASURY_STARTING_BALANCE_MINOR_UNITS - oneUnderAHire, 'hiring')).toBe(true);
+    const oneUnderAHire = INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS + WAGE - 1;
+    expect(runtime.treasury.spend(TREASURY_STARTING_BALANCE_MINOR_UNITS - oneUnderAHire, 'wages')).toBe(true);
     expect(runtime.treasury.balanceMinorUnits).toBe(oneUnderAHire);
-    expect(runtime.treasury.canAfford(WAGE, 'hiring'), 'one minor unit under, and it is the floor that says so').toBe(false);
+    expect(
+      runtime.treasury.canAfford(WAGE, 'hiring'),
+      'one minor unit under, and it is the hiring rung that says so',
+    ).toBe(false);
+    expect(
+      runtime.treasury.canAfford(WAGE, 'wages'),
+      'while the treasury itself would still carry it, which is the ladder',
+    ).toBe(true);
 
     // The tick the command is *dispatched* at, which is the one the refusal
     // carries -- not the tick the kernel has reached by the time it is read.
