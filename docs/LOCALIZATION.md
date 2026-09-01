@@ -42,6 +42,27 @@ mandatory.
   one requested, is refused whole. The game keeps the previous or default
   locale rather than starting with half its text missing.
 
+### How a second catalog actually arrives
+
+`createChunkCatalogLoader` (`src/services/localization/chunk-catalog-loader.ts`)
+is the port's implementation: a map of `() => import(...)` thunks, one per
+locale, so a catalog is a code-split chunk requested when a player asks for
+it and not before. The chunk lands at `/assets/<name>-<hash>.js` — one path
+segment, content-hashed — which `public/_headers`' existing `/assets/:file`
+rule already covers, so **no deploy configuration changes**. The measurements
+behind that choice, including what the two rejected routes cost, are in
+`docs/research/2026-08-30-how-a-second-catalogue-reaches-a-running-page.md`.
+
+`switchLocale` is the call a language picker makes. It never throws and never
+half-applies: on any failure it returns *the caller's own* `Localizer`, plus a
+report through `onFailure`.
+
+The port itself answers one question — give me the bytes for this tag. It
+cannot answer *which* tags exist, which is what `selectSupportedLocale` has
+always needed and what a picker has to render, so `ChunkCatalogLoader` adds
+`locales` and `has()` beside it. Nothing in `src/main.ts` registers a locale
+yet: that, and the re-render, are the language picker's work.
+
 ## Fallback
 
 `buildLocaleFallbackChain('pt-BR')` → `['pt-BR', 'pt', 'en']`. Lookup walks
@@ -125,3 +146,15 @@ shipping.
 Issue #36 explicitly excludes translating the game before content
 stabilizes. This is the infrastructure plus the default locale; no second
 locale is authored, and no translation vendor process is defined yet.
+
+Two things the infrastructure owes a translator, recorded rather than fixed
+because both mean authoring player-visible copy:
+
+- **21 messages interpolate `{count}` into a flat string.** English reads
+  correctly; Polish needs `few` and `many` for 2, 3, 4, 22 … and a translator
+  cannot add a form to a key that has none. Pinned in
+  `tests/foundation/second-locale-contract.test.ts` so the list cannot grow
+  unnoticed. Only 2 of 588 messages are plural entries today.
+- **2 accessible names are assembled in code** from a localized word, a
+  hard-coded `": "` and another element's text. Rule 4 above forbids it;
+  the same gate pins both sites.
