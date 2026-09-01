@@ -404,3 +404,254 @@ answer 3's degradation ladder is unreachable still holds for the reason given.
 "Consequences" bullet correcting the income line — the one that says the
 paragraph *"went on saying the opposite, because no test reads English"* — is the
 same defect class this amendment records twice more, in the same document.
+
+## Amendment, 2026-09-01: decision 8's ladder gets three thresholds inside the overdraft, so its *order* can be true again
+
+> **Proposed amendment, not self-approved — awaiting the owner's signature.**
+> Drafted 2026-09-01. Nothing in this corpus is self-approved (`AGENTS.md`,
+> `docs/AGENT_WORKFLOW.md` §3), and the implementation that accompanies this
+> amendment on the same branch **must not merge before the signature**. It is
+> on the branch so that what is being signed can be read as behaviour and not
+> only as prose.
+>
+> *This amends **decision 8 alone**. Decisions 1 through 7 are untouched, and
+> `Status` remains **Accepted**. The form is the "Amendment, 2026-08-27" above,
+> ADR 0029's and ADR 0034 §9's: the old wording is quoted rather than
+> overwritten.*
+
+### 1. The ruling, in the owner's words
+
+The owner was asked how the insolvency ladder should behave now that a standing
+overdraft exists, and answered, on 2026-08-31 (**ruling 19**):
+
+> **"Dać szczeblom własne progi wewnątrz debetu"**
+
+— *give the rungs their own thresholds inside the overdraft* — with these three
+numbers:
+
+| rung | what stops | threshold |
+| --- | --- | --- |
+| 1 | deliveries refused | balance below **−1,250** |
+| 2 | construction halted | balance below **−2,000** |
+| 3 | wages unpaid | balance below **−2,500** (the floor) |
+
+### 2. What of decision 8 is superseded, and what survives
+
+Decision 8 reads, in full, at "The three answers, in full" §3:
+
+> **Accepted: insolvency is a state, not a loss condition.** At a negative
+> balance the state stops paying for discretionary things in a defined order and
+> the prison degrades visibly — deliveries refused first, then construction
+> halted, then staff unpaid with the morale and incident consequences that
+> follow. No game-over, no silent stall.
+
+**Everything in that paragraph survives.** Insolvency is still a state and not a
+loss condition; there is still no game-over and no silent stall; the *order* is
+still deliveries, then construction, then staff. The consequence decision 8
+accepts — *"degradation has to be authored and surfaced"* — survives too, and
+§5 below records what of it is still owed.
+
+**What is superseded is nothing decision 8 said, and everything the code did
+with it.** Decision 8 named an order and no magnitudes, and while
+`Treasury.spend` refused at a balance of zero the order followed from the one
+comparison for free: every discretionary spend was refused before the
+undeclinable one, because the undeclinable one was bounded by the balance.
+`src/simulation/economy/treasury.ts` argued exactly that, at length, and it was
+right.
+
+#703 ruling A of 2026-08-31 opened a **standing overdraft** on every treasury
+([ADR 0083](./0083-what-opens-the-negative-balance-and-what-bounds-it.md) §2),
+and inverted the ladder. `Treasury.canAfford` was one comparison,
+`balance - amount >= floor`, so a single floor moved rungs 1 and 2 **together**
+to −2,500, while `PayrollSystem`'s `Math.min(due, balance)` left rung 3 at a
+balance of zero. A prison with its wages unpaid went on buying deliveries and
+hiring staff for another 2,500: rung 3 fired *first*. ADR 0083 §2 recorded the
+inversion and said in terms that it did not choose the remedy —
+
+> Either the ladder's order is amended to say so, or decision 8 is narrowed to a
+> prison that has spent its overdraft. **This document does not choose between
+> those**; it records that one of them is now required and that the code cannot
+> express the ladder faithfully until it is taken.
+
+**Ruling 19 takes neither.** It keeps the order exactly as decision 8 states it
+and keeps decision 8 applying to every prison, and instead gives the three rungs
+three thresholds *inside* the overdraft so that the order is expressible at all.
+That is why this is an amendment to decision 8's **implementation contract** and
+not to its text: after it, decision 8's sentence is true again, for the first
+time since ruling A.
+
+**The three magnitudes are new, and they are the owner's.** Nothing in this
+corpus derived them and nothing here defends them as arithmetic. ADR 0017
+decision 5 puts balance values out of this ADR's scope and reserves them to #29;
+ruling 19 satisfies that reservation by a ruling rather than bypassing it, in
+the same way #703's rulings satisfied it for the opening balance and the
+overdraft floor.
+
+### 3. What the amendment decides
+
+**a. Each rung is a floor of its own, and the third rung is the treasury's
+floor.** Rungs 1 and 2 are named constants; rung 3 is **not** a constant. The
+overdraft floor already has one owner — `Treasury.setOverdraftFloor`, fed by
+`createNewSimulationRuntime` from `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` — and
+writing −2,500 a second time would be a second copy of a number that is defined
+once, disagreeing with the first the moment anything passed a different floor.
+Rung 3 is therefore *the floor, whatever the floor is*.
+
+**b. The thresholds are absolute minor units, not fractions of the floor.** The
+owner ruled three magnitudes and no ratios. 1,250 is a half of 2,500 and 2,000
+is four fifths of it, and both of those are readings this document would be
+inventing: a rule expressed as a fraction claims that the *shape* of the ladder
+is what was decided, and what was decided is three numbers. Against that: a
+fraction would move the rungs automatically if the floor were ever
+reconfigured, and absolute numbers do not.
+
+What is done about that instead is a **clamp and not a scaling**: every rung is
+clamped up to the treasury's floor (`Treasury.floorFor`), so
+
+- at a floor of `0` — a bare `new Treasury()`, which is every one in the unit
+  tests — **there are no rungs at all** and every class behaves exactly as it
+  did before ruling A, to the minor unit. This is what "inside the overdraft"
+  has to mean, and it is asserted rather than described;
+- no rung can ever be *deeper* than the floor, so a floor reconfigured
+  shallower than −2,500 collapses the rungs onto it **in order** rather than
+  leaving two of them unreachable below it.
+
+The clamp is not a decision about what the rungs should be at a different floor.
+It is the minimum that keeps the ladder from becoming incoherent. §4 marks the
+real question as not decided.
+
+**c. Which spend belongs to which rung, and this is a reading rather than the
+ruling's own words.** Ruling 19 names three rungs; the code has four spending
+sites, and two of them go through the same method. The reading taken:
+
+| spend | rung | site |
+| --- | --- | --- |
+| the player's *Buy* press (`PurchaseMaterials`) | **deliveries**, −1,250 | `src/simulation/runtime/session-commands.ts` |
+| materials for a queued build order | **construction**, −2,000 | `JustInTimeMaterialsService.procureForPendingOrders` |
+| a payday | **wages**, the floor | `PayrollSystem.update` |
+| taking on staff (`HireStaff`) | **deliveries' threshold**, −1,250 | `src/simulation/staff/hiring.ts` |
+
+The first two both reach `ProcurementSystem.purchase`, so the rung cannot be a
+property of that method and is a property of *who asked*. The split is decision
+8's own words read literally: a *delivery* is a purchase the player asked for,
+and *construction* is the prison buying what a standing order needs. It is also
+the only split under which the two rungs are distinguishable at all — without
+it, decision 8's first two rungs are one event again, which is the defect this
+amendment exists to remove.
+
+**Hiring is not one of the three rungs, and is deliberately not given a fourth.**
+Authoring a fourth threshold would be authoring a rung the owner did not rule.
+It takes the *shallowest* of the three, because the alternative — a prison that
+refuses deliveries while still taking on staff whose wages it will then owe — is
+decision 8's ordering broken in the other direction. §4 marks a rung of its own
+as the owner's.
+
+**d. The rung is a required argument, and that is a decision rather than an
+implementation detail.** `Treasury.canAfford` and `Treasury.spend` take a
+`SpendClass` that cannot be omitted. The property that forces it is the only one
+a ladder must have: **a rung must be impossible to bypass by calling `spend`
+without saying which rung you are.** A check at each caller is bypassed by
+forgetting it, and nothing goes red. A defaulted parameter is bypassed by
+omitting it and silently gets the deepest floor — the rung that refuses *last* —
+which is the failure mode wearing a default's clothes. A required member of a
+closed union cannot be omitted, and `tsc` is what asks.
+
+**e. What a payday does between −2,500 and zero, and it reverses something ADR
+0083 decided against.** Ruling 19 says wages are unpaid *below* −2,500, which
+means **paid down to it**: `PayrollSystem` bounds the day by
+`Math.min(due, balance - floorFor('wages'))` and therefore draws on the
+overdraft. ADR 0083's "What was considered and not taken" rejected exactly this,
+by name:
+
+> **Making the payroll draw on the floor.** Rejected. `Math.min(due, balance)`
+> is what keeps ADR 0017 decision 8's third rung reachable […] Changing it would
+> delete the rung.
+
+That was right under a single floor, where a payroll drawing on the overdraft
+would have had no threshold of its own left. Under ruling 19 the third rung *is*
+the floor, so the draw is what puts the rung where the owner put it rather than
+what deletes it. Both directions are recorded here and at `treasury.ts`.
+
+**f. What "unpaid" means for accrual is unchanged, and ruling 19 does not
+answer it.** The ruling says *wages unpaid* and says nothing about whether the
+wage is skipped or becomes a debt.
+[ADR 0049](./0049-what-a-prison-that-cannot-make-payroll-owes.md) decision 1
+already answered it — what is not paid becomes **arrears**, carried beside the
+balance and in the save — and the implementation takes that reading because it
+is the one that changes least: a partial payday still pays what the rung leaves
+and owes the rest, and `tests/integration/economy-money-conservation.test.ts`
+stays green, which is the property that says no minor unit is created or
+destroyed by a rung firing. **If the owner meant a skipped wage rather than a
+deferred one, this is the sentence to correct**, and it is marked as theirs in
+§4.
+
+### 4. What this amendment does **not** decide
+
+- **Whether `escalatedDiversionRateBasisPoints` or the loan interact with the
+  rungs.** ADR 0083 §3 records 5,000 bp as ruled and not wired, and `LoanBook`
+  is built only when `loanTerms` is supplied, which nothing in `src/` does. A
+  drawdown credits the balance and touches no floor, so today a loan moves a
+  prison *up* through the rungs and nothing more. Whether repayment diversion
+  should be gated by a rung, or should itself be a rung, is untouched here.
+- **Whether the rungs move if the floor is reconfigured.** §3b settles the
+  representation — absolute minor units, clamped to the floor — and deliberately
+  does not settle the policy. Nothing in `src/` calls `setOverdraftFloor` with
+  anything but `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`, so the question is not
+  live; the day a second floor exists, the choice between "the rungs are these
+  three numbers" and "the rungs are these three fractions of whatever the floor
+  is" is the owner's, and the clamp is what keeps the ladder coherent until it
+  is made.
+- **Whether hiring deserves a rung of its own.** §3c gives it the first rung's
+  threshold because a fourth threshold is a fourth ruling.
+- **Whether an unpaid wage is deferred or skipped.** §3f implements ADR 0049's
+  answer and marks the question.
+- **What the player is told at each rung.** §5.
+- **Any price, any other balance value.** Decision 5 is unchanged.
+
+### 5. What a player is told at each rung — owed to the owner, and four sentences are now wrong
+
+Decision 8's stated cost is *"degradation has to be authored and surfaced, or
+insolvency becomes the same invisible stall as #89"*. Ruling 19 makes three
+rungs where there was one, and **the sentences that exist describe the one**.
+All four say the charge would go past the *floor*, which is true at −2,500 and
+false at −1,250:
+
+| key | text, verbatim | rung it now answers |
+| --- | --- | --- |
+| `hud.alert.refusal.purchase.insufficient-funds` | *"Nothing was bought — that would go past what the state will carry."* | 1, deliveries (−1,250) |
+| `hud.refusal.purchase-materials-past-floor` | *"Nothing was bought — that would go past what the state will carry."* | 1, deliveries (−1,250) |
+| `hud.alert.refusal.hire.insufficient-funds` | *"Nobody was hired — that would go past what the state will carry."* | hiring (−1,250) |
+| `hud.refusal.hire-staff-past-floor` | *"Nobody was hired — that would go past what the state will carry."* | hiring (−1,250) |
+
+**None of them is changed, and none of them may be**: player-facing copy is
+`AGENTS.md`'s fourth exclusion, these four are the owner's own words from ruling
+18 of 2026-08-31, and there is no ruling behind a replacement. They are left
+byte-for-byte with the defect recorded beside them in
+`src/content/default-locale-en.ts`.
+
+Two more things a player is owed and does not have:
+
+- **Rung 2 has no sentence at all.** A halted construction queue reports
+  `hud.alert.refusal.purchase.insufficient-funds` through
+  `reportMaterialsFunding`, which is rung 1's sentence on rung 2's event.
+- **The `FUNDS` chip's `{remaining} left` badge** (`hud.status.funds-remaining`)
+  renders `balance − overdraftFloor`, the room to −2,500. Between −1,250 and
+  −2,500 it offers a player room no press can spend. The figure is not copy but
+  its meaning is a promise, so re-basing it is the owner's too; the host's
+  pre-flight (`judgeAffordability`) *is* re-based, so a press is refused at the
+  rung the worker refuses it at.
+
+### 6. Where this is implemented
+
+`src/simulation/economy/treasury.ts` (`SpendClass`,
+`INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`,
+`INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`,
+`INSOLVENCY_RUNG_FLOORS_MINOR_UNITS`, `rungFloorMinorUnits`,
+`Treasury.floorFor`), `src/simulation/economy/procurement.ts`,
+`src/simulation/economy/just-in-time-materials.ts`,
+`src/simulation/economy/payroll.ts`, `src/simulation/staff/hiring.ts`,
+`src/simulation/runtime/session-commands.ts` and `src/ui/affordability.ts`.
+
+The ladder's order is asserted as an order — not as three separate boundaries —
+in `tests/integration/economy-insolvency-ladder.test.ts` and
+`tests/integration/economy-payroll-loop.test.ts`.
