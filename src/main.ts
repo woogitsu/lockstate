@@ -1722,7 +1722,18 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * answers `undefined` for every message but `simulation/event`, so on all
      * other messages this is exactly `alerts`.
      */
-    const eventAlerts = hudEventAlertsFromWorkerMessage(message, alerts ?? viewModel.alerts);
+    const eventAlerts = hudEventAlertsFromWorkerMessage(
+      message,
+      alerts ?? viewModel.alerts,
+      // How long an in-game day is, so a row can say **when** it happened (the
+      // owner's decision 2 of 2026-09-01 on ADR 0084). Read from this
+      // message's own clock where it carried one, and from the view model
+      // otherwise, for the reason the list itself is threaded through `alerts`
+      // above: the freshest value this thread has, never a second copy of it.
+      // `0` is `UNKNOWN_HUD_CLOCK`'s "no session has reported a clock", and a
+      // row built then carries no time rather than a fabricated day.
+      (clock ?? viewModel.clock).dayLengthTicks,
+    );
     // The same event, read a second time for the surface that is actually on
     // screen. The list is the log; this is the notice, and it goes to a band
     // laid out at every viewport with no section to open -- which the alerts

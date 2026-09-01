@@ -1908,6 +1908,39 @@ const eventMessageSchema = z
       .object({
         tick: tickSchema,
         event: simulationEventSchema,
+        /**
+         * This is a record the log **kept**, not something the prison has just
+         * done (the owner's decision 4 of 2026-09-01 on
+         * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
+         *
+         * ## Why the same message rather than a second kind
+         *
+         * Because it is the same record. What a restored session replays is
+         * exactly what it recorded, in the order it recorded it, and a second
+         * message kind carrying the identical union would have needed a second
+         * translator on the other side and would have made every reader ask
+         * which of the two it should handle. What differs is not the content
+         * but the **claim**, and one flag is the whole of the difference.
+         *
+         * ## What reads it, and why the two surfaces answer differently
+         *
+         * - The **alerts list** builds a row from it either way. That is the
+         *   whole of decision 4: the log survives a reload.
+         * - The **events band** ignores it. The band carries what just
+         *   happened -- *"an event is a statement that something happened
+         *   now"* (`SimulationEventLog`) -- and a restored record happened on
+         *   a tick the player was not looking at. A band that announced one on
+         *   load would be exactly the *"loaded prison announcing last week's
+         *   discharges"* `docs/PERSISTENCE.md` refuses, and it would also be a
+         *   decision about the band, which is ADR 0084's decision 4 and is not
+         *   taken.
+         *
+         * `z.literal(true)` and optional, so the absent case has one meaning
+         * and one only: nobody restored this, the prison just did it. A
+         * `boolean` would have let `restored: false` mean the same thing
+         * twice.
+         */
+        restored: z.literal(true).optional(),
       })
       .strict(),
   })
