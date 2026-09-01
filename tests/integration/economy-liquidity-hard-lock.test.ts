@@ -202,15 +202,24 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      * of: a `SellMaterials`, a `ProduceItem` or a `RequestGrant` added later
      * fails this line and sends its author here.
      *
-     * Of these fourteen, exactly one credits the treasury --
+     * Of these fifteen, exactly one credits the treasury --
      * `CancelMaterialPurchase` -- and the test below measures that it refuses
      * once the delivery has landed.
+     *
+     * **This said "fourteen" until the owner's decisions of 2026-09-01 on
+     * [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md).**
+     * `DismissAlert` is the fifteenth and it moves no money at all: it marks a
+     * row of the alerts log as read, which is the one command in this list that
+     * changes nothing about the prison. The tally is what rots here and the
+     * list is what to read, so both are corrected together rather than the
+     * number alone.
      */
     const types = simulationCommandSchema.options.map((option) => option.shape.type.value).sort();
     expect(types).toEqual([
       'AdmitPrisoner',
       'CancelBuildOrder',
       'CancelMaterialPurchase',
+      'DismissAlert',
       'DismissStaff',
       'HireStaff',
       'PlaceBuildOrder',

@@ -69,15 +69,18 @@ it — see the three version sections below.
 
 ### Adding an optional field without a version bump
 
-Seven payload fields have been added since their section was first written --
+Eight payload fields have been added since their section was first written --
 `construction.orders[].edge` (#74), `construction.currentTransaction` /
 `currentTransactionId` (#108), `masterSeed` (#412),
 `simulation.contraband.intelligenceSequence` and `simulation.economy.payroll`
-(ADR 0042 step 3), and `construction.orders[].placementSequence`
+(ADR 0042 step 3), `construction.orders[].placementSequence`
 ([ADR 0082](./adr/0082-what-order-build-orders-are-carried-out-in.md), #722)
+and `simulation.alerts`
+([ADR 0084](./adr/0084-what-the-alerts-channel-owes-a-player.md), the owner's
+decision of 2026-09-01)
 -- and none of them bumped the schema version. **This sentence read "Six" until
-2026-08-31 and the count is the part of it that rots**; the list is what to
-read. The conditions that make that correct, rather than merely
+2026-08-31 and "Seven" until 2026-09-01, and the count is the part of it that
+rots**; the list is what to read. The conditions that make that correct, rather than merely
 convenient, are:
 
 - **The field is optional, and absent means what the older build already
@@ -628,58 +631,118 @@ work are not.**
   `identity` arrived — which is why this entry is about what it would *buy*
   rather than what it would cost. Also recorded in
   `docs/HUD_PROJECTIONS.md` gap 33.
-- **`SimulationEventLog`** (`SimulationRuntime.events`, #507). What the prison
-  just did — a sentence that ended, a payday it could not meet, a prisoner
-  moved into a bed that exists after the player took theirs away
-  ([ADR 0076](./adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
-  decision A(i)) — published on `simulation/event` and rendered on the events
-  band and in the alerts list.
-  Excluded on `RefusalLog`'s reasoning above and one addition of its own: an
-  event is a statement that something happened *now*, so a loaded prison
-  announcing last week's discharges would be describing a tick the player is
-  not looking at, and this channel has no dismissal either.
-  What makes the exclusion cost nothing is that the *conditions* behind the
-  events are persisted independently. Arrears are carried in
-  `simulation.payroll.unpaidWagesMinorUnits` ([ADR 0049](./adr/0049-what-a-prison-that-cannot-make-payroll-owes.md),
-  "arrears are *history*"), so a restored prison that is still broke says so
-  again at its next payday rather than replaying the one before the save;
-  sentence ticks are carried in the prisoner component arrays, so a sentence
-  that ends after a load is announced when it ends. The log is therefore
-  derivable-forward rather than lost.
-  ADR 0076's relocation notice is the one member where the *outcome* rather
-  than the condition is what persists — the resident's new accommodation is in
-  the save — so a restored prison has nothing to re-announce and nothing to
-  say: the move already happened and the player was told at the time, or the
-  session it happened in has gone.
-  **#703 ruling 13's `contraband.discovered` is a second member on the
-  relocation notice's terms rather than the arrears'**, and it needs no
-  argument of its own: the *outcome* is what the save carries. The item is
-  `'confiscated'` in `simulation.contraband.items`, the evidence is in
-  `simulation.contraband.confiscations`, and the figure the status chip reads is
-  `...search.metrics.itemsDiscovered` — so a restored prison has nothing to
-  re-announce and says nothing, exactly as it says nothing about a relocation
-  that already happened. No field is added anywhere for it and
-  `SAVE_SCHEMA_VERSION` does not move; the event exists only on the wire and in
-  the unsnapshotted log.
+- **`SimulationEventLog`** (`SimulationRuntime.events`, #507). **No longer
+  excluded since 2026-09-01: the alerts log is in the payload, as an optional
+  `simulation.alerts` section**
+  ([ADR 0084](./adr/0084-what-the-alerts-channel-owes-a-player.md), the owner's
+  decision 3 of that day). The entry below is kept in full rather than deleted,
+  because everything it argues is still true of the *events band* and is the
+  reason a restored record announces nothing, and because a correction is no
+  more durable than the claim it corrected
+  (`docs/AGENT_WORKFLOW.md` section 4).
 
-  **The incident events of issue #555 are the one member of the channel this
-  argument holds less neatly for, and it is worth stating rather than
-  discovering.** `IncidentLog` *is* persisted, so an incident that was open
-  when the save was taken is open again on load — but its
-  `incidents.riot-opened` was not, and nothing re-announces an opening that
-  already happened. What the restored player has is the status strip's
-  incidents badge, which names the kind (issue #506 finding 2) and is a level
-  rather than an occurrence, so it does carry across a save; and, when the
-  restored incident reaches a terminal state, `incidents.all-clear` — and, if
-  that terminal state is a lapsed escape attempt,
-  `incidents.escape-succeeded` naming the prisoner who got out (#683). So the
-  sequence a restored session shows is the end of an incident it never
-  announced the start of. That is a smaller version of the same shape the
-  arrears case has, and the same reasoning covers it: the *condition* is on
-  screen throughout, and only the sentence marking the moment is missing.
-  Asserted rather than described: `tests/integration/sentence-end-release.test.ts`
-  saves a prison that has just released somebody and requires the restored one
-  to announce nothing. Also recorded in `docs/HUD_PROJECTIONS.md` gap 33.
+  What changed is the separation of two surfaces this entry treated as one. The
+  **band** carries what just happened, and a restored record did not; the
+  **log** is what a player scrolls back through, and the owner decided they
+  keep it. So the records come back and are republished with `restored: true`,
+  which rebuilds the list and is ignored by the band -- the "loaded prison
+  announcing last week's discharges" this entry refuses is still refused.
+
+  What the section carries: the retained buffer (at most
+  `MAX_BUFFERED_SIMULATION_EVENTS` records), the ordinals of the rows a player
+  dismissed, and the log's own sequence counter, which must not rewind or two
+  different facts would share a row identity. **No `SAVE_SCHEMA_VERSION`
+  bump**, under the "Adding an optional field without a version bump" rule
+  above: absence is unambiguous as a fact about the corpus, because no build
+  that wrote a save could record a log at all, and every one of those saves
+  restored to exactly the empty log an absent section restores to now.
+
+  **The dismissals are in the save for a reason worth stating separately**, and
+  it is why the owner's decisions 2 and 3 could not have been built apart: a row
+  a player retired that came back on the next load would make the two undo one
+  another, and the only place a fact can be put to survive a load is this
+  payload.
+
+  **What is bounded rather than complete.** The buffer keeps the newest 64
+  records and the alerts list keeps eight rows chosen by *severity*, so a
+  `danger` row the live list had kept whose record had already left the buffer
+  is gone across a reload. That is a real limit of carrying the log rather than
+  the rows: the rows are on the main thread, and the main thread contributes
+  nothing to a save.
+
+  **`RefusalLog` above is unchanged and stays out of the payload.** The owner
+  ruled on this log and not on that one, and the two stop being siblings in this
+  one respect.
+
+  **One clause of the kept entry is false rather than narrowed**, and it is
+  named here so a reader does not have to spot it: *"this channel has no
+  dismissal either"*. It has one since the same day -- the owner's decision 2 --
+  and the dismissals are part of what this section carries. The clause was one
+  of the two legs the exclusion stood on, which is why removing it is part of
+  what the ruling did rather than a detail.
+
+  **The test the kept entry names still exists and now asserts both halves.**
+  `tests/integration/sentence-end-release.test.ts` saved a prison that had just
+  released somebody and required the restored one to announce nothing; it now
+  requires the restored one to *carry the record* and still announce nothing,
+  which is the property that could have been lost by accident and is the reason
+  that test was re-pinned rather than replaced.
+
+  The entry as it stood:
+
+  > What the prison
+  > just did — a sentence that ended, a payday it could not meet, a prisoner
+  > moved into a bed that exists after the player took theirs away
+  > ([ADR 0076](./adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+  > decision A(i)) — published on `simulation/event` and rendered on the events
+  > band and in the alerts list.
+  > Excluded on `RefusalLog`'s reasoning above and one addition of its own: an
+  > event is a statement that something happened *now*, so a loaded prison
+  > announcing last week's discharges would be describing a tick the player is
+  > not looking at, and this channel has no dismissal either.
+  > What makes the exclusion cost nothing is that the *conditions* behind the
+  > events are persisted independently. Arrears are carried in
+  > `simulation.payroll.unpaidWagesMinorUnits` ([ADR 0049](./adr/0049-what-a-prison-that-cannot-make-payroll-owes.md),
+  > "arrears are *history*"), so a restored prison that is still broke says so
+  > again at its next payday rather than replaying the one before the save;
+  > sentence ticks are carried in the prisoner component arrays, so a sentence
+  > that ends after a load is announced when it ends. The log is therefore
+  > derivable-forward rather than lost.
+  > ADR 0076's relocation notice is the one member where the *outcome* rather
+  > than the condition is what persists — the resident's new accommodation is in
+  > the save — so a restored prison has nothing to re-announce and nothing to
+  > say: the move already happened and the player was told at the time, or the
+  > session it happened in has gone.
+  > **#703 ruling 13's `contraband.discovered` is a second member on the
+  > relocation notice's terms rather than the arrears'**, and it needs no
+  > argument of its own: the *outcome* is what the save carries. The item is
+  > `'confiscated'` in `simulation.contraband.items`, the evidence is in
+  > `simulation.contraband.confiscations`, and the figure the status chip reads is
+  > `...search.metrics.itemsDiscovered` — so a restored prison has nothing to
+  > re-announce and says nothing, exactly as it says nothing about a relocation
+  > that already happened. No field is added anywhere for it and
+  > `SAVE_SCHEMA_VERSION` does not move; the event exists only on the wire and in
+  > the unsnapshotted log.
+  >
+  > **The incident events of issue #555 are the one member of the channel this
+  > argument holds less neatly for, and it is worth stating rather than
+  > discovering.** `IncidentLog` *is* persisted, so an incident that was open
+  > when the save was taken is open again on load — but its
+  > `incidents.riot-opened` was not, and nothing re-announces an opening that
+  > already happened. What the restored player has is the status strip's
+  > incidents badge, which names the kind (issue #506 finding 2) and is a level
+  > rather than an occurrence, so it does carry across a save; and, when the
+  > restored incident reaches a terminal state, `incidents.all-clear` — and, if
+  > that terminal state is a lapsed escape attempt,
+  > `incidents.escape-succeeded` naming the prisoner who got out (#683). So the
+  > sequence a restored session shows is the end of an incident it never
+  > announced the start of. That is a smaller version of the same shape the
+  > arrears case has, and the same reasoning covers it: the *condition* is on
+  > screen throughout, and only the sentence marking the moment is missing.
+  > Asserted rather than described: `tests/integration/sentence-end-release.test.ts`
+  > saves a prison that has just released somebody and requires the restored one
+  > to announce nothing. Also recorded in `docs/HUD_PROJECTIONS.md` gap 33.
+
 - **Storage backend, compression algorithm, encryption.** Out of scope per
   issue #18; see "Size hook" below for the one hook this schema does provide.
 

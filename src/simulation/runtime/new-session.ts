@@ -204,13 +204,23 @@ export interface SimulationRuntime {
    */
   readonly refusals: RefusalLog;
   /**
-   * What the prison has just done, for `simulation/event` to carry (#507).
+   * What the prison has just done, for `simulation/event` to carry (#507), and
+   * which of it a player has already read
+   * ([ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md),
+   * the owner's decisions of 2026-09-01).
    *
-   * Not snapshotted, for the reason `refusals` above is not: see
-   * `SimulationEventLog`, which states it in full. The two logs are siblings
-   * in every respect except shape -- one holds the latest of a level, this
-   * holds a bounded queue of occurrences -- and the difference is a property
-   * of the channels they leave by, not of the sessions they belong to.
+   * **Snapshotted, since 2026-09-01, and `refusals` above is not.** This read
+   * *"Not snapshotted, for the reason `refusals` above is not"*, and the rest
+   * of that sentence is kept because it is still the best short account of how
+   * the two differ: *"The two logs are siblings in every respect except shape
+   * -- one holds the latest of a level, this holds a bounded queue of
+   * occurrences -- and the difference is a property of the channels they leave
+   * by, not of the sessions they belong to."* What the owner decided is that
+   * the queue of occurrences is a **log a player scrolls back through** and
+   * should survive a reload, while nobody has ruled on the refusal; so the
+   * siblings part is now false of persistence and true of everything else.
+   * `SimulationEventLog` states it in full, including why a restored record
+   * rebuilds the list without announcing anything.
    */
   readonly events: SimulationEventLog;
   /**
@@ -520,11 +530,18 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
 
   /*
    * Issue #507's route out for what the prison did when nothing went wrong --
-   * the third of ADR 0003 decision 2's families to get a producer. Empty for a
-   * new session and for a restored one alike, exactly like `refusals` below and
-   * for the reason `SimulationEventLog` states: an event says something
-   * happened *now*, so replaying one from before a save would be a statement
-   * about a tick the player is not looking at.
+   * the third of ADR 0003 decision 2's families to get a producer.
+   *
+   * **This said it is "empty for a new session and for a restored one alike,
+   * exactly like `refusals` below", and half of that is no longer true.** It is
+   * empty for a new session; a restored one comes back holding what the save
+   * carried, which is the owner's decision of 2026-09-01 on ADR 0084 --
+   * `restoreSessionSystems` loads it, and this line only ever builds the empty
+   * one a fresh runtime starts from. The reason the old sentence gave is kept
+   * because it is still why a restored record is not *announced*: an event says
+   * something happened *now*, so replaying one from before a save onto the
+   * events band would be a statement about a tick the player is not looking at.
+   * `refusals` below is unchanged and is still empty on a restore.
    *
    * Constructed this far up because `PrisonerOperationsRuntime` needs it in the
    * very next statement -- `PrisonerDischargeSystem` is one of its two
@@ -670,7 +687,9 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    */
   // Issue #261's route out for a command the simulation accepts and then
   // refuses on its content. Empty for a new session and for a restored one
-  // alike -- it is not snapshotted.
+  // alike -- it is not snapshotted. (That is still true of *this* log. The
+  // events log beside it stopped being unsnapshotted on 2026-09-01, ADR 0084;
+  // the owner ruled on that one and not on this one.)
   //
   // **Constructed here rather than below `stateIncome`, which is where it used
   // to sit** (#640): the construction system's sixth argument withdraws a
@@ -1347,7 +1366,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(searchSystem);
   kernel.registerSystem(incidentResponseSystem);
   kernel.setCommandHandler(
-    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, objectPlacement, guardRelease, staffDismissal, refusals),
+    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, objectPlacement, guardRelease, staffDismissal, refusals, events),
   );
 
   return {

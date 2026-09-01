@@ -442,7 +442,20 @@ test.describe('the alerts list says what a search found (#703 ruling 13)', () =>
       if (next !== undefined && next !== 'none') notice = next;
     }
     if (notice === undefined) throw new Error('the band was given nothing to say');
-    expect(alerts.length).toBe(discoveries.length);
+    /*
+     * **One row, however many finds of the same category there were.**
+     *
+     * This read `expect(alerts.length).toBe(discoveries.length)` until the
+     * owner's decisions of 2026-09-01 on
+     * [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md),
+     * and it was measuring the right thing at the time: every discovery reaches
+     * the list. It still does -- what changed is that discoveries saying the
+     * *same sentence* are one row that counts them, so the assertion is now on
+     * the count rather than on the row tally. Both directions are checked, so a
+     * find that went missing entirely still fails here.
+     */
+    expect(alerts.length, 'one sentence, one row').toBe(1);
+    expect(alerts[0]?.occurrences?.count, 'and every discovery is counted on it').toBe(discoveries.length);
 
     await page.goto(HARNESS_URL);
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());

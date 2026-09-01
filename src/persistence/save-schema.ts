@@ -5,9 +5,11 @@ import {
   identifierSchema,
   jsonValueSchema,
   sequenceSchema,
+  simulationEventSchema,
   tickSchema,
   uint32Schema,
 } from '../simulation/protocol/types';
+import { MAX_BUFFERED_SIMULATION_EVENTS } from '../simulation/events/event-log';
 import { MAX_PURCHASE_QUANTITY } from '../simulation/economy';
 import { NEED_MAX_SCALED } from '../simulation/prisoners/needs';
 import { WORLD_CHUNK_SIZE_LIMIT } from '../simulation/world/coordinates';
@@ -580,6 +582,48 @@ const placedObjectSchema = z
 const objectsSectionSchema = z
   .object({
     placedObjects: z.array(placedObjectSchema),
+  })
+  .strict();
+
+/**
+ * The alerts log the player scrolls back through (the owner's decision 4 of
+ * 2026-09-01 on
+ * [ADR 0084](./adr/0084-what-the-alerts-channel-owes-a-player.md)).
+ *
+ * **Added to V5 rather than bumping to V6**, under the rule
+ * `docs/PERSISTENCE.md` states at "Adding an optional field without a version
+ * bump" and `masterSeed` and `objects` are already instances of: it is
+ * optional, and its absence is unambiguous as a fact about the corpus rather
+ * than by convention -- no build that wrote a save before this change could
+ * record an alerts log, because nothing snapshotted one, and every one of
+ * those saves restored to exactly what an absent section means here, an empty
+ * log. So no migration step is added, and `SAVE_SCHEMA_VERSION` does not move.
+ * ADR 0084 predicted this in its Consequences and said to record it so a
+ * future implementer does not re-litigate it; this is that record, and it was
+ * re-checked against ADR 0038 section 1 and `docs/PERSISTENCE.md:69-92` rather
+ * than taken from the ADR.
+ *
+ * The cost of not bumping is the one `masterSeed` records: an **older** build
+ * reading a save that carries this key refuses it as `invalid-shape` where a
+ * V6 bump would have said `unsupported-version`. Both refuse; only the label
+ * differs.
+ *
+ * `simulationEventSchema` is the protocol's own union rather than a copy
+ * declared here. A second shape for the same records would be a window the
+ * moment an event type gains a field -- the argument `PurchaseMaterials` makes
+ * in `commands.ts` about two boundaries disagreeing, which cost this
+ * repository an intermittent unreproducible save failure once already.
+ *
+ * `records` is bounded here as well as in the log, and by the same constant:
+ * a payload that arrived with ten thousand records would otherwise be restored
+ * into a buffer that `SimulationEventLog.append` only trims on the next
+ * *append*, so a session that recorded nothing more would hold it for ever.
+ */
+const alertsSectionSchema = z
+  .object({
+    sequence: sequenceSchema,
+    records: z.array(simulationEventSchema).max(MAX_BUFFERED_SIMULATION_EVENTS),
+    dismissed: z.array(sequenceSchema).max(MAX_BUFFERED_SIMULATION_EVENTS),
   })
   .strict();
 
@@ -1196,9 +1240,21 @@ const sessionSystemsShapeFor = <RoomInstance extends z.ZodTypeAny>(
 const sessionSystemsV3Schema = z.object(sessionSystemsShapeFor(NEED_LEVEL_MAX_V3, roomInstanceSchemaV4)).strict();
 /** Frozen historical shape: scaled needs (#259), authored room capacity, no objects section. */
 const sessionSystemsV4Schema = z.object(sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV4)).strict();
-/** Current shape: room instances carry their rectangle and no derived fields, and placed objects have a section (ADR 0028). */
+/**
+ * Current shape: room instances carry their rectangle and no derived fields,
+ * placed objects have a section (ADR 0028), and the alerts log has one (ADR
+ * 0084, the owner's decision 4 of 2026-09-01).
+ *
+ * Both extra sections are optional and both are added *here* rather than in
+ * `sessionSystemsShapeFor` above, which is what keeps the V3 and V4 shapes
+ * frozen: a save written by one of those builds is still exactly what it was.
+ */
 const sessionSystemsV5Schema = z
-  .object({ ...sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV5), objects: objectsSectionSchema.optional() })
+  .object({
+    ...sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV5),
+    objects: objectsSectionSchema.optional(),
+    alerts: alertsSectionSchema.optional(),
+  })
   .strict();
 
 // --- Envelope ---

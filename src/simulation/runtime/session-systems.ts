@@ -15,6 +15,7 @@ import type { IncidentLog } from '../incidents/incident';
 import type { IncidentResponseSystem } from '../incidents/response-system';
 import type { SectorRiskTracker } from '../incidents/sector-risk';
 import type { IncidentTriggerSystem } from '../incidents/trigger-system';
+import type { SimulationEventLogSnapshot } from '../events/event-log';
 import type { DoorDefinition } from '../navigation/door';
 import { Container } from '../operations/inventory';
 import type { CarryItemJob } from '../operations/job';
@@ -334,6 +335,32 @@ export interface EncodedSessionSystems {
    * `capacity` off a room instance.
    */
   readonly objects?: EncodedObjects;
+  /**
+   * The alerts log the player scrolls back through (the owner's decision 4 of
+   * 2026-09-01 on
+   * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
+   *
+   * **Optional, and absence means "this save does not know"** -- which is what
+   * every save written before this change meant, because no such build
+   * snapshotted the log at all, and every one of them restored to the empty
+   * log an absent section restores to now. That is the optional-field pattern
+   * `docs/PERSISTENCE.md` describes, on its own stated condition, so
+   * `SAVE_SCHEMA_VERSION` stays at 5 and no migration step is added, exactly
+   * as for `objects` above and `economy.payroll` below.
+   *
+   * **Why it is in the save at all, having twice been argued out of it.**
+   * `SimulationEventLog`'s docblock and `docs/PERSISTENCE.md` both argued the
+   * exclusion, and both were right about the *band*: an event is a statement
+   * that something happened now. What the owner decided is that the **log** is
+   * a different surface from the band -- it is what a player scrolls back
+   * through -- so the records come back and are replayed with `restored: true`,
+   * which rebuilds the list and announces nothing. Both documents are
+   * corrected rather than quietly contradicted.
+   *
+   * It also carries the dismissals, and it has to: a row a player retired that
+   * came back on the next load would make the owner's decisions 3 and 4 fight.
+   */
+  readonly alerts?: SimulationEventLogSnapshot;
 }
 
 export interface EncodedObjects {
@@ -624,6 +651,11 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     // know -- the same distinction `migrateSaveEnvelopeV2ToV3` draws for the
     // `simulation` section itself.
     objects: { placedObjects: runtime.placedObjects.getSnapshot() },
+    // Emitted unconditionally by a live capture, empty buffer and all, on the
+    // same terms as `objects` above: a session that has had nothing to say
+    // writes an empty log, which says "this prison has said nothing", where an
+    // *absent* section says "this save does not know".
+    alerts: runtime.events.getSnapshot(),
     incidents: {
       log: runtime.incidents.getSnapshot(),
       sectorRisk: runtime.sectorRisk.getSnapshot(),
@@ -918,4 +950,22 @@ export function restoreSessionSystems(
    *    value rather than a throw (ADR 0038 §1).
    */
   applyDefaultSearchPolicies(runtime.searchPolicies);
+
+  /*
+   * 10. The alerts log the session had said, so the player gets it back (the
+   *     owner's decision 4 of 2026-09-01 on
+   *     [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
+   *
+   *     Last, and order-free: nothing else in this function reads the log and
+   *     nothing the log holds is consulted by any restore step, because these
+   *     are records of what was *said* rather than state anything is derived
+   *     from. It is placed here rather than in step 1 for that reason -- a
+   *     reader looking for the ordering constraints of a restore does not have
+   *     to consider it at all.
+   *
+   *     Absent means an empty log, which is what every save written before this
+   *     change restored to. Nothing is fabricated for one: a prison that came
+   *     back saying nothing is exactly what those saves recorded.
+   */
+  if (systems.alerts !== undefined) runtime.events.loadSnapshot(systems.alerts);
 }

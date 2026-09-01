@@ -498,27 +498,63 @@ describe('a sentence that ends says so (#507)', () => {
   });
 
   /**
-   * A restored prison does not re-announce a release the player has already
-   * read.
+   * A restored prison gets its log back, and still announces nothing.
    *
-   * This is the persistence decision, asserted rather than described: the event
-   * log is not snapshotted, so a save carries no event history and a load
-   * announces nothing. The *conditions* behind events do persist -- arrears are
-   * in the save (ADR 0049) -- which is what makes this a formatting decision
-   * the save never has to see rather than a fact the player loses.
+   * **This test asserted the opposite until the owner's decision of 2026-09-01
+   * on [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)**
+   * -- the log survives a reload -- and the sentence it was written for is kept
+   * rather than deleted, because half of it is still exactly what is asserted
+   * below:
+   *
+   * > A restored prison does not re-announce a release the player has already
+   * > read.
+   * >
+   * > This is the persistence decision, asserted rather than described: the
+   * > event log is not snapshotted, so a save carries no event history and a
+   * > load announces nothing. The *conditions* behind events do persist --
+   * > arrears are in the save (ADR 0049) -- which is what makes this a
+   * > formatting decision the save never has to see rather than a fact the
+   * > player loses.
+   *
+   * What the owner changed is the *first* clause: the save does carry the log
+   * now, because the log is the surface a player scrolls back through and they
+   * asked to keep it. What is unchanged is the second: a load still announces
+   * nothing, because the record is replayed with `restored: true` and the
+   * events band ignores those. Both halves are asserted here, which is the
+   * whole reason this test is re-pinned rather than replaced -- the property it
+   * was protecting is the one that could have been lost by accident.
    */
-  it('does not replay a release across a save', () => {
+  it('gets a release back across a save without re-announcing it', () => {
     const runtime = twoCellPrison();
     const prisoner = admit(runtime, 'admit-before-save');
     housedIn(runtime, prisoner);
     const endTick = runtime.prisoners.records.sentenceEndTick[runtime.prisoners.entityStore.getIndex(prisoner)]!;
     stepTo(runtime, endTick + 20);
-    expect(runtime.events.since(0).length, 'the release must have been announced before the save').toBe(1);
+    const announced = runtime.events.since(0);
+    expect(announced.length, 'the release must have been announced before the save').toBe(1);
 
     const restored = saveAndLoad(runtime);
+    const carried = restored.events.since(0);
+    expect(carried, 'the log the player was reading comes back exactly as it was').toEqual(announced);
+
+    // And the band is still silent about it. The worker marks a replayed
+    // record on the wire (`SimulationWorkerStateMachine` sets `restored` from
+    // the log's count at restore, pinned end to end in
+    // `tests/contract/worker-snapshot-roundtrip.test.ts`); this is the other
+    // half of that contract, read by the translator the HUD actually uses.
+    const replay = workerToMainMessageSchema.parse({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: '00000000-0000-4000-8000-000000000084',
+      kind: 'simulation/event',
+      payload: { tick: restored.kernel.tick, event: carried[0]!, restored: true },
+    }) as WorkerToMainMessage;
     expect(
-      restored.events.since(0),
+      hudEventNoticeFromWorkerMessage(replay),
       'a loaded prison must not announce a release that happened before the save -- the player has already read it, and the tick it names is not the one they are looking at',
-    ).toEqual([]);
+    ).toBeUndefined();
+    // The log, though, is rebuilt: that is the decision.
+    expect(hudEventAlertsFromWorkerMessage(replay, [])?.map((row) => row.labelKey)).toEqual([
+      'hud.alert.event.prisoners.discharged',
+    ]);
   });
 });
