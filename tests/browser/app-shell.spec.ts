@@ -4846,9 +4846,54 @@ test.describe('the assembled application', () => {
       if (panel !== null) panel.scrollTop = 0;
     });
     expect(await deliveries.boundingBox(), 'an empty deliveries block kept its box').toBeNull();
-    expect(await geometry(), 'the panel did not return to its arrival geometry once nothing was on its way').toEqual(
-      before,
+
+    /*
+     * **The identity above is no longer the whole story, as of #749.** The
+     * `Cancel` pressed earlier in this test is one of the four presses that
+     * issue put a success sentence on `.hud__event` for, and `hud.ts`'s
+     * `applyEventNotice` documents that band as never auto-dismissing: it
+     * "is replaced by the next event or emptied when the session ends", and
+     * nothing that happens between the cancel and here -- the remaining
+     * deliveries landing, the fold opening and shutting again -- is either.
+     * So the band is still showing "The delivery was cancelled -- {total}
+     * back." at the point this test measures its final geometry, and that
+     * is a fourth row `.hud` (`grid-template-rows: auto auto auto auto
+     * minmax(0, 1fr) auto`) never had to give space to at the top of this
+     * test, where nothing had happened yet.
+     *
+     * Asserted directly, so the arithmetic below is traceable to its cause
+     * rather than four re-pinned numbers a reader has to take on faith.
+     */
+    const event = page.locator('.hud__event');
+    await expect(event, 'the cancellation this test drove should still be the band`s last word').toBeVisible();
+    await expect(event).toHaveAttribute('data-severity', 'info');
+    await expect(event).toHaveText(
+      localeText('hud.alert.event.economy.delivery-cancelled').replace('{total}', fundsText(refundOf)),
     );
+
+    /*
+     * The band is an `auto` row and everything below it shares the grid's one
+     * `minmax(0, 1fr)` row, so 24px of band is 24px the Build panel's own box
+     * no longer has: `panelHeight` and `foldSlack` both fall by exactly that
+     * (338.1 -> 314.1, 7.8 -> -16.2 -- the last section now sits 16.2px past
+     * the fold), and because the panel's *content* did not shrink to match,
+     * `panelOverflow` opens up by the same 24px it used to be flush at. Every
+     * other field -- both catalogue figures, the body's own content height,
+     * the last section's text, the scroll position -- is untouched, which is
+     * the rest of the #703 identity still holding: this block still donates
+     * nothing of its own, on top of or under the fold.
+     */
+    expect(await geometry(), 'the panel did not return to its arrival geometry once nothing was on its way').toEqual({
+      panelHeight: 314.1,
+      panelOverflow: 24,
+      panelScrollTop: before?.panelScrollTop,
+      bodyHeight: before?.bodyHeight,
+      bodyContent: before?.bodyContent,
+      listHeight: before?.listHeight,
+      listContent: before?.listContent,
+      lastText: before?.lastText,
+      foldSlack: -16.2,
+    });
   });
 
   /**
