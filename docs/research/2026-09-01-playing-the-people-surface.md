@@ -3,7 +3,8 @@
 **Date:** 2026-09-01
 **Branch:** `docs/playtest-people-2026-09-01`, cut from `origin/main` at
 **v0.0.341** (`5cc6227b`). The strip's own version line confirms this
-throughout the run (`v0.0.341 · <commit>`, the commit moving with each of this
+throughout the run (the strip renders `v<version> · <commit>`, and the commit
+moved with each of this
 branch's own commits as the instrument was fixed forward).
 
 **Surface:** residents, staff, risk classification, guard deployment and
@@ -402,7 +403,8 @@ research pass the same day
 (`2026-09-01-what-the-funds-chip-promises.md`, §"D1"), played against
 `v0.0.323`, quoted the hire refusal's host-side sentence as *"Nobody was
 hired — that would go past what the state will carry."* This pass, against
-`v0.0.341`, reads a different sentence for the same `HostRefusalError` path —
+`v0.0.341` (`5cc6227b`), reads a different sentence for the same
+`HostRefusalError` path —
 *"Nobody was hired — hiring is refused until the state pays what it owes."*
 **Both are correct readings of their own commit.**
 `src/content/default-locale-en.ts:1082-1083`'s own comment names the reason:
