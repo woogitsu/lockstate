@@ -696,6 +696,34 @@ floor, so a prison at −1,300 that had already had a delivery and a hire refuse
 still painted amber. It now paints `danger` from the deliveries rung down,
 which is where the cheapest press stops changing the outcome.
 
+**d. The badge's words were measured and are *not* shipped, which is a result
+rather than a gap.** The owner chose `{remaining} left before deliveries stop`
+for the re-based figure, on the condition that the badge be measured first —
+no measurement of it existed anywhere in this repository. It was measured, in
+`tests/browser/ui-overdraft-badge.spec.ts`, on a populated prison at 1280x800
+with the treasury floor at −2,500:
+
+| wording | balance | badge | FUNDS chip | row client / scroll | FUNDS chip visible |
+| --- | --- | --- | --- | --- | --- |
+| `{remaining} left` | −1,300 | 46.95px | 125.77px | 1256 / 1262 | yes |
+| `{remaining} left` | −1 | 73.20px | 150.97px | 1256 / 1287 | yes |
+| `{remaining} left before deliveries stop` | −1,300 | 179.94px | 258.75px | 1256 / 1395 | yes |
+| `{remaining} left before deliveries stop` | −1 | 206.19px | 283.95px | 1256 / 1420 | **no** |
+
+The sentence never wraps and is never clipped — legibility is not the
+objection. It costs **+133px** of chip width, and at 1280x800 that pushes the
+`FUNDS` chip itself past the right edge of `.hud-strip__metrics` for the whole
+four-digit range of the remainder, on a container whose scrollbar `hud.css`
+suppresses. At 1440x800 it survives except in the every-badge state; at
+1920x800 it fits everywhere.
+
+So `hud.status.funds-remaining` keeps `{remaining} left` byte-for-byte, with
+the measurement recorded beside it in `src/content/default-locale-en.ts` — the
+same treatment §5 gave the four refusal keys while they waited for a ruling.
+The words go back to the owner with the figures. What is **not** waiting is the
+number and the tone under them: §5a(c) shipped, so the badge is true today
+whatever it ends up saying.
+
 
 
 ### 6. Where this is implemented

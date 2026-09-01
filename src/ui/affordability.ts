@@ -149,10 +149,18 @@ export type AffordabilityRefusal = 'past-the-floor' | 'malformed-charge';
  * player-visible figure whose meaning the ruling changes, so it is the owner's
  * under `AGENTS.md`'s fourth exclusion and is reported rather than quietly
  * re-based here."* It was reported, and the owner ruled on 2026-09-01 that the
- * badge is re-based onto this same rung and says so in words. The badge now
- * reads `{remaining} left before deliveries stop` over
- * `deliveriesRungFloorMinorUnits`, so the host's pre-flight and the figure the
- * player reads before pressing are one number.
+ * badge is re-based onto this same rung. It is: `overdraftRemaining` computes
+ * over `deliveriesRungFloorMinorUnits` below, so the host's pre-flight and the
+ * figure the player reads before pressing are one number, and `0 left` and
+ * "the next press is refused" are one fact.
+ *
+ * The badge's *words* are a separate question and are still open. The owner
+ * chose `{remaining} left before deliveries stop` subject to the badge being
+ * measured, `tests/browser/ui-overdraft-badge.spec.ts` measured it, and the
+ * long wording costs +133px of chip and pushes the FUNDS chip off the visible
+ * edge of the metrics row at 1280x800. The incumbent `{remaining} left` ships
+ * until the owner rules on the figures; ADR 0017 "Amendment, 2026-09-01" §5a(d)
+ * carries them.
  */
 export const HOST_PRESS_FLOOR_MINOR_UNITS = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
 

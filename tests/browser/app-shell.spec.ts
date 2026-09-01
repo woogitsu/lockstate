@@ -8049,21 +8049,25 @@ test.describe('the assembled application', () => {
      */
     await expect(page.locator('[data-metric="funds"]')).toHaveAttribute('data-tone', 'warning');
     /*
-     * **The badge counts room to the TREASURY floor, and the purchase above
-     * was refused at the delivery rung 1,250 higher.** Both are deliberate and
-     * they disagree: ruling 18 authored `{remaining} left` against the one
-     * floor that existed then, and ruling 19 then gave each rung its own. So
-     * the chip tells a player how far the state will carry them while the next
-     * press is refused well before that -- which the ADR 0017 amendment names
-     * as owed to the owner rather than fixed here, because closing it means
-     * either new copy or a decision about which number the chip should show.
+     * **The badge counted room to the TREASURY floor and now counts room to the
+     * `'deliveries'` rung, which is the decision this pin existed to catch.**
      *
-     * Asserted against the treasury floor on purpose: this is the pin that
-     * goes red the day somebody changes which floor the badge counts to, and
-     * it should, because that is the decision.
+     * It read: *"Both are deliberate and they disagree: ruling 18 authored
+     * `{remaining} left` against the one floor that existed then, and ruling 19
+     * then gave each rung its own. So the chip tells a player how far the state
+     * will carry them while the next press is refused well before that -- which
+     * the ADR 0017 amendment names as owed to the owner rather than fixed here
+     * ... Asserted against the treasury floor on purpose: this is the pin that
+     * goes red the day somebody changes which floor the badge counts to, and it
+     * should, because that is the decision."*
+     *
+     * The owner took the decision on 2026-09-01 and the pin went red, exactly
+     * as written. It is re-aimed at the same rung `spendable` above is composed
+     * from, so the chip and the press this test just made are now one number:
+     * the purchase spent down to ten short of the rung, and the badge says ten.
      */
     await expect(page.locator('[data-metric="funds"] .ui-badge')).toHaveText(
-      `${fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)} left`,
+      `${fundsText(settled - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS))} left`,
     );
     await expect(page.locator('.hud__refusal')).toBeHidden();
   });

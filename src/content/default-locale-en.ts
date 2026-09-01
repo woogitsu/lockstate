@@ -175,11 +175,29 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // shown as a plain count of the units the simulation holds it in rather
   // than converted into a major unit nobody has chosen yet.
   'hud.status.funds': 'Funds',
-  // How much of the standing overdraft is left, under the balance while it is
+  // How much is left before deliveries stop, under the balance while it is
   // negative (the owner's ruling 18 of 2026-08-31, in the owner's own words).
   // No unit and no currency, for the same reason the label above names none:
   // the number is in the minor units the simulation holds, and the chip's own
   // figure is beside it in the same units.
+  //
+  // **The number under it was re-based on 2026-09-01 and these words were not,
+  // and that is a measurement rather than a preference.** Ruling 19 made
+  // `balance - overdraftFloor` an offer of room no press can spend, so
+  // `overdraftRemaining` (`src/ui/hud/projection.ts`) now states the room to
+  // the `'deliveries'` rung; the owner chose *"{remaining} left before
+  // deliveries stop"* for the words that go with it, on the condition that the
+  // badge was measured first, because no measurement of it had ever existed.
+  // It was measured, in `tests/browser/ui-overdraft-badge.spec.ts`, and it does
+  // not fit: the sentence never wraps and is never clipped, but it costs the
+  // FUNDS chip **+133px**, which pushes that chip off the visible edge of
+  // `.hud-strip__metrics` at 1280x800 whenever the remainder has four digits --
+  // a container whose scrollbar `hud.css` suppresses, so the badge is present
+  // in the DOM and visible to nobody, which #629 says does not count. The
+  // incumbent words keep the chip on screen at that viewport. So this key is
+  // **left byte-for-byte with the reason recorded**, exactly as the four
+  // refusal keys above were left between ruling 19 and the ruling that
+  // replaced them, and the wording goes back to the owner with the numbers.
   'hud.status.funds-remaining': '{remaining} left',
   // What this in-game day has earned so far (#29). The state pays per
   // prisoner-day at the end of the day, so this is the day's accrual and the
