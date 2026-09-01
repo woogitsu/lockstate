@@ -6,6 +6,7 @@ import { SecuritySectorRegistry } from '../../src/simulation/security/sector';
 import { GuardRoster } from '../../src/simulation/security/guard-roster';
 import { DeploymentSystem } from '../../src/simulation/security/deployment-system';
 import { PatrolSystem } from '../../src/simulation/security/patrol-system';
+import { createGuardLocomotionSystem } from '../../src/simulation/security/guard-locomotion';
 import { constantDeploymentSchedule } from '../../src/simulation/security/deployment-schedule';
 
 function buildScenario(cellCount = 12) {
@@ -35,6 +36,7 @@ describe('PatrolSystem: guards loop a defined route through real navigation', ()
 
     const kernel = new Kernel();
     kernel.registerSystem(navigation);
+    kernel.registerSystem(createGuardLocomotionSystem(guards, navigation, deployment, patrol));
     kernel.registerSystem(deployment);
     kernel.registerSystem(patrol);
 
@@ -61,6 +63,7 @@ describe('PatrolSystem: guards loop a defined route through real navigation', ()
 
     const kernel = new Kernel();
     kernel.registerSystem(navigation);
+    kernel.registerSystem(createGuardLocomotionSystem(guards, navigation, deployment, patrol));
     kernel.registerSystem(deployment);
     kernel.registerSystem(patrol);
 
@@ -85,6 +88,7 @@ describe('PatrolSystem: guards loop a defined route through real navigation', ()
 
     const kernel = new Kernel();
     kernel.registerSystem(navigation);
+    kernel.registerSystem(createGuardLocomotionSystem(guards, navigation, deployment, patrol));
     kernel.registerSystem(deployment);
     kernel.registerSystem(patrol);
 
@@ -108,6 +112,7 @@ describe('PatrolSystem: guards loop a defined route through real navigation', ()
 
     const kernel = new Kernel();
     kernel.registerSystem(navigation);
+    kernel.registerSystem(createGuardLocomotionSystem(guards, navigation, deployment, patrol));
     kernel.registerSystem(deployment);
     kernel.registerSystem(patrol);
 

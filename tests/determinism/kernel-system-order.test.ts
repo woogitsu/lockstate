@@ -370,6 +370,17 @@ describe('kernel system ordering', () => {
       { id: 'economy.payroll', order: 130 },
       { id: 'navigation', order: 150 },
       { id: 'prisoners.locomotion', order: 200 },
+      /*
+       * **Inserted right after the prisoner instance** (ADR 0088, answering
+       * ADR 0059 open question 4): both walk the same window, after
+       * navigation and before anything that reads an arrival, and neither
+       * depends on the other -- `LocomotionStore` is one instance per
+       * population, addressed by a different key in each (a component index
+       * for prisoners, an `EntityId` for guards). 201 rather than a shared
+       * 200, because the test below this one requires every declared order in
+       * a real session to be distinct.
+       */
+      { id: 'security.locomotion', order: 201 },
       { id: 'prisoners.actions', order: 250 },
       { id: 'operations.jobs', order: 260 },
       { id: 'contraband.intelligence', order: 265 },

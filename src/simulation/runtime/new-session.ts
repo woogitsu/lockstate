@@ -60,6 +60,7 @@ import { NamedRngStreams } from '../rng/streams';
 import {
   applyDefaultSecuritySector,
   countSectorOccupants,
+  createGuardLocomotionSystem,
   DeploymentSystem,
   GuardReleaseService,
   GuardRoster,
@@ -939,6 +940,17 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     },
   );
   const patrolSystem = new PatrolSystem(securitySectors, securityGuards, navigation);
+  /**
+   * Walks a guard's tile between the one it left and the one it is travelling
+   * to, instead of `continueDeploymentTravel`/`continueLeg` applying the
+   * resolved route in one step (ADR 0088, answering ADR 0059 open question 4
+   * for guards the way ADR 0059 answered it for prisoners). Registered
+   * alongside `deploymentSystem`/`patrolSystem` below, at order 200 -- before
+   * both (270/280), so a walk that finishes on tick *n* is visible to whichever
+   * of them owns it on that same tick, exactly as `LocomotionSystem` is
+   * ordered against `ActionSystem`.
+   */
+  const guardLocomotionSystem = createGuardLocomotionSystem(securityGuards, navigation, deploymentSystem, patrolSystem);
 
   /*
    * Issue #27's contraband/intelligence/search substrate.
@@ -1358,6 +1370,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   prisoners.registerOn(kernel);
   kernel.registerSystem(jobSystem);
   kernel.registerSystem(intelligenceSystem);
+  kernel.registerSystem(guardLocomotionSystem);
   kernel.registerSystem(deploymentSystem);
   kernel.registerSystem(safetyCoverage);
   kernel.registerSystem(patrolSystem);
