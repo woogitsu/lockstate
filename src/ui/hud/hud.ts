@@ -1822,6 +1822,55 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       // is unreachable from it.
       const text = hudAlertRowLabel(t, alert);
       const badge = { tone: severityTone(alert.severity), text: t(severityLabelKey(alert.severity)) };
+      /*
+       * **A row that can be dismissed carries an `x` control** (the owner's
+       * decision 3 of 2026-09-01 on ADR 0084), and only the rows that can be:
+       * a row carrying `occurrences` is one this channel's own producer made,
+       * and the refusal and protocol-fault rows beside it carry none. Their
+       * dismissal is `docs/HUD_PROJECTIONS.md` gap 34 and is not this change.
+       *
+       * **Computed once, here, and applied identically whether `row` below is
+       * about to be created or is being reused** (issue #764). It used to be
+       * computed only inside the create branch, so a row built without
+       * `occurrences` and later reused with them kept whatever the create
+       * branch decided the one time it ran -- no control, forever, however
+       * the row's state changed after that. `alert.occurrences` is read fresh
+       * on every paint, so this is a function of the row's current state
+       * rather than of its construction history, which is the promise ADR
+       * 0084 decision 2 makes and the fix this issue asked for.
+       *
+       * **A control of its own rather than the whole row, which overrides
+       * `createListRow`'s general rule for this row and does so deliberately.**
+       * That rule -- *"the entire row, not a small chevron at its end, because
+       * a row is the tap target on a touch screen"* -- is right where pressing
+       * a row selects something. Here it writes a mark into the save and there
+       * is no undo, so the owner ruled for the smaller target with that cost in
+       * front of them: a mis-tap that cannot be reversed is worse than a
+       * control a finger has to find. `ListRow.setAction` carries the argument
+       * at the primitive.
+       *
+       * **What it costs the sentence beside it is real and is recorded rather
+       * than absorbed.** `.ui-row__label` in this list measures 88px (#720);
+       * a `--tap-target` control and its gap take 52px of that, leaving about
+       * 36px. See `hud-alerts__list` in `hud.css` for the arithmetic and for
+       * what would have to give.
+       *
+       * Not gated and not marked as a command control: see the intent's own
+       * comment on `HudIntent` for why a dismissal has no refusal to paint
+       * and nothing to serialise against.
+       */
+      const dismissible = alert.occurrences !== undefined;
+      const dismissAction = dismissible
+        ? {
+            icon: 'dismiss' as const,
+            label: dismissLabel,
+            onActivate: () => {
+              const intent: HudIntent = { kind: 'dismiss-alert', rowId: alert.id };
+              runReported(intent.kind, () => options.onIntent?.(intent), reportError);
+            },
+          }
+        : undefined;
+
       const existing = alertRows.get(alert.id);
       let row = existing;
       if (row === undefined) {
@@ -1840,65 +1889,21 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
          * item name -- the part rulings 3 and 13 of #703 added the sentence
          * for -- was always the part cut.
          */
-        /*
-         * **A row that can be dismissed carries an `x` control** (the owner's
-         * decision 3 of 2026-09-01 on ADR 0084), and only the rows that can be:
-         * a row carrying `occurrences` is one this channel's own producer made,
-         * and the refusal and protocol-fault rows beside it carry none. Their
-         * dismissal is `docs/HUD_PROJECTIONS.md` gap 34 and is not this change.
-         *
-         * **A control of its own rather than the whole row, which overrides
-         * `createListRow`'s general rule for this row and does so deliberately.**
-         * That rule -- *"the entire row, not a small chevron at its end, because
-         * a row is the tap target on a touch screen"* -- is right where pressing
-         * a row selects something. Here it writes a mark into the save and there
-         * is no undo, so the owner ruled for the smaller target with that cost in
-         * front of them: a mis-tap that cannot be reversed is worse than a
-         * control a finger has to find. `ListRowOptions.action` carries the
-         * argument at the primitive.
-         *
-         * **What it costs the sentence beside it is real and is recorded rather
-         * than absorbed.** `.ui-row__label` in this list measures 88px (#720);
-         * a `--tap-target` control and its gap take 52px of that, leaving about
-         * 36px. See `hud-alerts__list` in `hud.css` for the arithmetic and for
-         * what would have to give.
-         *
-         * Not gated and not marked as a command control: see the intent's own
-         * comment on `HudIntent` for why a dismissal has no refusal to paint
-         * and nothing to serialise against.
-         */
-        const dismissible = alert.occurrences !== undefined;
-        row = createListRow({
-          icon: 'incident',
-          label: text,
-          badge,
-          wrap: true,
-          ...(dismissible
-            ? {
-                action: {
-                  icon: 'dismiss',
-                  label: dismissLabel,
-                  onActivate: () => {
-                    const intent: HudIntent = { kind: 'dismiss-alert', rowId: alert.id };
-                    runReported(intent.kind, () => options.onIntent?.(intent), reportError);
-                  },
-                },
-              }
-            : {}),
-        });
+        row = createListRow({ icon: 'incident', label: text, badge, wrap: true });
         row.element.dataset['alert'] = alert.id;
-        // So a browser test can tell the two families apart without reading an
-        // id prefix, which is `src/ui/simulation-*.ts`'s vocabulary and not the
-        // HUD's.
-        if (dismissible) row.element.dataset['alertDismissible'] = 'true';
         alertRows.set(alert.id, row);
       } else {
         row.setLabel(text);
         row.setBadge(badge);
-        // Re-resolved with the sentence beside it, so a locale change moves the
-        // control's name too. A no-op on a row that has no control.
-        row.setActionLabel(dismissLabel);
       }
+      row.setAction(dismissAction);
+      // So a browser test can tell the two families apart without reading an
+      // id prefix, which is `src/ui/simulation-*.ts`'s vocabulary and not the
+      // HUD's. Set or cleared every paint alongside the control itself, for
+      // the same reason `setAction` above is: a row that lost its control on
+      // a reuse must not keep the flag claiming it still has one.
+      if (dismissible) row.element.dataset['alertDismissible'] = 'true';
+      else delete row.element.dataset['alertDismissible'];
 
       // The drawn order is `viewModel.alerts`'s order, re-established on every
       // paint. Appending a new row instead put the list in *first-seen* order,
