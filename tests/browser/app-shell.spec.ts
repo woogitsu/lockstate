@@ -7,7 +7,11 @@ import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
 import { SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
 import { TILE_SIZE_PX } from '../../src/rendering/tile-metrics';
 import { defaultMessageCatalogEn, formatNumber } from '../../src/services/localization';
-import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
+import {
+  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  TREASURY_STARTING_BALANCE_MINOR_UNITS,
+  rungFloorMinorUnits,
+} from '../../src/simulation/economy';
 import { HUD_TAB_IDS, PRISONER_ROSTER_ROW_LIMIT, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
 
 /**
@@ -7864,7 +7868,16 @@ test.describe('the assembled application', () => {
     // is `balance - amount >= floor`, so the affordability boundary this test
     // straddles is the balance *plus* the facility. Derived rather than
     // written out, so it moves with either constant.
-    const spendable = TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
+    //
+    // **And the floor a purchase meets is no longer the treasury's** (ruling
+    // 19, 2026-09-01): a purchase is a `'deliveries'` spend, refused at that
+    // rung's own threshold, which sits 1,250 above the treasury floor. This
+    // line read `TREASURY_STARTING_BALANCE_MINOR_UNITS -
+    // TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` until then, and the sentence above
+    // it is kept because that is still what a *prison* can spend -- it is only
+    // no longer what a *delivery* may.
+    const spendable =
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
     const quantity = Math.floor(spendable / unitPrice / 2) + 1;
     // The arithmetic this test rests on, asserted rather than left to a
     // reader: one is affordable against what the prison can spend and two are
@@ -7990,11 +8003,20 @@ test.describe('the assembled application', () => {
     const funds = page.locator('[data-metric="funds"] .ui-stat__value');
     await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
 
-    // The largest whole purchase the facility covers, derived so it moves with
-    // either constant: 27,500 of spending power at 40 a brick is 687 bricks
-    // and 27,480, which lands the balance at -2,480.
+    // The largest whole purchase a delivery may make, derived so it moves with
+    // the constants.
+    //
+    // **This read `TREASURY_STARTING_BALANCE_MINOR_UNITS -
+    // TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` until ruling 19 of 2026-09-01**,
+    // and the comment under it read *"27,500 of spending power at 40 a brick
+    // is 687 bricks and 27,480, which lands the balance at -2,480."* That was
+    // true while one floor governed every spend. It does not any more: a
+    // purchase is a `'deliveries'` spend and is refused 1,250 above the
+    // treasury's floor, so the old figure buys nothing at all and this test
+    // measured the ruling working rather than the strip failing.
     const unitPrice = unitPriceOf('item.brick');
-    const spendable = TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
+    const spendable =
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
     const quantity = Math.floor(spendable / unitPrice);
     const settled = TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice;
     // The state this test is about, asserted rather than assumed: the purchase
@@ -8026,6 +8048,20 @@ test.describe('the assembled application', () => {
      * is never the only signal.
      */
     await expect(page.locator('[data-metric="funds"]')).toHaveAttribute('data-tone', 'warning');
+    /*
+     * **The badge counts room to the TREASURY floor, and the purchase above
+     * was refused at the delivery rung 1,250 higher.** Both are deliberate and
+     * they disagree: ruling 18 authored `{remaining} left` against the one
+     * floor that existed then, and ruling 19 then gave each rung its own. So
+     * the chip tells a player how far the state will carry them while the next
+     * press is refused well before that -- which the ADR 0017 amendment names
+     * as owed to the owner rather than fixed here, because closing it means
+     * either new copy or a decision about which number the chip should show.
+     *
+     * Asserted against the treasury floor on purpose: this is the pin that
+     * goes red the day somebody changes which floor the badge counts to, and
+     * it should, because that is the decision.
+     */
     await expect(page.locator('[data-metric="funds"] .ui-badge')).toHaveText(
       `${fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)} left`,
     );
@@ -8046,10 +8082,13 @@ test.describe('the assembled application', () => {
     await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
 
     const unitPrice = unitPriceOf('item.brick');
-    // Past what the prison can spend, which is the balance plus the standing
-    // overdraft (#703 ruling A) rather than the balance alone -- see the
-    // `spendable` note in the test above.
-    const spendable = TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
+    // Past what a purchase may spend, which is the balance plus the delivery
+    // rung's own room (ruling 19) rather than the whole standing overdraft --
+    // see the `spendable` note in the first test that derives it. This line
+    // named the treasury floor until 2026-09-01; the quantity it produced was
+    // refused then and is refused now, by a threshold 1,250 higher.
+    const spendable =
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
     const unaffordable = Math.floor(spendable / unitPrice) + 1;
     expect(unaffordable * unitPrice).toBeGreaterThan(spendable);
 

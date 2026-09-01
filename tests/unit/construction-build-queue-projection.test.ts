@@ -453,24 +453,64 @@ describe('cancelling one order by id, which is the command this read model exist
      * a standing overdraft of 2,500 in every session
      * ([ADR 0083](../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
      * §2), so 40 in the bank funds thirty-one walls and this case measured
-     * nothing. 422 planks at 65 is 27,430 of the 27,500 a new prison can spend,
-     * leaving 70 -- the same relationship to a wall's 80, expressed against the
-     * floor the prison has.
+     * nothing.
+     *
+     * > 422 planks at 65 is 27,430 of the 27,500 a new prison can spend,
+     * > leaving 70 -- the same relationship to a wall's 80, expressed against the
+     * > floor the prison has.
+     *
+     * > ```
+     * > runtime.kernel.submitCommand('cmd-buy', …, 0, packCommand({ … quantity: 422 }));
+     * > orderWall(runtime, 'order-a', 3, 3);
+     * > runTo(runtime, 30);
+     * > expect(runtime.treasury.balanceMinorUnits, '25,000 - 422 x 65, …').toBe(-2_430);
+     * > ```
+     *
+     * **The owner's ruling 19 of 2026-08-31 moved both the figure and the
+     * order of events, and the second is the finding.** Ruling 19 -- drafted as
+     * ADR 0017's "Amendment, 2026-09-01" -- gives ADR 0017 decision 8's rungs
+     * their own thresholds inside the overdraft: a press stops at -1,250 and the
+     * queue's own procurement at -2,000. A press can therefore no longer leave
+     * *less* than 750 of construction room, so "spent down to seventy" is not a
+     * position any sequence of presses reaches. The last stretch is taken at the
+     * wage rung -- a payday -- which is how a real session gets there, and it
+     * has to happen after the purchase has been dispatched rather than beside
+     * it.
+     *
+     * 403 planks at 65 is 26,195 of the 26,250 a press may spend, leaving the
+     * balance at -1,195; 735 more at the wage rung is **-1,930**, which is 70 of
+     * construction room against a wall's 80. The relationship this case is about
+     * is unchanged to the minor unit.
      */
     const runtime = createNewSimulationRuntime(SEED);
-    // Both at tick 0 and neither stepped in between, because `orderWall`
-    // schedules at tick 0 and the kernel refuses a command dated in the past.
-    // The kernel dispatches them in sequence order, so the money is gone before
-    // the wall is placed.
     runtime.kernel.submitCommand(
       'cmd-buy',
       runtime.kernel.expectedSequence,
       0,
-      packCommand({ type: 'PurchaseMaterials', orderId: 'order-buy', itemId: 'item.wood-plank', quantity: 422 }),
+      packCommand({ type: 'PurchaseMaterials', orderId: 'order-buy', itemId: 'item.wood-plank', quantity: 403 }),
     );
-    orderWall(runtime, 'order-a', 3, 3);
     runTo(runtime, 30);
-    expect(runtime.treasury.balanceMinorUnits, '25,000 - 422 x 65, and the wall bought nothing').toBe(-2_430);
+    expect(runtime.treasury.balanceMinorUnits, '25,000 - 403 x 65, which is the delivery rung').toBe(-1_195);
+    expect(runtime.treasury.spend(735, 'wages'), 'the rest, at the only rung that reaches it').toBe(true);
+
+    // Dated at the tick the kernel has reached rather than at 0, because the
+    // wage-rung drain above had to happen after the purchase was dispatched and
+    // the kernel refuses a command dated in the past.
+    runtime.kernel.submitCommand(
+      'cmd-order-a',
+      runtime.kernel.expectedSequence,
+      runtime.kernel.tick,
+      packCommand({
+        type: 'PlaceBuildOrder',
+        orderId: 'order-a',
+        definitionId: 'wall-brick',
+        x: 3,
+        y: 3,
+        transactionId: 'txn-order-a',
+      }),
+    );
+    runTo(runtime, 60);
+    expect(runtime.treasury.balanceMinorUnits, 'and the wall bought nothing').toBe(-1_930);
 
     const view = queue(runtime);
     expect(view.orders.rows.map((row) => row.state)).toEqual(['materials-pending']);

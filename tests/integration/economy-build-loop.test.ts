@@ -198,7 +198,7 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
     const runtime = createNewSimulationRuntime(7);
     const before = runtime.treasury.balanceMinorUnits;
 
-    const outcome = runtime.procurement.purchase('buy-huge', 'item.brick', 100_000, 0);
+    const outcome = runtime.procurement.purchase('buy-huge', 'item.brick', 100_000, 0, 'deliveries');
     expect(outcome).toEqual({ ok: false, reason: 'insufficient-funds' });
     expect(runtime.treasury.balanceMinorUnits, 'a refused purchase must not spend').toBe(before);
     expect(runtime.procurement.pendingDeliveries).toHaveLength(0);
@@ -220,7 +220,7 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
      * codec and says nothing about whether the save carries it.
      */
     const runtime = createNewSimulationRuntime(7);
-    runtime.procurement.purchase('buy-1', 'item.brick', 10, runtime.kernel.tick);
+    runtime.procurement.purchase('buy-1', 'item.brick', 10, runtime.kernel.tick, 'deliveries');
     expect(runtime.treasury.balanceMinorUnits).toBeLessThan(TREASURY_STARTING_BALANCE_MINOR_UNITS);
 
     const bundle = captureSessionSnapshot(runtime);
@@ -256,7 +256,7 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
     const runtime = createNewSimulationRuntime(7);
     const before = runtime.treasury.balanceMinorUnits;
 
-    const outcome = runtime.procurement.purchase('buy-1', 'item.brick', 5, 0);
+    const outcome = runtime.procurement.purchase('buy-1', 'item.brick', 5, 0, 'deliveries');
     expect(outcome.ok).toBe(true);
     const spent = before - runtime.treasury.balanceMinorUnits;
     expect(spent, 'the fixture must actually have spent something').toBeGreaterThan(0);
@@ -297,12 +297,12 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
      * reads the queue.
      */
     const forwards = createNewSimulationRuntime(7);
-    forwards.procurement.purchase('b-second', 'item.brick', 1, 0);
-    forwards.procurement.purchase('a-first', 'item.wood-plank', 1, 0);
+    forwards.procurement.purchase('b-second', 'item.brick', 1, 0, 'deliveries');
+    forwards.procurement.purchase('a-first', 'item.wood-plank', 1, 0, 'deliveries');
 
     const backwards = createNewSimulationRuntime(7);
-    backwards.procurement.purchase('a-first', 'item.wood-plank', 1, 0);
-    backwards.procurement.purchase('b-second', 'item.brick', 1, 0);
+    backwards.procurement.purchase('a-first', 'item.wood-plank', 1, 0, 'deliveries');
+    backwards.procurement.purchase('b-second', 'item.brick', 1, 0, 'deliveries');
 
     const ids = (runtime: SimulationRuntime): readonly string[] =>
       runtime.procurement.pendingDeliveries.map((delivery) => delivery.orderId);

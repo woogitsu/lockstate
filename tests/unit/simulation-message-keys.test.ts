@@ -166,6 +166,12 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'Why `JobSystem` ended a carry job -- a container id the registry does not hold, or a reservation that could not be honoured at pickup. Exempt for a *stronger* version of the reason `BUILD_ORDER_FAIL_REASONS` above is: that one at least reaches the player under a different spelling, mapped onto a `RefusalReason` by a command handler, and this one reaches no surface at all. Nothing in `src/simulation/presentation/` projects `CarryItemJob.failReason`, no command creates a carry job (so there is no handler to map it and no `carry.*` namespace on the wire -- `simulation-refusals.test.ts` asserts the wire vocabulary is exactly the ten *command* namespaces), and `docs/OPERATIONS.md` records that nothing in the HUD surfaces the operations substrate yet. It is persisted by `save-schema.ts` and read back as save data, which is storage rather than display. Labelling it would author words for a fact no panel can render; giving job failures a player-facing channel is an ADR rather than a row in this table.',
   },
   {
+    sourceFile: 'src/simulation/economy/treasury.ts',
+    declaration: 'SpendClass',
+    reason:
+      "Which rung of ADR 0017 decision 8's insolvency ladder a spend belongs to -- the owner's ruling 19 of 2026-08-31, drafted as ADR 0017's \"Amendment, 2026-09-01\". It is a *required argument* on `Treasury.canAfford` and `Treasury.spend`, chosen over a caller-side check precisely so that `tsc` refuses a spend that does not name its rung; it is never a value anything holds, publishes, persists or renders. Nothing crosses the worker boundary carrying it: what a player is told when a rung refuses them is the authored `hud.alert.refusal.purchase.*` or `hud.alert.refusal.hire.*` sentence for the `RefusalReason` the command handler maps to, which is the same argument `PurchaseRefusalReason` below makes one layer down. A derived `spend-class.deliveries.name` reading \"Deliveries\" would have nowhere to be rendered. **What the ruling *does* owe the player is a sentence per rung, and that is recorded as owed rather than answered here**: the four existing sentences say \"that would go past what the state will carry\", which is true at -2,500 and false at -1,250, and replacement copy is the owner's under `AGENTS.md`'s fourth exclusion. See `src/content/default-locale-en.ts` at those four keys.",
+  },
+  {
     sourceFile: 'src/simulation/economy/procurement.ts',
     declaration: 'PurchaseRefusalReason',
     reason:

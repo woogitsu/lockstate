@@ -81,23 +81,56 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
  * A prison that owes its staff money, reached only through commands a player
  * has.
  *
- * 620 bricks at 40 takes 24,800 of the 25,000, two hires at 80 take 160, and
- * the 40 left cannot meet the 160 that falls due at the first day boundary. It
- * pays the 40 and owes 120. Every figure is written out; nothing here reads the
- * catalogue except `GUARD_WAGE`, which is restated as a literal.
+ * **Every figure here moved with the owner's ruling 19 of 2026-08-31, and the
+ * old ones are kept because the *shape* of the fixture is unchanged and only
+ * the depth is not.** What stood here:
+ *
+ * > 620 bricks at 40 takes 24,800 of the 25,000, two hires at 80 take 160, and
+ * > the 40 left cannot meet the 160 that falls due at the first day boundary. It
+ * > pays the 40 and owes 120.
+ *
+ * > ```
+ * > submit(runtime, 'buy', … itemId: 'item.brick', quantity: 620 );
+ * > expect(runtime.treasury.balanceMinorUnits).toBe(40);
+ * > stepTo(runtime, DAY_LENGTH_TICKS);
+ * > expect(runtime.treasury.balanceMinorUnits, 'floored, not overdrawn').toBe(0);
+ * > expect(runtime.payroll.unpaidWagesMinorUnits, '160 billed against 40 held').toBe(120);
+ * > ```
+ *
+ * Ruling 19 -- drafted as ADR 0017's "Amendment, 2026-09-01" -- gives ADR 0017
+ * decision 8's rungs their own thresholds inside the overdraft, and **wages are
+ * the rung at the floor**: a payday is paid out of the overdraft until the
+ * balance reaches -2,500, and only then goes unpaid. So a prison stops being
+ * *floored at zero* and starts being *floored at the wage rung*, and it takes
+ * longer to get there.
+ *
+ * The arithmetic, all of it written out:
+ *
+ * - Two hires at 80 take 160 of the 25,000, leaving 24,840. A hire is the
+ *   `'hiring'` rung, refused below -1,250.
+ * - 649 bricks at 40 and 2 planks at 65 is 26,090, which is exactly the 24,840
+ *   plus the 1,250 of delivery-rung room -- so the last purchase a player can
+ *   make lands the balance on **-1,250** to the minor unit, and the fixture is
+ *   at the first rung with nothing further buyable.
+ * - The wage rung is 1,250 deeper. Seven paydays at 160 take 1,120 of it,
+ *   leaving 130 at the eighth, which pays 130 of its 160 and **owes 30**.
+ *
+ * Nothing here reads the catalogue except `GUARD_WAGE`, which is restated as a
+ * literal.
  */
 function insolventSession(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(0x9a6e5);
-  submit(runtime, 'buy', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: 620 }));
   submit(runtime, 'hire-0', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
   submit(runtime, 'hire-1', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
+  submit(runtime, 'buy', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: 649 }));
+  submit(runtime, 'buy-p', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-p', itemId: 'item.wood-plank', quantity: 2 }));
   expect(runtime.refusals.count, 'the fixture must afford everything it buys').toBe(0);
-  expect(runtime.treasury.balanceMinorUnits).toBe(40);
+  expect(runtime.treasury.balanceMinorUnits, 'exactly the delivery rung, with nothing left to press').toBe(-1_250);
   expect(runtime.payroll.dailyWageBillMinorUnits()).toBe(2 * GUARD_WAGE);
 
-  stepTo(runtime, DAY_LENGTH_TICKS);
-  expect(runtime.treasury.balanceMinorUnits, 'floored, not overdrawn').toBe(0);
-  expect(runtime.payroll.unpaidWagesMinorUnits, '160 billed against 40 held').toBe(120);
+  stepTo(runtime, DAY_LENGTH_TICKS * 8);
+  expect(runtime.treasury.balanceMinorUnits, 'at the wage rung, not floored at zero').toBe(-2_500);
+  expect(runtime.payroll.unpaidWagesMinorUnits, '160 billed against the 130 the rung left').toBe(30);
   return runtime;
 }
 
@@ -151,13 +184,15 @@ describe('the arrears field is in the save, and it is what makes a debt survive 
     if (!decoded.ok) throw new Error('the envelope must decode for this test to mean anything');
 
     const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
-    expect(restored.payroll.unpaidWagesMinorUnits).toBe(120);
-    expect(restored.treasury.balanceMinorUnits).toBe(0);
+    expect(restored.payroll.unpaidWagesMinorUnits).toBe(30);
+    expect(restored.treasury.balanceMinorUnits).toBe(-2_500);
 
     // And the restored debt is charged forward rather than merely remembered:
-    // 120 owed plus 160 for the next day, against an empty treasury.
-    stepTo(restored, DAY_LENGTH_TICKS * 2);
-    expect(restored.payroll.unpaidWagesMinorUnits).toBe(280);
+    // 30 owed plus 160 for the next day, against a treasury already at the wage
+    // rung. Before ruling 19 this read 120 owed against an empty treasury,
+    // ending at 280.
+    stepTo(restored, DAY_LENGTH_TICKS * 9);
+    expect(restored.payroll.unpaidWagesMinorUnits).toBe(190);
   });
 
   it('writes the section unconditionally, so a solvent prison says "nothing owed" rather than "unknown"', () => {
@@ -181,7 +216,7 @@ describe('a save written before the payroll existed still loads, which is why no
     const captured = capturedSystems(insolventSession());
     const { payroll: dropped, ...economy } = captured.economy;
     expect(dropped, 'the positive control: the key must be there before this function removes it').toEqual({
-      unpaidWagesMinorUnits: 120,
+      unpaidWagesMinorUnits: 30,
     });
     const envelope = envelopeOf({ ...captured.bundle, simulation: { ...captured.simulation, economy } });
     return JSON.parse(JSON.stringify(envelope)) as unknown;
@@ -209,7 +244,7 @@ describe('a save written before the payroll existed still loads, which is why no
 
     // The rest of the save is untouched by the absence: the treasury the older
     // build wrote is the treasury that comes back.
-    expect(restored.treasury.balanceMinorUnits).toBe(0);
+    expect(restored.treasury.balanceMinorUnits).toBe(-2_500);
   });
 
   it('is refused if it carries the key with a value the field cannot hold', () => {
@@ -317,7 +352,7 @@ describe('the historical chain still walks a save older than the field', () => {
     const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
     // The treasury the V4 save recorded, and no debt -- because a V4 build had
     // no way to owe one.
-    expect(restored.treasury.balanceMinorUnits).toBe(0);
+    expect(restored.treasury.balanceMinorUnits).toBe(-2_500);
     expect(restored.payroll.unpaidWagesMinorUnits).toBe(0);
   });
 });

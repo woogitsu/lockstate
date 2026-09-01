@@ -1,7 +1,17 @@
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, procurableMaterial } from '../../content/procurement-catalog';
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { Container } from '../operations/inventory';
-import type { Treasury } from './treasury';
+import type { SpendClass, Treasury } from './treasury';
+
+/**
+ * The two rungs a purchase can be refused at (the owner's ruling 19 of
+ * 2026-08-31, drafted as ADR 0017's "Amendment, 2026-09-01").
+ *
+ * A narrowing of `SpendClass` rather than the whole union, because a purchase
+ * is neither a wage nor a hire and a caller must not be able to buy bricks at
+ * the wage rung's deeper threshold. See `ProcurementSystem.purchase`.
+ */
+export type PurchaseSpendClass = Extract<SpendClass, 'deliveries' | 'construction'>;
 
 /**
  * Money in, materials out: the procurement half of issue #96's loop.
@@ -180,8 +190,33 @@ export class ProcurementSystem implements SystemRegistration {
    * big a figure to hand this method* and calls it once per item per funded
    * order. `Treasury.spend` is likewise untouched and still strictly
    * all-or-nothing against its floor.
+   *
+   * ## `spendClass`, and why this one method serves two rungs
+   *
+   * The owner's ruling 19 of 2026-08-31 gives ADR 0017 decision 8's first two
+   * rungs their own thresholds — deliveries at −1,250, construction at −2,000 —
+   * and **both of them arrive here**, because a purchase is the only way
+   * materials enter a prison. So the rung cannot be a property of this method;
+   * it is a property of *who asked*, and the caller says which:
+   *
+   * - the player's Buy press, through `PurchaseMaterials`
+   *   (`src/simulation/runtime/session-commands.ts`), is `'deliveries'`;
+   * - `JustInTimeMaterialsService.procureForPendingOrders`, buying for build
+   *   orders that are already queued, is `'construction'`.
+   *
+   * It is `PurchaseSpendClass` rather than `SpendClass`: a purchase is never a
+   * wage and never a hire, and narrowing the union here means a caller cannot
+   * hide a hire behind a delivery's threshold. The amendment argues the split
+   * itself, which is a reading of decision 8's words rather than something
+   * ruling 19 states.
    */
-  public purchase(orderId: string, itemId: string, quantity: number, tick: number): PurchaseOutcome {
+  public purchase(
+    orderId: string,
+    itemId: string,
+    quantity: number,
+    tick: number,
+    spendClass: PurchaseSpendClass,
+  ): PurchaseOutcome {
     if (this.pending.some((delivery) => delivery.orderId === orderId)) {
       return { ok: false, reason: 'duplicate-order' };
     }
@@ -192,7 +227,7 @@ export class ProcurementSystem implements SystemRegistration {
     if (material === undefined) return { ok: false, reason: 'unknown-material' };
 
     const paidMinorUnits = material.unitPriceMinorUnits * quantity;
-    if (!this.treasury.spend(paidMinorUnits)) return { ok: false, reason: 'insufficient-funds' };
+    if (!this.treasury.spend(paidMinorUnits, spendClass)) return { ok: false, reason: 'insufficient-funds' };
 
     const arrivesAtTick = tick + PROCUREMENT_DELIVERY_DELAY_TICKS;
     this.pending.push({ orderId, itemId, quantity, arrivesAtTick, paidMinorUnits });

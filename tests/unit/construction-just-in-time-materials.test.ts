@@ -61,7 +61,7 @@ const oneOrder = (...requirements: MaterialRequirement[]): QueuedOrderDemand[] =
 function fixture(startingBalance = 25_000) {
   const treasury = new Treasury();
   if (startingBalance < 25_000) {
-    expect(treasury.spend(25_000 - startingBalance), 'the fixture must be able to reach its own opening balance').toBe(true);
+    expect(treasury.spend(25_000 - startingBalance, 'construction'), 'the fixture must be able to reach its own opening balance').toBe(true);
   }
   const stock = new Container('construction-materials');
   const procurement = new ProcurementSystem(treasury, stock);

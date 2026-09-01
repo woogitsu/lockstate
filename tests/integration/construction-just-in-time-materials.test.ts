@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, procurableMaterial } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
-import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
+import {
+  INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
+  TREASURY_STARTING_BALANCE_MINOR_UNITS,
+} from '../../src/simulation/economy';
 import { projectBuildQueue } from '../../src/simulation/presentation';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import {
@@ -258,12 +261,27 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
    * **The fixture moved and the subject did not.** What every case below
    * measures is the refusal *machinery* -- that the player is told on the press,
    * that the order is kept, that the shortfall figure reaches the view model --
-   * and none of that is about where the boundary sits. So the position is now
-   * `-2,430`: seventy minor units of room against a wall that costs eighty,
-   * which is the same relationship `40` against `80` expressed against the floor
-   * the prison actually has. `PLANK_PRICE` is 65 and 25,000 mod 65 is 40, so
-   * `-2,430` is the deepest balance a whole number of planks can reach that
-   * still cannot fund a wall: 422 planks, and 70 of the facility left.
+   * and none of that is about where the boundary sits.
+   *
+   * > So the position is now
+   * > `-2,430`: seventy minor units of room against a wall that costs eighty,
+   * > which is the same relationship `40` against `80` expressed against the floor
+   * > the prison actually has. `PLANK_PRICE` is 65 and 25,000 mod 65 is 40, so
+   * > `-2,430` is the deepest balance a whole number of planks can reach that
+   * > still cannot fund a wall: 422 planks, and 70 of the facility left.
+   *
+   * **The owner's ruling 19 of 2026-08-31 moved it again, and it moved the route
+   * as well as the number.** Ruling 19 -- drafted as ADR 0017's "Amendment,
+   * 2026-09-01" -- gives ADR 0017 decision 8's rungs their own thresholds inside
+   * the overdraft: a *press* is refused below -1,250 and the queue's own
+   * procurement below -2,000. So no sequence of presses can reach a position
+   * where the queue cannot fund a wall -- a press that goes through always
+   * leaves the queue 750 -- and the last stretch of the drain is taken at the
+   * wage rung, which is the only class whose threshold is the floor and is
+   * therefore how a real session gets there (a payday).
+   *
+   * The position is now `-1,930`: the same seventy minor units of *construction*
+   * room against an eighty-minor-unit wall, one rung up.
    *
    * The floor is deliberately **not** closed with `setOverdraftFloor(0)` to make
    * the old figures work again. That would leave every case here exercising a
@@ -271,22 +289,39 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
    */
   function prisonWith(balance: number): SimulationRuntime {
     const runtime = createNewSimulationRuntime(SEED);
-    const planks = (25_000 - balance) / PLANK_PRICE;
-    expect(Number.isInteger(planks), 'the fixture must spend a whole number of planks').toBe(true);
-    send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: PLANK, quantity: planks });
+    // As far as the delivery rung allows, in whole planks, and the rest at the
+    // wage rung. Planks because no wall order asks for one, so the stock this
+    // leaves behind cannot fund anything the cases below place.
+    const pressable = Math.floor(
+      (TREASURY_STARTING_BALANCE_MINOR_UNITS - INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS) / PLANK_PRICE,
+    );
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: PLANK, quantity: pressable });
+    const rest = runtime.treasury.balanceMinorUnits - balance;
+    expect(rest, 'the fixture must not be asked for a balance a press already passed').toBeGreaterThanOrEqual(0);
+    if (rest > 0) expect(runtime.treasury.spend(rest, 'wages')).toBe(true);
     expect(runtime.treasury.balanceMinorUnits).toBe(balance);
     expect(
-      runtime.treasury.canAfford(WALL_COST),
+      runtime.treasury.canAfford(WALL_COST, 'construction'),
       'the fixture only means anything if a wall is genuinely unaffordable from here',
     ).toBe(false);
     return runtime;
   }
 
   /**
-   * Seventy of room against an eighty-minor-unit wall: the position every case
-   * in this describe is written from. See `prisonWith`.
+   * Seventy of construction room against an eighty-minor-unit wall: the position
+   * every case in this describe is written from. See `prisonWith`.
+   *
+   * **`-2,430` until the owner's ruling 19 of 2026-08-31**, when seventy of room
+   * meant seventy above the single floor.
    */
-  const CANNOT_FUND_A_WALL = -2_430;
+  const CANNOT_FUND_A_WALL = -1_930;
+
+  /**
+   * What cancelling `prisonWith`'s own delivery gives back: the press, and not
+   * the wage-rung stretch of the drain, which is money the prison spent rather
+   * than money it has on order.
+   */
+  const REFUNDED_BALANCE = 24_265;
 
   it('records the refusal on the press, keeps the order, and says how much is missing', () => {
     // 40 in the bank against a wall that costs 80.
@@ -413,13 +448,21 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
       'materials-pending',
     );
 
+    /*
+     * **`REFUNDED_BALANCE` and not 25,000, since the owner's ruling 19 of
+     * 2026-08-31.** `prisonWith` reaches its position in two spends now -- a
+     * press as far as the delivery rung, and the rest at the wage rung -- and
+     * only the press is a delivery there is anything to cancel. What the refund
+     * has to do for this case is put the prison back above a wall's 80, and it
+     * does that with 24,265 to spare.
+     */
     send(runtime, { type: 'CancelMaterialPurchase', orderId: 'order-buy' });
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
+    expect(runtime.treasury.balanceMinorUnits).toBe(REFUNDED_BALANCE);
 
     // No further `PlaceBuildOrder`. The scheduled pass is what buys.
     step(runtime, 4_000);
     expect(runtime.construction.getOrder('order-a')?.state).toBe('completed');
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_000 - WALL_COST);
+    expect(runtime.treasury.balanceMinorUnits).toBe(REFUNDED_BALANCE - WALL_COST);
     expect(projectBuildQueue(runtime.construction, {}, runtime.justInTimeMaterials).materialsFunding, 'and the shortfall stopped being reported').toEqual({
       unfunded: false,
       shortfallMinorUnits: 0,
@@ -461,7 +504,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
     expect(runtime.refusals.last?.reason, 'the press is what announced it').toBe('purchase.insufficient-funds');
 
     send(runtime, { type: 'CancelMaterialPurchase', orderId: 'order-buy' });
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
+    expect(runtime.treasury.balanceMinorUnits).toBe(REFUNDED_BALANCE);
 
     // The last command this session receives. Everything below is the clock.
     step(runtime, 4_000);
@@ -531,20 +574,29 @@ describe('a placed object is a build order too (ADR 0028 decision 4)', () => {
      * 65 plank out of its standing overdraft, so the press is not refused and
      * the case measured nothing.
      *
-     * The bed needs one plank at 65. 687 bricks is 27,480 of the 27,500 a new
-     * prison can spend, leaving **20** of the facility -- so a plank is
-     * unaffordable by 45 and the refusal this case is about is reached again.
-     * The prison holds bricks a bed cannot use either way, which is the property
-     * the fixture was chosen for.
+     * > The bed needs one plank at 65. 687 bricks is 27,480 of the 27,500 a new
+     * > prison can spend, leaving **20** of the facility -- so a plank is
+     * > unaffordable by 45 and the refusal this case is about is reached again.
+     *
+     * **And the owner's ruling 19 of 2026-08-31 moved it once more.** A press
+     * stops at -1,250 and the queue at -2,000 (ADR 0017's "Amendment,
+     * 2026-09-01"), so 656 bricks is the largest press a new prison can make and
+     * it leaves 760 of construction room -- ten times what this case needs. The
+     * rest is taken at the wage rung, which is the only one that reaches: 740
+     * more puts the balance at -1,980 with **20** of construction room, the same
+     * twenty, one rung up. The prison holds bricks a bed cannot use either way,
+     * which is the property the fixture was chosen for.
      */
-    send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 687 });
-    expect(runtime.treasury.balanceMinorUnits).toBe(-2_480);
-    expect(runtime.treasury.canAfford(PLANK_PRICE), 'a plank is 65 and 20 of room is left').toBe(false);
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 656 });
+    expect(runtime.treasury.balanceMinorUnits, 'the deepest a press reaches').toBe(-1_240);
+    expect(runtime.treasury.spend(740, 'wages'), 'and the rest, the way a payday would').toBe(true);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-1_980);
+    expect(runtime.treasury.canAfford(PLANK_PRICE, 'construction'), 'a plank is 65 and 20 of room is left').toBe(false);
 
     send(runtime, { type: 'PlaceObject', orderId: 'order-bed', definitionId: 'bed-wooden', x: CELL_RECT.x, y: CELL_RECT.y });
 
     expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
-    expect(runtime.treasury.balanceMinorUnits).toBe(-2_480);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-1_980);
     expect(runtime.construction.getOrder('order-bed')?.state, 'and the bed is still the player\'s').not.toBe('failed');
   });
 });
@@ -602,9 +654,15 @@ describe('the order the queue is funded in (#703 ruling 12)', () => {
      * later, and a wall order with bricks in stock needs no purchase at all --
      * which would make this a case about stock instead of about the walk.
      */
-    const roomBefore = runtime.treasury.balanceMinorUnits - runtime.treasury.overdraftFloorMinorUnits;
-    expect(runtime.treasury.spend(roomBefore), 'the prison starts this case with nothing to spend').toBe(true);
-    expect(runtime.treasury.canAfford(1)).toBe(false);
+    //
+    // **To the `'construction'` rung and not to the floor** (the owner's ruling
+    // 19 of 2026-08-31): the rung is what this pass is refused at, so it is the
+    // number "nothing to spend" means here. Draining to the floor instead would
+    // put the prison 500 *below* the rung, where the credit below could not lift
+    // it back over and the case would measure an empty report.
+    const roomBefore = runtime.treasury.balanceMinorUnits - runtime.treasury.floorFor('construction');
+    expect(runtime.treasury.spend(roomBefore, 'wages'), 'the prison starts this case with nothing to spend').toBe(true);
+    expect(runtime.treasury.canAfford(1, 'construction')).toBe(false);
 
     // Both are placed while nothing is affordable, so neither is funded by its
     // own press and both are waiting when the money arrives.
@@ -614,7 +672,7 @@ describe('the order the queue is funded in (#703 ruling 12)', () => {
 
     // Exactly one wall, and 15 short of the wall plus the bed.
     runtime.treasury.credit(WALL_COST);
-    expect(runtime.treasury.balanceMinorUnits - runtime.treasury.overdraftFloorMinorUnits).toBe(80);
+    expect(runtime.treasury.balanceMinorUnits - runtime.treasury.floorFor('construction')).toBe(80);
 
     /*
      * One scheduled construction tick, and no more: `lastReport` is rewritten
@@ -647,8 +705,8 @@ describe('the order the queue is funded in (#703 ruling 12)', () => {
     // 80 less the plank's 65. Written out rather than read back: the residual
     // is what says the wall was refused for the whole 80 and not part-funded,
     // which is ruling 12's per-order atomicity.
-    expect(runtime.treasury.balanceMinorUnits - runtime.treasury.overdraftFloorMinorUnits).toBe(15);
-    expect(runtime.treasury.canAfford(WALL_COST), 'what is left cannot buy the wall').toBe(false);
+    expect(runtime.treasury.balanceMinorUnits - runtime.treasury.floorFor('construction')).toBe(15);
+    expect(runtime.treasury.canAfford(WALL_COST, 'construction'), 'what is left cannot buy the wall').toBe(false);
   });
 });
 
@@ -719,20 +777,27 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
    */
   it('spends income that arrives after placement, with nothing pressed in between (#703)', () => {
     const runtime = createNewSimulationRuntime(SEED);
-    const roomOf = (): number => runtime.treasury.balanceMinorUnits - runtime.treasury.overdraftFloorMinorUnits;
+    /*
+     * **Room measured against the `'construction'` rung rather than the floor**
+     * (the owner's ruling 19 of 2026-08-31, ADR 0017's "Amendment,
+     * 2026-09-01"): every spend this case counts is the queue's own, and the
+     * rung is what the queue is refused at. Every figure below is unchanged to
+     * the minor unit; what moved is which number zero is measured from.
+     */
+    const roomOf = (): number => runtime.treasury.balanceMinorUnits - runtime.treasury.floorFor('construction');
 
     /*
-     * Drained to exactly the floor, so no order can be funded by the press that
+     * Drained to exactly the rung, so no order can be funded by the press that
      * places it and the press path is out of the picture entirely. Through
      * `Treasury.spend` rather than the Buy control, because a purchase would
      * land materials in the container and the queue would then need none.
      */
-    expect(runtime.treasury.spend(roomOf())).toBe(true);
+    expect(runtime.treasury.spend(roomOf(), 'wages')).toBe(true);
     expect(roomOf()).toBe(0);
 
     const orders = placeWalls(runtime, 10);
     expect(runtime.treasury.balanceMinorUnits, 'nothing was funded at any press').toBe(
-      runtime.treasury.overdraftFloorMinorUnits,
+      runtime.treasury.floorFor('construction'),
     );
     expect(runtime.procurement.pendingDeliveries).toEqual([]);
     /*
@@ -750,7 +815,7 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
     runtime.treasury.credit(WALL_COST - 1);
     step(runtime, INSTALMENT_TICKS);
     expect(runtime.treasury.balanceMinorUnits, '79 buys no part of an 80 order').toBe(
-      runtime.treasury.overdraftFloorMinorUnits + WALL_COST - 1,
+      runtime.treasury.floorFor('construction') + WALL_COST - 1,
     );
     expect(statesOf(runtime).completed ?? 0).toBe(0);
 
@@ -862,19 +927,33 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
       else if (firstRefusedAt < 0) firstRefusedAt = index;
     }
 
-    expect(funded, '(25,000 + 2,500) / 80').toBe(343);
-    expect(firstRefusedAt, 'zero-based, so the 344th wall is the first the game refuses to buy for').toBe(343);
-    expect(runtime.treasury.balanceMinorUnits, '25,000 - 343 x 80').toBe(-2_440);
+    /*
+     * **The owner's ruling 19 of 2026-08-31 moves the gesture 6 segments
+     * shallower and does not remove it.** The queue spends at the
+     * `'construction'` rung (ADR 0017's "Amendment, 2026-09-01"), so its power
+     * is 25,000 + 2,000 = 27,000 rather than 27,500:
+     *
+     *   floor(27,000 / 80) = 337 wall segments, leaving 40 of the rung.
+     *
+     * `343` and `-2,440` are what the paragraphs above measured and are kept
+     * there; the finding is unchanged in every respect that matters, and it is
+     * worth saying which way it moved: the drag locks the prison **sooner** now,
+     * with 500 of the facility still standing that only a payday can reach.
+     */
+    expect(funded, '(25,000 + 2,000) / 80').toBe(337);
+    expect(firstRefusedAt, 'zero-based, so the 338th wall is the first the game refuses to buy for').toBe(337);
+    expect(runtime.treasury.balanceMinorUnits, '25,000 - 337 x 80').toBe(-1_960);
     expect(
-      runtime.treasury.canAfford(PLANK_PRICE),
-      'and the 60 of overdraft still standing is below the 65 that would end this',
+      runtime.treasury.canAfford(PLANK_PRICE, 'construction'),
+      'and the 40 of the construction rung still standing is below the 65 that would end this',
     ).toBe(false);
 
     // The lock itself, confirmed rather than inferred: the one thing that
-    // would restart the income line is refused.
+    // would restart the income line is refused -- and at -1,960 it is refused
+    // by the *delivery* rung, 710 before the queue would have run out.
     send(runtime, { type: 'PurchaseMaterials', orderId: 'order-plank', itemId: PLANK, quantity: 1 });
     expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
-    expect(runtime.treasury.balanceMinorUnits).toBe(-2_440);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-1_960);
   });
 });
 
