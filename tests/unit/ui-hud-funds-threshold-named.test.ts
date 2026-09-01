@@ -54,8 +54,15 @@ const WHAT_STOPS = /deliver/i;
 
 /**
  * The two sentences the chip carries on its `title` and in its screen-reader
- * text -- `overdraftDescription` in `src/ui/hud/projection.ts` chooses between
- * them on the same boundary `overdraftTone` chooses amber from red on.
+ * text above and at the deliveries rung -- `overdraftDescription` in
+ * `src/ui/hud/projection.ts` chooses between them on the same boundary
+ * `overdraftTone` chooses amber from red on.
+ *
+ * A third sentence, `fundsTreasuryFloorExhausted`, joined on 2026-09-01 for
+ * the treasury floor itself (`critical`, issue #768's ruling) and is gated
+ * separately below: it does not name deliveries specifically -- it names
+ * that *every* spend is refused, deliveries included -- so `WHAT_STOPS`'s
+ * `/deliver/i` is the wrong check for it.
  */
 const CHIP_DESCRIPTION_KEYS = [
   HUD_MESSAGE_KEY.fundsBeforeDeliveriesStop,
@@ -97,6 +104,35 @@ describe('the deliveries rung is named where a player will meet it (the ruling o
         localizer.format(HUD_MESSAGE_KEY.fundsRemaining, { remaining: '1,249' }).length,
       );
     }
+  });
+
+  /**
+   * **The treasury floor's own sentence, gated on what it must say rather
+   * than on `WHAT_STOPS`.** The ruling that added it (issue #768, the owner's
+   * of 2026-09-01) asked for two facts a player at this balance needs: that
+   * no further spending of any kind is possible, and what would lift it. Not
+   * pinned verbatim, for the same reason `CHIP_DESCRIPTION_KEYS`'s prose is
+   * not: the words are player-facing copy `AGENTS.md`'s fourth exclusion
+   * reserves to the owner (flagged owner-pending in the copy's own comment in
+   * `src/content/default-locale-en.ts`), and this checks the property the
+   * ruling is about rather than the draft.
+   */
+  it('names the treasury floor as its own state, in a full sentence that says what lifts it', () => {
+    const sentence = localizer.format(HUD_MESSAGE_KEY.fundsTreasuryFloorExhausted);
+    expect(sentence.endsWith('.'), 'not a sentence').toBe(true);
+    expect(sentence.length, 'no longer than the badge it explains').toBeGreaterThan(
+      localizer.format(HUD_MESSAGE_KEY.fundsRemaining, { remaining: '1,249' }).length,
+    );
+    // No further spending of any kind is possible right now -- not only
+    // deliveries, which is what `fundsDeliveriesStopped` already says and
+    // this sentence exists to be told apart from.
+    expect(sentence, 'does not say spending has stopped entirely').toMatch(/nothing|no .*spen|exhaust/i);
+    // What lifts it, the same tail every sibling refusal sentence carries.
+    expect(sentence, 'does not say what would lift it').toMatch(/until the state pays what it owes/);
+    // And it must actually differ from the rung's sentence -- the whole
+    // point of the ruling, pinned again in `tests/unit/ui-hud-projection.test.ts`
+    // with a mutation proving this comparison is load-bearing.
+    expect(sentence).not.toBe(localizer.format(HUD_MESSAGE_KEY.fundsDeliveriesStopped));
   });
 
   it('says it again in the refusals, so a player who never hovers still meets it', () => {

@@ -196,6 +196,12 @@
   --amber-alpha-14: rgba(232, 180, 99, 0.14);
   --clay-300: #d4785c;
   --clay-alpha-14: rgba(212, 120, 92, 0.14);
+  /* A fifth status hue, past `--clay-300` on the same warm ramp: deeper and
+     more saturated, for the one state (issue #768's ruling of 2026-09-01) that
+     has to read as *further along* than `danger` rather than as a different
+     colour beside it -- the treasury floor, not merely the rung above it. */
+  --crimson-300: #b8455a;
+  --crimson-alpha-14: rgba(184, 69, 90, 0.14);
 
   /* ---------------------------------------------------------------- */
   /* Layer 2: semantic aliases -- the only names components may use    */
@@ -225,6 +231,7 @@
   --status-success: var(--moss-300);
   --status-warning: var(--amber-300);
   --status-danger: var(--clay-300);
+  --status-critical: var(--crimson-300);
   --status-info: var(--sky-300);
 
   /* Badge background/foreground pairs. Paired here so a badge can never be
@@ -237,6 +244,8 @@
   --badge-warning-fg: var(--status-warning);
   --badge-danger-bg: var(--clay-alpha-14);
   --badge-danger-fg: var(--status-danger);
+  --badge-critical-bg: var(--crimson-alpha-14);
+  --badge-critical-fg: var(--status-critical);
   --badge-info-bg: var(--sky-alpha-14);
   --badge-info-fg: var(--status-info);
 

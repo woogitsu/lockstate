@@ -1908,14 +1908,26 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     queueMore.hidden = unlisted === 0;
 
     /*
-     * What the queue is short of, when it is short of money at all.
+     * What unblocks the front of the queue, when it is stalled on money at all
+     * (issue #771's second finding, the owner's ruling of 2026-09-01).
      *
-     * **Driven by `unfunded` and not by `shortfallMinorUnits > 0`.** The two
-     * agree in every session the simulation can produce, and they are not the
-     * same claim: the flag is the projection's answer to "is this queue stalled
-     * on money", and reading the figure instead would put this panel in the
-     * business of deciding that from a number -- which is the second source of
-     * truth `AGENTS.md` boundary 1 forbids, in miniature.
+     * **Driven by `unfunded` and not by `nextOrderShortfallMinorUnits > 0`.**
+     * The two agree in every reachable session state, and they are not the
+     * same claim: the flag is the projection's answer to "is this queue
+     * stalled on money", and reading the figure instead would put this panel
+     * in the business of deciding that from a number -- which is the second
+     * source of truth `AGENTS.md` boundary 1 forbids, in miniature.
+     *
+     * **The figure itself changed subject on that ruling.** It used to be
+     * `shortfallMinorUnits`, the sum of every order the queue could not fund --
+     * "what the queue still needs, whole". ADR 0081 decision 2 funds one whole
+     * order at a time and lets a later, cheaper order through while an
+     * earlier, pricier one waits (`JustInTimeMaterialsService`'s rule 2), so a
+     * player who saved the sum could still watch nothing move. This states
+     * `nextOrderShortfallMinorUnits` instead: what actually unblocks the order
+     * at the front of the walk, which `ConstructionSystem.orderedOrders()` and
+     * this panel's own rows agree is also the front of the list on screen
+     * (ADR 0082).
      *
      * The figure is in the same minor units as the status strip's Funds chip
      * and is formatted the same way, which is the comparison
@@ -1925,7 +1937,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      */
     queueShortfall.textContent = shown.materialsFunding.unfunded
       ? t(HUD_MESSAGE_KEY.buildQueueShortfall, {
-          total: localizer.formatNumber(shown.materialsFunding.shortfallMinorUnits),
+          total: localizer.formatNumber(shown.materialsFunding.nextOrderShortfallMinorUnits),
         })
       : '';
     queueShortfall.hidden = !shown.materialsFunding.unfunded;

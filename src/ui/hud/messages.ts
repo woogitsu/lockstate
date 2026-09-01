@@ -156,8 +156,38 @@ export const HUD_MESSAGE_KEY = {
    * distinction in colour (`overdraftTone` in `./projection.ts` paints
    * `warning` above the rung and `danger` at it), so a single sentence here
    * would be the one channel on this chip that does not.
+   *
+   * **Reserved for `danger` and above the treasury floor only, since the
+   * owner's ruling on issue #768.** This key used to be the sentence for
+   * every balance at or below the deliveries rung, `danger` and `critical`
+   * alike -- the gap `overdraftDescription`'s docblock and
+   * `tests/unit/ui-hud-projection.test.ts` recorded rather than closed.
+   * `fundsTreasuryFloorExhausted` below now takes `critical`, on the same
+   * `atTreasuryFloor` boundary `overdraftTone` already drew the colour on.
    */
   fundsDeliveriesStopped: 'hud.status.funds-deliveries-stopped',
+  /**
+   * The chip's tooltip once the balance has reached the treasury floor
+   * itself -- `critical`, not merely `danger` -- and the sentence the owner's
+   * ruling on issue #768 asked for: colour is never the only signal, so a
+   * third tone needs a third sentence rather than reusing
+   * `fundsDeliveriesStopped`.
+   *
+   * **Chosen on exactly the boundary `overdraftTone` paints `critical` on**
+   * (`atTreasuryFloor` in `./projection.ts`, over
+   * `counts.treasuryOverdraftFloorMinorUnits`), not a new judgement -- see
+   * `overdraftDescription`.
+   *
+   * **The words are player-facing copy and are owner-pending**
+   * (`AGENTS.md`'s fourth exclusion): written to be the clearest available
+   * sentence rather than a placeholder, but subject to the owner's revision.
+   * It says two things `fundsDeliveriesStopped` does not: that the *overdraft
+   * itself*, not only deliveries, is exhausted, and that nothing at all --
+   * not construction, not hiring, not even the wage payment the ladder's
+   * other two rungs still let through -- can spend from this balance until
+   * the state pays what it owes.
+   */
+  fundsTreasuryFloorExhausted: 'hud.status.funds-treasury-floor-exhausted',
   /**
    * The rising "earned today" chip beside the balance (#29).
    *

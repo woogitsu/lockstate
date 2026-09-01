@@ -432,7 +432,12 @@ describe('cancelling one order by id, which is the command this read model exist
     orderWall(runtime, 'order-a', 3, 3);
     runTo(runtime, 30);
 
-    expect(queue(runtime).materialsFunding).toEqual({ unfunded: false, shortfallMinorUnits: 0, items: [] });
+    expect(queue(runtime).materialsFunding).toEqual({
+      unfunded: false,
+      shortfallMinorUnits: 0,
+      nextOrderShortfallMinorUnits: 0,
+      items: [],
+    });
   });
 
   it('reads `unfunded` for a queue the prison cannot pay for, which `state` alone cannot say', () => {
@@ -529,6 +534,11 @@ describe('cancelling one order by id, which is the command this read model exist
     expect(view.materialsFunding).toEqual({
       unfunded: true,
       shortfallMinorUnits: 80,
+      // The one order in this queue is also the front of it, so the two
+      // figures agree here; `nextOrderShortfallMinorUnits`'s own test file is
+      // `tests/unit/construction-just-in-time-materials.test.ts`, where a
+      // multi-order queue makes them diverge.
+      nextOrderShortfallMinorUnits: 80,
       items: [{ itemId: 'item.brick', quantity: 2, costMinorUnits: 80 }],
     });
   });
@@ -547,6 +557,7 @@ describe('cancelling one order by id, which is the command this read model exist
     expect(projectBuildQueue(runtime.construction).materialsFunding).toEqual({
       unfunded: false,
       shortfallMinorUnits: 0,
+      nextOrderShortfallMinorUnits: 0,
       items: [],
     });
   });

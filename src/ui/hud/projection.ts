@@ -509,21 +509,45 @@ function overdraftRemaining(counts: HudCountsViewModel): number | undefined {
 }
 
 /**
- * The `FUNDS` chip's tone: nothing while the prison is solvent, `warning` while
- * it is under water with room left, `danger` at the deliveries rung (the
- * owner's ruling 18 of 2026-08-31, re-based by the ruling of 2026-09-01).
+ * Whether the balance has reached the treasury floor itself -- the deepest a
+ * prison can go, published as `counts.treasuryOverdraftFloorMinorUnits` and
+ * reached only by an automatic payroll tick, never by a press (issue #768).
  *
- * ## Why two tones and not one
+ * Its own function because `overdraftTone` and `overdraftDescription` both
+ * need the same boundary and must not drift into two comparisons that could
+ * disagree at the edge.
+ */
+function atTreasuryFloor(counts: HudCountsViewModel): boolean {
+  const floor = counts.treasuryOverdraftFloorMinorUnits;
+  return floor !== undefined && floor < 0 && counts.treasuryMinorUnits <= floor;
+}
+
+/**
+ * The `FUNDS` chip's tone: nothing while the prison is solvent, `warning`
+ * while it is under water with room left, `danger` at the deliveries rung and
+ * `critical` at the treasury floor itself (the owner's ruling 18 of
+ * 2026-08-31, re-based by the ruling of 2026-09-01, given a third tone by the
+ * ruling on issue #768).
  *
- * `coverageTone`'s argument, applied to money. A prison at -100 and a prison at
- * -1,300 are not the same state told louder: the first can still buy the plank
- * that finishes the cell, and the second can buy nothing at all -- every press
- * that costs money is refused, and none of them will stop being refused until
- * the state pays. That is exactly the distinction the coverage ladder draws
- * between understaffed and unguarded, *"the rung where the cheapest possible
- * action changes the outcome"*. A strip where the worst state and an ordinary
- * one paint the same is a strip that has nothing left to say when the prison is
- * actually stuck.
+ * ## Why three tones and not two
+ *
+ * `coverageTone`'s argument, applied to money, twice over. A prison at -100
+ * and a prison at -1,300 are not the same state told louder: the first can
+ * still buy the plank that finishes the cell, and the second can buy nothing
+ * at all -- every press that costs money is refused, and none of them will
+ * stop being refused until the state pays. That is exactly the distinction the
+ * coverage ladder draws between understaffed and unguarded, *"the rung where
+ * the cheapest possible action changes the outcome"*.
+ *
+ * **And a prison at -1,300 and one at -2,500 are not the same state either,
+ * for the opposite reason.** Both refuse every press alike -- `danger` was
+ * correct about that much on its own -- but only the second is the floor no
+ * press can reach at all, where the treasury itself has stopped and the
+ * *game's* own automatic spends (a payday) are what put it there, not the
+ * player. Issue #768 found the two indistinguishable: `danger` covered both
+ * the instant ruling 19 re-based it onto the deliveries rung, and a strip that
+ * paints "you cannot buy" the same as "you are at the bottom" has nothing left
+ * to say once the prison is stuck twice over.
  *
  * **The tone was computed against the whole -2,500 floor until 2026-09-01, and
  * the paragraph above read *"the second can buy nothing at all until the state
@@ -544,7 +568,8 @@ function overdraftRemaining(counts: HudCountsViewModel): number | undefined {
  * exactly what it reads as: no discretionary spend of any kind, player-pressed
  * or scheduled, moves the balance again until the state pays what it owes.
  * Only the payday exception survives, and it is named above rather than
- * implied.
+ * implied. **And it does not mean "the deepest a prison can go" either** --
+ * that is `critical` now, the ruling on issue #768's own boundary.
  *
  * **And during the starter exemption the rung itself moves, which this
  * function must move with rather than key off a stale -1,250.** Before this
@@ -552,26 +577,49 @@ function overdraftRemaining(counts: HudCountsViewModel): number | undefined {
  * unfurnished prison sitting on the shallower starter floor -- the same
  * source `overdraftRemaining` reads is read here too, so a fresh prison's
  * chip turns amber, not red, exactly at the floor the starter rung actually
- * enforces.
+ * enforces. The floor itself does not move with the starter exemption --
+ * `Treasury.overdraftFloorMinorUnits` is unaffected by furnishing -- so
+ * `atTreasuryFloor` needs no matching change; only the `warning`/`danger`
+ * boundary above it does.
  *
  * ## Why the chip takes a tone at all, when it has always refused one
  *
  * The `funds` descriptor's own comment refuses a tone at length, and that
  * refusal is intact: *"low on money" is a threshold, and a threshold is a
  * balance decision* reserved to #29 and ADR 0017 decision 5. **Nobody chose a
- * threshold here.** Zero is not a number this file picked -- it is where the
- * prison stops spending its own money and starts spending the state's -- and
- * the floor is `Treasury.overdraftFloorMinorUnits`, published by the
- * simulation. Both are states the economy defines; neither is a judgement
- * about when a balance is "low".
+ * threshold here.** Zero, the deliveries rung and the floor are not numbers
+ * this file picked: zero is where the prison stops spending its own money and
+ * starts spending the state's, the rung is `Treasury.floorFor('deliveries')`
+ * -- the point ADR 0017 decision 8 already defines as where a press stops
+ * working -- and the floor is `Treasury.overdraftFloorMinorUnits`, published by
+ * the simulation. All three are states the economy defines; none is a
+ * judgement about when a balance is "low", and if the deliveries and
+ * construction rungs are ever unified (the sibling half of #771) the boundary
+ * between `warning` and `danger` moves with them for the same reason -- it is
+ * read off the rung, not written out here -- while the boundary this ruling
+ * adds, between `danger` and `critical`, stays the published floor and is
+ * unaffected either way.
  *
- * Colour is never the only signal: the badge beside it states the remainder in
- * words, and at the rung those words are `0 left before deliveries stop`.
+ * **Colour is never the only signal, and this ruling now keeps that promise.**
+ * The badge beside the chip states the remainder in words, and until issue
+ * #768's ruling of 2026-09-01 the rung and the floor read the same sentence --
+ * `HUD_MESSAGE_KEY.fundsDeliveriesStopped`, chosen whenever `overdraftRemaining`
+ * clamps to zero, which it does at the rung and everywhere below it alike. A
+ * player who could not see the colours read one sentence for two states this
+ * function tells apart. `overdraftDescription` now chooses a third key,
+ * `HUD_MESSAGE_KEY.fundsTreasuryFloorExhausted`, on exactly the boundary this
+ * function paints `critical` on -- `atTreasuryFloor`, over the published
+ * `counts.treasuryOverdraftFloorMinorUnits` -- so the words and the colour
+ * change together at both steps, not only the first. The sentence itself is
+ * player-facing copy and `AGENTS.md`'s fourth exclusion reserves its final
+ * wording to the owner; what shipped here is the clearest available draft,
+ * flagged owner-pending, not a placeholder.
  */
 function overdraftTone(counts: HudCountsViewModel): BadgeTone | undefined {
   const remaining = overdraftRemaining(counts);
   if (remaining === undefined || counts.treasuryMinorUnits >= 0) return undefined;
-  return remaining <= 0 ? 'danger' : 'warning';
+  if (remaining > 0) return 'warning';
+  return atTreasuryFloor(counts) ? 'critical' : 'danger';
 }
 
 /**
@@ -611,6 +659,18 @@ function overdraftBadge(counts: HudCountsViewModel): HudMetricBadge | undefined 
  * badge is amber then red across the same step, so the words and the colour
  * change together.
  *
+ * **Three keys now, closing the gap issue #768's ruling of 2026-09-01 found.**
+ * `overdraftTone` told the deliveries rung apart from the treasury floor from
+ * the moment the third tone landed; this function did not -- `remaining`
+ * clamps to zero at the rung and stays zero all the way to the floor and
+ * below, so `fundsDeliveriesStopped` was the sentence at both `danger` and
+ * `critical`, which differed only in colour. This function now asks
+ * `atTreasuryFloor(counts)` directly -- the same boundary `overdraftTone`
+ * already draws `critical` on, computed once so the two cannot disagree at
+ * the edge -- and chooses `HUD_MESSAGE_KEY.fundsTreasuryFloorExhausted`
+ * there instead. `danger` is untouched: it is still exactly the balance-below
+ * the rung, above-the-floor case, and still reads `fundsDeliveriesStopped`.
+ *
  * The remainder rides `numberParameters` for `overdraftBadge`'s reason: this
  * layer is pure and has no localizer, so it names the quantity and the strip
  * formats it -- and the tooltip's number then groups exactly as the badge's
@@ -621,6 +681,7 @@ function overdraftDescription(counts: HudCountsViewModel): HudMetricText | undef
   const tone = overdraftTone(counts);
   const remaining = overdraftRemaining(counts);
   if (tone === undefined || remaining === undefined) return undefined;
+  if (atTreasuryFloor(counts)) return { textKey: HUD_MESSAGE_KEY.fundsTreasuryFloorExhausted };
   if (remaining <= 0) return { textKey: HUD_MESSAGE_KEY.fundsDeliveriesStopped };
   return { textKey: HUD_MESSAGE_KEY.fundsBeforeDeliveriesStop, numberParameters: { remaining } };
 }

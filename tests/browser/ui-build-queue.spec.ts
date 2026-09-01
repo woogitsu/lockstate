@@ -83,7 +83,7 @@ function queueOf(total = 12): HudBuildQueueViewModel {
     // these assert the window, the ids and the pooled rows. The funded state is
     // the one that leaves the block's drawing unchanged, so no case here is
     // silently measuring a shortfall it did not ask for.
-    materialsFunding: { unfunded: false, shortfallMinorUnits: 0 },
+    materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 },
   };
 }
 
@@ -97,7 +97,7 @@ function queueOf(total = 12): HudBuildQueueViewModel {
  * test would agree with any price (`docs/TESTING.md`).
  */
 function unfundedQueueOf(total = 12, shortfall = 80): HudBuildQueueViewModel {
-  return { ...queueOf(total), materialsFunding: { unfunded: true, shortfallMinorUnits: shortfall } };
+  return { ...queueOf(total), materialsFunding: { unfunded: true, shortfallMinorUnits: shortfall, nextOrderShortfallMinorUnits: shortfall } };
 }
 
 async function openBuildTab(page: Page): Promise<void> {
@@ -304,7 +304,7 @@ test.describe('the Build panel queue', () => {
     // surviving rows are still there and still aimed at their own orders.
     await page.evaluate(
       (model) => window.lockstateUiHarness.reportBuildQueue(model),
-      { total: 11, started: 1, orders: [order(0, 'in-progress'), order(2, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
+      { total: 11, started: 1, orders: [order(0, 'in-progress'), order(2, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
     );
     const settled = await probeQueue(page);
     expect(settled.rows.map((row) => row.orderId)).toEqual(['order-00', 'order-02']);
@@ -331,7 +331,7 @@ test.describe('the Build panel queue', () => {
     // The queue advances: the first order finished, so every row shifts up one.
     await page.evaluate(
       (model) => window.lockstateUiHarness.reportBuildQueue(model),
-      { total: 11, started: 1, orders: [order(1, 'in-progress'), order(2, 'assigned'), order(3, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
+      { total: 11, started: 1, orders: [order(1, 'in-progress'), order(2, 'assigned'), order(3, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
     );
     const advanced = await probeQueue(page);
     expect(advanced.rows.map((row) => row.orderId)).toEqual(['order-01', 'order-02', 'order-03']);
@@ -481,8 +481,14 @@ test.describe('the Build panel queue', () => {
       // The rendered sentence, with the figure substituted. An unresolved
       // `hud.build.queue-shortfall` shows up here as its own dotted key, and an
       // unsubstituted parameter shows up as a literal brace.
+      //
+      // "80" here is `unfundedQueueOf`'s single unfunded order, so the front
+      // of the queue and the queue's total are the same figure -- the
+      // divergent case is `tests/integration/construction-just-in-time-materials.test.ts`,
+      // *"answers what unblocks the front of the queue, not the queue's total,
+      // when a later order slips through (#771)"*.
       expect(queue.shortfallText, `the shortfall line at ${width}x${height}`).toBe(
-        'Waiting for 80 to buy materials.',
+        'Waiting for 80 to unblock the next order.',
       );
 
       /*
@@ -537,11 +543,11 @@ test.describe('the Build panel queue', () => {
     await openBuildTab(page);
 
     await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), unfundedQueueOf(12, 80));
-    expect((await probeQueue(page)).shortfallText).toBe('Waiting for 80 to buy materials.');
+    expect((await probeQueue(page)).shortfallText).toBe('Waiting for 80 to unblock the next order.');
 
     await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), unfundedQueueOf(12, 240));
     expect((await probeQueue(page)).shortfallText, 'the figure is a constant, not the model').toBe(
-      'Waiting for 240 to buy materials.',
+      'Waiting for 240 to unblock the next order.',
     );
 
     await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), queueOf(12));

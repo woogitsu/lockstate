@@ -7,10 +7,18 @@ import { type IconId, createIcon } from './icon';
  * The tone is an *addition* to the text, never a replacement for it: a badge
  * always carries a word, so a red-green colour-blind player, a monochrome
  * display and a screen reader all get the same information.
+ *
+ * **`'critical'` was added for issue #768's ruling of 2026-09-01**, the FUNDS
+ * chip's third tone: a state stronger than `'danger'` for the one place in this
+ * repository that needs to say "further still" than the tone that already
+ * means "urgent" everywhere else it appears (an active incident, an unguarded
+ * sector, a prison over capacity). Ordered here past `'danger'` for that
+ * reason -- it is the top of the ladder, not a rung between `'warning'` and
+ * `'danger'` -- and nothing else in the HUD emits it yet.
  */
-export type BadgeTone = 'neutral' | 'success' | 'warning' | 'danger' | 'info';
+export type BadgeTone = 'neutral' | 'success' | 'warning' | 'danger' | 'critical' | 'info';
 
-export const BADGE_TONES: readonly BadgeTone[] = ['neutral', 'success', 'warning', 'danger', 'info'];
+export const BADGE_TONES: readonly BadgeTone[] = ['neutral', 'success', 'warning', 'danger', 'critical', 'info'];
 
 export interface StatusBadgeOptions {
   readonly tone: BadgeTone;

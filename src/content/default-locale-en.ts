@@ -241,6 +241,28 @@ const authoredMessages: Readonly<Record<string, string>> = {
    */
   'hud.status.funds-deliveries-stopped':
     'Deliveries have stopped — no materials can be ordered until the state pays what it owes.',
+  /*
+   * The chip's tooltip at the treasury floor itself -- `critical`, the ruling
+   * on issue #768's third tone, one step past everything the sentence above
+   * says.
+   *
+   * **Written to answer the two questions a player at this balance has, and
+   * nothing else**: that no further spending of *any* kind is possible right
+   * now (not deliveries alone -- the sentence above already says that -- but
+   * construction, hiring and even the wage payment the deliveries rung still
+   * lets through), and what lifts it. "Until the state pays what it owes" is
+   * kept as the tail rather than invented fresh, because it is the true
+   * mechanism (the per-prisoner-day grant, `src/simulation/economy/income.ts`)
+   * and it is what every sibling refusal sentence already says; a different
+   * tail here would read as a different escape hatch where there is only one.
+   *
+   * **This copy is owner-pending** (`AGENTS.md`'s fourth exclusion: a
+   * player-facing promise is not an agent's to finalise). Written to be the
+   * clearest available sentence rather than a placeholder, not to be the
+   * owner's last word on it.
+   */
+  'hud.status.funds-treasury-floor-exhausted':
+    'The treasury is exhausted — nothing can be spent at all until the state pays what it owes.',
   // What this in-game day has earned so far (#29). The state pays per
   // prisoner-day at the end of the day, so this is the day's accrual and the
   // wording says so: "Earned today", never "Income" -- there is no rate, no
@@ -1039,15 +1061,36 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * Since a build order buys its own materials (ADR 0017 decision 7),
    * *"Awaiting Materials"* means two things a row cannot separate -- the lorry
    * is coming, or the prison could not pay -- and only the second needs the
-   * player to do something. `{total}` is what the queue could not buy, in the
-   * same minor units as `hud.status.funds`, so the two numbers on screen read
-   * against each other with nobody having chosen a currency.
+   * player to do something. `{total}` is the same minor units as
+   * `hud.status.funds`, so the two numbers on screen read against each other
+   * with nobody having chosen a currency.
    *
-   * **Authored by the owner, 2026-08-30, and verbatim.** The words on this line
+   * **`{total}` changed subject under the owner's ruling on issue #771 of
+   * 2026-09-01, and this line's wording is a proposal pending that same
+   * ruling, not a signed sentence.** It used to be, and the paragraph below
+   * records verbatim, `shortfallMinorUnits` -- the sum of every order the
+   * queue could not fund, "what the queue still needs, whole". ADR 0081
+   * decision 2 funds one whole order at a time and
+   * `JustInTimeMaterialsService`'s rule 2 lets a later, cheaper order through
+   * while an earlier, pricier one waits, so a player who saved the sum could
+   * still see nothing move. `{total}` is now
+   * `BuildQueueMaterialsFundingViewModel.nextOrderShortfallMinorUnits`: what
+   * unblocks the order at the front of the queue, which is also the front of
+   * the list on screen (ADR 0082). The wording change from "buy materials" to
+   * "unblock the next order" is this agent's best attempt at the clearest
+   * sentence for the new subject, offered for the owner to sign, adjust or
+   * replace -- `AGENTS.md`'s fourth exclusion reserves new player-facing copy,
+   * and only the number's *source* was this agent's to fix.
+   *
+   * **The paragraph the ruling replaces, kept for its own record.**
+   * *"Authored by the owner, 2026-08-30, and verbatim. The words on this line
    * are not an agent's: the sentence #640 needed did not exist, the gap was
    * reported rather than filled, and this is the answer that came back. It
    * names no material on purpose, which is why the view model that feeds it
-   * carries two scalars and not the projection's per-item list.
+   * carries two scalars and not the projection's per-item list."* The view
+   * model now carries three scalars for the reason above; the rest is
+   * unaffected -- no material is named and the words are still not this
+   * agent's own idea of the *subject*, only of the phrasing.
    */
   'hud.build.queue': 'Queued',
   'hud.build.queue-count': '{count} waiting · {started} being built',
@@ -1055,7 +1098,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.queue-cancel': 'Cancel',
   'hud.build.queue-unnamed': 'Unnamed order',
   'hud.build.queue-more': 'and {count} more behind these — undo takes back a whole run.',
-  'hud.build.queue-shortfall': 'Waiting for {total} to buy materials.',
+  'hud.build.queue-shortfall': 'Waiting for {total} to unblock the next order.',
   /*
    * What has been bought and has not arrived (#285), inside the buy disclosure
    * and beside the control that spent the money.

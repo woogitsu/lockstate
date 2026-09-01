@@ -138,6 +138,17 @@ export interface BuildQueueFundingSource {
  * `shortfallMinorUnits` is the actionable half and the reason this is not a
  * boolean: the answer to "you cannot afford it" is a number the player can
  * compare against the balance on the strip. It is the sum of `items`.
+ *
+ * **`nextOrderShortfallMinorUnits` is the other actionable figure, and it
+ * answers a different question (#771's second finding).** `shortfallMinorUnits`
+ * is what the *queue* still needs, whole; this is what unblocks the order at
+ * the front of it -- the earliest order in `orders`' own walk the last pass
+ * could not afford. ADR 0081 decision 2 funds one whole order at a time and
+ * `JustInTimeMaterialsService`'s rule 2 lets a later, cheaper order through in
+ * the same pass, so the two figures diverge whenever more than one order is
+ * unfunded: a player who saves `shortfallMinorUnits` may pay for money the
+ * queue does not need yet, and one who saves less than it may already see the
+ * front order move.
  */
 export interface BuildQueueMaterialsFundingViewModel {
   /**
@@ -152,6 +163,14 @@ export interface BuildQueueMaterialsFundingViewModel {
   readonly unfunded: boolean;
   /** What the queue could not buy, in minor units. `0` whenever `unfunded` is `false`. */
   readonly shortfallMinorUnits: number;
+  /**
+   * What it would take to fund the order at the front of the queue's own
+   * unfunded ones -- not the queue's total. `0` whenever `unfunded` is `false`,
+   * or when every blocked order is blocked for a reason that is not money. See
+   * `MaterialsProcurementReport.nextOrderShortfallMinorUnits`, which this is
+   * read from unchanged.
+   */
+  readonly nextOrderShortfallMinorUnits: number;
   /** Per item, ascending item id. Empty whenever `unfunded` is `false`. */
   readonly items: readonly {
     readonly itemId: string;
@@ -297,6 +316,7 @@ export function projectBuildQueue(
     materialsFunding: {
       unfunded: unfundedItems.length > 0,
       shortfallMinorUnits: unfundedItems.reduce((total, item) => total + item.costMinorUnits, 0),
+      nextOrderShortfallMinorUnits: funding?.lastReport.nextOrderShortfallMinorUnits ?? 0,
       items: unfundedItems,
     },
   };

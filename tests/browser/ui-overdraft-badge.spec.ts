@@ -81,6 +81,8 @@ interface ChipReading {
   /** Whether the badge's box lies inside the metrics row's own visible box. */
   readonly badgeOnScreen: boolean | null;
   readonly chipOnScreen: boolean;
+  /** The chip's `title` attribute -- the tooltip a hover reads. */
+  readonly chipTitle: string | null;
 }
 
 async function show(page: Page, next: HudCountsViewModel): Promise<ChipReading> {
@@ -109,6 +111,7 @@ async function show(page: Page, next: HudCountsViewModel): Promise<ChipReading> 
       chipValue: chip.querySelector<HTMLElement>('.ui-stat__value')?.textContent ?? null,
       badgeOnScreen: box === undefined ? null : box.left >= rowBox.left - 0.5 && box.right <= rowBox.right + 0.5,
       chipOnScreen: chipBox.left >= rowBox.left - 0.5 && chipBox.right <= rowBox.right + 0.5,
+      chipTitle: chip.getAttribute('title'),
     };
   });
 }
@@ -183,17 +186,27 @@ test.describe('the FUNDS chip says how much of the overdraft is left (ruling 18)
     expect(pastTheRung.badgeText).toBe('0 left');
     expect(pastTheRung.badgeTone).toBe('danger');
     expect(pastTheRung.chipTone).toBe('danger');
+    expect(pastTheRung.chipTitle, 'danger reads the deliveries-stopped sentence').toMatch(/deliver/i);
 
     /*
-     * **At the floor: `0 left`, and red.** Still true a rung further down, and
-     * still clamped: the remainder cannot go negative however deep the balance
-     * goes. A `-0` or a negative here would be the one number on this strip
-     * that a player would believe and act on.
+     * **At the floor: `0 left`, a third tone, and now a third sentence**
+     * (issue #768's ruling, closed on 2026-09-01). Still `0 left` -- the
+     * remainder cannot go negative however deep the balance goes, and that
+     * number is unchanged by this ruling on purpose: it states room against
+     * the deliveries rung, which is nothing at and below that rung alike, in
+     * both bands. What changed is the *words*: `overdraftDescription` used to
+     * fall back to the same `fundsDeliveriesStopped` sentence `danger` reads,
+     * and now asks `atTreasuryFloor` directly, on the same boundary the tone
+     * itself is painted on, so a colour-blind player or a screen reader hears
+     * the floor named as its own state rather than reusing "deliveries have
+     * stopped".
      */
     const stuck = await show(page, counts(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS));
     expect(stuck.badgeText).toBe('0 left');
-    expect(stuck.badgeTone).toBe('danger');
-    expect(stuck.chipTone).toBe('danger');
+    expect(stuck.badgeTone).toBe('critical');
+    expect(stuck.chipTone).toBe('critical');
+    expect(stuck.chipTitle, 'critical no longer reads the danger sentence').not.toBe(pastTheRung.chipTitle);
+    expect(stuck.chipTitle, 'and says the overdraft itself is exhausted').toMatch(/exhaust/i);
     // Off the edge for the same reason as the shallow case above, and for a
     // reason that has nothing to do with the tone: at 900x600 the FUNDS chip
     // is the eighth of nine on a row that shows one. See #719.

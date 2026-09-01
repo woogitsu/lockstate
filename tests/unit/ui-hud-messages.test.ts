@@ -194,11 +194,18 @@ describe('every HUD message key resolves in the bundled default locale', () => {
      * names, and say what happens when it runs out, which is a rule
      * `Treasury.floorFor` enforces today.
      */
+    /*
+     * **A third joins on the same principle, for the third tone issue #768's
+     * ruling added.** `hud.status.funds-treasury-floor-exhausted` names the
+     * same chip's same balance at its `critical` step -- the treasury floor,
+     * `counts.treasuryOverdraftFloorMinorUnits` -- and no new flow either.
+     */
     const ALLOWED_MONEY_KEYS = new Set([
       'hud.status.funds',
       'hud.status.funds-remaining',
       'hud.status.funds-before-deliveries-stop',
       'hud.status.funds-deliveries-stopped',
+      'hud.status.funds-treasury-floor-exhausted',
       'hud.security.roster-wage-bill',
     ]);
 

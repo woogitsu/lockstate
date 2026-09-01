@@ -30,6 +30,12 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * **The owner's ruling 19 of 2026-08-31 was that amendment's source**:
  * *"Dać szczeblom własne progi wewnątrz debetu"* -- give the rungs their own
  * thresholds inside the overdraft -- at **-1,250**, **-2,000** and **-2,500**.
+ * It is recorded at `docs/adr/0017-money-primary-resource-model.md`
+ * ("Amendment, 2026-09-01"), which the owner **accepted on 2026-09-01**. This
+ * paragraph read *"is **Proposed and not self-approved**"* until then and is
+ * corrected rather than deleted, because the amendment's own header keeps the
+ * same record for the same reason.
+ *
  * It gave the ladder three depths, and in doing so opened a 750-wide band
  * between the first two in which a purchase the shop refused was nevertheless
  * funded for a queued build order needing the identical materials -- filed as

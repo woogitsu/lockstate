@@ -444,7 +444,10 @@ describe('status strip: tone and badges', () => {
      */
     expect(badge(FLOOR).badge?.numberParameters).toEqual({ remaining: 0 });
     expect(badge(-3_000).badge?.numberParameters).toEqual({ remaining: 0 });
-    expect(badge(-3_000).badge?.tone).toBe('danger');
+    // At and below the floor itself the tone is `critical`, not `danger`
+    // (issue #768's ruling of 2026-09-01) -- see the dedicated test below for
+    // the boundary between the two.
+    expect(badge(-3_000).badge?.tone).toBe('critical');
 
     /*
      * **A floor shallower than the rung collapses the rung onto it**, which is
@@ -501,16 +504,34 @@ describe('status strip: tone and badges', () => {
     });
 
     /*
-     * At and below the rung: a different sentence, because a different thing
-     * is true. `{remaining} left before deliveries stop` with a `0` in it is a
-     * warning about something that has already happened, and the chip goes red
-     * at exactly this step -- so the words change where the colour changes.
+     * At and below the rung, above the floor: a different sentence, because a
+     * different thing is true. `{remaining} left before deliveries stop` with
+     * a `0` in it is a warning about something that has already happened, and
+     * the chip goes red at exactly this step -- so the words change where the
+     * colour changes.
      */
-    for (const balance of [-1_250, -1_300, -2_500, -3_000]) {
+    for (const balance of [-1_250, -1_300]) {
       expect(chip(balance).description, `balance ${String(balance)}`).toEqual({
         textKey: HUD_MESSAGE_KEY.fundsDeliveriesStopped,
       });
       expect(chip(balance).badge?.tone, `balance ${String(balance)}`).toBe('danger');
+    }
+    /*
+     * **A third sentence at the floor itself, closing the gap issue #768's
+     * ruling of 2026-09-01 found and this test used to pin.** `overdraftTone`
+     * told -1,300 apart from -2,500 (`danger` against `critical`) from the
+     * moment the third tone landed; this sentence did not, because
+     * `overdraftDescription` chose between only two keys on whether
+     * `remaining` had clamped to zero, which it does at the rung and
+     * everywhere below it alike. It now also asks `atTreasuryFloor`, so
+     * `critical` gets its own words -- `fundsTreasuryFloorExhausted` -- rather
+     * than reusing `fundsDeliveriesStopped`.
+     */
+    for (const balance of [-2_500, -3_000]) {
+      expect(chip(balance).description, `balance ${String(balance)} is at or past the floor`).toEqual({
+        textKey: HUD_MESSAGE_KEY.fundsTreasuryFloorExhausted,
+      });
+      expect(chip(balance).badge?.tone, `balance ${String(balance)} is at or past the floor`).toBe('critical');
     }
 
     /*
@@ -572,14 +593,15 @@ describe('status strip: tone and badges', () => {
   });
 
   /**
-   * **Two tones, not one, and the split is `coverageTone`'s argument applied to
-   * money.**
+   * **Three tones, not two, and the two splits are `coverageTone`'s argument
+   * applied to money twice over.**
    *
-   * A prison at -100 and a prison at -1,300 are not the same state told louder:
-   * the first can still buy the plank that finishes the cell, and the second
-   * cannot buy anything at all until the state pays it. That is the same
-   * distinction `coverageTone` draws between understaffed and unguarded -- the
-   * rung where the cheapest available action stops changing the outcome.
+   * A prison at -100 and a prison at -1,300 are not the same state told
+   * louder: the first can still buy the plank that finishes the cell, and the
+   * second cannot buy anything at all until the state pays it. That is the
+   * same distinction `coverageTone` draws between understaffed and unguarded
+   * -- the rung where the cheapest available action stops changing the
+   * outcome.
    *
    * **This test read `reserves danger for the floor itself` and pinned -2,500
    * until the owner's ruling of 2026-09-01**, and the sentence above read *"a
@@ -591,15 +613,23 @@ describe('status strip: tone and badges', () => {
    * still painted amber. The rung where a player's press dies is the deliveries
    * rung, so that is where `danger` starts.
    *
-   * What `danger` therefore no longer means is *"nothing at all can be spent"*
-   * -- the build queue can still spend down to -2,000 and a payday to -2,500.
-   * That is a real narrowing and it is the right one: every one of those is a
-   * spend the player cannot make happen by pressing anything.
+   * **And a prison at -1,300 and one at -2,500 are not the same state either**
+   * -- issue #768's finding, and the ruling this test now pins. Both refuse
+   * every press alike, but only the second is the floor no press can reach:
+   * every spend below the rung is the game's own, not one a player caused. So
+   * `danger` no longer means *"nothing at all can be spent"* (ruling 19 -- the
+   * build queue can still spend to -2,000 and a payday to -2,500) and it no
+   * longer means *"the deepest a prison can go"* either (this ruling): the
+   * floor itself is `critical`, one step further.
    *
-   * Colour is never the only signal in either: the badge states the remainder
-   * in words, and at the rung those words are `0 left before deliveries stop`.
+   * Colour is never the only signal in either split: the badge states the
+   * remainder in words, and at the rung those words are
+   * `0 left before deliveries stop`. **They stay that at the floor too** --
+   * `overdraftDescription`'s own comment records that the words do not yet
+   * separate `danger` from `critical`, which is a finding of this ruling and
+   * not something this test papers over.
    */
-  it('reserves danger for the deliveries rung, and paints the chip and its badge alike', () => {
+  it('reserves danger for the deliveries rung and critical for the treasury floor, and paints the chip and its badge alike', () => {
     // `roomCapacity: 1`, for the reason the first test in this block gives:
     // the mature rung, not the starter one `counts()`'s own `0` default would
     // otherwise select.
@@ -609,12 +639,14 @@ describe('status strip: tone and badges', () => {
     expect(at(-1).tone).toBe('warning');
     expect(at(-1_249).tone, 'one unit of room left is still room').toBe('warning');
     expect(at(-1_250).tone, 'and none at all is not').toBe('danger');
-    expect(at(-1_300).tone, 'the position the ruling was argued from').toBe('danger');
-    expect(at(-2_500).tone, 'and the floor is still danger, a rung further down').toBe('danger');
+    expect(at(-1_300).tone, 'the position the ruling of 2026-09-01 was argued from').toBe('danger');
+    expect(at(-2_499).tone, 'one unit above the floor is still danger, not the floor').toBe('danger');
+    expect(at(-2_500).tone, 'the floor itself is a third tone (#768)').toBe('critical');
+    expect(at(-4_000).tone, 'and so is anything a restored save can put below it').toBe('critical');
 
     // One decision, two channels: the chip and its badge cannot disagree about
     // how bad this is.
-    for (const balance of [-1, -1_249, -1_250, -2_500, -4_000]) {
+    for (const balance of [-1, -1_249, -1_250, -2_499, -2_500, -4_000]) {
       const chip = at(balance);
       expect(chip.badge?.tone, `balance ${String(balance)}`).toBe(chip.tone);
     }
