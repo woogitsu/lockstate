@@ -296,7 +296,7 @@ describe('every declared simulation command either has a producer or is accounte
     // loud. A pattern that matched nothing, or a stripper that blanked every
     // file, would do the same in a way the file count cannot see, so the
     // positive control names every command that genuinely has a producer and
-    // where it is -- all fourteen in `src/main.ts`, which is the composition
+    // where it is -- all fifteen in `src/main.ts`, which is the composition
     // root and the only place in `src/` that builds a command object.
     //
     // **This read `all eleven` until this change**, and it was right when #367
@@ -309,17 +309,28 @@ describe('every declared simulation command either has a producer or is accounte
     // Corrected rather than overwritten, because the number is not the finding
     // and the assertion below is: `COMMAND_TYPES.length` is pinned two lines
     // down, so the *comment* could rot for three additions while the *gate*
-    // could not rot for one. Thirteen of the fourteen are named in this block;
+    // could not rot for one. Fourteen of the fifteen are named in this block;
     // `Undo` is named at the `case 'Undo':` case below, for the reason given
     // there.
+    //
+    // **And it read `all fourteen` until the owner's decisions of 2026-09-01 on
+    // [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)**,
+    // which added `DismissAlert` -- with its producer, from the alerts list's
+    // own rows. The correction is the fifth of exactly the shape the paragraph
+    // above describes, which is why the paragraph is kept.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(14);
+    expect(COMMAND_TYPES.length).toBe(15);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
     expect(producersOf('AdmitPrisoner')).toEqual(['src/main.ts']);
     expect(producersOf('HireStaff')).toEqual(['src/main.ts']);
     expect(producersOf('Redo')).toEqual(['src/main.ts']);
+    // The alerts log's own gesture (ADR 0084 decision 3). Named here for the
+    // reason `RemoveObject` is named below: its whole point is that a *press*
+    // reaches it, so a producer that existed only in a test would be exactly
+    // the defect this gate is named after.
+    expect(producersOf('DismissAlert')).toEqual(['src/main.ts']);
     // The two the Rooms tab added, asserted by name rather than only by the
     // count: a producer that had drifted out of the composition root would
     // still keep the count green.
@@ -463,12 +474,15 @@ describe('every declared simulation command either has a producer or is accounte
     // `DismissStaff` arrived the same way and put the first caller in `src/` in
     // front of anything that removes a staff member from the roster at all
     // (#533) -- which, unlike the three before it, was not an unreachable
-    // existing path but a path that did not exist.
+    // existing path but a path that did not exist, and **zero and fifteen**
+    // once `DismissAlert` arrived the same way (ADR 0084 decision 3, the
+    // owner's, 2026-09-01) and gave the alerts log the player gesture two
+    // modules in `src/ui/` had each recorded as missing.
     // Both numbers move in the same change as a producer, which is the point of
     // asserting the count as well as the list: neither can be edited alone and
-    // stay green. Note the denominator moves too, so a fifteenth command added
+    // stay green. Note the denominator moves too, so a sixteenth command added
     // with no producer fails here as well as failing the accounting above.
     expect(unproducedTypes.length).toBe(0);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(14);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(15);
   });
 });

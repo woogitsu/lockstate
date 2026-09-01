@@ -52,7 +52,12 @@ import {
 } from './ui/hud';
 import { hudClockFromWorkerMessage } from './ui/simulation-clock';
 import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from './ui/simulation-alerts';
-import { hudEventAlertsFromWorkerMessage, hudEventNoticeFromWorkerMessage } from './ui/simulation-events';
+import {
+  alertRowDismissal,
+  hudAlertsWithoutRow,
+  hudEventAlertsFromWorkerMessage,
+  hudEventNoticeFromWorkerMessage,
+} from './ui/simulation-events';
 import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { BuildQueueReader } from './ui/simulation-build-queue';
@@ -2187,6 +2192,41 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
         case 'dismiss-staff':
           requireSimulation(commands).submit({ type: 'DismissStaff', staffId: intent.staffId });
           return;
+
+        /*
+         * The player has read a row of the alerts log (the owner's decision 3
+         * of 2026-09-01 on
+         * [ADR 0084](../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
+         *
+         * **Two writes, and neither is the other's copy.** The row leaves the
+         * list here, which is what the player sees happen; the command is what
+         * makes it still gone after a reload, because the log is in the save
+         * (decision 4) and a dismissal only this thread knew about would be
+         * undone by the next load. `src/ui/simulation-events.ts` states the
+         * division at both functions.
+         *
+         * **The two ordinals are read off the row rather than carried on the
+         * intent**: the HUD paints rows and does not know that a row stands for
+         * a run of arrivals, and `alertRowDismissal` is the one place that
+         * mapping lives. It answers `undefined` for a row that carries no run
+         * -- the refusal and protocol-fault rows -- and then nothing is sent
+         * and nothing is removed, which is `docs/HUD_PROJECTIONS.md` gap 34
+         * staying shut rather than a swallowed gesture.
+         *
+         * **`requireSimulation` is deliberately not used**, unlike every
+         * command above. A dismissal with no session to send to is not a failed
+         * command: the row goes off this thread's list, and there is no session
+         * for it to have survived into. Throwing here would paint
+         * `hud.refusal.*` for a gesture that did exactly what the player asked.
+         */
+        case 'dismiss-alert': {
+          const dismissal = alertRowDismissal(viewModel.alerts, intent.rowId);
+          if (dismissal === undefined) return;
+          viewModel = { ...viewModel, alerts: hudAlertsWithoutRow(viewModel.alerts, intent.rowId) };
+          hud?.update(viewModel);
+          commands?.submit({ type: 'DismissAlert', ...dismissal });
+          return;
+        }
 
         case 'place-build-order': {
           const sender = requireSimulation(commands);

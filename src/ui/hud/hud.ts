@@ -44,6 +44,7 @@ import {
   type HudStaffViewModel,
   type HudViewModel,
 } from './view-model';
+import { hudAlertRowLabel } from './alert-row-label';
 import { resolveHudLabelParameters } from './label-parameters';
 
 /**
@@ -557,6 +558,33 @@ export type HudIntent =
    * application could end one.
    */
   | { readonly kind: 'dismiss-staff'; readonly staffId: number }
+  /**
+   * The player has read a row of the alerts log and wants it gone (the owner's
+   * decision 3 of 2026-09-01 on
+   * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
+   *
+   * **The row's id and nothing else.** The two ordinals the wire needs are on
+   * the row the id names, and the host reads them off the list it is holding
+   * (`alertRowDismissal`); putting them on the intent would make the HUD
+   * describe a run of arrivals, which is not a thing it knows about -- it
+   * paints rows.
+   *
+   * **Not a *command* in the gated sense, unlike every intent above it.** The
+   * gate exists so a second tap while one is in flight does not hand a busy
+   * host two of something, and so a refusal reaches the player. Neither
+   * applies: a dismissal is idempotent -- the row is already off the list by
+   * the time a second tap could land, and the simulation treats a dismissal it
+   * cannot place as a success (`SimulationEventLog.dismiss`) -- and there is no
+   * refusal to paint, which is why no `hud.refusal.*` sentence is added for it.
+   * A dismissal made while this thread has no session is simply local: the row
+   * goes, and there is no session for it to have survived into anyway.
+   *
+   * **Only the rows this channel's own producer made can be dismissed**, which
+   * the HUD does not decide: a row carries `occurrences` or it does not, and
+   * the refusal and protocol-fault rows do not. Their dismissal is
+   * `docs/HUD_PROJECTIONS.md` gap 34, which ADR 0084 explicitly did not reopen.
+   */
+  | { readonly kind: 'dismiss-alert'; readonly rowId: string }
   /**
    * The player asked for an area to become a room (ADR 0022, amended).
    *
@@ -1783,7 +1811,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     const seen = new Set<string>();
     for (const [index, alert] of viewModel.alerts.entries()) {
       seen.add(alert.id);
-      const text = t(alert.labelKey, resolveHudLabelParameters(t, alert));
+      // The sentence, and -- since the owner's decisions 1 and 2 of 2026-09-01
+      // on ADR 0084 -- how many times it has been said and when the newest of
+      // them was. Composed by a pure function outside this file, because the
+      // suite runs in `node` with no jsdom and a decision made inside `mountHud`
+      // is unreachable from it.
+      const text = hudAlertRowLabel(t, alert);
       const badge = { tone: severityTone(alert.severity), text: t(severityLabelKey(alert.severity)) };
       const existing = alertRows.get(alert.id);
       let row = existing;
@@ -1803,8 +1836,46 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
          * item name -- the part rulings 3 and 13 of #703 added the sentence
          * for -- was always the part cut.
          */
-        row = createListRow({ icon: 'incident', label: text, badge, wrap: true });
+        /*
+         * **Pressing the row dismisses it** (the owner's decision 3 of
+         * 2026-09-01 on ADR 0084), and only on the rows that can be dismissed:
+         * a row carrying `occurrences` is one this channel's own producer made,
+         * and the refusal and protocol-fault rows beside it carry none. Their
+         * dismissal is `docs/HUD_PROJECTIONS.md` gap 34 and is not this change.
+         *
+         * **The whole row rather than a control at the end of it**, which is
+         * `createListRow`'s own rule and its own reason: *"the entire row, not
+         * a small chevron at its end, because a row is the tap target on a
+         * touch screen"*. It also costs no new word: a button with an icon or a
+         * label would need a sentence naming what it does, and a sentence is
+         * the owner's (`AGENTS.md`, fourth exclusion). The row's accessible
+         * name is the alert it is about, which is what a player is choosing
+         * between.
+         *
+         * Not gated and not marked as a command control: see the intent's own
+         * comment on `HudIntent` for why a dismissal has no refusal to paint
+         * and nothing to serialise against.
+         */
+        const dismissible = alert.occurrences !== undefined;
+        row = createListRow({
+          icon: 'incident',
+          label: text,
+          badge,
+          wrap: true,
+          ...(dismissible
+            ? {
+                onActivate: () => {
+                  const intent: HudIntent = { kind: 'dismiss-alert', rowId: alert.id };
+                  runReported(intent.kind, () => options.onIntent?.(intent), reportError);
+                },
+              }
+            : {}),
+        });
         row.element.dataset['alert'] = alert.id;
+        // So a browser test can tell the two families apart without reading an
+        // id prefix, which is `src/ui/simulation-*.ts`'s vocabulary and not the
+        // HUD's.
+        if (dismissible) row.element.dataset['alertDismissible'] = 'true';
         alertRows.set(alert.id, row);
       } else {
         row.setLabel(text);

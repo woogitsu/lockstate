@@ -179,6 +179,43 @@ export const HUD_MESSAGE_KEY = {
   minimapPlaceholder: 'hud.minimap.placeholder',
   alertsTitle: 'hud.alerts.title',
   alertsEmpty: 'hud.alerts.empty',
+  /**
+   * **The two sentences on this channel that nobody has authored, and they are
+   * the owner's** (`AGENTS.md`'s standing mandate, fourth exclusion: *"anything
+   * that reaches a player as a promise the code does not keep"*, which reserves
+   * player-visible wording).
+   *
+   * The owner took ADR 0084's decisions 1 and 2 on 2026-09-01 -- a repeated
+   * sentence says **how many times**, and it says **when** -- and every part of
+   * that except the two fragments a player reads is built:
+   * `HudAlertViewModel.occurrences` carries the count and the day, and
+   * `hudAlertRowLabel` puts them on the row. What it puts there is these two
+   * keys, and the catalog does not have them, **deliberately**:
+   *
+   * - `hud.alert.occurrences` renders the repeat count. `{count}` is a whole
+   *   number, at least 2 where this is rendered at all. The obvious English is
+   *   the ADR's own shorthand, `×{count}`, and whether that is the wording,
+   *   whether the multiplication sign leads or trails, and what a locale with
+   *   no such convention says instead are all the owner's.
+   * - `hud.alert.time` renders when the newest arrival happened. `{day}` is the
+   *   in-game day, counting from 1, and `{progress}` is how far through it, as
+   *   a whole percent -- the same two figures the status strip's `Day` and
+   *   `Through the day` readouts carry, because they are the only calendar this
+   *   game has (`docs/HUD_PROJECTIONS.md` gap 5: there is no hour of the day to
+   *   render, and inventing one would be *"the same class of lie as a money
+   *   counter with no economy"*).
+   *
+   * **This costs a red test until they are filled, and that is the point.**
+   * `tests/foundation/localization-key-completeness.test.ts` and
+   * `tests/unit/ui-hud-messages.test.ts` both fail while a declared key has no
+   * sentence, naming these two, so the gap cannot be merged and published
+   * quietly -- `resolveLocalizationKey` renders an unknown key as itself, which
+   * is exactly the *"wrong shipping state"* the first of those tests exists to
+   * catch. A placeholder sentence written here would pass both tests and put an
+   * un-owned word on a player's screen, which is the worse of the two failures.
+   */
+  alertsOccurrences: 'hud.alert.occurrences',
+  alertsTime: 'hud.alert.time',
 
   panelCollapse: 'hud.panel.collapse',
   panelExpand: 'hud.panel.expand',
