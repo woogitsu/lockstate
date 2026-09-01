@@ -644,12 +644,29 @@ test.describe("5: ADR 0086 §2's browser prediction", () => {
     // window from a clean mark so the `select-tab` refresh is not counted as
     // part of the heartbeat's cadence.
     await page.waitForTimeout(2_000);
+    // The row content at both ends of the window, because the prediction has
+    // three parts and "visibly moving need bars" is the third. A count and a
+    // gap say the request was made; only the painted row says the readout
+    // changed.
+    // `data-need-permille` and not the row's words: the need's *word* is a rung
+    // and a rung need not move in thirty seconds, so reading the text alone
+    // would answer "did the bar move" with "the label did not".
+    const rowsNow = async (): Promise<readonly string[]> =>
+      page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.hud-regime__roster-row:not([hidden])')].map(
+          (node) =>
+            `${node.dataset['prisoner'] ?? '?'} need=${node.dataset['need'] ?? '?'} permille=${node.dataset['needPermille'] ?? '?'} | ${(node.innerText ?? '').replace(/\s+/g, ' ').trim()}`,
+        ),
+      );
+    const rowsAtStart = await rowsNow();
     const mark = await page.evaluate(() => {
       const pulls = (window as unknown as RosterPullWindow).lockstateRosterPulls ?? [];
       return { start: performance.now(), before: pulls.length };
     });
 
-    await page.waitForTimeout(30_000);
+    await page.waitForTimeout(15_000);
+    const rowsAtHalf = await rowsNow();
+    await page.waitForTimeout(15_000);
 
     const window30 = await page.evaluate((started: number) => {
       const pulls = ((window as unknown as RosterPullWindow).lockstateRosterPulls ?? []).filter(
@@ -696,6 +713,9 @@ test.describe("5: ADR 0086 §2's browser prediction", () => {
     console.log(`gap histogram (50 ms buckets): ${JSON.stringify(window30.gapHistogram)}`);
     console.log(`every projection pulled in the window: ${JSON.stringify(window30.byProjection)}`);
     console.log(`roster data-total=${String(window30.rosterTotal)}`);
+    console.log(`rows at t=0:    ${JSON.stringify(rowsAtStart)}`);
+    console.log(`rows at t=15s:  ${JSON.stringify(rowsAtHalf)}`);
+    console.log(`rows at t=30s:  ${JSON.stringify(await rowsNow())}`);
     for (const row of window30.rows) console.log(`  row ${row.prisoner}: ${row.text}`);
 
     // The premise, and the only assertion: the measurement really was taken
