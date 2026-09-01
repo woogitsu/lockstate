@@ -256,17 +256,44 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      */
     stepTo(runtime, DAY_LENGTH_TICKS * 9);
     expect(runtime.payroll.unpaidWagesMinorUnits, 'nine paydays must have been met for this test to mean anything').toBe(0);
-    expect(
-      runtime.events.since(0),
-      'a prison that has paid its staff every day has nothing to say about payday',
-    ).toEqual([]);
+    /*
+     * **Not `[]` any more, and that is the finding rather than a defect.**
+     * This assertion read `toEqual([])` and the comment here read "a prison
+     * that has paid its staff every day has nothing to say about payday"
+     * until issue #767 (ADR 0087 decision 2's amendment,
+     * `InsolvencyRungSystem`). It is still true of *payday* -- neither event
+     * below is `economy.wages-unpaid` -- and it is exactly the ladder ADR
+     * 0017 decision 8 authors that this fixture's own heading names:
+     * deliveries are refused and construction is halted **while wages are
+     * still being paid in full out of the overdraft**, because
+     * `PayrollSystem` draws all the way to the wages rung (the floor, -2,500)
+     * and the other two rungs sit above it. A prison that "has nothing to say
+     * about payday" for nine days has, in this same window, already lost the
+     * ability to buy and the ability to fund construction -- the exact shape
+     * #767 measured being told to nobody before this system existed.
+     *
+     * **This read "deliveries are refused (tick 16,799, day 7) and
+     * construction is halted (tick 21,599, day 9)", two days apart, and the
+     * owner's ruling on #771 (2026-09-01, ADR 0017's equalisation amendment)
+     * closed that gap.** `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` now
+     * equals `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`, so a balance
+     * sinking past the shared -1,250 crosses both in the same tick -- 16,799,
+     * day 7, exactly where deliveries already fires, not two days later.
+     */
+    expect(runtime.events.since(0), 'the two rungs above the wages floor, crossed together before any payday is missed').toEqual([
+      { sequence: 1, tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.deliveries-refused' },
+      { sequence: 2, tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.construction-refused' },
+    ]);
 
     // Day 10 is the first it cannot meet: 140 of room against a 520 bill.
     stepTo(runtime, DAY_LENGTH_TICKS * 10);
     expect(runtime.payroll.unpaidWagesMinorUnits).toBe(380);
 
-    const afterFirstMiss = runtime.events.since(0);
-    expect(afterFirstMiss.length, 'one missed payday is one thing to say').toBe(1);
+    // The two rung crossings above are still the only two of their kind: this
+    // is one missed payday, not one event overall, now that the ladder's
+    // upper rungs have their own channel entries.
+    const afterFirstMiss = runtime.events.since(0).filter((event) => event.type === 'economy.wages-unpaid');
+    expect(afterFirstMiss.length, 'one missed payday is one wages-unpaid sentence').toBe(1);
     // The figure the player is told is the arrears the save also carries, not
     // the day's shortfall by some other arithmetic.
     expect(afterFirstMiss[0]).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 380 });
@@ -305,12 +332,26 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      */
     stepTo(runtime, DAY_LENGTH_TICKS * 13);
     expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_940);
-    const afterFourMisses = runtime.events.since(0);
+    // Filtered to `economy.wages-unpaid` for the reason the first check above
+    // is: the two rung-crossing events from day 7 and day 9 are still on the
+    // channel (nothing here retires them) and are not paydays.
+    const afterFourMisses = runtime.events.since(0).filter((event) => event.type === 'economy.wages-unpaid');
     expect(
       afterFourMisses.length,
       'a prison that stays broke says so once per payday -- four missed paydays, four sentences',
     ).toBe(4);
     expect(afterFourMisses.at(-1)).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 1_940 });
+    // And the ladder's whole shape in one assertion: two rung crossings while
+    // solvent, then one wages-unpaid sentence per missed payday thereafter --
+    // six events for six real things that happened, none of them repeated.
+    expect(runtime.events.since(0).map((event) => event.type)).toEqual([
+      'economy.deliveries-refused',
+      'economy.construction-refused',
+      'economy.wages-unpaid',
+      'economy.wages-unpaid',
+      'economy.wages-unpaid',
+      'economy.wages-unpaid',
+    ]);
   });
 
   it('spends the overdraft on wages, stops at the wage rung and starts owing there', () => {

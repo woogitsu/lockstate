@@ -187,9 +187,28 @@ export const HOST_PRESS_FLOOR_MINOR_UNITS = rungFloorMinorUnits('deliveries', TR
  * chip above it. At the only floor anything in `src/` configures the two agree
  * to the minor unit; they part only for a session that sets a shallower floor,
  * and there the payload is right.
+ *
+ * **`isFreshUnfurnishedPrison` added 2026-09-01, for the same reason
+ * `pressFloorMinorUnits` above takes it.** This function predates the starter
+ * rung (ADR 0017's "Amendment, 2026-09-01: a starter rung…") and defaulted to
+ * `false` by omission, which is `rungFloorMinorUnits`'s own default -- so the
+ * one caller, `overdraftRemaining` in `src/ui/hud/projection.ts`, kept
+ * computing the mature -1,250 for a fresh, unfurnished prison sitting on the
+ * shallower -1,185 starter floor. The badge then overstated spendable room
+ * by exactly the 65-minor-unit gap between the two: at a balance of -1,160 it
+ * read `90 left` while a 65 press was refused, which is `AGENTS.md`'s fourth
+ * exclusion and the defect PR #769 closed for the mature floor, reopened here
+ * by an argument that never named the starter rung. The parameter is
+ * required rather than defaulted, matching `pressFloorMinorUnits`'s own
+ * choice and for the same reason: a caller that reads a published
+ * `roomCapacity` and forgets to pass it through would silently get "not
+ * fresh" back, which is the direction that reintroduces this exact defect.
  */
-export function deliveriesRungFloorMinorUnits(overdraftFloorMinorUnits: number): number {
-  return rungFloorMinorUnits('deliveries', overdraftFloorMinorUnits);
+export function deliveriesRungFloorMinorUnits(
+  overdraftFloorMinorUnits: number,
+  isFreshUnfurnishedPrison: boolean,
+): number {
+  return rungFloorMinorUnits('deliveries', overdraftFloorMinorUnits, isFreshUnfurnishedPrison);
 }
 
 /**

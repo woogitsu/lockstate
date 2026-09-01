@@ -450,6 +450,21 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
  * does too. Kept as a record that the badge used to understate the queue as
  * well as the payday, and no longer does.
  *
+ * **The same ruling opened a second gap this function closed the same day:
+ * the starter exemption.** While a prison is fresh and unfurnished
+ * (`RoomInstanceRegistry.totalResidentCapacity === 0`), `Treasury.floorFor`
+ * answers `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS` (-1,185, not
+ * -1,250) so the prison can always afford its first plank. A badge that kept
+ * computing the mature rung during that window overstated spendable room by
+ * exactly the 65-minor-unit gap between the two floors: at -1,160 it read
+ * `90 left` while a 65 press was refused, which is `AGENTS.md`'s fourth
+ * exclusion and the exact defect PR #769 closed for the mature floor. Fixed
+ * by reading the same freshness `pressFloorMinorUnits` reads --
+ * `counts.roomCapacity === 0` -- and passing it through
+ * `deliveriesRungFloorMinorUnits`, so the badge and the press it describes
+ * are computed from the one boolean rather than two things that can drift
+ * apart.
+ *
  * The rung comes through `deliveriesRungFloorMinorUnits` in
  * `src/ui/affordability.ts` rather than from `rungFloorMinorUnits` directly,
  * because `src/ui/hud/` may not import the simulation -- `AGENTS.md` boundary 1,
@@ -476,7 +491,8 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
 function overdraftRemaining(counts: HudCountsViewModel): number | undefined {
   const floor = counts.treasuryOverdraftFloorMinorUnits;
   if (floor === undefined || floor >= 0) return undefined;
-  return Math.max(0, counts.treasuryMinorUnits - deliveriesRungFloorMinorUnits(floor));
+  const isFreshUnfurnishedPrison = counts.roomCapacity === 0;
+  return Math.max(0, counts.treasuryMinorUnits - deliveriesRungFloorMinorUnits(floor, isFreshUnfurnishedPrison));
 }
 
 /**
@@ -516,6 +532,14 @@ function overdraftRemaining(counts: HudCountsViewModel): number | undefined {
  * or scheduled, moves the balance again until the state pays what it owes.
  * Only the payday exception survives, and it is named above rather than
  * implied.
+ *
+ * **And during the starter exemption the rung itself moves, which this
+ * function must move with rather than key off a stale -1,250.** Before this
+ * fix `overdraftTone` painted `danger` at the mature rung even for a fresh,
+ * unfurnished prison sitting on the shallower starter floor -- the same
+ * source `overdraftRemaining` reads is read here too, so a fresh prison's
+ * chip turns amber, not red, exactly at the floor the starter rung actually
+ * enforces.
  *
  * ## Why the chip takes a tone at all, when it has always refused one
  *

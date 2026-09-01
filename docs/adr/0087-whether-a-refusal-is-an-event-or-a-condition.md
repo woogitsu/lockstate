@@ -50,17 +50,39 @@
 
 ## Status
 
-**Proposed, 2026-09-01. Not self-approved.**
+**Proposed, 2026-09-01. Not self-approved**, for decisions 1, 3 and 4.
 
-Four decisions are stated below and one of them is recommended without
-reservation; the other three are recommended with a named gate. **Decision 2
-cannot be executed without new player-facing sentences**, which `AGENTS.md`'s
-fourth exclusion reserves to the owner — so what is asked for here is a ruling
-on the *shape*, after which the sentences are a separate request.
+**Decision 2 is amended, and the amendment is signed: the owner ruled on it on
+2026-09-01, on issue [#767](https://github.com/matmaxalez/lockstate/issues/767).**
+See §*Amendment, 2026-09-01: the ruling is both — a standing condition and a
+crossing event* at the foot of this file. It records the owner's answer to the
+question this document put to them — *"a persistent indicator ... plus a
+one-off notice at the moment of crossing"* — which is **more** than decision
+2's own recommendation of the indicator alone, and prices what that costs (more
+rows on the events band) in the amendment rather than leaving decision 2's
+original cost table standing unqualified. **Implemented in the same branch**:
+`PrisonCondition` (`src/simulation/protocol/types.ts`), the pure producer
+`computeStandingPrisonConditions`
+(`src/simulation/presentation/status-strip-projection.ts`) and the crossing
+system `InsolvencyRungSystem`
+(`src/simulation/economy/insolvency-rung-system.ts`) all exist on disk as of
+this amendment, so what was signed can be seen running rather than only
+described.
 
-**Nothing in `src/` is changed by this document.** No file under `src/` was
-edited by the pass that wrote it; five other agents were working there at the
-time, including in the files it cites most.
+Decisions 1, 3 and 4 are unaffected by the amendment and remain as originally
+stated below: one recommended without reservation, the other three (now: the
+other two, since 2 is settled) recommended with a named gate. **Decision 2
+still could not have been executed without new player-facing sentences**,
+which `AGENTS.md`'s fourth exclusion reserves to the owner; the amendment
+records that the crossing event's two sentences were written to be the
+clearest available rather than presented as settled, and are the owner's to
+confirm or replace, exactly as the rest of this Status already says about
+every string in this corpus.
+
+**Nothing in `src/` was changed by the pass that first wrote this document.**
+No file under `src/` was edited by that pass; five other agents were working
+there at the time, including in the files it cites most. The amendment below
+is a separate, later pass and is the first to touch `src/`.
 
 ## Context
 
@@ -699,3 +721,203 @@ probe and by citation, not by playing the game. Cost 2's four steps are
 asserted at the `RefusalLog` level and each of the four transitions is cited
 to the producer that performs it; what is **not** demonstrated is a real
 session walking that path end to end.
+
+## Amendment, 2026-09-01: the ruling is both — a standing condition and a crossing event
+
+**Accepted, 2026-09-01, by the repository owner.** Drafted the same day this
+document was first proposed, on issue
+[#767](https://github.com/matmaxalez/lockstate/issues/767) — found by playing
+the pass behind PR #766 — which measured a single automatic payroll tick
+taking the treasury from **−1,220 to −2,180**, crossing both the deliveries
+rung (−1,250) and the construction rung (−2,000) in one step, while the alerts
+log read *"No active alerts"* the same second. Implemented on the same branch
+so the ruling could be signed against running code rather than only prose.
+
+### 1. The question this ADR put to the owner, and the ruling in their own words
+
+Decision 2 above recommends option 4 **alone**: a standing indicator on
+`simulation/status-counts`, and nothing else. That recommendation was put to
+the owner directly, alongside the alternative issue #767 raised — an event
+instead — and framed as a genuine either/or. **The owner did not pick either
+option. They picked both:**
+
+> A persistent indicator as in option 4 — a closed union recomputed from live
+> state, visible without opening anything, not scrolling away, nothing in the
+> save — **plus** a one-off notice at the moment of crossing, so a player who
+> was looking elsewhere gets a nudge. The accepted cost is more noise on the
+> events band.
+
+### 2. This exceeds decision 2's own recommendation, and the cost table below is now incomplete on its own terms
+
+Decision 2's cost table prices four things: the union and schema field, the
+recomputing producer, the label-key `Record`, and copy — and its closing
+paragraph states outright what it does *not* price: *"adopting decision 2
+makes B13's silence fixable but does not by itself fix it… If the owner would
+rather a press produce exactly one line, B12 should be deleted rather than
+kept, and that is a fifth decision this document does not take because it
+changes what a player sees."* The owner's ruling is the fifth decision, taken
+the other way from the one that paragraph flagged as the alternative: not
+fewer lines, but a second one, deliberately, priced against the same events
+band ADR 0084 and ADR 0085 are also spending width and dwell time on.
+
+**What "more noise on the events band" actually costs, named rather than
+assumed:**
+
+- **Two rows instead of zero, for a single tick.** The −1,220 → −2,180 case
+  produces exactly two crossing events on the same tick (§4 below) — not one
+  per condition-check but one per rung genuinely crossed, so a player who
+  loses both capabilities at once reads two sentences rather than a single
+  combined one. That is a deliberate choice (see `deliveriesRefusedEventSchema`'s
+  own comment in `types.ts`): `EVENT_PRESENTATION` grades a sentence by `type`
+  alone and "deliveries refused" and "construction halted" are two different
+  facts, not one fact with a slot.
+- **It interacts with the dwell floor another agent is building
+  (`feat/0084-a-terminal-outcome-gets-its-moment`).** Two events landing on
+  one tick are two arrivals into whatever minimum-dwell arbitration
+  `applyEventNotice` ends up enforcing, and this document does not touch that
+  arbitration or assume how it resolves the pair — see §5 below.
+- **No new figure and no ordinal enters the save.** The crossing event carries
+  only the envelope every event carries (`sequence`, `tick`); the condition
+  carries nothing at all into the save (decision 2, unchanged). The cost is
+  entirely on the events band's *volume*, not on persistence.
+
+### 3. What was built, where, and how it divides between the two mechanisms
+
+**The condition (decision 2, exactly as recommended, unchanged by this
+amendment):**
+
+- `PrisonCondition`, a closed union of four members, authored in
+  `src/simulation/protocol/types.ts` (`PRISON_CONDITIONS` /
+  `PrisonCondition`, beside `statusCountsSchema`): `'construction.unfunded'`
+  and `'intake.no-place'` — the two the code had already built as pulled read
+  models (`BuildQueueMaterialsFundingViewModel.shortfallMinorUnits`,
+  `PrisonerPopulationCountsViewModel.waitingWithoutPlace`) — plus this
+  ruling's two, `'treasury.construction-refused'` and
+  `'treasury.deliveries-refused'`. Declared in ascending-id order, which is
+  also the canonical order the producer below emits in.
+- An optional `conditions` array on `statusCountsSchema`
+  (`src/simulation/protocol/types.ts`), bounded by `PRISON_CONDITIONS.length`,
+  always published (never absent in practice — only admitted as absent on the
+  wire for the same pre-existing-fixture reason `treasuryOverdraftFloorMinorUnits`
+  is).
+- `computeStandingPrisonConditions`
+  (`src/simulation/presentation/status-strip-projection.ts`): a pure function
+  of the treasury balance and its overdraft floor (via the existing
+  `rungFloorMinorUnits`, so it tracks a reconfigured floor rather than a bare
+  constant), the just-in-time materials report's `unfunded` length, and the
+  intake pipeline's `waitingWithoutPlace` count — all three already read
+  elsewhere in this same projection for other purposes, so nothing new is
+  walked to produce it. Wired into the real publication path at
+  `src/simulation/worker/status-counts.ts` (`projectStatusCounts`), which now
+  also passes `runtime.justInTimeMaterials` as the new `materialsFunding`
+  source. **No ordinal, no monotonic counter, no supersession key, nothing in
+  the save** — exactly as decision 2 specifies, unamended.
+
+**The crossing event (this ruling's addition):**
+
+- `InsolvencyRungSystem` (`src/simulation/economy/insolvency-rung-system.ts`),
+  a new kernel system registered at order 135 — immediately after
+  `economy.payroll` (130), before `navigation` (150) — because nothing that
+  spends treasury money in this session runs at a later order (`procurement`
+  is 110; a command-handler spend is dispatched before any system runs that
+  tick; `payroll` is 130), so a system at 135 always reads a tick's *final*
+  balance. Pinned in
+  `tests/determinism/kernel-system-order.test.ts`.
+- It holds a small transient `Set` of which rungs are currently standing —
+  memory the condition itself must never have (Cost 1 above), kept here
+  instead, exactly as `IncidentLog` keeps "is an incident open" beside the
+  pure incident *count* the strip separately recomputes. Never persisted; the
+  first `update()` call after a session is built (new or restored) only seeds
+  this set from the treasury's actual balance and fires nothing, so a
+  restored session that is already below a rung is told by the *condition*
+  (immediately, on its first publication) and not re-told by a spurious
+  crossing notice for a fact that was already true before this session began.
+- On a genuine transition it calls the **existing** event-writing path:
+  `SimulationEventLog.recordInsolvencyRungCrossed`
+  (`src/simulation/events/event-log.ts`), the same class and the same
+  `append`-based mechanism `recordUnpaidWages`, `recordDischarge` and every
+  other producer already use. Two new `SimulationEvent` members,
+  `'economy.deliveries-refused'` and `'economy.construction-refused'`
+  (`src/simulation/protocol/types.ts`), wired through `EVENT_PRESENTATION`,
+  `eventParameters` and `eventParameterMessages`
+  (`src/ui/simulation-events.ts`) the same way every existing member is.
+
+### 4. Proof: the −1,220 → −2,180 case, reproduced directly
+
+A throwaway probe (deleted before this commit, per
+`docs/AGENT_WORKFLOW.md` §2) built a bare `Treasury` at −1,220 with the
+shipped overdraft floor (−2,500), ran `InsolvencyRungSystem`'s seeding tick
+(confirmed nothing standing), forced the balance to −2,180 exactly as a
+payroll tick would, and checked both mechanisms:
+
+```
+conditions before:              []
+events after seeding tick:      []
+conditions after the tick:      ["treasury.construction-refused","treasury.deliveries-refused"]
+events after the crossing tick: [{"sequence":1,"tick":101,"type":"economy.deliveries-refused"},
+                                  {"sequence":2,"tick":101,"type":"economy.construction-refused"}]
+```
+
+Two conditions stand at once, in canonical ascending-id order
+(`construction.unfunded` < `intake.no-place` < `treasury.construction-refused`
+< `treasury.deliveries-refused`, so the two present here sort
+construction-before-deliveries). Two crossing events fire on the same tick, in
+`InsolvencyRungSystem`'s own iteration order — deliveries (the shallower rung)
+before construction — which is a different, and equally deliberate, ordering
+from the condition set's: one is a fixed alphabetical id order for a set with
+no meaningful sequence, the other is the order the two facts became true in a
+single tick, deliveries first because it is the shallower rung. A second,
+full-integration reproduction lives in
+`tests/integration/economy-payroll-loop.test.ts`, which a real command-built
+prison drives past both rungs on days 7 and 9 — before payroll itself first
+fails on day 10 — and asserts the same two event types in the same order.
+
+### 5. The interaction this amendment does not resolve, named rather than guessed at
+
+Another agent is adding a minimum dwell with severity promotion to the events
+band's own arbitration (`.hud__event` / `applyEventNotice`,
+`feat/0084-a-terminal-outcome-gets-its-moment`). This amendment's crossing
+event calls the same `SimulationEventLog` every other event already calls and
+touches nothing about how the band chooses what to show — but two crossing
+events landing on one tick, plus whatever `PayrollSystem` itself is doing
+around the same insolvency ladder, is exactly the kind of burst that dwell
+floor exists to arbitrate between. Whether two simultaneous `'warning'`-severity
+rows are shown in sequence, coalesced, or raced against a higher-severity
+event arriving the same tick is that other change's decision to make, not
+this one's — this amendment adds volume to the band and deliberately does not
+touch how the band spends it.
+
+### 6. What this amendment does not decide
+
+Same four items decision 2's own "What this document deliberately does not
+decide" lists, unchanged: any *other* sentence (the two this amendment does
+author are marked owner-pending below, not settled); whether the rungs get
+sentences of their own (ADR 0017's amendment already owes those); whether a
+condition gets a band of its own (ADR 0085's question); and which of the
+*other* three candidate conditions (#557, #552, #478) ship. This amendment
+answers only the shape-versus-event question for the two the owner had in
+front of them.
+
+**Copy, owner-pending.** The crossing event needed two sentences to exist at
+all, and `AGENTS.md`'s fourth exclusion reserves authoring them to the owner —
+so, as this Status section already says of `hud.alert.event.economy.wages-unpaid`'s
+siblings, these two are written to be the clearest available rather than
+presented as decided:
+
+- `hud.alert.event.economy.deliveries-refused`: *"Deliveries refused — the
+  treasury cannot cover a purchase right now."*
+- `hud.alert.event.economy.construction-refused`: *"Construction halted — the
+  treasury cannot fund the build queue right now."*
+
+The second reuses decision 8's own word for this rung ("halted") rather than
+"refused", on the reasoning that a purchase is refused and a queue is halted —
+two different verbs for two different subjects — but neither has been put to
+the owner, and either may come back changed or replaced.
+
+**Assumption recorded rather than silently relied on.** Both `computeStandingPrisonConditions`
+and `InsolvencyRungSystem` read the −1,250 / −2,000 split as it stands today,
+through `rungFloorMinorUnits` rather than a repeated literal — so a change to
+*which* `SpendClass` each condition or rung reads from would need an edit, but
+a change to the two constants themselves would not. A separate ruling is
+equalising the rung floors and has not yet been dispatched; when it lands,
+this amendment's code needs no change on that account alone.
