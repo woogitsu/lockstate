@@ -28,6 +28,8 @@ import { expect, test, type Page } from '@playwright/test';
 
 import {
   TILE,
+  armBuildable,
+  buy,
   calibrate,
   centreOf,
   drag,
@@ -429,23 +431,70 @@ test.describe('playing the rooms surface, 2026-09-01', () => {
 
     console.log(`[act4] funds at the start: ${String(await funds())}`);
 
-    await page.locator('.hud-build__list [data-buildable="bed-wooden"]').click();
-    if (await page.locator('.hud-build__buy').isHidden()) await page.locator('.hud-build__buy-toggle').click();
-    await page.locator('.hud-build__buy .ui-number__input').fill('1');
-    await page.locator('.hud-build__buy-submit').click();
-    await page.waitForTimeout(400);
-    console.log(`[act4] funds after buying one bed's material: ${String(await funds())}`);
+    /*
+     * `PlaceObject` refuses `outside-room` for any tile `roomInstanceContaining`
+     * cannot resolve (`src/simulation/objects/object-placement-service.ts:476`)
+     * -- a bed is an object buildable and object buildables belong to a room by
+     * construction (ADR 0028). The first version of this act pressed a bed
+     * straight onto bare, unzoned ground and never checked the refusal band at
+     * that point; funds went start -> unchanged -> unchanged and the later
+     * Remove press answered `nothing-to-remove`, which the act misread as
+     * confirming ADR 0076's "returns nothing" when it was actually confirming
+     * that no bed had ever existed to return anything from. So: enclose a 4x4
+     * `room.cell` inside the found 5x5 block first, exactly the way a player
+     * would have to, then place the bed inside it.
+     */
+    await buy(page, 'wall-brick', 20);
+    await buy(page, 'bed-wooden', 1);
+    console.log(`[act4] funds after buying wall and bed material: ${String(await funds())}`);
 
     await page.locator('.hud-strip__transport button').nth(2).click();
     await page.waitForTimeout(200);
     await page.locator('.hud-strip__transport button').nth(2).click();
     await page.waitForTimeout(6000);
 
-    const armLabel = (await page.locator('.hud-build__arm').innerText()).trim().toLowerCase();
-    if (armLabel.startsWith('place') || armLabel.startsWith('draw')) await page.locator('.hud-build__arm').click();
-    const bedPoint = centreOf(origin, tx, ty);
-    console.log(`[act4] placing a bed at tile (${tx},${ty}) submitted: ${JSON.stringify(await press(page, bedPoint.x, bedPoint.y))}`);
+    await armBuildable(page, 'wall-brick');
+    const westX = origin.originX + tx * TILE;
+    const eastX = origin.originX + (tx + 4) * TILE;
+    const northY = origin.originY + ty * TILE;
+    const southY = origin.originY + (ty + 4) * TILE;
+    for (const run of [
+      { a: { x: westX + TILE / 2, y: northY }, b: { x: eastX - TILE / 2, y: northY } },
+      { a: { x: westX + TILE / 2, y: southY }, b: { x: eastX - TILE / 2, y: southY } },
+      { a: { x: westX, y: northY + TILE / 2 }, b: { x: westX, y: southY - TILE / 2 } },
+      { a: { x: eastX, y: northY + TILE / 2 }, b: { x: eastX, y: southY - TILE / 2 } },
+    ]) {
+      await drag(page, run.a, run.b);
+    }
+    console.log(`[act4] wall queue right after drawing the 4x4 perimeter: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+    await waitForQueueEmpty(page);
+
+    // Zone it, retrying for the reason `buildAndPopulate` retries (the Rooms
+    // panel's enclosure verdict can read a world view a snapshot has not yet
+    // refreshed).
+    let zonedRooms = 0;
+    for (let attempt = 1; attempt <= 10 && zonedRooms === 0; attempt += 1) {
+      await tab(page, 'rooms').click();
+      const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
+      if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+      await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+      await page.locator('.hud-rooms__arm').click();
+      await drag(page, centreOf(origin, tx, ty), centreOf(origin, tx + 3, ty + 3));
+      await page.locator('.hud-rooms__confirm').click();
+      await page.waitForTimeout(800);
+      zonedRooms = (await latestCounts(page))?.rooms ?? 0;
+      console.log(`[act4] zone attempt ${attempt}: rooms=${zonedRooms}, band=${JSON.stringify(await refusalBand(page))}`);
+      if (zonedRooms === 0) await page.waitForTimeout(3000);
+    }
+    if (zonedRooms === 0) throw new Error('the 4x4 perimeter was never accepted as a room.cell');
+
+    await tab(page, 'build').click();
+    await armBuildable(page, 'bed-wooden');
+    // Inside the cell, one tile in from every wall.
+    const bedPoint = centreOf(origin, tx + 1, ty + 1);
+    console.log(`[act4] placing a bed at tile (${tx + 1},${ty + 1}) submitted: ${JSON.stringify(await press(page, bedPoint.x, bedPoint.y))}`);
     console.log(`[act4] funds right after the order: ${String(await funds())}`);
+    console.log(`[act4] refusal band right after placing: ${JSON.stringify(await refusalBand(page))}`);
 
     await waitForQueueEmpty(page);
     await page.waitForTimeout(2500);
