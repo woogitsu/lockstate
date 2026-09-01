@@ -945,10 +945,12 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * to, instead of `continueDeploymentTravel`/`continueLeg` applying the
    * resolved route in one step (ADR 0088, answering ADR 0059 open question 4
    * for guards the way ADR 0059 answered it for prisoners). Registered
-   * alongside `deploymentSystem`/`patrolSystem` below, at order 200 -- before
-   * both (270/280), so a walk that finishes on tick *n* is visible to whichever
-   * of them owns it on that same tick, exactly as `LocomotionSystem` is
-   * ordered against `ActionSystem`.
+   * alongside `deploymentSystem`/`patrolSystem` below, at order 201 (one past
+   * the prisoner instance's 200, so the two do not collide -- see
+   * `LocomotionSystem`'s own header) -- before both 270 and 280, so a walk
+   * that finishes on tick *n* is visible to whichever of them owns it on that
+   * same tick, exactly as the prisoner instance is ordered against
+   * `ActionSystem`.
    */
   const guardLocomotionSystem = createGuardLocomotionSystem(securityGuards, navigation, deploymentSystem, patrolSystem);
 
