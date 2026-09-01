@@ -1639,16 +1639,46 @@ decision about what to build next.
     optional field, no version bump — so the exclusion is about what it would
     buy, and it is written down as such under "What is deliberately excluded
     from the payload" in `docs/PERSISTENCE.md`.
-    **`SimulationEventLog` (#507) joins them on the same terms**, and the
-    entry is worth reading beside `RefusalLog`'s rather than as a repetition:
-    both are excluded because they hold a *notice* rather than a condition, but
-    this one can say so more strongly. The conditions behind its events are
-    persisted separately — arrears in the payroll snapshot (ADR 0049), sentence
-    ticks in the prisoner components (ADR 0050) — so a restored prison
-    re-announces at its next failed payday and at the next sentence that ends,
-    and nothing a player would have been told is actually lost. It is recorded
-    in `docs/PERSISTENCE.md` under the same heading, and asserted in
-    `tests/integration/sentence-end-release.test.ts`.
+    **`SimulationEventLog` (#507) joined them on the same terms, and left them
+    on 2026-09-01.** The owner took
+    [ADR 0084](./adr/0084-what-the-alerts-channel-owes-a-player.md)'s decision
+    3 — the alerts log survives a reload — so the log *is* snapshotted, as an
+    optional `simulation.alerts` section carrying the retained records, the
+    ordinals a player dismissed and the log's sequence counter. No
+    `SAVE_SCHEMA_VERSION` bump; the pricing is in `docs/PERSISTENCE.md` under
+    the same heading, which carries the corrected entry in full.
+
+    The paragraph that stood here is kept, because the argument in it is still
+    the reason a restored record **announces** nothing:
+
+    > **`SimulationEventLog` (#507) joins them on the same terms**, and the
+    > entry is worth reading beside `RefusalLog`'s rather than as a repetition:
+    > both are excluded because they hold a *notice* rather than a condition, but
+    > this one can say so more strongly. The conditions behind its events are
+    > persisted separately — arrears in the payroll snapshot (ADR 0049), sentence
+    > ticks in the prisoner components (ADR 0050) — so a restored prison
+    > re-announces at its next failed payday and at the next sentence that ends,
+    > and nothing a player would have been told is actually lost. It is recorded
+    > in `docs/PERSISTENCE.md` under the same heading, and asserted in
+    > `tests/integration/sentence-end-release.test.ts`.
+
+    What separates the two now is which surface a restored record reaches. It
+    is republished with `restored: true`, which rebuilds the **list** — the log
+    a player scrolls back through, which is what the owner decided they keep —
+    and is ignored by the **band**, which carries what just happened and would
+    otherwise be describing a tick the player was not looking at. So the
+    quoted argument is not withdrawn; it is the reason for the flag.
+
+    **`RefusalLog` above is unchanged and is still not snapshotted.** The owner
+    ruled on the events log and not on the refusal, and the two stop being
+    siblings in this one respect.
+
+    **What the log gives back is bounded by the buffer rather than by the
+    list.** At most `MAX_BUFFERED_SIMULATION_EVENTS` records are retained and
+    the list keeps eight rows chosen by *severity*, so a `danger` row the live
+    list had kept whose record had already left the buffer does not come back.
+    The rows are main-thread state and the main thread contributes nothing to a
+    save, which is the whole of why the save carries records instead of rows.
 
 34. **A refusal cannot be dismissed by the player, and carries no location on
     the wire.** *Amended for issue #492 — the standing-until-another-refusal
@@ -1665,8 +1695,23 @@ decision about what to build next.
     `src/simulation/refusals/refusal-log.ts`'s "Supersession keys" section
     for the ten routes' own reasoning). What is still true: there is no
     *player* gesture that dismisses a refusal — no "close" button, no
-    main-to-worker message for it — and `SimulationRefusal`, what actually
-    crosses the worker boundary, still carries no tile, order id or item id,
+    main-to-worker message for it — **and this half of the gap is now the
+    narrow one, which is worth saying so a reader does not carry the wider
+    version away.** The alerts list's *other* producer got its gesture on
+    2026-09-01: the owner took
+    [ADR 0084](./adr/0084-what-the-alerts-channel-owes-a-player.md)'s decision
+    2, so an event row is dismissed by pressing it, `DismissAlert` carries the
+    run of arrivals it stood for to the worker, and the mark is in the save.
+    None of that reaches a refusal row, deliberately — a refusal is a *level*,
+    republished unchanged up to twice a second, so suppressing one is a
+    different mechanism from retiring a run of occurrences, and ADR 0084 says
+    in terms that it does not reopen this gap. The rows a player can press are
+    exactly the rows carrying `HudAlertViewModel.occurrences`, and a refusal
+    row carries none.
+
+    The rest of what is still true stands unchanged: `SimulationRefusal`, what
+    actually crosses the worker boundary, still carries no tile, order id or
+    item id,
     so the sentence on screen can say *what* was refused and *why* but not
     *where*. The key `supersede` compares against is a second, purely
     in-worker string that never reaches `src/ui/` and is not part of
