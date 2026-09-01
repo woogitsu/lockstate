@@ -279,6 +279,20 @@ describe('a removed object takes its capacity and its capability with it', () =>
   });
 
   it('gives back the materials a cancelled order had allocated, and does not refund a built object', () => {
+    /*
+     * **The name survives the owner's ruling of 2026-09-01 and one word of it
+     * changed meaning, which is why it is annotated rather than renamed.**
+     * *"Does not refund a built object"* is now true of every route rather than
+     * of this one -- ADR 0076's amendment of that date reverses decision B, so
+     * `Undo` on the finished bed gives nothing back either. *"Gives back the
+     * materials a cancelled order had allocated"* is about the `'in-progress'`
+     * press below and was already false in its own currency after ruling 20:
+     * that press releases nothing, and this case asserts the empty allocation
+     * rather than a stock figure, which is why it never went red.
+     *
+     * The asymmetry the body's comment names is therefore gone, and the case
+     * now measures the two halves agreeing.
+     */
     const runtime = createNewSimulationRuntime(SEED);
     submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 2 }));
     wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
@@ -298,9 +312,17 @@ describe('a removed object takes its capacity and its capability with it', () =>
     expect(runtime.construction.getOrder('bed-1')?.materialsAllocated).toEqual([]);
 
     // The second plank builds a second bed all the way, and removing *that* one
-    // gives nothing back: the plank became a bed. The asymmetry is the decision
-    // -- an order that never finished releases what it was holding, and a thing
-    // built out of the materials does not un-build into them.
+    // gives nothing back: the plank became a bed.
+    //
+    // **The two sentences that followed named an asymmetry and are kept because
+    // it is the asymmetry two rulings closed.** They read: *"The asymmetry is
+    // the decision -- an order that never finished gives its materials back,
+    // and a thing built out of the materials does not un-build into them."*
+    // Ruling 20 took the first half (an unfinished order gives back money, or
+    // nothing once the crew has started) and the ruling of 2026-09-01 confirmed
+    // the second for every route. Nothing gives materials back any more, so
+    // there is no asymmetry left -- only the second half, which was always the
+    // part this case measured.
     submit(runtime, 'place-again', packCommand({ type: 'PlaceObject', orderId: 'bed-2', definitionId: 'bed-wooden', ...BED_TILE }));
     stepTo(runtime, 500);
     expect(runtime.construction.getOrder('bed-2')?.state).toBe('completed');
@@ -648,6 +670,10 @@ describe('a bed removed from an occupied cell relocates its resident, and evicts
     // ADR 0076 decision B is about the two commands disagreeing over
     // *materials*; this is the two agreeing about *residents*, and it is a
     // separate wiring that a test of `RemoveObject` alone would not reach.
+    // (Since the owner's ruling of 2026-09-01 -- ADR 0076's amendment of that
+    // date -- the two agree about materials as well: neither gives anything
+    // back. The sentence is kept because the *wirings* are still separate,
+    // which is the whole reason this case exists beside the one above it.)
     // Its own fixture, because `Undo` pops the *last* transaction and
     // `prisonWithHousedPrisoner` furnishes the spare cell second. The two beds
     // are therefore placed the other way round here -- the spare cell first,

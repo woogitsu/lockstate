@@ -323,6 +323,19 @@ describe('what a loan does to the locked position, and what it does not', () => 
    * who draws thirteen segments too many and undoes them keeps the debt and gets
    * a pile of brick -- which is the same silence this describe is about, one step
    * further on.
+   *
+   * **The mechanism half of that paragraph is false and the attempt has not
+   * been re-run, so what it now does is unmeasured and is not guessed at
+   * here.** *"`cancelOrder` returns bricks, never money"* was overtaken twice:
+   * by the owner's ruling 20 of 2026-08-31 (#746), which makes the four states
+   * before the crew starts give back **money**, and by the ruling of
+   * 2026-09-01 (ADR 0076's amendment of that date), which makes a `'completed'`
+   * order give back nothing. Thirteen orders cancelled immediately after being
+   * placed are in the first group, so the balance almost certainly does move
+   * now -- but nobody has run it since, and the sentence is marked rather than
+   * replaced with an arithmetic that has not been measured. **What this case
+   * actually asserts is untouched by any of it**: it never places the thirteen
+   * orders at all, and the 40 below is the control.
    */
   it('leaves the facility untouched when the thirteen orders are never placed', () => {
     const runtime = createNewSimulationRuntime(SEED, { loanTerms: PROBE_TERMS });

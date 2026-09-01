@@ -111,7 +111,7 @@ describe('cancelling a build order returns the materials it consumed', () => {
     const construction = new ConstructionSystem(world, new ContainerMaterialsProvider(site));
     const kernel = new Kernel();
     kernel.registerSystem(construction);
-    return { construction, kernel, site };
+    return { construction, kernel, site, world };
   }
 
   it('refunds an order cancelled after it allocated and before the crew started', () => {
@@ -175,39 +175,105 @@ describe('cancelling a build order returns the materials it consumed', () => {
     expect(construction.getOrder('order-2')?.state, 'and there is nothing left to build with').toBe('materials-pending');
   });
 
-  it('refunds an order cancelled after it completed, and does not refund one that never allocated', () => {
-    const { construction, kernel, site } = siteWithOrder(2);
+  it('gives nothing back for an order cancelled after it completed, and nothing for one that never allocated', () => {
+    /*
+     * **This case was called `refunds an order cancelled after it completed,
+     * and does not refund one that never allocated` and it asserted two bricks
+     * back on the shelf.** The owner's ruling of 2026-09-01 -- *"Taking a
+     * finished object away returns nothing. Not its materials, not its
+     * money."*, ADR 0076's amendment of that date -- reverses ADR 0076
+     * decision B's sentence, and this is one of the sentences that promised the
+     * old behaviour.
+     *
+     * **It is the branch that is not conditional on an economy**, exactly as
+     * the `'in-progress'` case above is not: this site has a container and no
+     * procurement sink, so before the ruling it took the `hadGeometry` arm of
+     * `cancelOrder` and released. Now the two consumed states share one arm and
+     * neither asks whether anybody is keeping accounts -- the materials went
+     * into works that are being un-built either way.
+     *
+     * The second half of the case is untouched: an order that never allocated
+     * still has nothing to give back, and cancelling it must not manufacture
+     * any. Both halves now read zero, which is why the first half also asserts
+     * the wall came down -- without it, "nothing came back" would be satisfied
+     * by a cancellation that did nothing at all.
+     */
+    const { construction, kernel, site, world } = siteWithOrder(2);
     construction.submitOrder(createBuildOrder('order-1', 'wall-brick', { x: tileCoordinate(1), y: tileCoordinate(1) }));
     for (let i = 0; i < 200; i += 1) kernel.step();
     expect(construction.getOrder('order-1')?.state).toBe('completed');
+    expect(world.getTopEdge({ x: tileCoordinate(1), y: tileCoordinate(1) }), 'the wall must really exist').toBeGreaterThan(0);
 
     construction.cancelOrder('order-1');
-    expect(site.quantityOf('item.brick')).toBe(2);
+    expect(site.quantityOf('item.brick'), 'the wall took its bricks with it').toBe(0);
+    expect(construction.getOrder('order-1')?.materialsAllocated).toEqual([]);
+    expect(world.getTopEdge({ x: tileCoordinate(1), y: tileCoordinate(1) }), 'and the wall still came down').toBe(0);
 
     // An order that is still waiting for materials holds none, so cancelling
-    // it must not manufacture any.
+    // it must not manufacture any. **The parenthetical here used to read
+    // "order-2 took the only two bricks" and it is now the shelf being empty
+    // that parks order-3**: the first wall consumed them, so neither of these
+    // two can allocate at all. The property under test is the same one -- a
+    // cancellation with nothing allocated behind it puts nothing back -- and it
+    // is reached one state earlier.
     construction.submitOrder(createBuildOrder('order-2', 'wall-brick', { x: tileCoordinate(3), y: tileCoordinate(3) }));
     construction.submitOrder(createBuildOrder('order-3', 'wall-brick', { x: tileCoordinate(4), y: tileCoordinate(4) }));
     for (let i = 0; i < 30; i += 1) kernel.step();
-    expect(construction.getOrder('order-3')?.state).toBe('materials-pending'); // order-2 took the only two bricks
+    expect(construction.getOrder('order-3')?.state).toBe('materials-pending');
+    expect(construction.getOrder('order-3')?.materialsAllocated, 'it is holding nothing').toEqual([]);
     construction.cancelOrder('order-3');
     expect(site.quantityOf('item.brick')).toBe(0);
   });
 
-  it('undo refunds, and a redone order pays again rather than building for free', () => {
+  it('undo refunds nothing, and a redone order cannot build at all without more materials', () => {
+    /*
+     * **This case was called `undo refunds, and a redone order pays again
+     * rather than building for free`, and its middle assertion read
+     * `expect(site.quantityOf('item.brick')).toBe(2)` after the undo.** The
+     * owner's ruling of 2026-09-01 withdraws that: undoing a finished wall
+     * returns nothing, so there is nothing for the redo to spend.
+     *
+     * **What the old name was reaching for is still measured and is now
+     * sharper.** *"Pays again rather than building for free"* was the guard
+     * against `redo` finding a stale allocation and building twice off one
+     * purchase. `redo` still does not restore an allocation, and with the
+     * shelf now empty the redone order cannot even reach `'assigned'`: it
+     * parks in `'materials-pending'`, which is a stronger statement than
+     * "it paid again" and needs no second purchase to make it.
+     *
+     * A bare `ConstructionSystem` over a container has no treasury, so
+     * "paying" is not a thing this fixture can observe at all --
+     * `tests/integration/economy-money-conservation.test.ts`'s
+     * `makes an undo and a redo of a finished wall cost two walls` is where the
+     * money half of the same sequence is measured, through a real session.
+     */
     const { construction, kernel, site } = siteWithOrder(2);
     construction.submitOrder(createBuildOrder('order-1', 'wall-brick', { x: tileCoordinate(1), y: tileCoordinate(1) }));
     construction.registerTransactionOrder('order-1', 'txn-1');
     for (let i = 0; i < 200; i += 1) kernel.step();
+    expect(construction.getOrder('order-1')?.state).toBe('completed');
     expect(site.quantityOf('item.brick')).toBe(0);
 
     construction.undo();
-    expect(site.quantityOf('item.brick')).toBe(2);
+    expect(construction.getOrder('order-1')?.state).toBe('cancelled');
+    expect(site.quantityOf('item.brick'), 'undo returns nothing').toBe(0);
+    expect(construction.getOrder('order-1')?.materialsAllocated).toEqual([]);
 
     construction.redo();
     for (let i = 0; i < 200; i += 1) kernel.step();
+    expect(
+      construction.getOrder('order-1')?.state,
+      'the redone order has nothing to build with, and redo restored no allocation for it to find',
+    ).toBe('materials-pending');
+    expect(site.quantityOf('item.brick')).toBe(0);
+
+    // The redo is not broken, only unfunded: put two bricks back on the shelf
+    // by hand and the same order finishes, which is what says the parking above
+    // is about materials and not about `redo` having lost the order.
+    site.deposit('item.brick', 2);
+    for (let i = 0; i < 200; i += 1) kernel.step();
     expect(construction.getOrder('order-1')?.state).toBe('completed');
-    expect(site.quantityOf('item.brick')).toBe(0); // paid for a second time, not refunded twice
+    expect(site.quantityOf('item.brick')).toBe(0);
   });
 
   it('the unlimited provider still refunds nothing anywhere', () => {

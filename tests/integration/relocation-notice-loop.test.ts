@@ -39,7 +39,16 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * `RemoveObject` and the `Undo` of a completed object order are separate
  * wirings into `ObjectPlacementService` -- one refunds nothing and one refunds
  * the plank (decision B, still outstanding), one is handed the tick and one is
- * not -- and both take the same bed out of the same room. It is the **undo**
+ * not -- and both take the same bed out of the same room.
+ *
+ * **The materials half of that sentence is false since the owner's ruling of
+ * 2026-09-01 and is kept because it is what the two routes used to disagree
+ * about.** *"Taking a finished object away returns nothing. Not its materials,
+ * not its money."* -- ADR 0076's amendment of that date -- reverses decision B,
+ * so neither route refunds anything. They are still separate wirings, still
+ * differ over the tick, and still both have to announce, which is what this
+ * file measures; the heading above it is now one word too strong and the
+ * sentence says why. It is the **undo**
  * route that `economy-bed-recycling.test.ts` drives the recycling loop
  * through, so a notice wired to the press alone would be silent exactly where
  * it matters most. Each route is driven end to end below.

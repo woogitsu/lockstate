@@ -12,7 +12,8 @@ import {
   createNewSimulationRuntime,
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
-import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { tileCoordinate, type TilePosition } from '../../src/simulation/world/coordinates';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * **Money is conserved across every build order a player can place and take
@@ -137,17 +138,91 @@ function prisonValueMinorUnits(runtime: SimulationRuntime): number {
     for (const [itemId, price] of UNIT_PRICE) total += container.quantityOf(itemId) * price;
   }
 
-  // Stock a live order has taken out of the container but not given back.
-  // `ConstructionSystem` withdraws on allocation and only re-deposits on
-  // cancellation, so between those two points the bricks are in neither the
-  // treasury nor a container and are owned all the same.
   for (const order of runtime.construction.snapshot().orders) {
+    // What the order **built**, for as long as it is standing.
+    //
+    // **This term used to be the completed order's `materialsAllocated`, on
+    // the argument quoted in the comment below, and the owner's ruling of
+    // 2026-09-01 is what withdrew that argument.** Under ADR 0076 decision B
+    // a completed order's allocation was liquid -- one press of `Undo` turned
+    // it back into stock -- so counting it as prison value was exact. Under
+    // the ruling it is not liquid and never will be: a finished thing taken
+    // away returns nothing, so what the prison owns is the *thing*, not a
+    // claim on the materials inside it.
+    //
+    // Valued from `BUILDABLE_REGISTRY` and the procurement catalogue rather
+    // than from `materialsAllocated`, which is the stronger form of the same
+    // check: the sum no longer reads its answer off a record the code under
+    // test writes (`docs/TESTING.md`). Nothing moves at completion -- the
+    // allocation term below falls by the order's materials and this one rises
+    // by the same catalogue figure -- and what moves is destruction.
+    //
+    // An **object** buildable stands only while its object is in
+    // `PlacedObjectRegistry`: `RemoveObject` takes the object out and leaves
+    // the order `completed` with its allocation intact, so the order's state
+    // alone cannot answer whether anything is there. An **edge** buildable has
+    // no second registry, so `'completed'` is exactly "the wall is standing"
+    // and `revertConstruction` un-writing the edge always goes with the order
+    // leaving that state.
+    if (order.state === 'completed') {
+      if (standsInTheWorld(runtime, order)) total += buildableValueMinorUnits(order.definitionId);
+      continue;
+    }
+
+    // Stock a live order has taken out of the container but not given back.
+    // `ConstructionSystem` withdraws on allocation and only re-deposits on
+    // cancellation, so between those two points the bricks are in neither the
+    // treasury nor a container and are owned all the same.
+    //
+    // **"Only re-deposits on cancellation" stopped being the whole story on
+    // 2026-08-31 and is kept because it is still true of these states.** An
+    // `'in-progress'` order's allocation is neither re-deposited nor paid for
+    // when it is cancelled -- that is ruling 20, and `consumedMinorUnits` is
+    // what the equation carries it in.
     for (const allocation of order.materialsAllocated) {
       total += allocation.quantity * (UNIT_PRICE.get(allocation.itemId) ?? 0);
     }
   }
 
   return total;
+}
+
+/**
+ * The catalogue price of everything one buildable requires.
+ *
+ * Read forward from `materialsRequired` rather than back from what an order
+ * happens to be holding, so an order that allocated the wrong quantity is a
+ * failure of the sum rather than a fixture that agrees with it.
+ */
+function buildableValueMinorUnits(definitionId: string): number {
+  const definition = BUILDABLE_REGISTRY.get(definitionId);
+  if (definition === undefined) return 0;
+  let total = 0;
+  for (const requirement of definition.materialsRequired) {
+    total += requirement.quantity * (UNIT_PRICE.get(requirement.itemId) ?? 0);
+  }
+  return total;
+}
+
+/**
+ * Whether the thing a completed order built is still in the world.
+ *
+ * Two questions with one answer, because the world stores objects and edges in
+ * different places. An object buildable is matched on the anchor **and** on the
+ * object id, the same pair `ObjectPlacementService.onOrderReverted` guards on,
+ * so an order whose tile has since been taken by a different object does not
+ * count that object as its own.
+ */
+function standsInTheWorld(runtime: SimulationRuntime, order: { definitionId: string; location: TilePosition }): boolean {
+  const objectId = BUILDABLE_REGISTRY.get(order.definitionId)?.placesObjectId;
+  if (objectId === undefined) return true;
+  const standing = runtime.placedObjects.objectAt(order.location);
+  return (
+    standing !== undefined &&
+    standing.objectId === objectId &&
+    standing.anchorTile.x === order.location.x &&
+    standing.anchorTile.y === order.location.y
+  );
 }
 
 /** Drives the real command boundary: pack, submit, step. */
@@ -417,25 +492,50 @@ describe('money is conserved across build orders and undo (#285)', () => {
     expect(session.stock(WALL_REQUIREMENT.itemId), 'the bricks are in the wall, not on the shelf').toBe(0);
   });
 
-  it('undo, redo and undo again move the same bricks and never credit twice', () => {
+  it('undo, redo and undo again never credit the treasury, and each finished wall is paid for once', () => {
     /*
-     * The double-credit case, stated on both axes. The bricks going 2 → 0 → 2
-     * is #97's guard and is not what this is about; what is new is that the
-     * *money* does not move on any of the three, and that the total is 25000
-     * at every one of them.
+     * The double-credit case, stated on both axes. What this is about is that
+     * the *money* does not move on any of the three presses, and that the total
+     * is conserved at every one of them against what has been deliberately
+     * consumed.
      *
      * Measured: mutation M2 above — an undo that credits the value of the
      * materials it released — takes this red on the first `Undo`, at
      * `balance=25000 total=25080`. Mutation M1 does **not**, because the
      * delivery has already landed by then and `cancel` returns `false`; the
      * in-flight scenario is what covers that one.
+     *
+     * **THREE SENTENCES OF THIS CASE WERE REVERSED ON 2026-09-01 AND ARE KEPT
+     * HERE BECAUSE THEY ARE WHAT THE RULING CHANGED.** They were correct
+     * against the code that shipped them and against ADR 0076 decision B, and
+     * the owner's ruling of that date — *"Taking a finished object away returns
+     * nothing. Not its materials, not its money."* — withdraws B's sentence:
+     *
+     * - *"The bricks going 2 → 0 → 2 is #97's guard and is not what this is
+     *   about"*. They do not go back to 2 any more. The first undo consumes
+     *   them, which is why the case opens with `expectConsumption`.
+     * - *"undo returns the bricks"* and *"redo spends the same bricks again"*.
+     *   The undo returns nothing and the redo buys its own, so the prison pays
+     *   for two walls and stands one — measured in
+     *   `makes an undo and a redo of a finished wall cost two walls` below,
+     *   which exists to state that price rather than have it inferred here.
+     * - *"the second undo must return the same two bricks, never four"*. It
+     *   returns none, and the *never four* half is what survives: the guard
+     *   against a second refund is now a guard against a second **anything**,
+     *   and the consumption is declared twice because two walls really were
+     *   built and destroyed.
+     *
+     * The pre-purchase is kept. It is what makes the two undos differ from the
+     * cases above — the bricks are on the shelf before the order exists, so the
+     * order buys nothing and the money this case watches is the player's own.
      */
     const session = createSession();
     session.buy('order-buy-1', WALL_REQUIREMENT.itemId, WALL_REQUIREMENT.quantity, 'after PurchaseMaterials');
 
     const afterPurchase = session.runtime.treasury.balanceMinorUnits;
+    const wallCost = UNIT_PRICE.get(WALL_REQUIREMENT.itemId)! * WALL_REQUIREMENT.quantity;
     expect(afterPurchase, 'the fixture must actually have spent something').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - UNIT_PRICE.get(WALL_REQUIREMENT.itemId)! * WALL_REQUIREMENT.quantity,
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost,
     );
 
     session.place('order-wall-1', WALL, 4, 6, 'build-1', 'after PlaceBuildOrder');
@@ -443,21 +543,28 @@ describe('money is conserved across build orders and undo (#285)', () => {
     expect(session.runtime.world.getTopEdge(tile(4, 6)), 'the wall must really exist').toBeGreaterThan(0);
     expect(session.stock(WALL_REQUIREMENT.itemId), 'the bricks are in the wall, not on the shelf').toBe(0);
 
+    session.expectConsumption(wallCost);
     session.undo('after Undo');
-    expect(session.stock(WALL_REQUIREMENT.itemId), 'undo returns the bricks').toBe(WALL_REQUIREMENT.quantity);
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'undo returns nothing').toBe(0);
     expect(session.runtime.treasury.balanceMinorUnits, 'undo must not move money').toBe(afterPurchase);
 
     session.redo('after Redo');
     session.buildUntilComplete(['order-wall-1'], 'rebuild after redo');
-    expect(session.stock(WALL_REQUIREMENT.itemId), 'redo spends the same bricks again').toBe(0);
-    expect(session.runtime.treasury.balanceMinorUnits, 'redo must not move money').toBe(afterPurchase);
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'redo bought its own bricks and spent them').toBe(0);
+    expect(
+      session.runtime.treasury.balanceMinorUnits,
+      'redo pays for the second wall, because the first wall took its bricks with it',
+    ).toBe(afterPurchase - wallCost);
 
+    session.expectConsumption(wallCost);
     session.undo('after second Undo');
     expect(
       session.stock(WALL_REQUIREMENT.itemId),
-      'the second undo must return the same two bricks, never four',
-    ).toBe(WALL_REQUIREMENT.quantity);
-    expect(session.runtime.treasury.balanceMinorUnits, 'no undo may credit the treasury').toBe(afterPurchase);
+      'the second undo must return nothing, and certainly never four bricks',
+    ).toBe(0);
+    expect(session.runtime.treasury.balanceMinorUnits, 'no undo may credit the treasury').toBe(
+      afterPurchase - wallCost,
+    );
     expect(session.creditSpy, 'undo → redo → undo credited the treasury').not.toHaveBeenCalled();
   });
 
@@ -505,8 +612,18 @@ describe('money is conserved across build orders and undo (#285)', () => {
      *
      * All three walls are on different tiles, so `remainingEdgeValue`'s
      * same-edge case is not what is under test here; what is, is that three
-     * allocations and three releases against one container net to zero however
-     * they are interleaved.
+     * allocations and three cancellations against one container net out
+     * exactly, however they are interleaved.
+     *
+     * **The sentence above ended *"three releases against one container net to
+     * zero"* until 2026-09-01 and is kept because it is what the ruling
+     * changed.** There are no releases left on this path: the owner's ruling of
+     * that date takes a finished wall's bricks with it, so what the three
+     * cancellations net out to is three walls' worth consumed rather than zero.
+     * The property being measured is unchanged — the interleaving must not make
+     * any difference to the arithmetic — and it is now measured against a
+     * consumption declared from the catalogue three times, once per wall,
+     * before each press.
      */
     const session = createSession();
     const bricks = WALL_REQUIREMENT.quantity * 3;
@@ -515,24 +632,37 @@ describe('money is conserved across build orders and undo (#285)', () => {
     expect(session.stock(WALL_REQUIREMENT.itemId)).toBe(bricks);
     const afterPurchase = session.runtime.treasury.balanceMinorUnits;
 
+    const wallCost = UNIT_PRICE.get(WALL_REQUIREMENT.itemId)! * WALL_REQUIREMENT.quantity;
+
     session.place('order-wall-a', WALL, 4, 6, 'build-a', 'placed A');
     session.place('order-wall-b', WALL, 5, 6, 'build-b', 'placed B');
     session.buildUntilComplete(['order-wall-a', 'order-wall-b'], 'A and B build');
+    session.expectConsumption(wallCost);
     session.undo('undo → cancels B');
     expect(session.stateOf('order-wall-b')).toBe('cancelled');
     expect(session.stateOf('order-wall-a')).toBe('completed');
 
     session.place('order-wall-c', WALL, 6, 6, 'build-c', 'placed C');
     session.buildUntilComplete(['order-wall-c'], 'C builds');
+    session.expectConsumption(wallCost);
     session.undo('undo → cancels C');
     expect(session.stateOf('order-wall-c')).toBe('cancelled');
 
+    session.expectConsumption(wallCost);
     session.undo('undo → cancels A, placed first and cancelled last');
     expect(session.stateOf('order-wall-a')).toBe('cancelled');
 
-    expect(session.stock(WALL_REQUIREMENT.itemId), 'every brick is back on the shelf').toBe(bricks);
+    // Three walls were pre-bought, three were built and three were taken down,
+    // so the shelf is empty rather than full and the money that filled it is
+    // gone with the walls. C's own bricks came out of the same pre-purchase --
+    // the third wall's worth was still on the shelf when C was placed, so the
+    // order bought nothing and the balance never moved after the purchase.
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'not one brick came back').toBe(0);
     expect(session.runtime.treasury.balanceMinorUnits).toBe(afterPurchase);
     expect(session.creditSpy).not.toHaveBeenCalled();
+    expect(bricks, 'three walls of bricks were bought and three walls of bricks were consumed').toBe(
+      (wallCost * 3) / UNIT_PRICE.get(WALL_REQUIREMENT.itemId)!,
+    );
   });
 
   it('holds across two materials at two different prices bought and undone together', () => {
@@ -540,6 +670,15 @@ describe('money is conserved across build orders and undo (#285)', () => {
      * One price would let a conservation sum pass on a valuation that had the
      * price wrong in both directions at once. Bricks are 40 and planks are 65,
      * and a wall and a door are undone in one gesture apiece.
+     *
+     * **The two assertions that read the stock back were reversed on
+     * 2026-09-01 and the reason is the whole point of keeping this case.** The
+     * owner's ruling of that date takes a finished thing's materials with it,
+     * so the shelf stays empty — and a valuation with both prices wrong would
+     * now pass a stock check trivially, because both stocks are zero. What
+     * catches it instead is the **consumption**, which is declared per
+     * buildable from the catalogue at two different prices: get either price
+     * wrong and the equation is short or long by the difference.
      */
     const session = createSession();
     session.buy('order-buy-1', WALL_REQUIREMENT.itemId, WALL_REQUIREMENT.quantity, 'bought bricks');
@@ -557,10 +696,12 @@ describe('money is conserved across build orders and undo (#285)', () => {
     session.place('order-door-1', DOOR, 5, 6, 'build-door', 'placed the door');
     session.buildUntilComplete(['order-wall-1', 'order-door-1'], 'both deliver and build');
 
+    session.expectConsumption(UNIT_PRICE.get(DOOR_REQUIREMENT.itemId)! * DOOR_REQUIREMENT.quantity);
     session.undo('undo the door');
+    session.expectConsumption(UNIT_PRICE.get(WALL_REQUIREMENT.itemId)! * WALL_REQUIREMENT.quantity);
     session.undo('undo the wall');
-    expect(session.stock(WALL_REQUIREMENT.itemId)).toBe(WALL_REQUIREMENT.quantity);
-    expect(session.stock(DOOR_REQUIREMENT.itemId)).toBe(DOOR_REQUIREMENT.quantity);
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'the wall took its bricks with it').toBe(0);
+    expect(session.stock(DOOR_REQUIREMENT.itemId), 'and the door took its planks').toBe(0);
     expect(session.creditSpy).not.toHaveBeenCalled();
   });
 
@@ -930,28 +1071,37 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
     expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost);
   });
 
-  it('leaves a completed order alone: undoing a finished wall still returns its bricks (ADR 0076 decision B)', () => {
+  it('gives nothing back for a completed order either, which is the state ruling 20 did not reach', () => {
     /*
-     * The state ruling 20 does **not** reach, asserted here rather than left to
-     * be inferred from silence. Decision B is accepted and says a finished
-     * object un-builds into its full materials; the amendment leaves it
-     * standing and marks the question B governs and ruling 20 does not answer
-     * -- `RemoveObject` on a completed object -- as the owner's.
+     * The sixth state, kept in this block so that the enumeration ruling 20
+     * names stays complete, and **reversed on 2026-09-01 by the ruling the
+     * block below is about**.
      *
-     * It is also the inversion the amendment reports: cancel at
-     * `'in-progress'` and the bricks are gone, wait for `'completed'` and they
-     * all come back.
+     * **This case was called `leaves a completed order alone: undoing a
+     * finished wall still returns its bricks (ADR 0076 decision B)` and it
+     * asserted the opposite**, under `decision B: the full materials`, reading
+     * two bricks back off the shelf. It is renamed and rewritten rather than
+     * deleted because it is the sentence that promised the old behaviour, and
+     * ADR 0076's Consequences require that such a sentence be edited by hand
+     * rather than quietly stop being run.
+     *
+     * Its old comment also named the inversion, and that half is what the new
+     * ruling closed: *"cancel at `'in-progress'` and the bricks are gone, wait
+     * for `'completed'` and they all come back."* Now both are gone, and the
+     * two rows read the same.
+     *
+     * The behaviour is measured at greater length in the block below, which is
+     * the gate for the ruling itself; what this one is for is the table.
      */
     const session = createSession();
     session.place('order-wall-1', WALL, 4, 6, 'build-1', 'place the wall');
     session.buildUntilComplete(['order-wall-1'], 'build it');
     expect(session.runtime.world.getTopEdge(tile(4, 6))).toBeGreaterThan(0);
 
+    session.expectConsumption(wallCost);
     session.cancel('order-wall-1', 'cancel a completed order');
-    expect(session.stock(WALL_REQUIREMENT.itemId), 'decision B: the full materials').toBe(
-      WALL_REQUIREMENT.quantity,
-    );
-    expect(session.creditSpy, 'and not money as well').not.toHaveBeenCalled();
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'not the materials').toBe(0);
+    expect(session.creditSpy, 'and not money either').not.toHaveBeenCalled();
     expect(session.runtime.world.getTopEdge(tile(4, 6)), 'and the wall really came down').toBe(0);
   });
 
@@ -1120,5 +1270,265 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
 
     session.buildUntilComplete(['order-wall-2'], 'and the survivor builds off it');
     expect(session.runtime.world.getTopEdge(tile(5, 6))).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * **Taking a finished thing away returns nothing** — the owner's ruling of
+ * 2026-09-01, drafted as
+ * [ADR 0076](../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+ * *"Amendment, 2026-09-01: taking a finished object away returns nothing"*.
+ *
+ * > **Taking a finished object away returns nothing. Not its materials, not its
+ * > money.**
+ *
+ * This block is the gate that amendment inherits from decision B and from
+ * ruling 20 before it: **one refund per order, in exactly one currency, with
+ * the allocation emptied in the same step** — here with the currency count at
+ * zero, which is the case B's hazard did not cover and which is checked rather
+ * than assumed.
+ *
+ * ## What it closes
+ *
+ * The inversion the amendment above reported and did not settle. Ruling 20
+ * gives an `'in-progress'` order back nothing; decision B gave a `'completed'`
+ * one back everything; so it paid to let the crew finish. Measured on
+ * `0a53ec70` before this changed, one prison and one plank at 65:
+ *
+ * ```
+ * after the bed is built   balance 24935  plank 0  completed  alloc [plank×1]  objects 1
+ * after RemoveObject       balance 24935  plank 0  completed  alloc [plank×1]  objects 0
+ * after Undo               balance 24935  plank 1  cancelled  alloc []         objects 0
+ * ```
+ *
+ * — the plank came back **after the bed it became had already gone**.
+ *
+ * ## The three routes, which are all of them
+ *
+ * A completed order's value could return by exactly three presses, and each has
+ * a case below. `RemoveObject` on a standing object
+ * (`object-placement-service.ts:582`) already returned nothing and is pinned
+ * here so that it stays that way; `Undo` (`system.ts:525`) and
+ * `CancelBuildOrder` (`handler.ts:97`) both delegate to
+ * `ConstructionSystem.cancelOrder` (`system.ts:653`) and are what this changes.
+ * The Build panel cannot aim `CancelBuildOrder` at a finished order —
+ * `PENDING_BUILD_ORDER_STATES` excludes `'completed'` — so `Undo` and
+ * `RemoveObject` are the only two presses a player can actually reach one with,
+ * and `Undo` is the one the inversion used.
+ *
+ * ## Red-then-green
+ *
+ * Every case here was run against the unchanged `cancelOrder` first. The four
+ * that drive `Undo` or `CancelBuildOrder` on a completed order failed there,
+ * each by exactly the catalogue value of what came back — `total=25000` against
+ * an expected `24920` for a wall and `24935` for a bed. The `RemoveObject`-only
+ * case passed before and after, which is the point of it: it is a pin on
+ * behaviour the ruling does **not** change, and it is the term the other cases
+ * are measured against.
+ */
+describe('taking a finished thing away returns nothing (ADR 0076 amendment of 2026-09-01)', () => {
+  const wallCost = UNIT_PRICE.get(WALL_REQUIREMENT.itemId)! * WALL_REQUIREMENT.quantity;
+
+  /** `room.cell`'s authored minimum, on owned land — the rectangle every object fixture in this repository uses. */
+  const CELL_RECT = { x: 4, y: 6, width: 2, height: 3 } as const;
+  /** Inside `CELL_RECT`, so the bed's 1×2 footprint lies wholly in the cell. */
+  const BED_TILE = { x: 4, y: 6 } as const;
+  const BED = 'bed-wooden';
+  const BED_REQUIREMENT = BUILDABLE_REGISTRY.get(BED)!.materialsRequired[0]!;
+  const bedCost = UNIT_PRICE.get(BED_REQUIREMENT.itemId)! * BED_REQUIREMENT.quantity;
+
+  /**
+   * A session with one zoned, enclosed cell and nothing built in it.
+   *
+   * The perimeter is written straight into the world by `wallRoomPerimeter`
+   * rather than ordered, for the reason that helper gives: this file's subject
+   * is money, and twelve `wall-brick` orders would put twelve completed orders
+   * into every sum below for no gain. Nothing was bought for those edges, so
+   * they cost the conservation equation nothing either.
+   */
+  const cellSession = () => {
+    const session = createSession();
+    wallRoomPerimeter(session.runtime.world, CELL_RECT, { doors: session.runtime.navigation.doors });
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }, 'zone the cell');
+    return session;
+  };
+
+  /** Places a bed and runs the clock until it is standing. */
+  const bedStanding = (session: ReturnType<typeof createSession>, orderId = 'bed-1'): void => {
+    session.send({ type: 'PlaceObject', orderId, definitionId: BED, ...BED_TILE }, 'place the bed');
+    session.buildUntilComplete([orderId], 'build the bed');
+    expect(session.runtime.placedObjects.size, 'the bed must really be standing').toBe(1);
+  };
+
+  it('removing a finished object returns nothing, and the plank goes with the bed', () => {
+    /*
+     * The press the ruling is named after, and the one case here whose
+     * behaviour does not change: `ObjectPlacementService.remove` takes the
+     * object out of `PlacedObjectRegistry` and never touches the order, so
+     * nothing was ever refunded by this route.
+     *
+     * What is new is that it is now **measured as a loss**. Until the ruling
+     * the plank in a removed bed was still recoverable — one `Undo` away — so
+     * counting it as prison value was exact. It is not recoverable any more, so
+     * the removal is where the value leaves and `expectConsumption` is raised
+     * from the catalogue before the press rather than inferred from what
+     * happened.
+     */
+    const session = cellSession();
+    bedStanding(session);
+    expect(session.runtime.treasury.balanceMinorUnits, 'the bed cost one plank').toBe(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - bedCost,
+    );
+
+    session.expectConsumption(bedCost);
+    session.send({ type: 'RemoveObject', ...BED_TILE }, 'remove the finished bed');
+
+    expect(session.runtime.placedObjects.size, 'the bed is gone').toBe(0);
+    expect(session.stock(BED_REQUIREMENT.itemId), 'and its plank did not come back').toBe(0);
+    expect(session.creditSpy, 'and neither did its money').not.toHaveBeenCalled();
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - bedCost);
+    expect(
+      session.stateOf('bed-1'),
+      'the order is untouched by a removal, which is why the second press refuses',
+    ).toBe('completed');
+
+    session.run(PROCUREMENT_DELIVERY_DELAY_TICKS + 40, 'and nothing brings it back later');
+    expect(session.stock(BED_REQUIREMENT.itemId)).toBe(0);
+  });
+
+  it('undoing a finished wall returns nothing, and the wall still comes down', () => {
+    /*
+     * **This case reverses `leaves a completed order alone: undoing a finished
+     * wall still returns its bricks (ADR 0076 decision B)`, which is rewritten
+     * in the block above** — it stays there under a new name, because that
+     * block is an enumeration of the six states ruling 20 lists and dropping
+     * one would leave the enumeration incomplete. **That case asserted
+     * `decision B: the full materials` and read the two bricks back off the
+     * shelf.** Decision B's sentence is what this ruling withdraws.
+     *
+     * Measured against the unchanged `cancelOrder`: red at
+     * `after Undo … balance=24920 total=25000`, expected `24920`, the bricks
+     * having gone back on the shelf.
+     *
+     * **Reversing the geometry is not the refund and does not go with it.**
+     * `isCancellable` keeps `'completed'` in the set for the reason it always
+     * gave — a finished wall that could not be taken down would be permanent
+     * the moment it was placed — so the wall must still come down, and the
+     * `getTopEdge` assertion is the half of this case that did not change.
+     */
+    const session = createSession();
+    session.place('order-wall-1', WALL, 4, 6, 'build-1', 'place the wall');
+    session.buildUntilComplete(['order-wall-1'], 'build the wall');
+    expect(session.runtime.world.getTopEdge(tile(4, 6)), 'the wall must really exist').toBeGreaterThan(0);
+
+    session.expectConsumption(wallCost);
+    session.undo('undo the finished wall');
+
+    expect(session.stateOf('order-wall-1')).toBe('cancelled');
+    expect(session.runtime.world.getTopEdge(tile(4, 6)), 'and the wall really came down').toBe(0);
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'no bricks').toBe(0);
+    expect(session.creditSpy, 'and no money').not.toHaveBeenCalled();
+    expect(session.runtime.construction.getOrder('order-wall-1')?.materialsAllocated).toEqual([]);
+    expect(session.runtime.treasury.balanceMinorUnits, 'the 80 stays spent').toBe(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost,
+    );
+  });
+
+  it('cancelling a completed order returns nothing either, though no panel can aim at one', () => {
+    /*
+     * The third route, driven because `cancelOrder` is where the rule lives and
+     * a rule that held only for the `Undo` caller would be a rule about `undo`.
+     * No control in the game can reach it: the build queue's read model
+     * excludes `'completed'` on purpose, so this goes in through the command
+     * boundary the way a save-scripted or future control would.
+     *
+     * Measured against the unchanged `cancelOrder`: red at `total=25000`
+     * against an expected `24920`.
+     */
+    const session = createSession();
+    session.place('order-wall-1', WALL, 4, 6, 'build-1', 'place the wall');
+    session.buildUntilComplete(['order-wall-1'], 'build the wall');
+
+    session.expectConsumption(wallCost);
+    session.cancel('order-wall-1', 'cancel the completed order');
+
+    expect(session.stateOf('order-wall-1')).toBe('cancelled');
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'no bricks').toBe(0);
+    expect(session.creditSpy, 'and no money').not.toHaveBeenCalled();
+    expect(session.runtime.world.getTopEdge(tile(4, 6)), 'and the wall came down all the same').toBe(0);
+  });
+
+  it('pays nothing whichever way round Remove and Undo go, and pays it exactly once', () => {
+    /*
+     * **ADR 0076's `Remove` → `Undo` and `Undo` → `Remove`, in the currency the
+     * ruling leaves.** B named this pair as the gate because a refund on
+     * `RemoveObject` that left `materialsAllocated` populated would be paid a
+     * second time by the `Undo` behind it. Returning nothing looks like it
+     * cannot double-pay; this is that being measured rather than assumed, and
+     * the interesting half is the **consumption**, which must also happen
+     * exactly once.
+     *
+     * `Remove` → `Undo` is the sequence that was red: the removal consumed the
+     * plank and the undo handed it straight back, `total=25000` against an
+     * expected `24935`. `Undo` → `Remove` was red on the undo alone and then
+     * refuses the removal, `remove-object.nothing-to-remove`, because the bed
+     * has already gone with the order.
+     */
+    const removeThenUndo = cellSession();
+    bedStanding(removeThenUndo);
+    removeThenUndo.expectConsumption(bedCost);
+    removeThenUndo.send({ type: 'RemoveObject', ...BED_TILE }, 'Remove');
+    removeThenUndo.undo('then Undo');
+    expect(removeThenUndo.stateOf('bed-1'), 'the undo still cancels the order').toBe('cancelled');
+    expect(removeThenUndo.stock(BED_REQUIREMENT.itemId), 'Remove then Undo must not hand the plank back').toBe(0);
+    expect(removeThenUndo.creditSpy, 'nor pay for it').not.toHaveBeenCalled();
+
+    const undoThenRemove = cellSession();
+    bedStanding(undoThenRemove);
+    undoThenRemove.expectConsumption(bedCost);
+    undoThenRemove.undo('Undo');
+    expect(undoThenRemove.runtime.placedObjects.size, 'the undo took the bed out of the world').toBe(0);
+    undoThenRemove.send({ type: 'RemoveObject', ...BED_TILE }, 'then Remove');
+    expect(
+      undoThenRemove.runtime.refusals.last?.reason,
+      'there is nothing left to remove, and that refusal is the second press being harmless',
+    ).toBe('remove-object.nothing-to-remove');
+    expect(undoThenRemove.stock(BED_REQUIREMENT.itemId), 'and still no plank').toBe(0);
+    expect(undoThenRemove.creditSpy).not.toHaveBeenCalled();
+  });
+
+  it('makes an undo and a redo of a finished wall cost two walls', () => {
+    /*
+     * The price of the ruling, measured rather than described.
+     *
+     * `redo()` returns a cancelled order to `'approved'` and does **not**
+     * restore its allocation, so the order becomes demand again and the
+     * just-in-time pass buys its materials a second time. Under decision B the
+     * pair was free — the undo handed the bricks back and the redo spent the
+     * same ones, which is exactly what `undo, redo and undo again move the same
+     * bricks and never credit twice` measured. Under this ruling the first
+     * wall's bricks are gone and the second wall is bought outright.
+     *
+     * It is here because it is the shape of the cost a player will feel, and
+     * because `redo` is the one route where an emptied allocation could have
+     * been refilled and paid from twice. It is not: the second purchase is a
+     * purchase, the treasury pays for it, and `Treasury.credit` is still never
+     * called.
+     */
+    const session = createSession();
+    session.place('order-wall-1', WALL, 4, 6, 'build-1', 'place the wall');
+    session.buildUntilComplete(['order-wall-1'], 'build the wall');
+
+    session.expectConsumption(wallCost);
+    session.undo('undo the finished wall');
+    session.redo('redo it');
+    session.buildUntilComplete(['order-wall-1'], 'build it a second time');
+
+    expect(session.runtime.world.getTopEdge(tile(4, 6)), 'the wall is standing again').toBeGreaterThan(0);
+    expect(
+      session.runtime.treasury.balanceMinorUnits,
+      'one wall standing, two walls paid for',
+    ).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost * 2);
+    expect(session.creditSpy, 'and nothing was refunded on the way').not.toHaveBeenCalled();
   });
 });
