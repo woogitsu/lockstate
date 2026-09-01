@@ -54,6 +54,15 @@ recorded here rather than left to be inferred, because "all four decisions were
 taken" and "decision 4 was taken" are both sentences a later reader could
 reasonably form from the same commit, and only the first is true.
 
+**That last sentence stopped being true later the same day.** Decision 4 was
+also taken on 2026-09-01, by a separate ruling put to the owner after this
+document had already been accepted on the strength of the other three — see
+**"Amendment, 2026-09-01: decision 4 is taken"** at the foot of this document.
+The paragraph above is kept rather than corrected in place, because it is an
+accurate description of a real, if brief, state this document was in, and
+because the trap it names — treating "3 of 4" and "4 of 4" as interchangeable —
+is exactly the failure a silent edit here would risk reintroducing.
+
 **Whether the count and the time are one change or two: they are one, and the
 implementation says so in one field.** A count with no time leaves a row that
 recurs sitting at the position its *first* arrival earned while a number grows
@@ -573,6 +582,12 @@ unconditional. The one thing that change adds to the band is a rule about a
 and answers none of the question above: it says what the band does with a
 record that did not just happen, not what it does with two that did.
 
+**Decided, later the same day.** The two paragraphs above are kept, unedited,
+as an accurate record of what was and was not true of this document until the
+ruling arrived — see **"Amendment, 2026-09-01: decision 4 is taken"** at the
+foot of this document for the ruling itself, the reasoning behind it, and what
+it does and does not settle.
+
 ## Consequences
 
 - **Nothing in `src/` changes as a result of this document.** All four
@@ -624,3 +639,219 @@ record that did not just happen, not what it does with two that did.
   `incidents.escape-succeeded`) — a fight a player dismissed and a fight
   that ended might be the same gesture from two different sources on the
   same row.
+- ~~Whether decision 4's dwell floor, if granted, should apply to the
+  `.hud__refusal` band as well~~ — decision 4 is granted (see the amendment
+  below), and this question is **not** answered by that ruling. The owner was
+  asked about `.hud__event` alone; nothing in the ruling or in the brief that
+  carried it says anything about `applySimulationRefusal`, and extending the
+  floor there is exactly the kind of architectural call `AGENTS.md`'s fourth
+  exclusion reserves to the owner. So this stays open, now for a sharper
+  reason than "out of scope for this draft": a second band has its own
+  arbitration and its own dismissal story (gap 34), and nothing about *this*
+  amendment's reasoning — the events list's `SEVERITY_EVICTION_ORDER` — carries
+  over to it, because the refusal band's collisions are not decided by that
+  ordering today. Struck through rather than deleted, so that a later reader
+  can see the question was carried across the ruling rather than quietly
+  dropped by it.
+- **New, closed by construction rather than by ruling: does the floor need a
+  rule for the restored-record case?** No. Decision 3 already settled that a
+  restored record announces nothing to the band —
+  `hudEventNoticeFromWorkerMessage` returns `undefined` (not a notice) for a
+  `simulation/event` message whose payload carries `restored: true`
+  (`src/ui/simulation-events.ts`, the "A restored record is not an
+  announcement" docblock), and `undefined` there means "the view model is left
+  exactly as it is," never a new value. `admitToEventBand` — the function
+  decision 4's amendment below adds — only ever sees an `arriving` argument
+  that the caller believes is a notice; a restored record never produces one,
+  so it never reaches the floor's arbitration at all, favorable or not. The
+  floor and decision 3's silence on reload therefore do not interact, and
+  nothing had to be decided to make that true: it falls out of the two
+  decisions being about different messages. (What *does* still reach
+  `admitToEventBand` on a page that is restoring a session is the same
+  `HudEventNoticeViewModel` value as before, repainted because some other
+  field in the same worker message changed — `hud.ts`'s render pass calls
+  `applyEventNotice(next.event)` on every message, restored or not. That case
+  is not new either: it is caught by the ordinal guard `admitToEventBand`
+  already needs for a busy live session, `arriving.sequence ===
+  state.showing.sequence`, which repaints without restarting the floor.)
+
+## Amendment, 2026-09-01: decision 4 is taken — a dwell floor on `.hud__event`, arbitrated by severity promotion
+
+> **Accepted, 2026-09-01, by the repository owner.** This is a record of a
+> decision the owner made, not a decision made here: nothing in this amendment
+> is self-approved, and none of the reasoning below is offered as a substitute
+> for the ruling — it exists to carry the ruling's *"one game, one ordering"*
+> ("§2" below) into the one place in the tree that can enforce it.
+>
+> *This amends **Decision 4 alone**, the Status clause's account of which
+> decisions were taken (the paragraph beginning "Decision 4 of this document —
+> the dwell floor on `.hud__event` — is *not* among them"), and the first
+> bullet of Open Questions. Decisions 1 through 3 are untouched, the second and
+> third Open Questions bullets are untouched, and `Status` remains
+> **Accepted**. The form is the "Amendment, 2026-09-01" sections above in this
+> corpus's sibling ADRs, [0017's](./0017-money-primary-resource-model.md) and
+> [0076's](./0076-what-happens-to-a-resident-whose-bed-is-taken-away.md): the
+> old wording is quoted and pointed to rather than overwritten.*
+
+### 1. The ruling, in the owner's words
+
+The owner was asked, alongside the collision this document's Finding 4 and
+decision 4 describe, whether `.hud__event` should get a minimum dwell and, if
+so, what a second event arriving inside it should do. The answer, given as one
+ruling covering both halves of the question:
+
+> A terminal outcome does get a minimum dwell on `.hud__event`. When a second
+> event arrives inside the floor, the more severe one wins the band
+> immediately; an equal or less severe one waits.
+
+### 2. The reason the owner gave, and why it is the whole of the collision rule
+
+**The owner's own reason:** the alerts list already evicts by severity —
+`SEVERITY_EVICTION_ORDER`, cited by the owner at
+`simulation-events.ts:344-348`, its location in the tree the ruling was shown
+against — so the band must not acquire a *second, different* arbitration rule.
+**One game, one ordering.**
+
+That sentence is the whole of decision 4's collision rule, and it is why this
+amendment introduces no new comparison. Finding 4 posed three shapes for what
+a second event does inside the floor — hold the first and drop the second,
+queue the second behind the first, or promote by severity — and the owner did
+not merely pick the third; the reason given rules out inventing any *fourth*
+shape for a future collision this ruling did not anticipate, because the
+reason is general (one ordering, not one outcome) rather than local to the
+escape/all-clear pair that motivated it. That is also why `SEVERITY_EVICTION_ORDER`
+moved rather than being reimplemented: a second copy of the same three numbers
+would satisfy the letter of "promote by severity" while failing the reason
+behind it, since two copies can drift and one drifting would be exactly the
+second ordering the owner ruled out. It is now declared once, beside
+`HudSeverity` in `src/ui/hud/view-model.ts`, and read by both
+`src/ui/simulation-events.ts` (the list's cap, unchanged in behavior) and
+`src/ui/hud/event-band-dwell.ts` (the band's floor, new).
+
+### 3. What was built, and where
+
+`src/ui/hud/event-band-dwell.ts` holds the decision as a pure function,
+`admitToEventBand`, of the band's own held state and a caller-supplied clock
+reading — no DOM, no timer, no simulation access. Its rule, in the order the
+function takes it, is:
+
+- No notice at all (the session ended) empties the band, including anything
+  waiting.
+- Nothing currently on the line: a first event is never delayed, at any
+  severity.
+- The same event repainted (recognised by `HudEventNoticeViewModel.sequence`,
+  which cannot collide across a session boundary because `simulation/stopped`
+  clears this state first): repainted, not treated as a new arrival, so a busy
+  render loop cannot extend the floor by re-triggering it.
+- The floor has lapsed: the newest event takes the line, exactly as before
+  this change, releasing anything that was waiting first so an older sentence
+  is never shown after a newer one.
+- Inside the floor and **more severe**: takes the line immediately — the half
+  of the ruling that keeps the band readable without a floor-induced lag on
+  the event that most needs to be seen at once.
+- Inside the floor and **equal or less severe**: waits in the one slot
+  `EventBandDwellState.waiting` provides, arbitrated against whatever is
+  already waiting by the same `SEVERITY_EVICTION_ORDER` comparison
+  (`moreImportant`), and the band keeps showing what it was already showing.
+
+`src/ui/hud/hud.ts`'s `applyEventNotice` calls `admitToEventBand`, paints what
+the decision returns, and arms or clears the one `setTimeout` a waiting
+sentence needs to release itself without depending on the next worker
+message. `performance.now()` — monotonic, so a system clock change mid-session
+cannot desynchronize the floor — is read in exactly one place, `hudNowMs()`,
+and passed in; nothing in `event-band-dwell.ts` reads a clock itself, which is
+what keeps this presentational rather than a second source of time (§5 below).
+
+### 4. The floor's duration: 600 ms, and where the number comes from
+
+**Not measured today, on this machine, under today's load — derived from two
+bounds already in the tree, per the brief's own instruction that the number
+must not rest on a latency reading taken while several agents share this
+box.**
+
+- **Lower bound — what this repository already calls "seen."**
+  `tests/browser/ui-escape-sentence-survival.spec.ts` defines `SEEN_MS = 250`
+  and documents it as *"what this file is willing to call 'a player could have
+  read it.' Roughly fifteen frames at 60 Hz."* A floor shorter than that
+  guarantees nothing a player would notice, so 600 ms — 2.4× `SEEN_MS`, about
+  36 frames — clears it with room rather than by a hair.
+- **Upper bound — the tick rate, and the spacing of real events at the
+  fastest speed the game offers.** A tick is 50 ms
+  (`src/simulation/clock/fixed-step-clock.ts`, `stepMilliseconds`), so ×4 —
+  the speed #700's own playtest ran at — is 12.5 ms of wall clock per tick.
+  Two prisons driven through the real kernel for this decision, every event's
+  tick recorded rather than its wall-clock arrival timed:
+
+  | prison | ticks run | events | shortest gap between distinct events | pairs under 600 ms at ×4 |
+  | --- | --- | --- | --- | --- |
+  | 48 cells, 120 admitted | 200,000 (83 in-game days) | 64 | 50 ticks | 0 of 63 |
+  | 24 cells, 40 admitted | 90,000 (37 in-game days) | 54 | 10 ticks | 1 of 53 |
+
+  The shortest gap in the larger run is 625 ms at ×4, and 600 ms is the
+  largest round number under it. **One consecutive pair in 116 across both
+  runs is delayed at all, and none at ×1.** That is the cost decision 4's own
+  text warned a floor would impose on *every* event, priced rather than
+  asserted, and it is a single-digit fraction of one percent.
+
+  The one figure already in this document agrees: Finding 4 measured a
+  terminal outcome standing *"about 6.3 s at ×1 and 1.6 s at ×4"* before the
+  next event of any kind, and the 2026-08-31 playtest's shortest observed gap
+  between two *different* band sentences was 70 ticks — 875 ms at ×4
+  (`docs/research/2026-08-31-playing-the-nine-changes.md` §2e). Both clear 600
+  ms.
+
+**What 600 ms is not:** the time it takes to read the sentence. *"A riot has
+broken out — {count} prisoners have stopped taking orders"* is not read by any
+plausible player in 600 ms; reading is the alerts list's job, which is why
+decisions 1 through 3 gave that list a count, a time and permanence across a
+reload. The band's job, and the one this floor closes, is narrower: that a
+player looking at it **sees the sentence exist** — exactly what the escape
+sentence in #700 did not do, written three times and painted zero.
+
+### 5. Determinism: presentational, checked rather than assumed
+
+`EventBandDwellState` is declared, in its own docblock, as read by nothing in
+`src/simulation/**`, published to no worker message, and absent from
+`SessionRuntimeHost.capture()`. The wall-clock reading it is compared against
+is a parameter (`now`) supplied by the caller on every call, never a value
+`event-band-dwell.ts` reads for itself — `docs/DETERMINISM.md` and
+[ADR 0020](./0020-deterministic-kernel.md) are the reason that separation is
+load-bearing rather than tidy: a dwell floor that could reach simulation state
+would be a determinism defect regardless of how the collision rule reads.
+`tests/determinism/ambient-nondeterminism-contract.test.ts` is the existing
+gate that keeps a wall-clock read from crossing into `src/simulation/**`, and
+it passes unchanged by this amendment's implementation (§6 below), which is
+the check rather than the assumption.
+
+### 6. What was proven, and how
+
+Two behaviors, each with a test added under `tests/`:
+
+- **The escape/all-clear collision from Finding 4 no longer loses the first
+  message.** Two events at the same tick, the second no more severe than the
+  first (the escape/all-clear shape #700 found), and the band shows the first
+  one rather than jumping straight to the second.
+- **A more severe event still reaches the band with no added delay.** An event
+  arriving inside another one's floor, strictly more severe by
+  `SEVERITY_EVICTION_ORDER`, takes the line immediately rather than waiting
+  for the floor to lapse.
+
+Both are reported, with the exact test names, the confirmation that each goes
+red on the code from before this amendment, the `tests/determinism` result,
+and what a manual playthrough of an escape-then-all-clear sequence showed, in
+the report handed over for the branch this amendment ships on
+(`feat/0084-a-terminal-outcome-gets-its-moment`) rather than duplicated into
+this document, which is a record of the decision and not of the branch's test
+run.
+
+### 7. What this amendment does not decide
+
+- **Whether the floor reaches `.hud__refusal`.** Struck through rather than
+  answered in the Open Questions entry above, for the reason given there: the
+  owner was asked about `.hud__event`, and nothing in the ruling reaches the
+  refusal band's own arbitration.
+- **The restored-record case**, which the Open Questions entry above resolves
+  — but by construction from decision 3's existing behavior, not by anything
+  this ruling added. It is recorded there rather than here because it needed
+  no ruling to close, and this section exists to be honest about which of the
+  two nearby questions the owner actually answered.

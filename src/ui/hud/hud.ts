@@ -45,6 +45,13 @@ import {
   type HudViewModel,
 } from './view-model';
 import { hudAlertDismissLabel, hudAlertRowLabel } from './alert-row-label';
+import {
+  EMPTY_EVENT_BAND_DWELL_STATE,
+  admitToEventBand,
+  releaseEventBandFloor,
+  type EventBandDwellDecision,
+  type EventBandDwellState,
+} from './event-band-dwell';
 import { resolveHudLabelParameters } from './label-parameters';
 
 /**
@@ -846,6 +853,22 @@ export interface HudHandle {
   destroy(): void;
 }
 
+/**
+ * The one place this module reads a wall clock, and the only one it may.
+ *
+ * `performance.now()` rather than `Date.now()`: it is monotonic, so a system
+ * clock adjusted mid-session cannot make an event band floor look already
+ * lapsed or never lapsing. It is read here, on the main thread, for a purely
+ * presentational comparison in `event-band-dwell.ts` -- which takes the reading
+ * as an argument precisely so that nothing about the floor depends on being
+ * able to read a clock. Nothing in `src/simulation/**` can reach this function,
+ * and `tests/determinism/ambient-nondeterminism-contract.test.ts` is the gate
+ * that keeps it that way.
+ */
+function hudNowMs(): number {
+  return performance.now();
+}
+
 export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle {
   const { localizer } = options;
   const t = (key: LocalizationKey, parameters?: MessageParameters): string =>
@@ -1079,15 +1102,74 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   eventNotice.hidden = true;
 
   /**
-   * The newest event is the one on the line.
+   * The band's dwell floor, held here and nowhere else.
    *
-   * No arbitration and no source tracking, unlike `applySimulationRefusal`
-   * below: this band has exactly one producer, so whatever it replaces is
-   * always an older event rather than a sentence of another class. `undefined`
-   * means the view model says nothing yet; the field is absent until the
-   * session has had something to say and again once it has ended.
+   * Presentational state about one DOM element, on the main thread, in the
+   * module that owns that element. It is never published, never captured and
+   * never read by anything that ticks -- see `EventBandDwellState` for why that
+   * is a determinism requirement rather than a preference.
+   */
+  let eventBandDwell: EventBandDwellState = EMPTY_EVENT_BAND_DWELL_STATE;
+  let eventBandFloorTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /**
+   * The newest event is the one on the line, **unless the line is still owed to
+   * the last one** (the owner's ruling of 2026-09-01 on
+   * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)
+   * decision 4).
+   *
+   * This read *"No arbitration and no source tracking, unlike
+   * `applySimulationRefusal` below: this band has exactly one producer, so
+   * whatever it replaces is always an older event rather than a sentence of
+   * another class."* Both halves are still true of the *producer* and neither
+   * is any longer true of the *band*. One producer was enough while the only
+   * thing a sentence could lose to was a later one, and issue #700 is the case
+   * where it is not: `SimulationEventLog.recordIncidentsAllClear` and the escape it
+   * closes were written on one tick, `publishEvents` posted them back to back
+   * in one task, and the escape sentence reached zero animation frames across
+   * three escapes in 21.8 minutes of play.
+   *
+   * So the band now has exactly one rule more than it had, and it is the
+   * ordering the alerts list's cap already runs -- `SEVERITY_EVICTION_ORDER`,
+   * one constant, read by both. `src/ui/hud/event-band-dwell.ts` holds the
+   * decision and the arithmetic behind the floor; this function is the paint
+   * and the timer, which is all a DOM module should own.
+   *
+   * `undefined` means the view model says nothing yet; the field is absent
+   * until the session has had something to say and again once it has ended.
    */
   function applyEventNotice(notice: HudEventNoticeViewModel | undefined): void {
+    applyEventBandDecision(admitToEventBand(eventBandDwell, notice, hudNowMs()));
+  }
+
+  /**
+   * Paints what the decision chose, and arms the one timer the floor needs.
+   *
+   * The timer exists because a sentence that waits has to arrive on its own:
+   * nothing else is guaranteed to publish inside the next 600 ms, so without it
+   * a held all-clear would sit in `EventBandDwellState.waiting` until the next
+   * event of any kind -- which is the defect running the other way round.
+   *
+   * Re-armed rather than left running, because every decision carries the wake
+   * it needs from the state it produced, and a stale timer would release a
+   * sentence the band has since moved past.
+   */
+  function applyEventBandDecision(decision: EventBandDwellDecision): void {
+    eventBandDwell = decision.state;
+    paintEventNotice(decision.paint);
+    if (eventBandFloorTimer !== undefined) {
+      clearTimeout(eventBandFloorTimer);
+      eventBandFloorTimer = undefined;
+    }
+    if (decision.wakeInMs === undefined) return;
+    eventBandFloorTimer = setTimeout(() => {
+      eventBandFloorTimer = undefined;
+      applyEventBandDecision(releaseEventBandFloor(eventBandDwell, hudNowMs()));
+    }, decision.wakeInMs);
+  }
+
+  /** The write itself, unchanged: this is the function `applyEventNotice` was before the floor. */
+  function paintEventNotice(notice: HudEventNoticeViewModel | undefined): void {
     eventNotice.hidden = notice === undefined;
     eventText.textContent = notice === undefined ? '' : t(notice.labelKey, resolveHudLabelParameters(t, notice));
     if (notice === undefined) delete eventNotice.dataset['severity'];
@@ -1822,6 +1904,55 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       // is unreachable from it.
       const text = hudAlertRowLabel(t, alert);
       const badge = { tone: severityTone(alert.severity), text: t(severityLabelKey(alert.severity)) };
+      /*
+       * **A row that can be dismissed carries an `x` control** (the owner's
+       * decision 3 of 2026-09-01 on ADR 0084), and only the rows that can be:
+       * a row carrying `occurrences` is one this channel's own producer made,
+       * and the refusal and protocol-fault rows beside it carry none. Their
+       * dismissal is `docs/HUD_PROJECTIONS.md` gap 34 and is not this change.
+       *
+       * **Computed once, here, and applied identically whether `row` below is
+       * about to be created or is being reused** (issue #764). It used to be
+       * computed only inside the create branch, so a row built without
+       * `occurrences` and later reused with them kept whatever the create
+       * branch decided the one time it ran -- no control, forever, however
+       * the row's state changed after that. `alert.occurrences` is read fresh
+       * on every paint, so this is a function of the row's current state
+       * rather than of its construction history, which is the promise ADR
+       * 0084 decision 2 makes and the fix this issue asked for.
+       *
+       * **A control of its own rather than the whole row, which overrides
+       * `createListRow`'s general rule for this row and does so deliberately.**
+       * That rule -- *"the entire row, not a small chevron at its end, because
+       * a row is the tap target on a touch screen"* -- is right where pressing
+       * a row selects something. Here it writes a mark into the save and there
+       * is no undo, so the owner ruled for the smaller target with that cost in
+       * front of them: a mis-tap that cannot be reversed is worse than a
+       * control a finger has to find. `ListRow.setAction` carries the argument
+       * at the primitive.
+       *
+       * **What it costs the sentence beside it is real and is recorded rather
+       * than absorbed.** `.ui-row__label` in this list measures 88px (#720);
+       * a `--tap-target` control and its gap take 52px of that, leaving about
+       * 36px. See `hud-alerts__list` in `hud.css` for the arithmetic and for
+       * what would have to give.
+       *
+       * Not gated and not marked as a command control: see the intent's own
+       * comment on `HudIntent` for why a dismissal has no refusal to paint
+       * and nothing to serialise against.
+       */
+      const dismissible = alert.occurrences !== undefined;
+      const dismissAction = dismissible
+        ? {
+            icon: 'dismiss' as const,
+            label: dismissLabel,
+            onActivate: () => {
+              const intent: HudIntent = { kind: 'dismiss-alert', rowId: alert.id };
+              runReported(intent.kind, () => options.onIntent?.(intent), reportError);
+            },
+          }
+        : undefined;
+
       const existing = alertRows.get(alert.id);
       let row = existing;
       if (row === undefined) {
@@ -1840,65 +1971,21 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
          * item name -- the part rulings 3 and 13 of #703 added the sentence
          * for -- was always the part cut.
          */
-        /*
-         * **A row that can be dismissed carries an `x` control** (the owner's
-         * decision 3 of 2026-09-01 on ADR 0084), and only the rows that can be:
-         * a row carrying `occurrences` is one this channel's own producer made,
-         * and the refusal and protocol-fault rows beside it carry none. Their
-         * dismissal is `docs/HUD_PROJECTIONS.md` gap 34 and is not this change.
-         *
-         * **A control of its own rather than the whole row, which overrides
-         * `createListRow`'s general rule for this row and does so deliberately.**
-         * That rule -- *"the entire row, not a small chevron at its end, because
-         * a row is the tap target on a touch screen"* -- is right where pressing
-         * a row selects something. Here it writes a mark into the save and there
-         * is no undo, so the owner ruled for the smaller target with that cost in
-         * front of them: a mis-tap that cannot be reversed is worse than a
-         * control a finger has to find. `ListRowOptions.action` carries the
-         * argument at the primitive.
-         *
-         * **What it costs the sentence beside it is real and is recorded rather
-         * than absorbed.** `.ui-row__label` in this list measures 88px (#720);
-         * a `--tap-target` control and its gap take 52px of that, leaving about
-         * 36px. See `hud-alerts__list` in `hud.css` for the arithmetic and for
-         * what would have to give.
-         *
-         * Not gated and not marked as a command control: see the intent's own
-         * comment on `HudIntent` for why a dismissal has no refusal to paint
-         * and nothing to serialise against.
-         */
-        const dismissible = alert.occurrences !== undefined;
-        row = createListRow({
-          icon: 'incident',
-          label: text,
-          badge,
-          wrap: true,
-          ...(dismissible
-            ? {
-                action: {
-                  icon: 'dismiss',
-                  label: dismissLabel,
-                  onActivate: () => {
-                    const intent: HudIntent = { kind: 'dismiss-alert', rowId: alert.id };
-                    runReported(intent.kind, () => options.onIntent?.(intent), reportError);
-                  },
-                },
-              }
-            : {}),
-        });
+        row = createListRow({ icon: 'incident', label: text, badge, wrap: true });
         row.element.dataset['alert'] = alert.id;
-        // So a browser test can tell the two families apart without reading an
-        // id prefix, which is `src/ui/simulation-*.ts`'s vocabulary and not the
-        // HUD's.
-        if (dismissible) row.element.dataset['alertDismissible'] = 'true';
         alertRows.set(alert.id, row);
       } else {
         row.setLabel(text);
         row.setBadge(badge);
-        // Re-resolved with the sentence beside it, so a locale change moves the
-        // control's name too. A no-op on a row that has no control.
-        row.setActionLabel(dismissLabel);
       }
+      row.setAction(dismissAction);
+      // So a browser test can tell the two families apart without reading an
+      // id prefix, which is `src/ui/simulation-*.ts`'s vocabulary and not the
+      // HUD's. Set or cleared every paint alongside the control itself, for
+      // the same reason `setAction` above is: a row that lost its control on
+      // a reuse must not keep the flag claiming it still has one.
+      if (dismissible) row.element.dataset['alertDismissible'] = 'true';
+      else delete row.element.dataset['alertDismissible'];
 
       // The drawn order is `viewModel.alerts`'s order, re-established on every
       // paint. Appending a new row instead put the list in *first-seen* order,
@@ -2029,6 +2116,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     },
     destroy: () => {
       gate.dispose();
+      // The floor's timer outlives the element it paints unless it is cleared:
+      // a HUD torn down inside the 600 ms would otherwise wake up and write to
+      // a detached band.
+      if (eventBandFloorTimer !== undefined) {
+        clearTimeout(eventBandFloorTimer);
+        eventBandFloorTimer = undefined;
+      }
       hud.remove();
     },
   };
