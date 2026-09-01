@@ -240,8 +240,11 @@ Nothing here changes a status; this table only reports them.
 
 | [0085](./0085-what-the-hud-corner-is-for-and-what-the-strip-may-drop.md) | What the HUD's alerts corner is for, and what the status strip may drop | Proposed, 2026-09-01. Not self-approved — answers [#739](https://github.com/matmaxalez/lockstate/issues/739) (the alerts corner) and [#719](https://github.com/matmaxalez/lockstate/issues/719) (the status strip), both filed as decisions rather than defects. **Decision 1: the corner is a log, not a deliberate ticker** — `MAX_EVENT_ALERT_ROWS`'s severity-graded eviction has no use on a ticker that discards its oldest row regardless of importance, and rulings 1, 3, 11 and 13 of 2026-08-31 all spend effort on the assumption the log is read, not glanced past. Recommends widening the whole corner (candidate A of four, full costs in `docs/research/2026-09-01-what-the-corner-and-strip-cost.md` §3) over letting only the alerts box grow (an asymmetric shape nothing in this file has built), moving the list out of the corner (every cost UNDERIVED), or a two-column corner above a width breakpoint (helps 0 of the 4 measured viewports if it reuses the strip's own breakpoint band, since issue #739's finding D1 measured the deficiency identically at 900×600 and 1920×1080). The exact width is not decided — that needs a line-count sweep of the 109-character sentence at candidate widths, which no Playwright run in this pass could take — and a provisional guardrail (corner footprint under ~430px until a real minimap is rendered into the placeholder) is offered as this document's own judgment rather than a measurement. **Decision 2: the strip must never drop a chip silently, and `funds` must never be the first one gone.** Confirms PR #723's ruling-21 coverage-badge shortening already lands issue #719's route 1, and that the overflow persists anyway — D9 measures 133px over at 1280×800 on a mid-game prison, and `ui-strip-badged-width.spec.ts`'s own docblock reasons the true post-#723 worst case to ≈1,407–1,499px against 1,256 without ever measuring it. Recommends a height-gated second metrics row (available at 1280×800 and taller; not at 1280×720, where the Build panel's corrected ~2px budget cannot absorb it, nor at 900×600, already committed to one row by a prior explicit ruling) together with reordering chip priority so a badge-carrying chip — `funds` above all, eighth of nine in today's order and one of the first two lost in the measured worst case — is never among the ones an unfitting row drops, leaving `earned-today` (the one chip with no warning state at any reading taken) as the deliberate last-to-drop chip. Names, without recommending either way, that issue #634's prior refusal of a visible scroll affordance predates both ruling 21 and the ninth chip and that the ground it was ruled on has moved. Ships no layout: both decisions are Proposed. A genuine bug the same pass found alongside these — `.hud-rooms__note` (issue #739 finding D5, "Drag a rectangle across the tiles this room should cover.") painting 231px outside its own panel rather than being contained by it — is fixed separately, without an ADR, because containing an overflow decides neither the wrapping question `hud.css`'s own comment on that rule already argues against nor the shortening question `AGENTS.md`'s fourth exclusion reserves to the owner |
 | [0086](./0086-what-refreshes-a-pulled-hud-readout.md) | What refreshes a pulled HUD readout | Proposed, 2026-09-01. Not self-approved — answers [#718](https://github.com/matmaxalez/lockstate/issues/718), which the owner filed as a decision rather than a bug: *"what cadence should a pulled readout have when the thing it depends on is not what makes the counts move?"* **Corrects the issue's premise with a measurement.** The nine pulled readouts in `src/main.ts` do **not** ride `simulation/status-counts`; they ride every message that survives one listener's six-way early return (`src/main.ts:1735-1740`), and `hudClockFromWorkerMessage` (`src/ui/simulation-clock.ts:22-57`) has no "nothing changed" arm — so the binding cadence is the **clock heartbeat at 250 ms**, not the counts channel at 500 ms. Measured on the real `SimulationWorkerStateMachine` over 30 simulated seconds at ×1: an empty prison publishes `simulation/status-counts` **once** and refreshes its readouts **120 times**, longest gap **255 ms**; a housed prison publishes 59 and refreshes 178. **The mutation is the finding**: delete the clock term from that predicate and the same prisons refresh **once in 30 s** — issue #718's symptom reproduced to the second, from a one-term change, with nothing in the repository to catch it (`src/main.ts` is DOM code and `vitest.config.ts` is `environment: 'node'` with no jsdom). Carries the inventory the issue asked for — all fifteen catalogued read models, ten with a reader, every one of the nine HUD readouts moving on a bare tick while all twenty counts stand still — and prices publish-every-tick, a timer of the pull layer's own, per-projection input invalidation and accepting the freeze against `docs/HUD_PROJECTIONS.md` §§7-9 and against `SimulationSnapshotFeed`, which already made this decision and paid for the wrong answer first (121 requests where its header promised 2). **Recommends naming the heartbeat that already exists** — the tick moved, not a wall-clock timer — documenting it and pinning it. Leaves with the owner: approval; whether to take `blockProgress` off the pull route; and whether a paused prison's correct-but-motionless readouts are an acceptable product answer. |
+| [0087](./0087-whether-a-refusal-is-an-event-or-a-condition.md) | Whether a refusal is an event or a condition of the prison | Proposed, 2026-09-01. Not self-approved — answers [#657](https://github.com/matmaxalez/lockstate/issues/657). **The question is whether a refusal is a thing that happened, with a time, that scrolls away, or a way the prison currently is, that persists until its cause is gone** — and the codebase answers both, in different places, so the same state produces different screens. Carries an inventory of **every producer of a refusal** and prices the ambiguity in six named costs, **seven of which were checked by a throwaway `vitest` probe against this tree (all seven pass) and deleted before commit** per `docs/AGENT_WORKFLOW.md` §2; costs 1 and 2 were re-run at `a64709f6` after the fast-forward and pass unchanged. Prices five options — idempotent `record` under an unchanged key, producers decide, a second `simulation/condition` channel, two kinds, and doing nothing — and **recommends option 4**: refusals stay exactly as they are, and a *standing condition* becomes a distinct smaller thing, a member of a closed union recomputed from live state at every publication and carried as a bounded set on `simulation/status-counts`, with **no ordinal, no monotonic counter, no supersession key and nothing in the save**; absence of an id from the set means the condition is not standing, and several stand at once by construction. That is the shape the existing pulled read models already have, moved from a surface that must be opened to one that need not be, which is [#629](https://github.com/matmaxalez/lockstate/issues/629)'s requirement stated exactly. **Decision 2 cannot be executed without new player-facing sentences**, which `AGENTS.md`'s fourth exclusion reserves to the owner, so what is asked for is a ruling on the *shape*; the sentences are a separate request. Nothing under `src/` is changed by the document, and no file under `src/` was edited by the pass that wrote it — five other agents were working there at the time, including in the files it cites most. |
 
-**Next free number: 0087.** **0086 is a draft in flight rather than a landed ADR, and this line moves with it on the reservation rule this file states at the top** — adding 0086's row above is what reserves it. The remote sweep was performed rather than asserted for this entry too: `git ls-remote --refs --heads origin` returned every head on the remote and `git ls-tree -r --name-only <head> -- docs/adr/` was read out of each; the highest four-digit prefix on any head is `0085`, so `max + 1` off disk (0085 → 0086) and the swept ceiling agree and 0086 collides with nothing this sweep can see. A branch that has not pushed is invisible to it, and 0086's own header pre-commits to being renumbered if it collides. **The paragraph this replaced is kept below rather than overwritten** (`docs/AGENT_WORKFLOW.md` §4: mark both directions), because what it records — two simultaneous drafts, each told a number and each sweeping anyway, the second confirming the first's reservation rather than colliding with it — is the mechanism working and is worth keeping:
+**Next free number: 0088.** **0087 is a draft in flight rather than a landed ADR, and this line moves with it on the reservation rule this file states at the top** — adding 0087's row above is what reserves it, and the number is not reserved until it does. **0087 was taken over a held 0086, and the sweep is the authority.** On the branch that drafted it, cut from `main` at `b04e45f8` (v0.0.319), the highest ADR on disk was 0085 and this line read `Next free number: 0086` — so `max + 1` off disk and the stated next-free line agreed at 0086, **and both were wrong**, for the reason this file has now recorded nine times: disk sees only what has merged. The remote sweep was performed rather than asserted: one `git fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune`, then `git ls-remote --refs --heads origin` (**402 heads**) with `git ls-tree --name-only <head> docs/adr/` read out of every one of them. The highest four-digit prefix on any head was **0086**, on `docs/718-what-cadence-a-pulled-readout-has` alone, unmerged and therefore invisible from this index; nothing at 0087 or above appeared anywhere. 0086 has since landed on `main` as `dada4c8b` (v0.0.322), which is the sweep's answer confirmed rather than overtaken. **The paragraph this replaced is kept below rather than overwritten** (`docs/AGENT_WORKFLOW.md` §4: mark both directions), because what it records — a ceiling swept over a hold, and 0086's own pre-commitment to being renumbered on collision — is the same mechanism one turn earlier:
+
+> **Superseded 2026-09-01 by the paragraph above; kept because it records how 0086 was reserved.** **Next free number: 0087.** **0086 is a draft in flight rather than a landed ADR, and this line moves with it on the reservation rule this file states at the top** — adding 0086's row above is what reserves it. The remote sweep was performed rather than asserted for this entry too: `git ls-remote --refs --heads origin` returned every head on the remote and `git ls-tree -r --name-only <head> -- docs/adr/` was read out of each; the highest four-digit prefix on any head is `0085`, so `max + 1` off disk (0085 → 0086) and the swept ceiling agree and 0086 collides with nothing this sweep can see. A branch that has not pushed is invisible to it, and 0086's own header pre-commits to being renumbered if it collides. **The paragraph this replaced is kept below rather than overwritten** (`docs/AGENT_WORKFLOW.md` §4: mark both directions), because what it records — two simultaneous drafts, each told a number and each sweeping anyway, the second confirming the first's reservation rather than colliding with it — is the mechanism working and is worth keeping:
 
 > **Superseded 2026-09-01 by the paragraph above; kept because it records how 0084 and 0085 were reserved.** **Next free number: 0086.** **0084 AND 0085 are both drafts in flight rather than landed ADRs, and this line moves with the higher of them on the same reservation rule this file states at the top** -- they were drafted by two passes running at the same time, each told which number to take and each asked to sweep anyway; the second sweep found the first's branch and confirmed the reservation instead of colliding with it, which is the mechanism working rather than luck. — adding 0084's row above is what reserves it, and the number is not reserved until it does. The remote sweep was performed rather than asserted for this entry too: `git ls-remote --refs --heads origin` returned every head on the remote and `docs/adr/` was read out of each with `git ls-tree`; neither a `0084-` nor a `0085-` filename appears on any of them, so `max + 1` off disk (0083 → 0084) and the swept ceiling agree and 0084 does not collide with anything in flight. **0085 is named, by the brief that commissioned 0084, as already assigned to a different agent's draft working elsewhere**, and that agent's branch was not visible to this sweep — nothing under `docs/adr/` names 0085 on any head this sweep could read, so it has either not pushed yet or not written its file yet. This line moves to 0085 anyway, over that unconfirmed hold, on the reasoning the many entries below give a ceiling sitting over a hold: `max + 1` off disk is the rule, and a hold this sweep cannot see is not evidence against it. Resolving the collision, if 0085 lands from two directions at once, is named in the same brief as the integrator's task rather than something to renumber around from inside either worktree.
 
@@ -490,13 +493,136 @@ reconstruct.**
 
 That is why #380 was right to queue its ADR 0007 amendment — it declined to
 self-approve and marked its heading *"(awaiting approval)"* — and it is right for
-a reason that has nothing to do with applying versus amending. Ten of the 17
+a reason that has nothing to do with applying versus amending. **Ten of the 17
 post-hoc additions on disk are covered today, by their own opening (0006,
 0007 ×2, 0028 ×3, 0033), by their ADR's `Status` (0022, 0023, 0031), or by both.
-**Seven are not: 0003's four amendments, 0026's addendum, and ADR 0008's two
+Seven are not: 0003's four amendments, 0026's addendum, and ADR 0008's two
 rulings.** This section does **not** condemn the first five; they are named as a
 backlog for whoever edits those documents next, and the count is what asserting
 this half mechanically would cost.
+
+**That count is corrected below, 2026-09-01, rather than deleted — it is kept
+because it records what was believed and why it stopped being true.**
+
+#### What counts as a post-hoc addition, precisely
+
+Two shapes, and only two:
+
+**(a) A headed section** — a section whose heading's *first word* is `Amendment`
+or `Addendum` (match the opener, not the word: ruling 2 §5's first
+implementation note applies here too, so a sub-heading merely *containing*
+either word inside such a section, e.g. ADR 0007's *"The decision this amendment
+adds…"*, does not count again). This is ruling 2's predicate 1 and it is
+exhaustive and mechanical:
+
+```
+grep -RniE '^#{2,6}\s+[*_`]*(Amendment|Addendum)\b' docs/adr/*.md
+```
+
+run against every ADR file — not this file and not `STATUS-QUEUE.md`, the two
+documents `adr-numbering-contract.test.ts` already exempts.
+
+**(b) An unheaded passage that does the same job inline** — one that itself
+states, narrows, generalises, reverses or settles something the *document it
+sits in* requires or leaves open, under no heading of shape (a). This is the
+shape ADR 0008 §2's two rulings were in before ruling 2 gave them headings, and
+the reason ruling 2 §5 built a second predicate for it: a decision verb
+(`decided|settled|generalised|ruled|narrowed`) within about 60 characters of a
+date, outside every section of shape (a). That predicate is noisy on this
+corpus and has to be read, not only run — three shapes trip it and are **not**
+additions in this sense, excluded by reading rather than by a sharper regex:
+
+- an ADR's own opening recording *when the document itself* was decided
+  (`**Proposed, 2026-08-28.** Decided under the owner's standing mandate…`,
+  `**Ruled: 5,000 bp (50%)** (#703, 2026-08-31)`, and every later ADR that
+  states its own ruling this way) — original content, not something added
+  after acceptance;
+- a passage that names its own exemption (`Nothing this section decides
+  moves`, `No decision in the rest of this document is edited`) — a correction
+  to a citation, a name or a measurement, changing no rule;
+- a passage that reports a *different*, separately-dated document's decision
+  rather than changing what *this* one requires — ADR 0010's paragraph on ADR
+  0008's telemetry scoping, ADR 0044's confirmation that an open question
+  resolved the way it had predicted, ADR 0026's own amendments (counted under
+  (a) already) being referenced from ADR 0050.
+
+Run over the full corpus with those three exclusions applied by hand, exactly
+one passage survives: a paragraph in
+[ADR 0028](./0028-object-placement-and-derived-room-capacity.md), opening
+*"Narrowed on 2026-08-30 by [ADR 0076] decision A(i), which that ADR requires
+to be written in here rather than left to be discovered from the code"* —
+no heading, unmentioned by ADR 0028's own `Status`. It is this pass's headline
+finding; see below.
+
+#### Enumerated mechanically, 2026-09-01
+
+Predicate (a), run against this tree: **32 headed sections across 18
+documents** — 0003 ×4, 0006, 0007 ×2, 0008 ×4, 0014, 0015, 0017 ×2, 0019,
+0020 ×2, 0022, 0023, 0026 ×3, 0028 ×3, 0029, 0031, 0033, 0071, 0076 ×2 — plus
+predicate (b)'s one surviving unheaded passage above. **That is 33 post-hoc
+additions on disk, not 17.**
+
+**The 17 above was never wrong on its own terms and was never re-derivable on
+anyone else's.** It was the 15 headed sections ruling 2 §2 measured at
+`54418b6`, plus ADR 0008's then-unheaded two, and it was frozen the day it was
+written while the corpus it describes kept moving — past 15 first (ruling 2's
+own recount above found 24), then to 32, plus the one unheaded passage no
+heading-only grep would ever surface. Nothing about *how* it was produced was
+stated closely enough for a later pass to reproduce the number, which is the
+defect this subsection exists to close.
+
+#### The covered/uncovered split, redone against the current 33
+
+The test stays the one stated above: an addition is **covered** when its own
+opening or its ADR's `Status` states a resolved position — an explicit
+approval, or an explicit "no decision here" tying it to the acceptance already
+on record — and **uncovered** when it states or implies a changed rule with
+neither. Each of the 33 was checked against its file rather than carried
+forward from the count above.
+
+- **26 of the 33 are covered.** By their own opening: 0006; 0007 ×2; the two
+  2026-08-27 amendments at the foot of
+  [ADR 0008](./0008-trusted-service-boundary.md) §3 (*"no decision moves"*,
+  then *"the owner has chosen"*); 0014; 0015; 0017 ×2; 0019; 0020 ×2;
+  [0026](./0026-entity-id-lifetime.md)'s addendum (*"No decision changes
+  here"*); 0028 ×3; 0029;
+  [0071](./0071-what-bounds-a-room-whose-activity-consumes-no-object.md)'s
+  amendment, which names *"the owner's"* ruling on issue #585 in its own
+  opening line; and [0076](./0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+  two, each opening *"Accepted, 2026-09-01, by the repository owner"* —
+  twenty sections across thirteen documents. By their ADR's `Status`: 0022;
+  0023; 0026's other two amendments (2026-08-28, 2026-08-29), which its
+  `Status` paragraph names and resolves in the same two sentences; 0031; 0033
+  — six more across five documents (0026 counted in both, once for each kind
+  of coverage it carries).
+- **7 are not: 0003's four amendments, ADR 0008 §2's original two rulings** —
+  which still open *"Nobody has approved this, and a reader acting on it
+  should know that"* even now that they carry a heading and a date — **and the
+  ADR 0028 paragraph found above.**
+
+**The total held at seven both times, and that is coincidence rather than
+agreement.** [ADR 0026](./0026-entity-id-lifetime.md)'s addendum
+(2026-08-26) — one of the original seven — is reclassified covered here: its
+opening states *"No decision changes here"* exactly as plainly as the
+audit-amendments to 0014, 0015, 0019, 0020, 0028 and 0029 do, a reading the
+count above did not extend to it. The ADR 0028 paragraph takes the seat it
+leaves. **What this section does not condemn is therefore four, not five:
+0003's four amendments alone.** The ADR 0028 paragraph is named separately
+above rather than folded into that backlog, because unlike those four it is
+not merely unapproved — it is undiscoverable.
+
+**The ADR 0028 paragraph is this pass's one uncovered-and-load-bearing find, in
+ruling 3's own sense.** It differs from ADR 0008's two in *why* it is
+uncovered: it is not disputed the way those are — it traces to
+[ADR 0076](./0076-what-happens-to-a-resident-whose-bed-is-taken-away.md), an
+accepted decision, so its substance is not in question — but nothing in ADR
+0028 says so. No heading, no mention in its own `Status`, nothing short of
+reading the whole *Decision* section end to end. And it binds future work
+exactly as ADR 0008's two do: for every room a placed-object capacity governs,
+a resident the prison **can** rehouse is moved rather than left, which is a
+rule the next thing touching occupancy has to know is there. Whether it gets a
+`STATUS-QUEUE.md` §2 row on the model of ADR 0008's two is that document's
+call, not this one's.
 
 **And an approval sentence can itself rot, which is the limit of this half.**
 0033's amendment opens *"Status of this section: `Proposed`, with the rest of
@@ -519,13 +645,20 @@ say yes or no to them.
 
 ### 4. The alternatives, and what each would have condemned
 
-- **Extend the §2 rule to every post-acceptance edit.** Condemns **16 of the 17**
-  post-hoc additions on disk: exactly one of them — 0007's second amendment — ever
-  had a row, and [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 records that the row it
-  did have was *"the only thing that says it exists"*. It also adds surface to a
-  rule that same section already diagnoses as *"unsatisfiable under concurrency"*
-  and as having failed more often than it worked. Rejected: a rule already being
-  routed around does not get widened.
+- **Extend the §2 rule to every post-acceptance edit.** Condemned **16 of the 17**
+  post-hoc additions on disk as this bullet was originally counted; against the
+  redone 33 (2026-09-01), it is **28 of the 33**. Five have ever had a row, not
+  one: 0007's second amendment (resolved, and the row deleted with it, per
+  [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2's own note that the row it did have
+  was *"the only thing that says it exists"*); ADR 0008 §2's two rulings and its
+  2026-08-27 §3 scope clause, all three still carrying an open row today; and
+  [ADR 0071](./0071-what-bounds-a-room-whose-activity-consumes-no-object.md)'s
+  amendment, queued not for its own coverage — its opening names the owner's
+  ruling, which is why it counts covered above — but for the `Proposed` document
+  it sits inside. The ratio moved (16 of 17 to 28 of 33) without the argument
+  moving: it also adds surface to a rule that same section already diagnoses as
+  *"unsatisfiable under concurrency"* and as having failed more often than it
+  worked. Rejected: a rule already being routed around does not get widened.
 - **Keep the applies/amends line and write the test for it.** There is no test to
   write; see ruling 1. Rejected as unimplementable rather than as unattractive.
 - **Require each ADR's `## Status` to name every amendment it carries.**
