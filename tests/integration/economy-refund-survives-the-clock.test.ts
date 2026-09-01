@@ -175,27 +175,53 @@ function runToQuiet(runtime: SimulationRuntime, limit = 2_000): number {
  *
  * **The owner's ruling 19 of 2026-08-31 moved it again, and it also moved the
  * *route*, which is a finding and not a fixture repair.** Ruling 19 -- drafted
- * as ADR 0017's "Amendment, 2026-09-01" -- gives ADR 0017 decision 8's rungs
- * their own thresholds inside the overdraft: a press is `'deliveries'` and stops
- * at -1,250, while the queue's own procurement is `'construction'` and stops at
- * -2,000. **Construction therefore always has exactly 750 more room than a
- * press**, so the state this case is about -- a player who can still afford a
- * 240 press while the queue cannot fund one 80 wall -- *cannot be reached by
- * pressing at all any more*. Any balance at which the press goes through leaves
- * the queue at least 750, which funds nine walls.
+ * as ADR 0017's "Amendment, 2026-09-01" -- gave ADR 0017 decision 8's rungs
+ * their own thresholds inside the overdraft: a press was `'deliveries'` and
+ * stopped at -1,250, while the queue's own procurement was `'construction'`
+ * and stopped at -2,000. **Construction therefore always had exactly 750 more
+ * room than a press**, so the state this case is about -- a player who can
+ * still afford a 240 press while the queue cannot fund one 80 wall -- *could
+ * not be reached by pressing at all*. Any balance at which the press went
+ * through left the queue at least 750, which funded nine walls.
  *
- * So the last stretch of the drain is taken at the wage rung, which is the only
- * class whose threshold is the floor -- that is, by a payday, which is exactly
- * how a real session arrives here. The window itself is unchanged in size:
+ * So the last stretch of the drain was taken at the wage rung, which was the
+ * only class whose threshold was the floor -- that is, by a payday. The window
+ * itself was unchanged in size:
  *
- * - 400 planks at 65 is 26,000 of the 26,250 a press may spend, leaving 250 --
- *   enough for the six bricks and nothing else.
- * - Six bricks at 40 is 240: balance -1,240, and the press rung is spent.
- * - 735 more at the wage rung puts the balance at **-1,975**, which is 25 of
- *   construction room -- above nothing and below the 80 one wall order costs.
- * - Cancelling the six bricks refunds 240 and leaves **265**, which is above the
- *   240 three wall orders cost and below the 320 that four cost. That is the
- *   same 265 window the paragraph above describes, one rung up.
+ * > - 400 planks at 65 is 26,000 of the 26,250 a press may spend, leaving 250 --
+ * >   enough for the six bricks and nothing else.
+ * > - Six bricks at 40 is 240: balance -1,240, and the press rung is spent.
+ * > - 735 more at the wage rung puts the balance at -1,975, which is 25 of
+ * >   construction room -- above nothing and below the 80 one wall order costs.
+ * > - Cancelling the six bricks refunds 240 and leaves 265, which is above the
+ * >   240 three wall orders cost and below the 320 that four cost. That is the
+ * >   same 265 window the paragraph above describes, one rung up.
+ *
+ * **The owner's ruling on #771 (2026-09-01, ADR 0017's equalisation amendment)
+ * removes the 750 of daylight this fixture is built on, and the wage-rung step
+ * goes with it.** `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` is now the
+ * same -1,250 the delivery rung is, so "construction has 750 more room than a
+ * press" is no longer true of any balance -- there is no depth left at which
+ * the queue can fund something a press could not, which is the whole property
+ * #771 asked for. A payday is no longer needed to reach the window this case
+ * is about, because the window now sits *inside* the range a press can reach
+ * on its own:
+ *
+ * - 400 planks at 65 is still 26,000, leaving **-1,000** of the 25,000 grant --
+ *   both purchases are ordinary presses, and this balance alone still has 250
+ *   of room to the shared rung.
+ * - Six bricks at 40 is 240: balance **-1,240**, still one ordinary press, and
+ *   10 of room to the shared rung -- above nothing and below the 80 one wall
+ *   order costs, the same shape the wage-drained fixture had at 25.
+ * - Cancelling the six bricks refunds 240 and leaves **-1,000** again, 250 of
+ *   room -- above the 240 three wall orders cost and below the 320 that four
+ *   cost, the same shape the wage-drained fixture had at 265.
+ *
+ * The case this fixture serves is otherwise unaffected: what it measures is
+ * ADR 0081's per-order funding and `CancelMaterialPurchase`'s refund, neither
+ * of which #771 touches, and the property only needed *a* window in which the
+ * queue can fund three orders and not four -- not specifically one 750 minor
+ * units past a press's own limit.
  */
 function drainedPrison(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
@@ -204,15 +230,16 @@ function drainedPrison(): SimulationRuntime {
   send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 6 });
   expect(runtime.refusals.count, 'the fixture must afford everything it presses').toBe(0);
   // Not `step`ped after this, so the six bricks are still in flight -- which is
-  // what makes `buy-1` cancellable below.
-  expect(runtime.treasury.spend(735, 'wages'), 'the wage rung is the only one that reaches here').toBe(true);
+  // what makes `buy-1` cancellable below. No further drain is needed since
+  // #771: both purchases above are ordinary presses and land exactly on the
+  // window this fixture is for.
   return runtime;
 }
 
-/** 25,000 - 400 x 65 - 6 x 40 - 735, with the six bricks refunded. 265 of construction room. */
-const DRAINED_BALANCE = -1_735;
-/** `DRAINED_BALANCE` less six bricks at 40, which is 25 of room and below one wall order. */
-const DRAINED_AFTER_SIX_BRICKS = -1_975;
+/** 25,000 - 400 x 65 - 6 x 40, with the six bricks refunded. 250 of room to the shared rung. */
+const DRAINED_BALANCE = -1_000;
+/** `DRAINED_BALANCE` less six bricks at 40, which is 10 of room and below one wall order. */
+const DRAINED_AFTER_SIX_BRICKS = -1_240;
 
 describe('a refund survives the clock (#687)', () => {
   it('pins the three figures every balance below is written from', () => {
@@ -728,8 +755,9 @@ describe('a refund survives the clock (#687)', () => {
    * partial fill is reverted this line fails rather than quietly passing.
    */
   it('stalls a whole queue the prison can no longer fund in one lump, and one press undoes that', () => {
-    // The six bricks are bought inside the fixture now, because the press that
-    // buys them must happen before the wage-rung drain: see `drainedPrison`.
+    // The six bricks are bought inside the fixture, as an ordinary press
+    // (`drainedPrison`, corrected for #771's equalisation -- no wage-rung
+    // drain is needed any more).
     const withCancel = drainedPrison();
     const ids = placeWalls(withCancel, 4);
     expect(balanceOf(withCancel)).toBe(DRAINED_AFTER_SIX_BRICKS);

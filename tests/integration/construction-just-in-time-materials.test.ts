@@ -941,32 +941,50 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
     }
 
     /*
-     * **The owner's ruling 19 of 2026-08-31 moves the gesture 6 segments
-     * shallower and does not remove it.** The queue spends at the
+     * **The owner's ruling 19 of 2026-08-31 moved the gesture 6 segments
+     * shallower and did not remove it.** The queue spent at the
      * `'construction'` rung (ADR 0017's "Amendment, 2026-09-01"), so its power
-     * is 25,000 + 2,000 = 27,000 rather than 27,500:
+     * was 25,000 + 2,000 = 27,000 rather than 27,500:
      *
      *   floor(27,000 / 80) = 337 wall segments, leaving 40 of the rung.
      *
-     * `343` and `-2,440` are what the paragraphs above measured and are kept
-     * there; the finding is unchanged in every respect that matters, and it is
-     * worth saying which way it moved: the drag locks the prison **sooner** now,
-     * with 500 of the facility still standing that only a payday can reach.
+     * `343` and `-2,440` are what the paragraphs above measured and were kept
+     * there; that finding was unchanged in every respect that mattered, and it
+     * was worth saying which way it moved: the drag locked the prison
+     * **sooner** than under the standing overdraft alone, with 500 of the
+     * facility still standing that only a payday could reach.
+     *
+     * **The owner's ruling on #771 (2026-09-01, ADR 0017's equalisation
+     * amendment) moves it again, 9 segments shallower still, and this time
+     * the "500 of the facility only a payday can reach" is gone.**
+     * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` now reads the same
+     * -1,250 the delivery rung does, so the queue's spending power is
+     * 25,000 + 1,250 = 26,250 rather than 27,000:
+     *
+     *   floor(26,250 / 80) = 328 wall segments, leaving 10 of the rung.
+     *
+     * The two prior figures are kept above for the same reason every
+     * superseded figure in this repository is kept: the finding survives and
+     * only the number under it moves. See
+     * `tests/integration/economy-liquidity-hard-lock.test.ts` for what this
+     * means for ADR 0075's lock on the exact fixture that used to escape it.
      */
-    expect(funded, '(25,000 + 2,000) / 80').toBe(337);
-    expect(firstRefusedAt, 'zero-based, so the 338th wall is the first the game refuses to buy for').toBe(337);
-    expect(runtime.treasury.balanceMinorUnits, '25,000 - 337 x 80').toBe(-1_960);
+    expect(funded, '(25,000 + 1,250) / 80').toBe(328);
+    expect(firstRefusedAt, 'zero-based, so the 329th wall is the first the game refuses to buy for').toBe(328);
+    expect(runtime.treasury.balanceMinorUnits, '25,000 - 328 x 80').toBe(-1_240);
     expect(
       runtime.treasury.canAfford(PLANK_PRICE, 'construction'),
-      'and the 40 of the construction rung still standing is below the 65 that would end this',
+      'and the 10 of room still standing is below the 65 that would end this',
     ).toBe(false);
 
     // The lock itself, confirmed rather than inferred: the one thing that
-    // would restart the income line is refused -- and at -1,960 it is refused
-    // by the *delivery* rung, 710 before the queue would have run out.
+    // would restart the income line is refused -- and, since #771, it is
+    // refused by the *same* rung the queue just stopped at, not by a deeper
+    // one 710 minor units further down. There is no depth left at which the
+    // queue can do something a Buy press cannot.
     send(runtime, { type: 'PurchaseMaterials', orderId: 'order-plank', itemId: PLANK, quantity: 1 });
     expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
-    expect(runtime.treasury.balanceMinorUnits).toBe(-1_960);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-1_240);
   });
 });
 

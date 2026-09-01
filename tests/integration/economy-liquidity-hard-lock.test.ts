@@ -88,6 +88,44 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *   at 0. It still does not lock anybody, for the reason the case says, but the
  *   prison spends its facility on wages while it waits rather than holding it.
  *
+ * ## What the owner's ruling on #771 (2026-09-01) reopens, and this is the
+ * largest single consequence this branch measured
+ *
+ * **The purchase-route cure above depended entirely on the press and the
+ * queue *not* sharing a threshold, and #771's equalisation removes exactly
+ * that.** #771 found the 750 minor units of daylight between the two rungs
+ * had a cost the sentence above does not name: it was a purchase-route escape
+ * from ECON-002's own lock, and closing the daylight closes the escape with
+ * it. Measured directly, on the exact fixture that used to demonstrate the
+ * recovery (`BALANCE_AT_THE_RUNG = -1,240`, no plank in stock, no bed built):
+ * a `PlaceObject` for a bed now stays `materials-pending` for ever, exactly as
+ * it did before ruling 19 shipped, because `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`
+ * is now the same -1,250 the press already stops at and `-1,240 - 65 = -1,305`
+ * clears neither. **No admission can hold an occupancy slot, `StateIncomeSystem`
+ * pays nothing, and the loop this file opens with -- a session that reaches
+ * this balance can never earn another minor unit -- is true again**, for the
+ * player who spends by pressing Buy rather than by queuing a build order.
+ *
+ * **This is reported here rather than reversed here.** The owner ruled on
+ * #771 with the cost of narrowing the construction rung stated and accepted;
+ * what neither the ruling nor its statement of cost named is that the
+ * construction rung's extra depth was, on this one fixture, the only thing
+ * standing between a new prison and ADR 0075's hard lock. ADR 0075 decision 1
+ * (development grants at population thresholds) and decision 3 (sell-back)
+ * are still unimplemented -- nothing in `src/` reads a population threshold
+ * for money, and there is no sell command -- and decision 2's loan
+ * (`LoanBook`) is built only when `loanTerms` is supplied, which nothing in
+ * `src/` does either. So none of ADR 0075's other remedies is standing behind
+ * this lock today; the case below is updated to assert it is a lock again,
+ * and `docs/adr/0017-money-primary-resource-model.md`'s #771 amendment names
+ * this as a consequence the owner was not shown when they ruled, for a
+ * decision on what closes it.
+ *
+ * The payroll-route case at the bottom of this file is unaffected: it buys
+ * its plank with a direct player press (`PurchaseMaterials`, the
+ * `'deliveries'` rung), which #771 does not move, and every figure in that
+ * case is unchanged.
+ *
  * ## What this file is not
  *
  * It is not an assertion of the trap's *shape*. The trap is established by
@@ -234,7 +272,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
     ]);
   });
 
-  it('spends the grant and the delivery rung on 656 bricks, and the queue`s own rung is what gets the prison out', () => {
+  it('spends the grant and the delivery rung on 656 bricks, and the ECON-002 lock reopens since #771 equalised the rungs', () => {
     /*
      * **The title said "25,000 on 625 bricks" and the quantity was the whole
      * opening balance.** Since #703 ruling A a new prison's spending power is
@@ -285,109 +323,68 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
     expect(stockOf(runtime, 'item.wood-plank')).toBe(0);
 
     /*
-     * **Escape 3, and under the owner's ruling 19 of 2026-08-31 it is no longer
-     * an escape that fails. This is the finding, and it is the largest single
-     * consequence this branch measured.**
+     * **Escape 3, and under the owner's ruling on #771 (2026-09-01) it is an
+     * escape that fails again. This is the largest single consequence this
+     * branch measured for that ruling, reported at length in the file
+     * docblock above.**
      *
-     * What stood here, and it was true of every tree from ADR 0017 decision 8's
-     * acceptance until this ruling:
+     * Ruling 19 of 2026-08-31 gave the construction rung 750 minor units the
+     * delivery rung did not have, and for one release this order was funded
+     * here: the queue bought the plank the press could not, at a balance past
+     * the first rung and short of the second. #771 found that same 750-wide
+     * gap was the reason a purchase the shop refused could still be funded
+     * for a queued build order, and the owner ruled *"buying and building
+     * stop at the same place"*. With
+     * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` now the same -1,250 the
+     * press already stops at, `-1,240 - 65 = -1,305` clears neither rung, and
+     * this order is exactly the pre-ruling-19 case again -- quoted below from
+     * the version of this file ruling 19 superseded, and now the live
+     * assertion once more:
      *
      * > **Escape 3: order the bed anyway and wait.** A `materials-pending` order
      * > is retried on every scheduled tick for ever, and 5,000 ticks is two
      * > in-game days of retrying against a container that will never hold a plank.
-     *
-     * > ```
-     * > expect(runtime.construction.getOrder('bed-1')?.state).toBe('materials-pending');
-     * > expect(runtime.placedObjects.size).toBe(0);
-     * > expect(runtime.prisoners.roomInstances.getById(cellInstanceId)?.residentCapacity).toBe(0);
-     * > ```
-     *
-     * Ruling 19 gives ADR 0017 decision 8's rungs their own thresholds, and the
-     * **construction** rung is 750 deeper than the delivery rung a press stops
-     * at. So a player who presses until something is refused stops at -1,240
-     * with 760 of room the *queue* may still spend -- and the queue buys the one
-     * 65 plank the press could not. The bed is built, the cell has a capacity,
-     * and the income line can start.
-     *
-     * **ECON-002's lock is therefore cured on this route**, in the same shape
-     * ruling A cured the payroll route in the describe below: not by anybody
-     * deciding to rescue a locked prison, but because two spends that used to
-     * share one threshold no longer do. Escapes 4 and 5 below used to establish
-     * that nothing else could earn a minor unit; they now measure the recovery
-     * instead, because there is one.
      */
     wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
     send(runtime, 'zone', { type: 'ZoneRoom', roomId: CELL, ...CELL_RECT });
     send(runtime, 'bed', { type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE });
     stepTo(runtime, runtime.kernel.tick + 5_000);
-    expect(runtime.construction.getOrder('bed-1')?.state, 'the queue bought what the press could not').toBe(
-      'completed',
-    );
-    expect(runtime.placedObjects.size).toBe(1);
-    const cellInstanceId = `${CELL}:${CELL_RECT.x}:${CELL_RECT.y}`;
-    expect(runtime.prisoners.roomInstances.getById(cellInstanceId)?.residentCapacity).toBe(1);
-    expect(runtime.treasury.balanceMinorUnits, 'one plank at 65, out of the construction rung').toBe(
-      BALANCE_AT_THE_RUNG - 65,
-    );
     expect(
-      runtime.treasury.balanceMinorUnits,
-      'and it stopped short of the construction rung rather than at the floor',
-    ).toBeGreaterThan(-2_000);
+      runtime.construction.getOrder('bed-1')?.state,
+      'the queue cannot buy what the press could not either, since #771',
+    ).toBe('materials-pending');
+    expect(runtime.placedObjects.size).toBe(0);
+    const cellInstanceId = `${CELL}:${CELL_RECT.x}:${CELL_RECT.y}`;
+    expect(runtime.prisoners.roomInstances.getById(cellInstanceId)?.residentCapacity).toBe(0);
+    expect(runtime.treasury.balanceMinorUnits, 'the halted order took nothing').toBe(BALANCE_AT_THE_RUNG);
 
     /*
-     * **Escape 4: admit somebody and let the state pay for them.** It does now,
-     * and this assertion is the inverse of the one it replaces: there is a bed,
-     * so the arrival holds an occupancy slot and `StateIncomeSystem` pays 300 a
-     * prisoner-day for it.
+     * **Escape 4: admit somebody anyway.** The command is legal -- admission
+     * does not itself require a bed -- but with no furnished cell there is no
+     * occupancy slot for `StateIncomeSystem` to pay for, so nothing is earned.
+     * This is the pre-ruling-19 quote, again the live assertion:
      *
-     * > ```
      * > expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(0);
      * > expect(runtime.treasury.balanceMinorUnits, 'five in-game days later, still nothing')
      * >   .toBe(BALANCE_AT_THE_RUNG);
-     * > ```
      */
-    const balanceBeforeTheArrival = runtime.treasury.balanceMinorUnits;
     send(runtime, 'admit', { type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL });
     stepTo(runtime, runtime.kernel.tick + 12_000);
-    expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(1);
+    expect(runtime.prisoners.roomInstances.totalOccupancy, 'no bed, no occupied place').toBe(0);
     expect(
       runtime.treasury.balanceMinorUnits,
-      'five in-game days later the prison is earning, which is the way out',
-    ).toBeGreaterThan(balanceBeforeTheArrival);
+      'five in-game days later, still nothing -- the lock is ECON-002`s again',
+    ).toBe(BALANCE_AT_THE_RUNG);
 
     /*
-     * **Escape 5: give the bricks back -- and it is not an escape any more.**
-     *
-     * > **Escape 5: give the bricks back.** Unchanged, and it is the one claim
-     * > in this case ruling 19 does not touch: a brick-built object can be
-     * > removed and undone, and both give bricks -- never money.
-     * >
-     * > ```
-     * > send(runtime, 'undo', { type: 'Undo' });
-     * > expect(stockOf(runtime, 'item.brick'), 'undo returns the brick').toBe(BRICKS_TO_THE_RUNG);
-     * > ```
-     *
-     * The owner's ruling of 2026-09-01 -- *"Taking a finished object away
-     * returns nothing. Not its materials, not its money."*, ADR 0076's
-     * amendment of that date -- withdraws it. Building a thing and un-building
-     * it is now **strictly a loss**: the brick goes into the toilet and stays
-     * there, so a prison out of money cannot recover a material by taking
-     * something down.
-     *
-     * **The second clause survives and is the one that mattered here**: still
-     * *never money*. This escape was never a way back to a balance, only to a
-     * material, and `Treasury.credit` is asserted below to have stayed out of
-     * it.
-     *
-     * **This narrows the file's own opening sentence**, which states the trap
-     * as *"spending power below one plank's price with no plank in stock and
-     * nothing plank-built to reverse"*. The third clause has stopped doing any
-     * work: there is nothing to reverse anything **into**, so a prison with a
-     * bed standing is in exactly the position of one without. Ruling 19 is what
-     * keeps that from re-opening ECON-002 -- the queue's own rung has 750 the
-     * press cannot reach, which is what the recovery above measures -- and this
-     * case is now the record that **the materials route out is closed and the
-     * money route out is what is left.**
+     * **Escape 5: give the bricks back.** Still not a way to money, which is
+     * unaffected by #771 and is the one claim this case has never needed to
+     * revise: a brick-built object can be removed and undone, and the owner's
+     * separate ruling of 2026-09-01 on ADR 0076 (*"Taking a finished object
+     * away returns nothing. Not its materials, not its money."*) means it
+     * gives back neither, once completed. Built and undone here without a bed
+     * in the world at all, so the assertion is about the toilet and the
+     * treasury only, not about anything Escape 3 would have produced.
      */
     const balanceBeforeTheToilet = runtime.treasury.balanceMinorUnits;
     send(runtime, 'toilet', { type: 'PlaceObject', orderId: 'toilet-1', definitionId: 'toilet-brick', x: 5, y: 6 });
@@ -399,14 +396,22 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
     send(runtime, 'undo', { type: 'Undo' });
     expect(runtime.construction.getOrder('toilet-1')?.state, 'the undo does reach the order').toBe('cancelled');
     expect(runtime.placedObjects.objectAt(toiletTile), 'and the toilet really came down').toBeUndefined();
-    expect(
-      runtime.placedObjects.objectAt({ x: tileCoordinate(BED_TILE.x), y: tileCoordinate(BED_TILE.y) })?.objectId,
-      'while the bed the escape above needs is untouched',
-    ).toBe('object.bed');
     expect(stockOf(runtime, 'item.brick'), 'undo returns nothing: the brick went into the toilet and stayed there').toBe(
       BRICKS_TO_THE_RUNG - 1,
     );
     expect(runtime.treasury.balanceMinorUnits, 'and not a minor unit of it is money').toBe(balanceBeforeTheToilet);
+
+    /*
+     * **No escape recovers the prison, which is ECON-002's own conclusion,
+     * reopened.** Nothing above moved the balance off `BALANCE_AT_THE_RUNG`,
+     * there is no occupied place and no route to one, and every command the
+     * union offers has now been tried. This is the state the file's opening
+     * sentence names -- *"a session that reaches this balance can never earn
+     * another minor unit"* -- true again since the owner's ruling on #771.
+     */
+    expect(runtime.treasury.balanceMinorUnits, 'the prison is locked exactly where it pressed itself to').toBe(
+      BALANCE_AT_THE_RUNG,
+    );
   });
 
   it('is a zone and not a knife edge: 655 bricks leaves 50 of room, which is still short of a plank', () => {

@@ -297,10 +297,19 @@ export const TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS = -Math.trunc(TREASURY_STARTIN
  *
  * The owner's ruling 19 of 2026-08-31 -- *"Dać szczeblom własne progi wewnątrz
  * debetu"*, give the rungs their own thresholds inside the overdraft -- is
- * drafted as an amendment to
+ * recorded as an amendment to
  * [ADR 0017](../../../docs/adr/0017-money-primary-resource-model.md)
- * ("Amendment, 2026-09-01"), **Proposed and awaiting the owner's signature**.
- * This type is what makes the ladder expressible at all.
+ * ("Amendment, 2026-09-01"), **Accepted 2026-09-01**. This type is what makes
+ * the ladder expressible at all.
+ *
+ * **A second, same-day amendment ("Amendment, 2026-09-01: the deliveries and
+ * construction rungs are equalised…") then equalised two of the three
+ * magnitudes** -- issue #771 found a 750-wide band in which a purchase the
+ * shop refuses is nevertheless funded for a queued build order needing the
+ * same materials, and the owner ruled *"buying and building stop at the same
+ * place"* over keeping them apart. See `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`
+ * for what changed. This type itself -- the requirement that every spend name
+ * its rung -- is untouched by that amendment.
  *
  * **It is a required argument on `canAfford` and `spend`, and that is the whole
  * design.** The alternative shapes were a per-caller check and a floor set on
@@ -335,24 +344,63 @@ export type SpendClass = 'deliveries' | 'construction' | 'wages' | 'hiring';
  * `1_250 / 2_500` is a ratio nobody stated. What keeps the ladder coherent if
  * the floor is ever reconfigured is the clamp in `Treasury.floorFor`, not a
  * derivation here.
+ *
+ * **This is also, since the 2026-09-01 equalisation amendment below, the
+ * construction rung's threshold.** It did not move; construction's did, to
+ * meet it. See `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`.
  */
 export const INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS = -1_250;
 
 /**
- * The second rung: **construction halted below −2,000.** Ruling 19, as above.
+ * The second rung: **construction halted below −1,250 -- the same balance
+ * deliveries stop at.**
  *
- * "Construction" here is the material spend a *queued build order* causes --
- * `JustInTimeMaterialsService.procureForPendingOrders`, which is the only
- * caller that reaches `ProcurementSystem.purchase` without a player pressing
- * Buy. The press itself is `'deliveries'`. That split is what makes the first
- * two rungs distinguishable at all, because both spends go through one method;
- * the amendment argues it rather than assuming it.
+ * Ruling 19 (2026-08-31) put this at −2,000, a rung of its own 750 minor
+ * units deeper than deliveries'. **The owner's ruling on issue #771
+ * (2026-09-01, "ADR 0017: Amendment, 2026-09-01: the deliveries and
+ * construction rungs are equalised") retired that split**: #771 measured a
+ * balance at which the shop refused a 40-minor-unit brick and a queued wall
+ * segment needing the same two bricks was funded anyway -- *"ten wall
+ * segments, 800 spent, all went through silently"* in the 750-wide band the
+ * two thresholds used to leave open. Put the cost plainly and ruled on
+ * anyway: *"Equalise the rungs: buying and building stop at the same
+ * place."*
+ *
+ * **−1,250 rather than −2,000, and the choice is argued in the ADR amendment
+ * and not just asserted here**: the sentence the owner was warned with --
+ * *"the prison loses the ability to finish what it has already started
+ * building"* -- is true of construction rising to meet deliveries and false
+ * of deliveries sinking to meet construction, and −1,250 is also the figure
+ * the FUNDS chip and its tooltip (`hud.status.funds-before-deliveries-stop`)
+ * already made a player-facing promise about, which −2,000 is not.
+ *
+ * Defined as `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS` and not as a
+ * second literal that happens to equal it: two named constants holding the
+ * same value by coincidence is exactly the shape that drifted apart once
+ * already (this constant *was* a second, independent literal, `−2_000`,
+ * until this amendment). One definition cannot silently diverge from
+ * itself.
+ *
+ * "Construction" here is still the material spend a *queued build order*
+ * causes -- `JustInTimeMaterialsService.procureForPendingOrders`, which is
+ * the only caller that reaches `ProcurementSystem.purchase` without a player
+ * pressing Buy. The press itself is `'deliveries'`. That split still decides
+ * *which* `SpendClass` a spend is asked under, and it still lets a stalled
+ * queue and a refused press be told apart as events
+ * (`hud.alert.refusal.construction.materials-unfunded` versus
+ * `hud.alert.refusal.purchase.insufficient-funds`) -- what the equalisation
+ * removes is the two rungs ever being *reachable* at different balances, not
+ * the split itself.
  */
-export const INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS = -2_000;
+export const INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS = INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS;
 
 /**
- * The three rungs and the one spend the ruling does not name, as the floors
- * they are refused at.
+ * The rungs and the one spend the ruling does not name, as the floors they
+ * are refused at. Since the 2026-09-01 equalisation amendment,
+ * `deliveries`, `construction` and `hiring` all read the same value -- see
+ * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` -- so this is a two-deep
+ * ladder (the discretionary spends, then wages) with four named entry points
+ * into it rather than the three-deep ladder ruling 19 first gave it.
  *
  * **`'wages'` is `-Infinity` and that is not a threshold: it is the sentinel for
  * "no rung of its own above the treasury's floor".** Ruling 19 puts the third

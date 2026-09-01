@@ -311,13 +311,18 @@ describe('what a shipped session gets (#703 ruling A)', () => {
 
 
 /**
- * **The rungs the owner's ruling 19 of 2026-08-31 gives ADR 0017 decision 8.**
+ * **The rungs the owner's ruling 19 of 2026-08-31 gives ADR 0017 decision 8,
+ * as equalised by the owner's ruling on #771 (2026-09-01).**
  *
- * *"Dać szczeblom własne progi wewnątrz debetu"* -- give the rungs their own
- * thresholds inside the overdraft -- at -1,250 (deliveries), -2,000
- * (construction) and -2,500 (wages, the floor). Drafted at
- * `docs/adr/0017-money-primary-resource-model.md` ("Amendment, 2026-09-01"),
- * **Proposed and not self-approved**.
+ * Ruling 19 -- *"Dać szczeblom własne progi wewnątrz debetu"*, give the rungs
+ * their own thresholds inside the overdraft -- gave -1,250 (deliveries),
+ * -2,000 (construction) and -2,500 (wages, the floor). #771 found a 750-wide
+ * band in which the shop refused a purchase the build queue could still fund
+ * with the same materials, and the owner ruled *"buying and building stop at
+ * the same place"*: construction now reads the same -1,250 deliveries does.
+ * Both rulings are recorded at `docs/adr/0017-money-primary-resource-model.md`
+ * ("Amendment, 2026-09-01", both of them -- ruling 19's and the equalisation
+ * that follows it), **Accepted**.
  *
  * Everything above this describe is about a treasury with no facility open, and
  * every one of those expectations is unchanged -- which is the first thing
@@ -336,20 +341,23 @@ describe('Treasury: the rungs inside the overdraft (ruling 19)', () => {
     }
   });
 
-  it('is the owner`s three numbers at the shipped floor, and the third is the floor itself', () => {
+  it('is the owner`s numbers at the shipped floor -- deliveries and construction equalised, and the third is the floor itself', () => {
     const treasury = new Treasury(0);
     treasury.setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
 
     expect(treasury.floorFor('deliveries')).toBe(-1_250);
-    expect(treasury.floorFor('construction')).toBe(-2_000);
+    // Equalised by the owner's ruling on #771 (2026-09-01): construction no
+    // longer has a rung of its own 750 minor units deeper than deliveries'.
+    expect(treasury.floorFor('construction'), 'the same balance a Buy press stops at').toBe(-1_250);
     expect(treasury.floorFor('wages')).toBe(-2_500);
     // Not a fourth threshold and not the deepest: see `SpendClass`.
     expect(treasury.floorFor('hiring')).toBe(-1_250);
 
-    // The two that are constants are the constants, so a literal moved in one
-    // place and not the other fails here.
+    // Deliveries and construction are the same constant, not two constants
+    // that happen to agree -- see `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`.
     expect(INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS).toBe(-1_250);
-    expect(INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS).toBe(-2_000);
+    expect(INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS).toBe(-1_250);
+    expect(INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS).toBe(INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS);
     // And the third carries no constant of its own -- it tracks the floor.
     treasury.setOverdraftFloor(-4_000);
     expect(treasury.floorFor('wages'), 'the wage rung is the floor, wherever the floor is').toBe(-4_000);
@@ -358,7 +366,7 @@ describe('Treasury: the rungs inside the overdraft (ruling 19)', () => {
   it('refuses each class one minor unit past its own rung, and not before', () => {
     const boundaries = [
       ['deliveries', -1_250],
-      ['construction', -2_000],
+      ['construction', -1_250],
       ['wages', -2_500],
       ['hiring', -1_250],
     ] as const;
@@ -380,16 +388,27 @@ describe('Treasury: the rungs inside the overdraft (ruling 19)', () => {
     /*
      * The property that keeps the ladder coherent if the floor is ever
      * reconfigured. It is deliberately a clamp and **not** a scaling: ruling 19
-     * gave three magnitudes and no ratios, and whether the rungs should move
-     * with the floor is marked in the amendment as the owner's. What the clamp
-     * guarantees is only that no rung is ever deeper than the floor, so the
-     * rungs collapse onto it in order instead of two of them being dead.
+     * gave three magnitudes (now two, since #771's equalisation) and no
+     * ratios, and whether the rungs should move with the floor is marked in
+     * the amendment as the owner's. What the clamp guarantees is only that no
+     * rung is ever deeper than the floor, so the rungs collapse onto it in
+     * order instead of being dead below it.
      */
     const treasury = new Treasury(0);
-    treasury.setOverdraftFloor(-1_600);
+    treasury.setOverdraftFloor(-1_000);
 
-    expect(treasury.floorFor('deliveries'), 'the first rung is above this floor and stands').toBe(-1_250);
-    expect(treasury.floorFor('construction'), 'the second is below it and collapses onto it').toBe(-1_600);
+    // Both discretionary rungs are below this floor and collapse onto it
+    // together -- the property #771's equalisation adds: there is no longer a
+    // floor position at which they can be told apart by the clamp.
+    expect(treasury.floorFor('deliveries'), 'below this floor, collapses onto it').toBe(-1_000);
+    expect(treasury.floorFor('construction'), 'and so does construction, onto the same floor').toBe(-1_000);
+    expect(treasury.floorFor('wages')).toBe(-1_000);
+
+    // At a floor deep enough for the rung to stand on its own, deliveries and
+    // construction still agree with each other, above the floor.
+    treasury.setOverdraftFloor(-1_600);
+    expect(treasury.floorFor('deliveries'), 'the rung is above this floor and stands').toBe(-1_250);
+    expect(treasury.floorFor('construction'), 'and construction stands with it, at the same value').toBe(-1_250);
     expect(treasury.floorFor('wages')).toBe(-1_600);
 
     // And the ordering survives the collapse, which is the point of the clamp.

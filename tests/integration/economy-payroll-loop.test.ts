@@ -438,20 +438,33 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
    * ADR 0083 §2 recorded that an amendment to decision 8 was owed and that it
    * was the owner's to sign. **Ruling 19 is that amendment's source** --
    * *"Dać szczeblom własne progi wewnątrz debetu"*, give the rungs their own
-   * thresholds inside the overdraft, at -1,250, -2,000 and -2,500. It is drafted
-   * at `docs/adr/0017-money-primary-resource-model.md` ("Amendment,
-   * 2026-09-01") and is **Proposed and not self-approved**.
+   * thresholds inside the overdraft, at -1,250, -2,000 and -2,500. It is
+   * recorded at `docs/adr/0017-money-primary-resource-model.md` ("Amendment,
+   * 2026-09-01") and was **Accepted 2026-09-01**.
    *
-   * So this case now measures the ladder running **forwards**, and it does it
-   * the way decision 8 describes: not by positioning a balance three times, but
-   * by letting one prison sink and watching which rung it meets first. The reads
-   * below are `canAfford` and the arrears, so watching costs nothing and the
-   * walk is the fixture's own.
+   * So this case measured the ladder running **forwards**, three rungs deep,
+   * and it did it the way decision 8 describes: not by positioning a balance
+   * three times, but by letting one prison sink and watching which rung it
+   * meets first.
+   *
+   * **The owner's ruling on #771, the same day, retired the middle step.**
+   * #771 found a 750-wide band in which a purchase the shop refused was still
+   * funded for a queued build order needing the same materials, and the owner
+   * ruled *"buying and building stop at the same place"*:
+   * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` now reads the same
+   * -1,250 the delivery rung does. This prison's sink is unaffected --
+   * nothing about income, wages or the purchase that overcommits it moved --
+   * so the day the balance first passes -1,250 is still day 7, at -1,320. What
+   * moved is that **both** discretionary rungs fire that day rather than one
+   * of them waiting until day 9, and the case below is corrected to measure
+   * two rungs meeting together where it used to measure three meeting in
+   * sequence. The reads are still `canAfford` and the arrears, so watching
+   * costs nothing and the walk is still the fixture's own.
    */
-  it('meets the three rungs in ADR 0017 decision 8`s own order as one prison sinks', () => {
+  it('meets the two discretionary rungs together in ADR 0017 decision 8`s ladder, then wages unpaid last, as one prison sinks', () => {
     const runtime = overcommitted();
 
-    /** The three rungs, as questions asked of the treasury rather than of a balance. */
+    /** The ladder's two remaining depths, as questions asked of the treasury rather than of a balance. */
     const rungs = (): { deliveries: boolean; construction: boolean; wages: number } => ({
       // One brick, which is the smallest thing a player can press Buy for.
       deliveries: runtime.treasury.canAfford(BRICK_PRICE, 'deliveries'),
@@ -468,29 +481,38 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
       return -1;
     };
 
-    // Day 7 (-1,320): the first rung. A player pressing Buy is refused, and the
+    // Day 7 (-1,320): the shared rung. A player pressing Buy is refused, and the
     // sentence they are shown is `AGENTS.md`'s fourth exclusion -- see the four
-    // keys named at `src/content/default-locale-en.ts`.
+    // keys named at `src/content/default-locale-en.ts`. Construction fires with
+    // it, the same day, at the same balance -- this is #771's own finding, read
+    // off a real sink rather than probed as a boundary.
     const deliveriesStopped = firstDayThat((state) => !state.deliveries);
     expect(deliveriesStopped, 'deliveries are refused first').toBe(7);
-    expect(rungs().construction, 'and the queue is still buying at that point').toBe(true);
+    expect(rungs().construction, 'and construction is refused with it, not two days later').toBe(false);
     expect(rungs().wages, 'and the staff are still being paid').toBe(0);
 
-    // Day 9 (-2,360): the second rung. A queued build order stops being funded.
-    const constructionStopped = firstDayThat((state) => !state.construction);
-    expect(constructionStopped, 'construction halts second').toBe(9);
-    expect(rungs().wages, 'and the staff are still being paid').toBe(0);
+    /*
+     * Construction never gets a day of its own to stop on any more, so it is
+     * read at the same tick rather than searched for with a second
+     * `firstDayThat` -- calling that again here would restart its loop at
+     * day 1 while the clock has already reached day 7, and because the
+     * predicate is already true at that already-elapsed tick it would return
+     * day 1 without advancing anything, which is a false positive rather than
+     * a finding. `deliveriesStopped` is the true day both rungs share.
+     */
+    const constructionStopped = deliveriesStopped;
 
-    // Day 10 (-2,500): the third. The payday takes the 140 of room the rung
+    // Day 10 (-2,500): wages. The payday takes the 140 of room the rung
     // leaves and owes the other 380.
     const wagesUnpaid = firstDayThat((state) => state.wages > 0);
     expect(wagesUnpaid, 'wages go unpaid last').toBe(10);
     expect(runtime.treasury.balanceMinorUnits).toBe(-2_500);
 
     // The ordering itself, stated as the assertion it is rather than left to be
-    // read off three numbers.
-    expect([deliveriesStopped, constructionStopped, wagesUnpaid]).toEqual([7, 9, 10]);
-    expect(deliveriesStopped).toBeLessThan(constructionStopped);
+    // read off the numbers: the two discretionary rungs are equal, and both
+    // precede wages.
+    expect([deliveriesStopped, constructionStopped, wagesUnpaid]).toEqual([7, 7, 10]);
+    expect(deliveriesStopped).toBe(constructionStopped);
     expect(constructionStopped).toBeLessThan(wagesUnpaid);
 
     // And the presses themselves, so this is a refusal a player meets and not
