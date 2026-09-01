@@ -8,7 +8,8 @@ import { element, eyebrowText, nextUiId, valueText } from '../primitives/dom';
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createNumberField, type NumberField } from '../primitives/number-field';
 import { createPanel } from '../primitives/panel';
-import { rovingFocusMove, rovingTabStop } from '../primitives/roving-focus';
+import { rovingTabStop } from '../primitives/roving-focus';
+import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import { HUD_MESSAGE_KEY } from './messages';
 import { toggleRemovalMode } from './tool-arming';
 import {
@@ -968,26 +969,23 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * answers `undefined` for everything else, and an arrow that is not ours must
    * stay the browser's, or the scroll region this list *is* would stop
    * scrolling.
+   *
+   * Wired through `bindRovingFocusKeydown` rather than a listener written
+   * here: `preventDefault()` alone left the same keystroke free to bubble to
+   * `WorldScene`'s `window`-level camera binding, which paid out as six
+   * `ArrowDown` presses in this catalogue panning the world underneath the
+   * player -- a 2026-09-01 keyboard playtest of the assembled page, recorded
+   * on an unmerged research branch at the time of this fix.
+   * `rooms-panel.ts` had written the identical listener, with the identical
+   * gap, for the identical reason -- so the fix is the shared wiring both now
+   * call, not a `stopPropagation()` pasted into each a second time. See that
+   * function's own comment for why the cure is *there* and not a wider gate
+   * on the camera binding.
    */
-  catalogueList.addEventListener('keydown', (event: KeyboardEvent) => {
-    if (event.altKey || event.ctrlKey || event.metaKey) return;
-    const focused = event.target;
-    if (!(focused instanceof HTMLElement)) return;
-    const definitionId = focused.dataset['buildable'];
-    if (definitionId === undefined) return;
-    const order = focusRing.visibleIds;
-    const next = rovingFocusMove(event.key, order.indexOf(definitionId), order.length);
-    if (next === undefined) return;
-    const targetId = order[next];
-    const target = rows.get(targetId ?? '');
-    if (target === undefined) return;
-    event.preventDefault();
-    // The moved-to row has to be able to take focus before it is given focus:
-    // every row but the tab stop carries `-1`, and `focus()` on a `-1` element
-    // works, but leaving the group's `0` behind would mean tabbing back in
-    // returns to the row the player arrowed away from.
-    for (const [id, row] of rows) row.element.tabIndex = id === targetId ? 0 : -1;
-    target.element.focus();
+  bindRovingFocusKeydown(catalogueList, {
+    datasetAttribute: 'buildable',
+    order: () => focusRing.visibleIds,
+    rows,
   });
 
   const catalogue: CollapsibleSection = createCollapsibleSection({
