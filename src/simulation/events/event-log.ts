@@ -432,6 +432,43 @@ export class SimulationEventLog {
   }
 
   /**
+   * Records that the treasury just fell to or below one insolvency rung's
+   * floor -- the owner's ruling of 2026-09-01 on issue #767 (ADR 0087
+   * decision 2's amendment).
+   *
+   * **The one call site is `InsolvencyRungSystem`**
+   * (`src/simulation/economy/insolvency-rung-system.ts`), which is the only
+   * thing in this codebase that tracks whether a rung was *already* standing
+   * -- exactly the edge-detection `IncidentTriggerSystem`/`IncidentLog` do
+   * for an incident's opening, and for the same reason: the *condition*
+   * (`PrisonCondition` on `statusCountsSchema.conditions`) is a pure,
+   * memory-free recomputation and must never be the thing deciding whether to
+   * call this, or it would fire on every publication the prison stays
+   * refused rather than once at the transition -- precisely ADR 0087 Cost 1,
+   * a rung deep instead of a refusal reason deep.
+   *
+   * No figure is guarded here the way `recordUnpaidWages`'s `< 1` guards a
+   * payday met in full: `rung` is a fact the caller has already established
+   * by comparing two ticks, not a magnitude this method can independently
+   * validate, so there is nothing to refuse.
+   *
+   * @param rung Which of ADR 0017 decision 8's ladder the balance just
+   * crossed into. `'wages'` never reaches here: the third rung *is* the
+   * treasury's floor (`INSOLVENCY_RUNG_FLOORS_MINOR_UNITS.wages`,
+   * `-Infinity` clamped), and drawing on it is `PayrollSystem` failing to pay
+   * in full, which `recordUnpaidWages` above already announces on its own
+   * schedule -- once per in-game day, with the arrears carried. A third
+   * member here would say the same thing on a different channel.
+   */
+  public recordInsolvencyRungCrossed(rung: 'deliveries' | 'construction', tick: number): void {
+    this.append({
+      sequence: this._sequence + 1,
+      tick,
+      type: rung === 'deliveries' ? 'economy.deliveries-refused' : 'economy.construction-refused',
+    });
+  }
+
+  /**
    * Records that an incident opened (issue #555).
    *
    * **A `switch` over `IncidentType` rather than a lookup**, because the

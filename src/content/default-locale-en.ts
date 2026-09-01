@@ -605,6 +605,17 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // Staff panels format a price.
   'hud.alert.event.prisoners.discharged': '{count} released — their sentences are served.',
   'hud.alert.event.economy.wages-unpaid': 'Payday went unpaid — your staff are owed {total}.',
+  // The owner's ruling of 2026-09-01 on issue #767 (ADR 0087 decision 2's
+  // amendment): a one-off notice at the moment the treasury crosses a rung,
+  // beside the standing `treasury.deliveries-refused` /
+  // `treasury.construction-refused` conditions that keep saying so
+  // afterward. **Owner-pending**: written to be the clearest sentence
+  // available rather than a settled answer -- see `InsolvencyRungSystem`
+  // (`src/simulation/economy/insolvency-rung-system.ts`) for the mechanism
+  // and `docs/adr/0087-whether-a-refusal-is-an-event-or-a-condition.md`'s
+  // amendment for the ruling this implements.
+  'hud.alert.event.economy.deliveries-refused': 'Deliveries refused — the treasury cannot cover a purchase right now.',
+  'hud.alert.event.economy.construction-refused': 'Construction halted — the treasury cannot fund the build queue right now.',
 
   // ADR 0076 decision A(i)'s notice: a prisoner whose bed was taken away has
   // been moved to one that exists.
