@@ -645,6 +645,112 @@ Two more things a player is owed and does not have:
   pre-flight (`judgeAffordability`) *is* re-based, so a press is refused at the
   rung the worker refuses it at.
 
+### 5a. What the owner then ruled, 2026-09-01 — every debt §5 records is paid
+
+> **Ruled by the repository owner, 2026-09-01.** §5 above is kept exactly as it
+> stood, including its *"None of them is changed, and none of them may be"*,
+> because it is the record of the sentences having waited for a ruling rather
+> than been rewritten by whoever noticed they were wrong. This clause says what
+> the ruling was and what shipped for it.
+
+**a. The four sentences name what stops, not the threshold.** The shape ruled
+out is *"the state will not pay past −1,250"* and the shape ruled in is
+*"deliveries are refused until the state pays what it owes"*. The reason is
+staleness rather than taste: a sentence spelling out −1,250 is a second copy of
+`INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS` with no test tying prose to
+constant, so a later ruling that moved a rung would leave the copy silently
+false — the failure mode ruling 19 exists to correct, rebuilt one layer up.
+
+| key | text, verbatim | rung it answers |
+| --- | --- | --- |
+| `hud.alert.refusal.purchase.insufficient-funds` | *"Nothing was bought — deliveries are refused until the state pays what it owes."* | 1, deliveries (−1,250) |
+| `hud.refusal.purchase-materials-past-floor` | *"Nothing was bought — deliveries are refused until the state pays what it owes."* | 1, deliveries (−1,250) |
+| `hud.alert.refusal.hire.insufficient-funds` | *"Nobody was hired — hiring is refused until the state pays what it owes."* | hiring (−1,250) |
+| `hud.refusal.hire-staff-past-floor` | *"Nobody was hired — hiring is refused until the state pays what it owes."* | hiring (−1,250) |
+| `hud.alert.refusal.construction.materials-unfunded` | *"The build queue is stalled — no more materials until the state pays what it owes."* | 2, construction (−2,000) |
+
+Ruling 23's equality survives: the worker's sentence and the host's are the
+same words, pinned as text in `tests/unit/ui-simulation-alerts.test.ts`. The
+hire sentence says *"hiring"* and not *"deliveries"* deliberately — §3c gives
+hiring the shallowest rung's threshold by construction and §4 leaves a rung of
+its own to the owner, so a sentence naming the deliveries rung would name a
+rung hiring is not on.
+
+**b. Rung 2 gets a sentence, and the plumbing it needs.** The owner accepted
+the cost §5's first bullet priced. `RefusalReason` gains
+`construction.materials-unfunded` — the twelfth namespace, mirroring
+`ConstructionFundingRefusalReason` in
+`src/simulation/economy/just-in-time-materials.ts` — `REFUSAL_LABEL_KEYS` gains
+its row, and `reportMaterialsFunding`
+(`src/simulation/construction/handler.ts`) records it instead of
+`purchase.insufficient-funds`. The just-in-time pass is the only producer and
+it spends at `'construction'` and nowhere else, so the new reason *is* rung 2
+by construction rather than by a branch that could be got wrong.
+
+**c. The `FUNDS` chip is re-based, and its tone with it.** `overdraftRemaining`
+and `overdraftTone` (`src/ui/hud/projection.ts`) read the whole overdraft floor
+and now read the `'deliveries'` rung clamped to the published floor — the same
+`rungFloorMinorUnits('deliveries', …)` the host's pre-flight uses. §5's second
+bullet named only the number; the **tone** was computed against the same wrong
+floor, so a prison at −1,300 that had already had a delivery and a hire refused
+still painted amber. It now paints `danger` from the deliveries rung down,
+which is where the cheapest press stops changing the outcome.
+
+**d. The badge's words were measured and are *not* shipped, which is a result
+rather than a gap.** The owner chose `{remaining} left before deliveries stop`
+for the re-based figure, on the condition that the badge be measured first —
+no measurement of it existed anywhere in this repository. It was measured, in
+`tests/browser/ui-overdraft-badge.spec.ts`, on a populated prison at 1280x800
+with the treasury floor at −2,500:
+
+| wording | balance | badge | FUNDS chip | row client / scroll | FUNDS chip visible |
+| --- | --- | --- | --- | --- | --- |
+| `{remaining} left` | −1,300 | 46.95px | 125.77px | 1256 / 1262 | yes |
+| `{remaining} left` | −1 | 73.20px | 150.97px | 1256 / 1287 | yes |
+| `{remaining} left before deliveries stop` | −1,300 | 179.94px | 258.75px | 1256 / 1395 | yes |
+| `{remaining} left before deliveries stop` | −1 | 206.19px | 283.95px | 1256 / 1420 | **no** |
+
+The sentence never wraps and is never clipped — legibility is not the
+objection. It costs **+133px** of chip width, and at 1280x800 that pushes the
+`FUNDS` chip itself past the right edge of `.hud-strip__metrics` for the whole
+four-digit range of the remainder, on a container whose scrollbar `hud.css`
+suppresses. At 1440x800 it survives except in the every-badge state; at
+1920x800 it fits everywhere.
+
+So `hud.status.funds-remaining` keeps `{remaining} left` byte-for-byte, with
+the measurement recorded beside it in `src/content/default-locale-en.ts` — the
+same treatment §5 gave the four refusal keys while they waited for a ruling.
+The words go back to the owner with the figures. What is **not** waiting is the
+number and the tone under them: §5a(c) shipped, so the badge is true today
+whatever it ends up saying.
+
+**e. The owner ruled on (d), reversing their own earlier choice of
+`{remaining} left before deliveries stop`, still 2026-09-01.** Kept rather than
+overwritten, for the same reason §5a's own opening clause gives: (d) is the
+record of the measurement having been taken and returned rather than acted on
+unilaterally. The ruling itself: *"the chip keeps the short wording, because it
+fits; the name of the threshold — that it is deliveries that will stop — is
+said elsewhere, where there is room for a full sentence: in the hover tooltip
+on the chip, and in the alert. Nothing is to disappear from the screen."*
+
+Only the badge's wording was reversed. `hud.status.funds-remaining` stays
+`{remaining} left`, exactly as (d) left it; §5a(c)'s re-based number and tone
+are untouched, because they were never what the owner reversed. What shipped
+instead is the sentence living somewhere the badge had no room for: two new
+keys, `hud.status.funds-before-deliveries-stop` and
+`hud.status.funds-deliveries-stopped`, chosen on the same amber/red boundary
+`overdraftTone` chooses on, said through `StatChip.setDescription` into both
+the chip's `title` (pointer hover) and its screen-reader text (everyone else,
+`.ui-sr-only`, out of flow — costs the row no width, measured rather than
+assumed in `tests/browser/ui-overdraft-badge.spec.ts`). The refusal alert,
+`hud.alert.refusal.purchase.insufficient-funds`, says the same thing again for
+the player who never hovers at all — the owner's standing directive against
+hidden functionality applies to a tooltip exactly as it applies to anything
+else, and `tests/unit/ui-hud-funds-threshold-named.test.ts` gates both channels
+so neither can go quiet on its own.
+
+
+
 ### 6. Where this is implemented
 
 `src/simulation/economy/treasury.ts` (`SpendClass`,

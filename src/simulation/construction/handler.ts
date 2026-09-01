@@ -2,7 +2,7 @@ import type { CommandHandler } from '../kernel/kernel';
 import { unpackCommand } from '../protocol/commands';
 import {
   BUILD_REFUSAL_REASONS,
-  PURCHASE_REFUSAL_REASONS,
+  CONSTRUCTION_FUNDING_REFUSAL_REASONS,
   buildSupersessionKey,
   materialsFundingSupersessionKey,
   type RefusalLog,
@@ -138,6 +138,34 @@ export function createConstructionCommandHandler(
  * order to proceed is a defect. The alert band is the channel that does not
  * have to be opened.
  *
+ * ## Why this was `purchase.insufficient-funds` for two rulings, and is not now
+ *
+ * **The section below is the argument for reusing it, kept whole because it
+ * was right for as long as there was one money threshold.** What ended it is
+ * the owner's ruling 19 of 2026-08-31 (ADR 0017, "Amendment, 2026-09-01"):
+ * ruling 19 gave ADR 0017 decision 8's rungs three thresholds inside the
+ * overdraft, and from that moment "exactly that refusal" was false. A *Buy*
+ * press is refused at the `'deliveries'` rung, -1,250; this route spends at
+ * `'construction'` and is refused at -2,000. Two thresholds, two events, and
+ * one string on both -- so a prison at -1,800 with a stalled queue was told
+ * that deliveries are refused, which at -1,800 is *also* true but is not what
+ * just happened and is not the rung the player has to climb back over.
+ *
+ * ADR 0017's amendment §5 named this owed in those terms -- *"A halted
+ * construction queue reports `hud.alert.refusal.purchase.insufficient-funds`
+ * through `reportMaterialsFunding`, which is rung 1's sentence on rung 2's
+ * event"* -- and the owner ruled on 2026-09-01 that rung 2 gets a sentence of
+ * its own, accepting the plumbing that costs: a new `RefusalReason` member
+ * (`construction.materials-unfunded`), a new `REFUSAL_LABEL_KEYS` row and the
+ * English behind it. This function records that member now.
+ *
+ * The paragraph below headed "Why `purchase.insufficient-funds` and not a new
+ * refusal id" is left exactly as it was written, because its *shape* of
+ * argument is what says why the new id is not a smuggled second sentence for
+ * the same fact: the namespaces exist so that a player is not sent to the
+ * wrong control, and the two routes now genuinely answer different controls at
+ * different thresholds.
+ *
  * ## Why `purchase.insufficient-funds` and not a new refusal id
  *
  * **Because it is exactly that refusal, produced by exactly that code.**
@@ -169,6 +197,12 @@ export function createConstructionCommandHandler(
  * it is not this change's to write. Reported on #627 rather than guessed at
  * here.
  *
+ * **Half of that is paid and half is not, as of 2026-09-01.** The member and
+ * the key exist -- `construction.materials-unfunded` -- so the *rung* is named.
+ * The **wall** still is not: `RefusalLog` carries a reason and a tick and no
+ * order id or definition id, so there is nothing to interpolate, and the
+ * sentence names the queue rather than the thing in it.
+ *
  * **AND SINCE #703 RULING 9 THE SHIPPED SENTENCE IS PARTLY FALSE, WHICH IS
  * WHAT IS NOW OWED RATHER THAN WHAT WOULD MERELY SAY MORE.** The English text
  * behind `purchase.insufficient-funds` was *"The materials were not ordered —
@@ -181,7 +215,7 @@ export function createConstructionCommandHandler(
  * telling the player *"a precondition rather than a nicety"*.
  *
  * **Ruling 23 changed the sentence and did not close this**, which is worth
- * saying explicitly rather than leaving to be re-discovered. It now reads
+ * saying explicitly rather than leaving to be re-discovered. It read
  * *"Nothing was bought — that would go past what the state will carry."*, so
  * the *reason* clause became true of this route as well -- `unfunded` is
  * populated behind `Treasury.canAfford` and nowhere else, and every non-money
@@ -189,6 +223,15 @@ export function createConstructionCommandHandler(
  * denying the same half it denied before, in the same way and for the same
  * reason. The three ways out below are unchanged and so is the open question
  * they end at.
+ *
+ * **The 2026-09-01 ruling did not close it either, and it is worth being
+ * precise about which half moved.** This route's sentence is now *"The build
+ * queue is stalled — no more materials until the state pays what it owes."*
+ * The subject changed from a purchase to the queue, which removes the "nothing
+ * was bought" denial the paragraphs above are about -- a stalled queue is a
+ * true description of a pass that funded four orders and not the fifth. What
+ * is still not said is *how much* was bought, which is ADR 0081's open
+ * question 2 and still the owner's.
  *
  * **Left as it is, deliberately, and named here rather than patched around.**
  * The three ways out are all worse or not this change's:
@@ -247,5 +290,5 @@ export function reportMaterialsFunding(
     refusals.supersede(materialsFundingSupersessionKey());
     return;
   }
-  refusals.record(PURCHASE_REFUSAL_REASONS['insufficient-funds'], tick, materialsFundingSupersessionKey());
+  refusals.record(CONSTRUCTION_FUNDING_REFUSAL_REASONS['materials-unfunded'], tick, materialsFundingSupersessionKey());
 }

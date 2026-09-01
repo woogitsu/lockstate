@@ -299,9 +299,20 @@ export interface HudCountsViewModel {
    * **The owner ruled on both places on 2026-08-31 (ruling 18) and authored
    * both strings**, so neither is empty any more. The chip takes a tone and a
    * `{remaining} left` badge whenever the balance is negative (`overdraftTone`
-   * and `overdraftBadge` in `./projection.ts`), and a charge the facility
-   * cannot carry reads *"that would go past what the state will carry"* rather
-   * than the generic refusal (`hud.refusal.purchase-materials-past-floor`).
+   * and `overdraftBadge` in `./projection.ts`), and a charge the rung cannot
+   * carry reads *"deliveries are refused until the state pays what it owes"*
+   * rather than the generic refusal
+   * (`hud.refusal.purchase-materials-past-floor`).
+   *
+   * **That sentence read *"that would go past what the state will carry"*
+   * until the owner's ruling of 2026-09-01**, and the badge's number was the
+   * room to the whole -2,500 floor until the same day. Both are kept in the
+   * record rather than overwritten: ruling 19 gave the ladder three
+   * thresholds, which made a sentence and a figure naming the *floor* false
+   * everywhere above -2,000, and the 2026-09-01 ruling replaced the sentence
+   * with one that names what stops and re-based the badge onto the
+   * `'deliveries'` rung.
+   *
    * What is still nowhere on screen, and is worth naming rather than assuming
    * closed: nothing says the facility exists **before** a player goes negative.
    */
