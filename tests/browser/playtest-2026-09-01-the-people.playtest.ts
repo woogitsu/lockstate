@@ -660,26 +660,24 @@ test('act 4: an incident opens and resolves — can a player follow the story on
   await admitAndHire(page, 14, 0, act);
   log(act, `after the build: ${JSON.stringify(await latestCounts(page))}`);
 
+  // Armed **before the clock is ever started**, not after some predicted
+  // tick. The first run of this act armed at tick 8,000 on the strength of a
+  // two-prisoner prison's measured 13,250-tick assault -- and this fourteen-
+  // prisoner, two-bed prison had already opened *and resolved* an assault
+  // (5,151 -> 5,762) and a riot by the time arming happened, so the 110-frame
+  // recording that resulted watched nothing but an already-settled screen.
+  // There is no way to recover a frame that already went by
+  // (`tests/browser/alert-dwell.ts`'s own docblock), so arming late is not
+  // recoverable after the fact -- only avoidable by arming first.
+  await installBandRecorder(page, '.hud__event');
+  log(act, `recorder armed at tick ${await currentTick(page)}, before the clock has run at all`);
+
   await page.locator('.hud-strip__transport button').nth(1).click();
   await page.waitForTimeout(150);
   await page.locator('.hud-strip__transport button').nth(2).click();
   await page.waitForTimeout(150);
   await page.locator('.hud-strip__transport button').nth(2).click();
   await page.waitForTimeout(150);
-
-  // Arm the band recorder well ahead of where incidents have been measured to
-  // open (13,250 ticks for a two-prisoner unguarded prison per
-  // `staff-panel.ts`'s own comment), so no frame the terminal outcome holds is
-  // missed.
-  const ARM_AT_TICK = 8_000;
-  const armStarted = Date.now();
-  for (;;) {
-    if ((await currentTick(page)) >= ARM_AT_TICK) break;
-    if (Date.now() - armStarted > 600_000) throw new Error('stuck reaching the arming point');
-    await page.waitForTimeout(500);
-  }
-  await installBandRecorder(page, '.hud__event');
-  log(act, `recorder armed at tick ${await currentTick(page)}`);
 
   const CEILING_TICKS = 100_000;
   let firstOpened: { tick: number; type: string } | undefined;
@@ -722,8 +720,8 @@ test('act 4: an incident opens and resolves — can a player follow the story on
   );
   log(act, `every span the band held, in order: ${JSON.stringify(recording.spans.map((s) => `${s.frames}f "${s.text}"`))}`);
 
-  const allEvents = (await workerEvents(page)).filter((e) => e.tick >= ARM_AT_TICK - 100);
-  log(act, `every worker event from tick ${ARM_AT_TICK - 100} on: ${JSON.stringify(allEvents)}`);
+  const allEvents = (await workerEvents(page)).filter((e) => e.type.startsWith('incidents.'));
+  log(act, `every incidents.* worker event, the whole run: ${JSON.stringify(allEvents)}`);
 
   const alerts = await alertLines(page);
   log(act, `alerts log at the end (fold may be shut, this reads the DOM either way): ${JSON.stringify(alerts)}`);
