@@ -395,8 +395,19 @@ export class ObjectPlacementService {
    * both order them that way -- a tile outside the materialised world has no
    * ownership to ask about, and `SparseWorld` materialises a chunk on write, so
    * checking in the other order would grow the world on the way to refusing.
+   *
+   * @param placementSequence The `QueuedCommand.sequence` of the `PlaceObject`
+   * command that asked for this, stamped onto the build order so the object
+   * takes its turn in the same queue a wall does (ADR 0082 decisions 1 and 2,
+   * #722). **A third parameter beside `tick` rather than a field on
+   * `PlaceObjectRequest`**, because a refusal echoes the request back
+   * (`PlaceObjectRefusal.request`) and an ordinal for an order that was never
+   * created is a number with no subject. Optional for the reason `tick` is
+   * not: a fixture calling this directly has no command behind it, and an
+   * order with no ordinal sorts exactly where it sorted before the field
+   * existed -- see `compareBuildOrderExecution`.
    */
-  public place(request: PlaceObjectRequest, tick: number): PlaceObjectOutcome {
+  public place(request: PlaceObjectRequest, tick: number, placementSequence?: number): PlaceObjectOutcome {
     const definition = BUILDABLE_REGISTRY.get(request.definitionId);
     if (definition === undefined) return this.refuse('unknown-buildable', request, tick);
 
@@ -441,7 +452,12 @@ export class ObjectPlacementService {
     const room = roomInstanceContaining(this.world, this.roomInstances, anchor, this.rooms);
     if (room === undefined) return this.refuse('outside-room', request, tick, anchor);
 
-    this.orders.submitOrder(createBuildOrder(request.orderId, definition.id, anchor));
+    // `undefined` for `edge`: an object is addressed by a tile and occupies no
+    // edge. The ordinal after it is the placement order this object takes in
+    // the build queue (ADR 0082, #722) -- a bed placed after three hundred
+    // walls waits for the three hundred, which is decision 1 read literally
+    // over *every* build order rather than over walls alone.
+    this.orders.submitOrder(createBuildOrder(request.orderId, definition.id, anchor, undefined, placementSequence));
     /*
      * One press, one undo step -- and the transaction id has to be *given* for
      * that to be true.
@@ -602,9 +618,11 @@ export class ObjectPlacementService {
    *
    * At most one can exist -- `place` refuses `tile-occupied` against exactly
    * this set -- so the walk's order decides nothing. It is still taken over
-   * `allOrders()`, which `ConstructionSystem` keeps sorted by id, so the answer
-   * is a function of state rather than of insertion history even in a session
-   * whose invariant was somehow broken.
+   * `allOrders()`, which `ConstructionSystem` keeps in its own canonical order
+   * (placement order with id as the tie-break since ADR 0082; ascending id
+   * alone before it, and still that for an order book with no ordinals), so the
+   * answer is a function of state rather than of insertion history even in a
+   * session whose invariant was somehow broken.
    */
   private orderBuildingObjectAt(tile: TilePosition): { readonly order: BuildOrder; readonly objectId: string } | undefined {
     const key = tileKey(tile);
@@ -715,8 +733,10 @@ export class ObjectPlacementService {
    * the materials take -- during which the tile must not be handed out twice.
    *
    * Cost is one pass over the order list per placement command, which is a
-   * player press and not a tick. `ConstructionSystem.allOrders()` is already
-   * sorted by id, so the set is a function of state.
+   * player press and not a tick. `ConstructionSystem.allOrders()` is already in
+   * a canonical order -- sorted by id until ADR 0082, by
+   * `(placementSequence ?? -1, id)` since -- so the set is a function of state
+   * either way. It is a `Set`, so which order it is built in decides nothing.
    */
   private tilesClaimedByOrdersInFlight(): ReadonlySet<string> {
     const claimed = new Set<string>();

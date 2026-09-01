@@ -406,7 +406,9 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
    * ## Determinism
    *
    * The walk order is the caller's and is canonical
-   * (`ConstructionSystem.orderedOrders()`, ascending id). Within an order the
+   * (`ConstructionSystem.orderedOrders()` -- placement order with id as the
+   * tie-break since ADR 0082 (#722), ascending id alone before it, and still
+   * ascending id for an order book that carries no ordinals). Within an order the
    * requirements are re-sorted by item id here rather than trusted, exactly as
    * this method used to re-sort the aggregate demand and for the same reason
    * (`docs/DETERMINISM.md`, "Canonical iteration order") -- although under

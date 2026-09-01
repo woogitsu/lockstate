@@ -38,7 +38,31 @@
 
 ## Status
 
-**Proposed, 2026-08-31. Not self-approved.**
+**Accepted, 2026-08-31, by the repository owner.**
+
+**This clause read `Proposed, 2026-08-31. Not self-approved.` until the owner
+accepted it the same day.** The paragraph that stood under it is kept below,
+unedited, because everything it says is still true: the decision was still
+genuinely absent when it was drafted, and [ADR 0081](./0081-whether-a-purchase-may-be-partly-filled.md)
+still declined it deliberately. What had not happened was the acceptance step,
+and it has now happened.
+
+**How the acceptance arrived, recorded because a reader checking this status
+later deserves to know its weight.** The owner was shown the decisions as
+written and answered, in Polish, *"Podpisz i wdrażaj"* — sign and implement.
+That is an approval of **the decisions as written** and of nothing wider: the
+four numbered decisions below, and the save-format cost stated under
+*The save-format cost*. It is **not** an answer to any of the three open
+questions at the foot of this document, which stay open; it is not a ruling on
+what the Build panel should say, which decision 4 leaves to the owner
+(`AGENTS.md`'s fourth exclusion); and it is not approval to change the id
+scheme at the composition root, which decision 3 refuses.
+
+**Implemented in [#722](https://github.com/matmaxalez/lockstate/issues/722)**,
+in the commit that carries this acceptance and the two beside it. The blast
+radius measured below is one measurement of a *proxy* — the sort replaced with
+descending id — and the implementation's own is smaller and is recorded under
+*The blast radius* rather than in place of it.
 
 Drafted under `CLAUDE.md`'s rule that a genuinely absent architectural decision
 is proposed rather than taken inside implementation code, and because
@@ -289,6 +313,32 @@ was replaced with *descending* id -- still total, still deterministic, still not
 placement order -- and the whole non-browser suite run before and after under
 identical conditions:
 
+> **The implemented change turned 4 tests in 4 files red, not 16 in 8, and the
+> difference is the proxy and not the tree.** Measured on 2026-08-31 against
+> `main` @ `72b29c4` (v0.0.299), whose baseline is `Test Files 359 passed`,
+> `Tests 4112 passed | 1 skipped` -- the suite has grown by 63 files and 634
+> tests since the run below, so the two absolute counts are not comparable and
+> only the *differences* are. The four:
+> `tests/unit/construction-crew-capacity.test.ts` (1, not 5),
+> `tests/unit/construction-build-queue-projection.test.ts` (1),
+> `tests/integration/economy-refund-survives-the-clock.test.ts` (1, not 2) and
+> `tests/integration/construction-just-in-time-materials.test.ts` (1), which
+> postdates the measurement below and is not on its list at all.
+>
+> **Why the proxy over-counted, and it is the interesting half.** Descending id
+> reorders *every* order book, including the many fixtures that build orders
+> directly with ascending ids and never touch a command --
+> `object-removal-loop`, `yard-and-common-room`, `economy-loan-recovery`,
+> `construction-geometry`, `operations-construction-integration` and four of
+> `construction-crew-capacity`'s five. `(placementSequence ?? -1, id)` leaves
+> every one of those exactly as it was, because an order with no ordinal ties
+> at the sentinel and the id decides. That is decision 2's *"an order book of
+> nothing but pre-field orders behaves exactly as today"* showing up as a test
+> count, and it is evidence for the design rather than a correction to it.
+> The paragraph and the table below are kept because the measurement was real
+> and the reasoning it supports -- that each of these is a contract change and
+> not a weakened test -- is what the implementation went on to do.
+
 ```
 baseline: Test Files 296 passed (296)          Tests 3478 passed | 1 skipped
 mutated:  Test Files   8 failed | 288 passed   Tests   16 failed | 3462 passed
@@ -309,13 +359,16 @@ The named one is the contract itself:
 `construction-build-queue-projection.test.ts` *"lists the queue in the order the
 crew will reach it, **which is ascending id and not submission order**"*. That
 sentence is what this ADR changes, and re-pinning it is the change rather than a
-casualty of it. `tests/determinism/canonical-iteration-contract.test.ts` needs no
+casualty of it. It now reads *"which is placement order and not ascending id"*. `tests/determinism/canonical-iteration-contract.test.ts` needs no
 change at all and did not fail: it requires the enumeration to reach *a* sort,
 and it still does. Four docblocks state the old order in prose and go with it:
 `system.ts:655-658`, `materials-procurement.ts:86-90`,
 `construction-projection.ts:225-234` and `src/ui/simulation-build-queue.ts:79`.
 
 **The mutation was reverted and nothing in `src/` is changed by this commit.**
+(That was true of the commit that added this document. The commit that carries
+the acceptance above *does* change `src/`; the sentence is kept because it is
+what makes the measurement above readable as a measurement of `main`.)
 A Playwright suite belonging to another agent was running throughout both runs,
 which is why the measurement is a *difference* between two runs taken under the
 same contention rather than an absolute count -- and the baseline being 0

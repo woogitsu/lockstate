@@ -556,7 +556,7 @@ describe('the order the queue is funded in (#703 ruling 12)', () => {
     return runtime;
   }
 
-  it('funds the earlier order in the crew\'s own walk, not the cheaper one and not the later one', () => {
+  it('funds the order the player placed first, not the cheaper one and not the lower id (#722)', () => {
     /*
      * **The one property of ruling 12 that nothing else in this repository
      * measures**, and it was found by mutation: reversing the walk
@@ -568,17 +568,29 @@ describe('the order the queue is funded in (#703 ruling 12)', () => {
      *
      * A **mixed** queue can tell, because the two orders want different
      * materials. A wall wants 2 bricks (80) and a bed wants 1 plank (65). With
-     * exactly 80 of spending room and both already queued, the ascending walk
-     * funds the wall and leaves the bed; a reversed walk funds the bed, is left
-     * with 15, and leaves the wall. The container's contents are the answer.
+     * exactly 80 of spending room and both already queued, the walk's first
+     * order is funded and the second is left; the container's contents are the
+     * answer.
      *
-     * This is also where the honest limit of ruling 12 shows, and it is ADR
-     * 0081 Decision 2's own: the ids here are chosen so that ascending id is a
-     * fact this case can state. A session mints
-     * `order-${crypto.randomUUID()}`, so which of a player's two orders is
-     * `order-aa` and which is `order-zz` is a draw they cannot see. ADR 0082
-     * proposes the persisted placement ordinal that would fix it and is
-     * unsigned.
+     * **Until 2026-08-31 that first order was the lower id and this test was
+     * called *"funds the earlier order in the crew's own walk, not the cheaper
+     * one and not the later one"*.** It funded `order-aa`, the wall, which was
+     * placed *second*, and its own comment recorded the limit: *"the ids here
+     * are chosen so that ascending id is a fact this case can state. A session
+     * mints `order-${crypto.randomUUID()}`, so which of a player's two orders
+     * is `order-aa` and which is `order-zz` is a draw they cannot see. ADR
+     * 0082 proposes the persisted placement ordinal that would fix it and is
+     * unsigned."* It was signed, #722 implemented it, and this is the case
+     * where the fix is visible in money: the bed is placed first and the bed is
+     * what the 80 buys, even though `order-zz` sorts after `order-aa`.
+     *
+     * **It is also the only test in the suite that pins the `PlaceObject`
+     * route's ordinal against a wall's.** A placed object is a build order
+     * (ADR 0028 decision 4), so it queues with the walls rather than beside
+     * them; an implementation that stamped only `PlaceBuildOrder` would leave
+     * the bed unstamped, sort it ahead of everything at the `-1` sentinel, and
+     * pass this test for the wrong reason -- which is why the assertion below
+     * reads the ordinals directly as well as the money.
      */
     const runtime = prisonWithACell();
 
@@ -611,17 +623,30 @@ describe('the order the queue is funded in (#703 ruling 12)', () => {
     const buyingTick = 10;
     step(runtime, buyingTick);
 
+    // The bed was drawn first, so the bed is funded -- and the ordinals say so
+    // rather than the ids: `order-zz` carries the smaller `placementSequence`
+    // and the larger id, which is the pair that makes this case decisive.
+    const bedSequence = runtime.construction.getOrder('order-zz')?.placementSequence;
+    const wallSequence = runtime.construction.getOrder('order-aa')?.placementSequence;
+    expect(bedSequence).toBeTypeOf('number');
+    expect(wallSequence).toBeTypeOf('number');
+    expect(bedSequence!).toBeLessThan(wallSequence!);
+
     expect(runtime.justInTimeMaterials.lastReport.purchased).toEqual([
-      { itemId: BRICK, quantity: BRICKS_PER_WALL, costMinorUnits: WALL_COST },
+      { itemId: PLANK, quantity: 1, costMinorUnits: PLANK_PRICE },
     ]);
     expect(runtime.justInTimeMaterials.lastReport.unfunded).toEqual([
-      { itemId: PLANK, quantity: 1, costMinorUnits: PLANK_PRICE },
+      { itemId: BRICK, quantity: BRICKS_PER_WALL, costMinorUnits: WALL_COST },
     ]);
     expect(
       runtime.procurement.pendingDeliveries.map((delivery) => delivery.itemId),
-      'bricks for order-aa, and no plank for order-zz',
-    ).toEqual([BRICK]);
-    expect(runtime.treasury.canAfford(1), 'the wall took all 80').toBe(false);
+      'a plank for order-zz, and no bricks for order-aa',
+    ).toEqual([PLANK]);
+    // 80 less the plank's 65. Written out rather than read back: the residual
+    // is what says the wall was refused for the whole 80 and not part-funded,
+    // which is ruling 12's per-order atomicity.
+    expect(runtime.treasury.balanceMinorUnits - runtime.treasury.overdraftFloorMinorUnits).toBe(15);
+    expect(runtime.treasury.canAfford(WALL_COST), 'what is left cannot buy the wall').toBe(false);
   });
 });
 

@@ -522,6 +522,12 @@ export function createSessionCommandHandler(
           y: simCommand.y,
         },
         context.tick,
+        // The placement ordinal, exactly as `construction/handler.ts` stamps
+        // it on a `PlaceBuildOrder` (ADR 0082 decision 2, #722). A placed
+        // object *is* a build order from here on -- ADR 0028 decision 4 -- so
+        // it has to enter the same queue at the same place, or a bed would
+        // jump ahead of every wall drawn before it.
+        command.sequence,
       );
       const placeKey = placeObjectSupersessionKey(simCommand.definitionId, simCommand.x, simCommand.y);
       if (outcome.kind === 'refused') {

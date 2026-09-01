@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, procurableMaterial } from '../../src/content/procurement-catalog';
-import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
+import { BUILDABLE_REGISTRY, createBuildOrder } from '../../src/simulation/construction';
 import { JUST_IN_TIME_ORDER_ID_PREFIX, TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import { projectPendingDeliveries } from '../../src/simulation/presentation';
@@ -9,6 +9,7 @@ import {
   createNewSimulationRuntime,
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 
 /**
  * **The money a player takes back stays back once the clock runs**
@@ -235,20 +236,27 @@ describe('a refund survives the clock (#687)', () => {
     expect(stockOf(runtime, BRICK) + 2 * (orderStates(runtime).completed ?? 0)).toBeGreaterThanOrEqual(2);
   });
 
-  it('takes the back of the crew walk, which is the last id and not the last drawn', () => {
+  it('takes the back of the crew walk', () => {
     const runtime = createNewSimulationRuntime(SEED);
     // `placeWalls` mints `order-000`, `order-001`, `order-002` in that order,
-    // so ascending id and placement order coincide *here* and nowhere a player
-    // is: `src/main.ts` mints `order-${crypto.randomUUID()}`. What is being
-    // gated is the walk, and the fixture is what makes the walk legible.
+    // so ascending id and placement order coincide here -- which is what makes
+    // the walk legible in this fixture and is exactly why it cannot be the
+    // case that gates *which* key the walk sorts on. The sibling case below,
+    // with ids that disagree, is that one.
+    //
+    // **This test was called *"takes the back of the crew walk, which is the
+    // last id and not the last drawn"* until 2026-08-31.** Since ADR 0082
+    // (#722) the back of the walk *is* the last drawn, so the second half of
+    // the old name is no longer a distinction this fixture can draw. What is
+    // gated here is unchanged: that the withdrawal comes off the back.
     placeWalls(runtime, 3);
 
     const [first] = deliveryIds(runtime);
     send(runtime, { type: 'CancelMaterialPurchase', orderId: first! });
 
-    // The greatest id: the work the crew's ascending-id walk reaches last, and
-    // therefore the order it was furthest from starting. Withdrawing from the
-    // front would take the one it is about to pick up.
+    // The work the crew's walk reaches last, and therefore the order it was
+    // furthest from starting. Withdrawing from the front would take the one it
+    // is about to pick up.
     expect(runtime.construction.getOrder('order-002')!.state).toBe('cancelled');
     expect(runtime.construction.getOrder('order-000')!.state).not.toBe('cancelled');
     expect(runtime.construction.getOrder('order-001')!.state).not.toBe('cancelled');
@@ -503,19 +511,31 @@ describe('a refund survives the clock (#687)', () => {
   });
 
   /**
-   * **Which segment actually disappears** -- #693's weakest claim, checked.
+   * **Which segment actually disappears** -- #693's weakest claim, checked,
+   * and since ADR 0082 (#722) closed rather than only checked.
    *
-   * It claimed *"the back of the crew walk is the least surprising segment to
-   * take"*, and named its own doubt: ids are `order-${crypto.randomUUID()}`,
+   * #693 claimed *"the back of the crew walk is the least surprising segment
+   * to take"*, and named its own doubt: ids are `order-${crypto.randomUUID()}`,
    * so the greatest id is not the last segment drawn, and it guessed the
    * player would *"watch a segment vanish from somewhere in the middle of the
-   * line"*. **Both halves are wrong, and the guess is wrong in the direction
-   * that matters.** With ids that do not follow placement order -- which is
-   * every run a player produces -- the greatest id is uniformly distributed
-   * over the run, so the segment that goes is as likely to be either end as
-   * the middle. The fixture below is the extreme case, and it is reachable:
-   * placement order left to right, and the segment withdrawn is the **first
-   * one drawn**, at the far left of the row.
+   * line"*.
+   *
+   * **This test asserted that defect until 2026-08-31**, under the name
+   * *"takes whichever segment holds the greatest id, which can be the first one
+   * drawn"*, with the same five ids and the same expectation reversed: the
+   * withdrawn order was `order-ffff` at x = 4, the tile the player drew
+   * **first**, at the far left of the row. Both halves of #693 were wrong and
+   * the guess was wrong in the direction that mattered -- the greatest id is
+   * uniformly distributed over a run, so the segment that went was as likely
+   * to be either end as the middle, and the extreme case was reachable rather
+   * than theoretical.
+   *
+   * **ADR 0082 is the persisted field `withdrawOrdersAwaitingMaterial`'s own
+   * docblock said this needed**, so the back of the crew's walk is now the
+   * back of the *player's* walk: the segment withdrawn is the one they drew
+   * last, at the far right. Nothing in `withdrawOrdersAwaitingMaterial`
+   * changed -- it still takes the last order in the walk -- which is why the
+   * fix is a sort and not a special case.
    *
    * The case above (*"takes the back of the crew walk, which is the last id
    * and not the last drawn"*) gates the walk with ids that ascend *with*
@@ -528,7 +548,7 @@ describe('a refund survives the clock (#687)', () => {
    * a fact about the order book and not about the renderer -- which is why
    * #693 could have settled it and did not.
    */
-  it('takes whichever segment holds the greatest id, which can be the first one drawn', () => {
+  it('takes the segment the player drew last, however its id sorts (#693, #722)', () => {
     const runtime = createNewSimulationRuntime(SEED);
     // Ids deliberately unordered against x, the way a UUID is. Placement is
     // left to right at x = 4..8, one drag down one row.
@@ -549,12 +569,50 @@ describe('a refund survives the clock (#687)', () => {
 
     const withdrawn = runtime.construction.allOrders().filter((order) => order.state === 'cancelled');
     expect(withdrawn).toHaveLength(1);
-    // `order-ffff` is the greatest id and it is the tile the player drew
-    // **first**, at the left end of the row -- not the middle, and not the
-    // segment they drew last.
+    // `order-5555` is the *smallest* id of the five and the tile the player
+    // drew **last**, at the right end of the row. The id decides nothing; the
+    // placement ordinal does.
+    expect(withdrawn[0]!.id).toBe('order-5555');
+    expect(withdrawn[0]!.location.x).toBe(8);
+    expect(runtime.construction.getOrder('order-ffff')!.state).not.toBe('cancelled');
+  });
+
+  /**
+   * The same five segments in an order book that carries no placement
+   * ordinals, which is what a save written before ADR 0082 restores to.
+   *
+   * `docs/PERSISTENCE.md` requires that absence mean what the older build did,
+   * and this is that claim made against the behaviour a player would see:
+   * `order-ffff` goes, at the far left, exactly as the test above asserted
+   * before the ADR. Built through `ConstructionSystem` directly rather than
+   * through commands, because a command is precisely what stamps the ordinal.
+   */
+  it('still takes the greatest id when no order carries a placement ordinal', () => {
+    const runtime = createNewSimulationRuntime(SEED);
+    for (const { id, x } of [
+      { id: 'order-ffff', x: 4 },
+      { id: 'order-1111', x: 5 },
+      { id: 'order-9999', x: 6 },
+      { id: 'order-0000', x: 7 },
+      { id: 'order-5555', x: 8 },
+    ] as const) {
+      runtime.construction.submitOrder(createBuildOrder(id, WALL, { x: tileCoordinate(x), y: tileCoordinate(4) }));
+    }
+    for (const order of runtime.construction.allOrders()) {
+      expect(order.placementSequence).toBeUndefined();
+    }
+
+    // One pass of the scheduled purchase, so the queue has deliveries to
+    // cancel -- the command route above did this on the press.
+    runtime.kernel.step();
+    const justInTime = deliveryIds(runtime).filter((id) => id.startsWith(JUST_IN_TIME_ORDER_ID_PREFIX));
+    expect(justInTime.length).toBeGreaterThan(0);
+    send(runtime, { type: 'CancelMaterialPurchase', orderId: justInTime[0]! });
+
+    const withdrawn = runtime.construction.allOrders().filter((order) => order.state === 'cancelled');
+    expect(withdrawn).toHaveLength(1);
     expect(withdrawn[0]!.id).toBe('order-ffff');
     expect(withdrawn[0]!.location.x).toBe(4);
-    expect(runtime.construction.getOrder('order-5555')!.state).not.toBe('cancelled');
   });
 
   /**
@@ -651,11 +709,14 @@ describe('a refund survives the clock (#687)', () => {
      * until #703 ruling 9.** Eight bricks at 40 is 320 and the prison can spend
      * 265, so the pass used to buy nothing at all. It now walks the four wall
      * orders and funds three of them whole -- 3 x 80 = 240 of the 265 -- and
-     * leaves the fourth, which is the last one placed and, in this fixture
-     * alone, also the last one in the walk: `placeWalls` mints
-     * `order-000..order-003`, so ascending id happens to be placement order
-     * here. A session mints `order-${crypto.randomUUID()}` and gets neither
-     * (ADR 0081 Decision 2, ADR 0082).
+     * leaves the fourth, which is the last one placed and also the last one in
+     * the walk. **Those were two different facts that happened to coincide in
+     * this fixture until 2026-08-31**, because `placeWalls` mints
+     * `order-000..order-003` so ascending id happened to be placement order
+     * here while a session minting `order-${crypto.randomUUID()}` got neither
+     * (ADR 0081 Decision 2). ADR 0082 (#722) made the walk placement order, so
+     * "the last one placed" and "the last one in the walk" are now the same
+     * fact in every session and not only in this fixture.
      */
     expect(orderStates(withCancel).completed).toBe(3);
     expect(queued(withCancel)).toBe(1);

@@ -139,20 +139,28 @@ describe('the pending build queue, as a read model', () => {
     expect(queue(runtime).orders.rows[0]?.edge).toBe('north');
   });
 
-  it('lists the queue in the order the crew will reach it, which is ascending id and not submission order', () => {
+  it('lists the queue in the order the crew will reach it, which is placement order and not ascending id (#722)', () => {
     /*
-     * Not cosmetic: `ConstructionSystem.update` walks `orderedOrders()` --
-     * ascending id -- and the first *eligible* id takes the crew. So ascending
-     * id is the build schedule, and the list is the schedule rather than an
-     * enumeration.
+     * **The name of this test used to end "which is ascending id and not
+     * submission order", and that sentence is the thing ADR 0082 changes.** It
+     * was an accurate description of the code: `ConstructionSystem.update`
+     * walked `orderedOrders()` in ascending id and the first *eligible* id took
+     * the crew, so with `order-${crypto.randomUUID()}` ids a player's own drag
+     * came back to them shuffled (#722). Decisions 1 and 2 make the walk
+     * `(placementSequence ?? -1, id)`, so the ids below -- deliberately chosen
+     * to sort against the order they are submitted in -- no longer decide
+     * anything while a session is stamping ordinals.
      *
-     * Submitted backwards, and **this on its own does not prove the projection
-     * sorts**: `allOrders()` already hands out ascending id, so a projection that
-     * passed the source's order straight through would pass this. Red-proofed
-     * exactly that way -- deleting the sort left this green -- which is what the
-     * stub-source test below exists for. This one is still worth keeping,
-     * because it is the half that ties the *order of the rows* to the *order the
-     * crew works in*, over a real system, which no stub can show.
+     * Still not cosmetic, and for the same reason as before: the list *is* the
+     * build schedule and not an enumeration of it, which is why the second half
+     * of this test asks the system what it actually started.
+     *
+     * **The ids disagreeing with placement order is now what makes the test
+     * bite**, where before it was what made it weak. It used to be red-proofed
+     * by the observation that `allOrders()` already handed out ascending id, so
+     * a projection that passed its source straight through would pass -- the
+     * stub-source tests below are still the half that guards the projection's
+     * own sort.
      */
     const runtime = session();
     orderWall(runtime, 'order-c', 3, 5);
@@ -160,20 +168,29 @@ describe('the pending build queue, as a read model', () => {
     orderWall(runtime, 'order-b', 3, 4);
     runTo(runtime, 1);
 
-    expect(idsOf(queue(runtime))).toEqual(['order-a', 'order-b', 'order-c']);
+    expect(idsOf(queue(runtime))).toEqual(['order-c', 'order-a', 'order-b']);
 
-    // And the schedule agrees: the lowest id is the one that starts, however
-    // late it was submitted.
+    // And the schedule agrees: the one drawn first is the one that starts,
+    // however late its id sorts.
     runTo(runtime, 30);
-    expect(runtime.construction.getOrder('order-a')?.state).toBe('in-progress');
-    expect(runtime.construction.getOrder('order-c')?.state).toBe('assigned');
+    expect(runtime.construction.getOrder('order-c')?.state).toBe('in-progress');
+    expect(runtime.construction.getOrder('order-a')?.state).toBe('assigned');
   });
 
-  it('sorts what it is handed, so a source that stopped ordering cannot silently reorder the panel', () => {
+  it('sorts an order book carrying no placement ordinals by ascending id, exactly as it always did', () => {
     /*
-     * The half the test above cannot make, and the reason `projectBuildQueue`
-     * takes a narrow source shape at all rather than a `ConstructionSystem`:
-     * handed orders out of order, it must still answer in ascending id.
+     * **Two claims in one test, and the second is new.** It was called *"sorts
+     * what it is handed, so a source that stopped ordering cannot silently
+     * reorder the panel"* and it still makes that claim; since ADR 0082 it also
+     * pins what an order book with no `placementSequence` does, which is every
+     * save written before the field and every fixture that builds orders
+     * directly. They tie at the `-1` sentinel and the id decides -- so the
+     * expectation below is unchanged from before the ADR, and that is the
+     * point of it.
+     *
+     * The half the real-session test above cannot make, and the reason
+     * `projectBuildQueue` takes a narrow source shape at all rather than a
+     * `ConstructionSystem`: handed orders out of order, it must still sort.
      *
      * `docs/DETERMINISM.md`'s canonical-iteration rule is the argument. The
      * source *does* sort today -- `orderedOrders()` -- so this sort is
@@ -199,6 +216,49 @@ describe('the pending build queue, as a read model', () => {
       'order-c@3,5',
     ]);
     expect(view.started).toBe(1);
+  });
+
+  it('sorts a scrambled source by its placement ordinals, not by its ids (#722)', () => {
+    /*
+     * The projection's own sort, on the key ADR 0082 gave it. The test above
+     * cannot show this: its rows carry no ordinals, so ids decide there and a
+     * projection still sorting on id alone would pass it.
+     *
+     * Ids and ordinals are deliberately opposed -- `order-a` is the *last*
+     * gesture -- and the rows are handed over in a third order again, so
+     * neither "trusted the source" nor "sorted by id" can produce the expected
+     * answer.
+     */
+    const scrambled: readonly BuildOrder[] = [
+      { id: 'order-b', definitionId: 'wall-brick', location: tile(3, 4), placementSequence: 11, state: 'assigned', progress: 0, materialsAllocated: [] },
+      { id: 'order-a', definitionId: 'wall-brick', location: tile(3, 3), placementSequence: 12, state: 'assigned', progress: 0, materialsAllocated: [] },
+      { id: 'order-c', definitionId: 'wall-brick', location: tile(3, 5), placementSequence: 10, state: 'assigned', progress: 0, materialsAllocated: [] },
+    ];
+
+    const view = projectBuildQueue({ allOrders: () => scrambled });
+    expect(view.orders.rows.map((row) => `${row.orderId}@${row.tile.x},${row.tile.y}`)).toEqual([
+      'order-c@3,5',
+      'order-b@3,4',
+      'order-a@3,3',
+    ]);
+  });
+
+  it('puts an order that predates the placement ordinal ahead of every stamped one', () => {
+    /*
+     * The mixed order book a player reaches by loading a save written before
+     * ADR 0082 and then drawing another wall. Absence means "this order
+     * predates the field", which `docs/PERSISTENCE.md` requires to mean what
+     * the older build did -- the old work is already in the queue, so it is
+     * reached first, in the ascending id it would have been reached in.
+     */
+    const mixed: readonly BuildOrder[] = [
+      { id: 'order-new', definitionId: 'wall-brick', location: tile(3, 5), placementSequence: 0, state: 'assigned', progress: 0, materialsAllocated: [] },
+      { id: 'order-old-z', definitionId: 'wall-brick', location: tile(3, 4), state: 'assigned', progress: 0, materialsAllocated: [] },
+      { id: 'order-old-a', definitionId: 'wall-brick', location: tile(3, 3), state: 'assigned', progress: 0, materialsAllocated: [] },
+    ];
+
+    const view = projectBuildQueue({ allOrders: () => mixed });
+    expect(view.orders.rows.map((row) => row.orderId)).toEqual(['order-old-a', 'order-old-z', 'order-new']);
   });
 
   it('counts exactly one order as started, which is the whole of what #348 made visible', () => {

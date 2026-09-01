@@ -169,6 +169,41 @@ const buildOrderSchema = z
      * so no migration step is needed and none is added.
      */
     edge: z.enum(['north', 'west']).optional(),
+    /**
+     * Where the order sits in the sequence of gestures the player made
+     * ([ADR 0082](../../docs/adr/0082-what-order-build-orders-are-carried-out-in.md),
+     * #722) -- the `QueuedCommand.sequence` of the command that placed it. The
+     * crew reaches orders in `(placementSequence ?? -1, id)`; see
+     * `compareBuildOrderExecution` in
+     * `src/simulation/construction/build-order.ts`.
+     *
+     * Optional, and **not** a version bump, on exactly the reasoning `edge`
+     * above and `currentTransaction` below are declared under, checked against
+     * `docs/PERSISTENCE.md`'s three conditions rather than assumed:
+     *
+     * - *Absent means what the older build already did.* An order with no
+     *   ordinal sorts ahead of every stamped one and tie-breaks by id, so a
+     *   save in which no order carries the key walks in ascending id -- which
+     *   is what every build before this one did, whole. No migration step is
+     *   needed and none is added.
+     * - *The key still has to be declared.* This schema is `.strict()`, so an
+     *   order carrying the field could not be saved at all until this line
+     *   existed; `createSaveEnvelope` refuses it with
+     *   `unrecognized_keys Unrecognized key: "placementSequence"`.
+     * - *Absence is not ambiguous and no existing field changed shape or
+     *   meaning.* A missing key means "this order predates the field", and
+     *   `id`, `edge`, `state`, `progress` and the rest all mean exactly what
+     *   they meant. So `SAVE_SCHEMA_VERSION` does not move -- the line ADR
+     *   0038 §1 draws, and the one V2 (#50) and V3 (#70) crossed.
+     *
+     * A non-negative integer because the kernel's counter is one:
+     * `Kernel.restoreState` refuses a snapshot whose `expectedSequence` is
+     * not. Validated rather than taken as `z.number()` so that a value the
+     * comparator could not order -- a fraction, a negative that collides with
+     * the `?? -1` sentinel -- is refused at the boundary instead of quietly
+     * reordering a prison.
+     */
+    placementSequence: z.number().int().min(0).optional(),
     state: z.enum([
       'planned',
       'approved',

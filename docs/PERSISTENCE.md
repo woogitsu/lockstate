@@ -69,18 +69,26 @@ it — see the three version sections below.
 
 ### Adding an optional field without a version bump
 
-Six payload fields have been added since their section was first written --
+Seven payload fields have been added since their section was first written --
 `construction.orders[].edge` (#74), `construction.currentTransaction` /
 `currentTransactionId` (#108), `masterSeed` (#412),
 `simulation.contraband.intelligenceSequence` and `simulation.economy.payroll`
-(ADR 0042 step 3) -- and none of them bumped the schema version. The conditions that make that correct, rather than merely
+(ADR 0042 step 3), and `construction.orders[].placementSequence`
+([ADR 0082](./adr/0082-what-order-build-orders-are-carried-out-in.md), #722)
+-- and none of them bumped the schema version. **This sentence read "Six" until
+2026-08-31 and the count is the part of it that rots**; the list is what to
+read. The conditions that make that correct, rather than merely
 convenient, are:
 
 - **The field is optional, and absent means what the older build already
   did.** An order with no `edge` resolves to `DEFAULT_BUILD_EDGE`; a
   construction snapshot with no `currentTransaction` means "no build gesture
   is open", which is exactly what every restore assumed before the field
-  existed. So an older save needs no migration step and none is added -- the
+  existed; an order with no `placementSequence` sorts ahead of every stamped
+  one and tie-breaks by id, so a save in which no order carries the key walks
+  in the ascending id that *was* the whole rule before ADR 0082
+  (`compareBuildOrderExecution` in
+  `src/simulation/construction/build-order.ts`). So an older save needs no migration step and none is added -- the
   same reasoning `migrateSaveEnvelopeV2ToV3` uses for its two optional
   sections, applied to a field instead of a section.
 - **The key still has to be declared.** `buildOrderSchema` and

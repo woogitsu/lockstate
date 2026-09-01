@@ -136,6 +136,34 @@ export interface BuildOrder {
    */
   readonly edge?: BuildEdge;
 
+  /**
+   * Where this order sits in the sequence of gestures the player made
+   * ([ADR 0082](../../../docs/adr/0082-what-order-build-orders-are-carried-out-in.md),
+   * #722). Smaller is earlier; `compareBuildOrderExecution` is the one place
+   * that reads it.
+   *
+   * **It is `QueuedCommand.sequence`, stamped where the command is handled and
+   * never minted here.** The kernel enforces that the value is strictly
+   * increasing with no gaps and no duplicates
+   * (`src/simulation/kernel/kernel.ts`, `submitCommand`), dispatches strictly
+   * by `(executeAtTick, sequence)`, and persists the counter as
+   * `KernelSnapshot.expectedSequence` -- which `restoreState` restores, so
+   * every order placed after a load sorts after every order restored from the
+   * save and no two orders can collide. That is why no new counter is
+   * introduced and why the ordinal survives a round trip.
+   *
+   * **Optional, and absent is not a defect.** An order restored from a save
+   * written before this field existed has none, and so does any order a
+   * fixture or a producer creates without one. `compareBuildOrderExecution`
+   * sorts such an order ahead of every stamped one and tie-breaks among them
+   * by id -- which is exactly the ascending-id walk this class had before the
+   * field existed, so an order book of nothing but unstamped orders behaves
+   * identically to the way it did. Declared `placementSequence` in
+   * `buildOrderSchema` (`src/persistence/save-schema.ts`) for the same reason
+   * `edge` is declared: the schema is `.strict()`.
+   */
+  readonly placementSequence?: number;
+
   state: BuildOrderLifecycleState;
   progress: number;
 
@@ -150,6 +178,7 @@ export function createBuildOrder(
   definitionId: string,
   location: TilePosition,
   edge?: BuildEdge,
+  placementSequence?: number,
 ): BuildOrder {
   return {
     id,
@@ -160,8 +189,62 @@ export function createBuildOrder(
     // `undefined` would also serialize into a snapshot as a key that is not
     // in the schema.
     ...(edge === undefined ? {} : { edge }),
+    // Same spread, same three reasons, plus a fourth that is this field's own:
+    // an order with an explicit `placementSequence: undefined` is *not* the
+    // same value as one with no key, and `BuildOrder.placementSequence`'s
+    // contract is that a missing key means "this order predates the field or
+    // was made outside a command". A key holding `undefined` also reaches
+    // `computeSaveChecksum` and then does not survive the JSON round trip, so
+    // the reloaded payload would hash differently -- the trap
+    // `ConstructionSystem.snapshot` already records for `currentTransaction`.
+    ...(placementSequence === undefined ? {} : { placementSequence }),
     state: 'planned',
     progress: 0,
     materialsAllocated: [],
   };
+}
+
+/**
+ * The order the crew reaches build orders in: placement order, ties by id
+ * ([ADR 0082](../../../docs/adr/0082-what-order-build-orders-are-carried-out-in.md)
+ * decisions 1 and 2, #722).
+ *
+ * **Until 2026-08-31 the sort was ascending `id` alone**, and because
+ * `src/main.ts` mints `order-${crypto.randomUUID()}` that made the build
+ * schedule a uniformly random permutation of the player's own gestures -- ADR
+ * 0082 measured 21, 17, 14, 17 and 25 inversions out of 45 on a ten-segment
+ * perimeter, against the 22.5 a random permutation predicts. The old sentence
+ * is kept because four docblocks in this repository still explain themselves
+ * against it: the sort *was* ascending id, and the id remains the total
+ * tie-break.
+ *
+ * `(placementSequence ?? -1, id)`, and both halves are load-bearing:
+ *
+ * - **`?? -1` puts an unstamped order first.** Kernel sequences are
+ *   non-negative integers (`Kernel.restoreState` refuses a snapshot whose
+ *   `expectedSequence` is not one), so `-1` sorts below every real ordinal and
+ *   below no other sentinel. An order book in which *nothing* is stamped --
+ *   every save written before this field, and every fixture that builds orders
+ *   directly -- therefore collapses to ascending id, which is what it did
+ *   before.
+ * - **The id is the tie-break, so the comparator is total.**
+ *   `docs/DETERMINISM.md` requires that ("A tie-break must be total"), and ids
+ *   are unique by construction: `ConstructionSystem.submitOrder` throws on a
+ *   duplicate. Two orders sharing an ordinal cannot arise from the kernel, but
+ *   they can arise from a hand-built fixture, and the answer must still not
+ *   depend on `Map` insertion order.
+ *
+ * Exported rather than private to `ConstructionSystem` because
+ * `projectBuildQueue` re-sorts the rows it publishes instead of trusting its
+ * source, and a second copy of this rule is how the panel and the crew would
+ * come to disagree about what is next.
+ */
+export function compareBuildOrderExecution(
+  left: Pick<BuildOrder, 'id' | 'placementSequence'>,
+  right: Pick<BuildOrder, 'id' | 'placementSequence'>,
+): number {
+  const leftSequence = left.placementSequence ?? -1;
+  const rightSequence = right.placementSequence ?? -1;
+  if (leftSequence !== rightSequence) return leftSequence - rightSequence;
+  return left.id < right.id ? -1 : left.id > right.id ? 1 : 0;
 }

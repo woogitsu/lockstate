@@ -151,10 +151,14 @@ export interface QueuedOrderDemand {
  * -- double-buys, and not in a corner case. A purchase takes
  * `PROCUREMENT_DELIVERY_DELAY_TICKS` to arrive, which is ten construction
  * ticks, and a `materials-pending` order is retried on every one of them; and
- * order ids are `order-${crypto.randomUUID()}` (`src/main.ts:2144`), so
- * `orderedOrders()`'s ascending-id walk is **not** placement order and a later
- * order can take delivery of an earlier one's bricks and send it back to buy
- * again. Both disappear when the question is asked once over the whole queue:
+ * order ids are `order-${crypto.randomUUID()}` (`src/main.ts`), so
+ * `orderedOrders()`'s walk was **not** placement order and a later
+ * order could take delivery of an earlier one's bricks and send it back to buy
+ * again. (**ADR 0082 (#722) made that walk placement-ordered on 2026-08-31**,
+ * and the sentence is kept in the past tense because the double-buy it
+ * describes never depended on the walk being *random* -- any walk in which a
+ * later order is reached first produces it, and this one still has later
+ * orders.) Both disappear when the question is asked once over the whole queue:
  * what does everything still waiting need, against what the prison holds *and*
  * what it has already paid for and not yet received.
  *
@@ -182,14 +186,21 @@ export interface QueuedOrderDemand {
  *   canonical walk `ConstructionSystem.orderedOrders()` produces, each carrying
  *   its buildable's whole `materialsRequired`. **The walk order decides which
  *   orders an insufficient balance funds**, so it is a fact about money and not
- *   about presentation. It is ascending order **id**, which for the
- *   `order-${crypto.randomUUID()}` ids a session mints is *not* placement
- *   order -- ADR 0081 Decision 2 records that this ruling therefore *"halves
- *   the expected requirement and leaves the worst case exactly where it is"*,
- *   and ADR 0082 is where a persisted placement ordinal is put to the owner.
- *   Until that is signed, "as many whole orders as the balance covers" means
- *   *as many as it covers along a walk the player cannot predict*, and an
+ *   about presentation. It is **placement order, ties by id**
+ *   (`compareBuildOrderExecution`): ADR 0082 was signed on 2026-08-31 and #722
+ *   implemented it, so "as many whole orders as the balance covers" now means
+ *   *as many as it covers, starting from the one the player drew first*. An
  *   implementation must not paper over that by re-sorting on anything else.
+ *
+ *   **This bullet read "It is ascending order **id**, which for the
+ *   `order-${crypto.randomUUID()}` ids a session mints is *not* placement
+ *   order ... Until that is signed, ... a walk the player cannot predict"**,
+ *   and that is what a save carrying no ordinals still does -- every order in
+ *   it ties at the sentinel and the id decides. ADR 0081 Decision 2's
+ *   observation that per-order granularity *"halves the expected requirement
+ *   and leaves the worst case exactly where it is"* is unchanged as arithmetic;
+ *   what moved is that the worst case is no longer drawn at random, because
+ *   the walk is now stated.
  * - Within one order, requirements are funded in ascending item id, and that
  *   choice decides nothing: the order is atomic, so either every line is bought
  *   or none is.
