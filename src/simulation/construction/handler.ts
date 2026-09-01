@@ -134,9 +134,9 @@ export function createConstructionCommandHandler(
          * neither sentence names one.
          *
          * **The research this implements said the handler already read the
-         * state, and it did not** -- the 2026-09-01 copy-variants research
-         * (branch `docs/copy-variants-for-the-owner`) section 5a, *"read by the
-         * handler before `cancelOrder` is called"*.
+         * state, and it did not** --
+         * `docs/research/2026-09-01-copy-variants-for-the-owner.md` section 5a,
+         * *"read by the handler before `cancelOrder` is called"*.
          * `cancelOrder` reads it privately; this line is what makes the claim
          * true. The correction does not change the ruling -- the state was
          * reachable, one level down -- and it is recorded rather than quietly

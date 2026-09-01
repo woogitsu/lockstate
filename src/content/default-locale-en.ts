@@ -524,7 +524,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * know that without doing the arithmetic.
    *
    * **The wordings are the owner's, taken from
-   * the 2026-09-01 copy-variants research (branch `docs/copy-variants-for-the-owner`) §5.** CD1 for the
+   * `docs/research/2026-09-01-copy-variants-for-the-owner.md` §5.** CD1 for the
    * delivery, UR3 for the two history sentences. The build-order **pair** is
    * the one place that document tabled no verbatim candidate -- its §5c
    * offers a state-aware pair as *"a fourth option not tabled as a single
