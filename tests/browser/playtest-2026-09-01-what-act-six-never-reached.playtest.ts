@@ -1,12 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
-import {
-  dwellOf,
-  expectNeverPainted,
-  framesShowing,
-  installBandRecorder,
-  readBandRecording,
-  writesOf,
-} from './alert-dwell';
+import { dwellOf, framesShowing, installBandRecorder, readBandRecording, writesOf } from './alert-dwell';
 import {
   TILE,
   armBuildable,
@@ -15,7 +8,6 @@ import {
   calibrate,
   centreOf,
   currentTick,
-  drag,
   installTee,
   latestCounts,
   openApp,
@@ -244,7 +236,11 @@ test('act 1: a neglected prison loses somebody, and what the band does about it 
     log(act, `the escape sentence never reached the alerts log at all -- see the writes/spans above for what did`);
     return;
   }
-  const escapeCore = escapeText.replace(/(Warning|Danger|Info)$/, '');
+  // Badge words are 'Info' | 'Warning' | 'Critical' (hud.severity.*,
+  // default-locale-en.ts:1164-1166) -- 'danger' severity reads "Critical" on
+  // screen, not "Danger". The band itself (.hud__event) carries no badge at
+  // all, so the comparison text alert-dwell needs is the bare sentence.
+  const escapeCore = escapeText.replace(/(Warning|Critical|Info)$/, '');
   const writes = writesOf(recording, escapeCore);
   const frames = framesShowing(recording, escapeCore);
   const dwell = dwellOf(recording, escapeCore);
