@@ -233,7 +233,13 @@ function readAlerts(candidateWidths: readonly number[]): AlertsReading {
   };
 }
 
-const CANDIDATE_WIDTHS = [36, 88, 160, 200, 260, 320, 400] as const;
+/*
+ * 36, 61 and 88 are the label widths this codebase actually renders (the two
+ * ends of the with-a-control range, and #720's figure); 160-400 are ADR 0085
+ * §5 item 1's candidates; 216 is what the ADR's own 430px guardrail leaves for
+ * the label once the measured 214px of corner around it is subtracted.
+ */
+const CANDIDATE_WIDTHS = [36, 61, 88, 160, 200, 216, 260, 320, 400] as const;
 
 test.describe('1 and 2: the alerts row with a dismiss control, and what the corner would need', () => {
   test('the label width, the line count and the rail, at four viewports', async ({ page }) => {
