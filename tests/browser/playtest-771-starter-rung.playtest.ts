@@ -34,26 +34,42 @@ import {
  *    `HostRefusalError: The last reported balance of 25000 cannot cover
  *    26240` -- before the command even reaches the kernel. Balance stays
  *    25,000.
- * 2. 654 bricks is bought (`-1,160`), and the FUNDS badge reads **"90 left"**.
+ * 2. 654 bricks is bought (`-1,160`), and the FUNDS badge reads **"25 left"**.
  * 3. A direct press for the one plank a bed needs (65) is refused --
  *    `HostRefusalError: The last reported balance of -1160 cannot cover 65`
- *    -- **although the badge just said 90 was left.** This is ADR 0017's
- *    2026-09-01 "starter rung" amendment §5 measured live: the badge is still
- *    computed against the mature -1,250 rung (`90 = -1,160 - (-1,250)`),
- *    while the balance is actually judged against the starter rung's -1,185
- *    (`25 = -1,160 - (-1,185)`, which is short of the 65 a plank costs). The
- *    badge overstated spendable room by exactly the 65 minor units the ADR
- *    predicted, and a player pressing on its word would have been refused
- *    with no explanation for why a purchase inside "90 left" failed.
+ *    -- **and the badge already said only 25 was left**, which is short of
+ *    the 65 the press asked for. The two agree: a player reading the badge
+ *    could see the press was going to fail before pressing.
  * 4. The bed is placed as a queued build order instead (the construction
  *    rung, unaffected by freshness) and completes: balance **-1,225**, room
- *    capacity 1. The badge now reads **"25 left"** -- correct again, because
- *    furnishing the bed ended the exemption and both the true floor and the
- *    badge's assumed floor are the same -1,250 from here on.
+ *    capacity 1. The badge now reads **"25 left"** -- correct throughout,
+ *    because furnishing the bed ended the exemption and both the true floor
+ *    and the badge's floor are the same -1,250 from here on.
  * 5. A prisoner is admitted, and one in-game day later the balance has risen
  *    on its own, with no further press: -1,225 to -925, +300, exactly
  *    `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS`. The loop ECON-002 opens
  *    with -- a balance that can never earn again -- is broken, on screen.
+ *
+ * **Steps 2 and 3 above are corrected, not transcribed.** The run that wrote
+ * this file first found the badge reading **"90 left"** at step 2 -- computed
+ * against the mature -1,250 rung (`90 = -1,160 - (-1,250)`) while the balance
+ * was actually judged against the starter rung's -1,185
+ * (`25 = -1,160 - (-1,185)`) -- so step 3's refusal landed with "the badge
+ * just said 90 was left" and no explanation for why a purchase inside that
+ * figure failed. That was `AGENTS.md`'s fourth exclusion, reported rather
+ * than patched because this file's own brief was to play the starter rung,
+ * not to touch the chip. The owner's follow-up ruling threaded the same
+ * freshness signal `pressFloorMinorUnits` already reads
+ * (`counts.roomCapacity === 0`) through `overdraftRemaining` and
+ * `overdraftTone` in `src/ui/hud/projection.ts`, and a re-run transcribed
+ * above now reads "25 left" at step 2, in agreement with step 3 from the
+ * first press onward. One transient is new and is not a defect: immediately
+ * after the bed order is placed (before it completes) the badge reads **"0
+ * left"** at -1,225 -- correct for that instant, because the room is still
+ * unfurnished (`roomCapacity` has not moved yet) and -1,225 has in fact
+ * already passed the starter floor (-1,185); it reads "25 left" again a few
+ * hundred milliseconds later once the bed completes and the mature floor
+ * takes over.
  *
  * Not a gate: nothing in CI collects `.playtest.ts`, only
  * `tests/browser/playwright.playtest.config.ts` does, and that is run by
