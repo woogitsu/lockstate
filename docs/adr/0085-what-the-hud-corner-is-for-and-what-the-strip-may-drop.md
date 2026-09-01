@@ -26,7 +26,31 @@
 
 ## Status
 
-**Proposed, 2026-09-01. Not self-approved.**
+**Proposed, 2026-09-01. Not self-approved.** This document as a whole is
+unaccepted — decision 2 (the strip) is untouched and nothing here flips that
+line, because doing so is the owner's call and no implementing agent's.
+
+**Addendum, 2026-09-01, decision 1 only.** `src/ui/hud/hud.css`'s own record,
+above `.hud-alerts__list > .ui-row` ("THE OWNER ANSWERED ON 2026-09-01, AND THE
+ANSWER IS THE THIRD: THE WIDTH COMES FROM THE RAIL"), already settled the
+*direction* of decision 1 independently of this document's Status line — the
+owner ruled, in the course of ADR 0084 decision 3's dismiss-control tradeoff,
+that the corner widens rather than the row losing its badge or wrapping the
+control onto its own line, and named this decision as the mechanism. That
+ruling is not this document's to approve or withhold; it is recorded here
+because decision 1's own text already argued the identical direction for
+independent reasons, and both arguments now point at one shipped change. What
+this document still owed — "the exact width... needs the 109-character
+sentence's line count at candidate label widths... it has not been taken" —
+**has now been taken** (`docs/research/2026-09-01-the-measurements-that-were-owed.md`
+§2, and `tests/browser/playtest-739-a-column-a-sentence-fits-in.playtest.ts`'s
+own threshold hunt), and decision 1's section below is updated with the
+resolved number and its arithmetic, on the standing mandate's instruction to
+decide a genuinely open technical question rather than leave it open a second
+time now that the measurement exists. **What is not claimed:** that this
+addendum accepts the document. Decision 2 is exactly as open as it was, and a
+reader who wants this ADR's whole Status flipped to Accepted still needs the
+owner for that, same as ADR 0084 did.
 
 It answers issues [#739](https://github.com/matmaxalez/lockstate/issues/739)
 (the alerts corner) and [#719](https://github.com/matmaxalez/lockstate/issues/719)
@@ -157,6 +181,52 @@ what the player actually sees there rather than against a text placeholder.
 need at minimum" and this pass did not answer it either; it is named so the
 owner can override it with an actual number rather than inherit an implicit
 one.
+
+**Resolved, 2026-09-01** (see the Status section's addendum for what this does
+and does not settle): the candidate widths this section asked for were swept
+2px at a time rather than at 160/200/260/320/400 (`playtest-739-a-column-a-sentence-fits-in.playtest.ts`, "where the line count actually flips"), against
+the worst severity badge (`warning`, 64.31px) rather than an unlabelled clone,
+because #720's own measured range for that badge is 36–61px depending on
+severity and nothing in `hud.css` or this ADR said so before now — see
+`hud.css`'s own record above `.hud-alerts__list > .ui-row`. **The corner
+widened to 422px** (`.hud-minimap`'s width moved from 224px to 396px), **not
+to the 430px guardrail above**: 396px is the smallest width at which the
+worst-case row still holds the 109-character sentence to 4 line boxes —
+394px wraps to 5, 396px is the first width that wraps to 4, and nothing
+between 396px and 430px buys a fifth line box back. Spending the guardrail's
+remaining 8px would cost world view for zero additional line boxes, so it
+was not spent. At 900×600 (assembled page, `.hud__rail` measured 288px): world
+view is **190px**, against **182px** had the corner been widened to the full
+430px guardrail and against 362px before this change — 9px more than half of
+362 (181px) either way, so the guardrail's own rule ("do not cut the budget by
+more than half") holds with more room to spare than maxing the guardrail would
+have left.
+
+**One thing this measurement found that the guardrail's own arithmetic did
+not model, and it changed the shape of what shipped.** `.hud-minimap__surface`
+is `aspect-ratio: 1 / 1` off the panel's width, and the minimap and the alerts
+list are two flex children sharing one bounded *height*, not two independent
+claims on a width — so letting the square grow with the panel (this section's
+own preference for A over B, "a bigger minimap footprint is forward
+investment... not waste") measured as **worse**, not neutral: with the panel
+at 396px and the square uncapped, a single ordinary alert — not the
+109-character worst case, the shortest content the list can ever hold — no
+longer fit its own list box at 1280×720 (76px row in a 70px box) or 900×600
+(76px row in a 46px box), because the square's height demand grew with the
+wider panel and took the height back from the list that this decision widened
+the corner to give room to. **The shipped change caps
+`.hud-minimap__surface`'s width at its pre-#739 224px** rather than letting it
+grow with the panel, so the full width gain goes to the row and none of it is
+spent on a placeholder square with no player-visible content yet to justify
+taking height from a list that has some. This is a narrower deviation from
+this section's stated preference for candidate A than it looks: the *corner*
+widens exactly as A recommends, and the minimap section's forward-investment
+argument is deferred rather than rejected — "let it grow" is worth revisiting
+once a real minimap draws there and the tradeoff can be judged against what a
+player actually sees, exactly the condition the guardrail paragraph above
+already names. **This is a deviation from A's literal text, made on a
+measurement A did not have, and recorded here rather than silently decided
+against the document's own words.**
 
 ## Decision 2: the strip must never drop a chip with nothing to say so, and `funds` must never be the first one gone
 

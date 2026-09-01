@@ -197,7 +197,26 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // far through the in-game day it is (docs/HUD_PROJECTIONS.md, gap 5).
   'hud.clock.day-progress': 'Through the day',
   'hud.clock.day': 'Day',
-  'hud.clock.speed': 'Speed {speed}x',
+  /*
+   * The sign is U+00D7 MULTIPLICATION SIGN, as it is everywhere else in this
+   * catalogue, under the owner's ruling of 2026-09-01: **one multiplication
+   * sign, and it is `×`.** This entry spelled it `Speed {speed}x` with an
+   * ASCII letter until then and was the last player-facing sentence in the
+   * game that did; the divergence is described, from the other side, in
+   * `hud.alert.occurrences` below, which is where it was first written down.
+   *
+   * **What this sentence is, and it is not the readout.** Nothing paints it on
+   * screen: `status-strip.ts` writes the *visible* speed itself as
+   * `×${formatNumber(speed)}` -- U+00D7 since #639 -- and passes this key to a
+   * `.ui-sr-only` span, so `Speed 1×` is what a screen reader says and only a
+   * screen reader. The ruling is a typography ruling and typography is not
+   * what a synthesiser reads, so the change here is about the catalogue being
+   * one convention rather than about anything a sighted player can see; what a
+   * reader announces for U+00D7 is the host's symbol dictionary, not ours, and
+   * this repository has measured no synthesiser. `tests/foundation/times-sign-contract.test.ts`
+   * is the gate that keeps the ASCII spelling from coming back.
+   */
+  'hud.clock.speed': 'Speed {speed}×',
   // Uppercase in the string rather than by `text-transform`, because the
   // readout it replaces is `×1` -- a value, not an eyebrow -- and the strip's
   // value styling carries no case transform. The word is the owner's, ruled on
@@ -236,14 +255,21 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * about ten characters a line, so the multiplier is digits and a sign and
    * nothing else.
    *
-   * **The sign is U+00D7, and `hud.clock.speed` beside it spells its multiplier
-   * with an ASCII `x`** (`'Speed {speed}x'`). That is a real divergence rather
-   * than a typo here: the owner supplied this sentence with the typographic
-   * sign, and the speed readout's `x` predates it and was never ruled on. Two
-   * spellings of one convention is the kind of thing that reads as a defect on
-   * screen, so it is recorded rather than quietly harmonised in either
-   * direction -- changing the speed readout is a player-visible wording change
-   * and is the owner's.
+   * **The sign is U+00D7, and it is now the only times sign in the game.**
+   * **This paragraph recorded the opposite for one merge and is marked rather
+   * than overwritten** (`docs/AGENT_WORKFLOW.md` section 4). It read: *"The
+   * sign is U+00D7, and `hud.clock.speed` beside it spells its multiplier with
+   * an ASCII `x` (`'Speed {speed}x'`). That is a real divergence rather than a
+   * typo here: the owner supplied this sentence with the typographic sign, and
+   * the speed readout's `x` predates it and was never ruled on. Two spellings
+   * of one convention is the kind of thing that reads as a defect on screen,
+   * so it is recorded rather than quietly harmonised in either direction --
+   * changing the speed readout is a player-visible wording change and is the
+   * owner's."* Every clause of that was true when it was written; the last one
+   * is what resolved it. The owner ruled on 2026-09-01 that the typographic
+   * sign is the one, so `hud.clock.speed` moved and this entry did not.
+   * `tests/foundation/times-sign-contract.test.ts` is the gate that keeps the
+   * ASCII spelling from returning to either of them.
    *
    * **`Day {day}` and not `Day {day}, {progress}%`.** The owner was shown the
    * two-figure form and rejected it: a percentage of a day is a strange unit to
@@ -257,7 +283,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * **What tells two events on the same day apart is the count beside them**,
    * which is the owner's own answer to that gap rather than a property this
    * sentence claims. Two arrivals of one sentence on day 3 are one row reading
-   * `2x Day 3`; two *different* sentences on day 3 are two rows, each naming
+   * `2× Day 3`; two *different* sentences on day 3 are two rows, each naming
    * itself.
    */
   'hud.alert.occurrences': '{count}×',

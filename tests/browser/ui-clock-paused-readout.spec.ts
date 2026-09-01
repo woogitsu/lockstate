@@ -135,7 +135,7 @@ async function readClock(page: Page): Promise<ClockReading> {
 
     // `innerText` reflects layout, so a span that is `.ui-sr-only` is dropped
     // by cloning the strip and removing them: the survey #636 had to correct
-    // itself over is that "Pause" and "Speed 1x" are in `innerText` and on
+    // itself over is that "Pause" and "Speed 1×" are in `innerText` and on
     // nobody's screen.
     const clone = strip.cloneNode(true) as HTMLElement;
     for (const hidden of clone.querySelectorAll('.ui-sr-only')) hidden.remove();
