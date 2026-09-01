@@ -277,24 +277,49 @@ test('act 2: the shop is shut but the build queue still spends — the construct
   if (armLabel.startsWith('place') || armLabel.startsWith('draw')) await page.locator('.hud-build__arm').click();
   log(act, `the wall tool is armed; the control reads ${JSON.stringify((await page.locator('.hud-build__arm').innerText()).trim())}`);
 
-  const startTile = { x: 3, y: 12 };
-  for (let i = 0; i < 13; i += 1) {
-    const at = centreOf(origin, startTile.x + i, startTile.y);
-    if (at.x > 1200 || at.y > 780 || at.x < 0 || at.y < 0) {
-      log(act, `segment ${i + 1} would be drawn off screen at (${at.x}, ${at.y}); stopping the sweep here`);
-      break;
+  /*
+   * **Segments are pressed on tile *edges*, not tile centres**, because
+   * `wall-brick` places no object: it writes an edge (`session-commands.ts`).
+   * The west edge of tile (column,row) is at `originX + column*TILE`, vertically
+   * centred. Columns 12..19 of rows 12..14 are the same neighbourhood
+   * `buildAndPopulate` builds its 6x6 cell in, and every point below was
+   * checked to lie inside the 1280x800 viewport before it was pressed.
+   *
+   * Each press is followed by a read of the balance and of the FUNDS chip, so
+   * the segment at which construction stops is a measurement rather than a
+   * subtraction.
+   */
+  const edges: { column: number; row: number }[] = [];
+  for (const row of [12, 13, 14]) for (let column = 12; column <= 19; column += 1) edges.push({ column, row });
+
+  let drawn = 0;
+  for (const edge of edges) {
+    if (drawn >= 14) break;
+    const x = origin.originX + edge.column * TILE;
+    const y = origin.originY + edge.row * TILE + TILE / 2;
+    if (x < 8 || x > 1272 || y < 8 || y > 792) {
+      log(act, `edge (${edge.column},${edge.row}) is off screen at (${x}, ${y}); skipped`);
+      continue;
     }
-    await page.mouse.move(at.x, at.y);
+    const before = (await sentCommands(page)).length;
+    await page.mouse.move(x, y);
     await page.mouse.down({ button: 'left' });
     await page.mouse.up({ button: 'left' });
-    await page.waitForTimeout(1400);
+    await page.waitForTimeout(1500);
+    const produced = (await sentCommands(page)).slice(before).map((c) => String(c['type']));
+    if (produced.length === 0) {
+      log(act, `edge (${edge.column},${edge.row}) at (${x}, ${y}) produced NO command; skipped`);
+      continue;
+    }
+    drawn += 1;
     const counts = await latestCounts(page);
     const chip = await readFundsChip(page);
     log(
       act,
-      `wall segment ${i + 1} at tile (${startTile.x + i},${startTile.y}): treasury=${String(counts?.treasuryMinorUnits)}` +
-        ` | badge ${JSON.stringify(chip.badgeText)} tone=${String(chip.badgeTone)}` +
-        ` | queue ${JSON.stringify((await panelText(page, '.hud-build__queue')).replace(/\n/g, ' | '))}`,
+      `wall ${drawn} on the west edge of (${edge.column},${edge.row}): sent=${JSON.stringify(produced)}` +
+        ` treasury=${String(counts?.treasuryMinorUnits)} | badge ${JSON.stringify(chip.badgeText)} tone=${String(chip.badgeTone)}` +
+        ` | queue ${JSON.stringify((await panelText(page, '.hud-build__queue')).replace(/\n/g, ' | '))}` +
+        ` | shortfall ${JSON.stringify(await panelText(page, '.hud-build__queue-shortfall'))}`,
     );
   }
 
@@ -415,4 +440,84 @@ test('act 4: the Buy control at every balance — does anything on it say what a
   log(act, `pressing it: sent=${JSON.stringify(bigPress.sent)} band=${JSON.stringify(bigPress.band)}`);
 
   log(act, `the tile a wall costs, for the record: ${TILE} px per tile`);
+});
+
+/* ------------------------------------------------------------------ */
+
+test('act 5: payroll walks a prison past every rung the player was refused at, and the danger tone that no press can reach', async ({
+  page,
+}) => {
+  const act = 'act5';
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await installTee(page);
+  await openApp(page);
+
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+  /*
+   * Acts 1 and 2 between them establish the deepest balance a *press* can
+   * reach: the Buy control stops at the deliveries rung of −1,250 and the wall
+   * tool stops at the construction rung of −2,000, so the FUNDS chip's `danger`
+   * tone -- which `overdraftTone` reserves for `remaining <= 0`, i.e. exactly
+   * the floor of −2,500 (`src/ui/hud/projection.ts:446-450`) -- is not
+   * reachable by anything the player chooses to spend on.
+   *
+   * `'wages'` is the one spend class whose rung *is* the floor
+   * (`INSOLVENCY_RUNG_FLOORS_MINOR_UNITS`, `treasury.ts:377-382`), so payroll
+   * is the only route to it. This act takes that route with the mouse: twelve
+   * guards hired while solvent, the balance spent down to just above the
+   * deliveries rung, and then the clock run across day boundaries with no
+   * prisoners in the prison, so nothing pays anything in.
+   */
+  await tab(page, 'security').click();
+  const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
+  if ((await guardRow.count()) > 0) await guardRow.first().click();
+  log(act, `the hire control reads ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);
+  for (let i = 0; i < 12; i += 1) {
+    await page.locator('.hud-staff__hire').click();
+    await page.waitForTimeout(500);
+  }
+  log(act, `after twelve hire presses: treasury=${String((await latestCounts(page))?.treasuryMinorUnits)} staff=${String((await latestCounts(page))?.staff)}`);
+
+  await buyQuantity(page, 'bed-wooden', 388);
+  await page.waitForTimeout(1500);
+  const beforeDays = await latestCounts(page);
+  log(act, `after 388 planks: treasury=${String(beforeDays?.treasuryMinorUnits)} | FUNDS ${JSON.stringify(await readFundsChip(page))}`);
+
+  const refused = await probeBuy(page, 'wall-brick', 1);
+  log(act, `Buy one brick (40) before the first day boundary: sent=${JSON.stringify(refused.sent)} band=${JSON.stringify(refused.band)}`);
+
+  // Two Fast forward presses take the clock from paused to x4.
+  await page.locator('.hud-strip__transport button').nth(2).click();
+  await page.waitForTimeout(200);
+  await page.locator('.hud-strip__transport button').nth(2).click();
+  await page.waitForTimeout(200);
+  log(act, `the clock reads ${JSON.stringify((await panelText(page, '.hud-strip__transport')).replace(/\n/g, ' | '))}`);
+
+  let previous = (await latestCounts(page))?.treasuryMinorUnits;
+  let sawDanger = false;
+  const started = Date.now();
+  while (Date.now() - started < 240_000) {
+    await page.waitForTimeout(1000);
+    const counts = await latestCounts(page);
+    const balance = counts?.treasuryMinorUnits;
+    if (balance === previous) continue;
+    const chip = await readFundsChip(page);
+    log(
+      act,
+      `t+${Math.round((Date.now() - started) / 1000)}s tick=${String(counts?.tick)} day=${await page.locator('.hud-clock__day').innerText()}` +
+        `: treasury ${String(previous)} -> ${String(balance)} | chip tone=${String(chip.chipTone)}` +
+        ` badge ${JSON.stringify(chip.badgeText)} tone=${String(chip.badgeTone)}`,
+    );
+    previous = balance;
+    if (chip.badgeTone === 'danger') {
+      sawDanger = true;
+      break;
+    }
+  }
+  log(act, `the FUNDS badge reached the danger tone: ${String(sawDanger)}`);
+  log(act, `the alerts log holds ${JSON.stringify(await alertLines(page))}`);
+  log(act, `the whole strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+  log(act, `the Security panel says ${JSON.stringify((await panelText(page, '.hud-staff')).replace(/\n/g, ' | '))}`);
 });
