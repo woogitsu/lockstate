@@ -206,6 +206,24 @@ that had already allocated would destroy its materials permanently, and
 `undo()` goes through `cancelOrder`. A provider that cannot say what it does
 on cancellation is not a usable provider.
 
+**Since the owner's ruling 20 of 2026-08-31 that is no longer what every
+cancellation does, and the paragraph above is kept because the seam still
+exists for its reason.** [ADR 0076](./adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+amendment of that date -- *"Anulowanie zwraca pieniądze zamiast cegieł"* and
+*"Pieniądze dopóki ekipa nie zaczęła"* -- has `cancelOrder` give back **money**
+for an order in `'assigned'`, and **nothing at all** for one in
+`'in-progress'`, whose materials are consumed by the works. Three callers of
+`release` are left, and the unbuildable-prison failure above is what it
+prevents in every one of them:
+
+- a `'completed'` order being un-built, which ADR 0076 decision B governs and
+  ruling 20 does not reach;
+- a requirement the procurement catalogue cannot price, which no refund can pay
+  for honestly;
+- any `ConstructionSystem` with no procurement sink behind it -- a bare system
+  rather than a session, with no treasury to pay from, which therefore does what
+  it always did.
+
 `ConstructionSystem`'s constructor now takes an optional provider
 (defaulting to `UNLIMITED_MATERIALS_PROVIDER`, so #16's original behavior
 is unchanged for any caller that doesn't pass one). `inventory.ts`'s

@@ -58,6 +58,26 @@ executed as stated**, and says what is missing rather than choosing it.
 > reading A leaves open and for which §2 proposes a rule (one tenth of the
 > opening grant) that is **unmeasured below −1,500** and must be swept before
 > it ships.
+>
+> **The first of those two is now drafted, and this sentence is kept because it
+> is what this document created rather than a claim about where things stand.**
+> The owner's **ruling 19 of 2026-08-31** — *"Dać szczeblom własne progi
+> wewnątrz debetu"*, give the rungs their own thresholds inside the overdraft,
+> at −1,250 / −2,000 / −2,500 — answers the question §2 put, and it is drafted
+> as [ADR 0017](./0017-money-primary-resource-model.md)'s
+> **"Amendment, 2026-09-01"**. **The owner signed it on 2026-09-01**, so the
+> amendment is drafted *and* accepted. This clause read *"It is Proposed and not
+> self-approved, so the amendment is drafted and still owed a signature"* for as
+> long as that was true, and the sentence above it — the one this document
+> created — has not changed either way.
+>
+> Ruling 19 also takes **neither** of the two remedies §2 named. It does not
+> amend the *order* and does not narrow decision 8 to a prison that has spent
+> its overdraft; it keeps both, and makes the order expressible by giving the
+> three rungs three thresholds. See ADR 0017's amendment §2. One thing this
+> document decided is reversed by it, and is marked at that site: "What was
+> considered and not taken" rejected *"making the payroll draw on the floor"*,
+> which ruling 19 requires.
 
 ## Context
 
@@ -414,6 +434,18 @@ told so. **That was a recommendation and not a decision**, because the mechanism
 is not in decision 2's text and inventing it in implementation code is what
 `CLAUDE.md` forbids.
 
+**RULED AGAIN, on the amendment this section says is owed: ruling 19 of
+2026-08-31.** *"Dać szczeblom własne progi wewnątrz debetu"* — the rungs get
+their own thresholds inside the overdraft, at −1,250 (deliveries), −2,000
+(construction) and −2,500 (wages, the floor). **It is neither of the two
+remedies the paragraph below offers**, which are kept because a ruling is only
+legible against what it chose over: the ladder's order is *not* amended and
+decision 8 is *not* narrowed. Both stand, and three thresholds are what make the
+order expressible where one comparison could not. Drafted as
+[ADR 0017](./0017-money-primary-resource-model.md)'s "Amendment, 2026-09-01",
+**accepted by the owner on 2026-09-01**. This line read *"Proposed and awaiting
+the owner's signature"* until then.
+
 **And the paragraph below said in advance what the ruling settles**, which is
 why it is quoted rather than deleted: *"if the owner's `tylko minus i pożyczki`
 means the minus is a facility the player has from the start rather than one
@@ -522,6 +554,16 @@ waiting on the loan being enabled, not a wiring task.
   above shows it survives an open floor unchanged. Changing it would delete the
   rung for the reason ADR 0049 predicted, and ADR 0049's argument is wrong only
   about what the code *does*, not about what that change would cost.
+
+  **Overruled by the owner's ruling 19 of 2026-08-31, and the entry is kept
+  because it was right under the premise it was written under.** Ruling 19 puts
+  decision 8's third rung *at* the floor — wages unpaid below −2,500, which is
+  wages paid down to it — so `PayrollSystem` now bounds the day by
+  `Math.min(due, balance - floorFor('wages'))` and does draw on the overdraft.
+  The rejection assumed the floor was a single number shared with every other
+  spend, where a drawing payroll would have had no threshold left of its own;
+  with three thresholds the draw is what puts the rung where the owner put it.
+  See ADR 0017's "Amendment, 2026-09-01" §3e.
 - **Widening `countSchema` itself** rather than the one field that needs it. Not
   taken: fourteen other members are counts whose floor of zero is a real
   invariant, and a shared schema loosened for one of them stops checking the

@@ -3595,6 +3595,76 @@ test.describe('the Rooms panel', () => {
   });
 
   /**
+   * Issue #735: the other half of #689's family, on the control beside it.
+   *
+   * "Draw on map" used to run `removing = false; armed = !armed;`. Coming
+   * *out* of removal `armed` is already `true` -- removal arms the tool -- so
+   * that expression computed `false`: a player who pressed "Draw on map" to
+   * say which of the two they wanted got the tool standing down instead. This
+   * is the walk that manifests it: arm to remove, reopen the panel to reach
+   * the control, then press "Draw on map".
+   *
+   * The fold assertion is part of the same fix, not a separate concern
+   * (`pressArm`'s doc in `tool-arming.ts`): the panel was folded over "Stop
+   * removing" during the removal pass, the player reopened it to reach that
+   * control, and the press has to fold it again over the world for the fresh
+   * drawing pass it just started -- even though `armed` does not change value
+   * across the press.
+   */
+  test('pressing "Draw on map" while removing arms the tool to draw, not stand it down (#735)', async ({
+    page,
+  }) => {
+    const probe = async () => page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    const armIntents = async (): Promise<readonly string[]> => {
+      const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+      return intents.filter((intent) => intent.includes('"arm-room-tool"'));
+    };
+    const roomIntent = (armed: boolean, removing: boolean): string =>
+      JSON.stringify({ kind: 'arm-room-tool', armed, roomId: 'room.cell', removing });
+
+    // ---- arm to remove, then reopen the panel to reach the control ----
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('remove'));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('fold'));
+    const removing = await probe();
+    expect(removing.removePressed, 'one press did not turn removal on').toBe('true');
+    expect(removing.armLaidOut, '"Draw on map" has no box for the player to press').toBe(true);
+
+    // ---- pressing "Draw on map" while removing ----
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
+    expect(await armIntents(), 'the switch from removing to drawing never reached the world tool').toEqual([
+      roomIntent(true, true),
+      roomIntent(true, false),
+    ]);
+    const drawing = await probe();
+    // The defect: negating an `armed` that was already `true` from removal
+    // computed `false` here, standing the tool down instead of arming it.
+    expect(drawing.armPressed, 'the press that asked to draw got no tool').toBe('true');
+    expect(drawing.removePressed, 'removal outlived the press that said "Draw on map"').toBe('false');
+    expect(drawing.armText).toBe('Stop drawing');
+    // A fresh press of "Draw on map" is a fresh statement of intent, so the
+    // panel folds again even though it was reopened a moment ago to reach the
+    // control, and `armed` did not change value across the press.
+    expect(drawing.folded, 'the panel stayed open over a fresh drawing pass').toBe('true');
+    // And no room was designated or removed on the way through.
+    expect(await roomCommands(page), 'a mode switch asked the simulation for something').toEqual([]);
+
+    // **The flags saying "armed" is not the same as the tool drawing**, and
+    // this is the half that tells them apart: a drag on the world after the
+    // press has to produce a pending designation rectangle. Ported from a
+    // red-first branch opened against this same issue, which measured exactly
+    // this and nothing else -- kept because it is the assertion that would
+    // survive a future refactor moving the flags somewhere the gesture does
+    // not follow.
+    expect(
+      await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 4, y: 6, width: 2, height: 3 })),
+      'the HUD registered no room-gesture sink',
+    ).toBe(true);
+    const pending = await probe();
+    expect(pending.area, 'the drawing pass produced no pending designation rectangle').toBe('4,6,2,3');
+    expect(pending.confirmText).toContain('Designate 2 × 3');
+  });
+
+  /**
    * The tint, on the panel whose `data-armed` #684 connected and whose
    * `data-removing` nothing read until #689.
    *

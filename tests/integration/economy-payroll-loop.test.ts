@@ -50,6 +50,8 @@ const ADMISSION = { sentenceLengthTicks: 400_000, priorIncidents: 0 } as const;
 
 /** The catalogue's guard wage: one day's worth, and also what one hire costs up front (ADR 0025 decision 2). */
 const WAGE = staffHireCostMinorUnits(GUARD)!;
+/** The catalogue's brick, written out: a wall order is two of them. */
+const BRICK_PRICE = 40;
 
 function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<typeof packCommand>): void {
   runtime.kernel.submitCommand(id, runtime.kernel.expectedSequence, runtime.kernel.tick, payload);
@@ -240,25 +242,34 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
   it('says so when payday cannot be met, and names what is owed', () => {
     const runtime = overcommitted();
 
-    // Days 1-4 are met in full, so the prison has nothing to say about wages.
-    // Asserted before the failure, so a producer that announced every payday
-    // -- or every tick -- could not pass this.
-    stepTo(runtime, DAY_LENGTH_TICKS * 4);
-    expect(runtime.payroll.unpaidWagesMinorUnits, 'four paydays must have been met for this test to mean anything').toBe(0);
+    /*
+     * Days 1-9 are met in full, so the prison has nothing to say about wages.
+     * Asserted before the failure, so a producer that announced every payday
+     * -- or every tick -- could not pass this.
+     *
+     * **This read *"days 1-4"* and *"day 5 is the first it cannot meet"* until
+     * the owner's ruling 19 of 2026-08-31.** Ruling 19 -- drafted as ADR 0017's
+     * "Amendment, 2026-09-01" -- puts ADR 0017 decision 8's third rung at the
+     * overdraft floor rather than at a balance of zero, so a payday is met out
+     * of the overdraft until -2,500. The prison now takes five more in-game days
+     * to miss one; nothing else about what it says, or how often, has moved.
+     */
+    stepTo(runtime, DAY_LENGTH_TICKS * 9);
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'nine paydays must have been met for this test to mean anything').toBe(0);
     expect(
       runtime.events.since(0),
       'a prison that has paid its staff every day has nothing to say about payday',
     ).toEqual([]);
 
-    // Day 5 is the first it cannot meet.
-    stepTo(runtime, DAY_LENGTH_TICKS * 5);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(360);
+    // Day 10 is the first it cannot meet: 140 of room against a 520 bill.
+    stepTo(runtime, DAY_LENGTH_TICKS * 10);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(380);
 
     const afterFirstMiss = runtime.events.since(0);
     expect(afterFirstMiss.length, 'one missed payday is one thing to say').toBe(1);
     // The figure the player is told is the arrears the save also carries, not
     // the day's shortfall by some other arithmetic.
-    expect(afterFirstMiss[0]).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 360 });
+    expect(afterFirstMiss[0]).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 380 });
 
     const message = workerToMainMessageSchema.parse({
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -283,7 +294,7 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
     const sentence = localizer.format(notice.labelKey, notice.labelParameters);
     expect(sentence, 'the player must not be shown a raw message key').not.toContain('hud.alert.event');
-    expect(sentence, 'and the sentence must name what is owed').toContain('360');
+    expect(sentence, 'and the sentence must name what is owed').toContain('380');
 
     /*
      * **Once a day while it stays broke, not twice a second.** This is the
@@ -292,17 +303,42 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * ceiling is a property of where the producer sits and not of a filter
      * downstream.
      */
-    stepTo(runtime, DAY_LENGTH_TICKS * 8);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_840);
+    stepTo(runtime, DAY_LENGTH_TICKS * 13);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_940);
     const afterFourMisses = runtime.events.since(0);
     expect(
       afterFourMisses.length,
       'a prison that stays broke says so once per payday -- four missed paydays, four sentences',
     ).toBe(4);
-    expect(afterFourMisses.at(-1)).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 1_840 });
+    expect(afterFourMisses.at(-1)).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 1_940 });
   });
 
-  it('empties the treasury, floors it at zero and starts owing wages instead of overdrawing', () => {
+  it('spends the overdraft on wages, stops at the wage rung and starts owing there', () => {
+    /*
+     * **This case was titled *"empties the treasury, floors it at zero and
+     * starts owing wages instead of overdrawing"*, and the owner's ruling 19 of
+     * 2026-08-31 made that title its opposite.** What stood here:
+     *
+     * > Day 5 is the first the prison cannot meet ... 80 in hand plus 520
+     * > against a 960 bill: it pays 600, the balance stops at 0 rather than
+     * > going to -360, and 360 is owed.
+     *
+     * > ```
+     * > stepTo(runtime, DAY_LENGTH_TICKS * 5);
+     * > expect(runtime.treasury.balanceMinorUnits).toBe(0);
+     * > expect(runtime.payroll.unpaidWagesMinorUnits).toBe(360);
+     * > stepTo(runtime, DAY_LENGTH_TICKS * 8);
+     * > expect(runtime.treasury.balanceMinorUnits).toBe(0);
+     * > expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_840);
+     * > ```
+     *
+     * Ruling 19 -- drafted as ADR 0017's "Amendment, 2026-09-01" -- puts ADR
+     * 0017 decision 8's third rung at the overdraft floor: *wages unpaid below
+     * -2,500*, which means **paid down to it**. The prison therefore overdraws
+     * for five more days and floors at the rung instead of at zero. Everything
+     * else here is arithmetic that has not changed: the same bill, the same
+     * income, the same conditional grant.
+     */
     const runtime = overcommitted();
     // 25,000 less 8 planks at 65 (520), 12 hires at 80 (960) and 550 bricks at
     // 40 (22,000): 1,520 in hand against 960 a day.
@@ -318,41 +354,55 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0);
 
     /*
-     * Day 5 is the first the prison cannot meet -- and it is also the first day
-     * the state pays it less, which is not a coincidence but the two mechanics
-     * meeting.
+     * Day 5 is the first day the state pays the prison less, and the first the
+     * balance goes under water. `beddedPrison` has no shower room, so `hygiene`
+     * crosses `STATE_INCOME_UNMET_NEED_LEVEL` on day 5 and the day's income
+     * falls from 600 to 520 (two places at 260). 80 in hand plus 520 against a
+     * 960 bill: the whole bill is met out of the overdraft and the balance goes
+     * to -360, owing nothing.
      *
-     * `beddedPrison` has no shower room, so `hygiene` crosses
-     * `STATE_INCOME_UNMET_NEED_LEVEL` on day 5 and the day's income falls from
-     * 600 to 520 (two places at 260). 80 in hand plus 520 against a 960 bill:
-     * it pays 600, the balance stops at 0 rather than going to -360, and 360
-     * is owed.
-     *
-     * **This read 280 before the grant became conditional**
+     * **The 520 read 280 before the grant became conditional**
      * ([ADR 0064](../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)).
-     * The extra 80 is the neglect, and the direction is the one worth stating: a
-     * prison that is failing its prisoners reaches insolvency sooner and digs
-     * out of it more slowly.
+     * The direction is still the one worth stating: a prison that is failing its
+     * prisoners reaches insolvency sooner and digs out of it more slowly.
      */
     stepTo(runtime, DAY_LENGTH_TICKS * 5);
-    expect(runtime.treasury.balanceMinorUnits).toBe(0);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(360);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-360);
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'the overdraft is what pays it, so nothing is owed').toBe(0);
 
-    // And the debt compounds while nothing changes: 440 more on day 6, then
-    // 520 a day once `recreation` crosses the line on day 7 as well -- the 960
-    // bill less an income that is itself falling.
-    stepTo(runtime, DAY_LENGTH_TICKS * 8);
-    expect(runtime.treasury.balanceMinorUnits).toBe(0);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_840);
+    /*
+     * And down it goes: 440 more on day 6, then 520 a day once `recreation`
+     * crosses the line on day 7 as well -- the 960 bill less an income that is
+     * itself falling. -800, -1,320, -1,840, -2,360.
+     */
+    stepTo(runtime, DAY_LENGTH_TICKS * 9);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-2_360);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0);
+
+    /*
+     * Day 10 is the first payday the prison cannot meet, and the rung is what
+     * says so: 140 of room against a 520 bill. It pays the 140, lands exactly on
+     * -2,500 and owes 380. From there the balance does not move again -- the
+     * rung holds -- and the debt compounds at 520 a day.
+     */
+    stepTo(runtime, DAY_LENGTH_TICKS * 10);
+    expect(runtime.treasury.balanceMinorUnits, 'exactly the wage rung, which is the floor').toBe(-2_500);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(380);
+
+    stepTo(runtime, DAY_LENGTH_TICKS * 13);
+    expect(runtime.treasury.balanceMinorUnits, 'and no payday may pass it').toBe(-2_500);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_940);
   });
 
   /**
    * **This case was titled *"refuses a delivery first, which is the ladder's top
-   * rung and needed no new code"*, and #703 ruling A inverted the ladder it
-   * measured. The inversion is a finding, not a fixture repair, and it is the
-   * reason this docblock is long.**
+   * rung and needed no new code"*, then *"refuses a delivery only once the
+   * overdraft is gone, which runs ADR 0017 decision 8's ladder backwards"*. The
+   * owner's ruling 19 of 2026-08-31 turns it back the right way round, and all
+   * three readings are kept because the case is the record of the ladder being
+   * broken and repaired.**
    *
-   * What stood here, and every line of it was measured:
+   * What stood here first, and every line of it was measured:
    *
    * > ```
    * > stepTo(runtime, DAY_LENGTH_TICKS * 5);
@@ -370,70 +420,134 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
    * rungs firing at a balance of zero, which is where they had to fire while
    * `Treasury`'s floor was zero.
    *
-   * **`Treasury.canAfford` is one comparison over every spend**
-   * (`balance - amount >= floor`), so a standing overdraft moves *all* of the
-   * discretionary refusals to the floor at once. A prison that cannot pay its
-   * staff now buys bricks and hires guards for another 2,500 -- the third rung
-   * fires first, because `PayrollSystem` is bounded by the balance and the other
-   * two are bounded by the floor. The ladder runs backwards.
+   * What stood here second, under #703 ruling A:
    *
-   * ADR 0083 §2 records that an amendment to decision 8 is owed and that it is
-   * the owner's to sign: either the order is amended to say this, or decision 8
-   * is narrowed to a prison that has spent its overdraft. **This case does not
-   * choose between those**; it pins what the code now does, at both ends of the
-   * facility, so the amendment is written against a measurement.
+   * > **`Treasury.canAfford` is one comparison over every spend**
+   * > (`balance - amount >= floor`), so a standing overdraft moves *all* of the
+   * > discretionary refusals to the floor at once. A prison that cannot pay its
+   * > staff now buys bricks and hires guards for another 2,500 -- the third rung
+   * > fires first, because `PayrollSystem` is bounded by the balance and the
+   * > other two are bounded by the floor. The ladder runs backwards.
+   *
+   * > ```
+   * > expect(runtime.refusals.count, 'a delivery is bought out of the overdraft, with wages owed').toBe(before);
+   * > expect(runtime.treasury.balanceMinorUnits).toBe(-40);
+   * > submit(... 59 bricks); expect(runtime.treasury.balanceMinorUnits).toBe(-2_480);
+   * > ```
+   *
+   * ADR 0083 §2 recorded that an amendment to decision 8 was owed and that it
+   * was the owner's to sign. **Ruling 19 is that amendment's source** --
+   * *"Dać szczeblom własne progi wewnątrz debetu"*, give the rungs their own
+   * thresholds inside the overdraft, at -1,250, -2,000 and -2,500. It is drafted
+   * at `docs/adr/0017-money-primary-resource-model.md` ("Amendment,
+   * 2026-09-01") and is **Proposed and not self-approved**.
+   *
+   * So this case now measures the ladder running **forwards**, and it does it
+   * the way decision 8 describes: not by positioning a balance three times, but
+   * by letting one prison sink and watching which rung it meets first. The reads
+   * below are `canAfford` and the arrears, so watching costs nothing and the
+   * walk is the fixture's own.
    */
-  it('refuses a delivery only once the overdraft is gone, which runs ADR 0017 decision 8`s ladder backwards', () => {
+  it('meets the three rungs in ADR 0017 decision 8`s own order as one prison sinks', () => {
     const runtime = overcommitted();
-    stepTo(runtime, DAY_LENGTH_TICKS * 5);
-    expect(runtime.treasury.balanceMinorUnits).toBe(0);
-    expect(runtime.payroll.unpaidWagesMinorUnits, 'the third rung has already fired').toBe(360);
 
-    /*
-     * The inversion itself: wages are unpaid and both discretionary spends go
-     * through anyway.
-     */
+    /** The three rungs, as questions asked of the treasury rather than of a balance. */
+    const rungs = (): { deliveries: boolean; construction: boolean; wages: number } => ({
+      // One brick, which is the smallest thing a player can press Buy for.
+      deliveries: runtime.treasury.canAfford(BRICK_PRICE, 'deliveries'),
+      // One wall order's materials, which is the smallest thing the queue buys.
+      construction: runtime.treasury.canAfford(2 * BRICK_PRICE, 'construction'),
+      wages: runtime.payroll.unpaidWagesMinorUnits,
+    });
+
+    const firstDayThat = (predicate: (state: ReturnType<typeof rungs>) => boolean): number => {
+      for (let day = 1; day <= 13; day += 1) {
+        stepTo(runtime, DAY_LENGTH_TICKS * day);
+        if (predicate(rungs())) return day;
+      }
+      return -1;
+    };
+
+    // Day 7 (-1,320): the first rung. A player pressing Buy is refused, and the
+    // sentence they are shown is `AGENTS.md`'s fourth exclusion -- see the four
+    // keys named at `src/content/default-locale-en.ts`.
+    const deliveriesStopped = firstDayThat((state) => !state.deliveries);
+    expect(deliveriesStopped, 'deliveries are refused first').toBe(7);
+    expect(rungs().construction, 'and the queue is still buying at that point').toBe(true);
+    expect(rungs().wages, 'and the staff are still being paid').toBe(0);
+
+    // Day 9 (-2,360): the second rung. A queued build order stops being funded.
+    const constructionStopped = firstDayThat((state) => !state.construction);
+    expect(constructionStopped, 'construction halts second').toBe(9);
+    expect(rungs().wages, 'and the staff are still being paid').toBe(0);
+
+    // Day 10 (-2,500): the third. The payday takes the 140 of room the rung
+    // leaves and owes the other 380.
+    const wagesUnpaid = firstDayThat((state) => state.wages > 0);
+    expect(wagesUnpaid, 'wages go unpaid last').toBe(10);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-2_500);
+
+    // The ordering itself, stated as the assertion it is rather than left to be
+    // read off three numbers.
+    expect([deliveriesStopped, constructionStopped, wagesUnpaid]).toEqual([7, 9, 10]);
+    expect(deliveriesStopped).toBeLessThan(constructionStopped);
+    expect(constructionStopped).toBeLessThan(wagesUnpaid);
+
+    // And the presses themselves, so this is a refusal a player meets and not
+    // only a predicate: both are past their rung by day 10.
     const before = runtime.refusals.count;
     submit(runtime, 'buy-more', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-more', itemId: 'item.brick', quantity: 1 }));
-    expect(runtime.refusals.count, 'a delivery is bought out of the overdraft, with wages owed').toBe(before);
-    expect(runtime.treasury.balanceMinorUnits).toBe(-40);
-
-    submit(runtime, 'hire-more', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
-    expect(runtime.refusals.count, 'and so is another guard the prison cannot pay').toBe(before);
-    expect(runtime.treasury.balanceMinorUnits).toBe(-120);
-
-    /*
-     * And the rungs do fire, at the floor rather than at zero. 2,500 less the
-     * 120 already spent is 2,380 of room: 59 bricks at 40 is 2,360, leaving 20 --
-     * below a brick and below a guard-day.
-     */
-    submit(runtime, 'buy-the-room', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-the-room', itemId: 'item.brick', quantity: 59 }));
-    expect(runtime.treasury.balanceMinorUnits).toBe(-2_480);
-
-    submit(runtime, 'buy-past-it', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-past-it', itemId: 'item.brick', quantity: 1 }));
     expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
-    submit(runtime, 'hire-past-it', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
+    submit(runtime, 'hire-more', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
     expect(runtime.refusals.last?.reason).toBe('hire.insufficient-funds');
-    expect(runtime.treasury.balanceMinorUnits, 'and neither refusal took a minor unit').toBe(-2_480);
+    expect(runtime.refusals.count).toBe(before + 2);
+    expect(runtime.treasury.balanceMinorUnits, 'and neither refusal took a minor unit').toBe(-2_500);
   });
 
   it('says so on the status channel rather than accruing an invisible debt', () => {
+    // Day 5 and `0 / 360` until the owner's ruling 19 of 2026-08-31 moved the
+    // third rung to the floor; the channel carries the same three figures.
     const runtime = overcommitted();
-    stepTo(runtime, DAY_LENGTH_TICKS * 5);
+    stepTo(runtime, DAY_LENGTH_TICKS * 10);
     const counts = projectStatusCounts(runtime, runtime.kernel.tick);
-    expect(counts.treasuryMinorUnits).toBe(0);
-    expect(counts.unpaidWagesMinorUnits).toBe(360);
+    expect(counts.treasuryMinorUnits).toBe(-2_500);
+    expect(counts.unpaidWagesMinorUnits).toBe(380);
     expect(counts.dailyWageBillMinorUnits).toBe(960);
   });
 
   it('digs out when the player fills the beds they already built', () => {
-    // The recovery lever, and it is a command rather than a mechanic invented
-    // for this: six more prisoners into six empty beds takes the income from
-    // 440 a day to 2,240 against a 960 payroll. ADR 0017 decision 8 says the
-    // interesting part of insolvency is digging out; this is it happening.
+    /*
+     * The recovery lever, and it is a command rather than a mechanic invented
+     * for this: six more prisoners into six empty beds takes the income from
+     * 440 a day to 2,240 against a 960 payroll. ADR 0017 decision 8 says the
+     * interesting part of insolvency is digging out; this is it happening.
+     *
+     * **Every figure moved with the owner's ruling 19 of 2026-08-31 and the
+     * lever did not.** What stood here:
+     *
+     * > ```
+     * > stepTo(runtime, DAY_LENGTH_TICKS * 8);
+     * > expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_840);
+     * > admit(runtime, 6, 2);
+     * > stepTo(runtime, DAY_LENGTH_TICKS * 9);
+     * > expect(runtime.payroll.unpaidWagesMinorUnits).toBe(560);
+     * > expect(runtime.treasury.balanceMinorUnits).toBe(0);
+     * > stepTo(runtime, DAY_LENGTH_TICKS * 10);
+     * > expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0);
+     * > expect(runtime.treasury.balanceMinorUnits).toBe(720);
+     * > ```
+     *
+     * On day 8 the prison now owes **nothing** -- the overdraft has been paying
+     * the wages since day 5 -- and is at -1,840 instead. So the recovery is a
+     * balance climbing out of the overdraft rather than arrears being cleared,
+     * which is the same recovery seen from the other side of ruling 19's third
+     * rung. It is still unconditional and still needs no command beyond the
+     * admissions.
+     */
     const runtime = overcommitted();
     stepTo(runtime, DAY_LENGTH_TICKS * 8);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_840);
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'the overdraft has met every payday so far').toBe(0);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-1_840);
 
     admit(runtime, 6, 2);
     stepTo(runtime, DAY_LENGTH_TICKS * 9);
@@ -441,24 +555,14 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     /*
      * Six arrivals start at `NEED_MAX` on every need, so they are paid the
      * undiminished 300 while the two long-standing prisoners are paid 220:
-     * 2,240 of income against 1,840 owed plus 960 for the day. It clears 2,240
-     * of the 2,800, leaving 560 owed and the balance still at 0.
-     *
-     * **This used to clear in one day** (2,400 against 1,360 + 960, ending at
-     * 80). It now takes two, and the reason is worth having in the file: the
-     * prison is short exactly what its two neglected prisoners are no longer
-     * earning it, on top of the deeper hole that neglect dug in the first
-     * place. Recovery is still unconditional and needs no command beyond the
-     * admissions -- ADR 0017 decision 8's "insolvency is a state, not a loss
-     * condition" is intact.
+     * 2,240 of income against a 960 bill, which is 1,280 towards the hole.
      */
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(560);
-    expect(runtime.treasury.balanceMinorUnits).toBe(0);
-
-    // Day 10 clears the rest and the balance is positive again, and it keeps
-    // climbing after that, so the recovery is a recovery rather than a pause.
-    stepTo(runtime, DAY_LENGTH_TICKS * 10);
     expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-560);
+
+    // Day 10 puts the prison back above water, and it keeps climbing after
+    // that, so the recovery is a recovery rather than a pause.
+    stepTo(runtime, DAY_LENGTH_TICKS * 10);
     expect(runtime.treasury.balanceMinorUnits).toBe(720);
     stepTo(runtime, DAY_LENGTH_TICKS * 11);
     expect(runtime.treasury.balanceMinorUnits).toBe(2_000);

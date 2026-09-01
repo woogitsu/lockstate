@@ -7,8 +7,9 @@ import {
   type UnfundedMaterial,
   type UnprocurableMaterial,
 } from '../construction/materials-procurement';
+import type { MaterialRequirement } from '../construction/definition';
 import type { Container } from '../operations/inventory';
-import { MAX_PURCHASE_QUANTITY, type ProcurementSystem } from './procurement';
+import { MAX_PURCHASE_QUANTITY, type PendingDelivery, type ProcurementSystem } from './procurement';
 import type { Treasury } from './treasury';
 
 /**
@@ -272,6 +273,28 @@ export function justInTimePurchaseOrderId(tick: number, itemId: string, inFlight
  * names as the implementation hazard of the same shape and
  * `tests/integration/economy-money-conservation.test.ts` measures as M2.
  *
+ * **THAT PARAGRAPH IS FALSE FROM THE OWNER'S RULING 20 OF 2026-08-31, AND IT
+ * IS KEPT BECAUSE ITS ARGUMENT IS THE ONE THE NEW CODE HAS TO ANSWER.** *"Anulowanie
+ * zwraca pieniądze zamiast cegieł"* -- cancelling gives back money instead of
+ * bricks -- and *"Pieniądze dopóki ekipa nie zaczęła"* -- money until the crew
+ * has started. ADR 0076's amendment of that date records both. There are now
+ * two refund paths here, `refundAllocatedMaterials` and
+ * `refundSurplusDeliveries`, and each is written against the exact hazard the
+ * paragraph above names:
+ *
+ * - The `buy -> cancel -> refund` loop it forbids is **still** forbidden.
+ *   `cancelOrder`'s material release is what ruling 20 replaced, not something
+ *   a refund is now added beside: an order in the four refundable states gives
+ *   back money **or** materials, never both, and `materialsAllocated` is
+ *   emptied in the same step. M2 is exactly the mutation that would come back
+ *   if either half of that slipped, and the conservation file still measures
+ *   it.
+ * - *"a build order cancelled while its just-in-time delivery is in flight
+ *   leaves the delivery alone"* is the sentence ruling 20 reverses, and only
+ *   for a delivery **this class bought** and only for the part of it the rest
+ *   of the queue no longer wants. A delivery the player pressed *Buy* for is
+ *   still left alone, for #687's reason.
+ *
  * **It records rather than refuses.** The order stays in
  * `'materials-pending'`; what changes is that `lastReport` now says the queue
  * is stalled on *money* rather than on nothing. ADR 0017 decision 2 requires
@@ -283,6 +306,13 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
 
   /**
    * `treasury` is read and never written here.
+   *
+   * **Still true of this field and no longer true of this class, since the
+   * owner's ruling 20 of 2026-08-31.** The two refund paths added for it move
+   * money through `ProcurementSystem.refundMaterials` and
+   * `ProcurementSystem.cancel`, so `this.treasury` itself is still only ever
+   * asked `canAfford` -- which is the property the paragraph below is about,
+   * and the reason it is narrowed rather than deleted.
    *
    * The only call is `canAfford`, and it is what makes an order atomic: a
    * two-material order has to be known affordable **before** its first line is
@@ -328,7 +358,12 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
    *
    * 1. **Per order, whole or not at all.** `this.treasury.canAfford` is asked
    *    once for the order's *whole* remainder before any of its lines is
-   *    bought. This is the only new bound this pass has and it is a real one:
+   *    bought, **at the `'construction'` rung** — the owner's ruling 19 of
+   *    2026-08-31, drafted as ADR 0017's "Amendment, 2026-09-01". This pass is
+   *    what ADR 0017 decision 8 calls *construction*, and the player's Buy
+   *    press is what it calls a *delivery*, so this method stops at −2,000 and
+   *    the press stops at −1,250. Every `canAfford` and `spend` on this path
+   *    carries the same class, so the two cannot come apart. This is the only new bound this pass has and it is a real one:
    *    without it a partly filled pass would buy the affordable half of a
    *    two-material order and spend money on materials that can never finish
    *    anything.
@@ -381,6 +416,16 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
    * - **`TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`**, which every `spend` passes
    *   through one comparison in `Treasury.canAfford`. §10c measures `floor
    *   breaches` at 0 in every run.
+   *
+   *   **Since ruling 19 the bound on *this* path is the shallower
+   *   `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`, and the sentence above
+   *   is kept because it is what §10c measured.** The floor is still the bound
+   *   on the treasury as a whole and `floor breaches` is still 0; what changed
+   *   is that a standing build queue now runs out of room 500 minor units
+   *   earlier, which is the point of giving construction a rung. §10c's own
+   *   finding — that a twenty-order tail strands a prison at −1,625 — lands
+   *   between the two thresholds, so under ruling 19 that tail stops itself at
+   *   −2,000 with 500 of room left for wages.
    *
    * **What this change really moves is the residual**, and it is stated rather
    * than bounded here. Under all-or-nothing a queue the prison could not fund
@@ -508,7 +553,7 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
        * them and telling the player it is would be a sentence that is false.
        */
       if (blocked || lines.length === 0) continue;
-      if (!this.treasury.canAfford(orderCostMinorUnits)) {
+      if (!this.treasury.canAfford(orderCostMinorUnits, 'construction')) {
         for (const line of lines) add(unfunded, line);
         continue;
       }
@@ -520,6 +565,7 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
           line.itemId,
           line.quantity,
           tick,
+          'construction',
         );
         if (outcome.ok) {
           add(purchased, { itemId: line.itemId, quantity: line.quantity, costMinorUnits: outcome.paidMinorUnits });
@@ -565,6 +611,113 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
 
     this.report = { tick, purchased: byItemId(purchased), unfunded: byItemId(unfunded), unprocurable };
     return this.report;
+  }
+
+  /**
+   * `ConstructionProcurementSink.refundAllocatedMaterials`, which the class
+   * docblock's *"It never credits the treasury"* forbade until the owner's
+   * ruling 20 of 2026-08-31.
+   *
+   * The money movement itself is `ProcurementSystem.refundMaterials` and not
+   * this class: `ProcurementSystem` owns every other movement of money for
+   * materials -- `purchase` spends, `cancel` credits -- and its own docblock is
+   * where the catalogue-price argument belongs, beside the recorded-price
+   * argument it contradicts.
+   *
+   * A line the catalogue cannot price refunds `0`, and that is the line handed
+   * back for the caller to release.
+   */
+  public refundAllocatedMaterials(
+    allocations: readonly MaterialRequirement[],
+  ): readonly MaterialRequirement[] {
+    const unpriced: MaterialRequirement[] = [];
+    /*
+     * Ascending item id rather than the caller's order, for the reason every
+     * other walk in this class is sorted: this credits the treasury, so it
+     * writes simulation state (`docs/DETERMINISM.md`, "Canonical iteration
+     * order"). The total is the same either way; the order the credits land in
+     * is not.
+     */
+    for (const allocation of [...allocations].sort((left, right) =>
+      left.itemId < right.itemId ? -1 : left.itemId > right.itemId ? 1 : 0,
+    )) {
+      if (allocation.quantity <= 0) continue;
+      if (this.procurement.refundMaterials(allocation.itemId, allocation.quantity) > 0) continue;
+      unpriced.push(allocation);
+    }
+    return unpriced;
+  }
+
+  /**
+   * `ConstructionProcurementSink.refundSurplusDeliveries`.
+   *
+   * ## The loop, and why it cannot run away
+   *
+   * Every pass either cancels one delivery -- which removes it from
+   * `pendingDeliveries` for ever -- or stops. The queue of deliveries is
+   * finite, so this terminates whatever the caller hands it, in the same shape
+   * `ConstructionSystem.withdrawOrdersAwaitingMaterial`'s loop terminates.
+   *
+   * ## Which delivery goes
+   *
+   * **The largest that fits entirely inside the surplus, ties broken by
+   * ascending order id.** Largest-first is greedy and is *not* optimal -- a
+   * surplus of 4 against deliveries of 3, 2 and 2 refunds 3 where 2 + 2 would
+   * refund 4 -- and it is chosen anyway, because the case it is not optimal in
+   * needs several just-in-time deliveries of one item outstanding at once and
+   * the ordinary case is one delivery per order. Optimal packing here would be
+   * a subset sum on a player press to recover money the next pass would spend
+   * again.
+   *
+   * The tie-break is what makes it a function of state rather than of
+   * insertion: `pendingDeliveries` is already sorted by `(arrivesAtTick,
+   * orderId)`, and re-sorting by `(quantity, orderId)` here means a restore
+   * cannot change which delivery a cancellation takes.
+   *
+   * ## What it will not touch
+   *
+   * A delivery whose order id is not a `jit:` one -- stock the player chose to
+   * hold (#687) -- and a delivery bigger than the surplus. The second is the
+   * bound that keeps this from re-creating #687 in reverse: cancelling a
+   * delivery the remaining queue still needs part of would have the next
+   * scheduled pass buy it straight back, at a price the prison may by then be
+   * unable to fund in one order.
+   */
+  public refundSurplusDeliveries(itemId: string, demandedQuantity: number): number {
+    let refundedMinorUnits = 0;
+    for (;;) {
+      const surplus = this.heldOrInFlightOf(itemId) - demandedQuantity;
+      if (surplus <= 0) break;
+      const candidate = this.largestSurplusDelivery(itemId, surplus);
+      if (candidate === undefined) break;
+      const outcome = this.procurement.cancel(candidate.orderId);
+      /*
+       * `not-pending` is unreachable while the candidate was read out of
+       * `pendingDeliveries` a line earlier, and breaking rather than continuing
+       * is what stops this spinning on a delivery it cannot remove if that ever
+       * stops being true.
+       */
+      if (!outcome.ok) break;
+      refundedMinorUnits += outcome.refundedMinorUnits;
+    }
+    return refundedMinorUnits;
+  }
+
+  /** The biggest `jit:` delivery of `itemId` that fits inside `surplus`, by `(quantity, orderId)`. */
+  private largestSurplusDelivery(itemId: string, surplus: number): PendingDelivery | undefined {
+    let best: PendingDelivery | undefined;
+    for (const delivery of this.procurement.pendingDeliveries) {
+      if (delivery.itemId !== itemId) continue;
+      if (delivery.quantity > surplus) continue;
+      if (!isJustInTimePurchaseOrderId(delivery.orderId)) continue;
+      if (best === undefined) {
+        best = delivery;
+        continue;
+      }
+      if (delivery.quantity > best.quantity) best = delivery;
+      else if (delivery.quantity === best.quantity && delivery.orderId < best.orderId) best = delivery;
+    }
+    return best;
   }
 
   /**

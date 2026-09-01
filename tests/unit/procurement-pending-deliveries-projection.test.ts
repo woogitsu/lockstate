@@ -46,7 +46,7 @@ const shuffled: PendingDeliverySource = {
 describe('projectPendingDeliveries', () => {
   it('carries every field a row needs, from a real purchase through the real system', () => {
     const runtime = createNewSimulationRuntime(5);
-    expect(runtime.procurement.purchase('buy-1', 'item.brick', 3, 0).ok).toBe(true);
+    expect(runtime.procurement.purchase('buy-1', 'item.brick', 3, 0, 'deliveries').ok).toBe(true);
 
     const view = projectPendingDeliveries(runtime.procurement);
 
@@ -130,7 +130,7 @@ describe('projectPendingDeliveries', () => {
      * a publication is stale for.
      */
     const runtime = createNewSimulationRuntime(5);
-    runtime.procurement.purchase('buy-1', 'item.brick', 2, 0);
+    runtime.procurement.purchase('buy-1', 'item.brick', 2, 0, 'deliveries');
     for (let step = 0; step < PROCUREMENT_DELIVERY_DELAY_TICKS + 1; step += 1) runtime.kernel.step();
 
     const view = projectPendingDeliveries(runtime.procurement);

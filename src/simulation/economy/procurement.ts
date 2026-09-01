@@ -1,7 +1,17 @@
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, procurableMaterial } from '../../content/procurement-catalog';
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { Container } from '../operations/inventory';
-import type { Treasury } from './treasury';
+import type { SpendClass, Treasury } from './treasury';
+
+/**
+ * The two rungs a purchase can be refused at (the owner's ruling 19 of
+ * 2026-08-31, drafted as ADR 0017's "Amendment, 2026-09-01").
+ *
+ * A narrowing of `SpendClass` rather than the whole union, because a purchase
+ * is neither a wage nor a hire and a caller must not be able to buy bricks at
+ * the wage rung's deeper threshold. See `ProcurementSystem.purchase`.
+ */
+export type PurchaseSpendClass = Extract<SpendClass, 'deliveries' | 'construction'>;
 
 /**
  * Money in, materials out: the procurement half of issue #96's loop.
@@ -180,8 +190,33 @@ export class ProcurementSystem implements SystemRegistration {
    * big a figure to hand this method* and calls it once per item per funded
    * order. `Treasury.spend` is likewise untouched and still strictly
    * all-or-nothing against its floor.
+   *
+   * ## `spendClass`, and why this one method serves two rungs
+   *
+   * The owner's ruling 19 of 2026-08-31 gives ADR 0017 decision 8's first two
+   * rungs their own thresholds — deliveries at −1,250, construction at −2,000 —
+   * and **both of them arrive here**, because a purchase is the only way
+   * materials enter a prison. So the rung cannot be a property of this method;
+   * it is a property of *who asked*, and the caller says which:
+   *
+   * - the player's Buy press, through `PurchaseMaterials`
+   *   (`src/simulation/runtime/session-commands.ts`), is `'deliveries'`;
+   * - `JustInTimeMaterialsService.procureForPendingOrders`, buying for build
+   *   orders that are already queued, is `'construction'`.
+   *
+   * It is `PurchaseSpendClass` rather than `SpendClass`: a purchase is never a
+   * wage and never a hire, and narrowing the union here means a caller cannot
+   * hide a hire behind a delivery's threshold. The amendment argues the split
+   * itself, which is a reading of decision 8's words rather than something
+   * ruling 19 states.
    */
-  public purchase(orderId: string, itemId: string, quantity: number, tick: number): PurchaseOutcome {
+  public purchase(
+    orderId: string,
+    itemId: string,
+    quantity: number,
+    tick: number,
+    spendClass: PurchaseSpendClass,
+  ): PurchaseOutcome {
     if (this.pending.some((delivery) => delivery.orderId === orderId)) {
       return { ok: false, reason: 'duplicate-order' };
     }
@@ -192,7 +227,7 @@ export class ProcurementSystem implements SystemRegistration {
     if (material === undefined) return { ok: false, reason: 'unknown-material' };
 
     const paidMinorUnits = material.unitPriceMinorUnits * quantity;
-    if (!this.treasury.spend(paidMinorUnits)) return { ok: false, reason: 'insufficient-funds' };
+    if (!this.treasury.spend(paidMinorUnits, spendClass)) return { ok: false, reason: 'insufficient-funds' };
 
     const arrivesAtTick = tick + PROCUREMENT_DELIVERY_DELAY_TICKS;
     this.pending.push({ orderId, itemId, quantity, arrivesAtTick, paidMinorUnits });
@@ -229,6 +264,52 @@ export class ProcurementSystem implements SystemRegistration {
     const [delivery] = this.pending.splice(index, 1);
     this.treasury.credit(delivery!.paidMinorUnits);
     return { ok: true, refundedMinorUnits: delivery!.paidMinorUnits };
+  }
+
+  /**
+   * Sells `quantity` of `itemId` back at the catalogue price, and answers what
+   * was credited.
+   *
+   * **The other direction of `purchase`, and it exists for the owner's
+   * ruling 20 of 2026-08-31** -- *"Anulowanie zwraca pieniądze zamiast
+   * cegieł"*, recorded in
+   * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+   * amendment of that date. A build order cancelled before its crew starts
+   * gives back **money**, and the money for an order that has already
+   * allocated has to come from somewhere: the materials it is holding, valued
+   * and handed back to the supplier. The caller destroys the goods in the same
+   * step -- see `ConstructionSystem.cancelOrder` -- because paying for the
+   * plank *and* putting it back in the container is the one-press value
+   * creation the amendment names.
+   *
+   * **It prices from the catalogue where `cancel` deliberately does not, and
+   * the difference is a fact about the two situations rather than an
+   * inconsistency.** `cancel` refunds a `PendingDelivery.paidMinorUnits`
+   * because the record of what that purchase cost still exists and refunding
+   * anything else would open a buy-low-cancel-high trade. Allocated material
+   * carries no such record: `BuildOrderMaterial` is an item id and a quantity,
+   * the goods are fungible with everything else the container held, and the
+   * order may have consumed stock nobody bought at all. The catalogue price is
+   * therefore the only figure available, and it is the same figure
+   * `tests/integration/economy-money-conservation.test.ts` values stock at --
+   * which is what makes the exchange exact. **The buy-low-cancel-high trade it
+   * reopens is bounded by prices never moving**: `PROCURABLE_MATERIALS` is a
+   * static table with no producer. The day a price moves, this becomes an
+   * arbitrage and the fix is a paid-price record on the allocation, which is a
+   * save-format change.
+   *
+   * `0` for an item the catalogue does not sell and for a non-positive or
+   * non-integer quantity, and in both cases nothing is credited: the caller is
+   * then holding goods it could not price, and must put them back rather than
+   * destroy them.
+   */
+  public refundMaterials(itemId: string, quantity: number): number {
+    if (!Number.isSafeInteger(quantity) || quantity <= 0) return 0;
+    const material = procurableMaterial(itemId);
+    if (material === undefined) return 0;
+    const refundedMinorUnits = material.unitPriceMinorUnits * quantity;
+    this.treasury.credit(refundedMinorUnits);
+    return refundedMinorUnits;
   }
 
   /** Deliveries not yet arrived, in the order they will arrive. */

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, PROCURABLE_MATERIALS } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
 import {
+  INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
 } from '../../src/simulation/economy';
@@ -156,11 +157,32 @@ function createSession(seed = 7) {
   let sequence = 0;
   const trace: string[] = [];
 
+  /**
+   * What the game has deliberately consumed, and the only thing the equation
+   * below is allowed to be short by.
+   *
+   * **Added for the owner's ruling 20 of 2026-08-31** (ADR 0076's amendment of
+   * that date): cancelling an order the crew has already started returns
+   * nothing at all, so its allocated materials are neither released nor paid
+   * for and value really does leave the prison. That is the ruling rather than
+   * a leak -- if the materials came back in either currency, cancelling late
+   * would cost nothing and *"pieniądze dopóki ekipa nie zaczęła"* would be a
+   * distinction without a difference.
+   *
+   * **It is raised by the caller and never by the code under test**, from the
+   * buildable catalogue and the procurement catalogue, so this stays a check
+   * and does not become a fixture that agrees with any implementation
+   * (`docs/TESTING.md`). A cancellation that consumed the wrong amount, or
+   * consumed anything in a state ruling 20 pays for, still fails here.
+   */
+  let consumedMinorUnits = 0;
+
   const conserved = (label: string): void => {
     const total = prisonValueMinorUnits(runtime);
     trace.push(
       `${label.padEnd(42)} balance=${String(runtime.treasury.balanceMinorUnits).padStart(5)}` +
-        ` total=${String(total).padStart(5)}`,
+        ` total=${String(total).padStart(5)}` +
+        (consumedMinorUnits === 0 ? '' : ` consumed=${String(consumedMinorUnits)}`),
     );
     expect(Number.isSafeInteger(runtime.treasury.balanceMinorUnits), `${label}: the balance left the integers`)
       .toBe(true);
@@ -169,12 +191,38 @@ function createSession(seed = 7) {
     // read backwards from where it appeared, and a run of two hundred
     // identical ticks in front of it buries the two lines that matter.
     expect(total, `${label}: value was created or destroyed\n${trace.slice(-12).join('\n')}`)
-      .toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+      .toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - consumedMinorUnits);
+  };
+
+  /** Says what the next press is expected to consume for good, before it is pressed. */
+  const expectConsumption = (amountMinorUnits: number): void => {
+    consumedMinorUnits += amountMinorUnits;
   };
 
   const send = (command: SimulationCommand, label: string): void => {
     runtime.kernel.submitCommand(`cmd-${sequence}`, sequence, runtime.kernel.tick, packCommand(command));
     sequence += 1;
+    runtime.kernel.step();
+    conserved(label);
+  };
+
+  /**
+   * Several commands at one tick, dispatched before any system runs.
+   *
+   * The only way to observe a cancellation of an `'approved'` order through
+   * the real command boundary: a `PlaceBuildOrder` reaches
+   * `'materials-pending'` inside the very step that dispatched it, so a
+   * `CancelBuildOrder` sent afterwards can never find the order in the state
+   * `submitOrder` wrote. Two commands at the same tick can, and it is an
+   * ordinary gesture -- placing a wall and taking it back before the clock
+   * has moved.
+   */
+  const sendAtOneTick = (commands: readonly SimulationCommand[], label: string): void => {
+    const tick = runtime.kernel.tick;
+    for (const command of commands) {
+      runtime.kernel.submitCommand(`cmd-${sequence}`, sequence, tick, packCommand(command));
+      sequence += 1;
+    }
     runtime.kernel.step();
     conserved(label);
   };
@@ -228,10 +276,19 @@ function createSession(seed = 7) {
   const stock = (itemId: string): number =>
     runtime.containers.getById(CONSTRUCTION_MATERIALS_CONTAINER_ID)!.quantityOf(itemId);
 
+  const cancel = (orderId: string, label: string): void => send({ type: 'CancelBuildOrder', orderId }, label);
+
+  const runUntilState = (orderId: string, state: string, label: string): void =>
+    runUntil(() => stateOf(orderId) === state, `${label} (waiting for ${state})`);
+
   return {
     runtime,
     creditSpy,
     conserved,
+    expectConsumption,
+    sendAtOneTick,
+    cancel,
+    runUntilState,
     send,
     run,
     runUntil,
@@ -247,7 +304,7 @@ function createSession(seed = 7) {
 }
 
 describe('money is conserved across build orders and undo (#285)', () => {
-  it('placing a build order buys exactly what it needs, and undoing it credits nothing', () => {
+  it('placing a build order buys exactly what it needs, and undoing it takes the money back', () => {
     /*
      * **This case has changed direction, and the old direction is kept in the
      * assertion message rather than deleted.** It used to read *"placing a
@@ -277,6 +334,24 @@ describe('money is conserved across build orders and undo (#285)', () => {
      * scenario the file header calls the only one that catches mutation M1 --
      * an undo that cancels a purchase it never made. It is now the ordinary
      * shape of an undo rather than a constructed one.
+     *
+     * **THE SECOND BULLET REVERSED ON 2026-08-31 AND IS KEPT BECAUSE IT IS
+     * WHAT THE RULING CHANGED.** The owner's ruling 20 -- *"Anulowanie zwraca
+     * pieniądze zamiast cegieł"*, ADR 0076's amendment of that date -- makes
+     * the refund **money**, and the undo below now takes the 80 back rather
+     * than leaving it on the road. Two things about that bullet survive
+     * exactly:
+     *
+     * - *"`prisonValueMinorUnits` is what makes that a conservation statement
+     *   rather than an excuse"*. It still does, and it is the whole reason this
+     *   case is safe: the 80 moves from `paidMinorUnits` back into `balance`,
+     *   and the total is unmoved. Mutation M1 -- *"undo cancels every pending
+     *   purchase"* -- is **not** what shipped and is still caught: what is
+     *   cancelled is the surplus of the *build queue's own* deliveries, so a
+     *   delivery the player bought with `PurchaseMaterials` survives an undo,
+     *   which the case *"an undo must not cancel a purchase the player made"*
+     *   below pins directly.
+     * - The first bullet, about what an order costs, is untouched.
      */
     const session = createSession();
     session.conserved('session start');
@@ -300,15 +375,20 @@ describe('money is conserved across build orders and undo (#285)', () => {
     expect(session.stateOf('order-wall-1')).toBe('cancelled');
     expect(
       session.runtime.treasury.balanceMinorUnits,
-      'the money bought bricks; undoing the wall does not un-buy them',
-    ).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost);
-    expect(session.creditSpy, 'undoing a build order must not credit anything').not.toHaveBeenCalled();
+      'the wall had not started, so the money comes back (ruling 20)',
+    ).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(
+      session.creditSpy.mock.calls.map(([amount]) => amount),
+      'exactly one credit, of exactly the delivery that was cancelled',
+    ).toEqual([wallCost]);
+    expect(session.runtime.procurement.pendingDeliveries, 'and the lorry was turned around').toHaveLength(0);
 
-    // And the bricks really do arrive and stay the prison's, which is what
-    // makes "no refund" a conservation statement and not a loss: `conserved`
-    // ran on every tick inside `run`.
-    session.run(PROCUREMENT_DELIVERY_DELAY_TICKS + 1, 'the cancelled order\'s delivery still lands');
-    expect(session.stock(WALL_REQUIREMENT.itemId)).toBe(WALL_REQUIREMENT.quantity);
+    // Nothing arrives afterwards either, which is what makes the refund
+    // survive the clock rather than being reversed by the next scheduled
+    // purchase pass -- #687's failure mode in the opposite direction.
+    session.run(PROCUREMENT_DELIVERY_DELAY_TICKS + 40, 'the refund survives the clock');
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'no bricks, because none were paid for').toBe(0);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
   });
 
   it('buys nothing for an order whose materials the player already holds', () => {
@@ -533,35 +613,63 @@ describe('money is conserved across build orders and undo (#285)', () => {
      * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` in every session, so a prison at
      * zero can buy 62 more bricks and the old probe measured nothing.
      *
-     * The exact boundary is now the *floor*, so the probe walks to it: spending
-     * power is 25,000 + 2,500 = 27,500, which is 681 bricks at 40 plus four
-     * planks at 65 to the minor unit. That purchase must go through -- a prison
-     * that cannot spend its last coin is the defect this case exists for, and
-     * the coin is now the last of the facility -- and the brick after it must
-     * not.
+     * **And it moved again with the owner's ruling 19 of 2026-08-31.** The
+     * paragraph that stood here is kept, because it is the reason the probe is
+     * where it is at all:
+     *
+     * > The exact boundary is now the *floor*, so the probe walks to it: spending
+     * > power is 25,000 + 2,500 = 27,500, which is 681 bricks at 40 plus four
+     * > planks at 65 to the minor unit.
+     *
+     * > ```
+     * > const roomToTheFloor = TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
+     * > session.buy('order-buy-the-room', WALL_REQUIREMENT.itemId, 681 - wholeBalance, …);
+     * > session.buy('order-buy-the-last-coin', DOOR_REQUIREMENT.itemId, 4, …);
+     * > ```
+     *
+     * A `PurchaseMaterials` is ADR 0017 decision 8's **first** rung, and ruling
+     * 19 gives that rung a threshold of its own at -1,250 (drafted as ADR 0017's
+     * "Amendment, 2026-09-01"). So a press can no longer reach the floor, and
+     * the exact boundary a *purchase* has is the first rung: spending power is
+     * 25,000 + 1,250 = 26,250, which is 653 bricks at 40 plus two planks at 65
+     * to the minor unit. The case is unchanged in every other respect -- the
+     * purchase that lands exactly on the boundary must go through, the unit
+     * after it must not, and the equation must not move either way.
+     *
+     * **What this case is *for* is the conservation equation, and the ruling
+     * does not touch it.** An unpaid wage is arrears and not a destroyed minor
+     * unit (ADR 0049), and a refused purchase debits nothing; `session.buy`
+     * re-checks `total === 25,000` after every command below.
      */
-    const roomToTheFloor = TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
+    const roomToTheRung = TREASURY_STARTING_BALANCE_MINOR_UNITS - INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS;
     const plankPrice = UNIT_PRICE.get(DOOR_REQUIREMENT.itemId)!;
     expect(
-      681 * price + 4 * plankPrice,
-      'the two catalogue prices no longer reach the floor exactly, so this case can no longer land on it',
-    ).toBe(roomToTheFloor);
+      653 * price + 2 * plankPrice,
+      'the two catalogue prices no longer reach the first rung exactly, so this case can no longer land on it',
+    ).toBe(roomToTheRung);
 
-    session.buy('order-buy-the-room', WALL_REQUIREMENT.itemId, 681 - wholeBalance, 'the rest of the room, in bricks');
-    session.buy('order-buy-the-last-coin', DOOR_REQUIREMENT.itemId, 4, 'a purchase for the exact remaining room');
+    session.buy('order-buy-the-room', WALL_REQUIREMENT.itemId, 653 - wholeBalance, 'the rest of the room, in bricks');
+    session.buy('order-buy-the-last-coin', DOOR_REQUIREMENT.itemId, 2, 'a purchase for the exact remaining room');
     expect(
       session.runtime.refusals.count,
-      'a purchase that lands exactly on the floor must not be refused either',
+      'a purchase that lands exactly on the first rung must not be refused either',
     ).toBe(0);
-    expect(session.runtime.treasury.balanceMinorUnits, 'the last coin of the facility was spent').toBe(
-      TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+    expect(session.runtime.treasury.balanceMinorUnits, 'the last coin the rung allows was spent').toBe(
+      INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
     );
 
-    // One minor unit past it, on a facility that is now empty: still a refusal,
-    // and still no partial debit.
+    // One minor unit past it: still a refusal, and still no partial debit. The
+    // treasury would carry 1,250 more -- the *floor* is at -2,500 and no rung
+    // may pass it -- which is the ladder rather than a disagreement: the
+    // command handler spends at the same `'deliveries'` rung this press is
+    // judged by.
     session.buy('order-buy-one-more', WALL_REQUIREMENT.itemId, 1, 'one brick too many');
     expect(session.runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS);
+    expect(
+      session.runtime.treasury.balanceMinorUnits - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+      'and the deeper floor is untouched, with a rung between the press and it',
+    ).toBe(1_250);
     expect(session.runtime.procurement.pendingDeliveries).toHaveLength(3);
 
     // And the conservation equation is unmoved by all of it: `session.buy`
@@ -650,5 +758,367 @@ describe('money is conserved across build orders and undo (#285)', () => {
     expect(session.runtime.procurement.pendingDeliveries).toHaveLength(0);
     expect(session.runtime.refusals.count, 'the refusal must have reached the player').toBeGreaterThan(0);
     expect(session.creditSpy).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * **Cancelling in every state the owner's ruling 20 of 2026-08-31 names**
+ * (ADR 0076's amendment of that date, which awaits the owner's signature).
+ *
+ * The two rulings are *"Anulowanie zwraca pieniądze zamiast cegieł"* and
+ * *"Pieniądze dopóki ekipa nie zaczęła"*: money instead of bricks, and money
+ * only until the crew has started. Against `BuildOrderLifecycleState` that is a
+ * refund for `planned`, `approved`, `materials-pending` and `assigned`, and
+ * nothing for `in-progress`.
+ *
+ * ADR 0076 decision B made a conservation test over this non-optional and this
+ * is it, inherited in the new currency. Every case below runs the same
+ * `conserved` check on every command and every tick as the rest of this file,
+ * so what each one adds on top is the *distribution*: which of the treasury,
+ * the stock, the in-flight deliveries and the allocation the value ended up in.
+ *
+ * **The one state whose value does not come back is `in-progress`, and it is
+ * declared before the press rather than measured after it.** See
+ * `expectConsumption`.
+ */
+describe('cancelling a build order in each of the states ruling 20 names (ADR 0076 amendment)', () => {
+  const wallCost = UNIT_PRICE.get(WALL_REQUIREMENT.itemId)! * WALL_REQUIREMENT.quantity;
+
+  it('refunds nothing for a planned order, because nothing was ever bought for one', () => {
+    /*
+     * `'planned'` is the state `createBuildOrder` writes and `submitOrder`
+     * immediately leaves -- it writes `'approved'` or `'failed'` -- so it is
+     * reachable only from a restored save, which is exactly how this reaches
+     * it. `pendingOrderDemand` does not count a planned order, so no
+     * just-in-time purchase is ever made for one: there is no money to give
+     * back, and a refund that produced any would be inventing it.
+     *
+     * This is the one of the five states whose *behaviour* ruling 20 does not
+     * change. It is here because the ruling names it, and because "the refund
+     * is zero" is a claim that has to be measured rather than assumed.
+     */
+    const session = createSession();
+    const before = session.runtime.construction.snapshot();
+    session.runtime.construction.restore({
+      ...before,
+      orders: [
+        ...before.orders,
+        {
+          id: 'order-planned',
+          definitionId: WALL,
+          location: tile(6, 6),
+          edge: 'north',
+          state: 'planned',
+          progress: 0,
+          materialsAllocated: [],
+        },
+      ],
+    });
+    session.conserved('a planned order restored into the book');
+    expect(session.stateOf('order-planned')).toBe('planned');
+
+    session.cancel('order-planned', 'cancel a planned order');
+    expect(session.stateOf('order-planned')).toBe('cancelled');
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(session.creditSpy, 'nothing was spent on it, so nothing may be refunded').not.toHaveBeenCalled();
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'and no bricks were conjured either').toBe(0);
+  });
+
+  it('refunds the money for an approved order, in the same tick it was placed', () => {
+    /*
+     * The state a `PlaceBuildOrder` writes, and the only way to observe a
+     * cancellation in it: `update` promotes `'approved'` to
+     * `'materials-pending'` inside the step that dispatched the placement, so
+     * both commands go in at one tick. As a gesture it is placing a wall and
+     * taking it straight back.
+     *
+     * The money is in a delivery on the road -- the press bought it -- and the
+     * refund is that delivery being turned around.
+     */
+    const session = createSession();
+    session.sendAtOneTick(
+      [
+        { type: 'PlaceBuildOrder', orderId: 'order-wall-1', definitionId: WALL, x: 4, y: 6, edge: 'north', transactionId: 'build-1' },
+        { type: 'CancelBuildOrder', orderId: 'order-wall-1' },
+      ],
+      'place and cancel at one tick',
+    );
+
+    expect(session.stateOf('order-wall-1')).toBe('cancelled');
+    expect(session.runtime.treasury.balanceMinorUnits, 'the whole 80 came back').toBe(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS,
+    );
+    expect(session.creditSpy.mock.calls.map(([amount]) => amount)).toEqual([wallCost]);
+    expect(session.runtime.procurement.pendingDeliveries).toHaveLength(0);
+
+    session.run(PROCUREMENT_DELIVERY_DELAY_TICKS + 40, 'nothing arrives and nothing is re-bought');
+    expect(session.stock(WALL_REQUIREMENT.itemId)).toBe(0);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+  });
+
+  it('refunds the money for a materials-pending order while its delivery is still on the road', () => {
+    const session = createSession();
+    session.place('order-wall-1', WALL, 4, 6, 'build-1', 'place the wall');
+    expect(session.stateOf('order-wall-1')).toBe('materials-pending');
+    expect(session.runtime.procurement.pendingDeliveries, 'its own delivery, in flight').toHaveLength(1);
+
+    session.cancel('order-wall-1', 'cancel while materials-pending');
+    expect(session.stateOf('order-wall-1')).toBe('cancelled');
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(session.creditSpy.mock.calls.map(([amount]) => amount)).toEqual([wallCost]);
+    expect(session.runtime.procurement.pendingDeliveries).toHaveLength(0);
+  });
+
+  it('refunds the money for an assigned order and does not put its bricks back on the shelf', () => {
+    /*
+     * The state where the money is no longer money: the delivery landed, and
+     * `tryAllocate` withdrew the bricks from the container into the order. The
+     * refund therefore has to come out of the *materials*, valued at the
+     * catalogue price -- and the thing that must not happen is both, which is
+     * the one-press value creation ADR 0076's amendment names. `conserved`
+     * catches that directly: paying 80 while also depositing two bricks reads
+     * as 25,080.
+     */
+    const session = createSession();
+    session.place('order-wall-1', WALL, 4, 6, 'build-1', 'place the wall');
+    session.runUntilState('order-wall-1', 'assigned', 'wait for the bricks to be allocated');
+
+    expect(session.runtime.construction.getOrder('order-wall-1')?.materialsAllocated).toEqual([
+      { itemId: WALL_REQUIREMENT.itemId, quantity: WALL_REQUIREMENT.quantity },
+    ]);
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'the bricks are the order\'s, not the shelf\'s').toBe(0);
+
+    session.cancel('order-wall-1', 'cancel while assigned');
+    expect(session.stateOf('order-wall-1')).toBe('cancelled');
+    expect(session.runtime.construction.getOrder('order-wall-1')?.materialsAllocated).toEqual([]);
+    expect(session.runtime.treasury.balanceMinorUnits, 'the catalogue value of what it held').toBe(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS,
+    );
+    expect(session.creditSpy.mock.calls.map(([amount]) => amount)).toEqual([wallCost]);
+    expect(
+      session.stock(WALL_REQUIREMENT.itemId),
+      'money instead of bricks: the bricks must not also come back',
+    ).toBe(0);
+  });
+
+  it('gives nothing back for an in-progress order, and the materials are gone for good', () => {
+    /*
+     * *"Pieniądze dopóki ekipa nie zaczęła"*. The crew has started, so nothing
+     * comes back in either currency and the allocation is consumed. This is the
+     * only press in the game that destroys value, and the consumption is
+     * declared from the catalogue before it happens so that `conserved` is
+     * still an equation and not an exemption.
+     */
+    const session = createSession();
+    session.place('order-wall-1', WALL, 4, 6, 'build-1', 'place the wall');
+    session.runUntilState('order-wall-1', 'in-progress', 'wait for the crew to start');
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost);
+
+    session.expectConsumption(wallCost);
+    session.cancel('order-wall-1', 'cancel while in-progress');
+
+    expect(session.stateOf('order-wall-1')).toBe('cancelled');
+    expect(session.runtime.construction.getOrder('order-wall-1')?.materialsAllocated).toEqual([]);
+    expect(session.creditSpy, 'the crew had started, so no money comes back').not.toHaveBeenCalled();
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'and no bricks either').toBe(0);
+    expect(session.runtime.treasury.balanceMinorUnits, 'the 80 stays spent').toBe(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost,
+    );
+    expect(session.runtime.world.getTopEdge(tile(4, 6)), 'and no wall was left standing').toBe(0);
+
+    session.run(60, 'and nothing brings it back later');
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost);
+  });
+
+  it('leaves a completed order alone: undoing a finished wall still returns its bricks (ADR 0076 decision B)', () => {
+    /*
+     * The state ruling 20 does **not** reach, asserted here rather than left to
+     * be inferred from silence. Decision B is accepted and says a finished
+     * object un-builds into its full materials; the amendment leaves it
+     * standing and marks the question B governs and ruling 20 does not answer
+     * -- `RemoveObject` on a completed object -- as the owner's.
+     *
+     * It is also the inversion the amendment reports: cancel at
+     * `'in-progress'` and the bricks are gone, wait for `'completed'` and they
+     * all come back.
+     */
+    const session = createSession();
+    session.place('order-wall-1', WALL, 4, 6, 'build-1', 'place the wall');
+    session.buildUntilComplete(['order-wall-1'], 'build it');
+    expect(session.runtime.world.getTopEdge(tile(4, 6))).toBeGreaterThan(0);
+
+    session.cancel('order-wall-1', 'cancel a completed order');
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'decision B: the full materials').toBe(
+      WALL_REQUIREMENT.quantity,
+    );
+    expect(session.creditSpy, 'and not money as well').not.toHaveBeenCalled();
+    expect(session.runtime.world.getTopEdge(tile(4, 6)), 'and the wall really came down').toBe(0);
+  });
+
+  it('pays once whichever way round the two presses go, with a delivery in flight and with one landed', () => {
+    /*
+     * **The both-ways-round half of ADR 0076's gate**, which it wrote as
+     * `Remove` -> `Undo` and `Undo` -> `Remove` and which is here as the two
+     * presses that reach `cancelOrder` for one order: the panel's *Cancel*
+     * (`CancelBuildOrder`) and `Undo`.
+     *
+     * The hazard is one refund becoming two. A cancelled order is terminal, so
+     * the second press must find nothing to pay for -- `undo()` skips a
+     * non-cancellable order and `createConstructionCommandHandler` swallows the
+     * throw -- and the credit spy is what says so rather than the balance
+     * alone, which a compensating error could leave looking right.
+     *
+     * Both orderings are run twice over: once with the money still in a
+     * delivery, and once with it in the order's own allocation. Those are the
+     * two places a refund can draw from and they are refunded by different
+     * code.
+     */
+    const inFlight = () => {
+      const session = createSession();
+      session.place('order-wall-1', WALL, 4, 6, 'build-1', 'place the wall');
+      return session;
+    };
+    const allocated = () => {
+      const session = createSession();
+      session.place('order-wall-1', WALL, 4, 6, 'build-1', 'place the wall');
+      session.runUntilState('order-wall-1', 'assigned', 'wait for the allocation');
+      return session;
+    };
+
+    for (const [name, open] of [['in flight', inFlight], ['allocated', allocated]] as const) {
+      const cancelThenUndo = open();
+      cancelThenUndo.cancel('order-wall-1', `${name}: Cancel`);
+      cancelThenUndo.undo(`${name}: then Undo`);
+      expect(
+        cancelThenUndo.creditSpy.mock.calls.map(([amount]) => amount),
+        `${name}: Cancel then Undo paid more than once`,
+      ).toEqual([wallCost]);
+      expect(cancelThenUndo.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+      expect(cancelThenUndo.stock(WALL_REQUIREMENT.itemId), `${name}: and no bricks came back too`).toBe(0);
+
+      const undoThenCancel = open();
+      undoThenCancel.undo(`${name}: Undo`);
+      undoThenCancel.cancel('order-wall-1', `${name}: then Cancel`);
+      expect(
+        undoThenCancel.creditSpy.mock.calls.map(([amount]) => amount),
+        `${name}: Undo then Cancel paid more than once`,
+      ).toEqual([wallCost]);
+      expect(undoThenCancel.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+      expect(undoThenCancel.stock(WALL_REQUIREMENT.itemId), `${name}: and no bricks came back too`).toBe(0);
+    }
+  });
+
+  it('refunds the queue\'s own delivery and never the one the player bought', () => {
+    /*
+     * #687's distinction, in the direction ruling 20 creates. A delivery
+     * `JustInTimeMaterialsService` bought is the build queue's money and comes
+     * back when the demand behind it goes; a delivery the player pressed *Buy*
+     * for is stock they chose to hold and must survive every cancellation.
+     *
+     * This is also what keeps mutation M1 -- *"undo cancels every pending
+     * purchase"* -- caught after ruling 20 made a cancellation credit money at
+     * all.
+     */
+    const session = createSession();
+    session.buy('order-buy-1', WALL_REQUIREMENT.itemId, 10, 'the player buys ten bricks');
+    const afterPurchase = session.runtime.treasury.balanceMinorUnits;
+
+    session.place('order-wall-1', WALL, 4, 6, 'build-1', 'a wall the player already has bricks for');
+    expect(
+      session.runtime.procurement.pendingDeliveries,
+      'the queue bought nothing: the player\'s ten cover it',
+    ).toHaveLength(1);
+
+    session.cancel('order-wall-1', 'cancel it again');
+    expect(
+      session.runtime.procurement.pendingDeliveries,
+      'the player\'s own delivery must survive a build-order cancellation',
+    ).toHaveLength(1);
+    expect(session.creditSpy, 'and nothing may be refunded for an order that bought nothing').not.toHaveBeenCalled();
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(afterPurchase);
+  });
+
+  it('takes back one wall\'s money and leaves the other wall\'s alone', () => {
+    /*
+     * Two orders, two deliveries -- which is what a session produces since #703
+     * ruling 12 made the *order* the unit a purchase is atomic at. Cancelling
+     * one must take back exactly its own delivery and leave the other queue
+     * member able to finish, rather than refunding the pair and re-buying on
+     * the next scheduled pass.
+     */
+    const session = createSession();
+    session.place('order-wall-1', WALL, 4, 6, 'build-1', 'first wall');
+    session.place('order-wall-2', WALL, 5, 6, 'build-2', 'second wall');
+    const spent = TREASURY_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits;
+    expect(spent, 'two walls, two lots of bricks').toBe(2 * wallCost);
+
+    session.cancel('order-wall-1', 'cancel the first');
+    expect(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits,
+      'exactly one wall\'s worth is still spent',
+    ).toBe(wallCost);
+
+    session.buildUntilComplete(['order-wall-2'], 'the survivor still builds');
+    expect(session.runtime.world.getTopEdge(tile(5, 6)), 'and it really went up').toBeGreaterThan(0);
+    expect(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits,
+      'and it was not bought a second time',
+    ).toBe(wallCost);
+  });
+
+  it('will not cancel one lorry two orders are waiting on, which is a save written before ruling 12', () => {
+    /*
+     * **The bound that stops this becoming #687 in reverse, and the only route
+     * that still reaches it.** A delivery covering more than one order cannot
+     * be produced by a session on this build: #703 ruling 12 made the order the
+     * unit a purchase is atomic at, so `procureForPendingOrders` makes one
+     * purchase per item **per funded order** and every `jit:` delivery is
+     * exactly one order's worth. Cancelling a delivery the rest of the queue
+     * still needs part of is therefore unreachable by placing walls -- and it
+     * is reachable from a **save**, because `pendingDeliveries` is persisted
+     * (`economySectionSchema`) and a save written by any build before
+     * 2026-08-31 can hold an aggregated lump.
+     *
+     * So this restores one, which is what that save looks like when it loads,
+     * and asserts the surplus half of a lorry is not a reason to turn the whole
+     * lorry around: the second wall still gets its bricks and is not paid for
+     * twice.
+     *
+     * Measured: without the `delivery.quantity > surplus` guard in
+     * `largestSurplusDelivery`, this reads `160` where it expects `80` -- the
+     * whole lump refunded for one cancelled wall -- and the second wall is then
+     * re-bought by the next scheduled pass.
+     */
+    const session = createSession();
+    session.place('order-wall-1', WALL, 4, 6, 'build-1', 'first wall');
+    session.place('order-wall-2', WALL, 5, 6, 'build-2', 'second wall');
+    const pending = session.runtime.procurement.pendingDeliveries;
+    expect(pending, 'this build makes one delivery per order').toHaveLength(2);
+
+    // The pre-ruling-12 shape: one purchase for the pair, under one `jit:` id,
+    // carrying what the two together cost. Restoring is how such a delivery
+    // enters a session, and it is exactly what loading that save does.
+    session.runtime.procurement.restore({
+      pending: [
+        {
+          orderId: 'jit:0:item.brick:0',
+          itemId: WALL_REQUIREMENT.itemId,
+          quantity: 2 * WALL_REQUIREMENT.quantity,
+          arrivesAtTick: pending[0]!.arrivesAtTick,
+          paidMinorUnits: 2 * wallCost,
+        },
+      ],
+    });
+    session.conserved('one lorry for the pair, as a pre-ruling-12 save carries it');
+
+    session.cancel('order-wall-1', 'cancel one of the two');
+    expect(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits,
+      'the lorry the other wall is waiting on must not be turned around',
+    ).toBe(2 * wallCost);
+    expect(session.runtime.procurement.pendingDeliveries, 'so it is still on its way').toHaveLength(1);
+
+    session.buildUntilComplete(['order-wall-2'], 'and the survivor builds off it');
+    expect(session.runtime.world.getTopEdge(tile(5, 6))).toBeGreaterThan(0);
   });
 });

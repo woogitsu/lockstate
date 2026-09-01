@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { toggleRemovalMode, type HudToolArming } from '../../src/ui/hud/tool-arming';
+import { pressArm, toggleRemovalMode, type HudToolArming } from '../../src/ui/hud/tool-arming';
 import { stripComments } from '../helpers/canonical-iteration';
 
 const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -94,6 +94,50 @@ describe('pressing the removal toggle', () => {
 });
 
 /**
+ * The arm control -- "Draw on map" / "Place on map" -- at the same layer the
+ * removal toggle above is proved at, and for the same reason: the panel that
+ * owns it is unreachable from this suite (`vitest.config.ts` has no jsdom).
+ *
+ * Only `RoomsPanel` calls `pressArm` today; see the function's own doc for why
+ * `build-panel.ts` -- which has the identical defect in its own arm button --
+ * is not migrated in the same change, and the coupling block below asserts
+ * exactly that asymmetry rather than a coupling that does not exist yet.
+ */
+describe('pressing the arm control', () => {
+  /** The ordinary case: nothing armed, nothing removing. One press arms it. */
+  it('arms the tool from a standing start', () => {
+    expect(pressArm(DISARMED)).toEqual({ armed: true, removing: false });
+  });
+
+  /**
+   * The defect issue #735 names. `armed` was already `true` on the way out of
+   * removal -- entering removal arms the tool -- so the old expression,
+   * `armed = !armed` after `removing` had already been cleared, computed
+   * `false`: the press that asked to draw stood the tool down instead.
+   */
+  it('arms to draw when pressed while removing, rather than standing the tool down', () => {
+    expect(pressArm({ armed: true, removing: true })).toEqual({ armed: true, removing: false });
+  });
+
+  /** The toggle-off case: pressed again while already armed to draw. */
+  it('disarms when pressed a second time while already armed to draw', () => {
+    expect(pressArm({ armed: true, removing: false })).toEqual({ armed: false, removing: false });
+  });
+
+  /**
+   * `removing` is unconditionally `false` after this press in every starting
+   * state -- this control's whole job is to select "draw", never "remove" --
+   * stated as a property across every reachable state rather than only in the
+   * three examples above.
+   */
+  it('always leaves removal off, whatever the starting state', () => {
+    for (const before of [DISARMED, { armed: true, removing: false }, { armed: true, removing: true }]) {
+      expect(pressArm(before).removing, `pressArm(${JSON.stringify(before)}) left removal on`).toBe(false);
+    }
+  });
+});
+
+/**
  * The coupling, which is the actual class defect.
  *
  * #689 was one expression written twice -- `armed = removing || armed`, in
@@ -145,5 +189,52 @@ describe('the two panels hold one removal transition between them', () => {
       expect(code.length, `${panel} stripped to nothing`).toBeGreaterThan(10_000);
       expect(code, `${panel} is not the panel it claims to be`).toContain('HUD_MESSAGE_KEY');
     }
+  });
+});
+
+/**
+ * The arm control's coupling -- deliberately **not** claimed to be both
+ * panels', because it is not, yet.
+ *
+ * `RoomsPanel` calls `pressArm`; `build-panel.ts` still carries its own
+ * `armed = (wasRemoving || !armed) && selectedId !== undefined` inline, with
+ * the identical #735-shaped defect `pressArm`'s doc comment accounts for.
+ * That file is held by another agent for the length of this change (see the
+ * brief for issue #735), so this only asserts what is actually true today:
+ * `RoomsPanel` routes the press through the shared reducer, and no longer
+ * carries the expression the issue is about. A future change that migrates
+ * `build-panel.ts` too should widen this to match
+ * "the two panels hold one removal transition between them" above -- not
+ * silently, since a coupling test that quietly started checking more would be
+ * exactly the kind of change this file's own comments warn against passing
+ * unnoticed.
+ */
+describe("the Rooms panel's arm control routes through the shared reducer", () => {
+  const ROOMS_PANEL = 'src/ui/hud/rooms-panel.ts';
+
+  const codeOf = async (relative: string): Promise<string> =>
+    stripComments(await readFile(path.join(REPOSITORY_ROOT, relative), 'utf8'));
+
+  it('has the Rooms panel ask pressArm for the arm control', async () => {
+    const code = await codeOf(ROOMS_PANEL);
+    expect(code, `${ROOMS_PANEL} decides the arm press without the shared reducer`).toContain('pressArm(');
+  });
+
+  it('has the Rooms panel no longer carrying the expression #735 is about', async () => {
+    const code = await codeOf(ROOMS_PANEL);
+    expect(code.replace(/\s+/g, ' '), `${ROOMS_PANEL} still negates armed on the way out of removal`).not.toContain(
+      'armed = !armed',
+    );
+  });
+
+  /**
+   * Non-vacuity, `stripComments`'s own reason repeated: a scanner that
+   * returned nothing, or a path that resolved to nothing, would satisfy both
+   * assertions above by finding nothing at all.
+   */
+  it('read real panel source, not an empty file', async () => {
+    const code = await codeOf(ROOMS_PANEL);
+    expect(code.length, `${ROOMS_PANEL} stripped to nothing`).toBeGreaterThan(10_000);
+    expect(code, `${ROOMS_PANEL} is not the panel it claims to be`).toContain('HUD_MESSAGE_KEY');
   });
 });

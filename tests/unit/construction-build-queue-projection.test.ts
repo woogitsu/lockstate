@@ -4,6 +4,7 @@ import {
   projectBuildQueue,
   type BuildQueueViewModel,
 } from '../../src/simulation/presentation';
+import { PROCURABLE_MATERIALS } from '../../src/content/procurement-catalog';
 import { BUILD_ORDER_FAIL_REASONS, type BuildOrder } from '../../src/simulation/construction/build-order';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import {
@@ -452,24 +453,64 @@ describe('cancelling one order by id, which is the command this read model exist
      * a standing overdraft of 2,500 in every session
      * ([ADR 0083](../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
      * §2), so 40 in the bank funds thirty-one walls and this case measured
-     * nothing. 422 planks at 65 is 27,430 of the 27,500 a new prison can spend,
-     * leaving 70 -- the same relationship to a wall's 80, expressed against the
-     * floor the prison has.
+     * nothing.
+     *
+     * > 422 planks at 65 is 27,430 of the 27,500 a new prison can spend,
+     * > leaving 70 -- the same relationship to a wall's 80, expressed against the
+     * > floor the prison has.
+     *
+     * > ```
+     * > runtime.kernel.submitCommand('cmd-buy', …, 0, packCommand({ … quantity: 422 }));
+     * > orderWall(runtime, 'order-a', 3, 3);
+     * > runTo(runtime, 30);
+     * > expect(runtime.treasury.balanceMinorUnits, '25,000 - 422 x 65, …').toBe(-2_430);
+     * > ```
+     *
+     * **The owner's ruling 19 of 2026-08-31 moved both the figure and the
+     * order of events, and the second is the finding.** Ruling 19 -- drafted as
+     * ADR 0017's "Amendment, 2026-09-01" -- gives ADR 0017 decision 8's rungs
+     * their own thresholds inside the overdraft: a press stops at -1,250 and the
+     * queue's own procurement at -2,000. A press can therefore no longer leave
+     * *less* than 750 of construction room, so "spent down to seventy" is not a
+     * position any sequence of presses reaches. The last stretch is taken at the
+     * wage rung -- a payday -- which is how a real session gets there, and it
+     * has to happen after the purchase has been dispatched rather than beside
+     * it.
+     *
+     * 403 planks at 65 is 26,195 of the 26,250 a press may spend, leaving the
+     * balance at -1,195; 735 more at the wage rung is **-1,930**, which is 70 of
+     * construction room against a wall's 80. The relationship this case is about
+     * is unchanged to the minor unit.
      */
     const runtime = createNewSimulationRuntime(SEED);
-    // Both at tick 0 and neither stepped in between, because `orderWall`
-    // schedules at tick 0 and the kernel refuses a command dated in the past.
-    // The kernel dispatches them in sequence order, so the money is gone before
-    // the wall is placed.
     runtime.kernel.submitCommand(
       'cmd-buy',
       runtime.kernel.expectedSequence,
       0,
-      packCommand({ type: 'PurchaseMaterials', orderId: 'order-buy', itemId: 'item.wood-plank', quantity: 422 }),
+      packCommand({ type: 'PurchaseMaterials', orderId: 'order-buy', itemId: 'item.wood-plank', quantity: 403 }),
     );
-    orderWall(runtime, 'order-a', 3, 3);
     runTo(runtime, 30);
-    expect(runtime.treasury.balanceMinorUnits, '25,000 - 422 x 65, and the wall bought nothing').toBe(-2_430);
+    expect(runtime.treasury.balanceMinorUnits, '25,000 - 403 x 65, which is the delivery rung').toBe(-1_195);
+    expect(runtime.treasury.spend(735, 'wages'), 'the rest, at the only rung that reaches it').toBe(true);
+
+    // Dated at the tick the kernel has reached rather than at 0, because the
+    // wage-rung drain above had to happen after the purchase was dispatched and
+    // the kernel refuses a command dated in the past.
+    runtime.kernel.submitCommand(
+      'cmd-order-a',
+      runtime.kernel.expectedSequence,
+      runtime.kernel.tick,
+      packCommand({
+        type: 'PlaceBuildOrder',
+        orderId: 'order-a',
+        definitionId: 'wall-brick',
+        x: 3,
+        y: 3,
+        transactionId: 'txn-order-a',
+      }),
+    );
+    runTo(runtime, 60);
+    expect(runtime.treasury.balanceMinorUnits, 'and the wall bought nothing').toBe(-1_930);
 
     const view = queue(runtime);
     expect(view.orders.rows.map((row) => row.state)).toEqual(['materials-pending']);
@@ -498,7 +539,22 @@ describe('cancelling one order by id, which is the command this read model exist
     });
   });
 
-  it('gives the materials back, so cancelling the third of a run is not a way to lose bricks', () => {
+  it('gives the money back, so cancelling the third of a run is not a way to lose value', () => {
+    /*
+     * **This case read "gives the materials back" until 2026-08-31 and asserted
+     * the bricks landing in the container.** The owner's ruling 20 of that date
+     * -- *"Anulowanie zwraca pieniądze zamiast cegieł"*, recorded in ADR 0076's
+     * amendment -- makes the refund money instead, for an order the crew has
+     * not started. The point of the case is unchanged and is the reason it is
+     * rewritten rather than deleted: aiming the panel's *Cancel* at one row of a
+     * run must not be a way to lose what that row was holding.
+     *
+     * Both halves are asserted, because paying for the bricks *and* putting
+     * them back is the one-press value creation the amendment names.
+     * `tests/integration/economy-money-conservation.test.ts` is where the whole
+     * sum is checked; this checks the two counters this panel's own command
+     * moves.
+     */
     const runtime = session();
     const container = runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID);
     orderWall(runtime, 'order-a', 3, 3);
@@ -508,13 +564,20 @@ describe('cancelling one order by id, which is the command this read model exist
     // built, the second is `assigned` and holding its allocation.
     runTo(runtime, 30);
     const held = container.quantityOf('item.brick');
+    const balance = runtime.treasury.balanceMinorUnits;
     const allocated = runtime.construction.getOrder('order-b')?.materialsAllocated ?? [];
     expect(allocated.length).toBeGreaterThan(0);
+    const price = PROCURABLE_MATERIALS.find((material) => material.itemId === allocated[0]?.itemId)?.unitPriceMinorUnits;
+    expect(price, 'the fixture needs a catalogue price to be measuring anything').toBeGreaterThan(0);
 
     cancel(runtime, 'order-b');
     runTo(runtime, runtime.kernel.tick + 1);
 
-    expect(container.quantityOf('item.brick')).toBe(held + (allocated[0]?.quantity ?? 0));
+    expect(
+      runtime.treasury.balanceMinorUnits - balance,
+      'the catalogue value of what the cancelled row was holding',
+    ).toBe(price! * (allocated[0]?.quantity ?? 0));
+    expect(container.quantityOf('item.brick'), 'money instead of bricks, never both').toBe(held);
     expect(runtime.construction.getOrder('order-b')?.materialsAllocated).toEqual([]);
   });
 });
