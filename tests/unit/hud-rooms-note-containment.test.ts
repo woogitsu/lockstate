@@ -15,6 +15,13 @@ import { describe, expect, it } from 'vitest';
  * agent default, 231px painted past the panel's right edge and over whatever
  * the map block drew beside it.
  *
+ * **The owner ruled on 2026-09-01 that the sentence wraps**, so the cure is
+ * `white-space: normal` (overriding the `nowrap` inherited from `.ui-eyebrow`)
+ * plus `overflow-wrap: break-word`, the same pairing #720's fix gave
+ * `.ui-row--wrap`. `overflow: hidden` stays, and is still what this test is
+ * mainly for: it is the declaration that keeps a single unbreakable token
+ * contained once wrapping has nothing to break on.
+ *
  * This is a source-level check in the same spirit as
  * `tests/unit/ui-design-tokens.test.ts` -- `vitest.config.ts` sets
  * `environment: 'node'`, so there is no layout engine here to measure a real
@@ -26,11 +33,14 @@ import { describe, expect, it } from 'vitest';
  * longer paints past its box on the assembled page is a Playwright
  * measurement this suite cannot take; ADR 0085 names it as one still owed.
  *
- * Deliberately narrow: this does not assert the sentence is *readable* --
- * ellipsis-truncating the only instruction the game gives for this gesture is
- * itself an unresolved cost, recorded in `hud.css`'s own comment on this rule
- * and in ADR 0085 rather than fixed here. It asserts only that the box
- * contains what does not fit, instead of drawing it over its neighbours.
+ * **This file's third case asserted `text-overflow: ellipsis` until the
+ * ruling**, under a docblock that called the sentence unreadable *"deliberately
+ * narrow: this does not assert the sentence is readable -- ellipsis-truncating
+ * the only instruction the game gives for this gesture is itself an unresolved
+ * cost"*. That cost is what the owner removed: the case now asserts the two
+ * declarations that make the whole sentence visible, and `text-overflow` is
+ * asserted **absent**, because it only ever applies to a single non-wrapping
+ * line and would read as a promise this rule does not keep.
  */
 
 const HUD_CSS_PATH = join(__dirname, '../../src/ui/hud/hud.css');
@@ -70,8 +80,21 @@ describe('.hud-rooms__note contains its overflow instead of painting over its ne
     expect(rule).toMatch(/overflow\s*:\s*hidden\s*;?/);
   });
 
-  it('declares text-overflow: ellipsis, so a truncation is visible rather than a silent hard clip', () => {
+  it('wraps the sentence rather than truncating it, on the owner\'s ruling of 2026-09-01', () => {
     const rule = baseRoomsNoteRule(source);
-    expect(rule).toMatch(/text-overflow\s*:\s*ellipsis\s*;?/);
+    // `.ui-eyebrow` sets `white-space: nowrap`; without this override the
+    // sentence is one line however wide it gets, which is what spilled.
+    expect(rule, 'the note inherits nowrap from .ui-eyebrow and nothing overrides it').toMatch(
+      /white-space\s*:\s*normal\s*;?/,
+    );
+    // The pairing #720's `.ui-row--wrap` uses: wrapping alone leaves a single
+    // token longer than the box with nowhere to break.
+    expect(rule, 'a token longer than the box has nowhere to break').toMatch(/overflow-wrap\s*:\s*break-word\s*;?/);
+    // And not the truncation this rule carried for a few hours: it applies
+    // only to a non-wrapping line, so beside `white-space: normal` it would be
+    // a declaration that does nothing and reads as though it did.
+    expect(rule, 'text-overflow does nothing on a wrapping line and should not suggest otherwise').not.toMatch(
+      /text-overflow\s*:/,
+    );
   });
 });

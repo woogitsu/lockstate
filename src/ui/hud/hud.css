@@ -2643,23 +2643,37 @@
    it -- the only instruction the game gives for the Rooms gesture, spilling
    onto neighbouring UI rather than being contained by the panel that owns it.
 
-   This is a containment fix and not a readability one, and the distinction is
-   the reason it ships without an ADR: it does not choose between wrapping the
-   sentence (which the comment above already argues against, because it would
-   move the controls under it while a player is reading) and shortening it
-   (which is copy, and `AGENTS.md`'s fourth exclusion makes that the owner's).
-   Ellipsis-truncating a static, unchanging instruction is not a good outcome
-   either -- it hides content precisely for players it was written for -- and
-   is recorded as such rather than passed off as solved; what this rule
-   guarantees is only that the failure mode is "some of the sentence, inside
+   **The owner ruled on 2026-09-01: the sentence wraps.** This rule read
+   `display: block; overflow: hidden; text-overflow: ellipsis;` for the few
+   hours between the spill being measured and that ruling, and the reasoning
+   is kept because it is what a reader of that revision found here: it called
+   itself "a containment fix and not a readability one", said that
+   "ellipsis-truncating a static, unchanging instruction is not a good outcome
+   either -- it hides content precisely for players it was written for", and
+   guaranteed only that the failure mode became "some of the sentence, inside
    its own box" rather than "the whole sentence, drawn over something else".
-   `.ui-row__label` in `primitives.css` keeps the same `overflow: hidden` for
-   the same stated reason: contained is strictly better than uncontained,
-   independent of what a future decision does with the wrapping question.
-   `tests/unit/hud-rooms-note-containment.test.ts` pins the three declarations
-   this rule needs so a future edit cannot drop `overflow` and reopen the
-   spill silently. */
-.hud-rooms__note { display: block; overflow: hidden; text-overflow: ellipsis; }
+
+   The owner chose the readability answer over the containment-only one, so
+   the whole instruction is now visible: `white-space: normal` overrides the
+   `nowrap` this element inherits from `.ui-eyebrow`, and `overflow-wrap:
+   break-word` is the same pairing #720's fix gave `.ui-row--wrap`, for the
+   same reason -- a single token longer than the box would otherwise spill
+   again with no space to break at.
+
+   **The cost was chosen knowingly, and the argument it overrules is one this
+   file makes two blocks above**: a wrapped note is two or three lines, so the
+   controls under it move down while a player reads. That is the price of the
+   player being able to read the only instruction the game gives for the Rooms
+   gesture. Shortening the sentence instead remains available and remains the
+   owner's, `AGENTS.md`'s fourth exclusion.
+
+   `overflow: hidden` stays: it is what keeps an unbreakable token contained,
+   and it is what `tests/unit/hud-rooms-note-containment.test.ts` pins, so a
+   future edit cannot reopen the spill silently. `text-overflow: ellipsis` is
+   gone -- it only ever applies to a single non-wrapping line, so keeping it
+   beside `white-space: normal` would be a declaration that reads as a promise
+   and does nothing. */
+.hud-rooms__note { display: block; white-space: normal; overflow-wrap: break-word; overflow: hidden; }
 
 .hud-rooms__note[data-tone='warning'] { color: var(--status-warning); }
 
