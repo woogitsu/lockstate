@@ -724,6 +724,31 @@ The words go back to the owner with the figures. What is **not** waiting is the
 number and the tone under them: §5a(c) shipped, so the badge is true today
 whatever it ends up saying.
 
+**e. The owner ruled on (d), reversing their own earlier choice of
+`{remaining} left before deliveries stop`, still 2026-09-01.** Kept rather than
+overwritten, for the same reason §5a's own opening clause gives: (d) is the
+record of the measurement having been taken and returned rather than acted on
+unilaterally. The ruling itself: *"the chip keeps the short wording, because it
+fits; the name of the threshold — that it is deliveries that will stop — is
+said elsewhere, where there is room for a full sentence: in the hover tooltip
+on the chip, and in the alert. Nothing is to disappear from the screen."*
+
+Only the badge's wording was reversed. `hud.status.funds-remaining` stays
+`{remaining} left`, exactly as (d) left it; §5a(c)'s re-based number and tone
+are untouched, because they were never what the owner reversed. What shipped
+instead is the sentence living somewhere the badge had no room for: two new
+keys, `hud.status.funds-before-deliveries-stop` and
+`hud.status.funds-deliveries-stopped`, chosen on the same amber/red boundary
+`overdraftTone` chooses on, said through `StatChip.setDescription` into both
+the chip's `title` (pointer hover) and its screen-reader text (everyone else,
+`.ui-sr-only`, out of flow — costs the row no width, measured rather than
+assumed in `tests/browser/ui-overdraft-badge.spec.ts`). The refusal alert,
+`hud.alert.refusal.purchase.insufficient-funds`, says the same thing again for
+the player who never hovers at all — the owner's standing directive against
+hidden functionality applies to a tooltip exactly as it applies to anything
+else, and `tests/unit/ui-hud-funds-threshold-named.test.ts` gates both channels
+so neither can go quiet on its own.
+
 
 
 ### 6. Where this is implemented
