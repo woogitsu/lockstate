@@ -87,7 +87,26 @@ async function wallSide(
     const beforePress = (await sentCommands(page)).length;
     await press(page, point.x, point.y);
     const producedByPress = (await sentCommands(page)).slice(beforePress);
-    repairs.push(`press at ${tile.x},${tile.y} produced ${JSON.stringify(producedByPress)}`);
+    if (producedByPress.length === 0) {
+      // A press producing nothing at all is worth knowing the cause of: what
+      // DOM element actually sits under that point, screen-space, so a
+      // repeated no-op is diagnosed rather than repeated blind.
+      const underneath = await page.evaluate(
+        ([x, y]) => {
+          const stack = document.elementsFromPoint(x, y).slice(0, 4);
+          return stack.map((el) => ({
+            tag: el.tagName,
+            cls: el.className,
+            rect: el.getBoundingClientRect(),
+            pointerEvents: getComputedStyle(el).pointerEvents,
+          }));
+        },
+        [point.x, point.y] as const,
+      );
+      repairs.push(`press at ${tile.x},${tile.y} (screen ${point.x},${point.y}) produced NOTHING; elementsFromPoint: ${JSON.stringify(underneath)}`);
+    } else {
+      repairs.push(`press at ${tile.x},${tile.y} produced ${JSON.stringify(producedByPress)}`);
+    }
   }
   const stillMissing = (await missingOf()).map((t) => `${t.x},${t.y}`);
   return { byDrag, repairs, stillMissing };
@@ -119,6 +138,33 @@ async function buildResilientCell(
   const origin = await calibrate(page);
   log(`calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
 
+  /*
+   * **`.hud-minimap` sits over the world canvas on the left, and this is the
+   * cause the first run of act 1 spent three re-drags and a diagnostic press
+   * finding.** At 1280x800 it measured `.ui-panel hud-minimap` at
+   * `x:12 y:317.8 w:398 h:401` with `pointer-events: auto` — a real panel a
+   * player can click, not a decoration — and `elementsFromPoint` at the west
+   * wall's three missing tiles (`(384,368)`, `(384,432)`, `(384,496)`)
+   * resolved to it before the world `canvas`, so those presses produced zero
+   * commands, not a wrong one. `docs/research/2026-08-29-playtest-ordering-
+   * and-the-second-room.md` already measured the same panel blocking tiles at
+   * 900x600 and ruled it *"not a defect claim... the camera pans"* — which is
+   * this fix: build somewhere the panel is not, rather than fighting it tile
+   * by tile.
+   *
+   * Read live rather than hard-coded, because the panel's rect depends on the
+   * viewport this act runs at.
+   */
+  const minimapRect = await page.evaluate(() => {
+    const el = document.querySelector('.hud-minimap');
+    if (el === null || (el as HTMLElement).offsetParent === null) return undefined;
+    const r = el.getBoundingClientRect();
+    return { left: r.left, right: r.right, top: r.top, bottom: r.bottom };
+  });
+  const tileShift =
+    minimapRect === undefined ? 0 : Math.max(0, Math.ceil((minimapRect.right + 40 - origin.originX) / TILE) - 12);
+  log(`.hud-minimap rect: ${JSON.stringify(minimapRect)} — tile shift applied to clear it: ${tileShift}`);
+
   await buy(page, 'wall-brick', 60);
   await buy(page, 'bed-wooden', bedCount + 2);
 
@@ -128,11 +174,13 @@ async function buildResilientCell(
   await page.waitForTimeout(3_000);
 
   await armBuildable(page, 'wall-brick');
-  const westX = origin.originX + 12 * TILE;
-  const eastX = origin.originX + 18 * TILE;
+  const westTile = 12 + tileShift;
+  const eastTile = 18 + tileShift;
+  const westX = origin.originX + westTile * TILE;
+  const eastX = origin.originX + eastTile * TILE;
   const northY = origin.originY + 12 * TILE;
   const southY = origin.originY + 18 * TILE;
-  const columns = [12, 13, 14, 15, 16, 17];
+  const columns = [0, 1, 2, 3, 4, 5].map((i) => westTile + i);
   const rows = [12, 13, 14, 15, 16, 17];
 
   const north = await wallSide(
@@ -154,7 +202,7 @@ async function buildResilientCell(
   const west = await wallSide(
     page,
     'west',
-    rows.map((y) => ({ x: 12, y })),
+    rows.map((y) => ({ x: westTile, y })),
     { x: westX, y: northY + TILE / 2 },
     { x: westX, y: southY - TILE / 2 },
     (t) => ({ x: westX, y: centreOf(origin, t.x, t.y).y }),
@@ -162,7 +210,7 @@ async function buildResilientCell(
   const east = await wallSide(
     page,
     'west',
-    rows.map((y) => ({ x: 18, y })),
+    rows.map((y) => ({ x: eastTile, y })),
     { x: eastX, y: northY + TILE / 2 },
     { x: eastX, y: southY - TILE / 2 },
     (t) => ({ x: eastX, y: centreOf(origin, t.x, t.y).y }),
@@ -187,7 +235,7 @@ async function buildResilientCell(
     }
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
-    await drag(page, centreOf(origin, 12, 12), centreOf(origin, 17, 17));
+    await drag(page, centreOf(origin, westTile, 12), centreOf(origin, eastTile - 1, 17));
     await page.locator('.hud-rooms__confirm').click();
     await page.waitForTimeout(800);
     zoned = ((await latestCounts(page))?.rooms ?? 0) > 0;
@@ -199,14 +247,14 @@ async function buildResilientCell(
   await armBuildable(page, 'bed-wooden');
   let placed = 0;
   for (const row of [12, 14]) {
-    for (let column = 12; column <= 17 && placed < bedCount; column += 1) {
+    for (let column = westTile; column <= eastTile - 1 && placed < bedCount; column += 1) {
       const point = centreOf(origin, column, row);
       await press(page, point.x, point.y);
       placed += 1;
     }
   }
   await armBuildable(page, 'toilet-brick');
-  await press(page, centreOf(origin, 12, 16).x, centreOf(origin, 12, 16).y);
+  await press(page, centreOf(origin, westTile, 16).x, centreOf(origin, westTile, 16).y);
   log(`${placed} bed order(s) + 1 toilet placed`);
   await waitForQueueEmpty(page);
   await page.waitForTimeout(1_500);
