@@ -548,15 +548,20 @@ function atTreasuryFloor(counts: HudCountsViewModel): boolean {
  * adds, between `danger` and `critical`, stays the published floor and is
  * unaffected either way.
  *
- * **Colour is never the only signal, and this ruling does not by itself keep
- * that promise.** The badge beside the chip states the remainder in words, and
- * at both the rung and the floor those words are the same sentence --
- * `HUD_MESSAGE_KEY.fundsDeliveriesStopped`, chosen when `overdraftRemaining`
- * clamps to zero, which it does at the rung and everywhere below it alike. So
- * today a player who cannot see the colours reads one sentence for two states
- * this function tells apart, and `overdraftDescription` does not invent a
- * second one: a new sentence is player-facing copy and `AGENTS.md`'s fourth
- * exclusion reserves it to the owner. This is reported rather than fixed here.
+ * **Colour is never the only signal, and this ruling now keeps that promise.**
+ * The badge beside the chip states the remainder in words, and until issue
+ * #768's ruling of 2026-09-01 the rung and the floor read the same sentence --
+ * `HUD_MESSAGE_KEY.fundsDeliveriesStopped`, chosen whenever `overdraftRemaining`
+ * clamps to zero, which it does at the rung and everywhere below it alike. A
+ * player who could not see the colours read one sentence for two states this
+ * function tells apart. `overdraftDescription` now chooses a third key,
+ * `HUD_MESSAGE_KEY.fundsTreasuryFloorExhausted`, on exactly the boundary this
+ * function paints `critical` on -- `atTreasuryFloor`, over the published
+ * `counts.treasuryOverdraftFloorMinorUnits` -- so the words and the colour
+ * change together at both steps, not only the first. The sentence itself is
+ * player-facing copy and `AGENTS.md`'s fourth exclusion reserves its final
+ * wording to the owner; what shipped here is the clearest available draft,
+ * flagged owner-pending, not a placeholder.
  */
 function overdraftTone(counts: HudCountsViewModel): BadgeTone | undefined {
   const remaining = overdraftRemaining(counts);
@@ -602,17 +607,19 @@ function overdraftBadge(counts: HudCountsViewModel): HudMetricBadge | undefined 
  * badge is amber then red across the same step, so the words and the colour
  * change together.
  *
- * **Still two keys after issue #768's ruling added a third tone, and that is
- * a gap this function reports rather than closes.** `overdraftTone` now tells
- * the deliveries rung apart from the treasury floor; this function does not --
- * `remaining` clamps to zero at the rung and stays zero all the way to the
- * floor and below, so `fundsDeliveriesStopped` is the sentence at both, and
- * `critical` and `danger` currently differ only in colour. Naming the floor in
- * words would be a third player-facing sentence, which `AGENTS.md`'s fourth
- * exclusion reserves to the owner; this comment is the record that the words
- * do not yet carry the distinction the colour now does, so a colour-blind
- * player or a screen reader hears one state where the chip shows two.
+ * **Three keys now, closing the gap issue #768's ruling of 2026-09-01 found.**
+ * `overdraftTone` told the deliveries rung apart from the treasury floor from
+ * the moment the third tone landed; this function did not -- `remaining`
+ * clamps to zero at the rung and stays zero all the way to the floor and
+ * below, so `fundsDeliveriesStopped` was the sentence at both `danger` and
+ * `critical`, which differed only in colour. This function now asks
+ * `atTreasuryFloor(counts)` directly -- the same boundary `overdraftTone`
+ * already draws `critical` on, computed once so the two cannot disagree at
+ * the edge -- and chooses `HUD_MESSAGE_KEY.fundsTreasuryFloorExhausted`
+ * there instead. `danger` is untouched: it is still exactly the balance-below
+ * the rung, above-the-floor case, and still reads `fundsDeliveriesStopped`.
  *
+
  * The remainder rides `numberParameters` for `overdraftBadge`'s reason: this
  * layer is pure and has no localizer, so it names the quantity and the strip
  * formats it -- and the tooltip's number then groups exactly as the badge's
@@ -623,6 +630,7 @@ function overdraftDescription(counts: HudCountsViewModel): HudMetricText | undef
   const tone = overdraftTone(counts);
   const remaining = overdraftRemaining(counts);
   if (tone === undefined || remaining === undefined) return undefined;
+  if (atTreasuryFloor(counts)) return { textKey: HUD_MESSAGE_KEY.fundsTreasuryFloorExhausted };
   if (remaining <= 0) return { textKey: HUD_MESSAGE_KEY.fundsDeliveriesStopped };
   return { textKey: HUD_MESSAGE_KEY.fundsBeforeDeliveriesStop, numberParameters: { remaining } };
 }

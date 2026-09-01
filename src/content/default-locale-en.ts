@@ -241,6 +241,28 @@ const authoredMessages: Readonly<Record<string, string>> = {
    */
   'hud.status.funds-deliveries-stopped':
     'Deliveries have stopped — no materials can be ordered until the state pays what it owes.',
+  /*
+   * The chip's tooltip at the treasury floor itself -- `critical`, the ruling
+   * on issue #768's third tone, one step past everything the sentence above
+   * says.
+   *
+   * **Written to answer the two questions a player at this balance has, and
+   * nothing else**: that no further spending of *any* kind is possible right
+   * now (not deliveries alone -- the sentence above already says that -- but
+   * construction, hiring and even the wage payment the deliveries rung still
+   * lets through), and what lifts it. "Until the state pays what it owes" is
+   * kept as the tail rather than invented fresh, because it is the true
+   * mechanism (the per-prisoner-day grant, `src/simulation/economy/income.ts`)
+   * and it is what every sibling refusal sentence already says; a different
+   * tail here would read as a different escape hatch where there is only one.
+   *
+   * **This copy is owner-pending** (`AGENTS.md`'s fourth exclusion: a
+   * player-facing promise is not an agent's to finalise). Written to be the
+   * clearest available sentence rather than a placeholder, not to be the
+   * owner's last word on it.
+   */
+  'hud.status.funds-treasury-floor-exhausted':
+    'The treasury is exhausted — nothing can be spent at all until the state pays what it owes.',
   // What this in-game day has earned so far (#29). The state pays per
   // prisoner-day at the end of the day, so this is the day's accrual and the
   // wording says so: "Earned today", never "Income" -- there is no rate, no

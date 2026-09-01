@@ -492,31 +492,33 @@ describe('status strip: tone and badges', () => {
     });
 
     /*
-     * At and below the rung: a different sentence, because a different thing
-     * is true. `{remaining} left before deliveries stop` with a `0` in it is a
-     * warning about something that has already happened, and the chip goes red
-     * at exactly this step -- so the words change where the colour changes.
+     * At and below the rung, above the floor: a different sentence, because a
+     * different thing is true. `{remaining} left before deliveries stop` with
+     * a `0` in it is a warning about something that has already happened, and
+     * the chip goes red at exactly this step -- so the words change where the
+     * colour changes.
      */
-    /*
-     * **The same sentence at all four balances, including the two at and past
-     * the floor** -- and that sameness is issue #768's finding, not an
-     * oversight of this test. `overdraftTone` tells -1,300 apart from -2,500
-     * (`danger` against `critical`, asserted below); this sentence does not,
-     * because `overdraftDescription` chooses between its two keys on whether
-     * `remaining` has clamped to zero, and it is zero at the rung and
-     * everywhere below it alike. A third sentence for the floor is
-     * player-facing copy `AGENTS.md`'s fourth exclusion reserves to the owner,
-     * so this test pins the gap rather than inventing one.
-     */
-    for (const balance of [-1_250, -1_300, -2_500, -3_000]) {
+    for (const balance of [-1_250, -1_300]) {
       expect(chip(balance).description, `balance ${String(balance)}`).toEqual({
         textKey: HUD_MESSAGE_KEY.fundsDeliveriesStopped,
       });
-    }
-    for (const balance of [-1_250, -1_300]) {
       expect(chip(balance).badge?.tone, `balance ${String(balance)}`).toBe('danger');
     }
+    /*
+     * **A third sentence at the floor itself, closing the gap issue #768's
+     * ruling of 2026-09-01 found and this test used to pin.** `overdraftTone`
+     * told -1,300 apart from -2,500 (`danger` against `critical`) from the
+     * moment the third tone landed; this sentence did not, because
+     * `overdraftDescription` chose between only two keys on whether
+     * `remaining` had clamped to zero, which it does at the rung and
+     * everywhere below it alike. It now also asks `atTreasuryFloor`, so
+     * `critical` gets its own words -- `fundsTreasuryFloorExhausted` -- rather
+     * than reusing `fundsDeliveriesStopped`.
+     */
     for (const balance of [-2_500, -3_000]) {
+      expect(chip(balance).description, `balance ${String(balance)} is at or past the floor`).toEqual({
+        textKey: HUD_MESSAGE_KEY.fundsTreasuryFloorExhausted,
+      });
       expect(chip(balance).badge?.tone, `balance ${String(balance)} is at or past the floor`).toBe('critical');
     }
 
