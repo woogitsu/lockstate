@@ -508,7 +508,8 @@ test('act 5: payroll walks a prison past every rung the player was refused at, a
       act,
       `t+${Math.round((Date.now() - started) / 1000)}s tick=${String(counts?.tick)} day=${await page.locator('.hud-clock__day').innerText()}` +
         `: treasury ${String(previous)} -> ${String(balance)} | chip tone=${String(chip.chipTone)}` +
-        ` badge ${JSON.stringify(chip.badgeText)} tone=${String(chip.badgeTone)}`,
+        ` badge ${JSON.stringify(chip.badgeText)} tone=${String(chip.badgeTone)}` +
+        ` | alerts ${JSON.stringify(await alertLines(page))}`,
     );
     previous = balance;
     if (chip.badgeTone === 'danger') {
@@ -520,4 +521,75 @@ test('act 5: payroll walks a prison past every rung the player was refused at, a
   log(act, `the alerts log holds ${JSON.stringify(await alertLines(page))}`);
   log(act, `the whole strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
   log(act, `the Security panel says ${JSON.stringify((await panelText(page, '.hud-staff')).replace(/\n/g, ' | '))}`);
+});
+
+/* ------------------------------------------------------------------ */
+
+test('act 6: the quantity field — what a player can type into the Buy control, and what they are told about it', async ({
+  page,
+}) => {
+  const act = 'act6';
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await installTee(page);
+  await openApp(page);
+
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await tab(page, 'build').click();
+  await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+  const buyRow = page.locator('.hud-build__buy');
+  if (await buyRow.isHidden()) await page.locator('.hud-build__buy-toggle').click();
+
+  /*
+   * `MAX_PURCHASE_QUANTITY` is 100,000 (`src/simulation/economy/procurement.ts:118`)
+   * and the command schema pins the same bound
+   * (`src/simulation/protocol/commands.ts:155`), so a quantity past it is
+   * rejected before it can be priced. `judgeAffordability` refuses a
+   * non-integer or negative charge as `'malformed-charge'`, which
+   * `src/main.ts` deliberately does *not* promote to ruling 18's sentence. This
+   * act types each of those into the field a player types into and records what
+   * the screen then says.
+   */
+  for (const typed of ['', '0', '-5', '0.5', '1e3', '100001', '999999999']) {
+    await page.locator('.hud-build__buy .ui-number__input').fill(typed);
+    await page.waitForTimeout(250);
+    const beforeText = await readBuyControl(page);
+    const before = (await sentCommands(page)).length;
+    await page.locator('.hud-build__buy-submit').click();
+    await page.waitForTimeout(900);
+    const sent = (await sentCommands(page)).slice(before);
+    const counts = await latestCounts(page);
+    log(
+      act,
+      `typed ${JSON.stringify(typed)}: the field now holds ` +
+        `${JSON.stringify(await page.locator('.hud-build__buy .ui-number__input').inputValue())}` +
+        ` | button before the press ${JSON.stringify(beforeText.submitLabel)}` +
+        ` | sent ${JSON.stringify(sent.map((c) => `${String(c['type'])} x${String(c['quantity'])}`))}` +
+        ` | band ${JSON.stringify(await refusalBand(page))}` +
+        ` | alerts ${JSON.stringify(await alertLines(page))}` +
+        ` | treasury=${String(counts?.treasuryMinorUnits)}`,
+    );
+  }
+
+  /*
+   * And the other silent route: two presses inside one dispatch.
+   * `AsyncActionGate.run` answers `'refused-busy'` and does not dispatch
+   * (`src/ui/primitives/async-action.ts:86`). Whether the player is told is
+   * what this measures.
+   */
+  await page.locator('.hud-build__buy .ui-number__input').fill('1');
+  await page.waitForTimeout(250);
+  const beforeBurst = (await sentCommands(page)).length;
+  const beforeBalance = (await latestCounts(page))?.treasuryMinorUnits;
+  for (let i = 0; i < 5; i += 1) {
+    await page.locator('.hud-build__buy-submit').click({ force: true, noWaitAfter: true });
+  }
+  await page.waitForTimeout(2500);
+  log(
+    act,
+    `five Buy presses as fast as the mouse allows: sent ${JSON.stringify(
+      (await sentCommands(page)).slice(beforeBurst).map((c) => String(c['type'])),
+    )} | treasury ${String(beforeBalance)} -> ${String((await latestCounts(page))?.treasuryMinorUnits)}` +
+      ` | band ${JSON.stringify(await refusalBand(page))} | alerts ${JSON.stringify(await alertLines(page))}`,
+  );
 });

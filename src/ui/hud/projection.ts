@@ -384,13 +384,42 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
  * How much of the standing overdraft a prison can still spend, or `undefined`
  * when there is no facility to have a remainder of.
  *
- * `balance - floor`, which is `judgeAffordability`'s `spendableMinorUnits` and
- * `Treasury.canAfford`'s own subtraction, arrived at from the two figures the
- * status channel publishes. The HUD may not import the simulation
- * (`AGENTS.md` boundary 1) and does not need to: both operands come from the
- * same payload, so this is an arithmetic identity over two published numbers
- * and not a second authority on either -- the line `prisonersWithoutBed` above
- * draws, applied to money.
+ * `balance - floor`, arrived at from the two figures the status channel
+ * publishes. The HUD may not import the simulation (`AGENTS.md` boundary 1) and
+ * does not need to: both operands come from the same payload, so this is an
+ * arithmetic identity over two published numbers and not a second authority on
+ * either -- the line `prisonersWithoutBed` above draws, applied to money.
+ *
+ * **This sentence used to go on: *"which is `judgeAffordability`'s
+ * `spendableMinorUnits` and `Treasury.canAfford`'s own subtraction"*. It is
+ * kept rather than overwritten, because it was true when #723 wrote it
+ * (`8d495e62`) and because it is the claim that broke.** The owner's ruling 19
+ * of 2026-08-31 (#747, `52b5bb1c`) gave ADR 0017 decision 8's rungs their own
+ * thresholds inside the overdraft, and that commit did not touch this file.
+ * Since it landed the two subtractions are different subtractions:
+ *
+ * - `judgeAffordability`'s `spendableMinorUnits` is
+ *   `balance - HOST_PRESS_FLOOR_MINOR_UNITS`, and that floor is
+ *   `rungFloorMinorUnits('deliveries', …)` -- **-1,250**
+ *   (`src/ui/affordability.ts:152`);
+ * - `Treasury.canAfford` subtracts `this.floorFor(spendClass)`, which is a
+ *   different number for three of the four classes
+ *   (`src/simulation/economy/treasury.ts:516`);
+ * - this function subtracts `treasuryOverdraftFloorMinorUnits`, the treasury's
+ *   floor -- **-2,500**.
+ *
+ * So the figure below is **exactly 1,250 larger than anything a Buy or a Hire
+ * press can spend**, at every negative balance, and 500 larger than anything a
+ * queued build order can. Measured on the assembled page: at a balance of
+ * -1,235 the badge reads `1,265 left` and the cheapest item in the catalogue,
+ * a 40 brick, is refused
+ * (`docs/research/2026-09-01-what-the-funds-chip-promises.md`, act 1).
+ *
+ * **What that figure should be instead is not decided here.** It is a
+ * player-visible number the owner ruled the wording of (ruling 18), so it is
+ * the owner's under `AGENTS.md`'s fourth exclusion -- which is the same reading
+ * `src/ui/affordability.ts` took of it when ruling 19 landed, in the paragraph
+ * beginning *"What it does not fix, deliberately."*
  *
  * **`undefined` for a floor that is absent or `0`.** Both say no room below
  * zero is known, and a facility of nothing has no remainder to state; the
