@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS } from '../../src/content/procurement-catalog';
+import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
+import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
+import { SIMULATION_PROTOCOL_VERSION, type WorkerToMainMessage } from '../../src/simulation/protocol/types';
+import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
+import { hudAlertsFromWorkerMessage } from '../../src/ui/simulation-alerts';
 import {
   INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS,
   INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
@@ -23,8 +29,11 @@ import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/si
  * **The owner's ruling 19 of 2026-08-31 is that amendment's source**:
  * *"Dać szczeblom własne progi wewnątrz debetu"* -- give the rungs their own
  * thresholds inside the overdraft -- at **-1,250**, **-2,000** and **-2,500**.
- * It is drafted at `docs/adr/0017-money-primary-resource-model.md` ("Amendment,
- * 2026-09-01") and is **Proposed and not self-approved**.
+ * It is recorded at `docs/adr/0017-money-primary-resource-model.md`
+ * ("Amendment, 2026-09-01"), which the owner **accepted on 2026-09-01**. This
+ * paragraph read *"is **Proposed and not self-approved**"* until then and is
+ * corrected rather than deleted, because the amendment's own header keeps the
+ * same record for the same reason.
  *
  * ## What this file is, and why it is not covered by the files it sits beside
  *
@@ -123,6 +132,22 @@ function payday(runtime: SimulationRuntime, day: number): { paid: number; owed: 
     paid: before - runtime.treasury.balanceMinorUnits,
     owed: runtime.payroll.unpaidWagesMinorUnits - owedBefore,
   };
+}
+
+/** One `simulation/status-counts` publication, carrying whatever the log last recorded. */
+function publication(runtime: SimulationRuntime): WorkerToMainMessage {
+  const refusal = runtime.refusals.last;
+  return {
+    protocolVersion: SIMULATION_PROTOCOL_VERSION,
+    messageId: 'counts-under-test',
+    kind: 'simulation/status-counts',
+    payload: {
+      tick: runtime.kernel.tick,
+      schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
+      counts: projectStatusCounts(runtime, runtime.kernel.tick),
+      ...(refusal === undefined ? {} : { refusal }),
+    },
+  } as WorkerToMainMessage;
 }
 
 describe('the three thresholds ruling 19 gives ADR 0017 decision 8`s rungs', () => {
@@ -271,6 +296,83 @@ describe('ADR 0017 decision 8`s ladder, pressed rung by rung in one run', () => 
         ).toBe(true);
       }
     }
+  });
+
+  /**
+   * **What a prison at -1,800 is *told* when its build queue stalls** -- the
+   * owner's ruling of 2026-09-01, and the half of ADR 0017's amendment §5 that
+   * was owed rather than shipped.
+   *
+   * The walk above proves the two rungs are two *events*. This proves they are
+   * two *sentences*, which is a separate fact and was false until this change:
+   * `reportMaterialsFunding` recorded `purchase.insufficient-funds` for either
+   * one, so a prison whose queue had halted read that deliveries were refused
+   * -- rung 1's sentence on rung 2's event, in the amendment's own words.
+   *
+   * Driven the whole way: a real command through the real kernel, the real
+   * `RefusalLog`, the real `simulation/status-counts` publication, the real
+   * `REFUSAL_LABEL_KEYS` table and the bundled English. Nothing here reads a
+   * sentence off the thing that chose it.
+   *
+   * -1,800 is the position the ruling was argued from and it is chosen for a
+   * property, not for the round number: it is **past rung 1 and above rung 2**,
+   * so the prison is simultaneously a prison whose deliveries are refused and
+   * one whose construction is still running. That is exactly the range in which
+   * one sentence for both rungs is a lie, and it is why the two assertions
+   * below -- what the stall says, and what a *Buy* press says at the same
+   * balance -- have to be made in one run at one balance to mean anything.
+   */
+  it('tells a prison at -1,800 that its build queue stalled, and not that deliveries are refused', () => {
+    const runtime = prisonWithOneGuard();
+    sinkTo(runtime, -1_800);
+
+    // 200 of construction room against an 80 wall: two orders fit and the
+    // third does not. Spelled out rather than looped, so the position the
+    // refusal happens at is a literal like every other figure in this file.
+    expect(queueFunded(runtime, 'wall-a', 2), 'the first wall is funded').toBe(true);
+    expect(queueFunded(runtime, 'wall-b', 3), 'and so is the second').toBe(true);
+    expect(runtime.treasury.balanceMinorUnits, '-1,800 less two walls at 80').toBe(-1_960);
+    expect(runtime.refusals.count, 'and nothing has been refused yet').toBe(0);
+
+    expect(queueFunded(runtime, 'wall-c', 4), 'the third stalls: 40 of room against an 80 wall').toBe(false);
+    expect(
+      runtime.treasury.canAfford(BRICK_PRICE, 'deliveries'),
+      'and rung 1 has been fired since -1,250, which is what makes this position the interesting one',
+    ).toBe(false);
+
+    expect(runtime.refusals.last?.reason, 'rung 2, named on the wire').toBe('construction.materials-unfunded');
+
+    const alerts = hudAlertsFromWorkerMessage(publication(runtime));
+    expect(alerts).toEqual([
+      { id: 'refusal-1', labelKey: 'hud.alert.refusal.construction.materials-unfunded', severity: 'warning' },
+    ]);
+
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const stallSentence = localizer.format(alerts![0]!.labelKey);
+    expect(stallSentence, 'the key resolved to real text and not to its own dotted self').toBe(
+      'The build queue is stalled — no more materials until the state pays what it owes.',
+    );
+
+    /*
+     * **And it is not rung 1's sentence, which is the whole point.** Asserted
+     * against the two keys a *Buy* press reaches rather than against a
+     * transcription, so that a future edit collapsing the three sentences back
+     * onto one fails here whatever the collapsed wording turns out to be.
+     */
+    expect(stallSentence).not.toBe(localizer.format('hud.alert.refusal.purchase.insufficient-funds'));
+    expect(stallSentence).not.toBe(localizer.format('hud.refusal.purchase-materials-past-floor'));
+
+    /*
+     * The other half of the same run: at this same balance a press really does
+     * get rung 1's sentence. Without this the assertion above would hold for a
+     * prison in which rung 1 was unreachable, and the two rungs would be
+     * distinguishable only because one of them never fires.
+     */
+    expect(pressBuy(runtime, 'buy-at-minus-1800'), 'rung 1: the press is refused').toBe(false);
+    const pressAlerts = hudAlertsFromWorkerMessage(publication(runtime));
+    expect(localizer.format(pressAlerts![0]!.labelKey)).toBe(
+      'Nothing was bought — deliveries are refused until the state pays what it owes.',
+    );
   });
 
   it('has no rungs at all in a prison with no facility open, which is every bare `new Treasury`', () => {

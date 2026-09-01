@@ -366,8 +366,14 @@ test('act 3: the worker refusing a hire and a purchase, in the host\'s words (#7
    *    waved through, and the worker refuses the second.
    * 2. **The just-in-time route.** A build order prices its own materials
    *    inside the worker; nothing on this thread knows the charge, so nothing
-   *    can pre-check it. `reportMaterialsFunding` raises
-   *    `purchase.insufficient-funds` with no press on Buy at all.
+   *    can pre-check it. `reportMaterialsFunding` raises a refusal with no
+   *    press on Buy at all. **It raised `purchase.insufficient-funds` when this
+   *    was written and raises `construction.materials-unfunded` since the
+   *    owner's ruling of 2026-09-01**, which gave ADR 0017 decision 8's second
+   *    rung a sentence of its own -- this route spends at the `'construction'`
+   *    rung and was reporting rung 1's words. Ruling 23's equality is a claim
+   *    about the *purchase* pair and is untouched by that: this route is not
+   *    one of the two the host can also decide.
    *
    * The balance is set up with **planks only**, so the material store holds no
    * brick and a wall really does have to be bought.
