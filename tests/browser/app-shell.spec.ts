@@ -8167,9 +8167,24 @@ test.describe('the assembled application', () => {
     // purchase is a `'deliveries'` spend and is refused 1,250 above the
     // treasury's floor, so the old figure buys nothing at all and this test
     // measured the ruling working rather than the strip failing.
+    //
+    // **And this line read `rungFloorMinorUnits('deliveries',
+    // TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)` -- the mature -1,250 rung --
+    // until the owner's starter-rung ruling of 2026-09-01, with `spendable` at
+    // 26,250, `quantity` at 656 bricks, `settled` at -1,240 and the badge
+    // reading "10 left".** This session never zones a room (`New prison`
+    // alone, no build order), so `RoomInstanceRegistry.totalResidentCapacity`
+    // stays `0` for the test's whole life and every purchase here is judged at
+    // the *starter* rung, -1,185, not the mature one -- passing `true` as the
+    // third argument is what selects it. The old quantity no longer clears:
+    // 656 bricks is 26,240, which is 55 past the shallower starter floor's
+    // 26,185 of room, so the press this test used to make would now be
+    // refused outright rather than landing in the overdraft this test is
+    // about.
     const unitPrice = unitPriceOf('item.brick');
     const spendable =
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+      TREASURY_STARTING_BALANCE_MINOR_UNITS -
+      rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true);
     const quantity = Math.floor(spendable / unitPrice);
     const settled = TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice;
     // The state this test is about, asserted rather than assumed: the purchase
@@ -8218,9 +8233,19 @@ test.describe('the assembled application', () => {
      * as written. It is re-aimed at the same rung `spendable` above is composed
      * from, so the chip and the press this test just made are now one number:
      * the purchase spent down to ten short of the rung, and the badge says ten.
+     *
+     * **That was ten short of the *mature* rung, and the owner's starter-rung
+     * ruling later that day moved both halves of the pair together.** This
+     * session is fresh and unfurnished for its whole life (see `spendable`
+     * above), so the rung the badge counts room to is the starter one,
+     * -1,185: the purchase now settles at -1,160, which is twenty-five short
+     * of that floor rather than ten short of the mature one, and the badge
+     * says twenty-five. The pin is re-aimed at the same starter rung
+     * `spendable` is composed from, so the chip and the press this test just
+     * made stay one number.
      */
     await expect(page.locator('[data-metric="funds"] .ui-badge')).toHaveText(
-      `${fundsText(settled - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS))} left`,
+      `${fundsText(settled - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true))} left`,
     );
     await expect(page.locator('.hud__refusal')).toBeHidden();
   });
