@@ -3647,6 +3647,21 @@ test.describe('the Rooms panel', () => {
     expect(drawing.folded, 'the panel stayed open over a fresh drawing pass').toBe('true');
     // And no room was designated or removed on the way through.
     expect(await roomCommands(page), 'a mode switch asked the simulation for something').toEqual([]);
+
+    // **The flags saying "armed" is not the same as the tool drawing**, and
+    // this is the half that tells them apart: a drag on the world after the
+    // press has to produce a pending designation rectangle. Ported from a
+    // red-first branch opened against this same issue, which measured exactly
+    // this and nothing else -- kept because it is the assertion that would
+    // survive a future refactor moving the flags somewhere the gesture does
+    // not follow.
+    expect(
+      await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 4, y: 6, width: 2, height: 3 })),
+      'the HUD registered no room-gesture sink',
+    ).toBe(true);
+    const pending = await probe();
+    expect(pending.area, 'the drawing pass produced no pending designation rectangle').toBe('4,6,2,3');
+    expect(pending.confirmText).toContain('Designate 2 × 3');
   });
 
   /**
