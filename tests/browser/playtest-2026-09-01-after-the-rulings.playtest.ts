@@ -829,3 +829,75 @@ test('act 6: the first half hour — twelve prisoners, four guards, three in-gam
   log(act, `after one more boundary: ${JSON.stringify(await latestCounts(page))}`);
   await panels('after one more day');
 });
+
+/* ------------------------------------------------------------------ */
+
+test('act 5b: how wide the alert sentence actually gets, and how many lines that costs', async ({ page }) => {
+  const act = 'act5b';
+  test.setTimeout(600_000);
+  await installTee(page);
+
+  for (const viewport of [
+    { width: 1920, height: 1080 },
+    { width: 1280, height: 800 },
+    { width: 1280, height: 720 },
+    { width: 900, height: 600 },
+  ]) {
+    const at = `${viewport.width}x${viewport.height}`;
+    await page.setViewportSize(viewport);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    await tab(page, 'rooms').click();
+    const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
+    if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+    await page.locator('.hud-rooms__arm').click();
+    await drag(page, { x: 300, y: 200 }, { x: 620, y: 400 });
+    await page.locator('.hud-rooms__confirm').click();
+    await page.waitForTimeout(1500);
+
+    /*
+     * `Range.getClientRects()` over the sentence's own text node counts the
+     * **line boxes the browser actually laid out**, which no `scrollHeight`
+     * arithmetic can: `line-height` computes to `normal` here, so dividing by
+     * it returns `NaN` (act 5 printed `labelLines: -1` for exactly that).
+     */
+    const measured = await page.evaluate(() => {
+      const row = document.querySelector<HTMLElement>('.hud-alerts__list .ui-row');
+      const label = document.querySelector<HTMLElement>('.hud-alerts__list .ui-row__label');
+      if (row === null || label === null) return null;
+      const text = label.firstChild;
+      let lines = -1;
+      let widest = -1;
+      if (text !== null) {
+        const range = document.createRange();
+        range.selectNodeContents(label);
+        const rects = [...range.getClientRects()];
+        lines = rects.length;
+        widest = rects.reduce((max, rect) => Math.max(max, rect.width), 0);
+      }
+      const style = getComputedStyle(label);
+      const children = [...row.children].map((child) => {
+        const box = child.getBoundingClientRect();
+        return `${child.className}: ${Math.round(box.width)}x${Math.round(box.height)}`;
+      });
+      return {
+        rowWidth: Math.round(row.getBoundingClientRect().width),
+        rowHeight: Math.round(row.getBoundingClientRect().height),
+        labelWidth: Math.round(label.getBoundingClientRect().width),
+        labelHeight: Math.round(label.getBoundingClientRect().height),
+        fontSize: style.fontSize,
+        lineHeight: style.lineHeight,
+        lines,
+        widestLinePx: Math.round(widest),
+        children,
+        characters: (label.textContent ?? '').length,
+        listClientHeight: document.querySelector<HTMLElement>('.hud-alerts__list')?.clientHeight ?? -1,
+        listScrollHeight: document.querySelector<HTMLElement>('.hud-alerts__list')?.scrollHeight ?? -1,
+      };
+    });
+    log(act, `${at}: ${JSON.stringify(measured)}`);
+  }
+});
