@@ -1,7 +1,8 @@
 # The five measurements five documents were owed
 
 **Date:** 2026-09-01
-**Branch:** `docs/the-measurements-that-were-owed`, cut from `origin/main` at `a64709f6` (v0.0.321).
+**Branch:** `docs/the-measurements-that-were-owed`, cut from `origin/main` at `a64709f6` (v0.0.321);
+`origin/main` at `46f70141` (v0.0.322) merged in afterwards, changing nothing any figure here reads.
 **Instrument:** `tests/browser/playtest-2026-09-01-measurements-owed.playtest.ts`, run with
 `./node_modules/.bin/playwright test -c tests/browser/playwright.playtest.config.ts` in a
 worktree with `git lfs checkout` done (`file public/assets/actors/actor.guard.base.idle.png`
@@ -36,11 +37,14 @@ was written and is no longer true:
   `74a48909`, in `tests/browser/ui-overdraft-badge.spec.ts`'s closing docblock. This pass
   re-took it independently, by a different method, and **reproduces every figure to the
   hundredth of a pixel** — see §4.
-- **Measurement 5**'s ADR is `docs/adr/0086-what-refreshes-a-pulled-hud-readout.md` on
-  `origin/docs/718-what-cadence-a-pulled-readout-has`. It is **not on `main`**, so the brief's
-  "owed by a document already on `main`" does not hold for this one. Its §2 prediction was still
-  owed: that branch's own follow-up commit (`b169e62d`) adds a *foundation* contract test, which
-  is not the browser measurement §5 asks for.
+- **Measurement 5**'s ADR, `docs/adr/0086-what-refreshes-a-pulled-hud-readout.md`, was on
+  `origin/docs/718-what-cadence-a-pulled-readout-has` and **not on `main`** when this pass started;
+  it **landed on `main` while this pass was measuring it** (`dada4c8b`, v0.0.322). The runs below
+  were taken at `a64709f6` (v0.0.321), one commit earlier, and `dada4c8b` changes nothing they
+  observe: its `src/main.ts` diff is comments only — six sentences renumbered from "500ms for the
+  next counts publication" to "255ms for the next clock heartbeat" — plus a foundation contract
+  test, which is not the browser measurement §5 asks for. This branch has since merged
+  `origin/main` at `46f70141` and the figures stand against it.
 
 ---
 
@@ -336,9 +340,18 @@ ten segments every 15 s.
   300 ms against a 260 ms bound is 15% over, not "well above": a bound restated as **"no gap above
   ~300 ms at ×1 on a four-core container"** is what the browser supports. Nothing in §2's
   reasoning about *which channel* refreshes the readout is touched by it.
-- **What the ADR should carry forward:** the 255 ms figure is a harness figure and must be
-  labelled as one wherever it is quoted as a bound. Any future budget written against this cadence
-  should be set from the browser's tail, not the harness's.
+- **What the ADR should carry forward, and it is now urgent rather than tidy.** `dada4c8b` put
+  the 255 ms figure into **seven places on `main`** as a bound a reader will take at face value:
+  `src/main.ts:1185` (*"120 times, worst gap 255 ms"*), five interaction comments at
+  `src/main.ts:1923`, `:1936`, `:1954`, `:1959`, `:1966` and `:1972` (*"waiting up to 255ms for the
+  next clock heartbeat"*), and `docs/HUD_PROJECTIONS.md:554`. **255 ms is a fake-timer figure and
+  the browser's real tail is 292.8–299.6 ms.** Nothing on that list is wrong about the mechanism
+  and none of it is a promise to a player, so this note proposes no edit to `src/` — but the next
+  pass that writes a budget, a poll timeout or a test bound against that number should take it
+  from here and not from there.
+
+  Concretely, the sentence those comments make — *"a player who presses this does not wait more
+  than 255ms"* — is measurably a ~300 ms sentence on a four-core container at ×1.
 
 ---
 
