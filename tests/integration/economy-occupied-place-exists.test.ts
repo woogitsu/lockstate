@@ -25,6 +25,23 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * available again -- while the prisoner the bed housed stays assigned to the
  * now-bedless cell. Repeat into the next cell.
  *
+ * **The middle clause is false since the owner's ruling of 2026-09-01 and the
+ * paragraph is kept because it is the exploit as it was found.** *"Taking a
+ * finished object away returns nothing. Not its materials, not its money."* --
+ * ADR 0076's amendment of that date -- stops `cancelOrder` releasing anything
+ * for a `completed` order, so the plank is **not** available again. The
+ * sequence below still runs, because a `PlaceObject` against an empty container
+ * makes `JustInTimeMaterialsService` buy a fresh plank at the press: what the
+ * ruling costs the exploit is the money, not the gesture.
+ *
+ * **What this file measures is untouched by that**, which is why no number here
+ * moved. Its subject is what an occupied place is *worth* -- issue #585 and ADR
+ * 0076 decision A(ii) -- and the residents, the cells, the admissions and the
+ * one standing bed are the same however many planks paid for them. The money
+ * half of the same loop is measured in
+ * `tests/integration/economy-bed-recycling.test.ts`, where the arm moved from
+ * 26,275 to 26,145 on this ruling.
+ *
  * Nothing below reaches into a registry, a treasury or a construction order by
  * hand: every step is a packed command through `Kernel.submitCommand`, which is
  * what makes the numbers a statement about what a player can do rather than
@@ -120,6 +137,15 @@ function cycleOnePlankThroughThreeCells(): SimulationRuntime {
     // releases `materialsAllocated` back into the container. Measured: with
     // `RemoveObject` here the second bed order sits in `materials-pending` for
     // ever, so the plank really does come back only down this path.
+    //
+    // **All of that is false since the owner's ruling of 2026-09-01 and it is
+    // kept because it is why this fixture chose `Undo`.** `cancelOrder`
+    // releases nothing for a `completed` order now, so the two commands agree
+    // and the plank comes back down neither path. The `RemoveObject`
+    // observation went with it: a second bed order no longer parks, because
+    // the just-in-time pass buys a plank for it at the press. **`Undo` is kept
+    // rather than switched**, because it is still the gesture the exploit was
+    // reported with and this file is the reproduction of that report.
     submit(runtime, `undo-${String(index)}`, packCommand({ type: 'Undo' }));
     expect(runtime.refusals.count, 'undoing a completed bed order must not be refused').toBe(0);
     stepBy(runtime, 60);
