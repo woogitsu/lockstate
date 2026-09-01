@@ -1001,3 +1001,81 @@ construction" property §3d above already applies to the required
 docblocks; `src/ui/affordability.ts` is unchanged in code because
 `HOST_PRESS_FLOOR_MINOR_UNITS` was already computed through
 `rungFloorMinorUnits('deliveries', …)`, which does not move.
+
+### 9. A cost the gate found and §5 did not price — not put to the owner, and not decided here
+
+**This section is not part of what was accepted.** §5 is titled "stated
+rather than argued away" and did not state this; the banner at the top of
+this amendment says the owner "was shown the reproduction and the cost this
+amendment prices, in the same sitting" — that sentence was true of §5 as
+written and is not true of the cost below, which the gate (§7) surfaced only
+while making `tests/integration/economy-liquidity-hard-lock.test.ts` pass
+again. Recorded here rather than folded into §5 silently, so the acceptance
+banner is not left claiming a completeness this amendment did not have.
+
+**ADR 0075's ECON-002 lock reopens.** That file's own subject, before this
+amendment, was a cured trap: a new prison that spends its opening grant and
+the whole standing overdraft on bricks (656 of them, landing on
+`BALANCE_AT_THE_RUNG = -1,240`, ten minor units of press room short of a
+65-minor-unit plank) used to have one escape ruling 19 opened by accident —
+the construction rung's extra 750 minor units of depth let a queued
+`bed-wooden` order buy the plank the player's own press could not. This
+amendment's whole point is closing exactly that gap, and closing it removes
+that escape along with it: `-1,240 - 65 = -1,305` now clears neither rung, so
+`PlaceObject` for a bed stays `materials-pending` forever, no admission can
+occupy a place, `StateIncomeSystem` pays nothing, and — every other command
+the union offers having been tried in the test and refused or found to move
+no money — the prison is locked exactly where it pressed itself to. That is
+ECON-002's own conclusion, true again since this amendment, on a fixture
+that needs no misplay to reach: one legal, unrefused 656-brick purchase is
+sufficient. `tests/integration/economy-liquidity-hard-lock.test.ts`'s own
+title for the case names it directly: *"spends the grant and the delivery
+rung on 656 bricks, and the ECON-002 lock reopens since #771 equalised the
+rungs."*
+
+**Why this is a materially different cost than the one §5 prices, not a
+restatement of it.** §5's first bullet says a standing *queue* now stalls
+750 minor units earlier than it did. That is true and it is the smaller
+half of what moved: the case above shows the same 750 minor units were also
+the only thing standing between a brand-new, otherwise ordinarily-played
+prison and a state ADR 0049 exists to say a prison should not be able to
+reach — one it cannot earn its way out of by any command the game offers,
+before it has built a single bed. §2's warning to the owner — *"the prison
+loses the ability to finish what it has already started building"* — is
+true of a queue with a shortfall already short by one purchase. It does not,
+on its own words, describe a prison that has built nothing yet and now
+never can.
+
+**What stands behind this lock, and does not stand today.** ADR 0075
+decided three remedies: decision 1 (grants at population thresholds),
+decision 2 (a loan) and decision 3 (sell-back). Checked against the tree
+this amendment ships on: no code in `src/` reads a population threshold to
+credit the treasury, no command in `simulationCommandSchema` sells anything
+back, and `LoanBook` is constructed only when `loanTerms` is supplied, which
+nothing in `src/` does. So none of ADR 0075's own cures is wired, and this
+amendment reopens the lock they were written for onto a game where none of
+them fire.
+
+**Not decided here, because it was not what this amendment was authorised to
+decide.** This work's brief was to equalise the rungs and to report what
+that touches; it was not a mandate to re-litigate ADR 0075 or to wire one of
+its remedies to close a trap ruling 19 happened to paper over. Three shapes
+were visible and none is chosen:
+
+- Wire one of ADR 0075's own remedies (most directly, decision 2's loan, the
+  only one with code already built and unwired).
+- Give a brand-new, unfurnished prison a rung of its own — shallower than
+  −1,250 — so the very first purchase or hire cannot spend the facility a
+  first bed needs. Nothing rules this today and it is a fourth rung, which
+  §3c above already reserves to the owner.
+- Accept the reopening as a consequence of "buying and building stop at the
+  same place" applying to every prison, including one that has not started
+  yet, and let ADR 0075 stay exactly as underbuilt as it already was.
+
+**The gate is green regardless of which the owner picks**, because
+`tests/integration/economy-liquidity-hard-lock.test.ts` asserts the lock as
+it stands today rather than assuming a remedy — the same rule this
+document's own "What this file is not" paragraph states about not merely
+asserting a symptom. Whichever remedy is chosen turns that file red at the
+line that names `BALANCE_AT_THE_RUNG` staying put, and is the gate for
+whatever change closes this.
