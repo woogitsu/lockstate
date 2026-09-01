@@ -5,8 +5,8 @@ import {
 } from '../../src/simulation/economy/treasury';
 import { installBandRecorder, readBandRecording } from './alert-dwell';
 import {
+  TILE,
   armBuildable,
-  buildAndPopulate,
   buy,
   calibrate,
   centreOf,
@@ -17,9 +17,197 @@ import {
   openApp,
   panelText,
   press,
+  sentCommands,
   tab,
   waitForQueueEmpty,
 } from './playtest-harness';
+
+/**
+ * **A wall run that repairs itself, and why this file does not call the
+ * shared `buildAndPopulate`.**
+ *
+ * `buildAndPopulate`'s four perimeter walls are each one `drag()` — a mouse
+ * move interpolated over 8 steps each half, no verification of what it
+ * produced. On a loaded box (this session measured a one-minute load average
+ * of 8.2 before its first run, with other agents' Playwright/Vitest visible
+ * in `ps`) one run of this file's act 1 watched the west run drop three of
+ * its six segments — `["12,12 west","12,13 west","12,14 west"]` where north,
+ * south and east each produced all six — and the zoning retry loop that
+ * follows a wall run has no way to close a gap nothing redraws: it retried
+ * the *designation*, twelve times over 131 seconds, against a perimeter that
+ * was never going to enclose. `docs/AGENT_WORKFLOW.md`'s own contention
+ * canaries are the same shape — a control that is there, pressed, and slow to
+ * answer under load, misread as broken. This is not reported as a defect for
+ * that reason (`docs/AGENT_WORKFLOW.md` §"do not report any finding that
+ * rests on wall-clock timing, frame rate or latency"); it is repaired here so
+ * the acts that need a sealed cell do not inherit a coin-flip.
+ *
+ * The repair is a single `press()` per tile the drag's produced commands do
+ * not cover, on the same line the drag itself used — not a second drag, which
+ * would be exactly as exposed to the same dropped-frame failure. A `press` is
+ * one mousedown/mouseup with no interpolation, which is what `buildAndPopulate`
+ * already trusts for every bed and every toilet.
+ */
+async function wallSide(
+  page: Page,
+  edge: 'north' | 'south' | 'east' | 'west',
+  tiles: readonly { readonly x: number; readonly y: number }[],
+  dragA: { readonly x: number; readonly y: number },
+  dragB: { readonly x: number; readonly y: number },
+  pointFor: (tile: { readonly x: number; readonly y: number }) => { readonly x: number; readonly y: number },
+): Promise<{ readonly byDrag: number; readonly repaired: readonly string[] }> {
+  const before = (await sentCommands(page)).length;
+  await drag(page, dragA, dragB);
+  const produced = (await sentCommands(page)).slice(before);
+  const got = new Set(produced.map((c) => `${String(c['x'])},${String(c['y'])},${String(c['edge'])}`));
+  const missing = tiles.filter((t) => !got.has(`${t.x},${t.y},${edge}`));
+  for (const tile of missing) {
+    const point = pointFor(tile);
+    await press(page, point.x, point.y);
+  }
+  return { byDrag: produced.length, repaired: missing.map((t) => `${t.x},${t.y}`) };
+}
+
+interface ResilientCellResult {
+  readonly origin: { readonly originX: number; readonly originY: number };
+  readonly zoned: boolean;
+  readonly zoneAttempts: number;
+}
+
+/**
+ * A 6x6 walled, zoned cell at tiles (12,12)-(17,17) — the same footprint
+ * `buildAndPopulate` uses, and the same one
+ * `tests/browser/ui-contraband-name.spec.ts`'s headless fixture uses for
+ * `CELL_RECT` two tiles over — with `bedCount` beds and one toilet placed
+ * inside, and the wall repair `wallSide` above adds.
+ */
+async function buildResilientCell(
+  page: Page,
+  bedCount: number,
+  label: string,
+): Promise<ResilientCellResult> {
+  const log = (line: string) => console.log(`[${label}] ${line}`);
+
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await tab(page, 'build').click();
+  const origin = await calibrate(page);
+  log(`calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
+
+  await buy(page, 'wall-brick', 60);
+  await buy(page, 'bed-wooden', bedCount + 2);
+
+  await page.locator('.hud-strip__transport button').nth(2).click();
+  await page.waitForTimeout(150);
+  await page.locator('.hud-strip__transport button').nth(2).click();
+  await page.waitForTimeout(3_000);
+
+  await armBuildable(page, 'wall-brick');
+  const westX = origin.originX + 12 * TILE;
+  const eastX = origin.originX + 18 * TILE;
+  const northY = origin.originY + 12 * TILE;
+  const southY = origin.originY + 18 * TILE;
+  const columns = [12, 13, 14, 15, 16, 17];
+  const rows = [12, 13, 14, 15, 16, 17];
+
+  const north = await wallSide(
+    page,
+    'north',
+    columns.map((x) => ({ x, y: 12 })),
+    { x: westX + TILE / 2, y: northY },
+    { x: eastX - TILE / 2, y: northY },
+    (t) => ({ x: centreOf(origin, t.x, t.y).x, y: northY }),
+  );
+  const south = await wallSide(
+    page,
+    'north',
+    columns.map((x) => ({ x, y: 18 })),
+    { x: westX + TILE / 2, y: southY },
+    { x: eastX - TILE / 2, y: southY },
+    (t) => ({ x: centreOf(origin, t.x, t.y).x, y: southY }),
+  );
+  const west = await wallSide(
+    page,
+    'west',
+    rows.map((y) => ({ x: 12, y })),
+    { x: westX, y: northY + TILE / 2 },
+    { x: westX, y: southY - TILE / 2 },
+    (t) => ({ x: westX, y: centreOf(origin, t.x, t.y).y }),
+  );
+  const east = await wallSide(
+    page,
+    'west',
+    rows.map((y) => ({ x: 18, y })),
+    { x: eastX, y: northY + TILE / 2 },
+    { x: eastX, y: southY - TILE / 2 },
+    (t) => ({ x: eastX, y: centreOf(origin, t.x, t.y).y }),
+  );
+  log(
+    `wall runs: north ${north.byDrag} by drag, repaired ${JSON.stringify(north.repaired)} | ` +
+      `south ${south.byDrag} by drag, repaired ${JSON.stringify(south.repaired)} | ` +
+      `west ${west.byDrag} by drag, repaired ${JSON.stringify(west.repaired)} | ` +
+      `east ${east.byDrag} by drag, repaired ${JSON.stringify(east.repaired)}`,
+  );
+
+  await waitForQueueEmpty(page);
+
+  let zoned = false;
+  let attempts = 0;
+  for (; attempts < 12 && !zoned; attempts += 1) {
+    await tab(page, 'rooms').click();
+    if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
+      await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    }
+    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+    await page.locator('.hud-rooms__arm').click();
+    await drag(page, centreOf(origin, 12, 12), centreOf(origin, 17, 17));
+    await page.locator('.hud-rooms__confirm').click();
+    await page.waitForTimeout(800);
+    zoned = ((await latestCounts(page))?.rooms ?? 0) > 0;
+    if (!zoned) await page.waitForTimeout(4_000);
+  }
+  log(`zoned: ${zoned} after ${attempts} attempt(s)`);
+
+  await tab(page, 'build').click();
+  await armBuildable(page, 'bed-wooden');
+  let placed = 0;
+  for (const row of [12, 14]) {
+    for (let column = 12; column <= 17 && placed < bedCount; column += 1) {
+      const point = centreOf(origin, column, row);
+      await press(page, point.x, point.y);
+      placed += 1;
+    }
+  }
+  await armBuildable(page, 'toilet-brick');
+  await press(page, centreOf(origin, 12, 16).x, centreOf(origin, 12, 16).y);
+  log(`${placed} bed order(s) + 1 toilet placed`);
+  await waitForQueueEmpty(page);
+  await page.waitForTimeout(1_500);
+
+  return { origin, zoned, zoneAttempts: attempts };
+}
+
+async function admitAndHire(page: Page, admits: number, guards: number, label: string): Promise<void> {
+  const log = (line: string) => console.log(`[${label}] ${line}`);
+  await tab(page, 'overview').click();
+  for (let i = 0; i < admits; i += 1) {
+    await page.locator('.hud-intake__admit').click();
+    await page.waitForTimeout(150);
+  }
+  await page.waitForTimeout(1_500);
+  log(`intake panel after ${admits} admissions: ${await panelText(page, '.hud-intake')}`);
+
+  if (guards > 0) {
+    await tab(page, 'security').click();
+    const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
+    if ((await guardRow.count()) > 0) await guardRow.first().click();
+    for (let i = 0; i < guards; i += 1) {
+      await page.locator('.hud-staff__hire').click();
+      await page.waitForTimeout(300);
+    }
+    await page.waitForTimeout(1_500);
+  }
+}
 
 /**
  * **Playing the people surface: residents, staff, contraband, incidents, and
@@ -116,7 +304,9 @@ test('act 1: what a risk-tier badge says, and what it never explains', async ({ 
   await installTee(page);
   await openApp(page);
 
-  await buildAndPopulate(page, { beds: 6, admits: 6, guards: 1, label: act });
+  const built = await buildResilientCell(page, 6, act);
+  log(act, `built: ${JSON.stringify(built)}`);
+  await admitAndHire(page, 6, 1, act);
 
   // Give ClassificationReviewSystem's intake-time draw (not the 24,000-tick
   // re-review) a few seconds of real ticks to resolve every arrival out of
@@ -203,64 +393,13 @@ test('act 2: coverage states, a held guard says why it is held, and a contraband
   await installTee(page);
   await openApp(page);
 
-  await page.getByRole('button', { name: 'New prison' }).click();
-  await expect(page.locator('.hud-clock__day')).toHaveText('1');
-  await tab(page, 'build').click();
-  const origin = await calibrate(page);
-
   // A 6x6 cell, twelve beds, a toilet — the same footprint
   // `ui-contraband-name.spec.ts` proved a real search duty fires inside, sized
   // up here so the coverage requirement is worth reading (more than one
-  // guard).
-  await buy(page, 'wall-brick', 60);
-  await buy(page, 'bed-wooden', 14);
-  await page.locator('.hud-strip__transport button').nth(2).click();
-  await page.waitForTimeout(150);
-  await page.locator('.hud-strip__transport button').nth(2).click();
-  await page.waitForTimeout(3_000);
-
-  await armBuildable(page, 'wall-brick');
-  const westX = origin.originX + 12 * 64;
-  const eastX = origin.originX + 18 * 64;
-  const northY = origin.originY + 12 * 64;
-  const southY = origin.originY + 18 * 64;
-  for (const run of [
-    { a: { x: westX + 32, y: northY }, b: { x: eastX - 32, y: northY } },
-    { a: { x: westX + 32, y: southY }, b: { x: eastX - 32, y: southY } },
-    { a: { x: westX, y: northY + 32 }, b: { x: westX, y: southY - 32 } },
-    { a: { x: eastX, y: northY + 32 }, b: { x: eastX, y: southY - 32 } },
-  ]) {
-    await drag(page, run.a, run.b);
-  }
-  await waitForQueueEmpty(page);
-
-  let zoned = false;
-  for (let attempt = 0; attempt < 12 && !zoned; attempt += 1) {
-    await tab(page, 'rooms').click();
-    if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
-      await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
-    }
-    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
-    await page.locator('.hud-rooms__arm').click();
-    await drag(page, centreOf(origin, 12, 12), centreOf(origin, 17, 17));
-    await page.locator('.hud-rooms__confirm').click();
-    await page.waitForTimeout(800);
-    zoned = ((await latestCounts(page))?.rooms ?? 0) > 0;
-    if (!zoned) await page.waitForTimeout(5_000);
-  }
-  log(act, `zoned: ${zoned}`);
-
-  await tab(page, 'build').click();
-  await armBuildable(page, 'bed-wooden');
-  const bedTiles: ReadonlyArray<readonly [number, number]> = [
-    [12, 12], [13, 12], [14, 12], [15, 12], [16, 12], [17, 12],
-    [12, 14], [13, 14], [14, 14], [15, 14], [16, 14], [17, 14],
-  ];
-  for (const [column, row] of bedTiles) {
-    const point = centreOf(origin, column, row);
-    await press(page, point.x, point.y);
-  }
-  await waitForQueueEmpty(page);
+  // guard). `buildResilientCell` — see its own docblock — repairs any wall
+  // segment a loaded box's dropped mouse-move drops.
+  const cell = await buildResilientCell(page, 12, act);
+  log(act, `built: ${JSON.stringify(cell)}`);
   const built = await latestCounts(page);
   log(act, `after furnishing: rooms=${built?.rooms} accommodationCapacity=${built?.accommodationCapacity}`);
 
@@ -440,7 +579,9 @@ test('act 4: an incident opens and resolves — can a player follow the story on
   // prisoners, zero guards. Overcrowded and unguarded produces assaults and
   // riots as well as escapes (`trigger-system.ts`'s own comment: "an
   // overcrowded, unguarded starter prison opened 49 riots").
-  await buildAndPopulate(page, { beds: 2, admits: 14, guards: 0, label: act });
+  const cell = await buildResilientCell(page, 2, act);
+  log(act, `built: ${JSON.stringify(cell)}`);
+  await admitAndHire(page, 14, 0, act);
   log(act, `after the build: ${JSON.stringify(await latestCounts(page))}`);
 
   await page.locator('.hud-strip__transport button').nth(1).click();
