@@ -179,6 +179,69 @@ export const HUD_MESSAGE_KEY = {
   minimapPlaceholder: 'hud.minimap.placeholder',
   alertsTitle: 'hud.alerts.title',
   alertsEmpty: 'hud.alerts.empty',
+  /**
+   * What a row of the alerts log adds to its sentence: how many times, and when
+   * (the owner's decisions 1 and 2 of 2026-09-01 on ADR 0084).
+   *
+   * **Both sentences are the owner's own, given on the same day**, and this
+   * comment records what they chose *against* because the alternatives are what
+   * a later pass would otherwise re-propose:
+   *
+   * - `hud.alert.occurrences` is `{count}×` -- the multiplier **after** the
+   *   figure, chosen over `×{count}` and over `{count} times`. `{count}` is a
+   *   whole number and is at least 2 wherever this is rendered at all; a row
+   *   that has arrived once shows no multiplier (`hudAlertRowLabel`).
+   * - `hud.alert.time` is `Day {day}` -- the day **alone**. The owner was shown
+   *   `Day {day}, {progress}%` and rejected it: a percentage of a day is a
+   *   strange unit to put in front of a player. `{progress}` is still produced
+   *   and passed and is deliberately not rendered; see the catalog entry, which
+   *   is where that is argued, and `HudAlertTimeViewModel` for what produces
+   *   it. What tells two events on the same day apart is the count beside them.
+   *
+   * **All three keys here were declared with no catalog entry first**, so that
+   * `tests/unit/ui-hud-messages.test.ts` would fail by name until the owner
+   * supplied each word -- `resolveLocalizationKey` renders an unknown key as
+   * itself, which is the *"wrong shipping state"*
+   * `tests/foundation/localization-key-completeness.test.ts` exists to catch,
+   * and a placeholder sentence would have passed both gates with an un-owned
+   * word on a player's screen. The tripwire is recorded rather than deleted
+   * now that all three are filled: it is the procedure, not an incident, and
+   * the next key on this surface should be added the same way.
+   */
+  alertsOccurrences: 'hud.alert.occurrences',
+  alertsTime: 'hud.alert.time',
+  /**
+   * What the `×` control on a dismissable alert row is called: **"Clear this
+   * alert"**, the owner's own sentence of 2026-09-01.
+   *
+   * The owner took ADR 0084's decision 3 that day and ruled on the *shape* of
+   * the control with it: a separate `×` rather than the whole row, chosen with
+   * the cost of the alternative in front of them -- pressing a row dismisses it
+   * permanently, the mark goes into the save, and there is no undo, so a
+   * mis-tap that cannot be reversed was judged worse than a smaller target. A
+   * `×` glyph is not an accessible name, so `createIconButton` requires this
+   * one: a button whose only content is a glyph reaches a screen reader as
+   * nothing at all.
+   *
+   * **Chosen over "Dismiss this notice", and `hud.security.roster-dismiss`
+   * ("Dismiss") is not reused** -- the near miss is the reason the sentence
+   * looks the way it does. That word ends a staff member's employment; its own
+   * hint says *"a dismissed staff member leaves the prison for good, and their
+   * wage stops"*. One key meaning both "sack this person" and "I have read this
+   * notice" is two answers to one question, which is the failure
+   * `hud.regime.roster-name` is shared to avoid in the other direction -- and
+   * a *second* sentence built on the same verb would have left **dismiss**
+   * meaning two different things in one interface, which is that failure one
+   * step further on. So the sentence avoids the verb instead of reusing it.
+   * The catalog entry carries the argument too, because that is where a
+   * translator meets it.
+   *
+   * No parameter: the row's own sentence is beside the control and the name
+   * does not repeat it. If a locale needs the subject, this key gains one and
+   * `hudAlertDismissLabel` is where it would be resolved -- `hud.ts` would not
+   * change.
+   */
+  alertsDismiss: 'hud.alert.dismiss',
 
   panelCollapse: 'hud.panel.collapse',
   panelExpand: 'hud.panel.expand',

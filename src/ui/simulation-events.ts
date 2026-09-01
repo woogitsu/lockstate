@@ -1,7 +1,16 @@
 import type { LocalizationKey } from '../content/localization';
+import { simulationEventIdentity } from '../simulation/protocol/event-identity';
 import type { SimulationEvent, SimulationEventType, WorkerToMainMessage } from '../simulation/protocol/types';
-import type { HudAlertViewModel, HudEventNoticeViewModel, HudSeverity } from './hud/view-model';
+import { projectClockPosition } from '../simulation/presentation/clock-projection';
+import type {
+  HudAlertOccurrencesViewModel,
+  HudAlertTimeViewModel,
+  HudAlertViewModel,
+  HudEventNoticeViewModel,
+  HudSeverity,
+} from './hud/view-model';
 import type { HudMessageParameterViewModel } from './hud/label-parameters';
+import { dayProgressPercent } from './hud/projection';
 import { HUD_MESSAGE_KEY } from './hud/messages';
 
 /**
@@ -364,22 +373,76 @@ const SEVERITY_EVICTION_ORDER: Readonly<Record<HudSeverity, number>> = {
  *
  * ## What clears an event
  *
- * **Nothing, individually.** A refusal is withdrawn when the same action later
- * succeeds, because "the build order failed" stops being the current answer
- * about that control. An event has no control and no current answer: "two
- * prisoners finished their sentences at tick 40,000" does not become untrue,
- * and there is nothing a player could do that would make it untrue. So no row
- * is ever removed for being wrong. Rows leave for exactly two reasons, and
- * both are about the *list* rather than about the event:
+ * **This section said "exactly two reasons" and now says four.** The original
+ * two are unchanged and are kept below word for word, because the argument
+ * that produced them is still the argument: an event does not stop being true,
+ * so no row is ever removed for being *wrong*, and every reason a row leaves
+ * is about the list or about the session rather than about the event. The two
+ * that were added on 2026-09-01 do not weaken that -- one is a player saying
+ * they have read it, the other is the list belonging to a session -- and they
+ * are marked as an addition rather than folded in, per `docs/AGENT_WORKFLOW.md`
+ * section 4.
  *
- * - **The cap** (`MAX_EVENT_ALERT_ROWS`) drops the oldest to keep the list
- *   bounded.
- * - **`simulation/stopped` empties it**, which
- *   `hudAlertsFromWorkerMessage` already does for the whole list. That is not
- *   a claim that the events stopped being true; it is the same reading the
- *   counts take when they zero and the clock takes when it goes unknown --
- *   this HUD is a view of a live session, and there is no longer a session for
- *   it to be a view of.
+ * As it stood:
+ *
+ * > **Nothing, individually.** A refusal is withdrawn when the same action
+ * > later succeeds, because "the build order failed" stops being the current
+ * > answer about that control. An event has no control and no current answer:
+ * > "two prisoners finished their sentences at tick 40,000" does not become
+ * > untrue, and there is nothing a player could do that would make it untrue.
+ * > So no row is ever removed for being wrong. Rows leave for exactly two
+ * > reasons, and both are about the *list* rather than about the event:
+ * >
+ * > - **The cap** (`MAX_EVENT_ALERT_ROWS`) drops the oldest to keep the list
+ * >   bounded.
+ * > - **`simulation/stopped` empties it**, which
+ * >   `hudAlertsFromWorkerMessage` already does for the whole list. That is not
+ * >   a claim that the events stopped being true; it is the same reading the
+ * >   counts take when they zero and the clock takes when it goes unknown --
+ * >   this HUD is a view of a live session, and there is no longer a session for
+ * >   it to be a view of.
+ *
+ * The two added by the owner's decisions of 2026-09-01 on
+ * [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md):
+ *
+ * - **A player dismissed it** (decision 3). Not a claim that it stopped being
+ *   true either -- it is the player saying they have read it, which is the one
+ *   thing the paragraph above never considered because no gesture existed to
+ *   say it with. `hudAlertsWithoutRow` below is the removal; the dismissal is
+ *   also sent to the worker, because a row the player has retired must stay
+ *   retired across the reload decision 4 grants.
+ * - **A new session replaced the one it belonged to** (`simulation/ready`).
+ *   The same reading `simulation/stopped` takes, at the other end: a list is a
+ *   view of one session, and a session that has just been started or restored
+ *   is not the session these rows were about. It is `simulation/stopped`'s
+ *   sibling rather than a new idea, and it exists because decision 4 makes a
+ *   restore *publish* rows -- without it, loading a prison inside a page that
+ *   already had one would count every restored arrival a second time on top of
+ *   the rows it already had.
+ *
+ * ## What collapses
+ *
+ * Repeats of one statement are **one row that counts them** (decisions 1 and
+ * 2), rather than several identical rows. `simulationEventIdentity` is what
+ * "the same statement" means and says why the rule is one rule over the whole
+ * union rather than a special case for the four types that can repeat
+ * verbatim. The row keeps the position its first arrival earned and updates
+ * in place, which is `replaceOrAppend`'s rule in `simulation-alerts.ts`:
+ * *"the position of a row the player is already reading must not change under
+ * them"*.
+ *
+ * **ADR 0084 rejected collapsing, and this is not that change.** What it
+ * rejected was a collapse with *"no `×3`, no timestamp, because either of
+ * those is decision 1, gated above"* -- a rule that would have removed the
+ * only evidence a player had that three fights happened. The owner has since
+ * taken decision 1 and decision 2, so the count and the time are on the row
+ * that the rejected version could not carry them on.
+ *
+ * `dayLengthTicks` is what turns an event's tick into the day a player reads,
+ * through `projectClockPosition`, and comes from the clock the caller is
+ * already holding. `0` means no session has reported a clock -- the value
+ * `UNKNOWN_HUD_CLOCK` carries -- and a row built then carries no time rather
+ * than a day computed from a day length nobody published.
  *
  * Returns `undefined` for a message that says nothing about events, so the
  * caller leaves the field alone -- the tri-state every translator here uses.
@@ -387,9 +450,21 @@ const SEVERITY_EVICTION_ORDER: Readonly<Record<HudSeverity, number>> = {
 export function hudEventAlertsFromWorkerMessage(
   message: WorkerToMainMessage,
   previous: readonly HudAlertViewModel[] = [],
+  dayLengthTicks = 0,
 ): readonly HudAlertViewModel[] | undefined {
+  // A session's list belongs to that session. Only this producer's rows are
+  // dropped: the two families share one flat list and neither may erase the
+  // other's rows, which is the rule `EVENT_ROW_PREFIX` exists for.
+  if (message.kind === 'simulation/ready') return previous.filter((row) => !row.id.startsWith(EVENT_ROW_PREFIX));
   if (message.kind !== 'simulation/event') return undefined;
-  const next = [...previous, eventAlertRow(message.payload.event)];
+
+  const { event } = message.payload;
+  const statement = simulationEventIdentity(event);
+  const standing = previous.find((row) => row.occurrences?.statement === statement);
+  const next =
+    standing === undefined
+      ? [...previous, eventAlertRow(event, statement, dayLengthTicks)]
+      : previous.map((row) => (row === standing ? withFurtherOccurrence(row, event, dayLengthTicks) : row));
 
   /*
    * **Positions are preserved and only the oldest event rows are dropped.**
@@ -435,9 +510,21 @@ export function hudEventAlertsFromWorkerMessage(
   const byEvictionPriority = [...eventRows].sort((left, right) => {
     const bySeverity = SEVERITY_EVICTION_ORDER[left.severity] - SEVERITY_EVICTION_ORDER[right.severity];
     if (bySeverity !== 0) return bySeverity;
-    // Same band: the older row goes first. `next` is in arrival order, so the
-    // index in it *is* the age, and reading it here avoids parsing the id.
-    return eventRows.indexOf(left) - eventRows.indexOf(right);
+    /*
+     * Same band: the older row goes first.
+     *
+     * **This read `eventRows.indexOf(left) - eventRows.indexOf(right)` -- the
+     * position in the list -- and that stopped being the age on 2026-09-01.**
+     * The comment it carried said so itself: *"`next` is in arrival order, so
+     * the index in it *is* the age"*. Since a row collapses its repeats and
+     * keeps the position its **first** arrival earned, a row at index 0 may
+     * have arrived again a tick ago, and evicting it as the oldest would drop
+     * the most recent thing in the band. `lastSequence` is the age that
+     * survives collapsing: it is the ordinal of the newest arrival the row
+     * stands for, and ordinals are assigned at append, so comparing them is
+     * comparing arrival order without depending on where a row sits.
+     */
+    return lastSequenceOf(left) - lastSequenceOf(right);
   });
 
   const dropped = new Set(byEvictionPriority.slice(0, eventRows.length - MAX_EVENT_ALERT_ROWS).map((row) => row.id));
@@ -470,6 +557,23 @@ export function hudEventNoticeFromWorkerMessage(
 ): HudEventNoticeViewModel | 'none' | undefined {
   switch (message.kind) {
     case 'simulation/event': {
+      /*
+       * **A restored record is not an announcement**, which is the one place
+       * the two surfaces of this channel disagree about a message (the owner's
+       * decision 4 of 2026-09-01 on ADR 0084 -- the log survives a reload).
+       *
+       * `undefined` and not `'none'`: this message says nothing about what is
+       * happening *now*, so the band must be left exactly as it is rather than
+       * emptied. On a fresh page it is empty already; inside a page that is
+       * loading a prison over a running one, emptying is `simulation/stopped`'s
+       * job and it has already done it.
+       *
+       * The band's own rule is untouched by this. It still carries the newest
+       * event and still replaces whatever it holds without arbitration, which
+       * is ADR 0084's decision 4 -- a dwell floor -- and that decision is not
+       * taken.
+       */
+      if (message.payload.restored === true) return undefined;
       const { event } = message.payload;
       const { labelKey, severity } = EVENT_PRESENTATION[event.type];
       const messages = eventParameterMessages(event);
@@ -493,21 +597,148 @@ export function hudEventNoticeFromWorkerMessage(
   }
 }
 
-function eventAlertRow(event: SimulationEvent): HudAlertViewModel {
+function eventAlertRow(event: SimulationEvent, statement: string, dayLengthTicks: number): HudAlertViewModel {
   const { labelKey, severity } = EVENT_PRESENTATION[event.type];
   const messages = eventParameterMessages(event);
+  const at = alertTime(event.tick, dayLengthTicks);
   return {
-    // The event's own ordinal, so every event is its own row rather than
-    // rewriting the previous one -- the opposite of what a refusal's ordinal
-    // buys, and for the opposite reason: a refusal is republished unchanged on
-    // a cadence and must update in place, while each event is published once
-    // and is a new fact.
+    /*
+     * The **first** arrival's ordinal.
+     *
+     * This read "the event's own ordinal, so every event is its own row rather
+     * than rewriting the previous one -- the opposite of what a refusal's
+     * ordinal buys, and for the opposite reason: a refusal is republished
+     * unchanged on a cadence and must update in place, while each event is
+     * published once and is a new fact." Half of that is now the other way
+     * round and the half that is not is why: a repeat of the *same statement*
+     * does rewrite this row, because the owner's decision 1 made a row a run
+     * rather than an arrival -- but a genuinely new fact is still a new row,
+     * and the ordinal it is keyed by is still the one the row began with, so
+     * the row a player is reading keeps its identity and its place.
+     */
     id: `${EVENT_ROW_PREFIX}${event.sequence}`,
     labelKey,
     labelParameters: eventParameters(event),
     ...(messages === undefined ? {} : { labelParameterMessages: messages }),
     severity,
+    occurrences: {
+      count: 1,
+      ...(at === undefined ? {} : { lastAt: at }),
+      firstSequence: event.sequence,
+      lastSequence: event.sequence,
+      statement,
+    },
   };
+}
+
+/**
+ * The same row, having heard the same thing again.
+ *
+ * Everything the sentence renders from is left exactly as it was -- the label
+ * key, the parameters and the severity are functions of the statement, and the
+ * statement is what matched. What moves is the count, the time and the far end
+ * of the run: those three are the whole of what a second arrival adds.
+ */
+function withFurtherOccurrence(
+  row: HudAlertViewModel,
+  event: SimulationEvent,
+  dayLengthTicks: number,
+): HudAlertViewModel {
+  const occurrences = row.occurrences;
+  // Unreachable while the caller only ever passes a row it matched by
+  // `statement`, which is a field of this object. Returned rather than thrown
+  // because there is nothing to repair: a row with no run to add to is the row
+  // the other producer owns, and leaving it untouched is what this module owes
+  // it.
+  if (occurrences === undefined) return row;
+  const at = alertTime(event.tick, dayLengthTicks);
+  return {
+    ...row,
+    occurrences: {
+      ...occurrences,
+      count: occurrences.count + 1,
+      ...(at === undefined ? {} : { lastAt: at }),
+      lastSequence: event.sequence,
+    },
+  };
+}
+
+/**
+ * Where an event's tick sits in the in-game calendar, or `undefined` because
+ * no session has said how long a day is.
+ *
+ * `projectClockPosition` rather than arithmetic here: it is *"the one piece of
+ * clock arithmetic in the codebase, so a caller cannot disagree with the
+ * status strip about which day it is"*, and a row that named a different day
+ * than the strip for the same tick would be the defect that comment exists to
+ * prevent. The percent is `dayProgressPercent`'s, for the same reason -- the
+ * strip renders the current day's position with it, and this renders a past
+ * one.
+ */
+function alertTime(tick: number, dayLengthTicks: number): HudAlertTimeViewModel | undefined {
+  if (!Number.isSafeInteger(tick) || tick < 0) return undefined;
+  if (!Number.isSafeInteger(dayLengthTicks) || dayLengthTicks <= 0) return undefined;
+  const position = projectClockPosition(tick, dayLengthTicks);
+  const progressPercent = dayProgressPercent(position.tickOfDay, position.dayLengthTicks);
+  return progressPercent === undefined ? undefined : { day: position.dayNumber, progressPercent };
+}
+
+/** The newest arrival a row stands for, which is its age for the cap's purposes. */
+function lastSequenceOf(row: HudAlertViewModel): number {
+  // Every row this module produces carries a run; the fallback is here because
+  // the field is optional for the *other* producer's rows, and `eventRows`
+  // above is selected by id prefix rather than by this field so that the
+  // family boundary stays the one thing that decides which rows are whose.
+  return row.occurrences?.lastSequence ?? 0;
+}
+
+/**
+ * What a dismissal has to name on the wire to retire one row (the owner's
+ * decision 3 of 2026-09-01 on ADR 0084), or `undefined` for a row that cannot
+ * be dismissed.
+ *
+ * **Two ordinals rather than one, and the second is the point.** A row stands
+ * for a run of arrivals, so retiring it retires every arrival in the run --
+ * and only those. An arrival that reaches the worker *after* the player
+ * pressed, which is possible because a command is applied on a tick and a
+ * publication is not, has an ordinal above `throughSequence` and is therefore
+ * not dismissed: the same fact recurring comes back as a new row counting from
+ * one. That is the recurrence question ADR 0084 raised -- *"if the same fact
+ * recurs (a fourth fight after the third was dismissed), is that a new row or
+ * a return of the dismissed one?"* -- answered as **a new row**, because what
+ * a player dismissed is the occurrences they had read, not the sentence.
+ *
+ * `undefined` for the refusal and protocol-fault rows, which carry no run:
+ * `docs/HUD_PROJECTIONS.md` gap 34 is the un-taken decision about dismissing
+ * those, and ADR 0084 did not reopen it.
+ */
+export function alertRowDismissal(
+  alerts: readonly HudAlertViewModel[],
+  rowId: string,
+): { readonly fromSequence: number; readonly throughSequence: number } | undefined {
+  const occurrences = alerts.find((row) => row.id === rowId)?.occurrences;
+  if (occurrences === undefined) return undefined;
+  return { fromSequence: occurrences.firstSequence, throughSequence: occurrences.lastSequence };
+}
+
+/**
+ * The list without the row the player dismissed.
+ *
+ * The main thread's half of decision 3. The worker's half is the command
+ * `alertRowDismissal` above describes, and the two are not a duplication: this
+ * one is what the player sees happen when they press, and that one is what
+ * makes it still true after a reload. Neither can do the other's job -- the
+ * list is not in the save, and the save is not on screen.
+ *
+ * A row this list does not hold leaves it unchanged, which is the honest
+ * outcome rather than a swallowed error: the gesture asked for the row to be
+ * gone and it is.
+ */
+export function hudAlertsWithoutRow(
+  alerts: readonly HudAlertViewModel[],
+  rowId: string,
+): readonly HudAlertViewModel[] {
+  return alerts.filter((row) => row.id !== rowId);
 }
 
 /**

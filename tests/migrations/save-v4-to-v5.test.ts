@@ -98,10 +98,12 @@ function v4EnvelopeWithARoom(): SaveEnvelopeV4 {
   const bundle = captureSessionSnapshot(runtime);
   if (bundle.simulation === undefined) throw new Error('a captured session must carry a simulation section');
 
-  // The two things about a current capture that are newer than V4: the objects
-  // section did not exist, and a room instance carried a capacity and a
-  // capability list instead of a rectangle.
-  const { objects: _objects, ...simulation } = bundle.simulation;
+  // The three things about a current capture that are newer than V4: the
+  // objects section did not exist, the alerts section did not exist either
+  // (the owner's decisions of 2026-09-01 on ADR 0084 added it beside `objects`
+  // under the same optional-field rule), and a room instance carried a
+  // capacity and a capability list instead of a rectangle.
+  const { objects: _objects, alerts: _alerts, ...simulation } = bundle.simulation;
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,

@@ -371,15 +371,38 @@ describe('a prison a player can start finds the contraband it admits', () => {
       [],
     );
 
-    expect(rows).toHaveLength(2);
-    for (const row of rows) {
-      expect(row.severity, 'ruling 13: warning, and a weapon is not louder').toBe('warning');
-      const sentence = localizer.format(
-        row.labelKey,
-        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), row),
-      );
-      expect(sentence).toBe('Contraband found: Phone.');
-    }
+    /*
+     * **One row, saying it happened twice.**
+     *
+     * This required two rows until the owner's decisions of 2026-09-01 on
+     * [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md),
+     * and the sentence it was asserting is unchanged and still asserted below:
+     * ruling 13's `warning` band, and "Contraband found: Phone." for a find
+     * that is not a weapon. What changed is how many rows two identical
+     * sentences occupy.
+     *
+     * **This measurement is also the counter-example to a sentence in ADR 0084
+     * itself**, and it is worth recording where it can be checked. Rejecting
+     * the collapse, that document argued it "would only ever fire for the four
+     * incident types and leave discharges and paydays stacking as they do
+     * today", because "`prisoners.discharged` carries `count`,
+     * `economy.wages-unpaid` carries a sum, `incidents.riot-opened` carries
+     * `participantCount` -- two occurrences of any of those are almost never
+     * byte-identical". Two phones found in one played prison are byte-identical
+     * apart from their ordinals and ticks, so the rule fires here, on a
+     * `contraband.discovered`. That is the rule behaving as it is written --
+     * the same sentence twice is one row twice -- rather than a family being
+     * treated specially, which is exactly the property the ADR asked for.
+     */
+    expect(rows).toHaveLength(1);
+    const row = rows[0]!;
+    expect(row.occurrences?.count, 'two phones, one sentence, said twice').toBe(2);
+    expect(row.severity, 'ruling 13: warning, and a weapon is not louder').toBe('warning');
+    const sentence = localizer.format(
+      row.labelKey,
+      resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), row),
+    );
+    expect(sentence).toBe('Contraband found: Phone.');
   });
 
   /**
