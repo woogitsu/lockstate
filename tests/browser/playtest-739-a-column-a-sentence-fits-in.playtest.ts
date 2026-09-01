@@ -97,6 +97,7 @@ interface RowReading {
 
 interface CornerReading {
   readonly rootWidth: number;
+  readonly cornerHeight: number;
   readonly corner: number;
   readonly panel: number;
   readonly rail: number;
@@ -166,6 +167,7 @@ function readCorner(input: { readonly sweepWidths: readonly number[]; readonly s
   const surface = corner.querySelector<HTMLElement>('.hud-minimap__surface');
   return {
     rootWidth: document.documentElement.clientWidth,
+    cornerHeight: round(box(corner).height),
     corner: round(box(corner).width),
     panel: round(box(corner.querySelector('.ui-panel')).width),
     rail: round(box(rail).width),
@@ -183,7 +185,7 @@ function report(label: string, r: CornerReading): void {
   const world = r.rootWidth - r.rail - r.corner;
   console.log(
     `  ${label}: root=${r.rootWidth} rail=${r.rail} corner=${r.corner} panel=${r.panel} ` +
-      `world=${world}px  minimap surface=${r.minimapSurface.width}x${r.minimapSurface.height}`,
+      `world=${world}px  cornerHeight=${r.cornerHeight} minimap surface=${r.minimapSurface.width}x${r.minimapSurface.height}`,
   );
   console.log(`    list clientHeight=${r.listClientHeight} scrollHeight=${r.listScrollHeight}`);
   for (const row of r.rows) {
@@ -236,6 +238,112 @@ test.describe('#739: what the alerts column measures', () => {
       const r = await page.evaluate(readCorner, { sweepWidths: [], sentence: LONGEST_SENTENCE });
       console.log(`\n=== ${width}x${height} (/index.html) ===`);
       report('assembled', r);
+    }
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/* The candidate sweep, applied to the real corner rather than a clone */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Why the widths below are applied to the live panel and not modelled from the
+ * clone sweep above.
+ *
+ * `.hud-minimap__surface` is `aspect-ratio: 1 / 1` off the panel's width
+ * (`hud.css`), so a wider panel is also a **taller** placeholder square, and
+ * the square and the alerts section are two flex items sharing one bounded
+ * column. Every pixel of width the sentence gains, the square takes back out
+ * of the height of the box the sentence sits in — and the clone sweep, which
+ * only counts line boxes at a given label width, cannot see that at all. So
+ * each candidate is applied as a real declaration and the whole corner is
+ * re-measured, with and without a cap on the square.
+ */
+interface Candidate {
+  readonly panel: number;
+  readonly surfaceCap: number | null;
+}
+
+const CANDIDATES: readonly Candidate[] = [
+  { panel: 226, surfaceCap: null },
+  { panel: 348, surfaceCap: null },
+  { panel: 388, surfaceCap: null },
+  { panel: 404, surfaceCap: null },
+  { panel: 348, surfaceCap: 224 },
+  { panel: 372, surfaceCap: 224 },
+  { panel: 388, surfaceCap: 224 },
+  { panel: 404, surfaceCap: 224 },
+];
+
+function applyCandidate(candidate: Candidate): void {
+  const id = 'lockstate-739-candidate';
+  document.getElementById(id)?.remove();
+  const style = document.createElement('style');
+  style.id = id;
+  style.textContent =
+    `.hud-minimap { width: ${candidate.panel}px !important; }` +
+    (candidate.surfaceCap === null
+      ? ''
+      : `.hud-minimap__surface { max-width: ${candidate.surfaceCap}px; align-self: center; }`);
+  document.head.append(style);
+}
+
+test.describe('#739: what each candidate width actually measures', () => {
+  test('one long alert, every candidate, five viewports', async ({ page }) => {
+    await page.goto(HARNESS_URL);
+    await page.waitForFunction(() => 'lockstateUiHarness' in window);
+
+    for (const [width, height] of VIEWPORTS) {
+      await page.setViewportSize({ width, height });
+      console.log(`\n=== ${width}x${height} ===`);
+      for (const candidate of CANDIDATES) {
+        await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+        await page.evaluate(applyCandidate, candidate);
+        // The `warning` badge is the widest of the three, so a list holding all
+        // three severities is measured at its worst row rather than its median.
+        await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), hudModel(refusalRows(3)));
+        const r = await page.evaluate(readCorner, { sweepWidths: [], sentence: LONGEST_SENTENCE });
+        const worst = [...r.rows].sort((a, b) => b.rowHeight - a.rowHeight)[0];
+        const world = r.rootWidth - r.rail - r.corner;
+        console.log(
+          `  panel=${String(candidate.panel).padStart(3)} cap=${String(candidate.surfaceCap ?? '-').padStart(3)} ` +
+            `-> corner=${r.corner} world=${world} surface=${r.minimapSurface.width}x${r.minimapSurface.height} ` +
+            `list=${r.listClientHeight} | worst row ${worst?.badgeText ?? '?'} label=${worst?.label ?? 0} ` +
+            `lines=${worst?.lines ?? 0} height=${worst?.rowHeight ?? 0}` +
+            ((worst?.rowHeight ?? 0) > r.listClientHeight ? '  <-- TALLER THAN THE LIST BOX' : ''),
+        );
+      }
+    }
+  });
+});
+
+/**
+ * The threshold hunt. The coarse sweep above lands the 109-character sentence
+ * on 5 line boxes at a 200px label and 4 at 216px; the flip is somewhere
+ * between, and where exactly decides whether four line boxes can be bought
+ * inside ADR 0085's 430px guardrail or only on top of it.
+ */
+test.describe('#739: where the line count actually flips', () => {
+  test('declared panel width, 2px at a time, worst severity only', async ({ page }) => {
+    await page.goto(HARNESS_URL);
+    await page.waitForFunction(() => 'lockstateUiHarness' in window);
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    let previous = -1;
+    for (let panel = 340; panel <= 412; panel += 2) {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(applyCandidate, { panel, surfaceCap: 224 });
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), hudModel(refusalRows(3)));
+      const r = await page.evaluate(readCorner, { sweepWidths: [], sentence: LONGEST_SENTENCE });
+      const worst = [...r.rows].sort((a, b) => b.lines - a.lines)[0];
+      const lines = worst?.lines ?? 0;
+      if (lines !== previous) {
+        console.log(
+          `  panel=${panel} corner=${r.corner} worst=${worst?.badgeText ?? '?'} label=${worst?.label ?? 0} ` +
+            `lines=${lines} rowHeight=${worst?.rowHeight ?? 0}  <-- first width at this line count`,
+        );
+        previous = lines;
+      }
     }
   });
 });
