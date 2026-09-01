@@ -1,4 +1,4 @@
-import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS } from '../simulation/economy';
+import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, rungFloorMinorUnits } from '../simulation/economy';
 
 /**
  * **Whether the host should refuse a charge before it sends the command, and
@@ -120,6 +120,38 @@ export interface AffordabilityVerdict {
 export type AffordabilityRefusal = 'past-the-floor' | 'malformed-charge';
 
 /**
+ * **The floor a press is judged against, which since the owner's ruling 19 of
+ * 2026-08-31 is a rung and not the overdraft floor.**
+ *
+ * The two intents this module serves are `purchase-materials` and `hire-staff`.
+ * Under ruling 19 (drafted as ADR 0017's "Amendment, 2026-09-01") the first is
+ * ADR 0017 decision 8's `'deliveries'` rung and the second is `'hiring'`, which
+ * shares its threshold -- so **one number serves both**, and if hiring is ever
+ * given a rung of its own this becomes a parameter of the call rather than a
+ * constant.
+ *
+ * Composed through `rungFloorMinorUnits` rather than written out, so the host's
+ * pre-flight and `Treasury.floorFor` are one definition. Writing `-1_250` here
+ * would rebuild, one ruling later, exactly the second copy this module's own
+ * docblock was created to prevent.
+ *
+ * **The default was `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` until ruling 19, and
+ * every paragraph above was written under it.** Leaving it there would have made
+ * the host accept every press between -1,250 and -2,500 that the worker then
+ * refuses -- not the #82/#207 failure, which is the interface refusing what the
+ * simulation accepts, but its mirror: a control that says yes and is overruled
+ * some ticks later.
+ *
+ * **What it does not fix, deliberately.** `hud.status.funds-remaining` renders
+ * `balance - overdraftFloor` (`src/ui/hud/projection.ts`), which is the room to
+ * -2,500; between -1,250 and -2,500 that badge now offers a player room they
+ * cannot spend. That is a player-visible figure whose meaning the ruling
+ * changes, so it is the owner's under `AGENTS.md`'s fourth exclusion and is
+ * reported rather than quietly re-based here.
+ */
+export const HOST_PRESS_FLOOR_MINOR_UNITS = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+
+/**
  * The one comparison, and it is deliberately the same shape as
  * `Treasury.canAfford`: `balance - charge >= floor`.
  *
@@ -135,7 +167,7 @@ export type AffordabilityRefusal = 'past-the-floor' | 'malformed-charge';
 export function judgeAffordability(
   chargeMinorUnits: number,
   balanceMinorUnits: number,
-  overdraftFloorMinorUnits: number = TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  overdraftFloorMinorUnits: number = HOST_PRESS_FLOOR_MINOR_UNITS,
 ): AffordabilityVerdict {
   const spendableMinorUnits = balanceMinorUnits - overdraftFloorMinorUnits;
   const wellFormed = Number.isSafeInteger(chargeMinorUnits) && chargeMinorUnits >= 0;

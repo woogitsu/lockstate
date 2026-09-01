@@ -284,11 +284,39 @@ export class PayrollSystem implements SystemRegistration {
     // have to filter out entries for no money.
     if (due === 0) return;
 
-    const payable = Math.min(due, this.treasury.balanceMinorUnits);
+    /*
+     * **What the prison may spend on wages today, which is no longer its
+     * balance** (the owner's ruling 19 of 2026-08-31, drafted as ADR 0017's
+     * "Amendment, 2026-09-01").
+     *
+     * This line read `Math.min(due, this.treasury.balanceMinorUnits)`, and that
+     * sentence is kept because it is what ADR 0083 measured and defended: its
+     * "considered and not taken" rejected *"making the payroll draw on the
+     * floor"* on the ground that `Math.min(due, balance)` *"is what keeps ADR
+     * 0017 decision 8's third rung reachable"*. Under a single floor that was
+     * right — a payroll that drew on the overdraft would have had no rung of
+     * its own at all. Ruling 19 gives it one: **wages are unpaid below −2,500**,
+     * which is the floor, so the third rung is reached by drawing down to it
+     * rather than by refusing to draw at all.
+     *
+     * `floorFor('wages')` and not `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`: the
+     * floor a session actually runs on is the one `setOverdraftFloor` was given,
+     * and a second copy of the constant here would disagree with it the first
+     * time they differed. A treasury with no facility open returns `0` from
+     * that call, which makes this line *exactly* the `Math.min(due, balance)` it
+     * replaced — every `new Treasury()` in `tests/unit/economy-payroll.test.ts`
+     * is unaffected, to the minor unit.
+     *
+     * `Math.max(0, …)` because the balance can already be below the wage rung's
+     * floor when this runs — a restored save, or income withheld after a
+     * construction pass — and a negative `payable` is not a refund.
+     */
+    const payable = Math.max(0, Math.min(due, this.treasury.balanceMinorUnits - this.treasury.floorFor('wages')));
     // `spend` cannot refuse `payable` -- it is a non-negative integer bounded
-    // by the balance -- but the outcome is read rather than discarded, so that
-    // a refusal leaves the whole bill owed instead of silently vanishing.
-    const paid = payable > 0 && this.treasury.spend(payable) ? payable : 0;
+    // by the room the wage rung leaves -- but the outcome is read rather than
+    // discarded, so that a refusal leaves the whole bill owed instead of
+    // silently vanishing.
+    const paid = payable > 0 && this.treasury.spend(payable, 'wages') ? payable : 0;
     this.unpaid = due - paid;
     /*
      * The event is the *payday*, not the condition. ADR 0049 decided

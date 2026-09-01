@@ -128,6 +128,27 @@
  *   `tests/integration/economy-payroll-loop.test.ts` pins the inversion at both
  *   ends of the facility so the amendment is written against a measurement.
  *
+ *   **The amendment is drafted, and this bullet is kept because it is the
+ *   record of what was measured before it.** The owner's ruling 19 of
+ *   2026-08-31 — *"Dać szczeblom własne progi wewnątrz debetu"* — chose neither
+ *   of the two options ADR 0083 §2 named: rather than amending the *order* or
+ *   narrowing decision 8 to a prison that has spent its overdraft, it gives the
+ *   three rungs their own thresholds **inside** the overdraft, at −1,250,
+ *   −2,000 and −2,500. `docs/adr/0017-money-primary-resource-model.md`
+ *   ("Amendment, 2026-09-01") drafts it, and it is **Proposed and not
+ *   self-approved**: nothing that depends on it may merge before the owner
+ *   signs it.
+ *
+ *   What that costs this file, stated because it reverses something ADR 0083
+ *   decided against: `canAfford` is no longer *"one comparison over every
+ *   spend"* against a single floor — it takes a `SpendClass` and compares
+ *   against that rung's floor — and `PayrollSystem` now draws on the overdraft
+ *   down to the floor, which ADR 0083's "considered and not taken" rejected by
+ *   name as *"making the payroll draw on the floor"*. That rejection was right
+ *   under a single floor, where the draw would have deleted the third rung;
+ *   under ruling 19 the third rung *is* the floor, so the draw is what puts the
+ *   rung where the owner put it.
+ *
  * ## Integer minor units, and why that is not a formatting choice
  *
  * The balance is authoritative simulation state and a save carries it. A
@@ -271,6 +292,110 @@ export const TREASURY_STARTING_BALANCE_MINOR_UNITS = 25_000;
  */
 export const TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS = -Math.trunc(TREASURY_STARTING_BALANCE_MINOR_UNITS / 10);
 
+/**
+ * **Which rung of ADR 0017 decision 8's insolvency ladder a spend belongs to.**
+ *
+ * The owner's ruling 19 of 2026-08-31 -- *"Dać szczeblom własne progi wewnątrz
+ * debetu"*, give the rungs their own thresholds inside the overdraft -- is
+ * drafted as an amendment to
+ * [ADR 0017](../../../docs/adr/0017-money-primary-resource-model.md)
+ * ("Amendment, 2026-09-01"), **Proposed and awaiting the owner's signature**.
+ * This type is what makes the ladder expressible at all.
+ *
+ * **It is a required argument on `canAfford` and `spend`, and that is the whole
+ * design.** The alternative shapes were a per-caller check and a floor set on
+ * the `Treasury` per class; both were rejected for the same reason, which is
+ * the one property a ladder has to have: *a rung must be impossible to bypass
+ * by calling `spend` without saying which rung you are.* A caller-side check is
+ * bypassed by forgetting it and nothing goes red; a defaulted parameter is
+ * bypassed by omitting it and silently gets the deepest floor, which is the
+ * rung that refuses last. A required parameter of a closed union cannot be
+ * omitted, and `tsc` is the thing that asks.
+ *
+ * `'hiring'` is **not** one of the ruling's three rungs. `GuardRoster.hire`
+ * spends (`src/simulation/staff/hiring.ts`) and the ruling does not name it, so
+ * it is given the *shallowest* threshold rather than a fourth one of its own:
+ * see `INSOLVENCY_RUNG_FLOORS_MINOR_UNITS`. Whether hiring deserves a rung of
+ * its own is marked in the amendment as the owner's and is not taken here.
+ */
+export type SpendClass = 'deliveries' | 'construction' | 'wages' | 'hiring';
+
+/**
+ * The first rung: **deliveries refused below −1,250.**
+ *
+ * The owner's ruling 19 of 2026-08-31, quoted at
+ * [ADR 0017](../../../docs/adr/0017-money-primary-resource-model.md)'s
+ * "Amendment, 2026-09-01", which is the citation this number has and the only
+ * one. It is deliberately a named constant rather than a literal at a
+ * comparison, because a magnitude the owner ruled has to be findable from the
+ * ruling.
+ *
+ * **Absolute minor units, not a fraction of the floor**, and the amendment
+ * defends the choice: the owner ruled three magnitudes, not three ratios, and
+ * `1_250 / 2_500` is a ratio nobody stated. What keeps the ladder coherent if
+ * the floor is ever reconfigured is the clamp in `Treasury.floorFor`, not a
+ * derivation here.
+ */
+export const INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS = -1_250;
+
+/**
+ * The second rung: **construction halted below −2,000.** Ruling 19, as above.
+ *
+ * "Construction" here is the material spend a *queued build order* causes --
+ * `JustInTimeMaterialsService.procureForPendingOrders`, which is the only
+ * caller that reaches `ProcurementSystem.purchase` without a player pressing
+ * Buy. The press itself is `'deliveries'`. That split is what makes the first
+ * two rungs distinguishable at all, because both spends go through one method;
+ * the amendment argues it rather than assuming it.
+ */
+export const INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS = -2_000;
+
+/**
+ * The three rungs and the one spend the ruling does not name, as the floors
+ * they are refused at.
+ *
+ * **`'wages'` is `0` and that is not a threshold of its own: it is the sentinel
+ * for "no rung above the treasury's floor".** Ruling 19 puts the third rung
+ * *at* the floor (−2,500 today), and the floor already has an owner --
+ * `Treasury.setOverdraftFloor`, fed by `createNewSimulationRuntime` from
+ * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`. Writing −2,500 here would be a second
+ * copy of a number that is already defined once, and the two copies would
+ * disagree the first time anybody passed a different floor. `floorFor` clamps
+ * every rung to the treasury's floor, so `0` clamps to exactly the floor and
+ * the third rung is the floor by construction rather than by coincidence.
+ *
+ * `'hiring'` shares the first rung. Not a fourth threshold, because ruling 19
+ * authored three and a fourth is the owner's; and not a deeper one, because a
+ * prison that is refusing deliveries and still taking on staff is decision 8's
+ * ordering broken in the other direction.
+ */
+export const INSOLVENCY_RUNG_FLOORS_MINOR_UNITS: Readonly<Record<SpendClass, number>> = {
+  deliveries: INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
+  construction: INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS,
+  wages: 0,
+  hiring: INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
+};
+
+/**
+ * The rung's threshold clamped to an overdraft floor — the whole of the ladder's
+ * arithmetic, as one pure function.
+ *
+ * A function rather than a method on `Treasury` because there is a second
+ * reader: `judgeAffordability` (`src/ui/affordability.ts`) is the host's
+ * pre-flight on the two intents that cost money, and it sits on the other side
+ * of `sender.submit` from any `Treasury`. That module exists precisely because
+ * *"the comparison it makes was wrong for a whole ruling and nothing could see
+ * it"*, and a second `Math.max` written out over there would be the same defect
+ * one ruling later. `Treasury.floorFor` and the host now call the same
+ * definition.
+ *
+ * See `Treasury.floorFor` for what the clamp buys and what it deliberately
+ * does not decide.
+ */
+export function rungFloorMinorUnits(spendClass: SpendClass, overdraftFloorMinorUnits: number): number {
+  return Math.max(INSOLVENCY_RUNG_FLOORS_MINOR_UNITS[spendClass], overdraftFloorMinorUnits);
+}
+
 export interface TreasurySnapshot {
   readonly balanceMinorUnits: number;
 }
@@ -334,6 +459,35 @@ export class Treasury {
   }
 
   /**
+   * **How far below zero this class of spend may take the balance.**
+   *
+   * The rung's own threshold, clamped to the treasury's floor: no spend of any
+   * class may pass `this.floor`, which is the one bound the whole economy was
+   * written against and the one `scripts/report-loan-recovery-pricing.mjs`
+   * measures `floor breaches` of.
+   *
+   * **The clamp is what makes the ladder a ladder rather than four numbers.**
+   * Two properties follow from it and both are asserted in
+   * `tests/unit/economy-treasury.test.ts`:
+   *
+   * - **A prison with no facility open behaves exactly as it did before ruling
+   *   19, to the minor unit, for every class.** With `this.floor` at `0` the
+   *   clamp returns `0` for all four, so a bare `new Treasury()` — which is
+   *   every one in the unit tests — has no rungs at all. The ladder exists
+   *   *inside* the overdraft, which is what the ruling's own words say.
+   * - **No rung can be deeper than the floor**, so a floor reconfigured
+   *   shallower than −2,500 collapses the rungs onto it in order instead of
+   *   leaving two of them unreachable below it.
+   *
+   * What the clamp deliberately does *not* do is **scale** the rungs with the
+   * floor. That is the amendment's open question, marked there as the owner's:
+   * ruling 19 gave three magnitudes and no ratios.
+   */
+  public floorFor(spendClass: SpendClass): number {
+    return rungFloorMinorUnits(spendClass, this.floor);
+  }
+
+  /**
    * Whether a spend is affordable.
    *
    * `this.balance - amountMinorUnits >= this.floor` rather than
@@ -342,10 +496,21 @@ export class Treasury {
    * (`tests/unit/economy-treasury.test.ts`, #416) is untouched, and with a
    * floor below zero this is the one that lets a prison spend into the room a
    * loan opened.
+   *
+   * **`this.floor` became `this.floorFor(spendClass)` under the owner's ruling
+   * 19 of 2026-08-31, and the sentence above is kept because it describes the
+   * comparison this still is.** It was *"one comparison over every spend"* —
+   * `treasury.ts`'s own docblock, `tests/integration/economy-payroll-loop.test.ts`
+   * and ADR 0083 §2 all say so in those words — and that is exactly why ADR 0017
+   * decision 8's ladder ran backwards: one comparison cannot express three
+   * rungs. It is still one comparison, against a floor that now depends on
+   * which rung is asking.
+   *
+   * `spendClass` is required rather than defaulted. See `SpendClass`.
    */
-  public canAfford(amountMinorUnits: number): boolean {
+  public canAfford(amountMinorUnits: number, spendClass: SpendClass): boolean {
     if (!Number.isSafeInteger(amountMinorUnits) || amountMinorUnits < 0) return false;
-    return this.balance - amountMinorUnits >= this.floor;
+    return this.balance - amountMinorUnits >= this.floorFor(spendClass);
   }
 
   /**
@@ -355,9 +520,13 @@ export class Treasury {
    * cannot afford is an ordinary refusal the interface reports, not an
    * exceptional condition — the same reading `ConstructionSystem.submitOrder`
    * takes of an order on unowned land (#215).
+   *
+   * **Which rung is refusing is the caller's to say and cannot be omitted**
+   * (ruling 19; see `SpendClass` for why the parameter is required rather than
+   * defaulted).
    */
-  public spend(amountMinorUnits: number): boolean {
-    if (!this.canAfford(amountMinorUnits)) return false;
+  public spend(amountMinorUnits: number, spendClass: SpendClass): boolean {
+    if (!this.canAfford(amountMinorUnits, spendClass)) return false;
     this.balance -= amountMinorUnits;
     return true;
   }

@@ -328,7 +328,12 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
    *
    * 1. **Per order, whole or not at all.** `this.treasury.canAfford` is asked
    *    once for the order's *whole* remainder before any of its lines is
-   *    bought. This is the only new bound this pass has and it is a real one:
+   *    bought, **at the `'construction'` rung** — the owner's ruling 19 of
+   *    2026-08-31, drafted as ADR 0017's "Amendment, 2026-09-01". This pass is
+   *    what ADR 0017 decision 8 calls *construction*, and the player's Buy
+   *    press is what it calls a *delivery*, so this method stops at −2,000 and
+   *    the press stops at −1,250. Every `canAfford` and `spend` on this path
+   *    carries the same class, so the two cannot come apart. This is the only new bound this pass has and it is a real one:
    *    without it a partly filled pass would buy the affordable half of a
    *    two-material order and spend money on materials that can never finish
    *    anything.
@@ -381,6 +386,16 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
    * - **`TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`**, which every `spend` passes
    *   through one comparison in `Treasury.canAfford`. §10c measures `floor
    *   breaches` at 0 in every run.
+   *
+   *   **Since ruling 19 the bound on *this* path is the shallower
+   *   `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`, and the sentence above
+   *   is kept because it is what §10c measured.** The floor is still the bound
+   *   on the treasury as a whole and `floor breaches` is still 0; what changed
+   *   is that a standing build queue now runs out of room 500 minor units
+   *   earlier, which is the point of giving construction a rung. §10c's own
+   *   finding — that a twenty-order tail strands a prison at −1,625 — lands
+   *   between the two thresholds, so under ruling 19 that tail stops itself at
+   *   −2,000 with 500 of room left for wages.
    *
    * **What this change really moves is the residual**, and it is stated rather
    * than bounded here. Under all-or-nothing a queue the prison could not fund
@@ -508,7 +523,7 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
        * them and telling the player it is would be a sentence that is false.
        */
       if (blocked || lines.length === 0) continue;
-      if (!this.treasury.canAfford(orderCostMinorUnits)) {
+      if (!this.treasury.canAfford(orderCostMinorUnits, 'construction')) {
         for (const line of lines) add(unfunded, line);
         continue;
       }
@@ -520,6 +535,7 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
           line.itemId,
           line.quantity,
           tick,
+          'construction',
         );
         if (outcome.ok) {
           add(purchased, { itemId: line.itemId, quantity: line.quantity, costMinorUnits: outcome.paidMinorUnits });

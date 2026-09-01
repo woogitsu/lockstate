@@ -24,7 +24,17 @@ export {
   justInTimePurchaseOrderId,
 } from './just-in-time-materials';
 export { BASIS_POINTS_PER_UNIT, LoanBook, type LoanSnapshot, type LoanTerms } from './loans';
-export { Treasury, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, TREASURY_STARTING_BALANCE_MINOR_UNITS, type TreasurySnapshot } from './treasury';
+export {
+  INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS,
+  INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
+  INSOLVENCY_RUNG_FLOORS_MINOR_UNITS,
+  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  TREASURY_STARTING_BALANCE_MINOR_UNITS,
+  Treasury,
+  rungFloorMinorUnits,
+  type SpendClass,
+  type TreasurySnapshot,
+} from './treasury';
 export { staffDailyWageMinorUnits } from './wages';
 export {
   MAX_PURCHASE_QUANTITY,
@@ -35,4 +45,5 @@ export {
   type PurchaseCancelRefusalReason,
   type PurchaseOutcome,
   type PurchaseRefusalReason,
+  type PurchaseSpendClass,
 } from './procurement';

@@ -196,7 +196,21 @@ export class StaffHiringService {
     }
 
     const paidMinorUnits = staffDailyWageForRole(role);
-    if (!this.treasury.spend(paidMinorUnits)) return { kind: 'refused', reason: 'insufficient-funds' };
+    /*
+     * `'hiring'`, and it is **not** one of ADR 0017 decision 8's three rungs.
+     *
+     * The owner's ruling 19 of 2026-08-31 (drafted as ADR 0017's "Amendment,
+     * 2026-09-01") names deliveries, construction and wages. Taking somebody on
+     * is none of the three, and inventing a fourth threshold for it would be
+     * authoring a rung the owner did not rule — so it shares the *shallowest*,
+     * `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`. The direction is the
+     * defensible one: a prison already refusing deliveries must not still be
+     * taking on staff whose wages it will then owe, which would be decision 8's
+     * ordering broken in the other direction. Whether hiring deserves a rung of
+     * its own — earlier than deliveries, say — is marked in the amendment as
+     * the owner's and is not decided here.
+     */
+    if (!this.treasury.spend(paidMinorUnits, 'hiring')) return { kind: 'refused', reason: 'insufficient-funds' };
 
     return { kind: 'hired', entityId: this.roster.hire(role.id, request.originTile), paidMinorUnits };
   }

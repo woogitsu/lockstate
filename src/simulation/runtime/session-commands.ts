@@ -344,7 +344,20 @@ export function createSessionCommandHandler(
       // The lookup is exhaustive over `PurchaseRefusalReason`, so a fifth
       // refusal reason added to `ProcurementSystem` fails to compile until it
       // is given a wire id and a message key.
-      const outcome = procurement.purchase(simCommand.orderId, simCommand.itemId, simCommand.quantity, context.tick);
+      /*
+       * `'deliveries'` — the player's Buy press is ADR 0017 decision 8's first
+       * rung, refused below −1,250 under the owner's ruling 19 of 2026-08-31
+       * (drafted as ADR 0017's "Amendment, 2026-09-01"). The same method serves
+       * the second rung when `JustInTimeMaterialsService` calls it for a queued
+       * build order; see `ProcurementSystem.purchase` for the split.
+       */
+      const outcome = procurement.purchase(
+        simCommand.orderId,
+        simCommand.itemId,
+        simCommand.quantity,
+        context.tick,
+        'deliveries',
+      );
       const purchaseKey = purchaseSupersessionKey(simCommand.itemId, simCommand.quantity);
       if (!outcome.ok) {
         refusals.record(PURCHASE_REFUSAL_REASONS[outcome.reason], context.tick, purchaseKey);
