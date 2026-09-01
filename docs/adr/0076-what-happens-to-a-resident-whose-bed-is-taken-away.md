@@ -16,16 +16,20 @@
 
 **Accepted, 2026-08-29, by the repository owner.**
 
-**Decision B is under a proposed amendment as of 2026-08-31, and that amendment
-is not signed.** See §*Amendment, 2026-08-31: cancelling a build order gives back
+**Decision B is amended, and the amendment is signed: the owner accepted it on
+2026-09-01.** See §*Amendment, 2026-08-31: cancelling a build order gives back
 money, not materials, and only while the crew has not started* at the foot of
 this file. It records the owner's ruling 20 of 2026-08-31, supersedes the
 premise decision B rests on for four of the six cancellable states, leaves B's
 own sentence about a **completed** object standing, and marks what B governs and
 ruling 20 does not answer — `RemoveObject` on a completed object — as undecided
-and the owner's. **Until it is signed, decision B as written above is what this
-document decides**; the amendment is a proposal with an implementation beside it,
-not a change of status.
+and the owner's.
+
+**This clause read differently while the amendment was unsigned**, and the
+sentence is kept because it is what a reader of an earlier revision found here:
+*"Until it is signed, decision B as written above is what this document decides;
+the amendment is a proposal with an implementation beside it, not a change of
+status."* That condition ended on 2026-09-01.
 
 **This clause read `Proposed, 2026-08-29. Not self-approved.` until the owner
 accepted it later the same day.** As with [ADR 0075](./0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md),
@@ -531,12 +535,18 @@ decision would need re-reading rather than extending.
 
 ## Amendment, 2026-08-31: cancelling a build order gives back money, not materials, and only while the crew has not started
 
-**Proposed amendment, not self-approved — awaiting the owner's signature.**
-Drafted 2026-08-31 against `72b29c4` (v0.0.299). The two rulings quoted below
-are the owner's; **everything this amendment derives from them is not**, and
-nothing here is accepted until the owner signs it. The implementation on the
-same branch exists so that what is being signed can be seen running; it must
-not merge before the signature.
+**Accepted, 2026-09-01, by the repository owner.** Drafted 2026-08-31 against
+`72b29c4` (v0.0.299) and put to the owner with its implementation beside it, so
+that what was being signed could be seen running. The two rulings quoted below
+were always the owner's; **everything this amendment derives from them was
+not**, and the acceptance step is what makes the derivation the repository's
+rather than its author's.
+
+**The clause above read `Proposed amendment, not self-approved — awaiting the
+owner's signature` until that acceptance**, together with the sentence *"it must
+not merge before the signature."* Both are kept rather than deleted, because
+they are the record of the condition this document was under for one day, and
+of the rule that held it there.
 
 ### The source: the owner's ruling 20 of 2026-08-31
 
