@@ -82,7 +82,7 @@ test('a payroll tick crossing two rungs at once tells the player, live (#767)', 
       console.log(`NEW CONDITION(S) at tick ${latest.tick}: ${JSON.stringify(conditions)} (was ${JSON.stringify(lastConditions)})`);
       console.log(`FUNDS strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
       console.log(`Event band: ${await panelText(page, '.hud__event')}`);
-      console.log(`Alerts log: ${await panelText(page, '.hud-alerts')}`);
+      console.log(`Alerts log: ${await panelText(page, '.hud-alerts__list')}`);
       await page.screenshot({ path: `/tmp/claude-0/-workspace-lockstate/4ce06045-59df-5454-8f9c-d57846358c5a/scratchpad/767-crossing-tick-${latest.tick}.png`, fullPage: false });
       lastConditions = conditions;
     }
@@ -97,7 +97,7 @@ test('a payroll tick crossing two rungs at once tells the player, live (#767)', 
   console.log(`crossing events on the wire: ${JSON.stringify(await crossingEvents(page))}`);
   console.log(`final FUNDS strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
   console.log(`final event band: ${await panelText(page, '.hud__event')}`);
-  console.log(`final alerts log: ${await panelText(page, '.hud-alerts')}`);
+  console.log(`final alerts log: ${await panelText(page, '.hud-alerts__list')}`);
   await page.screenshot({ path: '/tmp/claude-0/-workspace-lockstate/4ce06045-59df-5454-8f9c-d57846358c5a/scratchpad/767-final.png', fullPage: false });
 
   expect(crossed, 'both rungs should have been crossed within the playtest window').toBe(true);
