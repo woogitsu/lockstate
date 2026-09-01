@@ -119,12 +119,34 @@ half hours later, the same day: `65b5fe2` added this document at 05:10 on
 arrival; it is one that nothing revisited for the eight months since.
 
 The narrow reading that survives is worth keeping, because deleting the
-sentence outright would overcorrect: **nothing yet fetches a catalog.**
-`MessageCatalogLoader` is an interface, and the trusted-services layer performs
-no I/O at all — `tests/unit/services-layer-boundaries.test.ts` asserts exactly
-that, with an empty allow-list. So the infrastructure ships and the default
-locale is bundled; what does not exist is a wired *remote* catalog fetch, and
-that is a much smaller absence than "no pipeline".
+sentence outright would overcorrect: **nothing yet fetches a catalog.** So the
+infrastructure ships and the default locale is bundled; what does not exist is
+a wired *remote* catalog fetch, and that is a much smaller absence than "no
+pipeline".
+
+**Two halves of that paragraph rotted separately, and both are dated rather
+than overwritten.** It used to read *"`MessageCatalogLoader` is an interface,
+and the trusted-services layer performs no I/O at all —
+`tests/unit/services-layer-boundaries.test.ts` asserts exactly that, with an
+empty allow-list."*
+
+- **The port has an implementation.** `41db45d0` (2026-08-31, #678/#662)
+  landed `createChunkCatalogLoader` and `switchLocale`: a non-default locale
+  is a code-split chunk, fetched by an injected `() => import(...)` thunk when
+  a player asks for it. Still nothing *registers* a locale, so "nothing yet
+  fetches a catalog" holds — the sentence that stopped being true is the one
+  about the interface, not the one about the fetch.
+- **The allow-list has not been empty since `bb23e3f3` (2026-08-27)**, which
+  wrote down `services/telemetry/http-transport.ts` as the one module in the
+  layer that leaves the device. The claim above was written against
+  `90703159` (2026-08-24), when the list really was empty.
+
+What the gate asserts today is that no module in the layer performs I/O
+*except* that one — and, since #664, that a **dynamic `import()` counts as
+I/O there**. `chunk-catalog-loader.ts` passes because its importer is
+injected rather than written; a module in this layer that imported a
+catalogue chunk directly would fail, which is what keeps the sentence above
+honest as a second locale arrives.
 
 ## Feeding issue #17's room vocabulary
 
