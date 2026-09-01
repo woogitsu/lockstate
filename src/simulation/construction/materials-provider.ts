@@ -34,6 +34,14 @@ export interface ConstructionMaterialsProvider {
    * which has no treasury to pay from and so does what it always did. The
    * unbuildable-prison failure the paragraph above describes is still what this
    * method prevents in all three.
+   *
+   * **The first of those three went on 2026-09-01 and the count is marked
+   * rather than corrected in place, because which caller left and when is the
+   * record.** The owner's ruling of that date -- *"Taking a finished object
+   * away returns nothing. Not its materials, not its money."*, recorded in the
+   * same ADR's amendment of that date -- reverses decision B, so an un-built
+   * `'completed'` order releases nothing either. **Two callers are left**, the
+   * second and third above, and both are unchanged.
    */
   release(allocations: readonly MaterialRequirement[]): void;
 }

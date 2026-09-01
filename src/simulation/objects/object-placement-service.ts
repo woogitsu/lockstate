@@ -695,6 +695,19 @@ export class ObjectPlacementService {
    * player regrets and a standing object they regret are different facts with
    * different answers.
    *
+   * **The two clauses about refunding are false since the owner's ruling of
+   * 2026-09-01 and are kept because the distinction they were drawing is what
+   * that ruling closed.** *"Taking a finished object away returns nothing. Not
+   * its materials, not its money."* --
+   * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+   * amendment of that date -- reverses decision B, so this route refunds
+   * nothing either and the two commands agree. **The rest of the paragraph is
+   * unchanged and is now the whole of why both exist**: they are keyed
+   * differently (the order's own tile versus any tile of the footprint), they
+   * are reached differently (the undo stack versus a press), and a pending
+   * order the player regrets is still a different fact from a standing object
+   * they regret. What is no longer different is the answer about materials.
+   *
    * The object is identified by the tile it was anchored on rather than by an
    * id carried on the order, because the id *is* a function of that tile
    * (`placedObjectIdFor`). Nothing has to be stored to find it again.

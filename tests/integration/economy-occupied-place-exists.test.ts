@@ -240,6 +240,15 @@ describe('two residents over one remaining bed, in one cell', () => {
     // `cancelOrder` releases an allocation only for a `completed` order now,
     // which is exactly the order the `Undo` above cancels. In the states the
     // ruling covers it pays money instead.
+    //
+    // **And since the owner's ruling of 2026-09-01 it releases an allocation
+    // in no state at all**, so the middle clause is false in both halves and
+    // is kept because it is what the exploit ran on: *"Taking a finished
+    // object away returns nothing. Not its materials, not its money."* The
+    // sentence this note is attached to is unaffected -- `RemoveObject` still
+    // refunds nothing, the plank is still irrelevant here, and the bed still
+    // simply stops existing. What has gone is the reason the `Undo` above was
+    // the cheaper gesture.
     submit(runtime, 'remove-second-bed', packCommand({ type: 'RemoveObject', ...SECOND_BED }));
     stepBy(runtime, 5);
     return runtime;

@@ -16,6 +16,24 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * [ADR 0076](../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
  * decision A(ii) shipped on `agent/585-occupied-place` (#585).**
  *
+ * **Nor is it one plank any more, since the owner's ruling of 2026-09-01.**
+ * *"Taking a finished object away returns nothing. Not its materials, not its
+ * money."* -- ADR 0076's amendment of that date -- withdraws decision B's
+ * sentence, and with it the third step of the loop below. `Undo` on the
+ * completed bed order reverses the geometry and releases **nothing**, so the
+ * next cell is furnished with a plank the prison buys at 65 like anybody
+ * else's. The loop is still four commands nothing refuses and it still leaves
+ * three residents behind; what it no longer is, is free. This arm now reads
+ * **26,145** against the control's **26,235** -- recycling is strictly worse
+ * than playing it straight, the first time that has been true in this file.
+ *
+ * **Both halves of the exploit are now closed, by two different rulings, and
+ * the file records which did which**: A(ii) removed the income the loop
+ * manufactured, and the 2026-09-01 ruling removed the free materials. Neither
+ * was aimed at this file -- A(ii) was aimed at what an occupied place is worth
+ * and the ruling at an inversion in cancellation -- which is why the numbers
+ * below are worth more than a fix written to make them move.
+ *
  * **Both directions are marked rather than overwritten**, and this file is the
  * reason the marking matters: every measurement below was taken before the fix
  * existed, by a different agent, on a different branch, and it is the strongest
@@ -77,6 +95,11 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *    (`ConstructionSystem.revertConstruction` -> `ObjectPlacementService.onOrderReverted`)
  *    **and releases `materialsAllocated`** -- so the plank comes back
  *    (`ConstructionSystem.cancelOrder`).
+ *
+ *    **Step 3's second clause is false since 2026-09-01 and is kept because it
+ *    is what the loop was.** `cancelOrder` still reverses the geometry and
+ *    still empties `materialsAllocated`; what it no longer does is release it
+ *    into the container. The plank does not come back, and step 4 buys one.
  * 4. Repeat in the next cell.
  *
  * ## The two halves, and which one is the finding
@@ -99,6 +122,15 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * Set beside a residency that survives the object, that turns the plank into a
  * reusable licence: it is *the same plank* that furnishes every cell, and every
  * cell it leaves behind keeps earning.
+ *
+ * **That paragraph is answered rather than false, and it is kept because it is
+ * the question two rulings were needed to close.** It *was* decided nowhere;
+ * it is decided now, twice. ADR 0076 decision B decided it in the generous
+ * direction on 2026-08-29 and never shipped; the owner's ruling of 2026-09-01
+ * reverses B and decides it in the other -- neither command refunds a finished
+ * object, so the two no longer disagree and the plank is not a licence. The
+ * case below called *"is undo and not removal"* is where that agreement is
+ * measured, and its own name is now the thing that has stopped being true.
  *
  * ## The measurement, and why it is a comparison of two sequences
  *
@@ -197,7 +229,24 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
       // groups by order id), so it reverses the bed and nothing else.
       send(runtime, `undo-${index}`, { type: 'Undo' });
       expect(runtime.construction.getOrder(`bed-${index}`)?.state).toBe('cancelled');
-      expect(planksInStock(runtime), 'undo hands the plank back, whole').toBe(1);
+      /*
+       * **This assertion read `.toBe(1)` under `'undo hands the plank back,
+       * whole'` until 2026-09-01, and that sentence is the whole of what this
+       * file was written to report.** The owner's ruling of that date --
+       * *"Taking a finished object away returns nothing. Not its materials, not
+       * its money."*, ADR 0076's amendment of that date -- withdraws ADR 0076
+       * decision B's sentence, so `Undo` on the completed bed order now
+       * releases nothing and the plank does not come back.
+       *
+       * **The loop still runs, and that is why the assertion is kept rather
+       * than the case deleted.** The next `PlaceObject` finds an empty
+       * container, so `JustInTimeMaterialsService` buys a *second* plank at the
+       * press -- the gesture is not refused, it is charged for. What the ruling
+       * removes is the "same plank" half of the finding: the sequence still
+       * furnishes three cells and still leaves three residents behind, and it
+       * now costs 65 a cell like anybody else's.
+       */
+      expect(planksInStock(runtime), 'undo hands nothing back any more').toBe(0);
       expect(
         runtime.prisoners.roomInstances.totalOccupancy,
         'and the resident it was holding stays -- ADR 0028 decision 2, unchanged by ADR 0076 A(ii)',
@@ -266,11 +315,27 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
      * left of the gap is one day's withholding on one need, and the control
      * asserts the relation against the schedule's own constant.
      *
+     * **It is 26,145 since the owner's ruling of 2026-09-01, and this is the
+     * third move of this literal.** *"Taking a finished object away returns
+     * nothing. Not its materials, not its money."* -- ADR 0076's amendment of
+     * that date -- stops `Undo` handing the plank back, so the two undos in
+     * this loop each cost the prison a fresh plank at the next press:
+     * `26,275 - 2 x 65 = 26,145`. The income half is unmoved, because the
+     * residents, the cells, the admissions and the ticks are all unchanged;
+     * every one of the 130 is materials.
+     *
+     * **The three earlier readings are kept above rather than replaced**
+     * because the sequence is the record: 29,315 (the exploit), 26,395 (A(ii)
+     * closed the income half), 26,275 (ADR 0078's withholding moved it), and
+     * now 26,145 (the materials half closed too). This arm is now *below* the
+     * control, which it has never been before, and the control's own case says
+     * by how much and why.
+     *
      * Written as the literal it is, not as a subtraction or as the control's
      * balance read back, either of which the code under test could satisfy with
      * any pair of numbers.
      */
-    expect(runtime.treasury.balanceMinorUnits).toBe(26_275);
+    expect(runtime.treasury.balanceMinorUnits).toBe(26_145);
   });
 
   it('control: the same prison, the same plank, the same ticks, without the undo', () => {
@@ -313,26 +378,49 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
      */
     expect(runtime.treasury.balanceMinorUnits).toBe(26_235);
     /*
-     * The relation between the two arms, asserted against the **schedule's own
-     * constant** rather than against a literal 40 -- so a change to what an
-     * unmet need costs fails here naming itself, and a re-baseline that moved
-     * one of the two balances and not the other fails here too.
+     * The relation between the two arms, asserted against **production content**
+     * rather than against literals -- so a change to what an unmet need costs
+     * or to what a plank costs fails here naming itself, and a re-baseline that
+     * moved one of the two balances and not the other fails here too.
+     *
+     * **The relation has changed sign, and that is the ruling of 2026-09-01
+     * arriving.** It read `26_275 - balance === STATE_INCOME_WITHHELD_...`: the
+     * recycled arm was 40 *above* this control, an accident of when its
+     * surviving resident arrived. Now the recycled arm is 90 *below* it,
+     * because its two undos cost two planks and only 40 of that is given back
+     * by the withholding this arm pays and that one does not. **Recycling is
+     * now strictly worse than playing it straight**, which is the plainest
+     * statement this file has ever been able to make about the loop.
      *
      * It is not a fixture supplying both sides of its own comparison
      * (`docs/TESTING.md`): the left-hand side is this arm's live balance, the
-     * 26,275 is the other arm's independently pinned literal, and the
-     * right-hand side is production content neither test computes.
+     * 26,145 is the other arm's independently pinned literal, and the
+     * right-hand side is two pieces of production content neither test
+     * computes.
      */
-    expect(26_275 - runtime.treasury.balanceMinorUnits).toBe(STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS);
+    expect(runtime.treasury.balanceMinorUnits - 26_145).toBe(
+      2 * procurableMaterial('item.wood-plank')!.unitPriceMinorUnits -
+        STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS,
+    );
   });
 
-  it('is undo and not removal: `RemoveObject` takes the bed and keeps the plank', () => {
+  it('undo and removal agree now: neither gives the plank back', () => {
     /*
      * The asymmetry the loop turns on, measured on one prison so the two
      * commands are compared and not merely described. It is also what makes
      * this a finding rather than a restatement of ADR 0028 decision 2: with
      * `RemoveObject` the resident is still left behind, but the next cell costs
      * another 65.
+     *
+     * **This case was called `is undo and not removal: RemoveObject takes the
+     * bed and keeps the plank`, and the asymmetry it named is gone.** The
+     * owner's ruling of 2026-09-01 brings `Undo` down to what `RemoveObject`
+     * already did, so *"the next cell costs another 65"* is now true of both
+     * commands -- which the recycled arm above measures as two extra planks.
+     * The body is untouched: what it asserts about `RemoveObject` was true
+     * before the ruling and is true after it, and the second half of the case
+     * is new so that the two commands are still *compared* rather than one of
+     * them merely re-pinned.
      */
     const runtime = prisonWithOnePlankAndThreeCells();
     const rect = RECTS[0]!;
@@ -346,5 +434,13 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
     expect(runtime.placedObjects.size, 'the bed is gone either way').toBe(0);
     expect(planksInStock(runtime), 'but nothing comes back').toBe(0);
     expect(runtime.construction.getOrder('bed-0')?.state, 'and the order still reads completed').toBe('completed');
+
+    // The other command, on the same prison, so the comparison this case is
+    // named for is still a comparison. `Undo` finds the completed order the
+    // removal left behind, cancels it, and hands back exactly as much as the
+    // removal did.
+    send(runtime, 'undo', { type: 'Undo' });
+    expect(runtime.construction.getOrder('bed-0')?.state, 'the undo does reach the order').toBe('cancelled');
+    expect(planksInStock(runtime), 'and it gives back nothing either').toBe(0);
   });
 });
