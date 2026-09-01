@@ -142,7 +142,7 @@ describe('what a just-in-time pass buys', () => {
   it('buys nothing at all when the queue wants nothing', () => {
     const { treasury, service } = fixture();
     const report = service.procureForPendingOrders([], 0);
-    expect(report).toEqual({ tick: 0, purchased: [], unfunded: [], unprocurable: [] });
+    expect(report).toEqual({ tick: 0, purchased: [], unfunded: [], unprocurable: [], nextOrderShortfallMinorUnits: 0 });
     expect(treasury.balanceMinorUnits).toBe(25_000);
   });
 
@@ -236,6 +236,9 @@ describe('what a just-in-time pass cannot buy', () => {
     expect(report.unprocurable).toEqual([{ itemId: SINK, quantity: 1, reason: 'unpurchasable' }]);
     expect(report.unfunded).toEqual([]);
     expect(treasury.balanceMinorUnits).toBe(25_000);
+    // Blocked, and not for money: `nextOrderShortfallMinorUnits` stays 0
+    // rather than naming an amount that would not actually unblock anything.
+    expect(report.nextOrderShortfallMinorUnits).toBe(0);
   });
 
   it('reports a demand past the purchase bound as unbuyable rather than unaffordable', () => {
@@ -380,6 +383,50 @@ describe('the unit a partly filled purchase is atomic at (#703 ruling 12)', () =
     ]);
     expect(report.unfunded).toEqual([{ itemId: BRICK, quantity: 2, costMinorUnits: 80 }]);
     expect(treasury.balanceMinorUnits).toBe(5);
+    // The order actually blocking the crew is the one at the front of the
+    // walk -- order-1 -- and its own cost is what unblocks it, which agrees
+    // with `unfunded`'s sum here because exactly one order was left unfunded.
+    // The next case is the one where the two figures pull apart.
+    expect(report.nextOrderShortfallMinorUnits).toBe(80);
+  });
+
+  it("states the front order's own cost, not the queue's total, when a later order slips through (#771)", () => {
+    /*
+     * Issue #771's second finding, pinned. The shortfall sentence used to
+     * state `unfunded`'s sum -- "what the queue still needs" -- and a player
+     * who scraped that amount together could still see nothing move, because
+     * rule 2 (the case above) lets a later, cheaper order through while an
+     * earlier, pricier one waits. `nextOrderShortfallMinorUnits` is the figure
+     * that actually unblocks the order at the front of the walk.
+     *
+     * Three orders at a balance of 65: order-1 wants 2 bricks (80, more than
+     * the balance -- unfunded); order-2 wants 1 plank (65, exactly the
+     * balance -- funded, rule 2 lets it through); order-3 wants 1 more brick
+     * (40, and the balance is 0 by the time the walk reaches it -- unfunded).
+     *
+     * `unfunded` aggregates order-1's and order-3's bricks into one line --
+     * 3 bricks, 120 -- because it is `MaterialsProcurementReport`'s stated,
+     * unchanged contract: the queue's total. `nextOrderShortfallMinorUnits` is
+     * order-1's own 80, the first order the walk could not afford, and the
+     * two figures genuinely disagree: crediting 80 unblocks order-1, and
+     * crediting 120 -- what the old sentence would have stated -- overpays for
+     * that by 40 while still leaving order-3 waiting behind it in the walk.
+     */
+    const { treasury, service } = fixture(65);
+
+    const report = service.procureForPendingOrders(
+      [order('order-1', need(BRICK, 2)), order('order-2', need(PLANK, 1)), order('order-3', need(BRICK, 1))],
+      0,
+    );
+
+    expect(report.purchased, 'order-2 slips through on rule 2').toEqual([
+      { itemId: PLANK, quantity: 1, costMinorUnits: 65 },
+    ]);
+    expect(report.unfunded, "the queue's total, aggregated per item, unchanged").toEqual([
+      { itemId: BRICK, quantity: 3, costMinorUnits: 120 },
+    ]);
+    expect(treasury.balanceMinorUnits).toBe(0);
+    expect(report.nextOrderShortfallMinorUnits, "order-1's own cost, not the 120 the sum reads").toBe(80);
   });
 
   it('reports every order it left unfunded, not only the first', () => {
@@ -603,7 +650,7 @@ describe('the one way a just-in-time purchase id can collide', () => {
 describe('the report the queue is read through', () => {
   it('is empty before any pass has run, at a tick nothing can have run at', () => {
     const { service } = fixture();
-    expect(service.lastReport).toEqual({ tick: -1, purchased: [], unfunded: [], unprocurable: [] });
+    expect(service.lastReport).toEqual({ tick: -1, purchased: [], unfunded: [], unprocurable: [], nextOrderShortfallMinorUnits: 0 });
   });
 
   it('is rewritten by every pass, so a shortfall the prison has fixed stops being reported', () => {
@@ -617,6 +664,6 @@ describe('the report the queue is read through', () => {
     expect(service.lastReport.unfunded).toHaveLength(1);
 
     service.procureForPendingOrders([], 10);
-    expect(service.lastReport).toEqual({ tick: 10, purchased: [], unfunded: [], unprocurable: [] });
+    expect(service.lastReport).toEqual({ tick: 10, purchased: [], unfunded: [], unprocurable: [], nextOrderShortfallMinorUnits: 0 });
   });
 });

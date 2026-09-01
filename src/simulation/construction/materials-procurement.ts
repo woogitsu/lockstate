@@ -56,6 +56,16 @@ export interface UnprocurableMaterial {
  * `BuildQueueMaterialsFundingViewModel` meaning what it has always meant --
  * what the queue still needs, whole -- so no player-facing figure changed its
  * subject under ruling 9.
+ *
+ * **`nextOrderShortfallMinorUnits` is per order, deliberately, and is the one
+ * field on this record that is not aggregated.** Issue #771's second finding:
+ * the queue's shortfall sentence stated the sum of every unfunded order, and a
+ * player who scraped that amount together could still see nothing move,
+ * because ADR 0081 decision 2 funds one whole order at a time and *"lets a
+ * later order it can afford through, rather than stopping at the first it
+ * cannot"* (`JustInTimeMaterialsService`'s own rule 2). The two figures agree
+ * only when at most one order is unfunded; whenever more than one is, they
+ * diverge, and the sum is not the number that moves anything.
  */
 export interface MaterialsProcurementReport {
   readonly tick: number;
@@ -80,6 +90,26 @@ export interface MaterialsProcurementReport {
   readonly unfunded: readonly UnfundedMaterial[];
   /** Wanted and not buyable at all, for a reason that is not money. */
   readonly unprocurable: readonly UnprocurableMaterial[];
+  /**
+   * What it would take to fund the **earliest order in the walk** this pass
+   * left unfunded for money -- not the queue's total, `unfunded`'s sum.
+   *
+   * `0` whenever nothing in this pass was blocked on money: the queue is fully
+   * funded, empty, or every blocked order is blocked for a reason that is not
+   * money (`unprocurable`). Otherwise it is the exact `costMinorUnits` total
+   * of the first order the walk could not afford, in the same demand order
+   * `ConstructionSystem.orderedOrders()` and the build queue panel both use
+   * (`compareBuildOrderExecution`) -- so it is well-defined precisely because
+   * ADR 0082 made "the next order" and "the order at the top of the queue's
+   * own list" the same order for anything placed through a command.
+   *
+   * **What it does not promise.** A later, cheaper order can still be funded
+   * in the *same* pass while this order is not (rule 2's own guarantee, cited
+   * above) -- so a queue can move without this figure reaching zero, and this
+   * figure reaching zero does not mean the *whole* queue is funded. It answers
+   * one question only: what unblocks the order the crew is waiting behind.
+   */
+  readonly nextOrderShortfallMinorUnits: number;
 }
 
 /**
@@ -115,6 +145,7 @@ export const EMPTY_MATERIALS_PROCUREMENT_REPORT: MaterialsProcurementReport = Ob
   purchased: Object.freeze([]),
   unfunded: Object.freeze([]),
   unprocurable: Object.freeze([]),
+  nextOrderShortfallMinorUnits: 0,
 });
 
 /**

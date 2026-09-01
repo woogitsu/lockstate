@@ -757,6 +757,15 @@ export interface HudBuildQueueMaterialsFundingViewModel {
    * `src/content/procurement-catalog.ts` is a whole number of them.
    */
   readonly shortfallMinorUnits: number;
+  /**
+   * What it would take to fund the order at the front of the queue -- not the
+   * queue's total (#771's second finding). See
+   * `BuildQueueMaterialsFundingViewModel.nextOrderShortfallMinorUnits`, which
+   * this carries across the worker boundary unchanged. `0` whenever `unfunded`
+   * is `false`, or when the queue's only blocked orders are blocked for a
+   * reason that is not money.
+   */
+  readonly nextOrderShortfallMinorUnits: number;
 }
 
 export interface HudBuildQueueViewModel {

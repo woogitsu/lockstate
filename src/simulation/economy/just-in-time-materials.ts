@@ -499,6 +499,18 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
           });
     };
 
+    /*
+     * The earliest order in the walk this pass could not afford, and its own
+     * cost -- issue #771's second finding. Set once, on the first order that
+     * reaches the `canAfford` refusal below, and never overwritten: rule 2
+     * lets a later, cheaper order through in the same pass, and that order's
+     * cost must not displace the figure a player would actually spend next.
+     * `0` stays the answer for a fully funded or empty queue, and for a queue
+     * blocked only on `unprocurable` lines, which never reach that branch.
+     */
+    let nextOrderShortfallMinorUnits = 0;
+    let sawUnfundedOrder = false;
+
     for (const order of demand) {
       const lines: UnfundedMaterial[] = [];
       let orderCostMinorUnits = 0;
@@ -555,6 +567,10 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
       if (blocked || lines.length === 0) continue;
       if (!this.treasury.canAfford(orderCostMinorUnits, 'construction')) {
         for (const line of lines) add(unfunded, line);
+        if (!sawUnfundedOrder) {
+          nextOrderShortfallMinorUnits = orderCostMinorUnits;
+          sawUnfundedOrder = true;
+        }
         continue;
       }
 
@@ -609,7 +625,13 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
     const byItemId = (entries: Map<string, UnfundedMaterial>): readonly UnfundedMaterial[] =>
       [...entries.keys()].sort().map((itemId) => entries.get(itemId)!);
 
-    this.report = { tick, purchased: byItemId(purchased), unfunded: byItemId(unfunded), unprocurable };
+    this.report = {
+      tick,
+      purchased: byItemId(purchased),
+      unfunded: byItemId(unfunded),
+      unprocurable,
+      nextOrderShortfallMinorUnits,
+    };
     return this.report;
   }
 

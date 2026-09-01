@@ -359,6 +359,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
     expect(view.materialsFunding).toEqual({
       unfunded: true,
       shortfallMinorUnits: WALL_COST,
+      nextOrderShortfallMinorUnits: WALL_COST,
       items: [{ itemId: BRICK, quantity: BRICKS_PER_WALL, costMinorUnits: WALL_COST }],
     });
     expect(view.orders.rows.map((row) => row.state), 'and the state alone would have said nothing').toEqual([
@@ -417,7 +418,11 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
       projectBuildQueue(runtime.construction, {}, runtime.justInTimeMaterials),
       () => 'hud.build.buildable.wall-brick',
     );
-    expect(stalled.materialsFunding).toEqual({ unfunded: true, shortfallMinorUnits: WALL_COST });
+    expect(stalled.materialsFunding).toEqual({
+      unfunded: true,
+      shortfallMinorUnits: WALL_COST,
+      nextOrderShortfallMinorUnits: WALL_COST,
+    });
     expect(stalled.orders.map((order) => order.state), 'and the row alone still says nothing about money').toEqual([
       'materials-pending',
     ]);
@@ -430,7 +435,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
       projectBuildQueue(runtime.construction, {}, runtime.justInTimeMaterials),
       () => 'hud.build.buildable.wall-brick',
     );
-    expect(settled.materialsFunding).toEqual({ unfunded: false, shortfallMinorUnits: 0 });
+    expect(settled.materialsFunding).toEqual({ unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 });
   });
 
   it('builds the order it could not afford, without a further press, once the money is back', () => {
@@ -475,6 +480,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
     expect(projectBuildQueue(runtime.construction, {}, runtime.justInTimeMaterials).materialsFunding, 'and the shortfall stopped being reported').toEqual({
       unfunded: false,
       shortfallMinorUnits: 0,
+      nextOrderShortfallMinorUnits: 0,
       items: [],
     });
   });
@@ -720,6 +726,54 @@ describe('the order the queue is funded in (#703 ruling 12)', () => {
     // which is ruling 12's per-order atomicity.
     expect(runtime.treasury.balanceMinorUnits - runtime.treasury.floorFor('construction')).toBe(15);
     expect(runtime.treasury.canAfford(WALL_COST, 'construction'), 'what is left cannot buy the wall').toBe(false);
+  });
+
+  it("answers what unblocks the front of the queue, not the queue's total, when a later order slips through (#771)", () => {
+    /*
+     * Issue #771's second finding, through the real kernel rather than the
+     * unit-level stub: the build queue's shortfall sentence used to state
+     * `unfunded`'s sum, and a player who saved that amount could still see
+     * nothing move, because rule 2 above lets a later, cheaper order through
+     * while an earlier, pricier one waits at the front of the walk.
+     *
+     * Three orders, placed in this order: a wall (`order-a1`, 80 -- the front
+     * of the walk), a bed (`order-a2`, 65 -- cheap enough to slip through),
+     * and a second wall (`order-a3`, 80 -- also left waiting). The prison is
+     * credited exactly the bed's price, so the bed is funded and both walls
+     * are not.
+     */
+    const runtime = prisonWithACell();
+    const roomBefore = runtime.treasury.balanceMinorUnits - runtime.treasury.floorFor('construction');
+    expect(runtime.treasury.spend(roomBefore, 'wages'), 'the prison starts this case with nothing to spend').toBe(true);
+    expect(runtime.treasury.canAfford(1, 'construction')).toBe(false);
+
+    send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a1', definitionId: WALL, x: 20, y: 20 });
+    send(runtime, { type: 'PlaceObject', orderId: 'order-a2', definitionId: 'bed-wooden', x: CELL_RECT.x, y: CELL_RECT.y });
+    send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a3', definitionId: WALL, x: 22, y: 20 });
+    expect(runtime.procurement.pendingDeliveries, 'nothing was bought at any of the three presses').toEqual([]);
+
+    // Exactly the bed's price -- not enough for either wall on its own.
+    runtime.treasury.credit(PLANK_PRICE);
+    expect(runtime.treasury.balanceMinorUnits - runtime.treasury.floorFor('construction')).toBe(PLANK_PRICE);
+
+    step(runtime, 10);
+
+    expect(runtime.justInTimeMaterials.lastReport.purchased, 'the bed slips through').toEqual([
+      { itemId: PLANK, quantity: 1, costMinorUnits: PLANK_PRICE },
+    ]);
+    expect(
+      runtime.justInTimeMaterials.lastReport.unfunded,
+      "the queue's total: both walls, aggregated",
+    ).toEqual([{ itemId: BRICK, quantity: BRICKS_PER_WALL * 2, costMinorUnits: WALL_COST * 2 }]);
+    expect(
+      runtime.justInTimeMaterials.lastReport.nextOrderShortfallMinorUnits,
+      'order-a1 alone -- the order actually blocking the crew, not both walls summed',
+    ).toBe(WALL_COST);
+
+    // And the same two figures, read the way the Build panel reads them.
+    const view = projectBuildQueue(runtime.construction, {}, runtime.justInTimeMaterials);
+    expect(view.materialsFunding.shortfallMinorUnits, "the queue's total").toBe(WALL_COST * 2);
+    expect(view.materialsFunding.nextOrderShortfallMinorUnits, 'what unblocks order-a1').toBe(WALL_COST);
   });
 });
 

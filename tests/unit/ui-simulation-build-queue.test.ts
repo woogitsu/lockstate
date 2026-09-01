@@ -27,7 +27,7 @@ const projection = (overrides: Partial<BuildQueueViewModel> = {}): BuildQueueVie
   // is about: the reader's job is the window and the ids, and #627's funding
   // block is asserted where it is produced
   // (`tests/unit/construction-build-queue-projection.test.ts`).
-  materialsFunding: { unfunded: false, shortfallMinorUnits: 0, items: [] },
+  materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0, items: [] },
   orders: {
     total: 12,
     offset: 0,
@@ -118,7 +118,7 @@ describe('what the Build panel is told about the queue', () => {
       total: 0,
       started: 0,
       orders: [],
-      materialsFunding: { unfunded: false, shortfallMinorUnits: 0 },
+      materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 },
     });
   });
 
@@ -143,12 +143,15 @@ describe('what the Build panel is told about the queue', () => {
         materialsFunding: {
           unfunded: true,
           shortfallMinorUnits: 80,
+          // Deliberately not equal to `shortfallMinorUnits`, so a passthrough
+          // that quietly reused one number for the other could not pass this.
+          nextOrderShortfallMinorUnits: 40,
           items: [{ itemId: 'item.brick', quantity: 2, costMinorUnits: 80 }],
         },
       }),
       labelKeyOf,
     );
-    expect(queue.materialsFunding).toEqual({ unfunded: true, shortfallMinorUnits: 80 });
+    expect(queue.materialsFunding).toEqual({ unfunded: true, shortfallMinorUnits: 80, nextOrderShortfallMinorUnits: 40 });
   });
 
   it('does not carry the projection\'s per-item list, which nothing on this thread can name yet', () => {
@@ -161,6 +164,7 @@ describe('what the Build panel is told about the queue', () => {
         materialsFunding: {
           unfunded: true,
           shortfallMinorUnits: 80,
+          nextOrderShortfallMinorUnits: 40,
           items: [{ itemId: 'item.brick', quantity: 2, costMinorUnits: 80 }],
         },
       }),
@@ -237,7 +241,7 @@ describe('the reader that asks for the queue', () => {
         { orderId: 'order-02', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 3, y: 4 }, edge: 'north', state: 'assigned' },
         { orderId: 'order-03', labelKey: 'hud.build.buildable.door-wooden', tile: { x: 3, y: 5 }, edge: 'west', state: 'materials-pending' },
       ],
-      materialsFunding: { unfunded: false, shortfallMinorUnits: 0 },
+      materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 },
     });
   });
 

@@ -94,7 +94,7 @@ export type BuildableLabelLookup = (definitionId: string) => LocalizationKey | u
  * reached no reader at all.
  *
  * The projection's per-item `items` list is deliberately not carried; see
- * `HudBuildQueueMaterialsFundingViewModel` for why two scalars are the whole
+ * `HudBuildQueueMaterialsFundingViewModel` for why three scalars are the whole
  * of what a consumer can use today.
  *
  * A row whose buildable the host cannot name keeps its place. That is the
@@ -129,6 +129,7 @@ export function buildQueueFromProjection(
     materialsFunding: {
       unfunded: view.materialsFunding.unfunded,
       shortfallMinorUnits: view.materialsFunding.shortfallMinorUnits,
+      nextOrderShortfallMinorUnits: view.materialsFunding.nextOrderShortfallMinorUnits,
     },
   };
 }
