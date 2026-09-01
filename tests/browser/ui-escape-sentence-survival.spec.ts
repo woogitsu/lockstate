@@ -293,6 +293,20 @@ test.describe('the escape sentence has to survive a frame (#700)', () => {
     const events = escapeEvents(false);
     const escape = sentenceFor(events, 'incidents.escape-succeeded');
 
+    /*
+     * Only the terminal notice is delivered, not the fixture's full history
+     * (`incidents.escape-attempt-opened` precedes it, at the same `danger`
+     * severity). `deliverAsTheWorkerWould` delivers a sequence with no real
+     * elapsed time between messages -- faithful to two events on *one* tick,
+     * which is what it exists to reproduce, but not to `responseDeadlineTicks`
+     * (600, `response-system.ts`): in a real session the attempt and its own
+     * lapse are that many ticks apart, 30 s at ×1 and never under 7.5 s at
+     * ×4, both far outside `EVENT_BAND_DWELL_FLOOR_MS`. Replaying the whole
+     * history at zero elapsed time would put the attempt's floor in the way
+     * of its own escape sentence -- a same-severity hold this fixture's real
+     * timing could never produce -- and this test is about whether the
+     * escape sentence survives on screen, not about that pair's own spacing.
+     */
     await page.goto(HARNESS_URL);
     await page.evaluate(() => {
       window.lockstateUiHarness.mountHudShell();
@@ -301,7 +315,10 @@ test.describe('the escape sentence has to survive a frame (#700)', () => {
     // Before the first write. There is no recovering a frame that has gone by,
     // which is exactly why this defect was invisible to the suite.
     await installBandRecorder(page, BAND);
-    await deliverAsTheWorkerWould(page, viewModelsFor(events));
+    await deliverAsTheWorkerWould(
+      page,
+      viewModelsFor(events.filter((event) => event.type === 'incidents.escape-succeeded')),
+    );
     await letFramesRun(page, FRAME_WINDOW_MS);
     const recording = await readBandRecording(page);
 
@@ -351,13 +368,30 @@ test.describe('the escape sentence has to survive a frame (#700)', () => {
       escapeTick,
     );
 
+    /*
+     * Delivered without the fixture's own `incidents.escape-attempt-opened`
+     * -- for the reason arm 1's comment gives, and sharper here: that event
+     * is `danger`, the same severity as `incidents.escape-succeeded`, so
+     * replaying it at zero elapsed time would have it occupy the floor and
+     * the waiting slot ahead of the two events this test is actually about,
+     * silently losing the all-clear to a collision the real game can never
+     * produce (the attempt and its own lapse are `responseDeadlineTicks`
+     * apart, never under 7.5 s of wall clock -- arm 1's comment has the
+     * arithmetic). Finding 4's collision is a two-event collision --
+     * `incidents.escape-succeeded` and `incidents.all-clear`, one tick apart
+     * -- and delivering exactly those two is what tests it.
+     */
+    const collision = events.filter(
+      (event) => event.type === 'incidents.escape-succeeded' || event.type === 'incidents.all-clear',
+    );
+
     await page.goto(HARNESS_URL);
     await page.evaluate(() => {
       window.lockstateUiHarness.mountHudShell();
     });
 
     await installBandRecorder(page, BAND);
-    await deliverAsTheWorkerWould(page, viewModelsFor(events));
+    await deliverAsTheWorkerWould(page, viewModelsFor(collision));
     // Long enough for the floor to actually lapse and release the held
     // all-clear, not merely long enough to sample a few frames -- the claim
     // below is about what happens *after* the floor, not only during it.
