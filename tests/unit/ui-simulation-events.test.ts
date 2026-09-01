@@ -47,6 +47,15 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   // built from `defaultContrabandRegistry` would supply both sides of the
   // comparison (`docs/TESTING.md`).
   'contraband.discovered': (sequence) => ({ sequence, tick: 100, type: 'contraband.discovered', categoryNameKey: 'contraband.weapon.name' }),
+  // #749's five. Four carry nothing at all -- the owner's ruling declines both
+  // the refund amount `ConstructionSystem.cancelOrder` cannot answer and the
+  // transaction size `undo` deliberately does not surface -- so the sample is
+  // the envelope and the discriminant.
+  'construction.order-cancelled': (sequence) => ({ sequence, tick: 100, type: 'construction.order-cancelled' }),
+  'construction.order-cancelled-underway': (sequence) => ({ sequence, tick: 100, type: 'construction.order-cancelled-underway' }),
+  'construction.undone': (sequence) => ({ sequence, tick: 100, type: 'construction.undone' }),
+  'construction.redone': (sequence) => ({ sequence, tick: 100, type: 'construction.redone' }),
+  'economy.delivery-cancelled': (sequence) => ({ sequence, tick: 100, type: 'economy.delivery-cancelled', refundedMinorUnits: 1250 }),
   'economy.wages-unpaid': (sequence) => ({ sequence, tick: 100, type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 360 }),
   'economy.deliveries-refused': (sequence) => ({ sequence, tick: 100, type: 'economy.deliveries-refused' }),
   'economy.construction-refused': (sequence) => ({ sequence, tick: 100, type: 'economy.construction-refused' }),
@@ -334,6 +343,143 @@ describe('what the prison says when nothing went wrong', () => {
       if (notice === undefined || notice === 'none') throw new Error(`${type} must produce a notice`);
       expect(localizer.format(notice.labelKey, notice.labelParameters), `${type} must not leave a placeholder on screen`).not.toContain('{');
     }
+  });
+});
+
+/**
+ * What a control says when it **works** (issue
+ * [#749](https://github.com/matmaxalez/lockstate/issues/749), the owner's
+ * ruling of 2026-09-01).
+ *
+ * `docs/research/2026-09-01-what-act-six-never-reached.md` D2 measured four
+ * controls that succeeded and said nothing: Cancel on a queued build order,
+ * Cancel on a delivery, Undo and Redo. The only feedback was a row vanishing
+ * from a fold that starts collapsed.
+ *
+ * The sweep at the top of this file already covers the property every event
+ * shares -- the key resolves, the sentence is not empty, no placeholder
+ * survives -- so what is asserted here is what is specific to these five and
+ * what a change could get wrong while that sweep stayed green: **which of the
+ * two cancellation sentences a state gets, that the delivery names the figure
+ * it was handed rather than one written into the message, that neither history
+ * sentence names a count, and the severity split.**
+ *
+ * The expected words are written out rather than read back off the catalog,
+ * for the reason `docs/TESTING.md` gives: an expectation computed from the code
+ * under test's own input holds for any implementation, including one that put
+ * the loss sentence on the refund.
+ */
+describe('what a control says when it works (#749)', () => {
+  const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+  const sentenceOf = (event: SimulationEvent): string => {
+    const notice = hudEventNoticeFromWorkerMessage(publication(event));
+    if (notice === undefined || notice === 'none') throw new Error(`${event.type} produced no notice`);
+    return localizer.format(
+      notice.labelKey,
+      resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+    );
+  };
+  const severityOf = (event: SimulationEvent): string => {
+    const notice = hudEventNoticeFromWorkerMessage(publication(event));
+    if (notice === undefined || notice === 'none') throw new Error(`${event.type} produced no notice`);
+    return notice.severity;
+  };
+
+  it('says two different things about a cancelled order, which is the whole of ruling 2', () => {
+    /*
+     * The owner split one sentence into two because the two outcomes differ:
+     * before the crew started the money comes back, and after it ruling 20 of
+     * 2026-08-31 destroys the materials on purpose. Their reasoning is
+     * *"silence about a loss is the worst option"*.
+     *
+     * Asserted as two whole sentences and as their *difference*, because a
+     * table that mapped both types onto one key would satisfy any assertion
+     * made about either of them alone.
+     */
+    expect(sentenceOf(SAMPLE['construction.order-cancelled'](1))).toBe(
+      'The order was cancelled — the money it cost is refunded.',
+    );
+    expect(sentenceOf(SAMPLE['construction.order-cancelled-underway'](1))).toBe(
+      'The order was cancelled. Anything already spent past the point of no return stays spent.',
+    );
+    expect(
+      sentenceOf(SAMPLE['construction.order-cancelled'](1)),
+      'the two outcomes must not read the same',
+    ).not.toBe(sentenceOf(SAMPLE['construction.order-cancelled-underway'](1)));
+  });
+
+  it('names the refund the delivery actually carried, not a figure written into the message', () => {
+    /*
+     * Ruling 3. Two different amounts through one sentence, because a message
+     * with the number baked in would satisfy a single-value assertion -- the
+     * same shape the contraband case above uses for `{item}`.
+     */
+    const refund = (refundedMinorUnits: number): string =>
+      sentenceOf({ sequence: 1, tick: 100, type: 'economy.delivery-cancelled', refundedMinorUnits });
+
+    expect(refund(1250)).toBe('The delivery was cancelled — 1250 back.');
+    expect(refund(80)).toBe('The delivery was cancelled — 80 back.');
+  });
+
+  it('says the last change moved, and says no count, which is ruling 4', () => {
+    /*
+     * Undo and Redo each reverse a whole transaction, so a sentence naming one
+     * order would be a small lie whenever a run of several was taken back. The
+     * digit assertion is the one that would catch a later change plumbing
+     * `redoTransaction.length` through and interpolating it: the sentence would
+     * still resolve and still leave no `{` behind.
+     */
+    expect(sentenceOf(SAMPLE['construction.undone'](1))).toBe('The last change to the build queue was undone.');
+    expect(sentenceOf(SAMPLE['construction.redone'](1))).toBe('The last change to the build queue was redone.');
+    expect(sentenceOf(SAMPLE['construction.undone'](1)), 'no count').not.toMatch(/\d/);
+    expect(sentenceOf(SAMPLE['construction.redone'](1)), 'no count').not.toMatch(/\d/);
+  });
+
+  it('paints the one that reports a loss differently from the three that do not', () => {
+    /*
+     * The band's severity is the only thing separating "you got your money
+     * back" from "what the crew had used is gone", and the grade is argued in
+     * `EVENT_PRESENTATION`'s docblock: read as *the player got what they asked
+     * for* the in-progress cancellation is `'info'`; read as *this reports
+     * value destroyed* it is not, and it is graded on the second reading
+     * because painting the two outcomes in one colour would take back in the
+     * tone what the owner's two sentences just distinguished.
+     *
+     * Not `'danger'`: that member means "stop trusting what you are looking
+     * at", and a deliberate press is the opposite of that.
+     */
+    expect(severityOf(SAMPLE['construction.order-cancelled-underway'](1))).toBe('warning');
+    expect(severityOf(SAMPLE['construction.order-cancelled'](1))).toBe('info');
+    expect(severityOf(SAMPLE['construction.undone'](1))).toBe('info');
+    expect(severityOf(SAMPLE['construction.redone'](1))).toBe('info');
+    expect(severityOf(SAMPLE['economy.delivery-cancelled'](1))).toBe('info');
+  });
+
+  it('refuses a refund that is not a whole non-negative number of minor units', () => {
+    /*
+     * The one figure these five carry, and the boundary is the only thing
+     * checking it: `recordDeliveryCancelled` guards the same way, but a command
+     * handler is not the only conceivable producer and the schema is what makes
+     * the sentence safe from any of them.
+     *
+     * `min(0)` rather than the `min(1)` every other figure on this channel
+     * carries, and the difference is deliberate: elsewhere a zero means the
+     * thing did not happen, and here the cancellation happened whatever the
+     * delivery had cost.
+     */
+    const parseRefund = (refundedMinorUnits: unknown): boolean =>
+      workerToMainMessageSchema.safeParse({
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: '00000000-0000-4000-8000-000000000749',
+        kind: 'simulation/event',
+        payload: { tick: 101, event: { sequence: 1, tick: 100, type: 'economy.delivery-cancelled', refundedMinorUnits } },
+      }).success;
+
+    expect(parseRefund(1250)).toBe(true);
+    expect(parseRefund(0), 'a delivery that cost nothing was still cancelled').toBe(true);
+    expect(parseRefund(-1), 'a cancellation never takes money away').toBe(false);
+    expect(parseRefund(12.5), 'minor units are whole').toBe(false);
+    expect(parseRefund('1250')).toBe(false);
   });
 });
 

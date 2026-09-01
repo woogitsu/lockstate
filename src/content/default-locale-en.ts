@@ -739,6 +739,66 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.event.economy.deliveries-refused': 'Deliveries refused — the treasury cannot cover a purchase right now.',
   'hud.alert.event.economy.construction-refused': 'Construction halted — the treasury cannot fund the build queue right now.',
 
+  /*
+   * What a control says when it *works* (issue #749, the owner's ruling of
+   * 2026-09-01).
+   *
+   * These five are the first sentences on this channel about something the
+   * *player* did, and they exist because four controls said nothing at all when
+   * they succeeded: `docs/research/2026-09-01-what-act-six-never-reached.md` D2
+   * measured Cancel on a queued build order, Cancel on a delivery, Undo and
+   * Redo, and found the only feedback was a row vanishing from a fold that
+   * starts collapsed. The money was exactly right; the player had no way to
+   * know that without doing the arithmetic.
+   *
+   * **The wordings are the owner's, taken from
+   * `docs/research/2026-09-01-copy-variants-for-the-owner.md` §5.** CD1 for the
+   * delivery, UR3 for the two history sentences. The build-order **pair** is
+   * the one place that document tabled no verbatim candidate -- its §5c
+   * offers a state-aware pair as *"a fourth option not tabled as a single
+   * candidate, because it is a different shape of answer"* -- so the two below
+   * are assembled from that section's own clauses rather than newly written:
+   * CO2's *"the money it cost is refunded"* with its hedge *"where any is
+   * still recoverable"* dropped, because the state check makes the hedge
+   * unnecessary, and CO3's second sentence verbatim for the case the hedge was
+   * hedging about. Nothing here is an improvement on a candidate; where a
+   * candidate was false against the code it was reported rather than edited.
+   *
+   * **Two sentences for one control, which is ruling 2**: before the crew
+   * started, the money comes back; after, ruling 20 of 2026-08-31 destroys the
+   * materials on purpose. The owner's reasoning is *"silence about a loss is
+   * the worst option"*, and it is why the second sentence exists at all rather
+   * than the first being stretched to cover both.
+   *
+   * **Only one of the four names a figure, and that is deliberate.**
+   * `ProcurementSystem.cancel` already answers `refundedMinorUnits`, so
+   * `{total}` is nearly free; `ConstructionSystem.cancelOrder` answers `void`,
+   * so the two order sentences cannot name an amount without plumbing the
+   * ruling declines. `{total}` is minor units, unconverted, exactly as the
+   * unpaid-payday sentence above -- and it is the same word the Build panel's
+   * own delivery row already uses for the same money (`hud.build.delivery`,
+   * "{total} back").
+   *
+   * **Neither history sentence names a count**, which is ruling 4: Undo and
+   * Redo each reverse a whole transaction, so a sentence naming one order would
+   * be a small lie whenever a run of several moved. "The last change" is what
+   * UR3 says instead, and it is true of a run of one and of twelve.
+   *
+   * A cancelled order that had already **finished** gets no sentence here.
+   * Neither of the two below is true of it -- the money did not come back and
+   * the materials are not gone, they went into the container (ADR 0076
+   * decision B) -- no control can reach that press, and inventing a third
+   * sentence for it would be exactly the promise-the-code-does-not-keep that
+   * `AGENTS.md`'s fourth exclusion reserves. Recorded as owed at
+   * `SimulationEventLog.recordBuildOrderCancelled`.
+   */
+  'hud.alert.event.construction.order-cancelled': 'The order was cancelled — the money it cost is refunded.',
+  'hud.alert.event.construction.order-cancelled-underway':
+    'The order was cancelled. Anything already spent past the point of no return stays spent.',
+  'hud.alert.event.construction.undone': 'The last change to the build queue was undone.',
+  'hud.alert.event.construction.redone': 'The last change to the build queue was redone.',
+  'hud.alert.event.economy.delivery-cancelled': 'The delivery was cancelled — {total} back.',
+
   // ADR 0076 decision A(i)'s notice: a prisoner whose bed was taken away has
   // been moved to one that exists.
   //
