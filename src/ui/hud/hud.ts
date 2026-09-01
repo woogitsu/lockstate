@@ -45,6 +45,13 @@ import {
   type HudViewModel,
 } from './view-model';
 import { hudAlertDismissLabel, hudAlertRowLabel } from './alert-row-label';
+import {
+  EMPTY_EVENT_BAND_DWELL_STATE,
+  admitToEventBand,
+  releaseEventBandFloor,
+  type EventBandDwellDecision,
+  type EventBandDwellState,
+} from './event-band-dwell';
 import { resolveHudLabelParameters } from './label-parameters';
 
 /**
@@ -846,6 +853,22 @@ export interface HudHandle {
   destroy(): void;
 }
 
+/**
+ * The one place this module reads a wall clock, and the only one it may.
+ *
+ * `performance.now()` rather than `Date.now()`: it is monotonic, so a system
+ * clock adjusted mid-session cannot make an event band floor look already
+ * lapsed or never lapsing. It is read here, on the main thread, for a purely
+ * presentational comparison in `event-band-dwell.ts` -- which takes the reading
+ * as an argument precisely so that nothing about the floor depends on being
+ * able to read a clock. Nothing in `src/simulation/**` can reach this function,
+ * and `tests/determinism/ambient-nondeterminism-contract.test.ts` is the gate
+ * that keeps it that way.
+ */
+function hudNowMs(): number {
+  return performance.now();
+}
+
 export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle {
   const { localizer } = options;
   const t = (key: LocalizationKey, parameters?: MessageParameters): string =>
@@ -1079,15 +1102,74 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   eventNotice.hidden = true;
 
   /**
-   * The newest event is the one on the line.
+   * The band's dwell floor, held here and nowhere else.
    *
-   * No arbitration and no source tracking, unlike `applySimulationRefusal`
-   * below: this band has exactly one producer, so whatever it replaces is
-   * always an older event rather than a sentence of another class. `undefined`
-   * means the view model says nothing yet; the field is absent until the
-   * session has had something to say and again once it has ended.
+   * Presentational state about one DOM element, on the main thread, in the
+   * module that owns that element. It is never published, never captured and
+   * never read by anything that ticks -- see `EventBandDwellState` for why that
+   * is a determinism requirement rather than a preference.
+   */
+  let eventBandDwell: EventBandDwellState = EMPTY_EVENT_BAND_DWELL_STATE;
+  let eventBandFloorTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /**
+   * The newest event is the one on the line, **unless the line is still owed to
+   * the last one** (the owner's ruling of 2026-09-01 on
+   * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)
+   * decision 4).
+   *
+   * This read *"No arbitration and no source tracking, unlike
+   * `applySimulationRefusal` below: this band has exactly one producer, so
+   * whatever it replaces is always an older event rather than a sentence of
+   * another class."* Both halves are still true of the *producer* and neither
+   * is any longer true of the *band*. One producer was enough while the only
+   * thing a sentence could lose to was a later one, and issue #700 is the case
+   * where it is not: `SimulationEventLog.recordIncidentsAllClear` and the escape it
+   * closes were written on one tick, `publishEvents` posted them back to back
+   * in one task, and the escape sentence reached zero animation frames across
+   * three escapes in 21.8 minutes of play.
+   *
+   * So the band now has exactly one rule more than it had, and it is the
+   * ordering the alerts list's cap already runs -- `SEVERITY_EVICTION_ORDER`,
+   * one constant, read by both. `src/ui/hud/event-band-dwell.ts` holds the
+   * decision and the arithmetic behind the floor; this function is the paint
+   * and the timer, which is all a DOM module should own.
+   *
+   * `undefined` means the view model says nothing yet; the field is absent
+   * until the session has had something to say and again once it has ended.
    */
   function applyEventNotice(notice: HudEventNoticeViewModel | undefined): void {
+    applyEventBandDecision(admitToEventBand(eventBandDwell, notice, hudNowMs()));
+  }
+
+  /**
+   * Paints what the decision chose, and arms the one timer the floor needs.
+   *
+   * The timer exists because a sentence that waits has to arrive on its own:
+   * nothing else is guaranteed to publish inside the next 600 ms, so without it
+   * a held all-clear would sit in `EventBandDwellState.waiting` until the next
+   * event of any kind -- which is the defect running the other way round.
+   *
+   * Re-armed rather than left running, because every decision carries the wake
+   * it needs from the state it produced, and a stale timer would release a
+   * sentence the band has since moved past.
+   */
+  function applyEventBandDecision(decision: EventBandDwellDecision): void {
+    eventBandDwell = decision.state;
+    paintEventNotice(decision.paint);
+    if (eventBandFloorTimer !== undefined) {
+      clearTimeout(eventBandFloorTimer);
+      eventBandFloorTimer = undefined;
+    }
+    if (decision.wakeInMs === undefined) return;
+    eventBandFloorTimer = setTimeout(() => {
+      eventBandFloorTimer = undefined;
+      applyEventBandDecision(releaseEventBandFloor(eventBandDwell, hudNowMs()));
+    }, decision.wakeInMs);
+  }
+
+  /** The write itself, unchanged: this is the function `applyEventNotice` was before the floor. */
+  function paintEventNotice(notice: HudEventNoticeViewModel | undefined): void {
     eventNotice.hidden = notice === undefined;
     eventText.textContent = notice === undefined ? '' : t(notice.labelKey, resolveHudLabelParameters(t, notice));
     if (notice === undefined) delete eventNotice.dataset['severity'];
@@ -2029,6 +2111,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     },
     destroy: () => {
       gate.dispose();
+      // The floor's timer outlives the element it paints unless it is cleared:
+      // a HUD torn down inside the 600 ms would otherwise wake up and write to
+      // a detached band.
+      if (eventBandFloorTimer !== undefined) {
+        clearTimeout(eventBandFloorTimer);
+        eventBandFloorTimer = undefined;
+      }
       hud.remove();
     },
   };
