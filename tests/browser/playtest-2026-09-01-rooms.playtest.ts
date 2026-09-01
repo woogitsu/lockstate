@@ -100,8 +100,8 @@ async function eventBand(page: Page): Promise<string> {
 /**
  * The top-left tile of a `width` x `height` block of world the mouse can
  * actually reach -- every corner, every edge midpoint and the centre of the
- * block answering `CANVAS` to `document.elementFromPoint`, so no part of the
- * gesture lands on a HUD panel.
+ * block's own outer **boundary** answering `CANVAS` to
+ * `document.elementFromPoint`, so no part of the gesture lands on a HUD panel.
  *
  * **This is the second attempt and the first one's failure is the reason it
  * checks the whole block.** A version that measured one horizontal and one
@@ -111,6 +111,24 @@ async function eventBand(page: Page): Promise<string> {
  * 1x1 from three identical gestures, because their start points were under the
  * Rooms panel. A rectangle whose size depends on which panel is open is not a
  * measurement of anything.
+ *
+ * **This is the third attempt, and the second one's failure is why it checks
+ * the boundary rather than the tile centres.** The nine probe points used to
+ * sit half a tile in from each side -- `tx*TILE + TILE/2` and the like --
+ * which is exactly right for a room-designation drag (it moves between tile
+ * *centres*, `centreOf`) and exactly wrong for a wall-edge drag (it moves
+ * along the tile *grid line* at `ty*TILE`, one half-tile further out). A run
+ * of `findFreeTile(page, origin, 6, 2)` on the Build tab returned tile
+ * (5,10), whose row spans screen y 98..162 -- clear of the status strip -- but
+ * whose own top edge, the line a horizontal wall run is drawn along, is at
+ * y=66, which `document.elementFromPoint(48, 66)` resolved to
+ * `SPAN.ui-eyebrow.ui-stat__label` on the status strip. Act 2's "one
+ * west-to-east drag submitted 0 PlaceBuildOrder(s)" was this: the drag's
+ * mousedown landed on a HUD label, not the canvas, and produced nothing.
+ * Checking the block's true outer boundary (`tx*TILE` .. `(tx+w)*TILE`,
+ * `ty*TILE` .. `(ty+h)*TILE`) rather than the shrunk tile-centre rectangle
+ * covers both callers: a designation drag's tile centres are strictly inside
+ * this boundary, and a wall-edge drag's grid lines sit exactly on it.
  */
 async function findFreeTile(
   page: Page,
@@ -131,10 +149,10 @@ async function findFreeTile(
       const lastTy = Math.floor((window.innerHeight - originY) / tile) - h;
       for (let ty = firstTy; ty <= lastTy; ty += 1) {
         for (let tx = firstTx; tx <= lastTx; tx += 1) {
-          const left = originX + tx * tile + tile / 2;
-          const top = originY + ty * tile + tile / 2;
-          const right = originX + (tx + w - 1) * tile + tile / 2;
-          const bottom = originY + (ty + h - 1) * tile + tile / 2;
+          const left = originX + tx * tile;
+          const top = originY + ty * tile;
+          const right = originX + (tx + w) * tile;
+          const bottom = originY + (ty + h) * tile;
           const midX = (left + right) / 2;
           const midY = (top + bottom) / 2;
           const points: readonly (readonly [number, number])[] = [
