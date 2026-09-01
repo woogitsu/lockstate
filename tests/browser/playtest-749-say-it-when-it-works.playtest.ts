@@ -52,8 +52,15 @@ const pause = async (page: Page): Promise<void> => {
   await page.waitForTimeout(200);
 };
 
-/** What the events band is showing right now, exactly as a player reads it. */
-async function band(page: Page): Promise<{ text: string; severity: string | null; hidden: boolean }> {
+/**
+ * What the events band is showing right now, exactly as a player reads it.
+ *
+ * `hidden` is `HTMLElement.hidden` verbatim -- `boolean | 'until-found'`,
+ * because the DOM's own type is, per the convention
+ * `build-deliveries-outside-the-fold.spec.ts` documents -- reported as found
+ * rather than coerced to `true`/`false`.
+ */
+async function band(page: Page): Promise<{ text: string; severity: string | null; hidden: boolean | 'until-found' }> {
   return page.evaluate(() => {
     const element = document.querySelector<HTMLElement>('.hud__event');
     if (element === null) return { text: 'NO SUCH ELEMENT', severity: null, hidden: true };
