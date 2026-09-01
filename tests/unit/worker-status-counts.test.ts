@@ -3,7 +3,7 @@ import { defaultContrabandRegistry } from '../../src/content/contraband-catalog'
 import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
 import { decodeWorkerToMainMessage } from '../../src/simulation/protocol/decode';
-import { REFUSAL_REASONS, SIMULATION_PROTOCOL_VERSION, type MainToWorkerMessage } from '../../src/simulation/protocol/types';
+import { PRISON_CONDITIONS, REFUSAL_REASONS, SIMULATION_PROTOCOL_VERSION, type MainToWorkerMessage } from '../../src/simulation/protocol/types';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import {
   captureSessionSnapshot,
@@ -320,6 +320,13 @@ describe('publishing the status counts', () => {
       // and no bill has been raised, let alone gone unmet -- and the treasury
       // above is untouched, which is the same fact read from the other side.
       unpaidWagesMinorUnits: 0,
+      // None standing (ADR 0087 decision 2): the treasury above is untouched
+      // and well above either rung, the build queue has placed no order yet,
+      // and `prisonersInIntake: 4` above are all still at `queued`/`reception`
+      // rather than `accommodation-assignment`, so `waitingWithoutPlace` is
+      // zero too. An empty array rather than an absent key -- `conditions` is
+      // always published, see its own doc comment.
+      conditions: [],
     });
     expect(first?.payload.schemaVersion).toBe(HUD_VIEW_MODEL_SCHEMA_VERSION);
   });
@@ -761,8 +768,15 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       //
       // This is what a status-counts
       // payload is, and why it needs no paging.
+      //
+      // **21, not 20, since ADR 0087 decision 2 added `conditions`.** Unlike
+      // the two conditional keys below it, `conditions` is a third field this
+      // object admits as `.optional()` on the wire yet **always** publishes --
+      // see its own doc comment in `src/simulation/protocol/types.ts` for why
+      // -- so it adds exactly one to the base count for every scenario this
+      // test drives, never zero and never a second conditional term.
       expect(Object.keys(counts)).toHaveLength(
-        20 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
+        21 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
       );
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a
@@ -788,6 +802,27 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
             typeof value === 'string' || value === undefined,
             `counts.${key} is not a stable id, a message key or undefined`,
           ).toBe(true);
+          continue;
+        }
+        // The one deliberate exception (ADR 0087 decision 2), named for the
+        // same reason `activeIncidentType` is: an array is exactly the shape
+        // this loop exists to catch, and `conditions` is allowed to be one
+        // only because it is bounded by a closed union's own size rather than
+        // by anything that grows with the population -- asserted here rather
+        // than assumed, so a `PrisonCondition` member added later that this
+        // scenario happens to trigger cannot silently widen the array past
+        // that bound.
+        if (key === 'conditions') {
+          expect(Array.isArray(value), 'counts.conditions is not an array').toBe(true);
+          const conditions = value as readonly string[];
+          expect(conditions.length, 'counts.conditions grew past the closed union it is drawn from').toBeLessThanOrEqual(
+            PRISON_CONDITIONS.length,
+          );
+          for (const condition of conditions) {
+            expect(PRISON_CONDITIONS as readonly string[], `counts.conditions holds an unknown id ${condition}`).toContain(
+              condition,
+            );
+          }
           continue;
         }
         expect(typeof value, `counts.${key} is not a scalar`).toBe('number');

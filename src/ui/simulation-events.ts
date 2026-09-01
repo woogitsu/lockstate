@@ -179,6 +179,8 @@ const EVENT_PRESENTATION: Readonly<
   Record<SimulationEventType, { readonly labelKey: LocalizationKey; readonly severity: HudSeverity }>
 > = {
   'contraband.discovered': { labelKey: 'hud.alert.event.contraband.discovered', severity: 'warning' },
+  'economy.construction-refused': { labelKey: 'hud.alert.event.economy.construction-refused', severity: 'warning' },
+  'economy.deliveries-refused': { labelKey: 'hud.alert.event.economy.deliveries-refused', severity: 'warning' },
   'economy.wages-unpaid': { labelKey: 'hud.alert.event.economy.wages-unpaid', severity: 'warning' },
   'incidents.all-clear': { labelKey: 'hud.alert.event.incidents.all-clear', severity: 'info' },
   'incidents.assault-opened': { labelKey: 'hud.alert.event.incidents.assault-opened', severity: 'warning' },
@@ -770,6 +772,15 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
       return { count: event.count };
     case 'incidents.riot-opened':
       return { count: event.participantCount };
+    // The crossing is the whole sentence; the figure a player would want --
+    // how far under, how much room is left -- is what
+    // `treasury.deliveries-refused` / `treasury.construction-refused` on
+    // `statusCountsSchema.conditions` exist to keep answering after this
+    // notice has scrolled away, per ADR 0087 decision 2's own division of
+    // labour between the two channels.
+    case 'economy.deliveries-refused':
+    case 'economy.construction-refused':
+      return {};
     // Both of this one's parameters are messages rather than figures, so they
     // are resolved at render time by `eventParameterMessages` below. Nothing
     // is substituted from here.
@@ -880,6 +891,8 @@ function eventParameterMessages(
     // visible for each, and so the `default` below is reached only by a type
     // nobody has considered.
     case 'economy.wages-unpaid':
+    case 'economy.deliveries-refused':
+    case 'economy.construction-refused':
     case 'prisoners.discharged':
     case 'incidents.riot-opened':
     case 'incidents.gang-retaliation-opened':

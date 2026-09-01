@@ -19,7 +19,9 @@ import {
   type RegimeSchedule,
 } from '../prisoners/regime';
 import { stateIncomeAccruedByTick, stateIncomeForOccupiedPlaces } from '../economy/income';
+import { rungFloorMinorUnits } from '../economy/treasury';
 import { EMPTY_SAFETY_COVERAGE_CENSUS, type SafetyCoverageCensus } from '../prisoners/safety-coverage-system';
+import { PRISON_CONDITIONS, type PrisonCondition } from '../protocol/types';
 import { projectClockPosition } from './clock-projection';
 import type { ContrabandConfiscationSource, ContrabandSearchSource } from './contraband-projection';
 import { projectPrisonerPopulationCounts, type PrisonerProjectionSource } from './prisoner-projection';
@@ -173,6 +175,84 @@ export interface StatusStripSource {
    * `IntakeSystem` holds rather than a second copy of the default.
    */
   readonly accommodationPolicy?: AccommodationPolicy;
+  /**
+   * The just-in-time procurement pass's most recent report -- read for one
+   * fact only: whether the build queue currently has a demand the treasury
+   * refused to fund. ([ADR 0087](../../../docs/adr/0087-whether-a-refusal-is-an-event-or-a-condition.md)
+   * decision 2, `PrisonCondition`'s `'construction.unfunded'` member.)
+   *
+   * `JustInTimeMaterialsService` itself satisfies this shape (`.lastReport`),
+   * so `src/simulation/worker/status-counts.ts` passes it directly rather
+   * than a captured copy -- the same live-read convention `coverage` and
+   * `confiscations` above take, so a purchase that funds the queue between two
+   * publications reaches this projection without anything here having to
+   * notice.
+   *
+   * Absent reports no shortfall, matching every other optional source's
+   * reading of "no such system in this runtime": a session with no
+   * construction economy cannot have an unfunded one.
+   */
+  readonly materialsFunding?: { readonly lastReport: { readonly unfunded: readonly unknown[] } };
+}
+
+/**
+ * Which of ADR 0087's `PrisonCondition` members currently hold, from exactly
+ * the live facts the pulled read models this generalises already read --
+ * never from a log, an ordinal or anything with memory of a previous call.
+ *
+ * **A pure function of its five arguments and nothing else**, which is what
+ * lets `tests/determinism/status-counts-publication.test.ts` treat a
+ * publication as a read: the same balance, the same shortfall and the same
+ * intake backlog always produce the same set, in the same order, however many
+ * times this runs.
+ *
+ * **In canonical (ascending id) order, for free.** `PRISON_CONDITIONS` is
+ * itself declared in that order (`src/simulation/protocol/types.ts`), so
+ * walking it in order and testing each member's predicate produces a
+ * canonically ordered result without a sort -- `docs/DETERMINISM.md`'s
+ * canonical-order rule without the cost of one.
+ *
+ * **Several members stand at once by construction.** Issue #767's own
+ * measurement -- a payroll tick taking the treasury from −1,220 to −2,180 --
+ * crosses both `'treasury.deliveries-refused'` and
+ * `'treasury.construction-refused'` in the same tick, because the two are
+ * independent predicates over the same balance rather than rungs of one
+ * ladder this function walks in order and stops at the first hit.
+ *
+ * `rungFloorMinorUnits` rather than the two bare `INSOLVENCY_RUNG_*`
+ * constants: a floor is clamped to the treasury's own
+ * `overdraftFloorMinorUnits` (`Treasury.floorFor`'s own argument, ADR 0083
+ * §2), so a session running a shallower or deeper facility than the shipped
+ * one is read correctly rather than against a number that assumes the
+ * shipped facility. **This function does assume the −1,250 / −2,000 split
+ * itself is unchanged** -- a separate ruling is equalising the rung floors
+ * and is not yet dispatched; if that ruling moves the two constants this
+ * function needs no edit, because it never repeats them, but a ruling that
+ * changed which `SpendClass` each condition reads from would.
+ */
+export function computeStandingPrisonConditions(input: {
+  readonly treasuryMinorUnits: number;
+  readonly treasuryOverdraftFloorMinorUnits: number;
+  readonly buildQueueUnfunded: boolean;
+  readonly waitingWithoutPlace: number;
+}): readonly PrisonCondition[] {
+  const standing: PrisonCondition[] = [];
+  for (const condition of PRISON_CONDITIONS) {
+    const holds = ((): boolean => {
+      switch (condition) {
+        case 'construction.unfunded':
+          return input.buildQueueUnfunded;
+        case 'intake.no-place':
+          return input.waitingWithoutPlace > 0;
+        case 'treasury.construction-refused':
+          return input.treasuryMinorUnits <= rungFloorMinorUnits('construction', input.treasuryOverdraftFloorMinorUnits);
+        case 'treasury.deliveries-refused':
+          return input.treasuryMinorUnits <= rungFloorMinorUnits('deliveries', input.treasuryOverdraftFloorMinorUnits);
+      }
+    })();
+    if (holds) standing.push(condition);
+  }
+  return standing;
 }
 
 export interface StatusStripOptions {
@@ -485,6 +565,20 @@ export interface StatusStripViewModel {
      * whole of why there are two fields here instead of one signed one.
      */
     readonly unpaidWagesMinorUnits: number;
+    /**
+     * The ways the prison currently *is*, as a set of `PrisonCondition`
+     * members ([ADR 0087](../../../docs/adr/0087-whether-a-refusal-is-an-event-or-a-condition.md)
+     * decision 2) -- see `computeStandingPrisonConditions` above for the pure
+     * function this is and `statusCountsSchema.conditions` in
+     * `src/simulation/protocol/types.ts` for the wire field it fills.
+     *
+     * **Always an array, never absent**, matching
+     * `treasuryOverdraftFloorMinorUnits` above: the wire schema admits its
+     * absence only so a fixture written before this field existed still
+     * decodes, and this projection always has an answer to "which conditions
+     * currently stand", even when the answer is none of them.
+     */
+    readonly conditions: readonly PrisonCondition[];
   };
 }
 
@@ -704,6 +798,18 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
     options.contraband ?? defaultContrabandRegistry,
   );
 
+  // Read once and shared between `counts` below and the condition set: both
+  // need the same two figures, and a second `?? 0` here would risk the pair
+  // disagreeing the day either default changes.
+  const treasuryMinorUnits = source.treasury?.balanceMinorUnits ?? 0;
+  const treasuryOverdraftFloorMinorUnits = source.treasury?.overdraftFloorMinorUnits ?? 0;
+  const conditions = computeStandingPrisonConditions({
+    treasuryMinorUnits,
+    treasuryOverdraftFloorMinorUnits,
+    buildQueueUnfunded: (source.materialsFunding?.lastReport.unfunded.length ?? 0) > 0,
+    waitingWithoutPlace: population.waitingWithoutPlace,
+  });
+
   return {
     schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
     clock: clockViewModel(source.tick, source.clockControl),
@@ -739,11 +845,11 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       ...(activeIncidentType !== undefined ? { activeIncidentType } : {}),
       contrabandDiscovered,
       ...(contrabandNameKey === undefined ? {} : { contrabandNameKey }),
-      treasuryMinorUnits: source.treasury?.balanceMinorUnits ?? 0,
+      treasuryMinorUnits,
       // The treasury's own floor, on the same `?? 0` reading its balance takes
       // one line up: a runtime with no treasury has no facility, and `0` is
       // exactly what a `Treasury` with none reports.
-      treasuryOverdraftFloorMinorUnits: source.treasury?.overdraftFloorMinorUnits ?? 0,
+      treasuryOverdraftFloorMinorUnits,
       // The registry's own total, not `roomOccupants` above: that count is
       // built from the catalog fan-out and cannot see an instance registered
       // under an unknown room-catalog id (gap 15), while the income line is
@@ -767,6 +873,7 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       ),
       dailyWageBillMinorUnits: source.payroll?.dailyWageBillMinorUnits() ?? 0,
       unpaidWagesMinorUnits: source.payroll?.unpaidWagesMinorUnits ?? 0,
+      conditions,
     },
   };
 }

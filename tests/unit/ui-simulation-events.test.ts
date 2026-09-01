@@ -48,6 +48,8 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   // comparison (`docs/TESTING.md`).
   'contraband.discovered': (sequence) => ({ sequence, tick: 100, type: 'contraband.discovered', categoryNameKey: 'contraband.weapon.name' }),
   'economy.wages-unpaid': (sequence) => ({ sequence, tick: 100, type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 360 }),
+  'economy.deliveries-refused': (sequence) => ({ sequence, tick: 100, type: 'economy.deliveries-refused' }),
+  'economy.construction-refused': (sequence) => ({ sequence, tick: 100, type: 'economy.construction-refused' }),
   'prisoners.discharged': (sequence) => ({ sequence, tick: 100, type: 'prisoners.discharged', count: 2 }),
   'incidents.riot-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.riot-opened', participantCount: 12 }),
   'incidents.assault-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.assault-opened' }),
