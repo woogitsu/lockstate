@@ -5,6 +5,7 @@ import { REFUSAL_REASONS, type RefusalReason } from '../../src/simulation/protoc
 import {
   ADMIT_REFUSAL_REASONS,
   BUILD_REFUSAL_REASONS,
+  CONSTRUCTION_FUNDING_REFUSAL_REASONS,
   DISMISS_STAFF_REFUSAL_REASONS,
   HIRE_REFUSAL_REASONS,
   PLACE_OBJECT_REFUSAL_REASONS,
@@ -107,11 +108,12 @@ describe('RefusalLog: the snapshot shape a cadence channel can carry', () => {
   });
 });
 
-describe('the wire vocabulary is exactly what the eleven domains can produce', () => {
-  it('maps every admission, build, hiring, dismissal, placement, object removal, purchase, cancellation, guard release and zoning refusal onto a declared reason', () => {
+describe('the wire vocabulary is exactly what the twelve domains can produce', () => {
+  it('maps every admission, build, construction funding, hiring, dismissal, placement, object removal, purchase, cancellation, guard release and zoning refusal onto a declared reason', () => {
     const produced = [
       ...Object.values(ADMIT_REFUSAL_REASONS),
       ...Object.values(BUILD_REFUSAL_REASONS),
+      ...Object.values(CONSTRUCTION_FUNDING_REFUSAL_REASONS),
       ...Object.values(DISMISS_STAFF_REFUSAL_REASONS),
       ...Object.values(HIRE_REFUSAL_REASONS),
       ...Object.values(PLACE_OBJECT_REFUSAL_REASONS),
@@ -149,7 +151,7 @@ describe('the wire vocabulary is exactly what the eleven domains can produce', (
      * expression would be the production tables' own rule re-implemented in
      * the test, which is the shape `docs/TESTING.md` records as the fixture
      * supplying both sides -- and it would also make an *intended* divergence
-     * impossible to express here. These are transcribed from the ten tables'
+     * impossible to express here. These are transcribed from the twelve tables'
      * declarations, which is what makes an accidental edit to either side show
      * up as a disagreement.
      */
@@ -170,6 +172,16 @@ describe('the wire vocabulary is exactly what the eleven domains can produce', (
     // and a one-member table is exactly the case where a pairing test earns its
     // keep, because there is no set-size check anywhere that could notice
     // `dismiss.unknown-staff` being written as `hire.unknown-staff`.
+    /*
+     * The twelfth table, and the second single-member one where the pairing
+     * test is the only thing that could notice a typo: nothing else in this
+     * suite names `construction.materials-unfunded` beside its domain
+     * spelling. Transcribed from the owner's ruling of 2026-09-01 (ADR 0017,
+     * "Amendment, 2026-09-01" §5a) rather than read back off the table.
+     */
+    expect(CONSTRUCTION_FUNDING_REFUSAL_REASONS).toEqual({
+      'materials-unfunded': 'construction.materials-unfunded',
+    });
     expect(DISMISS_STAFF_REFUSAL_REASONS).toEqual({
       'unknown-staff': 'dismiss.unknown-staff',
     });
@@ -234,9 +246,17 @@ describe('the wire vocabulary is exactly what the eleven domains can produce', (
     // rather than the table -- exactly the "an eleventh table could be added
     // with no pair written here" case this comment predicted, caught by the
     // sentence that predicted it.
+    //
+    // **And it tripped again on the twelfth**, which is the same paragraph
+    // earning its keep a second time: `CONSTRUCTION_FUNDING_REFUSAL_REASONS`
+    // was added to the set comparison above and to the pairing block, and this
+    // list was still eleven tables long -- `expected [...] to have a length of
+    // 41 but got 40`. The count named the shortfall and not the table, exactly
+    // as predicted, and exactly as it did for `dismiss`.
     const paired = [
       ...Object.values(ADMIT_REFUSAL_REASONS),
       ...Object.values(BUILD_REFUSAL_REASONS),
+      ...Object.values(CONSTRUCTION_FUNDING_REFUSAL_REASONS),
       ...Object.values(DISMISS_STAFF_REFUSAL_REASONS),
       ...Object.values(HIRE_REFUSAL_REASONS),
       ...Object.values(PLACE_OBJECT_REFUSAL_REASONS),
@@ -266,7 +286,7 @@ describe('the wire vocabulary is exactly what the eleven domains can produce', (
     expect([...REFUSAL_REASONS]).toEqual([...REFUSAL_REASONS].sort());
   });
 
-  it('names the eleven commands it can answer, so the vocabularies cannot collide', () => {
+  it('names the twelve vocabularies it can answer, so they cannot collide', () => {
     // `unzone` is its own namespace and not more members of `zone`'s, because
     // `invalid-area` is the same *condition* for both and a different
     // *sentence*: a player told "the room was not zoned" after asking to remove
@@ -301,11 +321,25 @@ describe('the wire vocabulary is exactly what the eleven domains can produce', (
     // all three answer different gestures. A release that failed leaves a guard
     // employed and assigned; a dismissal that failed leaves them employed and
     // being paid.
+    // `construction` is the twelfth (the owner's ruling of 2026-09-01) and it
+    // is the one namespace that is not a *command's* vocabulary at all: no
+    // command is called Construction, and the refusal is the just-in-time
+    // materials pass failing to fund a queue that is already standing. It is
+    // the eighth demonstration and the only one where the two sentences answer
+    // the same treasury call at *different thresholds* rather than different
+    // gestures -- ADR 0017 decision 8's rung 1 refuses a player's delivery at
+    // -1,250 and rung 2 refuses the queue's own materials at -2,000, so
+    // `purchase.insufficient-funds` on both told a prison at -1,800 that
+    // deliveries were refused when what stopped was construction. The test
+    // name said "eleven commands" until this member arrived; it says
+    // "vocabularies" now, because that is what the twelve have always been and
+    // the eleventh was the last one for which the two words coincided.
     const prefixes = new Set(REFUSAL_REASONS.map((reason) => reason.split('.')[0]));
     expect([...prefixes].sort()).toEqual([
       'admit',
       'build',
       'cancel-purchase',
+      'construction',
       'dismiss',
       'hire',
       'place-object',

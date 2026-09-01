@@ -297,3 +297,34 @@ when you press play — and it is reached here without copying anything.
    button is accented and `data-clock-mode` says `paused`, which is honest but
    quiet. This ADR makes the *consequences* of a pause smaller; it does not
    make the pause more discoverable, and that is a separate piece of work.
+
+## Amendment, 2026-09-01: decision 3 named the wrong publication, once #749 gave the log a second writer
+
+Decision 3 above says the paused drain publishes `simulation/status-counts`
+immediately when a command did something, "with the same ... treatment
+`publishStatusCounts` already gives a refusal and a zoning notice." That
+sentence was complete when it was written: at the time, nothing a command
+handler could do while paused wrote to `SimulationEventLog` — every producer
+of that channel was a scheduled system, reached only from `step()`.
+
+Issue #749 (the owner's ruling of 2026-09-01) made two command handlers write
+to that log on success — `createConstructionCommandHandler` for
+`CancelBuildOrder`, `Undo` and `Redo`, `createSessionCommandHandler` for
+`CancelMaterialPurchase` — and this decision was not revisited when it did.
+`SimulationWorkerStateMachine.handleSubmitCommand`'s paused-drain branch kept
+publishing status counts only, so a player who cancelled a queued build order
+while paused saw the row vanish and the treasury move at once — decision 3
+working exactly as designed — and did not see #749's success sentence until
+the next tick-loop wake, which while paused is "whenever the player next
+presses Play." Found by playing, not by a unit test:
+`tests/browser/playtest-749-say-it-when-it-works.playtest.ts` act a held the
+band empty for a 3 s wait against the unfixed worker and showed the sentence
+only after Play was pressed.
+
+The fix widens decision 3 rather than replacing it: the paused drain now calls
+`publishEvents()` immediately after `publishStatusCounts()` whenever
+`dispatchDueCommands()` did something, so a command handler's event and its
+status-counts readout arrive on the same message batch, matching the tick loop
+publishing both on every wake. `tests/unit/worker-state-machine.test.ts`,
+*"publishes the cancellation sentence immediately too, not only on the next
+tick-loop wake,"* guards it red-then-green.

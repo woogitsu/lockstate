@@ -522,7 +522,36 @@ export class ConstructionSystem implements SystemRegistration {
     this.currentTransaction.push(orderId);
   }
 
-  public undo(): void {
+  /**
+   * Reverses the most recent transaction, and answers **whether it reversed
+   * anything** (#749).
+   *
+   * ## Why the return value exists, and what it is deliberately not
+   *
+   * It is `boolean` and not a count. The owner's ruling of 2026-09-01 on
+   * [#749](https://github.com/matmaxalez/lockstate/issues/749) gives Undo a
+   * success sentence and rules that it *"does not name a count"* -- an undo
+   * reverses a whole transaction, so naming one order would be a small lie
+   * whenever a run of several was taken back -- and rules explicitly that the
+   * transaction-size plumbing is **not** to be built. `redoTransaction.length`
+   * is sitting right there and is not returned, on purpose.
+   *
+   * What *is* needed for that sentence to be honest is the one bit this
+   * answers: a press against an empty stack, or against a transaction whose
+   * orders have all reached a terminal state, reverses nothing, and a band
+   * reading "the last change to the build queue was undone" over a queue
+   * nothing happened to is the player-visible promise the code does not keep
+   * that `AGENTS.md`'s fourth exclusion is about. `false` is what stops the
+   * handler saying it.
+   *
+   * Both no-op shapes answer `false` and the second is the one a caller would
+   * miss: a transaction *was* popped -- so the undo stack really did shrink --
+   * and yet nothing in the world changed, because `isCancellable` rejected
+   * every order in it. The redo stack is not pushed in that case either, which
+   * is the existing behaviour this return value now reports rather than
+   * changes.
+   */
+  public undo(): boolean {
     if (this.currentTransaction.length > 0) {
       this.undoStack.push([...this.currentTransaction]);
       this.currentTransaction = [];
@@ -530,7 +559,7 @@ export class ConstructionSystem implements SystemRegistration {
     }
 
     const transaction = this.undoStack.pop();
-    if (!transaction) return; // Nothing to undo
+    if (!transaction) return false; // Nothing to undo
 
     const redoTransaction: string[] = [];
 
@@ -551,14 +580,27 @@ export class ConstructionSystem implements SystemRegistration {
       redoTransaction.push(orderId);
     }
 
-    if (redoTransaction.length > 0) {
-      this.redoStack.push(redoTransaction);
-    }
+    if (redoTransaction.length === 0) return false;
+    this.redoStack.push(redoTransaction);
+    return true;
   }
 
-  public redo(): void {
+  /**
+   * Re-applies the most recent undone transaction, and answers whether it
+   * re-applied anything (#749).
+   *
+   * The mirror of `undo` above on every point that method's docblock makes,
+   * including the one it is most tempting to drop: `undoTransaction.length` is
+   * a count and is not returned, because the owner's ruling gives Redo a
+   * sentence that names no count either.
+   *
+   * `false` covers the empty redo stack and the popped transaction whose orders
+   * were no longer `'cancelled'` -- reachable because `redo` restores only an
+   * order still in that state, and a later press may have moved it.
+   */
+  public redo(): boolean {
     const transaction = this.redoStack.pop();
-    if (!transaction) return; // Nothing to redo
+    if (!transaction) return false; // Nothing to redo
 
     const undoTransaction: string[] = [];
 
@@ -573,9 +615,9 @@ export class ConstructionSystem implements SystemRegistration {
       }
     }
 
-    if (undoTransaction.length > 0) {
-      this.undoStack.push(undoTransaction);
-    }
+    if (undoTransaction.length === 0) return false;
+    this.undoStack.push(undoTransaction);
+    return true;
   }
 
   /**

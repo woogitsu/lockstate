@@ -23,6 +23,7 @@ import {
 import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coordinates';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { RefusalLog } from '../../src/simulation/refusals';
+import { SimulationEventLog } from '../../src/simulation/events/event-log';
 
 /**
  * Issue #74: completing a build order must change the world.
@@ -136,7 +137,7 @@ describe('completing an order writes world geometry', () => {
     const construction = new ConstructionSystem(world);
     const kernel = new Kernel();
     kernel.registerSystem(construction);
-    kernel.setCommandHandler(createConstructionCommandHandler(construction, new RefusalLog()));
+    kernel.setCommandHandler(createConstructionCommandHandler(construction, new RefusalLog(), new SimulationEventLog()));
     kernel.submitCommand(
       'cmd-0',
       0,
@@ -393,7 +394,7 @@ describe('taking an order back removes the geometry it wrote', () => {
     const construction = new ConstructionSystem(world);
     const kernel = new Kernel();
     kernel.registerSystem(construction);
-    kernel.setCommandHandler(createConstructionCommandHandler(construction, new RefusalLog()));
+    kernel.setCommandHandler(createConstructionCommandHandler(construction, new RefusalLog(), new SimulationEventLog()));
     kernel.submitCommand(
       'cmd-0',
       0,

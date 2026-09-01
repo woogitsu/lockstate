@@ -1,5 +1,6 @@
 import { createConstructionCommandHandler, reportMaterialsFunding } from '../construction';
 import { isJustInTimePurchaseOrderId, type ProcurementSystem } from '../economy';
+import type { SimulationEventLog } from '../events';
 import type { CommandHandler } from '../kernel/kernel';
 import { unpackCommand } from '../protocol/commands';
 import {
@@ -32,7 +33,6 @@ import type { RoomZoningService } from '../rooms/zoning';
 import type { GuardReleaseService } from '../security/guard-release';
 import type { StaffDismissalService } from '../staff/dismissal';
 import type { StaffHiringService } from '../staff/hiring';
-import type { SimulationEventLog } from '../events/event-log';
 import { tileCoordinate } from '../world/coordinates';
 
 /**
@@ -103,6 +103,16 @@ import { tileCoordinate } from '../world/coordinates';
  * guard id) and one -- `admit` -- compares nothing but the domain, and for
  * why a role, an item or a tile that does not match the standing refusal's
  * own leaves that refusal exactly as it was.
+ *
+ * `events` is the session's `SimulationEventLog`, and it is `refusals`' mirror
+ * for the case that log could never carry: a command that **worked** (the
+ * owner's ruling of 2026-09-01 on
+ * [#749](https://github.com/matmaxalez/lockstate/issues/749)). Only two of the
+ * ten routes write to it today -- this file's `CancelMaterialPurchase`, and
+ * `CancelBuildOrder`/`Undo`/`Redo` inside the construction handler it
+ * constructs -- because those are the four controls #749 measured saying
+ * nothing when they succeeded. The other six are outside that ruling's scope
+ * and are left silent rather than given sentences nobody has written.
  */
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
@@ -116,7 +126,7 @@ export function createSessionCommandHandler(
   refusals: RefusalLog,
   events: SimulationEventLog,
 ): CommandHandler {
-  const constructionCommands = createConstructionCommandHandler(construction, refusals);
+  const constructionCommands = createConstructionCommandHandler(construction, refusals, events);
 
   return (command, context) => {
     const simCommand = unpackCommand(command.payload as never);
@@ -451,6 +461,30 @@ export function createSessionCommandHandler(
         // of a different order must not silence a standing `not-pending`
         // about this one.
         refusals.supersede(cancelKey);
+        /*
+         * And the success says so, with the figure (#749).
+         *
+         * **The one success sentence in this repository that can name an
+         * amount, and the reason is two lines up:** `cancel` already answers
+         * `refundedMinorUnits`, the delivery's *recorded* `paidMinorUnits`, so
+         * the number is sitting at the call site and only had to be carried.
+         * `ConstructionSystem.cancelOrder` answers nothing, so the build-order
+         * sentences beside this one name no amount at all. The owner's ruling
+         * of 2026-09-01 names that asymmetry and keeps it: it is the honest
+         * shape of what each route knows, and closing it would mean plumbing a
+         * return value through a method whose refund is split across two sinks.
+         *
+         * The paragraph above about the refusal being *"the interesting half"*
+         * was true of #285 and is half of the story since #749: it argued that
+         * a cancellation that refunded nothing leaves a balance that did not
+         * move and that silence there is a control that appeared to give money
+         * back. The measurement in
+         * `docs/research/2026-09-01-what-act-six-never-reached.md` D2 found the
+         * mirror -- a cancellation that refunded *exactly the right amount*
+         * also said nothing, and the player had no way to know the money was
+         * right without doing the arithmetic. Both halves now speak.
+         */
+        events.recordDeliveryCancelled(outcome.refundedMinorUnits, context.tick);
       }
       return;
     }

@@ -330,7 +330,16 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 });
 
     // 1. The alert band, which is the channel that does not have to be opened.
-    expect(runtime.refusals.last?.reason, 'the player is told on the press').toBe('purchase.insufficient-funds');
+    /*
+     * **`purchase.insufficient-funds` until the owner's ruling of 2026-09-01.**
+     * The just-in-time pass spends at the `'construction'` rung, so this stall
+     * is ADR 0017 decision 8's rung 2 and it used to report rung 1's sentence
+     * -- which ADR 0017's "Amendment, 2026-09-01" §5 named as owed. The rung is
+     * now on the wire.
+     */
+    expect(runtime.refusals.last?.reason, 'the player is told on the press').toBe(
+      'construction.materials-unfunded',
+    );
     expect(runtime.refusals.last?.tick).toBe(runtime.kernel.tick - 1);
 
     // 2. The treasury is untouched: a refused purchase spends nothing, and
@@ -369,7 +378,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
      * green.
      */
     expect(runtime.refusals.last?.reason, 'the retries withdrew a shortfall that is still true').toBe(
-      'purchase.insufficient-funds',
+      'construction.materials-unfunded',
     );
     expect(runtime.refusals.count, 'and the retries did not re-record it either').toBe(1);
   });
@@ -438,7 +447,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
      */
     const runtime = prisonWith(CANNOT_FUND_A_WALL);
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 });
-    expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
+    expect(runtime.refusals.last?.reason).toBe('construction.materials-unfunded');
 
     // Three scheduled construction ticks, and short of the fixture's own
     // delivery at tick 100 -- the refund below needs a purchase still in
@@ -486,7 +495,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
      * were funded and the last never would be. This case is the direction where
      * it is false. The treasury is refunded in full, the scheduled pass buys the
      * bricks and the crew finishes the wall -- and before this change
-     * `refusals.last` was still the `purchase.insufficient-funds` recorded at
+     * `refusals.last` was still the rung-2 shortfall recorded at
      * tick 1, standing over a solvent prison with the wall up. No press had
      * happened since, and none ever would: the only route to a withdrawal was a
      * press.
@@ -501,7 +510,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
      */
     const runtime = prisonWith(CANNOT_FUND_A_WALL);
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 });
-    expect(runtime.refusals.last?.reason, 'the press is what announced it').toBe('purchase.insufficient-funds');
+    expect(runtime.refusals.last?.reason, 'the press is what announced it').toBe('construction.materials-unfunded');
 
     send(runtime, { type: 'CancelMaterialPurchase', orderId: 'order-buy' });
     expect(runtime.treasury.balanceMinorUnits).toBe(REFUNDED_BALANCE);
@@ -522,7 +531,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
     // fixed must not keep a notice on screen.
     const runtime = prisonWith(CANNOT_FUND_A_WALL);
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 });
-    expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
+    expect(runtime.refusals.last?.reason).toBe('construction.materials-unfunded');
 
     send(runtime, { type: 'CancelMaterialPurchase', orderId: 'order-buy' });
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-b', definitionId: WALL, x: 4, y: 5 });
@@ -595,7 +604,11 @@ describe('a placed object is a build order too (ADR 0028 decision 4)', () => {
 
     send(runtime, { type: 'PlaceObject', orderId: 'order-bed', definitionId: 'bed-wooden', x: CELL_RECT.x, y: CELL_RECT.y });
 
-    expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
+    // `PlaceObject` reaches the same just-in-time pass by a different door
+    // (ADR 0028 decision 4), so it is the same rung and the same sentence:
+    // `construction.materials-unfunded`, not the `purchase.*` a *Buy* press
+    // would get. That is the whole reason `reportMaterialsFunding` is exported.
+    expect(runtime.refusals.last?.reason).toBe('construction.materials-unfunded');
     expect(runtime.treasury.balanceMinorUnits).toBe(-1_980);
     expect(runtime.construction.getOrder('order-bed')?.state, 'and the bed is still the player\'s').not.toBe('failed');
   });

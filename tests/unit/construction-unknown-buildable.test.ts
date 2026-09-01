@@ -6,6 +6,7 @@ import { ConstructionSystem, type ConstructionSnapshot } from '../../src/simulat
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { packCommand, unpackCommand } from '../../src/simulation/protocol/commands';
 import { RefusalLog } from '../../src/simulation/refusals';
+import { SimulationEventLog } from '../../src/simulation/events/event-log';
 import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coordinates';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 
@@ -83,7 +84,7 @@ function harness(): Harness {
   const kernel = new Kernel();
   const refusals = new RefusalLog();
   kernel.registerSystem(construction);
-  kernel.setCommandHandler(createConstructionCommandHandler(construction, refusals));
+  kernel.setCommandHandler(createConstructionCommandHandler(construction, refusals, new SimulationEventLog()));
   return { construction, kernel, refusals };
 }
 

@@ -1,8 +1,9 @@
+import type { SimulationEventLog } from '../events';
 import type { CommandHandler } from '../kernel/kernel';
 import { unpackCommand } from '../protocol/commands';
 import {
   BUILD_REFUSAL_REASONS,
-  PURCHASE_REFUSAL_REASONS,
+  CONSTRUCTION_FUNDING_REFUSAL_REASONS,
   buildSupersessionKey,
   materialsFundingSupersessionKey,
   type RefusalLog,
@@ -25,10 +26,38 @@ import type { ConstructionSystem } from './system';
  * the defect #261 exists to remove. A caller with no interest in refusals
  * constructs a `RefusalLog` and ignores it, which costs one object and states
  * the choice.
+ *
+ * @param events Where a cancellation, an undo or a redo that **succeeded** is
+ * recorded so the player is told it worked (the owner's ruling of 2026-09-01 on
+ * [#749](https://github.com/matmaxalez/lockstate/issues/749)).
+ *
+ * **Required for `refusals`' reason, and the defect it answers is that reason's
+ * mirror.** Until #749 these three controls said nothing at all when they
+ * succeeded: `docs/research/2026-09-01-what-act-six-never-reached.md` D2
+ * measured it by playing, and found the only feedback was a row vanishing from
+ * a fold that starts collapsed. A refusal sink with no success sink meant this
+ * handler could report every way a command could fail and no way it could work.
+ *
+ * **Why the success is recorded here and not inside `ConstructionSystem`.**
+ * `cancelOrder` is reached from four places -- this handler, `undo()`,
+ * `withdrawOrdersAwaitingMaterial`, and `ObjectPlacementService`'s removal of
+ * an object whose order has not finished -- and only the first is the press
+ * #749 is about. Recording inside the system would announce a cancellation per
+ * order every time #687's withdrawal walked the queue after a cancelled
+ * delivery, which is fifteen sentences for one press. The command boundary is
+ * where "the player asked for *this*" is known.
+ *
+ * **The fourth of those is a finding rather than a footnote**, and it is left
+ * for the owner rather than decided here: `RemoveObject` on a tile whose object
+ * is still being built cancels that build order and says nothing, which is D2's
+ * defect one control over. It is outside the four #749 names, and giving it a
+ * sentence means choosing between the two this file already has -- or writing a
+ * third -- which is copy, and copy is the owner's.
  */
 export function createConstructionCommandHandler(
   constructionSystem: ConstructionSystem,
   refusals: RefusalLog,
+  events: SimulationEventLog,
 ): CommandHandler {
   return (command, context) => {
     const simCommand = unpackCommand(command.payload as never);
@@ -92,20 +121,61 @@ export function createConstructionCommandHandler(
         break;
       }
 
-      case 'CancelBuildOrder':
+      case 'CancelBuildOrder': {
+        /*
+         * The state is read **before** the cancellation and used after it, and
+         * the ordering is the whole of what makes two sentences possible: every
+         * cancelled order reads `'cancelled'` afterwards, so the distinction
+         * the owner's ruling of 2026-09-01 (#749) splits the sentence on --
+         * money back, or the crew had started and what it used is gone -- is
+         * gone the moment `cancelOrder` returns. Read from `getOrder` rather
+         * than through a new return value on `cancelOrder`, because the ruling
+         * declines that plumbing: the *amount* stays unreachable here and
+         * neither sentence names one.
+         *
+         * **The research this implements said the handler already read the
+         * state, and it did not** --
+         * `docs/research/2026-09-01-copy-variants-for-the-owner.md` section 5a,
+         * *"read by the handler before `cancelOrder` is called"*.
+         * `cancelOrder` reads it privately; this line is what makes the claim
+         * true. The correction does not change the ruling -- the state was
+         * reachable, one level down -- and it is recorded rather than quietly
+         * fixed.
+         */
+        const stateAtCancellation = constructionSystem.getOrder(simCommand.orderId)?.state;
         try {
           constructionSystem.cancelOrder(simCommand.orderId);
         } catch {
           // Cancellation is intentionally idempotent at the command boundary.
+          break;
         }
+        // Reached only when `cancelOrder` returned, which is the one moment the
+        // cancellation is a fact. `stateAtCancellation` is defined here by
+        // construction -- `cancelOrder` throws for an id it cannot find -- and
+        // the guard states that to the compiler rather than doubting it.
+        if (stateAtCancellation !== undefined) events.recordBuildOrderCancelled(stateAtCancellation, context.tick);
         break;
+      }
 
+      /*
+       * Undo and Redo say so when they worked, and say nothing when they did
+       * not (#749).
+       *
+       * The `boolean` is the whole reason those methods now answer one: a press
+       * against an empty history reverses nothing, and confirming a reversal
+       * that did not happen is the promise the code does not keep that
+       * `AGENTS.md`'s fourth exclusion reserves. Neither sentence names a count
+       * -- the owner's ruling, because an undo reverses a whole transaction and
+       * naming one order would be a small lie whenever a run of several was
+       * taken back. The transaction size is known inside `ConstructionSystem`
+       * and is deliberately left there.
+       */
       case 'Undo':
-        constructionSystem.undo();
+        if (constructionSystem.undo()) events.recordConstructionUndone(context.tick);
         break;
 
       case 'Redo':
-        constructionSystem.redo();
+        if (constructionSystem.redo()) events.recordConstructionRedone(context.tick);
         break;
 
       // `ZoneRoom` is deliberately absent. It used to have a branch here that
@@ -138,6 +208,34 @@ export function createConstructionCommandHandler(
  * order to proceed is a defect. The alert band is the channel that does not
  * have to be opened.
  *
+ * ## Why this was `purchase.insufficient-funds` for two rulings, and is not now
+ *
+ * **The section below is the argument for reusing it, kept whole because it
+ * was right for as long as there was one money threshold.** What ended it is
+ * the owner's ruling 19 of 2026-08-31 (ADR 0017, "Amendment, 2026-09-01"):
+ * ruling 19 gave ADR 0017 decision 8's rungs three thresholds inside the
+ * overdraft, and from that moment "exactly that refusal" was false. A *Buy*
+ * press is refused at the `'deliveries'` rung, -1,250; this route spends at
+ * `'construction'` and is refused at -2,000. Two thresholds, two events, and
+ * one string on both -- so a prison at -1,800 with a stalled queue was told
+ * that deliveries are refused, which at -1,800 is *also* true but is not what
+ * just happened and is not the rung the player has to climb back over.
+ *
+ * ADR 0017's amendment §5 named this owed in those terms -- *"A halted
+ * construction queue reports `hud.alert.refusal.purchase.insufficient-funds`
+ * through `reportMaterialsFunding`, which is rung 1's sentence on rung 2's
+ * event"* -- and the owner ruled on 2026-09-01 that rung 2 gets a sentence of
+ * its own, accepting the plumbing that costs: a new `RefusalReason` member
+ * (`construction.materials-unfunded`), a new `REFUSAL_LABEL_KEYS` row and the
+ * English behind it. This function records that member now.
+ *
+ * The paragraph below headed "Why `purchase.insufficient-funds` and not a new
+ * refusal id" is left exactly as it was written, because its *shape* of
+ * argument is what says why the new id is not a smuggled second sentence for
+ * the same fact: the namespaces exist so that a player is not sent to the
+ * wrong control, and the two routes now genuinely answer different controls at
+ * different thresholds.
+ *
  * ## Why `purchase.insufficient-funds` and not a new refusal id
  *
  * **Because it is exactly that refusal, produced by exactly that code.**
@@ -169,6 +267,12 @@ export function createConstructionCommandHandler(
  * it is not this change's to write. Reported on #627 rather than guessed at
  * here.
  *
+ * **Half of that is paid and half is not, as of 2026-09-01.** The member and
+ * the key exist -- `construction.materials-unfunded` -- so the *rung* is named.
+ * The **wall** still is not: `RefusalLog` carries a reason and a tick and no
+ * order id or definition id, so there is nothing to interpolate, and the
+ * sentence names the queue rather than the thing in it.
+ *
  * **AND SINCE #703 RULING 9 THE SHIPPED SENTENCE IS PARTLY FALSE, WHICH IS
  * WHAT IS NOW OWED RATHER THAN WHAT WOULD MERELY SAY MORE.** The English text
  * behind `purchase.insufficient-funds` was *"The materials were not ordered —
@@ -181,7 +285,7 @@ export function createConstructionCommandHandler(
  * telling the player *"a precondition rather than a nicety"*.
  *
  * **Ruling 23 changed the sentence and did not close this**, which is worth
- * saying explicitly rather than leaving to be re-discovered. It now reads
+ * saying explicitly rather than leaving to be re-discovered. It read
  * *"Nothing was bought — that would go past what the state will carry."*, so
  * the *reason* clause became true of this route as well -- `unfunded` is
  * populated behind `Treasury.canAfford` and nowhere else, and every non-money
@@ -189,6 +293,15 @@ export function createConstructionCommandHandler(
  * denying the same half it denied before, in the same way and for the same
  * reason. The three ways out below are unchanged and so is the open question
  * they end at.
+ *
+ * **The 2026-09-01 ruling did not close it either, and it is worth being
+ * precise about which half moved.** This route's sentence is now *"The build
+ * queue is stalled — no more materials until the state pays what it owes."*
+ * The subject changed from a purchase to the queue, which removes the "nothing
+ * was bought" denial the paragraphs above are about -- a stalled queue is a
+ * true description of a pass that funded four orders and not the fifth. What
+ * is still not said is *how much* was bought, which is ADR 0081's open
+ * question 2 and still the owner's.
  *
  * **Left as it is, deliberately, and named here rather than patched around.**
  * The three ways out are all worse or not this change's:
@@ -247,5 +360,5 @@ export function reportMaterialsFunding(
     refusals.supersede(materialsFundingSupersessionKey());
     return;
   }
-  refusals.record(PURCHASE_REFUSAL_REASONS['insufficient-funds'], tick, materialsFundingSupersessionKey());
+  refusals.record(CONSTRUCTION_FUNDING_REFUSAL_REASONS['materials-unfunded'], tick, materialsFundingSupersessionKey());
 }

@@ -645,6 +645,58 @@ describe('a command submitted against a paused clock', () => {
     expect(after[after.length - 1].payload.tick).toBe(0);
   });
 
+  /**
+   * The paused drain publishes a success sentence too, not only a counts
+   * readout (issue #749, found by playing rather than by this file).
+   *
+   * `createConstructionCommandHandler` writes `construction.order-cancelled`
+   * to `SimulationEventLog` on a successful `CancelBuildOrder`, and until this
+   * test's production fix, nothing published it while the clock stayed
+   * paused: `onTickLoop` is the only caller of `publishEvents()`, and
+   * `transition` stops the tick-loop interval for every state but `running`.
+   * A player who cancels a queued order -- almost always done while paused,
+   * managing a queue -- saw the row vanish and the treasury move, correctly,
+   * and never saw the sentence #749 exists to add, until they next pressed
+   * Play. Reproduced on the assembled page:
+   * `tests/browser/playtest-749-say-it-when-it-works.playtest.ts` act a, run
+   * against the unfixed worker, held the band empty for the whole of a 3 s
+   * wait and showed the sentence only after Play was pressed.
+   *
+   * Mutation: comment out the `this.publishEvents()` line this test guards
+   * -> 1 failed ("no simulation/event message reached the port before any
+   * tick had run") | the rest of this describe block still passed, which is
+   * the point: status counts alone do not catch this.
+   */
+  test('publishes the cancellation sentence immediately too, not only on the next tick-loop wake', () => {
+    const { port, machine } = start();
+    placeWall(machine, 0, 5);
+    const orderId = 'order-0';
+
+    const beforeEvents = port.messages.filter((message) => message.kind === 'simulation/event').length;
+    expect(beforeEvents).toBe(0);
+
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'cancel-0',
+      kind: 'simulation/submit-command',
+      payload: {
+        commandId: 'cancel-command-0',
+        sequence: 1,
+        executeAtTick: 0,
+        command: packCommand({ type: 'CancelBuildOrder', orderId }),
+      },
+    });
+
+    // No tick has run -- `orderStates` above establishes that a paused-drain
+    // command does not advance `Kernel.tick` -- so a message here is not one
+    // that could have ridden a tick-loop wake. It has to be this handler's own
+    // publish.
+    const events = port.messages.filter((message) => message.kind === 'simulation/event');
+    expect(events.length).toBe(1);
+    expect(events[0].payload.event.type).toBe('construction.order-cancelled');
+    expect(events[0].payload.tick).toBe(0);
+  });
+
   test('answers a run of orders given during one pause, one publication each', () => {
     const { port, machine } = start();
     for (let sequence = 0; sequence < 3; sequence += 1) placeWall(machine, sequence, 5 + sequence);
