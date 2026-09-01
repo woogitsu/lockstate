@@ -380,6 +380,32 @@ export interface HudCountsViewModel {
 export type HudSeverity = 'info' | 'warning' | 'danger';
 
 /**
+ * Which of two graded things the game gives up first: the least severe.
+ *
+ * Lower goes first. Written out rather than derived from `HudSeverity`'s union
+ * order, so that reordering that type cannot silently re-rank what the player
+ * loses.
+ *
+ * **It lives here, beside the type, because two surfaces arbitrate by it and
+ * the owner's reason for the second one was that there must not be a third
+ * answer.** It was `SEVERITY_EVICTION_ORDER` in `src/ui/simulation-events.ts`
+ * and private to that module, where #703 ruling 11 made the alerts list evict
+ * `info` before `warning` before `danger`. The owner's ruling of 2026-09-01 on
+ * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)
+ * decision 4 gave the events band a minimum dwell and settled the collision
+ * rule as severity promotion, *"so the band must not acquire a second,
+ * different arbitration rule -- one game, one ordering"*. The literal way to
+ * hold that is one constant both read, so the name is unchanged and only its
+ * address moved: `src/ui/simulation-events.ts` imports it for the cap and
+ * `src/ui/hud/event-band-dwell.ts` imports it for the floor.
+ */
+export const SEVERITY_EVICTION_ORDER: Readonly<Record<HudSeverity, number>> = {
+  info: 0,
+  warning: 1,
+  danger: 2,
+};
+
+/**
  * Where in the in-game calendar something happened, as this game measures it
  * (the owner's decision 2 of 2026-09-01 on
  * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).

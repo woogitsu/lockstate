@@ -20,6 +20,7 @@ import { Localizer, defaultMessageCatalogEn } from '../../src/services/localizat
 import { resolveHudLabelParameters } from '../../src/ui/hud/label-parameters';
 import type { HudAlertViewModel, HudViewModel } from '../../src/ui/hud';
 import { hudEventAlertsFromWorkerMessage, hudEventNoticeFromWorkerMessage } from '../../src/ui/simulation-events';
+import { EVENT_BAND_DWELL_FLOOR_MS } from '../../src/ui/hud/event-band-dwell';
 import { buildCellBlockFixture } from '../helpers/navigation-fixture';
 import {
   deliverAsTheWorkerWould,
@@ -28,6 +29,7 @@ import {
   installBandRecorder,
   letFramesRun,
   readBandRecording,
+  writesOf,
 } from './alert-dwell';
 import { expect, test } from './network-changed-fixture';
 import './ui-harness-api';
@@ -52,11 +54,18 @@ import './ui-harness-api';
  *   production translators turn its events into view models, and they are
  *   delivered into the page the way the worker delivers them. The sentence has
  *   to be on screen at the end.
- * - **The control: the same run with the tick's all-clear put back.** That is
- *   the v0.0.273 stream, and the instrument has to catch it -- written, never
- *   painted. This is the red half of red-then-green, kept permanently rather
- *   than run once, because the fix that makes arm 1 green lives in a different
- *   file and could be reverted without touching this one.
+ * - **The same run with the tick's all-clear put back, and what the band does
+ *   with it now.** That is the v0.0.273 stream. Until ADR 0084 decision 4's
+ *   dwell floor (`src/ui/hud/event-band-dwell.ts`), the instrument caught it
+ *   as a defect -- written, never painted -- and this arm asserted exactly
+ *   that, as a permanent proof that `expectNeverPainted` could see a real
+ *   displacement rather than passing on an empty recording. **The floor
+ *   changes what a correct band does with this stream, so this arm now
+ *   asserts the corrected shape instead: both sentences painted, in order,
+ *   the escape first.** `expectNeverPainted`'s own credibility does not rest
+ *   on this arm alone -- the guard test below still proves it refuses a
+ *   sentence that was never written -- so repointing this arm at the fix
+ *   loses no coverage of the instrument itself.
  * - **The instrument's own vacuity guards**, each exercised: a selector that
  *   matches nothing, a read with no recorder, and a recording of a band nobody
  *   wrote to.
@@ -113,6 +122,20 @@ const FRAME_WINDOW_MS = 600;
 
 /** What this file is willing to call "a player could have read it". Roughly fifteen frames at 60 Hz. */
 const SEEN_MS = 250;
+
+/**
+ * How long to let the recorder run when the assertion needs the dwell floor to
+ * have actually lapsed -- as opposed to `FRAME_WINDOW_MS`, which only needs
+ * enough frames to measure a span that is not going anywhere.
+ *
+ * `EVENT_BAND_DWELL_FLOOR_MS` plus half again, read from
+ * `src/ui/hud/event-band-dwell.ts` rather than restated, so a change to the
+ * floor's duration cannot silently make this window too short and turn a
+ * flaky test into a false pass. The margin is for `setTimeout` jitter on a
+ * shared, loaded machine, which only ever fires *late*, never early -- so a
+ * generous window costs wall-clock time and nothing else.
+ */
+const FLOOR_LAPSE_WINDOW_MS = Math.round(EVENT_BAND_DWELL_FLOOR_MS * 1.5);
 
 /**
  * A real prison losing a real prisoner, and the events it recorded.
@@ -270,6 +293,20 @@ test.describe('the escape sentence has to survive a frame (#700)', () => {
     const events = escapeEvents(false);
     const escape = sentenceFor(events, 'incidents.escape-succeeded');
 
+    /*
+     * Only the terminal notice is delivered, not the fixture's full history
+     * (`incidents.escape-attempt-opened` precedes it, at the same `danger`
+     * severity). `deliverAsTheWorkerWould` delivers a sequence with no real
+     * elapsed time between messages -- faithful to two events on *one* tick,
+     * which is what it exists to reproduce, but not to `responseDeadlineTicks`
+     * (600, `response-system.ts`): in a real session the attempt and its own
+     * lapse are that many ticks apart, 30 s at ×1 and never under 7.5 s at
+     * ×4, both far outside `EVENT_BAND_DWELL_FLOOR_MS`. Replaying the whole
+     * history at zero elapsed time would put the attempt's floor in the way
+     * of its own escape sentence -- a same-severity hold this fixture's real
+     * timing could never produce -- and this test is about whether the
+     * escape sentence survives on screen, not about that pair's own spacing.
+     */
     await page.goto(HARNESS_URL);
     await page.evaluate(() => {
       window.lockstateUiHarness.mountHudShell();
@@ -278,7 +315,10 @@ test.describe('the escape sentence has to survive a frame (#700)', () => {
     // Before the first write. There is no recovering a frame that has gone by,
     // which is exactly why this defect was invisible to the suite.
     await installBandRecorder(page, BAND);
-    await deliverAsTheWorkerWould(page, viewModelsFor(events));
+    await deliverAsTheWorkerWould(
+      page,
+      viewModelsFor(events.filter((event) => event.type === 'incidents.escape-succeeded')),
+    );
     await letFramesRun(page, FRAME_WINDOW_MS);
     const recording = await readBandRecording(page);
 
@@ -298,28 +338,51 @@ test.describe('the escape sentence has to survive a frame (#700)', () => {
     expect(recording.spans.at(-1)?.severity, 'and in the band the owner graded it').toBe('danger');
   });
 
-  test('the instrument catches the defect: with the tick`s all-clear back, it is written and never painted', async ({
+  test('the dwell floor keeps the escape sentence on screen through the same-tick all-clear (ADR 0084 decision 4)', async ({
     page,
   }) => {
     /*
-     * **The control, and the reason it is a permanent test rather than a run
-     * somebody once did.** The arm above is green because of #703 ruling 6, in
-     * `src/simulation/incidents/response-system.ts` -- a file this spec does
-     * not touch. If that gate were removed, the arm above would go red *only*
-     * if the instrument can actually see a displaced sentence. This proves it
-     * can, on the exact stream v0.0.273 produced, every time the suite runs.
+     * **The same reconstructed stream this test used as a control before the
+     * floor existed, now exercising the floor instead.** `#703` ruling 6
+     * (`src/simulation/incidents/response-system.ts`) already stops *this
+     * exact* incident from producing the collision on `main` -- that is arm 1
+     * above -- but Finding 4 of ADR 0084 also found the collision reachable
+     * through two *different* incidents closing on one tick
+     * (`simulation-events.ts:297-304`'s own count of same-tick pairs), which
+     * ruling 6's single-incident guard cannot see. `alsoRecordTheAllClear`
+     * reconstructs that shape directly, deliberately bypassing ruling 6, so
+     * this arm is a test of the band's own defence -- the dwell floor -- and
+     * not of the one kernel path ruling 6 happens to guard.
      */
     const events = escapeEvents(true);
     const escape = sentenceFor(events, 'incidents.escape-succeeded');
     const allClear = sentenceFor(events, 'incidents.all-clear');
 
-    // The premise: the two really are on one tick. Without this the control
-    // could be measuring two events far enough apart to paint, and passing
-    // because the run was wrong rather than because the instrument works.
+    // The premise: the two really are on one tick, so the only thing standing
+    // between the escape sentence and instant displacement is the floor this
+    // test exists to prove -- not a gap in the stream that would let it
+    // survive on timing alone.
     const escapeTick = events.find((event) => event.type === 'incidents.escape-succeeded')?.tick;
     const allClearTick = events.find((event) => event.type === 'incidents.all-clear')?.tick;
-    expect(allClearTick, 'the pre-ruling-6 all-clear shared the escape`s tick, which is the whole mechanism').toBe(
+    expect(allClearTick, 'the reconstructed all-clear shares the escape`s tick, which is the whole mechanism').toBe(
       escapeTick,
+    );
+
+    /*
+     * Delivered without the fixture's own `incidents.escape-attempt-opened`
+     * -- for the reason arm 1's comment gives, and sharper here: that event
+     * is `danger`, the same severity as `incidents.escape-succeeded`, so
+     * replaying it at zero elapsed time would have it occupy the floor and
+     * the waiting slot ahead of the two events this test is actually about,
+     * silently losing the all-clear to a collision the real game can never
+     * produce (the attempt and its own lapse are `responseDeadlineTicks`
+     * apart, never under 7.5 s of wall clock -- arm 1's comment has the
+     * arithmetic). Finding 4's collision is a two-event collision --
+     * `incidents.escape-succeeded` and `incidents.all-clear`, one tick apart
+     * -- and delivering exactly those two is what tests it.
+     */
+    const collision = events.filter(
+      (event) => event.type === 'incidents.escape-succeeded' || event.type === 'incidents.all-clear',
     );
 
     await page.goto(HARNESS_URL);
@@ -328,17 +391,91 @@ test.describe('the escape sentence has to survive a frame (#700)', () => {
     });
 
     await installBandRecorder(page, BAND);
-    await deliverAsTheWorkerWould(page, viewModelsFor(events));
-    await letFramesRun(page, FRAME_WINDOW_MS);
+    await deliverAsTheWorkerWould(page, viewModelsFor(collision));
+    // Long enough for the floor to actually lapse and release the held
+    // all-clear, not merely long enough to sample a few frames -- the claim
+    // below is about what happens *after* the floor, not only during it.
+    await letFramesRun(page, FLOOR_LAPSE_WINDOW_MS);
     const recording = await readBandRecording(page);
 
-    // Written, and never on a screen. The sentence #700 measured at 1 ms, 0 ms
-    // and 0 ms, stated as an assertion.
-    expectNeverPainted(recording, escape, 'the escape sentence, displaced by the same tick`s all-clear');
+    // The finding this amendment closes: the escape sentence is on screen,
+    // for a real stretch a player could read, rather than reaching zero
+    // frames the way it did before the floor existed.
+    expectPaintedFor(recording, escape, SEEN_MS, 'the escape sentence, held by the floor');
 
-    // And what the player reads instead, which is the finding rather than a
-    // detail: a danger sentence about an attempt, then an all-clear.
-    expectPaintedFor(recording, allClear, SEEN_MS, 'the all-clear that took the line');
+    // The all-clear was not dropped either -- it waited, and the floor
+    // released it once it lapsed, exactly as `event-band-dwell.ts` documents.
+    expectPaintedFor(recording, allClear, SEEN_MS, 'the all-clear, released once the floor lapsed');
+
+    // And the order is the one a player actually lived through: the escape
+    // first, the all-clear after -- never the reverse, which is what "the
+    // older sentence is never shown after the newer one" means in practice.
+    const escapeSpan = recording.spans.find((span) => span.text === escape);
+    const allClearSpan = recording.spans.find((span) => span.text === allClear);
+    expect(escapeSpan, 'the escape sentence never reached a span at all').toBeDefined();
+    expect(allClearSpan, 'the all-clear sentence never reached a span at all').toBeDefined();
+    expect(
+      escapeSpan!.firstFrameAt,
+      'the all-clear was painted before the escape it was supposed to wait behind',
+    ).toBeLessThan(allClearSpan!.firstFrameAt);
+
+    // And the all-clear is the last thing the band says once the floor has
+    // lapsed -- nothing is left waiting forever.
+    expect(recording.spans.at(-1)?.text, 'the band did not end the run on the released all-clear').toBe(allClear);
+  });
+
+  test('a more severe event still takes the band immediately, with no floor-imposed delay (ADR 0084 decision 4)', async ({
+    page,
+  }) => {
+    /*
+     * The other half of the owner's ruling: the floor protects a sentence
+     * from an *equal or less severe* one, never from a more severe one. Two
+     * synthetic events stand in for the real kernel here -- unlike the arms
+     * above, what matters is the severity gap between them
+     * (`EVENT_PRESENTATION` in `src/ui/simulation-events.ts`), not any
+     * particular incident -- an `info` discharge, then a `danger` riot,
+     * delivered back to back the way `deliverAsTheWorkerWould` always
+     * delivers, which is well inside any floor a discharge could have armed.
+     */
+    const discharged: SimulationEvent = { sequence: 1, tick: 100, type: 'prisoners.discharged', count: 2 };
+    const riot: SimulationEvent = { sequence: 2, tick: 100, type: 'incidents.riot-opened', participantCount: 12 };
+    const events = [discharged, riot];
+    const discharge = sentenceFor(events, 'prisoners.discharged');
+    const riotSentence = sentenceFor(events, 'incidents.riot-opened');
+
+    await page.goto(HARNESS_URL);
+    await page.evaluate(() => {
+      window.lockstateUiHarness.mountHudShell();
+    });
+
+    await installBandRecorder(page, BAND);
+    await deliverAsTheWorkerWould(page, viewModelsFor(events));
+    // Deliberately short, and well under the floor: if the riot had to wait
+    // for the discharge's floor to lapse, it could not yet have reached
+    // `SEEN_MS` of dwell inside this window, and the assertion below would
+    // fail rather than merely running long enough to hide a delay.
+    await letFramesRun(page, SEEN_MS + 100);
+    const recording = await readBandRecording(page);
+
+    expect(EVENT_BAND_DWELL_FLOOR_MS, 'the window below has to be comfortably under the floor to prove immediacy').toBeGreaterThan(
+      SEEN_MS + 100,
+    );
+
+    // The riot reached the band and stood long enough to count as seen,
+    // inside a window too short to have waited out the discharge's floor --
+    // the only way that is possible is that severity promoted it at once.
+    expectPaintedFor(recording, riotSentence, SEEN_MS, 'the riot, which must outrank the discharge already on the line');
+
+    // And it is the last thing the band says, not a flash that the discharge
+    // then reclaimed -- a `danger` sentence does not lose the line back to an
+    // `info` one still within its own floor.
+    expect(recording.spans.at(-1)?.text, 'the discharge displaced the riot that is supposed to outrank it').toBe(
+      riotSentence,
+    );
+
+    // The discharge was real and was written -- this is a promotion, not a
+    // suppression of the first event, which is a different feature.
+    expect(writesOf(recording, discharge), 'the discharge was never written, so nothing was actually promoted past').toBeGreaterThan(0);
   });
 
   test('an instrument that observed nothing fails instead of passing', async ({ page }) => {
