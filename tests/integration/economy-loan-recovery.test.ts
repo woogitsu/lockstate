@@ -316,26 +316,29 @@ describe('what a loan does to the locked position, and what it does not', () => 
    * by the thirteen orders and by nothing else: the same 312 segments without
    * the tail leave the facility untouched at 40.
    *
-   * **`CancelBuildOrder` is not the control**, and the attempt is recorded
-   * rather than dropped: cancelling all thirteen immediately after placing them
-   * still ends at -1,000, because `procureQueuedMaterials` buys on the placing
-   * tick and `cancelOrder` returns *bricks*, never money (ADR 0076). So a player
-   * who draws thirteen segments too many and undoes them keeps the debt and gets
-   * a pile of brick -- which is the same silence this describe is about, one step
-   * further on.
-   *
-   * **The mechanism half of that paragraph is false and the attempt has not
-   * been re-run, so what it now does is unmeasured and is not guessed at
-   * here.** *"`cancelOrder` returns bricks, never money"* was overtaken twice:
-   * by the owner's ruling 20 of 2026-08-31 (#746), which makes the four states
-   * before the crew starts give back **money**, and by the ruling of
-   * 2026-09-01 (ADR 0076's amendment of that date), which makes a `'completed'`
-   * order give back nothing. Thirteen orders cancelled immediately after being
-   * placed are in the first group, so the balance almost certainly does move
-   * now -- but nobody has run it since, and the sentence is marked rather than
-   * replaced with an arithmetic that has not been measured. **What this case
-   * actually asserts is untouched by any of it**: it never places the thirteen
-   * orders at all, and the 40 below is the control.
+   * **Re-measured on 2026-09-01: `CancelBuildOrder` is still not the control,
+   * and now for a different reason than the one first written here.**
+   * *"`cancelOrder` returns bricks, never money"* was true when this case was
+   * written and false the moment the owner's ruling 20 landed (#746, ADR
+   * 0076's amendment): a `materials-pending` order -- which is what all
+   * thirteen tail orders are, twenty days on, per `ConstructionSystem.update`'s
+   * unconditional `'approved'` -> `'materials-pending'` transition -- now
+   * refunds money rather than bricks. The case below has been run rather than
+   * guessed at, and the balance it measures is unchanged: still -1,000. Not
+   * because the currency change did not happen, but because there is nothing
+   * in either currency to hand back. ADR 0081 (#725) funds the queue one whole
+   * order at a time and skips an order the treasury cannot cover in full
+   * (`ConstructionSystem.update`), and the thirteen tail orders are exactly
+   * what it skips -- none of them ever reached `procureQueuedMaterials`, so
+   * none holds a delivery in flight. `cancelOrder`'s `refundSurplusOf` pays
+   * back only the surplus a cancellation creates between demand
+   * (`demandedQuantityOf`) and what is actually held or in flight
+   * (`ConstructionProcurementSink.heldOrInFlightOf`), and both are zero for
+   * these thirteen, before and after every one of them is cancelled. So the
+   * sentence this case needed was never about which currency `cancelOrder`
+   * pays in -- it is that **an order the queue never funded returns nothing,
+   * in either currency** -- and that is what is measured below, not guessed
+   * at.
    */
   it('leaves the facility untouched when the thirteen orders are never placed', () => {
     const runtime = createNewSimulationRuntime(SEED, { loanTerms: PROBE_TERMS });
@@ -355,7 +358,10 @@ describe('what a loan does to the locked position, and what it does not', () => 
     for (const orderId of cancelled.unfunded) send(cancelled.runtime, { type: 'CancelBuildOrder', orderId });
     expect(
       cancelled.runtime.treasury.balanceMinorUnits,
-      'cancelling after the fact gives bricks back, never money',
+      // Not "bricks, never money" any more (#746) -- the treasury balance is
+      // unchanged because none of the thirteen was ever funded, so there is
+      // no delivery in flight for `cancelOrder` to turn into a refund.
+      'cancelling after the fact gives back nothing, because nothing was ever spent on the unfunded tail',
     ).toBe(-STANDING_SHORTFALL + 40);
   }, 60_000);
 
