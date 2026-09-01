@@ -17,6 +17,7 @@ export {
   type PayrollSnapshot,
   type PayrollStaffSource,
 } from './payroll';
+export { InsolvencyRungSystem } from './insolvency-rung-system';
 export {
   JUST_IN_TIME_ORDER_ID_PREFIX,
   JustInTimeMaterialsService,
@@ -28,6 +29,8 @@ export {
   INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS,
   INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
   INSOLVENCY_RUNG_FLOORS_MINOR_UNITS,
+  INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS,
+  STARTER_RUNG_FLOORS_MINOR_UNITS,
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
   Treasury,

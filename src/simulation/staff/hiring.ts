@@ -140,8 +140,12 @@ export class StaffHiringService {
    * exactly as it found them, so the money is spent only once the role has
    * resolved and the roster has been shown to have room. There is no ordering
    * of these in which money leaves and nobody arrives.
+   *
+   * `isFreshUnfurnishedPrison` defaults to `false` for the reason
+   * `rungFloorMinorUnits` gives: `createSessionCommandHandler`'s `HireStaff`
+   * branch is the one caller that computes it live and passes it on.
    */
-  public hire(request: StaffHireRequest): StaffHireOutcome {
+  public hire(request: StaffHireRequest, isFreshUnfurnishedPrison = false): StaffHireOutcome {
     const role = this.staffRoles.getById(request.staffRoleId);
     if (role === undefined) return { kind: 'refused', reason: 'unknown-role' };
 
@@ -210,7 +214,9 @@ export class StaffHiringService {
      * its own — earlier than deliveries, say — is marked in the amendment as
      * the owner's and is not decided here.
      */
-    if (!this.treasury.spend(paidMinorUnits, 'hiring')) return { kind: 'refused', reason: 'insufficient-funds' };
+    if (!this.treasury.spend(paidMinorUnits, 'hiring', isFreshUnfurnishedPrison)) {
+      return { kind: 'refused', reason: 'insufficient-funds' };
+    }
 
     return { kind: 'hired', entityId: this.roster.hire(role.id, request.originTile), paidMinorUnits };
   }

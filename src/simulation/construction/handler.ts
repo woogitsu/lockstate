@@ -1,3 +1,4 @@
+import type { SimulationEventLog } from '../events';
 import type { CommandHandler } from '../kernel/kernel';
 import { unpackCommand } from '../protocol/commands';
 import {
@@ -25,10 +26,38 @@ import type { ConstructionSystem } from './system';
  * the defect #261 exists to remove. A caller with no interest in refusals
  * constructs a `RefusalLog` and ignores it, which costs one object and states
  * the choice.
+ *
+ * @param events Where a cancellation, an undo or a redo that **succeeded** is
+ * recorded so the player is told it worked (the owner's ruling of 2026-09-01 on
+ * [#749](https://github.com/matmaxalez/lockstate/issues/749)).
+ *
+ * **Required for `refusals`' reason, and the defect it answers is that reason's
+ * mirror.** Until #749 these three controls said nothing at all when they
+ * succeeded: `docs/research/2026-09-01-what-act-six-never-reached.md` D2
+ * measured it by playing, and found the only feedback was a row vanishing from
+ * a fold that starts collapsed. A refusal sink with no success sink meant this
+ * handler could report every way a command could fail and no way it could work.
+ *
+ * **Why the success is recorded here and not inside `ConstructionSystem`.**
+ * `cancelOrder` is reached from four places -- this handler, `undo()`,
+ * `withdrawOrdersAwaitingMaterial`, and `ObjectPlacementService`'s removal of
+ * an object whose order has not finished -- and only the first is the press
+ * #749 is about. Recording inside the system would announce a cancellation per
+ * order every time #687's withdrawal walked the queue after a cancelled
+ * delivery, which is fifteen sentences for one press. The command boundary is
+ * where "the player asked for *this*" is known.
+ *
+ * **The fourth of those is a finding rather than a footnote**, and it is left
+ * for the owner rather than decided here: `RemoveObject` on a tile whose object
+ * is still being built cancels that build order and says nothing, which is D2's
+ * defect one control over. It is outside the four #749 names, and giving it a
+ * sentence means choosing between the two this file already has -- or writing a
+ * third -- which is copy, and copy is the owner's.
  */
 export function createConstructionCommandHandler(
   constructionSystem: ConstructionSystem,
   refusals: RefusalLog,
+  events: SimulationEventLog,
 ): CommandHandler {
   return (command, context) => {
     const simCommand = unpackCommand(command.payload as never);
@@ -92,20 +121,61 @@ export function createConstructionCommandHandler(
         break;
       }
 
-      case 'CancelBuildOrder':
+      case 'CancelBuildOrder': {
+        /*
+         * The state is read **before** the cancellation and used after it, and
+         * the ordering is the whole of what makes two sentences possible: every
+         * cancelled order reads `'cancelled'` afterwards, so the distinction
+         * the owner's ruling of 2026-09-01 (#749) splits the sentence on --
+         * money back, or the crew had started and what it used is gone -- is
+         * gone the moment `cancelOrder` returns. Read from `getOrder` rather
+         * than through a new return value on `cancelOrder`, because the ruling
+         * declines that plumbing: the *amount* stays unreachable here and
+         * neither sentence names one.
+         *
+         * **The research this implements said the handler already read the
+         * state, and it did not** --
+         * `docs/research/2026-09-01-copy-variants-for-the-owner.md` section 5a,
+         * *"read by the handler before `cancelOrder` is called"*.
+         * `cancelOrder` reads it privately; this line is what makes the claim
+         * true. The correction does not change the ruling -- the state was
+         * reachable, one level down -- and it is recorded rather than quietly
+         * fixed.
+         */
+        const stateAtCancellation = constructionSystem.getOrder(simCommand.orderId)?.state;
         try {
           constructionSystem.cancelOrder(simCommand.orderId);
         } catch {
           // Cancellation is intentionally idempotent at the command boundary.
+          break;
         }
+        // Reached only when `cancelOrder` returned, which is the one moment the
+        // cancellation is a fact. `stateAtCancellation` is defined here by
+        // construction -- `cancelOrder` throws for an id it cannot find -- and
+        // the guard states that to the compiler rather than doubting it.
+        if (stateAtCancellation !== undefined) events.recordBuildOrderCancelled(stateAtCancellation, context.tick);
         break;
+      }
 
+      /*
+       * Undo and Redo say so when they worked, and say nothing when they did
+       * not (#749).
+       *
+       * The `boolean` is the whole reason those methods now answer one: a press
+       * against an empty history reverses nothing, and confirming a reversal
+       * that did not happen is the promise the code does not keep that
+       * `AGENTS.md`'s fourth exclusion reserves. Neither sentence names a count
+       * -- the owner's ruling, because an undo reverses a whole transaction and
+       * naming one order would be a small lie whenever a run of several was
+       * taken back. The transaction size is known inside `ConstructionSystem`
+       * and is deliberately left there.
+       */
       case 'Undo':
-        constructionSystem.undo();
+        if (constructionSystem.undo()) events.recordConstructionUndone(context.tick);
         break;
 
       case 'Redo':
-        constructionSystem.redo();
+        if (constructionSystem.redo()) events.recordConstructionRedone(context.tick);
         break;
 
       // `ZoneRoom` is deliberately absent. It used to have a branch here that

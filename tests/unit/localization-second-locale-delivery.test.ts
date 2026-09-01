@@ -61,7 +61,7 @@ function pseudoChunk(): unknown {
 describe('a second locale reaches a running page over the real catalogue (#662)', () => {
   it('changes every one of the 588 messages, and none of them keeps its English', () => {
     const before = bundledLocalizer();
-    expect(before.format('hud.clock.speed', { speed: 2 })).toBe('Speed 2x');
+    expect(before.format('hud.clock.speed', { speed: 2 })).toBe('Speed 2×');
 
     const loader = createChunkCatalogLoader({ [PSEUDO_LOCALE]: () => Promise.resolve(pseudoChunk()) });
     return switchLocale(before, loader, PSEUDO_LOCALE).then((outcome) => {
@@ -126,7 +126,7 @@ describe('a second locale reaches a running page over the real catalogue (#662)'
       { requestedLocale: PSEUDO_LOCALE, message: 'Failed to fetch dynamically imported module' },
     ]);
     // Not a page of raw keys and not a blank screen.
-    expect(outcome.localizer.format('hud.clock.speed', { speed: 2 })).toBe('Speed 2x');
+    expect(outcome.localizer.format('hud.clock.speed', { speed: 2 })).toBe('Speed 2×');
   });
 
   it('refuses a catalogue of the wrong version whole, over the real key set', async () => {
@@ -142,7 +142,7 @@ describe('a second locale reaches a running page over the real catalogue (#662)'
 
     expect(outcome.changed).toBe(false);
     expect(failures).toHaveLength(1);
-    expect(outcome.localizer.format('hud.clock.speed', { speed: 2 })).toBe('Speed 2x');
+    expect(outcome.localizer.format('hud.clock.speed', { speed: 2 })).toBe('Speed 2×');
   });
 
   it('composes with `selectSupportedLocale`, which is how a picker asks what exists', async () => {
@@ -186,7 +186,7 @@ describe('a second locale reaches a running page over the real catalogue (#662)'
     // chunk is published for `en` and none ever will be.
     const home = await switchLocale(bundledLocalizer(), loader, DEFAULT_LOCALE);
     expect(home.failure, 'returning to the bundled default must not fail').toBeUndefined();
-    expect(home.localizer.format('hud.clock.speed', { speed: 2 })).toBe('Speed 2x');
+    expect(home.localizer.format('hud.clock.speed', { speed: 2 })).toBe('Speed 2×');
     expect(requests, 'returning to the bundled default must not fetch anything').toBe(0);
 
     await switchLocale(bundledLocalizer(), loader, PSEUDO_LOCALE);

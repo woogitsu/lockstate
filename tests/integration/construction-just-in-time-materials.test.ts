@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, procurableMaterial } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
 import {
-  INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
+  INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS,
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
 } from '../../src/simulation/economy';
 import { projectBuildQueue } from '../../src/simulation/presentation';
@@ -286,14 +286,29 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
    * The floor is deliberately **not** closed with `setOverdraftFloor(0)` to make
    * the old figures work again. That would leave every case here exercising a
    * configuration no session has.
+   *
+   * **The owner's second ruling on #771 (2026-09-01) moved the *route* to
+   * `-1,930` again, without moving `-1,930` itself.** This runtime never zones
+   * a room, so it stays "fresh, unfurnished" for its whole life
+   * (`RoomInstanceRegistry.totalResidentCapacity === 0`) and every press below
+   * is judged at the shallower starter rung
+   * (`INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`, -1,185), not the
+   * mature one this helper used to press to. Pressing to the mature rung's own
+   * -1,250 in one purchase is refused outright for a prison this fresh --
+   * exactly the mechanism `tests/integration/economy-liquidity-hard-lock.test.ts`
+   * exercises -- so the plank count has to be the largest one the *starter*
+   * rung admits, and the wage-rung spend that follows is unaffected (wages'
+   * rung is not moved by freshness) and still lands on the same `-1,930`.
    */
   function prisonWith(balance: number): SimulationRuntime {
     const runtime = createNewSimulationRuntime(SEED);
-    // As far as the delivery rung allows, in whole planks, and the rest at the
-    // wage rung. Planks because no wall order asks for one, so the stock this
-    // leaves behind cannot fund anything the cases below place.
+    // As far as the *starter* delivery rung allows (this runtime never
+    // furnishes a room, so it is judged there for its whole life -- see the
+    // docblock above), in whole planks, and the rest at the wage rung. Planks
+    // because no wall order asks for one, so the stock this leaves behind
+    // cannot fund anything the cases below place.
     const pressable = Math.floor(
-      (TREASURY_STARTING_BALANCE_MINOR_UNITS - INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS) / PLANK_PRICE,
+      (TREASURY_STARTING_BALANCE_MINOR_UNITS - INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS) / PLANK_PRICE,
     );
     send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: PLANK, quantity: pressable });
     const rest = runtime.treasury.balanceMinorUnits - balance;
@@ -320,8 +335,13 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
    * What cancelling `prisonWith`'s own delivery gives back: the press, and not
    * the wage-rung stretch of the drain, which is money the prison spent rather
    * than money it has on order.
+   *
+   * **24,200, not 24,265, since the owner's second ruling on #771
+   * (2026-09-01).** `prisonWith`'s press is now 402 planks against the starter
+   * rung rather than 403 against the mature one (see its own docblock), so
+   * `-1,930 + 402 x 65 = 24,200` is what the cancelled delivery hands back.
    */
-  const REFUNDED_BALANCE = 24_265;
+  const REFUNDED_BALANCE = 24_200;
 
   it('records the refusal on the press, keeps the order, and says how much is missing', () => {
     // 40 in the bank against a wall that costs 80.
@@ -468,7 +488,8 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
      * press as far as the delivery rung, and the rest at the wage rung -- and
      * only the press is a delivery there is anything to cancel. What the refund
      * has to do for this case is put the prison back above a wall's 80, and it
-     * does that with 24,265 to spare.
+     * does that with 24,200 to spare (see `REFUNDED_BALANCE`'s own docblock for
+     * why 24,200 and not 24,265).
      */
     send(runtime, { type: 'CancelMaterialPurchase', orderId: 'order-buy' });
     expect(runtime.treasury.balanceMinorUnits).toBe(REFUNDED_BALANCE);
@@ -593,19 +614,30 @@ describe('a placed object is a build order too (ADR 0028 decision 4)', () => {
      * > prison can spend, leaving **20** of the facility -- so a plank is
      * > unaffordable by 45 and the refusal this case is about is reached again.
      *
-     * **And the owner's ruling 19 of 2026-08-31 moved it once more.** A press
-     * stops at -1,250 and the queue at -2,000 (ADR 0017's "Amendment,
-     * 2026-09-01"), so 656 bricks is the largest press a new prison can make and
-     * it leaves 760 of construction room -- ten times what this case needs. The
-     * rest is taken at the wage rung, which is the only one that reaches: 740
-     * more puts the balance at -1,980 with **20** of construction room, the same
-     * twenty, one rung up. The prison holds bricks a bed cannot use either way,
-     * which is the property the fixture was chosen for.
+     * **The owner's ruling 19 of 2026-08-31 moved it once more, and the
+     * equalisation amendment on #771 moved the queue's own rung to meet the
+     * press's** (`INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`, now -1,250,
+     * not the -2,000 an earlier version of this comment named).
+     *
+     * **The owner's second ruling on #771 (2026-09-01) moves it a third time,
+     * and this is the live derivation.** `prisonWithACell` zones a room but
+     * never places a bed, so `totalResidentCapacity` stays `0` and this
+     * runtime is judged at the *starter* delivery rung for its whole life
+     * (`INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`, -1,185, not the
+     * mature -1,250) -- exactly `STARTER_BRICKS_TO_THE_RUNG` in
+     * `tests/integration/economy-liquidity-hard-lock.test.ts`. So 654 bricks,
+     * not 656, is the largest press this prison can make: `25,000 - 654 x 40 =
+     * -1,160`. The rest is taken at the wage rung, which freshness does not
+     * move: 70 more puts the balance at -1,230, twenty short of the
+     * (unaffected) construction rung's -1,250 -- the same twenty this case has
+     * always measured, at the rung the queue itself now sits at. The prison
+     * holds bricks a bed cannot use either way, which is the property the
+     * fixture was chosen for.
      */
-    send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 656 });
-    expect(runtime.treasury.balanceMinorUnits, 'the deepest a press reaches').toBe(-1_240);
-    expect(runtime.treasury.spend(740, 'wages'), 'and the rest, the way a payday would').toBe(true);
-    expect(runtime.treasury.balanceMinorUnits).toBe(-1_980);
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 654 });
+    expect(runtime.treasury.balanceMinorUnits, 'the deepest a press reaches while fresh and unfurnished').toBe(-1_160);
+    expect(runtime.treasury.spend(70, 'wages'), 'and the rest, the way a payday would').toBe(true);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-1_230);
     expect(runtime.treasury.canAfford(PLANK_PRICE, 'construction'), 'a plank is 65 and 20 of room is left').toBe(false);
 
     send(runtime, { type: 'PlaceObject', orderId: 'order-bed', definitionId: 'bed-wooden', x: CELL_RECT.x, y: CELL_RECT.y });
@@ -615,7 +647,7 @@ describe('a placed object is a build order too (ADR 0028 decision 4)', () => {
     // `construction.materials-unfunded`, not the `purchase.*` a *Buy* press
     // would get. That is the whole reason `reportMaterialsFunding` is exported.
     expect(runtime.refusals.last?.reason).toBe('construction.materials-unfunded');
-    expect(runtime.treasury.balanceMinorUnits).toBe(-1_980);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-1_230);
     expect(runtime.construction.getOrder('order-bed')?.state, 'and the bed is still the player\'s').not.toBe('failed');
   });
 });
@@ -995,32 +1027,50 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
     }
 
     /*
-     * **The owner's ruling 19 of 2026-08-31 moves the gesture 6 segments
-     * shallower and does not remove it.** The queue spends at the
+     * **The owner's ruling 19 of 2026-08-31 moved the gesture 6 segments
+     * shallower and did not remove it.** The queue spent at the
      * `'construction'` rung (ADR 0017's "Amendment, 2026-09-01"), so its power
-     * is 25,000 + 2,000 = 27,000 rather than 27,500:
+     * was 25,000 + 2,000 = 27,000 rather than 27,500:
      *
      *   floor(27,000 / 80) = 337 wall segments, leaving 40 of the rung.
      *
-     * `343` and `-2,440` are what the paragraphs above measured and are kept
-     * there; the finding is unchanged in every respect that matters, and it is
-     * worth saying which way it moved: the drag locks the prison **sooner** now,
-     * with 500 of the facility still standing that only a payday can reach.
+     * `343` and `-2,440` are what the paragraphs above measured and were kept
+     * there; that finding was unchanged in every respect that mattered, and it
+     * was worth saying which way it moved: the drag locked the prison
+     * **sooner** than under the standing overdraft alone, with 500 of the
+     * facility still standing that only a payday could reach.
+     *
+     * **The owner's ruling on #771 (2026-09-01, ADR 0017's equalisation
+     * amendment) moves it again, 9 segments shallower still, and this time
+     * the "500 of the facility only a payday can reach" is gone.**
+     * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` now reads the same
+     * -1,250 the delivery rung does, so the queue's spending power is
+     * 25,000 + 1,250 = 26,250 rather than 27,000:
+     *
+     *   floor(26,250 / 80) = 328 wall segments, leaving 10 of the rung.
+     *
+     * The two prior figures are kept above for the same reason every
+     * superseded figure in this repository is kept: the finding survives and
+     * only the number under it moves. See
+     * `tests/integration/economy-liquidity-hard-lock.test.ts` for what this
+     * means for ADR 0075's lock on the exact fixture that used to escape it.
      */
-    expect(funded, '(25,000 + 2,000) / 80').toBe(337);
-    expect(firstRefusedAt, 'zero-based, so the 338th wall is the first the game refuses to buy for').toBe(337);
-    expect(runtime.treasury.balanceMinorUnits, '25,000 - 337 x 80').toBe(-1_960);
+    expect(funded, '(25,000 + 1,250) / 80').toBe(328);
+    expect(firstRefusedAt, 'zero-based, so the 329th wall is the first the game refuses to buy for').toBe(328);
+    expect(runtime.treasury.balanceMinorUnits, '25,000 - 328 x 80').toBe(-1_240);
     expect(
       runtime.treasury.canAfford(PLANK_PRICE, 'construction'),
-      'and the 40 of the construction rung still standing is below the 65 that would end this',
+      'and the 10 of room still standing is below the 65 that would end this',
     ).toBe(false);
 
     // The lock itself, confirmed rather than inferred: the one thing that
-    // would restart the income line is refused -- and at -1,960 it is refused
-    // by the *delivery* rung, 710 before the queue would have run out.
+    // would restart the income line is refused -- and, since #771, it is
+    // refused by the *same* rung the queue just stopped at, not by a deeper
+    // one 710 minor units further down. There is no depth left at which the
+    // queue can do something a Buy press cannot.
     send(runtime, { type: 'PurchaseMaterials', orderId: 'order-plank', itemId: PLANK, quantity: 1 });
     expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
-    expect(runtime.treasury.balanceMinorUnits).toBe(-1_960);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-1_240);
   });
 });
 

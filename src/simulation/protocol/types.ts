@@ -621,6 +621,62 @@ const _statusCountsIncidentTypeMirrorsIncidentType: AssertSame<IncidentType, z.i
 void _statusCountsIncidentTypeMirrorsIncidentType;
 
 /**
+ * A way the prison currently *is*, rather than a thing that just happened to
+ * it -- [ADR 0087](../../../docs/adr/0087-whether-a-refusal-is-an-event-or-a-condition.md)
+ * decision 2, and the amendment of 2026-09-01 that widened decision 1's
+ * vocabulary from a recommendation into the owner's ruling on issue
+ * [#767](https://github.com/matmaxalez/lockstate/issues/767).
+ *
+ * **A closed union, not a count and not a level with one current value.**
+ * `refusal` and `zoning` below are each *one* current fact, so an optional
+ * field says "no such fact yet". A condition set is several facts standing at
+ * once by construction -- the −1,220 → −2,180 payroll tick #767 measured
+ * crosses `treasury.deliveries-refused` and `treasury.construction-refused`
+ * in the same tick, and a shape that could only say one of them would be
+ * exactly ADR 0087's Cost 4 (one refusal reason, two rungs) repeated one
+ * layer up.
+ *
+ * **Recomputed from live state at every publication, never written by a
+ * handler.** Unlike `RefusalReason`, nothing here has an ordinal, a
+ * supersession key or a slot in any log -- see
+ * `computeStandingPrisonConditions` in
+ * `src/simulation/presentation/status-strip-projection.ts` for the pure
+ * function this union's members are read off of. Absence of an id from the
+ * published set means that condition is not standing *now*, which is also
+ * why nothing here is snapshotted: the state each member reads (the
+ * treasury balance, the just-in-time procurement report, the intake
+ * pipeline) is already in the save, so a restore re-derives the same set on
+ * its first publication rather than needing one of its own.
+ *
+ * **The first two are what the code had already built as pulled read
+ * models before this union existed** -- `BuildQueueMaterialsFundingViewModel.shortfallMinorUnits`
+ * (`src/simulation/presentation/construction-projection.ts`) and
+ * `PrisonerPopulationCountsViewModel.waitingWithoutPlace`
+ * (`src/simulation/presentation/prisoner-projection.ts`) -- moved from a
+ * surface that must be opened to one that need not be, which is issue #629's
+ * requirement and ADR 0087's own framing of option 4. **The last two are the
+ * owner's 2026-09-01 ruling on #767**, which went further than ADR 0087's own
+ * recommendation: the standing indicator *and* a crossing notice (see
+ * `SimulationEventLog.recordInsolvencyRungCrossed`), because a rung crossed
+ * with nobody watching the FUNDS chip is exactly what #767 measured.
+ *
+ * Declared in the ascending-id order `docs/DETERMINISM.md`'s canonical-order
+ * rule asks for, which `computeStandingPrisonConditions` emits in rather than
+ * sorting on every call -- the four members are authored in that order
+ * already, so iterating this array *is* iterating in canonical order.
+ */
+export const PRISON_CONDITIONS = [
+  'construction.unfunded',
+  'intake.no-place',
+  'treasury.construction-refused',
+  'treasury.deliveries-refused',
+] as const;
+
+export type PrisonCondition = (typeof PRISON_CONDITIONS)[number];
+
+const prisonConditionSchema = z.enum(PRISON_CONDITIONS);
+
+/**
  * The `counts` block of the status-strip projection
  * (`src/simulation/presentation/status-strip-projection.ts`), field for
  * field.
@@ -631,14 +687,19 @@ void _statusCountsIncidentTypeMirrorsIncidentType;
  * open, and `IncidentType` is a stable id (ADR 0011), not a count, so the
  * field this fix needed is not a `countSchema` member. What the sentence was
  * really protecting still holds and is worth restating precisely now that a
- * count is no longer the whole of it: **no field here is a list, an object or
- * anything of unbounded size** -- every member is a scalar, a `countSchema`
- * integer or a small closed string enum, so the payload's size is still
- * capacity-independent. It is also the one field in this object that is
- * `.optional()` rather than required, for the reason its own comment gives.
- * The projection also computes a clock position and the active regime
- * blocks; neither is carried here (see `simulation/status-counts` below for
- * why).
+ * count is no longer the whole of it: **no field here is an object of
+ * unbounded size** -- every member is a scalar, a `countSchema` integer, a
+ * small closed string enum, or (since ADR 0087 decision 2) an array bounded
+ * by a closed union's own size, so the payload's size is still
+ * capacity-independent. **This sentence read "no field here is a list" until
+ * `conditions` below, and the clause is corrected rather than the field left
+ * out**: `PRISON_CONDITIONS` has four members today and the array can never
+ * hold more than that many, so the property the old sentence was protecting
+ * -- that nothing here grows with the population -- still holds. It is also
+ * one of two fields in this object that are `.optional()` rather than
+ * required, for the reason each one's own comment gives. The projection also
+ * computes a clock position and the active regime blocks; neither is carried
+ * here (see `simulation/status-counts` below for why).
  *
  * `.strict()` means the two definitions cannot drift apart quietly: a count
  * added to the projection and not added here is rejected by the main
@@ -1082,6 +1143,33 @@ export const statusCountsSchema = z
      * the wages and decision 8's ladder would never reach its bottom rung.
      */
     unpaidWagesMinorUnits: countSchema,
+    /**
+     * The ways the prison currently *is*, as a set of `PrisonCondition`
+     * members ([ADR 0087](../../../docs/adr/0087-whether-a-refusal-is-an-event-or-a-condition.md)
+     * decision 2). See `PrisonCondition` above for what a member means and
+     * why this is a set rather than a level like `refusal` below.
+     *
+     * **Optional for the reason `treasuryOverdraftFloorMinorUnits` above is**:
+     * this object is `.strict()` and a fixture written before this field
+     * existed decodes whole only if the key may be missing. `conditions` is
+     * nonetheless **always published** by `projectStatusStrip` -- an empty
+     * array when nothing is standing, never an absent key -- exactly as that
+     * field is always published though the schema admits its absence.
+     *
+     * In canonical (ascending id) order, per `docs/DETERMINISM.md`, and
+     * bounded above by `PRISON_CONDITIONS.length`: the array can name each
+     * member at most once, so a producer that somehow duplicated one would be
+     * refused here rather than accepted and misread as two standing facts.
+     *
+     * **Nothing in the save.** Every member is recomputed from state the save
+     * already carries -- the treasury balance, the just-in-time procurement
+     * report, the intake pipeline -- so a restore re-derives the same set on
+     * its first publication instead of needing a slot of its own.
+     *
+     * **`HUD_VIEW_MODEL_SCHEMA_VERSION` is deliberately not bumped**, for the
+     * reason spelled out on `treasuryMinorUnits` above.
+     */
+    conditions: z.array(prisonConditionSchema).max(PRISON_CONDITIONS.length).optional(),
   })
   .strict();
 
@@ -1527,9 +1615,59 @@ const snapshotMessageSchema = z
  * `tick` is the tick the event *happened* on, which is not the `tick` on the
  * envelope around it: the publication reports it on the next tick-loop wake,
  * and the distinction is the same one `refusalSchema` draws.
+ *
+ * ## Five members say what the prison did *because the player asked*, and that
+ * is a widening of the paragraph above (issue #749)
+ *
+ * Every member up to #749 was something the prison did on its own -- a
+ * sentence ended, a payday failed, a fight broke out -- and the heading above
+ * still describes those. The five `construction.*` and `economy.delivery-cancelled`
+ * members are the prison carrying out an instruction: a queued order
+ * cancelled, a delivery cancelled, the build history walked back or forward.
+ *
+ * **The widening is a consequence of the owner's ruling of 2026-09-01 on
+ * [#749](https://github.com/matmaxalez/lockstate/issues/749) rather than a
+ * decision taken here.** That ruling puts the four success sentences in the
+ * HUD's events band (`.hud__event`) rather than in the refusal band, because
+ * the refusal band is permanently red and a success painted there would
+ * displace the last refusal the player may not have read. `simulation/event`
+ * is the only channel that reaches that band, and success is not knowable on
+ * the main thread -- `SimulationCommandSender.submit` is fire-and-forget, and
+ * whether a cancellation found an order, whether an undo had a transaction to
+ * pop, and how much a cancelled delivery refunded are all facts this side of
+ * the worker boundary owns. So the sentences travel here or they do not travel.
+ *
+ * **What it costs is stated rather than hidden**: the events band has no
+ * arbitration -- *"the newest event is the one on the line"*
+ * (`applyEventNotice`, `src/ui/hud/hud.ts`) -- so a success sentence can now
+ * displace a simulation event the player has not read. That collision is
+ * exactly the subject of [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)
+ * decision 4 -- **the one decision of that ADR the owner did not take on
+ * 2026-09-01, and it is still open**; its own Status clause says so and warns
+ * that "all four decisions were taken" is the sentence a reader wrongly forms
+ * from that day's commit. No dwell rule is invented here to paper over the
+ * collision, because inventing one would decide that question from inside
+ * implementation code.
+ *
+ * **The bound on volume is the player's hands rather than the tick loop.**
+ * `MAX_EVENT_ALERT_ROWS`'s docblock argues that a *burst* is impossible by
+ * construction because every producer is a scheduled system that emits at most
+ * once per pass. These five are not: a player can press Undo eight times in a
+ * second. What still bounds the damage is the eviction rule the same module
+ * runs -- `SEVERITY_EVICTION_ORDER` drops `'info'` first -- so a run of
+ * confirmations evicts itself and other `'info'` rows before it evicts a riot.
+ * Both halves are recorded because the first is a claim in that file that these
+ * members falsify.
  */
 export const SIMULATION_EVENT_TYPES = [
+  'construction.order-cancelled',
+  'construction.order-cancelled-underway',
+  'construction.redone',
+  'construction.undone',
   'contraband.discovered',
+  'economy.construction-refused',
+  'economy.deliveries-refused',
+  'economy.delivery-cancelled',
   'economy.wages-unpaid',
   'incidents.all-clear',
   'incidents.assault-opened',
@@ -1661,6 +1799,65 @@ const wagesUnpaidEventSchema = z
     ...simulationEventEnvelopeFields,
     type: z.literal('economy.wages-unpaid'),
     unpaidWagesMinorUnits: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+  })
+  .strict();
+
+/**
+ * The treasury just fell to or below the deliveries rung
+ * (`INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`, ADR 0017's "Amendment,
+ * 2026-09-01", ruling 19) -- the owner's ruling of 2026-09-01 on issue
+ * [#767](https://github.com/matmaxalez/lockstate/issues/767): *"a persistent
+ * indicator ... plus a one-off notice at the moment of crossing, so a player
+ * who was looking elsewhere gets a nudge."*
+ *
+ * **The event is the crossing, not the state.** `treasury.deliveries-refused`
+ * on `statusCountsSchema.conditions` is the state and is recomputed forever;
+ * this fires exactly once per transition into it, from
+ * `InsolvencyRungSystem` (`src/simulation/economy/insolvency-rung-system.ts`),
+ * which is what keeps it from repeating on every tick the prison stays
+ * refused -- the same shape `PayrollSystem.recordUnpaidWages` and
+ * `IncidentTriggerSystem`'s opening events already take of a standing fact,
+ * and the reason ADR 0087 Cost 1 gives for why a *condition* must never be
+ * carried this way is exactly why a *crossing* may: this is emitted once,
+ * not once per tick the fact remains true.
+ *
+ * No figure carried, matching `incidents.all-clear` and the three
+ * zero-parameter incident openings: the sentence names what changed and the
+ * `treasury.deliveries-refused` condition beside it is where a player reads
+ * the standing fact, exactly as `economy.wages-unpaid` carries the arrears
+ * and `incidents.riot-opened` alone among the incident events carries a
+ * count, because each of those is the one whose sentence needs a number.
+ * This one's does not.
+ */
+const deliveriesRefusedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('economy.deliveries-refused'),
+  })
+  .strict();
+
+/**
+ * The treasury just fell to or below the construction rung
+ * (`INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`, ADR 0017's "Amendment,
+ * 2026-09-01", ruling 19) -- the same ruling and the same mechanism as
+ * `deliveriesRefusedEventSchema` above, for the deeper of the two rungs a
+ * single payroll tick crossed in issue #767's measurement (−1,220 →
+ * −2,180, crossing both in one step).
+ *
+ * **A member of its own rather than a `rung` field on one event**, for the
+ * reason the four incident-opening members are members rather than one event
+ * with an `IncidentType` field: `EVENT_PRESENTATION` grades a sentence by
+ * `type` alone, and "deliveries refused" and "construction halted" are two
+ * different sentences (ADR 0017 decision 8's own words for the ladder), not
+ * one sentence with a slot. Carrying the rung as a raw id would also cross
+ * ADR 0011: `MessageParameters` substitutes values and does not resolve a
+ * nested key, so a `rung` field would have to be interpolated as the id
+ * itself rather than as authored text.
+ */
+const constructionRefusedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('economy.construction-refused'),
   })
   .strict();
 
@@ -1911,6 +2108,139 @@ const contrabandDiscoveredEventSchema = z
   .strict();
 
 /**
+ * A queued build order was cancelled before the crew reached it, and the money
+ * it cost came back (the owner's ruling of 2026-09-01 on
+ * [#749](https://github.com/matmaxalez/lockstate/issues/749)).
+ *
+ * ## Why two members rather than one carrying the state
+ *
+ * The same argument the four incident-opening schemas make above, and it
+ * arrives here from the ruling rather than from taste: the owner's answer to
+ * "one sentence or two" was **two** -- one for a cancellation before the crew
+ * started, one for after -- with the reasoning *"silence about a loss is the
+ * worst option"*. `EVENT_PRESENTATION` grades an event by its `type` and
+ * nothing else, so one member carrying a `state` field could not paint the
+ * refund and the loss differently, and a lifecycle state crossing the wire
+ * would then have to be interpolated into a sentence, which ADR 0011 forbids
+ * (`interpolate` substitutes values and would render the slug `in-progress`).
+ *
+ * ## What it does not carry, and why the asymmetry with the delivery is honest
+ *
+ * **No amount.** `ConstructionSystem.cancelOrder` returns `void`: the refund
+ * happens inside it, split across `refundSurplusOf` and
+ * `ConstructionProcurementSink.refundAllocatedMaterials`, and is never
+ * handed back to the caller. The owner's ruling names the asymmetry and keeps
+ * it -- `ProcurementSystem.cancel` already answers `refundedMinorUnits`, so
+ * `economy.delivery-cancelled` below names its figure, and this one may not
+ * without new plumbing that the ruling explicitly declines. It is the honest
+ * shape of what each route knows rather than an omission.
+ *
+ * **No order id, no tile.** The channel *"carries no identity"*
+ * (`SimulationEventLog`), and the row the player pressed is gone from the queue
+ * by the time this is read.
+ *
+ * **`'planned'` is covered by this member and the sentence is vacuously true
+ * there.** A planned order never reached `procureQueuedMaterials`, so nothing
+ * was spent and nothing is refunded; "the money it cost is refunded" is true of
+ * a cost of zero. Recorded rather than special-cased, because a third sentence
+ * for "nothing happened either way" is copy the owner has not written.
+ */
+const buildOrderCancelledEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('construction.order-cancelled'),
+  })
+  .strict();
+
+/**
+ * A build order was cancelled after the crew had started it, and what it had
+ * already consumed is gone (#749, and ruling 20 of 2026-08-31 is what makes it
+ * true).
+ *
+ * The counterpart of the member above, and the one the owner's *"silence about
+ * a loss is the worst option"* is actually about. `ConstructionSystem.cancelOrder`
+ * drops an `'in-progress'` order's allocation **unreleased and unpaid** -- the
+ * one place in the money loop where value leaves rather than changing form,
+ * argued at length at that method -- so a player who cancels late has lost
+ * something, and the band is the only surface that can say so at every viewport
+ * with nothing opened.
+ *
+ * Carries no figure for the reason the member above carries none: the value
+ * destroyed is `order.materialsAllocated` priced by a catalogue this layer
+ * cannot reach, and `cancelOrder` answers nothing.
+ */
+const buildOrderCancelledUnderwayEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('construction.order-cancelled-underway'),
+  })
+  .strict();
+
+/**
+ * The build history was walked back one transaction (#749).
+ *
+ * **Carries no count, and that is the owner's ruling rather than a limitation
+ * met halfway.** `ConstructionSystem.undo` reverses a whole transaction --
+ * `redoTransaction` groups every order id in it -- so a twelve-segment wall
+ * undoes as one gesture, and a sentence naming *one* order would be a small lie
+ * whenever a run of several was reversed. Surfacing the size would need new
+ * plumbing on that method; the ruling declines it and this schema records that
+ * the count is *known and left* rather than unnoticed.
+ *
+ * **Recorded only when something was actually reversed.** `undo()` answers
+ * `false` for an empty stack and for a transaction whose orders had all reached
+ * a terminal state, so a press against no history says nothing at all rather
+ * than confirming a reversal that did not happen -- which would be the
+ * player-visible promise the code does not keep that `AGENTS.md` reserves to
+ * the owner.
+ */
+const constructionUndoneEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('construction.undone'),
+  })
+  .strict();
+
+/** The build history was walked forward one transaction (#749). The mirror of `construction.undone`, on every point that schema makes. */
+const constructionRedoneEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('construction.redone'),
+  })
+  .strict();
+
+/**
+ * A delivery that had not landed was cancelled, and this is what came back
+ * (#749).
+ *
+ * **The one success on this channel that names its figure, and it is nearly
+ * free.** `ProcurementSystem.cancel` already answers
+ * `{ ok: true, refundedMinorUnits }` -- the *recorded* `paidMinorUnits` of the
+ * delivery, never a recomputation from today's catalogue price -- so the number
+ * exists at the call site in `createSessionCommandHandler` and only had to be
+ * carried. The owner's ruling of 2026-09-01 asked for it by name.
+ *
+ * Minor units, unconverted, exactly as `economy.wages-unpaid` carries its
+ * arrears: the HUD formats money at the last possible moment and nothing
+ * upstream of the formatter knows what a major unit is.
+ *
+ * **`min(0)` rather than the `min(1)` every other figure on this channel
+ * carries**, and the difference is what the guard is for. Elsewhere a zero
+ * means the thing did not happen -- a payday met in full, nobody discharged --
+ * and the event must not be emitted. Here the *event* is the cancellation and
+ * the figure is a detail of it: a delivery whose recorded price was zero was
+ * still cancelled, and refusing to say so would be the silence #749 exists to
+ * remove.
+ */
+const deliveryCancelledEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('economy.delivery-cancelled'),
+    refundedMinorUnits: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
+  })
+  .strict();
+
+/**
  * Exported since 2026-09-01, because the save carries these records.
  *
  * `save-schema.ts` validates the alerts section against this rather than
@@ -1921,8 +2251,15 @@ const contrabandDiscoveredEventSchema = z
  * see `docs/PERSISTENCE.md` on what an existing field changing meaning costs.
  */
 export const simulationEventSchema = z.discriminatedUnion('type', [
+  buildOrderCancelledEventSchema,
+  buildOrderCancelledUnderwayEventSchema,
+  constructionUndoneEventSchema,
+  constructionRedoneEventSchema,
+  deliveryCancelledEventSchema,
   contrabandDiscoveredEventSchema,
   wagesUnpaidEventSchema,
+  deliveriesRefusedEventSchema,
+  constructionRefusedEventSchema,
   dischargedEventSchema,
   residentRelocatedEventSchema,
   riotOpenedEventSchema,

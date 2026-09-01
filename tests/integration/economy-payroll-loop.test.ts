@@ -256,17 +256,44 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      */
     stepTo(runtime, DAY_LENGTH_TICKS * 9);
     expect(runtime.payroll.unpaidWagesMinorUnits, 'nine paydays must have been met for this test to mean anything').toBe(0);
-    expect(
-      runtime.events.since(0),
-      'a prison that has paid its staff every day has nothing to say about payday',
-    ).toEqual([]);
+    /*
+     * **Not `[]` any more, and that is the finding rather than a defect.**
+     * This assertion read `toEqual([])` and the comment here read "a prison
+     * that has paid its staff every day has nothing to say about payday"
+     * until issue #767 (ADR 0087 decision 2's amendment,
+     * `InsolvencyRungSystem`). It is still true of *payday* -- neither event
+     * below is `economy.wages-unpaid` -- and it is exactly the ladder ADR
+     * 0017 decision 8 authors that this fixture's own heading names:
+     * deliveries are refused and construction is halted **while wages are
+     * still being paid in full out of the overdraft**, because
+     * `PayrollSystem` draws all the way to the wages rung (the floor, -2,500)
+     * and the other two rungs sit above it. A prison that "has nothing to say
+     * about payday" for nine days has, in this same window, already lost the
+     * ability to buy and the ability to fund construction -- the exact shape
+     * #767 measured being told to nobody before this system existed.
+     *
+     * **This read "deliveries are refused (tick 16,799, day 7) and
+     * construction is halted (tick 21,599, day 9)", two days apart, and the
+     * owner's ruling on #771 (2026-09-01, ADR 0017's equalisation amendment)
+     * closed that gap.** `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` now
+     * equals `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`, so a balance
+     * sinking past the shared -1,250 crosses both in the same tick -- 16,799,
+     * day 7, exactly where deliveries already fires, not two days later.
+     */
+    expect(runtime.events.since(0), 'the two rungs above the wages floor, crossed together before any payday is missed').toEqual([
+      { sequence: 1, tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.deliveries-refused' },
+      { sequence: 2, tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.construction-refused' },
+    ]);
 
     // Day 10 is the first it cannot meet: 140 of room against a 520 bill.
     stepTo(runtime, DAY_LENGTH_TICKS * 10);
     expect(runtime.payroll.unpaidWagesMinorUnits).toBe(380);
 
-    const afterFirstMiss = runtime.events.since(0);
-    expect(afterFirstMiss.length, 'one missed payday is one thing to say').toBe(1);
+    // The two rung crossings above are still the only two of their kind: this
+    // is one missed payday, not one event overall, now that the ladder's
+    // upper rungs have their own channel entries.
+    const afterFirstMiss = runtime.events.since(0).filter((event) => event.type === 'economy.wages-unpaid');
+    expect(afterFirstMiss.length, 'one missed payday is one wages-unpaid sentence').toBe(1);
     // The figure the player is told is the arrears the save also carries, not
     // the day's shortfall by some other arithmetic.
     expect(afterFirstMiss[0]).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 380 });
@@ -305,12 +332,26 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      */
     stepTo(runtime, DAY_LENGTH_TICKS * 13);
     expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_940);
-    const afterFourMisses = runtime.events.since(0);
+    // Filtered to `economy.wages-unpaid` for the reason the first check above
+    // is: the two rung-crossing events from day 7 and day 9 are still on the
+    // channel (nothing here retires them) and are not paydays.
+    const afterFourMisses = runtime.events.since(0).filter((event) => event.type === 'economy.wages-unpaid');
     expect(
       afterFourMisses.length,
       'a prison that stays broke says so once per payday -- four missed paydays, four sentences',
     ).toBe(4);
     expect(afterFourMisses.at(-1)).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 1_940 });
+    // And the ladder's whole shape in one assertion: two rung crossings while
+    // solvent, then one wages-unpaid sentence per missed payday thereafter --
+    // six events for six real things that happened, none of them repeated.
+    expect(runtime.events.since(0).map((event) => event.type)).toEqual([
+      'economy.deliveries-refused',
+      'economy.construction-refused',
+      'economy.wages-unpaid',
+      'economy.wages-unpaid',
+      'economy.wages-unpaid',
+      'economy.wages-unpaid',
+    ]);
   });
 
   it('spends the overdraft on wages, stops at the wage rung and starts owing there', () => {
@@ -438,20 +479,33 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
    * ADR 0083 §2 recorded that an amendment to decision 8 was owed and that it
    * was the owner's to sign. **Ruling 19 is that amendment's source** --
    * *"Dać szczeblom własne progi wewnątrz debetu"*, give the rungs their own
-   * thresholds inside the overdraft, at -1,250, -2,000 and -2,500. It is drafted
-   * at `docs/adr/0017-money-primary-resource-model.md` ("Amendment,
-   * 2026-09-01") and is **Proposed and not self-approved**.
+   * thresholds inside the overdraft, at -1,250, -2,000 and -2,500. It is
+   * recorded at `docs/adr/0017-money-primary-resource-model.md` ("Amendment,
+   * 2026-09-01") and was **Accepted 2026-09-01**.
    *
-   * So this case now measures the ladder running **forwards**, and it does it
-   * the way decision 8 describes: not by positioning a balance three times, but
-   * by letting one prison sink and watching which rung it meets first. The reads
-   * below are `canAfford` and the arrears, so watching costs nothing and the
-   * walk is the fixture's own.
+   * So this case measured the ladder running **forwards**, three rungs deep,
+   * and it did it the way decision 8 describes: not by positioning a balance
+   * three times, but by letting one prison sink and watching which rung it
+   * meets first.
+   *
+   * **The owner's ruling on #771, the same day, retired the middle step.**
+   * #771 found a 750-wide band in which a purchase the shop refused was still
+   * funded for a queued build order needing the same materials, and the owner
+   * ruled *"buying and building stop at the same place"*:
+   * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` now reads the same
+   * -1,250 the delivery rung does. This prison's sink is unaffected --
+   * nothing about income, wages or the purchase that overcommits it moved --
+   * so the day the balance first passes -1,250 is still day 7, at -1,320. What
+   * moved is that **both** discretionary rungs fire that day rather than one
+   * of them waiting until day 9, and the case below is corrected to measure
+   * two rungs meeting together where it used to measure three meeting in
+   * sequence. The reads are still `canAfford` and the arrears, so watching
+   * costs nothing and the walk is still the fixture's own.
    */
-  it('meets the three rungs in ADR 0017 decision 8`s own order as one prison sinks', () => {
+  it('meets the two discretionary rungs together in ADR 0017 decision 8`s ladder, then wages unpaid last, as one prison sinks', () => {
     const runtime = overcommitted();
 
-    /** The three rungs, as questions asked of the treasury rather than of a balance. */
+    /** The ladder's two remaining depths, as questions asked of the treasury rather than of a balance. */
     const rungs = (): { deliveries: boolean; construction: boolean; wages: number } => ({
       // One brick, which is the smallest thing a player can press Buy for.
       deliveries: runtime.treasury.canAfford(BRICK_PRICE, 'deliveries'),
@@ -468,29 +522,38 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
       return -1;
     };
 
-    // Day 7 (-1,320): the first rung. A player pressing Buy is refused, and the
+    // Day 7 (-1,320): the shared rung. A player pressing Buy is refused, and the
     // sentence they are shown is `AGENTS.md`'s fourth exclusion -- see the four
-    // keys named at `src/content/default-locale-en.ts`.
+    // keys named at `src/content/default-locale-en.ts`. Construction fires with
+    // it, the same day, at the same balance -- this is #771's own finding, read
+    // off a real sink rather than probed as a boundary.
     const deliveriesStopped = firstDayThat((state) => !state.deliveries);
     expect(deliveriesStopped, 'deliveries are refused first').toBe(7);
-    expect(rungs().construction, 'and the queue is still buying at that point').toBe(true);
+    expect(rungs().construction, 'and construction is refused with it, not two days later').toBe(false);
     expect(rungs().wages, 'and the staff are still being paid').toBe(0);
 
-    // Day 9 (-2,360): the second rung. A queued build order stops being funded.
-    const constructionStopped = firstDayThat((state) => !state.construction);
-    expect(constructionStopped, 'construction halts second').toBe(9);
-    expect(rungs().wages, 'and the staff are still being paid').toBe(0);
+    /*
+     * Construction never gets a day of its own to stop on any more, so it is
+     * read at the same tick rather than searched for with a second
+     * `firstDayThat` -- calling that again here would restart its loop at
+     * day 1 while the clock has already reached day 7, and because the
+     * predicate is already true at that already-elapsed tick it would return
+     * day 1 without advancing anything, which is a false positive rather than
+     * a finding. `deliveriesStopped` is the true day both rungs share.
+     */
+    const constructionStopped = deliveriesStopped;
 
-    // Day 10 (-2,500): the third. The payday takes the 140 of room the rung
+    // Day 10 (-2,500): wages. The payday takes the 140 of room the rung
     // leaves and owes the other 380.
     const wagesUnpaid = firstDayThat((state) => state.wages > 0);
     expect(wagesUnpaid, 'wages go unpaid last').toBe(10);
     expect(runtime.treasury.balanceMinorUnits).toBe(-2_500);
 
     // The ordering itself, stated as the assertion it is rather than left to be
-    // read off three numbers.
-    expect([deliveriesStopped, constructionStopped, wagesUnpaid]).toEqual([7, 9, 10]);
-    expect(deliveriesStopped).toBeLessThan(constructionStopped);
+    // read off the numbers: the two discretionary rungs are equal, and both
+    // precede wages.
+    expect([deliveriesStopped, constructionStopped, wagesUnpaid]).toEqual([7, 7, 10]);
+    expect(deliveriesStopped).toBe(constructionStopped);
     expect(constructionStopped).toBeLessThan(wagesUnpaid);
 
     // And the presses themselves, so this is a refusal a player meets and not

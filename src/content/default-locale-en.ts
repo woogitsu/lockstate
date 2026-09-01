@@ -279,7 +279,26 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // far through the in-game day it is (docs/HUD_PROJECTIONS.md, gap 5).
   'hud.clock.day-progress': 'Through the day',
   'hud.clock.day': 'Day',
-  'hud.clock.speed': 'Speed {speed}x',
+  /*
+   * The sign is U+00D7 MULTIPLICATION SIGN, as it is everywhere else in this
+   * catalogue, under the owner's ruling of 2026-09-01: **one multiplication
+   * sign, and it is `×`.** This entry spelled it `Speed {speed}x` with an
+   * ASCII letter until then and was the last player-facing sentence in the
+   * game that did; the divergence is described, from the other side, in
+   * `hud.alert.occurrences` below, which is where it was first written down.
+   *
+   * **What this sentence is, and it is not the readout.** Nothing paints it on
+   * screen: `status-strip.ts` writes the *visible* speed itself as
+   * `×${formatNumber(speed)}` -- U+00D7 since #639 -- and passes this key to a
+   * `.ui-sr-only` span, so `Speed 1×` is what a screen reader says and only a
+   * screen reader. The ruling is a typography ruling and typography is not
+   * what a synthesiser reads, so the change here is about the catalogue being
+   * one convention rather than about anything a sighted player can see; what a
+   * reader announces for U+00D7 is the host's symbol dictionary, not ours, and
+   * this repository has measured no synthesiser. `tests/foundation/times-sign-contract.test.ts`
+   * is the gate that keeps the ASCII spelling from coming back.
+   */
+  'hud.clock.speed': 'Speed {speed}×',
   // Uppercase in the string rather than by `text-transform`, because the
   // readout it replaces is `×1` -- a value, not an eyebrow -- and the strip's
   // value styling carries no case transform. The word is the owner's, ruled on
@@ -318,14 +337,21 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * about ten characters a line, so the multiplier is digits and a sign and
    * nothing else.
    *
-   * **The sign is U+00D7, and `hud.clock.speed` beside it spells its multiplier
-   * with an ASCII `x`** (`'Speed {speed}x'`). That is a real divergence rather
-   * than a typo here: the owner supplied this sentence with the typographic
-   * sign, and the speed readout's `x` predates it and was never ruled on. Two
-   * spellings of one convention is the kind of thing that reads as a defect on
-   * screen, so it is recorded rather than quietly harmonised in either
-   * direction -- changing the speed readout is a player-visible wording change
-   * and is the owner's.
+   * **The sign is U+00D7, and it is now the only times sign in the game.**
+   * **This paragraph recorded the opposite for one merge and is marked rather
+   * than overwritten** (`docs/AGENT_WORKFLOW.md` section 4). It read: *"The
+   * sign is U+00D7, and `hud.clock.speed` beside it spells its multiplier with
+   * an ASCII `x` (`'Speed {speed}x'`). That is a real divergence rather than a
+   * typo here: the owner supplied this sentence with the typographic sign, and
+   * the speed readout's `x` predates it and was never ruled on. Two spellings
+   * of one convention is the kind of thing that reads as a defect on screen,
+   * so it is recorded rather than quietly harmonised in either direction --
+   * changing the speed readout is a player-visible wording change and is the
+   * owner's."* Every clause of that was true when it was written; the last one
+   * is what resolved it. The owner ruled on 2026-09-01 that the typographic
+   * sign is the one, so `hud.clock.speed` moved and this entry did not.
+   * `tests/foundation/times-sign-contract.test.ts` is the gate that keeps the
+   * ASCII spelling from returning to either of them.
    *
    * **`Day {day}` and not `Day {day}, {progress}%`.** The owner was shown the
    * two-figure form and rejected it: a percentage of a day is a strange unit to
@@ -339,7 +365,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * **What tells two events on the same day apart is the count beside them**,
    * which is the owner's own answer to that gap rather than a property this
    * sentence claims. Two arrivals of one sentence on day 3 are one row reading
-   * `2x Day 3`; two *different* sentences on day 3 are two rows, each naming
+   * `2× Day 3`; two *different* sentences on day 3 are two rows, each naming
    * itself.
    */
   'hud.alert.occurrences': '{count}×',
@@ -478,6 +504,20 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` with nothing tying the
    * prose to it, which is the argument written out in full at
    * `hud.alert.refusal.hire.insufficient-funds` below.
+   *
+   * **Corrected 2026-09-01, and kept above rather than rewritten because it
+   * is the record of why this sentence exists at all.** The owner's ruling on
+   * #771 (ADR 0017's equalisation amendment) retired the rung this sentence
+   * used to name a *different threshold* for: `construction` now reads
+   * `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`, the same −1,250 a Buy
+   * press stops at, not −2,000. This sentence still fires at a different
+   * *moment* than the four Buy/Hire sentences do -- it answers a queued
+   * order the construction system is retrying, they answer a press -- so it
+   * still earns its own key and this comment's "why the subject is the
+   * queue" and "why it shares the tail" sections both still hold. What no
+   * longer holds is "at a different threshold": a prison whose queue stalls
+   * has, from this ruling on, always also had its last Buy press refused,
+   * because the two now fire together.
    */
   'hud.alert.refusal.construction.materials-unfunded':
     'The build queue is stalled — no more materials until the state pays what it owes.',
@@ -563,11 +603,16 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // would be false the day hiring gets its own. "Hiring is refused" is true
   // either way.
   //
-  // The rung-2 sentence that pairs with these -- a build queue stalled at
-  // -2,000 -- is `hud.alert.refusal.construction.materials-unfunded` above,
-  // and it deliberately shares this one's *"until the state pays what it
-  // owes"* tail so the three read as one ladder rather than three unrelated
-  // rules.
+  // The rung-2 sentence that pairs with these -- a build queue stalled -- is
+  // `hud.alert.refusal.construction.materials-unfunded` above, and it
+  // deliberately shares this one's *"until the state pays what it owes"*
+  // tail so the ladder reads as one thing rather than unrelated rules. It
+  // stalled at -2,000 under ruling 19; the owner's ruling on #771
+  // (2026-09-01, ADR 0017's equalisation amendment) moved it to the same
+  // -1,250 a hire or a purchase already stops at, which is exactly why
+  // naming what stops rather than the number was the right call two
+  // paragraphs up -- this sentence needed no edit when the number under it
+  // moved.
   'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — hiring is refused until the state pays what it owes.',
   // ADR 0053: the only work a staff member can be sent to do today is a
   // security duty, so a role outside the security department is a wage with
@@ -723,6 +768,77 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // Staff panels format a price.
   'hud.alert.event.prisoners.discharged': '{count} released — their sentences are served.',
   'hud.alert.event.economy.wages-unpaid': 'Payday went unpaid — your staff are owed {total}.',
+  // The owner's ruling of 2026-09-01 on issue #767 (ADR 0087 decision 2's
+  // amendment): a one-off notice at the moment the treasury crosses a rung,
+  // beside the standing `treasury.deliveries-refused` /
+  // `treasury.construction-refused` conditions that keep saying so
+  // afterward. **Owner-pending**: written to be the clearest sentence
+  // available rather than a settled answer -- see `InsolvencyRungSystem`
+  // (`src/simulation/economy/insolvency-rung-system.ts`) for the mechanism
+  // and `docs/adr/0087-whether-a-refusal-is-an-event-or-a-condition.md`'s
+  // amendment for the ruling this implements.
+  'hud.alert.event.economy.deliveries-refused': 'Deliveries refused — the treasury cannot cover a purchase right now.',
+  'hud.alert.event.economy.construction-refused': 'Construction halted — the treasury cannot fund the build queue right now.',
+
+  /*
+   * What a control says when it *works* (issue #749, the owner's ruling of
+   * 2026-09-01).
+   *
+   * These five are the first sentences on this channel about something the
+   * *player* did, and they exist because four controls said nothing at all when
+   * they succeeded: `docs/research/2026-09-01-what-act-six-never-reached.md` D2
+   * measured Cancel on a queued build order, Cancel on a delivery, Undo and
+   * Redo, and found the only feedback was a row vanishing from a fold that
+   * starts collapsed. The money was exactly right; the player had no way to
+   * know that without doing the arithmetic.
+   *
+   * **The wordings are the owner's, taken from
+   * `docs/research/2026-09-01-copy-variants-for-the-owner.md` §5.** CD1 for the
+   * delivery, UR3 for the two history sentences. The build-order **pair** is
+   * the one place that document tabled no verbatim candidate -- its §5c
+   * offers a state-aware pair as *"a fourth option not tabled as a single
+   * candidate, because it is a different shape of answer"* -- so the two below
+   * are assembled from that section's own clauses rather than newly written:
+   * CO2's *"the money it cost is refunded"* with its hedge *"where any is
+   * still recoverable"* dropped, because the state check makes the hedge
+   * unnecessary, and CO3's second sentence verbatim for the case the hedge was
+   * hedging about. Nothing here is an improvement on a candidate; where a
+   * candidate was false against the code it was reported rather than edited.
+   *
+   * **Two sentences for one control, which is ruling 2**: before the crew
+   * started, the money comes back; after, ruling 20 of 2026-08-31 destroys the
+   * materials on purpose. The owner's reasoning is *"silence about a loss is
+   * the worst option"*, and it is why the second sentence exists at all rather
+   * than the first being stretched to cover both.
+   *
+   * **Only one of the four names a figure, and that is deliberate.**
+   * `ProcurementSystem.cancel` already answers `refundedMinorUnits`, so
+   * `{total}` is nearly free; `ConstructionSystem.cancelOrder` answers `void`,
+   * so the two order sentences cannot name an amount without plumbing the
+   * ruling declines. `{total}` is minor units, unconverted, exactly as the
+   * unpaid-payday sentence above -- and it is the same word the Build panel's
+   * own delivery row already uses for the same money (`hud.build.delivery`,
+   * "{total} back").
+   *
+   * **Neither history sentence names a count**, which is ruling 4: Undo and
+   * Redo each reverse a whole transaction, so a sentence naming one order would
+   * be a small lie whenever a run of several moved. "The last change" is what
+   * UR3 says instead, and it is true of a run of one and of twelve.
+   *
+   * A cancelled order that had already **finished** gets no sentence here.
+   * Neither of the two below is true of it -- the money did not come back and
+   * the materials are not gone, they went into the container (ADR 0076
+   * decision B) -- no control can reach that press, and inventing a third
+   * sentence for it would be exactly the promise-the-code-does-not-keep that
+   * `AGENTS.md`'s fourth exclusion reserves. Recorded as owed at
+   * `SimulationEventLog.recordBuildOrderCancelled`.
+   */
+  'hud.alert.event.construction.order-cancelled': 'The order was cancelled — the money it cost is refunded.',
+  'hud.alert.event.construction.order-cancelled-underway':
+    'The order was cancelled. Anything already spent past the point of no return stays spent.',
+  'hud.alert.event.construction.undone': 'The last change to the build queue was undone.',
+  'hud.alert.event.construction.redone': 'The last change to the build queue was redone.',
+  'hud.alert.event.economy.delivery-cancelled': 'The delivery was cancelled — {total} back.',
 
   // ADR 0076 decision A(i)'s notice: a prisoner whose bed was taken away has
   // been moved to one that exists.

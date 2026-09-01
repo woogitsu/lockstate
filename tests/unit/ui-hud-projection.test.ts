@@ -46,6 +46,7 @@ function counts(overrides: Partial<HudCountsViewModel> = {}): HudCountsViewModel
     occupiedPlaces: 0,
     staff: 0,
     rooms: 0,
+    roomCapacity: 0,
     prisonersCovered: 0,
     prisonersUnderstaffed: 0,
     prisonersUnguarded: 0,
@@ -379,10 +380,18 @@ describe('status strip: tone and badges', () => {
    */
   it('says how much is left before deliveries stop, and never a number below zero', () => {
     const FLOOR = -2_500;
+    // `roomCapacity: 1` -- a furnished, mature prison -- and not `counts()`'s
+    // own `0` default. This test is about the mature -1,250 rung throughout;
+    // the fixture's default `roomCapacity: 0` happens to be the literal value
+    // `overdraftRemaining` reads as "fresh, unfurnished" since the owner's
+    // second ruling on #771 (2026-09-01), and every figure below was derived
+    // against the mature rung, not the shallower starter one that default
+    // would otherwise select.
     const badge = (treasuryMinorUnits: number, floor: number | undefined = FLOOR) =>
       metric(
         counts({
           treasuryMinorUnits,
+          roomCapacity: 1,
           ...(floor === undefined ? {} : { treasuryOverdraftFloorMinorUnits: floor }),
         }),
         'funds',
@@ -474,8 +483,11 @@ describe('status strip: tone and badges', () => {
    * `tests/unit/ui-hud-funds-threshold-named.test.ts`.
    */
   it('names the threshold on the chip, in a sentence the badge has no room for', () => {
+    // `roomCapacity: 1`, for the reason the sibling test above gives: this is
+    // the mature rung, not the starter one `counts()`'s own `0` default would
+    // otherwise select.
     const chip = (treasuryMinorUnits: number) =>
-      metric(counts({ treasuryMinorUnits, treasuryOverdraftFloorMinorUnits: -2_500 }), 'funds');
+      metric(counts({ treasuryMinorUnits, treasuryOverdraftFloorMinorUnits: -2_500, roomCapacity: 1 }), 'funds');
 
     /*
      * Above the rung: the warning, carrying the same remainder the badge
@@ -618,8 +630,11 @@ describe('status strip: tone and badges', () => {
    * not something this test papers over.
    */
   it('reserves danger for the deliveries rung and critical for the treasury floor, and paints the chip and its badge alike', () => {
+    // `roomCapacity: 1`, for the reason the first test in this block gives:
+    // the mature rung, not the starter one `counts()`'s own `0` default would
+    // otherwise select.
     const at = (treasuryMinorUnits: number) =>
-      metric(counts({ treasuryMinorUnits, treasuryOverdraftFloorMinorUnits: -2_500 }), 'funds');
+      metric(counts({ treasuryMinorUnits, treasuryOverdraftFloorMinorUnits: -2_500, roomCapacity: 1 }), 'funds');
 
     expect(at(-1).tone).toBe('warning');
     expect(at(-1_249).tone, 'one unit of room left is still room').toBe('warning');

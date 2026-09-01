@@ -765,3 +765,568 @@ so neither can go quiet on its own.
 The ladder's order is asserted as an order — not as three separate boundaries —
 in `tests/integration/economy-insolvency-ladder.test.ts` and
 `tests/integration/economy-payroll-loop.test.ts`.
+
+## Amendment, 2026-09-01: the deliveries and construction rungs are equalised, and decision 8's ladder loses a step
+
+> **Accepted, 2026-09-01, by the repository owner.** This is a record of a
+> decision already made and communicated, not a proposal awaiting one —
+> `AGENTS.md` and `docs/AGENT_WORKFLOW.md` §3 forbid an implementing agent
+> self-approving an ADR, and nothing below is offered as this agent's
+> recommendation. The owner was shown the reproduction and the cost this
+> amendment prices, in the same sitting, and ruled anyway. Amends the
+> "Amendment, 2026-09-01: decision 8's ladder gets three thresholds inside the
+> overdraft" section immediately above — quoted rather than overwritten, per
+> that section's own form and ADR 0076's.
+
+### 1. The reproduction
+
+Issue [#771](https://github.com/matmaxalez/lockstate/issues/771), filed
+2026-09-01 against the ladder that section shipped: buying a 40-minor-unit
+brick from the shop (`'deliveries'`, refused below −1,250) is refused at a
+balance where drawing a wall segment that needs the *same two bricks*
+(`'construction'`, refused below −2,000) is still funded. Measured in the
+issue: **ten wall segments, 800 spent, all went through silently** at a
+balance in the 750-wide band between the two rungs, at the same time the shop
+refused a 40 purchase. §3c above calls this split "the whole of what makes the
+first two rungs distinguishable at all" and defends it as a deliberate
+reading of decision 8's words — the finding is not that the split is wrong,
+it is that **nothing on screen said it was there**: the same material, the
+same money, one refused and one accepted, with no stated reason, at exactly
+the point #771 itself identifies as where a player is already in trouble and
+most needs the rules to be legible — the owner's standing directive against
+hidden functionality, applied to the ladder rather than to a tooltip this
+time. PR #763 / ADR 0087 (is a refusal an event or a standing condition) and
+#767 (a crossed rung produces no event) are the neighbouring open questions
+#771 names; neither is decided here, and §5 below names the one live
+interaction with the branch working #767.
+
+### 2. The ruling, in the owner's words
+
+Put to the owner as a choice with its cost stated plainly rather than
+buried: the option was described to them, before they took it, as one that
+*"kills the deliberately designed ladder — the prison loses the ability to
+finish what it has already started building."* The owner's ruling:
+
+> **"Equalise the rungs: buying and building stop at the same place."**
+
+Chosen with the cost in view. That is the owner's decision and it is not
+re-litigated here; this amendment carries it out and writes down what it
+costs where the corpus can find it.
+
+### 3. Which place — the evidence, because the ruling names an operation and not a number
+
+Ruling 19 (the section above) gave three magnitudes. This ruling gives an
+operation — *equalise* — over two of them, and leaves which value they
+equalise *to* for this amendment to answer with evidence, per the brief this
+amendment was drafted under. Two candidates were live: **−1,250** (the
+deliveries rung rises to meet nothing — construction's threshold moves up to
+meet it) or **−2,000** (the deliveries rung sinks to meet construction's).
+**−1,250 is taken**, on three grounds:
+
+1. **It is the only reading under which the warned cost is the cost that was
+   actually accepted.** The sentence the owner was warned with — *"the prison
+   loses the ability to finish what it has already started building"* — is
+   true of a queue that used to be funded to −2,000 and now stops at −1,250:
+   a build already queued, materials already short, that would previously
+   have been bought for down to −2,000 now stalls 750 minor units earlier.
+   It is **not** true of the −2,000 reading, which would *widen* what a
+   press can do rather than narrow what a queue can finish — deliveries
+   would newly be funded 750 units deeper than they are today, and nothing
+   the owner was told described the ruling as *more* generous to buying.
+   Only −1,250 matches the sentence the owner ruled against having read.
+2. **−1,250 is the number the game has already made a visible promise
+   about, and −2,000 is not.** §5a above shipped `hud.status.funds-before-deliveries-stop`
+   and `hud.status.funds-deliveries-stopped` on the deliveries rung's own
+   value, in the chip's tooltip and screen-reader text, measured in
+   `tests/browser/ui-overdraft-badge.spec.ts`. Taking −1,250 leaves every one
+   of those already-shipped, already-measured player-facing figures true
+   without touching them a second time. Taking −2,000 would move a number
+   the owner signed off once already (§5a(e)) without a second ruling asking
+   for that.
+3. **It is the smaller change to the reachable game**, which this document's
+   own convention (§3b above: *"the clamp is the minimum that keeps the
+   ladder coherent"*) treats as the tie-breaker where the ruling itself does
+   not choose between two readings that both satisfy its words. −1,250
+   changes one rung's depth (construction, by 750 units, shallower). −2,000
+   would change two directions on one rung (deliveries, by 750 units,
+   deeper) while also being the reading the first two grounds rule out.
+
+So: **both rungs a player's presses reach are −1,250.** The wages rung is
+untouched, exactly as the brief for this work requires — it is
+`Number.NEGATIVE_INFINITY`, the identity of `Math.max`, and clamps to
+whatever `Treasury.floorFor` is asked for; nothing above changes what it
+clamps to.
+
+### 4. What of §3c is superseded, and what survives
+
+**Superseded: the magnitude.** §3c's table read deliveries at −1,250 and
+construction at −2,000. It is now:
+
+| spend | rung | site | floor |
+| --- | --- | --- | --- |
+| the player's *Buy* press (`PurchaseMaterials`) | deliveries | `src/simulation/runtime/session-commands.ts` | **−1,250** |
+| materials for a queued build order | construction | `JustInTimeMaterialsService.procureForPendingOrders` | **−1,250** |
+| a payday | wages | `PayrollSystem.update` | the floor |
+| taking on staff (`HireStaff`) | deliveries' threshold | `src/simulation/staff/hiring.ts` | **−1,250** |
+
+**Superseded: decision 8's promise of a three-step order, read as three
+distinct depths.** Decision 8 reads *"deliveries refused first, then
+construction halted, then staff unpaid."* Under §3c that was three
+strictly-ordered depths. Under this amendment it is **two**: deliveries and
+construction now fire *together*, at the same balance, and staff go unpaid
+last, at the floor. **This is the step the ladder loses, named rather than
+hidden**: a prison sinking through the overdraft no longer passes through a
+window in which it can buy nothing new but can still finish what it already
+queued. §2 above records that the owner was told this in those terms and
+ruled anyway.
+
+**Survives: which spend is asked at which rung.** §3c's reading — that the
+rung is a property of *who asked*, `'deliveries'` for a press and
+`'construction'` for the just-in-time pass — is not withdrawn. The two
+`SpendClass` values still exist, `Treasury.canAfford` and `Treasury.spend`
+still take one as a required argument, and the split is still what lets
+`reportMaterialsFunding` (§5a(b) above) tell a stalled queue apart from a
+refused press *as events*, even though the two events now share a threshold.
+Removing the split would also remove that distinction, which nothing in the
+ruling asks for — the ruling equalises *where* the rungs are, not *whether*
+a queue and a press are different things.
+
+**Survives: the sentences.** §5a(a)'s five refusal sentences name what
+stops, not the threshold, exactly so that a ruling that moves a threshold
+does not falsify prose written against it. None of the five is touched by
+this amendment, and none needed to be — the argument that shipped them
+holds without change.
+
+**Survives: rung 3, the sentinel, and everything §3a, §3d, §3e and §3f
+decided.** Untouched. This amendment is scoped to §3c's magnitude and to
+decision 8's reading as a three-*depth* order; nothing else in the previous
+amendment is reached.
+
+### 5. What this amendment costs, stated rather than argued away
+
+- **Construction that used to be funded to −2,000 is now refused 750 minor
+  units earlier.** A prison with a standing build queue and a balance
+  between −1,250 and −2,000 could previously keep drawing on materials
+  already short by a purchase; it cannot any longer. This is the cost the
+  owner was warned of in those words and accepted — see §2.
+- **Decision 8's ladder is now two steps where it was three.** "Deliveries
+  refused first, then construction halted" collapses to one line, and the
+  order decision 8 promises survives as *discretionary spends, then wages*
+  rather than as three strictly nested depths. Decision 8's own sentence is
+  not rewritten — it still names three things in order, and a prison at
+  −1,250 still has all three true of it (deliveries refused, construction
+  halted, wages so far paid) — but two of the three now become true in the
+  same instant rather than in sequence, which is the sense in which the
+  three-step reading of it is retired.
+- **The 750-wide band #771 measured is closed**, by construction: a
+  `Treasury` at any balance now agrees with itself about whether the two
+  bricks a wall segment needs are affordable, whichever caller asks.
+- **`tests/integration/economy-insolvency-ladder.test.ts`'s whole premise
+  changes.** Its docblock and its central test walk the ladder specifically
+  to exhibit the band this amendment closes — *"the prison cannot buy a 40
+  brick and can still finish the wall it has already queued … the whole of
+  what 'deliveries refused first, then construction halted' means as two
+  separate events"* is, after this amendment, no longer true, and the file
+  is rewritten rather than patched. §7 below is the gate.
+- **No player-facing string changes.** §5a(a)'s five sentences all name what
+  stops rather than a number, and none of them becomes false. The **FUNDS**
+  chip's number and tone are untouched by value — both are already computed
+  from the deliveries rung (§5a(c)), which does not move — but what that
+  number now *means* changes: "left before deliveries stop" is, after this
+  amendment, also "left before construction stops," and the chip is not
+  told to say so. Per this work's own brief the chip's wording and tone are
+  owned by other branches (PR #769, and a separate agent's third colour) and
+  are not touched here; this is named for whoever next edits that copy.
+- **No save format moves, and a determinism fingerprint moves only for a
+  prison whose balance ever sat between −1,250 and −2,000 with a standing
+  construction queue** — exactly the band this amendment removes. A prison
+  that never entered that band produces the same fingerprint before and
+  after.
+- **ADR 0081 (queue funding, one whole order at a time) does not reason from
+  the split and needs no change.** Checked: neither its granularity decision
+  nor its Consequences cite either rung's magnitude or the fact that they
+  differed; its subject is atomicity per order, orthogonal to which floor an
+  order's spend is measured against. Nothing here invalidates it.
+- **The `PrisonCondition` work on `feat/767-a-crossed-rung-is-a-condition-and-an-event`
+  is a real interaction, named rather than resolved here.** If that branch
+  models "deliveries refused" and "construction halted" as two conditions
+  that cross at different balances, this amendment makes them cross at the
+  *same* balance for every prison, always — the two conditions become one
+  event in wall-clock terms even if they remain two named conditions in the
+  model. Whether that collapses to one condition, stays two conditions that
+  are simply always concurrent, or is unaffected because that branch
+  already treats them as independent facts about the treasury rather than
+  about timing, is that branch's call; this amendment does not touch it or
+  coordinate with it directly, per this work's brief.
+
+### 6. What this amendment does not decide
+
+- **Whether decision 8's prose should itself be reworded** to say two steps
+  instead of three. Decision 8 is Accepted text from #96 and this amendment
+  narrows its *implementation contract* exactly as the previous amendment
+  did, not its words; a rewording is a documentation question for whoever
+  next touches decision 8's own paragraph, not an implementation decision.
+- **Whether the wages rung should ever be drawn toward the other two.** Out
+  of scope by the brief this amendment was written under, and untouched:
+  `INSOLVENCY_RUNG_FLOORS_MINOR_UNITS.wages` stays
+  `Number.NEGATIVE_INFINITY`.
+- **What, if anything, replaces the FUNDS chip's derivation once its tone or
+  wording next changes.** §5 above names that the number now means two
+  things at once; choosing new copy for that is reserved exactly as
+  `AGENTS.md`'s fourth exclusion reserves it, and is explicitly out of
+  scope for the branch that carries this amendment.
+- **The `PrisonCondition` interaction named in §5.** Flagged, not settled.
+
+### 7. The gate
+
+`tests/integration/economy-insolvency-ladder.test.ts` is rewritten to walk
+the now-two-step ladder and to carry the #771 case directly: the same two
+bricks, bought and drawn, at a balance that used to sit inside the 750-wide
+band and no longer produces different answers. `tests/unit/economy-treasury.test.ts`,
+`tests/integration/economy-money-conservation.test.ts`,
+`tests/integration/economy-liquidity-hard-lock.test.ts` and
+`tests/unit/ui-affordability.test.ts` are updated wherever they asserted the
+old construction magnitude or the gap between the two rungs by name.
+`tests/determinism/` and `tests/contract/` are run in full and reported
+green, unchanged in count, per this work's own instruction.
+
+### 8. Where this is implemented
+
+`src/simulation/economy/treasury.ts`
+(`INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`, now defined as
+`INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS` rather than a second literal,
+so the two cannot silently diverge again — the same "impossible to bypass by
+construction" property §3d above already applies to the required
+`SpendClass` argument, extended here to the magnitude itself) and its
+docblocks; `src/ui/affordability.ts` is unchanged in code because
+`HOST_PRESS_FLOOR_MINOR_UNITS` was already computed through
+`rungFloorMinorUnits('deliveries', …)`, which does not move.
+
+### 9. A cost the gate found and §5 did not price — not put to the owner, and not decided here
+
+**This section is not part of what was accepted.** §5 is titled "stated
+rather than argued away" and did not state this; the banner at the top of
+this amendment says the owner "was shown the reproduction and the cost this
+amendment prices, in the same sitting" — that sentence was true of §5 as
+written and is not true of the cost below, which the gate (§7) surfaced only
+while making `tests/integration/economy-liquidity-hard-lock.test.ts` pass
+again. Recorded here rather than folded into §5 silently, so the acceptance
+banner is not left claiming a completeness this amendment did not have.
+
+**ADR 0075's ECON-002 lock reopens.** That file's own subject, before this
+amendment, was a cured trap: a new prison that spends its opening grant and
+the whole standing overdraft on bricks (656 of them, landing on
+`BALANCE_AT_THE_RUNG = -1,240`, ten minor units of press room short of a
+65-minor-unit plank) used to have one escape ruling 19 opened by accident —
+the construction rung's extra 750 minor units of depth let a queued
+`bed-wooden` order buy the plank the player's own press could not. This
+amendment's whole point is closing exactly that gap, and closing it removes
+that escape along with it: `-1,240 - 65 = -1,305` now clears neither rung, so
+`PlaceObject` for a bed stays `materials-pending` forever, no admission can
+occupy a place, `StateIncomeSystem` pays nothing, and — every other command
+the union offers having been tried in the test and refused or found to move
+no money — the prison is locked exactly where it pressed itself to. That is
+ECON-002's own conclusion, true again since this amendment, on a fixture
+that needs no misplay to reach: one legal, unrefused 656-brick purchase is
+sufficient. `tests/integration/economy-liquidity-hard-lock.test.ts`'s own
+title for the case names it directly: *"spends the grant and the delivery
+rung on 656 bricks, and the ECON-002 lock reopens since #771 equalised the
+rungs."*
+
+**Why this is a materially different cost than the one §5 prices, not a
+restatement of it.** §5's first bullet says a standing *queue* now stalls
+750 minor units earlier than it did. That is true and it is the smaller
+half of what moved: the case above shows the same 750 minor units were also
+the only thing standing between a brand-new, otherwise ordinarily-played
+prison and a state ADR 0049 exists to say a prison should not be able to
+reach — one it cannot earn its way out of by any command the game offers,
+before it has built a single bed. §2's warning to the owner — *"the prison
+loses the ability to finish what it has already started building"* — is
+true of a queue with a shortfall already short by one purchase. It does not,
+on its own words, describe a prison that has built nothing yet and now
+never can.
+
+**What stands behind this lock, and does not stand today.** ADR 0075
+decided three remedies: decision 1 (grants at population thresholds),
+decision 2 (a loan) and decision 3 (sell-back). Checked against the tree
+this amendment ships on: no code in `src/` reads a population threshold to
+credit the treasury, no command in `simulationCommandSchema` sells anything
+back, and `LoanBook` is constructed only when `loanTerms` is supplied, which
+nothing in `src/` does. So none of ADR 0075's own cures is wired, and this
+amendment reopens the lock they were written for onto a game where none of
+them fire.
+
+**Not decided here, because it was not what this amendment was authorised to
+decide.** This work's brief was to equalise the rungs and to report what
+that touches; it was not a mandate to re-litigate ADR 0075 or to wire one of
+its remedies to close a trap ruling 19 happened to paper over. Three shapes
+were visible and none is chosen:
+
+- Wire one of ADR 0075's own remedies (most directly, decision 2's loan, the
+  only one with code already built and unwired).
+- Give a brand-new, unfurnished prison a rung of its own — shallower than
+  −1,250 — so the very first purchase or hire cannot spend the facility a
+  first bed needs. Nothing rules this today and it is a fourth rung, which
+  §3c above already reserves to the owner.
+- Accept the reopening as a consequence of "buying and building stop at the
+  same place" applying to every prison, including one that has not started
+  yet, and let ADR 0075 stay exactly as underbuilt as it already was.
+
+**The gate is green regardless of which the owner picks**, because
+`tests/integration/economy-liquidity-hard-lock.test.ts` asserts the lock as
+it stands today rather than assuming a remedy — the same rule this
+document's own "What this file is not" paragraph states about not merely
+asserting a symptom. Whichever remedy is chosen turns that file red at the
+line that names `BALANCE_AT_THE_RUNG` staying put, and is the gate for
+whatever change closes this.
+
+## Amendment, 2026-09-01: a starter rung for a fresh, unfurnished prison
+
+> **Accepted, 2026-09-01, by the repository owner.** This is a record of a
+> decision already made and communicated, not a proposal awaiting one —
+> `AGENTS.md` and `docs/AGENT_WORKFLOW.md` §3 forbid an implementing agent
+> self-approving an ADR, and nothing below is offered as this agent's
+> recommendation. The owner was shown §9's reproduction — a brand-new prison
+> that spends its opening grant and the standing overdraft on one legal
+> 656-brick purchase lands at a balance from which it can never earn another
+> minor unit — and the three shapes §9 named without choosing between them,
+> and ruled. Amends §9 immediately above — **superseded, not overwritten**,
+> per that section's own form and `docs/AGENT_WORKFLOW.md` §4's "mark both
+> directions": §9's own words stay below, and this section is where the
+> question it left open is answered.
+
+### 1. The ruling, in the owner's words
+
+Put to the owner as §9 put it: three shapes, each with its cost stated
+plainly — wire one of ADR 0075's own remedies (most directly, the unwired
+loan); give a fresh, unfurnished prison a rung of its own; or accept the
+reopening as a consequence of equalisation reaching every prison, including
+one that has not started yet. The owner's ruling:
+
+> **"A fresh, unfurnished prison gets a rung of its own — a lower limit,
+> enough that it can always afford its first plank. Equalisation stands; the
+> starter exemption is how the lock stays shut."**
+
+Chosen over wiring ADR 0075's loan (the only one of the three with code
+already built and unwired), over reverting the equalisation §2 above records,
+and over accepting the lock as a cost of equalisation reaching every prison.
+The second of §9's three shapes, taken as ruled and not re-litigated here.
+
+### 2. "Fresh, unfurnished": a predicate over live state, and why it cannot go stale
+
+**Defined as `RoomInstanceRegistry.totalResidentCapacity === 0`** — the
+summed `residentCapacity` of *every* registered room instance, whatever its
+room-catalog id and whatever `IntakeSystem`'s `AccommodationPolicy` would or
+would not house someone in. It is `0` exactly when nothing anywhere in the
+prison has a standing `'sleep-surface'` object.
+
+**It is precisely ECON-002's own precondition, not a proxy for it.**
+ADR 0075's own words: *"cash below 65, no plank in stock, and nothing
+plank-built to reverse"* is the closed state; *"nothing plank-built"* is
+`totalResidentCapacity === 0` in the registry's own terms, because
+`residentCapacity` is nonzero only when a plank-built `object.bed` or
+`object.medical-bed` stands (ADR 0028 decision 2). So the exemption is in
+force exactly while the condition it exists to prevent is still reachable,
+by construction rather than by a rule kept in step with it by hand.
+
+**It cannot go stale because nothing caches it.** `createSessionCommandHandler`
+(`src/simulation/runtime/session-commands.ts`) reads
+`runtimePrisoners.roomInstances.totalResidentCapacity` fresh, at the moment
+of every `PurchaseMaterials` or `HireStaff` command — never at session start,
+never written to a field, never carried across a tick. The registry's own
+`residentCapacity` per instance is written exactly once, by
+`RoomCapacityResolver.updateDerived`, at the three moments the object set
+inside a room's rectangle can have changed (`room-instance-registry.ts`'s own
+docblock) — a build order completing, that order being reverted, or a zone
+being registered — never on a scheduled tick. So the moment a build order
+*places* the first bed or medical bed, the very next command sees
+`totalResidentCapacity > 0` and the exemption ends there, with nothing to
+remember and nothing to forget. This is the same discipline the FUNDS chip's
+tone bands already follow (§5a(c) above): every boundary is read off state
+the economy already publishes about itself, never invented as a flag beside
+it.
+
+**Not `accommodationCapacity`, the figure the occupancy bar uses, and the
+difference is deliberate.** That figure is scoped to the room types
+`IntakeSystem`'s policy would actually house an arrival in, which is the
+right question for "how full is the prison" — and the wrong one here. A
+prison that has furnished only an infirmary has still proven it can buy and
+place a plank-priced sleep surface, which is the fact this predicate exists
+to establish; excluding medical beds would leave the starter rung open for a
+prison that has already demonstrated it does not need it. Ending the
+exemption one build order early is the safe direction regardless: the
+fallback is the ordinary, already-shipped mature rung, never a lock.
+
+The host's pre-flight (`src/ui/affordability.ts`) reads the published twin of
+this figure, `HudCountsViewModel.roomCapacity` — new, optional, the same
+shape as `treasuryOverdraftFloorMinorUnits` and mapped straight through from
+`counts.roomCapacity` (`src/ui/simulation-counts.ts`) rather than invented at
+the boundary, for the reason `src/ui/hud/` may not import the simulation
+(`AGENTS.md` boundary 1) but `src/main.ts` may.
+
+### 3. The starter limit, and its arithmetic
+
+**`INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS = -1,185`** —
+`INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS` (−1,250) shifted shallower by
+exactly `item.wood-plank`'s price (65), read from the procurement catalogue
+rather than written out a second time. It is the floor for `'deliveries'`
+and `'hiring'` while fresh and unfurnished; `'construction'` and `'wages'`
+are untouched.
+
+**Not a round number, and not the test file's own worst-observed balance —
+the tight bound, derived from the invariant the fix depends on.**
+`Treasury.canAfford` enforces `balance − amount ≥ floor` on *every* spend, so
+a `'deliveries'`/`'hiring'` balance can never fall below whichever floor is
+active — the floor is the worst case that can be reached, not merely a
+typical one. With the starter floor at `F = -1,250 + 65`, and construction's
+own (unaffected) floor at `C = -1,250`:
+
+```
+balance ≥ F                          (canAfford, holds at every point while fresh)
+balance − 65 ≥ F − 65 = C            (subtract the one plank a bed needs)
+```
+
+— so a queued build order's one-plank purchase, asked at the `'construction'`
+rung, is guaranteed to clear from *any* balance a fresh press could have
+reached, not only from the specific fixture
+`tests/integration/economy-liquidity-hard-lock.test.ts` presses to. That
+fixture's own numbers are the tightest instance of the general inequality
+rather than a separate fact: 654 bricks is the largest legal press under the
+starter floor, landing on −1,160; `−1,160 − 65 = −1,225`, which is 25 short
+of the mature rung and 25 clear of the unaffected construction rung. The
+general proof — swept over every reachable balance, not merely this one — is
+`tests/unit/economy-treasury.test.ts`, *"proves the transition is never a
+cliff…"*.
+
+**One plank, because a sleep-surface buildable never costs more than one.**
+`BUILDABLE_REGISTRY`'s two rows that place a `'sleep-surface'` object —
+`bed-wooden` and `medical-bed-wooden` — both require exactly one
+`item.wood-plank` and nothing else, enumerated rather than asserted about in
+the hard-lock test. If a future buildable priced a sleep surface at more than
+one plank, this derivation would need re-running with that larger figure —
+named here as what would change it, not treated as unreachable.
+
+**Why the margin is subtracted from `'deliveries'`/`'hiring'` rather than
+added to `'construction'`.** The owner's own words name *"the very first
+purchase or hire"*, not the build queue — so tightening the press is what
+the ruling asks for, and it is also the only shape that can work at all: a
+*single* floor shared between a 40-priced brick and a 65-priced plank can
+never guarantee the plank is affordable after a maximal brick purchase,
+because the remainder after any integer number of 40s is always less than
+40 above the floor and 40 is less than 65 — true at *any* floor, not only
+−1,250 or −1,185. Reserving the margin in a *different* rung (construction,
+already 65 short of deliveries) is the only shape under which the inequality
+above holds unconditionally. This is also, not incidentally, the same split
+`docs/adr/0083-…` and this document's earlier amendments already draw between
+a press and a queued order — the starter rung reuses it rather than inventing
+a third `SpendClass`.
+
+### 4. Where the exemption ends, and the proof it is not a cliff
+
+**It ends the instant a build order completes a sleep surface** —
+`totalResidentCapacity` becomes positive on that same command, and the very
+next command that spends under `'deliveries'` or `'hiring'` is judged at the
+mature rung (−1,250), not the starter one. There is no separate "graduation"
+step, no delay, and nothing a player must do to close it out — the predicate
+in §2 above *is* the exemption's own lifetime.
+
+**Not a cliff, because the transition can only ever widen the room a press
+has, never narrow it.** §3's inequality — `balance ≥ F` while fresh, and
+`F − 65 = C` — means the balance at the moment a bed completes is always
+`≥ F − 65 = C`, i.e. always inside the mature rung the prison is judged at
+the instant it stops being fresh. There is no reachable position from which
+furnishing the first bed leaves a balance the *new* (mature) rung would
+refuse: the worst case lands exactly on it (`tests/unit/economy-treasury.test.ts`,
+*"lands exactly on the unaffected construction rung"*), and every other case
+has room to spare. `tests/integration/economy-liquidity-hard-lock.test.ts`
+measures this transition in the kernel rather than only in the arithmetic:
+the balance right after the bed completes (−1,225) is already below where
+the starter rung would have refused everything (−1,185), and the prison is
+furnished rather than locked — the admission that follows holds a place, and
+the balance rises on its own, with no further press, inside the next
+in-game day.
+
+**What this does not prove**, named as the weakest claim rather than
+elided: no combination of catalogue prices lets the kernel exercise a
+*press* that is refused as fresh and accepted as furnished at the exact same
+balance, because the narrowest available item (a brick, 40) does not fit
+inside the 25-unit margin the tightest fixture leaves at the transition. The
+comparison is instead made directly against the published constants
+(`balanceAfterTheBed` measured below the starter floor, at or above the
+mature one) rather than forced through an artificial purchase. The
+mathematical proof in `tests/unit/economy-treasury.test.ts` does not have
+this limitation — it sweeps every reachable balance rather than one kernel
+run — and is the stronger of the two for this specific claim.
+
+### 5. What this amendment costs, and what it does not decide
+
+- **Two interactions this branch does not resolve, per its own brief**, named
+  so the branches that own them can:
+  - **`feat/767-a-crossed-rung-is-a-condition-and-an-event`'s
+    `InsolvencyRungSystem`** compares a prison's balance against
+    `rungFloorMinorUnits(rung, floor)`. That call's default third argument
+    (`isFreshUnfurnishedPrison = false`) means a crossed-rung condition for a
+    *fresh* prison will report the **mature** rung (−1,250) until that branch
+    is updated to pass the live predicate — under-reporting exactly the
+    window in which the starter rung is tighter (−1,185 to −1,250), the safe
+    direction (late rather than early) but not the correct one. That branch's
+    own call to make, not decided or touched here.
+  - **PR #782's FUNDS chip.** `overdraftRemaining` and `overdraftTone`
+    (`src/ui/hud/projection.ts`) read `deliveriesRungFloorMinorUnits`, which
+    this amendment leaves **unchanged** — the chip is still computed against
+    the mature −1,250, on every prison, fresh or not, per this work's brief
+    not to touch the FUNDS chip's wording or tone bands. **The consequence,
+    stated rather than patched:** for a fresh, unfurnished prison with a
+    balance between −1,185 and −1,250, the chip's tone stays `warning`
+    (amber) though a press is *already* refused — `danger` is defined as "the
+    rung where the cheapest possible action changes the outcome", which for a
+    fresh prison is −1,185 and not −1,250 — and the `{remaining} left` badge
+    overstates the spendable room by up to 65 minor units, because it
+    computes `balance − (-1,250)` where the true spendable room is
+    `balance − (-1,185)`. **This is a promise the code does not keep**
+    (`AGENTS.md`'s fourth exclusion), reported here rather than patched, and
+    it is the owner's copy to re-base or accept.
+- **No player-facing string changes.** No refusal sentence names a threshold
+  (§5a(a) above), and none becomes false: `'deliveries'` and `'hiring'` still
+  say "deliveries/hiring are refused until the state pays what it owes",
+  which is true at either rung.
+- **No save format moves.** `totalResidentCapacity` is derived from state a
+  save already carries (`RoomInstance.residentCapacity`); nothing new is
+  persisted.
+- **A determinism fingerprint moves only for a prison that ever pressed or
+  hired while fresh and unfurnished** — exactly the window this amendment
+  narrows. A prison that furnishes its first bed before ever pressing past
+  the mature rung's own room produces the same fingerprint before and after.
+- **Not decided here:** whether `InsolvencyRungSystem` (PR #784) should read
+  the live predicate, and what PR #782's FUNDS chip should show during the
+  exemption. Both are named above as the owner's or that branch's to take.
+
+### 6. The gate
+
+`tests/integration/economy-liquidity-hard-lock.test.ts`'s central case is
+retitled and rewritten around the starter rung's own numbers rather than
+re-valued: it now proves the lock **stays shut** — a fresh prison recovers
+via the construction route, an admission holds a place, and the balance
+rises with no further press — where it previously proved the lock reopens.
+The superseded assertions are quoted in place rather than deleted, per this
+file's own convention. Confirmed red against a hand mutation disabling the
+starter rung (`rungFloorMinorUnits` ignoring `isFreshUnfurnishedPrison`) and
+green again after a byte-for-byte restore verified with `sha256sum`.
+`tests/unit/economy-treasury.test.ts` and
+`tests/unit/prisoners-room-instance-registry.test.ts` gain the arithmetic and
+registry-level proofs this section cites; `tests/determinism/` and
+`tests/contract/` are run in full and reported unchanged in count.
+
+### 7. Where this is implemented
+
+`src/simulation/economy/treasury.ts` (`INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`,
+`STARTER_RUNG_FLOORS_MINOR_UNITS`, `rungFloorMinorUnits`, `Treasury.floorFor`
+/ `canAfford` / `spend`, all gaining the optional `isFreshUnfurnishedPrison`
+parameter), `src/simulation/prisoners/room-instance-registry.ts`
+(`RoomInstanceRegistry.totalResidentCapacity`),
+`src/simulation/economy/procurement.ts` (`ProcurementSystem.purchase`),
+`src/simulation/staff/hiring.ts` (`StaffHiringService.hire`),
+`src/simulation/runtime/session-commands.ts` (computes the live predicate at
+the two call sites that need it), `src/ui/affordability.ts`
+(`pressFloorMinorUnits`), `src/ui/hud/view-model.ts`
+(`HudCountsViewModel.roomCapacity`) and `src/ui/simulation-counts.ts`.

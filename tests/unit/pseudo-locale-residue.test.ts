@@ -82,8 +82,14 @@ describe('the pseudo-locale residue classifier (#664)', () => {
   });
 
   it('ignores a lone ASCII letter, which is far more often a unit than a word', () => {
-    // `Speed {speed}x` puts an `x` outside the placeholder; a generation id
-    // reads `gen-mtg1aol0-1`. Neither is copy.
+    // A synthetic case, not `hud.clock.speed`'s own text -- the owner's ruling
+    // of 2026-09-01 moved that key's sign to U+00D7
+    // (`tests/foundation/times-sign-contract.test.ts`), and a real `x` outside
+    // a placeholder is now a defect there rather than an example of one here.
+    // The shape is still worth covering on its own terms, because a lone
+    // ASCII letter beside a number is not always a times sign -- a unit
+    // suffix could put one there too -- and a generation id reads
+    // `gen-mtg1aol0-1`. Neither is copy.
     expect(findPseudoLocaleResidue('⟦Šƥééđ ⟨2⟩x···⟧')).toEqual([]);
     expect(findPseudoLocaleResidue('⟦Ẃ⟧ 3 × 4')).toEqual([]);
   });
