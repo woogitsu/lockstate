@@ -4,6 +4,7 @@ import {
   projectBuildQueue,
   type BuildQueueViewModel,
 } from '../../src/simulation/presentation';
+import { PROCURABLE_MATERIALS } from '../../src/content/procurement-catalog';
 import { BUILD_ORDER_FAIL_REASONS, type BuildOrder } from '../../src/simulation/construction/build-order';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import {
@@ -498,7 +499,22 @@ describe('cancelling one order by id, which is the command this read model exist
     });
   });
 
-  it('gives the materials back, so cancelling the third of a run is not a way to lose bricks', () => {
+  it('gives the money back, so cancelling the third of a run is not a way to lose value', () => {
+    /*
+     * **This case read "gives the materials back" until 2026-08-31 and asserted
+     * the bricks landing in the container.** The owner's ruling 20 of that date
+     * -- *"Anulowanie zwraca pieniądze zamiast cegieł"*, recorded in ADR 0076's
+     * amendment -- makes the refund money instead, for an order the crew has
+     * not started. The point of the case is unchanged and is the reason it is
+     * rewritten rather than deleted: aiming the panel's *Cancel* at one row of a
+     * run must not be a way to lose what that row was holding.
+     *
+     * Both halves are asserted, because paying for the bricks *and* putting
+     * them back is the one-press value creation the amendment names.
+     * `tests/integration/economy-money-conservation.test.ts` is where the whole
+     * sum is checked; this checks the two counters this panel's own command
+     * moves.
+     */
     const runtime = session();
     const container = runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID);
     orderWall(runtime, 'order-a', 3, 3);
@@ -508,13 +524,20 @@ describe('cancelling one order by id, which is the command this read model exist
     // built, the second is `assigned` and holding its allocation.
     runTo(runtime, 30);
     const held = container.quantityOf('item.brick');
+    const balance = runtime.treasury.balanceMinorUnits;
     const allocated = runtime.construction.getOrder('order-b')?.materialsAllocated ?? [];
     expect(allocated.length).toBeGreaterThan(0);
+    const price = PROCURABLE_MATERIALS.find((material) => material.itemId === allocated[0]?.itemId)?.unitPriceMinorUnits;
+    expect(price, 'the fixture needs a catalogue price to be measuring anything').toBeGreaterThan(0);
 
     cancel(runtime, 'order-b');
     runTo(runtime, runtime.kernel.tick + 1);
 
-    expect(container.quantityOf('item.brick')).toBe(held + (allocated[0]?.quantity ?? 0));
+    expect(
+      runtime.treasury.balanceMinorUnits - balance,
+      'the catalogue value of what the cancelled row was holding',
+    ).toBe(price! * (allocated[0]?.quantity ?? 0));
+    expect(container.quantityOf('item.brick'), 'money instead of bricks, never both').toBe(held);
     expect(runtime.construction.getOrder('order-b')?.materialsAllocated).toEqual([]);
   });
 });

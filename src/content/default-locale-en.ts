@@ -661,6 +661,22 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * and one still being built -- because they are one gesture with two outcomes,
    * and the refund only applies to the second: a thing already built out of the
    * materials does not give them back.
+   *
+   * **`remove-hint` IS FALSE AS OF 2026-08-31 AND NO REPLACEMENT IS WRITTEN
+   * HERE, BECAUSE COPY IS THE OWNER'S** (`AGENTS.md`'s fourth exclusion). The
+   * owner's ruling 20 -- *"Anulowanie zwraca pieniądze zamiast cegieł"* and
+   * *"Pieniądze dopóki ekipa nie zaczęła"*, recorded in
+   * [ADR 0076](../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+   * amendment of that date -- makes a cancelled order give back **money**
+   * rather than materials, and give back **nothing** once the crew has started
+   * it. So *"its materials come back"* names the wrong currency, and the
+   * sentence has no clause at all for the case where nothing comes back. The
+   * second half, *"a finished one is not refunded"*, is still true.
+   *
+   * It is left standing rather than deleted for the reason a wrong sentence
+   * beats no sentence on a control that takes something away: removing it would
+   * leave the *Remove* tool with nothing said about it at all. Reported to the
+   * owner with the branch that made it false.
    */
   'hud.build.remove': 'Remove',
   'hud.build.remove-active': 'Stop removing',

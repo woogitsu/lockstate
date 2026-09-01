@@ -43,6 +43,22 @@
  *    (`src/simulation/construction/system.ts:565`), and a just-in-time
  *    delivery already in flight is left alone to land as stock. *Illiquid, not
  *    destroyed.*
+ *
+ *    **THIS SHAPE CHANGED ON 2026-08-31 AND THE RUN ABOVE WAS MEASURED BEFORE
+ *    IT, WHICH IS WHY IT IS MARKED RATHER THAN REWRITTEN.** The owner's ruling
+ *    20 — *"Anulowanie zwraca pieniądze zamiast cegieł"* and *"Pieniądze
+ *    dopóki ekipa nie zaczęła"*, recorded in ADR 0076's amendment of that date
+ *    — makes an undo before the crew starts give back **money**: the delivery
+ *    in flight is turned around, or the allocation is sold back at the
+ *    catalogue price. So undone geometry is no longer *illiquid* at all in
+ *    those states, and the sentence two paragraphs up — *"an undone build
+ *    gives back material, never money"* — is false with it. What the ruling
+ *    *creates* is a fifth shape this list does not have: an order cancelled
+ *    while it is `'in-progress'` returns nothing in either currency, which is
+ *    **destroyed** and is the first press in the game that destroys value
+ *    outright. **No figure in this document has been re-measured against that
+ *    change**, so every multiplier below is a measurement of the pre-ruling
+ *    build and should be read as one.
  * 2. **Abandoned geometry** — walls that enclose nothing and are left
  *    standing. `Undo` pops one transaction, so a run drawn two gestures ago is
  *    out of reach. *Destroyed.*

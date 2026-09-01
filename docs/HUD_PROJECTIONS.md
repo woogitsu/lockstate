@@ -1204,6 +1204,25 @@ decision about what to build next.
     `tests/foundation/documentation-claims-contract.test.ts` pins that this
     paragraph names all three.
 
+    **A fourth crediting *event* arrived with the owner's ruling 20 of
+    2026-08-31, and it does not move the file list that gate checks, which is
+    why it is written out here by hand.**
+    [ADR 0076](./adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+    amendment of that date -- *"Anulowanie zwraca pieniądze zamiast cegieł"* --
+    makes cancelling a build order before its crew starts give the **money**
+    back. It reaches the treasury through two calls that were already in
+    `src/simulation/economy/procurement.ts`: `ProcurementSystem.cancel`, for a
+    just-in-time delivery the cancellation made surplus, and
+    `ProcurementSystem.refundMaterials`, which is new and sells an allocated
+    order's materials back at the catalogue price. **Neither is an income
+    line** -- both are the prison's own money coming back, exactly as a
+    cancelled purchase's refund is -- so neither is diverted to a loan under
+    ADR 0075 decision 2, and neither may be added to a readout that shows
+    income. The count in the heading above therefore stays *three sites* and
+    becomes *four events*, and the distinction is the one the gate cannot make:
+    it scans for files, and the fourth event is in a file the list already
+    names.
+
     **Both are now reachable from a session a player can drive.** This section
     used to say neither was, then that one was: the income half was changed by
     ADR 0028 rather than by anything in the money loop, and the refund half by

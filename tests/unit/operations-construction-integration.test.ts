@@ -91,6 +91,17 @@ describe('ConstructionSystem + ContainerMaterialsProvider: issue #25 integration
  * undo -- which `undo()` performs by calling `cancelOrder` -- destroyed
  * stock permanently, so ordinary play walked a prison toward an unbuildable
  * state with no feedback of any kind.
+ *
+ * **The heading is narrower than it reads since the owner's ruling 20 of
+ * 2026-08-31, and it is kept because every fixture below is a
+ * `ConstructionSystem` with no economy behind it -- which is exactly the case
+ * the ruling leaves alone.** ADR 0076's amendment of that date has a
+ * cancellation give back **money** for an order in `'assigned'` and **nothing**
+ * for one in `'in-progress'`; a bare `ConstructionSystem` has no treasury to
+ * pay anybody from, so the first of those falls back to the release this file
+ * measures. The second does not fall back, because it is not about money: the
+ * materials are consumed by the works whoever is keeping accounts, and the
+ * `'in-progress'` case below is rewritten rather than kept.
  */
 describe('cancelling a build order returns the materials it consumed', () => {
   function siteWithOrder(bricks: number) {
@@ -103,11 +114,26 @@ describe('cancelling a build order returns the materials it consumed', () => {
     return { construction, kernel, site };
   }
 
-  it('refunds an order cancelled after it allocated but before it finished', () => {
+  it('refunds an order cancelled after it allocated and before the crew started', () => {
+    /*
+     * **This case cancelled an `'in-progress'` order until 2026-08-31 and now
+     * cancels an `'assigned'` one, and the change is the owner's ruling 20
+     * rather than a fixture preference.** *"Pieniądze dopóki ekipa nie
+     * zaczęła"* -- until the crew has started -- draws the line between those
+     * two states, and the sibling case below is where the other side of it is
+     * measured. What this one still measures is unchanged: a cancellation
+     * before the crew starts puts the materials back where a bare
+     * `ConstructionSystem` can spend them again.
+     *
+     * It waits for the state rather than counting ticks, because the state is
+     * the thing the ruling is about and a literal tick count would encode the
+     * construction schedule twice.
+     */
     const { construction, kernel, site } = siteWithOrder(2);
     construction.submitOrder(createBuildOrder('order-1', 'wall-brick', { x: tileCoordinate(1), y: tileCoordinate(1) }));
 
-    for (let i = 0; i < 30; i += 1) kernel.step();
+    for (let i = 0; i < 200 && construction.getOrder('order-1')?.state !== 'assigned'; i += 1) kernel.step();
+    expect(construction.getOrder('order-1')?.state, 'the crew must not have started yet').toBe('assigned');
     expect(site.quantityOf('item.brick')).toBe(0); // the order really took them
 
     construction.cancelOrder('order-1');
@@ -118,6 +144,35 @@ describe('cancelling a build order returns the materials it consumed', () => {
     construction.submitOrder(createBuildOrder('order-2', 'wall-brick', { x: tileCoordinate(2), y: tileCoordinate(2) }));
     for (let i = 0; i < 200; i += 1) kernel.step();
     expect(construction.getOrder('order-2')?.state).toBe('completed');
+  });
+
+  it('gives nothing back for an order the crew had already started, whatever the substrate', () => {
+    /*
+     * The other side of ruling 20's line, and the one branch of `cancelOrder`
+     * that is **not** conditional on an economy being wired: an
+     * `'in-progress'` order's materials went into the works, so they are
+     * dropped unreleased and unpaid whether or not anybody is keeping
+     * accounts. Before the ruling this returned the two bricks, and the case
+     * above is where that assertion moved to.
+     *
+     * The second order is what makes it a measurement rather than a reading of
+     * one counter: with the bricks gone there is nothing to build it from, and
+     * it parks in `'materials-pending'` for ever.
+     */
+    const { construction, kernel, site } = siteWithOrder(2);
+    construction.submitOrder(createBuildOrder('order-1', 'wall-brick', { x: tileCoordinate(1), y: tileCoordinate(1) }));
+
+    for (let i = 0; i < 200 && construction.getOrder('order-1')?.state !== 'in-progress'; i += 1) kernel.step();
+    expect(construction.getOrder('order-1')?.state).toBe('in-progress');
+
+    construction.cancelOrder('order-1');
+
+    expect(site.quantityOf('item.brick'), 'the crew had started, so the bricks are gone').toBe(0);
+    expect(construction.getOrder('order-1')?.materialsAllocated).toEqual([]);
+
+    construction.submitOrder(createBuildOrder('order-2', 'wall-brick', { x: tileCoordinate(2), y: tileCoordinate(2) }));
+    for (let i = 0; i < 200; i += 1) kernel.step();
+    expect(construction.getOrder('order-2')?.state, 'and there is nothing left to build with').toBe('materials-pending');
   });
 
   it('refunds an order cancelled after it completed, and does not refund one that never allocated', () => {
