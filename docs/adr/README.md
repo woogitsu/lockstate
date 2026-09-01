@@ -487,13 +487,136 @@ reconstruct.**
 
 That is why #380 was right to queue its ADR 0007 amendment — it declined to
 self-approve and marked its heading *"(awaiting approval)"* — and it is right for
-a reason that has nothing to do with applying versus amending. Ten of the 17
+a reason that has nothing to do with applying versus amending. **Ten of the 17
 post-hoc additions on disk are covered today, by their own opening (0006,
 0007 ×2, 0028 ×3, 0033), by their ADR's `Status` (0022, 0023, 0031), or by both.
-**Seven are not: 0003's four amendments, 0026's addendum, and ADR 0008's two
+Seven are not: 0003's four amendments, 0026's addendum, and ADR 0008's two
 rulings.** This section does **not** condemn the first five; they are named as a
 backlog for whoever edits those documents next, and the count is what asserting
 this half mechanically would cost.
+
+**That count is corrected below, 2026-09-01, rather than deleted — it is kept
+because it records what was believed and why it stopped being true.**
+
+#### What counts as a post-hoc addition, precisely
+
+Two shapes, and only two:
+
+**(a) A headed section** — a section whose heading's *first word* is `Amendment`
+or `Addendum` (match the opener, not the word: ruling 2 §5's first
+implementation note applies here too, so a sub-heading merely *containing*
+either word inside such a section, e.g. ADR 0007's *"The decision this amendment
+adds…"*, does not count again). This is ruling 2's predicate 1 and it is
+exhaustive and mechanical:
+
+```
+grep -RniE '^#{2,6}\s+[*_`]*(Amendment|Addendum)\b' docs/adr/*.md
+```
+
+run against every ADR file — not this file and not `STATUS-QUEUE.md`, the two
+documents `adr-numbering-contract.test.ts` already exempts.
+
+**(b) An unheaded passage that does the same job inline** — one that itself
+states, narrows, generalises, reverses or settles something the *document it
+sits in* requires or leaves open, under no heading of shape (a). This is the
+shape ADR 0008 §2's two rulings were in before ruling 2 gave them headings, and
+the reason ruling 2 §5 built a second predicate for it: a decision verb
+(`decided|settled|generalised|ruled|narrowed`) within about 60 characters of a
+date, outside every section of shape (a). That predicate is noisy on this
+corpus and has to be read, not only run — three shapes trip it and are **not**
+additions in this sense, excluded by reading rather than by a sharper regex:
+
+- an ADR's own opening recording *when the document itself* was decided
+  (`**Proposed, 2026-08-28.** Decided under the owner's standing mandate…`,
+  `**Ruled: 5,000 bp (50%)** (#703, 2026-08-31)`, and every later ADR that
+  states its own ruling this way) — original content, not something added
+  after acceptance;
+- a passage that names its own exemption (`Nothing this section decides
+  moves`, `No decision in the rest of this document is edited`) — a correction
+  to a citation, a name or a measurement, changing no rule;
+- a passage that reports a *different*, separately-dated document's decision
+  rather than changing what *this* one requires — ADR 0010's paragraph on ADR
+  0008's telemetry scoping, ADR 0044's confirmation that an open question
+  resolved the way it had predicted, ADR 0026's own amendments (counted under
+  (a) already) being referenced from ADR 0050.
+
+Run over the full corpus with those three exclusions applied by hand, exactly
+one passage survives: a paragraph in
+[ADR 0028](./0028-object-placement-and-derived-room-capacity.md), opening
+*"Narrowed on 2026-08-30 by [ADR 0076] decision A(i), which that ADR requires
+to be written in here rather than left to be discovered from the code"* —
+no heading, unmentioned by ADR 0028's own `Status`. It is this pass's headline
+finding; see below.
+
+#### Enumerated mechanically, 2026-09-01
+
+Predicate (a), run against this tree: **32 headed sections across 18
+documents** — 0003 ×4, 0006, 0007 ×2, 0008 ×4, 0014, 0015, 0017 ×2, 0019,
+0020 ×2, 0022, 0023, 0026 ×3, 0028 ×3, 0029, 0031, 0033, 0071, 0076 ×2 — plus
+predicate (b)'s one surviving unheaded passage above. **That is 33 post-hoc
+additions on disk, not 17.**
+
+**The 17 above was never wrong on its own terms and was never re-derivable on
+anyone else's.** It was the 15 headed sections ruling 2 §2 measured at
+`54418b6`, plus ADR 0008's then-unheaded two, and it was frozen the day it was
+written while the corpus it describes kept moving — past 15 first (ruling 2's
+own recount above found 24), then to 32, plus the one unheaded passage no
+heading-only grep would ever surface. Nothing about *how* it was produced was
+stated closely enough for a later pass to reproduce the number, which is the
+defect this subsection exists to close.
+
+#### The covered/uncovered split, redone against the current 33
+
+The test stays the one stated above: an addition is **covered** when its own
+opening or its ADR's `Status` states a resolved position — an explicit
+approval, or an explicit "no decision here" tying it to the acceptance already
+on record — and **uncovered** when it states or implies a changed rule with
+neither. Each of the 33 was checked against its file rather than carried
+forward from the count above.
+
+- **26 of the 33 are covered.** By their own opening: 0006; 0007 ×2; the two
+  2026-08-27 amendments at the foot of
+  [ADR 0008](./0008-trusted-service-boundary.md) §3 (*"no decision moves"*,
+  then *"the owner has chosen"*); 0014; 0015; 0017 ×2; 0019; 0020 ×2;
+  [0026](./0026-entity-id-lifetime.md)'s addendum (*"No decision changes
+  here"*); 0028 ×3; 0029;
+  [0071](./0071-what-bounds-a-room-whose-activity-consumes-no-object.md)'s
+  amendment, which names *"the owner's"* ruling on issue #585 in its own
+  opening line; and [0076](./0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+  two, each opening *"Accepted, 2026-09-01, by the repository owner"* —
+  twenty sections across thirteen documents. By their ADR's `Status`: 0022;
+  0023; 0026's other two amendments (2026-08-28, 2026-08-29), which its
+  `Status` paragraph names and resolves in the same two sentences; 0031; 0033
+  — six more across five documents (0026 counted in both, once for each kind
+  of coverage it carries).
+- **7 are not: 0003's four amendments, ADR 0008 §2's original two rulings** —
+  which still open *"Nobody has approved this, and a reader acting on it
+  should know that"* even now that they carry a heading and a date — **and the
+  ADR 0028 paragraph found above.**
+
+**The total held at seven both times, and that is coincidence rather than
+agreement.** [ADR 0026](./0026-entity-id-lifetime.md)'s addendum
+(2026-08-26) — one of the original seven — is reclassified covered here: its
+opening states *"No decision changes here"* exactly as plainly as the
+audit-amendments to 0014, 0015, 0019, 0020, 0028 and 0029 do, a reading the
+count above did not extend to it. The ADR 0028 paragraph takes the seat it
+leaves. **What this section does not condemn is therefore four, not five:
+0003's four amendments alone.** The ADR 0028 paragraph is named separately
+above rather than folded into that backlog, because unlike those four it is
+not merely unapproved — it is undiscoverable.
+
+**The ADR 0028 paragraph is this pass's one uncovered-and-load-bearing find, in
+ruling 3's own sense.** It differs from ADR 0008's two in *why* it is
+uncovered: it is not disputed the way those are — it traces to
+[ADR 0076](./0076-what-happens-to-a-resident-whose-bed-is-taken-away.md), an
+accepted decision, so its substance is not in question — but nothing in ADR
+0028 says so. No heading, no mention in its own `Status`, nothing short of
+reading the whole *Decision* section end to end. And it binds future work
+exactly as ADR 0008's two do: for every room a placed-object capacity governs,
+a resident the prison **can** rehouse is moved rather than left, which is a
+rule the next thing touching occupancy has to know is there. Whether it gets a
+`STATUS-QUEUE.md` §2 row on the model of ADR 0008's two is that document's
+call, not this one's.
 
 **And an approval sentence can itself rot, which is the limit of this half.**
 0033's amendment opens *"Status of this section: `Proposed`, with the rest of
@@ -516,13 +639,20 @@ say yes or no to them.
 
 ### 4. The alternatives, and what each would have condemned
 
-- **Extend the §2 rule to every post-acceptance edit.** Condemns **16 of the 17**
-  post-hoc additions on disk: exactly one of them — 0007's second amendment — ever
-  had a row, and [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 records that the row it
-  did have was *"the only thing that says it exists"*. It also adds surface to a
-  rule that same section already diagnoses as *"unsatisfiable under concurrency"*
-  and as having failed more often than it worked. Rejected: a rule already being
-  routed around does not get widened.
+- **Extend the §2 rule to every post-acceptance edit.** Condemned **16 of the 17**
+  post-hoc additions on disk as this bullet was originally counted; against the
+  redone 33 (2026-09-01), it is **28 of the 33**. Five have ever had a row, not
+  one: 0007's second amendment (resolved, and the row deleted with it, per
+  [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2's own note that the row it did have
+  was *"the only thing that says it exists"*); ADR 0008 §2's two rulings and its
+  2026-08-27 §3 scope clause, all three still carrying an open row today; and
+  [ADR 0071](./0071-what-bounds-a-room-whose-activity-consumes-no-object.md)'s
+  amendment, queued not for its own coverage — its opening names the owner's
+  ruling, which is why it counts covered above — but for the `Proposed` document
+  it sits inside. The ratio moved (16 of 17 to 28 of 33) without the argument
+  moving: it also adds surface to a rule that same section already diagnoses as
+  *"unsatisfiable under concurrency"* and as having failed more often than it
+  worked. Rejected: a rule already being routed around does not get widened.
 - **Keep the applies/amends line and write the test for it.** There is no test to
   write; see ruling 1. Rejected as unimplementable rather than as unattractive.
 - **Require each ADR's `## Status` to name every amendment it carries.**
