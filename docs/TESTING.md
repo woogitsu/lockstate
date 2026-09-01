@@ -206,6 +206,65 @@ this check is silent about it — that is an affordance defect and needs its own
 assertion (`.save-panel` on the Build and Rooms tabs;
 `docs/research/2026-08-31-playing-the-twelve.md` §11).
 
+### Reading the DOM afterwards is not seeing it either (#700)
+
+`expectNotClipped` answers "is the string where the element is". It cannot
+answer "was the string ever on a screen", and on 2026-08-31 that was the
+difference between a green suite and a defect the owner found by playing.
+
+A neglected prison lost three prisoners. The escape sentence — *"{name} broke
+out — no guard reached them in time."* — **was written correctly all three
+times**, in the `danger` band, unhidden, naming the person, and was replaced
+**1 ms, 0 ms and 0 ms later** by the all-clear recorded on the same tick.
+Across 21.8 minutes of play the sentence reached **zero animation frames**
+(#700, `docs/research/2026-08-31-playing-the-nine-changes.md` §2c).
+
+**No assertion in the suite could have failed on that**, and the reason is
+worth stating rather than assuming. A browser test reads the DOM *after* the
+event, so it reads the replacement and passes. A 100 ms poll cannot help: the
+playtest's own poll took 52 samples and never landed on a sentence that stood
+for 1 ms. And `vitest.config.ts` is `environment: 'node'` with no jsdom, so
+`hud.ts`'s `applyEventNotice` — the function that writes the band — is
+unreachable from `pnpm test` at all, and an animation frame does not exist
+there.
+
+`tests/browser/alert-dwell.ts` is the assertion that was missing.
+`installBandRecorder(page, selector)` starts a `MutationObserver` for the
+**writes** and a `requestAnimationFrame` loop for the **paints**;
+`readBandRecording(page)` brings back both, and the finding is the difference
+between them. The frame log keeps *spans* — first frame, last frame, frame
+count — so `expectPaintedFor(recording, text, minimumMs, what)` can assert
+what nothing else here can: this sentence was on screen, unbroken, for at
+least this long. A span caught in exactly one frame measures 0 ms, which is
+honest: it was painted, and nobody could read it.
+
+**Deliver the view models the way the worker does.** `src/main.ts` calls
+`hud.update` synchronously once per worker message with no frame batching, and
+`SimulationWorkerStateMachine.publishEvents` posts one message per event in a
+single loop — so two events on one tick are two DOM writes inside one frame
+budget. `deliverAsTheWorkerWould(page, models)` hands each model over in its
+own task through a `MessageChannel`. A sequence applied in a single
+`page.evaluate` would measure a path the application never takes and would
+report every sentence as surviving.
+
+**An instrument that observes nothing must fail, not pass**, because a blind
+instrument is worse than the defect it was written for. Four guards, and
+`ui-escape-sentence-survival.spec.ts` exercises each rather than describing
+it: a selector matching nothing throws at install; a read with no recorder
+throws; every assertion first requires at least two animation frames and at
+least one observed write; and `expectNeverPainted` — the assertion a *control*
+arm uses — additionally requires that the text **was written**, so "it never
+reached a frame" cannot pass for a sentence nobody produced.
+
+That last guard is what keeps the control arm from rotting into a tautology.
+`ui-escape-sentence-survival.spec.ts` keeps the red half of red-then-green
+permanently: one arm measures the escape as `main` produces it, and a second
+rebuilds the pre-#703-ruling-6 stream — the all-clear recorded on the escape's
+own tick, through the same production recorder — and asserts the instrument
+catches it. The code that makes the first arm green lives in
+`src/simulation/incidents/response-system.ts`, which that spec does not touch.
+
+
 ### Comments are not executed, and one shape of them is now gated
 
 `tests/foundation/comment-symbol-existence-contract.test.ts` reads every
