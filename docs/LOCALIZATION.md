@@ -150,11 +150,13 @@ locale is authored, and no translation vendor process is defined yet.
 Two things the infrastructure owes a translator, recorded rather than fixed
 because both mean authoring player-visible copy:
 
-- **21 messages interpolate `{count}` into a flat string.** English reads
-  correctly; Polish needs `few` and `many` for 2, 3, 4, 22 … and a translator
-  cannot add a form to a key that has none. Pinned in
+- **22 messages interpolate `{count}` into a flat string** (21 when this was
+  first counted; `hud.alert.occurrences` arrived with #754 and is a `×`
+  formula like the other two, not a sentence). English reads correctly;
+  Polish needs `few` and `many` for 2, 3, 4, 22 … and a translator cannot add
+  a form to a key that has none. Pinned in
   `tests/foundation/second-locale-contract.test.ts` so the list cannot grow
-  unnoticed. Only 2 of 588 messages are plural entries today.
+  unnoticed. Only 2 of 591 messages are plural entries today.
 - **2 accessible names are assembled in code** from a localized word, a
   hard-coded `": "` and another element's text. Rule 4 above forbids it;
   the same gate pins both sites.

@@ -137,15 +137,18 @@ describe('every non-default catalogue is well-formed, without being required to 
  * sentence to write rather than twenty-two.
  *
  * Not every entry is a defect. `hud.build.target-run` (`{count} × {edge} from
- * {x}, {y}`) and `hud.rooms.needs-object` (`{count} × {object}`) are formulae
- * where the `×` carries the counting, and a formula has no grammatical number
- * in any language. They are listed anyway: the point of the list is that
- * every counted message has been looked at, and splitting it into "real" and
- * "fine" would need a per-entry judgement that is the owner's to make.
+ * {x}, {y}`), `hud.rooms.needs-object` (`{count} × {object}`) and
+ * `hud.alert.occurrences` (`{count}×`, added by #754 after this list was
+ * first measured) are formulae where the `×` carries the counting, and a
+ * formula has no grammatical number in any language. They are listed anyway:
+ * the point of the list is that every counted message has been looked at, and
+ * splitting it into "real" and "fine" would need a per-entry judgement that is
+ * the owner's to make.
  */
 const FLAT_MESSAGES_WITH_COUNT = [
   'hud.alert.event.incidents.riot-opened',
   'hud.alert.event.prisoners.discharged',
+  'hud.alert.occurrences',
   'hud.build.buy-submit',
   'hud.build.deliveries-count',
   'hud.build.deliveries-more',
