@@ -7,7 +7,8 @@ import { ambientFocusOwner, handOffFocus, holdsFocus } from '../primitives/focus
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createNumberField, type NumberField } from '../primitives/number-field';
 import { createPanel } from '../primitives/panel';
-import { rovingFocusMove, rovingTabStop } from '../primitives/roving-focus';
+import { rovingTabStop } from '../primitives/roving-focus';
+import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import { HUD_MESSAGE_KEY } from './messages';
 import { pressArm, toggleRemovalMode } from './tool-arming';
 import type {
@@ -645,24 +646,20 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * answers `undefined` for everything else, and an arrow that is not ours must
    * stay the browser's, or the scroll region this list *is* would stop
    * scrolling.
+   *
+   * Wired through `bindRovingFocusKeydown` rather than a listener written
+   * here: this panel had the same gap `build-panel.ts` did --
+   * `preventDefault()` with no `stopPropagation()` -- which left the same
+   * `ArrowDown`/`Up`/`Left`/`Right` free to also reach `WorldScene`'s
+   * `window`-level camera binding and pan the world underneath the player
+   * -- measured, on 2026-09-01, against the Build catalogue rather than this
+   * panel, but the same code shape. Fixed once, in the wiring both panels now
+   * share, rather than twice.
    */
-  catalogueRows.addEventListener('keydown', (event: KeyboardEvent) => {
-    if (event.altKey || event.ctrlKey || event.metaKey) return;
-    const focused = event.target;
-    if (!(focused instanceof HTMLElement)) return;
-    const roomId = focused.dataset['room'];
-    if (roomId === undefined) return;
-    const next = rovingFocusMove(event.key, rowOrder.indexOf(roomId), rowOrder.length);
-    if (next === undefined) return;
-    const target = rows.get(rowOrder[next] ?? '');
-    if (target === undefined) return;
-    event.preventDefault();
-    // The moved-to row has to be able to take focus before it is given focus:
-    // every row but the tab stop carries `-1`, and `focus()` on a `-1` element
-    // works, but leaving the group's `0` behind would mean tabbing back in
-    // returns to the row the player arrowed away from.
-    for (const [id, row] of rows) row.element.tabIndex = id === rowOrder[next] ? 0 : -1;
-    target.element.focus();
+  bindRovingFocusKeydown(catalogueRows, {
+    datasetAttribute: 'room',
+    order: () => rowOrder,
+    rows,
   });
 
   // An empty list must say so. A blank rectangle is indistinguishable from a

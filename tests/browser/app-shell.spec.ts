@@ -4357,6 +4357,114 @@ test.describe('the assembled application', () => {
     }
   });
 
+  /**
+   * Arrow-key catalogue navigation moves the catalogue, not the world camera.
+   *
+   * Only the assembled page can prove this either way: the defect needs both
+   * `build-panel.ts`'s roving-tabindex `keydown` handler and `WorldScene`'s
+   * own `window`-level camera bindings alive at once, and neither the
+   * isolated HUD harness `ui-shell.spec.ts` runs against nor the isolated
+   * world-scene harness `world-scene-input.spec.ts` runs against has both --
+   * one has no `WorldScene`, the other has no HUD panel. This file's own
+   * `APP_URL` (`/index.html`) is the one page where the two systems actually
+   * share a `window`.
+   *
+   * A 2026-09-01 keyboard playtest of this exact page (recorded on an
+   * unmerged research branch as
+   * docs/research/2026-09-01-what-act-six-never-reached.md, finding D3) is
+   * where this was found: six `ArrowDown` presses inside the Build catalogue
+   * -- which correctly moved the roving-tabindex *selection* from the first
+   * buildable to the seventh -- also panned the world camera down two tiles'
+   * worth at 1280x800, because `build-panel.ts`'s `keydown` handler called
+   * `event.preventDefault()` for the key it consumed but never
+   * `event.stopPropagation()`, so the same keystroke went on to satisfy
+   * `WorldScene`'s camera binding, which is gated only by
+   * `isTextEntryFocused()` and does not treat a focused `<button
+   * role="radio">` as a text field.
+   *
+   * **The instrument.** There is no debug hook for camera position on this
+   * page (`window.lockstateWorldSceneHarness` exists only on the isolated
+   * world-scene harness), so this reads the world the same way the playtest
+   * did: arm Remove once, as a read-only probe, and press the same fixed
+   * screen point before and after the arrow keys. `RemoveObject`'s own report
+   * names the world tile under wherever the press landed -- if the camera
+   * moved between the two presses, the same screen point names a different
+   * tile, and if it did not, the same tile comes back twice.
+   */
+  test('the Build catalogue arrow keys move the catalogue, not the world camera', async ({ page }) => {
+    await installCommandTee(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await page.getByRole('button', { name: 'Build' }).click();
+    await expect(page.locator('.hud-build')).toBeVisible();
+
+    // Armed once and left alone -- a toggle re-pressed mid-test would un-arm
+    // it, and a probe that fires no `RemoveObject` at all reads as "nothing
+    // moved" rather than as a defect, which is the test bug the 2026-09-01
+    // playtest's own script recorded catching in itself.
+    await page.locator('.hud-build__remove').click();
+    await expect(page.locator('.hud-build__remove')).toHaveAttribute('aria-pressed', 'true');
+
+    // A fixed, bare-canvas screen point, found once and pressed twice -- the
+    // same point both times, or a difference in *where the mouse landed*
+    // would be indistinguishable from a difference in *what the camera
+    // showed there*.
+    const viewport = page.viewportSize();
+    if (viewport === null) throw new Error('the viewport size is needed to aim the probe');
+    const aim = await page.evaluate(
+      ({ width, height }) => {
+        for (let y = 8; y < height - 8; y += 16) {
+          for (let x = 8; x < width - 8; x += 16) {
+            if (document.elementFromPoint(x, y)?.tagName.toLowerCase() === 'canvas') return { x, y };
+          }
+        }
+        return null;
+      },
+      { width: viewport.width, height: viewport.height },
+    );
+    expect(aim, 'no bare world point at 1280x800 to aim the probe at').not.toBeNull();
+    if (aim === null) return;
+
+    const probeAt = async (): Promise<{ x: number; y: number } | undefined> => {
+      const already = (await objectCommandsSent(page, 'RemoveObject')).length;
+      await page.mouse.move(aim.x, aim.y);
+      await page.mouse.down({ button: 'left' });
+      await page.mouse.up({ button: 'left' });
+      return (await objectCommandsSent(page, 'RemoveObject')).slice(already)[0];
+    };
+
+    const before = await probeAt();
+    expect(before, 'the first probe produced no RemoveObject to read a tile from').not.toBeUndefined();
+
+    // Re-focus a catalogue row: arming Remove above, and the world press just
+    // taken, both move DOM focus off the catalogue.
+    await page.locator('.hud-build__list [data-buildable]').first().focus();
+    for (let i = 0; i < 6; i += 1) await page.keyboard.press('ArrowDown');
+
+    // The catalogue's own navigation still has to work -- this test is a
+    // regression guard for the camera, not a trade against the accessibility
+    // route #411 built. `document.activeElement` moving off the first row is
+    // the same claim `rowState().focused` makes in the test above, read
+    // directly since this test does not otherwise need that helper.
+    expect(
+      await page.evaluate(() => (document.activeElement as HTMLElement | null)?.dataset?.['buildable'] ?? ''),
+      "ArrowDown stopped moving the catalogue's own focus",
+    ).not.toBe('');
+
+    const after = await probeAt();
+
+    // **The regression this test exists for.** Before the fix this was
+    // `{"x":16,"y":14}` -> `{"x":16,"y":16}`, matching the 2026-09-01 finding
+    // exactly: the six ArrowDown presses above also panned the camera down
+    // two tiles' worth even though every one of them landed inside the
+    // catalogue's own roving-tabindex group.
+    expect(after, `tile under the probe went from ${JSON.stringify(before)} to ${JSON.stringify(after)}`).toEqual(
+      before,
+    );
+  });
+
   test('a pending delivery is on the panel with the fold shut, and costs it nothing while none is (#285, #703)', async ({
     page,
   }) => {
