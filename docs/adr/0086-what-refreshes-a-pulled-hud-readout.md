@@ -209,8 +209,11 @@ what follows.
 This is the part the brief called the most valuable, and the part nobody had
 done. `PROJECTION_IDS` has fifteen members; `PROJECTION_CATALOG`
 (`src/simulation/worker/projection-catalog.ts:209-445`) binds each to the
-runtime state that answers it. **Ten have a reader; five do not.** The
-derivation is a grep for the quoted id under `src/`.
+runtime state that answers it. **Nine have a reader; six do not.** The
+derivation is a grep for the quoted id under `src/` — `grep -rl "'hud/<id>'" src/ui/`
+for each of the fourteen `hud/` ids, and `grep -rn "world/render-snapshot" src/`
+for the fifteenth, which returns one comment in `src/simulation/codec/run-length.ts`
+and no requester at all.
 
 Every row below was opened. "Moves on a tick with no player command" is the
 column that decides whether a readout can go stale at all.
@@ -227,12 +230,11 @@ column that decides whether a readout can go stale at all.
 | 8 | `hud/staff` (`limit: 0`, totals) | `simulation-staff-coverage.ts:124` | security | `required`/`assigned`/`shortage` summed over sectors | yes — `DeploymentSystem` runs every 10 ticks | `prisonersCovered`/`Understaffed`/`Unguarded` move **only** when the census changes |
 | 9 | `hud/room-list` | `simulation-room-needs.ts:308` | rooms | room instances × `runtime.placedObjects` | yes — an object completes on a tick | none for a toilet, a shower or a bench |
 | 10 | `hud/room-detail` | `simulation-room-needs.ts:332` | rooms | same, per room | yes | same |
-| 11 | `world/render-snapshot` | `src/rendering/feed/simulation-snapshot-feed.ts` | — | world geometry | no — geometry changes only behind a command | n/a — **has its own cadence**, see §7 |
-| — | `hud/prisoner-detail`, `hud/security`, `hud/contraband`, `hud/incidents`, `hud/incident-detail` | none | — | — | — | no reader; `tests/foundation/projection-reachability-contract.test.ts` carries each one's reason |
+| — | `hud/prisoner-detail`, `hud/security`, `hud/contraband`, `hud/incidents`, `hud/incident-detail`, `world/render-snapshot` | none | — | — | — | no `simulation/request-projection` reader; `tests/foundation/projection-reachability-contract.test.ts` carries each one's reason. `world/render-snapshot` is the one worth a second look: the world *is* on screen, but `SimulationSnapshotFeed` reaches it through `simulation/request-snapshot` (`:383`) rather than through this channel, which is why it has a cadence of its own — see §7 |
 
 **The answer to "there may be others" is: there is no instance. There is only
-the class.** All ten readouts with a reader are refreshed by one predicate in
-one listener; nine of them by the same nine-call block. Every one of the nine
+the class.** All nine read models with a reader are refreshed by one predicate
+in one listener, through the same nine-call block. Every one of the nine
 has content that moves on a bare tick, and for every one of the nine there is a
 change that moves it while all twenty counts stand still. The roster is not the
 worst of them either — row 1 is, because `blockProgress` is a *continuous*
@@ -280,9 +282,11 @@ repository has to #718's question:
 
 Note what part 1 buys and does not buy. It works for the render feed because
 its subject **cannot change without a command**: geometry is built by orders.
-Row 11 of the inventory is the only row where that is true. Rows 1–10 all move
-on a bare tick, so an invalidation flag for them would have to be set *inside*
-the systems that move them — which is the cost priced as option C below.
+`SimulationSnapshotFeed`'s own subject is the only one in this document of which
+that is true, and it is not even on this channel. **All ten rows of the
+inventory move on a bare tick**, so an invalidation flag for them would have to
+be set *inside* the systems that move them — which is the cost priced as option
+C below.
 
 ### 8. Where the documentation says something else
 
@@ -370,8 +374,9 @@ essentially every tick of a populated prison, and the gate collapses to option
 A for exactly the readout #718 is about.
 
 **Refused as a general rule.** It is the right shape for a readout whose
-subject genuinely cannot change without a command — which is row 11, and row 11
-already does it.
+subject genuinely cannot change without a command — which, of everything this
+document looked at, is `world/render-snapshot` alone, and
+`SimulationSnapshotFeed` already does it.
 
 ### Option D — accept the freeze and say why
 
@@ -460,6 +465,14 @@ as "the tick moved" rather than "every 250 ms".
    clock says nothing new" — must replace the heartbeat in the same commit.
 6. **Row 1 of the inventory stays on the pull route** unless the follow-up in
    E.3 is taken.
+7. **`docs/HUD_PROJECTIONS.md` §9's tally is corrected in the same branch.** It
+   read *"**Eight** of the fifteen catalogued read models still have a route and
+   nobody on the end of it: **seven are read, by six modules**"*; by its own
+   stated derivation — a grep for the quoted id under `src/ui/` — it is now six
+   unread and nine read, by nine modules. `hud/status-strip` and
+   `hud/prisoner-roster` gained readers with #451/#459 and the pair was never
+   restated. `tests/foundation/projection-reachability-contract.test.ts` carries
+   the same sentence and is another agent's surface; handed over.
 
 ## What stays the owner's
 

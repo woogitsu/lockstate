@@ -531,6 +531,38 @@ Four properties are worth stating because each is a decision:
   player is always looking at belongs on a cadence; a list only an open panel
   cares about, in a window only that panel knows, belongs on a request.
   Nothing publishes a `simulation/projection` on a timer.
+- **And what makes the main thread ask is the clock heartbeat, not the counts.**
+  Corrected 2026-09-01 (issue #718). Every reader below is introduced as riding
+  *"the counts cadence"*, and six sentences in this section said so; the
+  composition root's nine comments said it with a number, *"up to 500ms for the
+  next counts publication"*. **All of them were false the day they were
+  written.** `src/main.ts:1702` opens **one** listener for every worker-to-main
+  message, and its early return (`src/main.ts:1735-1740`) fires only when all
+  six of its translators say nothing. `hudClockFromWorkerMessage`
+  (`src/ui/simulation-clock.ts:22-57`) has no "nothing changed" arm — it
+  returns a view model for *every* `simulation/clock-state` — so every one of
+  those falls through to the nine-call refresh block at
+  `src/main.ts:1795-1804`. `publishClockState` posts one at most every 250 ms
+  and only when the tick has moved
+  (`src/simulation/worker/state-machine.ts:438-462`), which is twice the rate
+  of the counts channel and, crucially, **not change-gated on the counts**.
+
+  Measured on the real `SimulationWorkerStateMachine` over 30 simulated seconds
+  at ×1, classifying every posted message by the composition root's own six
+  translators: a prison with **no occupied place publishes
+  `simulation/status-counts` exactly once** and refreshes its readouts **120
+  times**, worst gap **255 ms**; a housed prison publishes 59 and refreshes 178.
+  The mutation says why this is load-bearing rather than incidental — remove the
+  clock term from that predicate and the same two prisons refresh **once in
+  thirty seconds**, which is issue #718's reported symptom exactly.
+
+  **What each of those six sentences was reaching for is still true** and is why
+  they are corrected rather than deleted: none of these readouts is refreshed
+  only on arrival, and each rides a cadence that already exists rather than a
+  timer of its own. What was wrong is *which* cadence, and the number. The
+  decision about whether that heartbeat should be the deliberate contract is
+  [ADR 0086](./adr/0086-what-refreshes-a-pulled-hud-readout.md), Proposed;
+  it also carries the inventory of every pulled readout and what moves each one.
 - **Which is why #157 finding 2 does not arise.** `ConfiscationLedger` has no
   windowed accessor and `IncidentLog.all()` materialises every incident ever
   recorded — both unsafe to read twice a second, and neither read at all until
@@ -569,14 +601,15 @@ started using it, which is what happened. `src/ui/simulation-room-needs.ts`
 reads `hud/room-list` and, for the rooms it says are unfinished,
 `hud/room-detail`, so the Rooms panel can tell the player what a zoned room is
 missing; the composition root asks while the Rooms tab is the one showing, on
-the `simulation/status-counts` cadence, and `RoomNeedsReader.read` refuses to
+the refresh cadence the bullet above corrects (this sentence read *"on the
+`simulation/status-counts` cadence"*), and `RoomNeedsReader.read` refuses to
 stack so a slow answer cannot queue a second question. The gate's entry is gone
 and its assertion now runs the other way: there must be a reader, and deleting
 the last one fails.
 
 `src/ui/simulation-build-queue.ts` is the second, on identical terms —
-`hud/build-queue`, while the Build tab is showing, on the counts cadence,
-refusing to stack — and it is the one worth naming separately, because it is the
+`hud/build-queue`, while the Build tab is showing, on the refresh cadence
+corrected above, refusing to stack — and it is the one worth naming separately, because it is the
 first time this channel made a **command** reachable rather than a readout.
 `CancelBuildOrder` names an `orderId`; no order id reached the main thread at
 all, so nothing could aim it, and
@@ -587,8 +620,8 @@ window, because the block draws three rows and a hundred would be ninety-odd
 built for nothing twice a second.
 
 `src/ui/simulation-intake.ts` is the third, on the same three terms —
-`hud/prisoner-population`, while the Overview tab is showing, on the counts
-cadence, refusing to stack — and it is the first that is about *people* rather
+`hud/prisoner-population`, while the Overview tab is showing, on the refresh
+cadence corrected above, refusing to stack — and it is the first that is about *people* rather
 than about the building. It asks for no window at all, because that projection
 is declared `paged: false` and the worker refuses `offset`/`limit` on a
 projection with no list rather than ignoring them; the reply is six stage counts
@@ -632,8 +665,8 @@ note now states both halves of what the control needs, and
 
 `src/ui/simulation-pending-deliveries.ts` is the fourth, on the same three terms
 as the build queue -- `hud/pending-deliveries`, while the Build tab is showing, on
-the counts cadence, asking for the panel's own three-row window rather than the
-default hundred -- and it is the second time this channel is what makes a
+the refresh cadence corrected above, asking for the panel's own three-row window
+rather than the default hundred -- and it is the second time this channel is what makes a
 *command* reachable rather than a readout. The difference from the queue's is what
 was unreachable behind it: not a control, but a **credit**.
 
@@ -660,8 +693,8 @@ save-schema version: `pendingDeliveries` is a public accessor over the list
 field of it.
 
 `src/ui/simulation-held-guards.ts` is the fifth, on the same three terms --
-`hud/held-guards`, while the Security tab is showing, on the counts cadence,
-asking for the panel's own three-row window rather than the default hundred -- and
+`hud/held-guards`, while the Security tab is showing, on the refresh cadence
+corrected above, asking for the panel's own three-row window rather than the default hundred -- and
 it is the **third** time this channel is what makes a *command* reachable rather
 than a readout. What was unreachable behind it was neither a control nor a credit
 but a **release** ([ADR 0034](./adr/0034-releasing-a-claimed-guard.md), answering
@@ -699,7 +732,8 @@ It needs no new persisted state and no save-schema version: everything it reads 
 claimants, all of which a V5 save has held all along.
 
 `src/ui/simulation-staff-coverage.ts` is the sixth, on the same three terms --
-`hud/staff`, while the Security tab is showing, on the counts cadence -- and it
+`hud/staff`, while the Security tab is showing, on the refresh cadence corrected
+above -- and it
 is the first whose subject is neither a readout of what the prison holds nor an
 id a control aims at, but a **warning**
 ([ADR 0048](./adr/0048-what-a-sectors-occupants-are.md) consequence 1). Its
@@ -732,21 +766,36 @@ so a prison with one sector over-staffed and another short still reports a
 shortage. What stops being answerable then is *which* sector is short, which is a
 breakdown to add on the day a player can draw one.
 
-**Eight** of the fifteen catalogued read models still have a route and nobody on
-the end of it: **seven are read, by six modules.** Both numbers are stated
+**Six** of the fifteen catalogued read models still have a route and nobody on
+the end of it: **nine are read, by nine modules.** Both numbers are stated
 because the difference between them is what made an earlier sentence wrong.
-It said ten, having counted reader *modules* rather than read models —
+An older one said ten, having counted reader *modules* rather than read models —
 `src/ui/simulation-room-needs.ts` asks for two, `hud/room-list` and
-`hud/room-detail`, so the two counts differ by one for that reason alone. It was
-already nine at the commit that wrote it, and it is eight now that `hud/staff`
-has a reader; the pair is restated rather than one half edited, because the pair
-is what a reader checks.
+`hud/room-detail` — and the pair is restated rather than one half edited,
+because the pair is what a reader checks.
 
-The seven with a reader are `hud/build-queue`, `hud/pending-deliveries`,
-`hud/held-guards`, `hud/prisoner-population`, `hud/room-list`, `hud/room-detail`
-and `hud/staff`; a `grep` for the quoted id under `src/ui/` is the whole
-derivation. That is the honest state of this channel, and it is a different
-sentence from the one this section used to carry.
+**This paragraph read "**Eight** … **seven are read, by six modules**" until
+2026-09-01, and both halves had been overtaken by the two readers on the fifth
+tab.** `src/ui/simulation-regime.ts` reads `hud/status-strip` and
+`src/ui/simulation-prisoner-roster.ts` reads `hud/prisoner-roster` (issue #451,
+the Regime panel), which is +2 read and −2 unread; the two counts then happen
+to coincide at nine because `simulation-room-needs.ts` reads two models and
+`hud/staff` has two readers, and those cancel. The correction is marked rather
+than overwritten because the *shape* of the old sentence was right and only its
+arithmetic rotted — exactly what `docs/AGENT_WORKFLOW.md` §4 says a tally does.
+
+The nine with a reader are `hud/status-strip`, `hud/build-queue`,
+`hud/pending-deliveries`, `hud/held-guards`, `hud/prisoner-population`,
+`hud/prisoner-roster`, `hud/room-list`, `hud/room-detail` and `hud/staff`; a
+`grep -rl "'hud/<id>'" src/ui/` per id is the whole derivation. The six without
+one are `hud/prisoner-detail`, `hud/security`, `hud/contraband`,
+`hud/incidents`, `hud/incident-detail` and **`world/render-snapshot`** — the
+last of which is worth naming rather than assumed read, because the world is
+plainly on screen: `SimulationSnapshotFeed` reaches it through
+`simulation/request-snapshot` (`src/rendering/feed/simulation-snapshot-feed.ts:383`)
+and not through this channel at all, which is why it has a cadence of its own
+and why that cadence is the only worked precedent this repository has for
+[ADR 0086](./adr/0086-what-refreshes-a-pulled-hud-readout.md)'s question.
 
 `tests/foundation/projection-reachability-contract.test.ts` carries the same
 sentence and is not corrected here; it is another agent's surface.
