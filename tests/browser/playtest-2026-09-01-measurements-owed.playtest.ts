@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import type { HudAlertViewModel, HudCountsViewModel, HudViewModel } from '../../src/ui/hud';
+import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS } from '../../src/simulation/economy';
 import { buildAndPopulate, installTee, openApp, tab } from './playtest-harness';
 import './ui-harness-api';
 
@@ -383,6 +384,24 @@ function readStrip(alternativeBadgeText: string | null): StripReading {
   };
 }
 
+/**
+ * Remount, paint, read.
+ *
+ * **The remount is load-bearing and was found by a wrong reading.** `readStrip`
+ * writes the candidate wording into the badge's own text node, and the HUD does
+ * not rewrite a badge whose *view model* value has not changed — so a second
+ * `setHudViewModel` left the mutated string in place and the next reading
+ * appended to it. The first run of this block reported a 1,301px badge reading
+ * `2,499 left before deliveries stop left before deliveries stop …`, seven
+ * times over. `mountHudShell()` destroys the HUD and builds a new one, which is
+ * the only thing here that guarantees the DOM is the view model's again.
+ */
+async function paintAndRead(page: Page, model: HudViewModel, alternativeBadgeText: string | null): Promise<StripReading> {
+  await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+  await page.evaluate((viewModel) => window.lockstateUiHarness.setHudViewModel(viewModel), model);
+  return page.evaluate(readStrip, alternativeBadgeText);
+}
+
 function report(at: string, what: string, reading: StripReading): void {
   console.log(`\n--- ${at} ${what} ---`);
   console.log(
@@ -400,9 +419,20 @@ function report(at: string, what: string, reading: StripReading): void {
   );
 }
 
-/** `POPULATED`/`EVERY_BADGE` with the treasury under the deliveries rung, so the FUNDS badge draws. */
+/**
+ * `POPULATED` with the treasury under the floor, so the FUNDS badge draws.
+ *
+ * `treasuryOverdraftFloorMinorUnits` is what makes the badge exist at all
+ * (`ui-overdraft-badge.spec.ts`'s own fixture) — a first pass of this file left
+ * it out and measured no badge at any viewport, which is the reading that
+ * would have been reported as "the badge is not there".
+ */
 function overdrawn(base: HudCountsViewModel, balance: number): HudCountsViewModel {
-  return { ...base, treasuryMinorUnits: balance };
+  return {
+    ...base,
+    treasuryMinorUnits: balance,
+    treasuryOverdraftFloorMinorUnits: TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  };
 }
 
 test.describe('3 and 4: the strip after #723, and the funds badge', () => {
@@ -421,11 +451,9 @@ test.describe('3 and 4: the strip after #723, and the funds badge', () => {
       await page.setViewportSize({ width, height });
       const at = `${width}x${height}`;
 
-      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), hudModel([], POPULATED));
-      report(at, 'POPULATED (an ordinary prison)', await page.evaluate(readStrip, null));
+      report(at, 'POPULATED (an ordinary prison)', await paintAndRead(page, hudModel([], POPULATED), null));
 
-      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), hudModel([], EVERY_BADGE));
-      const badged = await page.evaluate(readStrip, null);
+      const badged = await paintAndRead(page, hudModel([], EVERY_BADGE), null);
       // The premise: this really is the four-badge state #723 left behind.
       expect(badged.badges, `the four-badge state at ${at}`).toEqual([
         '36 with no bed',
@@ -451,22 +479,19 @@ test.describe('3 and 4: the strip after #723, and the funds badge', () => {
       [900, 600],
     ] as const) {
       await page.setViewportSize({ width, height });
-      for (const balance of [-1_300, -1]) {
-        await page.evaluate(
-          (model) => window.lockstateUiHarness.setHudViewModel(model),
-          hudModel([], overdrawn(POPULATED, balance)),
-        );
-        const incumbent = await page.evaluate(readStrip, null);
+      // -1 renders the widest remainder the floor allows; the floor itself
+      // renders the shortest (`0 left`).
+      for (const balance of [-1, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS]) {
+        const model = hudModel([], overdrawn(POPULATED, balance));
+        const incumbent = await paintAndRead(page, model, null);
         if (incumbent.fundsBadgeWidth === null) {
           console.log(`\n--- ${width}x${height} balance ${balance}: NO FUNDS BADGE DRAWN (no floor in this view model) ---`);
           continue;
         }
         report(`${width}x${height} balance ${balance}`, `incumbent "{remaining} left"`, incumbent);
 
-        const long = await page.evaluate(
-          readStrip,
-          `${incumbent.chips[incumbent.fundsIndex]?.badge?.replace(/ left$/, '') ?? ''} left before deliveries stop`,
-        );
+        const remainder = incumbent.chips[incumbent.fundsIndex]?.badge?.replace(/ left$/, '') ?? '';
+        const long = await paintAndRead(page, model, `${remainder} left before deliveries stop`);
         report(`${width}x${height} balance ${balance}`, `candidate "{remaining} left before deliveries stop"`, long);
       }
     }
