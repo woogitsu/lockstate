@@ -4846,9 +4846,54 @@ test.describe('the assembled application', () => {
       if (panel !== null) panel.scrollTop = 0;
     });
     expect(await deliveries.boundingBox(), 'an empty deliveries block kept its box').toBeNull();
-    expect(await geometry(), 'the panel did not return to its arrival geometry once nothing was on its way').toEqual(
-      before,
+
+    /*
+     * **The identity above is no longer the whole story, as of #749.** The
+     * `Cancel` pressed earlier in this test is one of the four presses that
+     * issue put a success sentence on `.hud__event` for, and `hud.ts`'s
+     * `applyEventNotice` documents that band as never auto-dismissing: it
+     * "is replaced by the next event or emptied when the session ends", and
+     * nothing that happens between the cancel and here -- the remaining
+     * deliveries landing, the fold opening and shutting again -- is either.
+     * So the band is still showing "The delivery was cancelled -- {total}
+     * back." at the point this test measures its final geometry, and that
+     * is a fourth row `.hud` (`grid-template-rows: auto auto auto auto
+     * minmax(0, 1fr) auto`) never had to give space to at the top of this
+     * test, where nothing had happened yet.
+     *
+     * Asserted directly, so the arithmetic below is traceable to its cause
+     * rather than four re-pinned numbers a reader has to take on faith.
+     */
+    const event = page.locator('.hud__event');
+    await expect(event, 'the cancellation this test drove should still be the band`s last word').toBeVisible();
+    await expect(event).toHaveAttribute('data-severity', 'info');
+    await expect(event).toHaveText(
+      localeText('hud.alert.event.economy.delivery-cancelled').replace('{total}', fundsText(refundOf)),
     );
+
+    /*
+     * The band is an `auto` row and everything below it shares the grid's one
+     * `minmax(0, 1fr)` row, so 24px of band is 24px the Build panel's own box
+     * no longer has: `panelHeight` and `foldSlack` both fall by exactly that
+     * (338.1 -> 314.1, 7.8 -> -16.2 -- the last section now sits 16.2px past
+     * the fold), and because the panel's *content* did not shrink to match,
+     * `panelOverflow` opens up by the same 24px it used to be flush at. Every
+     * other field -- both catalogue figures, the body's own content height,
+     * the last section's text, the scroll position -- is untouched, which is
+     * the rest of the #703 identity still holding: this block still donates
+     * nothing of its own, on top of or under the fold.
+     */
+    expect(await geometry(), 'the panel did not return to its arrival geometry once nothing was on its way').toEqual({
+      panelHeight: 314.1,
+      panelOverflow: 24,
+      panelScrollTop: before?.panelScrollTop,
+      bodyHeight: before?.bodyHeight,
+      bodyContent: before?.bodyContent,
+      listHeight: before?.listHeight,
+      listContent: before?.listContent,
+      lastText: before?.lastText,
+      foldSlack: -16.2,
+    });
   });
 
   /**
@@ -8122,9 +8167,24 @@ test.describe('the assembled application', () => {
     // purchase is a `'deliveries'` spend and is refused 1,250 above the
     // treasury's floor, so the old figure buys nothing at all and this test
     // measured the ruling working rather than the strip failing.
+    //
+    // **And this line read `rungFloorMinorUnits('deliveries',
+    // TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)` -- the mature -1,250 rung --
+    // until the owner's starter-rung ruling of 2026-09-01, with `spendable` at
+    // 26,250, `quantity` at 656 bricks, `settled` at -1,240 and the badge
+    // reading "10 left".** This session never zones a room (`New prison`
+    // alone, no build order), so `RoomInstanceRegistry.totalResidentCapacity`
+    // stays `0` for the test's whole life and every purchase here is judged at
+    // the *starter* rung, -1,185, not the mature one -- passing `true` as the
+    // third argument is what selects it. The old quantity no longer clears:
+    // 656 bricks is 26,240, which is 55 past the shallower starter floor's
+    // 26,185 of room, so the press this test used to make would now be
+    // refused outright rather than landing in the overdraft this test is
+    // about.
     const unitPrice = unitPriceOf('item.brick');
     const spendable =
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+      TREASURY_STARTING_BALANCE_MINOR_UNITS -
+      rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true);
     const quantity = Math.floor(spendable / unitPrice);
     const settled = TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice;
     // The state this test is about, asserted rather than assumed: the purchase
@@ -8157,21 +8217,35 @@ test.describe('the assembled application', () => {
      */
     await expect(page.locator('[data-metric="funds"]')).toHaveAttribute('data-tone', 'warning');
     /*
-     * **The badge counts room to the TREASURY floor, and the purchase above
-     * was refused at the delivery rung 1,250 higher.** Both are deliberate and
-     * they disagree: ruling 18 authored `{remaining} left` against the one
-     * floor that existed then, and ruling 19 then gave each rung its own. So
-     * the chip tells a player how far the state will carry them while the next
-     * press is refused well before that -- which the ADR 0017 amendment names
-     * as owed to the owner rather than fixed here, because closing it means
-     * either new copy or a decision about which number the chip should show.
+     * **The badge counted room to the TREASURY floor and now counts room to the
+     * `'deliveries'` rung, which is the decision this pin existed to catch.**
      *
-     * Asserted against the treasury floor on purpose: this is the pin that
-     * goes red the day somebody changes which floor the badge counts to, and
-     * it should, because that is the decision.
+     * It read: *"Both are deliberate and they disagree: ruling 18 authored
+     * `{remaining} left` against the one floor that existed then, and ruling 19
+     * then gave each rung its own. So the chip tells a player how far the state
+     * will carry them while the next press is refused well before that -- which
+     * the ADR 0017 amendment names as owed to the owner rather than fixed here
+     * ... Asserted against the treasury floor on purpose: this is the pin that
+     * goes red the day somebody changes which floor the badge counts to, and it
+     * should, because that is the decision."*
+     *
+     * The owner took the decision on 2026-09-01 and the pin went red, exactly
+     * as written. It is re-aimed at the same rung `spendable` above is composed
+     * from, so the chip and the press this test just made are now one number:
+     * the purchase spent down to ten short of the rung, and the badge says ten.
+     *
+     * **That was ten short of the *mature* rung, and the owner's starter-rung
+     * ruling later that day moved both halves of the pair together.** This
+     * session is fresh and unfurnished for its whole life (see `spendable`
+     * above), so the rung the badge counts room to is the starter one,
+     * -1,185: the purchase now settles at -1,160, which is twenty-five short
+     * of that floor rather than ten short of the mature one, and the badge
+     * says twenty-five. The pin is re-aimed at the same starter rung
+     * `spendable` is composed from, so the chip and the press this test just
+     * made stay one number.
      */
     await expect(page.locator('[data-metric="funds"] .ui-badge')).toHaveText(
-      `${fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)} left`,
+      `${fundsText(settled - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true))} left`,
     );
     await expect(page.locator('.hud__refusal')).toBeHidden();
   });

@@ -96,7 +96,7 @@ interface HudDump {
    * game says it is paused" -- and it is an artifact: `createIconButton` puts
    * its label in a `screenReaderText` span (`src/ui/primitives/icon-button.ts:31`,
    * `src/ui/primitives/dom.ts:60-62`), so `Pause`, `Play at normal speed`,
-   * `Fast forward` and `Speed 1x` are all in `innerText` and none of them is
+   * `Fast forward` and `Speed 1×` are all in `innerText` and none of them is
    * on screen. What a sighted player reads of the clock is `×1` and three
    * icons. Same failure as #625 §6, one size along: a survey answers about the
    * probe until the probe is checked.

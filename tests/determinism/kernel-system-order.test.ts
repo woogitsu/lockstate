@@ -341,6 +341,30 @@ describe('kernel system ordering', () => {
    * in any of them -- `tests/integration/assault-sanction-loop.test.ts` is
    * where a sanction is watched actually being imposed, enforced and lifted.
    *
+   * **The seventh is `economy.insolvency-rungs` (order 135), and it is a
+   * reviewed edit for the owner's ruling of 2026-09-01 on issue #767** (ADR
+   * 0087 decision 2's amendment): a one-off notice at the moment the treasury
+   * crosses the deliveries or the construction rung, beside the standing
+   * `PrisonCondition` a status-counts publication already carries for both.
+   * Inserted into the gap between `economy.payroll` (130) and `navigation`
+   * (150), so no existing system moves -- and the gap is argued rather than
+   * merely available, exactly as `economy.payroll`'s own paragraph above
+   * argues its: nothing that spends treasury money runs at an order later
+   * than 130 in this session (`procurement` is 110, a command-handler spend
+   * is dispatched before any system runs that tick, and `payroll` itself is
+   * 130), so a system at 135 always reads a tick's *final* balance before
+   * `navigation` and everything after it runs. Scheduled every tick
+   * (`intervalTicks: 1, phaseTicks: 0`), unlike `economy.payroll`'s once-a-day
+   * cadence, because a crossing can happen on any tick a spend lands, not only
+   * the payroll tick -- but it changes none of the recorded 400-tick
+   * determinism scenarios' outcomes: it only ever *reads* the treasury and
+   * conditionally appends to `SimulationEventLog`, and none of those scenarios
+   * drives a treasury balance anywhere near either rung, so it runs every
+   * tick, is pinned here, and emits nothing in any of them.
+   * `tests/integration/economy-payroll-loop.test.ts` and the browser
+   * playtest behind issue #767 are where a crossing is watched actually
+   * firing.
+   *
    * The retirement the sentence above requires was looked for and **there is
    * nothing in this repository to retire**, which is worth recording so the
    * next person does not go hunting for a list that does not exist:
@@ -368,6 +392,7 @@ describe('kernel system ordering', () => {
       { id: 'procurement', order: 110 },
       { id: 'economy.state-income', order: 120 },
       { id: 'economy.payroll', order: 130 },
+      { id: 'economy.insolvency-rungs', order: 135 },
       { id: 'navigation', order: 150 },
       { id: 'prisoners.locomotion', order: 200 },
       /*

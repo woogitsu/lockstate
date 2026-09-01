@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, PROCURABLE_MATERIALS } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
 import {
-  INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
+  INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS,
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
 } from '../../src/simulation/economy';
@@ -773,44 +773,58 @@ describe('money is conserved across build orders and undo (#285)', () => {
      * "Amendment, 2026-09-01"). So a press can no longer reach the floor, and
      * the exact boundary a *purchase* has is the first rung: spending power is
      * 25,000 + 1,250 = 26,250, which is 653 bricks at 40 plus two planks at 65
-     * to the minor unit. The case is unchanged in every other respect -- the
-     * purchase that lands exactly on the boundary must go through, the unit
-     * after it must not, and the equation must not move either way.
+     * to the minor unit. **This paragraph is kept and no longer describes this
+     * `session`**, per the next one.
      *
-     * **What this case is *for* is the conservation equation, and the ruling
-     * does not touch it.** An unpaid wage is arrears and not a destroyed minor
+     * **The owner's second ruling on #771 (2026-09-01) moves the boundary a
+     * third time, for exactly this session.** `createSession` never zones a
+     * room, so this prison is "fresh, unfurnished"
+     * (`RoomInstanceRegistry.totalResidentCapacity === 0`) for its whole life
+     * and every `PurchaseMaterials` here is judged at the *starter* rung
+     * (`INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`, -1,185), not the
+     * mature -1,250 the paragraph above derives. Spending power is
+     * 25,000 + 1,185 = 26,185, which comes out even cleaner: 653 bricks at 40
+     * (26,120) plus **one** plank at 65 (65) is 26,185 exactly -- the same 653
+     * bricks the mature derivation used, one fewer plank. The case is
+     * unchanged in every other respect -- the purchase that lands exactly on
+     * the boundary must go through, the unit after it must not, and the
+     * equation must not move either way.
+     *
+     * **What this case is *for* is the conservation equation, and neither
+     * ruling touches it.** An unpaid wage is arrears and not a destroyed minor
      * unit (ADR 0049), and a refused purchase debits nothing; `session.buy`
      * re-checks `total === 25,000` after every command below.
      */
-    const roomToTheRung = TREASURY_STARTING_BALANCE_MINOR_UNITS - INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS;
+    const roomToTheRung = TREASURY_STARTING_BALANCE_MINOR_UNITS - INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS;
     const plankPrice = UNIT_PRICE.get(DOOR_REQUIREMENT.itemId)!;
     expect(
-      653 * price + 2 * plankPrice,
-      'the two catalogue prices no longer reach the first rung exactly, so this case can no longer land on it',
+      653 * price + 1 * plankPrice,
+      'the two catalogue prices no longer reach the starter rung exactly, so this case can no longer land on it',
     ).toBe(roomToTheRung);
 
     session.buy('order-buy-the-room', WALL_REQUIREMENT.itemId, 653 - wholeBalance, 'the rest of the room, in bricks');
-    session.buy('order-buy-the-last-coin', DOOR_REQUIREMENT.itemId, 2, 'a purchase for the exact remaining room');
+    session.buy('order-buy-the-last-coin', DOOR_REQUIREMENT.itemId, 1, 'a purchase for the exact remaining room');
     expect(
       session.runtime.refusals.count,
-      'a purchase that lands exactly on the first rung must not be refused either',
+      'a purchase that lands exactly on the starter rung must not be refused either',
     ).toBe(0);
-    expect(session.runtime.treasury.balanceMinorUnits, 'the last coin the rung allows was spent').toBe(
-      INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
+    expect(session.runtime.treasury.balanceMinorUnits, 'the last coin the starter rung allows was spent').toBe(
+      INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS,
     );
 
     // One minor unit past it: still a refusal, and still no partial debit. The
-    // treasury would carry 1,250 more -- the *floor* is at -2,500 and no rung
+    // treasury would carry 1,315 more -- the *floor* is at -2,500 and no rung
     // may pass it -- which is the ladder rather than a disagreement: the
     // command handler spends at the same `'deliveries'` rung this press is
-    // judged by.
+    // judged by, and this fresh, unfurnished prison is judged at the starter
+    // threshold within it.
     session.buy('order-buy-one-more', WALL_REQUIREMENT.itemId, 1, 'one brick too many');
     expect(session.runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS);
     expect(
       session.runtime.treasury.balanceMinorUnits - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
       'and the deeper floor is untouched, with a rung between the press and it',
-    ).toBe(1_250);
+    ).toBe(1_315);
     expect(session.runtime.procurement.pendingDeliveries).toHaveLength(3);
 
     // And the conservation equation is unmoved by all of it: `session.buy`

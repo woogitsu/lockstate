@@ -617,6 +617,65 @@ describe('RoomInstanceRegistry', () => {
     });
   });
 
+  /**
+   * `totalResidentCapacity` -- the "fresh, unfurnished" predicate ADR 0017's
+   * starter-rung amendment reads. `tests/integration/economy-liquidity-hard-lock.test.ts`
+   * is the gate that proves it drives the rung through the real kernel; this
+   * pins the registry-level facts that predicate depends on.
+   */
+  describe('totalResidentCapacity', () => {
+    it('is zero for an empty registry -- the state every fresh prison starts in', () => {
+      expect(new RoomInstanceRegistry().totalResidentCapacity).toBe(0);
+    });
+
+    it('is zero for a zoned room with nothing furnishing it, whatever its room type', () => {
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 0, concurrentUseCapacity: 0, objectCapabilities: [] });
+      registry.register({ instanceId: 'yard-1', roomCatalogId: 'room.yard', anchorTile: TILE, residentCapacity: 0, concurrentUseCapacity: 10, objectCapabilities: [] });
+      expect(registry.totalResidentCapacity).toBe(0);
+    });
+
+    it('sums across every registered instance, not the first one found', () => {
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: ['sleep-surface'] });
+      registry.register({ instanceId: 'cell-2', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 2, concurrentUseCapacity: 2, objectCapabilities: ['sleep-surface'] });
+      registry.register({ instanceId: 'infirmary-1', roomCatalogId: 'room.infirmary', anchorTile: TILE, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: ['sleep-surface'] });
+      expect(registry.totalResidentCapacity).toBe(4);
+    });
+
+    it('counts a medical bed`s capacity too -- unlike `accommodationCapacity`, deliberately', () => {
+      // The whole reason this is a new accessor rather than a reuse of the
+      // accommodation-scoped figure `IntakeSystem` uses: a prison that has
+      // furnished only an infirmary has still proven it can buy and place a
+      // plank-priced sleep surface, which is what "unfurnished" means here.
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'infirmary-1', roomCatalogId: 'room.infirmary', anchorTile: TILE, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: ['sleep-surface'] });
+      expect(registry.totalResidentCapacity).toBe(1);
+    });
+
+    it('rises the moment `updateDerived` gives an instance its first sleep surface, live rather than cached', () => {
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 0, concurrentUseCapacity: 0, objectCapabilities: [] });
+      expect(registry.totalResidentCapacity, 'zoned, not yet furnished').toBe(0);
+
+      registry.updateDerived('cell-1', {
+        residentCapacity: 1,
+        concurrentUseCapacity: 1,
+        concurrentUseCapacityByCapability: [['sleep-surface', 1]],
+        objectCapabilities: ['sleep-surface'],
+      });
+      expect(registry.totalResidentCapacity, 'the very next read, with nothing else touched').toBe(1);
+    });
+
+    it('falls back to zero if the bed is taken out again, exactly the reverse transition', () => {
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: ['sleep-surface'] });
+      expect(registry.totalResidentCapacity).toBe(1);
+      registry.updateDerived('cell-1', { residentCapacity: 0, concurrentUseCapacity: 0, concurrentUseCapacityByCapability: [], objectCapabilities: [] });
+      expect(registry.totalResidentCapacity).toBe(0);
+    });
+  });
+
   describe('findBestAvailable', () => {
     /** Two shared cells of the same room type, both with the required capability. */
     function twoSharedCells(): RoomInstanceRegistry {

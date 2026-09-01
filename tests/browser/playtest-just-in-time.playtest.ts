@@ -546,11 +546,16 @@ test('act 3: how much wall 25,000 buys, and what the game says when it runs out'
    * **`/not enough funds/i` until the owner's ruling 23 of 2026-08-31**, which
    * gave `hud.alert.refusal.purchase.insufficient-funds` the host's words --
    * *"Nothing was bought — that would go past what the state will carry."* --
-   * and took the word "funds" out of it. Both alternatives, so this instrument
-   * still reads a branch or a log from before the ruling instead of reporting
-   * that the band never named money.
+   * and took the word "funds" out of it.
+   *
+   * **A third alternative since the owner's ruling of 2026-09-01**, which
+   * replaced ruling 23's words on all four keys with a sentence that names
+   * what stops instead of the threshold: *"Nothing was bought — deliveries
+   * are refused until the state pays what it owes."* Every alternative is
+   * kept, so this instrument still reads a branch or a log from before either
+   * ruling instead of reporting that the band never named money.
    */
-  const FUNDS_SENTENCE = /not enough funds|past what the state will carry/i;
+  const FUNDS_SENTENCE = /not enough funds|past what the state will carry|until the state pays what it owes/i;
   let ordered = 0;
   let fundsRefusalAtSegment = -1;
   let fundsRefusalText = '';

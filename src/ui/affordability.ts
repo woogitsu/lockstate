@@ -142,14 +142,106 @@ export type AffordabilityRefusal = 'past-the-floor' | 'malformed-charge';
  * simulation accepts, but its mirror: a control that says yes and is overruled
  * some ticks later.
  *
- * **What it does not fix, deliberately.** `hud.status.funds-remaining` renders
- * `balance - overdraftFloor` (`src/ui/hud/projection.ts`), which is the room to
- * -2,500; between -1,250 and -2,500 that badge now offers a player room they
- * cannot spend. That is a player-visible figure whose meaning the ruling
- * changes, so it is the owner's under `AGENTS.md`'s fourth exclusion and is
- * reported rather than quietly re-based here.
+ * **What it did not fix, deliberately, and what fixed it.** This paragraph read:
+ * *"`hud.status.funds-remaining` renders `balance - overdraftFloor`
+ * (`src/ui/hud/projection.ts`), which is the room to -2,500; between -1,250 and
+ * -2,500 that badge now offers a player room they cannot spend. That is a
+ * player-visible figure whose meaning the ruling changes, so it is the owner's
+ * under `AGENTS.md`'s fourth exclusion and is reported rather than quietly
+ * re-based here."* It was reported, and the owner ruled on 2026-09-01 that the
+ * badge is re-based onto this same rung. It is: `overdraftRemaining` computes
+ * over `deliveriesRungFloorMinorUnits` below, so the host's pre-flight and the
+ * figure the player reads before pressing are one number, and `0 left` and
+ * "the next press is refused" are one fact.
+ *
+ * The badge's *words* are a separate question and are still open. The owner
+ * chose `{remaining} left before deliveries stop` subject to the badge being
+ * measured, `tests/browser/ui-overdraft-badge.spec.ts` measured it, and the
+ * long wording costs +133px of chip and pushes the FUNDS chip off the visible
+ * edge of the metrics row at 1280x800. The incumbent `{remaining} left` ships
+ * until the owner rules on the figures; ADR 0017 "Amendment, 2026-09-01" §5a(d)
+ * carries them.
  */
 export const HOST_PRESS_FLOOR_MINOR_UNITS = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+
+/**
+ * The `'deliveries'` rung under a floor the simulation published, for the one
+ * caller that has a published floor to hand.
+ *
+ * **This exists because `src/ui/hud/` may not import the simulation and this
+ * module may.** `tests/unit/ui-hud-messages.test.ts` pins that boundary --
+ * *"the HUD is a view over snapshots (`AGENTS.md` boundary 1), so it may not
+ * import the simulation"* -- and `overdraftRemaining` in
+ * `src/ui/hud/projection.ts` needs the rung the owner's ruling of 2026-09-01
+ * re-based the `FUNDS` chip onto. Re-deriving `Math.max(-1_250, floor)` inside
+ * the HUD would be a second copy of `rungFloorMinorUnits`'s clamp; going
+ * through here is one definition with the boundary intact.
+ *
+ * **Why the published floor and not `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`,
+ * where `HOST_PRESS_FLOOR_MINOR_UNITS` above takes the constant.** The two
+ * callers are not in the same position. This module's pre-flight is a
+ * *decision* and the docblock above argues at length that a decision must not
+ * depend on a value up to 500ms old; the badge is a *readout* of a treasury
+ * state, and it already reads the balance and the floor off the same payload,
+ * so taking the rung from anywhere else would let the badge disagree with the
+ * chip above it. At the only floor anything in `src/` configures the two agree
+ * to the minor unit; they part only for a session that sets a shallower floor,
+ * and there the payload is right.
+ *
+ * **`isFreshUnfurnishedPrison` added 2026-09-01, for the same reason
+ * `pressFloorMinorUnits` above takes it.** This function predates the starter
+ * rung (ADR 0017's "Amendment, 2026-09-01: a starter rung…") and defaulted to
+ * `false` by omission, which is `rungFloorMinorUnits`'s own default -- so the
+ * one caller, `overdraftRemaining` in `src/ui/hud/projection.ts`, kept
+ * computing the mature -1,250 for a fresh, unfurnished prison sitting on the
+ * shallower -1,185 starter floor. The badge then overstated spendable room
+ * by exactly the 65-minor-unit gap between the two: at a balance of -1,160 it
+ * read `90 left` while a 65 press was refused, which is `AGENTS.md`'s fourth
+ * exclusion and the defect PR #769 closed for the mature floor, reopened here
+ * by an argument that never named the starter rung. The parameter is
+ * required rather than defaulted, matching `pressFloorMinorUnits`'s own
+ * choice and for the same reason: a caller that reads a published
+ * `roomCapacity` and forgets to pass it through would silently get "not
+ * fresh" back, which is the direction that reintroduces this exact defect.
+ */
+export function deliveriesRungFloorMinorUnits(
+  overdraftFloorMinorUnits: number,
+  isFreshUnfurnishedPrison: boolean,
+): number {
+  return rungFloorMinorUnits('deliveries', overdraftFloorMinorUnits, isFreshUnfurnishedPrison);
+}
+
+/**
+ * **The floor a press or a hire is judged against, for a session that may be
+ * a fresh, unfurnished prison** — the host-side twin of
+ * `Treasury.floorFor('deliveries' | 'hiring', floor, isFreshUnfurnishedPrison)`,
+ * composed the same way `HOST_PRESS_FLOOR_MINOR_UNITS` is, so the two sides of
+ * `sender.submit` cannot disagree about which threshold is in force.
+ *
+ * **Why this one reads a per-call flag where `HOST_PRESS_FLOOR_MINOR_UNITS`
+ * is a module-load constant.** That constant's own docblock argues at length
+ * that the pre-flight must not depend on a *published* value that can lag —
+ * but "fresh, unfurnished" is exactly as live as the balance the pre-flight
+ * already reads off `viewModel.counts.treasuryMinorUnits`, not a new category
+ * of staleness: both come from the same status-counts payload, at most 500ms
+ * old, and the pre-flight has always accepted that lag for the balance. What
+ * it must not do is invent a *second* definition of "fresh" — `roomCapacity`
+ * is `statusCountsSchema`'s own field, already on the wire for the Rooms
+ * panel, not a value minted for this call.
+ *
+ * **Leaving `HOST_PRESS_FLOOR_MINOR_UNITS` as the mature constant, rather than
+ * folding this into it, is deliberate.** The old constant is still what a
+ * caller gets by omitting the third argument to `judgeAffordability`
+ * (`tests/unit/ui-affordability.test.ts` pins several such calls), and a
+ * default that silently varied with a session's furnished state would be
+ * exactly the kind of defaulted safety-relevant parameter this corpus argues
+ * against elsewhere (`SpendClass`, `rungFloorMinorUnits`'s own docblock). This
+ * function is for the two call sites in `src/main.ts` that know which session
+ * they are asking about and can say so.
+ */
+export function pressFloorMinorUnits(overdraftFloorMinorUnits: number, isFreshUnfurnishedPrison: boolean): number {
+  return rungFloorMinorUnits('deliveries', overdraftFloorMinorUnits, isFreshUnfurnishedPrison);
+}
 
 /**
  * The one comparison, and it is deliberately the same shape as

@@ -103,6 +103,12 @@ describe('the HUD counts are read from the worker', () => {
       occupiedPlaces: 28,
       staff: 11,
       rooms: 9,
+      // Straight through, and deliberately the field beside it in `COUNTS`
+      // (60) rather than `accommodationCapacity` (44) again -- see
+      // `HudCountsViewModel.roomCapacity`'s own doc comment for why the two
+      // are different sums over the same registry and why the host's
+      // starter-rung pre-flight needs this one.
+      roomCapacity: 60,
       // Straight through, all three: the HUD may not derive a simulation
       // figure, and the rungs are what `SafetyCoverageSystem` counted.
       prisonersCovered: 25,
@@ -265,6 +271,11 @@ describe('the HUD counts are read from the worker', () => {
       ...EMPTY_HUD_VIEW_MODEL.counts,
       dailyWageBillMinorUnits: 0,
       treasuryOverdraftFloorMinorUnits: 0,
+      // A third field of the same shape, added by ADR 0017's "starter rung"
+      // amendment: `roomCapacity` is optional for the reason
+      // `treasuryOverdraftFloorMinorUnits` is, and a running session that has
+      // registered nothing publishes a real `0` rather than staying absent.
+      roomCapacity: 0,
     });
   });
 

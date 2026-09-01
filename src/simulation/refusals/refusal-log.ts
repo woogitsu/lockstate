@@ -1,4 +1,5 @@
 import type { BuildOrderFailReason } from '../construction/build-order';
+import type { ConstructionFundingRefusalReason } from '../construction/materials-procurement';
 import type { PurchaseCancelRefusalReason, PurchaseRefusalReason } from '../economy/procurement';
 import type { PlaceObjectRefusalReason, RemoveObjectRefusalReason } from '../objects/object-placement-service';
 import type { AdmitPrisonerRefusalReason } from '../prisoners/prisoner-operations-runtime';
@@ -199,6 +200,30 @@ export const BUILD_REFUSAL_REASONS: Readonly<Record<BuildOrderFailReason, Refusa
   'unknown-buildable': 'build.unknown-buildable',
   'unowned-land': 'build.unowned-land',
   'water-blocked': 'build.water-blocked',
+};
+
+/**
+ * `ConstructionFundingRefusalReason`, mapped onto the wire's. Exhaustive for
+ * the same reason as above, and the twelfth table.
+ *
+ * **This is ADR 0017 decision 8's second rung getting a sentence of its own**
+ * -- the owner's ruling of 2026-09-01, taking the cost ADR 0017's
+ * "Amendment, 2026-09-01" priced under *"Rung 2 has no sentence at all"*.
+ * `reportMaterialsFunding` (`src/simulation/construction/handler.ts`) used to
+ * record `PURCHASE_REFUSAL_REASONS['insufficient-funds']` here, so a prison
+ * whose standing build queue stalled at -1,800 was handed rung 1's sentence
+ * for rung 2's event: two rungs, two thresholds, one string.
+ *
+ * The one thing worth checking before believing that: the route really is
+ * rung 2 and only rung 2. `JustInTimeMaterialsService.procureForPendingOrders`
+ * spends at `'construction'` at both of its treasury calls and at no other
+ * class, so `unfunded` is populated behind the construction rung or not at
+ * all -- see `ConstructionFundingRefusalReason` for the whole argument.
+ */
+export const CONSTRUCTION_FUNDING_REFUSAL_REASONS: Readonly<
+  Record<ConstructionFundingRefusalReason, RefusalReason>
+> = {
+  'materials-unfunded': 'construction.materials-unfunded',
 };
 
 /**

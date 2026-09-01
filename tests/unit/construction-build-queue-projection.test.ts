@@ -481,17 +481,29 @@ describe('cancelling one order by id, which is the command this read model exist
      * balance at -1,195; 735 more at the wage rung is **-1,930**, which is 70 of
      * construction room against a wall's 80. The relationship this case is about
      * is unchanged to the minor unit.
+     *
+     * **The owner's second ruling on #771 (2026-09-01) moves the press's own
+     * ceiling once more, and this runtime never zones a room -- so it is
+     * "fresh, unfurnished" for its whole life
+     * (`RoomInstanceRegistry.totalResidentCapacity === 0`) and the plank press
+     * below is judged at the *starter* rung
+     * (`INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`, -1,185), not the
+     * mature -1,250 the paragraph above assumed.** 402 planks at 65 is 26,130 of
+     * the 26,185 a fresh press may spend, leaving the balance at **-1,130**; 800
+     * more at the (freshness-unaffected) wage rung is still **-1,930** -- the
+     * same target the mature derivation reached, from one fewer plank and 65
+     * more at the wage rung.
      */
     const runtime = createNewSimulationRuntime(SEED);
     runtime.kernel.submitCommand(
       'cmd-buy',
       runtime.kernel.expectedSequence,
       0,
-      packCommand({ type: 'PurchaseMaterials', orderId: 'order-buy', itemId: 'item.wood-plank', quantity: 403 }),
+      packCommand({ type: 'PurchaseMaterials', orderId: 'order-buy', itemId: 'item.wood-plank', quantity: 402 }),
     );
     runTo(runtime, 30);
-    expect(runtime.treasury.balanceMinorUnits, '25,000 - 403 x 65, which is the delivery rung').toBe(-1_195);
-    expect(runtime.treasury.spend(735, 'wages'), 'the rest, at the only rung that reaches it').toBe(true);
+    expect(runtime.treasury.balanceMinorUnits, '25,000 - 402 x 65, which is the starter delivery rung').toBe(-1_130);
+    expect(runtime.treasury.spend(800, 'wages'), 'the rest, at the only rung that reaches it').toBe(true);
 
     // Dated at the tick the kernel has reached rather than at 0, because the
     // wage-rung drain above had to happen after the purchase was dispatched and

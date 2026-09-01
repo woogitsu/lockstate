@@ -361,12 +361,17 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
    *    bought, **at the `'construction'` rung** — the owner's ruling 19 of
    *    2026-08-31, drafted as ADR 0017's "Amendment, 2026-09-01". This pass is
    *    what ADR 0017 decision 8 calls *construction*, and the player's Buy
-   *    press is what it calls a *delivery*, so this method stops at −2,000 and
-   *    the press stops at −1,250. Every `canAfford` and `spend` on this path
-   *    carries the same class, so the two cannot come apart. This is the only new bound this pass has and it is a real one:
-   *    without it a partly filled pass would buy the affordable half of a
-   *    two-material order and spend money on materials that can never finish
-   *    anything.
+   *    press is what it calls a *delivery*. **Ruling 19 stopped this method at
+   *    −2,000 and the press at −1,250; the owner's ruling on #771 (2026-09-01,
+   *    ADR 0017's equalisation amendment) retired the gap** — both now stop at
+   *    −1,250, because a queued order funding itself past the balance a press
+   *    would already be refused at was #771's own reproduction. Every
+   *    `canAfford` and `spend` on this path carries the same class, so the two
+   *    cannot come apart on *which* rung they read, only on *when* they fire
+   *    relative to each other, which is now never. This is the only new bound
+   *    this pass has and it is a real one: without it a partly filled pass
+   *    would buy the affordable half of a two-material order and spend money
+   *    on materials that can never finish anything.
    * 2. **An order the balance does not cover is skipped, not stopped on.** The
    *    walk continues to the next order. Stopping instead would have been the
    *    more conservative rule and it was measured against ADR 0081 Decision 2's
@@ -426,6 +431,19 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
    *   finding — that a twenty-order tail strands a prison at −1,625 — lands
    *   between the two thresholds, so under ruling 19 that tail stops itself at
    *   −2,000 with 500 of room left for wages.
+   *
+   *   **Both "shallower" and the 500 figure were ruling 19's and were
+   *   overtaken by the owner's ruling on #771 (2026-09-01, ADR 0017's
+   *   equalisation amendment).** `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`
+   *   is now `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS` -- the two rungs
+   *   a player's presses reach are the same balance -- so this path's bound
+   *   is no longer *shallower* than anything, it is the same −1,250 a Buy
+   *   press already stops at, and a standing queue now runs out of room
+   *   1,250 minor units short of the treasury's floor rather than 500. §10c's
+   *   own twenty-order-tail figure (−1,625) is not re-measured here — it
+   *   predates both ruling 19 and partial fill, and standing it up again
+   *   under the equalised rungs is a fresh measurement this comment does not
+   *   make rather than a number this comment revises.
    *
    * **What this change really moves is the residual**, and it is stated rather
    * than bounded here. Under all-or-nothing a queue the prison could not fund

@@ -177,6 +177,8 @@
  * a locale format eventually; nothing in the simulation cares.
  */
 
+import { procurableMaterial } from '../../content/procurement-catalog';
+
 /**
  * What a new prison starts with.
  *
@@ -297,10 +299,19 @@ export const TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS = -Math.trunc(TREASURY_STARTIN
  *
  * The owner's ruling 19 of 2026-08-31 -- *"Dać szczeblom własne progi wewnątrz
  * debetu"*, give the rungs their own thresholds inside the overdraft -- is
- * drafted as an amendment to
+ * recorded as an amendment to
  * [ADR 0017](../../../docs/adr/0017-money-primary-resource-model.md)
- * ("Amendment, 2026-09-01"), **Proposed and awaiting the owner's signature**.
- * This type is what makes the ladder expressible at all.
+ * ("Amendment, 2026-09-01"), **Accepted 2026-09-01**. This type is what makes
+ * the ladder expressible at all.
+ *
+ * **A second, same-day amendment ("Amendment, 2026-09-01: the deliveries and
+ * construction rungs are equalised…") then equalised two of the three
+ * magnitudes** -- issue #771 found a 750-wide band in which a purchase the
+ * shop refuses is nevertheless funded for a queued build order needing the
+ * same materials, and the owner ruled *"buying and building stop at the same
+ * place"* over keeping them apart. See `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`
+ * for what changed. This type itself -- the requirement that every spend name
+ * its rung -- is untouched by that amendment.
  *
  * **It is a required argument on `canAfford` and `spend`, and that is the whole
  * design.** The alternative shapes were a per-caller check and a floor set on
@@ -335,24 +346,63 @@ export type SpendClass = 'deliveries' | 'construction' | 'wages' | 'hiring';
  * `1_250 / 2_500` is a ratio nobody stated. What keeps the ladder coherent if
  * the floor is ever reconfigured is the clamp in `Treasury.floorFor`, not a
  * derivation here.
+ *
+ * **This is also, since the 2026-09-01 equalisation amendment below, the
+ * construction rung's threshold.** It did not move; construction's did, to
+ * meet it. See `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`.
  */
 export const INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS = -1_250;
 
 /**
- * The second rung: **construction halted below −2,000.** Ruling 19, as above.
+ * The second rung: **construction halted below −1,250 -- the same balance
+ * deliveries stop at.**
  *
- * "Construction" here is the material spend a *queued build order* causes --
- * `JustInTimeMaterialsService.procureForPendingOrders`, which is the only
- * caller that reaches `ProcurementSystem.purchase` without a player pressing
- * Buy. The press itself is `'deliveries'`. That split is what makes the first
- * two rungs distinguishable at all, because both spends go through one method;
- * the amendment argues it rather than assuming it.
+ * Ruling 19 (2026-08-31) put this at −2,000, a rung of its own 750 minor
+ * units deeper than deliveries'. **The owner's ruling on issue #771
+ * (2026-09-01, "ADR 0017: Amendment, 2026-09-01: the deliveries and
+ * construction rungs are equalised") retired that split**: #771 measured a
+ * balance at which the shop refused a 40-minor-unit brick and a queued wall
+ * segment needing the same two bricks was funded anyway -- *"ten wall
+ * segments, 800 spent, all went through silently"* in the 750-wide band the
+ * two thresholds used to leave open. Put the cost plainly and ruled on
+ * anyway: *"Equalise the rungs: buying and building stop at the same
+ * place."*
+ *
+ * **−1,250 rather than −2,000, and the choice is argued in the ADR amendment
+ * and not just asserted here**: the sentence the owner was warned with --
+ * *"the prison loses the ability to finish what it has already started
+ * building"* -- is true of construction rising to meet deliveries and false
+ * of deliveries sinking to meet construction, and −1,250 is also the figure
+ * the FUNDS chip and its tooltip (`hud.status.funds-before-deliveries-stop`)
+ * already made a player-facing promise about, which −2,000 is not.
+ *
+ * Defined as `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS` and not as a
+ * second literal that happens to equal it: two named constants holding the
+ * same value by coincidence is exactly the shape that drifted apart once
+ * already (this constant *was* a second, independent literal, `−2_000`,
+ * until this amendment). One definition cannot silently diverge from
+ * itself.
+ *
+ * "Construction" here is still the material spend a *queued build order*
+ * causes -- `JustInTimeMaterialsService.procureForPendingOrders`, which is
+ * the only caller that reaches `ProcurementSystem.purchase` without a player
+ * pressing Buy. The press itself is `'deliveries'`. That split still decides
+ * *which* `SpendClass` a spend is asked under, and it still lets a stalled
+ * queue and a refused press be told apart as events
+ * (`hud.alert.refusal.construction.materials-unfunded` versus
+ * `hud.alert.refusal.purchase.insufficient-funds`) -- what the equalisation
+ * removes is the two rungs ever being *reachable* at different balances, not
+ * the split itself.
  */
-export const INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS = -2_000;
+export const INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS = INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS;
 
 /**
- * The three rungs and the one spend the ruling does not name, as the floors
- * they are refused at.
+ * The rungs and the one spend the ruling does not name, as the floors they
+ * are refused at. Since the 2026-09-01 equalisation amendment,
+ * `deliveries`, `construction` and `hiring` all read the same value -- see
+ * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` -- so this is a two-deep
+ * ladder (the discretionary spends, then wages) with four named entry points
+ * into it rather than the three-deep ladder ruling 19 first gave it.
  *
  * **`'wages'` is `-Infinity` and that is not a threshold: it is the sentinel for
  * "no rung of its own above the treasury's floor".** Ruling 19 puts the third
@@ -382,6 +432,103 @@ export const INSOLVENCY_RUNG_FLOORS_MINOR_UNITS: Readonly<Record<SpendClass, num
 };
 
 /**
+ * The price of one `item.wood-plank` — what both sleep-surface buildables cost
+ * (`bed-wooden`, `medical-bed-wooden`; `tests/integration/economy-liquidity-hard-lock.test.ts`
+ * enumerates the two and pins the price) — read from the procurement catalogue
+ * rather than written out a second time here, so the derivation below moves
+ * with a price change instead of rotting beside it.
+ */
+const STARTER_PLANK_PRICE_MINOR_UNITS = procurableMaterial('item.wood-plank')!.unitPriceMinorUnits;
+
+/**
+ * **The starter rung: how much shallower a fresh, unfurnished prison's
+ * `'deliveries'`/`'hiring'` threshold is, so its first plank is always still
+ * inside the facility.**
+ *
+ * The owner's second ruling on #771 (2026-09-01), which is the second of the
+ * three remedies `docs/adr/0017-money-primary-resource-model.md`'s "Amendment,
+ * 2026-09-01… §9" named and did not choose between: *"Give a brand-new,
+ * unfurnished prison a rung of its own — shallower than −1,250 — so the very
+ * first purchase or hire cannot spend the facility a first bed needs."*
+ * `docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md`'s
+ * ECON-002 is the cost this closes: with the two rungs equalised, the 750
+ * minor units of daylight construction used to have over deliveries — the
+ * accidental escape #771 removed — is gone, and a prison that spends its press
+ * room down to −1,250 on bricks has nothing left for the plank a bed needs,
+ * by any route.
+ *
+ * **Shallower by exactly one plank's price, and the arithmetic is the whole
+ * design.** `Treasury.canAfford` enforces `balance - amount >= floor` on
+ * *every* spend, so a `'deliveries'`/`'hiring'` balance can never go below
+ * whichever floor is active — the rung itself is the worst case, not merely a
+ * typical one. Construction's rung is **unaffected** by this amendment (it
+ * stays `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`, −1,250, whether the
+ * prison is fresh or not — see `STARTER_RUNG_FLOORS_MINOR_UNITS`). So for any
+ * balance a press or a hire could have reached while fresh:
+ *
+ * ```
+ * balance >= deliveries-starter-floor                          (canAfford, always true)
+ *          = INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS + 65  (this constant)
+ * balance - 65 >= INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS
+ *              == INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS (unaffected)
+ * ```
+ *
+ * — so a queued build order's one-plank purchase, at the construction rung,
+ * always clears. That is an inequality over the *whole* reachable range, not a
+ * measurement of one fixture: it holds at the exact worst case
+ * (`tests/integration/economy-liquidity-hard-lock.test.ts`'s 656-brick
+ * purchase, `BALANCE_AT_THE_RUNG = -1,240`, is 10 minor units short of even
+ * needing the margin) and at every balance between the two rungs.
+ *
+ * **Not a threshold backstop keyed to the price of a plank in the sense
+ * ADR 0075 rejects by name.** That rejection was about the *general* overdraft
+ * facility every prison has for its whole life, where coupling it to one
+ * content price would make it drift out of step with whatever else the
+ * facility is meant to cover. This is narrower and the coupling is the point:
+ * the owner's own words name the plank as what the rung exists to protect, so
+ * deriving the margin from the plank's price is answering the question asked
+ * rather than inventing a proxy for it.
+ *
+ * **What would change this.** The proof above assumes a single bed's
+ * construction order never needs more than one plank (`BUILDABLE_REGISTRY`'s
+ * two sleep-surface rows both cost exactly one `item.wood-plank`, pinned in
+ * the hard-lock test) and that `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` stays at
+ * least as deep as `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` (today
+ * −2,500 against −1,250, 1,250 minor units of margin) — `Treasury.floorFor`'s
+ * clamp would otherwise pull construction's rung shallower than −1,250 and the
+ * 65-unit gap this constant relies on would close. Both are measured facts
+ * about the shipped catalogue and the shipped constant, not proved for all
+ * time; either changing is a reason to re-run this derivation, not a reason to
+ * distrust it today.
+ */
+const STARTER_RUNG_MARGIN_MINOR_UNITS = STARTER_PLANK_PRICE_MINOR_UNITS;
+
+/** `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS` shifted shallower by `STARTER_RUNG_MARGIN_MINOR_UNITS` — see it for the derivation. */
+export const INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS =
+  INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS + STARTER_RUNG_MARGIN_MINOR_UNITS;
+
+/**
+ * The rungs a **fresh, unfurnished** prison is refused at — see
+ * `isFreshUnfurnishedPrison` for what "fresh, unfurnished" means and why it is
+ * read from live state rather than carried as a flag.
+ *
+ * Only `'deliveries'` and `'hiring'` move, to
+ * `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS` — shallower than the
+ * mature −1,250, reserving one plank's worth of room. `'construction'` and
+ * `'wages'` are **unchanged**: the owner's ruling names "the very first
+ * purchase or hire", not the build queue, and construction's own rung is what
+ * the reserved room is *for* — see `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`'s
+ * arithmetic. Widening construction here as well would spend the reserve on
+ * itself and prove nothing.
+ */
+export const STARTER_RUNG_FLOORS_MINOR_UNITS: Readonly<Record<SpendClass, number>> = {
+  deliveries: INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS,
+  construction: INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS,
+  wages: Number.NEGATIVE_INFINITY,
+  hiring: INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS,
+};
+
+/**
  * The rung's threshold clamped to an overdraft floor — the whole of the ladder's
  * arithmetic, as one pure function.
  *
@@ -394,11 +541,33 @@ export const INSOLVENCY_RUNG_FLOORS_MINOR_UNITS: Readonly<Record<SpendClass, num
  * one ruling later. `Treasury.floorFor` and the host now call the same
  * definition.
  *
+ * **`isFreshUnfurnishedPrison` defaults to `false` rather than being required,
+ * and that is a deliberate departure from `SpendClass`'s own "no default"
+ * rule, not an oversight of it.** `SpendClass` is required because it is
+ * asked at every one of dozens of call sites and a default would be a silent
+ * wrong answer at any of them. This flag is consulted by exactly two of
+ * those call sites in the whole of `src/` — the `'deliveries'` press and the
+ * `'hiring'` hire, both in `createSessionCommandHandler`
+ * (`src/simulation/runtime/session-commands.ts`), which computes it from
+ * `PrisonerOperationsRuntime.roomInstances.totalResidentCapacity` and is the
+ * one place this repository's own tests hold accountable for passing it.
+ * Every other caller — `'construction'`, `'wages'`, and every test that spends
+ * before this amendment existed — reads a spend class whose rung this flag
+ * does not move at all (`STARTER_RUNG_FLOORS_MINOR_UNITS` above leaves
+ * `construction` and `wages` exactly where `INSOLVENCY_RUNG_FLOORS_MINOR_UNITS`
+ * has them), so a default of `false` there is not a wrong answer waiting to
+ * happen — it is the *only* answer, whichever way it is spelled.
+ *
  * See `Treasury.floorFor` for what the clamp buys and what it deliberately
  * does not decide.
  */
-export function rungFloorMinorUnits(spendClass: SpendClass, overdraftFloorMinorUnits: number): number {
-  return Math.max(INSOLVENCY_RUNG_FLOORS_MINOR_UNITS[spendClass], overdraftFloorMinorUnits);
+export function rungFloorMinorUnits(
+  spendClass: SpendClass,
+  overdraftFloorMinorUnits: number,
+  isFreshUnfurnishedPrison = false,
+): number {
+  const rungs = isFreshUnfurnishedPrison ? STARTER_RUNG_FLOORS_MINOR_UNITS : INSOLVENCY_RUNG_FLOORS_MINOR_UNITS;
+  return Math.max(rungs[spendClass], overdraftFloorMinorUnits);
 }
 
 export interface TreasurySnapshot {
@@ -487,9 +656,13 @@ export class Treasury {
    * What the clamp deliberately does *not* do is **scale** the rungs with the
    * floor. That is the amendment's open question, marked there as the owner's:
    * ruling 19 gave three magnitudes and no ratios.
+   *
+   * `isFreshUnfurnishedPrison` selects the starter rungs for `'deliveries'`/
+   * `'hiring'` instead of the mature ones — see `rungFloorMinorUnits` for why
+   * it defaults to `false` rather than being required the way `spendClass` is.
    */
-  public floorFor(spendClass: SpendClass): number {
-    return rungFloorMinorUnits(spendClass, this.floor);
+  public floorFor(spendClass: SpendClass, isFreshUnfurnishedPrison = false): number {
+    return rungFloorMinorUnits(spendClass, this.floor, isFreshUnfurnishedPrison);
   }
 
   /**
@@ -512,10 +685,11 @@ export class Treasury {
    * which rung is asking.
    *
    * `spendClass` is required rather than defaulted. See `SpendClass`.
+   * `isFreshUnfurnishedPrison` is not — see `rungFloorMinorUnits`.
    */
-  public canAfford(amountMinorUnits: number, spendClass: SpendClass): boolean {
+  public canAfford(amountMinorUnits: number, spendClass: SpendClass, isFreshUnfurnishedPrison = false): boolean {
     if (!Number.isSafeInteger(amountMinorUnits) || amountMinorUnits < 0) return false;
-    return this.balance - amountMinorUnits >= this.floorFor(spendClass);
+    return this.balance - amountMinorUnits >= this.floorFor(spendClass, isFreshUnfurnishedPrison);
   }
 
   /**
@@ -528,10 +702,13 @@ export class Treasury {
    *
    * **Which rung is refusing is the caller's to say and cannot be omitted**
    * (ruling 19; see `SpendClass` for why the parameter is required rather than
-   * defaulted).
+   * defaulted). **Whether the caller is asking on behalf of a fresh,
+   * unfurnished prison is a separate flag and defaults to `false`** — see
+   * `rungFloorMinorUnits` for why that default is safe here in a way a
+   * defaulted `spendClass` would not be.
    */
-  public spend(amountMinorUnits: number, spendClass: SpendClass): boolean {
-    if (!this.canAfford(amountMinorUnits, spendClass)) return false;
+  public spend(amountMinorUnits: number, spendClass: SpendClass, isFreshUnfurnishedPrison = false): boolean {
+    if (!this.canAfford(amountMinorUnits, spendClass, isFreshUnfurnishedPrison)) return false;
     this.balance -= amountMinorUnits;
     return true;
   }

@@ -33,7 +33,7 @@ import {
   type SectorOccupantResolver,
   type SectorRiskSampler,
 } from '../incidents';
-import { JustInTimeMaterialsService, LoanBook, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, type LoanTerms } from '../economy';
+import { InsolvencyRungSystem, JustInTimeMaterialsService, LoanBook, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, type LoanTerms } from '../economy';
 import { SimulationEventLog } from '../events';
 import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
 import { RefusalLog, materialsFundingSupersessionKey } from '../refusals';
@@ -188,6 +188,15 @@ export interface SimulationRuntime {
    * somebody something.
    */
   readonly payroll: PayrollSystem;
+  /**
+   * The one-off notice at the moment the treasury crosses the deliveries or
+   * the construction rung ([ADR 0087](../../../docs/adr/0087-whether-a-refusal-is-an-event-or-a-condition.md)
+   * decision 2's amendment, issue #767). On the runtime for the same reason
+   * `payroll` is: a test that wants to drive a session past a rung without
+   * standing up a whole worker reaches it here rather than only through
+   * `kernel.systemExecutionOrder`.
+   */
+  readonly insolvencyRungs: InsolvencyRungSystem;
   /**
    * What the simulation last refused, and how many times (#261).
    *
@@ -918,6 +927,23 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * registered below at order 130, immediately after `economy.state-income`.
    */
   const payroll = new PayrollSystem(treasury, securityGuards, events);
+  /*
+   * The owner's ruling of 2026-09-01 on issue #767 (ADR 0087 decision 2's
+   * amendment): the one-off notice at the moment the treasury crosses the
+   * deliveries or the construction rung, beside the standing `PrisonCondition`
+   * a status-counts publication already carries for both. Registered right
+   * after `payroll` for the reason its own class comment gives -- nothing
+   * that spends treasury money runs later than order 130 in this session.
+   *
+   * `prisoners.roomInstances` is the third argument the owner's ruling on
+   * #771 added to `rungFloorMinorUnits`: this system reads
+   * `totalResidentCapacity` off the same registry `createSessionCommandHandler`
+   * reads it from, live on every tick, so a fresh session's crossing notice
+   * uses the shallower starter floor exactly as long as the treasury's own
+   * `spend` calls do -- see `InsolvencyRungSystem`'s own class comment,
+   * "The starter rung".
+   */
+  const insolvencyRungs = new InsolvencyRungSystem(treasury, events, prisoners.roomInstances);
   const securitySchedules: DeploymentSchedule[] = [];
   /*
    * The fifth argument is the constructor's own default, restated (and skipped)
@@ -1368,6 +1394,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(procurement);
   kernel.registerSystem(stateIncome);
   kernel.registerSystem(payroll);
+  kernel.registerSystem(insolvencyRungs);
   kernel.registerSystem(navigation);
   prisoners.registerOn(kernel);
   kernel.registerSystem(jobSystem);
@@ -1395,6 +1422,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     stateIncome,
     loans,
     payroll,
+    insolvencyRungs,
     refusals,
     events,
     actorIdentity,

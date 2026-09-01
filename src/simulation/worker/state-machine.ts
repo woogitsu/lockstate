@@ -1193,10 +1193,44 @@ export class SimulationWorkerStateMachine {
      * out of a command handler has already touched simulation state, so the
      * fault is unrecoverable, and it carries no `replyTo` because the request
      * that provoked it has already been answered.
+     *
+     * **`publishEvents()` runs here too, and it was not until #749 made the
+     * paragraph above false for five members of `SIMULATION_EVENT_TYPES`.**
+     * "Nothing had been applied, so there was nothing new to publish" held
+     * while every route this drain could reach wrote only to status counts --
+     * a wall, a room, a hire. `createConstructionCommandHandler` and
+     * `createSessionCommandHandler` now also write to `SimulationEventLog` on
+     * a successful cancel, undo, redo or delivery cancellation, and that log
+     * is otherwise drained only by `onTickLoop`'s own `publishEvents()` --
+     * which `transition` stops from running at all while paused, because it
+     * stops the tick-loop interval for every state but `running`
+     * (`stopTickLoop`). Nothing then calls it again until the player presses
+     * Play.
+     *
+     * Measured by playing, not inferred: cancelling a queued build order while
+     * paused removed the row and refunded the treasury instantly -- the
+     * status-counts publish this branch already ran -- and the events band
+     * stayed empty for as long as the clock stayed paused, then showed "The
+     * order was cancelled -- the money it cost is refunded" the instant Play
+     * was pressed, on a tick the player did not cause pressing it. Exactly the
+     * player-visible promise the code did not keep that `AGENTS.md`'s fourth
+     * exclusion is about, for the one control -- Cancel on a queued order --
+     * that issue #749 exists to fix and that a player manages almost
+     * exclusively while paused.
+     *
+     * Both directions are marked rather than the paragraph above rewritten
+     * (`docs/AGENT_WORKFLOW.md` section 4): it is still true of every command
+     * this branch reached before #749, and false of the five it reaches now.
+     *
+     * Ordered after `publishStatusCounts`, matching `onTickLoop`'s own
+     * ordering of the two.
      */
     if (this._clock.control.mode !== 'paused') return;
     try {
-      if (this._kernel.dispatchDueCommands() > 0) this.publishStatusCounts(this.performanceNow(), true);
+      if (this._kernel.dispatchDueCommands() > 0) {
+        this.publishStatusCounts(this.performanceNow(), true);
+        this.publishEvents();
+      }
     } catch (e) {
       this.fault('internal-error', e instanceof Error ? e.message : String(e));
     }

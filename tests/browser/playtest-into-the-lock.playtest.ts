@@ -115,8 +115,17 @@ const newLines = (baseline: ReadonlySet<string>, visibleText: string): readonly 
  * a log or a branch cut before that ruling; a probe that silently stopped
  * matching would report "the descent produced no money refusal", which is the
  * opposite of what happened.
+ *
+ * **A third alternative since the owner's ruling of 2026-09-01**, for exactly
+ * the same reason and with the same care: ruling 19's rungs each got a sentence
+ * naming what stops rather than the threshold, so all four keys now end *"until
+ * the state pays what it owes"* -- and a build queue stalled at rung 2 says
+ * *"The build queue is stalled — no more materials until the state pays what it
+ * owes."* under a key of its own,
+ * `hud.alert.refusal.construction.materials-unfunded`. Both are covered by the
+ * shared tail. Every wording is kept; none is replaced.
  */
-const FUNDS_SENTENCE = /not enough funds|past what the state will carry/i;
+const FUNDS_SENTENCE = /not enough funds|past what the state will carry|until the state pays what it owes/i;
 
 interface HudDump {
   readonly visibleText: string;

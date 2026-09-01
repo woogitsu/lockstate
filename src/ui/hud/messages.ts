@@ -117,6 +117,48 @@ export const HUD_MESSAGE_KEY = {
    */
   fundsRemaining: 'hud.status.funds-remaining',
   /**
+   * The full sentence behind `{remaining} left`, on the `FUNDS` chip's hover
+   * tooltip and in its screen-reader text -- the owner's ruling of 2026-09-01.
+   *
+   * ## Why the badge does not say this itself
+   *
+   * It cannot. The owner first chose `{remaining} left before deliveries stop`
+   * for the badge, on the condition that the badge be measured, and
+   * `tests/browser/ui-overdraft-badge.spec.ts` measured it: that wording costs
+   * the chip **+133px** and pushes the FUNDS chip -- eighth of nine on a row
+   * whose scrollbar `hud.css` suppresses -- off the visible edge at 1280x800
+   * for the whole four-digit range of the remainder. The ruling that followed
+   * keeps the short badge *because it fits* and moves the name of the
+   * threshold to the two places that have room for a sentence: here, and the
+   * refusal alert.
+   *
+   * ## Why a tooltip is not where this ends
+   *
+   * A hover-only sentence is unreachable on touch and invisible to a player
+   * who never hovers, which is the owner's standing directive against hidden
+   * functionality. So this is one of **two** places the rung is named, not the
+   * only one: `hud.alert.refusal.purchase.insufficient-funds` says it in full
+   * when the refusal actually happens, and
+   * `tests/unit/ui-hud-funds-threshold-named.test.ts` fails if either place
+   * stops naming it. `createStatChip` writes the sentence into the DOM as
+   * screen-reader text as well as into `title`, for the reason
+   * `createIconButton` states.
+   */
+  fundsBeforeDeliveriesStop: 'hud.status.funds-before-deliveries-stop',
+  /**
+   * The same tooltip once the remainder is nothing -- the deliveries rung has
+   * been reached and the sentence above would be about a future that has
+   * arrived.
+   *
+   * Two keys rather than one with a `0` in it, because they state different
+   * facts: `1,249 left before deliveries stop` is a warning and
+   * `deliveries have stopped` is a report. The badge already draws the same
+   * distinction in colour (`overdraftTone` in `./projection.ts` paints
+   * `warning` above the rung and `danger` at it), so a single sentence here
+   * would be the one channel on this chip that does not.
+   */
+  fundsDeliveriesStopped: 'hud.status.funds-deliveries-stopped',
+  /**
    * The rising "earned today" chip beside the balance (#29).
    *
    * Named for what the number is -- what this in-game day has earned so far --

@@ -181,9 +181,24 @@ describe('every HUD message key resolves in the bundled default locale', () => {
      * It is `hud.status.funds`'s own exception one field wider: the same chip,
      * the same units, the same absence of a currency.
      */
+    /*
+     * **Two more join on 2026-09-01, and for once the list grows without the
+     * screen gaining anything a player did not already have.** The owner's
+     * ruling of that day keeps the `FUNDS` badge at `{remaining} left` -- the
+     * long wording was measured at +133px of chip and off the visible edge of
+     * the metrics row at 1280x800 -- and moves the *name* of the threshold to
+     * the chip's tooltip and screen-reader text.
+     * `hud.status.funds-before-deliveries-stop` and
+     * `hud.status.funds-deliveries-stopped` are that sentence. They name no
+     * flow: they name the same remainder `hud.status.funds-remaining` already
+     * names, and say what happens when it runs out, which is a rule
+     * `Treasury.floorFor` enforces today.
+     */
     const ALLOWED_MONEY_KEYS = new Set([
       'hud.status.funds',
       'hud.status.funds-remaining',
+      'hud.status.funds-before-deliveries-stop',
+      'hud.status.funds-deliveries-stopped',
       'hud.security.roster-wage-bill',
     ]);
 
@@ -266,6 +281,7 @@ describe('message keys live in one registry', () => {
       occupiedPlaces: 0,
       staff: 1,
       rooms: 1,
+      roomCapacity: 2,
       // Non-zero on the understaffed rung, so the coverage chip takes its
       // `securityCoverageShort` branch rather than the `securityCoverageMet`
       // fallback. **The owner's ruling 21 of 2026-08-31 made that badge one of

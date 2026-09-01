@@ -88,6 +88,11 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
         occupiedPlaces: counts.occupiedPlaces,
         staff: counts.staff,
         rooms: counts.rooms,
+        // Straight through, deliberately not `prisonerCapacity` above -- see
+        // `HudCountsViewModel.roomCapacity`'s own doc comment for why the
+        // host's starter-rung pre-flight needs the unfiltered sum and the
+        // occupancy bar needs the accommodation-scoped one.
+        roomCapacity: counts.roomCapacity,
         // Straight through, all three, for `accommodationCapacity`'s reason:
         // the HUD may not derive a simulation figure, and these are the rungs
         // `SafetyCoverageSystem` counted the population onto on the same walk
