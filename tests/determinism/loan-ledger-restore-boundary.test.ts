@@ -285,9 +285,9 @@ describe('a negative balance survives a save, and the debt that produced it does
     runtime.treasury.setOverdraftFloor(floor);
     // Spend to exactly the standing floor, so what remains affordable is only
     // the extra room the loan's own floor opened.
-    expect(runtime.treasury.spend(runtime.treasury.balanceMinorUnits - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)).toBe(true);
+    expect(runtime.treasury.spend(runtime.treasury.balanceMinorUnits - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, 'wages')).toBe(true);
     expect(runtime.treasury.balanceMinorUnits).toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
-    expect(runtime.treasury.canAfford(WALL_COST), 'the pre-save session can spend into the overdraft').toBe(true);
+    expect(runtime.treasury.canAfford(WALL_COST, 'wages'), 'the pre-save session can spend into the overdraft').toBe(true);
 
     const restored = roundTrip(runtime);
     expect(restored.treasury.balanceMinorUnits).toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
@@ -296,7 +296,7 @@ describe('a negative balance survives a save, and the debt that produced it does
       'the composition root applied it; the save carries no floor at all',
     ).toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
     expect(
-      restored.treasury.canAfford(WALL_COST),
+      restored.treasury.canAfford(WALL_COST, 'wages'),
       'when this starts failing, the floor became part of the save and this test should assert it came back',
     ).toBe(false);
   }, 30_000);
@@ -326,7 +326,7 @@ describe('why no determinism fingerprint could have moved when the balance stopp
      */
     const left = earningSession();
     const right = earningSession();
-    expect(right.treasury.spend(WALL_COST), 'the two sessions must actually differ').toBe(true);
+    expect(right.treasury.spend(WALL_COST, 'deliveries'), 'the two sessions must actually differ').toBe(true);
     expect(left.treasury.balanceMinorUnits).not.toBe(right.treasury.balanceMinorUnits);
 
     expect(hashFullRuntime(right), 'the runtime fingerprint does not read the treasury').toBe(hashFullRuntime(left));

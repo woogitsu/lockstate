@@ -67,16 +67,33 @@ function submit(runtime: SimulationRuntime, id: string, command: Parameters<type
  * the depths ADR 0083 recorded even if the shipped magnitude moves.
  * **The sentence here used to be *"because nothing in `src/` opens one"*, and
  * that reason expired with #703 ruling A** -- the reason above is the one that
- * still holds. The spend is a single `PurchaseMaterials` sized so the balance
- * lands on the floor to the minor unit, which is the boundary
- * `Treasury.canAfford` decides.
+ * still holds.
+ *
+ * **And the route changed with the owner's ruling 19 of 2026-08-31.** This used
+ * to read:
+ *
+ * > The spend is a single `PurchaseMaterials` sized so the balance lands on the
+ * > floor to the minor unit, which is the boundary `Treasury.canAfford` decides.
+ *
+ * > ```
+ * > const quantity = (runtime.treasury.balanceMinorUnits + depth) / BRICK_PRICE;
+ * > expect(Number.isInteger(quantity), 'the probe depth has to be a whole number of bricks').toBe(true);
+ * > submit(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-under', itemId: 'item.brick', quantity });
+ * > ```
+ *
+ * **A press cannot reach these depths any more, and that is the ruling working
+ * rather than the fixture breaking.** Ruling 19 gives ADR 0017 decision 8's
+ * rungs their own thresholds inside the overdraft, and a `PurchaseMaterials` is
+ * the `'deliveries'` rung -- refused below -1,250 (ADR 0017's "Amendment,
+ * 2026-09-01"). The wage rung is the one whose threshold *is* the floor, so a
+ * payday is what actually takes a prison to the bottom of its facility, and
+ * `Treasury.spend(…, 'wages')` is the production call a payday makes. Still not
+ * an assigned balance: this is the same method `PayrollSystem` reaches.
  */
 function prisonUnderWater(depth: number): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
   runtime.treasury.setOverdraftFloor(-depth);
-  const quantity = (runtime.treasury.balanceMinorUnits + depth) / BRICK_PRICE;
-  expect(Number.isInteger(quantity), 'the probe depth has to be a whole number of bricks').toBe(true);
-  submit(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-under', itemId: 'item.brick', quantity });
+  expect(runtime.treasury.spend(runtime.treasury.balanceMinorUnits + depth, 'wages')).toBe(true);
   expect(runtime.treasury.balanceMinorUnits).toBe(-depth);
   return runtime;
 }
@@ -191,16 +208,40 @@ describe('the HUD side needs nothing new to say a prison is under water', () => 
   });
 });
 
-describe('payroll does not draw on the room a floor opened', () => {
+describe('payroll draws on the room a floor opened, down to the wage rung and no further', () => {
   /**
-   * `PayrollSystem.update` bounds the day's payment by
-   * `Math.min(due, this.treasury.balanceMinorUnits)`, not by what
-   * `Treasury.spend` would allow -- so opening a floor does not make the
-   * payroll overdraw, and
-   * [ADR 0049](../../docs/adr/0049-what-a-prison-that-cannot-make-payroll-owes.md)'s
-   * third rung survives a floor being open. That is the opposite of what that
-   * ADR predicted a signed balance would do, and it is the property this file
-   * pins rather than describes.
+   * **This describe was titled *"payroll does not draw on the room a floor
+   * opened"* and every assertion in it has been inverted by the owner's ruling
+   * 19 of 2026-08-31. The old text is kept because it is the measurement the
+   * ruling was made against.**
+   *
+   * What stood here:
+   *
+   * > `PayrollSystem.update` bounds the day's payment by
+   * > `Math.min(due, this.treasury.balanceMinorUnits)`, not by what
+   * > `Treasury.spend` would allow -- so opening a floor does not make the
+   * > payroll overdraw, and
+   * > [ADR 0049](../../docs/adr/0049-what-a-prison-that-cannot-make-payroll-owes.md)'s
+   * > third rung survives a floor being open. That is the opposite of what that
+   * > ADR predicted a signed balance would do, and it is the property this file
+   * > pins rather than describes.
+   *
+   * > ```
+   * > expect(payrollDay(30, -1_000)).toEqual({ balance: 0, arrears: GUARD_DAY - 30 });
+   * > expect(payrollDay(-200, -1_000)).toEqual({ balance: -200, arrears: GUARD_DAY });
+   * > ```
+   *
+   * That was true, and ADR 0083's "considered and not taken" defended it by
+   * name -- *"making the payroll draw on the floor … would delete the rung"*.
+   * Ruling 19 -- *"Dać szczeblom własne progi wewnątrz debetu"* -- moves the
+   * third rung **to** the floor instead of deleting it: wages are unpaid below
+   * -2,500, which means paid down to it. So the payroll draws, and the rung is
+   * the far edge of the draw rather than the balance reaching zero. Drafted as
+   * ADR 0017's "Amendment, 2026-09-01" and **awaiting the owner's signature**.
+   *
+   * The property that did *not* change is the one ADR 0049 owns: what is not
+   * paid is **arrears**, not a skipped wage. Both cases below still read the
+   * arrears, and the two that reach the rung show it.
    */
   /** The catalogue's own figure for one guard-day, so nothing here restates a balance value. */
   const GUARD_DAY = staffDailyWageMinorUnits('staff-role.guard') ?? 0;
@@ -219,12 +260,33 @@ describe('payroll does not draw on the room a floor opened', () => {
     return { balance: treasury.balanceMinorUnits, arrears: payroll.unpaidWagesMinorUnits };
   }
 
-  it('pays what the balance holds and arrears the rest, with a thousand of room standing unused', () => {
+  it('pays the day in full out of the room the floor opened, rather than arrearing what the balance is short', () => {
     expect(GUARD_DAY).toBeGreaterThan(30);
-    expect(payrollDay(30, -1_000)).toEqual({ balance: 0, arrears: GUARD_DAY - 30 });
+    // 30 held and 1,030 of room: the whole guard-day is paid and the balance
+    // goes under water by the difference. Before ruling 19 this arreared
+    // `GUARD_DAY - 30` and left the balance at 0.
+    expect(payrollDay(30, -1_000)).toEqual({ balance: 30 - GUARD_DAY, arrears: 0 });
   });
 
-  it('pays nothing at all from a balance already under water and does not deepen it', () => {
-    expect(payrollDay(-200, -1_000)).toEqual({ balance: -200, arrears: GUARD_DAY });
+  it('goes on paying from a balance already under water, while the room lasts', () => {
+    // Before ruling 19 this paid nothing at all and arreared the whole day.
+    expect(payrollDay(-200, -1_000)).toEqual({ balance: -200 - GUARD_DAY, arrears: 0 });
+  });
+
+  it('pays what the rung leaves and arrears the rest, which is the third rung firing', () => {
+    // Half a guard-day of room left: the payroll takes it, lands exactly on the
+    // wage rung, and owes the other half. This is ADR 0017 decision 8's third
+    // rung, at the threshold ruling 19 gives it.
+    const room = Math.trunc(GUARD_DAY / 2);
+    expect(payrollDay(-1_000 + room, -1_000)).toEqual({ balance: -1_000, arrears: GUARD_DAY - room });
+  });
+
+  it('pays nothing from a balance already at the rung, and does not deepen it', () => {
+    expect(payrollDay(-1_000, -1_000)).toEqual({ balance: -1_000, arrears: GUARD_DAY });
+  });
+
+  it('pays nothing from a balance already past the rung, and does not deepen it either', () => {
+    // A restored save can carry one: `Treasury.restore` writes any safe integer.
+    expect(payrollDay(-1_200, -1_000)).toEqual({ balance: -1_200, arrears: GUARD_DAY });
   });
 });

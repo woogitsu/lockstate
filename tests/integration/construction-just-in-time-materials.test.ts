@@ -276,7 +276,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
     send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: PLANK, quantity: planks });
     expect(runtime.treasury.balanceMinorUnits).toBe(balance);
     expect(
-      runtime.treasury.canAfford(WALL_COST),
+      runtime.treasury.canAfford(WALL_COST, 'construction'),
       'the fixture only means anything if a wall is genuinely unaffordable from here',
     ).toBe(false);
     return runtime;
@@ -539,7 +539,7 @@ describe('a placed object is a build order too (ADR 0028 decision 4)', () => {
      */
     send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 687 });
     expect(runtime.treasury.balanceMinorUnits).toBe(-2_480);
-    expect(runtime.treasury.canAfford(PLANK_PRICE), 'a plank is 65 and 20 of room is left').toBe(false);
+    expect(runtime.treasury.canAfford(PLANK_PRICE, 'construction'), 'a plank is 65 and 20 of room is left').toBe(false);
 
     send(runtime, { type: 'PlaceObject', orderId: 'order-bed', definitionId: 'bed-wooden', x: CELL_RECT.x, y: CELL_RECT.y });
 
@@ -603,8 +603,8 @@ describe('the order the queue is funded in (#703 ruling 12)', () => {
      * which would make this a case about stock instead of about the walk.
      */
     const roomBefore = runtime.treasury.balanceMinorUnits - runtime.treasury.overdraftFloorMinorUnits;
-    expect(runtime.treasury.spend(roomBefore), 'the prison starts this case with nothing to spend').toBe(true);
-    expect(runtime.treasury.canAfford(1)).toBe(false);
+    expect(runtime.treasury.spend(roomBefore, 'wages'), 'the prison starts this case with nothing to spend').toBe(true);
+    expect(runtime.treasury.canAfford(1, 'construction')).toBe(false);
 
     // Both are placed while nothing is affordable, so neither is funded by its
     // own press and both are waiting when the money arrives.
@@ -648,7 +648,7 @@ describe('the order the queue is funded in (#703 ruling 12)', () => {
     // is what says the wall was refused for the whole 80 and not part-funded,
     // which is ruling 12's per-order atomicity.
     expect(runtime.treasury.balanceMinorUnits - runtime.treasury.overdraftFloorMinorUnits).toBe(15);
-    expect(runtime.treasury.canAfford(WALL_COST), 'what is left cannot buy the wall').toBe(false);
+    expect(runtime.treasury.canAfford(WALL_COST, 'construction'), 'what is left cannot buy the wall').toBe(false);
   });
 });
 
@@ -727,7 +727,7 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
      * `Treasury.spend` rather than the Buy control, because a purchase would
      * land materials in the container and the queue would then need none.
      */
-    expect(runtime.treasury.spend(roomOf())).toBe(true);
+    expect(runtime.treasury.spend(roomOf(), 'wages')).toBe(true);
     expect(roomOf()).toBe(0);
 
     const orders = placeWalls(runtime, 10);
@@ -866,7 +866,7 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
     expect(firstRefusedAt, 'zero-based, so the 344th wall is the first the game refuses to buy for').toBe(343);
     expect(runtime.treasury.balanceMinorUnits, '25,000 - 343 x 80').toBe(-2_440);
     expect(
-      runtime.treasury.canAfford(PLANK_PRICE),
+      runtime.treasury.canAfford(PLANK_PRICE, 'construction'),
       'and the 60 of overdraft still standing is below the 65 that would end this',
     ).toBe(false);
 

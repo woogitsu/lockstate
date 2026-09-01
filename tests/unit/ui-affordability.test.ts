@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS } from '../../src/simulation/economy';
-import { judgeAffordability } from '../../src/ui/affordability';
+import {
+  INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
+  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+} from '../../src/simulation/economy';
+import { HOST_PRESS_FLOOR_MINOR_UNITS, judgeAffordability } from '../../src/ui/affordability';
 
 /**
  * **The host's pre-flight on the two intents that cost money.**
@@ -31,19 +34,56 @@ import { judgeAffordability } from '../../src/ui/affordability';
 /** The shipped facility, pinned so a change to it fails here with the reason named. */
 const FLOOR = -2_500;
 
+/**
+ * **The floor a *press* is judged against, which since the owner's ruling 19 of
+ * 2026-08-31 is not `FLOOR`.**
+ *
+ * Ruling 19 -- *"Dać szczeblom własne progi wewnątrz debetu"*, drafted as ADR
+ * 0017's "Amendment, 2026-09-01" -- gives ADR 0017 decision 8's rungs their own
+ * thresholds inside the overdraft. Both intents this module serves are refused
+ * at the first rung: `purchase-materials` is `'deliveries'` and `hire-staff` is
+ * `'hiring'`, which shares its threshold.
+ *
+ * **Every figure below that used to be 2,500 or -2,480 is now 1,250 or -1,230,
+ * and the old ones are kept in the case comments.** The shape of each assertion
+ * is unchanged; only the depth the host will carry to has moved. Pinned as a
+ * literal here for the reason `FLOOR` is: a change to the rung fails in this
+ * file, by name, rather than somewhere downstream.
+ */
+const PRESS_FLOOR = -1_250;
+
 describe('judgeAffordability: the one comparison the host makes about money', () => {
   it('is the same boundary `Treasury.canAfford` decides, to the minor unit', () => {
     expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, '#703 ruling A: one tenth of the opening grant').toBe(FLOOR);
+    expect(INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS, 'ruling 19: the first rung').toBe(PRESS_FLOOR);
+    expect(HOST_PRESS_FLOOR_MINOR_UNITS, 'and it is the rung the host judges a press against').toBe(PRESS_FLOOR);
 
-    // A prison at zero can still spend the whole facility, and not one unit more.
-    expect(judgeAffordability(2_500, 0).refused).toBe(false);
-    expect(judgeAffordability(2_501, 0).refused).toBe(true);
+    // A prison at zero can still spend down to the first rung, and not one unit
+    // more. Before ruling 19 this read 2,500 / 2,501 against the floor itself.
+    expect(judgeAffordability(1_250, 0).refused).toBe(false);
+    expect(judgeAffordability(1_251, 0).refused).toBe(true);
 
     // And from a balance already under water, the room left is what decides.
-    expect(judgeAffordability(20, -2_480).refused).toBe(false);
-    expect(judgeAffordability(21, -2_480).refused).toBe(true);
-    expect(judgeAffordability(0, FLOOR), 'buying nothing at the floor is legal').toMatchObject({ refused: false });
-    expect(judgeAffordability(1, FLOOR).refused).toBe(true);
+    // Before ruling 19: 20 / 21 against -2,480.
+    expect(judgeAffordability(20, -1_230).refused).toBe(false);
+    expect(judgeAffordability(21, -1_230).refused).toBe(true);
+    expect(judgeAffordability(0, PRESS_FLOOR), 'buying nothing at the rung is legal').toMatchObject({
+      refused: false,
+    });
+    expect(judgeAffordability(1, PRESS_FLOOR).refused).toBe(true);
+
+    /*
+     * **The rung is above the floor, so a press is now refused while the
+     * treasury would still carry it**, and that is the ladder rather than a
+     * disagreement between the two sides of `sender.submit`: `Treasury.spend`
+     * refuses the same press, at the same depth, because the command handler
+     * spends at the `'deliveries'` rung too
+     * (`src/simulation/runtime/session-commands.ts`).
+     */
+    expect(judgeAffordability(1, FLOOR).refused, 'a press at the overdraft floor is long past its rung').toBe(true);
+    expect(judgeAffordability(1_251, 0, FLOOR).refused, 'and the deep floor is still reachable by argument').toBe(
+      false,
+    );
   });
 
   /**
@@ -52,7 +92,9 @@ describe('judgeAffordability: the one comparison the host makes about money', ()
    * simulation would have accepted.
    */
   it('accepts the presses the pre-ruling comparison would have refused', () => {
-    for (const [charge, balance] of [[65, 40], [80, 0], [40, -1_000], [65, -2_435]] as const) {
+    // `[65, -2_435]` was here until ruling 19 and is now past the first rung;
+    // `[65, -1_185]` is the same probe one rung up.
+    for (const [charge, balance] of [[65, 40], [80, 0], [40, -1_000], [65, -1_185]] as const) {
       const verdict = judgeAffordability(charge, balance);
       expect(charge > balance, 'the old comparison refused this').toBe(true);
       expect(verdict.refused, `${String(charge)} against ${String(balance)} is affordable`).toBe(false);
@@ -77,14 +119,28 @@ describe('judgeAffordability: the one comparison the host makes about money', ()
   });
 
   it('reports the room left, which is what makes a refusal legible', () => {
-    expect(judgeAffordability(65, -2_480)).toEqual({
+    // Before ruling 19 this probe was `(65, -2_480)` with `spendableMinorUnits: 20`.
+    expect(judgeAffordability(65, -1_230)).toEqual({
       refused: true,
       refusal: 'past-the-floor',
       chargeMinorUnits: 65,
-      balanceMinorUnits: -2_480,
+      balanceMinorUnits: -1_230,
       spendableMinorUnits: 20,
     });
-    expect(judgeAffordability(65, 25_000).spendableMinorUnits, 'the grant plus the facility').toBe(27_500);
+    /*
+     * **And `spendableMinorUnits` is now the room to the *rung*, which is a
+     * player-visible figure this file cannot settle.** It read 27,500 -- the
+     * grant plus the whole facility -- and reads 26,250, the grant plus the
+     * first rung. `hud.status.funds-remaining` (`{remaining} left`) is computed
+     * elsewhere, from the *published* floor, and still says 27,500: reporting
+     * that divergence is this branch's job, and choosing what the chip should
+     * say is the owner's under `AGENTS.md`'s fourth exclusion.
+     */
+    expect(judgeAffordability(65, 25_000).spendableMinorUnits, 'the grant plus the first rung').toBe(26_250);
+    expect(
+      judgeAffordability(65, 25_000, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS).spendableMinorUnits,
+      'the grant plus the whole facility, which is what the FUNDS chip still shows',
+    ).toBe(27_500);
   });
 
   /**
@@ -107,10 +163,11 @@ describe('judgeAffordability: the one comparison the host makes about money', ()
    */
   it('names the branch that refused, so a sentence can be chosen for it', () => {
     expect(judgeAffordability(65, 25_000).refusal, 'affordable names no branch').toBeUndefined();
-    expect(judgeAffordability(2_500, 0).refusal, 'the whole facility, exactly').toBeUndefined();
+    // 2,500 / 2,501 before ruling 19; the rung is what the press meets now.
+    expect(judgeAffordability(1_250, 0).refusal, 'the whole first rung, exactly').toBeUndefined();
 
-    expect(judgeAffordability(2_501, 0).refusal).toBe('past-the-floor');
-    expect(judgeAffordability(1, FLOOR).refusal, 'one unit past a balance already at the floor').toBe(
+    expect(judgeAffordability(1_251, 0).refusal).toBe('past-the-floor');
+    expect(judgeAffordability(1, PRESS_FLOOR).refusal, 'one unit past a balance already at the rung').toBe(
       'past-the-floor',
     );
 
@@ -127,8 +184,8 @@ describe('judgeAffordability: the one comparison the host makes about money', ()
 
     // `refused` is exactly "a branch refused", so no caller can read one field
     // and the other and get two different answers.
-    for (const balance of [-2_500, -1, 0, 40, 25_000]) {
-      for (const charge of [-1, 0, 1, 65, 2_500, 27_500, 27_501, Number.NaN]) {
+    for (const balance of [-2_500, -1_250, -1, 0, 40, 25_000]) {
+      for (const charge of [-1, 0, 1, 65, 1_250, 2_500, 26_250, 26_251, 27_500, Number.NaN]) {
         const verdict = judgeAffordability(charge, balance);
         expect(verdict.refused, `charge ${String(charge)} against ${String(balance)}`).toBe(
           verdict.refusal !== undefined,

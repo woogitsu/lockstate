@@ -45,27 +45,27 @@ describe('Treasury: the exact-balance boundary', () => {
     // The boundary itself, from both sides and with the step between them
     // spelled out. `<=` says the first is true; `<` says it is false, and only
     // this input tells the two apart.
-    expect(treasury.canAfford(BALANCE), 'a prison must be able to spend its last coin').toBe(true);
-    expect(treasury.canAfford(BALANCE - 1)).toBe(true);
-    expect(treasury.canAfford(BALANCE + 1), 'nothing may be affordable past the balance').toBe(false);
+    expect(treasury.canAfford(BALANCE, 'wages'), 'a prison must be able to spend its last coin').toBe(true);
+    expect(treasury.canAfford(BALANCE - 1, 'wages')).toBe(true);
+    expect(treasury.canAfford(BALANCE + 1, 'wages'), 'nothing may be affordable past the balance').toBe(false);
   });
 
   it('spends the exact balance down to zero rather than refusing it', () => {
     const treasury = new Treasury(BALANCE);
 
-    expect(treasury.spend(BALANCE), 'spending exactly the balance is a purchase, not an overdraft').toBe(true);
+    expect(treasury.spend(BALANCE, 'wages'), 'spending exactly the balance is a purchase, not an overdraft').toBe(true);
     expect(treasury.balanceMinorUnits).toBe(0);
     // And the account is now empty rather than negative: the refusal contract
     // holds at the far end of the same boundary, where every further spend --
     // including a spend of nothing -- must leave the balance where it is.
-    expect(treasury.spend(1)).toBe(false);
+    expect(treasury.spend(1, 'wages')).toBe(false);
     expect(treasury.balanceMinorUnits).toBe(0);
   });
 
   it('refuses a spend of one more than the balance and changes nothing', () => {
     const treasury = new Treasury(BALANCE);
 
-    expect(treasury.spend(BALANCE + 1)).toBe(false);
+    expect(treasury.spend(BALANCE + 1, 'wages')).toBe(false);
     // The refusal is total: `spend` returns before the subtraction, so a
     // partial debit is the failure this pins against.
     expect(treasury.balanceMinorUnits).toBe(BALANCE);
@@ -77,8 +77,8 @@ describe('Treasury: the exact-balance boundary', () => {
     const treasury = new Treasury();
 
     expect(treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
-    expect(treasury.canAfford(TREASURY_STARTING_BALANCE_MINOR_UNITS)).toBe(true);
-    expect(treasury.canAfford(TREASURY_STARTING_BALANCE_MINOR_UNITS + 1)).toBe(false);
+    expect(treasury.canAfford(TREASURY_STARTING_BALANCE_MINOR_UNITS, 'wages')).toBe(true);
+    expect(treasury.canAfford(TREASURY_STARTING_BALANCE_MINOR_UNITS + 1, 'wages')).toBe(false);
   });
 
   it('holds the boundary again after a credit moves it', () => {
@@ -88,9 +88,9 @@ describe('Treasury: the exact-balance boundary', () => {
     const treasury = new Treasury(BALANCE);
     treasury.credit(500);
 
-    expect(treasury.canAfford(1_500)).toBe(true);
-    expect(treasury.canAfford(1_501)).toBe(false);
-    expect(treasury.spend(1_500)).toBe(true);
+    expect(treasury.canAfford(1_500, 'wages')).toBe(true);
+    expect(treasury.canAfford(1_501, 'wages')).toBe(false);
+    expect(treasury.spend(1_500, 'wages')).toBe(true);
     expect(treasury.balanceMinorUnits).toBe(0);
   });
 
@@ -98,9 +98,9 @@ describe('Treasury: the exact-balance boundary', () => {
     const treasury = new Treasury(BALANCE);
     treasury.restore({ balanceMinorUnits: 7 });
 
-    expect(treasury.canAfford(7)).toBe(true);
-    expect(treasury.canAfford(8)).toBe(false);
-    expect(treasury.spend(7)).toBe(true);
+    expect(treasury.canAfford(7, 'wages')).toBe(true);
+    expect(treasury.canAfford(8, 'wages')).toBe(false);
+    expect(treasury.spend(7, 'wages')).toBe(true);
     expect(treasury.balanceMinorUnits).toBe(0);
   });
 
@@ -110,9 +110,9 @@ describe('Treasury: the exact-balance boundary', () => {
     // purchase legal, and a `<` would make "buy nothing" a refusal too.
     const treasury = new Treasury(0);
 
-    expect(treasury.canAfford(0)).toBe(true);
-    expect(treasury.canAfford(1)).toBe(false);
-    expect(treasury.spend(0)).toBe(true);
+    expect(treasury.canAfford(0, 'wages')).toBe(true);
+    expect(treasury.canAfford(1, 'wages')).toBe(false);
+    expect(treasury.spend(0, 'wages')).toBe(true);
     expect(treasury.balanceMinorUnits).toBe(0);
   });
 
@@ -121,11 +121,11 @@ describe('Treasury: the exact-balance boundary', () => {
     // alone in this file.
     const treasury = new Treasury(BALANCE);
 
-    expect(treasury.canAfford(0.5)).toBe(false);
-    expect(treasury.canAfford(-1)).toBe(false);
-    expect(treasury.canAfford(Number.NaN)).toBe(false);
-    expect(treasury.canAfford(Number.POSITIVE_INFINITY)).toBe(false);
-    expect(treasury.spend(0.5)).toBe(false);
+    expect(treasury.canAfford(0.5, 'wages')).toBe(false);
+    expect(treasury.canAfford(-1, 'wages')).toBe(false);
+    expect(treasury.canAfford(Number.NaN, 'wages')).toBe(false);
+    expect(treasury.canAfford(Number.POSITIVE_INFINITY, 'wages')).toBe(false);
+    expect(treasury.spend(0.5, 'wages')).toBe(false);
     expect(treasury.balanceMinorUnits).toBe(BALANCE);
   });
 });
@@ -164,7 +164,7 @@ describe('Treasury: the room a facility opens below zero', () => {
 
     expect(treasury.overdraftFloorMinorUnits, 'the class default is still no room at all').toBe(0);
     // A plank is 65 and the prison holds 40: ADR 0075's lock, unchanged.
-    expect(treasury.spend(65)).toBe(false);
+    expect(treasury.spend(65, 'wages')).toBe(false);
     expect(treasury.balanceMinorUnits).toBe(40);
   });
 
@@ -173,16 +173,16 @@ describe('Treasury: the room a facility opens below zero', () => {
     treasury.setOverdraftFloor(-100);
 
     // 40 - 65 = -25, which is above -100.
-    expect(treasury.canAfford(65)).toBe(true);
-    expect(treasury.spend(65)).toBe(true);
+    expect(treasury.canAfford(65, 'wages')).toBe(true);
+    expect(treasury.spend(65, 'wages')).toBe(true);
     expect(treasury.balanceMinorUnits).toBe(-25);
 
     // 75 more lands exactly on the floor and is allowed; 76 is not.
-    expect(treasury.canAfford(75)).toBe(true);
-    expect(treasury.canAfford(76)).toBe(false);
-    expect(treasury.spend(76)).toBe(false);
+    expect(treasury.canAfford(75, 'wages')).toBe(true);
+    expect(treasury.canAfford(76, 'wages')).toBe(false);
+    expect(treasury.spend(76, 'wages')).toBe(false);
     expect(treasury.balanceMinorUnits, 'a refusal at the floor changes nothing').toBe(-25);
-    expect(treasury.spend(75)).toBe(true);
+    expect(treasury.spend(75, 'wages')).toBe(true);
     expect(treasury.balanceMinorUnits).toBe(-100);
   });
 
@@ -219,9 +219,9 @@ describe('Treasury: the room a facility opens below zero', () => {
     const treasury = new Treasury(1_000);
     treasury.setOverdraftFloor(-1_000);
 
-    expect(treasury.canAfford(-1)).toBe(false);
-    expect(treasury.spend(-1)).toBe(false);
-    expect(treasury.canAfford(0.5)).toBe(false);
+    expect(treasury.canAfford(-1, 'wages')).toBe(false);
+    expect(treasury.spend(-1, 'wages')).toBe(false);
+    expect(treasury.canAfford(0.5, 'wages')).toBe(false);
     expect(treasury.balanceMinorUnits).toBe(1_000);
   });
 });
@@ -262,11 +262,11 @@ describe('what a shipped session gets (#703 ruling A)', () => {
     expect(runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
     expect(runtime.treasury.overdraftFloorMinorUnits).toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
     expect(
-      runtime.treasury.canAfford(TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS),
+      runtime.treasury.canAfford(TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, 'wages'),
       'spending power is the grant plus the facility, to the minor unit',
     ).toBe(true);
     expect(
-      runtime.treasury.canAfford(TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS + 1),
+      runtime.treasury.canAfford(TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS + 1, 'wages'),
       'and not one unit more',
     ).toBe(false);
   });
@@ -280,7 +280,7 @@ describe('what a shipped session gets (#703 ruling A)', () => {
      * the claim the composition root's placement is *for*.
      */
     const runtime = createNewSimulationRuntime(0x703);
-    runtime.treasury.spend(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    runtime.treasury.spend(TREASURY_STARTING_BALANCE_MINOR_UNITS, 'wages');
     const restored = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
 
     expect(restored.treasury.balanceMinorUnits).toBe(0);

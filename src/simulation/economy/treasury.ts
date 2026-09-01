@@ -354,15 +354,20 @@ export const INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS = -2_000;
  * The three rungs and the one spend the ruling does not name, as the floors
  * they are refused at.
  *
- * **`'wages'` is `0` and that is not a threshold of its own: it is the sentinel
- * for "no rung above the treasury's floor".** Ruling 19 puts the third rung
- * *at* the floor (−2,500 today), and the floor already has an owner --
+ * **`'wages'` is `-Infinity` and that is not a threshold: it is the sentinel for
+ * "no rung of its own above the treasury's floor".** Ruling 19 puts the third
+ * rung *at* the floor (−2,500 today), and the floor already has an owner --
  * `Treasury.setOverdraftFloor`, fed by `createNewSimulationRuntime` from
  * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`. Writing −2,500 here would be a second
  * copy of a number that is already defined once, and the two copies would
- * disagree the first time anybody passed a different floor. `floorFor` clamps
- * every rung to the treasury's floor, so `0` clamps to exactly the floor and
- * the third rung is the floor by construction rather than by coincidence.
+ * disagree the first time anybody passed a different floor. Every rung is
+ * clamped *up* to the treasury's floor by `rungFloorMinorUnits`, so the sentinel
+ * has to be the identity of `Math.max`: `-Infinity` clamps to exactly the floor,
+ * whatever the floor is, and the third rung is the floor by construction rather
+ * than by coincidence. `0` was the first draft and is wrong -- the floor is
+ * non-positive, so `Math.max(0, floor)` is `0` for every floor and would have
+ * pinned wages at a balance of zero, which is the pre-ruling behaviour this
+ * change exists to move.
  *
  * `'hiring'` shares the first rung. Not a fourth threshold, because ruling 19
  * authored three and a fourth is the owner's; and not a deeper one, because a
@@ -372,7 +377,7 @@ export const INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS = -2_000;
 export const INSOLVENCY_RUNG_FLOORS_MINOR_UNITS: Readonly<Record<SpendClass, number>> = {
   deliveries: INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
   construction: INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS,
-  wages: 0,
+  wages: Number.NEGATIVE_INFINITY,
   hiring: INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
 };
 

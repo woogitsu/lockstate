@@ -208,9 +208,9 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
      * is it, expressed against the floor the prison has.
      */
     const oneUnderAHire = TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS + WAGE - 1;
-    expect(runtime.treasury.spend(TREASURY_STARTING_BALANCE_MINOR_UNITS - oneUnderAHire)).toBe(true);
+    expect(runtime.treasury.spend(TREASURY_STARTING_BALANCE_MINOR_UNITS - oneUnderAHire, 'hiring')).toBe(true);
     expect(runtime.treasury.balanceMinorUnits).toBe(oneUnderAHire);
-    expect(runtime.treasury.canAfford(WAGE), 'one minor unit under, and it is the floor that says so').toBe(false);
+    expect(runtime.treasury.canAfford(WAGE, 'hiring'), 'one minor unit under, and it is the floor that says so').toBe(false);
 
     // The tick the command is *dispatched* at, which is the one the refusal
     // carries -- not the tick the kernel has reached by the time it is read.
