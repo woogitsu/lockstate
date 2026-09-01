@@ -452,14 +452,22 @@ as "the tick moved" rather than "every 250 ms".
    overwritten (`docs/AGENT_WORKFLOW.md` §4), because what they were reaching
    for — "this readout is not refreshed only on arrival" — was true.
 2. **The nine `src/main.ts` comments** stop quoting 500 ms.
-3. **A new foundation- or unit-level gate** owns the sentence "the pull layer
-   is driven by the clock heartbeat," and it fails on the §4 mutation. Until it
-   exists, `tests/foundation/composition-root-contract.test.ts:176-179`'s label
-   is the only recorded statement of the cadence and it states the wrong one.
-4. **`tests/foundation/composition-root-contract.test.ts` needs its label
-   corrected**, not its assertion — it pins the right lines for the wrong
-   stated reason. It is another agent's file at the time of writing; handed
-   over rather than edited.
+3. **`tests/foundation/hud-refresh-cadence-contract.test.ts` now owns the
+   sentence "the pull layer is driven by the clock heartbeat,"** and it is
+   shipped in this branch rather than gated by this ADR, because it records the
+   cadence that exists rather than deciding the one that should. Four mutations
+   were run against it and each produced a red in the test that names it: a
+   "nothing changed" arm on `hudClockFromWorkerMessage`; the clock heartbeat
+   slowed from 250 ms to 30 s in `publishClockState`; the clock term deleted
+   from `src/main.ts`'s early return; and — as the contrast the file asserts
+   outright — the same trace scored by the predicate #718 describes, which
+   yields **one refresh in thirty seconds**. If the owner approves a different
+   heartbeat, that file changes in the same commit; that is the whole of what
+   it costs.
+4. **`tests/foundation/composition-root-contract.test.ts`'s label is corrected
+   in this branch**, not its assertion — it pinned the right lines under the
+   wrong stated reason (*"refreshed on the counts cadence"*). The correction is
+   marked in the entry's own `reason` rather than overwritten.
 5. **`hudClockFromWorkerMessage` becomes load-bearing on purpose.** Any future
    change that makes it conditional — the obvious "return `undefined` when the
    clock says nothing new" — must replace the heartbeat in the same commit.
