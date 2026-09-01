@@ -10,6 +10,8 @@ import {
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import {
   MAX_EVENT_ALERT_ROWS,
+  alertRowDismissal,
+  hudAlertsWithoutRow,
   hudEventAlertsFromWorkerMessage,
   hudEventNoticeFromWorkerMessage,
 } from '../../src/ui/simulation-events';
@@ -516,13 +518,36 @@ describe('what the events boundary refuses', () => {
   });
 });
 
+/**
+ * A discharge that says something **different** every time: `count` prisoners
+ * left, on a tick of its own.
+ *
+ * `SAMPLE['prisoners.discharged']` is fixed at two prisoners on tick 100, so
+ * every call to it renders the identical sentence -- which, since the owner's
+ * decision 1 of 2026-09-01, is one row that counts them rather than several
+ * rows. The tests below that are about *distinct* events therefore need
+ * distinct events, and this is what makes them distinct in the way the game
+ * does: a different figure in the sentence.
+ */
+function distinctDischarge(sequence: number): Extract<SimulationEvent, { type: 'prisoners.discharged' }> {
+  return { sequence, tick: 100 + sequence, type: 'prisoners.discharged', count: sequence };
+}
+
 describe('the log beside the notice', () => {
   it('gives every event its own row rather than rewriting the last one', () => {
-    const first = hudEventAlertsFromWorkerMessage(publication(SAMPLE['prisoners.discharged'](1)), []);
-    const second = hudEventAlertsFromWorkerMessage(publication(SAMPLE['prisoners.discharged'](2)), first);
+    const first = hudEventAlertsFromWorkerMessage(publication(distinctDischarge(1)), []);
+    const second = hudEventAlertsFromWorkerMessage(publication(distinctDischarge(2)), first);
     // Two discharges are two things that happened, not one thing restated --
     // the opposite of a refusal, which is republished unchanged on a cadence
     // and must update in place.
+    //
+    // **The two events are now deliberately unequal, and that is the whole of
+    // what the owner's decision 1 changed here.** This drove two publications
+    // of `SAMPLE['prisoners.discharged']`, which are byte-identical apart from
+    // the ordinal, and required two rows. Two *identical* sentences are now one
+    // row saying so twice -- the case below -- while two discharges that
+    // released a different number of people are still two things that
+    // happened, which is what this test was always about.
     expect(second?.length).toBe(2);
     expect(new Set(second?.map((row) => row.id)).size).toBe(2);
   });
@@ -532,7 +557,7 @@ describe('the log beside the notice', () => {
     // neither may erase the other. A standing protocol fault is the case that
     // matters: it is the row nothing else on this thread reads.
     const fault: HudAlertViewModel = { id: 'fault-invalid-message', labelKey: 'hud.alert.fault.invalid-message', severity: 'danger' };
-    const withEvent = hudEventAlertsFromWorkerMessage(publication(SAMPLE['prisoners.discharged'](1)), [fault]);
+    const withEvent = hudEventAlertsFromWorkerMessage(publication(distinctDischarge(1)), [fault]);
     expect(withEvent).toContainEqual(fault);
     // And the fault stays *above* the events, so a fault that has been standing
     // all session does not sink out of sight under a run of discharges.
@@ -562,11 +587,11 @@ describe('the log beside the notice', () => {
     const fault: HudAlertViewModel = { id: 'fault-invalid-message', labelKey: 'hud.alert.fault.invalid-message', severity: 'danger' };
     const refusal: HudAlertViewModel = { id: 'refusal-7', labelKey: 'hud.alert.refusal.build.unowned-land', severity: 'warning' };
 
-    const afterFirstEvent = hudEventAlertsFromWorkerMessage(publication(SAMPLE['prisoners.discharged'](1)), [fault]) ?? [];
+    const afterFirstEvent = hudEventAlertsFromWorkerMessage(publication(distinctDischarge(1)), [fault]) ?? [];
     // What a status-counts publication then does: it keeps every non-refusal
     // row where it is and appends the refusal at the end.
     const afterCounts = [...afterFirstEvent, refusal];
-    const afterSecondEvent = hudEventAlertsFromWorkerMessage(publication(SAMPLE['prisoners.discharged'](2)), afterCounts) ?? [];
+    const afterSecondEvent = hudEventAlertsFromWorkerMessage(publication(distinctDischarge(2)), afterCounts) ?? [];
 
     expect(
       afterSecondEvent.map((row) => row.id),
@@ -585,7 +610,7 @@ describe('the log beside the notice', () => {
     let rows: readonly HudAlertViewModel[] = [];
     const total = MAX_EVENT_ALERT_ROWS + 5;
     for (let sequence = 1; sequence <= total; sequence += 1) {
-      rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['prisoners.discharged'](sequence)), rows) ?? rows;
+      rows = hudEventAlertsFromWorkerMessage(publication(distinctDischarge(sequence)), rows) ?? rows;
     }
     expect(rows.length, 'the alerts list must not grow with the session').toBe(MAX_EVENT_ALERT_ROWS);
     // The newest are the ones kept: within one severity band the oldest is
@@ -622,7 +647,7 @@ describe('the log beside the notice', () => {
 
     const total = MAX_EVENT_ALERT_ROWS + 5;
     for (let sequence = 2; sequence <= total; sequence += 1) {
-      rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['prisoners.discharged'](sequence)), rows) ?? rows;
+      rows = hudEventAlertsFromWorkerMessage(publication(distinctDischarge(sequence)), rows) ?? rows;
     }
 
     expect(rows.length, 'the cap still holds').toBe(MAX_EVENT_ALERT_ROWS);
@@ -682,5 +707,217 @@ describe('what clears an event', () => {
     // refusal band already runs.
     expect(newer.sequence).toBeGreaterThan(older.sequence);
     expect(newer.labelKey).not.toBe(older.labelKey);
+  });
+});
+
+/**
+ * A `simulation/event` carrying a record a restored log kept, rather than
+ * something the prison has just done (the owner's decision 4 of 2026-09-01).
+ */
+function restoredPublication(event: SimulationEvent): WorkerToMainMessage {
+  return workerToMainMessageSchema.parse({
+    protocolVersion: SIMULATION_PROTOCOL_VERSION,
+    messageId: '00000000-0000-4000-8000-000000000084',
+    kind: 'simulation/event',
+    payload: { tick: 4_000, event, restored: true },
+  }) as WorkerToMainMessage;
+}
+
+function ready(): WorkerToMainMessage {
+  return workerToMainMessageSchema.parse({
+    protocolVersion: SIMULATION_PROTOCOL_VERSION,
+    messageId: '00000000-0000-4000-8000-0000000000aa',
+    replyTo: '00000000-0000-4000-8000-0000000000bb',
+    kind: 'simulation/ready',
+    payload: { sessionId: 'session-1', tick: 0, clock: { mode: 'paused' } },
+  }) as WorkerToMainMessage;
+}
+
+/** One in-game day, as `DAY_LENGTH_TICKS` has it. Written out rather than imported, so this fixture does not supply both sides of the day arithmetic it checks. */
+const DAY_TICKS = 2_400;
+
+describe('a sentence the prison says more than once (ADR 0084 decisions 1 and 2)', () => {
+  it('counts the repeats on one row instead of filling the list with copies of itself', () => {
+    /*
+     * Issue #741's measurement, in the translator: by in-game day 7 the list
+     * held "A fight has broken out between two prisoners." three times and the
+     * all-clear three times, in an eight-row list, "with no tick, no in-game
+     * time and no `×3`".
+     *
+     * The four incident-opening types are the ones that can repeat verbatim,
+     * because they carry no payload at all (`types.ts`, ADR 0084 Finding 1),
+     * so the assault is the case the player actually met.
+     */
+    let rows: readonly HudAlertViewModel[] = [];
+    for (let sequence = 1; sequence <= 3; sequence += 1) {
+      rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.assault-opened'](sequence)), rows, DAY_TICKS) ?? rows;
+    }
+
+    expect(rows.length, 'three identical sentences are one row').toBe(1);
+    expect(rows[0]?.occurrences?.count, 'and the row says how many times').toBe(3);
+    // The row keeps the identity its first arrival earned, so the row the
+    // player is reading does not become a different row under them.
+    expect(rows[0]?.id).toBe('event-1');
+    expect(rows[0]?.occurrences?.firstSequence).toBe(1);
+    expect(rows[0]?.occurrences?.lastSequence).toBe(3);
+  });
+
+  it('does not collapse two sentences that differ by a figure', () => {
+    // The rule is one rule over the whole union, and it fires on what the data
+    // says rather than on which family the event belongs to: two discharges
+    // that released a different number of people are two statements.
+    let rows = hudEventAlertsFromWorkerMessage(publication(distinctDischarge(1)), [], DAY_TICKS) ?? [];
+    rows = hudEventAlertsFromWorkerMessage(publication(distinctDischarge(2)), rows, DAY_TICKS) ?? rows;
+    expect(rows.map((row) => row.occurrences?.count)).toEqual([1, 1]);
+  });
+
+  it('does not collapse two escapes by different prisoners', () => {
+    // The safe direction of "identity is the payload, not the sentence": two
+    // people got out, and one row saying so twice would claim the same person
+    // did.
+    const first: SimulationEvent = { sequence: 1, tick: 100, type: 'incidents.escape-succeeded', entityId: 3, name: { givenName: 'Ada', familyName: 'Bell' } };
+    const second: SimulationEvent = { sequence: 2, tick: 200, type: 'incidents.escape-succeeded', entityId: 4, name: { givenName: 'Bo', familyName: 'Crane' } };
+    let rows = hudEventAlertsFromWorkerMessage(publication(first), [], DAY_TICKS) ?? [];
+    rows = hudEventAlertsFromWorkerMessage(publication(second), rows, DAY_TICKS) ?? rows;
+    expect(rows.length).toBe(2);
+  });
+
+  it('says when the most recent of them happened, in the day the strip counts', () => {
+    /*
+     * Decision 2. The vocabulary is the game's own: a day and a position
+     * within it, because nothing maps the tick budget onto a 24-hour dial
+     * (`docs/HUD_PROJECTIONS.md` gap 5).
+     *
+     * Tick 2,400 is the first tick of day 2 and tick 3,600 is halfway through
+     * it, computed here from the day length rather than read back off the
+     * translator, so the assertion does not supply both sides.
+     */
+    const first: SimulationEvent = { sequence: 1, tick: 2_400, type: 'incidents.all-clear' };
+    const again: SimulationEvent = { sequence: 2, tick: 3_600, type: 'incidents.all-clear' };
+    let rows = hudEventAlertsFromWorkerMessage(publication(first), [], DAY_TICKS) ?? [];
+    expect(rows[0]?.occurrences?.lastAt).toEqual({ day: 2, progressPercent: 0 });
+    rows = hudEventAlertsFromWorkerMessage(publication(again), rows, DAY_TICKS) ?? rows;
+    // The time moves with the newest arrival, which is what keeps a collapsed
+    // row honest about being recent while it keeps its first arrival's place.
+    expect(rows[0]?.occurrences?.lastAt).toEqual({ day: 2, progressPercent: 50 });
+  });
+
+  it('carries no time at all when no session has said how long a day is', () => {
+    // `UNKNOWN_HUD_CLOCK` holds `dayLengthTicks: 0`, and a row built then must
+    // not invent a day. Absent is the real state.
+    const rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.all-clear'](1)), [], 0) ?? [];
+    expect(rows[0]?.occurrences?.lastAt).toBeUndefined();
+    expect(rows[0]?.occurrences?.count, 'the count does not depend on the clock').toBe(1);
+  });
+
+  it('ages a collapsed row by its newest arrival, so a recurring row is not evicted as the oldest', () => {
+    /*
+     * The interaction between decision 1 and ruling 11 of #703, and the reason
+     * the eviction rule stopped reading the row's index.
+     *
+     * The all-clear arrives first, so it sits at index 0 for ever -- and then
+     * recurs after every one of the discharges that fill the list past its
+     * cap. Under the old age rule (position in the list) it is the oldest row
+     * in its band and is the first `info` row evicted; under the new one it is
+     * the newest thing in the band, because its last arrival is the last
+     * ordinal issued.
+     */
+    let rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.all-clear'](1)), [], DAY_TICKS) ?? [];
+    let sequence = 2;
+    for (let filled = 0; filled < MAX_EVENT_ALERT_ROWS + 4; filled += 1) {
+      rows = hudEventAlertsFromWorkerMessage(publication(distinctDischarge(sequence)), rows, DAY_TICKS) ?? rows;
+      sequence += 1;
+      rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.all-clear'](sequence)), rows, DAY_TICKS) ?? rows;
+      sequence += 1;
+    }
+
+    expect(rows.length, 'the cap still holds').toBe(MAX_EVENT_ALERT_ROWS);
+    const allClear = rows.find((row) => row.id === 'event-1');
+    expect(allClear, 'the row that keeps recurring is still there').toBeDefined();
+    expect(allClear?.occurrences?.count).toBe(MAX_EVENT_ALERT_ROWS + 5);
+    // And it is still first, because collapsing keeps a row where it was.
+    expect(rows[0]?.id).toBe('event-1');
+  });
+});
+
+describe('a row a player has read (ADR 0084 decision 3)', () => {
+  it('names the whole run of arrivals it stands for, and nothing after them', () => {
+    let rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.assault-opened'](1)), [], DAY_TICKS) ?? [];
+    rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.assault-opened'](4)), rows, DAY_TICKS) ?? rows;
+    expect(alertRowDismissal(rows, 'event-1')).toEqual({ fromSequence: 1, throughSequence: 4 });
+  });
+
+  it('cannot be asked of the other producer`s rows, which have their own un-taken decision (gap 34)', () => {
+    const refusal: HudAlertViewModel = { id: 'refusal-7', labelKey: 'hud.alert.refusal.build.unowned-land', severity: 'warning' };
+    const fault: HudAlertViewModel = { id: 'fault-invalid-message', labelKey: 'hud.alert.fault.invalid-message', severity: 'danger' };
+    expect(alertRowDismissal([refusal, fault], 'refusal-7')).toBeUndefined();
+    expect(alertRowDismissal([refusal, fault], 'fault-invalid-message')).toBeUndefined();
+  });
+
+  it('leaves the list without it, and leaves every other row exactly where it was', () => {
+    const fault: HudAlertViewModel = { id: 'fault-invalid-message', labelKey: 'hud.alert.fault.invalid-message', severity: 'danger' };
+    let rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.assault-opened'](1)), [fault], DAY_TICKS) ?? [];
+    rows = hudEventAlertsFromWorkerMessage(publication(distinctDischarge(2)), rows, DAY_TICKS) ?? rows;
+    expect(hudAlertsWithoutRow(rows, 'event-1').map((row) => row.id)).toEqual(['fault-invalid-message', 'event-2']);
+  });
+
+  it('comes back as a new row counting from one when the same fact happens again', () => {
+    // ADR 0084's recurrence question, answered: a dismissal is about the
+    // arrivals the player had read, so a fourth fight after the third was
+    // dismissed is a new row rather than the return of a dismissed one.
+    let rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.assault-opened'](1)), [], DAY_TICKS) ?? [];
+    rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.assault-opened'](2)), rows, DAY_TICKS) ?? rows;
+    rows = hudAlertsWithoutRow(rows, 'event-1');
+    rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.assault-opened'](3)), rows, DAY_TICKS) ?? rows;
+    expect(rows.map((row) => row.id)).toEqual(['event-3']);
+    expect(rows[0]?.occurrences?.count).toBe(1);
+  });
+});
+
+describe('a log that survived a reload (ADR 0084 decision 4)', () => {
+  it('builds the same rows out of restored records as the live session had', () => {
+    let live = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.assault-opened'](1)), [], DAY_TICKS) ?? [];
+    live = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.assault-opened'](2)), live, DAY_TICKS) ?? live;
+
+    let restored = hudEventAlertsFromWorkerMessage(ready(), [], DAY_TICKS) ?? [];
+    restored = hudEventAlertsFromWorkerMessage(restoredPublication(SAMPLE['incidents.assault-opened'](1)), restored, DAY_TICKS) ?? restored;
+    restored = hudEventAlertsFromWorkerMessage(restoredPublication(SAMPLE['incidents.assault-opened'](2)), restored, DAY_TICKS) ?? restored;
+
+    expect(restored).toEqual(live);
+  });
+
+  it('does not announce a restored record on the band', () => {
+    // The band says what just happened. A restored record happened on a tick
+    // the player was not looking at, and `undefined` leaves the band alone
+    // rather than emptying it.
+    expect(hudEventNoticeFromWorkerMessage(restoredPublication(SAMPLE['incidents.assault-opened'](1)))).toBeUndefined();
+  });
+
+  it('starts the log again when a session is started or restored, without touching the other producer`s rows', () => {
+    /*
+     * The reason a restore can publish rows at all. Loading a prison inside a
+     * page that already has one leaves the previous session's rows standing,
+     * and a restored arrival that matched one of them would be counted twice
+     * -- so the list a new session starts with is empty of *this* producer's
+     * rows, exactly as `simulation/stopped` empties them at the other end.
+     */
+    const fault: HudAlertViewModel = { id: 'fault-invalid-message', labelKey: 'hud.alert.fault.invalid-message', severity: 'danger' };
+    let rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.assault-opened'](1)), [fault], DAY_TICKS) ?? [];
+    expect(rows.length).toBe(2);
+    rows = hudEventAlertsFromWorkerMessage(ready(), rows, DAY_TICKS) ?? rows;
+    expect(rows.map((row) => row.id), 'the fault is not this producer`s to remove').toEqual(['fault-invalid-message']);
+  });
+
+  it('counts a restored run once rather than twice when a prison is loaded over a running one', () => {
+    // The interaction the reset exists for, driven end to end: two assaults in
+    // the session that was saved, the save loaded into the same page, and the
+    // restored row must say two rather than four.
+    let rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.assault-opened'](1)), [], DAY_TICKS) ?? [];
+    rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['incidents.assault-opened'](2)), rows, DAY_TICKS) ?? rows;
+    rows = hudEventAlertsFromWorkerMessage(ready(), rows, DAY_TICKS) ?? rows;
+    rows = hudEventAlertsFromWorkerMessage(restoredPublication(SAMPLE['incidents.assault-opened'](1)), rows, DAY_TICKS) ?? rows;
+    rows = hudEventAlertsFromWorkerMessage(restoredPublication(SAMPLE['incidents.assault-opened'](2)), rows, DAY_TICKS) ?? rows;
+    expect(rows.length).toBe(1);
+    expect(rows[0]?.occurrences?.count).toBe(2);
   });
 });

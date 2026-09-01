@@ -94,7 +94,11 @@ function v3EnvelopeWithPrisoner(): { readonly envelope: SaveEnvelopeV3; readonly
    * instance carrying a rectangle instead of a `capacity` would be rejected by
    * the very schema this test is walking a save forward from.
    *
-   *   - `objects` did not exist before V5 and is dropped.
+   *   - `objects` did not exist before V5 and is dropped, and `alerts` did
+ *     not exist until the owner's decisions of 2026-09-01 on ADR 0084 (the
+ *     alerts log survives a reload) put it beside `objects` under the same
+ *     optional-field rule -- so it is dropped for the same reason and by the
+ *     same sentence.
    *   - a room instance carried an authored `capacity` and
    *     `objectCapabilities` and no rectangle, so each row is rewritten into
    *     that shape. `0` and `[]` are not chosen here: they are what
@@ -102,7 +106,7 @@ function v3EnvelopeWithPrisoner(): { readonly envelope: SaveEnvelopeV3; readonly
    *     V4 build could produce, which is the same fact
    *     `migrateSaveEnvelopeV4ToV5` relies on in the other direction.
    */
-  const { objects: _objects, ...simulationWithoutObjects } = bundle.simulation;
+  const { objects: _objects, alerts: _alerts, ...simulationWithoutObjects } = bundle.simulation;
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,

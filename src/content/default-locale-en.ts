@@ -223,6 +223,75 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alerts.title': 'Alerts',
   'hud.alerts.empty': 'No active alerts',
 
+  /*
+   * How many times the prison has said the same thing, and when it last said
+   * it (the owner's decisions 1 and 2 of 2026-09-01 on
+   * [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md),
+   * with the two sentences supplied by the owner on the same day).
+   *
+   * **`{count}×` and not `×{count}` or `{count} times`**, chosen by the owner
+   * against both. The reason to prefer either short form over the long one is
+   * the column: `.ui-row__label` in the alerts log measures **88px** in the
+   * fixed 224px rail (#720's measurement, kept in `primitives.css`), which is
+   * about ten characters a line, so the multiplier is digits and a sign and
+   * nothing else.
+   *
+   * **The sign is U+00D7, and `hud.clock.speed` beside it spells its multiplier
+   * with an ASCII `x`** (`'Speed {speed}x'`). That is a real divergence rather
+   * than a typo here: the owner supplied this sentence with the typographic
+   * sign, and the speed readout's `x` predates it and was never ruled on. Two
+   * spellings of one convention is the kind of thing that reads as a defect on
+   * screen, so it is recorded rather than quietly harmonised in either
+   * direction -- changing the speed readout is a player-visible wording change
+   * and is the owner's.
+   *
+   * **`Day {day}` and not `Day {day}, {progress}%`.** The owner was shown the
+   * two-figure form and rejected it: a percentage of a day is a strange unit to
+   * put in front of a player. **`{progress}` is still produced and is
+   * deliberately not rendered** -- `HudAlertTimeViewModel.progressPercent`
+   * carries it, `hudAlertRowLabel` passes it, and this sentence declines it, so
+   * a locale that has a use for it has it and the next pass does not have to
+   * re-derive it from the tick. `interpolate` substitutes only the placeholders
+   * a sentence names, so an unused parameter costs nothing and reaches nobody.
+   *
+   * **What tells two events on the same day apart is the count beside them**,
+   * which is the owner's own answer to that gap rather than a property this
+   * sentence claims. Two arrivals of one sentence on day 3 are one row reading
+   * `2x Day 3`; two *different* sentences on day 3 are two rows, each naming
+   * itself.
+   */
+  'hud.alert.occurrences': '{count}×',
+  'hud.alert.time': 'Day {day}',
+
+  /*
+   * What the control on a dismissable alert row is called (the owner's
+   * decision 3 of 2026-09-01 on ADR 0084, with this sentence supplied by them
+   * on the same day).
+   *
+   * The control is an `×`, so this is not a caption -- it is the whole of what
+   * the control is called to anybody not looking at the glyph.
+   * `createIconButton` renders it as screen-reader text and as a `title`,
+   * because a button whose only content is a glyph reaches a screen reader as
+   * nothing at all.
+   *
+   * **"Clear this alert" and not "Dismiss this notice"**, and the reason is
+   * exactly the near miss that made a word necessary in the first place.
+   * `hud.security.roster-dismiss` is "Dismiss" and it ends a staff member's
+   * employment -- its own hint says *"a dismissed staff member leaves the
+   * prison for good, and their wage stops"*. Reusing that key here would have
+   * made one key mean both "sack this person" and "I have read this notice",
+   * which is two answers to one question; and authoring a *second* sentence
+   * around the same verb would have left the word **dismiss** meaning two
+   * different things in one interface, which is the same defect one step
+   * further on. So the sentence avoids the verb rather than reusing it.
+   *
+   * **"this alert" rather than "the alert"**: there is one control per row and
+   * several rows, so the word has to say *which*, and the demonstrative is what
+   * a player pressing one of eight rows needs. No parameter: the row's own
+   * sentence is beside it and the accessible name does not repeat it.
+   */
+  'hud.alert.dismiss': 'Clear this alert',
+
   // What the simulation refused, in the alerts list (issue #261).
   //
   // A command the worker accepted and a system then refused on its content:

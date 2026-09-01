@@ -1,5 +1,6 @@
 import type { BuildOrderLifecycleState } from '../construction/build-order';
 import type { IncidentType } from '../incidents/incident';
+import { simulationEventIdentity } from '../protocol/event-identity';
 import type { SimulationEvent } from '../protocol/types';
 
 /**
@@ -70,26 +71,77 @@ export const MAX_BUFFERED_SIMULATION_EVENTS = 64;
  *
  * ## What it deliberately does not do
  *
- * - **It is not snapshotted**, on the same reasoning `RefusalLog` gives and
- *   with one addition. A restored session starts with an empty log, so it
- *   announces nothing that happened before the save. That is the honest
- *   reading rather than a loss: an event is a statement that something
- *   happened *now*, and a prison that announced last week's discharges on
- *   load would be telling the player about a tick that is not the one they
- *   are looking at. The *conditions* behind the events do persist and
- *   re-announce themselves -- arrears are in the save (ADR 0049, "arrears are
- *   *history*"), so the next failed payday says so again -- which is what
- *   makes not persisting the log a formatting decision the save never has to
- *   see rather than a fact the player loses. Recorded in
- *   `docs/PERSISTENCE.md` and `docs/HUD_PROJECTIONS.md` beside `RefusalLog`'s
- *   own entry rather than left to be discovered.
+ * - **It was not snapshotted, and since 2026-09-01 it is.** The owner took
+ *   [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)'s
+ *   decision 3 -- the log survives a reload -- and this is where that is held.
+ *   The paragraph the decision overturned is kept rather than deleted, because
+ *   what it argued is still true of the *band* and is the reason a restored
+ *   record is replayed with `restored: true` and announces nothing:
  *
- *   **#749's five members have no condition behind them at all, and that makes
- *   the exclusion stronger rather than weaker.** "You cancelled that order" is
- *   a notice about a press, not a state of the prison -- which is precisely
- *   `RefusalLog`'s own reason for not being saved. Nothing re-announces them
- *   after a load and nothing should: the press happened in a session that has
- *   ended.
+ *   > It is not snapshotted, on the same reasoning `RefusalLog` gives and
+ *   > with one addition. A restored session starts with an empty log, so it
+ *   > announces nothing that happened before the save. That is the honest
+ *   > reading rather than a loss: an event is a statement that something
+ *   > happened *now*, and a prison that announced last week's discharges on
+ *   > load would be telling the player about a tick that is not the one they
+ *   > are looking at. The *conditions* behind the events do persist and
+ *   > re-announce themselves -- arrears are in the save (ADR 0049, "arrears are
+ *   > *history*"), so the next failed payday says so again -- which is what
+ *   > makes not persisting the log a formatting decision the save never has to
+ *   > see rather than a fact the player loses. Recorded in
+ *   > `docs/PERSISTENCE.md` and `docs/HUD_PROJECTIONS.md` beside `RefusalLog`'s
+ *   > own entry rather than left to be discovered.
+ *
+ *   **What the owner's decision changes is who the replay is for.** A restored
+ *   record does not go to the band and is not announced; it rebuilds the
+ *   *log*, which is the surface a player scrolls back through, and the
+ *   distinction is carried on the wire by one flag rather than inferred. The
+ *   sentence above that has actually been falsified is the last one -- the
+ *   exclusion is no longer what `docs/PERSISTENCE.md` records -- and the two
+ *   documents are corrected in the same change. `RefusalLog` is **not**
+ *   followed here: its own docblock prices carrying the refusal and refuses on
+ *   what it would buy, the owner has not ruled on it, and a refusal has no
+ *   dismissal either (`docs/HUD_PROJECTIONS.md` gap 34). The two logs stop
+ *   being siblings in this one respect and that is a decision rather than an
+ *   oversight.
+ *
+ *   What it costs is bounded by what the buffer holds:
+ *   `MAX_BUFFERED_SIMULATION_EVENTS` records, so a save carries at most 64 of
+ *   them and a session that recorded more comes back holding its newest 64.
+ *   A row the live list had kept under ruling 11's evict-by-severity but whose
+ *   record had already left this buffer is therefore gone across a reload.
+ *   That is a real limit and it is stated rather than hidden: the alerts list
+ *   keeps eight rows chosen by severity, this keeps sixty-four records chosen
+ *   by age, and only the second of those is in the save because only the
+ *   second of those is in the worker.
+ * - **A dismissal marks a record; it never deletes one.** An event does not
+ *   stop being true because a player has read it -- the whole argument in
+ *   `src/ui/simulation-events.ts` for why no row is ever retired for being
+ *   wrong -- so `dismiss` records that the player is done with it and leaves
+ *   the record where it is. `since` then declines to hand it out again, which
+ *   is what makes decision 3 survive the reload decision 4 grants.
+ *
+ *   **#749's five press-notices are carried by that same decision, and the
+ *   argument this branch first made for them is withdrawn.** The paragraph
+ *   below stood here while the log was not saved, and it said the opposite of
+ *   what now happens:
+ *
+ *   > #749's five members have no condition behind them at all, and that makes
+ *   > the exclusion stronger rather than weaker. "You cancelled that order" is
+ *   > a notice about a press, not a state of the prison -- which is precisely
+ *   > `RefusalLog`'s own reason for not being saved. Nothing re-announces them
+ *   > after a load and nothing should: the press happened in a session that
+ *   > has ended.
+ *
+ *   Its conclusion survives in the half that matters and its premise does not.
+ *   A restored `construction.order-cancelled` record is **not** announced --
+ *   `restored: true` is what stops it, and that is exactly the "nothing
+ *   re-announces them after a load" the paragraph asked for. What is wrong is
+ *   the inference from there to the save: the log is a scrollback now, and a
+ *   player who cancelled an order before saving is owed that row when they come
+ *   back for the same reason they are owed the riot. So the five ride the
+ *   general rule with no exception of their own, and no member of
+ *   `SIMULATION_EVENT_TYPES` is filtered out of the capture.
  * - **It carries no identity where the subject may be gone.** No entity id,
  *   no name, no tile -- the same line `SimulationRefusal` holds, and for a
  *   sharper reason here: the subject of a discharge event does not exist by
@@ -140,10 +192,121 @@ export class SimulationEventLog {
    */
   private _sequence = 0;
   private _buffered: SimulationEvent[] = [];
+  /**
+   * The ordinals of the records a player has said they are done with (the
+   * owner's decision 3 of 2026-09-01 on ADR 0084).
+   *
+   * A set of ordinals rather than a flag on the record, so the record itself
+   * stays exactly the `SimulationEvent` the protocol declares and the wire
+   * shape gains nothing: what is dismissed is a fact about this session's
+   * *reading* of an event, not about the event.
+   *
+   * Bounded by the buffer. `append` drops a mark whose record has been trimmed
+   * away, so this cannot outgrow `MAX_BUFFERED_SIMULATION_EVENTS` however many
+   * rows a long session dismisses.
+   */
+  private _dismissed = new Set<number>();
 
   /** How many events this session has recorded, ever. */
   public get count(): number {
     return this._sequence;
+  }
+
+  /**
+   * Records that the player has read a row and wants it gone (the owner's
+   * decision 3 of 2026-09-01 on ADR 0084).
+   *
+   * ## What a dismissal names, and why it takes two ordinals
+   *
+   * A row on the alerts list is a **run** of arrivals that say the same thing
+   * (`simulationEventIdentity`), so the gesture retires the run rather than
+   * one arrival. `fromSequence` is the arrival the row began with -- the
+   * record whose identity defines the run -- and `throughSequence` is the
+   * newest arrival the player had actually seen when they pressed.
+   *
+   * The far end is what makes this safe against the race it would otherwise
+   * have. A command is applied on a tick and a publication is not, so an
+   * arrival can reach the screen between the press and this call; it carries a
+   * higher ordinal than the player saw, so it is **not** dismissed and comes
+   * back as a new row. That is ADR 0084's recurrence question -- *"is that a
+   * new row or a return of the dismissed one?"* -- answered as a new row, in
+   * the one place that can answer it, because what was dismissed is the
+   * arrivals that were read.
+   *
+   * ## Why a dismissal this log cannot place is not a refusal
+   *
+   * A `fromSequence` no longer in the buffer, or one whose record was trimmed
+   * between the press and the tick, marks nothing and reports `0`. There is no
+   * refusal reason for it and none is wanted: the player asked for a row to be
+   * gone, and a record this log has already dropped **is** gone -- from the
+   * buffer, from the next save, and from anything a restore could rebuild. A
+   * refusal would tell them their gesture failed when it did exactly what they
+   * asked.
+   *
+   * Deterministic: it is applied from the command queue at the tick the
+   * command is due, from values the command carries, so two runs of the same
+   * session dismiss the same records.
+   *
+   * @returns How many records this marked. `0` means there was nothing left to
+   * mark, which the caller treats as success -- see above.
+   */
+  public dismiss(fromSequence: number, throughSequence: number): number {
+    const anchor = this._buffered.find((event) => event.sequence === fromSequence);
+    if (anchor === undefined) return 0;
+    const statement = simulationEventIdentity(anchor);
+    let marked = 0;
+    for (const event of this._buffered) {
+      if (event.sequence < fromSequence || event.sequence > throughSequence) continue;
+      if (this._dismissed.has(event.sequence)) continue;
+      // The run, not the range. Another event type interleaved between two
+      // arrivals of this one is a different row on the player's screen and
+      // must not be retired by a gesture aimed at this one.
+      if (simulationEventIdentity(event) !== statement) continue;
+      this._dismissed.add(event.sequence);
+      marked += 1;
+    }
+    return marked;
+  }
+
+  /**
+   * What the save carries, so the log survives a reload (the owner's decision
+   * 4 of 2026-09-01 on ADR 0084).
+   *
+   * The buffer as it stands and the marks against it, and the ordinal counter
+   * that must not rewind -- a restored session that reissued ordinals it had
+   * already used would give two different facts the same row identity, which
+   * is the one thing `_sequence` exists to prevent.
+   *
+   * A read: it trims nothing, clears nothing and moves no watermark, exactly
+   * as `since` does not.
+   */
+  public getSnapshot(): SimulationEventLogSnapshot {
+    return {
+      sequence: this._sequence,
+      records: this._buffered.map((event) => ({ ...event })),
+      // Sorted, so the payload is a function of the data rather than of the
+      // order a player happened to press in -- `docs/DETERMINISM.md`'s
+      // canonical-order rule, which the security section's sorted schedules
+      // and watched sector ids already follow.
+      dismissed: [...this._dismissed].sort((left, right) => left - right),
+    };
+  }
+
+  /**
+   * Puts a saved log back.
+   *
+   * Marks whose record is not in `records` are dropped rather than kept: they
+   * can never be consulted again, because `since` only ever reads the buffer,
+   * and keeping them would let a save grow a set nothing can bound.
+   */
+  public loadSnapshot(snapshot: SimulationEventLogSnapshot): void {
+    this._buffered = snapshot.records.map((event) => ({ ...event }));
+    const retained = new Set(this._buffered.map((event) => event.sequence));
+    this._dismissed = new Set(snapshot.dismissed.filter((sequence) => retained.has(sequence)));
+    // The highest ordinal the session ever issued, never the highest one the
+    // buffer still holds: trimming does not rewind `_sequence` in a live
+    // session and must not rewind it across a save either.
+    this._sequence = Math.max(snapshot.sequence, ...this._buffered.map((event) => event.sequence), 0);
   }
 
   /**
@@ -483,14 +646,46 @@ export class SimulationEventLog {
    * orders are the same by construction.
    */
   public since(after: number): readonly SimulationEvent[] {
-    return this._buffered.filter((event) => event.sequence > after);
+    // A dismissed record is one the player has already read and retired, so it
+    // is not handed out again -- which is what makes a dismissal survive the
+    // reload it would otherwise be undone by, since a restore republishes this
+    // buffer from ordinal zero. In a live session it changes nothing: a row
+    // has to be published before it can be on screen to be dismissed.
+    return this._buffered.filter((event) => event.sequence > after && !this._dismissed.has(event.sequence));
   }
 
   private append(event: SimulationEvent): void {
     this._sequence = event.sequence;
     this._buffered.push(event);
     if (this._buffered.length > MAX_BUFFERED_SIMULATION_EVENTS) {
-      this._buffered = this._buffered.slice(this._buffered.length - MAX_BUFFERED_SIMULATION_EVENTS);
+      const overflow = this._buffered.length - MAX_BUFFERED_SIMULATION_EVENTS;
+      const trimmed = this._buffered.slice(0, overflow);
+      this._buffered = this._buffered.slice(overflow);
+      // A mark against a record that has just been trimmed away can never be
+      // read again -- `since` and `dismiss` both only ever look at the buffer
+      // -- and keeping it would be the one thing on this class that grows with
+      // the session. Walked over the records that left rather than over the
+      // marks, which is both smaller (the overflow is one record per append)
+      // and ordered: `docs/DETERMINISM.md`'s canonical-order rule is about not
+      // enumerating a `Set` at all where an array will do.
+      for (const event of trimmed) this._dismissed.delete(event.sequence);
     }
   }
+}
+
+/**
+ * A saved log: the records the buffer held, the marks against them, and the
+ * ordinal counter (the owner's decision 4 of 2026-09-01 on ADR 0084).
+ *
+ * Declared beside the class rather than in `src/persistence`, for the reason
+ * every other subsystem snapshot is: the shape belongs to the thing that owns
+ * the state, and `save-schema.ts` validates it at the boundary.
+ */
+export interface SimulationEventLogSnapshot {
+  /** The highest ordinal the session had issued. Never rewound by trimming. */
+  readonly sequence: number;
+  /** The retained buffer, oldest first, at most `MAX_BUFFERED_SIMULATION_EVENTS` of them. */
+  readonly records: readonly SimulationEvent[];
+  /** Ascending ordinals of the records a player dismissed, each one of `records`. */
+  readonly dismissed: readonly number[];
 }

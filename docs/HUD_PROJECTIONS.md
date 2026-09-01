@@ -531,6 +531,38 @@ Four properties are worth stating because each is a decision:
   player is always looking at belongs on a cadence; a list only an open panel
   cares about, in a window only that panel knows, belongs on a request.
   Nothing publishes a `simulation/projection` on a timer.
+- **And what makes the main thread ask is the clock heartbeat, not the counts.**
+  Corrected 2026-09-01 (issue #718). Every reader below is introduced as riding
+  *"the counts cadence"*, and six sentences in this section said so; the
+  composition root's nine comments said it with a number, *"up to 500ms for the
+  next counts publication"*. **All of them were false the day they were
+  written.** `src/main.ts:1702` opens **one** listener for every worker-to-main
+  message, and its early return (`src/main.ts:1735-1740`) fires only when all
+  six of its translators say nothing. `hudClockFromWorkerMessage`
+  (`src/ui/simulation-clock.ts:22-57`) has no "nothing changed" arm — it
+  returns a view model for *every* `simulation/clock-state` — so every one of
+  those falls through to the nine-call refresh block at
+  `src/main.ts:1795-1804`. `publishClockState` posts one at most every 250 ms
+  and only when the tick has moved
+  (`src/simulation/worker/state-machine.ts:438-462`), which is twice the rate
+  of the counts channel and, crucially, **not change-gated on the counts**.
+
+  Measured on the real `SimulationWorkerStateMachine` over 30 simulated seconds
+  at ×1, classifying every posted message by the composition root's own six
+  translators: a prison with **no occupied place publishes
+  `simulation/status-counts` exactly once** and refreshes its readouts **120
+  times**, worst gap **255 ms**; a housed prison publishes 59 and refreshes 178.
+  The mutation says why this is load-bearing rather than incidental — remove the
+  clock term from that predicate and the same two prisons refresh **once in
+  thirty seconds**, which is issue #718's reported symptom exactly.
+
+  **What each of those six sentences was reaching for is still true** and is why
+  they are corrected rather than deleted: none of these readouts is refreshed
+  only on arrival, and each rides a cadence that already exists rather than a
+  timer of its own. What was wrong is *which* cadence, and the number. The
+  decision about whether that heartbeat should be the deliberate contract is
+  [ADR 0086](./adr/0086-what-refreshes-a-pulled-hud-readout.md), Proposed;
+  it also carries the inventory of every pulled readout and what moves each one.
 - **Which is why #157 finding 2 does not arise.** `ConfiscationLedger` has no
   windowed accessor and `IncidentLog.all()` materialises every incident ever
   recorded — both unsafe to read twice a second, and neither read at all until
@@ -569,14 +601,15 @@ started using it, which is what happened. `src/ui/simulation-room-needs.ts`
 reads `hud/room-list` and, for the rooms it says are unfinished,
 `hud/room-detail`, so the Rooms panel can tell the player what a zoned room is
 missing; the composition root asks while the Rooms tab is the one showing, on
-the `simulation/status-counts` cadence, and `RoomNeedsReader.read` refuses to
+the refresh cadence the bullet above corrects (this sentence read *"on the
+`simulation/status-counts` cadence"*), and `RoomNeedsReader.read` refuses to
 stack so a slow answer cannot queue a second question. The gate's entry is gone
 and its assertion now runs the other way: there must be a reader, and deleting
 the last one fails.
 
 `src/ui/simulation-build-queue.ts` is the second, on identical terms —
-`hud/build-queue`, while the Build tab is showing, on the counts cadence,
-refusing to stack — and it is the one worth naming separately, because it is the
+`hud/build-queue`, while the Build tab is showing, on the refresh cadence
+corrected above, refusing to stack — and it is the one worth naming separately, because it is the
 first time this channel made a **command** reachable rather than a readout.
 `CancelBuildOrder` names an `orderId`; no order id reached the main thread at
 all, so nothing could aim it, and
@@ -587,8 +620,8 @@ window, because the block draws three rows and a hundred would be ninety-odd
 built for nothing twice a second.
 
 `src/ui/simulation-intake.ts` is the third, on the same three terms —
-`hud/prisoner-population`, while the Overview tab is showing, on the counts
-cadence, refusing to stack — and it is the first that is about *people* rather
+`hud/prisoner-population`, while the Overview tab is showing, on the refresh
+cadence corrected above, refusing to stack — and it is the first that is about *people* rather
 than about the building. It asks for no window at all, because that projection
 is declared `paged: false` and the worker refuses `offset`/`limit` on a
 projection with no list rather than ignoring them; the reply is six stage counts
@@ -632,8 +665,8 @@ note now states both halves of what the control needs, and
 
 `src/ui/simulation-pending-deliveries.ts` is the fourth, on the same three terms
 as the build queue -- `hud/pending-deliveries`, while the Build tab is showing, on
-the counts cadence, asking for the panel's own three-row window rather than the
-default hundred -- and it is the second time this channel is what makes a
+the refresh cadence corrected above, asking for the panel's own three-row window
+rather than the default hundred -- and it is the second time this channel is what makes a
 *command* reachable rather than a readout. The difference from the queue's is what
 was unreachable behind it: not a control, but a **credit**.
 
@@ -660,8 +693,8 @@ save-schema version: `pendingDeliveries` is a public accessor over the list
 field of it.
 
 `src/ui/simulation-held-guards.ts` is the fifth, on the same three terms --
-`hud/held-guards`, while the Security tab is showing, on the counts cadence,
-asking for the panel's own three-row window rather than the default hundred -- and
+`hud/held-guards`, while the Security tab is showing, on the refresh cadence
+corrected above, asking for the panel's own three-row window rather than the default hundred -- and
 it is the **third** time this channel is what makes a *command* reachable rather
 than a readout. What was unreachable behind it was neither a control nor a credit
 but a **release** ([ADR 0034](./adr/0034-releasing-a-claimed-guard.md), answering
@@ -699,7 +732,8 @@ It needs no new persisted state and no save-schema version: everything it reads 
 claimants, all of which a V5 save has held all along.
 
 `src/ui/simulation-staff-coverage.ts` is the sixth, on the same three terms --
-`hud/staff`, while the Security tab is showing, on the counts cadence -- and it
+`hud/staff`, while the Security tab is showing, on the refresh cadence corrected
+above -- and it
 is the first whose subject is neither a readout of what the prison holds nor an
 id a control aims at, but a **warning**
 ([ADR 0048](./adr/0048-what-a-sectors-occupants-are.md) consequence 1). Its
@@ -732,21 +766,36 @@ so a prison with one sector over-staffed and another short still reports a
 shortage. What stops being answerable then is *which* sector is short, which is a
 breakdown to add on the day a player can draw one.
 
-**Eight** of the fifteen catalogued read models still have a route and nobody on
-the end of it: **seven are read, by six modules.** Both numbers are stated
+**Six** of the fifteen catalogued read models still have a route and nobody on
+the end of it: **nine are read, by nine modules.** Both numbers are stated
 because the difference between them is what made an earlier sentence wrong.
-It said ten, having counted reader *modules* rather than read models —
+An older one said ten, having counted reader *modules* rather than read models —
 `src/ui/simulation-room-needs.ts` asks for two, `hud/room-list` and
-`hud/room-detail`, so the two counts differ by one for that reason alone. It was
-already nine at the commit that wrote it, and it is eight now that `hud/staff`
-has a reader; the pair is restated rather than one half edited, because the pair
-is what a reader checks.
+`hud/room-detail` — and the pair is restated rather than one half edited,
+because the pair is what a reader checks.
 
-The seven with a reader are `hud/build-queue`, `hud/pending-deliveries`,
-`hud/held-guards`, `hud/prisoner-population`, `hud/room-list`, `hud/room-detail`
-and `hud/staff`; a `grep` for the quoted id under `src/ui/` is the whole
-derivation. That is the honest state of this channel, and it is a different
-sentence from the one this section used to carry.
+**This paragraph read "**Eight** … **seven are read, by six modules**" until
+2026-09-01, and both halves had been overtaken by the two readers on the fifth
+tab.** `src/ui/simulation-regime.ts` reads `hud/status-strip` and
+`src/ui/simulation-prisoner-roster.ts` reads `hud/prisoner-roster` (issue #451,
+the Regime panel), which is +2 read and −2 unread; the two counts then happen
+to coincide at nine because `simulation-room-needs.ts` reads two models and
+`hud/staff` has two readers, and those cancel. The correction is marked rather
+than overwritten because the *shape* of the old sentence was right and only its
+arithmetic rotted — exactly what `docs/AGENT_WORKFLOW.md` §4 says a tally does.
+
+The nine with a reader are `hud/status-strip`, `hud/build-queue`,
+`hud/pending-deliveries`, `hud/held-guards`, `hud/prisoner-population`,
+`hud/prisoner-roster`, `hud/room-list`, `hud/room-detail` and `hud/staff`; a
+`grep -rl "'hud/<id>'" src/ui/` per id is the whole derivation. The six without
+one are `hud/prisoner-detail`, `hud/security`, `hud/contraband`,
+`hud/incidents`, `hud/incident-detail` and **`world/render-snapshot`** — the
+last of which is worth naming rather than assumed read, because the world is
+plainly on screen: `SimulationSnapshotFeed` reaches it through
+`simulation/request-snapshot` (`src/rendering/feed/simulation-snapshot-feed.ts:383`)
+and not through this channel at all, which is why it has a cadence of its own
+and why that cadence is the only worked precedent this repository has for
+[ADR 0086](./adr/0086-what-refreshes-a-pulled-hud-readout.md)'s question.
 
 `tests/foundation/projection-reachability-contract.test.ts` carries the same
 sentence and is not corrected here; it is another agent's surface.
@@ -1639,21 +1688,62 @@ decision about what to build next.
     optional field, no version bump — so the exclusion is about what it would
     buy, and it is written down as such under "What is deliberately excluded
     from the payload" in `docs/PERSISTENCE.md`.
-    **`SimulationEventLog` (#507) joins them on the same terms**, and the
-    entry is worth reading beside `RefusalLog`'s rather than as a repetition:
-    both are excluded because they hold a *notice* rather than a condition, but
-    this one can say so more strongly. The conditions behind its events are
-    persisted separately — arrears in the payroll snapshot (ADR 0049), sentence
-    ticks in the prisoner components (ADR 0050) — so a restored prison
-    re-announces at its next failed payday and at the next sentence that ends,
-    and nothing a player would have been told is actually lost. It is recorded
-    in `docs/PERSISTENCE.md` under the same heading, and asserted in
-    `tests/integration/sentence-end-release.test.ts`.
-    **#749's five members have no condition behind them at all**, which does
-    not weaken that argument but replaces it with `RefusalLog`'s own: a
-    cancellation, an undo and a redo are notices about a press, and a loaded
-    prison confirming a press from a session that has ended would be the same
-    defect gap 34 describes for a refusal.
+    **`SimulationEventLog` (#507) joined them on the same terms, and left them
+    on 2026-09-01.** The owner took
+    [ADR 0084](./adr/0084-what-the-alerts-channel-owes-a-player.md)'s decision
+    3 — the alerts log survives a reload — so the log *is* snapshotted, as an
+    optional `simulation.alerts` section carrying the retained records, the
+    ordinals a player dismissed and the log's sequence counter. No
+    `SAVE_SCHEMA_VERSION` bump; the pricing is in `docs/PERSISTENCE.md` under
+    the same heading, which carries the corrected entry in full.
+
+    The paragraph that stood here is kept, because the argument in it is still
+    the reason a restored record **announces** nothing:
+
+    > **`SimulationEventLog` (#507) joins them on the same terms**, and the
+    > entry is worth reading beside `RefusalLog`'s rather than as a repetition:
+    > both are excluded because they hold a *notice* rather than a condition, but
+    > this one can say so more strongly. The conditions behind its events are
+    > persisted separately — arrears in the payroll snapshot (ADR 0049), sentence
+    > ticks in the prisoner components (ADR 0050) — so a restored prison
+    > re-announces at its next failed payday and at the next sentence that ends,
+    > and nothing a player would have been told is actually lost. It is recorded
+    > in `docs/PERSISTENCE.md` under the same heading, and asserted in
+    > `tests/integration/sentence-end-release.test.ts`.
+
+    What separates the two now is which surface a restored record reaches. It
+    is republished with `restored: true`, which rebuilds the **list** — the log
+    a player scrolls back through, which is what the owner decided they keep —
+    and is ignored by the **band**, which carries what just happened and would
+    otherwise be describing a tick the player was not looking at. So the
+    quoted argument is not withdrawn; it is the reason for the flag.
+
+    **`RefusalLog` above is unchanged and is still not snapshotted.** The owner
+    ruled on the events log and not on the refusal, and the two stop being
+    siblings in this one respect.
+
+    **What the log gives back is bounded by the buffer rather than by the
+    list.** At most `MAX_BUFFERED_SIMULATION_EVENTS` records are retained and
+    the list keeps eight rows chosen by *severity*, so a `danger` row the live
+    list had kept whose record had already left the buffer does not come back.
+    The rows are main-thread state and the main thread contributes nothing to a
+    save, which is the whole of why the save carries records instead of rows.
+
+    **#749's five press-notices ride that same decision, and the sentence that
+    stood here about them is corrected in both directions.** It read:
+
+    > **#749's five members have no condition behind them at all**, which does
+    > not weaken that argument but replaces it with `RefusalLog`'s own: a
+    > cancellation, an undo and a redo are notices about a press, and a loaded
+    > prison confirming a press from a session that has ended would be the same
+    > defect gap 34 describes for a refusal.
+
+    The defect it names is real and `restored: true` is what prevents it: a
+    reloaded prison does **not** announce "the order was cancelled" on the band.
+    What is false is the conclusion that the record therefore stays out of the
+    save. The log is a scrollback now, and a player who cancelled an order
+    before saving is owed that row on their return exactly as they are owed the
+    riot. No member of `SIMULATION_EVENT_TYPES` is filtered out of the capture.
 
 34. **A refusal cannot be dismissed by the player, and carries no location on
     the wire.** *Amended for issue #492 — the standing-until-another-refusal
@@ -1670,8 +1760,47 @@ decision about what to build next.
     `src/simulation/refusals/refusal-log.ts`'s "Supersession keys" section
     for the ten routes' own reasoning). What is still true: there is no
     *player* gesture that dismisses a refusal — no "close" button, no
-    main-to-worker message for it — and `SimulationRefusal`, what actually
-    crosses the worker boundary, still carries no tile, order id or item id,
+    main-to-worker message for it — **and this half of the gap is now the
+    narrow one, which is worth saying so a reader does not carry the wider
+    version away.** The alerts list's *other* producer got its gesture on
+    2026-09-01: the owner took
+    [ADR 0084](./adr/0084-what-the-alerts-channel-owes-a-player.md)'s decision
+    2, so an event row carries an `×` control that dismisses it, `DismissAlert`
+    carries the run of arrivals it stood for to the worker, and the mark is in
+    the save. **The control is its own element rather than the row**, which is
+    the owner's ruling of the same day and overrides `createListRow`'s general
+    rule for this row: a press writes into the save and there is no undo, so a
+    mis-tap that cannot be reversed was judged worse than a smaller target.
+    What it costs the sentence beside it — 88px of label down to about 36px —
+    is derived in `src/ui/hud/hud.css`, and **the owner answered it on the same
+    day by moving the question up a level: the width comes from the rail.**
+    Nothing in the row gives way — the severity badge stays, because it is how
+    ruling 11 reaches a player; the control stays on the row's line; the label
+    keeps its subject — and the corner widens instead, on
+    [ADR 0085](./adr/README.md) decision 1, which already recommends widening it
+    for reasons of its own. **This is a second and independent argument for that
+    change**, and it is recorded here so the pass that settles the corner's
+    width has it in front of it rather than re-deriving it: the label needs its
+    88px back *and* the 52px the control takes, so the present 226px is short by
+    about 52px before any other claim on the width is counted.
+
+    **Until that lands this list is knowingly over-subscribed**, and the
+    consequence is stated rather than left to be met: at the current width a
+    long sentence with a control beside it wraps past the list's box — about
+    five characters a line, so one long alert can be taller than the box holding
+    it. Nothing is clipped or unreachable, because the list scrolls (#703 ruling
+    1); what a player gets is a log they scroll further through, which is the
+    accepted cost of shipping the control before the corner moves.
+    None of that reaches a refusal row, deliberately — a refusal is a *level*,
+    republished unchanged up to twice a second, so suppressing one is a
+    different mechanism from retiring a run of occurrences, and ADR 0084 says
+    in terms that it does not reopen this gap. The rows a player can press are
+    exactly the rows carrying `HudAlertViewModel.occurrences`, and a refusal
+    row carries none.
+
+    The rest of what is still true stands unchanged: `SimulationRefusal`, what
+    actually crosses the worker boundary, still carries no tile, order id or
+    item id,
     so the sentence on screen can say *what* was refused and *why* but not
     *where*. The key `supersede` compares against is a second, purely
     in-worker string that never reaches `src/ui/` and is not part of

@@ -650,7 +650,34 @@ export class ConstructionSystem implements SystemRegistration {
    * | `materials-pending` | the same |
    * | `assigned` | money -- the catalogue value of the allocation it is holding; the materials are **not** returned to stock |
    * | `in-progress` | nothing at all. The allocation is dropped unreleased and unpaid |
-   * | `completed` | the materials, into the container, exactly as before -- ADR 0076 decision B, which ruling 20 does not reach |
+   * | `completed` | **nothing at all**, in either currency, and the geometry still comes down |
+   *
+   * **The `completed` row read *"the materials, into the container, exactly as
+   * before -- ADR 0076 decision B, which ruling 20 does not reach"* until
+   * 2026-09-01, and it is marked rather than rewritten because it is what
+   * decision B decided.** The owner's ruling of that date -- *"Taking a
+   * finished object away returns nothing. Not its materials, not its money."*
+   * -- reverses B's own sentence and closes the inversion ruling 20 created and
+   * reported: cancel at `in-progress` and the materials were gone, wait for
+   * `completed` and `Undo` returned them all, so it paid to let the crew
+   * finish. ADR 0076's *"Amendment, 2026-09-01: taking a finished object away
+   * returns nothing"* records it.
+   *
+   * **The ruling says *object* and this method cannot tell a bed from a wall,
+   * so it is read as "a completed order".** The inversion is identical for a
+   * wall, and branching on `placesObjectId` here would close it for the
+   * buildable a player places rarely and leave it open for the one they draw
+   * most -- *"two commands disagree"*, which decision B existed to end,
+   * reappearing as *"two buildables disagree"*. The amendment flags this as the
+   * one place the implementation is wider than the words, and the owner's
+   * signature covers it.
+   *
+   * **Reversing the geometry is not the refund and does not travel with it.**
+   * `revertConstruction` still runs for a `completed` order, `isCancellable`
+   * still holds `'completed'`, and `undo()` still delegates here -- for the
+   * reason those three always gave: a finished wall that could not be taken
+   * down would be permanent the moment it was placed, and an undo stack that
+   * claimed to have reversed something it had not would be a lie.
    *
    * **Why `in-progress` destroys value on purpose.** It is the only place in
    * the money loop where value leaves rather than changing form, and it is the
@@ -709,10 +736,25 @@ export class ConstructionSystem implements SystemRegistration {
       // refund are computed from it and the emptying is unconditional.
       const allocated = order.materialsAllocated;
       order.materialsAllocated = [];
-      if (stateAtCancellation === 'in-progress') {
-        // Ruling 20's "nothing". Neither released nor paid for: see the table
-        // above for why this is the ruling rather than a leak.
-      } else if (hadGeometry || this.materialsProcurement === undefined) {
+      if (stateAtCancellation === 'in-progress' || hadGeometry) {
+        // Ruling 20's "nothing" for `in-progress`, and the owner's ruling of
+        // 2026-09-01 for `completed`. Neither released nor paid for: see the
+        // table above for why each is the ruling rather than a leak.
+        //
+        // **`hadGeometry` moved into this arm on 2026-09-01 and the line it
+        // left is kept in the table above rather than deleted.** It used to
+        // read `hadGeometry || this.materialsProcurement === undefined`, and
+        // that first operand was ADR 0076 decision B: a finished thing
+        // un-builds into its full materials, which is what ruling 20 declined
+        // to reach and what this ruling reverses.
+        //
+        // **Neither of these two states is conditional on the procurement
+        // sink**, and the reason is the same for both: their rule is not about
+        // money. The materials went into works that are being un-built, and
+        // they are gone whether or not anybody is keeping accounts. Only the
+        // four states below choose a currency, which is why only they ask
+        // whether there is a treasury behind them.
+      } else if (this.materialsProcurement === undefined) {
         this.materialsProvider.release(allocated);
       } else {
         this.materialsProvider.release(this.materialsProcurement.refundAllocatedMaterials(allocated));
@@ -752,10 +794,19 @@ export class ConstructionSystem implements SystemRegistration {
    * the container by `tryAllocate` -- so running this for one would compare an
    * unchanged demand against an unchanged supply and could only act on a
    * surplus some *earlier* press had already been offered. `'planned'` is not
-   * demand either. `'completed'` is left out for a different reason: releasing
-   * its materials really does raise supply and really could make a delivery
-   * surplus, but ADR 0076 decision B governs that press and ruling 20 does not
-   * reach it, so its behaviour is left exactly where B put it.
+   * demand either. `'completed'` is left out for a different reason, and since
+   * the owner's ruling of 2026-09-01 that reason has become the simple one:
+   * **a completed order releases nothing**, so it cannot raise supply and
+   * cannot make a delivery surplus.
+   *
+   * **This paragraph read *"releasing its materials really does raise supply
+   * and really could make a delivery surplus, but ADR 0076 decision B governs
+   * that press and ruling 20 does not reach it, so its behaviour is left
+   * exactly where B put it"* until then.** It was the honest reading while
+   * decision B stood: the exclusion was a deferral to another decision rather
+   * than an argument. The deferral is answered -- ADR 0076's amendment of
+   * 2026-09-01 reverses B -- and what the exclusion now rests on is arithmetic,
+   * which is the stronger footing for the same line of code.
    *
    * ## Re-entrancy with `withdrawOrdersAwaitingMaterial`
    *

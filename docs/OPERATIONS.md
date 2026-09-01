@@ -224,6 +224,26 @@ prevents in every one of them:
   rather than a session, with no treasury to pay from, which therefore does what
   it always did.
 
+**The first of those three went on 2026-09-01 and the list is marked rather
+than trimmed, because which caller left and when is the record.** The owner's
+ruling of that date -- *"Taking a finished object away returns nothing. Not its
+materials, not its money."*, [ADR 0076](./adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+amendment of that date -- reverses decision B, so a `'completed'` order releases
+nothing either and **two callers are left**: the unpriceable line, and the bare
+system with no sink. Both are still exactly what the paragraph above describes,
+and the seam is still required for them.
+
+**What that does to the justification at the top of this section is worth
+saying plainly.** *"Against a finite stock a cancelled order that had already
+allocated would destroy its materials permanently"* was written as the reason
+`release` must exist. After two rulings it is no longer a description of any
+cancellation a session performs: `'assigned'` converts to money,
+`'in-progress'` and `'completed'` destroy the materials **on purpose**, and the
+only cancellations that still put stock back are the two above. The sentence is
+kept because it is still true of the *seam* -- a provider that could not answer
+a release would leave those two with nowhere to go -- and because it is the
+argument that got the seam built.
+
 `ConstructionSystem`'s constructor now takes an optional provider
 (defaulting to `UNLIMITED_MATERIALS_PROVIDER`, so #16's original behavior
 is unchanged for any caller that doesn't pass one). `inventory.ts`'s

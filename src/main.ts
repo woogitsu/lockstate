@@ -52,7 +52,12 @@ import {
 } from './ui/hud';
 import { hudClockFromWorkerMessage } from './ui/simulation-clock';
 import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from './ui/simulation-alerts';
-import { hudEventAlertsFromWorkerMessage, hudEventNoticeFromWorkerMessage } from './ui/simulation-events';
+import {
+  alertRowDismissal,
+  hudAlertsWithoutRow,
+  hudEventAlertsFromWorkerMessage,
+  hudEventNoticeFromWorkerMessage,
+} from './ui/simulation-events';
 import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { BuildQueueReader } from './ui/simulation-build-queue';
@@ -1149,14 +1154,40 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * nothing"). `activeTab` is tracked from the `select-tab` intent rather than
    * read back off the HUD, because the HUD's shell state is chrome the HUD owns.
    *
-   * **On the counts cadence, not on a timer of its own.** Placed objects change
-   * what a room has without changing any count -- a completed bed order takes a
-   * cell from "needs a bed" to "needs a toilet" and moves nothing on the strip
-   * -- so a readout refreshed only when a room was zoned would go stale in
-   * exactly the case the player is working through. `simulation/status-counts`
-   * arrives up to twice a second while a session exists, which is a cadence
-   * that already exists and costs nothing to join; `RoomNeedsReader.read`
+   * **On a cadence that already exists, not on a timer of its own.** Placed
+   * objects change what a room has without changing any count -- a completed bed
+   * order takes a cell from "needs a bed" to "needs a toilet" and moves nothing
+   * on the strip -- so a readout refreshed only when a room was zoned would go
+   * stale in exactly the case the player is working through. `RoomNeedsReader.read`
    * refuses to stack, so a slow answer cannot queue a second question.
+   *
+   * **Which cadence, corrected 2026-09-01 (issue #718). This is the one place
+   * in this file that states it; the eight comments below point here.** This
+   * paragraph read *"**On the counts cadence** ... `simulation/status-counts`
+   * arrives up to twice a second while a session exists"*, and five comments
+   * below put a number on it -- *"up to 500ms for the next counts
+   * publication"*. **All of them were false the day they were written**, and
+   * the listener at the bottom of this file is why: it computes six
+   * translations and returns early only when *all six* say nothing, so every
+   * message carrying any one of them falls through to the nine-call refresh
+   * block. `hudClockFromWorkerMessage` has no "nothing changed" arm -- it
+   * answers every `simulation/clock-state` -- and the worker posts one of those
+   * at most every 250 ms and only when the tick has moved
+   * (`CLOCK_STATE_PUBLISH_INTERVAL_MS`). So the binding cadence of every pulled
+   * readout in this file is the **clock heartbeat at 250 ms**, and the counts
+   * channel's change gate never bounded it at all.
+   *
+   * That distinction is not pedantry, because the counts channel *is* gated:
+   * measured on the real worker over 30 simulated seconds at x1, a prison with
+   * no occupied place publishes `simulation/status-counts` **once** -- the
+   * income accrual is the only per-tick mover among its twenty integers and it
+   * is a constant 0 while nobody is housed -- and refreshes these readouts
+   * **120 times**, worst gap 255 ms. Remove the clock term from that predicate
+   * and the same prison refreshes **once in thirty seconds**. What each of
+   * these comments was reaching for is still true -- none of these readouts is
+   * refreshed only on arrival -- and only the channel and the number were
+   * wrong. Whether the heartbeat should be the deliberate contract is
+   * [ADR 0086](../docs/adr/0086-what-refreshes-a-pulled-hud-readout.md).
    */
   const roomNeedsReader = client === undefined ? undefined : new RoomNeedsReader(client);
   /*
@@ -1165,8 +1196,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * whole point of it.
    *
    * The reasons it shares: it is a **pull**, because a queue is `O(orders)` to
-   * walk and nobody reads it from the Rooms tab; it rides the **counts
-   * cadence**, because an order finishing changes the queue without moving a
+   * walk and nobody reads it from the Rooms tab; it rides the **refresh cadence
+   * corrected in `roomNeedsReader`'s header above** (this said "counts cadence",
+   * and #718 measured that the clock heartbeat is what binds it), because an
+   * order finishing changes the queue without moving a
    * single figure on the status strip, so a readout refreshed only when
    * something was ordered would go stale in exactly the case the player is
    * watching; and it is asked for **only while the Build tab is showing**.
@@ -1197,7 +1230,8 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * consumer).
    *
    * The terms it shares: it is a **pull**, because nobody reads the intake
-   * pipeline from the Build tab; it rides the **counts cadence**, because a
+   * pipeline from the Build tab; it rides the **refresh cadence corrected in
+   * `roomNeedsReader`'s header above** (this said "counts cadence"), because a
    * stage advances on an intake tick without moving a single figure on the
    * strip -- the population count is identical before and after an arrival
    * finally gets a cell -- so a readout refreshed only when somebody was
@@ -1214,8 +1248,8 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   const intakePipelineReader = client === undefined ? undefined : new IntakePipelineReader(client);
   /*
    * What has been bought and has not arrived, on the same three terms as the
-   * three readouts above -- a pull, on the counts cadence, only while the Build
-   * tab is showing -- and closing the last unreachable credit path in the
+   * three readouts above -- a pull, on the refresh cadence corrected in
+   * `roomNeedsReader`'s header above, only while the Build tab is showing -- and closing the last unreachable credit path in the
    * economy (#285).
    *
    * The difference is what it makes reachable. `ProcurementSystem.cancel`
@@ -1722,7 +1756,18 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * answers `undefined` for every message but `simulation/event`, so on all
      * other messages this is exactly `alerts`.
      */
-    const eventAlerts = hudEventAlertsFromWorkerMessage(message, alerts ?? viewModel.alerts);
+    const eventAlerts = hudEventAlertsFromWorkerMessage(
+      message,
+      alerts ?? viewModel.alerts,
+      // How long an in-game day is, so a row can say **when** it happened (the
+      // owner's decision 2 of 2026-09-01 on ADR 0084). Read from this
+      // message's own clock where it carried one, and from the view model
+      // otherwise, for the reason the list itself is threaded through `alerts`
+      // above: the freshest value this thread has, never a second copy of it.
+      // `0` is `UNKNOWN_HUD_CLOCK`'s "no session has reported a clock", and a
+      // row built then carries no time rather than a fabricated day.
+      (clock ?? viewModel.clock).dayLengthTicks,
+    );
     // The same event, read a second time for the surface that is actually on
     // screen. The list is the log; this is the notice, and it goes to a band
     // laid out at every viewport with no section to open -- which the alerts
@@ -1875,8 +1920,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * readout is being refreshed at all.
          *
          * Both directions are needed. Arriving on the Rooms tab asks
-         * immediately rather than waiting up to 500ms for the next counts
-         * publication, and leaving it takes the readout off, because from here
+         * immediately rather than waiting up to 255ms for the next clock
+         * heartbeat (this said "500ms for the next counts publication"; see
+         * `roomNeedsReader`'s header and #718), and leaving it takes the
+         * readout off, because from here
          * on nothing is refreshing it. The panel clears its own copy when it is
          * hidden; this clears the view model, or the next publication would put
          * the stale one back.
@@ -1886,8 +1933,8 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           if (activeTab === 'rooms') refreshRoomNeeds();
           else applyRoomNeeds(undefined);
           // The build queue is the same arrangement one tab over: arriving asks
-          // at once rather than waiting up to 500ms for the next counts
-          // publication, and leaving takes the block off, because from here on
+          // at once rather than waiting up to 255ms for the next clock
+          // heartbeat, and leaving takes the block off, because from here on
           // nothing is refreshing it. The panel clears its own copy when it is
           // hidden; this clears the view model, or the next publication would
           // put the stale one back.
@@ -1904,25 +1951,25 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // And who is on the payroll, on the same tab and the same terms
           // (#533). Arriving asks at once for the coverage block's reason turned
           // round: a player who opened this tab because they are haemorrhaging
-          // money must not have to wait 500ms to see the control that stops it.
+          // money must not have to wait 255ms to see the control that stops it.
           if (activeTab === 'security') refreshStaffRoster();
           else applyStaffRoster(undefined);
           // And how many guards the prison asks for against how many it has, on
           // the same tab and the same terms (ADR 0048). Arriving asks at once:
-          // waiting up to 500ms for the next counts publication would mean a
+          // waiting up to 255ms for the next clock heartbeat would mean a
           // player who opened this tab *because* they suspected they were short
           // sees an empty block first.
           if (activeTab === 'security') refreshStaffCoverage();
           else applyStaffCoverage(undefined);
           // And the intake readout on the tab the Intake panel lives on, on
           // the same terms as both: arriving asks at once rather than waiting
-          // up to 500ms for the next counts publication, and leaving takes the
+          // up to 255ms for the next clock heartbeat, and leaving takes the
           // block off, because from here on nothing is refreshing it.
           if (activeTab === 'overview') refreshIntakePipeline();
           else applyIntakePipeline(undefined);
           // And the two readouts on the fifth tab, on the same terms as every
           // one above (issue #451). Arriving asks at once rather than waiting
-          // up to 500ms for the next counts publication, because this tab is
+          // up to 255ms for the next clock heartbeat, because this tab is
           // the one a player opens to look at somebody in particular and an
           // empty panel is indistinguishable from a prison holding nobody.
           if (activeTab === 'regime') refreshRegime();
@@ -2176,6 +2223,41 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
         case 'dismiss-staff':
           requireSimulation(commands).submit({ type: 'DismissStaff', staffId: intent.staffId });
           return;
+
+        /*
+         * The player has read a row of the alerts log (the owner's decision 3
+         * of 2026-09-01 on
+         * [ADR 0084](../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
+         *
+         * **Two writes, and neither is the other's copy.** The row leaves the
+         * list here, which is what the player sees happen; the command is what
+         * makes it still gone after a reload, because the log is in the save
+         * (decision 4) and a dismissal only this thread knew about would be
+         * undone by the next load. `src/ui/simulation-events.ts` states the
+         * division at both functions.
+         *
+         * **The two ordinals are read off the row rather than carried on the
+         * intent**: the HUD paints rows and does not know that a row stands for
+         * a run of arrivals, and `alertRowDismissal` is the one place that
+         * mapping lives. It answers `undefined` for a row that carries no run
+         * -- the refusal and protocol-fault rows -- and then nothing is sent
+         * and nothing is removed, which is `docs/HUD_PROJECTIONS.md` gap 34
+         * staying shut rather than a swallowed gesture.
+         *
+         * **`requireSimulation` is deliberately not used**, unlike every
+         * command above. A dismissal with no session to send to is not a failed
+         * command: the row goes off this thread's list, and there is no session
+         * for it to have survived into. Throwing here would paint
+         * `hud.refusal.*` for a gesture that did exactly what the player asked.
+         */
+        case 'dismiss-alert': {
+          const dismissal = alertRowDismissal(viewModel.alerts, intent.rowId);
+          if (dismissal === undefined) return;
+          viewModel = { ...viewModel, alerts: hudAlertsWithoutRow(viewModel.alerts, intent.rowId) };
+          hud?.update(viewModel);
+          commands?.submit({ type: 'DismissAlert', ...dismissal });
+          return;
+        }
 
         case 'place-build-order': {
           const sender = requireSimulation(commands);

@@ -23,19 +23,154 @@
 
 ## Status
 
-**Proposed, 2026-09-01. Not self-approved.**
+**Accepted, 2026-09-01, by the repository owner — all four decisions, taken on
+the day this was drafted.**
 
-This document decides nothing. It states four questions the repository has
-already framed as decisions rather than details, prices each one in this
-codebase's own terms, and stops. `AGENTS.md`'s "Never self-approve an ADR"
-instruction in the brief that commissioned this draft is the general rule
-`docs/AGENT_WORKFLOW.md` already states for every ADR; this one additionally
-recommends **no** default for two of the four (1 and 2, both of which need new
-player-facing copy — `AGENTS.md`'s standing mandate's fourth exclusion, "a
-player-visible promise the code does not keep," reserves the sentence itself
-to the owner even once the mechanism is chosen) and a narrow, reversible
-default for the other two (3 and 4) where the cost is architectural rather
-than lexical, argued in each decision's own section.
+**This clause read `Proposed, 2026-09-01. Not self-approved.` until the owner
+took the four decisions later the same day.** The paragraph that stood under it
+is kept below, unedited, because it is an accurate description of what this
+document *was* and of why it recommended no default for two of the four. What
+had not happened was the signature, and it has now happened.
+
+**What the owner decided, in the order the brief carrying the decisions put
+them.** All four of this document's "Decisions for the owner" are taken, and
+decision 1 was answered with **both** of the two units it offered rather than
+one:
+
+1. **A repeated sentence says how many times** — the `×3` case.
+2. **A repeated sentence says when it happened** — a time on the row. The owner
+   chose this *and* the count, so a row carries both.
+3. **A player can dismiss a row.**
+4. **The log survives a reload.**
+
+**Decision 4 of this document — the dwell floor on `.hud__event` — is *not*
+among them, and the numbering is the trap.** The four the owner took are this
+document's decision 1 (answered in two halves, the count and the time),
+decision 2 (dismissal) and decision 3 (the reload). The band's minimum dwell,
+which this document numbers 4 and which came from
+[#700](https://github.com/matmaxalez/lockstate/issues/700), is **still open**
+and nothing in the implementing change touches the band's arbitration. It is
+recorded here rather than left to be inferred, because "all four decisions were
+taken" and "decision 4 was taken" are both sentences a later reader could
+reasonably form from the same commit, and only the first is true.
+
+**Whether the count and the time are one change or two: they are one, and the
+implementation says so in one field.** A count with no time leaves a row that
+recurs sitting at the position its *first* arrival earned while a number grows
+on it, with nothing to say the newest of them was a moment ago; a time with no
+count answers "when" for a row whose whole problem is that the player cannot
+tell how many there were. `HudAlertViewModel.occurrences` carries both, and
+carries the two ordinals decision 2's dismissal needs, for the same reason: a
+row has stopped being an arrival and become a **run** of them, and a run has a
+size, a most-recent moment and two ends.
+
+**What implementing them cost, recorded because this document priced them and a
+price is checkable.** The four were built as one shape rather than four
+bolt-ons, and two of this document's own claims did not survive contact:
+
+- **The channel keeps publishing every occurrence and the collapse happens
+  where the rows are built**, on the main thread, in
+  `hudEventAlertsFromWorkerMessage`. Collapsing inside `SimulationEventLog`
+  would have broken the band, which must still light for the third fight, and
+  the publisher's watermark, which assumes ordinals only ever grow.
+- **The persistence claim held.** No `SAVE_SCHEMA_VERSION` bump: `alerts` is an
+  optional section on `simulation`, absent on every save written before the
+  change, and absence means the empty log those saves restored to. Re-checked
+  against [ADR 0038](./0038-what-makes-a-save-compatible.md) §1 and
+  `docs/PERSISTENCE.md`'s "Adding an optional field without a version bump"
+  rather than taken from this document.
+- **The claim in "Investigated and rejected" that a collapse "would only ever
+  fire for the four incident types" is false, and the counter-example was
+  already in the suite.** Two contraband finds of the same category in one
+  played prison are byte-identical apart from their ordinals and ticks —
+  `tests/integration/contraband-search-duty.test.ts` measured two phones — so
+  the rule fires there too. That is the *uniformity* this document asked for
+  rather than a family being privileged: the rule asks every member the same
+  question and the answers differ because the data differs.
+- **The dismissal had to be a piece of simulation state, exactly as Finding 2
+  predicted**, and not because a client-side suppression could not hide a row:
+  because decision 3 puts the log in the save, and the save is
+  `SessionRuntimeHost.capture()`'s alone. A dismissal only the main thread knew
+  about would be undone by the next load, so decisions 2 and 3 could not have
+  been built separately even if they had been taken separately.
+
+**Acceptance closes none of the three open questions at the foot of this
+document.** Two of them are answered *by the implementation* rather than by the
+acceptance, and the answers are recorded there rather than here: the count is
+exposed uniformly for every event type rather than for the four zero-payload
+ones (`simulationEventIdentity`), and a dismissal names the arrivals a player
+had read rather than the sentence, so the same fact recurring is a new row
+counting from one (`SimulationEventLog.dismiss`). The third — whether a dwell
+floor should reach `.hud__refusal` — is untouched, because the floor itself is
+untaken.
+
+**Every sentence a player reads here is the owner's own, all three of them.** The mechanism was built with the keys declared and the
+catalog deliberately empty, so the suite failed by name until the words
+existed -- `AGENTS.md`'s fourth exclusion held to rather than worked around.
+What the owner then supplied, and what they chose it against, because the
+alternatives are what a later pass would otherwise re-propose:
+
+- **`hud.alert.occurrences` is `{count}×`** — the multiplier after the figure,
+  over `×{count}` and over `{count} times`. The reason to prefer a short form
+  at all is the column: the label in this list measures 88px (#720).
+- **`hud.alert.time` is `Day {day}`** — the day alone. `Day {day}, {progress}%`
+  was shown and rejected, on the grounds that a percentage of a day is a
+  strange unit to put in front of a player. **`{progress}` is still produced
+  and passed and is deliberately not rendered**, so a locale that has a use for
+  it has it; and what tells two events on the same day apart is the count
+  beside them, which is the owner's own answer to that gap rather than a
+  property the sentence claims.
+- **`hud.alert.dismiss` is `Clear this alert`** — the name of the `×` control,
+  supplied last of the three. Chosen over "Dismiss this notice", and
+  `hud.security.roster-dismiss` ("Dismiss") is not reused: that word ends a
+  staff member's employment, one key meaning both that and "I have read this
+  notice" is two answers to one question, and a second sentence built on the
+  same verb would have left *dismiss* meaning two different things in one
+  interface. The sentence avoids the verb instead of reusing it.
+
+**And the owner ruled on the *shape* of the dismissal control on the same day,
+against this implementation's first reading of it.** It was built as the whole
+row, on `createListRow`'s own rule that *"a row is the tap target on a touch
+screen"*; the owner overrode that for this row with the cost of the
+alternative in front of them — a press writes a mark into the save and there is
+no undo, so a mis-tap that cannot be reversed is worse than a smaller target.
+The control is its own element, and **what that costs the sentence beside it was
+recorded rather than absorbed**: the label falls from 88px to about 36px, which
+is roughly five characters a line. The arithmetic and the three things that
+could give are in `src/ui/hud/hud.css` above `.hud-alerts__list > .ui-row`, and
+it was handed back as a finding rather than shrunk around.
+
+**The owner answered that too, on the same day, and answered it a level up:
+nothing in the row gives way and the rail widens.** The severity badge stays —
+it is how ruling 11 reaches a player — the control stays on the row's line, and
+the label keeps its subject; the corner is what moves, on **ADR 0085 decision
+1**, which already recommends widening it for reasons of its own. This
+measurement is a second and independent argument for the same change, and it is
+left in three places (`hud.css`, `docs/HUD_PROJECTIONS.md` gap 34, and here) so
+the pass that settles the corner's width does not have to re-derive it: the
+label needs its 88px back *and* the 52px the control takes, so 226px is short by
+about 52px before any other claim on that width is counted.
+
+**Until it lands, this list is knowingly over-subscribed, which is a stated cost
+rather than a defect to file.** A long sentence with a control beside it wraps
+past the list's box at the present width; the list scrolls, so nothing is
+clipped and nothing is unreachable, and what a player gets is a log they scroll
+further through. Narrowing the control, dropping the badge or stacking the row
+would each undo a decision the owner has taken.
+
+The paragraph this clause replaced, kept:
+
+> This document decides nothing. It states four questions the repository has
+> already framed as decisions rather than details, prices each one in this
+> codebase's own terms, and stops. `AGENTS.md`'s "Never self-approve an ADR"
+> instruction in the brief that commissioned this draft is the general rule
+> `docs/AGENT_WORKFLOW.md` already states for every ADR; this one additionally
+> recommends **no** default for two of the four (1 and 2, both of which need new
+> player-facing copy — `AGENTS.md`'s standing mandate's fourth exclusion, "a
+> player-visible promise the code does not keep," reserves the sentence itself
+> to the owner even once the mechanism is chosen) and a narrow, reversible
+> default for the other two (3 and 4) where the cost is architectural rather
+> than lexical, argued in each decision's own section.
 
 ## Context
 
@@ -334,6 +469,18 @@ reading is new player-facing text regardless of which locale key holds it —
 right unit is a count, an in-game time, or both, and whether it privileges the
 four zero-payload incident types alone or every event type.
 
+**Decided on 2026-09-01: both units, and every event type.** The owner took the
+count and the time together, so a row carries `count`, and `lastAt` as a day
+and a position within it — this game has no hour of the day to render
+(`docs/HUD_PROJECTIONS.md` gap 5) and the day is what the status strip already
+counts. The open question this section left about *which* types is answered
+uniformly and by construction rather than by a rule per family:
+`simulationEventIdentity` asks every member the same question — is this the
+same statement, envelope aside — and the four zero-payload types simply answer
+"yes" more often, because they have nothing to differ in. Two identical
+contraband finds collapse on the same rule, which is measured rather than
+argued (`tests/integration/contraband-search-duty.test.ts`).
+
 ### Decision 2 — can a player dismiss a row, and what does "dismissed" survive?
 
 **What it would take:** a new command in the worker protocol
@@ -346,6 +493,22 @@ dismissed one? `RefusalLog.supersede` (#492, gap 34) already answers a
 narrower version of this for refusals — dismissal-by-success, not
 dismissal-by-gesture — and is the nearest precedent rather than a template.
 **Not decided here.**
+
+**Decided on 2026-09-01: a player can dismiss a row, and a recurrence is a new
+row.** The command is `DismissAlert`, carrying two ordinals — the arrival the
+row began with and the newest one the player had seen — and
+`SimulationEventLog.dismiss` resolves the run between them by the same identity
+the list groups rows by. So what a dismissal retires is *the arrivals that were
+read*, not the sentence: a fourth fight after the third was dismissed is a new
+row counting from one, and an arrival that lands between the press and the tick
+is above the far end and survives. The state is session state in the worker and
+is snapshotted, which is not a free choice — see decision 3, and the Status
+section on why the two could not have been built separately. **The refusal and
+protocol-fault rows are not dismissable**: gap 34 is untouched.
+
+**Not** answered here, and left open: whether "acknowledged" should differ from
+"resolved" for the incident types that have a natural resolution event, which
+is this document's third open question and is unchanged by the ruling.
 
 ### Decision 3 — does the log survive a reload?
 
@@ -368,6 +531,22 @@ than the raw notice queue, which would require deciding what a stale `danger`
 row is allowed to keep saying. **Not decided here**, including which of the
 two shapes, or neither.
 
+**Decided on 2026-09-01: the log survives a reload, in the raw-record shape
+rather than the outcome-only one.** `simulation.alerts` carries the retained
+buffer, the dismissals against it and the ordinal counter, and no
+`SAVE_SCHEMA_VERSION` bump was needed — the pricing above held when it was
+re-checked against ADR 0038 §1 rather than assumed. What answers the semantic
+objection this section raised is not a new argument but a **separation of two
+surfaces that had been treated as one**: a restored record is republished with
+`restored: true`, which rebuilds the *log* the player scrolls back through and
+is ignored by the *band*, so nothing announces a tick the player was not
+looking at. The docblocks in `event-log.ts` and `refusal-log.ts` were right
+about the band and are quoted rather than deleted where they are corrected.
+
+**`RefusalLog` is unchanged and stays out of the save.** Its own docblock
+prices carrying the refusal and refuses on what it would buy; no ruling touched
+it, and the two logs stop being siblings in this one respect.
+
 ### Decision 4 — does a terminal outcome get a minimum dwell, and at whose expense?
 
 **What it would take:** per #700's own comment (quoted above), a dwell floor
@@ -386,6 +565,14 @@ rather than resolved by ADR fiat — the four are one question, and answering
 one quietly while gating the other three would understate how connected they
 are. **Not decided here.**
 
+**Still not decided, as of 2026-09-01.** The owner took the other three
+decisions and this one was not among them; the band's arbitration is untouched
+by the change that implements them, and `applyEventNotice` is still
+unconditional. The one thing that change adds to the band is a rule about a
+*restored* record — it announces none — which is deliberately not a dwell floor
+and answers none of the question above: it says what the band does with a
+record that did not just happen, not what it does with two that did.
+
 ## Consequences
 
 - **Nothing in `src/` changes as a result of this document.** All four
@@ -393,6 +580,15 @@ are. **Not decided here.**
   candidate — collapsing identical rows at the projection — this draft was
   asked to check and found still gated, for reasons argued above rather than
   asserted.
+
+  **That sentence was true of the document and stopped being true of the day.**
+  The owner took three of the four decisions on 2026-09-01 and `src/` changed
+  in consequence: the alerts list collapses repeats and counts them, a row
+  carries the day it happened on, a press retires a row, a `DismissAlert`
+  command and an `alerts` section on the save hold that, and a restored session
+  republishes its log without announcing it. The sentence is kept because it
+  records what this document itself did, which is still nothing — the change
+  came from the ruling, not from the draft.
 - **No `SAVE_SCHEMA_VERSION` bump is implied by any of the four**, should the
   owner take decisions 1 or 3: ADR 0038 §1's rule covers an optional `alerts`
   section the same way it already covers `masterSeed`, `placementSequence`

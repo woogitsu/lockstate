@@ -12,6 +12,7 @@ import {
   createNewSimulationRuntime,
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
@@ -201,15 +202,24 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      * of: a `SellMaterials`, a `ProduceItem` or a `RequestGrant` added later
      * fails this line and sends its author here.
      *
-     * Of these fourteen, exactly one credits the treasury --
+     * Of these fifteen, exactly one credits the treasury --
      * `CancelMaterialPurchase` -- and the test below measures that it refuses
      * once the delivery has landed.
+     *
+     * **This said "fourteen" until the owner's decisions of 2026-09-01 on
+     * [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md).**
+     * `DismissAlert` is the fifteenth and it moves no money at all: it marks a
+     * row of the alerts log as read, which is the one command in this list that
+     * changes nothing about the prison. The tally is what rots here and the
+     * list is what to read, so both are corrected together rather than the
+     * number alone.
      */
     const types = simulationCommandSchema.options.map((option) => option.shape.type.value).sort();
     expect(types).toEqual([
       'AdmitPrisoner',
       'CancelBuildOrder',
       'CancelMaterialPurchase',
+      'DismissAlert',
       'DismissStaff',
       'HireStaff',
       'PlaceBuildOrder',
@@ -346,17 +356,56 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
     ).toBeGreaterThan(balanceBeforeTheArrival);
 
     /*
-     * **Escape 5: give the bricks back.** Unchanged, and it is the one claim in
-     * this case ruling 19 does not touch: a brick-built object can be removed
-     * and undone, and both give bricks -- never money.
+     * **Escape 5: give the bricks back -- and it is not an escape any more.**
+     *
+     * > **Escape 5: give the bricks back.** Unchanged, and it is the one claim
+     * > in this case ruling 19 does not touch: a brick-built object can be
+     * > removed and undone, and both give bricks -- never money.
+     * >
+     * > ```
+     * > send(runtime, 'undo', { type: 'Undo' });
+     * > expect(stockOf(runtime, 'item.brick'), 'undo returns the brick').toBe(BRICKS_TO_THE_RUNG);
+     * > ```
+     *
+     * The owner's ruling of 2026-09-01 -- *"Taking a finished object away
+     * returns nothing. Not its materials, not its money."*, ADR 0076's
+     * amendment of that date -- withdraws it. Building a thing and un-building
+     * it is now **strictly a loss**: the brick goes into the toilet and stays
+     * there, so a prison out of money cannot recover a material by taking
+     * something down.
+     *
+     * **The second clause survives and is the one that mattered here**: still
+     * *never money*. This escape was never a way back to a balance, only to a
+     * material, and `Treasury.credit` is asserted below to have stayed out of
+     * it.
+     *
+     * **This narrows the file's own opening sentence**, which states the trap
+     * as *"spending power below one plank's price with no plank in stock and
+     * nothing plank-built to reverse"*. The third clause has stopped doing any
+     * work: there is nothing to reverse anything **into**, so a prison with a
+     * bed standing is in exactly the position of one without. Ruling 19 is what
+     * keeps that from re-opening ECON-002 -- the queue's own rung has 750 the
+     * press cannot reach, which is what the recovery above measures -- and this
+     * case is now the record that **the materials route out is closed and the
+     * money route out is what is left.**
      */
     const balanceBeforeTheToilet = runtime.treasury.balanceMinorUnits;
     send(runtime, 'toilet', { type: 'PlaceObject', orderId: 'toilet-1', definitionId: 'toilet-brick', x: 5, y: 6 });
     stepTo(runtime, runtime.kernel.tick + 300);
     expect(runtime.construction.getOrder('toilet-1')?.state).toBe('completed');
     expect(stockOf(runtime, 'item.brick')).toBe(BRICKS_TO_THE_RUNG - 1);
+    const toiletTile = { x: tileCoordinate(5), y: tileCoordinate(6) };
+    expect(runtime.placedObjects.objectAt(toiletTile)?.objectId, 'the toilet is standing').toBe('object.toilet');
     send(runtime, 'undo', { type: 'Undo' });
-    expect(stockOf(runtime, 'item.brick'), 'undo returns the brick').toBe(BRICKS_TO_THE_RUNG);
+    expect(runtime.construction.getOrder('toilet-1')?.state, 'the undo does reach the order').toBe('cancelled');
+    expect(runtime.placedObjects.objectAt(toiletTile), 'and the toilet really came down').toBeUndefined();
+    expect(
+      runtime.placedObjects.objectAt({ x: tileCoordinate(BED_TILE.x), y: tileCoordinate(BED_TILE.y) })?.objectId,
+      'while the bed the escape above needs is untouched',
+    ).toBe('object.bed');
+    expect(stockOf(runtime, 'item.brick'), 'undo returns nothing: the brick went into the toilet and stayed there').toBe(
+      BRICKS_TO_THE_RUNG - 1,
+    );
     expect(runtime.treasury.balanceMinorUnits, 'and not a minor unit of it is money').toBe(balanceBeforeTheToilet);
   });
 

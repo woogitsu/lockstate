@@ -339,6 +339,78 @@
 }
 
 /*
+ * WHAT THE DISMISS CONTROL COSTS THE SENTENCE BESIDE IT (ADR 0084 decision 3,
+ * the owner's ruling of 2026-09-01 that the control is its own element).
+ *
+ * **No rule is written here. This block is the arithmetic**, recorded where the
+ * next person to look at this box will find it, because the number is a finding
+ * for the owner rather than something to style around.
+ *
+ * The row is `display: flex` with `padding: var(--space-2)` and
+ * `gap: var(--space-2)`, and `.ui-row__label` is `flex: 1; min-width: 0`, so it
+ * gets whatever the fixed children leave. At `--ui-scale: 1`, in the
+ * `calc(224px * var(--ui-scale))` rail:
+ *
+ *     row              200px   (#720 measured the label at 88 inside it)
+ *     - padding         16     2 x var(--space-2)
+ *     = content        184
+ *     - icon (sm)       16     var(--icon-size-sm)
+ *     - gaps            16     2 x var(--space-2), icon|label|badge
+ *     - severity badge  64     measured at 50-70 (#720)
+ *     = label           88     which is what #720 measured, so the model holds
+ *
+ * A dismiss control is `min-width: var(--tap-target)` = 44 and adds one more
+ * gap of 8, both taken from the only flexible child:
+ *
+ *     label            88 - 52 = 36px
+ *
+ * **In characters**: #720 measured `scrollWidth 218` for the 30-character
+ * sentence "Contraband found: Mobile phone.", so ~7.3px a character, and it
+ * measured a 109-character sentence wrapping into eleven line boxes of 88px at
+ * 15px each. At 36px that is about **five characters a line** before wrapping,
+ * so the same sentence needs roughly 22 line boxes -- **~330px of row height**,
+ * derived rather than measured, in a list box that is about 200px at 1280x800
+ * and 137px at 900x600 (`2026-09-01-playing-after-the-rulings`). One alert
+ * would fill the log.
+ *
+ * **This is not shrunk around.** The control stays at `--tap-target` because
+ * that is what makes it reachable, and the three things that could give are all
+ * decisions rather than styling, so they were named and put to the owner:
+ *
+ *   1. Drop the severity badge from *this* list and give the label its 64px
+ *      back. The badge is how ruling 11's severity reaches a player, so
+ *      removing it is player-visible.
+ *   2. Let the row wrap and put the control on its own line -- height instead
+ *      of width, in the most constrained box chain in the interface (#174).
+ *   3. Widen the rail, which is #174's own subject.
+ *
+ * **THE OWNER ANSWERED ON 2026-09-01, AND THE ANSWER IS THE THIRD: THE WIDTH
+ * COMES FROM THE RAIL.** Nothing in the row gives way -- the badge stays, the
+ * control stays on the row's line, and the label keeps its subject -- and the
+ * corner widens instead, on ADR 0085 decision 1, which already recommends it
+ * for reasons of its own. This is a second and independent argument for the
+ * same change: a dismiss control does not fit beside a sentence in this rail.
+ *
+ * **So this list is knowingly over-subscribed until that lands, and the
+ * consequence is stated here rather than discovered.** At the current width a
+ * long sentence with a control beside it wraps past the list's box: about five
+ * characters a line, so one long alert can be taller than the box that holds
+ * it. The list scrolls (`.hud-alerts__list`, `overflow-y: auto`), so nothing is
+ * clipped and nothing is unreachable -- what a player gets is a log they scroll
+ * further through, which is the accepted cost of shipping the control before
+ * the corner moves. **Do not "fix" it here.** Narrowing the control, dropping
+ * the badge or stacking the row would each undo a decision the owner has taken.
+ *
+ * The measurement that would settle the 36px is `tests/browser/clipping.ts`
+ * pointed at these rows **with a dismissable alert in the list**; no test in
+ * the `node` suite can see a pixel, and the fixtures the existing check uses
+ * carry no control. Whoever measures the corner's new width should start from
+ * the chain above rather than re-deriving it: the label needs its 88px back
+ * *and* the 52px the control takes, so 226px of corner is short by about 52px
+ * before any other claim on the width is counted.
+ */
+
+/*
  * A row keeps its height and the list scrolls, which is not what happened
  * first and is the second thing here that had to be measured.
  *
@@ -2275,6 +2347,16 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
     overflow: hidden;
+    /* **A `white-space: nowrap` was written here and could never have worked**,
+       which is worth one comment because the mistake is a standing trap in
+       this file: a media query adds **no specificity**. The base
+       `.hud-rooms__note` rule is further down the sheet, so at equal
+       specificity it wins here too, and an override written inside this block
+       against a declaration below it is dead on arrival. CI measured it dead:
+       the same `2px shorter than its own content` came back unchanged. The
+       wrap is confined to tall viewports at the base rule instead, by a
+       `min-height: 701px` query that is this block's exact complement -- two
+       rules that cannot both apply need no ordering at all. */
   }
 
   /* And the room readout's detail line, for the same four-declaration reason
@@ -2628,8 +2710,67 @@
 /* The note is one line's worth of space whatever it is saying, because it says
    one of four things -- the arm hint, the removal hint, the too-small warning
    or the enclosure warning -- and a panel whose controls moved when the warning
-   appeared would move them at the exact moment the player was reading it. */
-.hud-rooms__note { display: block; }
+   appeared would move them at the exact moment the player was reading it.
+
+   `overflow: hidden; text-overflow: ellipsis;` are the fix for issue #739's
+   finding D5 and were missing here, not chosen against: `display: block`
+   overrides `.ui-eyebrow`'s `display: inline` but not its `white-space:
+   nowrap`, and nothing below 700px of viewport height (the `@media
+   (max-height: 700px)` block above) ever contained the single line that rule
+   leaves this element trying to render. Measured on the assembled page before
+   this rule, at every viewport 720px tall or taller: `hud.rooms.arm-hint`
+   ("Drag a rectangle across the tiles this room should cover.") is
+   `469x13` in a `238x13` box, `overflow: visible` by the UA default, painted
+   231px past its own right edge and over whatever the map block draws beside
+   it -- the only instruction the game gives for the Rooms gesture, spilling
+   onto neighbouring UI rather than being contained by the panel that owns it.
+
+   **The owner ruled on 2026-09-01: the sentence wraps.** This rule read
+   `display: block; overflow: hidden; text-overflow: ellipsis;` for the few
+   hours between the spill being measured and that ruling, and the reasoning
+   is kept because it is what a reader of that revision found here: it called
+   itself "a containment fix and not a readability one", said that
+   "ellipsis-truncating a static, unchanging instruction is not a good outcome
+   either -- it hides content precisely for players it was written for", and
+   guaranteed only that the failure mode became "some of the sentence, inside
+   its own box" rather than "the whole sentence, drawn over something else".
+
+   The owner chose the readability answer over the containment-only one, so
+   the whole instruction is now visible: `white-space: normal` overrides the
+   `nowrap` this element inherits from `.ui-eyebrow`, and `overflow-wrap:
+   break-word` is the same pairing #720's fix gave `.ui-row--wrap`, for the
+   same reason -- a single token longer than the box would otherwise spill
+   again with no space to break at.
+
+   **The cost was chosen knowingly, and the argument it overrules is one this
+   file makes two blocks above**: a wrapped note is two or three lines, so the
+   controls under it move down while a player reads. That is the price of the
+   player being able to read the only instruction the game gives for the Rooms
+   gesture. Shortening the sentence instead remains available and remains the
+   owner's, `AGENTS.md`'s fourth exclusion.
+
+   `overflow: hidden` stays: it is what keeps an unbreakable token contained,
+   and it is what `tests/unit/hud-rooms-note-containment.test.ts` pins, so a
+   future edit cannot reopen the spill silently. `text-overflow: ellipsis` is
+   gone -- it only ever applies to a single non-wrapping line, so keeping it
+   beside `white-space: normal` would be a declaration that reads as a promise
+   and does nothing. */
+.hud-rooms__note { display: block; overflow-wrap: break-word; overflow: hidden; }
+
+/* The wrap itself, gated to the viewports that have the height for it and
+   **paired exactly with the `@media (max-height: 700px)` clamp above**: 701 is
+   that block's complement, so the two can never both apply and neither
+   depends on the other's position in this sheet. Below it the note keeps the
+   `nowrap` it inherits from `.ui-eyebrow` and the clamp shows one line, which
+   is what the panel's own height floor is calculated against.
+   **The cost, stated rather than hidden:** at 700px tall and below, the only
+   instruction the game gives for the Rooms gesture is still one clamped line.
+   That is the outcome the owner rejected for taller viewports, and finding
+   the height for it here means taking it from something else in this panel --
+   #739's question, not this rule's. */
+@media (min-height: 701px) {
+  .hud-rooms__note { white-space: normal; }
+}
 
 .hud-rooms__note[data-tone='warning'] { color: var(--status-warning); }
 

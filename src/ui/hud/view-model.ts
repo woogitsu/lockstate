@@ -368,12 +368,113 @@ export interface HudCountsViewModel {
 
 export type HudSeverity = 'info' | 'warning' | 'danger';
 
+/**
+ * Where in the in-game calendar something happened, as this game measures it
+ * (the owner's decision 2 of 2026-09-01 on
+ * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
+ *
+ * **A day and a position within it, and deliberately not a clock face.**
+ * `dayProgressPercent`'s own comment in `src/ui/hud/projection.ts` is the rule
+ * this obeys: the simulation defines a day as a budget of ticks and nothing
+ * maps that budget onto a 24-hour dial (`docs/HUD_PROJECTIONS.md` gap 5), so
+ * rendering `07:45` here *"would put a time on screen that no system
+ * produces"*. The decision the owner took asks a row to say **when**; this is
+ * the only vocabulary the prison has for that, and it is the same one the
+ * status strip's `Day` readout already uses.
+ *
+ * Computed outside `src/ui/hud/` by `src/ui/simulation-events.ts`, through
+ * `projectClockPosition` -- *"the one piece of clock arithmetic in the
+ * codebase, so a caller cannot disagree with the status strip about which day
+ * it is"*. The HUD is handed the two figures and formats them.
+ */
+export interface HudAlertTimeViewModel {
+  /** 1-based, exactly as `HudClockViewModel.day` is. */
+  readonly day: number;
+  /** How far through that day, as a whole percent -- `dayProgressPercent`'s figure. */
+  readonly progressPercent: number;
+}
+
+/**
+ * What a row is a record of, once a row can stand for more than one arrival
+ * (the owner's decisions 1, 2 and 3 of 2026-09-01 on
+ * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
+ *
+ * ## Why the three decisions share one field
+ *
+ * Because they are one change. Collapsing repeats without a count would delete
+ * the only evidence a player currently has that three fights happened -- ADR
+ * 0084 rejected exactly that as *"a partial cure that makes the symptom
+ * quieter"*. A count without a time would leave a row that recurs sitting at
+ * the position its **first** arrival earned, growing a number, with nothing on
+ * it to say that the newest of them was a moment ago -- so the count is what
+ * makes the time necessary and the time is what makes the count readable. And
+ * a dismissal has to name a row, which means naming the run of arrivals the
+ * row stands for rather than one of them.
+ *
+ * ## Which rows carry it, and why that is not every row
+ *
+ * Only the rows `src/ui/simulation-events.ts` produces. `simulation-alerts.ts`
+ * produces the refusal row and the protocol-fault rows, and those are
+ * *levels*: the refusal row is republished unchanged up to twice a second and
+ * replaced in place by ordinal, and a fault row is keyed by its code so a peer
+ * emitting the same fault in a loop updates one row. Neither is a run of
+ * occurrences, and neither is dismissable here -- a player gesture that
+ * retires a **refusal** is `docs/HUD_PROJECTIONS.md` gap 34, which ADR 0084
+ * explicitly did not reopen and the owner has not ruled on. So the presence of
+ * this field is also what tells the HUD a row can be dismissed, and its
+ * absence is a statement about the other producer's rows rather than a default.
+ */
+export interface HudAlertOccurrencesViewModel {
+  /**
+   * How many times this exact statement has arrived (decision 1).
+   *
+   * At least 1. A row that has arrived once carries `1` rather than omitting
+   * the count, because "once" is a real answer to "how many times" and a row
+   * whose count appeared only on the second arrival would be the list saying
+   * two different kinds of thing about itself.
+   */
+  readonly count: number;
+  /**
+   * When the most recent of them arrived (decision 2), or absent because no
+   * session has reported a clock yet and the day cannot be worked out.
+   *
+   * The most recent rather than the first: the row keeps the *position* its
+   * first arrival earned (issue #209's rule, *"the position of a row the
+   * player is already reading must not change under them"*), so the newest
+   * arrival's time is the only thing on the row that can say it is recent.
+   */
+  readonly lastAt?: HudAlertTimeViewModel;
+  /** The wire ordinal of the first arrival. The row's `id` is built from it. */
+  readonly firstSequence: number;
+  /** The wire ordinal of the most recent arrival -- the far end a dismissal names. */
+  readonly lastSequence: number;
+  /**
+   * What makes two arrivals the same statement -- `simulationEventIdentity`'s
+   * string.
+   *
+   * The translator's own memory rather than something the HUD reads. These
+   * translators are pure and the view model is the only thing they are handed
+   * back, so a row that must recognise its own next arrival has to carry the
+   * question it will be asked. The HUD never renders it.
+   */
+  readonly statement: string;
+}
+
 export interface HudAlertViewModel extends HudLabelParametersViewModel {
   /** Stable identity for the row, so a list update is not a full rebuild. */
   readonly id: string;
   /** A message key, never text. */
   readonly labelKey: LocalizationKey;
   readonly severity: HudSeverity;
+  /**
+   * The arrivals this row stands for, on the rows that stand for arrivals.
+   *
+   * Absent on the refusal and protocol-fault rows, which are levels rather
+   * than runs -- see `HudAlertOccurrencesViewModel` for why that asymmetry is
+   * a statement rather than an omission, and for why it is also what makes a
+   * row dismissable.
+   */
+  readonly occurrences?: HudAlertOccurrencesViewModel;
 }
 
 /**
