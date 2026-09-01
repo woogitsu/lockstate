@@ -2628,8 +2628,38 @@
 /* The note is one line's worth of space whatever it is saying, because it says
    one of four things -- the arm hint, the removal hint, the too-small warning
    or the enclosure warning -- and a panel whose controls moved when the warning
-   appeared would move them at the exact moment the player was reading it. */
-.hud-rooms__note { display: block; }
+   appeared would move them at the exact moment the player was reading it.
+
+   `overflow: hidden; text-overflow: ellipsis;` are the fix for issue #739's
+   finding D5 and were missing here, not chosen against: `display: block`
+   overrides `.ui-eyebrow`'s `display: inline` but not its `white-space:
+   nowrap`, and nothing below 700px of viewport height (the `@media
+   (max-height: 700px)` block above) ever contained the single line that rule
+   leaves this element trying to render. Measured on the assembled page before
+   this rule, at every viewport 720px tall or taller: `hud.rooms.arm-hint`
+   ("Drag a rectangle across the tiles this room should cover.") is
+   `469x13` in a `238x13` box, `overflow: visible` by the UA default, painted
+   231px past its own right edge and over whatever the map block draws beside
+   it -- the only instruction the game gives for the Rooms gesture, spilling
+   onto neighbouring UI rather than being contained by the panel that owns it.
+
+   This is a containment fix and not a readability one, and the distinction is
+   the reason it ships without an ADR: it does not choose between wrapping the
+   sentence (which the comment above already argues against, because it would
+   move the controls under it while a player is reading) and shortening it
+   (which is copy, and `AGENTS.md`'s fourth exclusion makes that the owner's).
+   Ellipsis-truncating a static, unchanging instruction is not a good outcome
+   either -- it hides content precisely for players it was written for -- and
+   is recorded as such rather than passed off as solved; what this rule
+   guarantees is only that the failure mode is "some of the sentence, inside
+   its own box" rather than "the whole sentence, drawn over something else".
+   `.ui-row__label` in `primitives.css` keeps the same `overflow: hidden` for
+   the same stated reason: contained is strictly better than uncontained,
+   independent of what a future decision does with the wrapping question.
+   `tests/unit/hud-rooms-note-containment.test.ts` pins the three declarations
+   this rule needs so a future edit cannot drop `overflow` and reopen the
+   spill silently. */
+.hud-rooms__note { display: block; overflow: hidden; text-overflow: ellipsis; }
 
 .hud-rooms__note[data-tone='warning'] { color: var(--status-warning); }
 
