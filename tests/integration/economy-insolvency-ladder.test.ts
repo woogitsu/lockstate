@@ -14,6 +14,7 @@ import {
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * **ADR 0017 decision 8's insolvency ladder, walked in one run.**
@@ -91,6 +92,10 @@ const WALL_COST = 2 * BRICK_PRICE;
 const GUARD = 'staff-role.guard';
 const GUARD_DAY = 80;
 const ARRIVAL = { x: 16, y: 16 } as const;
+/** `room.cell`'s authored minimum, the rectangle every object fixture in this repository uses. */
+const CELL = 'room.cell';
+const CELL_RECT = { x: 4, y: 6, width: 2, height: 3 } as const;
+const BED_TILE = { x: 4, y: 6 } as const;
 
 function send(runtime: SimulationRuntime, id: string, command: SimulationCommand): void {
   runtime.kernel.submitCommand(id, runtime.kernel.expectedSequence, runtime.kernel.tick, packCommand(command));
@@ -110,11 +115,46 @@ function sinkTo(runtime: SimulationRuntime, balance: number): void {
 }
 
 /**
- * A prison with one guard on the books, so there is a wage bill to leave
- * unpaid, and nothing else -- no cells, no prisoners, no income.
+ * A prison with one guard on the books and one furnished cell, so there is a
+ * wage bill to leave unpaid and nothing else that spends -- no prisoners, no
+ * income.
+ *
+ * **The furnished cell is new, since the owner's second ruling on #771
+ * (2026-09-01), and this docblock used to say "and nothing else -- no cells".**
+ * A prison that never furnishes a sleep surface is "fresh, unfurnished"
+ * (`RoomInstanceRegistry.totalResidentCapacity === 0`) for its whole life, and
+ * this file's whole subject -- that `'deliveries'` and `'construction'` share
+ * one threshold -- is true only of the *mature* rungs. The starter rung
+ * deliberately reopens the gap between them for a fresh prison (reserving one
+ * plank's worth of room in `'construction'` that `'deliveries'`/`'hiring'`
+ * cannot reach), which is a second, narrower and equally deliberate finding
+ * with its own test (`tests/integration/economy-liquidity-hard-lock.test.ts`,
+ * `tests/unit/economy-treasury.test.ts`) -- not a contradiction of this file's,
+ * but a different regime this file is not about. Furnishing one bed here
+ * takes the fixture out of that regime for the rest of its life, so the "one
+ * comparison, one rung" property below is measured where it actually holds.
+ * `sinkTo` computes every position as a delta off whatever the balance
+ * happens to be, so the bed's own 65-minor-unit cost changes nothing it
+ * targets.
  */
 function prisonWithOneGuard(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
+  wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
+  send(runtime, 'zone', { type: 'ZoneRoom', roomId: CELL, ...CELL_RECT });
+  send(runtime, 'bed', { type: 'PlaceObject', orderId: 'bed-0', definitionId: 'bed-wooden', ...BED_TILE });
+  // 300 ticks, not 5,000: comfortably inside `DAY_LENGTH_TICKS` (2,400), so
+  // furnishing the cell cannot itself consume `payday`'s first, absolute-tick
+  // day boundary below it. Measured: a fresh plank order with nothing else
+  // queued completes in 151 ticks.
+  stepTo(runtime, runtime.kernel.tick + 300);
+  expect(runtime.construction.getOrder('bed-0')?.state, 'the fixture must actually furnish the cell it stands on').toBe(
+    'completed',
+  );
+  expect(
+    runtime.prisoners.roomInstances.totalResidentCapacity,
+    'furnished: no longer "fresh, unfurnished", for the rest of this runtime\'s life',
+  ).toBeGreaterThan(0);
+
   send(runtime, 'hire', { type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL });
   expect(runtime.refusals.count, 'the fixture must be able to hire the guard it hires').toBe(0);
   expect(runtime.payroll.dailyWageBillMinorUnits()).toBe(GUARD_DAY);

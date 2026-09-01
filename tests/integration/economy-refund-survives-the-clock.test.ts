@@ -217,29 +217,56 @@ function runToQuiet(runtime: SimulationRuntime, limit = 2_000): number {
  *   room -- above the 240 three wall orders cost and below the 320 that four
  *   cost, the same shape the wage-drained fixture had at 265.
  *
+ * **The paragraph above is superseded in turn by the owner's second ruling on
+ * #771 (2026-09-01), and this time it is the *press's own ceiling* that
+ * moves, not the queue's.** `drainedPrison` never zones a room, so this
+ * runtime is "fresh, unfurnished" for its whole life
+ * (`RoomInstanceRegistry.totalResidentCapacity === 0`) and both presses below
+ * are judged at the *starter* delivery rung
+ * (`INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`, -1,185), not the
+ * mature -1,250 the paragraph above assumed -- -1,240 is past it, so the
+ * second press used to be refused outright. `'construction'` is unaffected by
+ * freshness and still stops at -1,250, so the property this fixture needs --
+ * a balance from which the queue can fund three wall orders (240) and not
+ * four (320) -- still exists inside the starter rung's own reach; it is just
+ * narrower, at 15 minor units of press room rather than 65:
+ *
+ * - 399 planks at 65 is 25,935, leaving **-935** of the 25,000 grant -- one
+ *   fewer plank than before, because 400 would leave only 185 of starter-rung
+ *   room and the six-brick press below needs 240 of it.
+ * - Six bricks at 40 is 240: balance **-1,175**, ten short of the starter
+ *   rung's own -1,185 -- still one ordinary press, now the tightest one this
+ *   fixture can make -- and 75 of room to the (unaffected) construction rung,
+ *   below the 80 one wall order costs.
+ * - Cancelling the six bricks refunds 240 and leaves **-935** again, 315 of
+ *   room to the construction rung -- above the 240 three wall orders cost and
+ *   below the 320 that four cost, the same shape both earlier rulings' own
+ *   fixtures had.
+ *
  * The case this fixture serves is otherwise unaffected: what it measures is
  * ADR 0081's per-order funding and `CancelMaterialPurchase`'s refund, neither
- * of which #771 touches, and the property only needed *a* window in which the
- * queue can fund three orders and not four -- not specifically one 750 minor
- * units past a press's own limit.
+ * of which #771 touches (either ruling), and the property only ever needed *a*
+ * window in which the queue can fund three orders and not four -- not a
+ * specific distance from any one rung.
  */
 function drainedPrison(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
-  send(runtime, { type: 'PurchaseMaterials', orderId: 'drain', itemId: 'item.wood-plank', quantity: 400 });
+  send(runtime, { type: 'PurchaseMaterials', orderId: 'drain', itemId: 'item.wood-plank', quantity: 399 });
   step(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS + 2);
   send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 6 });
   expect(runtime.refusals.count, 'the fixture must afford everything it presses').toBe(0);
   // Not `step`ped after this, so the six bricks are still in flight -- which is
-  // what makes `buy-1` cancellable below. No further drain is needed since
-  // #771: both purchases above are ordinary presses and land exactly on the
-  // window this fixture is for.
+  // what makes `buy-1` cancellable below. No further drain is needed: both
+  // purchases above are ordinary presses and land exactly on the window this
+  // fixture is for, inside the starter rung this fresh, unfurnished prison is
+  // judged at (see the docblock above).
   return runtime;
 }
 
-/** 25,000 - 400 x 65 - 6 x 40, with the six bricks refunded. 250 of room to the shared rung. */
-const DRAINED_BALANCE = -1_000;
-/** `DRAINED_BALANCE` less six bricks at 40, which is 10 of room and below one wall order. */
-const DRAINED_AFTER_SIX_BRICKS = -1_240;
+/** 25,000 - 399 x 65 - 6 x 40, with the six bricks refunded. 315 of room to the (unaffected) construction rung. */
+const DRAINED_BALANCE = -935;
+/** `DRAINED_BALANCE` less six bricks at 40: -1,175, ten short of the starter rung and 75 of room to the construction rung, below one wall order. */
+const DRAINED_AFTER_SIX_BRICKS = -1_175;
 
 describe('a refund survives the clock (#687)', () => {
   it('pins the three figures every balance below is written from', () => {
