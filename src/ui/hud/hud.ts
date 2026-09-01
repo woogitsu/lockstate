@@ -1135,6 +1135,26 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * decision and the arithmetic behind the floor; this function is the paint
    * and the timer, which is all a DOM module should own.
    *
+   *
+   * **The channel widened again on the same day, from the other side.** The
+   * sentence quoted above also said this band has *"exactly one producer, so
+   * whatever it replaces is always an older event rather than a sentence of
+   * another class"*, and issue #749 falsified that second half independently
+   * of #700: the owner's ruling of 2026-09-01 puts four **success** sentences
+   * here -- a cancelled build order, a cancelled delivery, an undo, a redo --
+   * so the band now carries two classes, what the prison did on its own and
+   * what it did because the player asked. Both directions are marked rather
+   * than one overwritten (`docs/AGENT_WORKFLOW.md` section 4).
+   *
+   * **The cost that widening carried is now bounded rather than open.** A
+   * success sentence can displace a simulation event the player has not read
+   * -- press Undo while "A riot has broken out" is on the line. When #749 was
+   * written, ADR 0084 decision 4 was the one of that ADR's four the owner had
+   * not taken, so this producer could only record the collision and leave it.
+   * The owner took it on 2026-09-01 and the floor above is the answer: an undo
+   * no longer takes the line from a `danger` sentence inside the floor,
+   * because the ordering is `SEVERITY_EVICTION_ORDER` for every producer
+   * alike.
    * `undefined` means the view model says nothing yet; the field is absent
    * until the session has had something to say and again once it has ended.
    */

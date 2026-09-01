@@ -1743,6 +1743,22 @@ decision about what to build next.
     The rows are main-thread state and the main thread contributes nothing to a
     save, which is the whole of why the save carries records instead of rows.
 
+    **#749's five press-notices ride that same decision, and the sentence that
+    stood here about them is corrected in both directions.** It read:
+
+    > **#749's five members have no condition behind them at all**, which does
+    > not weaken that argument but replaces it with `RefusalLog`'s own: a
+    > cancellation, an undo and a redo are notices about a press, and a loaded
+    > prison confirming a press from a session that has ended would be the same
+    > defect gap 34 describes for a refusal.
+
+    The defect it names is real and `restored: true` is what prevents it: a
+    reloaded prison does **not** announce "the order was cancelled" on the band.
+    What is false is the conclusion that the record therefore stays out of the
+    save. The log is a scrollback now, and a player who cancelled an order
+    before saving is owed that row on their return exactly as they are owed the
+    riot. No member of `SIMULATION_EVENT_TYPES` is filtered out of the capture.
+
 34. **A refusal cannot be dismissed by the player, and carries no location on
     the wire.** *Amended for issue #492 — the standing-until-another-refusal
     half of this gap was closed, the rest of it stands.* The refusal raised

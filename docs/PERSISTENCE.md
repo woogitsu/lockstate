@@ -743,6 +743,24 @@ work are not.**
   > saves a prison that has just released somebody and requires the restored one
   > to announce nothing. Also recorded in `docs/HUD_PROJECTIONS.md` gap 33.
 
+  **Since #749 this channel also carries what the prison did because the
+  *player* asked** — a queued build order cancelled, a delivery cancelled, the
+  build history walked back or forward — and those five members are in the
+  section on the same terms as every other, with the argument the branch first
+  gave for them withdrawn. It read:
+
+  > those five members make the exclusion below *stronger* rather than weaker,
+  > because they have no condition behind them at all: "you cancelled that
+  > order" is a notice about a press, which is exactly `RefusalLog`'s own
+  > reason for not being saved.
+
+  The half of that which survives is the half about the **band**: a reloaded
+  prison must not confirm a press from a session that has ended, and
+  `restored: true` is what stops it. The half that does not is the inference to
+  the payload — the log is a scrollback now, so the row belongs in it. Nothing
+  filters a member of `SIMULATION_EVENT_TYPES` out of the capture, and adding
+  one that had to be filtered would be a new decision rather than a new member.
+
 - **Storage backend, compression algorithm, encryption.** Out of scope per
   issue #18; see "Size hook" below for the one hook this schema does provide.
 

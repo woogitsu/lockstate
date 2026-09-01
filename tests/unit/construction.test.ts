@@ -7,6 +7,7 @@ import { createConstructionCommandHandler } from '../../src/simulation/construct
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coordinates';
 import { RefusalLog } from '../../src/simulation/refusals';
+import { SimulationEventLog } from '../../src/simulation/events/event-log';
 
 test('ConstructionSystem processes build order through lifecycle deterministically', () => {
   const world = new SparseWorld(32);
@@ -26,7 +27,7 @@ test('ConstructionSystem processes build order through lifecycle deterministical
   const construction = new ConstructionSystem(world);
   const kernel = new Kernel();
   kernel.registerSystem(construction);
-  kernel.setCommandHandler(createConstructionCommandHandler(construction, new RefusalLog()));
+  kernel.setCommandHandler(createConstructionCommandHandler(construction, new RefusalLog(), new SimulationEventLog()));
   
   // Submit build order via command
   kernel.submitCommand('cmd-1', 0, 0, packCommand({
@@ -104,7 +105,7 @@ test('CancelBuildOrder command stops construction', () => {
   const construction = new ConstructionSystem(world);
   const kernel = new Kernel();
   kernel.registerSystem(construction);
-  kernel.setCommandHandler(createConstructionCommandHandler(construction, new RefusalLog()));
+  kernel.setCommandHandler(createConstructionCommandHandler(construction, new RefusalLog(), new SimulationEventLog()));
   
   kernel.submitCommand('cmd-start', 0, 0, packCommand({
     type: 'PlaceBuildOrder',
