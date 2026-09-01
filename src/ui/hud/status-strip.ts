@@ -9,8 +9,8 @@ import { type StatusBadge, createStatusBadge } from '../primitives/status-badge'
 import { HUD_MESSAGE_KEY } from './messages';
 import {
   CLOCK_UNKNOWN_TEXT,
-  type HudMetricBadge,
   type HudMetricId,
+  type HudMetricText,
   dayProgressPercent,
   displayDay,
   projectStatusMetrics,
@@ -82,7 +82,7 @@ interface MetricParts {
 }
 
 /**
- * The parameters a badge's message is formatted with, with every
+ * The parameters a chip's message is formatted with, with every
  * `numberParameters` entry rendered through the strip's own number formatter.
  *
  * A function rather than three lines inline because it is the one place the
@@ -91,13 +91,19 @@ interface MetricParts {
  * contradicting itself about how it writes a number, and that is exactly what
  * `String(value)` in `interpolate` produces for a raw one.
  *
- * `undefined` when the badge names no parameter at all, so `t` is called with
+ * `undefined` when the message names no parameter at all, so `t` is called with
  * one argument and a key with no placeholders takes the path it always took.
+ *
+ * **It took a `HudMetricBadge` until 2026-09-01 and takes a `HudMetricText`
+ * now**, which is the badge's own shape without the tone. The owner's ruling of
+ * that day gives the `FUNDS` chip a description as well as a badge, stating the
+ * same remainder; the two would have disagreed about grouping the moment one of
+ * them was formatted by a second copy of this loop.
  */
-function badgeParameters(badge: HudMetricBadge, localizer: HudLocalizer): MessageParameters | undefined {
-  if (badge.numberParameters === undefined) return undefined;
+function textParameters(text: HudMetricText, localizer: HudLocalizer): MessageParameters | undefined {
+  if (text.numberParameters === undefined) return undefined;
   const formatted: Record<string, string> = {};
-  for (const [name, value] of Object.entries(badge.numberParameters)) {
+  for (const [name, value] of Object.entries(text.numberParameters)) {
     formatted[name] = localizer.formatNumber(value);
   }
   return formatted;
@@ -212,6 +218,26 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
       parts.chip.setValue(localizer.formatNumber(descriptor.value));
       parts.chip.setTone(descriptor.tone);
 
+      /*
+       * The chip's own sentence -- its `title` and its screen-reader text --
+       * for the one chip that has one (the owner's ruling of 2026-09-01).
+       *
+       * Set on every update rather than only when it appears, because it
+       * carries a number: `1,249 left before deliveries stop` becomes
+       * `1,150 left before deliveries stop` on the next payload, and a
+       * tooltip that lags the badge under it is worse than no tooltip. The
+       * badge beside it is updated by the same rule, one branch down.
+       *
+       * Through the same `textParameters` the badge goes through, so the
+       * number in the sentence groups exactly as the number in the badge does.
+       * The two are read together or not at all.
+       */
+      parts.chip.setDescription(
+        descriptor.description === undefined
+          ? undefined
+          : t(descriptor.description.textKey, textParameters(descriptor.description, localizer)),
+      );
+
       if (descriptor.badge === undefined) {
         parts.badge?.element.remove();
         parts.badge = undefined;
@@ -228,7 +254,7 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
          * so a key with no placeholders is formatted exactly as it was before
          * the field existed.
          */
-        const parameters = badgeParameters(descriptor.badge, localizer);
+        const parameters = textParameters(descriptor.badge, localizer);
         const next = {
           tone: descriptor.badge.tone,
           text: t(descriptor.badge.textKey, parameters),

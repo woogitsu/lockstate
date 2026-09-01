@@ -154,8 +154,17 @@ export type HudMetricId =
  */
 const HIGH_RISK_LABEL_KEY: LocalizationKey = deriveSimulationMessageKey('classification-group', 'high-risk');
 
-export interface HudMetricBadge {
-  readonly tone: BadgeTone;
+/**
+ * A localizable sentence a chip can carry, and the numbers it names.
+ *
+ * Extracted on 2026-09-01 because `HudMetricBadge` was no longer the only one:
+ * the owner's ruling of that day gives the `FUNDS` chip a *description* as well
+ * as a badge, and both are "a key plus the quantities the strip must format".
+ * One shape means `status-strip.ts` formats both through the same function
+ * rather than growing a second copy of it, which is what
+ * `docs/AGENT_WORKFLOW.md` §3 means by looking one module over first.
+ */
+export interface HudMetricText {
   readonly textKey: LocalizationKey;
   /**
    * Placeholders for `textKey`, for a badge that states a **quantity** rather
@@ -189,6 +198,10 @@ export interface HudMetricBadge {
   readonly numberParameters?: Readonly<Record<string, number>>;
 }
 
+export interface HudMetricBadge extends HudMetricText {
+  readonly tone: BadgeTone;
+}
+
 export interface HudMetricDescriptor {
   readonly id: HudMetricId;
   readonly icon: IconId;
@@ -198,6 +211,28 @@ export interface HudMetricDescriptor {
   readonly capacity: number | undefined;
   readonly tone: BadgeTone | undefined;
   readonly badge: HudMetricBadge | undefined;
+  /**
+   * A full sentence about what this chip's number means, rendered by
+   * `status-strip.ts` into the chip's `title` **and** its screen-reader text --
+   * the owner's ruling of 2026-09-01, and `undefined` on every chip but one.
+   *
+   * **This exists because a badge has a width and a sentence does not fit in
+   * it.** The owner chose `{remaining} left before deliveries stop` for the
+   * `FUNDS` badge; `tests/browser/ui-overdraft-badge.spec.ts` measured it at
+   * +133px of chip and off the visible edge of the metrics row at 1280x800,
+   * and the ruling that followed kept the short badge and moved the name of
+   * the threshold here and into the refusal alert. `.ui-sr-only` is out of
+   * flow, so this channel is free of width -- which is the whole reason it can
+   * carry what the badge cannot.
+   *
+   * **It is not a hiding place, and that is a constraint rather than a
+   * remark.** A hover tooltip is unreachable on touch and unseen by a player
+   * who does not hover, so nothing may be said *only* here:
+   * `tests/unit/ui-hud-funds-threshold-named.test.ts` requires the deliveries
+   * rung to be named in the refusal alert as well, and fails if either place
+   * drops it.
+   */
+  readonly description: HudMetricText | undefined;
 }
 
 /**
@@ -512,6 +547,36 @@ function overdraftBadge(counts: HudCountsViewModel): HudMetricBadge | undefined 
 }
 
 /**
+ * What `{remaining} left` is a remainder of, in a full sentence -- the chip's
+ * tooltip and its screen-reader text (the owner's ruling of 2026-09-01).
+ *
+ * **Drawn exactly when the badge is drawn**, from the same two values, so a
+ * chip can never carry a number whose explanation is missing or an explanation
+ * with no number beside it. Both call `overdraftTone` and `overdraftRemaining`
+ * rather than one deriving from the other, which is one comparison in two
+ * places and not two rules.
+ *
+ * **Two keys, chosen on the same boundary the tone is chosen on.** Above the
+ * rung the sentence is a warning about what will happen; at it, deliveries
+ * have already stopped and a sentence in the future tense would be false. The
+ * badge is amber then red across the same step, so the words and the colour
+ * change together.
+ *
+ * The remainder rides `numberParameters` for `overdraftBadge`'s reason: this
+ * layer is pure and has no localizer, so it names the quantity and the strip
+ * formats it -- and the tooltip's number then groups exactly as the badge's
+ * does, which matters more here than anywhere because the two are read
+ * together.
+ */
+function overdraftDescription(counts: HudCountsViewModel): HudMetricText | undefined {
+  const tone = overdraftTone(counts);
+  const remaining = overdraftRemaining(counts);
+  if (tone === undefined || remaining === undefined) return undefined;
+  if (remaining <= 0) return { textKey: HUD_MESSAGE_KEY.fundsDeliveriesStopped };
+  return { textKey: HUD_MESSAGE_KEY.fundsBeforeDeliveriesStop, numberParameters: { remaining } };
+}
+
+/**
  * The top strip, left to right.
  *
  * Order is part of the contract: a HUD whose metrics move between builds is
@@ -548,6 +613,7 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
        * sleeping prisoner in a room that still has spare places elsewhere.
        */
       badge: prisonersWithoutBedBadge(counts),
+      description: undefined,
     },
     {
       /**
@@ -622,6 +688,7 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       capacity: undefined,
       tone: undefined,
       badge: undefined,
+      description: undefined,
     },
     {
       id: 'staff',
@@ -631,6 +698,7 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       capacity: undefined,
       tone: undefined,
       badge: undefined,
+      description: undefined,
     },
     {
       /**
@@ -667,6 +735,7 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       capacity: undefined,
       tone: coverageTone(counts),
       badge: coverageBadge(counts),
+      description: undefined,
     },
     {
       id: 'rooms',
@@ -676,6 +745,7 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       capacity: undefined,
       tone: undefined,
       badge: undefined,
+      description: undefined,
     },
     {
       id: 'incidents',
@@ -702,6 +772,7 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       badge: hasIncidents
         ? { tone: 'danger', textKey: counts.activeIncidentTypeLabelKey ?? HUD_MESSAGE_KEY.incidentsActive }
         : { tone: 'success', textKey: HUD_MESSAGE_KEY.incidentsClear },
+      description: undefined,
     },
     {
       id: 'contraband',
@@ -757,6 +828,7 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
         counts.contrabandNameKey === undefined
           ? undefined
           : { tone: 'warning', textKey: counts.contrabandNameKey },
+      description: undefined,
     },
     {
       id: 'funds',
@@ -837,6 +909,17 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       // reached the player as a minus sign and nothing else -- no tone, no
       // badge, no sentence -- so a player met the facility by hitting it.
       badge: overdraftBadge(counts),
+      /*
+       * **The one chip on this strip with a description, and the owner's
+       * ruling of 2026-09-01 is the whole reason it has one.** The badge above
+       * says `{remaining} left` and cannot say what the remainder is *of*: the
+       * wording that did -- `{remaining} left before deliveries stop` -- was
+       * measured at +133px of chip and pushed this very chip off the visible
+       * edge of the row at 1280x800. So the short badge stays and the sentence
+       * goes here, where `.ui-sr-only` and `title` cost no width, and into the
+       * refusal alert, where it reaches a player who never hovers.
+       */
+      description: overdraftDescription(counts),
     },
     {
       id: 'earned-today',
@@ -859,6 +942,7 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
 
       tone: undefined,
       badge: undefined,
+      description: undefined,
     },
   ];
 }

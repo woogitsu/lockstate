@@ -367,9 +367,9 @@ describe('status strip: tone and badges', () => {
    * refused and the badge still read `1,200 left`. The 2026-09-01 ruling
    * re-bases it onto the `'deliveries'` rung, which is the same
    * `HOST_PRESS_FLOOR_MINOR_UNITS` `judgeAffordability` refuses a press
-   * against -- so the badge reading `0 left before deliveries stop` and the
-   * next Buy press being refused are now the same fact, which is what makes
-   * the figure worth trusting.
+   * against -- so the badge reading `0 left` and the next Buy press being
+   * refused are now the same fact, which is what makes the figure worth
+   * trusting.
    *
    * A badge that were one unit generous would send a player to press a control
    * the simulation is going to refuse; one that were one unit mean would hide
@@ -448,6 +448,88 @@ describe('status strip: tone and badges', () => {
     expect(badge(-700, -800).badge?.numberParameters, 'the rung is clamped up to the floor').toEqual({
       remaining: 100,
     });
+  });
+
+  /**
+   * **What the badge cannot say, said on the chip itself** -- the owner's
+   * ruling of 2026-09-01.
+   *
+   * The ruling reversed an earlier choice of the owner's. The badge was to read
+   * `{remaining} left before deliveries stop`; `tests/browser/ui-overdraft-badge.spec.ts`
+   * measured that wording at **+133px** of chip and watched the FUNDS chip --
+   * eighth of nine on a row whose scrollbar `hud.css` suppresses -- leave the
+   * visible edge at 1280x800 for the whole four-digit range of the remainder.
+   * So the badge keeps the short words *because they fit*, and the name of the
+   * threshold moves to two places with room for a sentence: this description,
+   * and the refusal alert.
+   *
+   * What is pinned here is the pairing rather than the prose. A description
+   * without a badge would be a sentence about a number nobody can see; a badge
+   * without a description is the state the ruling exists to end. The words
+   * themselves are `src/content/default-locale-en.ts`'s and are gated, against
+   * the alert they have to agree with, in
+   * `tests/unit/ui-hud-funds-threshold-named.test.ts`.
+   */
+  it('names the threshold on the chip, in a sentence the badge has no room for', () => {
+    const chip = (treasuryMinorUnits: number) =>
+      metric(counts({ treasuryMinorUnits, treasuryOverdraftFloorMinorUnits: -2_500 }), 'funds');
+
+    /*
+     * Above the rung: the warning, carrying the same remainder the badge
+     * carries. Same number, same field, so the strip formats both through one
+     * `Intl` call and the tooltip cannot group differently from the pill it
+     * explains.
+     */
+    expect(chip(-1).description).toEqual({
+      textKey: HUD_MESSAGE_KEY.fundsBeforeDeliveriesStop,
+      numberParameters: { remaining: 1_249 },
+    });
+    expect(chip(-1).badge?.numberParameters, 'the badge and its sentence state one number').toEqual({
+      remaining: 1_249,
+    });
+
+    /*
+     * At and below the rung: a different sentence, because a different thing
+     * is true. `{remaining} left before deliveries stop` with a `0` in it is a
+     * warning about something that has already happened, and the chip goes red
+     * at exactly this step -- so the words change where the colour changes.
+     */
+    for (const balance of [-1_250, -1_300, -2_500, -3_000]) {
+      expect(chip(balance).description, `balance ${String(balance)}`).toEqual({
+        textKey: HUD_MESSAGE_KEY.fundsDeliveriesStopped,
+      });
+      expect(chip(balance).badge?.tone, `balance ${String(balance)}`).toBe('danger');
+    }
+
+    /*
+     * **And it is drawn exactly when the badge is drawn.** A tooltip that
+     * outlived its badge would be a sentence about a remainder the chip is no
+     * longer showing; one that arrived first would explain a number that is
+     * not there. Solvent, and a payload with no facility in it, are the two
+     * ways that could happen.
+     */
+    for (const balance of [0, 25_000]) {
+      expect(chip(balance).description, `balance ${String(balance)}`).toBeUndefined();
+    }
+    expect(metric(counts({ treasuryMinorUnits: -2_480 }), 'funds').description).toBeUndefined();
+    expect(
+      metric(counts({ treasuryMinorUnits: -2_480, treasuryOverdraftFloorMinorUnits: 0 }), 'funds').description,
+    ).toBeUndefined();
+  });
+
+  /**
+   * **Only the FUNDS chip carries one**, and this is the assertion that keeps
+   * it that way by accident rather than by policy: eight chips returning
+   * `undefined` is what makes the ninth's sentence worth reading. A strip where
+   * every chip has a tooltip is a strip whose tooltips nobody hovers, which is
+   * `coverageTone`'s argument about tone applied to prose.
+   */
+  it('gives no other chip a description', () => {
+    const populated = counts({ treasuryMinorUnits: -1, treasuryOverdraftFloorMinorUnits: -2_500 });
+    const described = projectStatusMetrics(populated)
+      .filter((entry) => entry.description !== undefined)
+      .map((entry) => entry.id);
+    expect(described).toEqual(['funds']);
   });
 
   it('leaves the funds chip exactly as it was while the prison is solvent', () => {

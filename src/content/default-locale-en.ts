@@ -194,11 +194,53 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // `.hud-strip__metrics` at 1280x800 whenever the remainder has four digits --
   // a container whose scrollbar `hud.css` suppresses, so the badge is present
   // in the DOM and visible to nobody, which #629 says does not count. The
-  // incumbent words keep the chip on screen at that viewport. So this key is
-  // **left byte-for-byte with the reason recorded**, exactly as the four
-  // refusal keys above were left between ruling 19 and the ruling that
-  // replaced them, and the wording goes back to the owner with the numbers.
+  // incumbent words keep the chip on screen at that viewport.
+  //
+  // **The owner ruled on those numbers on 2026-09-01 and the paragraph above
+  // is kept rather than overwritten**, because the measurement it records is
+  // still the reason this key reads the way it does. The ruling: *"the chip
+  // keeps the short wording, because it fits; the name of the threshold is
+  // said elsewhere, where there is room for a full sentence -- in the hover
+  // tooltip on the chip, and in the alert. Nothing is to disappear from the
+  // screen."* So this key is unchanged, and the sentence that was going to be
+  // crammed into it now lives at `hud.status.funds-before-deliveries-stop`
+  // and `hud.status.funds-deliveries-stopped` below, plus the refusal alert
+  // at `hud.alert.refusal.purchase.insufficient-funds`.
   'hud.status.funds-remaining': '{remaining} left',
+  /*
+   * What `{remaining} left` is a remainder *of*, said in full where there is
+   * room for a full sentence: the `FUNDS` chip's `title` and its screen-reader
+   * text (`createStatChip`), which cost the row no width at all.
+   *
+   * **A tooltip is not where a rule may only live**, which is why this is one
+   * of two places the threshold is named rather than the only one -- the
+   * refusal alert below says it again when the refusal actually happens, and
+   * `tests/unit/ui-hud-funds-threshold-named.test.ts` fails if either stops.
+   * A player who never hovers still meets the sentence.
+   *
+   * "Materials" rather than "anything": the build queue can still spend to
+   * -2,000 and a payday to -2,500, so a sentence saying *nothing* can be
+   * bought would be false about the prison even while it is true about every
+   * press the player can make. And *"until the state pays what it owes"* is
+   * the tail the three refusal sentences share, so the chip and the alert read
+   * as one rule rather than two.
+   */
+  'hud.status.funds-before-deliveries-stop':
+    '{remaining} left before deliveries stop — past that, no materials can be ordered until the state pays what it owes.',
+  /*
+   * The same sentence once the remainder is nothing, in the tense that is then
+   * true. `overdraftTone` paints the chip red at exactly this point and
+   * `judgeAffordability` refuses the Buy press at exactly this point, so all
+   * three say one thing.
+   *
+   * "Have stopped" is about ordering, not about deliveries already in flight:
+   * a delivery bought before the rung was reached still lands, and
+   * `ProcurementSystem` does not cancel it. The second clause is what makes
+   * that unambiguous, and it is the same clause the warning above and the
+   * refusal alert below carry.
+   */
+  'hud.status.funds-deliveries-stopped':
+    'Deliveries have stopped — no materials can be ordered until the state pays what it owes.',
   // What this in-game day has earned so far (#29). The state pays per
   // prisoner-day at the end of the day, so this is the day's accrual and the
   // wording says so: "Earned today", never "Income" -- there is no rate, no
