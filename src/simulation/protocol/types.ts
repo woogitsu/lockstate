@@ -1105,10 +1105,11 @@ export type SimulationStatusCounts = DeepReadonly<
  * message key in `src/ui/simulation-alerts.ts`; no text crosses the boundary.
  *
  * Declared in ascending code-unit order, and namespaced by the command the
- * refusal answers, so the eleven vocabularies behind it cannot collide:
+ * refusal answers, so the twelve vocabularies behind it cannot collide:
  * `admit.*` mirrors `AdmitPrisonerRefusalReason`, `build.*` mirrors
  * `BuildOrder.failReason`, `cancel-purchase.*` mirrors
- * `PurchaseCancelRefusalReason`, `dismiss.*` mirrors
+ * `PurchaseCancelRefusalReason`, `construction.*` mirrors
+ * `ConstructionFundingRefusalReason`, `dismiss.*` mirrors
  * `StaffDismissRefusalReason`, `hire.*` mirrors `StaffHireRefusalReason`,
  * `place-object.*` mirrors `PlaceObjectRefusalReason`,
  * `purchase.*` mirrors `PurchaseOutcome`'s refusal reasons,
@@ -1124,9 +1125,9 @@ export type SimulationStatusCounts = DeepReadonly<
  * sentence on several.
  *
  * `src/simulation/refusals/refusal-log.ts` maps each domain value onto one of
- * these through an exhaustive `Record`, so a reason added to any of the eleven
+ * these through an exhaustive `Record`, so a reason added to any of the twelve
  * fails to compile until it is named here -- and
- * `tests/unit/simulation-refusals.test.ts` asserts the eleven tables between
+ * `tests/unit/simulation-refusals.test.ts` asserts the twelve tables between
  * them cover this list exactly, so a member declared here and produced by
  * nothing is a failure too.
  *
@@ -1164,6 +1165,29 @@ export type SimulationStatusCounts = DeepReadonly<
  * fact, each answering a different command, is exactly what the namespace is
  * for; that only one of them existed is what the defect was.
  *
+ * `construction.*` is the twelfth namespace, and the only one that is not a
+ * *command's* vocabulary -- which is why it is a namespace of its own rather
+ * than a member of `purchase.*` or of `build.*`. It answers ADR 0017 decision
+ * 8's **second rung**: construction halted below -2,000, the owner's ruling 19
+ * of 2026-08-31. Its one member is what the just-in-time materials pass could
+ * not fund for a queue that is already standing.
+ *
+ * Before it existed, `reportMaterialsFunding` recorded
+ * `purchase.insufficient-funds` for that stall, so a prison at -1,800 with a
+ * halted build queue read rung 1's sentence on rung 2's event -- and rung 1 is
+ * refused at a different threshold for a different spend, which is the whole
+ * of what makes the ladder an *order*. ADR 0017's "Amendment, 2026-09-01" named
+ * it owed ("Rung 2 has no sentence at all") and the owner ruled it on
+ * 2026-09-01, accepting the plumbing this member is.
+ *
+ * Not `purchase.*`: the argument `cancel-purchase.*` makes applies whole. A
+ * player who pressed *Buy* and a player whose standing queue stalled are
+ * looking at two different controls at two different thresholds, and one
+ * sentence on both is the defect the namespace exists to prevent. Not `build.*`
+ * either, which mirrors `BuildOrderFailReason` and is about an order that
+ * **failed**; this order has not failed, it is waiting, and `ConstructionSystem`
+ * keeps it exactly so the prison can dig out.
+ *
  * `dismiss.*` is the eleventh namespace (issue #533), and it is a namespace of
  * its own against the *two* it sits between rather than one. Against `hire.*`,
  * for `cancel-purchase.*`'s reason: opposite gestures on one roster, and
@@ -1200,6 +1224,7 @@ export const REFUSAL_REASONS = [
   'build.unowned-land',
   'build.water-blocked',
   'cancel-purchase.not-pending',
+  'construction.materials-unfunded',
   'dismiss.unknown-staff',
   'hire.insufficient-funds',
   'hire.no-duty-for-role',

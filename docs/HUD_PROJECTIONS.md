@@ -1483,6 +1483,20 @@ decision about what to build next.
     is owed here is the same thing it was: a sentence that names the *wall*,
     which is still a new `RefusalReason` member, a new
     `hud.alert.refusal.build.*` key and new copy, and still the owner's.
+    **Amended 2026-09-01, and half of what the paragraph above calls owed is
+    now paid.** The owner ruled that a stalled build queue gets a sentence of
+    its own, accepting the plumbing the paragraph above priced: there is a new
+    `RefusalReason` member, `construction.materials-unfunded`, a new
+    `REFUSAL_LABEL_KEYS` entry and a new key,
+    `hud.alert.refusal.construction.materials-unfunded`, reading *"The build
+    queue is stalled — no more materials until the state pays what it owes."*
+    `reportMaterialsFunding` records that instead of
+    `purchase.insufficient-funds`, so rung 2's event no longer reports rung
+    1's sentence. What is **still** owed is the other half: the sentence names
+    the queue and not the *wall*, because `RefusalLog` carries no order id or
+    definition id, and it does not say what a partial pass did buy. ADR 0081's
+    open question 2 is unchanged.
+
 
     **Amended 2026-08-30: the payload now reaches the main thread, and the
     paragraph above described only half of where it stopped.** It said what is

@@ -217,6 +217,43 @@ describe('what the player is told is a key, and the key is real', () => {
     expect(alertSentence('hire.insufficient-funds')).not.toBe(alertSentence('purchase.insufficient-funds'));
   });
 
+  /**
+   * **ADR 0017 decision 8's three rungs say three things** -- the owner's
+   * ruling of 2026-09-01, which gave rung 2 a sentence of its own.
+   *
+   * Rung 2 had none: `reportMaterialsFunding` recorded
+   * `purchase.insufficient-funds` whichever `SpendClass` the treasury refused,
+   * so a stalled build queue borrowed rung 1's words. ADR 0017's "Amendment,
+   * 2026-09-01" §5 named that owed and the owner accepted the plumbing -- a new
+   * `RefusalReason` member and a row in `REFUSAL_LABEL_KEYS`.
+   *
+   * Two assertions, and they fail on different mistakes. The transcription
+   * catches the words drifting from the ruling; the distinctness catches the
+   * three collapsing back onto one, whatever wording they collapse onto.
+   */
+  it("gives the insolvency ladder's second rung a sentence of its own (2026-09-01)", () => {
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const alertSentence = (reason: RefusalReason): string =>
+      localizer.format(
+        String(hudAlertsFromWorkerMessage(publication({ sequence: 1, tick: 1, reason }))?.[0]?.labelKey),
+      );
+
+    expect(alertSentence('construction.materials-unfunded')).toBe(
+      'The build queue is stalled — no more materials until the state pays what it owes.',
+    );
+
+    const ladder = [
+      alertSentence('purchase.insufficient-funds'),
+      alertSentence('construction.materials-unfunded'),
+      alertSentence('hire.insufficient-funds'),
+    ];
+    expect(new Set(ladder).size, 'three rungs, three sentences').toBe(3);
+    // And they are one ladder rather than three unrelated rules: the tail is
+    // the owner's, shared on purpose, and a rung that lost it would read as a
+    // different kind of refusal.
+    for (const sentence of ladder) expect(sentence).toContain('until the state pays what it owes');
+  });
+
   it('carries no simulation text and no reason id into the view model', () => {
     // The boundary, stated as a measurement: nothing the HUD is handed is a
     // sentence, and nothing it is handed is the wire vocabulary either --

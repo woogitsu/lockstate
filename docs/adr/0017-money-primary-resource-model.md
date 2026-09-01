@@ -667,6 +667,7 @@ false — the failure mode ruling 19 exists to correct, rebuilt one layer up.
 | `hud.refusal.purchase-materials-past-floor` | *"Nothing was bought — deliveries are refused until the state pays what it owes."* | 1, deliveries (−1,250) |
 | `hud.alert.refusal.hire.insufficient-funds` | *"Nobody was hired — hiring is refused until the state pays what it owes."* | hiring (−1,250) |
 | `hud.refusal.hire-staff-past-floor` | *"Nobody was hired — hiring is refused until the state pays what it owes."* | hiring (−1,250) |
+| `hud.alert.refusal.construction.materials-unfunded` | *"The build queue is stalled — no more materials until the state pays what it owes."* | 2, construction (−2,000) |
 
 Ruling 23's equality survives: the worker's sentence and the host's are the
 same words, pinned as text in `tests/unit/ui-simulation-alerts.test.ts`. The
@@ -674,6 +675,18 @@ hire sentence says *"hiring"* and not *"deliveries"* deliberately — §3c gives
 hiring the shallowest rung's threshold by construction and §4 leaves a rung of
 its own to the owner, so a sentence naming the deliveries rung would name a
 rung hiring is not on.
+
+**b. Rung 2 gets a sentence, and the plumbing it needs.** The owner accepted
+the cost §5's first bullet priced. `RefusalReason` gains
+`construction.materials-unfunded` — the twelfth namespace, mirroring
+`ConstructionFundingRefusalReason` in
+`src/simulation/economy/just-in-time-materials.ts` — `REFUSAL_LABEL_KEYS` gains
+its row, and `reportMaterialsFunding`
+(`src/simulation/construction/handler.ts`) records it instead of
+`purchase.insufficient-funds`. The just-in-time pass is the only producer and
+it spends at `'construction'` and nowhere else, so the new reason *is* rung 2
+by construction rather than by a branch that could be got wrong.
+
 
 
 ### 6. Where this is implemented

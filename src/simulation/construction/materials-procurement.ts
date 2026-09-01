@@ -82,6 +82,33 @@ export interface MaterialsProcurementReport {
   readonly unprocurable: readonly UnprocurableMaterial[];
 }
 
+/**
+ * Why the build queue's own money refusal is a refusal, spelled the way the
+ * eleven other domain vocabularies are spelled.
+ *
+ * **One member, and the union exists anyway**, for exactly the argument
+ * `RemoveObjectRefusalReason` and `PurchaseCancelRefusalReason` record: the
+ * union is what makes a *second* reason a compile error at
+ * `CONSTRUCTION_FUNDING_REFUSAL_REASONS` (`src/simulation/refusals/refusal-log.ts`)
+ * rather than a literal at the call site that anybody may add a sibling to
+ * without deciding what a player is told.
+ *
+ * `'materials-unfunded'` is a non-empty `MaterialsProcurementReport.unfunded`,
+ * and it is **ADR 0017 decision 8's second rung by construction rather than by
+ * a branch**: `JustInTimeMaterialsService.procureForPendingOrders` is the only
+ * producer of that list and it asks `Treasury.canAfford(cost, 'construction')`
+ * and nothing else, so the money that was refused was refused at the
+ * construction rung -- -2,000 under the owner's ruling 19 of 2026-08-31 -- and
+ * cannot be any other rung's. Nothing here has to *decide* which rung fired,
+ * which is why there is no second member for "it was actually rung 1".
+ *
+ * Not one of `PurchaseRefusalReason`'s members. `ProcurementSystem.purchase`
+ * answers that union for a charge the player pressed *Buy* for, and the whole
+ * of ADR 0017's amendment §3c is that the rung is a property of *who asked*
+ * rather than of the method both callers reach.
+ */
+export type ConstructionFundingRefusalReason = 'materials-unfunded';
+
 /** A pass that found nothing to do, and the value `lastReport` holds before any pass has run. */
 export const EMPTY_MATERIALS_PROCUREMENT_REPORT: MaterialsProcurementReport = Object.freeze({
   tick: -1,

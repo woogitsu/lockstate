@@ -42,6 +42,7 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
   'build.unowned-land': 'hud.alert.refusal.build.unowned-land',
   'build.water-blocked': 'hud.alert.refusal.build.water-blocked',
   'cancel-purchase.not-pending': 'hud.alert.refusal.cancel-purchase.not-pending',
+  'construction.materials-unfunded': 'hud.alert.refusal.construction.materials-unfunded',
   'dismiss.unknown-staff': 'hud.alert.refusal.dismiss.unknown-staff',
   'hire.insufficient-funds': 'hud.alert.refusal.hire.insufficient-funds',
   'hire.no-duty-for-role': 'hud.alert.refusal.hire.no-duty-for-role',
@@ -253,6 +254,19 @@ const FAULT_ROW_PREFIX = 'fault-';
  * `hire.insufficient-funds` and `purchase.insufficient-funds` are the fourth
  * (ADR 0025): the treasury refuses both, and only the command says which panel
  * the player should be looking at.
+ *
+ * **`construction.materials-unfunded` is the ladder's second rung and the
+ * sharpest instance of the rule this whole comment states.** It is the same
+ * treasury refusing the same `ProcurementSystem.purchase` as
+ * `purchase.insufficient-funds`, and it is a different sentence because it is
+ * a different *rung*: the owner's ruling 19 of 2026-08-31 refuses a player's
+ * delivery at -1,250 and the build queue's own materials at -2,000, so one
+ * sentence on both told a prison at -1,800 that deliveries were refused when
+ * what had actually stopped was construction. Until the owner ruled on
+ * 2026-09-01 this table had no row for it to resolve to -- and could not have
+ * had one, because `reportMaterialsFunding` had no reason to record. That is
+ * the mechanism working: a `Record` over a closed union is what made "rung 2
+ * needs a sentence" a compile error rather than a wish.
  *
  * **Those two now resolve to the host's own sentences** -- the owner's ruling
  * 23 of 2026-08-31, *"Te same słowa co host"*. One refusal is decided on either

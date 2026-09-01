@@ -295,6 +295,41 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * refunds nothing.
    */
   'hud.alert.refusal.cancel-purchase.not-pending': 'Nothing was refunded — that delivery is not on its way any more.',
+  /*
+   * The one `construction.*` sentence, and ADR 0017 decision 8's **second
+   * rung** finally saying something of its own (the owner's ruling of
+   * 2026-09-01).
+   *
+   * Until that ruling a stalled build queue reported
+   * `hud.alert.refusal.purchase.insufficient-funds` -- rung 1's sentence on
+   * rung 2's event, which ADR 0017's "Amendment, 2026-09-01" §5 named as owed
+   * in exactly those words. A prison at -1,800 read that deliveries were
+   * refused; what had stopped was construction, at a different threshold, and
+   * the two rungs being distinguishable is the whole of what makes the ladder
+   * an order rather than a single wall.
+   *
+   * **Why the subject is the queue and not the order.** `RefusalLog` carries a
+   * reason and a tick and nothing else -- no order id, no definition id, no
+   * coordinates -- which is the same constraint
+   * `hud.alert.refusal.build.unknown-buildable` states above. There is nothing
+   * to interpolate, so the sentence names what a player can go and look at.
+   * "Stalled" rather than "failed" for a second reason that is not about the
+   * channel: `ConstructionSystem` keeps the order and retries it on every
+   * construction tick, so the wall the player drew is still theirs and a
+   * sentence saying it failed would be false.
+   *
+   * **Why it shares the other four's tail.** *"Until the state pays what it
+   * owes"* is the same clause `hud.alert.refusal.purchase.insufficient-funds`
+   * and `hud.alert.refusal.hire.insufficient-funds` carry, so the three rungs
+   * read as one ladder with three things stopping on it rather than as three
+   * unrelated rules that happen to be about money. And no number: the rung is
+   * -2,000 today and a sentence spelling that out would be a second copy of
+   * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` with nothing tying the
+   * prose to it, which is the argument written out in full at
+   * `hud.alert.refusal.hire.insufficient-funds` below.
+   */
+  'hud.alert.refusal.construction.materials-unfunded':
+    'The build queue is stalled — no more materials until the state pays what it owes.',
   // `hire.insufficient-funds` describes the same condition as
   // `purchase.insufficient-funds` below and gets its own sentence, for the
   // reason the `zone.*` pair further down does: the treasury refuses a hire
@@ -376,6 +411,12 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // name a rung hiring is not on, and one saying *"the deliveries threshold"*
   // would be false the day hiring gets its own. "Hiring is refused" is true
   // either way.
+  //
+  // The rung-2 sentence that pairs with these -- a build queue stalled at
+  // -2,000 -- is `hud.alert.refusal.construction.materials-unfunded` above,
+  // and it deliberately shares this one's *"until the state pays what it
+  // owes"* tail so the three read as one ladder rather than three unrelated
+  // rules.
   'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — hiring is refused until the state pays what it owes.',
   // ADR 0053: the only work a staff member can be sent to do today is a
   // security duty, so a role outside the security department is a wage with
