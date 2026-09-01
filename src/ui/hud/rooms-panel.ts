@@ -9,7 +9,7 @@ import { createNumberField, type NumberField } from '../primitives/number-field'
 import { createPanel } from '../primitives/panel';
 import { rovingFocusMove, rovingTabStop } from '../primitives/roving-focus';
 import { HUD_MESSAGE_KEY } from './messages';
-import { toggleRemovalMode } from './tool-arming';
+import { pressArm, toggleRemovalMode } from './tool-arming';
 import type {
   HudLocalizer,
   HudRoomEnclosureRequirement,
@@ -961,15 +961,31 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       // Arming to designate turns removal off. The two modes are one armed
       // tool, and a player pressing "Draw on map" while removal was on has
       // said which of the two they want.
-      removing = false;
+      //
+      // **This used to read `removing = false; armed = !armed;`, which is the
+      // defect issue #735 is about.** Coming *out* of removal `armed` was
+      // already `true` -- entering removal arms the tool, in `removeButton`
+      // below -- so negating it stood the tool down instead of arming it to
+      // draw: the player asked to draw and got no tool. That is the same
+      // shape #689 fixed on the removal control itself, on this control
+      // instead, so the fix goes through the same reducer family:
+      // `pressArm` (`tool-arming.ts`) reads `removing` and `armed` *before*
+      // either changes, so it can tell a fresh press apart from a switch out
+      // of removal.
+      const wasRemoving = removing;
       const wasArmed = armed;
-      armed = !armed;
+      const nextArming = pressArm({ armed, removing });
+      armed = nextArming.armed;
+      removing = nextArming.removing;
       // A fresh press of "Draw on map" is a fresh statement of intent, so the
-      // panel goes back out of the way even if the player pulled it open during
-      // the last pass. Only on the transition: re-folding a panel the player
-      // opened, on a press that did not arm anything, would be the surface
-      // arguing with them.
-      if (armed && !wasArmed) drawingFolded = true;
+      // panel goes back out of the way even if the player pulled it open
+      // during the last pass -- and a switch out of removal is that same
+      // fresh statement, even though `armed` does not change value across it
+      // (#735): the fold that had been pulled open over "Stop removing" is
+      // not the fold this drawing pass needs. Only on those two transitions:
+      // re-folding a panel the player opened, on a press that changed neither
+      // what the tool is about to do, would be the surface arguing with them.
+      if (armed && (wasRemoving || !wasArmed)) drawingFolded = true;
       paintActions();
       options.onArm(armed, { ...(selectedId === undefined ? {} : { roomId: selectedId }), removing: false });
     },

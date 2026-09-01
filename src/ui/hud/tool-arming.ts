@@ -1,6 +1,6 @@
 /**
- * The two booleans a map tool is held in, and the one transition both panels
- * make out of removal.
+ * The two booleans a map tool is held in, and the two transitions its arm
+ * control and its removal control each make.
  *
  * The Build panel and the Rooms panel each hold an armed tool as a pair of
  * flags -- `armed`, which decides whether a press on the *world* is the tool's
@@ -11,8 +11,9 @@
  *
  * It lives here, rather than inline in each panel, because the two panels had
  * drifted into holding the identical pair by two copies of the identical
- * expression, and a defect written once was therefore shipped twice (#689).
- * A pure reducer is also the only layer this decision can be *proved* at:
+ * expression, and a defect written once was therefore shipped twice (#689,
+ * and again as #735 on the neighbouring control -- see `pressArm` below). A
+ * pure reducer is also the only layer this decision can be *proved* at:
  * `vitest.config.ts` runs on `environment: 'node'` with no DOM, so a mounted
  * panel is unreachable from the unit suite entirely -- the same constraint that
  * produced `orderPrisonsForDisplay`, and `docs/AGENT_WORKFLOW.md` §2 records
@@ -70,4 +71,76 @@ export interface HudToolArming {
 export function toggleRemovalMode(state: HudToolArming): HudToolArming {
   const removing = !state.removing;
   return { armed: removing, removing };
+}
+
+/**
+ * What pressing the arm control -- "Draw on map" / "Place on map" -- means.
+ * `toggleRemovalMode` above is the removal toggle's transition; this is the
+ * other control's, and issue #735 is the reason it exists as its own function
+ * rather than as two more copies of one expression.
+ *
+ * ## The defect, and why it is #689's shape again
+ *
+ * `RoomsPanel`'s arm button used to run
+ * ```ts
+ * removing = false;
+ * armed = !armed;
+ * ```
+ * right beside a comment saying a player pressing it while removal is on "has
+ * said which of the two they want" -- draw, not remove. Coming *out* of
+ * removal, `armed` is already `true` (`toggleRemovalMode` arms the tool to
+ * enter removal), so `!armed` is `false`: the press stood the tool down
+ * instead of arming it to draw. That is exactly the bug #689 fixed on the
+ * removal control -- a boolean negated across a transition the expression did
+ * not account for -- reported separately (#735) rather than folded into that
+ * fix, to keep #689 to the control its issue named.
+ *
+ * ## The formula
+ *
+ * The press arms the tool whenever it is a fresh arming (`armed` was `false`)
+ * *or* a switch out of removal (`armed` was already `true`, but for the wrong
+ * gesture). Both collapse to one expression, read *before* `removing` is
+ * cleared: `state.removing || !state.armed`. `removing` always becomes
+ * `false` -- this control's whole job is to select "draw", never "remove".
+ *
+ * ## `build-panel.ts` already has this, with an extra term, and why it is not
+ * reproduced here
+ *
+ * `src/ui/hud/build-panel.ts`'s arm button computes
+ * `armed = (wasRemoving || !armed) && selectedId !== undefined`. That third
+ * term is dead code on every path that can reach it: `createActionButton`
+ * wires `onActivate` to nothing but the button element's native `click`
+ * listener (`src/ui/primitives/action-button.ts:43-44`), a `disabled` button
+ * dispatches no `click` event at all (browser behaviour, not this
+ * codebase's), and both panels disable this exact button whenever
+ * `selectedId === undefined` -- `build-panel.ts:1026` at creation,
+ * `rooms-panel.ts:959` at creation and kept live every repaint at
+ * `rooms-panel.ts:1589`'s `armButton.setDisabled(selectedId === undefined)`.
+ * So the handler this reducer replaces cannot run without a selection already
+ * held. Neither panel ever sets a `selectedId` that was once defined back to
+ * `undefined` -- each assigns it exactly twice in its own file: once from the
+ * model's first entry, once from a catalogue row's own id -- so the guard has
+ * never been observed to matter on either panel. Generalising it into the
+ * shared contract would give the Rooms panel a parameter that exists to guard
+ * against a state it cannot reach, which is the "state paid for and never
+ * read" the owner's standing directive already rules against in the other
+ * direction (see `toggleRemovalMode`'s own account of the rejected
+ * "remember the previous mode" alternative). It stays `build-panel.ts`'s own
+ * defensive line, not part of this function's contract.
+ *
+ * ## Why only `RoomsPanel` calls this, for now
+ *
+ * A reducer "both panels call" is exactly #689's shape, and `build-panel.ts`
+ * carries the identical defect in its own arm button today -- but this
+ * session's brief holds `build-panel.ts` for another agent, so migrating it
+ * is not this change's to make. `pressArm` is written to the same contract
+ * `toggleRemovalMode` is (`HudToolArming -> HudToolArming`, no panel-specific
+ * argument), so adopting it there is `armed = pressArm({ armed, removing
+ * }).armed` in place of the expression quoted above, once that file is free
+ * to edit -- and the textual-coupling test beside this module's says plainly
+ * that only `RoomsPanel` calls it yet, rather than claiming a coupling that
+ * is not there.
+ */
+export function pressArm(state: HudToolArming): HudToolArming {
+  return { armed: state.removing || !state.armed, removing: false };
 }
