@@ -2,8 +2,8 @@
 
 **Date:** 2026-09-01
 **Branch played:** `docs/playtest-rooms-2026-09-01`, cut from `origin/main` and
-merged forward once more during this session, most recently at `27400bcd`
-(v0.0.325). The branch adds one instrument under `tests/browser/` and this
+merged forward twice during this session, most recently at `0eabd591`
+(v0.0.327). The branch adds one instrument under `tests/browser/` and this
 record; it changes nothing under `src/`.
 
 **The assignment.** Play the rooms/designation/construction/build-order
