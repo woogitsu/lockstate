@@ -185,15 +185,18 @@ test.describe('the FUNDS chip says how much of the overdraft is left (ruling 18)
     expect(pastTheRung.chipTone).toBe('danger');
 
     /*
-     * **At the floor: `0 left`, and red.** Still true a rung further down, and
-     * still clamped: the remainder cannot go negative however deep the balance
-     * goes. A `-0` or a negative here would be the one number on this strip
-     * that a player would believe and act on.
+     * **At the floor: `0 left`, and a third tone (issue #768's ruling).**
+     * Still `0 left` -- the remainder cannot go negative however deep the
+     * balance goes, and `overdraftDescription`'s own comment records that the
+     * *words* do not yet separate this state from the one above, which is a
+     * finding this ruling reports rather than a gap this test papers over --
+     * but the colour is no longer `danger`: this is the deepest a prison can
+     * go, and no press put it here.
      */
     const stuck = await show(page, counts(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS));
     expect(stuck.badgeText).toBe('0 left');
-    expect(stuck.badgeTone).toBe('danger');
-    expect(stuck.chipTone).toBe('danger');
+    expect(stuck.badgeTone).toBe('critical');
+    expect(stuck.chipTone).toBe('critical');
     // Off the edge for the same reason as the shallow case above, and for a
     // reason that has nothing to do with the tone: at 900x600 the FUNDS chip
     // is the eighth of nine on a row that shows one. See #719.

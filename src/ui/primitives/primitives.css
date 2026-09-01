@@ -134,10 +134,11 @@
   color: var(--badge-neutral-fg);
 }
 
-.ui-badge[data-tone='success'] { background: var(--badge-success-bg); color: var(--badge-success-fg); }
-.ui-badge[data-tone='warning'] { background: var(--badge-warning-bg); color: var(--badge-warning-fg); }
-.ui-badge[data-tone='danger']  { background: var(--badge-danger-bg);  color: var(--badge-danger-fg); }
-.ui-badge[data-tone='info']    { background: var(--badge-info-bg);    color: var(--badge-info-fg); }
+.ui-badge[data-tone='success']  { background: var(--badge-success-bg);  color: var(--badge-success-fg); }
+.ui-badge[data-tone='warning']  { background: var(--badge-warning-bg);  color: var(--badge-warning-fg); }
+.ui-badge[data-tone='danger']   { background: var(--badge-danger-bg);   color: var(--badge-danger-fg); }
+.ui-badge[data-tone='critical'] { background: var(--badge-critical-bg); color: var(--badge-critical-fg); }
+.ui-badge[data-tone='info']     { background: var(--badge-info-bg);     color: var(--badge-info-fg); }
 
 /* ------------------------------------------------------------------ */
 /* Segmented bar                                                       */
@@ -273,13 +274,15 @@
   min-width: 0;
 }
 
-.ui-stat[data-tone='success'] { color: var(--status-success); }
-.ui-stat[data-tone='warning'] { color: var(--status-warning); }
-.ui-stat[data-tone='danger']  { color: var(--status-danger); }
-.ui-stat[data-tone='info']    { color: var(--status-info); }
+.ui-stat[data-tone='success']  { color: var(--status-success); }
+.ui-stat[data-tone='warning']  { color: var(--status-warning); }
+.ui-stat[data-tone='danger']   { color: var(--status-danger); }
+.ui-stat[data-tone='critical'] { color: var(--status-critical); }
+.ui-stat[data-tone='info']     { color: var(--status-info); }
 
-.ui-stat[data-tone='danger'] .ui-stat__value { color: var(--status-danger); }
-.ui-stat[data-tone='warning'] .ui-stat__value { color: var(--status-warning); }
+.ui-stat[data-tone='danger'] .ui-stat__value   { color: var(--status-danger); }
+.ui-stat[data-tone='warning'] .ui-stat__value  { color: var(--status-warning); }
+.ui-stat[data-tone='critical'] .ui-stat__value { color: var(--status-critical); }
 
 /* ------------------------------------------------------------------ */
 /* List row                                                            */
