@@ -2275,24 +2275,16 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
     overflow: hidden;
-    /* **Five declarations here, and the fifth is the owner's wrap giving way
-       to this block rather than overriding it.** The base rule sets
-       `white-space: normal` on the owner's ruling of 2026-09-01, so the whole
-       instruction is visible where the panel has room for it. Below 700px of
-       viewport it does not: this clamp exists because the body's height floor
-       counts this note as **one** line, and a wrapped note is two or three.
-       Measured on the assembled page at 900x600 with the wrap reaching here:
-       `.hud-rooms > .ui-panel__body is 2px shorter than its own content`, and
-       `app-shell.spec.ts`'s #331 case reads exactly that -- the panel clipping
-       itself is the defect that test exists to catch, so the wrap stops at
-       this door.
-       The cost is stated rather than hidden: at 700px tall and below, the only
-       instruction the game gives for the Rooms gesture is still one clamped
-       line with an ellipsis, which is the outcome the owner rejected for
-       taller viewports. Making it wrap here too means finding the height
-       somewhere else in this panel, which is #739's question and not this
-       rule's to answer. */
-    white-space: nowrap;
+    /* **A `white-space: nowrap` was written here and could never have worked**,
+       which is worth one comment because the mistake is a standing trap in
+       this file: a media query adds **no specificity**. The base
+       `.hud-rooms__note` rule is further down the sheet, so at equal
+       specificity it wins here too, and an override written inside this block
+       against a declaration below it is dead on arrival. CI measured it dead:
+       the same `2px shorter than its own content` came back unchanged. The
+       wrap is confined to tall viewports at the base rule instead, by a
+       `min-height: 701px` query that is this block's exact complement -- two
+       rules that cannot both apply need no ordering at all. */
   }
 
   /* And the room readout's detail line, for the same four-declaration reason
@@ -2691,7 +2683,22 @@
    gone -- it only ever applies to a single non-wrapping line, so keeping it
    beside `white-space: normal` would be a declaration that reads as a promise
    and does nothing. */
-.hud-rooms__note { display: block; white-space: normal; overflow-wrap: break-word; overflow: hidden; }
+.hud-rooms__note { display: block; overflow-wrap: break-word; overflow: hidden; }
+
+/* The wrap itself, gated to the viewports that have the height for it and
+   **paired exactly with the `@media (max-height: 700px)` clamp above**: 701 is
+   that block's complement, so the two can never both apply and neither
+   depends on the other's position in this sheet. Below it the note keeps the
+   `nowrap` it inherits from `.ui-eyebrow` and the clamp shows one line, which
+   is what the panel's own height floor is calculated against.
+   **The cost, stated rather than hidden:** at 700px tall and below, the only
+   instruction the game gives for the Rooms gesture is still one clamped line.
+   That is the outcome the owner rejected for taller viewports, and finding
+   the height for it here means taking it from something else in this panel --
+   #739's question, not this rule's. */
+@media (min-height: 701px) {
+  .hud-rooms__note { white-space: normal; }
+}
 
 .hud-rooms__note[data-tone='warning'] { color: var(--status-warning); }
 

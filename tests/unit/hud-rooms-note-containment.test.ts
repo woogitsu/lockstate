@@ -82,19 +82,33 @@ describe('.hud-rooms__note contains its overflow instead of painting over its ne
 
   it('wraps the sentence rather than truncating it, on the owner\'s ruling of 2026-09-01', () => {
     const rule = baseRoomsNoteRule(source);
-    // `.ui-eyebrow` sets `white-space: nowrap`; without this override the
-    // sentence is one line however wide it gets, which is what spilled.
-    expect(rule, 'the note inherits nowrap from .ui-eyebrow and nothing overrides it').toMatch(
-      /white-space\s*:\s*normal\s*;?/,
-    );
     // The pairing #720's `.ui-row--wrap` uses: wrapping alone leaves a single
     // token longer than the box with nowhere to break.
     expect(rule, 'a token longer than the box has nowhere to break').toMatch(/overflow-wrap\s*:\s*break-word\s*;?/);
     // And not the truncation this rule carried for a few hours: it applies
-    // only to a non-wrapping line, so beside `white-space: normal` it would be
-    // a declaration that does nothing and reads as though it did.
+    // only to a non-wrapping line, so beside a wrap it would be a declaration
+    // that does nothing and reads as though it did.
     expect(rule, 'text-overflow does nothing on a wrapping line and should not suggest otherwise').not.toMatch(
       /text-overflow\s*:/,
+    );
+    /*
+     * **`white-space: normal` was asserted on the base rule until CI measured
+     * why it could not live there**, and the sentence is kept because the
+     * mistake is a standing trap in a stylesheet this long: a media query adds
+     * **no specificity**. The `@media (max-height: 700px)` clamp sits above
+     * the base rule, so a base-rule wrap won at short viewports too, and the
+     * panel measured `2px shorter than its own content` at 900x600 -- which is
+     * the self-clipping `app-shell.spec.ts`'s #331 case exists to catch.
+     *
+     * So the wrap lives in `701px`, the clamp's exact complement. Two rules
+     * that can never both apply need no ordering, which is the property worth
+     * pinning rather than the declaration's position.
+     */
+    expect(source, 'the wrap is not gated to the viewports that have the height for it').toMatch(
+      /@media\s*\(min-height:\s*701px\)\s*\{\s*\.hud-rooms__note\s*\{[^}]*white-space\s*:\s*normal/,
+    );
+    expect(rule, 'the base rule wraps at every height again, including the one that clips').not.toMatch(
+      /white-space\s*:/,
     );
   });
 });
