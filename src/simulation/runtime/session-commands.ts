@@ -362,13 +362,24 @@ export function createSessionCommandHandler(
        * (drafted as ADR 0017's "Amendment, 2026-09-01"). The same method serves
        * the second rung when `JustInTimeMaterialsService` calls it for a queued
        * build order; see `ProcurementSystem.purchase` for the split.
+       *
+       * **The fifth argument is the owner's second ruling on #771 (2026-09-01,
+       * ADR 0017's "starter rung" amendment).** A fresh, unfurnished prison's
+       * press is refused at a shallower threshold than the mature −1,250, so
+       * its first plank is always still inside the facility whichever route
+       * buys it — see `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`
+       * for the arithmetic. "Unfurnished" is read live, here, at the moment of
+       * the press, from the one registry that would know: `roomInstances`,
+       * not a flag set once at session start and left to go stale.
        */
+      const isFreshUnfurnishedPrison = runtimePrisoners.roomInstances.totalResidentCapacity === 0;
       const outcome = procurement.purchase(
         simCommand.orderId,
         simCommand.itemId,
         simCommand.quantity,
         context.tick,
         'deliveries',
+        isFreshUnfurnishedPrison,
       );
       const purchaseKey = purchaseSupersessionKey(simCommand.itemId, simCommand.quantity);
       if (!outcome.ok) {
@@ -517,10 +528,17 @@ export function createSessionCommandHandler(
       // a queued command in a restored save, a future producer -- which is why
       // this maps the whole union rather than the one reason a panel can
       // provoke.
-      const outcome = staffHiring.hire({
-        staffRoleId: simCommand.staffRoleId,
-        originTile: { x: tileCoordinate(simCommand.x), y: tileCoordinate(simCommand.y) },
-      });
+      // See the `PurchaseMaterials` branch above for why this is read live
+      // rather than cached, and `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`
+      // for why hiring shares the press's starter threshold, exactly as it
+      // shares the mature one.
+      const outcome = staffHiring.hire(
+        {
+          staffRoleId: simCommand.staffRoleId,
+          originTile: { x: tileCoordinate(simCommand.x), y: tileCoordinate(simCommand.y) },
+        },
+        runtimePrisoners.roomInstances.totalResidentCapacity === 0,
+      );
       const hireKey = hireSupersessionKey(simCommand.staffRoleId);
       if (outcome.kind === 'refused') {
         refusals.record(HIRE_REFUSAL_REASONS[outcome.reason], context.tick, hireKey);

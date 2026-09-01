@@ -144,6 +144,12 @@ const ALLOWED: readonly CanonicalIterationExemption[] = [
       '`instancesOccupiedBy` collects the instance ids holding one entity and returns `result.sort()`, so the walk order cannot reach a caller. Membership is a per-set question, so no earlier ordering decision is folded into the answer either.',
   },
   {
+    file: 'src/simulation/prisoners/room-instance-registry.ts',
+    expression: 'this.instances.values()',
+    reason:
+      "`totalResidentCapacity` (#771's starter-rung predicate) sums every registered instance's `residentCapacity`, an integer field, into a running total with `+=`. Integer addition is commutative and associative, so the total is identical in every walk order, and nothing about *which* instance contributed which part of the sum is read anywhere -- the caller only compares the total to zero. The method touches no snapshot and folds nothing across instances beyond the arithmetic sum itself.",
+  },
+  {
     file: 'src/simulation/rooms/topology.ts',
     expression: 'this.chunkTopologies.entries()',
     reason:

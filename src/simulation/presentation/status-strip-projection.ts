@@ -224,17 +224,38 @@ export interface StatusStripSource {
  * `overdraftFloorMinorUnits` (`Treasury.floorFor`'s own argument, ADR 0083
  * §2), so a session running a shallower or deeper facility than the shipped
  * one is read correctly rather than against a number that assumes the
- * shipped facility. **This function does assume the −1,250 / −2,000 split
- * itself is unchanged** -- a separate ruling is equalising the rung floors
- * and is not yet dispatched; if that ruling moves the two constants this
- * function needs no edit, because it never repeats them, but a ruling that
- * changed which `SpendClass` each condition reads from would.
+ * shipped facility. **This paragraph said the function "does assume the
+ * −1,250 / −2,000 split itself is unchanged" and that the equalising ruling
+ * "is not yet dispatched" -- both false since the owner's ruling on #771
+ * (2026-09-01, ADR 0017's equalisation amendment) landed.** The two
+ * constants are equal today (`INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS
+ * = INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`), so a balance that crosses
+ * one crosses the other in the same call, exactly as issue #767's own
+ * −1,220 → −2,180 measurement above already showed two members standing at
+ * once for an unrelated reason. This function still needed no edit for the
+ * equalisation itself, because it never repeated either constant -- the
+ * sentence's *conclusion* was right and only its *tense* went stale.
+ *
+ * **`isFreshUnfurnishedPrison` added the same day, for a ruling that *did*
+ * need an edit here.** `rungFloorMinorUnits` took a third argument the same
+ * amendment introduced (the starter rung,
+ * `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`, shallower than the
+ * mature −1,250 for a fresh, unfurnished prison), and this function's two
+ * calls omitted it and so always read the mature floor -- exactly
+ * `InsolvencyRungSystem`'s own gap, in the sibling function ADR 0087
+ * decision 2 already names as this one's neighbour. Required rather than
+ * defaulted, matching `deliveriesRungFloorMinorUnits`'s own choice
+ * (`src/ui/affordability.ts`) and for the same reason: a caller that reads a
+ * live `RoomInstanceRegistry` and forgets to pass it through would silently
+ * get "not fresh" back, which is the direction that reintroduces exactly
+ * this gap.
  */
 export function computeStandingPrisonConditions(input: {
   readonly treasuryMinorUnits: number;
   readonly treasuryOverdraftFloorMinorUnits: number;
   readonly buildQueueUnfunded: boolean;
   readonly waitingWithoutPlace: number;
+  readonly isFreshUnfurnishedPrison: boolean;
 }): readonly PrisonCondition[] {
   const standing: PrisonCondition[] = [];
   for (const condition of PRISON_CONDITIONS) {
@@ -245,9 +266,15 @@ export function computeStandingPrisonConditions(input: {
         case 'intake.no-place':
           return input.waitingWithoutPlace > 0;
         case 'treasury.construction-refused':
-          return input.treasuryMinorUnits <= rungFloorMinorUnits('construction', input.treasuryOverdraftFloorMinorUnits);
+          return (
+            input.treasuryMinorUnits <=
+            rungFloorMinorUnits('construction', input.treasuryOverdraftFloorMinorUnits, input.isFreshUnfurnishedPrison)
+          );
         case 'treasury.deliveries-refused':
-          return input.treasuryMinorUnits <= rungFloorMinorUnits('deliveries', input.treasuryOverdraftFloorMinorUnits);
+          return (
+            input.treasuryMinorUnits <=
+            rungFloorMinorUnits('deliveries', input.treasuryOverdraftFloorMinorUnits, input.isFreshUnfurnishedPrison)
+          );
       }
     })();
     if (holds) standing.push(condition);
@@ -808,6 +835,11 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
     treasuryOverdraftFloorMinorUnits,
     buildQueueUnfunded: (source.materialsFunding?.lastReport.unfunded.length ?? 0) > 0,
     waitingWithoutPlace: population.waitingWithoutPlace,
+    // Live, exactly as `createSessionCommandHandler`'s `'deliveries'` press
+    // reads it (`src/simulation/runtime/session-commands.ts`) and for the
+    // same reason: "fresh, unfurnished" is a moment-of-read fact, not a flag
+    // that can go stale between the room that furnishes it and this read.
+    isFreshUnfurnishedPrison: source.prisoners.roomInstances.totalResidentCapacity === 0,
   });
 
   return {

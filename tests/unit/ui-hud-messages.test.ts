@@ -281,6 +281,7 @@ describe('message keys live in one registry', () => {
       occupiedPlaces: 0,
       staff: 1,
       rooms: 1,
+      roomCapacity: 2,
       // Non-zero on the understaffed rung, so the coverage chip takes its
       // `securityCoverageShort` branch rather than the `securityCoverageMet`
       // fallback. **The owner's ruling 21 of 2026-08-31 made that badge one of

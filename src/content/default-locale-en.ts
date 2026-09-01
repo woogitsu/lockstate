@@ -482,6 +482,20 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` with nothing tying the
    * prose to it, which is the argument written out in full at
    * `hud.alert.refusal.hire.insufficient-funds` below.
+   *
+   * **Corrected 2026-09-01, and kept above rather than rewritten because it
+   * is the record of why this sentence exists at all.** The owner's ruling on
+   * #771 (ADR 0017's equalisation amendment) retired the rung this sentence
+   * used to name a *different threshold* for: `construction` now reads
+   * `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`, the same −1,250 a Buy
+   * press stops at, not −2,000. This sentence still fires at a different
+   * *moment* than the four Buy/Hire sentences do -- it answers a queued
+   * order the construction system is retrying, they answer a press -- so it
+   * still earns its own key and this comment's "why the subject is the
+   * queue" and "why it shares the tail" sections both still hold. What no
+   * longer holds is "at a different threshold": a prison whose queue stalls
+   * has, from this ruling on, always also had its last Buy press refused,
+   * because the two now fire together.
    */
   'hud.alert.refusal.construction.materials-unfunded':
     'The build queue is stalled — no more materials until the state pays what it owes.',
@@ -567,11 +581,16 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // would be false the day hiring gets its own. "Hiring is refused" is true
   // either way.
   //
-  // The rung-2 sentence that pairs with these -- a build queue stalled at
-  // -2,000 -- is `hud.alert.refusal.construction.materials-unfunded` above,
-  // and it deliberately shares this one's *"until the state pays what it
-  // owes"* tail so the three read as one ladder rather than three unrelated
-  // rules.
+  // The rung-2 sentence that pairs with these -- a build queue stalled -- is
+  // `hud.alert.refusal.construction.materials-unfunded` above, and it
+  // deliberately shares this one's *"until the state pays what it owes"*
+  // tail so the ladder reads as one thing rather than unrelated rules. It
+  // stalled at -2,000 under ruling 19; the owner's ruling on #771
+  // (2026-09-01, ADR 0017's equalisation amendment) moved it to the same
+  // -1,250 a hire or a purchase already stops at, which is exactly why
+  // naming what stops rather than the number was the right call two
+  // paragraphs up -- this sentence needed no edit when the number under it
+  // moved.
   'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — hiring is refused until the state pays what it owes.',
   // ADR 0053: the only work a staff member can be sent to do today is a
   // security duty, so a role outside the security department is a wage with

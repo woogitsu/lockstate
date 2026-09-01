@@ -664,6 +664,55 @@ export class RoomInstanceRegistry {
   }
 
   /**
+   * The summed `residentCapacity` of **every** registered room instance,
+   * whatever its room-catalog id and whether or not `IntakeSystem`'s
+   * accommodation policy would ever house anyone in it — so this is `0`
+   * exactly when nothing anywhere in the prison has a standing sleep surface.
+   *
+   * ## Why this exists: the "fresh, unfurnished" predicate a starter rung reads
+   *
+   * ADR 0017's "Amendment, 2026-09-01: a starter rung for a fresh,
+   * unfurnished prison" defines "unfurnished" as *this being `0`* —
+   * `src/simulation/economy/treasury.ts`'s `STARTER_RUNG_FLOORS_MINOR_UNITS`
+   * is only in force while it is. It is read live at the moment a
+   * `PurchaseMaterials` or `HireStaff` command is handled
+   * (`src/simulation/runtime/session-commands.ts`) rather than cached or set
+   * once at session start, so it cannot go stale the way a flag someone
+   * remembered (or forgot) to flip could: the moment `RoomCapacityResolver`
+   * raises any instance's `residentCapacity` above zero — which happens only
+   * when a build order that places a `'sleep-surface'` object completes — the
+   * very next command sees it, with nothing to update and nothing to forget.
+   *
+   * **Not `roomCapacity`, the close cousin `status-strip-projection.ts`
+   * publishes, and the difference is deliberate.** That figure walks
+   * `collectRoomInstances`, filtered through the *content* room registry, so
+   * it cannot see an instance registered under a room-catalog id that
+   * registry does not define (`status-strip-projection.ts`'s own "gap 15").
+   * A structural safety gate has no content registry to hand and no reason to
+   * accept that blind spot — it asks the registry itself, which is the
+   * authority on what is actually standing, ADR 0028's `RoomInstance`'s own
+   * derived field.
+   *
+   * **Includes `object.medical-bed`, deliberately, the same as `roomCapacity`
+   * does.** A prison that has only furnished an infirmary has still proven it
+   * can buy and place a plank-built sleep surface — which is the fact the
+   * starter rung exists to guarantee, not a promise that this specific
+   * capacity is one `IntakeSystem` can use. Ending the exemption a step early
+   * is the safe direction: the fallback is the ordinary, already-shipped
+   * rung, not a lock.
+   *
+   * `O(rooms)`, walked fresh on every call rather than a maintained backing
+   * field like `totalOccupancy`'s: room counts are small (tens, not
+   * thousands) and this is read only from command handling, not from a
+   * per-tick system, so there is no cost here worth caching against.
+   */
+  public get totalResidentCapacity(): number {
+    let total = 0;
+    for (const instance of this.instances.values()) total += instance.residentCapacity;
+    return total;
+  }
+
+  /**
    * **Who** holds those places: every entity with a residency claim anywhere
    * in the registry, ascending by entity id. `length` is `totalOccupancy`.
    *

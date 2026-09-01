@@ -210,12 +210,21 @@ export class ProcurementSystem implements SystemRegistration {
    * itself, which is a reading of decision 8's words rather than something
    * ruling 19 states.
    */
+  /**
+   * `isFreshUnfurnishedPrison` defaults to `false` for the reason
+   * `rungFloorMinorUnits` gives: the only caller that ever needs `true` is
+   * `createSessionCommandHandler`'s `'deliveries'` press
+   * (`src/simulation/runtime/session-commands.ts`), computed there from live
+   * room-instance state. `JustInTimeMaterialsService`'s `'construction'` calls
+   * are unaffected by it either way — see `STARTER_RUNG_FLOORS_MINOR_UNITS`.
+   */
   public purchase(
     orderId: string,
     itemId: string,
     quantity: number,
     tick: number,
     spendClass: PurchaseSpendClass,
+    isFreshUnfurnishedPrison = false,
   ): PurchaseOutcome {
     if (this.pending.some((delivery) => delivery.orderId === orderId)) {
       return { ok: false, reason: 'duplicate-order' };
@@ -227,7 +236,9 @@ export class ProcurementSystem implements SystemRegistration {
     if (material === undefined) return { ok: false, reason: 'unknown-material' };
 
     const paidMinorUnits = material.unitPriceMinorUnits * quantity;
-    if (!this.treasury.spend(paidMinorUnits, spendClass)) return { ok: false, reason: 'insufficient-funds' };
+    if (!this.treasury.spend(paidMinorUnits, spendClass, isFreshUnfurnishedPrison)) {
+      return { ok: false, reason: 'insufficient-funds' };
+    }
 
     const arrivesAtTick = tick + PROCUREMENT_DELIVERY_DELAY_TICKS;
     this.pending.push({ orderId, itemId, quantity, arrivesAtTick, paidMinorUnits });

@@ -933,8 +933,16 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * a status-counts publication already carries for both. Registered right
    * after `payroll` for the reason its own class comment gives -- nothing
    * that spends treasury money runs later than order 130 in this session.
+   *
+   * `prisoners.roomInstances` is the third argument the owner's ruling on
+   * #771 added to `rungFloorMinorUnits`: this system reads
+   * `totalResidentCapacity` off the same registry `createSessionCommandHandler`
+   * reads it from, live on every tick, so a fresh session's crossing notice
+   * uses the shallower starter floor exactly as long as the treasury's own
+   * `spend` calls do -- see `InsolvencyRungSystem`'s own class comment,
+   * "The starter rung".
    */
-  const insolvencyRungs = new InsolvencyRungSystem(treasury, events);
+  const insolvencyRungs = new InsolvencyRungSystem(treasury, events, prisoners.roomInstances);
   const securitySchedules: DeploymentSchedule[] = [];
   /*
    * The fifth argument is the constructor's own default, restated (and skipped)

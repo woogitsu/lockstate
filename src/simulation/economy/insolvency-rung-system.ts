@@ -1,5 +1,6 @@
 import type { SimulationEventLog } from '../events';
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
+import type { RoomInstanceRegistry } from '../prisoners/room-instance-registry';
 import { rungFloorMinorUnits, type Treasury } from './treasury';
 
 /**
@@ -76,6 +77,41 @@ const WATCHED_RUNGS = ['deliveries', 'construction'] as const;
  * between two widely spaced publications. No RNG stream is taken. Two runs
  * of the same command stream read the same balance at the same tick and
  * therefore cross the same rungs on the same tick.
+ *
+ * ## The starter rung, added by #771 after this class predated it
+ *
+ * **`rungFloorMinorUnits` took a third argument, `isFreshUnfurnishedPrison`,
+ * the day after this class was written, and this call site was not updated
+ * to pass it.** The owner's second ruling on #771 (2026-09-01, ADR 0017's
+ * "starter rung" amendment) gives a fresh, unfurnished prison a shallower
+ * `'deliveries'` floor than the mature −1,250
+ * (`INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`, −1,185) so its
+ * first plank is always still affordable. Omitting the argument here does
+ * not throw — `rungFloorMinorUnits` defaults it to `false` — so this system
+ * silently compared every fresh session's balance against the *mature*
+ * floor instead: a fresh prison sinking to, say, −1,200 has in fact crossed
+ * its live −1,185 floor, but this system read −1,250 and reported nothing
+ * standing. **That is under-reporting, the safe direction and not the
+ * dangerous one — a missed nudge, not a false alarm — but it is still wrong**,
+ * and it is exactly what the pass that built #771 flagged without touching
+ * (out of its own brief) and this fix confirms and closes.
+ *
+ * `roomInstances` is read live at the top of every `update()`, the same
+ * idiom `createSessionCommandHandler`'s `'deliveries'` press uses and for the
+ * same reason its own comment gives: "fresh, unfurnished" is a moment-of-read
+ * fact, not a flag set once at construction and left to go stale — a prison
+ * that furnishes its first bed mid-session must have this system move onto
+ * the mature rung on its very next tick, not carry the starter one for the
+ * rest of the run.
+ *
+ * **`'construction'` is unaffected either way, and the loop still shares one
+ * flag between both watched rungs rather than branching per rung.**
+ * `STARTER_RUNG_FLOORS_MINOR_UNITS.construction` equals
+ * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` — the owner's ruling moves
+ * only `'deliveries'` and `'hiring'` — so passing the same
+ * `isFreshUnfurnishedPrison` into both calls in the loop below is not an
+ * approximation for construction, it is the identical comparison
+ * `rungFloorMinorUnits('construction', floor, false)` already made.
  */
 export class InsolvencyRungSystem implements SystemRegistration {
   public readonly id = 'economy.insolvency-rungs';
@@ -97,11 +133,13 @@ export class InsolvencyRungSystem implements SystemRegistration {
   public constructor(
     private readonly treasury: Treasury,
     private readonly events: SimulationEventLog,
+    private readonly roomInstances: RoomInstanceRegistry,
   ) {}
 
   public update(context: SimulationContext): void {
+    const isFreshUnfurnishedPrison = this.roomInstances.totalResidentCapacity === 0;
     for (const rung of WATCHED_RUNGS) {
-      const floor = rungFloorMinorUnits(rung, this.treasury.overdraftFloorMinorUnits);
+      const floor = rungFloorMinorUnits(rung, this.treasury.overdraftFloorMinorUnits, isFreshUnfurnishedPrison);
       const crossed = this.treasury.balanceMinorUnits <= floor;
       const wasStanding = this.standing.has(rung);
       if (crossed === wasStanding) continue;

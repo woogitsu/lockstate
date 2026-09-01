@@ -104,16 +104,36 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
  * *floored at zero* and starts being *floored at the wage rung*, and it takes
  * longer to get there.
  *
- * The arithmetic, all of it written out:
+ * **The arithmetic below moved once more with the owner's second ruling on
+ * #771 (2026-09-01), and it is kept as a superseded quote for the same reason
+ * the ruling-19 paragraph above is**:
  *
- * - Two hires at 80 take 160 of the 25,000, leaving 24,840. A hire is the
- *   `'hiring'` rung, refused below -1,250.
- * - 649 bricks at 40 and 2 planks at 65 is 26,090, which is exactly the 24,840
- *   plus the 1,250 of delivery-rung room -- so the last purchase a player can
- *   make lands the balance on **-1,250** to the minor unit, and the fixture is
- *   at the first rung with nothing further buyable.
- * - The wage rung is 1,250 deeper. Seven paydays at 160 take 1,120 of it,
- *   leaving 130 at the eighth, which pays 130 of its 160 and **owes 30**.
+ * > - Two hires at 80 take 160 of the 25,000, leaving 24,840. A hire is the
+ * >   `'hiring'` rung, refused below -1,250.
+ * > - 649 bricks at 40 and 2 planks at 65 is 26,090, which is exactly the
+ * >   24,840 plus the 1,250 of delivery-rung room -- so the last purchase a
+ * >   player can make lands the balance on **-1,250** to the minor unit, and
+ * >   the fixture is at the first rung with nothing further buyable.
+ * > - The wage rung is 1,250 deeper. Seven paydays at 160 take 1,120 of it,
+ * >   leaving 130 at the eighth, which pays 130 of its 160 and **owes 30**.
+ *
+ * **This runtime never zones a room, so it is "fresh, unfurnished"
+ * (`RoomInstanceRegistry.totalResidentCapacity === 0`) for its whole life, and
+ * both hires and both purchases are judged at the *starter* rung
+ * (`INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`, -1,185), not the
+ * mature -1,250 the quote above assumed.** The arithmetic, redone from the
+ * same two hires:
+ *
+ * - Two hires at 80 take 160 of the 25,000, leaving 24,840, exactly as before
+ *   -- both well above either rung.
+ * - 649 bricks at 40 and **one** plank at 65 (not two) is 26,025, which is
+ *   exactly the 24,840 plus the 1,185 of starter-rung room -- one fewer plank
+ *   than the mature derivation needed, because the starter rung reserves
+ *   exactly that plank's worth of room. The last purchase a player can make
+ *   lands the balance on **-1,185** to the minor unit.
+ * - The wage rung is unaffected by freshness and is still 1,315 deeper from
+ *   here (`-1,185 - (-2,500)`). Eight paydays at 160 take 1,280 of it,
+ *   leaving 35 at the ninth, which pays 35 of its 160 and **owes 125**.
  *
  * Nothing here reads the catalogue except `GUARD_WAGE`, which is restated as a
  * literal.
@@ -123,14 +143,16 @@ function insolventSession(): SimulationRuntime {
   submit(runtime, 'hire-0', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
   submit(runtime, 'hire-1', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
   submit(runtime, 'buy', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: 649 }));
-  submit(runtime, 'buy-p', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-p', itemId: 'item.wood-plank', quantity: 2 }));
+  submit(runtime, 'buy-p', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-p', itemId: 'item.wood-plank', quantity: 1 }));
   expect(runtime.refusals.count, 'the fixture must afford everything it buys').toBe(0);
-  expect(runtime.treasury.balanceMinorUnits, 'exactly the delivery rung, with nothing left to press').toBe(-1_250);
+  expect(runtime.treasury.balanceMinorUnits, 'exactly the starter delivery rung, with nothing left to press').toBe(
+    -1_185,
+  );
   expect(runtime.payroll.dailyWageBillMinorUnits()).toBe(2 * GUARD_WAGE);
 
-  stepTo(runtime, DAY_LENGTH_TICKS * 8);
+  stepTo(runtime, DAY_LENGTH_TICKS * 9);
   expect(runtime.treasury.balanceMinorUnits, 'at the wage rung, not floored at zero').toBe(-2_500);
-  expect(runtime.payroll.unpaidWagesMinorUnits, '160 billed against the 130 the rung left').toBe(30);
+  expect(runtime.payroll.unpaidWagesMinorUnits, '160 billed against the 35 the rung left').toBe(125);
   return runtime;
 }
 
@@ -184,15 +206,16 @@ describe('the arrears field is in the save, and it is what makes a debt survive 
     if (!decoded.ok) throw new Error('the envelope must decode for this test to mean anything');
 
     const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
-    expect(restored.payroll.unpaidWagesMinorUnits).toBe(30);
+    expect(restored.payroll.unpaidWagesMinorUnits).toBe(125);
     expect(restored.treasury.balanceMinorUnits).toBe(-2_500);
 
     // And the restored debt is charged forward rather than merely remembered:
-    // 30 owed plus 160 for the next day, against a treasury already at the wage
-    // rung. Before ruling 19 this read 120 owed against an empty treasury,
-    // ending at 280.
-    stepTo(restored, DAY_LENGTH_TICKS * 9);
-    expect(restored.payroll.unpaidWagesMinorUnits).toBe(190);
+    // 125 owed plus 160 for the next day, against a treasury already at the
+    // wage rung and no room left to pay any of it. Before ruling 19 this read
+    // 120 owed against an empty treasury, ending at 280; before the starter
+    // rung it read 30 owed, ending at 190.
+    stepTo(restored, DAY_LENGTH_TICKS * 10);
+    expect(restored.payroll.unpaidWagesMinorUnits).toBe(285);
   });
 
   it('writes the section unconditionally, so a solvent prison says "nothing owed" rather than "unknown"', () => {
@@ -216,7 +239,7 @@ describe('a save written before the payroll existed still loads, which is why no
     const captured = capturedSystems(insolventSession());
     const { payroll: dropped, ...economy } = captured.economy;
     expect(dropped, 'the positive control: the key must be there before this function removes it').toEqual({
-      unpaidWagesMinorUnits: 30,
+      unpaidWagesMinorUnits: 125,
     });
     const envelope = envelopeOf({ ...captured.bundle, simulation: { ...captured.simulation, economy } });
     return JSON.parse(JSON.stringify(envelope)) as unknown;

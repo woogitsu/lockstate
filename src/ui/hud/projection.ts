@@ -437,11 +437,33 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
  * the badge is read *before* pressing.
  *
  * **Why the deliveries rung and not the deepest one a prison can still reach.**
- * The build queue may spend to -2,000 and a payday to -2,500, so a badge over
+ * A payday may still spend to the treasury's floor (-2,500), so a badge over
  * the deliveries rung understates what the *prison* will spend. It states what
- * the *player* can spend, which is what a number beside a control is for: every
- * spend below this rung happens without a press and none of it is a choice the
- * badge could inform.
+ * the *player* can spend, which is what a number beside a control is for: a
+ * payday happens without a press and is not a choice the badge could inform.
+ *
+ * **This paragraph named the build queue as a second thing spending past this
+ * rung, at -2,000, and that stopped being true on 2026-09-01.** The owner's
+ * ruling on #771 (ADR 0017's equalisation amendment) moved
+ * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` onto the same -1,250 this
+ * rung already is, so the build queue now stops exactly where this badge
+ * does too. Kept as a record that the badge used to understate the queue as
+ * well as the payday, and no longer does.
+ *
+ * **The same ruling opened a second gap this function closed the same day:
+ * the starter exemption.** While a prison is fresh and unfurnished
+ * (`RoomInstanceRegistry.totalResidentCapacity === 0`), `Treasury.floorFor`
+ * answers `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS` (-1,185, not
+ * -1,250) so the prison can always afford its first plank. A badge that kept
+ * computing the mature rung during that window overstated spendable room by
+ * exactly the 65-minor-unit gap between the two floors: at -1,160 it read
+ * `90 left` while a 65 press was refused, which is `AGENTS.md`'s fourth
+ * exclusion and the exact defect PR #769 closed for the mature floor. Fixed
+ * by reading the same freshness `pressFloorMinorUnits` reads --
+ * `counts.roomCapacity === 0` -- and passing it through
+ * `deliveriesRungFloorMinorUnits`, so the badge and the press it describes
+ * are computed from the one boolean rather than two things that can drift
+ * apart.
  *
  * The rung comes through `deliveriesRungFloorMinorUnits` in
  * `src/ui/affordability.ts` rather than from `rungFloorMinorUnits` directly,
@@ -482,7 +504,8 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
 function overdraftRemaining(counts: HudCountsViewModel): number | undefined {
   const floor = counts.treasuryOverdraftFloorMinorUnits;
   if (floor === undefined || floor >= 0) return undefined;
-  return Math.max(0, counts.treasuryMinorUnits - deliveriesRungFloorMinorUnits(floor));
+  const isFreshUnfurnishedPrison = counts.roomCapacity === 0;
+  return Math.max(0, counts.treasuryMinorUnits - deliveriesRungFloorMinorUnits(floor, isFreshUnfurnishedPrison));
 }
 
 /**
@@ -513,10 +536,23 @@ function overdraftRemaining(counts: HudCountsViewModel): number | undefined {
  * is the one colour on this strip that says *there is still something you can
  * do*. Only the number moved; the ladder's own reasoning chose it.
  *
- * What `danger` no longer means is "nothing at all is spendable": the build
- * queue can still spend to -2,000 and a payday to -2,500. Both are spends the
- * player cannot cause, which is why the narrower reading is the one a control
- * strip should carry.
+ * What `danger` no longer means is "nothing at all is spendable": a payday can
+ * still spend to -2,500, a press the player cannot cause. **It read "the
+ * build queue can still spend to -2,000" as well, until the owner's ruling on
+ * #771 (2026-09-01, ADR 0017's equalisation amendment) moved the construction
+ * rung onto the same -1,250 this tone already keys off.** `danger` now means
+ * exactly what it reads as: no discretionary spend of any kind, player-pressed
+ * or scheduled, moves the balance again until the state pays what it owes.
+ * Only the payday exception survives, and it is named above rather than
+ * implied.
+ *
+ * **And during the starter exemption the rung itself moves, which this
+ * function must move with rather than key off a stale -1,250.** Before this
+ * fix `overdraftTone` painted `danger` at the mature rung even for a fresh,
+ * unfurnished prison sitting on the shallower starter floor -- the same
+ * source `overdraftRemaining` reads is read here too, so a fresh prison's
+ * chip turns amber, not red, exactly at the floor the starter rung actually
+ * enforces.
  *
  * ## Why the chip takes a tone at all, when it has always refused one
  *
