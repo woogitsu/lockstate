@@ -341,10 +341,22 @@ interface BuiltCell {
  * hazard this branch's brief names: at 1280x800 it measured `x:12 y:317.8
  * w:398 h:401` with `pointer-events: auto`, silently swallowing wall clicks).
  */
-async function buildWalls(page: Page, label: string): Promise<BuiltCell> {
+async function buildWalls(
+  page: Page,
+  label: string,
+  // A caller that already has an origin passes it so this function does not
+  // call `calibrate()` a second time. `calibrate()` presses the Remove tool
+  // to bisect the screen-to-tile transform (`playtest-harness.ts`), which is
+  // itself a real command and leaves its own "nothing to remove" refusal
+  // standing in `.hud__refusal` -- act 5 measured this directly: calling it
+  // between a genuine mistake and the genuine success it wanted to compare
+  // against overwrote the mistake's own refusal with the calibration probe's,
+  // and produced a false read of the very thing being measured.
+  precomputedOrigin?: { readonly originX: number; readonly originY: number },
+): Promise<BuiltCell> {
   const log2 = (line: string) => console.log(`[${label}] ${line}`);
   await tab(page, 'build').click();
-  const origin = await calibrate(page);
+  const origin = precomputedOrigin ?? (await calibrate(page));
 
   const minimapRect = await page.evaluate(() => {
     const el = document.querySelector('.hud-minimap');
@@ -424,6 +436,14 @@ test('act 5: build the walls, then zone the same rectangle — does the stale re
   // Reproduce act 4's honest mistake first, in the same session, the way a
   // real first five minutes would actually happen: try before building
   // walls, get refused, *then* build and succeed.
+  //
+  // `calibrate()` presses `.hud-build__remove`, which is only laid out while
+  // the Build tab is active — a fresh session's default tab is Overview
+  // (`hud-state.ts`'s `activeTab: 'overview'`), so calling it before this
+  // line ran into exactly the 30s guard added after act 4's hang: the
+  // control existed in the DOM but was never visible. Caught by that guard
+  // in seconds rather than by another silent hang.
+  await tab(page, 'build').click();
   const origin0 = await calibrate(page);
   await tab(page, 'rooms').click();
   if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
@@ -443,7 +463,7 @@ test('act 5: build the walls, then zone the same rectangle — does the stale re
   log('act5', `first (open-ground) attempt refusal band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
   log('act5', `rooms count after the mistake: ${(await latestCounts(page))?.rooms}`);
 
-  const built = await buildWalls(page, 'act5');
+  const built = await buildWalls(page, 'act5', origin0);
 
   let zoned = false;
   let attempts = 0;
