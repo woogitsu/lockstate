@@ -370,14 +370,35 @@ test.describe('the escape sentence has to survive a frame (#700)', () => {
       'expectPaintedFor passed against a recording with no writes in it',
     ).toThrow(/nothing wrote to/);
 
-    // Guard 4: the control assertion refuses a sentence that was never even
-    // produced -- otherwise "it never reached a frame" is true of every string
-    // and the control arm above would be a tautology.
+    /*
+     * Guard 4, and it needs a recording with real writes in it: on the idle
+     * recording above every assertion refuses at guard 3, which proves guard 3
+     * and nothing else. So this one delivers a real escape, and then asks both
+     * assertions about a sentence the prison never said.
+     *
+     * That is the shape a regression test for #700 rots into if nothing stops
+     * it -- rename the escape's message key, and a control asserting "the
+     * escape sentence never reached a frame" starts passing for the best
+     * possible reason and the worst possible one at once.
+     */
+    await installBandRecorder(page, BAND);
+    await deliverAsTheWorkerWould(page, viewModelsFor(escapeEvents(false)));
+    await letFramesRun(page, FRAME_WINDOW_MS);
+    const busy = await readBandRecording(page);
+
+    expect(busy.writes.length, 'the band was written to, so guard 3 is satisfied and guard 4 is what answers next').toBeGreaterThan(0);
+    const neverSaid = 'a sentence this prison never said';
     expect(
       () => {
-        expectNeverPainted(idle, 'a sentence this prison never said', 'a sentence nobody produced');
+        expectPaintedFor(busy, neverSaid, SEEN_MS, 'a sentence nobody produced');
       },
-      'expectNeverPainted passed for a sentence that was never written',
-    ).toThrow(/nothing wrote to/);
+      'expectPaintedFor passed for a sentence that was never written',
+    ).toThrow(/reached 0 animation frames/);
+    expect(
+      () => {
+        expectNeverPainted(busy, neverSaid, 'a sentence nobody produced');
+      },
+      'expectNeverPainted passed for a sentence that was never written, which is true of every string',
+    ).toThrow(/was never written to the band/);
   });
 });
