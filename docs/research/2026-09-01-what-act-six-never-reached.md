@@ -54,7 +54,7 @@ were measured on one.
 
 | act | what it played | viewport | result |
 | --- | --- | --- | --- |
-| 1 | a 2-bed, 14-prisoner, 0-guard neglect prison, run at ×4 to a real escape, with `alert-dwell.ts` armed ahead of it | 1280x800 | see below |
+| 1 | a 2-bed, 14-prisoner, 0-guard neglect prison, run at ×4 to a real escape, with `alert-dwell.ts` armed ahead of it | 1280x800 | `1 passed (10.6m)`, escape at tick 48,611 |
 | 2 | four single-tile walls, one `Cancel` and one `Undo`/`Redo` pair | 1280x800 | `1 passed (35.7s)` |
 | 3 | two purchases, one delivery watched to landing, one cancelled mid-flight | 1280x800 | `1 passed (20.5s)`; a first attempt failed on a testing artefact, see §3 |
 | 4 | a guarded 12-prisoner, 4-guard prison run to in-game day 15, with a save/reload at the end | 1280x800 | `1 passed (8.1m)` |
@@ -64,9 +64,100 @@ were measured on one.
 
 # 1. Escapes — the highest-value act, and the one `alert-dwell.ts` was built for
 
-*(Filled in once act 1's run completes — see the end of this record for its
-status. Everything below it was measured first because it was ready first;
-nothing here depended on act 1's order in the file.)*
+**MEASURED, act 1, 1280x800.** The same neglect recipe
+`docs/research/2026-08-31-playing-the-nine-changes.md` §2a used: one 6x6 cell,
+**two** beds, **fourteen** prisoners, **zero** guards, run at ×4. Build and
+admission finished at tick 4,333 — `14 | PRISONERS | 12 with no bed | 0 |
+STAFF`. `alert-dwell.ts` was armed on `.hud__event` at tick 40,042, well ahead
+of where the recipe's own prior run put the first escape (48,001), because a
+frame that has already gone by cannot be recovered — the whole reason #700
+was invisible to every poll before this instrument existed.
+
+**The recipe reproduced almost exactly.** Every worker event from tick 39,900
+on:
+
+```
+40,301  incidents.riot-opened
+40,911  incidents.all-clear
+44,161  prisoners.discharged
+45,101  incidents.riot-opened
+45,711  incidents.all-clear
+48,001  incidents.escape-attempt-opened
+48,611  incidents.escape-succeeded
+```
+
+`48,001` for the first escape attempt, against `48,001` in the 2026-08-31
+run — the classification-review boundary this neglect recipe depends on lands
+at the same tick both times, as the fixed schedule constants say it should
+(`ClassificationReviewSystem`, `intervalTicks: 24_000, phaseTicks: 23_999`).
+
+**And this time the sentence stood.** The full recording:
+`111,438ms`, `2,759` animation frames, `1,242` writes, `8` distinct spans —
+every sentence the band held, in the order it held them:
+
+```
+81f  "1 released — their sentences are served."
+184f "A riot has broken out — 13 prisoners have stopped taking orders."
+1029f "The prison is under control again — no incident is still open."
+308f "1 released — their sentences are served."
+171f "A riot has broken out — 12 prisoners have stopped taking orders."
+652f "The prison is under control again — no incident is still open."
+208f "A prisoner is trying to break out."
+126f "Jonas Quintero broke out — no guard reached them in time."
+```
+
+Read directly off the production catalogue, then measured against the
+recording:
+
+```
+the escape sentence, off the assembled page's own alerts log: "Jonas Quintero broke out — no guard reached them in time.Critical"
+the escape sentence in the band: written 52 time(s), reached 126 frame(s), dwelt 4478ms
+```
+
+**`written 52 time(s), reached 126 frame(s)` is the opposite shape from
+#700's own measurement of the pre-ruling-6 code — `"written three times,
+painted zero times"`** (`docs/research/2026-08-31-playing-the-nine-changes.md`
+§2c). Ruling 6 holds on a real escape, played end to end through
+`index.html` + `src/main.ts`, not only against the synthetic view models
+`ui-escape-sentence-survival.spec.ts` delivers through the isolated UI
+harness. **The 4,478ms figure is a floor, not a lifetime** — the escape
+sentence was still the band's whole content, unhidden, when this pass stopped
+the recorder about four seconds after `escape-succeeded`, so the true dwell
+before anything replaced it may be longer than what was captured.
+
+**And the mechanism the ruling changed is confirmed silent exactly where it
+should be.** The worker-event log above has no `incidents.all-clear` after
+`48,611` — on the tick the escape was announced, none was ever recorded at
+all, matching `reportAllClearIfCalm`'s `if (escapeAnnounced) return;` gate
+(`src/simulation/incidents/response-system.ts:270`) rather than a delayed one
+arriving later. This is the "silence, not a substitute sentence" the ruling's
+own comment describes, measured rather than read.
+
+**The persistent alerts log carries the sentence too, second from the
+bottom**, ahead only of a leftover refusal from this act's own setup
+(`calibrate()`'s probe, present in every act that uses it — see §2):
+
+```
+["A riot has broken out — 14 prisoners have stopped taking orders.Critical" ×4,
+ "A riot has broken out — 13 prisoners have stopped taking orders.Critical",
+ "A riot has broken out — 12 prisoners have stopped taking orders.Critical",
+ "A prisoner is trying to break out.Critical",
+ "Jonas Quintero broke out — no guard reached them in time.Critical",
+ "Nothing was removed — there is no object on that tile, and none being built there.Warning"]
+```
+
+This pass did not fully work out the list's sort rule from one sample — six
+riot rows sit ahead of the escape despite being chronologically older than it,
+which is consistent with `MAX_EVENT_ALERT_ROWS`'s eviction-priority scheme
+keeping high-priority rows over plain ones rather than strict recency, but
+this record states only what was read, not a rule it did not verify.
+
+**What this does not cover.** One escape, one session, one neglect recipe.
+The escaped prisoner's own tier-3 escalation matched the prior run exactly —
+final counts read `prisoners: 11, prisonersHighRisk: 11` — but this pass did
+not attempt a second or third escape (the prior run's recipe produced three,
+12,000 ticks apart) and cannot say whether the sentence survives as cleanly
+on a later one, when the alerts log is fuller and closer to its cap.
 
 # 2. `Undo`, and `Cancel` on a queued build order (#733's "before")
 
@@ -438,9 +529,15 @@ not the primary path today, so this is recorded as a fact establishing the
 current boundary rather than an urgent defect. Worth the owner's attention if
 full keyboard operability is ever a stated goal.
 
-## Escapes
+## Confirmed, not ranked as a defect — ruling 6 holds on a real escape
 
-*To be ranked once act 1 completes.*
+**MEASURED**, §1 above. This is the pass's strongest result and it is not a
+finding of harm: the escape sentence *"Jonas Quintero broke out — no guard
+reached them in time."* was written 52 times and reached 126 animation
+frames, standing for at least 4,478ms before this pass stopped watching —
+the reverse of #700's own measurement of the pre-ruling-6 code, `"written
+three times, painted zero times"`. It is placed first in this list because
+it is the headline of the record, not because it costs a player anything.
 
 ---
 
@@ -469,8 +566,30 @@ argued rather than skipped:**
 
 # The weakest claim in this record, and what would change it
 
-*(Written once act 1's result is known — the escape act is very likely to be
-either the strongest claim in this record, if the instrument catches the
-sentence on a real page for the first time, or the weakest, if the recipe
-does not reproduce inside this pass's time budget. Either way it belongs
-here, not as a placeholder.)*
+**It is act 1's alerts-log ordering aside in §1, and it is the one to attack
+first.** Six riot rows were read sitting ahead of the escape sentence despite
+being chronologically older than it, and this record states only that the
+reading is consistent with an eviction-priority scheme rather than claiming
+to have found the rule — because it did not open
+`hudEventAlertsFromWorkerMessage` and verify a sort function against this
+exact sample. **What would change my mind:** reading that function
+alongside a second recording that varies the mix of event types, to say
+positively *why* the display order looks the way it does rather than only
+that one order was observed.
+
+**The second-weakest claim is the dwell figure's precision, not its
+direction.** `4,478ms` is a measured floor on how long the escape sentence
+stood, not a claim about its total lifetime — the recorder was stopped about
+four seconds after `escape-succeeded` while the sentence was still current,
+so the true figure could be much larger (the prior neglect run's trigger
+cooldown is 12,000 ticks, giving the band a long quiet stretch to stand in
+before the next riot). **What would change my mind:** a run that keeps the
+recorder attached until something else actually replaces the band, giving a
+real total rather than a floor.
+
+**What this pass did not reach at all.** Mobile viewports, a second or third
+escape in the same session (the prior neglect run produced three, 12,000
+ticks apart), the `Enter coordinates` route, a save/reload taken *during* an
+open incident, and the `-g "act N"` acts run back to back rather than as five
+separate processes (each act here opened its own fresh page). None of that
+was played.
