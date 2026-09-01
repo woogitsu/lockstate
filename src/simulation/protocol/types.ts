@@ -1885,7 +1885,17 @@ const contrabandDiscoveredEventSchema = z
   })
   .strict();
 
-const simulationEventSchema = z.discriminatedUnion('type', [
+/**
+ * Exported since 2026-09-01, because the save carries these records.
+ *
+ * `save-schema.ts` validates the alerts section against this rather than
+ * declaring a second shape for the same union: a save-side copy would be a
+ * window the moment an event type gained a field, which is the argument
+ * `PurchaseMaterials` makes in `commands.ts` about two boundaries disagreeing.
+ * The schema is frozen by the same rule every other persisted shape is --
+ * see `docs/PERSISTENCE.md` on what an existing field changing meaning costs.
+ */
+export const simulationEventSchema = z.discriminatedUnion('type', [
   contrabandDiscoveredEventSchema,
   wagesUnpaidEventSchema,
   dischargedEventSchema,

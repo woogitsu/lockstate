@@ -308,10 +308,12 @@ describe('the historical chain still walks a save older than the field', () => {
     // A V4 payload carrying an economy section, built the way
     // `tests/migrations/save-v4-to-v5.test.ts` builds one: a real capture put
     // back into the V4 room-instance shape, with the payroll key removed
-    // because no V4 build had one to write.
+    // because no V4 build had one to write -- and, since the owner's decisions
+    // of 2026-09-01 on ADR 0084, the alerts key removed beside the objects key
+    // for exactly that reason.
     const captured = capturedSystems(insolventSession());
     const { bundle } = captured;
-    const { objects: _objects, ...simulation } = captured.simulation;
+    const { objects: _objects, alerts: _alerts, ...simulation } = captured.simulation;
     const { payroll: _payroll, ...economy } = captured.economy;
     const payload = {
       kernel: bundle.kernel,
