@@ -427,8 +427,9 @@
  * five characters a line... roughly 22 line boxes... ~330px of row height", in
  * a list box "about 200px at 1280x800 and 137px at 900x600". Every one of
  * those four numbers was a derivation, and browser measurement corrected all
- * four** (`docs/research/2026-09-01-the-measurements-that-were-owed.md` §1,
- * PR #762, method: a dismissable row -- `ui-shell.spec.ts`'s own fixtures
+ * four** (branch `docs/the-measurements-that-were-owed`'s
+ * `2026-09-01-the-measurements-that-were-owed.md` §1, not yet merged as this
+ * comment is written -- PR #762, method: a dismissable row -- `ui-shell.spec.ts`'s own fixtures
  * carry no `occurrences` and so never measured one): the wrap is **4.5
  * characters a line, not five**, because `overflow-wrap: break-word` does not
  * break at a whole-character boundary the way the derivation assumed; the

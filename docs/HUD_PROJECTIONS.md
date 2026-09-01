@@ -1755,26 +1755,43 @@ decision about what to build next.
     the owner's ruling of the same day and overrides `createListRow`'s general
     rule for this row: a press writes into the save and there is no undo, so a
     mis-tap that cannot be reversed was judged worse than a smaller target.
-    What it costs the sentence beside it — 88px of label down to about 36px —
-    is derived in `src/ui/hud/hud.css`, and **the owner answered it on the same
-    day by moving the question up a level: the width comes from the rail.**
-    Nothing in the row gives way — the severity badge stays, because it is how
-    ruling 11 reaches a player; the control stays on the row's line; the label
-    keeps its subject — and the corner widens instead, on
+    What it costs the sentence beside it — 88px of label down to a
+    **36-61px range depending on severity** (#720's own measured spread,
+    undocumented anywhere until 2026-09-01) — is derived in
+    `src/ui/hud/hud.css`, and **the owner answered it on the same day by moving
+    the question up a level: the width comes from the rail.** Nothing in the
+    row gives way — the severity badge stays, because it is how ruling 11
+    reaches a player; the control stays on the row's line; the label keeps its
+    subject — and the corner widens instead, on
     [ADR 0085](./adr/README.md) decision 1, which already recommends widening it
-    for reasons of its own. **This is a second and independent argument for that
-    change**, and it is recorded here so the pass that settles the corner's
-    width has it in front of it rather than re-deriving it: the label needs its
-    88px back *and* the 52px the control takes, so the present 226px is short by
-    about 52px before any other claim on the width is counted.
+    for reasons of its own.
 
-    **Until that lands this list is knowingly over-subscribed**, and the
-    consequence is stated rather than left to be met: at the current width a
-    long sentence with a control beside it wraps past the list's box — about
-    five characters a line, so one long alert can be taller than the box holding
-    it. Nothing is clipped or unreachable, because the list scrolls (#703 ruling
-    1); what a player gets is a log they scroll further through, which is the
-    accepted cost of shipping the control before the corner moves.
+    **Done, 2026-09-01, for issue #739.** `.hud-minimap` widened from 224px to
+    396px — the smallest width at which the worst-case severity badge
+    (`warning`, the narrowest label) still holds the 109-character refusal
+    sentence to 4 line boxes, measured 2px at a time rather than derived,
+    against ADR 0085's own 430px guardrail (396 clears the same 4-line-box
+    property at 34px less, buying nothing further from the extra headroom).
+    The corner measures 422px. `.hud-minimap__surface`'s own width is capped
+    at its pre-#739 224px rather than growing with the panel: uncapped, its
+    `aspect-ratio: 1 / 1` ties its height to the wider panel, and measured, a
+    single ordinary alert stopped fitting its own list box at two viewports
+    with the square left to grow — the opposite of what the widening was for.
+    See `src/ui/hud/hud.css`'s own block above `.hud-alerts__list > .ui-row`
+    and ADR 0085's Status-section addendum for the arithmetic, including what
+    this spends against the world view at 900×600 (190px, against 362px
+    before and 182px had the corner gone all the way to the guardrail).
+
+    **What this list no longer is: knowingly over-subscribed.** Before this
+    change, at the then-current width, a long sentence with a control beside
+    it wrapped past the list's box — about five characters a line by
+    derivation, though the real measurement was worse, 4.5 characters a line
+    (branch `docs/the-measurements-that-were-owed`'s
+    `2026-09-01-the-measurements-that-were-owed.md` §1, not yet merged as this
+    is written) — so one long alert could be taller than the box holding it.
+    Measured now
+    (`tests/browser/ui-alerts-column.spec.ts`): no alert is taller than its
+    list box at any of the five viewports this issue is measured at.
     None of that reaches a refusal row, deliberately — a refusal is a *level*,
     republished unchanged up to twice a second, so suppressing one is a
     different mechanism from retiring a run of occurrences, and ADR 0084 says
