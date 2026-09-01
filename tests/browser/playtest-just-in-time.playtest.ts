@@ -409,8 +409,17 @@ test('act 1 and 2: a wall, then everything after it, with no procurement press',
         await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
       }
       await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
-      // The arm control toggles, so a previous attempt can have left it armed
-      // and a blind click would disarm it. Read the label rather than assume.
+      /*
+       * The arm control toggles, so a previous attempt can have left it armed
+       * and a blind click would disarm it. Read the label rather than assume.
+       *
+       * **Neither #684 nor #689 retires this**, which was an open question when
+       * #689 was filed. #684 stands the tool down at the *confirm*, so a loop
+       * that reaches its confirm no longer arrives here armed -- but an attempt
+       * that throws before it (the `catch` below is why the retry exists) still
+       * does, and this is the only thing that notices. #689 does not reach it
+       * at all: this walk never presses a removal control, on either panel.
+       */
       const armLabel = (await page.locator('.hud-rooms__arm').innerText()).trim().toLowerCase();
       if (!armLabel.startsWith('stop')) await page.locator('.hud-rooms__arm').click();
       await drag(page, centreOf(origin, AREA.x0, AREA.y0), centreOf(origin, AREA.x1, AREA.y1));

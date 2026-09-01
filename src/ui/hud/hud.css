@@ -1395,16 +1395,36 @@
  * The label is what *says* the state -- "Stop drawing", "Stop placing" -- and
  * `aria-pressed` is what announces it; this is the half a player reads without
  * reading, which is the half that was missing.
+ *
+ * **`data-removing` joined it in #689, and for the identical reason.** Both
+ * panels' removal controls had written that attribute since the mode shipped
+ * and no stylesheet in this repository read either one, so removal mode had a
+ * label change and no tint on either panel -- the same shape #684 found one
+ * attribute earlier. It is the same declaration rather than a second one
+ * because removal is not a second kind of state: it is this tool, armed, aimed
+ * the other way. The two attributes never light at once, either, and that is
+ * what makes one tint honest -- while `removing` is on, the panels paint
+ * `data-armed="false"` on the arm control (`placing = armed && !removing`), so
+ * exactly one control in the row carries the tint and it is the one the
+ * pointer belongs to.
+ *
+ * Named per panel, still, rather than widened to `.hud .ui-action`: what earns
+ * the tint is a control that hands the pointer to the world, not any toggle
+ * that happens to use the attribute.
  */
 .hud-build .ui-action[data-armed='true'],
-.hud-rooms .ui-action[data-armed='true'] {
+.hud-rooms .ui-action[data-armed='true'],
+.hud-build .ui-action[data-removing='true'],
+.hud-rooms .ui-action[data-removing='true'] {
   background: var(--accent-soft);
   border-color: var(--accent);
   color: var(--accent);
 }
 
 .hud-build .ui-action[data-armed='true']:hover,
-.hud-rooms .ui-action[data-armed='true']:hover {
+.hud-rooms .ui-action[data-armed='true']:hover,
+.hud-build .ui-action[data-removing='true']:hover,
+.hud-rooms .ui-action[data-removing='true']:hover {
   background: var(--surface-active);
   color: var(--text-heading);
 }

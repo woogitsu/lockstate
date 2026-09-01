@@ -10,6 +10,7 @@ import { createNumberField, type NumberField } from '../primitives/number-field'
 import { createPanel } from '../primitives/panel';
 import { rovingFocusMove, rovingTabStop } from '../primitives/roving-focus';
 import { HUD_MESSAGE_KEY } from './messages';
+import { toggleRemovalMode } from './tool-arming';
 import {
   HUD_BUILD_EDGES,
   HUD_DEFAULT_BUILD_EDGE,
@@ -1089,11 +1090,21 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   const removeButton: ActionButton = createActionButton({
     label: t(HUD_MESSAGE_KEY.buildRemove),
     onActivate: () => {
-      removing = !removing;
       // Arming to remove is arming. The tool stays armed while the mode is on
       // and the world keeps the pointer, so the player presses one control and
       // then presses tiles -- which is the whole gesture on a touch device.
-      armed = removing || armed;
+      //
+      // And pressing it again stands the tool down. **This line read
+      // `armed = removing || armed` until #689**: the sentence above is right
+      // on the way in, and on the way out that expression kept whatever `armed`
+      // already was, so "Stop removing" handed the player a *placing* tool
+      // still holding the pointer. The pair moves together now, in
+      // `toggleRemovalMode`, which the Rooms panel's removal control calls too
+      // -- the two panels held one defect in two copies of one expression, so
+      // the transition has one home.
+      const nextArming = toggleRemovalMode({ armed, removing });
+      armed = nextArming.armed;
+      removing = nextArming.removing;
       paintArmed();
       paintBuy();
       options.onArm(armed, selectedId, removing);

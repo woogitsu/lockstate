@@ -9,6 +9,7 @@ import { createNumberField, type NumberField } from '../primitives/number-field'
 import { createPanel } from '../primitives/panel';
 import { rovingFocusMove, rovingTabStop } from '../primitives/roving-focus';
 import { HUD_MESSAGE_KEY } from './messages';
+import { toggleRemovalMode } from './tool-arming';
 import type {
   HudLocalizer,
   HudRoomEnclosureRequirement,
@@ -1011,7 +1012,6 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   const removeButton: ActionButton = createActionButton({
     label: t(HUD_MESSAGE_KEY.roomsRemove),
     onActivate: () => {
-      removing = !removing;
       // Switching mode discards a pending rectangle rather than reinterpreting
       // it. The same four numbers mean "designate this" or "remove whatever is
       // here", and silently changing which would be the panel deciding
@@ -1019,9 +1019,19 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       pending = undefined;
       pendingEnclosure = undefined;
       const wasArmed = armed;
-      armed = removing || armed;
-      // Arming to remove is arming, so it starts a drawing pass on the same
-      // terms as the button beside it.
+      // Arming to remove is arming, and "Stop removing" stands the whole tool
+      // down instead of handing back a designating one that still holds the
+      // pointer. **This line read `armed = removing || armed` until #689**,
+      // which is right on the way in and keeps whatever `armed` was on the way
+      // out. Both halves now live in `toggleRemovalMode`, which the Build
+      // panel's removal control calls too -- its docblock carries the
+      // reasoning, including why the tool does not return to a previously
+      // selected mode.
+      const nextArming = toggleRemovalMode({ armed, removing });
+      armed = nextArming.armed;
+      removing = nextArming.removing;
+      // Arming to remove starts a drawing pass on the same terms as the button
+      // beside it.
       if (armed && !wasArmed) drawingFolded = true;
       paintActions();
       options.onArm(armed, { ...(selectedId === undefined ? {} : { roomId: selectedId }), removing });
