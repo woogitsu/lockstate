@@ -17,7 +17,8 @@ import {
   type MessagePortLike,
 } from '../../src/simulation/worker/state-machine';
 import { packCommand } from '../../src/simulation/protocol/commands';
-import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
+import { projectStatusCounts, statusCountsEqual } from '../../src/simulation/worker/status-counts';
+import type { SimulationStatusCounts } from '../../src/simulation/protocol/types';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
 
@@ -928,4 +929,116 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
     },
     30_000,
   );
+});
+
+describe('statusCountsSchema.conditions: the bound is enforced at decode, not only observed at production', () => {
+  /**
+   * `PRISON_CONDITIONS.length` closed-union members is the bound decision 2
+   * states -- "bounded by the union's own size" -- and the schema encodes it
+   * as `.max(PRISON_CONDITIONS.length)`. The "grew past the closed union"
+   * assertion earlier in this file only ever sees what
+   * `computeStandingPrisonConditions` actually produces, which can never
+   * exceed that bound by construction; it cannot tell a correct `.max()` from
+   * a loosened one. This test attacks the schema directly: it takes one real
+   * published message, over-fills `counts.conditions` past the union's size,
+   * and asserts the decoder -- "the gate every worker message passes through"
+   * (this file's own words, above) -- refuses it.
+   */
+  test('a conditions array longer than the closed union is rejected by the decoder', () => {
+    // No `run`/`advance` needed: `handleInitialize` publishes one baseline
+    // status-counts message synchronously (see "publishes exactly one
+    // baseline reading on initialize" above), which is enough to attack.
+    const harness = new Harness(scenarioSnapshot());
+
+    const [published] = harness.publications();
+    if (published === undefined) throw new Error('the fixture must have produced at least one publication to attack');
+    expect(decodeWorkerToMainMessage(published).ok, 'the unmodified publication must itself be valid').toBe(true);
+
+    const overfilled = {
+      ...published,
+      payload: {
+        ...published.payload,
+        counts: {
+          ...published.payload.counts,
+          // One more than the union has members, and not drawn from thin air:
+          // reusing existing ids keeps this attacking the *count* bound
+          // specifically rather than accidentally tripping the enum check
+          // too.
+          conditions: [...PRISON_CONDITIONS, PRISON_CONDITIONS[0]],
+        },
+      },
+    };
+    const decoded = decodeWorkerToMainMessage(overfilled);
+    expect(decoded.ok, 'an over-long conditions array must be refused, not silently accepted').toBe(false);
+  });
+});
+
+/**
+ * `statusCountsEqual`'s `conditions` special-case, directly (ADR 0087
+ * decision 2): `computeStandingPrisonConditions` allocates a fresh array on
+ * every call even when its contents are unchanged, so a naive `!==` on it (the
+ * comparison every other field here correctly uses) would answer "changed" on
+ * every publication a treasury or a build queue happens to touch, whatever the
+ * actual set is -- suppressing nothing and defeating the whole point of this
+ * function. No test drives a real session to the point of proving that in
+ * practice (doing so deterministically would mean holding a balance and a
+ * build queue exactly still across two publications), so this exercises the
+ * pure function directly with two distinct array instances holding the same
+ * ids.
+ */
+describe('statusCountsEqual: conditions compares by content, not by array identity', () => {
+  const BASE = {
+    prisoners: 0,
+    prisonersInIntake: 0,
+    prisonersHighRisk: 0,
+    staff: 0,
+    staffUnassigned: 0,
+    rooms: 0,
+    roomCapacity: 0,
+    accommodationCapacity: 0,
+    roomOccupants: 0,
+    activeIncidents: 0,
+    contrabandDiscovered: 0,
+    treasuryMinorUnits: 0,
+    treasuryOverdraftFloorMinorUnits: 0,
+    dailyWageBillMinorUnits: 0,
+    unpaidWagesMinorUnits: 0,
+  } as unknown as SimulationStatusCounts;
+
+  function counts(conditions: readonly string[]): SimulationStatusCounts {
+    // A fresh array literal every call -- the same allocation shape
+    // `computeStandingPrisonConditions` has, and the one a naive `!==` would
+    // wrongly treat as "different" even when the ids inside are identical.
+    return { ...BASE, conditions: [...conditions] } as unknown as SimulationStatusCounts;
+  }
+
+  test('two different array instances holding the same ids in the same order are equal', () => {
+    expect(statusCountsEqual(counts(['intake.no-place']), counts(['intake.no-place']))).toBe(true);
+  });
+
+  test('two empty-conditions publications are equal, even as distinct array instances', () => {
+    expect(statusCountsEqual(counts([]), counts([]))).toBe(true);
+  });
+
+  test('a genuinely different set is not equal', () => {
+    expect(statusCountsEqual(counts(['intake.no-place']), counts(['construction.unfunded']))).toBe(false);
+  });
+
+  test('a different length is not equal', () => {
+    expect(
+      statusCountsEqual(
+        counts(['construction.unfunded']),
+        counts(['construction.unfunded', 'intake.no-place']),
+      ),
+    ).toBe(false);
+  });
+
+  test('the same ids in a different order are not equal (order is meaningful, not just membership)', () => {
+    expect(
+      statusCountsEqual(
+        counts(['construction.unfunded', 'intake.no-place']),
+        counts(['intake.no-place', 'construction.unfunded']),
+      ),
+    ).toBe(false);
+  });
 });
