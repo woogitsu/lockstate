@@ -453,6 +453,19 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
  * with `Treasury.floorFor`, clamped to the floor this very payload carries,
  * rather than a -1,250 written out here.
  *
+ * **The measurement that made this concrete**, kept from the playtest branch
+ * that took it rather than left in a research note alone: on the assembled
+ * page, at a balance of **-1,235** the badge read `1,265 left` while the
+ * cheapest item in the catalogue, a 40 brick, was refused -- the refusal
+ * landing on the host's own thread as
+ * `HostRefusalError: The last reported balance of -1195 cannot cover 65.`,
+ * where no player could see it
+ * (`docs/research/2026-09-01-what-the-funds-chip-promises.md`, act 1). The
+ * overstatement was **exactly 1,250 at every negative balance**, not a
+ * threshold the figure crossed: at -1,250 the real room reaches zero and stays
+ * there to the floor while the old figure went on counting down a positive
+ * number.
+ *
  * **`undefined` for a floor that is absent or `0`.** Both say no room below
  * zero is known, and a facility of nothing has no remainder to state; the
  * chip's own minus sign is then the whole story. Absent is every payload
