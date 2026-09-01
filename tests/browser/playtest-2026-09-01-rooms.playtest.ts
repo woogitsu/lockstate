@@ -393,11 +393,23 @@ test.describe('playing the rooms surface, 2026-09-01', () => {
       console.log(`[act3] needs readout: ${JSON.stringify(await panelText(page, '.hud-rooms__needs'))}`);
     };
 
+    /*
+     * A new prison materialises exactly one 32x32 chunk at (0,0)
+     * (`createNewSimulationRuntime`, `src/simulation/runtime/new-session.ts:402-413`)
+     * and nothing beyond it -- `RoomZoningService.zone` refuses a tile in an
+     * unmaterialised chunk as `out-of-bounds` (`src/simulation/rooms/zoning.ts:515`).
+     * Every rectangle below is chosen to stay inside x:0..31, y:0..31 for that
+     * reason: an 8x8 yard at x=40 is not a probe of the world edge, it is a
+     * probe of nothing, and the first version of this act found that out by
+     * running it -- every one of c/d/e came back `zone.out-of-bounds`
+     * ("part of that area is outside the map") instead of exercising the
+     * overlap and corner-overlap refusals they were written to reach.
+     */
     await designate('a. an enclosed room type on open ground', 'room.cell', { x: 20, y: 20, w: 4, h: 4 });
     await designate('b. under the authored minimum', 'room.cell', { x: 30, y: 20, w: 1, h: 1 });
-    await designate('c. an outdoor room type on open ground', 'room.yard', { x: 40, y: 20, w: 8, h: 8 });
-    await designate('d. a second room over the first one', 'room.yard', { x: 42, y: 22, w: 8, h: 8 });
-    await designate('e. a small room over a corner of the yard', 'room.cell', { x: 40, y: 20, w: 2, h: 3 });
+    await designate('c. an outdoor room type on open ground', 'room.yard', { x: 2, y: 2, w: 8, h: 8 });
+    await designate('d. a second room over the first one', 'room.yard', { x: 4, y: 4, w: 8, h: 8 });
+    await designate('e. a small room over a corner of the yard', 'room.cell', { x: 2, y: 2, w: 2, h: 3 });
   });
 
   test('act 4: what a finished object gives back when it is taken away (ADR 0076)', async ({ page }) => {
