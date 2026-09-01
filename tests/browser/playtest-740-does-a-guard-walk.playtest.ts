@@ -102,6 +102,30 @@ test('a deployed guard: does it walk to its post? (#740)', async ({ page }) => {
     await rosterSection.locator('> .ui-section__header').click();
   }
 
+  /*
+   * **A freshly hired guard never has a deployment walk to make.** ADR 0036
+   * decision 2 puts the derived sector's post tile at the same tile a hire
+   * first stands on, deliberately -- so in this exact fixture `beginDeployment`
+   * always takes its `isAtPost` fast path and no distance is ever covered. The
+   * derived sector also authors no patrol route (ADR 0036), so neither of the
+   * two errands this decision converts has anywhere to walk *to* until a guard
+   * is standing somewhere else when it is (re)assigned.
+   *
+   * A guard sent `'on-search'` genuinely does leave the post -- via
+   * `search-system.ts`, which still teleports, deliberately out of ADR 0088's
+   * scope -- so releasing it manually is what puts a guard exactly where this
+   * decision's own walk-back (`DeploymentSystem.walkBackToPost`) has real
+   * distance to cross. `.hud-staff__held-row` is the "ON DUTY" list this
+   * targets, distinct from `.hud-staff__roster` above it.
+   */
+  const searchRow = page.locator('.hud-staff__held-row', { hasText: 'Search' });
+  if ((await searchRow.count()) > 0) {
+    await searchRow.first().getByRole('button', { name: 'Release' }).click();
+    log(act, 'released the on-search guard -- watching it walk back to post');
+  } else {
+    log(act, 'no guard was on search duty to release -- sampling whatever is live');
+  }
+
   const phaseCounts = new Map<string, number>();
   let rosterPolls = 0;
   const startedAt = Date.now();
