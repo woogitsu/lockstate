@@ -65,9 +65,11 @@ executed as stated**, and says what is missing rather than choosing it.
 > wewnątrz debetu"*, give the rungs their own thresholds inside the overdraft,
 > at −1,250 / −2,000 / −2,500 — answers the question §2 put, and it is drafted
 > as [ADR 0017](./0017-money-primary-resource-model.md)'s
-> **"Amendment, 2026-09-01"**. It is **Proposed and not self-approved**, so the
-> amendment is *drafted* and still *owed a signature*: both halves are true at
-> once and the sentence above is the half that has not changed.
+> **"Amendment, 2026-09-01"**. **The owner signed it on 2026-09-01**, so the
+> amendment is drafted *and* accepted. This clause read *"It is Proposed and not
+> self-approved, so the amendment is drafted and still owed a signature"* for as
+> long as that was true, and the sentence above it — the one this document
+> created — has not changed either way.
 >
 > Ruling 19 also takes **neither** of the two remedies §2 named. It does not
 > amend the *order* and does not narrow decision 8 to a prison that has spent
@@ -441,7 +443,8 @@ legible against what it chose over: the ladder's order is *not* amended and
 decision 8 is *not* narrowed. Both stand, and three thresholds are what make the
 order expressible where one comparison could not. Drafted as
 [ADR 0017](./0017-money-primary-resource-model.md)'s "Amendment, 2026-09-01",
-**Proposed and awaiting the owner's signature**.
+**accepted by the owner on 2026-09-01**. This line read *"Proposed and awaiting
+the owner's signature"* until then.
 
 **And the paragraph below said in advance what the ruling settles**, which is
 why it is quoted rather than deleted: *"if the owner's `tylko minus i pożyczki`

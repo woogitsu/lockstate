@@ -407,12 +407,16 @@ same defect class this amendment records twice more, in the same document.
 
 ## Amendment, 2026-09-01: decision 8's ladder gets three thresholds inside the overdraft, so its *order* can be true again
 
-> **Proposed amendment, not self-approved — awaiting the owner's signature.**
-> Drafted 2026-09-01. Nothing in this corpus is self-approved (`AGENTS.md`,
-> `docs/AGENT_WORKFLOW.md` §3), and the implementation that accompanies this
-> amendment on the same branch **must not merge before the signature**. It is
-> on the branch so that what is being signed can be read as behaviour and not
-> only as prose.
+> **Accepted, 2026-09-01, by the repository owner.** Drafted the same day and
+> put to them with the implementation beside it, so that what was being signed
+> could be read as behaviour and not only as prose.
+>
+> **This clause read `Proposed amendment, not self-approved — awaiting the
+> owner's signature` until that acceptance**, and carried the sentence *"the
+> implementation that accompanies this amendment on the same branch must not
+> merge before the signature."* Both are kept rather than deleted: nothing in
+> this corpus is self-approved (`AGENTS.md`, `docs/AGENT_WORKFLOW.md` §3), and
+> the record of a document having waited is part of how that rule is visible.
 >
 > *This amends **decision 8 alone**. Decisions 1 through 7 are untouched, and
 > `Status` remains **Accepted**. The form is the "Amendment, 2026-08-27" above,
