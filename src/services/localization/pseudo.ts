@@ -9,6 +9,32 @@ import { PSEUDO_LOCALE } from './locale';
  * layouts that cannot survive longer text (the expansion padding), and
  * broken interpolation (placeholders are preserved exactly, so a mangled
  * one is obvious).
+ *
+ * ## Why an interpolated parameter is marked (#664)
+ *
+ * The transform's central promise is that **no character of a
+ * catalogue-derived string is an ASCII letter**, so every ASCII word left on
+ * a pseudo-localized screen is text that never went through the catalogue.
+ * `ACCENTS` below maps all 52 ASCII letters and the padding is `·`, so that
+ * held -- for the *template*. It did not hold for what the player reads,
+ * because a `{placeholder}` is copied through unaccented and the *value*
+ * substituted into it is ordinary English.
+ *
+ * That cost the 2026-08-30 sweep its sharpest finding twice over
+ * (`docs/research/2026-08-30-what-stays-readable-under-the-pseudo-locale.md`):
+ * a detector that deleted `⟦ … ⟧` spans scored
+ * `⟦Çóúļđ ñóţ çřéáţé á ƥříšóñ: Simulation worker fault (…)⟧` as clean, and
+ * the detector that replaced it -- every ASCII word anywhere is a finding --
+ * cannot say which of the three classes a word belongs to. A legitimate
+ * parameter and a hard-coded label look identical.
+ *
+ * So the placeholder span is copied through byte-for-byte, as ADR 0011
+ * requires, and `⟨ ⟩` is written *around* it. After interpolation the value
+ * sits inside those markers, which makes the three classes separable by
+ * inspection and by machine: ASCII inside `⟨ ⟩` is a parameter, ASCII
+ * elsewhere inside `⟦ ⟧` is a fragment concatenated into a localized
+ * message, and ASCII outside both never reached the catalogue at all.
+ * `tests/helpers/pseudo-locale-residue.ts` is that classifier.
  */
 
 const ACCENTS: Readonly<Record<string, string>> = {
@@ -19,9 +45,22 @@ const ACCENTS: Readonly<Record<string, string>> = {
 };
 
 /** Bracketing makes truncation visible: a clipped string loses its closing marker. */
-const START_MARKER = '⟦';
-const END_MARKER = '⟧';
-const PADDING_CHARACTER = '·';
+export const PSEUDO_START_MARKER = '⟦';
+export const PSEUDO_END_MARKER = '⟧';
+export const PSEUDO_PADDING_CHARACTER = '·';
+
+/**
+ * Wrapped around a `{placeholder}` span, so the value substituted into it is
+ * distinguishable from text that never reached the catalogue. Deliberately
+ * not `⟦ ⟧`: a reader and a detector both have to tell a parameter from a
+ * message, and reusing the message markers would make the two nest
+ * indistinguishably.
+ *
+ * Exported because a detector that re-declares them is a second copy of a
+ * scanning rule, which is how #188 happened.
+ */
+export const PSEUDO_PARAMETER_START_MARKER = '⟨';
+export const PSEUDO_PARAMETER_END_MARKER = '⟩';
 
 export const DEFAULT_PSEUDO_EXPANSION = 0.35;
 
@@ -33,9 +72,10 @@ function accentSegment(segment: string): string {
 
 /**
  * Accents letters, pads to simulate translation growth and brackets the
- * result -- while copying `{placeholder}` spans through untouched, because
- * an accented placeholder name would simply fail to interpolate and prove
- * nothing.
+ * result -- while copying `{placeholder}` spans through byte-for-byte,
+ * because an accented placeholder name would simply fail to interpolate and
+ * prove nothing. Each span is wrapped in `⟨ ⟩` so the value that replaces it
+ * is attributable; see the module comment.
  */
 export function pseudoLocalizeText(text: string, expansion: number = DEFAULT_PSEUDO_EXPANSION): string {
   const pattern = createPlaceholderPattern();
@@ -44,13 +84,13 @@ export function pseudoLocalizeText(text: string, expansion: number = DEFAULT_PSE
 
   for (let match = pattern.exec(text); match !== null; match = pattern.exec(text)) {
     transformed += accentSegment(text.slice(lastIndex, match.index));
-    transformed += match[0];
+    transformed += `${PSEUDO_PARAMETER_START_MARKER}${match[0]}${PSEUDO_PARAMETER_END_MARKER}`;
     lastIndex = match.index + match[0].length;
   }
   transformed += accentSegment(text.slice(lastIndex));
 
   const paddingLength = Math.ceil([...text].length * Math.max(0, expansion));
-  return `${START_MARKER}${transformed}${PADDING_CHARACTER.repeat(paddingLength)}${END_MARKER}`;
+  return `${PSEUDO_START_MARKER}${transformed}${PSEUDO_PADDING_CHARACTER.repeat(paddingLength)}${PSEUDO_END_MARKER}`;
 }
 
 function pseudoLocalizeEntry(entry: MessageEntry, expansion: number): MessageEntry {
