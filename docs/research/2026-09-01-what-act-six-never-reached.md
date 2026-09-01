@@ -58,7 +58,7 @@ were measured on one.
 | 2 | four single-tile walls, one `Cancel` and one `Undo`/`Redo` pair | 1280x800 | `1 passed (35.7s)` |
 | 3 | two purchases, one delivery watched to landing, one cancelled mid-flight | 1280x800 | `1 passed (20.5s)`; a first attempt failed on a testing artefact, see §3 |
 | 4 | a guarded 12-prisoner, 4-guard prison run to in-game day 15, with a save/reload at the end | 1280x800 | `1 passed (8.1m)` |
-| 5 | the whole session played with only the keyboard: a cold-load Tab sweep, starting a prison, switching HUD tabs, the Build catalogue's roving-tabindex group, camera keys, and whether a build order can be placed at all | 1280x800 | `1 passed` |
+| 5 | the whole session played with only the keyboard: a cold-load Tab sweep, starting a prison, switching HUD tabs, the Build catalogue's roving-tabindex group, camera keys, and whether a build order can be placed at all | 1280x800 | `1 passed (41.6s)` |
 
 ---
 
