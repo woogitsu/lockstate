@@ -1,3 +1,4 @@
+import type { BuildOrderLifecycleState } from '../construction/build-order';
 import type { IncidentType } from '../incidents/incident';
 import type { SimulationEvent } from '../protocol/types';
 
@@ -82,6 +83,13 @@ export const MAX_BUFFERED_SIMULATION_EVENTS = 64;
  *   see rather than a fact the player loses. Recorded in
  *   `docs/PERSISTENCE.md` and `docs/HUD_PROJECTIONS.md` beside `RefusalLog`'s
  *   own entry rather than left to be discovered.
+ *
+ *   **#749's five members have no condition behind them at all, and that makes
+ *   the exclusion stronger rather than weaker.** "You cancelled that order" is
+ *   a notice about a press, not a state of the prison -- which is precisely
+ *   `RefusalLog`'s own reason for not being saved. Nothing re-announces them
+ *   after a load and nothing should: the press happened in a session that has
+ *   ended.
  * - **It carries no identity where the subject may be gone.** No entity id,
  *   no name, no tile -- the same line `SimulationRefusal` holds, and for a
  *   sharper reason here: the subject of a discharge event does not exist by
@@ -109,9 +117,18 @@ export const MAX_BUFFERED_SIMULATION_EVENTS = 64;
  *   `prisoners.discharged` still carries neither, and its schema still gives
  *   the original reason.
  *
- * Writing to it is deterministic: it is written only from scheduled system
- * updates, at the tick the thing happened, from values those systems decided.
- * Two runs of the same session record the same events in the same order.
+ * Writing to it is deterministic. **The reason given here used to be "it is
+ * written only from scheduled system updates", and #749 falsified that half**:
+ * five members are written from *command handlers* --
+ * `createConstructionCommandHandler` and `createSessionCommandHandler` -- when
+ * a cancel, an undo or a redo the player asked for succeeds. Both directions
+ * are marked rather than one overwritten (`docs/AGENT_WORKFLOW.md` section 4),
+ * because the *conclusion* survives intact and it is the conclusion that
+ * matters: a command is dispatched by the kernel at a tick, in submitted
+ * sequence, and the values recorded are the ones that handler read at that
+ * tick. Two runs of the same session still record the same events in the same
+ * order. What has changed is only that "scheduled system update" is no longer
+ * the complete list of writers.
  */
 export class SimulationEventLog {
   /**
@@ -323,6 +340,120 @@ export class SimulationEventLog {
         this.append({ sequence, tick, type: 'incidents.escape-attempt-opened' });
         return;
     }
+  }
+
+  /**
+   * Records that a build order the player asked to cancel was cancelled
+   * (the owner's ruling of 2026-09-01 on
+   * [#749](https://github.com/matmaxalez/lockstate/issues/749)).
+   *
+   * **Two sentences, split on whether the crew had started**, which is the
+   * owner's answer to "one sentence or two" and their reasoning for it:
+   * *"silence about a loss is the worst option"*. An order cancelled before the
+   * crew reached it gives its money back; an `'in-progress'` one drops its
+   * allocation unreleased and unpaid (ruling 20 of 2026-08-31, argued at
+   * `ConstructionSystem.cancelOrder`). Two different outcomes, so two different
+   * things to say.
+   *
+   * **A `switch` over `BuildOrderLifecycleState` rather than a boolean the
+   * caller computes**, for the reason `recordIncidentOpened` above switches
+   * over `IncidentType`: exhaustiveness is the point. A ninth lifecycle state
+   * fails to compile here until somebody has decided what the prison says when
+   * an order in it is cancelled, and the three states that deliberately say
+   * nothing say so at a site where the reason can be read.
+   *
+   * `BuildOrderLifecycleState` is imported for its type only, so this module
+   * still runs no construction code -- the same shape the `IncidentType` import
+   * above has.
+   *
+   * **`'completed'` records nothing, and it is the one exclusion worth
+   * arguing.** A completed order is cancellable and `cancelOrder` reverses the
+   * geometry it wrote, but neither approved sentence is true of it: the money
+   * did not come back (`refundSurplusOf` runs for `'approved'` and
+   * `'materials-pending'` only) and the materials are not gone either (ADR 0076
+   * decision B puts them back in the container). No control can reach that
+   * press today -- `PENDING_BUILD_ORDER_STATES` excludes `'completed'`, so no
+   * Build-panel row names one -- and it is reachable only by an order finishing
+   * between a projection and the press that answers it. Saying one of the two
+   * sentences there would be a promise the code does not keep, which
+   * `AGENTS.md`'s fourth exclusion reserves to the owner; the sentence a
+   * cancelled *finished* order deserves is therefore recorded as owed, here,
+   * rather than guessed at.
+   *
+   * **`'cancelled'` and `'failed'` record nothing because they cannot happen**:
+   * `cancelOrder` throws for both and the caller records only after it returns.
+   * They are branches so the `switch` is exhaustive, not cases with a story.
+   *
+   * @param stateAtCancellation The order's state **read before**
+   * `ConstructionSystem.cancelOrder` was called. Read after, every order is
+   * `'cancelled'` and the distinction the two sentences exist for is gone.
+   */
+  public recordBuildOrderCancelled(stateAtCancellation: BuildOrderLifecycleState, tick: number): void {
+    const sequence = this._sequence + 1;
+    switch (stateAtCancellation) {
+      case 'planned':
+      case 'approved':
+      case 'materials-pending':
+      case 'assigned':
+        this.append({ sequence, tick, type: 'construction.order-cancelled' });
+        return;
+      case 'in-progress':
+        this.append({ sequence, tick, type: 'construction.order-cancelled-underway' });
+        return;
+      case 'completed':
+      case 'cancelled':
+      case 'failed':
+        return;
+    }
+  }
+
+  /**
+   * Records that the build history was walked back one transaction (#749).
+   *
+   * **Unguarded here, and bounded by the caller** -- the shape
+   * `recordIncidentsAllClear` below takes and for the same reason.
+   * `ConstructionSystem.undo` answers whether it actually reversed anything,
+   * and `createConstructionCommandHandler` calls this only when it did. A
+   * second, weaker check here (is the undo stack empty?) would need this class
+   * to know about construction, and is how the two would come to disagree.
+   *
+   * **No count**, which is the owner's ruling and not a shortcut: an undo
+   * reverses a whole transaction, so a sentence naming one order would be a
+   * small lie whenever a run of several was taken back, and surfacing the size
+   * needs plumbing on `redoTransaction` that the ruling declines. Left known.
+   */
+  public recordConstructionUndone(tick: number): void {
+    this.append({ sequence: this._sequence + 1, tick, type: 'construction.undone' });
+  }
+
+  /** Records that the build history was walked forward one transaction (#749). The mirror of `recordConstructionUndone` above, on every point. */
+  public recordConstructionRedone(tick: number): void {
+    this.append({ sequence: this._sequence + 1, tick, type: 'construction.redone' });
+  }
+
+  /**
+   * Records that a delivery still on the road was cancelled, and what came back
+   * (#749).
+   *
+   * **Guarded on the figure being a number rather than on it being positive**,
+   * which is the opposite of `recordUnpaidWages` and `recordDischarge` above and
+   * is deliberate: for those a zero means the thing did not happen, and here the
+   * cancellation happened whatever the delivery had cost. The bound that matters
+   * is the caller's -- `ProcurementSystem.cancel` answers `ok: false` for a
+   * delivery that is not in flight, and that route records a refusal instead.
+   *
+   * @param refundedMinorUnits `PurchaseCancelOutcome.refundedMinorUnits`, which
+   * is the delivery's *recorded* `paidMinorUnits`. Passed through rather than
+   * recomputed, exactly as `ProcurementSystem.cancel` refunds it.
+   */
+  public recordDeliveryCancelled(refundedMinorUnits: number, tick: number): void {
+    if (!Number.isSafeInteger(refundedMinorUnits) || refundedMinorUnits < 0) return;
+    this.append({
+      sequence: this._sequence + 1,
+      tick,
+      type: 'economy.delivery-cancelled',
+      refundedMinorUnits,
+    });
   }
 
   /**

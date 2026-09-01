@@ -45,6 +45,15 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   // built from `defaultContrabandRegistry` would supply both sides of the
   // comparison (`docs/TESTING.md`).
   'contraband.discovered': (sequence) => ({ sequence, tick: 100, type: 'contraband.discovered', categoryNameKey: 'contraband.weapon.name' }),
+  // #749's five. Four carry nothing at all -- the owner's ruling declines both
+  // the refund amount `ConstructionSystem.cancelOrder` cannot answer and the
+  // transaction size `undo` deliberately does not surface -- so the sample is
+  // the envelope and the discriminant.
+  'construction.order-cancelled': (sequence) => ({ sequence, tick: 100, type: 'construction.order-cancelled' }),
+  'construction.order-cancelled-underway': (sequence) => ({ sequence, tick: 100, type: 'construction.order-cancelled-underway' }),
+  'construction.undone': (sequence) => ({ sequence, tick: 100, type: 'construction.undone' }),
+  'construction.redone': (sequence) => ({ sequence, tick: 100, type: 'construction.redone' }),
+  'economy.delivery-cancelled': (sequence) => ({ sequence, tick: 100, type: 'economy.delivery-cancelled', refundedMinorUnits: 1250 }),
   'economy.wages-unpaid': (sequence) => ({ sequence, tick: 100, type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 360 }),
   'prisoners.discharged': (sequence) => ({ sequence, tick: 100, type: 'prisoners.discharged', count: 2 }),
   'incidents.riot-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.riot-opened', participantCount: 12 }),

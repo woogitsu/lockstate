@@ -1347,7 +1347,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(searchSystem);
   kernel.registerSystem(incidentResponseSystem);
   kernel.setCommandHandler(
-    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, objectPlacement, guardRelease, staffDismissal, refusals),
+    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, objectPlacement, guardRelease, staffDismissal, refusals, events),
   );
 
   return {

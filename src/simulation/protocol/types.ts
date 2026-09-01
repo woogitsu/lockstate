@@ -1502,9 +1502,54 @@ const snapshotMessageSchema = z
  * `tick` is the tick the event *happened* on, which is not the `tick` on the
  * envelope around it: the publication reports it on the next tick-loop wake,
  * and the distinction is the same one `refusalSchema` draws.
+ *
+ * ## Five members say what the prison did *because the player asked*, and that
+ * is a widening of the paragraph above (issue #749)
+ *
+ * Every member up to #749 was something the prison did on its own -- a
+ * sentence ended, a payday failed, a fight broke out -- and the heading above
+ * still describes those. The five `construction.*` and `economy.delivery-cancelled`
+ * members are the prison carrying out an instruction: a queued order
+ * cancelled, a delivery cancelled, the build history walked back or forward.
+ *
+ * **The widening is a consequence of the owner's ruling of 2026-09-01 on
+ * [#749](https://github.com/matmaxalez/lockstate/issues/749) rather than a
+ * decision taken here.** That ruling puts the four success sentences in the
+ * HUD's events band (`.hud__event`) rather than in the refusal band, because
+ * the refusal band is permanently red and a success painted there would
+ * displace the last refusal the player may not have read. `simulation/event`
+ * is the only channel that reaches that band, and success is not knowable on
+ * the main thread -- `SimulationCommandSender.submit` is fire-and-forget, and
+ * whether a cancellation found an order, whether an undo had a transaction to
+ * pop, and how much a cancelled delivery refunded are all facts this side of
+ * the worker boundary owns. So the sentences travel here or they do not travel.
+ *
+ * **What it costs is stated rather than hidden**: the events band has no
+ * arbitration -- *"the newest event is the one on the line"*
+ * (`applyEventNotice`, `src/ui/hud/hud.ts`) -- so a success sentence can now
+ * displace a simulation event the player has not read. That collision is
+ * exactly the subject of [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)
+ * decision 4, which is **Proposed and undecided**; no dwell rule is invented
+ * here to paper over it, because inventing one would decide that ADR from
+ * inside implementation code.
+ *
+ * **The bound on volume is the player's hands rather than the tick loop.**
+ * `MAX_EVENT_ALERT_ROWS`'s docblock argues that a *burst* is impossible by
+ * construction because every producer is a scheduled system that emits at most
+ * once per pass. These five are not: a player can press Undo eight times in a
+ * second. What still bounds the damage is the eviction rule the same module
+ * runs -- `SEVERITY_EVICTION_ORDER` drops `'info'` first -- so a run of
+ * confirmations evicts itself and other `'info'` rows before it evicts a riot.
+ * Both halves are recorded because the first is a claim in that file that these
+ * members falsify.
  */
 export const SIMULATION_EVENT_TYPES = [
+  'construction.order-cancelled',
+  'construction.order-cancelled-underway',
+  'construction.redone',
+  'construction.undone',
   'contraband.discovered',
+  'economy.delivery-cancelled',
   'economy.wages-unpaid',
   'incidents.all-clear',
   'incidents.assault-opened',
@@ -1885,7 +1930,145 @@ const contrabandDiscoveredEventSchema = z
   })
   .strict();
 
+/**
+ * A queued build order was cancelled before the crew reached it, and the money
+ * it cost came back (the owner's ruling of 2026-09-01 on
+ * [#749](https://github.com/matmaxalez/lockstate/issues/749)).
+ *
+ * ## Why two members rather than one carrying the state
+ *
+ * The same argument the four incident-opening schemas make above, and it
+ * arrives here from the ruling rather than from taste: the owner's answer to
+ * "one sentence or two" was **two** -- one for a cancellation before the crew
+ * started, one for after -- with the reasoning *"silence about a loss is the
+ * worst option"*. `EVENT_PRESENTATION` grades an event by its `type` and
+ * nothing else, so one member carrying a `state` field could not paint the
+ * refund and the loss differently, and a lifecycle state crossing the wire
+ * would then have to be interpolated into a sentence, which ADR 0011 forbids
+ * (`interpolate` substitutes values and would render the slug `in-progress`).
+ *
+ * ## What it does not carry, and why the asymmetry with the delivery is honest
+ *
+ * **No amount.** `ConstructionSystem.cancelOrder` returns `void`: the refund
+ * happens inside it, split across `refundSurplusOf` and
+ * `ConstructionMaterialsProcurement.refundAllocatedMaterials`, and is never
+ * handed back to the caller. The owner's ruling names the asymmetry and keeps
+ * it -- `ProcurementSystem.cancel` already answers `refundedMinorUnits`, so
+ * `economy.delivery-cancelled` below names its figure, and this one may not
+ * without new plumbing that the ruling explicitly declines. It is the honest
+ * shape of what each route knows rather than an omission.
+ *
+ * **No order id, no tile.** The channel *"carries no identity"*
+ * (`SimulationEventLog`), and the row the player pressed is gone from the queue
+ * by the time this is read.
+ *
+ * **`'planned'` is covered by this member and the sentence is vacuously true
+ * there.** A planned order never reached `procureQueuedMaterials`, so nothing
+ * was spent and nothing is refunded; "the money it cost is refunded" is true of
+ * a cost of zero. Recorded rather than special-cased, because a third sentence
+ * for "nothing happened either way" is copy the owner has not written.
+ */
+const buildOrderCancelledEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('construction.order-cancelled'),
+  })
+  .strict();
+
+/**
+ * A build order was cancelled after the crew had started it, and what it had
+ * already consumed is gone (#749, and ruling 20 of 2026-08-31 is what makes it
+ * true).
+ *
+ * The counterpart of the member above, and the one the owner's *"silence about
+ * a loss is the worst option"* is actually about. `ConstructionSystem.cancelOrder`
+ * drops an `'in-progress'` order's allocation **unreleased and unpaid** -- the
+ * one place in the money loop where value leaves rather than changing form,
+ * argued at length at that method -- so a player who cancels late has lost
+ * something, and the band is the only surface that can say so at every viewport
+ * with nothing opened.
+ *
+ * Carries no figure for the reason the member above carries none: the value
+ * destroyed is `order.materialsAllocated` priced by a catalogue this layer
+ * cannot reach, and `cancelOrder` answers nothing.
+ */
+const buildOrderCancelledUnderwayEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('construction.order-cancelled-underway'),
+  })
+  .strict();
+
+/**
+ * The build history was walked back one transaction (#749).
+ *
+ * **Carries no count, and that is the owner's ruling rather than a limitation
+ * met halfway.** `ConstructionSystem.undo` reverses a whole transaction --
+ * `redoTransaction` groups every order id in it -- so a twelve-segment wall
+ * undoes as one gesture, and a sentence naming *one* order would be a small lie
+ * whenever a run of several was reversed. Surfacing the size would need new
+ * plumbing on that method; the ruling declines it and this schema records that
+ * the count is *known and left* rather than unnoticed.
+ *
+ * **Recorded only when something was actually reversed.** `undo()` answers
+ * `false` for an empty stack and for a transaction whose orders had all reached
+ * a terminal state, so a press against no history says nothing at all rather
+ * than confirming a reversal that did not happen -- which would be the
+ * player-visible promise the code does not keep that `AGENTS.md` reserves to
+ * the owner.
+ */
+const constructionUndoneEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('construction.undone'),
+  })
+  .strict();
+
+/** The build history was walked forward one transaction (#749). The mirror of `construction.undone`, on every point that schema makes. */
+const constructionRedoneEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('construction.redone'),
+  })
+  .strict();
+
+/**
+ * A delivery that had not landed was cancelled, and this is what came back
+ * (#749).
+ *
+ * **The one success on this channel that names its figure, and it is nearly
+ * free.** `ProcurementSystem.cancel` already answers
+ * `{ ok: true, refundedMinorUnits }` -- the *recorded* `paidMinorUnits` of the
+ * delivery, never a recomputation from today's catalogue price -- so the number
+ * exists at the call site in `createSessionCommandHandler` and only had to be
+ * carried. The owner's ruling of 2026-09-01 asked for it by name.
+ *
+ * Minor units, unconverted, exactly as `economy.wages-unpaid` carries its
+ * arrears: the HUD formats money at the last possible moment and nothing
+ * upstream of the formatter knows what a major unit is.
+ *
+ * **`min(0)` rather than the `min(1)` every other figure on this channel
+ * carries**, and the difference is what the guard is for. Elsewhere a zero
+ * means the thing did not happen -- a payday met in full, nobody discharged --
+ * and the event must not be emitted. Here the *event* is the cancellation and
+ * the figure is a detail of it: a delivery whose recorded price was zero was
+ * still cancelled, and refusing to say so would be the silence #749 exists to
+ * remove.
+ */
+const deliveryCancelledEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('economy.delivery-cancelled'),
+    refundedMinorUnits: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
+  })
+  .strict();
+
 const simulationEventSchema = z.discriminatedUnion('type', [
+  buildOrderCancelledEventSchema,
+  buildOrderCancelledUnderwayEventSchema,
+  constructionUndoneEventSchema,
+  constructionRedoneEventSchema,
+  deliveryCancelledEventSchema,
   contrabandDiscoveredEventSchema,
   wagesUnpaidEventSchema,
   dischargedEventSchema,

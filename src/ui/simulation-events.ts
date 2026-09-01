@@ -165,11 +165,75 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  * The resident relocation could *not* rehouse is a different fact with no
  * approved sentence, so it has no row here and no key. See
  * `SimulationEventLog.recordResidentRelocated`.
+ *
+ * ## #749's five rows: what a control says when it *works*
+ *
+ * Every row above is something the prison did on its own. These five are the
+ * prison carrying out an instruction, and they are here because the owner's
+ * ruling of 2026-09-01 on
+ * [#749](https://github.com/matmaxalez/lockstate/issues/749) puts four success
+ * sentences on the events band rather than on the refusal band beside it.
+ * `docs/research/2026-09-01-what-act-six-never-reached.md` D2 is the
+ * measurement that provoked the ruling: cancelling a queued build order,
+ * cancelling a delivery, Undo and Redo all *worked* and all said nothing, and
+ * the only feedback was a row vanishing from a fold that starts collapsed.
+ *
+ * **Why not `.hud__refusal`, which is what the owner first said.** That band is
+ * permanently red (`hud.css`, *"everything they can say is bad"*) and a success
+ * painted there would additionally **displace the last refusal**, which the
+ * player may not have read. Put back to the owner with that objection, they
+ * chose this band -- which already exists, already carries
+ * `data-severity='info'`, and already exists for "the prison did something and
+ * it is not bad news".
+ *
+ * - **`construction.order-cancelled` is `'info'`**, and it is the
+ *   `prisoners.discharged` reading applied to a press: the player asked for
+ *   something, it happened, and the money it cost came back. Nothing is wrong.
+ * - **`construction.order-cancelled-underway` is `'warning'`, and the grade is
+ *   arguable** in the way `prisoners.relocated`'s is. Read as *the player got
+ *   what they asked for* it is `'info'`; read as *what this reports is value
+ *   destroyed* it is not. It is graded on the second reading, because the whole
+ *   reason the owner split one sentence into two is that these two outcomes are
+ *   different -- *"silence about a loss is the worst option"* -- and painting
+ *   them in one colour would take back in the tone what the words just
+ *   distinguished. Ruling 20 of 2026-08-31 destroys an in-progress order's
+ *   materials **on purpose**, so this is the one row on this channel that
+ *   reports a loss the player chose. Not `'danger'`: that member means "stop
+ *   trusting what you are looking at", and a deliberate press is the opposite
+ *   of that.
+ * - **`construction.undone` and `construction.redone` are `'info'`.** Walking
+ *   the build history is the loop working, in either direction. Neither
+ *   sentence names how many orders moved, which is the owner's ruling: an undo
+ *   reverses a whole transaction and a sentence naming one would be a small lie
+ *   whenever a run of several was taken back.
+ * - **`economy.delivery-cancelled` is `'info'`**, and it is the only success
+ *   here that names a figure. `ProcurementSystem.cancel` already answers
+ *   `refundedMinorUnits`, so `{total}` costs nothing; `ConstructionSystem.cancelOrder`
+ *   answers `void`, so the two rows above it name no amount. The owner's ruling
+ *   keeps that asymmetry rather than plumbing it away.
+ *
+ * **What these five cost the band, stated rather than left to be found.**
+ * `applyEventNotice` has no arbitration -- *"the newest event is the one on the
+ * line"* -- so a success sentence can now displace a simulation event the
+ * player has not read. That is the same class of defect
+ * [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)
+ * decision 4 is about, and that ADR is **Proposed and undecided**. No dwell or
+ * priority rule is invented here: deciding it inside implementation code is
+ * exactly what `AGENTS.md` forbids, and the collision is recorded so the owner
+ * can rule on it with this producer in front of them.
  */
 const EVENT_PRESENTATION: Readonly<
   Record<SimulationEventType, { readonly labelKey: LocalizationKey; readonly severity: HudSeverity }>
 > = {
+  'construction.order-cancelled': { labelKey: 'hud.alert.event.construction.order-cancelled', severity: 'info' },
+  'construction.order-cancelled-underway': {
+    labelKey: 'hud.alert.event.construction.order-cancelled-underway',
+    severity: 'warning',
+  },
+  'construction.redone': { labelKey: 'hud.alert.event.construction.redone', severity: 'info' },
+  'construction.undone': { labelKey: 'hud.alert.event.construction.undone', severity: 'info' },
   'contraband.discovered': { labelKey: 'hud.alert.event.contraband.discovered', severity: 'warning' },
+  'economy.delivery-cancelled': { labelKey: 'hud.alert.event.economy.delivery-cancelled', severity: 'info' },
   'economy.wages-unpaid': { labelKey: 'hud.alert.event.economy.wages-unpaid', severity: 'warning' },
   'incidents.all-clear': { labelKey: 'hud.alert.event.incidents.all-clear', severity: 'info' },
   'incidents.assault-opened': { labelKey: 'hud.alert.event.incidents.assault-opened', severity: 'warning' },
@@ -535,6 +599,15 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
   switch (event.type) {
     case 'economy.wages-unpaid':
       return { total: event.unpaidWagesMinorUnits };
+    // The one success sentence that names a figure (#749). `{total}` is the
+    // same placeholder the unpaid-payday row above uses and the same units --
+    // minor units, unconverted -- so the two render alike, and it is the same
+    // word the Build panel's own delivery row already uses for the money a
+    // cancellation would give back ("{count} x {material} - {total} back",
+    // `hud.build.delivery`). A player who reads the row before pressing reads
+    // the same figure in the confirmation afterwards.
+    case 'economy.delivery-cancelled':
+      return { total: event.refundedMinorUnits };
     case 'prisoners.discharged':
       return { count: event.count };
     case 'incidents.riot-opened':
@@ -564,6 +637,17 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     case 'incidents.assault-opened':
     case 'incidents.escape-attempt-opened':
     case 'incidents.all-clear':
+      return {};
+    // #749's four amount-free successes. Each is a whole sentence with no
+    // placeholder in it, and that is the owner's ruling rather than a gap:
+    // `ConstructionSystem.cancelOrder` returns `void`, so neither cancellation
+    // row can name what came back, and `undo`/`redo` reverse a whole
+    // transaction, so a count would be a lie whenever a run of several moved.
+    // The plumbing for both was explicitly declined; see the schemas.
+    case 'construction.order-cancelled':
+    case 'construction.order-cancelled-underway':
+    case 'construction.undone':
+    case 'construction.redone':
       return {};
   }
 }
@@ -655,6 +739,15 @@ function eventParameterMessages(
     case 'incidents.assault-opened':
     case 'incidents.escape-attempt-opened':
     case 'incidents.all-clear':
+    // #749's five. Four carry nothing at all; the delivery's `{total}` is a
+    // figure and is supplied by `eventParameters` above, which is where a
+    // sum of minor units belongs -- nothing here needs a localizer to produce
+    // it.
+    case 'construction.order-cancelled':
+    case 'construction.order-cancelled-underway':
+    case 'construction.undone':
+    case 'construction.redone':
+    case 'economy.delivery-cancelled':
       return undefined;
     default: {
       // **This branch is the exhaustiveness, and it is here because the
