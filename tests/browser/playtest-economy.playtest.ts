@@ -268,6 +268,22 @@ test.describe('playtest: taking it back', () => {
     // ---- put it back ----------------------------------------------------
     const again = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (again === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    /*
+     * Leave removal, if the confirm above did not.
+     *
+     * **This branch has been unreachable since #684**: the confirm stands the
+     * removal down with the tool, so the label read here is "Remove rooms" and
+     * the click is skipped. It is kept as the guard it is -- an attempt that
+     * threw before the confirm would still land here with the mode on.
+     *
+     * Whether *#689* reached it was open when that issue was filed, and it did:
+     * the pair it fixes is exactly this two-press sequence. Under the old
+     * `armed = removing || armed` this branch made things worse when it did
+     * fire -- "Stop removing" left the tool armed to designate, so the
+     * `.hud-rooms__arm` click below then *disarmed* it and the drag drew
+     * nothing. Both presses now say what they do, so the guard is correct
+     * whichever way it goes.
+     */
     const removeLabel = (await page.locator('.hud-rooms__remove').innerText()).trim().toLowerCase();
     if (removeLabel.startsWith('stop')) await page.locator('.hud-rooms__remove').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();

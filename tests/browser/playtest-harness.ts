@@ -255,6 +255,18 @@ export async function calibrate(page: Page): Promise<{ originX: number; originY:
   }
   const originY = hi - (base.y + 1) * TILE;
 
+  /*
+   * And the tool goes back off, so the caller starts from nothing armed.
+   *
+   * **That is only true from #689.** Until then `armed = removing || armed`
+   * kept the tool armed through this press, so calibrating left the *wall* tool
+   * holding the pointer with `wall-brick` selected -- the panel's arrival
+   * selection -- and the next bare `press` in a walk would have laid a wall
+   * nobody asked for. Nothing caught it because every caller here reaches the
+   * world through `armBuildable`, which reads the arm label before it clicks;
+   * the label was honest, so the guard did the right thing for the wrong
+   * reason. It now needs to do nothing.
+   */
   await page.locator('.hud-build__remove').click();
   return { originX, originY };
 }

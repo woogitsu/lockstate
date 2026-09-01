@@ -7294,12 +7294,30 @@ test.describe('the assembled application', () => {
     // Turning the mode off hands the world back, so a second press posts no
     // second removal. Without this the assertion above is also true of a tool
     // that never stops removing.
+    //
+    // **These four lines read differently until #689, and the difference is
+    // the fix.** They were:
+    //
+    //     await remove.click();
+    //     await expect(remove).toHaveAttribute('aria-pressed', 'false');
+    //     await page.locator('.hud-build__arm').click();
+    //     await expect(page.locator('.hud-build__arm')).toHaveAttribute('aria-pressed', 'false');
+    //
+    // -- and that press on the arm control was **disarming**, because
+    // `armed = removing || armed` left the tool armed on the way out of
+    // removal. So the old test needed a second press to hand the world back,
+    // and it recorded the defect as the route: a player who pressed *Stop
+    // removing* and then pressed a tile was placing, not removing, and had
+    // spent materials. Now the toggle itself stands the tool down, the arm
+    // control is untouched here, and pressing it would *arm* instead.
     await remove.click();
     await expect(remove).toHaveAttribute('aria-pressed', 'false');
-    await page.locator('.hud-build__arm').click();
     await expect(page.locator('.hud-build__arm')).toHaveAttribute('aria-pressed', 'false');
     expect(await pressOnWorld(page)).toBe(true);
     expect(await objectCommandsSent(page, 'RemoveObject')).toHaveLength(1);
+    // And nothing was placed either, which is the half the old shape could not
+    // assert: it had just disarmed a tool that #689 left armed to place.
+    expect(await objectCommandsSent(page, 'PlaceObject')).toEqual([]);
   });
 
   /**

@@ -1941,7 +1941,37 @@ test.describe('HUD shell', () => {
       );
     });
 
-    test('turning the removal mode off puts the pointer back to placing', async ({ page }) => {
+    /**
+     * **This test was called *"turning the removal mode off puts the pointer
+     * back to placing"* until #689, and asserted exactly that.** The reasoning
+     * it carried is kept here because every word of it was true of the code it
+     * described: *"Still armed, now to place -- `armed = removing || armed` in
+     * both this panel and the Rooms panel, and it is the precedent rather than
+     * an accident. Turning the mode off is a statement about what the pointer
+     * does, not about whether the player still has it: the world keeps the
+     * pointer and the arm button says so. Which is why the label is asserted
+     * right beside it. A pointer that silently changed from removing to placing
+     * would be a real hazard -- one tap spends materials -- so what makes this
+     * safe is that the control reads "Stop placing" and announces itself
+     * pressed."*
+     *
+     * What that defence answers is the *hazard*, and it answers it: the label
+     * really did change and the state was never hidden. What it does not answer
+     * is why pressing a control labelled **"Stop removing"** should hand the
+     * player a different tool at all. The old rule made the outcome of one
+     * control depend on invisible history -- press it after arming into removal
+     * and the tool that came back had never been asked for -- and there is no
+     * recorded "previous mode" to justify it either: entering removal
+     * overwrites `armed`, so the panel cannot tell the two histories apart.
+     * `toggleRemovalMode` carries the full argument.
+     *
+     * The second half of the test is unchanged and is now the load-bearing
+     * half: the one-press route from removing back to placing still exists, and
+     * it is the **arm** control, which is the one that says "Place on map".
+     */
+    test('turning the removal mode off stands the tool down, and the arm control is the way back to placing (#689)', async ({
+      page,
+    }) => {
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
       await page.evaluate(() => window.lockstateUiHarness.clickRemoveObject());
@@ -1949,31 +1979,125 @@ test.describe('HUD shell', () => {
 
       const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
       expect(probe.removing).toBe(false);
-      /*
-       * **Still armed, now to place** -- `armed = removing || armed` in both this
-       * panel and the Rooms panel, and it is the precedent rather than an
-       * accident. Turning the mode off is a statement about *what* the pointer
-       * does, not about whether the player still has it: the world keeps the
-       * pointer and the arm button says so.
-       *
-       * Which is why the label is asserted right beside it. A pointer that
-       * silently changed from removing to placing would be a real hazard -- one
-       * tap spends materials -- so what makes this safe is that the control
-       * reads "Stop placing" and announces itself pressed.
-       */
-      expect(probe.armed).toBe(true);
-      expect(probe.armLabel).toBe('Stop placing');
+      // Nothing armed, and the panel says so where the player is looking.
+      expect(probe.armed, 'the tool that says it stopped is still holding the pointer').toBe(false);
+      expect(probe.armLabel).toBe('Place on map');
+      expect(probe.removeLabel).toBe('Remove');
       expect(probe.buyToggleVisible).toBe(true);
       expect(probe.hint).toContain('Click a tile edge');
 
+      /*
+       * And the world tool is told, which the DOM above cannot show.
+       * `arm-build-tool` is what reaches `BuildTool.setArmed` and
+       * `ObjectTool.setArmed` in the assembled application, so a panel that
+       * repainted its buttons and sent nothing would leave the pointer captured
+       * by a tool the interface says is off -- the shape #684 pinned one press
+       * over.
+       */
+      const armIntents = async (): Promise<readonly string[]> => {
+        const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+        return intents.filter((intent) => intent.includes('"arm-build-tool"'));
+      };
+      expect(await armIntents(), 'the stand-down never reached the world tool').toEqual([
+        JSON.stringify({ kind: 'arm-build-tool', armed: true, definitionId: 'wall-brick', removing: true }),
+        JSON.stringify({ kind: 'arm-build-tool', armed: false, definitionId: 'wall-brick', removing: false }),
+      ]);
+
       // And pressing the arm button while the mode is on is the other way out,
-      // reaching the same state in one press rather than two.
+      // reaching a placing tool in one press rather than two. This is what
+      // makes the stand-down above cost a player nothing they cannot reach: the
+      // control that says "Place on map" is the one that places.
       await page.evaluate(() => window.lockstateUiHarness.clickRemoveObject());
       await page.evaluate(() => window.lockstateUiHarness.clickArmBuild());
       const armed = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
       expect(armed.removing).toBe(false);
       expect(armed.armed).toBe(true);
       expect(armed.armLabel).toBe('Stop placing');
+    });
+
+    /**
+     * Arming *into* removal still costs one press, which is the invariant the
+     * fix above had to leave standing.
+     *
+     * On a touch device this is the whole gesture -- press one control, then
+     * press tiles -- and there is no keyboard chord behind it to fall back on.
+     * A stand-down rule applied to *every* press of this toggle rather than
+     * only to the way out would satisfy every assertion in the test above and
+     * break this one, which is why it is a separate test rather than a line in
+     * that one.
+     */
+    test('arming into removal still costs one press (#689)', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      await page.evaluate(() => window.lockstateUiHarness.clickRemoveObject());
+
+      const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      expect(probe.removing, 'one press did not turn removal on').toBe(true);
+      expect(probe.removeLabel).toBe('Stop removing');
+      expect(await page.evaluate(() => window.lockstateUiHarness.hudIntents())).toContain(
+        JSON.stringify({ kind: 'arm-build-tool', armed: true, definitionId: 'wall-brick', removing: true }),
+      );
+    });
+
+    /**
+     * The tint, and why it is measured rather than taken from the stylesheet.
+     *
+     * `data-removing` was written by both panels' removal controls from the day
+     * the mode shipped and read by no stylesheet in `src/`, so removal mode had
+     * a label change and no colour -- the same gap #684 closed one attribute
+     * earlier for `data-armed`. Only a browser can say whether a declaration
+     * reached an element, which is the whole reason this assertion is here and
+     * not in a unit test.
+     *
+     * Read as a *difference* against the same control before the press rather
+     * than against a literal colour: the palette is tokens, a theme may move
+     * them, and what this test is about is that the armed look reaches this
+     * control at all.
+     */
+    test('the removal control carries the armed tint while the mode is on (#689)', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+
+      const paintOf = async (selector: string): Promise<{ background: string; border: string }> =>
+        page.evaluate((target) => {
+          const node = document.querySelector<HTMLElement>(target);
+          if (node === null) return { background: '', border: '' };
+          const style = getComputedStyle(node);
+          return { background: style.backgroundColor, border: style.borderTopColor };
+        }, selector);
+
+      /*
+       * Each control is compared against *its own* resting paint, never against
+       * the other's: the arm button is `tone: 'primary'` and the removal button
+       * is not, so the two do not start from the same colour and an assertion
+       * that crossed them would be measuring the tone rather than the state.
+       */
+      const armIdle = await paintOf('.hud-build__arm');
+      const removeIdle = await paintOf('.hud-build__remove');
+
+      // The armed look is measured off the control that has always had it,
+      // rather than a colour being written into this file -- which would pass
+      // against a stylesheet that had lost the rule and gained a literal.
+      await page.evaluate(() => window.lockstateUiHarness.clickArmBuild());
+      const armedPaint = await paintOf('.hud-build__arm');
+      expect(armedPaint.background, 'the arm control has no armed tint to reuse').not.toBe(armIdle.background);
+
+      await page.evaluate(() => window.lockstateUiHarness.clickRemoveObject());
+      const removing = await paintOf('.hud-build__remove');
+      expect(removing.background, 'removal mode changed the label and nothing else').not.toBe(removeIdle.background);
+      expect(removing.background, 'removal invented a second armed look').toBe(armedPaint.background);
+      expect(removing.border).toBe(armedPaint.border);
+
+      // Exactly one control in the row wears it: while removal is on the arm
+      // control paints `data-armed="false"`, so the tint marks where the
+      // pointer actually went instead of lighting the whole row.
+      expect((await paintOf('.hud-build__arm')).background, 'two controls claim the pointer at once').toBe(
+        armIdle.background,
+      );
+
+      // And it goes when the mode does.
+      await page.evaluate(() => window.lockstateUiHarness.clickRemoveObject());
+      expect((await paintOf('.hud-build__remove')).background).toBe(removeIdle.background);
     });
 
     test('leaving the Build tab turns the removal mode off with the arming', async ({ page }) => {
@@ -3407,6 +3531,110 @@ test.describe('the Rooms panel', () => {
     expect(after.removePressed, 'the removal mode outlived the removal').toBe('false');
     expect(after.armPressed, 'the tool stayed armed after the removal').toBe('false');
     expect(after.folded, 'the panel stayed folded after the removal').toBe('false');
+  });
+
+  /**
+   * Issue #689, on this panel: a control that says *stop* stops.
+   *
+   * The Build panel has the same pair and the same defect and is covered in its
+   * own suite; this is the Rooms half, and it is not a duplicate because the
+   * two panels reach the press through different geometry. Arming here **folds
+   * the panel**, so "Stop removing" is behind the header control the moment it
+   * becomes the thing to press -- which is the same shape #684 measured one
+   * button over, and the reason the unfold below is part of the walk rather
+   * than setup.
+   *
+   * Three promises, as in the #684 test above: the world tool is told, the
+   * panel says so where the player is looking, and the fold ends because there
+   * is no longer a drawing pass to hide behind.
+   */
+  test('pressing "Stop removing" stands the Rooms tool down (#689)', async ({ page }) => {
+    const probe = async () => page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    const armIntents = async (): Promise<readonly string[]> => {
+      const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+      return intents.filter((intent) => intent.includes('"arm-room-tool"'));
+    };
+    const removalIntent = (armed: boolean, removing: boolean): string =>
+      JSON.stringify({ kind: 'arm-room-tool', armed, roomId: 'room.cell', removing });
+
+    // ---- one press arms into removal, which is the invariant to keep ----
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('remove'));
+    const removing = await probe();
+    expect(removing.removePressed, 'one press did not turn removal on').toBe('true');
+    expect(removing.armPressed, 'the arm control claimed the mode that is not its').toBe('false');
+    expect(await armIntents(), 'arming to remove never reached the world tool').toEqual([removalIntent(true, true)]);
+    // Arming to remove starts a drawing pass on the same terms as the button
+    // beside it, so the panel gets out of the way of the world.
+    expect(removing.folded, 'arming to remove did not fold the panel').toBe('true');
+
+    // ---- the player opens the panel back up to reach the control ----
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('fold'));
+    const open = await probe();
+    expect(open.removeLaidOut, '"Stop removing" has no box for the player to press').toBe(true);
+    expect(open.removePressed).toBe('true');
+
+    // ---- and pressing it leaves nothing armed ----
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('remove'));
+    expect(await armIntents(), 'the stand-down never reached the world tool').toEqual([
+      removalIntent(true, true),
+      removalIntent(false, false),
+    ]);
+    const stopped = await probe();
+    expect(stopped.removePressed, 'the mode outlived the press that said stop').toBe('false');
+    expect(stopped.armPressed, '"Stop removing" handed back a designating tool').toBe('false');
+    // The label is the half a player reads without reading, and it must not be
+    // offering to stop something else instead.
+    expect(stopped.armText).toBe('Draw on map');
+    expect(stopped.armLaidOut, 'the control that reports the state has no box').toBe(true);
+    // `drawing()` is false with nothing armed, so the drawing fold ends on its
+    // own -- the panel comes back rather than staying shut over a tool that is
+    // no longer there.
+    expect(stopped.folded, 'the panel stayed folded with nothing armed').toBe('false');
+    // And no room was designated or removed on the way through.
+    expect(await roomCommands(page), 'a mode toggle asked the simulation for something').toEqual([]);
+  });
+
+  /**
+   * The tint, on the panel whose `data-armed` #684 connected and whose
+   * `data-removing` nothing read until #689.
+   *
+   * Measured in a browser because only a browser can say whether a declaration
+   * reached an element, and read as a difference against each control's own
+   * resting paint because the palette is tokens.
+   */
+  test('the Rooms removal control carries the armed tint while the mode is on (#689)', async ({ page }) => {
+    const paintOf = async (selector: string): Promise<string> =>
+      page.evaluate((target) => {
+        const node = document.querySelector<HTMLElement>(target);
+        return node === null ? '' : getComputedStyle(node).backgroundColor;
+      }, selector);
+
+    const armIdle = await paintOf('.hud-rooms__arm');
+    const removeIdle = await paintOf('.hud-rooms__remove');
+
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
+    // Arming folds the panel, so the paint is read with it open again -- a
+    // control with no box has no computed background worth comparing.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('fold'));
+    const armedPaint = await paintOf('.hud-rooms__arm');
+    expect(armedPaint, 'the arm control has no armed tint to reuse').not.toBe(armIdle);
+
+    /*
+     * Straight from drawing into removal, which is one press on this panel --
+     * and no second unfold, deliberately: `drawingFolded` only moves on the
+     * press that *starts* a pass (`armed && !wasArmed`), so a pass that was
+     * already running stays open where the player left it.
+     */
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('remove'));
+    expect(await paintOf('.hud-rooms__remove'), 'removal mode changed the label and nothing else').not.toBe(
+      removeIdle,
+    );
+    expect(await paintOf('.hud-rooms__remove'), 'removal invented a second armed look').toBe(armedPaint);
+    expect(await paintOf('.hud-rooms__arm'), 'two controls claim the pointer at once').toBe(armIdle);
+
+    // And it goes when the tool stands down.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('remove'));
+    expect(await paintOf('.hud-rooms__remove')).toBe(removeIdle);
   });
 
   /**
