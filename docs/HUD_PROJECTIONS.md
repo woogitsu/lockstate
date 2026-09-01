@@ -1649,6 +1649,11 @@ decision about what to build next.
     and nothing a player would have been told is actually lost. It is recorded
     in `docs/PERSISTENCE.md` under the same heading, and asserted in
     `tests/integration/sentence-end-release.test.ts`.
+    **#749's five members have no condition behind them at all**, which does
+    not weaken that argument but replaces it with `RefusalLog`'s own: a
+    cancellation, an undo and a redo are notices about a press, and a loaded
+    prison confirming a press from a session that has ended would be the same
+    defect gap 34 describes for a refusal.
 
 34. **A refusal cannot be dismissed by the player, and carries no location on
     the wire.** *Amended for issue #492 — the standing-until-another-refusal

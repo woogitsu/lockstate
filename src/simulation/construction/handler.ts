@@ -39,12 +39,20 @@ import type { ConstructionSystem } from './system';
  * handler could report every way a command could fail and no way it could work.
  *
  * **Why the success is recorded here and not inside `ConstructionSystem`.**
- * `cancelOrder` has three callers -- this handler, `undo()`, and
- * `withdrawOrdersAwaitingMaterial` -- and only the first is a press. Recording
- * inside the system would announce a cancellation per order every time #687's
- * withdrawal walked the queue after a cancelled delivery, which is fifteen
- * sentences for one press. The command boundary is where "the player asked for
- * this" is known.
+ * `cancelOrder` is reached from four places -- this handler, `undo()`,
+ * `withdrawOrdersAwaitingMaterial`, and `ObjectPlacementService`'s removal of
+ * an object whose order has not finished -- and only the first is the press
+ * #749 is about. Recording inside the system would announce a cancellation per
+ * order every time #687's withdrawal walked the queue after a cancelled
+ * delivery, which is fifteen sentences for one press. The command boundary is
+ * where "the player asked for *this*" is known.
+ *
+ * **The fourth of those is a finding rather than a footnote**, and it is left
+ * for the owner rather than decided here: `RemoveObject` on a tile whose object
+ * is still being built cancels that build order and says nothing, which is D2's
+ * defect one control over. It is outside the four #749 names, and giving it a
+ * sentence means choosing between the two this file already has -- or writing a
+ * third -- which is copy, and copy is the owner's.
  */
 export function createConstructionCommandHandler(
   constructionSystem: ConstructionSystem,
@@ -126,8 +134,9 @@ export function createConstructionCommandHandler(
          * neither sentence names one.
          *
          * **The research this implements said the handler already read the
-         * state, and it did not** (`docs/research/2026-09-01-copy-variants-for-the-owner.md`
-         * section 5a, "read by the handler before `cancelOrder` is called").
+         * state, and it did not** -- the 2026-09-01 copy-variants research
+         * (branch `docs/copy-variants-for-the-owner`) section 5a, *"read by the
+         * handler before `cancelOrder` is called"*.
          * `cancelOrder` reads it privately; this line is what makes the claim
          * true. The correction does not change the ruling -- the state was
          * reachable, one level down -- and it is recorded rather than quietly

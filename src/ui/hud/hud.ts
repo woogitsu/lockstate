@@ -1054,10 +1054,36 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * The newest event is the one on the line.
    *
    * No arbitration and no source tracking, unlike `applySimulationRefusal`
-   * below: this band has exactly one producer, so whatever it replaces is
-   * always an older event rather than a sentence of another class. `undefined`
-   * means the view model says nothing yet; the field is absent until the
-   * session has had something to say and again once it has ended.
+   * below. `undefined` means the view model says nothing yet; the field is
+   * absent until the session has had something to say and again once it has
+   * ended.
+   *
+   * **The reason given here was "this band has exactly one producer, so
+   * whatever it replaces is always an older event rather than a sentence of
+   * another class", and issue #749 falsified the second half of it.** The
+   * first half still holds in the only sense this function can see: one
+   * translator, `hudEventNoticeFromWorkerMessage`, reading one channel. What
+   * changed is what that channel carries. The owner's ruling of 2026-09-01
+   * puts four success sentences here -- a cancelled build order, a cancelled
+   * delivery, an undo, a redo -- so the band now holds **two classes of
+   * sentence**: what the prison did on its own, and what it did because the
+   * player asked. Both directions are marked rather than one overwritten
+   * (`docs/AGENT_WORKFLOW.md` section 4), because the sentence was a correct
+   * description of a channel that has since widened.
+   *
+   * **What that costs, said here rather than left to be found.** A success
+   * sentence can now displace a simulation event the player has not read --
+   * press Undo while "A riot has broken out" is on the line and the riot is
+   * gone from the band, though not from the list beside it. That is the same
+   * class of defect
+   * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)
+   * decision 4 is about, and that decision is **Proposed and undecided**: it
+   * asks whether a terminal outcome gets a minimum dwell and at whose expense,
+   * and notes that whichever answer is chosen slows every other event's
+   * arrival on the one band a player watches with nothing opened. No rule is
+   * invented here. Deciding it inside implementation code is what `AGENTS.md`
+   * forbids, and the collision is recorded so the owner can rule on it with
+   * this producer in front of them.
    */
   function applyEventNotice(notice: HudEventNoticeViewModel | undefined): void {
     eventNotice.hidden = notice === undefined;

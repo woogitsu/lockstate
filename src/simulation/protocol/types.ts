@@ -1951,7 +1951,7 @@ const contrabandDiscoveredEventSchema = z
  *
  * **No amount.** `ConstructionSystem.cancelOrder` returns `void`: the refund
  * happens inside it, split across `refundSurplusOf` and
- * `ConstructionMaterialsProcurement.refundAllocatedMaterials`, and is never
+ * `ConstructionProcurementSink.refundAllocatedMaterials`, and is never
  * handed back to the caller. The owner's ruling names the asymmetry and keeps
  * it -- `ProcurementSystem.cancel` already answers `refundedMinorUnits`, so
  * `economy.delivery-cancelled` below names its figure, and this one may not

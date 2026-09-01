@@ -634,6 +634,12 @@ work are not.**
   ([ADR 0076](./adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
   decision A(i)) — published on `simulation/event` and rendered on the events
   band and in the alerts list.
+  **Since #749 it also carries what the prison did because the player asked** —
+  a queued build order cancelled, a delivery cancelled, the build history
+  walked back or forward — and those five members make the exclusion below
+  *stronger* rather than weaker, because they have no condition behind them at
+  all: "you cancelled that order" is a notice about a press, which is exactly
+  `RefusalLog`'s own reason for not being saved.
   Excluded on `RefusalLog`'s reasoning above and one addition of its own: an
   event is a statement that something happened *now*, so a loaded prison
   announcing last week's discharges would be describing a tick the player is
