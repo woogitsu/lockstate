@@ -342,20 +342,41 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // `tests/unit/ui-simulation-alerts.test.ts` pins each of these two against
   // the host key it now quotes.
   //
-  // **The owner's ruling 19 of 2026-08-31 makes the tail of both sentences
-  // false for most of the range they now cover, and neither is touched here.**
-  // Ruling 19 -- *"Dać szczeblom własne progi wewnątrz debetu"* -- gives ADR
-  // 0017 decision 8's rungs their own thresholds inside the overdraft, so a
-  // hire is refused below -1,250 and a purchase below -1,250 as well, while
-  // *"what the state will carry"* is -2,500. At -1,300 the state will carry
-  // 1,200 more and the sentence says it will not. Ruling 18 authored these
-  // words for a single floor and there is no ruling behind a replacement, so
-  // both keys are left **byte-for-byte** and the defect is recorded here in the
-  // shape ruling 23 was recorded in above: the copy is the owner's
-  // (`AGENTS.md`'s fourth exclusion) and the amendment drafted at
-  // `docs/adr/0017-money-primary-resource-model.md` ("Amendment, 2026-09-01")
-  // lists all four keys as owed a sentence per rung.
-  'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — that would go past what the state will carry.',
+  // **The owner's ruling 19 of 2026-08-31 made the tail of both sentences
+  // false for most of the range they cover, and the paragraph that recorded
+  // that is kept below rather than deleted.** It read: *"Ruling 19 -- 'Dać
+  // szczeblom własne progi wewnątrz debetu' -- gives ADR 0017 decision 8's
+  // rungs their own thresholds inside the overdraft, so a hire is refused
+  // below -1,250 and a purchase below -1,250 as well, while 'what the state
+  // will carry' is -2,500. At -1,300 the state will carry 1,200 more and the
+  // sentence says it will not. Ruling 18 authored these words for a single
+  // floor and there is no ruling behind a replacement, so both keys are left
+  // **byte-for-byte** ... the amendment drafted at
+  // `docs/adr/0017-money-primary-resource-model.md` ('Amendment, 2026-09-01')
+  // lists all four keys as owed a sentence per rung."*
+  //
+  // **The owner ruled on 2026-09-01 and the four keys now name what stops
+  // rather than the number they stop at.** The shape chosen is *"deliveries
+  // are refused until the state pays what it owes"* over *"the state will not
+  // pay past -1,250"*, and it is the shape rather than the digits that is
+  // load-bearing: a sentence spelling out -1,250 would be a second copy of
+  // `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`
+  // (`src/simulation/economy/treasury.ts`) with nothing tying the prose to the
+  // constant, so a later ruling that moved the rung would leave the sentence
+  // silently stale -- which is the failure mode ruling 19 exists to correct,
+  // rebuilt one layer up. Naming what stops is true at every threshold and
+  // needs no maintenance when one moves.
+  //
+  // **The hire sentence says "hiring", not "deliveries", and that is
+  // deliberate.** Hiring is *not* one of ruling 19's three rungs: ADR 0017's
+  // amendment §3c gives it the shallowest rung's threshold by construction
+  // (`INSOLVENCY_RUNG_FLOORS_MINOR_UNITS.hiring =
+  // INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`) and §4 marks a rung of its
+  // own as the owner's. A hire sentence saying deliveries are refused would
+  // name a rung hiring is not on, and one saying *"the deliveries threshold"*
+  // would be false the day hiring gets its own. "Hiring is refused" is true
+  // either way.
+  'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — hiring is refused until the state pays what it owes.',
   // ADR 0053: the only work a staff member can be sent to do today is a
   // security duty, so a role outside the security department is a wage with
   // nothing behind it. The sentence names the rule rather than the department
@@ -397,7 +418,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // refusal to `unprocurable` instead, *"because the prison is not short of
   // money for them and telling the player it is would be a sentence that is
   // false"* -- so the tail of this sentence is true on both routes.
-  'hud.alert.refusal.purchase.insufficient-funds': 'Nothing was bought — that would go past what the state will carry.',
+  'hud.alert.refusal.purchase.insufficient-funds': 'Nothing was bought — deliveries are refused until the state pays what it owes.',
   'hud.alert.refusal.purchase.invalid-quantity': 'The materials were not ordered — that quantity cannot be bought.',
   'hud.alert.refusal.purchase.unknown-material': 'The materials were not ordered — that material is not for sale.',
   /*
@@ -1079,16 +1100,24 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // the prison out of money -- and the two sentences above cannot say which,
   // because they are chosen from the control that was pressed.
   //
-  // **Ruling 19 of 2026-08-31 makes the tail of both of these false below
-  // -1,250 and they are left byte-for-byte.** These two are the *host* half of
-  // the four keys the ruling breaks -- see the worker half at
-  // `hud.alert.refusal.hire.insufficient-funds` above for the whole argument.
-  // `judgeAffordability` now refuses at the `'deliveries'` rung
-  // (`src/ui/affordability.ts`, `HOST_PRESS_FLOOR_MINOR_UNITS`), so the press
-  // these sentences answer is refused at -1,250 while the sentence names
-  // -2,500. Replacing them is the owner's copy.
-  'hud.refusal.purchase-materials-past-floor': 'Nothing was bought — that would go past what the state will carry.',
-  'hud.refusal.hire-staff-past-floor': 'Nobody was hired — that would go past what the state will carry.',
+  // **Ruling 19 of 2026-08-31 made the tail of both of these false below
+  // -1,250, and the owner's ruling of 2026-09-01 replaced them.** The
+  // paragraph that recorded the defect is kept rather than overwritten: it
+  // read *"they are left byte-for-byte ... `judgeAffordability` now refuses at
+  // the 'deliveries' rung (`src/ui/affordability.ts`,
+  // `HOST_PRESS_FLOOR_MINOR_UNITS`), so the press these sentences answer is
+  // refused at -1,250 while the sentence names -2,500. Replacing them is the
+  // owner's copy."* It was, and they did.
+  //
+  // These two are the *host* half of the four keys ruling 19 broke, and they
+  // are byte-for-byte identical to the worker half at
+  // `hud.alert.refusal.purchase.insufficient-funds` and
+  // `hud.alert.refusal.hire.insufficient-funds` above -- ruling 23, *"Te same
+  // słowa co host"* -- which is where the whole argument for the new wording
+  // is written. `tests/unit/ui-simulation-alerts.test.ts` pins both the
+  // equality and the words.
+  'hud.refusal.purchase-materials-past-floor': 'Nothing was bought — deliveries are refused until the state pays what it owes.',
+  'hud.refusal.hire-staff-past-floor': 'Nobody was hired — hiring is refused until the state pays what it owes.',
   'hud.refusal.undo': 'Nothing was undone — the request was refused.',
   'hud.refusal.redo': 'Nothing was redone — the request was refused.',
   'hud.refusal.zone-room': 'The room was not designated — the request was refused.',

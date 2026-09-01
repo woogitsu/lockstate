@@ -192,6 +192,25 @@ describe('what the player is told is a key, and the key is real', () => {
       localizer.format(HUD_MESSAGE_KEY.refusalPurchaseMaterialsPastFloor),
     );
 
+    /*
+     * **And the words themselves, transcribed from the owner's ruling of
+     * 2026-09-01 rather than read back off the catalog.** The equality above
+     * holds for *any* pair of identical strings, including the pair ruling 19
+     * made false -- both sides said "that would go past what the state will
+     * carry" and both were wrong together between -1,250 and -2,500, in step
+     * and undetectably. Ruling 23 is what keeps the four keys equal; only a
+     * transcription keeps them *right*, and this is the transcription. It is
+     * not the fixture supplying both sides of the comparison
+     * (`docs/TESTING.md`): the expected text comes from the ruling, and the
+     * code under test is the table that chooses which key each reason gets.
+     */
+    expect(alertSentence('purchase.insufficient-funds')).toBe(
+      'Nothing was bought — deliveries are refused until the state pays what it owes.',
+    );
+    expect(alertSentence('hire.insufficient-funds')).toBe(
+      'Nobody was hired — hiring is refused until the state pays what it owes.',
+    );
+
     // And still not each other's. The namespace exists so that somebody who
     // pressed Hire is not sent to the Build panel to look for materials they
     // never ordered, and saying the host's words must not collapse that.

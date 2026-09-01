@@ -645,6 +645,37 @@ Two more things a player is owed and does not have:
   pre-flight (`judgeAffordability`) *is* re-based, so a press is refused at the
   rung the worker refuses it at.
 
+### 5a. What the owner then ruled, 2026-09-01 — every debt §5 records is paid
+
+> **Ruled by the repository owner, 2026-09-01.** §5 above is kept exactly as it
+> stood, including its *"None of them is changed, and none of them may be"*,
+> because it is the record of the sentences having waited for a ruling rather
+> than been rewritten by whoever noticed they were wrong. This clause says what
+> the ruling was and what shipped for it.
+
+**a. The four sentences name what stops, not the threshold.** The shape ruled
+out is *"the state will not pay past −1,250"* and the shape ruled in is
+*"deliveries are refused until the state pays what it owes"*. The reason is
+staleness rather than taste: a sentence spelling out −1,250 is a second copy of
+`INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS` with no test tying prose to
+constant, so a later ruling that moved a rung would leave the copy silently
+false — the failure mode ruling 19 exists to correct, rebuilt one layer up.
+
+| key | text, verbatim | rung it answers |
+| --- | --- | --- |
+| `hud.alert.refusal.purchase.insufficient-funds` | *"Nothing was bought — deliveries are refused until the state pays what it owes."* | 1, deliveries (−1,250) |
+| `hud.refusal.purchase-materials-past-floor` | *"Nothing was bought — deliveries are refused until the state pays what it owes."* | 1, deliveries (−1,250) |
+| `hud.alert.refusal.hire.insufficient-funds` | *"Nobody was hired — hiring is refused until the state pays what it owes."* | hiring (−1,250) |
+| `hud.refusal.hire-staff-past-floor` | *"Nobody was hired — hiring is refused until the state pays what it owes."* | hiring (−1,250) |
+
+Ruling 23's equality survives: the worker's sentence and the host's are the
+same words, pinned as text in `tests/unit/ui-simulation-alerts.test.ts`. The
+hire sentence says *"hiring"* and not *"deliveries"* deliberately — §3c gives
+hiring the shallowest rung's threshold by construction and §4 leaves a rung of
+its own to the owner, so a sentence naming the deliveries rung would name a
+rung hiring is not on.
+
+
 ### 6. Where this is implemented
 
 `src/simulation/economy/treasury.ts` (`SpendClass`,

@@ -148,7 +148,9 @@ describe('judgeAffordability: the one comparison the host makes about money', ()
    * until it did the interface could not tell the two cases apart at all.**
    *
    * The ruling gives a charge that would cross the floor its own sentence --
-   * *"that would go past what the state will carry"* -- against the generic
+   * *"that would go past what the state will carry"*, and since the owner's
+   * ruling of 2026-09-01 *"deliveries are refused until the state pays what it
+   * owes"* -- against the generic
    * *"the purchase was refused and no money was spent"* every other host
    * refusal reads. One boolean cannot choose between them, so the branch that
    * decided is now named.
