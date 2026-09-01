@@ -359,6 +359,38 @@ no longer exists; adding a fourth phase for "assigned, position unverified" is a
 new enum member with a new player-facing label, which is `AGENTS.md`'s fourth
 exclusion. **Handed over as a question about copy, not a defect to fix.**
 
+> **Answered, 2026-08-31, owner's ruling 24 — and the paragraph above is kept
+> as written rather than edited, because it is what was true when this record
+> was taken.** The owner supplied the word: **Returning**. Two of the three
+> options this paragraph weighed were the ones on the table and the third was
+> not seen: the word is *derived at projection time* from the state the restore
+> already leaves behind — phase `'on-post'`, tile not the sector's post tile —
+> so no enum member is added, nothing new is persisted, and the fourth
+> exclusion is discharged by the owner naming the label rather than by an agent
+> drafting one. `src/simulation/security/deployment-phase.ts` carries the
+> reasoning; `docs/SECURITY.md`'s *A guard restored halfway to its post* is the
+> permanent home.
+>
+> Two corrections to the sentences above fall out of implementing it:
+>
+> - *"Coverage is not affected"* stands, and is now pinned by a test rather
+>   than by a reading: a returning guard still counts toward its sector, which
+>   is what it did as `'on-post'`. The **weakest claim** named at the foot of
+>   this record — that nothing drove a restored session forward to see whether
+>   a tile-sensitive reader would disagree with the phase label — was the right
+>   thing to be uneasy about. Driven forward, it did: in a sector with **no**
+>   patrol route, which since ADR 0036 is every session a player can start,
+>   nothing in `src/` ever moved the restored guard again, so it stood in that
+>   corridor counted as on post for the rest of the session.
+>   `DeploymentSystem.walkBackToPost` now walks it home.
+> - *"`patrollingGuardCount: 1 → 0` … reaches nobody"* is still true, and so is
+>   the same record's note that `hud/security`'s `staffing.onPost` has no
+>   reader (`grep -rn "onPost" src/` finds it only inside
+>   `security-projection.ts`). That tally still counts a returning guard as
+>   on post. It is left alone deliberately — a view model nothing renders is
+>   not a lie a player is told — and whoever gives the Security panel that
+>   block should take the same derivation with it.
+
 `patrollingGuardCount: 1 → 0` on `hud/security` is the same reset seen from the
 other side and reaches nobody: that route has no reader either.
 

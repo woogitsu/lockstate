@@ -354,6 +354,11 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
           staff: runtime.securityGuards,
           deployment: runtime.deploymentSystem,
           patrol: runtime.patrolSystem,
+          // Post tiles, so a row can say `Returning` instead of asserting a
+          // post the guard is not standing on. The same registry
+          // `hud/security` below reads, and the one the deployment system
+          // routes against, so the panel and the walk cannot disagree.
+          sectors: runtime.securitySectors,
         },
         tick,
         pageRequest(request),

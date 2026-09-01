@@ -86,10 +86,18 @@ production wiring... for prisoners." Realistic guard headcounts are tens,
 not thousands, so every field lives in a small `Map` rather than a
 hot-SoA-component treatment -- there is no per-tick hot path at this scale
 (see `tests/unit/security-scale.test.ts`'s 60-sector/120-guard benchmark).
-A guard's `deploymentPhase` (`'unassigned' | 'travelling' | 'on-post'`) and
-optional `patrolWaypointIndex` are the only fields `DeploymentSystem` and
-`PatrolSystem` need to coordinate ownership of a travelling guard (see
-below).
+A guard's `deploymentPhase` and optional `patrolWaypointIndex` are the only
+fields `DeploymentSystem` and `PatrolSystem` need to coordinate ownership of a
+travelling guard (see below). **This sentence used to write the phase out as
+`'unassigned' | 'travelling' | 'on-post'` and that was three of four**: issue
+#27 added `'on-search'` for a guard pulled onto search duty, which is
+`contraband/search-system.ts`'s own bookkeeping and is invisible to both
+systems above. The union is named rather than copied here now, because a list
+in prose is the part that rots.
+
+A **fifth** word reaches a Staff panel row, `Returning`, and it is deliberately
+not a member of that union -- see *A guard restored halfway to its post* under
+Snapshot/restore below.
 
 ## Who may stand a post
 
@@ -199,6 +207,47 @@ instead of waiting forever. `tests/unit/security-snapshot-restore.test.ts`
 proves a sector's `'restricted'` override, a guard mid-patrol-leg and a
 still-unassigned guard all restoring correctly together in one scenario,
 matching #25's combined-not-per-class restore-test convention.
+
+### A guard restored halfway to its post
+
+**The reset above is right and the word it left behind was not** (the owner's
+ruling 24 of 2026-08-31, answering the question
+`docs/research/2026-08-31-what-a-reload-keeps-and-what-it-says.md` §C.1 handed
+over rather than settled). `'on-post'` is an assertion about a tile -- the
+guard is standing on its sector's `postTile` -- and a guard restored mid-walk
+is settled on that phase while standing wherever the walk had got to. The
+projection therefore checks the assertion instead of repeating it: a guard
+whose phase is `'on-post'` and whose tile is not the post tile is shown as
+**Returning** (`src/simulation/security/deployment-phase.ts`,
+`displayedDeploymentPhase`).
+
+Two properties are the whole of the design:
+
+- **Derived, never stored.** `DisplayedDeploymentPhase` is
+  `DeploymentPhase | 'returning'` and exists only in the view model, so
+  `guardRecordSchema`'s closed `deploymentPhase` enum is untouched and
+  `SAVE_SCHEMA_VERSION` stays 5. A widening would have been legal without a
+  bump (ADR 0038 §1) but would have cost an older build the ability to read a
+  save that recorded the value, and would have put the question "what does
+  this mean to me" to every reader of the phase. The label comes from
+  `simulation-message-keys.ts`'s `deployment-phase` group as an
+  `additionalIds` entry.
+- **A returning guard counts toward coverage**, exactly as it did while it was
+  reported as `'on-post'`: `assignedGuardCountFor` counts every guard whose
+  phase is not `'unassigned'`. The alternative would have made every reload
+  invent a shortage, which `assignUnassignedGuards` would fill on its next
+  cycle -- a prison coming back with more guards posted than it was saved
+  with.
+
+The word ends on its own, and something had to be added for that to be true.
+`DeploymentSystem.walkBackToPost` sends a guard back to a post it holds and is
+not standing on; a sector with a patrol route is left to `PatrolSystem`, which
+starts the loop from wherever the guard stands and takes the phase to
+`'travelling'`. Before this, a restored guard in a sector with **no** route
+stood where it was for the rest of the session -- and since ADR 0036 that is
+every session a player can start.
+`tests/integration/security-returning-after-restore.test.ts` runs the ticks for
+both endings.
 
 ## Wiring into `SimulationRuntime`
 

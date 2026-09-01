@@ -263,7 +263,15 @@ export const SIMULATION_ENUM_GROUPS = [
       travelling: 'Travelling',
       'on-post': 'On Post',
       'on-search': 'On Search',
+      returning: 'Returning',
     },
+    additionalIds: [
+      {
+        id: 'returning',
+        reason:
+          "`projectStaff` types a roster row's phase as `DisplayedDeploymentPhase` -- `DeploymentPhase | 'returning'` -- and derives this member rather than storing it (`src/simulation/security/deployment-phase.ts`). A guard restored from a save taken mid-journey settles on `'on-post'` while standing wherever the walk had got to, and `On Post` is an assertion about a tile it is not on; `Returning` is the word the owner chose for it. It is deliberately not a fifth `DeploymentPhase`: that union is persisted in every save under a `.strict()` schema and is read by the coverage census, both travel systems and the release service, none of which needs a new member to answer a question about one row's wording.",
+      },
+    ],
   },
   {
     // Labelled rather than exempted, unlike every refusal vocabulary beside it,

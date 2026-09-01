@@ -222,6 +222,21 @@ export class GuardRoster {
    * restarts the loop from wherever the guard's tile actually is) or
    * `'unassigned'` otherwise, exactly like `PrisonerOperationsRuntime` and
    * `JobBoard` reset stale in-flight travel on restore.
+   *
+   * **That paragraph is unchanged and still describes what this method does.
+   * What it does not say is what the guard's *tile* then is** -- wherever the
+   * walk had got to, which for a deployment leg is nowhere near the post the
+   * phase now names. Two things outside this method answer for that, both
+   * added under the owner's ruling 24 of 2026-08-31 and neither of them a
+   * change to the reset above:
+   *
+   * - a roster row says `Returning` rather than `On Post` for such a guard.
+   *   The word is derived from this state, not stored in it, so no member is
+   *   added to a union every save carries
+   *   (`src/simulation/security/deployment-phase.ts`);
+   * - `DeploymentSystem` walks the guard back. Before that, in a sector with
+   *   no patrol route -- which since ADR 0036 is every session a player can
+   *   start -- nothing in `src/` ever moved it again.
    */
   public loadSnapshot(snapshot: ReturnType<GuardRoster['getSnapshot']>): void {
     this.entityStore.loadSnapshot(snapshot.entityStore);
