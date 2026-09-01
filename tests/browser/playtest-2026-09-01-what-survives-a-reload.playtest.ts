@@ -157,7 +157,12 @@ test.describe('playtest: what survives a reload, and what the screen says about 
     let sawRun = false;
     for (let attempt = 0; attempt < 40; attempt += 1) {
       const rows = await readAlerts(page);
-      sawRun = rows.some((row) => /×\s*\d|x\s*\d/i.test(row.text) && row.id !== 'empty');
+      // `hud.alert.occurrences` renders `{count}×` -- the digit *before* the
+      // symbol (`src/content/default-locale-en.ts:263`, ADR 0084's own
+      // wording: "the multiplier after the figure"). A pattern demanding the
+      // digit follow `×` or a literal `x` never matches that order and this
+      // probe silently never saw a run; fixed to the actual rendered shape.
+      sawRun = rows.some((row) => /\d+\s*×/.test(row.text) && row.id !== 'empty');
       const tick = await currentTick(page);
       if (attempt % 5 === 0 || sawRun) {
         log(`t=${tick} day~${Math.floor(tick / DAY_TICKS) + 1}: ${rows.length} row(s), run seen = ${sawRun}`);
