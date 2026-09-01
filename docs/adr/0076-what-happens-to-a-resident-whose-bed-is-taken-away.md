@@ -765,14 +765,24 @@ and the procurement catalogue, never from the code under test.
 
 ## Amendment, 2026-09-01: taking a finished object away returns nothing
 
-**Proposed amendment, not self-approved -- awaiting the owner's signature.**
+**Accepted, 2026-09-01, by the repository owner** -- and the widening below was
+put to them explicitly and accepted with it: **a finished wall goes the same
+way as a finished bed.** The ruling says *"a finished object"*, this
+implementation reads that as *"a completed order"*, and the owner was asked
+whether that was meant. It was: the inversion is identical for a wall, and
+branching on `placesObjectId` would have reintroduced *"the two commands
+disagree"* as *"the two buildables disagree"*.
+
 Drafted 2026-09-01 against `0a53ec70` (v0.0.314), with its implementation on
-the same branch so that what is being signed can be seen running. **It must not
-merge before the signature.** The ruling quoted below is the owner's;
-*everything this amendment derives from it is not*, and the acceptance step is
-what makes the derivation the repository's rather than its author's. The
-amendment above this one was under exactly this condition for one day and its
-Status clause records what that read like.
+the same branch so that what was being signed could be seen running. **This
+clause read `Proposed amendment, not self-approved -- awaiting the owner's
+signature` and carried the sentence "It must not merge before the signature"
+until that acceptance**; both are kept rather than deleted, because the ruling
+quoted below was always the owner's while *everything this amendment derives
+from it* was not, and the acceptance step is what makes the derivation the
+repository's rather than its author's. The amendment above this one was under
+exactly the same condition for one day and its Status clause records what that
+read like.
 
 ### The source: the owner's ruling of 2026-09-01
 
