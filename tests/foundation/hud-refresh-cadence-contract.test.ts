@@ -279,7 +279,19 @@ describe('what refreshes a pulled HUD readout (#718)', () => {
     // stopped being a freeze, the assertions above would be pinning a cadence
     // that no longer needs pinning, and this file should be deleted rather
     // than left green.
-    expect(countAccepted(trace, refreshesWithoutTheClock)).toBe(1);
+    //
+    // **This read `toBe(1)` when the file landed and was measured at 2 the same
+    // afternoon**, by a merge rather than a regression: ADR 0084 (#754) made
+    // the alerts channel republish a restored record, so one more message in
+    // this window now carries something the counts-only predicate accepts. The
+    // old number is kept here because the freeze is the point and its size is
+    // not -- what matters is that 2 stands against the 120 the assertions above
+    // measure, and that the gap below is still the whole window.
+    //
+    // Left as an exact figure rather than loosened to a bound, deliberately: a
+    // bound would absorb the next such change in silence, and this number
+    // moving is exactly the news a reader of this file wants.
+    expect(countAccepted(trace, refreshesWithoutTheClock)).toBe(2);
     expect(worstGapMs(trace, refreshesWithoutTheClock)).toBeGreaterThanOrEqual(WINDOW_MS - WAKE_MS);
   });
 
