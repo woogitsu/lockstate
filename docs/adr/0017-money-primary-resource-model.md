@@ -687,6 +687,15 @@ its row, and `reportMaterialsFunding`
 it spends at `'construction'` and nowhere else, so the new reason *is* rung 2
 by construction rather than by a branch that could be got wrong.
 
+**c. The `FUNDS` chip is re-based, and its tone with it.** `overdraftRemaining`
+and `overdraftTone` (`src/ui/hud/projection.ts`) read the whole overdraft floor
+and now read the `'deliveries'` rung clamped to the published floor — the same
+`rungFloorMinorUnits('deliveries', …)` the host's pre-flight uses. §5's second
+bullet named only the number; the **tone** was computed against the same wrong
+floor, so a prison at −1,300 that had already had a delivery and a hire refused
+still painted amber. It now paints `danger` from the deliveries rung down,
+which is where the cheapest press stops changing the outcome.
+
 
 
 ### 6. Where this is implemented

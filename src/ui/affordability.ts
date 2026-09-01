@@ -142,14 +142,47 @@ export type AffordabilityRefusal = 'past-the-floor' | 'malformed-charge';
  * simulation accepts, but its mirror: a control that says yes and is overruled
  * some ticks later.
  *
- * **What it does not fix, deliberately.** `hud.status.funds-remaining` renders
- * `balance - overdraftFloor` (`src/ui/hud/projection.ts`), which is the room to
- * -2,500; between -1,250 and -2,500 that badge now offers a player room they
- * cannot spend. That is a player-visible figure whose meaning the ruling
- * changes, so it is the owner's under `AGENTS.md`'s fourth exclusion and is
- * reported rather than quietly re-based here.
+ * **What it did not fix, deliberately, and what fixed it.** This paragraph read:
+ * *"`hud.status.funds-remaining` renders `balance - overdraftFloor`
+ * (`src/ui/hud/projection.ts`), which is the room to -2,500; between -1,250 and
+ * -2,500 that badge now offers a player room they cannot spend. That is a
+ * player-visible figure whose meaning the ruling changes, so it is the owner's
+ * under `AGENTS.md`'s fourth exclusion and is reported rather than quietly
+ * re-based here."* It was reported, and the owner ruled on 2026-09-01 that the
+ * badge is re-based onto this same rung and says so in words. The badge now
+ * reads `{remaining} left before deliveries stop` over
+ * `deliveriesRungFloorMinorUnits`, so the host's pre-flight and the figure the
+ * player reads before pressing are one number.
  */
 export const HOST_PRESS_FLOOR_MINOR_UNITS = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+
+/**
+ * The `'deliveries'` rung under a floor the simulation published, for the one
+ * caller that has a published floor to hand.
+ *
+ * **This exists because `src/ui/hud/` may not import the simulation and this
+ * module may.** `tests/unit/ui-hud-messages.test.ts` pins that boundary --
+ * *"the HUD is a view over snapshots (`AGENTS.md` boundary 1), so it may not
+ * import the simulation"* -- and `overdraftRemaining` in
+ * `src/ui/hud/projection.ts` needs the rung the owner's ruling of 2026-09-01
+ * re-based the `FUNDS` chip onto. Re-deriving `Math.max(-1_250, floor)` inside
+ * the HUD would be a second copy of `rungFloorMinorUnits`'s clamp; going
+ * through here is one definition with the boundary intact.
+ *
+ * **Why the published floor and not `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`,
+ * where `HOST_PRESS_FLOOR_MINOR_UNITS` above takes the constant.** The two
+ * callers are not in the same position. This module's pre-flight is a
+ * *decision* and the docblock above argues at length that a decision must not
+ * depend on a value up to 500ms old; the badge is a *readout* of a treasury
+ * state, and it already reads the balance and the floor off the same payload,
+ * so taking the rung from anywhere else would let the badge disagree with the
+ * chip above it. At the only floor anything in `src/` configures the two agree
+ * to the minor unit; they part only for a session that sets a shallower floor,
+ * and there the payload is right.
+ */
+export function deliveriesRungFloorMinorUnits(overdraftFloorMinorUnits: number): number {
+  return rungFloorMinorUnits('deliveries', overdraftFloorMinorUnits);
+}
 
 /**
  * The one comparison, and it is deliberately the same shape as

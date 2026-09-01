@@ -356,17 +356,28 @@ describe('status strip: tone and badges', () => {
   });
 
   /**
-   * **The owner's ruling 18 of 2026-08-31, and the arithmetic in it is the one
-   * number here that can be wrong in a way a player would believe.**
+   * **The owner's ruling 18 of 2026-08-31, re-based by the owner's ruling of
+   * 2026-09-01, and the arithmetic in it is the one number here that can be
+   * wrong in a way a player would believe.**
    *
-   * `{remaining}` is *"how much of the facility is still spendable"*, i.e.
-   * `balance - floor`. A badge that were one unit generous would send a player
-   * to press a control the simulation is going to refuse; one that were one
-   * unit mean would hide a purchase they can afford, which is the failure #82
-   * and #207 are about. So the boundary is pinned from both sides, and the
-   * fixtures never compute the expected figure from the code under test.
+   * `{remaining}` was *"how much of the facility is still spendable"*,
+   * `balance - overdraftFloor`, and every figure in this test was written to
+   * the -2,500 floor. **Ruling 19 made that number an offer of room no press
+   * can spend**: a prison at -1,300 has already had a delivery and a hire
+   * refused and the badge still read `1,200 left`. The 2026-09-01 ruling
+   * re-bases it onto the `'deliveries'` rung, which is the same
+   * `HOST_PRESS_FLOOR_MINOR_UNITS` `judgeAffordability` refuses a press
+   * against -- so the badge reading `0 left before deliveries stop` and the
+   * next Buy press being refused are now the same fact, which is what makes
+   * the figure worth trusting.
+   *
+   * A badge that were one unit generous would send a player to press a control
+   * the simulation is going to refuse; one that were one unit mean would hide
+   * a purchase they can afford, which is the failure #82 and #207 are about.
+   * So the boundary is pinned from both sides, and the fixtures never compute
+   * the expected figure from the code under test.
    */
-  it('says how much of the overdraft is left, and never a number below zero', () => {
+  it('says how much is left before deliveries stop, and never a number below zero', () => {
     const FLOOR = -2_500;
     const badge = (treasuryMinorUnits: number, floor: number | undefined = FLOOR) =>
       metric(
@@ -377,38 +388,66 @@ describe('status strip: tone and badges', () => {
         'funds',
       );
 
-    // The remainder, spelled out rather than subtracted, so the fixture cannot
-    // agree with a wrong implementation: at -2,480 the owner's own worked
-    // example is 20.
-    expect(badge(-2_480).badge).toEqual({
+    /*
+     * The remainder, spelled out rather than subtracted, so the fixture cannot
+     * agree with a wrong implementation. -1,230 is `judgeAffordability`'s own
+     * worked example -- 20 of room against a 65 plank -- and the badge has to
+     * agree with it to the minor unit, because the two now answer the same
+     * question on the same rung from opposite sides of `sender.submit`.
+     *
+     * **This probe was `badge(-2_480)` with `remaining: 20` before the
+     * re-basing**, which was the same 20 measured against the floor.
+     */
+    expect(badge(-1_230).badge).toEqual({
       tone: 'warning',
       textKey: HUD_MESSAGE_KEY.fundsRemaining,
       numberParameters: { remaining: 20 },
     });
-    expect(badge(-1).badge?.numberParameters).toEqual({ remaining: 2_499 });
-    expect(badge(-1_250).badge?.numberParameters).toEqual({ remaining: 1_250 });
+    expect(badge(-1).badge?.numberParameters, '1,249 and not 2,499').toEqual({ remaining: 1_249 });
 
     /*
-     * **Exactly at the floor reads `0 left`, not a negative.** This is the
-     * boundary the ruling names: the prison can spend nothing, and a badge
-     * reading `-0` or `0` are different sentences to a player only if one of
-     * them is wrong.
+     * **The position the ruling was argued from.** A prison at -1,300 has had a
+     * delivery and a hire refused already, and the badge said `1,200 left` in
+     * amber. It says nothing is left, in red, because nothing is.
      */
-    expect(badge(FLOOR).badge).toEqual({
+    expect(badge(-1_300).badge).toEqual({
       tone: 'danger',
       textKey: HUD_MESSAGE_KEY.fundsRemaining,
       numberParameters: { remaining: 0 },
     });
 
     /*
-     * And **below** the floor, which `Treasury.spend` will not produce but a
-     * restored save or a future charge that bypasses `canAfford` could: the
-     * remainder is clamped, for `prisonersWithoutBed`'s reason -- a negative
-     * remainder is a nonsense sentence on screen, and the worst case here is a
-     * badge that understates by saying the truth of the floor.
+     * **Exactly at the rung reads `0 left`, not a negative.** This is the
+     * boundary: the prison can buy nothing more, and a badge reading `-0` or
+     * `0` are different sentences to a player only if one of them is wrong.
      */
+    expect(badge(-1_250).badge).toEqual({
+      tone: 'danger',
+      textKey: HUD_MESSAGE_KEY.fundsRemaining,
+      numberParameters: { remaining: 0 },
+    });
+
+    /*
+     * And **below** the rung, which a press cannot produce but a payday and the
+     * build queue both can: the remainder is clamped, for
+     * `prisonersWithoutBed`'s reason -- a negative remainder is a nonsense
+     * sentence on screen.
+     */
+    expect(badge(FLOOR).badge?.numberParameters).toEqual({ remaining: 0 });
     expect(badge(-3_000).badge?.numberParameters).toEqual({ remaining: 0 });
     expect(badge(-3_000).badge?.tone).toBe('danger');
+
+    /*
+     * **A floor shallower than the rung collapses the rung onto it**, which is
+     * `rungFloorMinorUnits`'s clamp and the reason the badge goes through
+     * `deliveriesRungFloorMinorUnits` rather than through a bare -1,250. At a
+     * floor of -800 the deliveries rung *is* -800, so a prison at -700 has 100
+     * left rather than a negative remainder against a rung deeper than its own
+     * facility.
+     */
+    expect(badge(-700, -800).badge?.numberParameters, 'the rung is clamped up to the floor').toEqual({
+      remaining: 100,
+    });
   });
 
   it('leaves the funds chip exactly as it was while the prison is solvent', () => {
@@ -442,28 +481,43 @@ describe('status strip: tone and badges', () => {
    * **Two tones, not one, and the split is `coverageTone`'s argument applied to
    * money.**
    *
-   * A prison at -100 and a prison at -2,500 are not the same state told louder:
+   * A prison at -100 and a prison at -1,300 are not the same state told louder:
    * the first can still buy the plank that finishes the cell, and the second
-   * can buy nothing at all until the state pays it. That is the same
+   * cannot buy anything at all until the state pays it. That is the same
    * distinction `coverageTone` draws between understaffed and unguarded -- the
-   * rung where the cheapest available action stops changing the outcome -- and
-   * it is why `danger` is reserved for the floor rather than spent on the first
-   * minus sign.
+   * rung where the cheapest available action stops changing the outcome.
+   *
+   * **This test read `reserves danger for the floor itself` and pinned -2,500
+   * until the owner's ruling of 2026-09-01**, and the sentence above read *"a
+   * prison at -100 and a prison at -2,500 ... `danger` is reserved for the
+   * floor rather than spent on the first minus sign."* It was right about the
+   * principle and wrong about the number from the moment ruling 19 gave the
+   * ladder three thresholds: between -1,250 and -2,500 the cheapest available
+   * action -- a press -- had already stopped changing the outcome, and the chip
+   * still painted amber. The rung where a player's press dies is the deliveries
+   * rung, so that is where `danger` starts.
+   *
+   * What `danger` therefore no longer means is *"nothing at all can be spent"*
+   * -- the build queue can still spend down to -2,000 and a payday to -2,500.
+   * That is a real narrowing and it is the right one: every one of those is a
+   * spend the player cannot make happen by pressing anything.
    *
    * Colour is never the only signal in either: the badge states the remainder
-   * in words, and at the floor those words are `0 left`.
+   * in words, and at the rung those words are `0 left before deliveries stop`.
    */
-  it('reserves danger for the floor itself, and paints the chip and its badge alike', () => {
+  it('reserves danger for the deliveries rung, and paints the chip and its badge alike', () => {
     const at = (treasuryMinorUnits: number) =>
       metric(counts({ treasuryMinorUnits, treasuryOverdraftFloorMinorUnits: -2_500 }), 'funds');
 
     expect(at(-1).tone).toBe('warning');
-    expect(at(-2_499).tone, 'one unit of room left is still room').toBe('warning');
-    expect(at(-2_500).tone, 'and none at all is not').toBe('danger');
+    expect(at(-1_249).tone, 'one unit of room left is still room').toBe('warning');
+    expect(at(-1_250).tone, 'and none at all is not').toBe('danger');
+    expect(at(-1_300).tone, 'the position the ruling was argued from').toBe('danger');
+    expect(at(-2_500).tone, 'and the floor is still danger, a rung further down').toBe('danger');
 
     // One decision, two channels: the chip and its badge cannot disagree about
     // how bad this is.
-    for (const balance of [-1, -2_499, -2_500, -4_000]) {
+    for (const balance of [-1, -1_249, -1_250, -2_500, -4_000]) {
       const chip = at(balance);
       expect(chip.badge?.tone, `balance ${String(balance)}`).toBe(chip.tone);
     }

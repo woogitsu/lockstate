@@ -5,7 +5,15 @@ import './ui-harness-api';
 
 /**
  * *"{remaining} left"* on the FUNDS chip, in a real browser -- the owner's
- * ruling 18 of 2026-08-31.
+ * ruling 18 of 2026-08-31, re-based onto the deliveries rung by the owner's
+ * ruling of 2026-09-01.
+ *
+ * **Every figure below moved on 2026-09-01 and none of the reasoning did.**
+ * The badge stated `balance - overdraftFloor`, the room to -2,500; ruling 19
+ * had given ADR 0017 decision 8's rungs three thresholds inside that overdraft,
+ * so between -1,250 and -2,500 the number was room no press could spend. It now
+ * states the room to the `'deliveries'` rung -- the same
+ * `HOST_PRESS_FLOOR_MINOR_UNITS` `judgeAffordability` refuses a press against.
  *
  * ## What this covers that `pnpm test` cannot
  *
@@ -125,7 +133,9 @@ test.describe('the FUNDS chip says how much of the overdraft is left (ruling 18)
      * the badge did before `numberParameters` existed.
      */
     const shallow = await show(page, counts(-100));
-    expect(shallow.badgeText, 'the remainder is formatted, not stringified').toBe('2,400 left');
+    // 1,150 and not 2,400: the room to -1,250, not to the floor. Still four
+    // digits, which is what this assertion is actually for.
+    expect(shallow.badgeText, 'the remainder is formatted, not stringified').toBe('1,150 left');
     expect(shallow.chipValue, 'and the chip above it is formatted the same way').toBe('-100');
     expect(shallow.badgeTone).toBe('warning');
     expect(shallow.chipTone, 'the chip and its badge state one severity').toBe('warning');
@@ -155,14 +165,29 @@ test.describe('the FUNDS chip says how much of the overdraft is left (ruling 18)
     expect(shallow.badgeOnScreen, 'still off the edge at 900x600 -- see #719').toBe(false);
     expect(shallow.chipOnScreen, 'and so is the chip carrying it').toBe(false);
 
-    // The owner's own worked example.
-    expect((await show(page, counts(-2_480))).badgeText).toBe('20 left');
+    /*
+     * The worked example. **`counts(-2_480)` until the re-basing**, where the
+     * same twenty was the room to the floor; -1,230 is where twenty of room
+     * lives now, and it is `judgeAffordability`'s own probe
+     * (`tests/unit/ui-affordability.test.ts`), so the badge and the pre-flight
+     * are read against one number.
+     */
+    expect((await show(page, counts(-1_230))).badgeText).toBe('20 left');
 
     /*
-     * **At the floor: `0 left`, and red.** The prison can spend nothing until
-     * the state pays it, which is the rung where the cheapest available action
-     * stops changing the outcome -- `coverageTone`'s distinction, applied to
-     * money. A `-0` or a negative here would be the one number on this strip
+     * **And the position the 2026-09-01 ruling was argued from**, in a real
+     * browser: a prison at -1,300 has had a delivery and a hire refused
+     * already. It read `1,200 left` in amber and reads nothing left, in red.
+     */
+    const pastTheRung = await show(page, counts(-1_300));
+    expect(pastTheRung.badgeText).toBe('0 left');
+    expect(pastTheRung.badgeTone).toBe('danger');
+    expect(pastTheRung.chipTone).toBe('danger');
+
+    /*
+     * **At the floor: `0 left`, and red.** Still true a rung further down, and
+     * still clamped: the remainder cannot go negative however deep the balance
+     * goes. A `-0` or a negative here would be the one number on this strip
      * that a player would believe and act on.
      */
     const stuck = await show(page, counts(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS));
