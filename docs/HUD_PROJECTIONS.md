@@ -1456,6 +1456,15 @@ decision about what to build next.
     money, and would need a new `RefusalReason` member, a new
     `hud.alert.refusal.build.*` key and its English text.
 
+    **The quoted sentence is not the shipped one as of 2026-08-31 and the
+    paragraph is otherwise unchanged.** The owner's ruling 23 gave
+    `purchase.insufficient-funds` the host's words for the same refusal —
+    *"Nothing was bought — that would go past what the state will carry."* —
+    so it now names the overdraft floor rather than an absence of funds. What
+    is owed here is the same thing it was: a sentence that names the *wall*,
+    which is still a new `RefusalReason` member, a new
+    `hud.alert.refusal.build.*` key and new copy, and still the owner's.
+
     **Amended 2026-08-30: the payload now reaches the main thread, and the
     paragraph above described only half of where it stopped.** It said what is
     owed is a sentence, which is true and is still true — but between the

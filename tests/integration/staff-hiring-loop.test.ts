@@ -16,6 +16,7 @@ import { StaffHiringService, staffHireCostMinorUnits } from '../../src/simulatio
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 import { hudAlertsFromWorkerMessage } from '../../src/ui/simulation-alerts';
 import { hudCountsFromWorkerMessage } from '../../src/ui/simulation-counts';
 
@@ -253,6 +254,23 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
     // not share a message, or a player who pressed Hire is sent to the Build
     // panel to look for materials they never ordered.
     expect(sentence).not.toBe(localizer.format('hud.alert.refusal.purchase.insufficient-funds'));
+    /*
+     * **And it is the host's sentence, word for word** -- the owner's ruling 23
+     * of 2026-08-31. The boundary this test set up by hand is the one
+     * `src/main.ts` pre-checks before it submits: a wage the last published
+     * balance cannot carry is refused on that thread with
+     * `hud.refusal.hire-staff-past-floor`, and the same wage a tick later --
+     * several hires inside one tick, or a balance that moved since the last
+     * publication -- is refused here. One press produces exactly one of the
+     * two, on the same band, so they say the same thing.
+     *
+     * This is the assertion that makes the precondition above load-bearing
+     * rather than decorative: `canAfford` is `balance - amount >= floor`, so
+     * the refusal really is the floor and the floor is what the sentence names.
+     */
+    expect(sentence, "ruling 23: the worker says the host's words").toBe(
+      localizer.format(HUD_MESSAGE_KEY.refusalHireStaffPastFloor),
+    );
   });
 
   it('refuses a role the catalogue does not declare, and records it as its own reason', () => {

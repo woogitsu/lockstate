@@ -301,19 +301,47 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // and a purchase alike, and somebody who pressed Hire must not be told the
   // materials were not ordered.
   //
-  // **Both of these say "not enough funds" for a refusal that is, since #703
-  // ruling A, always the overdraft floor** -- and that is recorded here rather
+  // **Both of these said "not enough funds" for a refusal that is, since #703
+  // ruling A, always the overdraft floor** -- and that was recorded here rather
   // than fixed. `GuardRoster.hire` refuses at `src/simulation/staff/hiring.ts:199`
-  // and `ProcurementSystem.purchase` at `src/simulation/economy/procurement.ts:166`,
+  // and `ProcurementSystem.purchase` at `src/simulation/economy/procurement.ts:195`,
   // both on a `Treasury.spend` that is one `canAfford` comparison against the
-  // floor, so the worker-side sentence carries exactly the conflation the
+  // floor, so the worker-side sentence carried exactly the conflation the
   // owner's ruling 18 of 2026-08-31 removed from the *host* side
   // (`hud.refusal.purchase-materials-past-floor` and its hire twin). Ruling 18
-  // authored two sentences and these are not them, and a replacement is
+  // authored two sentences and these were not them, and a replacement is
   // player-facing copy -- `AGENTS.md`'s fourth exclusion -- so the two halves of
-  // one refusal currently read differently depending on which side of
-  // `sender.submit` decided it.
-  'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — there are not enough funds.',
+  // one refusal read differently depending on which side of `sender.submit`
+  // decided it.
+  //
+  // **The owner's ruling 23 of 2026-08-31 closed it: *"Te same słowa co host"*
+  // -- the worker says the same words as the host.** The two sentences below
+  // are ruling 18's own, transcribed from `hud.refusal.hire-staff-past-floor`
+  // and `hud.refusal.purchase-materials-past-floor`; no third wording was
+  // authored here, so the fourth exclusion is satisfied by the owner having
+  // written both halves rather than bypassed. The paragraph above is kept
+  // because it is the record of what the sentences used to say and why nobody
+  // was allowed to change them until now.
+  //
+  // **Still four keys, and not two worker keys pointing at the host's.** Four
+  // call sites, and two vocabularies that ADR 0011 keeps apart at
+  // `REFUSAL_LABEL_KEYS` (`src/ui/simulation-alerts.ts`): a `RefusalReason` the
+  // worker put on the wire is turned into exactly one authored
+  // `hud.alert.refusal.<command>.*` sentence per reason -- the rule the
+  // refusal-reason exemptions in `tests/unit/simulation-message-keys.test.ts`
+  // state in those words, repeated for every command union that has one --
+  // while `hud.refusal.*` is what a control on *this* thread says when it
+  // refuses before submitting. Making one table's value a member of the other
+  // namespace would put a host key on the wire's side of that line. The repository's own precedent is the same
+  // direction and is not thin: `hud.build.queue-cancel` and
+  // `hud.build.delivery-cancel` are both "Cancel", `hud.build.step-up` and
+  // `hud.rooms.step-up` are both "Increase {field}", `hud.status.staff` and
+  // `hud.security.staff` are both "Staff" -- this file has always let distinct
+  // keys carry identical text, because a key here is a *call site* and never a
+  // string pool. What keeps identical text identical is a test, not a shared key:
+  // `tests/unit/ui-simulation-alerts.test.ts` pins each of these two against
+  // the host key it now quotes.
+  'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — that would go past what the state will carry.',
   // ADR 0053: the only work a staff member can be sent to do today is a
   // security duty, so a role outside the security department is a wage with
   // nothing behind it. The sentence names the rule rather than the department
@@ -346,7 +374,16 @@ const authoredMessages: Readonly<Record<string, string>> = {
    */
   'hud.alert.refusal.remove-object.nothing-to-remove': 'Nothing was removed — there is no object on that tile, and none being built there.',
   'hud.alert.refusal.purchase.duplicate-order': 'The materials were not ordered — that order already exists.',
-  'hud.alert.refusal.purchase.insufficient-funds': 'The materials were not ordered — there are not enough funds.',
+  // Ruling 23's other half -- see `hire.insufficient-funds` above for the
+  // whole argument, and note that this key has a second producer:
+  // `reportMaterialsFunding` (`src/simulation/construction/handler.ts`)
+  // records it for a build order the just-in-time pass could not fund. That
+  // path is the floor too -- `JustInTimeMaterialsService` puts a line in
+  // `unfunded` only behind `Treasury.canAfford`, and routes every non-money
+  // refusal to `unprocurable` instead, *"because the prison is not short of
+  // money for them and telling the player it is would be a sentence that is
+  // false"* -- so the tail of this sentence is true on both routes.
+  'hud.alert.refusal.purchase.insufficient-funds': 'Nothing was bought — that would go past what the state will carry.',
   'hud.alert.refusal.purchase.invalid-quantity': 'The materials were not ordered — that quantity cannot be bought.',
   'hud.alert.refusal.purchase.unknown-material': 'The materials were not ordered — that material is not for sale.',
   /*
