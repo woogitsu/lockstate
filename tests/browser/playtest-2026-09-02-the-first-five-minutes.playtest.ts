@@ -18,6 +18,22 @@ import {
 } from './playtest-harness';
 
 /**
+ * A bounded per-action timeout, on every page this file opens.
+ *
+ * `playwright.playtest.config.ts` sets `expect.timeout` but no default
+ * `actionTimeout`, so a `.click()` on a control that never becomes visible
+ * waits with **no timeout at all** rather than failing fast — measured here:
+ * act 4's first draft picked an off-screen tile pair (see its own comment)
+ * and the resulting `.click()` on a `.hud-rooms__confirm` that was never
+ * laid out ran past this file's own 120s harness timeout with no output.
+ * 30s turns that class of instrument mistake into a fast, readable failure
+ * instead of a silent hang.
+ */
+test.beforeEach(async ({ page }) => {
+  page.setDefaultTimeout(30_000);
+});
+
+/**
  * **Playing the first five minutes: a brand-new player, using only what the
  * screen tells them.**
  *
@@ -106,15 +122,30 @@ test('act 1: the first screen a player sees, and the default tab', async ({ page
 
   await page.getByRole('button', { name: 'New prison' }).click();
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
-  log('act1', `tick right after New prison: ${await currentTick(page)}`);
+  // `currentTick` reads the last `simulation/clock-state` message the tee has
+  // seen; the UI's own paint (the day label above) can land a frame before
+  // that channel's first message does, so a read with no wait at all can
+  // read -1. Waited out here rather than reported as a finding: it says
+  // something about this harness's two channels, nothing about what a player
+  // sees, and `.hud-clock__day` already reading "1" is the on-screen fact.
+  await page.waitForTimeout(200);
+  log('act1', `tick right after New prison (200ms settle): ${await currentTick(page)}`);
 
-  const activeTab = await page.locator('.hud__tabs').getAttribute('data-active-tab');
-  log('act1', `.hud__tabs data-active-tab (if present): ${activeTab}`);
+  // `hud.ts` stamps `data-active-tab` on `.hud` itself (`hud.dataset['activeTab']
+  // = state.activeTab`), not on `.hud__tabs` — read wrong once here and
+  // corrected before trusting it. The tab bar's own selection attribute is
+  // `aria-current`, not `aria-selected`: `hud.ts` passes `selection:
+  // 'aria-current'` to `createTabButton`, whose own comment says why
+  // (`aria-selected` needs a real `tablist`/`tabpanel` pairing this bar does
+  // not have yet) — read as `aria-selected` first, which is why every tab
+  // below would otherwise have printed `null`.
+  const activeTab = await page.locator('.hud').getAttribute('data-active-tab');
+  log('act1', `.hud data-active-tab: ${activeTab}`);
   for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
     const el = tab(page, id);
     const label = (await el.innerText()).trim();
-    const active = await el.getAttribute('aria-selected');
-    log('act1', `tab "${id}": label=${JSON.stringify(label)} aria-selected=${active}`);
+    const active = await el.getAttribute('aria-current');
+    log('act1', `tab "${id}": label=${JSON.stringify(label)} aria-current=${active}`);
   }
 
   // What the default (Overview) tab actually shows — this is the very first
@@ -218,10 +249,26 @@ test('act 4: zoning a cell on open ground before any wall exists', async ({ page
   await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
   await page.locator('.hud-rooms__arm').click();
 
-  // 4x4 tiles at (2,2) — well clear of the minimap on the left, and inside
-  // the one 32x32 chunk a fresh session actually owns
-  // (`src/simulation/runtime/new-session.ts`).
-  await drag(page, centreOf(origin, 2, 2), centreOf(origin, 6, 6));
+  /*
+   * **First attempt at this act used tiles (2,2)-(6,6), and it hung the
+   * `.hud-rooms__confirm` click forever rather than reporting anything.**
+   * `calibrate()` measured this run's origin at `(-304, -574)` — this
+   * config's 1440x900 default viewport puts the camera somewhere this
+   * session's earlier playtests at 1280x800 never landed — so tile (2,2)'s
+   * *centre* was screen point `(-144, -414)`: off the visible viewport
+   * entirely, in negative coordinates. The mouse events landed nowhere real,
+   * no rectangle was ever held, and `.hud-rooms__confirm` stayed not laid
+   * out while Playwright's `.click()` waited for it with no timeout
+   * configured on this action (`playwright.playtest.config.ts` sets
+   * `expect.timeout` but not a default `actionTimeout`) — a genuine hang,
+   * not a slow pass. This is a bug in this instrument's own choice of tile,
+   * not in the product: (12,12)-(17,17), the footprint every other playtest
+   * in this repository already builds at, is on-screen precisely because it
+   * was chosen for that reason (see `buildAndPopulate` and
+   * `buildResilientCell` elsewhere in this directory). Reusing that
+   * footprint here too, at row 12 rather than row 2.
+   */
+  await drag(page, centreOf(origin, 12, 12), centreOf(origin, 16, 16));
   const preConfirm = await panelText(page, '.hud-rooms');
   log('act4', `Rooms panel with the rectangle held, before Confirm is pressed: ${JSON.stringify(preConfirm)}`);
   const confirmDisabled = await page.locator('.hud-rooms__confirm').getAttribute('disabled');
@@ -384,7 +431,13 @@ test('act 5: build the walls, then zone the same rectangle — does the stale re
   }
   await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
   await page.locator('.hud-rooms__arm').click();
-  await drag(page, centreOf(origin0, 2, 2), centreOf(origin0, 6, 6));
+  // Tiles (12,20)-(16,24): on the same on-screen column act 4 found safe
+  // (see its comment on why (2,2) hung this instrument), at a row clear of
+  // the walled cell `buildWalls` puts at rows 12-17 below, so this failed
+  // attempt and the later success are genuinely two different rectangles —
+  // the exact shape act 3's rooms-surface playtest measured the stale
+  // refusal band under.
+  await drag(page, centreOf(origin0, 12, 20), centreOf(origin0, 16, 24));
   await page.locator('.hud-rooms__confirm').click();
   await page.waitForTimeout(500);
   log('act5', `first (open-ground) attempt refusal band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
