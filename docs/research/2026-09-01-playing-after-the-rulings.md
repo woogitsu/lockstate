@@ -246,7 +246,10 @@ three beds, a toilet, three prisoners admitted, then three guards hired with the
 clock stopped. Coverage read *"0 of 1 · Unguarded · Nobody is on duty. Hire 1 to
 cover this population."* The clock was then started at ×1 and
 `.hud-staff__roster .hud-staff__held-row` polled **every 80 ms for 90 seconds**
-— roughly 1,100 samples across about 1,800 ticks:
+across about 1,800 ticks. **No sample count is claimed for this act** — the
+loop's iterations were not counted, and a figure derived from 90 s ÷ 80 ms
+would ignore the `evaluate` round trip in each one. Act 6 counts its samples;
+this one only ran:
 
 ```
 first tick at which a row said Travelling: -1
@@ -327,7 +330,7 @@ a player will ever see either word. Recorded as **D2**.
 ## 5. #726 / #720 — the sentences are whole, and 88 pixels wide
 
 **MEASURED, acts 5 and 5b.** The longest sentence in the refusal namespace is
-`hud.alert.refusal.zone.not-enclosed` at 113 characters, and it is two mouse
+`hud.alert.refusal.zone.not-enclosed` at **109 characters**, and it is two mouse
 gestures away: arm the cell tool over open ground and confirm. It arrived
 complete, at both viewports the brief named:
 
@@ -609,7 +612,8 @@ than skipped:**
   the persistence and the post-load continuation. A browser spec would add the
   mouse path and a several-minute build, and would be testing Playwright.
 - **`Returning` (#732).** A spec would have to *catch* a 50–100 ms state — the
-  definition of a flaky test, and §4 shows 1,100 samples missing it. The right
+  definition of a flaky test, and §4 shows 95 counted samples across three
+  in-game days missing it. The right
   gate for that decision is headless, over `displayedDeploymentPhase`, which is
   where #732 already put it.
 - **The alerts row (#726) at 900x600.** This is the one real gap: #726's own
@@ -626,8 +630,8 @@ than skipped:**
 # Part D — the weakest claim in this record
 
 **It is §4's, and it is the one to attack first.** Two acts, two prisons, about
-four in-game days and a few hundred roster samples never showed the word
-`Travelling`, and act 6's deliberate hunt for a guard off its post caught an
+four in-game days and every roster sample either act took -- 95 of them
+counted, in act 6 -- never showed the word `Travelling`, and act 6's deliberate hunt for a guard off its post caught an
 `On Search` one whose reload produced `Unassigned` rather than `Returning`. The
 code read under it is unambiguous — `setTile(guardId, postTile)` is one line,
 and `loadSnapshot` rewrites `'travelling'` and nothing else — but the step from
