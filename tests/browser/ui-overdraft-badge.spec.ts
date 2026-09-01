@@ -221,37 +221,17 @@ test.describe('the FUNDS chip says how much of the overdraft is left (ruling 18)
 });
 
 /**
- * **How wide the badge is, at the width the strip's defect lives at.**
+ * **How wide the badge is, at the four widths a player might have.**
  *
- * The owner's ruling of 2026-09-01 gives this badge words that name what the
- * number protects -- `{remaining} left before deliveries stop` -- and the
- * research pass that put the candidate up -- *"Copy variants for two rulings"*,
- * 2026-09-01, on the `docs/copy-variants-for-the-owner` branch -- recorded in
- * its §2c that **no measurement of this badge's width existed anywhere in this
- * repository**.
- * `hud.css:2865` measures the FUNDS *value* chip; nothing measured the badge
- * under it. That absence is why the wording was not to ship unmeasured, and
- * this block is the measurement.
+ * ## The ruling this block measured, and the ruling that followed
  *
- * 1280x800 because that is the viewport `ui-strip-badged-width.spec.ts` calls
- * "the width the defect lives at and the commonest laptop", and because the
- * FUNDS chip is eighth of nine on a row that is `overflow-x: auto` with the
- * scrollbar suppressed -- so a badge that does not fit is present in the DOM
- * and visible to nobody, which #629 says does not count.
- *
- * The prison is `ui-strip-badged-width.spec.ts`'s `POPULATED` with the treasury
- * taken below the deliveries rung, which is the only way this badge draws at
- * all. Its seven-figure treasury cannot be used: a chip cannot be at seven
- * figures and below zero at once, and that is exactly why that file leaves this
- * state to this one.
- *
- * ## The numbers, and the ruling they were taken for
- *
- * Selector `.ui-stat[data-metric="funds"] .ui-badge`, harness page, the
- * populated prison below, treasury floor -2,500. Two balances, because the
- * badge's width follows its number: -1,300 is where the ruling was argued from
- * and renders the **shortest** remainder (`0`), and -1 renders the **widest**
- * the shipped floor allows (`1,249`).
+ * The owner first chose `{remaining} left before deliveries stop` for this
+ * badge, on the condition that the badge be measured, because the research pass
+ * that put the candidate up -- *"Copy variants for two rulings"*, 2026-09-01 --
+ * recorded in its §2c that **no measurement of this badge's width existed
+ * anywhere in this repository**. `hud.css` measures the FUNDS *value* chip;
+ * nothing measured the badge under it. This block was that measurement, and the
+ * wording did not survive it:
  *
  * | wording | balance | badge | FUNDS chip | row client / scroll @1280 | chips on screen | FUNDS chip visible |
  * | --- | --- | --- | --- | --- | --- | --- |
@@ -260,79 +240,144 @@ test.describe('the FUNDS chip says how much of the overdraft is left (ruling 18)
  * | `{remaining} left before deliveries stop` | -1,300 | 179.94px | 258.75px | 1256 / 1395 | 8 of 9 | yes |
  * | `{remaining} left before deliveries stop` | -1 | 206.19px | 283.95px | 1256 / 1420 | 7 of 9 | **no** |
  *
- * At 1440x800 the long wording survives at -1,300 (9 of 9, no overflow) and at
- * -1 (8 of 9, chip still visible), and fails in the every-badge state (7 of 9,
- * chip off). At 1920x800 it fits in every state measured.
+ * A separate research pass, on a different branch not yet merged here, re-took
+ * every one of those figures by a different method (editing the DOM rather
+ * than the locale catalogue) on a different tree and reported reproducing them
+ * to the hundredth of a pixel -- so this table rests on two independent
+ * measurements agreeing rather than one. Not cited by path: that document lives
+ * on a branch this one has not merged, and
+ * `tests/foundation/documentation-links-contract.test.ts` is right to refuse a
+ * citation this tree cannot resolve.
  *
- * **The verdict, which is the owner's to act on.** The long wording never wraps
- * and is never clipped -- it is one legible line at every width measured, so
- * the objection is not legibility. It costs **+133px** of chip, and at 1280x800
- * that is enough to push the FUNDS chip itself past the right edge of
- * `.hud-strip__metrics` for the whole four-digit range of the remainder, on a
- * container whose scrollbar `hud.css` suppresses: present in the DOM and
- * visible to nobody, which #629 says does not count. The incumbent wording
- * keeps that chip on screen at the same viewport in the same states. So the
- * incumbent ships and the wording goes back to the owner with these figures
- * beside it, recorded at `src/content/default-locale-en.ts`.
+ * **The owner then ruled, reversing their own earlier choice**: *"the chip keeps
+ * the short wording, because it fits; the name of the threshold -- that it is
+ * deliveries that will stop -- is said elsewhere, where there is room for a full
+ * sentence: in the hover tooltip on the chip, and in the alert. Nothing is to
+ * disappear from the screen."* So the badge is `{remaining} left`, the sentence
+ * is on the chip's `title` and in its screen-reader text
+ * (`StatChip.setDescription`), and it is in the refusal alert as well because a
+ * hover tooltip is unreachable on touch and unseen by a player who never hovers.
  *
- * ## What is asserted, and what is only reported
+ * ## What this block asserts now
  *
- * Asserted: the badge is not clipped or wrapped *inside its own chip*
- * (`scrollWidth <= clientWidth`, one line box), and the FUNDS chip and its
- * badge are both **on screen** at 1280x800 in both states. The second is the
- * gate the long wording fails, which is what makes it a real assertion rather
- * than a restatement of today -- and it cannot fire on somebody's #719 fix,
- * because a fix to #719 puts *more* of the row on screen, never less.
+ * Four viewports rather than one. 1280x800 is where the long wording failed;
+ * 1280x720, 1440x900 and 1920x1080 are the rest of the desktop range every
+ * layout decision in this repository is argued against, and a wording that fits
+ * at 1280 and is never checked at 1280x720 is a wording checked at one height.
+ * 900x600 is deliberately excluded: the FUNDS chip is off the row's edge there
+ * under *every* wording including the incumbent, which is #719 and not this
+ * ruling -- the first `describe` in this file pins that state rather than
+ * pretending it away.
+ *
+ * At each viewport, both ends of the remainder range: -1,300 renders the
+ * **shortest** number (`0`, and the position the re-basing ruling was argued
+ * from) and -1 the **widest** the shipped floor allows (`1,249`). The prison is
+ * `ui-strip-badged-width.spec.ts`'s `POPULATED` taken below the deliveries rung,
+ * which is the only state that draws this badge at all; its seven-figure
+ * treasury cannot be used, because a chip cannot be at seven figures and below
+ * zero at once.
+ *
+ * Asserted: the badge is not clipped or wrapped inside its own chip
+ * (`scrollWidth <= clientWidth`, one line box), the FUNDS chip carrying it is
+ * **on screen**, and the chip's description sentence is present and **costs the
+ * row no width** -- measured by blanking the screen-reader span and re-reading
+ * the chip, not by trusting `.ui-sr-only`'s declared `position: absolute`. The
+ * last of those is what makes the ruling's arrangement possible at all: if the
+ * tooltip channel had a width, moving the sentence off the badge would have
+ * bought nothing.
  *
  * Reported and deliberately not asserted: how many chips of the nine are on
- * screen. That is #719's subject, it was already short at this viewport before
- * this badge had any words at all, and an expectation pinning it here would
- * make the next person's fix fail this file -- the rule
- * `ui-strip-badged-width.spec.ts` states for the same row.
+ * screen. That is #719's subject, it was already short at 1280 before this badge
+ * had any words, and an expectation pinning it here would make the next person's
+ * fix fail this file -- the rule `ui-strip-badged-width.spec.ts` states for the
+ * same row. The on-screen assertion cannot fire on a #719 fix either, because a
+ * fix to #719 puts *more* of the row on screen, never less.
  */
-test.describe('the badge is legible where the strip is tightest', () => {
-  test.use({ viewport: { width: 1280, height: 800 } });
+const WIDTHS = [
+  { width: 1280, height: 720 },
+  { width: 1280, height: 800 },
+  { width: 1440, height: 900 },
+  { width: 1920, height: 1080 },
+] as const;
 
-  test('draws the whole sentence on one line inside the FUNDS chip at 1280x800', async ({ page }) => {
+/**
+ * The two ends of the remainder range, and nothing between them.
+ *
+ * The badge's width follows its number and the number has four digits at most,
+ * so the widest and the narrowest bracket every state the shipped floor can
+ * produce. -1,300 is also the position the 2026-09-01 re-basing was argued from
+ * and the point where the chip turns red, so the two cases cover both of the
+ * chip's tones and both of its description sentences.
+ */
+const BALANCES = [-1_300, -1] as const;
+
+test.describe('the badge fits, and the sentence it cannot hold costs the row nothing', () => {
+  test.use({ viewport: WIDTHS[0] });
+
+  test('keeps the FUNDS chip on screen at every desktop width, at both ends of the remainder', async ({ page }) => {
     await page.goto(HARNESS_URL);
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
 
-    /*
-     * A populated prison, below the deliveries rung. -1,300 is the position the
-     * ruling was argued from: a delivery and a hire have both been refused, so
-     * the badge reads nothing left, which is also its **shortest** number and
-     * therefore not the worst case for width. -1 is the widest number this
-     * badge can carry at the shipped floor (1,249), and both are measured.
-     */
-    const reading = await measure(page, -1_300);
-    const widest = await measure(page, -1);
+    const readings: Record<string, BadgeGeometry> = {};
+    for (const viewport of WIDTHS) {
+      await page.setViewportSize(viewport);
+      for (const balance of BALANCES) {
+        const at = `${String(viewport.width)}x${String(viewport.height)}@${String(balance)}`;
+        const state = await measure(page, balance);
+        readings[at] = state;
+
+        expect(state.badgeText, `${at}: the badge is drawn at all`).not.toBeNull();
+        expect(
+          state.badgeScrollWidth,
+          `${at}: "${String(state.badgeText)}" is clipped inside its own box`,
+        ).toBeLessThanOrEqual(state.badgeClientWidth);
+        expect(
+          state.badgeLines,
+          `${at}: "${String(state.badgeText)}" wrapped onto more than one line inside the chip`,
+        ).toBe(1);
+        // The chip grew to hold it rather than the badge overflowing the chip.
+        expect(state.badgeWidth, `${at}: the badge is inside its chip`).toBeLessThanOrEqual(state.chipWidth + 0.5);
+        /*
+         * And the chip carrying it is reachable. This is the half of "does it
+         * fit" that the long wording failed: a badge is only a badge if
+         * somebody can see it, and `.hud-strip__metrics` is `overflow-x: auto`
+         * with its scrollbar suppressed, so a chip past the right edge is a
+         * chip that does not exist for the player.
+         */
+        expect(
+          state.fundsChipOnScreen,
+          `${at}: the FUNDS chip is reachable with "${String(state.badgeText)}" on it`,
+        ).toBe(true);
+
+        /*
+         * **Nothing disappeared from the screen**, which is the sentence the
+         * ruling ends on. The threshold's name is on the chip in both channels
+         * -- `title` for a pointer, screen-reader text for everyone else -- and
+         * it says what the badge has no room to say.
+         */
+        expect(state.chipTitle, `${at}: the chip has no tooltip`).toMatch(/deliver/i);
+        expect(state.chipDescriptionText, `${at}: the tooltip is hover-only`).toBe(state.chipTitle);
+        expect(
+          String(state.chipTitle).length,
+          `${at}: the tooltip says no more than the badge does`,
+        ).toBeGreaterThan(String(state.badgeText).length);
+
+        /*
+         * **And it costs the row nothing**, measured rather than assumed. The
+         * screen-reader span is blanked and the chip re-read: same width to the
+         * hundredth of a pixel. If this ever stops holding, the ruling's whole
+         * arrangement stops working -- the sentence would be back in the
+         * layout, one indirection further away from anybody noticing.
+         */
+        expect(
+          state.chipWidthWithoutDescription,
+          `${at}: the chip's sentence has a width, so moving it off the badge bought nothing`,
+        ).toBe(state.chipWidth);
+      }
+    }
 
     // eslint-disable-next-line no-console -- the measurement is the point of this test.
-    console.log(`[funds-badge@1280x800] ${JSON.stringify({ reading, widest }, undefined, 2)}`);
-
-    for (const state of [reading, widest]) {
-      expect(state.badgeText, 'the badge is drawn at all').not.toBeNull();
-      expect(
-        state.badgeScrollWidth,
-        `"${String(state.badgeText)}" is clipped inside its own box`,
-      ).toBeLessThanOrEqual(state.badgeClientWidth);
-      expect(
-        state.badgeLines,
-        `"${String(state.badgeText)}" wrapped onto more than one line inside the chip`,
-      ).toBe(1);
-      // The chip grew to hold it rather than the badge overflowing the chip.
-      expect(state.badgeWidth, 'the badge is inside its chip').toBeLessThanOrEqual(state.chipWidth + 0.5);
-      /*
-       * And the chip carrying it is reachable. This is the half of "does it
-       * fit" that the long wording failed: a badge is only a badge if somebody
-       * can see it, and `.hud-strip__metrics` is `overflow-x: auto` with its
-       * scrollbar suppressed, so a chip past the right edge is a chip that does
-       * not exist for the player.
-       */
-      expect(state.fundsChipOnScreen, `the FUNDS chip is reachable with "${String(state.badgeText)}" on it`).toBe(
-        true,
-      );
-    }
+    console.log(`[funds-badge] ${JSON.stringify(readings, undefined, 2)}`);
   });
 });
 
@@ -348,6 +393,17 @@ interface BadgeGeometry {
   readonly chipsOnScreen: number;
   readonly chipCount: number;
   readonly fundsChipOnScreen: boolean;
+  /** The chip's `title` attribute -- the pointer-hover channel. `null` when unset. */
+  readonly chipTitle: string | null;
+  /** The chip's screen-reader-only description text -- the touch/AT channel. `null` when unset. */
+  readonly chipDescriptionText: string | null;
+  /**
+   * The chip's width with the screen-reader description span blanked, so it
+   * can be compared against `chipWidth` (description intact) to prove the
+   * sentence costs the row nothing. Equal to `chipWidth` when there is no
+   * description to blank.
+   */
+  readonly chipWidthWithoutDescription: number;
 }
 
 /** The FUNDS chip's badge geometry on a populated prison at `treasuryMinorUnits`. */
@@ -398,6 +454,24 @@ async function measure(page: Page, treasuryMinorUnits: number): Promise<BadgeGeo
     const tops = new Set([...range.getClientRects()].map((rect) => Math.round(rect.top)));
     const chips = [...row.querySelectorAll<HTMLElement>('[data-metric]')];
     const onScreen = (box: DOMRect): boolean => box.left >= rowBox.left - 0.5 && box.right <= rowBox.right + 0.5;
+
+    /*
+     * The screen-reader span is `.ui-sr-only`, always the chip's last child
+     * (`createStatChip`'s comment: "Last child, always"). Blanking its text
+     * and re-reading the chip's width, then restoring it, is how "costs the
+     * row no width" is measured rather than assumed -- trusting
+     * `.ui-sr-only`'s declared `position: absolute` would not catch a rule
+     * that stopped applying.
+     */
+    const description = chip.querySelector<HTMLElement>('.ui-sr-only');
+    const descriptionText = description?.textContent ?? null;
+    let chipWidthWithoutDescription = Math.round(chipBox.width * 100) / 100;
+    if (description !== null && descriptionText !== null && descriptionText !== '') {
+      description.textContent = '';
+      chipWidthWithoutDescription = Math.round(chip.getBoundingClientRect().width * 100) / 100;
+      description.textContent = descriptionText;
+    }
+
     return {
       badgeText: badge?.textContent?.trim() ?? null,
       badgeWidth: Math.round((badgeBox?.width ?? 0) * 100) / 100,
@@ -410,6 +484,9 @@ async function measure(page: Page, treasuryMinorUnits: number): Promise<BadgeGeo
       chipsOnScreen: chips.filter((entry) => onScreen(entry.getBoundingClientRect())).length,
       chipCount: chips.length,
       fundsChipOnScreen: onScreen(chipBox),
+      chipTitle: chip.getAttribute('title'),
+      chipDescriptionText: descriptionText === '' ? null : descriptionText,
+      chipWidthWithoutDescription,
     };
   });
 }
