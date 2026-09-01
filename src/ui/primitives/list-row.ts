@@ -1,6 +1,6 @@
 import { element } from './dom';
 import { type IconId, createIcon } from './icon';
-import { createIconButton } from './icon-button';
+import { type IconButton, createIconButton } from './icon-button';
 import { type BadgeTone, type StatusBadge, createStatusBadge } from './status-badge';
 
 /**
@@ -36,33 +36,34 @@ export interface ListRowOptions {
    * one caller that does.
    */
   readonly wrap?: boolean;
-  /**
-   * One control at the end of the row, for a row that is a readout with a
-   * single thing to *do* to it.
-   *
-   * **Not `onActivate` with extra steps, and the difference is the whole
-   * reason this exists.** `onActivate` makes the row itself the button, on the
-   * argument above that a row is the tap target on a touch screen. That is
-   * right when pressing the row *selects* it -- a buildable, a room type -- and
-   * wrong when pressing it does something irreversible: the alerts log's
-   * dismissal writes a mark into the save and there is no undo (ADR 0084
-   * decision 3), so the owner ruled on 2026-09-01 that the control is its own
-   * element, with the cost of the alternative in front of them. A mis-tap that
-   * cannot be reversed was judged worse than a smaller target.
-   *
-   * The two are mutually exclusive in practice and deliberately not enforced
-   * in the type: a row with both would be a button inside a button, which is
-   * invalid HTML that no caller here writes.
-   *
-   * `createIconButton` rather than a bare `<button>`, so the control is
-   * `--tap-target` in both axes and its `label` is real screen-reader text
-   * rather than a `title`. A glyph with no name is not a control.
-   */
-  readonly action?: {
-    readonly icon: IconId;
-    readonly label: string;
-    readonly onActivate: () => void;
-  };
+}
+
+/**
+ * The shape `setAction` takes, and what `ListRowOptions` used to carry as a
+ * construction-time-only `action` field (issue #764).
+ *
+ * **Not `onActivate` with extra steps, and the difference is the whole reason
+ * this exists.** `onActivate` makes the row itself the button, on the
+ * argument above that a row is the tap target on a touch screen. That is
+ * right when pressing the row *selects* it -- a buildable, a room type -- and
+ * wrong when pressing it does something irreversible: the alerts log's
+ * dismissal writes a mark into the save and there is no undo (ADR 0084
+ * decision 3), so the owner ruled on 2026-09-01 that the control is its own
+ * element, with the cost of the alternative in front of them. A mis-tap that
+ * cannot be reversed was judged worse than a smaller target.
+ *
+ * The two are mutually exclusive in practice and deliberately not enforced in
+ * the type: a row with both would be a button inside a button, which is
+ * invalid HTML that no caller here writes.
+ *
+ * `createIconButton` rather than a bare `<button>`, so the control is
+ * `--tap-target` in both axes and its `label` is real screen-reader text
+ * rather than a `title`. A glyph with no name is not a control.
+ */
+export interface ListRowAction {
+  readonly icon: IconId;
+  readonly label: string;
+  readonly onActivate: () => void;
 }
 
 export interface ListRow {
@@ -70,13 +71,32 @@ export interface ListRow {
   setLabel(text: string): void;
   setBadge(badge: { readonly tone: BadgeTone; readonly text: string } | undefined): void;
   /**
-   * Re-resolves the trailing control's name, for a caller that repaints.
+   * Adds, updates or removes the trailing control -- as a function of the
+   * row's *current* state, called on every repaint, rather than of whatever
+   * the row's state was the one time it was built.
    *
-   * A no-op on a row with no action, so a caller that repaints every row the
-   * same way does not have to ask which kind it is holding. `setBadge` above
-   * takes the same shape of responsibility for the same reason.
+   * `undefined` removes the control if the row has one; a defined action
+   * creates it if the row does not yet have one, or re-resolves its label if
+   * it does. `setBadge` above takes the same add-update-remove shape for the
+   * same reason: a caller that repaints every row identically should not have
+   * to ask which kind of row it is holding first.
+   *
+   * There used to be a construction-time-only `ListRowOptions.action` and a
+   * `setActionLabel` that could only update an action already there -- so a
+   * row built without one could never grow one, which was #764: the alerts
+   * log's dismiss control appeared only on the path that *created* a row, and
+   * a row that was reused and then gained the state that should carry a
+   * control never got one. This method is that fix, at the primitive: there
+   * is now exactly one way to state what a row's trailing control should be,
+   * and it works whether the row is new or being reused.
+   *
+   * The icon and the intent an action fires are assumed not to change across
+   * calls that both pass a defined action -- this primitive's one caller
+   * always names the same icon and the same kind of intent for a given kind
+   * of row -- so an update only re-resolves the label. A caller that needs
+   * the icon or the intent itself to change should remove and re-add.
    */
-  setActionLabel(text: string): void;
+  setAction(action: ListRowAction | undefined): void;
 }
 
 export function createListRow(options: ListRowOptions): ListRow {
@@ -89,20 +109,11 @@ export function createListRow(options: ListRowOptions): ListRow {
     children.push(badge.element);
   }
 
-  const action =
-    options.action === undefined
-      ? undefined
-      : createIconButton({
-          icon: options.action.icon,
-          label: options.action.label,
-          onActivate: options.action.onActivate,
-          // The glyph, not the button, is what shrinks: `sm` matches the row's
-          // leading icon so the two read as one row rather than as a control
-          // bolted to a readout, while `.ui-icon-button`'s own
-          // `min-width`/`min-height` keep the *target* at `--tap-target`.
-          size: 'sm',
-        });
-  if (action !== undefined) children.push(action.element);
+  // Mutable, and never seeded from `options`: `setAction` below is the only
+  // way this gets a value, on the create call exactly like on every later
+  // repaint, so there is no separate construction-time path for #764 to hide
+  // a bug in ever again.
+  let action: IconButton | undefined;
 
   const wrapClass = options.wrap === true ? ' ui-row--wrap' : '';
 
@@ -142,8 +153,30 @@ export function createListRow(options: ListRowOptions): ListRow {
       }
       badge.update(next);
     },
-    setActionLabel(text: string): void {
-      action?.setLabel(text);
+    setAction(next): void {
+      if (next === undefined) {
+        action?.element.remove();
+        action = undefined;
+        return;
+      }
+      if (action === undefined) {
+        action = createIconButton({
+          icon: next.icon,
+          label: next.label,
+          onActivate: next.onActivate,
+          // The glyph, not the button, is what shrinks: `sm` matches the row's
+          // leading icon so the two read as one row rather than as a control
+          // bolted to a readout, while `.ui-icon-button`'s own
+          // `min-width`/`min-height` keep the *target* at `--tap-target`.
+          size: 'sm',
+        });
+        // Always last: the badge above inserts itself before an existing
+        // action, so an action created after a badge already in the DOM
+        // still belongs at the end of the row.
+        root.append(action.element);
+        return;
+      }
+      action.setLabel(next.label);
     },
   };
 }

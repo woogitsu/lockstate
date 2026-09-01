@@ -101,6 +101,22 @@ that"*, pins it:
 > citation was also `:575-610`, which the same change moved — quoting the case's
 > title instead, because a line number into a file under edit is the least
 > durable citation this repository has (`docs/AGENT_WORKFLOW.md` §4).
+>
+> **AND BOTH REPLACEMENT BALANCES HAVE THEMSELVES ROTTED, which is recorded here
+> rather than edited into the paragraph above**
+> ([#760](https://github.com/matmaxalez/lockstate/issues/760), 2026-09-01). The
+> owner's ruling 19 of 2026-08-31 gave ADR 0017 decision 8's rungs their own
+> thresholds inside the overdraft, and `wages` is the only class whose threshold
+> is the floor itself (`INSOLVENCY_RUNG_FLOORS_MINOR_UNITS`,
+> `src/simulation/economy/treasury.ts`), so `drainedPrison` now takes the last
+> stretch of its drain at a payday rather than at a press — which is also how a
+> real session arrives here. The fixture holds `DRAINED_BALANCE = -1_735` and
+> `DRAINED_AFTER_SIX_BRICKS = -1_975`, not `-2,235` and `-2,475`. **The window is
+> unchanged and the window is the finding**: 265 of construction spending power
+> against a 320 deficit, and 25 once the six bricks are back in flight. Twice now
+> a balance in this section has moved without the relationship moving, which is
+> the case for stating the spending power here and leaving the balance to the
+> fixture that computes it.
 
 **Cancelling a delivery leaves the prison richer in cash and strictly worse at
 building**, because the money it got back can no longer be spent in one lump.

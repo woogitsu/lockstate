@@ -9,6 +9,14 @@ import type {
   HudEventNoticeViewModel,
   HudSeverity,
 } from './hud/view-model';
+/*
+ * The cap's eviction order, which stopped being this module's own on
+ * 2026-09-01. It is declared beside `HudSeverity` now because the events band
+ * arbitrates a dwell floor by the same map (the owner's ruling on ADR 0084
+ * decision 4, *"one game, one ordering"*); the name and the numbers are
+ * unchanged, and `src/ui/hud/view-model.ts` carries the account of the move.
+ */
+import { SEVERITY_EVICTION_ORDER } from './hud/view-model';
 import type { HudMessageParameterViewModel } from './hud/label-parameters';
 import { dayProgressPercent } from './hud/projection';
 import { HUD_MESSAGE_KEY } from './hud/messages';
@@ -407,19 +415,6 @@ const EVENT_ROW_PREFIX = 'event-';
  * the player must act on *now* is on the line above the list, not in it.
  */
 export const MAX_EVENT_ALERT_ROWS = 8;
-
-/**
- * Which row the cap sacrifices first: the least severe.
- *
- * Lower evicts earlier. Written out rather than derived from `HudSeverity`'s
- * union order, so that reordering that type cannot silently re-rank what the
- * player loses.
- */
-const SEVERITY_EVICTION_ORDER: Readonly<Record<HudSeverity, number>> = {
-  info: 0,
-  warning: 1,
-  danger: 2,
-};
 
 /**
  * Turns what the prison just did into the rows the HUD's alerts list paints.
