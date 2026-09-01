@@ -179,10 +179,13 @@ function readAlerts(candidateWidths: readonly number[]): AlertsReading {
       labelLineBoxes: lineBoxesOf(label),
       labelLineHeight: Math.round(Number.parseFloat(labelStyle.lineHeight) * 100) / 100,
       labelText: (label.textContent ?? '').trim(),
-      iconWidth: Math.round(box(row.querySelector('.ui-row__icon')) * 100) / 100,
+      // `:scope >` matters: the dismiss control carries an icon of its own.
+      iconWidth: Math.round(box(row.querySelector(':scope > .ui-icon')) * 100) / 100,
       badgeWidth: Math.round(box(row.querySelector('.ui-badge')) * 100) / 100,
-      // The dismiss control: the row's own button, which is not the badge.
-      actionWidth: Math.round(box(row.querySelector('button, .ui-row__action')) * 100) / 100,
+      // The dismiss control -- `createIconButton`, whose own min-width is
+      // `--tap-target`. Not the badge, and not the row (a row is only a
+      // `button` when it is interactive, which these are not).
+      actionWidth: Math.round(box(row.querySelector('.ui-icon-button')) * 100) / 100,
       gap: Math.round(Number.parseFloat(rowStyle.columnGap) * 100) / 100,
       paddingX:
         Math.round((Number.parseFloat(rowStyle.paddingLeft) + Number.parseFloat(rowStyle.paddingRight)) * 100) / 100,
@@ -243,6 +246,7 @@ test.describe('1 and 2: the alerts row with a dismiss control, and what the corn
 
       // --- the geometry the fixtures on `main` cannot show: rows 0 and 1
       // carry `occurrences`, so they render the control; rows 2..7 do not.
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       await page.evaluate(
         (model) => window.lockstateUiHarness.setHudViewModel(model),
         hudModel(refusalRows(8, 2)),
@@ -285,15 +289,38 @@ test.describe('1 and 2: the alerts row with a dismiss control, and what the corn
 
       // --- and the same list with every row dismissable, which is what the
       // channel's own producer actually emits.
+      /*
+       * **Remounted, and the reason is a finding in itself.**
+       * `hud.ts` reuses a row by `id` and only ever *builds* the control
+       * (`createListRow`'s `action`) in the branch that creates the row --
+       * `setLabel`, `setBadge` and `setActionLabel` are all a reused row gets.
+       * So updating the same eight ids from "no occurrences" to "occurrences"
+       * left rows c..h with their labels updated and **no control**: the first
+       * run of this block reported an info row at 113px in a list where every
+       * row was supposed to carry one. Not reachable from the live producer --
+       * `simulation-events.ts` gives a row `occurrences` from its first
+       * arrival and the refusal rows never gain them -- but it is what a
+       * measurement taken without a remount would have reported.
+       */
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), hudModel(refusalRows(8, 8)));
       const all = await page.evaluate(readAlerts, [...CANDIDATE_WIDTHS]);
-      const first = all.rows[0];
       console.log(
-        `  all-eight-dismissable: list clientHeight=${all.listClientHeight} scrollHeight=${all.listScrollHeight}` +
-          ` | first row ${first?.rowHeight ?? 0}px, label ${first?.labelClientWidth ?? 0}px, ${first?.labelLineBoxes ?? 0} lines`,
+        `  all-eight-dismissable: list clientHeight=${all.listClientHeight} scrollHeight=${all.listScrollHeight}`,
       );
+      // Three rows, because the three severities draw three badge widths and
+      // the label is the only flexible child -- so "the label with a control on
+      // it" is a *range* and not one number, which ADR 0084's single figure
+      // does not say.
+      for (const row of all.rows.slice(0, 3)) {
+        console.log(
+          `    ${row.selector} label=${row.labelClientWidth} badge=${row.badgeWidth} control=${row.actionWidth}` +
+            ` icon=${row.iconWidth} row=${row.rowHeight}px over ${row.labelLineBoxes} lines`,
+        );
+      }
 
       // --- one long alert alone, which is ADR 0084's "taller than the list box" claim.
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), hudModel(refusalRows(1, 1)));
       const single = await page.evaluate(readAlerts, [...CANDIDATE_WIDTHS]);
       const only = single.rows[0];
@@ -494,6 +521,57 @@ test.describe('3 and 4: the strip after #723, and the funds badge', () => {
         const long = await paintAndRead(page, model, `${remainder} left before deliveries stop`);
         report(`${width}x${height} balance ${balance}`, `candidate "{remaining} left before deliveries stop"`, long);
       }
+    }
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/* 2b: the same corner and rail on the assembled page                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * `.hud__rail` measured where the application puts it, not where the harness
+ * does.
+ *
+ * `hud.css:1604-1606` says the two differ and by how much: *"On the assembled
+ * page — where `.hud__rail` also holds the save panel, which `ui-shell.spec.ts`'s
+ * harness does not, so that harness hands this panel 128.7px more rail than the
+ * application ever gives it."* That is a claim about the rail's **height**, and
+ * ADR 0085 decision 1 is about its **width** — the two are not the same reading
+ * and a width taken only in the harness would be quoted for a page that does
+ * not exist. So it is taken in both.
+ */
+test.describe('2b: the corner and the rail on the assembled page', () => {
+  test('.hud__rail and .hud__corner at four viewports, in the real application', async ({ page }) => {
+    await openApp(page);
+
+    for (const [width, height] of VIEWPORTS) {
+      await page.setViewportSize({ width, height });
+      const reading = await page.evaluate(() => {
+        const read = (selector: string) => {
+          const el = document.querySelector<HTMLElement>(selector);
+          if (el === null) return null;
+          const box = el.getBoundingClientRect();
+          const style = getComputedStyle(el);
+          return {
+            width: Math.round(box.width * 100) / 100,
+            height: Math.round(box.height * 100) / 100,
+            paddingX: Math.round((Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight)) * 100) / 100,
+            display: style.display,
+          };
+        };
+        return {
+          rail: read('.hud__rail'),
+          corner: read('.hud__corner'),
+          cornerPanel: read('.hud__corner .ui-panel'),
+          savePanel: read('.hud__rail .save-panel'),
+          world: Math.round(((document.documentElement.clientWidth) - (document.querySelector('.hud__rail')?.getBoundingClientRect().width ?? 0) - (document.querySelector('.hud__corner')?.getBoundingClientRect().width ?? 0)) * 100) / 100,
+          viewportWidth: document.documentElement.clientWidth,
+        };
+      });
+      console.log(`\n=== ${width}x${height} — assembled page (/index.html) ===`);
+      console.log(JSON.stringify(reading));
+      expect(reading.rail, `no .hud__rail on the assembled page at ${width}x${height}`).not.toBeNull();
     }
   });
 });
