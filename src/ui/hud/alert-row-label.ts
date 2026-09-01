@@ -52,3 +52,23 @@ export function hudAlertRowLabel(
   }
   return fragments.join(' ');
 }
+
+/**
+ * What the `×` control on a dismissable row is called.
+ *
+ * One line, and it exists rather than being inlined at the call site for two
+ * reasons. It is the only place that decides *which key* names that control,
+ * so `tests/unit/ui-hud-alert-row-label.test.ts` can assert the decision in
+ * `node` where the HUD's DOM code is unreachable; and if the owner's sentence
+ * turns out to want the row's own subject in it -- "dismiss the fight notice"
+ * rather than "dismiss" -- this is the signature that gains the parameter, and
+ * `hud.ts` does not change.
+ *
+ * The key is unauthored on purpose. `HUD_MESSAGE_KEY.alertsDismiss` carries the
+ * brief; the suite fails by name until the word exists.
+ */
+export function hudAlertDismissLabel(
+  t: (key: LocalizationKey, parameters?: MessageParameters) => string,
+): string {
+  return t(HUD_MESSAGE_KEY.alertsDismiss);
+}

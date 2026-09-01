@@ -180,42 +180,61 @@ export const HUD_MESSAGE_KEY = {
   alertsTitle: 'hud.alerts.title',
   alertsEmpty: 'hud.alerts.empty',
   /**
-   * **The two sentences on this channel that nobody has authored, and they are
-   * the owner's** (`AGENTS.md`'s standing mandate, fourth exclusion: *"anything
-   * that reaches a player as a promise the code does not keep"*, which reserves
-   * player-visible wording).
+   * What a row of the alerts log adds to its sentence: how many times, and when
+   * (the owner's decisions 1 and 2 of 2026-09-01 on ADR 0084).
    *
-   * The owner took ADR 0084's decisions 1 and 2 on 2026-09-01 -- a repeated
-   * sentence says **how many times**, and it says **when** -- and every part of
-   * that except the two fragments a player reads is built:
-   * `HudAlertViewModel.occurrences` carries the count and the day, and
-   * `hudAlertRowLabel` puts them on the row. What it puts there is these two
-   * keys, and the catalog does not have them, **deliberately**:
+   * **Both sentences are the owner's own, given on the same day**, and this
+   * comment records what they chose *against* because the alternatives are what
+   * a later pass would otherwise re-propose:
    *
-   * - `hud.alert.occurrences` renders the repeat count. `{count}` is a whole
-   *   number, at least 2 where this is rendered at all. The obvious English is
-   *   the ADR's own shorthand, `×{count}`, and whether that is the wording,
-   *   whether the multiplication sign leads or trails, and what a locale with
-   *   no such convention says instead are all the owner's.
-   * - `hud.alert.time` renders when the newest arrival happened. `{day}` is the
-   *   in-game day, counting from 1, and `{progress}` is how far through it, as
-   *   a whole percent -- the same two figures the status strip's `Day` and
-   *   `Through the day` readouts carry, because they are the only calendar this
-   *   game has (`docs/HUD_PROJECTIONS.md` gap 5: there is no hour of the day to
-   *   render, and inventing one would be *"the same class of lie as a money
-   *   counter with no economy"*).
+   * - `hud.alert.occurrences` is `{count}×` -- the multiplier **after** the
+   *   figure, chosen over `×{count}` and over `{count} times`. `{count}` is a
+   *   whole number and is at least 2 wherever this is rendered at all; a row
+   *   that has arrived once shows no multiplier (`hudAlertRowLabel`).
+   * - `hud.alert.time` is `Day {day}` -- the day **alone**. The owner was shown
+   *   `Day {day}, {progress}%` and rejected it: a percentage of a day is a
+   *   strange unit to put in front of a player. `{progress}` is still produced
+   *   and passed and is deliberately not rendered; see the catalog entry, which
+   *   is where that is argued, and `HudAlertTimeViewModel` for what produces
+   *   it. What tells two events on the same day apart is the count beside them.
    *
-   * **This costs a red test until they are filled, and that is the point.**
-   * `tests/foundation/localization-key-completeness.test.ts` and
-   * `tests/unit/ui-hud-messages.test.ts` both fail while a declared key has no
-   * sentence, naming these two, so the gap cannot be merged and published
-   * quietly -- `resolveLocalizationKey` renders an unknown key as itself, which
-   * is exactly the *"wrong shipping state"* the first of those tests exists to
-   * catch. A placeholder sentence written here would pass both tests and put an
-   * un-owned word on a player's screen, which is the worse of the two failures.
+   * **These two were declared here with no catalog entry for one commit**, so
+   * that `tests/unit/ui-hud-messages.test.ts` would fail by name until the
+   * owner supplied the words -- `resolveLocalizationKey` renders an unknown key
+   * as itself, which is the *"wrong shipping state"*
+   * `tests/foundation/localization-key-completeness.test.ts` exists to catch,
+   * and a placeholder sentence would have passed both gates with an un-owned
+   * word on a player's screen. The tripwire is recorded rather than deleted
+   * because `alertsDismiss` below is standing on it now.
    */
   alertsOccurrences: 'hud.alert.occurrences',
   alertsTime: 'hud.alert.time',
+  /**
+   * **What the `×` control on a dismissable alert row is called, and it has no
+   * sentence yet -- deliberately, and the suite fails by name until it does.**
+   *
+   * The owner took ADR 0084's decision 3 on 2026-09-01 and ruled on the *shape*
+   * of the control on the same day: a separate `×` rather than the whole row,
+   * chosen with the cost of the alternative in front of them -- pressing a row
+   * dismisses it permanently, the mark goes into the save, and there is no
+   * undo, so a mis-tap that cannot be reversed was judged worse than a smaller
+   * target. The word the control is called is not settled and is not mine: a
+   * `×` glyph is not an accessible name, and `createIconButton` requires one
+   * because a button whose only content is a glyph reaches a screen reader as
+   * nothing at all.
+   *
+   * `hud.security.roster-dismiss` ("Dismiss") is **not** reused, and the near
+   * miss is the reason to say so: that word ends a staff member's employment --
+   * its own hint says *"a dismissed staff member leaves the prison for good,
+   * and their wage stops"* -- and one key meaning both "sack this person" and
+   * "I have read this notice" is two answers to one question, which is the
+   * failure `hud.regime.roster-name` is shared to avoid in the other direction.
+   *
+   * The sentence names an action on **one** row, so it may need the row's own
+   * subject; if the owner's word wants one, this key gains a parameter and
+   * `hudAlertDismissLabel` is where it would be resolved.
+   */
+  alertsDismiss: 'hud.alert.dismiss',
 
   panelCollapse: 'hud.panel.collapse',
   panelExpand: 'hud.panel.expand',

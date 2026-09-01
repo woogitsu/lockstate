@@ -223,6 +223,46 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alerts.title': 'Alerts',
   'hud.alerts.empty': 'No active alerts',
 
+  /*
+   * How many times the prison has said the same thing, and when it last said
+   * it (the owner's decisions 1 and 2 of 2026-09-01 on
+   * [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md),
+   * with the two sentences supplied by the owner on the same day).
+   *
+   * **`{count}×` and not `×{count}` or `{count} times`**, chosen by the owner
+   * against both. The reason to prefer either short form over the long one is
+   * the column: `.ui-row__label` in the alerts log measures **88px** in the
+   * fixed 224px rail (#720's measurement, kept in `primitives.css`), which is
+   * about ten characters a line, so the multiplier is digits and a sign and
+   * nothing else.
+   *
+   * **The sign is U+00D7, and `hud.clock.speed` beside it spells its multiplier
+   * with an ASCII `x`** (`'Speed {speed}x'`). That is a real divergence rather
+   * than a typo here: the owner supplied this sentence with the typographic
+   * sign, and the speed readout's `x` predates it and was never ruled on. Two
+   * spellings of one convention is the kind of thing that reads as a defect on
+   * screen, so it is recorded rather than quietly harmonised in either
+   * direction -- changing the speed readout is a player-visible wording change
+   * and is the owner's.
+   *
+   * **`Day {day}` and not `Day {day}, {progress}%`.** The owner was shown the
+   * two-figure form and rejected it: a percentage of a day is a strange unit to
+   * put in front of a player. **`{progress}` is still produced and is
+   * deliberately not rendered** -- `HudAlertTimeViewModel.progressPercent`
+   * carries it, `hudAlertRowLabel` passes it, and this sentence declines it, so
+   * a locale that has a use for it has it and the next pass does not have to
+   * re-derive it from the tick. `interpolate` substitutes only the placeholders
+   * a sentence names, so an unused parameter costs nothing and reaches nobody.
+   *
+   * **What tells two events on the same day apart is the count beside them**,
+   * which is the owner's own answer to that gap rather than a property this
+   * sentence claims. Two arrivals of one sentence on day 3 are one row reading
+   * `2x Day 3`; two *different* sentences on day 3 are two rows, each naming
+   * itself.
+   */
+  'hud.alert.occurrences': '{count}×',
+  'hud.alert.time': 'Day {day}',
+
   // What the simulation refused, in the alerts list (issue #261).
   //
   // A command the worker accepted and a system then refused on its content:

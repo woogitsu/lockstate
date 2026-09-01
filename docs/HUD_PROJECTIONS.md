@@ -1700,8 +1700,15 @@ decision about what to build next.
     version away.** The alerts list's *other* producer got its gesture on
     2026-09-01: the owner took
     [ADR 0084](./adr/0084-what-the-alerts-channel-owes-a-player.md)'s decision
-    2, so an event row is dismissed by pressing it, `DismissAlert` carries the
-    run of arrivals it stood for to the worker, and the mark is in the save.
+    2, so an event row carries an `×` control that dismisses it, `DismissAlert`
+    carries the run of arrivals it stood for to the worker, and the mark is in
+    the save. **The control is its own element rather than the row**, which is
+    the owner's ruling of the same day and overrides `createListRow`'s general
+    rule for this row: a press writes into the save and there is no undo, so a
+    mis-tap that cannot be reversed was judged worse than a smaller target.
+    What it costs the sentence beside it — 88px of label down to about 36px —
+    is derived in `src/ui/hud/hud.css` and is an open finding rather than a
+    solved problem.
     None of that reaches a refusal row, deliberately — a refusal is a *level*,
     republished unchanged up to twice a second, so suppressing one is a
     different mechanism from retiring a run of occurrences, and ADR 0084 says

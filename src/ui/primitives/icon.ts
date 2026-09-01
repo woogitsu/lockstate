@@ -29,6 +29,7 @@ export const ICON_IDS = [
   'check',
   'brand',
   'ui-scale',
+  'dismiss',
 ] as const;
 
 export type IconId = (typeof ICON_IDS)[number];
@@ -57,6 +58,14 @@ const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
   security: ['M12 3.75 19.75 6.5v5.75c0 4-3.1 6.9-7.75 8.1-4.65-1.2-7.75-4.1-7.75-8.1V6.5z'],
   regime: ['M3.75 6.25h16.5v13.5H3.75z', 'M3.75 10.5h16.5', 'M8.5 3.75v4.5', 'M15.5 3.75v4.5'],
   check: ['M5.25 12.5 10 17.25 18.75 6.75'],
+  // The `x` on a dismissable alert row (ADR 0084 decision 3, the owner's, and
+  // their ruling of the same day that the control is its own element rather
+  // than the whole row). Two strokes on the same 24-unit grid and the same
+  // 4.75/19.25 inset every other glyph here uses, so it reads at
+  // `--icon-size-sm` beside `incident` on the row it sits on. Deliberately not
+  // a glyph from a font: `createIcon` draws paths, and a literal x would be a
+  // character a locale might not have and a screen reader would announce.
+  dismiss: ['M6.75 6.75 17.25 17.25', 'M17.25 6.75 6.75 17.25'],
   // Interface scale (#545): a large letterform beside a small one, which is
   // the glyph a player already reads as "text size" everywhere else. Strokes
   // only, like every other entry -- two strokes per letter, the stem pair and

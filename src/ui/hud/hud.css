@@ -339,6 +339,57 @@
 }
 
 /*
+ * WHAT THE DISMISS CONTROL COSTS THE SENTENCE BESIDE IT (ADR 0084 decision 3,
+ * the owner's ruling of 2026-09-01 that the control is its own element).
+ *
+ * **No rule is written here. This block is the arithmetic**, recorded where the
+ * next person to look at this box will find it, because the number is a finding
+ * for the owner rather than something to style around.
+ *
+ * The row is `display: flex` with `padding: var(--space-2)` and
+ * `gap: var(--space-2)`, and `.ui-row__label` is `flex: 1; min-width: 0`, so it
+ * gets whatever the fixed children leave. At `--ui-scale: 1`, in the
+ * `calc(224px * var(--ui-scale))` rail:
+ *
+ *     row              200px   (#720 measured the label at 88 inside it)
+ *     - padding         16     2 x var(--space-2)
+ *     = content        184
+ *     - icon (sm)       16     var(--icon-size-sm)
+ *     - gaps            16     2 x var(--space-2), icon|label|badge
+ *     - severity badge  64     measured at 50-70 (#720)
+ *     = label           88     which is what #720 measured, so the model holds
+ *
+ * A dismiss control is `min-width: var(--tap-target)` = 44 and adds one more
+ * gap of 8, both taken from the only flexible child:
+ *
+ *     label            88 - 52 = 36px
+ *
+ * **In characters**: #720 measured `scrollWidth 218` for the 30-character
+ * sentence "Contraband found: Mobile phone.", so ~7.3px a character, and it
+ * measured a 109-character sentence wrapping into eleven line boxes of 88px at
+ * 15px each. At 36px that is about **five characters a line** before wrapping,
+ * so the same sentence needs roughly 22 line boxes -- **~330px of row height**,
+ * derived rather than measured, in a list box that is about 200px at 1280x800
+ * and 137px at 900x600 (`2026-09-01-playing-after-the-rulings`). One alert
+ * would fill the log.
+ *
+ * **This is not shrunk around.** The control stays at `--tap-target` because
+ * that is what makes it reachable, and the three things that could give are all
+ * decisions rather than styling, so they are named and left:
+ *
+ *   1. Drop the severity badge from *this* list and give the label its 64px
+ *      back. The badge is how ruling 11's severity reaches a player, so
+ *      removing it is player-visible.
+ *   2. Let the row wrap and put the control on its own line -- height instead
+ *      of width, in the most constrained box chain in the interface (#174).
+ *   3. Widen the rail, which is #174's own subject.
+ *
+ * The measurement that would settle it is `tests/browser/clipping.ts` pointed
+ * at these rows with a dismissable alert in the list; no test in the `node`
+ * suite can see a pixel.
+ */
+
+/*
  * A row keeps its height and the list scrolls, which is not what happened
  * first and is the second thing here that had to be measured.
  *

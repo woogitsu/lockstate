@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { LocalizationKey } from '../../src/content/localization';
 import type { MessageParameters } from '../../src/services/localization/format';
-import { hudAlertRowLabel } from '../../src/ui/hud/alert-row-label';
+import { DEFAULT_LOCALE } from '../../src/content/localization';
+import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
+import { hudAlertDismissLabel, hudAlertRowLabel } from '../../src/ui/hud/alert-row-label';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 import type { HudAlertViewModel } from '../../src/ui/hud/view-model';
 
@@ -17,15 +19,14 @@ import type { HudAlertViewModel } from '../../src/ui/hud/view-model';
  * are which fragments a row carries and in what order, and they were put in a
  * pure function so that this file could make them.
  *
- * **The localizer is a spy rather than the real one, and that is not a
- * shortcut.** The two keys these decisions need are *deliberately unauthored*
- * -- the words are the owner's (`AGENTS.md`'s fourth exclusion) and
- * `HUD_MESSAGE_KEY.alertsOccurrences` says so at its declaration. A real
- * `Localizer` would render each as its own dotted self, so asserting on the
- * finished English would be asserting on the gap rather than on the mechanism.
- * What is asserted instead is exactly what this function decides: which key,
- * with which parameters, in which order. `tests/unit/ui-hud-messages.test.ts`
- * is what fails, loudly and by name, until the sentences exist.
+ * **Two localizers, and the split is deliberate.** The spy asserts what this
+ * function *decides* -- which key, with which parameters, in which order --
+ * because that is what survives a re-wording. The real `Localizer` asserts what
+ * a player actually reads, and it can, because the owner supplied both
+ * sentences on 2026-09-01: `{count}×` and `Day {day}`. The third key,
+ * `hud.alert.dismiss`, is still unauthored on purpose and
+ * `tests/unit/ui-hud-messages.test.ts` fails by name until it is not, so the
+ * one test below that touches it reads the key rather than the word.
  */
 
 interface Rendered {
@@ -150,5 +151,82 @@ describe('what a row of the alerts list says', () => {
       'hud.alert.event.prisoners.relocated',
       HUD_MESSAGE_KEY.alertsOccurrences,
     ]);
+  });
+});
+
+describe('the two sentences the owner supplied on 2026-09-01', () => {
+  const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+  const t = (key: LocalizationKey, parameters?: MessageParameters): string => localizer.format(key, parameters);
+
+  it('reads the whole line a player reads, through the shipped catalog', () => {
+    // The row #741 was filed about: the same fight sentence three times in an
+    // eight-row list, "with no tick, no in-game time and no `x3`". This is what
+    // it says now.
+    const label = hudAlertRowLabel(t, {
+      ...ASSAULT,
+      occurrences: { ...ASSAULT.occurrences!, count: 3, lastSequence: 9, lastAt: { day: 7, progressPercent: 25 } },
+    });
+
+    expect(label).toBe('A fight has broken out between two prisoners. 3× Day 7');
+  });
+
+  it('puts the multiplier after the figure, which is what the owner chose over `×{count}`', () => {
+    const label = hudAlertRowLabel(t, { ...ASSAULT, occurrences: { ...ASSAULT.occurrences!, count: 12 } });
+    expect(label.endsWith('12×'), label).toBe(true);
+  });
+
+  it('says the day and not a percentage of one, and renders the parameter it declines without a trace', () => {
+    /*
+     * The owner was shown `Day {day}, {progress}%` and rejected it: a
+     * percentage of a day is a strange unit for a player. `{progress}` is still
+     * produced, still passed, and deliberately unused -- so this asserts both
+     * halves, that the figure reaches the sentence and that the sentence does
+     * not spend it. `interpolate` substitutes only the placeholders a sentence
+     * names, so an unused one must leave nothing behind at all.
+     */
+    const label = hudAlertRowLabel(t, {
+      ...ASSAULT,
+      occurrences: { ...ASSAULT.occurrences!, lastAt: { day: 4, progressPercent: 62 } },
+    });
+
+    expect(label).toBe('A fight has broken out between two prisoners. Day 4');
+    expect(label, 'the percentage must not reach the screen in any form').not.toContain('62');
+    expect(label).not.toContain('%');
+  });
+
+  it('tells two arrivals on one day apart by the count beside them, which is the owner`s answer for that gap', () => {
+    // Two arrivals of one sentence on day 3 are one row that says so; two
+    // *different* sentences on day 3 are two rows, each naming itself. Neither
+    // needs a finer clock than the day.
+    const twice = hudAlertRowLabel(t, {
+      ...ASSAULT,
+      occurrences: { ...ASSAULT.occurrences!, count: 2, lastAt: { day: 3, progressPercent: 10 } },
+    });
+    const once = hudAlertRowLabel(t, {
+      ...ASSAULT,
+      occurrences: { ...ASSAULT.occurrences!, lastAt: { day: 3, progressPercent: 90 } },
+    });
+
+    expect(twice).toBe('A fight has broken out between two prisoners. 2× Day 3');
+    expect(once).toBe('A fight has broken out between two prisoners. Day 3');
+  });
+});
+
+describe('the control that dismisses a row', () => {
+  it('is named by its own key rather than by the staff roster`s word', () => {
+    /*
+     * `hud.security.roster-dismiss` is "Dismiss" and is **not** reused: that
+     * word ends a staff member's employment -- its own hint says "a dismissed
+     * staff member leaves the prison for good, and their wage stops" -- and one
+     * key meaning both that and "I have read this notice" is two answers to one
+     * question.
+     *
+     * The key is deliberately unauthored, so this reads the key rather than the
+     * word; `tests/unit/ui-hud-messages.test.ts` is what fails by name until
+     * the owner supplies it.
+     */
+    const { t, rendered } = spyLocalizer();
+    expect(hudAlertDismissLabel(t)).toBe('<hud.alert.dismiss>');
+    expect(rendered).toEqual([{ key: HUD_MESSAGE_KEY.alertsDismiss, parameters: undefined }]);
   });
 });

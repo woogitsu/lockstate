@@ -104,12 +104,40 @@ counting from one (`SimulationEventLog.dismiss`). The third — whether a dwell
 floor should reach `.hud__refusal` — is untouched, because the floor itself is
 untaken.
 
-**Two sentences a player will read are still the owner's**, and the code is
-waiting for them rather than guessing: `hud.alert.occurrences` (`{count}`) and
-`hud.alert.time` (`{day}`, `{progress}`) are declared with no catalog entry, so
-the suite fails by name until they exist. That is `AGENTS.md`'s fourth
-exclusion held to rather than worked around; `src/ui/hud/messages.ts` carries
-the full brief for both.
+**Every sentence a player reads here is the owner's own, and two of the three
+arrived the same day.** The mechanism was built with the keys declared and the
+catalog deliberately empty, so the suite failed by name until the words
+existed -- `AGENTS.md`'s fourth exclusion held to rather than worked around.
+What the owner then supplied, and what they chose it against, because the
+alternatives are what a later pass would otherwise re-propose:
+
+- **`hud.alert.occurrences` is `{count}×`** — the multiplier after the figure,
+  over `×{count}` and over `{count} times`. The reason to prefer a short form
+  at all is the column: the label in this list measures 88px (#720).
+- **`hud.alert.time` is `Day {day}`** — the day alone. `Day {day}, {progress}%`
+  was shown and rejected, on the grounds that a percentage of a day is a
+  strange unit to put in front of a player. **`{progress}` is still produced
+  and passed and is deliberately not rendered**, so a locale that has a use for
+  it has it; and what tells two events on the same day apart is the count
+  beside them, which is the owner's own answer to that gap rather than a
+  property the sentence claims.
+- **`hud.alert.dismiss` is still open**, and the code is waiting for it rather
+  than guessing. It names the `×` control, and it is not
+  `hud.security.roster-dismiss`: that word ends a staff member's employment,
+  and one key meaning both that and "I have read this notice" is two answers to
+  one question.
+
+**And the owner ruled on the *shape* of the dismissal control on the same day,
+against this implementation's first reading of it.** It was built as the whole
+row, on `createListRow`'s own rule that *"a row is the tap target on a touch
+screen"*; the owner overrode that for this row with the cost of the
+alternative in front of them — a press writes a mark into the save and there is
+no undo, so a mis-tap that cannot be reversed is worse than a smaller target.
+The control is its own element, and **what that costs the sentence beside it is
+recorded rather than absorbed**: the label falls from 88px to about 36px, which
+is roughly five characters a line, and the arithmetic and the three things that
+could give are in `src/ui/hud/hud.css` above `.hud-alerts__list > .ui-row`.
+That is a finding for the owner, not a reason to shrink the target.
 
 The paragraph this clause replaced, kept:
 

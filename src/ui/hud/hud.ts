@@ -44,7 +44,7 @@ import {
   type HudStaffViewModel,
   type HudViewModel,
 } from './view-model';
-import { hudAlertRowLabel } from './alert-row-label';
+import { hudAlertDismissLabel, hudAlertRowLabel } from './alert-row-label';
 import { resolveHudLabelParameters } from './label-parameters';
 
 /**
@@ -1809,6 +1809,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
   function paintAlerts(): void {
     const seen = new Set<string>();
+    // One resolution per paint rather than one per row: every dismissable row's
+    // control is called the same thing, and the sentence does not depend on
+    // which row it is on.
+    const dismissLabel = hudAlertDismissLabel(t);
     for (const [index, alert] of viewModel.alerts.entries()) {
       seen.add(alert.id);
       // The sentence, and -- since the owner's decisions 1 and 2 of 2026-09-01
@@ -1837,20 +1841,27 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
          * for -- was always the part cut.
          */
         /*
-         * **Pressing the row dismisses it** (the owner's decision 3 of
-         * 2026-09-01 on ADR 0084), and only on the rows that can be dismissed:
+         * **A row that can be dismissed carries an `x` control** (the owner's
+         * decision 3 of 2026-09-01 on ADR 0084), and only the rows that can be:
          * a row carrying `occurrences` is one this channel's own producer made,
          * and the refusal and protocol-fault rows beside it carry none. Their
          * dismissal is `docs/HUD_PROJECTIONS.md` gap 34 and is not this change.
          *
-         * **The whole row rather than a control at the end of it**, which is
-         * `createListRow`'s own rule and its own reason: *"the entire row, not
-         * a small chevron at its end, because a row is the tap target on a
-         * touch screen"*. It also costs no new word: a button with an icon or a
-         * label would need a sentence naming what it does, and a sentence is
-         * the owner's (`AGENTS.md`, fourth exclusion). The row's accessible
-         * name is the alert it is about, which is what a player is choosing
-         * between.
+         * **A control of its own rather than the whole row, which overrides
+         * `createListRow`'s general rule for this row and does so deliberately.**
+         * That rule -- *"the entire row, not a small chevron at its end, because
+         * a row is the tap target on a touch screen"* -- is right where pressing
+         * a row selects something. Here it writes a mark into the save and there
+         * is no undo, so the owner ruled for the smaller target with that cost in
+         * front of them: a mis-tap that cannot be reversed is worse than a
+         * control a finger has to find. `ListRowOptions.action` carries the
+         * argument at the primitive.
+         *
+         * **What it costs the sentence beside it is real and is recorded rather
+         * than absorbed.** `.ui-row__label` in this list measures 88px (#720);
+         * a `--tap-target` control and its gap take 52px of that, leaving about
+         * 36px. See `hud-alerts__list` in `hud.css` for the arithmetic and for
+         * what would have to give.
          *
          * Not gated and not marked as a command control: see the intent's own
          * comment on `HudIntent` for why a dismissal has no refusal to paint
@@ -1864,9 +1875,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
           wrap: true,
           ...(dismissible
             ? {
-                onActivate: () => {
-                  const intent: HudIntent = { kind: 'dismiss-alert', rowId: alert.id };
-                  runReported(intent.kind, () => options.onIntent?.(intent), reportError);
+                action: {
+                  icon: 'dismiss',
+                  label: dismissLabel,
+                  onActivate: () => {
+                    const intent: HudIntent = { kind: 'dismiss-alert', rowId: alert.id };
+                    runReported(intent.kind, () => options.onIntent?.(intent), reportError);
+                  },
                 },
               }
             : {}),
@@ -1880,6 +1895,9 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       } else {
         row.setLabel(text);
         row.setBadge(badge);
+        // Re-resolved with the sentence beside it, so a locale change moves the
+        // control's name too. A no-op on a row that has no control.
+        row.setActionLabel(dismissLabel);
       }
 
       // The drawn order is `viewModel.alerts`'s order, re-established on every
