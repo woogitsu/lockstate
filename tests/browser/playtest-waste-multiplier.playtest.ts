@@ -59,6 +59,17 @@
  *    outright. **No figure in this document has been re-measured against that
  *    change**, so every multiplier below is a measurement of the pre-ruling
  *    build and should be read as one.
+ *
+ *    **AND SHAPE 1 CHANGED AGAIN ON 2026-09-01, IN THE SAME DIRECTION, WHICH
+ *    IS WHY THE LIST NOW HAS TWO MARKERS RATHER THAN A REWRITE.** The owner's
+ *    ruling of that date — *"Taking a finished object away returns nothing.
+ *    Not its materials, not its money."*, ADR 0076's amendment of that date —
+ *    reverses decision B, so undoing geometry the crew has **finished** is now
+ *    *destroyed* as well: it is neither illiquid nor sold back. Shape 1 has
+ *    therefore split into three by state — money before the crew starts,
+ *    nothing while they are working, nothing once they have finished — and
+ *    only the first of those three is still *illiquid, not destroyed*. The
+ *    re-measurement note above applies unchanged and now covers two rulings.
  * 2. **Abandoned geometry** — walls that enclose nothing and are left
  *    standing. `Undo` pops one transaction, so a run drawn two gestures ago is
  *    out of reach. *Destroyed.*

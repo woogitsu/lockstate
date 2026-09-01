@@ -119,6 +119,17 @@ async function installPseudoLocale(page: Page): Promise<void> {
  * of three things: a hard-coded string, a key that resolved to nothing, or an
  * interpolated parameter. Two rather than one, because a lone ASCII letter is
  * far more often part of a number, a unit or an id than a word.
+ *
+ * **Since #664 those three are separable rather than merely countable**, and
+ * this file has not been changed to take advantage of it. `pseudoLocalizeText`
+ * now writes `⟨ ⟩` around each placeholder span, so ASCII inside `⟨ ⟩` is a
+ * parameter, ASCII elsewhere inside `⟦ ⟧` is a fragment concatenated into a
+ * message, and ASCII outside both never reached the catalogue --
+ * `tests/helpers/pseudo-locale-residue.ts` is that classifier, with a control
+ * per class. The `residue` and `bracketed` fields below still carry the older,
+ * coarser answer; replacing them means moving the classification out of
+ * `page.evaluate` and into Node, which is a change to a spec that has to be
+ * re-run against a browser to be worth anything.
  */
 async function sweep(page: Page, state: string): Promise<void> {
   statesVisited.push(state);

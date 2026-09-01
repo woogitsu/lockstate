@@ -25,6 +25,19 @@ own sentence about a **completed** object standing, and marks what B governs and
 ruling 20 does not answer — `RemoveObject` on a completed object — as undecided
 and the owner's.
 
+**A second amendment is proposed and is NOT signed.** See §*Amendment,
+2026-09-01: taking a finished object away returns nothing* at the foot of this
+file. It records the owner's ruling of 2026-09-01 -- *"Taking a finished object
+away returns nothing. Not its materials, not its money."* -- which **reverses
+decision B's own sentence**, the one the amendment above left standing, and
+closes the inversion that amendment reported under *"What ruling 20 does not
+decide"*. **Until it is signed, decision B as written above is what this
+document decides for a `completed` order; the second amendment is a proposal
+with an implementation beside it, not a change of status, and it must not
+merge before the signature.** That sentence is the same one this Status carried
+for the first amendment, quoted below, and it is reused deliberately: the
+condition is identical and so is the rule that holds it there.
+
 **This clause read differently while the amendment was unsigned**, and the
 sentence is kept because it is what a reader of an earlier revision found here:
 *"Until it is signed, decision B as written above is what this document decides;
@@ -749,3 +762,368 @@ and no weakening: value is no longer conserved absolutely, because `in-progress`
 consumes it on purpose, so the sum is conserved against a separately derived
 total of what was deliberately consumed — derived from the buildable catalogue
 and the procurement catalogue, never from the code under test.
+
+## Amendment, 2026-09-01: taking a finished object away returns nothing
+
+**Accepted, 2026-09-01, by the repository owner** -- and the widening below was
+put to them explicitly and accepted with it: **a finished wall goes the same
+way as a finished bed.** The ruling says *"a finished object"*, this
+implementation reads that as *"a completed order"*, and the owner was asked
+whether that was meant. It was: the inversion is identical for a wall, and
+branching on `placesObjectId` would have reintroduced *"the two commands
+disagree"* as *"the two buildables disagree"*.
+
+Drafted 2026-09-01 against `0a53ec70` (v0.0.314), with its implementation on
+the same branch so that what was being signed could be seen running. **This
+clause read `Proposed amendment, not self-approved -- awaiting the owner's
+signature` and carried the sentence "It must not merge before the signature"
+until that acceptance**; both are kept rather than deleted, because the ruling
+quoted below was always the owner's while *everything this amendment derives
+from it* was not, and the acceptance step is what makes the derivation the
+repository's rather than its author's. The amendment above this one was under
+exactly the same condition for one day and its Status clause records what that
+read like.
+
+### The source: the owner's ruling of 2026-09-01
+
+> **Taking a finished object away returns nothing. Not its materials, not its
+> money.**
+
+**This reverses decision B, which the same owner accepted on 2026-08-29 knowing
+its cost.** B says *"A finished object un-builds into its full materials, by
+either route"*, and B's own text records that *"dismantling becomes free and
+perfectly reversible... that is a real change to how the first hour plays and it
+was chosen knowingly."* Nothing here says B was decided badly. What changed is
+the arithmetic B was decided inside, and the change is one this document
+predicted in writing before the owner saw it.
+
+### The inversion this closes, which is why the owner was asked again
+
+The amendment above -- ruling 20, merged today as
+[#746](https://github.com/matmaxalez/lockstate/pull/746) -- reported it under
+*"What ruling 20 does not decide"*, in these words:
+
+> **The question is sharper than it looks, because ruling 20 as implemented
+> makes it pay to let the crew finish.** Cancel at `in-progress` and the
+> materials are gone; wait for `completed` and `Undo` returns them in full. That
+> inversion did not exist before -- every state used to return the materials --
+> and it is created by the ruling rather than by this implementation, which is
+> why it is reported and not designed around.
+
+Measured on `0a53ec70`, one prison, one plank at 65, through the real kernel and
+the real command router:
+
+```
+                             balance  plank in stock  order state  materialsAllocated       objects standing
+after the bed is built         24935               0  completed    [wood-plank x1]                         1
+after RemoveObject             24935               0  completed    [wood-plank x1]                         0
+after Undo                     24935               1  cancelled    []                                      0
+```
+
+and, for the same press on the state one earlier, from the case
+`gives nothing back for an in-progress order, and the materials are gone for
+good` in `tests/integration/economy-money-conservation.test.ts`: the allocation
+is dropped unreleased and unpaid, and the balance stays down by the whole of it.
+
+So a player who changes their mind **early** loses everything and a player who
+waits for the crew to finish loses nothing. The owner was shown that and chose
+to close it from this end rather than by reopening ruling 20. The third of the
+three answers that amendment listed is the one taken:
+
+> 3. **Nothing, on the second ruling's own logic:** a finished object is on the
+>    far side of `in-progress`, and if abandoning a half-built wall returns
+>    nothing at all then demolishing a finished one is the harder case to be
+>    generous to.
+
+### What of decision B is superseded, and what survives -- and the answer to "is anything left"
+
+Decision B is one sentence about a finished object, one premise about how
+cancellation already works, one flag about salvage and one hazard. **Ruling 20
+took the premise. This takes the sentence.** Taken together:
+
+**Superseded -- B's sentence, entirely, in both currencies.** *"A finished
+object un-builds into its full materials, by either route"* is withdrawn, and so
+is the paragraph under it: `RemoveObject` on a completed order does not return
+everything the order consumed, and `Undo` stops doing so as well. The money
+reading -- answer 2 of the three the amendment above listed -- is refused with
+it: nothing comes back in either currency.
+
+**Achieved, from the other side -- B's goal.** B wanted *"the two commands stop
+disagreeing"*, and after this they do not disagree: both return nothing. B added
+*"and they agree on the generous answer"*, and that clause is the part that
+goes. This is worth stating rather than filing under the supersession, because
+the defect B was fixing -- one gesture paying and its twin not -- is fixed, and
+a reader who takes B as wholly abandoned would think it was still open.
+
+**Un-superseded -- B's supersession of ADR 0017.** B recorded that it
+*"supersedes, for object removal, the expectation ADR 0017's consequences
+recorded"* -- that #99's dismantle-to-salvage would return a built object's value
+*"as carried salvage, not as cash"*. That supersession is withdrawn with the
+sentence it belonged to. ADR 0017's expectation stands again, unchanged and
+unmet: a built object's value returns as **nothing at all today**, and salvage
+remains the open mechanic it was before B. B's warning to whoever implements #99
+-- *"a salvage route that also refunds would refund twice"* -- is no longer live
+in this direction, because there is now no refund for a salvage route to be
+doubled against; the remaining reading of it is the ordinary one, that #99 must
+not pay twice for its own carry.
+
+**Survives, and is the reason this section is long -- B's hazard and B's gate.**
+Both are in force, and neither was ever a decision about materials; see the two
+sections below.
+
+**So: is anything of decision B left?** *Nothing that B decided.* Its premise
+went on 2026-08-31 and its sentence goes here, and after both, decision B
+decides nothing about a finished object that this document still holds. What
+remains under B's heading is the material that was never a decision -- the
+hazard it named, the gate it made non-optional, and a flag about a future issue
+that this amendment hands back to ADR 0017. **Decision B is spent, and the
+heading is kept because the reasoning under it is what produced two rulings.**
+A future reader should not go looking for the surviving half; there is not one.
+
+### `Undo` on a completed order, which is the route the inversion actually used
+
+This is the other half of B's *"by either route"* and it is the half that
+matters, because it is the press a player can actually reach. **The Build
+panel's queue cannot aim `CancelBuildOrder` at a finished order**:
+`PENDING_BUILD_ORDER_STATES` in
+`src/simulation/presentation/construction-projection.ts` excludes `'completed'`
+deliberately -- *"a queue that listed standing walls would be a demolition list
+wearing a queue's label"* -- so the only two presses that reach a completed
+order are **`Undo`** (`KeyZ`) and **`RemoveObject`** (the *Remove* tool). The
+measurement above used `Undo`, and so does the recycling loop
+`tests/integration/economy-bed-recycling.test.ts` drives.
+
+**`Undo` on a completed order returns nothing, and still takes the thing down.**
+Reversing the geometry is not the refund and must not go with it:
+`ConstructionSystem.cancelOrder` (`src/simulation/construction/system.ts:653`)
+calls `revertConstruction` (`system.ts:1333`) for a `completed` order, which
+un-writes a wall's edge value and, for an object buildable, calls
+`ObjectPlacementService.onOrderReverted`
+(`src/simulation/objects/object-placement-service.ts:702`). All of that stays.
+`isCancellable` (`system.ts:48`) keeps `'completed'` in the set for the reason
+it always gave -- *"a finished wall that could not be taken down would be
+permanent the moment it was placed"* -- and `undo()` (`system.ts:525`) keeps
+delegating to `cancelOrder` at `system.ts:550` so that the undo stack does not
+become a lie. **What changes is one branch**: the `hadGeometry` arm at
+`system.ts:674` stops calling `this.materialsProvider.release(allocated)`, and
+`refundSurplusOf` (`system.ts:727`) keeps returning early for `'completed'` as
+it already does. The allocation is still emptied at `system.ts:669`, and it is
+emptied into nothing.
+
+**`Redo` then rebuilds and pays again, and that is arithmetic rather than a
+second decision.** `redo()` (`system.ts:559`) returns a cancelled order to
+`'approved'` and does not restore its allocation, so the order becomes demand
+again and the just-in-time pass buys its materials a second time. Under B an
+undo/redo pair was free, because the undo handed the bricks back and the redo
+spent the same ones. Under this ruling the pair costs one order's materials.
+Nothing new is wired for that; it is what "returns nothing" means once the same
+wall is asked for again.
+
+**A finished *wall* and a finished *door* go the same way, and this is the one
+place the amendment reads the ruling wider than its words.** The ruling says
+*object*; the mechanism is `cancelOrder` on a `completed` order, which does not
+distinguish a bed from a wall, and **the inversion is identical for a wall** --
+abandon a half-built wall and the bricks are gone, wait ten ticks and `Undo`
+hands them all back. Splitting the rule by buildable kind would close the
+inversion for beds, leave it open for the buildable a player draws most, and
+reintroduce *"two commands disagree"* one level down as *"two buildables
+disagree"*. So it is read as **"a completed order returns nothing"**. It is
+flagged here rather than buried because it is the widest thing in this document
+and the signature covers it: **undoing a wall run that has already been built
+now destroys its bricks.** Undoing one that has not been built yet is ruling
+20's business and is unchanged -- money back while the crew has not started,
+nothing once it has.
+
+### B's hazard in the new arithmetic: returning nothing cannot double-refund, checked rather than assumed
+
+B put the hazard this way, and ruling 20 inherited it with *materials* replaced
+by *money*:
+
+> A refund added to `RemoveObject` that leaves `materialsAllocated` populated is
+> refunded **a second time** by a subsequent `Undo` -- value created from
+> nothing [...] So this decision is not "add a release call to `RemoveObject`":
+> it is **one refund per order, whichever command triggers it, with the
+> allocation emptied in the same step**.
+
+**Returning nothing looks like it cannot double-refund. It cannot, and the
+reason is structural rather than incidental**, which is the difference between
+checking and assuming. Three facts establish it, each grepped on `0a53ec70`:
+
+1. **There are exactly two writes to `materialsAllocated` in `src/`**, and
+   `grep -rn "materialsAllocated" src/` outside the comments returns only them
+   plus the two copies that snapshot and restore make. They are
+   `system.ts:1105`, which fills the field from the buildable catalogue at
+   allocation, and `system.ts:669`, which empties it -- unconditionally, inside
+   `cancelOrder`, before any branch decides what to do with what it held.
+   Nothing else in the repository can put materials back into that field or take
+   them out of it.
+2. **Every refund site reads that field or a delivery, and the `completed`
+   branch now reads neither.** The material route is
+   `this.materialsProvider.release(...)` at `system.ts:674`; the money route for
+   an allocation is `refundAllocatedMaterials`, on the branch below it; the
+   money route for a delivery is `refundSurplusOf` (`system.ts:727`), which
+   returns early for every state except `'approved'` and `'materials-pending'`
+   and therefore has never run for a completed order. After this change the
+   `completed` arm calls none of the three.
+3. **`cancelOrder` cannot run twice on one order**, so "the second press" the
+   hazard is about does not exist. `'cancelled'` is terminal
+   (`isCancellable`, `system.ts:48`), the second call throws, and every caller
+   is already shaped for it: `undo()` skips a non-cancellable order
+   (`system.ts:549`), `createConstructionCommandHandler` swallows the throw
+   (`src/simulation/construction/handler.ts:97`),
+   `withdrawOrdersAwaitingMaterial` only ever picks `'approved'` and
+   `'materials-pending'` candidates (`system.ts:866`), and
+   `ObjectPlacementService.remove` reaches `cancelOrder` only through
+   `ordersBuildingObjects`, which excludes `'completed'` by construction
+   (`object-placement-service.ts:787`).
+
+**The inverse hazard is the one that is real, and it is created by this ruling
+rather than by its implementation.** Value can no longer be created; it can now
+be *destroyed without the books recording it*. `RemoveObject` on a standing
+object (`object-placement-service.ts:582`) takes the object out of
+`PlacedObjectRegistry` at line 587 and **never touches the order**: the order
+stays `completed` and keeps a populated `materialsAllocated` for the rest of the
+session. Today that record is honest, because the plank really is still
+recoverable -- the measurement at the top of this amendment is exactly that,
+`Undo` handing back a plank after the bed it became had already gone. Under this
+ruling it stops being recoverable, and a standing `materialsAllocated` on a
+completed order whose object has been removed becomes a record of materials that
+will never come back.
+
+Nothing in `src/` reads that field except `cancelOrder`, the snapshot and the
+save schema, so **in production it is inert**. Where it is not inert is the
+gate: `tests/integration/economy-money-conservation.test.ts` values a live
+order's allocation as prison value, on the argument that *"`ConstructionSystem`
+withdraws on allocation and only re-deposits on cancellation, so between those
+two points the bricks are in neither the treasury nor a container and are owned
+all the same."* That argument is what this ruling breaks, and the fix is in the
+valuation rather than in production code -- see the gate below. **The production
+change this amendment asks for is one branch and nothing else**; adding an
+allocation-clearing call to `RemoveObject` was considered and refused, because
+it is a second write to the field named in point 1 above, it buys correctness in
+a field nothing reads, and the honest place for the correction is the ledger
+that was making the claim.
+
+### The gate
+
+`tests/integration/economy-money-conservation.test.ts` is the file decision B
+named, ruling 20 inherited and this amendment inherits again. It is **not
+optional** and it needs one honest change and no weakening.
+
+**What the valuation has to stop saying.** Under B, a completed order's
+allocation was liquid: one press turned it back into stock, so counting it as
+prison value was exact. Under this ruling it is not liquid and never will be, so
+the term has to change from *"materials this order is holding"* to *"the thing
+this order built, while it is still standing"*:
+
+- an order that has **not** completed contributes its allocation, exactly as
+  today -- that is the crew's hands, and `in-progress`'s deliberate consumption
+  is measured off it;
+- an order that **has** completed contributes the catalogue value of what it
+  built, for as long as that thing exists -- an edge buildable while the order
+  reads `'completed'`, an object buildable while its object is in
+  `PlacedObjectRegistry`;
+- the value of what was built is derived from `BUILDABLE_REGISTRY`'s
+  `materialsRequired` and the procurement catalogue's prices, **not** from
+  `materialsAllocated`, so the check no longer reads its answer off the record
+  the code under test writes (`docs/TESTING.md`).
+
+Nothing moves at completion: the allocation term falls by the order's materials
+and the standing term rises by the same figure, both derived from the same
+catalogue. What moves is destruction, and there are exactly two destruction
+sites in the repository -- `object-placement-service.ts:587` (the *Remove*
+press) and `object-placement-service.ts:710` (`onOrderReverted`, reached only
+from `cancelOrder`) -- plus the edge un-write in `revertConstruction`. Each
+must be met by an explicit *deliberately consumed* term raised **by the test
+from the catalogue before the press**, exactly as ruling 20's `in-progress` case
+already does.
+
+**Both ways round, as B required.** `Remove` -> `Undo` and `Undo` -> `Remove`,
+and the second press of each pair must be measured to return nothing rather than
+assumed to. `Remove` -> `Undo` is the sequence the measurement at the top of this
+amendment shows paying a plank today; it is the case this ruling exists to
+change, and it is the case that will go red first.
+
+**Three assertions in other files have to be rewritten by hand, and that is
+correct**, for the reason decision B's own Consequences give: *"it must not be
+possible to change this behaviour without editing the sentences that promised
+the old one."* The sentences are named in the branch's report rather than here,
+because a list of test names in an ADR rots on the first rename.
+
+### What this amendment costs, stated as plainly as B stated the cost it accepted
+
+- **A misplaced bed is a permanent loss.** This is the whole of it and it is the
+  sentence to read twice. Under B a bed put in the wrong cell cost the crew's
+  time and nothing else; under this ruling the plank is gone and the next bed
+  needs another 65. There is no gesture, in any order, that gets it back.
+- **The early-game pressure B removed comes back, and B's own words are the
+  measure of it.** B accepted that *"dismantling becomes free and perfectly
+  reversible: a wall can be taken down and re-sited at no material cost, a
+  misplaced bed costs nothing but the crew's time, and the early-game pressure
+  that came from materials being spent irreversibly goes."* Every clause of that
+  is reversed here. Materials are spent irreversibly again, and with ruling 20
+  in front of it the first hour is now stricter than it was before **either**
+  amendment: before B, cancelling in any state returned the materials; now four
+  states return money, one returns nothing, and the sixth returns nothing.
+- **Undo stops being free, which is the change a player will feel first.** Not
+  the bed -- the wall run. Drawing a wall and pressing `KeyZ` before the crew
+  reaches it is unchanged; pressing it after they have finished now costs the
+  bricks. Whether that is the game the owner wants is the substance of the
+  signature, and it is not a question the tests can answer.
+- **The bed-recycling loop closes for materials as well as for income.**
+  ADR 0076 decision A(ii) already stopped the recycled cell earning anything;
+  this stops the plank coming back at all, so the loop
+  `tests/integration/economy-bed-recycling.test.ts` measures costs a plank per
+  turn and is no longer a loop. That is a benefit and it is recorded here as one
+  rather than argued as a justification -- the reason for the ruling is the
+  inversion, not the exploit.
+- **A player-facing sentence gets *more* true, and none gets less.**
+  `'hud.build.remove-hint'` (`src/content/default-locale-en.ts:697`) already
+  reads *"a finished one is not refunded"*, which this makes true of every route
+  rather than of one. The half of that string ruling 20 falsified --
+  *"One still being built is cancelled and its materials come back"* -- is
+  untouched by this amendment and is still false and still the owner's; it is
+  reported again with this branch rather than rewritten, under `AGENTS.md`'s
+  fourth exclusion. **No new string is added and none is edited.**
+- **No save format moves.** No field is added to `BuildOrder`, and the one field
+  involved is already persisted and already validated
+  (`src/persistence/save-schema.ts:218`). A save written before this change
+  restores into it unchanged: a completed order carrying an allocation simply
+  never gives it back.
+- **A determinism fingerprint moves for any prison that takes a finished thing
+  down**, for the reason B and ruling 20 both give -- the stock a fingerprint
+  hashes changes. A prison that never removes a finished object and never undoes
+  a completed order is unaffected, which is the property to check before
+  extending any pinned list.
+- **`docs/OPERATIONS.md`'s justification for the `release` seam narrows again,
+  to nothing.** It argues that *"against a finite stock a cancelled order that
+  had already allocated would destroy its materials permanently"*. Ruling 20
+  left that true *"as a statement about a `completed` order and about the seam
+  itself"*. After this, it is true of the seam only: no cancellable state
+  releases an allocation into the container any more. The seam still exists and
+  is still exercised -- `UNLIMITED_MATERIALS_PROVIDER` and a bare
+  `ConstructionSystem` with no procurement sink still release, because a system
+  with no treasury behind it cannot pay anybody -- but the sentence's example is
+  gone. Named here rather than edited, because that file is documentation the
+  branch touching this behaviour should correct with the numbers in front of it.
+
+### What would change my mind
+
+The weakest claim here is the wall. Reading *"a finished object"* as *"a
+completed order"* is an inference from the mechanism and from the inversion
+being identical, and it is the one place where the implementation is wider than
+the words the owner used. **If the owner meant beds and not walls, the branch is
+a one-line change** -- the `hadGeometry` arm would test
+`definition.placesObjectId !== undefined` instead of running for every completed
+order -- and the cost of getting it wrong in that direction is that the
+commonest build gesture in the game gets more expensive without anybody having
+asked for it. It is put here as the question the signature answers rather than
+resolved by argument.
+
+The second weakest is the claim that the standing `materialsAllocated` on a
+removed object's completed order is inert in production. It rests on a grep
+(`materialsAllocated` has three readers in `src/`: `cancelOrder`, `snapshot` and
+the save schema) and on nothing else. A future consumer that valued the order
+book -- a net-worth readout, a demolition estimate, an insolvency measure -- would
+read a plank that does not exist, and the cheapest thing that would change my
+mind is such a consumer being proposed.

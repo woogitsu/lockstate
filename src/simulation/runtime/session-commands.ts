@@ -32,6 +32,7 @@ import type { RoomZoningService } from '../rooms/zoning';
 import type { GuardReleaseService } from '../security/guard-release';
 import type { StaffDismissalService } from '../staff/dismissal';
 import type { StaffHiringService } from '../staff/hiring';
+import type { SimulationEventLog } from '../events/event-log';
 import { tileCoordinate } from '../world/coordinates';
 
 /**
@@ -113,6 +114,7 @@ export function createSessionCommandHandler(
   guardRelease: GuardReleaseService,
   staffDismissal: StaffDismissalService,
   refusals: RefusalLog,
+  events: SimulationEventLog,
 ): CommandHandler {
   const constructionCommands = createConstructionCommandHandler(construction, refusals);
 
@@ -690,6 +692,38 @@ export function createSessionCommandHandler(
         // standing refusal about this one.
         refusals.supersede(dismissKey);
       }
+      return;
+    }
+
+    if (simCommand !== null && simCommand.type === 'DismissAlert') {
+      /*
+       * The eleventh route, and the first one that changes nothing about the
+       * prison (the owner's decision 3 of 2026-09-01 on
+       * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
+       *
+       * **Why it is a command at all**, when every other branch here alters
+       * what the prison is: because the fact has to be in the *save*. The main
+       * thread already removed the row when the player pressed; what this
+       * writes is the reason it does not come back when the same save is
+       * loaded tomorrow, which is what stops the owner's decisions 3 and 4
+       * from undoing one another. `src/ui/simulation-alerts.ts` named the
+       * shape before there was one -- *"a main-to-worker message and a piece
+       * of simulation state to hold it"*.
+       *
+       * **No refusal, and no supersession key.** Every other branch here pairs
+       * `refusals.record` with `refusals.supersede` because every other branch
+       * can fail in a way the player has to be told about. This one cannot:
+       * `SimulationEventLog.dismiss` states why a dismissal it cannot place is
+       * still a success -- the row the player asked to be rid of is already
+       * gone -- and inventing a refusal reason for it would put a sentence on
+       * screen contradicting what the player can see.
+       *
+       * The tick is not passed and does not matter, which is the one thing
+       * that separates this from `DismissStaff` above: nothing is stamped,
+       * because a mark saying "the player has read this" is not an event in
+       * the prison's history and has no tick of its own.
+       */
+      events.dismiss(simCommand.fromSequence, simCommand.throughSequence);
       return;
     }
 

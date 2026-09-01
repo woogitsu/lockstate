@@ -4,7 +4,7 @@ import { BUILD_EDGES } from '../construction/build-order';
 import { MAX_PURCHASE_QUANTITY } from '../economy';
 import { MAX_PRIOR_INCIDENTS, MAX_SENTENCE_LENGTH_TICKS } from '../prisoners/components';
 import { MAX_ZONE_DIMENSION_TILES } from '../rooms/zoning';
-import { identifierSchema, type VersionedPayload } from './types';
+import { identifierSchema, sequenceSchema, type VersionedPayload } from './types';
 
 /**
  * `edge` is optional, and stays optional.
@@ -531,6 +531,61 @@ export const dismissStaffSchema = z.object({
   staffId: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
 }).strict();
 
+/**
+ * Retire one row of the alerts log, because the player has read it (the
+ * owner's decision 3 of 2026-09-01 on
+ * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
+ *
+ * ## Why this crosses the wire at all
+ *
+ * Because the row has to stay gone. `src/ui/simulation-alerts.ts` predicted
+ * the shape exactly -- *"that would be a main-to-worker message and a piece of
+ * simulation state to hold it"* -- and the reason it is not a purely
+ * client-side suppression is the owner's other decision of the same day: the
+ * log survives a reload, and what a reload rebuilds from is
+ * `SimulationEventLog`'s buffer inside the save. A dismissal the worker never
+ * heard about would be undone by the next load, so decisions 3 and 4 would
+ * fight. The main thread removes the row the moment the player presses
+ * (`hudAlertsWithoutRow`); this is what makes that still true tomorrow.
+ *
+ * ## What it carries
+ *
+ * Two ordinals, and no row id. `fromSequence` is the arrival the row began
+ * with and `throughSequence` is the newest arrival the player had seen. The
+ * *identity* of the run -- what makes two arrivals the same row -- is
+ * resolved inside the simulation from the record `fromSequence` names, exactly
+ * as `ReleaseGuardAssignment` names a guard and lets the simulation resolve
+ * what is holding it: a row id is a main-thread rendering concept, and a
+ * command that carried one would be this thread asserting a grouping the
+ * worker would then have to trust.
+ *
+ * The far end is the field that makes the recurrence rule work rather than a
+ * convenience. See `SimulationEventLog.dismiss`, which states what it buys: an
+ * arrival that lands between the press and the tick is above it and survives,
+ * so the same fact happening again is a new row rather than a silently
+ * re-dismissed one.
+ *
+ * `sequenceSchema`'s bounds are the wire's own for an ordinal. The pair is
+ * deliberately **not** cross-validated here: this schema is a member of a
+ * discriminated union whose options every consumer reads `.shape.type` off
+ * (`tests/foundation/unconsumed-command-contract.test.ts`), and a `.refine`
+ * would make this one a different kind of schema than its thirteen siblings
+ * for a rule that costs nothing anyway -- a `throughSequence` below its
+ * `fromSequence` names an empty range, so `SimulationEventLog.dismiss` marks
+ * nothing and reports it, which is the same outcome the check would have
+ * produced.
+ *
+ * **No refusal reason, and that is a decision.** A dismissal naming a record
+ * the log no longer retains marks nothing and is still a success: the player
+ * asked for a row to be gone and it is. `SimulationEventLog.dismiss` carries
+ * the argument in full.
+ */
+export const dismissAlertSchema = z.object({
+  type: z.literal('DismissAlert'),
+  fromSequence: sequenceSchema,
+  throughSequence: sequenceSchema,
+}).strict();
+
 export const undoCommandSchema = z.object({
   type: z.literal('Undo'),
 }).strict();
@@ -552,6 +607,7 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
   removeObjectSchema,
   releaseGuardAssignmentSchema,
   dismissStaffSchema,
+  dismissAlertSchema,
   undoCommandSchema,
   redoCommandSchema,
 ]);
@@ -642,6 +698,9 @@ function commandJson(command: SimulationCommand): JsonValue {
 
     case 'DismissStaff':
       return { type: command.type, staffId: command.staffId };
+
+    case 'DismissAlert':
+      return { type: command.type, fromSequence: command.fromSequence, throughSequence: command.throughSequence };
 
     case 'Undo':
     case 'Redo':

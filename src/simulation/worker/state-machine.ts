@@ -305,6 +305,22 @@ export class SimulationWorkerStateMachine {
    * and no `statusCountsEqual` to bypass.
    */
   private _publishedEventSequence = 0;
+  /**
+   * The highest ordinal this session **restored** rather than recorded (the
+   * owner's decision 4 of 2026-09-01 on
+   * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
+   *
+   * `0` for a session that started new, so nothing it publishes is ever
+   * marked. For a restored one it is the log's `count` at the moment the
+   * runtime was installed: every record at or below it came out of the save,
+   * and every record above it is something this session has just done.
+   *
+   * A watermark rather than a flag on the record, for the reason the two
+   * watermarks above are watermarks: what "restored" means is a property of
+   * *this publication run*, not of the event, and writing it onto the record
+   * would put it into the next save as though it were a fact about the prison.
+   */
+  private _restoredThroughSequence = 0;
   /** When the counts were last *projected*, which bounds the projection's cost as well as the message rate. */
   private _countsProjectedAtMs = Number.NEGATIVE_INFINITY;
   /**
@@ -718,6 +734,23 @@ export class SimulationWorkerStateMachine {
           // the whole five-tick budget has run.
           tick,
           event,
+          /*
+           * Whether the prison just did this, or the save remembered it (the
+           * owner's decision 4 of 2026-09-01 on ADR 0084).
+           *
+           * The alerts list builds a row either way -- that decision is the
+           * whole point -- and the events band ignores a restored one, because
+           * the band carries what is happening now and this happened on a tick
+           * the player was not looking at. Read from a watermark taken when the
+           * runtime was installed rather than from anything on the record, so a
+           * record that survives into the *next* save carries no trace of
+           * having been replayed.
+           *
+           * The key is omitted rather than set to `false`: `restored` is
+           * `z.literal(true).optional()` and `exactOptionalPropertyTypes` is
+           * on, so absent is the one spelling of "the prison just did this".
+           */
+          ...(event.sequence <= this._restoredThroughSequence ? { restored: true as const } : {}),
         },
       });
       // Advanced per message rather than once after the loop, so a `post` that
@@ -995,6 +1028,9 @@ export class SimulationWorkerStateMachine {
         });
       }
       this._kernel = this._runtime.kernel;
+      // Everything the log came back holding is a record this session is
+      // replaying rather than making, and `publishEvents` says so on the wire.
+      this._restoredThroughSequence = this._runtime.events.count;
     }
 
     this._clock = new FixedStepClock(50, { mode: 'paused' });
@@ -1024,6 +1060,18 @@ export class SimulationWorkerStateMachine {
     // counts genuinely are all zero, and this first readout is the baseline
     // the later "publish only what changed" comparison is made against.
     this.publishStatusCounts(this.performanceNow());
+    /*
+     * And the alerts log, before any tick has run, for exactly the reason the
+     * counts readout above goes out here (the owner's decision 4 of
+     * 2026-09-01 on ADR 0084).
+     *
+     * A restored session arrives `paused`, so the tick loop is not running and
+     * the next publication would otherwise wait for the player to press play
+     * -- leaving a prison whose log the save carried reading "No active
+     * alerts" until they did. For a new session the log is empty and this
+     * posts nothing, which is the same baseline the counts readout is.
+     */
+    this.publishEvents();
   }
 
   private handleSetClock(msg: Extract<MainToWorkerMessage, { kind: 'simulation/set-clock' }>): void {

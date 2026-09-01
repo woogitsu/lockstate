@@ -234,6 +234,24 @@ const FAULT_ROW_PREFIX = 'fault-';
  * simulation state to hold it, which is a decision rather than a detail, so
  * it is recorded in `docs/HUD_PROJECTIONS.md` instead of guessed at here.
  *
+ * **That paragraph is kept and is now half true, which is worth one sentence
+ * rather than a silent edit.** It is still exactly right about *these* rows: no
+ * gesture retires a refusal or a fault, and `docs/HUD_PROJECTIONS.md` gap 34 is
+ * still where that decision waits. What it stopped being right about is the
+ * *list*, because the other producer's rows can now be dismissed -- the owner's
+ * decision 2 of 2026-09-01 on
+ * [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md).
+ * And the shape this paragraph predicted is the shape that was built: a
+ * `DismissAlert` command and a mark in `SimulationEventLog`, which is a piece
+ * of simulation state, snapshotted so the row stays gone across a reload.
+ *
+ * Why it did **not** reach a refusal row, decided rather than deferred: a
+ * refusal is a *level*, republished unchanged on `simulation/status-counts` up
+ * to twice a second and replaced in place by ordinal, so retiring one means
+ * suppressing a value the worker keeps re-asserting -- a different mechanism
+ * from marking a run of occurrences as read, and one nobody has ruled on. ADR
+ * 0084 says in terms that it does not reopen gap 34.
+ *
  * For a **refusal**, `severity` is `'warning'` for every reason, and
  * uniformly rather than arbitrarily: each of these says the same thing -- the
  * player asked for something and the prison is not doing it -- and grading one

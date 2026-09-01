@@ -116,6 +116,19 @@ describe('trusted services layer boundaries', () => {
     ['indexedDB', /\bindexedDB\s*[.[]/],
     ['sessionStorage', /\bsessionStorage\s*[.[]/],
     ['caches', /\bcaches\s*\.\s*(?:open|match)\b/],
+    // A dynamic `import()` is a network fetch in a browser: the module is a
+    // URL the page did not have and goes over the wire on first evaluation.
+    // Added by #664, closing a gap the #662 delivery-route work handed over
+    // when it landed `chunk-catalog-loader.ts`: that module takes its importer
+    // as an injected thunk and performs no import of its own, but the obvious
+    // next step -- a module here that imports a catalogue chunk directly --
+    // would have left this gate green while falsifying its central claim and
+    // `docs/CONTENT.md`'s "the trusted-services layer performs no I/O at all".
+    //
+    // Comments are stripped before the scan, so `chunk-catalog-loader.ts`'s
+    // four prose mentions of `import()` do not match; a `type X =
+    // import('./y').Y` annotation would, and there is none in either tree.
+    ['dynamic import()', /(?:^|[^.\w])import\s*\(/],
   ];
 
   /**
