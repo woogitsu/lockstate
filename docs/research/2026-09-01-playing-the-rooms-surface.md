@@ -214,11 +214,16 @@ verbatim**:
 
 Both clauses of the displayed sentence are false of the state on screen at
 the moment it is read: a room *was* just zoned, and the room type just zoned
-does not require enclosure. Nothing else on screen contradicts it -- there is
-no success acknowledgement anywhere in this game for a designation (checked:
-`eventBand` reports nothing for a successful `ZoneRoom` either) -- so the
-*only* textual feedback channel available to the player is showing them
-someone else's old failure as if it just happened.
+does not require enclosure. Nothing else on screen was measured to contradict
+it in this pass -- act 3's own harness never reads the event band, only the
+refusal band, the enclosure readout and the room count, and a source search
+for anything a successful `ZoneRoom` might publish to the event log turned up
+no such site in `src/` (grepped for `ZoneRoom`/zoning beside `event`, `hud__event`
+or `success`; nothing matched). That is evidence the event band says nothing
+about a designation succeeding, not proof of it -- the event band itself was
+not read live at the moment of c)'s success, and that is named under *What
+this pass did not reach* rather than claimed here. Either way, the refusal
+band's text is what a player reads, and it is wrong.
 
 **Cause, VERIFIED, read.** A successful `ZoneRoom` calls
 `refusals.supersede(zoneKey)`, where `zoneKey = zoneSupersessionKey(roomId, x,
@@ -259,15 +264,23 @@ Rooms panel before doing anything else, can be the entire rest of the
 session.
 
 **This recurs beyond `ZoneRoom`.** Act 4 (below) independently hit the same
-class of staleness for `RemoveObject`: `calibrate()`'s own bisection probe
-deliberately presses empty tiles to measure the screen-to-tile transform,
-which genuinely refuses `nothing-to-remove` (`src/rendering/...` via
-`RemoveObject`) as part of its own working -- and that refusal then sat in the
-band, unchanged, through a real room being zoned, a real wall perimeter being
-built, and a real bed being placed, none of which cleared it, because none of
-their success keys matched the stale `RemoveObject` key. This is the same
-`supersede`-is-keyed-to-the-exact-subject design, on a different command
-family, so it is reported as the same finding rather than a second one.
+class of staleness for `RemoveObject`: `calibrate()` (`tests/browser/playtest-harness.ts:226-272`)
+deliberately arms the Remove tool and presses empty tiles to bisect the
+screen-to-tile transform, which genuinely refuses `nothing-to-remove`
+(`src/simulation/objects/object-placement-service.ts:207`,
+`RemoveObjectRefusalReason`) as part of its own working -- and that refusal
+then sat in the band, unchanged, through a real room being zoned, a real wall
+perimeter being built, and a real bed being placed, none of which cleared it,
+because none of their success keys matched the stale `RemoveObject` key --
+confirmed by the same shape of code, one command handler over: a successful
+`RemoveObject` calls `refusals.supersede(removeKey)` where `removeKey =
+removeObjectSupersessionKey(x, y)` is the tile just removed
+(`src/simulation/runtime/session-commands.ts:571-604`, whose own comment
+names the same issue by number: *"Issue #492: the tile. A removal elsewhere
+must not silence a standing `nothing-to-remove` about this one."*). This is
+the same `supersede`-is-keyed-to-the-exact-subject design, on a different
+command family, so it is reported as the same finding rather than a second
+one.
 
 **This is a proposal, not a one-line fix.** It touches an explicitly-reasoned
 design point (#492's exact-match scoping exists to solve a real problem in
@@ -375,7 +388,11 @@ command in the same session, and a build order queue long enough to exceed
 `BUILD_QUEUE_ROW_LIMIT` (3) -- ADR 0082's own Context section already reports
 that a queue past three rows is "a destructive control aimed by a hidden
 number" for the *Cancel* buttons specifically; this pass did not re-measure
-that against the placement-ordered queue.
+that against the placement-ordered queue. Also not read: the event band
+(`.hud__event`) at the moment scenario c) succeeds -- act 3's harness never
+polls it, so whether a successful designation says anything there at all is
+argued from a source grep (see the refusal-band finding above) rather than
+measured live.
 
 ## What would change my mind
 
