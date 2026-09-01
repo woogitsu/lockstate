@@ -169,8 +169,13 @@ the band under the control reads "Nobody was hired — that would go past what t
 
 Both are ruling 18's authored sentences, verbatim. The console carries the
 diagnostic half, which never reaches the player:
-`HostRefusalError: The last reported balance of -2500 cannot cover 40.` at
-`src/main.ts:2261`, and `… cannot cover 80.` at `src/main.ts:2446`.
+`HostRefusalError: The last reported balance of -2500 cannot cover 40.` for the
+purchase and `… cannot cover 80.` for the hire, both thrown from
+`Object.onIntent`. **The line numbers in those stack traces are Vite's
+transformed module and are deliberately not quoted here** — the two throws are
+at `src/main.ts:2464` and `src/main.ts:2653` in the repository, found by
+`grep -n "HostRefusalError('past-the-overdraft-floor'" src/main.ts` rather than
+by trusting the trace.
 
 **A measurement that qualifies #723's own note, rather than contradicting it.**
 The commit says *"At either end the row still overflows at 1280, so ruling 21
