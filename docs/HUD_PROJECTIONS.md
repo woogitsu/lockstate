@@ -1786,10 +1786,8 @@ decision about what to build next.
     change, at the then-current width, a long sentence with a control beside
     it wrapped past the list's box — about five characters a line by
     derivation, though the real measurement was worse, 4.5 characters a line
-    (branch `docs/the-measurements-that-were-owed`'s
-    `2026-09-01-the-measurements-that-were-owed.md` §1, not yet merged as this
-    is written) — so one long alert could be taller than the box holding it.
-    Measured now
+    (`docs/research/2026-09-01-the-measurements-that-were-owed.md` §1) — so one
+    long alert could be taller than the box holding it. Measured now
     (`tests/browser/ui-alerts-column.spec.ts`): no alert is taller than its
     list box at any of the five viewports this issue is measured at.
     None of that reaches a refusal row, deliberately — a refusal is a *level*,

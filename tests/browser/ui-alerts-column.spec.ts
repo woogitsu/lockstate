@@ -16,10 +16,8 @@ import './ui-harness-api';
  * further (36-61px depending on severity, #720's own measured range,
  * previously undocumented anywhere in this codebase) and the sentence measured
  * **26-27 line boxes, 407-422px of row** — taller than the list box that held
- * it at 1280x800, 1280x720 and 900x600 (branch
- * `docs/the-measurements-that-were-owed`'s
- * `2026-09-01-the-measurements-that-were-owed.md` §1, not yet merged as this
- * is written).
+ * it at 1280x800, 1280x720 and 900x600
+ * (`docs/research/2026-09-01-the-measurements-that-were-owed.md` §1).
  * `src/ui/hud/hud.css` widened `.hud-minimap` from 224px to 396px to fix it;
  * this file is what keeps that fix from quietly regressing.
  *

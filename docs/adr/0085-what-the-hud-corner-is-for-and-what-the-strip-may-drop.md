@@ -42,9 +42,8 @@ because decision 1's own text already argued the identical direction for
 independent reasons, and both arguments now point at one shipped change. What
 this document still owed — "the exact width... needs the 109-character
 sentence's line count at candidate label widths... it has not been taken" —
-**has now been taken** (branch `docs/the-measurements-that-were-owed`'s
-`2026-09-01-the-measurements-that-were-owed.md` §2, not yet merged as this is
-written, and `tests/browser/playtest-739-a-column-a-sentence-fits-in.playtest.ts`'s
+**has now been taken** (`docs/research/2026-09-01-the-measurements-that-were-owed.md`
+§2, and `tests/browser/playtest-739-a-column-a-sentence-fits-in.playtest.ts`'s
 own threshold hunt), and decision 1's section below is updated with the
 resolved number and its arithmetic, on the standing mandate's instruction to
 decide a genuinely open technical question rather than leave it open a second

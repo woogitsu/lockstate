@@ -16,9 +16,7 @@ import './ui-harness-api';
  * the `ui-harness` (where a view model with `occurrences` on it can be handed
  * to the HUD directly) and the assembled `/index.html` (where `.hud__rail`
  * measures 288px at every desktop viewport and the harness's does not, per
- * branch `docs/the-measurements-that-were-owed`'s
- * `2026-09-01-the-measurements-that-were-owed.md` §2 (not yet merged as this
- * is written).
+ * `docs/research/2026-09-01-the-measurements-that-were-owed.md` §2).
  */
 
 const HARNESS_URL = '/tests/browser/ui-harness.html';
