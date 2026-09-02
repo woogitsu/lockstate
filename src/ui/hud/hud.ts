@@ -2194,13 +2194,71 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 /**
  * What each transport button asks for, given what the clock is doing now.
  *
- * Pause never changes the speed, so unpausing resumes at the speed the
- * player chose rather than silently resetting to ×1.
+ * **The three controls do not treat "the speed the player chose" the same
+ * way, and that asymmetry is measured rather than assumed** — playing the
+ * clock (`docs/research/2026-09-02-playing-the-clock.md`,
+ * `tests/browser/playtest-2026-09-02-the-clock.playtest.ts` act 1) found this
+ * paragraph used to claim a single, uniform contract ("Pause never changes
+ * the speed, so unpausing resumes at the speed the player chose rather than
+ * silently resetting to ×1") that only one of the two ways out of a pause
+ * actually honours:
+ *
+ * - **Pause** never changes the retained speed — `viewModel.clock.speed` is
+ *   passed straight through, for `hudClockFromWorkerMessage` to keep across
+ *   the pause (`src/ui/simulation-clock.ts`) even though a paused
+ *   `ClockControl` carries no speed of its own for the worker to discard.
+ * - **Fast-forward, pressed directly out of a pause with no Play in
+ *   between,** *does* resume at the speed the player chose: it computes
+ *   `nextFastForwardSpeed` off the retained value, so a pause taken at ×4
+ *   comes back at ×2 rather than restarting the ladder from ×1. Measured:
+ *   pause at ×4, Fast-forward, reads ×2.
+ * - **Play always asks for ×1**, whatever the retained speed was — measured:
+ *   fast-forward to ×4, cycle down to ×2, Pause, Play reads ×1, not ×2. This
+ *   is the one path a player is most likely to mean by "unpausing", and it is
+ *   exactly the one this paragraph used to say did not reset silently.
+ *
+ * `tests/unit/ui-hud-transport-intent.test.ts` pins all three as measured.
+ *
+ * **The asymmetry is intentional, and it was already decided one file over —
+ * which the pass that measured it did not cite.** Reading it as an open
+ * design question was wrong, and the correction is recorded here rather than
+ * quietly applied. `nextFastForwardSpeed`'s own docblock
+ * (`src/ui/hud/projection.ts`) states the rule outright: *"Returning to ×1 is
+ * what the play button is for, so no tap is ever ambiguous about what it will
+ * do"* — which is why the fast-forward ladder runs 1 → 2 → 4 → 2 and never
+ * wraps back to 1 itself. And `transportPressedStates` in the same file
+ * returns `play: !fast` under the heading *"Exactly one transport control is
+ * pressed at any time, so the three buttons read as a state, not as three
+ * independent switches"*. Taken together the three controls are a **radio
+ * group over {paused, ×1, fast}**, not a play/pause pair with a speed dial
+ * beside it: `Play` *is* the ×1 member of that group, so `Play` asking for ×1
+ * out of a pause is the button doing the one thing it is for, and
+ * `Fast-forward` carrying the retained speed is the ladder resuming where it
+ * was. Neither is a reset of the other's state.
+ *
+ * **It is also not a hidden behaviour, which is the test the owner's standing
+ * design directive actually applies** (*"gra ma być łatwa przyjazna do grania,
+ * a nie jakieś ukryte funkcje"*): because exactly one control is lit and
+ * `play: !fast` lights `Play` precisely at ×1, a player who presses `Play`
+ * out of a ×4 pause sees `Play` lit and `Fast-forward` dark — the state is on
+ * screen, in the control they just pressed, rather than discarded silently.
+ * A player who meant to keep ×4 presses `Fast-forward`, which the same pass
+ * measured as resuming at ×2 on the ladder.
+ *
+ * So what rotted was **only this paragraph's claim of a single uniform
+ * contract**, and that claim is what the measurement refuted. The behaviour
+ * of all three controls is unchanged and now says why.
  */
 export function transportIntent(kind: TransportIntentKind, viewModel: HudViewModel): HudIntent {
   switch (kind) {
     case 'pause':
       return { kind: 'set-clock', mode: 'paused', speed: viewModel.clock.speed };
+    // See the docblock above: `Play` is the ×1 member of the transport's
+    // radio group (`transportPressedStates`'s `play: !fast`), and
+    // `nextFastForwardSpeed`'s docblock already states that returning to ×1
+    // is what this button is for. Asking for ×1 here is that rule, not an
+    // oversight -- a caller who wants the retained speed wants
+    // `fast-forward`, which is the case below.
     case 'play':
       return { kind: 'set-clock', mode: 'running', speed: 1 };
     case 'fast-forward':
