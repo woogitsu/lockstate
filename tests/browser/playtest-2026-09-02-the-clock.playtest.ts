@@ -184,6 +184,34 @@ test('act 1: the speed readout tells the truth through pause, fast-forward and t
   log(act, `after Play from a pause that started at ×2 -- does it resume at ×2 or reset to ×1?: ${JSON.stringify(resumed)}`);
 
   log(act, `raw simulation/clock-state readings across the sequence: ${JSON.stringify(await currentClock(page))} at tick ${await currentTick(page)}`);
+
+  /*
+   * A second, independent probe of the same claim, from `hud.ts:2149-2166`'s
+   * own `transportIntent` docblock: *"Pause never changes the speed, so
+   * unpausing resumes at the speed the player chose rather than silently
+   * resetting to ×1."* The sequence above showed Play does not do that. This
+   * asks whether *Fast-forward*, pressed directly from a pause with no Play
+   * in between, is the path the comment actually describes -- `simulation-
+   * clock.ts`'s own docblock says the retained speed exists "so the fast-
+   * forward control knows where a further tap goes", which is a narrower and
+   * different claim than "unpausing resumes at the chosen speed".
+   */
+  await ff0(page);
+  await ff0(page);
+  const backAt4x = await clockReading(page);
+  log(act, `two more Fast-forward presses from ×1: ${JSON.stringify(backAt4x)}`);
+
+  await press0(page);
+  const pausedAt4x = await clockReading(page);
+  log(act, `Pause while at ×4: ${JSON.stringify(pausedAt4x)}`);
+
+  await ff0(page);
+  const ffFromPause = await clockReading(page);
+  log(
+    act,
+    `Fast-forward pressed DIRECTLY from a pause that started at ×4 (no Play in between): ` +
+      `${JSON.stringify(ffFromPause)} -- expected ×2 (nextFastForwardSpeed(4)) if the retained speed feeds the ladder as the docblock claims`,
+  );
 });
 
 /* ==================================================================== */
