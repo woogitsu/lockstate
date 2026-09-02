@@ -370,3 +370,37 @@ at ×4, which the constant's own docblock states as *"640 px/s on screen at 1x
 — hurried"*. A starter prison owns one 32-tile chunk, so the longest route
 inside it is about 62 tiles, or **124 ticks**; a walk across a 6×6 cell is
 **2 to 20 ticks**.
+
+## §6 — Do the two features interact? Measurably, no; arithmetically, by a bounded amount
+
+The brief asked whether a `Medium` prisoner in a prison whose guards walk
+rather than teleport means slower incident coverage, and whether that is
+visible or measurable.
+
+**REASONED from READ facts, and the answer is that ADR 0088 was scoped
+precisely to avoid this.** The three guard errands that bear on an incident are
+untouched by it:
+
+- **Incident response still teleports**, deliberately (#740's own commit
+  message: *"Incident response and contraband search guard travel are
+  unchanged and still teleport on arrival"*), and its destination is
+  `requireDefinition(incident.sectorId).postTile` — the tile the responder is
+  already standing on in a starter prison.
+- **A contraband sweep's outbound travel still teleports**
+  (`src/simulation/contraband/search-system.ts:372`).
+- **Coverage** is `DeploymentSystem.getCoverageReport`, which counts guards by
+  deployment phase, not by position. A guard walking back is `'travelling'`,
+  which the tally counts as neither `onPost` nor `onSearch`
+  (`src/simulation/presentation/security-projection.ts:165-168`).
+
+So the only thing ADR 0088 adds to a coverage gap is the *walk-back* leg, and
+§2b prices it: the ticks measured there, against a 600-tick sweep period. That
+is the whole of the interaction, and it is small by construction rather than by
+luck.
+
+**What this pass did NOT do, stated rather than implied:** it did not run a
+prison to an incident with guards present and compare incident duration before
+and after `9dd6e601`. Doing that honestly needs a second worktree at the parent
+commit and a tick-indexed incident timeline on both — the shape
+`docs/AGENT_WORKFLOW.md` requires for a baseline — and it is a measurement, not
+a reading. **Not attempted here; named as unreached.**
