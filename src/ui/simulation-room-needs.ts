@@ -319,6 +319,18 @@ export class RoomNeedsReader {
       // counts cadence. A question costs the worker whether or not it is
       // answered, so a question is what the budget has to be spent in.
       //
+      // **"the counts cadence" is kept and corrected (2026-09-02, issues #718
+      // and #765): this reader does not ride it.** What makes the Rooms tab ask
+      // is the worker's clock heartbeat -- `CLOCK_STATE_PUBLISH_INTERVAL_MS` is
+      // 250 against the counts channel's 500, and the counts channel is
+      // change-gated where the heartbeat is not, so a prison with nobody housed
+      // publishes counts **once** in thirty seconds and refreshes this readout
+      // **120 times** (ADR 0086 §3). Nine requests per drive at up to about
+      // four drives a second is twice the traffic this paragraph priced, which
+      // is an argument for the budget rather than against it. The spacing is
+      // `ceil(250 / 15) * 15` = 255 ms on the harness, 292.8-299.6 ms measured
+      // in a browser (PR #762).
+      //
       // The counters coincide in the ordinary case -- a detail for a room the
       // list called unfinished names at least one missing requirement -- so this
       // changes nothing about what a settled prison shows. What it gives up is a

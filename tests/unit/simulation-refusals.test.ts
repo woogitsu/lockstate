@@ -806,6 +806,111 @@ describe('issue #492: a refusal is withdrawn once the simulation accepts the ver
   });
 });
 
+describe('issue #780: a zoning refusal is withdrawn by a different room type succeeding at the identical rectangle', () => {
+  it("a room.cell refused for being open does not survive a room.yard -- which needs no enclosure -- succeeding at the exact same rectangle", () => {
+    // The playtest reproduction (docs/research/2026-09-01-playing-the-rooms-surface.md,
+    // act 3), narrowed to the one case #492's own keying left open: not a
+    // *different* rectangle (the guarding test two blocks above pins that
+    // case exactly as it is), but the *same* rectangle, a *different* room
+    // type. `room.cell` requires `enclosed`; `room.yard` requires only
+    // `outdoors` and never reaches the enclosure check at all
+    // (`RoomZoningService.zone`, `zoning.ts:574`) -- so its success at this
+    // rectangle is a direct, positive answer to "is this rectangle enclosed",
+    // and the old `zoneSupersessionKey(roomCatalogId, x, y, width, height)`
+    // -- which folded the type into every one of `zone.*`'s eight reasons --
+    // could never see it: `zone:room.cell:20:20:8:8` and
+    // `zone:room.yard:20:20:8:8` are two different strings.
+    //
+    // 8x8 rather than #492's own 2x3, because `room.yard` authors an 8x8
+    // minimum (`room-catalog.ts`) and this rectangle has to satisfy both
+    // types' minimums to isolate the enclosure question from the size one.
+    const runtime = createNewSimulationRuntime(0x780);
+    submit(runtime, 0, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 20, y: 20, width: 8, height: 8 }));
+    expect(runtime.refusals.last?.reason).toBe('zone.not-enclosed');
+
+    submit(runtime, 1, packCommand({ type: 'ZoneRoom', roomId: 'room.yard', x: 20, y: 20, width: 8, height: 8 }));
+
+    expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.yard')).toHaveLength(1);
+    expect(
+      runtime.refusals.last,
+      'the yard needed no walls and stands where the cell was refused; the stale "must be enclosed" sentence must not still be the standing refusal',
+    ).toBeUndefined();
+    // The refusal really happened; only the standing record is withdrawn,
+    // exactly as #492's own build-order and admission cases assert.
+    expect(runtime.refusals.count).toBe(1);
+  });
+
+  it('withdraws a type-dependent refusal when the same type succeeds at the same rectangle -- the narrow key is load-bearing, not decorative', () => {
+    /*
+     * **This test exists because a mutation survived without it.** Replacing
+     * the `zoneSupersessionKey` withdrawal in `session-commands.ts` with a
+     * second `zoneAreaSupersessionKey` one -- dropping the room type from the
+     * narrow path entirely, which is exactly the over-widening #492 forbids --
+     * left all forty-six cases in this file green. So nothing pinned that the
+     * narrow key is ever *used*, and the #780 split could have silently
+     * collapsed into one key.
+     *
+     * The reason no existing case reached it is worth stating, because it is
+     * not an oversight in those cases. #492's own positive test withdraws a
+     * `not-enclosed` refusal, and `not-enclosed` is one of the five reasons
+     * #780 moved to the *area* key -- so that test now exercises the area
+     * withdrawal, not the narrow one. Of the three reasons that keep the
+     * narrow key, two can never be followed by a success at the same
+     * (type, rectangle) pair at all: `below-minimum-size` is a fact about a
+     * rectangle that does not change, and `unknown-room-type` is a fact about
+     * a type that does not change. **`duplicate-instance-id` is the only one
+     * of the three that is reachable twice**, because unzoning frees the
+     * instance id and lets the identical request succeed afterwards -- which
+     * makes it the only case that can pin the narrow path, and this is it.
+     *
+     * `room.yard` rather than `room.cell` so no walls are needed: a yard is
+     * `'outdoors'` and never reaches the enclosure check, which keeps this
+     * case about the key and not about construction.
+     */
+    const runtime = createNewSimulationRuntime(0x780);
+    submit(runtime, 0, packCommand({ type: 'ZoneRoom', roomId: 'room.yard', x: 20, y: 20, width: 8, height: 8 }));
+    expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.yard'), 'the first zoning has to succeed or the rest measures nothing').toHaveLength(1);
+    expect(runtime.refusals.last, 'a successful first zoning must refuse nothing').toBeUndefined();
+
+    // The identical request again: the instance id is taken, and
+    // `duplicate-instance-id` is checked before `overlaps-existing-room`
+    // (`zoning.ts`), so this is the reason under test rather than the
+    // geometry one.
+    submit(runtime, 1, packCommand({ type: 'ZoneRoom', roomId: 'room.yard', x: 20, y: 20, width: 8, height: 8 }));
+    expect(runtime.refusals.last?.reason, 'the second identical zoning must be refused for the duplicate instance id, which is one of the three type-dependent reasons').toBe('zone.duplicate-instance-id');
+
+    // Freeing the id is what makes the same request answerable again.
+    submit(runtime, 2, packCommand({ type: 'UnzoneRoom', x: 20, y: 20, width: 8, height: 8 }));
+    expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.yard'), 'unzoning has to actually remove the room or the retry below is not a retry').toHaveLength(0);
+
+    submit(runtime, 3, packCommand({ type: 'ZoneRoom', roomId: 'room.yard', x: 20, y: 20, width: 8, height: 8 }));
+
+    expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.yard')).toHaveLength(1);
+    expect(
+      runtime.refusals.last,
+      'the duplicate id was the whole refusal and the id is free again and taken again by the same request -- the standing "already exists" sentence must be withdrawn through the narrow key',
+    ).toBeUndefined();
+  });
+
+  it('leaves a different rectangle exactly as unenclosed as it was -- #492s own guard, unaffected by the #780 fix', () => {
+    // The companion case: the fix above must not have quietly widened into
+    // the reading the "leaves the line alone... narrow reading, not the wide
+    // one" test two blocks up exists to forbid. Same two types as above, two
+    // genuinely different rectangles.
+    const runtime = createNewSimulationRuntime(0x780);
+    submit(runtime, 0, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 2, y: 2, width: 2, height: 3 }));
+    expect(runtime.refusals.last?.reason).toBe('zone.not-enclosed');
+
+    submit(runtime, 1, packCommand({ type: 'ZoneRoom', roomId: 'room.yard', x: 12, y: 12, width: 8, height: 8 }));
+
+    expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.yard')).toHaveLength(1);
+    expect(
+      runtime.refusals.last?.reason,
+      'a yard succeeding twelve tiles away does not make the first rectangle enclosed',
+    ).toBe('zone.not-enclosed');
+  });
+});
+
 /**
  * Issue #514: eight rapid *Place order* presses at one tile and edge queued
  * eight distinct build orders for a wall only one of which could ever exist.

@@ -48,7 +48,7 @@ import {
  * one mousedown/mouseup with no interpolation, which is what `buildAndPopulate`
  * already trusts for every bed and every toilet.
  */
-async function wallSide(
+export async function wallSide(
   page: Page,
   edge: 'north' | 'south' | 'east' | 'west',
   tiles: readonly { readonly x: number; readonly y: number }[],
@@ -112,7 +112,7 @@ async function wallSide(
   return { byDrag, repairs, stillMissing };
 }
 
-interface ResilientCellResult {
+export interface ResilientCellResult {
   readonly origin: { readonly originX: number; readonly originY: number };
   readonly zoned: boolean;
   readonly zoneAttempts: number;
@@ -125,7 +125,7 @@ interface ResilientCellResult {
  * `CELL_RECT` two tiles over — with `bedCount` beds and one toilet placed
  * inside, and the wall repair `wallSide` above adds.
  */
-async function buildResilientCell(
+export async function buildResilientCell(
   page: Page,
   bedCount: number,
   label: string,

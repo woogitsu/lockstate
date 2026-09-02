@@ -44,6 +44,21 @@ export interface HarnessTile {
 }
 
 /**
+ * One chunk position, in the shape `SparseWorld.load` takes one -- plain
+ * numbers, so it crosses `page.evaluate`.
+ *
+ * The spec names chunks rather than tile bounds on purpose. `loadedBounds` is
+ * derived from materialised chunks by `WorldRenderView.fromSnapshot`, which is
+ * production code; a harness that took the bounds directly would let a spec
+ * hand the scene the very rectangle it then checks the mapping against, which
+ * is `docs/AGENT_WORKFLOW.md` §3's "fixture that supplies both sides".
+ */
+export interface HarnessChunkPosition {
+  readonly chunkX: number;
+  readonly chunkY: number;
+}
+
+/**
  * What Phaser's input manager is holding, for the `addPointer(2)` comment
  * (issue #209).
  *
@@ -173,6 +188,43 @@ export interface LockstateWorldSceneHarness {
   placedObjects(): readonly HarnessTile[];
   /** What the panel readout would currently show for the object gesture, or `undefined`. */
   targetedObject(): HarnessRect | undefined;
+
+  /**
+   * Materialises chunks in the feed this harness serves, and resolves once
+   * `WorldScene.update` has actually read the frame carrying them (issue #793).
+   *
+   * A real `SparseWorld` is loaded, snapshotted exactly as the worker does and
+   * projected through `WorldRenderView.fromSnapshot`, so the `loadedBounds`
+   * the scene then caches are computed by the same production code a running
+   * session's are -- the spec chooses a chunk *layout*, never a rectangle.
+   *
+   * The wait is on the harness feed's own `readFrame` call count, not on a
+   * fixed number of animation frames: `frameCameraOnFirstWorld` and the
+   * `lastLoadedBounds` cache both happen inside the `update()` that consumes
+   * the frame, so "the scene has read it" is the only honest precondition, and
+   * counting rAFs instead would be a guess about the engine's callback order
+   * that a loaded machine can break.
+   */
+  loadChunks(chunkSize: number, chunks: readonly HarnessChunkPosition[]): Promise<void>;
+  /**
+   * `WorldScene.navigateToMinimapPoint`, called directly -- the mapping the
+   * minimap's click drives, with no HUD, no app shell and no pixel rounding
+   * between the spec and the camera (issue #793).
+   *
+   * The app-level gate (`tests/browser/hud-minimap-navigates.spec.ts`) can only
+   * read the camera back through an integer-pixel bisection, which cannot
+   * express a float equality; this can.
+   */
+  navigateToMinimapPoint(fx: number, fy: number): boolean;
+  /**
+   * Moves the camera by writing Phaser's own `scrollX`/`scrollY`.
+   *
+   * Deliberately not a pan gesture and not a minimap click: a spec that
+   * displaced the camera with the mechanism under test would be proving that
+   * mechanism against itself. `Camera#setScroll` is the engine's, so it can
+   * carry no bug this file's subject has.
+   */
+  displaceCamera(scrollX: number, scrollY: number): void;
 }
 
 declare global {
