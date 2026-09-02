@@ -228,6 +228,13 @@ export interface BuildProbe {
   readonly buyRowVisible: boolean;
   /** The buy button's whole label, which states the quantity, the material and the total. */
   readonly buyLabel: string;
+  /**
+   * Whether the buy button is disabled (issue #772): the control's enabled
+   * state is judged against the same `pressAffordabilityVerdict` the press
+   * itself is judged against, so this and `buyLabel` moving independently of
+   * each other is exactly the gap #772 is about.
+   */
+  readonly buyDisabled: boolean;
   /** What the quantity stepper currently shows. */
   readonly buyQuantity: string;
   /** Every visible label in the panel, so an unresolved `hud.*` key is caught. */

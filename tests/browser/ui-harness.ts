@@ -1356,6 +1356,7 @@ window.lockstateUiHarness = {
       buyOpen: buyToggle?.getAttribute('aria-expanded') === 'true',
       buyRowVisible: buyRow !== null && buyRow.offsetParent !== null,
       buyLabel: buySubmit?.textContent?.trim() ?? '',
+      buyDisabled: buySubmit?.disabled ?? true,
       buyQuantity: buyQuantity?.value ?? '',
       texts: [...(panel?.querySelectorAll<HTMLElement>('button, label, span, h2') ?? [])]
         .map((node) => (node.textContent ?? '').trim())
