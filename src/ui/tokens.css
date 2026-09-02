@@ -208,33 +208,45 @@
      3:1 non-text-contrast floor and the whole reason `'caution'` exists.
      Hue and saturation are unchanged (40.3 -> 39.6 degrees, 29.9 -> 30.7 %);
      only lightness moved, from 62.0 % to 30.0 %, chosen as the smallest drop
-     that
-     clears 3:1 against `--paper-400` (3.38:1) *and* keeps a working margin on
-     both neighbours the ladder actually asserts: 3.17:1 against `--status-
-     success` and 3.89:1 against `--status-warning`, `tests/unit/
+     that clears 3:1 against `--paper-400` (3.38:1) *and* keeps a working
+     margin on both neighbours the ladder actually asserts: 3.17:1 against
+     `--status-success` and 3.89:1 against `--status-warning`. `tests/unit/
      ui-design-tokens.test.ts` computes all three from this file rather than
-     pinning them, so none can rot back under 3:1 unnoticed. It could not be
-     much smaller: every hue/saturation combination inside the palette's
-     established 45-70 % lightness band (the band every other status hue in
-     this ramp sits in) tops out around 2.35:1 against `--paper-400`, because
-     `--paper-400` is itself lighter (relative luminance 0.434) than nearly
-     everything on that band -- 3:1 is reachable only by leaving it. Reported,
-     not hidden: leaving the band means `--badge-caution-fg` no longer matches
-     the other six badge foregrounds' text-vs-own-background contrast on
-     `--surface-raised` (5.73:1 before this change, 2.13:1 after, computed the
-     same way as issue #768's `--status-critical`, which was already below
-     4.5:1 -- 2.94:1 on this surface -- before either ruling touched this
-     file). Moving the badge chip's own contrast back over 4.5:1 would need a
-     background token decoupled from this darkened foreground (a solid or
-     near-opaque chip, unlike every other badge's translucent tint) or a
-     lighter `--paper-400` that every other consumer of `--text-subtle` would
-     also repaint under -- both are a second decision this ruling did not
-     make, so `--straw-alpha-14` below still mirrors this token's RGB at 14 %
-     exactly as its five siblings mirror theirs, and the chip stays visually
-     consistent with the rest of the badge family rather than becoming the one
-     exception. */
+     pinning them, so none can rot back under 3:1 unnoticed.
+     **Given an opaque background of its own by the owner's third ruling,
+     2026-09-02, resolving the conflict the second ruling reported rather
+     than hid.** Clearing 3:1 against `--paper-400` forces this token's
+     relative luminance down to ~0.093 -- below the ~0.226 floor any
+     foreground needs for 4.5:1 text contrast on `--surface-raised`
+     (luminance 0.011) even against a fully transparent chip, so the
+     translucent 14 %-tint formula every other badge tone uses could not
+     reach 4.5:1 here at any alpha: the own-background contrast this token's
+     darkening cost -- 5.73:1 before, 2.13:1 with the old `--straw-alpha-14`
+     tint kept -- is fixed by giving `--badge-caution-bg` an *opaque* raw
+     ramp entry, `--straw-100` below, instead of a translucent one. `100`
+     follows `--paper-100`'s numbering (lower number, lighter colour) rather
+     than the "-alpha-NN" naming its five siblings use, because it no longer
+     is one: an alpha-14 name on a token holding no alpha would be exactly
+     the kind of literal-named-for-its-value drift this file's own header
+     rules out. Same hue and saturation as this token (39.6 degrees, 30.7 %),
+     lightness 82.0 % against this token's 30.0 %, chosen the same way as the
+     darkening above -- smallest change that clears its floor (4.5:1) with a
+     comparable margin (5.07:1, +12.7 % over the floor, matching this token's
+     own +12.7 % margin over 3:1 against `--paper-400`) -- so the badge reads
+     as one hue at two values rather than as an unrelated light chip. No
+     other raw ramp entry, alias or stylesheet changes: `--badge-caution-bg`
+     is repointed from `var(--straw-alpha-14)` to `var(--straw-100)` below,
+     and `.ui-badge[data-tone='caution']` in `primitives.css` already reads
+     only that alias, never the raw ramp directly, so the rule that paints
+     the chip is untouched and the other six tones' tokens and rules stay
+     byte-identical. `--straw-alpha-14` had exactly one consumer
+     (`--badge-caution-bg`) and is removed rather than left declared and
+     unused, which this file's own "uses only tokens that exist" contract
+     (`tests/unit/ui-design-tokens.test.ts`) would not have caught either
+     way -- that test guards a stylesheet reaching a token that is not
+     declared, not a token nothing reaches. */
   --straw-300: #645435;
-  --straw-alpha-14: rgba(100, 84, 53, 0.14);
+  --straw-100: #dfd6c3;
   --amber-300: #e8b463;
   --amber-alpha-14: rgba(232, 180, 99, 0.14);
   --clay-300: #d4785c;
@@ -284,7 +296,7 @@
   --badge-neutral-fg: var(--text-subtle);
   --badge-success-bg: var(--moss-alpha-14);
   --badge-success-fg: var(--status-success);
-  --badge-caution-bg: var(--straw-alpha-14);
+  --badge-caution-bg: var(--straw-100);
   --badge-caution-fg: var(--status-caution);
   --badge-warning-bg: var(--amber-alpha-14);
   --badge-warning-fg: var(--status-warning);

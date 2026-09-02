@@ -224,6 +224,32 @@ function contrastRatio(hexA: string, hexB: string): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+/**
+ * A token layer that composites badge chip against a surface, resolved to
+ * the `#rrggbb` a browser would actually paint -- what `getComputedStyle`
+ * reads is one blended colour, whichever of `rgba(r, g, b, a)` (a translucent
+ * tint, still this file's formula for six of the seven badge tones) or
+ * `#rrggbb` (opaque, `'caution'`'s own background since the owner's third
+ * ruling of 2026-09-02) the resolved token turns out to be. An opaque colour
+ * composites to itself; only a translucent one needs the surface at all, so
+ * this is also what makes the assertion below correct *and* a real gate
+ * against a future edit that makes the chip translucent again -- it would
+ * recompute the blend rather than throw on an unexpected format.
+ */
+function paintedColour(resolved: string, surfaceHex: string): string {
+  const opaque = /^#([0-9a-fA-F]{6})$/.exec(resolved);
+  if (opaque !== null) return resolved;
+  const translucent = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)$/.exec(resolved);
+  if (translucent === null) {
+    throw new Error(`expected a resolved #rrggbb or rgba(...) colour, got ${JSON.stringify(resolved)} -- extend this helper before trusting its output`);
+  }
+  const [, rStr, gStr, bStr, aStr] = translucent;
+  const [r, g, b, a] = [Number(rStr), Number(gStr), Number(bStr), Number(aStr)];
+  const [sr, sg, sb] = hexChannels(surfaceHex);
+  const blend = (c: number, s: number): number => Math.round(c * a + s * (1 - a));
+  return `#${[blend(r, sr), blend(g, sg), blend(b, sb)].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+}
+
 describe('badge tone contrast (issue #788, the owner\'s ruling of 2026-09-02)', () => {
   /**
    * **The measured defect.** A playtest read `getComputedStyle` on a
@@ -278,6 +304,38 @@ describe('badge tone contrast (issue #788, the owner\'s ruling of 2026-09-02)', 
     const warningFg = resolveToken('--badge-warning-fg', tokens);
     const ratio = contrastRatio(cautionFg, warningFg);
     expect(ratio, `caution (${cautionFg}) vs warning (${warningFg}) = ${ratio.toFixed(3)}:1`).toBeGreaterThanOrEqual(3);
+  });
+
+  /**
+   * **The badge's own text, half of what the owner's second ruling of
+   * 2026-09-02 reported as an unresolved conflict and the third ruling,
+   * same day, resolved.** Darkening `--badge-caution-fg` to clear 3:1 against
+   * neutral (the test above) forced its relative luminance down to ~0.093 --
+   * too dark for WCAG's 4.5:1 *text* contrast (SC 1.4.3) against the
+   * translucent 14 %-tint chip every other badge tone paints, on
+   * `--surface-raised` (the only surface `.hud-regime` -- the panel that
+   * paints every `'caution'` badge -- ever gives it): that pairing measured
+   * 5.73:1 before the darkening and 2.13:1 after, both recorded in
+   * `tokens.css`'s comment on `--straw-300`. The fix was an opaque
+   * `--badge-caution-bg` (`--straw-100` in `tokens.css`, same hue and
+   * saturation as the darkened foreground, only lighter) rather than a
+   * translucent one, so `paintedColour` above resolves it to itself with no
+   * compositing needed -- and still takes `--surface-raised` as its fallback
+   * surface, because the property this test is actually pinning is "the
+   * chip is opaque enough not to need one", and a translucent regression
+   * should fail on the real number the panel would paint, not on a format
+   * `paintedColour` cannot parse.
+   */
+  it("keeps caution's own text at least 4.5:1 on its own badge background (WCAG 1.4.3)", () => {
+    const cautionFg = resolveToken('--badge-caution-fg', tokens);
+    const cautionBgToken = resolveToken('--badge-caution-bg', tokens);
+    const surfaceRaised = resolveToken('--surface-raised', tokens);
+    const paintedBg = paintedColour(cautionBgToken, surfaceRaised);
+    const ratio = contrastRatio(cautionFg, paintedBg);
+    expect(
+      ratio,
+      `caution text (${cautionFg}) on caution's own background (${cautionBgToken} -> painted ${paintedBg} on --surface-raised ${surfaceRaised}) = ${ratio.toFixed(3)}:1`,
+    ).toBeGreaterThanOrEqual(4.5);
   });
 });
 
