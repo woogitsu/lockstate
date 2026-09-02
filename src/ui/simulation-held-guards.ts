@@ -137,6 +137,17 @@ export class HeldGuardsReader {
    * still come back over the whole roster, so the header tells the truth about
    * the prison while the rows tell the truth about the panel.
    *
+   * **"twice a second" is the counts cadence and this reader does not ride
+   * it (corrected 2026-09-02, issues #718 and #765).** The sentence is kept
+   * because the argument is unchanged and only gets stronger: what makes the
+   * main thread ask is the worker's clock heartbeat, and
+   * `CLOCK_STATE_PUBLISH_INTERVAL_MS` is 250 against the counts channel's 500 --
+   * measured at 120 refreshes in 30 s in a prison with nobody housed and 178 in
+   * one with two housed (ADR 0086 §3), so **up to about four a second, not
+   * two**. The spacing is `ceil(250 / 15) * 15` = 255 ms on the harness, with a
+   * 292.8-299.6 ms tail measured in a browser (PR #762). The cost this window
+   * refuses is therefore roughly double what this sentence priced.
+   *
    * `undefined` while another read is in flight, exactly as
    * `PendingDeliveriesReader` answers: a caller on a cadence must not queue a
    * second question about a prison it has not heard the answer for once.

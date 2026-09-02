@@ -536,13 +536,13 @@ Four properties are worth stating because each is a decision:
   *"the counts cadence"*, and six sentences in this section said so; the
   composition root's nine comments said it with a number, *"up to 500ms for the
   next counts publication"*. **All of them were false the day they were
-  written.** `src/main.ts:1755` opens **one** listener for every worker-to-main
-  message, and its early return (`src/main.ts:1796-1804`) fires only when all
+  written.** `src/main.ts:1781` opens **one** listener for every worker-to-main
+  message, and its early return (`src/main.ts:1822-1830`) fires only when all
   six of its translators say nothing. `hudClockFromWorkerMessage`
   (`src/ui/simulation-clock.ts:22-57`) has no "nothing changed" arm — it
   returns a view model for *every* `simulation/clock-state` — so every one of
   those falls through to the nine-call refresh block at
-  `src/main.ts:1860-1868`. (**Those three citations read `1702`, `1735-1740`
+  `src/main.ts:1886-1894`. (**Those three citations read `1702`, `1735-1740`
   and `1795-1804` until 2026-09-02** and all three had rotted; the quoted
   sentences are unchanged, which is why the quotations are the durable half and
   the line numbers are not.) `publishClockState` posts one at most every 250 ms
