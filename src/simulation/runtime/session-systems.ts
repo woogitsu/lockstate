@@ -702,35 +702,65 @@ export function restoreSessionSystems(
   //    baseline), then the control states that cascade onto the doors.
   for (const door of systems.navigation.doors) runtime.navigation.doors.register({ ...door });
   /*
-   *    **A sector the runtime already holds is skipped, not re-registered.**
+   *    **A sector the runtime already holds gets the payload's definition
+   *    applied over it, not skipped** ([ADR 0092](../../../docs/adr/0092-who-decides-where-a-guard-stands.md)
+   *    decision 3, confirmed by the owner 2026-09-02: *"the save wins over the
+   *    derivation"*).
    *
    *    `SecuritySectorRegistry.register` throws on a duplicate id, and since
    *    [ADR 0036](../../../docs/adr/0036-a-derived-default-security-sector.md)
    *    the runtime this function is handed already holds one sector: the derived
    *    default, registered by `createNewSimulationRuntime`, which
-   *    `restoreSimulationRuntime` builds the session with. Without this guard a
-   *    save written by any session at all would fail to load.
+   *    `restoreSimulationRuntime` builds the session with. Without *some* guard
+   *    a save written by any session at all would fail to load on the duplicate
+   *    id -- that half of the reasoning below is unchanged.
    *
-   *    Skipping is the right resolution rather than the convenient one.
-   *    `SecuritySectorRegistry`'s own contract is that a sector's static
-   *    definition is *"assumed re-registered identically by session/scenario
-   *    setup before `loadSnapshot` runs"* -- only the mutable control state is
-   *    part of the snapshot. The default sector is a pure function of the
-   *    world, the world is restored before this runs and handed into the same
-   *    wiring a live session uses, so what the payload carries for it and what
-   *    the runtime derived are the same definition; the payload's copy is
-   *    redundant rather than authoritative, exactly as room geometry and
-   *    navigation caches are (`restore-session.ts`'s `RestoredScope`).
-   *    `tests/integration/security-default-sector.test.ts` pins that they are
-   *    identical across a real round trip rather than trusting it.
+   *    **What used to be here argued that skipping was right rather than
+   *    convenient, and that argument doesn't survive ADR 0092.** It read, in
+   *    full: *"`SecuritySectorRegistry`'s own contract is that a sector's
+   *    static definition is 'assumed re-registered identically by
+   *    session/scenario setup before `loadSnapshot` runs' -- only the mutable
+   *    control state is part of the snapshot. The default sector is a pure
+   *    function of the world, the world is restored before this runs and
+   *    handed into the same wiring a live session uses, so what the payload
+   *    carries for it and what the runtime derived are the same definition;
+   *    the payload's copy is redundant rather than authoritative, exactly as
+   *    room geometry and navigation caches are."* Every clause was true the
+   *    day it was written, because `postTile` had exactly one writer in
+   *    `src/` and `patrolRoute` had none -- there was no way for the payload's
+   *    row to *differ* from the derivation, so "redundant" and "authoritative"
+   *    were the same thing in practice. ADR 0092 is what removes that: a
+   *    player-authored post or route (once its command exists) makes the
+   *    payload's row genuinely different from what today's derivation would
+   *    produce on reload, and skipping it would silently discard what the
+   *    player placed. The owner was shown exactly that (a bundle hand-edited
+   *    to carry `postTile: (20,20)` and two waypoints restoring as (16,16)
+   *    with no route) and ruled that what the player placed must come back.
    *
-   *    Nothing is lost for a *scenario* sector: the guard only fires for an id
-   *    already present, and nothing but the default is registered before this
-   *    point.
+   *    So: **register** an id the runtime does not hold yet (a scenario
+   *    sector, or the first load of any save), and **redefine** -- decision
+   *    2's narrow mutator, restricted to `postTile`/`patrolRoute`/
+   *    `expectedPatrolLoopTicks` -- one it already holds, so the payload's
+   *    copy of those three fields wins over whatever `createNewSimulationRuntime`
+   *    derived. `redefine` cannot touch `id`, `gradeId` or `doorIds`, so this
+   *    can never re-point which doors a sector governs or which baseline
+   *    `normalDoorStates` restores to -- only decision 3's three fields move.
+   *    `tests/integration/security-default-sector.test.ts` still pins that an
+   *    *untouched* save's payload and the fresh derivation are identical (the
+   *    case this whole mechanism has to keep working), and now also pins that
+   *    a *differing* payload row survives the round trip instead of being
+   *    overwritten by the derivation.
    */
   for (const sector of systems.security.sectorDefinitions) {
-    if (runtime.securitySectors.getDefinition(sector.id) !== undefined) continue;
-    runtime.securitySectors.register({ ...sector });
+    if (runtime.securitySectors.getDefinition(sector.id) === undefined) {
+      runtime.securitySectors.register({ ...sector });
+    } else {
+      runtime.securitySectors.redefine(sector.id, {
+        postTile: sector.postTile,
+        ...(sector.patrolRoute !== undefined ? { patrolRoute: sector.patrolRoute } : {}),
+        ...(sector.expectedPatrolLoopTicks !== undefined ? { expectedPatrolLoopTicks: sector.expectedPatrolLoopTicks } : {}),
+      });
+    }
   }
   runtime.securitySectors.loadSnapshot(systems.security.sectorControlStates);
 
