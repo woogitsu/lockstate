@@ -8004,6 +8004,36 @@ two days after the twelfth landed (#444).
   treasury at catalogue price, unconditionally — so this remains one citation
   correction and one handed-over residue, still not a reopening.
 
+  **The handover is discharged at `315dbbb6`, and it took more than a digit.**
+  Read against what the comment was actually claiming rather than swapped in
+  place: its argument is `procureForPendingOrders` being the only caller that
+  ever asks `Treasury.canAfford` under `'construction'`, which is a fact about
+  *who calls*, never about the two floors' magnitudes — so the equalisation
+  that made this docblock's number wrong left its argument intact, and fixing
+  it was replacing the stale figure and citing #771's equalisation, not
+  reworking the reasoning around it. Line 131 now reads the construction
+  rung's current floor, -1,250, and names the ruling that moved it there
+  (`src/simulation/construction/materials-procurement.ts`). The same pass
+  swept the rest of the tree for the same stale claim — "-2,000" asserted as
+  *today's* construction rung, without noting the equalisation — and found
+  five more production instances of it, all corrected the same way in the
+  same commit: `src/simulation/economy/procurement.ts`,
+  `src/simulation/protocol/types.ts`, `src/ui/simulation-alerts.ts`,
+  `src/simulation/economy/insolvency-rung-system.ts` (whose "why a system of
+  its own" argument had actually leaned on the 750-unit gap between the two
+  floors, so this one needed more than a citation — the crossing it describes
+  is narrower now that a construction spend can only reach the deliveries
+  floor rather than pass it, and the corrected text says so),
+  `src/content/default-locale-en.ts`, and one test docblock,
+  `tests/unit/simulation-refusals.test.ts`. Left alone, on purpose: the three
+  ADRs that name -2,000 as history (0017, 0083, 0087 -- 0017 already carries
+  the equalisation as its own amendment section), the dated research
+  playtest notes, and the remaining `tests/*.playtest.ts` and
+  `tests/*.test.ts` occurrences, which already narrate the change with dates
+  and the #771 citation rather than asserting it as present fact. Full
+  `vitest run` (378 files, 4,363 passed, 1 pre-existing skip) and both
+  typecheck projects were run clean against the fix before it landed.
+
   **This does not reopen the entry and it is worth saying why**, because the
   change is large and the temptation is to reopen anything large. ADR 0017
   decision 7 says materials are just-in-time by default and holding is permitted

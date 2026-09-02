@@ -17,13 +17,17 @@ import { tileCoordinate } from '../../src/simulation/world/coordinates';
  * `InsolvencyRungSystem` and `computeStandingPrisonConditions` at the exact
  * boundary the owner's ruling of 2026-09-01 on issue #767 (ADR 0087 decision
  * 2's amendment) both read: `balance <= floor`, not `< floor` -- the shipped
- * −1,250 / −2,000 rungs are themselves reachable balances (a payroll tick can
- * land exactly on one), so a strict inequality would silently miss the tick a
- * balance is driven to precisely a rung's own threshold. No existing test
- * pins this boundary: `tests/integration/economy-payroll-loop.test.ts` drives
- * a real payroll schedule whose daily bill happens never to land the balance
- * exactly on either floor, so a `<=` vs `<` mutation there survives. This file
- * is the mutation-closing test for that gap.
+ * rungs are themselves reachable balances (a payroll tick can land exactly on
+ * one), so a strict inequality would silently miss the tick a balance is
+ * driven to precisely a rung's own threshold. **This paragraph read "the
+ * shipped −1,250 / −2,000 rungs" until the owner's ruling on #771 (2026-09-01,
+ * ADR 0017's equalisation amendment); deliveries and construction now share
+ * one shipped floor, −1,250, and the boundary this file pins is that shared
+ * one plus the starter floor (−1,185) and the wage floor (−2,500) below.** No
+ * existing test pins this boundary: `tests/integration/economy-payroll-loop.test.ts`
+ * drives a real payroll schedule whose daily bill happens never to land the
+ * balance exactly on either floor, so a `<=` vs `<` mutation there survives.
+ * This file is the mutation-closing test for that gap.
  */
 function context(tick: number): SimulationContext {
   return { tick } as SimulationContext;

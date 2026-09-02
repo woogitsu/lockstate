@@ -1256,9 +1256,12 @@ export type SimulationStatusCounts = DeepReadonly<
  * `construction.*` is the twelfth namespace, and the only one that is not a
  * *command's* vocabulary -- which is why it is a namespace of its own rather
  * than a member of `purchase.*` or of `build.*`. It answers ADR 0017 decision
- * 8's **second rung**: construction halted below -2,000, the owner's ruling 19
- * of 2026-08-31. Its one member is what the just-in-time materials pass could
- * not fund for a queue that is already standing.
+ * 8's **second rung**: construction halted below -2,000 under the owner's
+ * ruling 19 of 2026-08-31, and since the owner's ruling on #771 (2026-09-01,
+ * ADR 0017's equalisation amendment) at the same -1,250 rung 1 stops at --
+ * ruling 19's split is retired, the namespace it named is not. Its one member
+ * is what the just-in-time materials pass could not fund for a queue that is
+ * already standing.
  *
  * Before it existed, `reportMaterialsFunding` recorded
  * `purchase.insufficient-funds` for that stall, so a prison at -1,800 with a

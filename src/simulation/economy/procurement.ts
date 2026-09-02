@@ -193,16 +193,28 @@ export class ProcurementSystem implements SystemRegistration {
    *
    * ## `spendClass`, and why this one method serves two rungs
    *
-   * The owner's ruling 19 of 2026-08-31 gives ADR 0017 decision 8's first two
-   * rungs their own thresholds — deliveries at −1,250, construction at −2,000 —
-   * and **both of them arrive here**, because a purchase is the only way
-   * materials enter a prison. So the rung cannot be a property of this method;
-   * it is a property of *who asked*, and the caller says which:
+   * The owner's ruling 19 of 2026-08-31 gave ADR 0017 decision 8's first two
+   * rungs their own thresholds — deliveries at −1,250, construction at
+   * −2,000, 750 minor units deeper — and **both of them arrive here**,
+   * because a purchase is the only way materials enter a prison. So the rung
+   * cannot be a property of this method; it is a property of *who asked*, and
+   * the caller says which:
    *
    * - the player's Buy press, through `PurchaseMaterials`
    *   (`src/simulation/runtime/session-commands.ts`), is `'deliveries'`;
    * - `JustInTimeMaterialsService.procureForPendingOrders`, buying for build
    *   orders that are already queued, is `'construction'`.
+   *
+   * **The two thresholds are no longer 750 apart.** The owner's ruling on
+   * #771 (2026-09-01, ADR 0017's equalisation amendment) retired the split
+   * above: `construction` now reads the same −1,250 as `deliveries`
+   * (`INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS ===
+   * INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`). What the paragraph above
+   * argues is unaffected by that: the two spend classes still name two
+   * distinct callers, "who asked" is still what decides `spendClass` here,
+   * and `PurchaseSpendClass` still exists to keep a hire from hiding behind
+   * either one's threshold. Two rungs sharing a value is not the same as the
+   * split disappearing.
    *
    * It is `PurchaseSpendClass` rather than `SpendClass`: a purchase is never a
    * wage and never a hire, and narrowing the union here means a caller cannot

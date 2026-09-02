@@ -218,12 +218,20 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * `tests/unit/ui-hud-funds-threshold-named.test.ts` fails if either stops.
    * A player who never hovers still meets the sentence.
    *
-   * "Materials" rather than "anything": the build queue can still spend to
-   * -2,000 and a payday to -2,500, so a sentence saying *nothing* can be
-   * bought would be false about the prison even while it is true about every
-   * press the player can make. And *"until the state pays what it owes"* is
-   * the tail the three refusal sentences share, so the chip and the alert read
-   * as one rule rather than two.
+   * "Materials" rather than "anything": a payday can still spend to -2,500,
+   * so a sentence saying *nothing* can be bought would be false about the
+   * prison even while it is true about every press the player can make. And
+   * *"until the state pays what it owes"* is the tail the three refusal
+   * sentences share, so the chip and the alert read as one rule rather than
+   * two.
+   *
+   * **This paragraph also named the build queue as spending past this rung,
+   * to -2,000, and that stopped being true on 2026-09-01.** The owner's
+   * ruling on #771 (ADR 0017's equalisation amendment) moved
+   * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` onto the same -1,250 a
+   * Buy press already stops at, so the build queue is no longer a second
+   * example here -- the payday alone is what still makes "materials" the
+   * right word instead of "anything".
    */
   'hud.status.funds-before-deliveries-stop':
     '{remaining} left before deliveries stop — past that, no materials can be ordered until the state pays what it owes.',
