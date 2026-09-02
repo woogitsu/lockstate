@@ -209,14 +209,15 @@ step on it.
    playtests"*; the answer is that a playtest is not drivable from that wrapper
    at all, by decision, and there is a foundation contract holding the
    exclusion in writing.
-2. **`tests/browser/playtest-2026-09-02-the-clock.playtest.ts` does not
-   exist.** The brief named it as one of three files to read and match. The
-   directory holds `playtest-2026-09-02-the-first-five-minutes` and
-   `playtest-2026-09-02-the-world-view` for that date, and
-   `tests/browser/ui-clock-paused-readout.spec.ts` is the only clock-named file
-   in the tree. This file matches the two that exist, plus
-   `playtest-2026-09-01-the-people.playtest.ts` and
-   `playtest-740-does-a-guard-walk.playtest.ts` as the brief asked.
+2. **The brief's first reference model, a 2026-09-02 playtest named
+   *the-clock*, is not in the tree.** It named three files to read and match;
+   that one has no file. `ls tests/browser/*.playtest.ts` lists 26 before this
+   pass added its own, two of them dated 2026-09-02 — *the-first-five-minutes*
+   and *the-world-view* — and `tests/browser/ui-clock-paused-readout.spec.ts`
+   is the only clock-named file in the directory. This file is matched against
+   those two plus `tests/browser/playtest-2026-09-01-the-people.playtest.ts`
+   and `tests/browser/playtest-740-does-a-guard-walk.playtest.ts`, which the
+   brief also named and which do exist.
 3. **"Hire a guard and deploy it somewhere far" is not a gesture the game
    has.** There is no control that chooses where a hire stands or which post it
    takes: `src/main.ts:2793` supplies the origin from a module constant, and
@@ -256,3 +257,116 @@ this is marked in a new record, which is what
 `docs/research/README.md` asks for. But the correction is not merely
 bookkeeping: **§3 below is about the consequence**, which is that the badge
 `Medium` now has two producers with two different meanings.
+
+## §4 — `.hud-minimap` does not merely swallow a click; it makes four world tiles unbuildable, and the drag over it fails silently
+
+**This is the one finding in this pass that is a defect claim, and it is not
+about either feature.** It is put in front of §2 and §3 because it cost two
+runs and because it is a third independent sighting of a panel that has twice
+been ruled *"not a defect claim — the camera pans"*.
+
+**MEASURED, act 4's first run** (kept verbatim; the run was stopped after this
+because everything downstream of it would have measured an unenclosed cell):
+
+```
+[act4] calibration: tile (0,0) top-left = (-384, -624)
+[act4] .hud-minimap rect {"left":12,"right":410,"top":317.8125,"bottom":718.8125}
+[act4] north run: 6 by drag; []; still missing []
+[act4] north run: 6 by drag; []; still missing []
+[act4] west run: 3 by drag; ["press at 12,15 produced NOTHING; under it:
+  [{"tag":"DIV","cls":"ui-panel__body","pointerEvents":"auto"},
+   {"tag":"SECTION","cls":"ui-panel hud-minimap","pointerEvents":"auto"},
+   {"tag":"CANVAS","cls":"","pointerEvents":"auto"}, ...]",
+  "press at 12,16 produced NOTHING; ... hud-minimap ...",
+  "press at 12,17 produced NOTHING; ... hud-minimap ..."];
+  still missing ["12,15","12,16","12,17"]
+[act4] west run: 6 by drag; []; still missing []
+```
+
+Read that against the geometry. Origin `(-384, -624)` puts tile column 12's
+west edge at screen `x = 384` and tile rows 12..17 at screen
+`y = 144, 208, 272, 336, 400, 464`, each 64px tall. The panel occupies
+`x 12..410, y 317.8..718.8`. So the west edges of tiles (12,15), (12,16) and
+(12,17) — and part of (12,14) — are inside it, and the two runs that laid the
+same wall on the *east* edge (`x = 768`, outside the panel) each produced all
+six segments.
+
+### Why this is different from the flake already on record
+
+`playtest-2026-09-01-the-people.playtest.ts`'s header documents a six-segment
+side producing three under machine load and declines to call it a defect,
+correctly, because *"it rests on dropped frames under load, which is
+wall-clock"*. **This run distinguishes the two causes without a timing
+argument at all**: the drag dropped exactly the three segments whose screen
+points `elementsFromPoint` places under a `pointer-events: auto` panel, the
+three it kept are the three outside it, and three subsequent single presses —
+one mousedown and one mouseup each, no interpolation — reached the panel too.
+A dropped frame does not choose its victims by screen rectangle.
+
+**So the player-facing statement is stronger than "a click is swallowed".** At
+this viewport and camera, **there is no gesture that builds on those tiles**:
+not a drag, not a press. And it is silent: `docs/research/2026-09-02-the-world-view.md`
+§3 already measured that a blocked click and a click that landed with nothing
+to report leave `.hud__refusal` and `.hud__event` byte-identical, so there is
+no third state for "this did not reach the world". This pass did not re-measure
+those two bands during the wall runs and does not claim to have — what it
+measured is the commands, and three of six were never submitted.
+
+### What is NOT claimed
+
+- **Not that the camera cannot be panned away from it.** It can, and
+  `docs/research/2026-09-02-the-world-view.md` §4 measured panning as unbounded
+  and exactly reversible. The claim is that a player who does not know to pan
+  gets a wall with holes in it and a refusal that blames the rectangle.
+- **Not a number for how much of the world this affects.** That is already
+  measured — 42.04%–44.42% of the canvas at four viewports, `.hud-minimap`
+  alone 14.5% at 1280×800, same note §1 — and this pass adds the consequence
+  rather than the fraction.
+- **Not that any sentence is missing.** What the right sentence would be, or
+  whether the panel should stop taking pointer events, is a player-facing
+  decision. **Owed to: the owner** (`AGENTS.md` exclusion 4).
+
+## §2 — The only walk a player can provoke, and what it costs in ticks
+
+### 2a. What was left after §1, read before it was played
+
+**READ.** ADR 0088 converts deployment travel and patrol legs. §1 established
+that the first has no distance from a hire and the second has no route in any
+session a player can start. What remains is a walk nobody asked for, and it is
+worth stating as a chain because every link is a different module:
+
+1. `SectorSearchDutySystem` orders a sweep of up to
+   `DEFAULT_SECTOR_SWEEP_MAX_TARGETS` (4) of a sector's own occupants every
+   `DEFAULT_SECTOR_SEARCH_INTERVAL_TICKS` (600 — a quarter of an in-game day),
+   but only while `claimableGuardIds(this.guards).length >=
+   policy.requiredGuardCount`
+   (`src/simulation/contraband/sector-search-duty.ts:126` and `:176`). ADR 0073
+   Part 2 Option A; no player gesture is involved.
+2. `SearchSystem` routes the claimed guard to each target and then, on arrival,
+   `this.guards.setTile(guardId, destination)`
+   (`src/simulation/contraband/search-system.ts:372`) — a **teleport**, and
+   deliberately out of ADR 0088's scope.
+3. When the last target's dwell expires, `releaseGuards` calls
+   `this.guards.unassign(guardId)`
+   (`src/simulation/contraband/search-system.ts:324`) — leaving the guard
+   `'unassigned'` **wherever the search left it**.
+4. `DeploymentSystem`, on its 10-tick schedule
+   (`src/simulation/security/deployment-system.ts:39`), picks it up:
+   `assignUnassignedGuards` if the sector is short, or `walkBackToPost`
+   (`src/simulation/security/deployment-system.ts:170`, the owner's ruling 24 of
+   2026-08-31) if it holds a post it is not standing on. Either path calls
+   `beginDeployment` from the guard's current tile, so the route has real
+   distance and **is** walked.
+
+So the walk ADR 0088 made possible is the *return from a contraband sweep*, and
+its length is however far the last target was from the post tile. That is the
+thing act 3 measures.
+
+**One thing that follows and is worth naming: the walk is bounded by the
+prison.** `DEFAULT_WALK_SUBTILE_UNITS_PER_TICK` is 128 against
+`LOCOMOTION_SUBTILE_UNITS` 256 (`src/simulation/locomotion/locomotion.ts:102`,
+`:76`), so **one tile every two ticks** — ten tiles a wall second at ×1, forty
+at ×4, which the constant's own docblock states as *"640 px/s on screen at 1x
+— hurried"*. A starter prison owns one 32-tile chunk, so the longest route
+inside it is about 62 tiles, or **124 ticks**; a walk across a 6×6 cell is
+**2 to 20 ticks**.
