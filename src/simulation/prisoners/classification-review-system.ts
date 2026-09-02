@@ -86,7 +86,7 @@ export function classifiedAtTickOf(sentenceEndTick: number, sentenceLengthTicks:
  * *reviewed* while they are held, because a tier written at that stage has
  * nowhere to go.
  */
-const REVIEWABLE_STAGES: readonly string[] = ['accommodation-assignment', 'completed'];
+export const REVIEWABLE_STAGES: readonly string[] = ['accommodation-assignment', 'completed'];
 
 /**
  * The tier a review has to *reach* before it asks what the prisoner is
@@ -167,6 +167,22 @@ const ESCALATION_INTRODUCTION_MINIMUM_TIER = 3;
  * - **Idempotent.** `reviewClassification` is absolute rather than
  *   incremental, so running this system twice at one tick writes the same
  *   values the first pass did.
+ *
+ * ## This is no longer the only writer of `riskTier`, since ADR 0090
+ *
+ * `ClassificationEarlyWarningSystem` (`classification-early-warning-system.ts`)
+ * also writes it, on a much faster schedule, and it changes nothing about what
+ * is written here: it can only ever *raise* a tier, and only ever as far as
+ * `EARLY_WARNING_TIER_CEILING` (`Medium`), so this system's own arithmetic,
+ * schedule and result are exactly what they were before it existed. It exists
+ * because this system's own floor -- the earliest any prisoner classified in a
+ * session's first review period can ever be reviewed is tick 47,999, batched
+ * rather than per-prisoner (see `schedule`'s docblock) -- makes it structurally
+ * impossible for *this* system alone to show `Medium` before `High` without
+ * either delaying `High` past that floor or moving the floor itself, both of
+ * which the owner's ruling on #788 forbids. See ADR 0090 for the reasoning in
+ * full and why a second, capped-lower system is the answer rather than a
+ * change to any constant here.
  */
 export class ClassificationReviewSystem implements SystemRegistration {
   public readonly id = 'prisoners.classification-review';

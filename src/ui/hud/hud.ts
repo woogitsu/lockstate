@@ -764,6 +764,34 @@ export interface MountHudOptions {
    */
   readonly worldObjects?: HudWorldObjectSource;
   /**
+   * Where a click on `.hud-minimap__surface` asks the camera to go (issue
+   * #793): a point normalized to the surface's own box, `0,0` at its
+   * top-left corner and `1,1` at its bottom-right, exactly as the caller
+   * reads it off `getBoundingClientRect()`. The mapping from that point to a
+   * world position is not this module's to make -- it belongs with the
+   * camera and the loaded-world bounds, both of which are the renderer's
+   * (`AGENTS.md` boundary 1; this file may not import `src/rendering/**`,
+   * `tests/unit/ui-hud-messages.test.ts`) -- so this is a plain callback
+   * rather than a port object like `worldBuild`/`worldRooms`/`worldObjects`:
+   * there is no shared mutable state for a port to carry, only one gesture
+   * translated into one call.
+   *
+   * Returns whether the camera actually moved. A click that lands while no
+   * world has ever been loaded (before a session exists, or on a page whose
+   * `Worker` never started) has nowhere to go, and `false` is how the HUD
+   * finds that out and says so -- swapping `hud.minimap.placeholder` for
+   * `hud.minimap.navigable` only once a click has actually landed somewhere,
+   * rather than leaving the surface's one sentence claiming "not available"
+   * forever once it demonstrably is. This is deliberately not on the gated
+   * `dispatchCommand`/`dispatchShell` paths every other control here uses:
+   * moving the camera never reaches the simulation, so there is nothing to
+   * gate and nothing for a host to refuse.
+   *
+   * Omitted, the surface stays exactly as inert as it always was -- the
+   * state of every harness in `tests/browser/` that does not pass it.
+   */
+  readonly onMinimapNavigate?: (point: { readonly fx: number; readonly fy: number }) => boolean;
+  /**
    * Receives every player action, and may be async.
    *
    * A *command* (`set-clock`) is gated: while one is in flight the transport
@@ -1335,13 +1363,28 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    *     the translator returned `'none'`. The line is cleared only if the
    *     simulation is what is on it; a host refusal decided on this thread is
    *     not the session's to withdraw.
-   *   - **The same refusal again.** The counts channel is a snapshot on a
-   *     cadence, so an unchanged refusal is republished beside a changed
-   *     count. Nothing happens -- in particular the line is *not* taken back
-   *     from a host refusal the player has caused since, which is the whole
-   *     reason `RefusalLog` carries an ordinal.
-   *   - **A new one.** It is the most recently decided refusal, so it takes
-   *     the line under the rule the band already had.
+   *   - **The same refusal again, and the line is already showing it.** The
+   *     counts channel is a snapshot on a cadence, so an unchanged refusal is
+   *     republished beside a changed count. Nothing happens -- in particular
+   *     the line is *not* taken back from a *live* host refusal the player
+   *     has caused since, which is the whole reason `RefusalLog` carries an
+   *     ordinal.
+   *   - **A new one, or the same one with nowhere currently showing it.** A
+   *     fresh ordinal always takes the line, exactly as before. **Issue
+   *     #777's fix is the second half of this case**: an unchanged ordinal
+   *     *also* takes the line once `refusalSource` is `undefined` -- the band
+   *     is empty because a host refusal that was occupying it has since
+   *     cleared (`clearRefusal`, on that host action's own later success).
+   *     Before this fix the guard above matched on ordinal alone, so a
+   *     still-standing simulation refusal the band had already shown once
+   *     stayed permanently evicted: nothing ever republishes a *new* ordinal
+   *     for a fact that has not changed, and the old guard read "already
+   *     shown" as "nothing to do" even when the line had since been handed to
+   *     a host refusal and then emptied under it. The alerts list never had
+   *     this bug -- it is rebuilt from `next.refusal` on every publication
+   *     with no memory of what it last painted -- so the two surfaces
+   *     disagreed about the identical fact until this. See
+   *     `docs/adr/0091-what-clears-the-refusal-band.md`.
    */
   const applySimulationRefusal = (notice: HudRefusalNoticeViewModel | undefined): void => {
     if (notice === undefined) {
@@ -1349,7 +1392,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       if (refusalSource === 'simulation') clearRefusalLine();
       return;
     }
-    if (notice.sequence === simulationRefusalSequence) return;
+    if (notice.sequence === simulationRefusalSequence && refusalSource !== undefined) return;
     simulationRefusalSequence = notice.sequence;
     takeRefusalLine('simulation');
     refusalText.textContent = t(notice.labelKey);
@@ -1413,12 +1456,27 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   });
 
   // ---- bottom-left minimap frame -----------------------------------
-  // A placeholder, honestly labelled in visible text. Minimap *rendering*
-  // belongs to the renderer, not to the HUD; this is the frame it will draw
-  // into.
+  // Rendering is still a placeholder, honestly labelled in visible text --
+  // minimap *rendering* belongs to the renderer, not to the HUD, and does
+  // not exist yet. Navigation is not (issue #793): the surface itself is a
+  // real click target, and every point on it maps to a world position
+  // through `onMinimapNavigate` (`WorldScene.navigateToMinimapPoint` owns the
+  // mapping -- see its own comment for what the surface represents and why).
+  const minimapPlaceholder = eyebrowText(t(HUD_MESSAGE_KEY.minimapPlaceholder), 'hud-minimap__placeholder');
   const minimapSurface = element('div', {
     className: 'hud-minimap__surface',
-    children: [eyebrowText(t(HUD_MESSAGE_KEY.minimapPlaceholder), 'hud-minimap__placeholder')],
+    children: [minimapPlaceholder],
+  });
+  minimapSurface.addEventListener('click', (event: MouseEvent) => {
+    const rect = minimapSurface.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+    const point = { fx: (event.clientX - rect.left) / rect.width, fy: (event.clientY - rect.top) / rect.height };
+    const navigated = options.onMinimapNavigate?.(point) ?? false;
+    // Only ever moves *toward* "navigable" -- a click that fails today still
+    // leaves the accurate `minimapPlaceholder` sentence standing, and a
+    // session's loaded world never disappears once one exists (see the
+    // message key's own comment), so this never has to move back.
+    if (navigated) minimapPlaceholder.textContent = t(HUD_MESSAGE_KEY.minimapNavigable);
   });
 
   const alertList = element('div', { className: 'hud-alerts__list' });
@@ -2163,13 +2221,71 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 /**
  * What each transport button asks for, given what the clock is doing now.
  *
- * Pause never changes the speed, so unpausing resumes at the speed the
- * player chose rather than silently resetting to ×1.
+ * **The three controls do not treat "the speed the player chose" the same
+ * way, and that asymmetry is measured rather than assumed** — playing the
+ * clock (`docs/research/2026-09-02-playing-the-clock.md`,
+ * `tests/browser/playtest-2026-09-02-the-clock.playtest.ts` act 1) found this
+ * paragraph used to claim a single, uniform contract ("Pause never changes
+ * the speed, so unpausing resumes at the speed the player chose rather than
+ * silently resetting to ×1") that only one of the two ways out of a pause
+ * actually honours:
+ *
+ * - **Pause** never changes the retained speed — `viewModel.clock.speed` is
+ *   passed straight through, for `hudClockFromWorkerMessage` to keep across
+ *   the pause (`src/ui/simulation-clock.ts`) even though a paused
+ *   `ClockControl` carries no speed of its own for the worker to discard.
+ * - **Fast-forward, pressed directly out of a pause with no Play in
+ *   between,** *does* resume at the speed the player chose: it computes
+ *   `nextFastForwardSpeed` off the retained value, so a pause taken at ×4
+ *   comes back at ×2 rather than restarting the ladder from ×1. Measured:
+ *   pause at ×4, Fast-forward, reads ×2.
+ * - **Play always asks for ×1**, whatever the retained speed was — measured:
+ *   fast-forward to ×4, cycle down to ×2, Pause, Play reads ×1, not ×2. This
+ *   is the one path a player is most likely to mean by "unpausing", and it is
+ *   exactly the one this paragraph used to say did not reset silently.
+ *
+ * `tests/unit/ui-hud-transport-intent.test.ts` pins all three as measured.
+ *
+ * **The asymmetry is intentional, and it was already decided one file over —
+ * which the pass that measured it did not cite.** Reading it as an open
+ * design question was wrong, and the correction is recorded here rather than
+ * quietly applied. `nextFastForwardSpeed`'s own docblock
+ * (`src/ui/hud/projection.ts`) states the rule outright: *"Returning to ×1 is
+ * what the play button is for, so no tap is ever ambiguous about what it will
+ * do"* — which is why the fast-forward ladder runs 1 → 2 → 4 → 2 and never
+ * wraps back to 1 itself. And `transportPressedStates` in the same file
+ * returns `play: !fast` under the heading *"Exactly one transport control is
+ * pressed at any time, so the three buttons read as a state, not as three
+ * independent switches"*. Taken together the three controls are a **radio
+ * group over {paused, ×1, fast}**, not a play/pause pair with a speed dial
+ * beside it: `Play` *is* the ×1 member of that group, so `Play` asking for ×1
+ * out of a pause is the button doing the one thing it is for, and
+ * `Fast-forward` carrying the retained speed is the ladder resuming where it
+ * was. Neither is a reset of the other's state.
+ *
+ * **It is also not a hidden behaviour, which is the test the owner's standing
+ * design directive actually applies** (*"gra ma być łatwa przyjazna do grania,
+ * a nie jakieś ukryte funkcje"*): because exactly one control is lit and
+ * `play: !fast` lights `Play` precisely at ×1, a player who presses `Play`
+ * out of a ×4 pause sees `Play` lit and `Fast-forward` dark — the state is on
+ * screen, in the control they just pressed, rather than discarded silently.
+ * A player who meant to keep ×4 presses `Fast-forward`, which the same pass
+ * measured as resuming at ×2 on the ladder.
+ *
+ * So what rotted was **only this paragraph's claim of a single uniform
+ * contract**, and that claim is what the measurement refuted. The behaviour
+ * of all three controls is unchanged and now says why.
  */
 export function transportIntent(kind: TransportIntentKind, viewModel: HudViewModel): HudIntent {
   switch (kind) {
     case 'pause':
       return { kind: 'set-clock', mode: 'paused', speed: viewModel.clock.speed };
+    // See the docblock above: `Play` is the ×1 member of the transport's
+    // radio group (`transportPressedStates`'s `play: !fast`), and
+    // `nextFastForwardSpeed`'s docblock already states that returning to ×1
+    // is what this button is for. Asking for ×1 here is that rule, not an
+    // oversight -- a caller who wants the retained speed wants
+    // `fast-forward`, which is the case below.
     case 'play':
       return { kind: 'set-clock', mode: 'running', speed: 1 };
     case 'fast-forward':

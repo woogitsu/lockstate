@@ -23,5 +23,7 @@ export {
   releaseGuardSupersessionKey,
   removeObjectSupersessionKey,
   unzoneSupersessionKey,
+  zoneAreaSupersessionKey,
+  zoneRefusalSupersessionKey,
   zoneSupersessionKey,
 } from './refusal-log';

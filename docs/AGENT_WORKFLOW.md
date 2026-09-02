@@ -137,6 +137,63 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   when the browser suite is the thing being verified", was therefore stronger
   than the facts required, and it is withdrawn: verify on the branch you are
   actually changing.
+- **`pnpm test` does not run the browser suite, and "the full suite is green"
+  is the sentence that let a regression through.** `./node_modules/.bin/vitest
+  run` collects `tests/unit`, `tests/integration`, `tests/foundation`,
+  `tests/determinism` and `tests/migrations` — **not** `tests/browser`, which is
+  Playwright and runs from `pnpm test:browser`. On 2026-09-02 an agent fixed
+  the Buy button to disable itself when a press would be refused (#772),
+  reported *"378/378 files, 4365 passed"* — which was **true** — and CI's
+  `browser` job then failed 3 of 318: three `app-shell.spec.ts` tests
+  deliberately set an unaffordable quantity and press Buy to exercise the
+  host-refusal plumbing (#89, #261, #220), and a disabled button cannot be
+  pressed. The integrator compounded it by verifying the *change* (the new
+  spec, both typecheck projects, the pinned citations, and a mutation of the
+  freshness thread) and never running `app-shell.spec.ts`. **Verifying a change
+  and verifying the suite are different acts.** If you touch anything a browser
+  spec presses — a control's enabled state, a class name, a label, a layout
+  bound — name the specs that press it and run those whole files, and never
+  extrapolate from three greens to a green suite.
+- **A browser spec must import `test` from `./network-changed-fixture`, and
+  breaking that rule goes red where you are not looking.**
+  `tests/foundation/browser-network-changed-retry-contract.test.ts` forbids
+  `'@playwright/test'` in every `tests/browser/*.spec.ts`: the `test` object
+  obtained that way carries no listeners, so a run aborted by
+  `net::ERR_NETWORK_CHANGED` records no evidence and the suite runner cannot
+  tell it from an ordinary failure — the failure would be red for the wrong
+  reason, or block a retry every other failing test qualified for. The trap is
+  the direction: that contract is a **`vitest`** test, so a spec with the wrong
+  import **passes the browser runner** and fails `pnpm test`. Two agents wrote
+  the direct import on 2026-09-02; one caught it before pushing because it ran
+  `tests/foundation`, which is the cheap habit that catches it.
+- **The Playwright configs live in `tests/browser/`, not the repository root.**
+  `playwright.config.ts`, `playwright.playtest.config.ts` and
+  `playwright.artifact.config.ts` are all under `tests/browser/`, so a bare
+  `playwright test <file>` finds no config, gets no `baseURL`, and every
+  `page.goto('/index.html')` fails with *"Cannot navigate to invalid URL"* —
+  which reads exactly like a broken app rather than a wrong invocation. Run the
+  suite the way the repository does: `node --experimental-transform-types
+  --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite
+  browser --grep "<pattern>"`. Note also that `playwright.config.ts` matches
+  only `/.*\.spec\.ts$/`, so the `.playtest.ts` instruments under
+  `playwright.playtest.config.ts` **are never collected by CI** — a playtest is
+  evidence, never a gate.
+- **`--reporter=line` is dead in this repository's `vitest` (4.1.11).** It fails
+  inside `loadCustomReporterModule` with `ERR_LOAD_URL` before a single test
+  runs, and the stack is a wall of Vite module-runner frames that reads exactly
+  like a broken test file or a broken install. Omit the flag; the default
+  reporter is fine. Recorded because the failure mode is expensive to diagnose
+  and cheap to avoid.
+- **Two tests sit close enough to their 5s budget that box load pushes them
+  over, and neither is a flake to wave through.**
+  `tests/foundation/comment-symbol-existence-contract.test.ts` (a
+  repository-wide comment scan) and `tests/unit/prisoners-sentence.test.ts`
+  (a bisection over an RNG stream) were measured at 5.2s and 6.8s against a 5s
+  `testTimeout` while three other agents ran full suites. Both report
+  `Error: Test timed out in 5000ms` — **not an assertion** — and both pass run
+  alone. If you see them red, run them alone before concluding anything, and
+  report what you saw rather than the word "flake": a label is not a diagnosis.
+  What is genuinely worth fixing here is the margin, not the runs.
 - **Three browser tests are the contention canaries, and the integrator who
   said otherwise was wrong.** `app-shell.spec.ts` *"every control can actually be
   pressed … (#88)"* (held-guard rows 2 and 3 never laid out), *"a pending delivery

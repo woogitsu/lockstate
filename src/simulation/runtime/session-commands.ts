@@ -23,6 +23,8 @@ import {
   releaseGuardSupersessionKey,
   removeObjectSupersessionKey,
   unzoneSupersessionKey,
+  zoneAreaSupersessionKey,
+  zoneRefusalSupersessionKey,
   zoneSupersessionKey,
   type RefusalLog,
 } from '../refusals';
@@ -154,24 +156,39 @@ export function createSessionCommandHandler(
         },
         context.tick,
       );
-      const zoneKey = zoneSupersessionKey(
-        simCommand.roomId,
-        simCommand.x,
-        simCommand.y,
-        simCommand.width,
-        simCommand.height,
-      );
       if (outcome.kind === 'refused') {
-        refusals.record(ZONE_REFUSAL_REASONS[outcome.reason], context.tick, zoneKey);
+        // Issue #780: filed under whichever of the two key shapes that
+        // *reason's own truth* actually depends on -- the rectangle alone for
+        // the five reasons the world decides regardless of room type, the
+        // room type and the rectangle together for the three it does not. See
+        // `zoneRefusalSupersessionKey`.
+        refusals.record(
+          ZONE_REFUSAL_REASONS[outcome.reason],
+          context.tick,
+          zoneRefusalSupersessionKey(outcome.reason, simCommand.roomId, simCommand.x, simCommand.y, simCommand.width, simCommand.height),
+        );
       } else {
         // Issue #492: this exact rectangle, for this exact room type, is what
-        // the standing refusal (if any) was about, and it has just been
-        // accepted -- so whatever it said is no longer true. Withdrawing it
-        // here rather than leaving the HUD to infer one from `rooms` rising
-        // is the whole point: a room zoned *elsewhere* leaves a standing
-        // refusal about *this* rectangle alone, because its key would not
-        // match.
-        refusals.supersede(zoneKey);
+        // a `below-minimum-size`/`duplicate-instance-id`/`unknown-room-type`
+        // standing refusal (if any) was about, and it has just been accepted
+        // -- so whatever it said is no longer true. Withdrawing it here
+        // rather than leaving the HUD to infer one from `rooms` rising is the
+        // whole point: a room zoned *elsewhere* leaves a standing refusal
+        // about *this* rectangle alone, because its key would not match.
+        refusals.supersede(zoneSupersessionKey(simCommand.roomId, simCommand.x, simCommand.y, simCommand.width, simCommand.height));
+        // Issue #780, the same withdrawal for the other five reasons: this
+        // rectangle's own geometry -- inside the map, owned, clear of another
+        // room, enclosed -- is a fact the world just confirmed, and it does
+        // not stop being confirmed because the *type* that confirmed it is
+        // not the type a standing refusal named. A `RoomZoningService.zone`
+        // that reaches this branch at all has already passed every one of
+        // the five checks `zoneAreaSupersessionKey`'s reasons name, for this
+        // exact rectangle, so withdrawing unconditionally on success -- with
+        // no reason to compare against, unlike `record` above -- is exactly
+        // as safe as `supersede`'s own contract promises: a miss is silent
+        // and cheap, and there is no reading of "this rectangle is not
+        // enclosed" that survives a room having just been zoned inside it.
+        refusals.supersede(zoneAreaSupersessionKey(simCommand.x, simCommand.y, simCommand.width, simCommand.height));
       }
       return;
     }

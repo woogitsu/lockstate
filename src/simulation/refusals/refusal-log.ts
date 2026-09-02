@@ -507,6 +507,79 @@ export function zoneSupersessionKey(roomCatalogId: string, x: number, y: number,
   return `zone:${roomCatalogId}:${x}:${y}:${width}:${height}`;
 }
 
+/**
+ * `zone.*`'s *other* key (issue #780): the exact rectangle alone, for the
+ * five reasons whose truth does not depend on which room type asked.
+ *
+ * `invalid-area`, `out-of-bounds`, `unowned-land`, `overlaps-existing-room`
+ * and `not-enclosed` are all read straight off the rectangle and the world --
+ * `RoomZoningService.zone` decides every one of them from `request.x/y/
+ * width/height` and `this.world`, never from `definition` (`../rooms/
+ * zoning.ts:505-576`). Folding the room type into their key anyway is what
+ * let a `room.cell` attempt's `not-enclosed` refusal outlive a `room.yard`
+ * zoned successfully at the *identical* rectangle moments later: the yard
+ * needs no enclosure (`enclosureRequirement`, `'outdoors'` rather than
+ * `'enclosed'`), so its success is a real, direct answer to "is this
+ * rectangle enclosed" -- and `zoneSupersessionKey`, folding in `'room.yard'`
+ * where the refusal was recorded under `'room.cell'`, was never going to see
+ * it.
+ *
+ * This is not #492's wide reading revisited -- a rectangle at a *different*
+ * location still leaves this key unequal, exactly as it leaves
+ * `zoneSupersessionKey` unequal, and `tests/unit/simulation-refusals.test.ts`
+ * "leaves the line alone when a different rectangle is what got walled and
+ * zoned" pins that this key must not change. It is #492's own per-target
+ * test -- "does the key correctly identify the target this refusal reason is
+ * actually about" -- applied to five reasons for which the target was never
+ * the type in the first place.
+ *
+ * The other three zone reasons keep `zoneSupersessionKey`: `below-minimum-
+ * size` reads the type's own authored minimum, `duplicate-instance-id`
+ * collides only because `roomInstanceIdFor` folds the type into the instance
+ * id, and `unknown-room-type` has no rectangle-only reading at all -- the
+ * definition lookup fails before any geometry is examined. A different type
+ * succeeding at the same rectangle answers none of those three.
+ */
+export function zoneAreaSupersessionKey(x: number, y: number, width: number, height: number): string {
+  return `zone-area:${x}:${y}:${width}:${height}`;
+}
+
+/**
+ * Which of the two keys above a given `zone.*` refusal is actually
+ * withdrawn by (issue #780). `record` uses this to file a refusal under the
+ * key its own truth depends on; a successful zoning has no reason recorded
+ * to consult, so it calls `supersede` with both keys instead (see
+ * `session-commands.ts`) rather than this function -- a miss on either is
+ * silent and cheap, exactly as `supersede` documents.
+ *
+ * A `switch` over the closed union, not a `Record`: TypeScript's exhaustiveness
+ * check on a `switch` with no `default` is what makes a ninth `ZoneRoomRefusalReason`
+ * fail to compile here until somebody has decided which key it belongs under,
+ * the same guarantee the `Record`-shaped tables above this file get from being
+ * `Record`s.
+ */
+export function zoneRefusalSupersessionKey(
+  reason: ZoneRoomRefusalReason,
+  roomCatalogId: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): string {
+  switch (reason) {
+    case 'invalid-area':
+    case 'out-of-bounds':
+    case 'unowned-land':
+    case 'overlaps-existing-room':
+    case 'not-enclosed':
+      return zoneAreaSupersessionKey(x, y, width, height);
+    case 'below-minimum-size':
+    case 'duplicate-instance-id':
+    case 'unknown-room-type':
+      return zoneSupersessionKey(roomCatalogId, x, y, width, height);
+  }
+}
+
 /** `unzone.*`'s key: the exact rectangle. `UnzoneRoom` names no room type, so none is part of it. */
 export function unzoneSupersessionKey(x: number, y: number, width: number, height: number): string {
   return `unzone:${x}:${y}:${width}:${height}`;

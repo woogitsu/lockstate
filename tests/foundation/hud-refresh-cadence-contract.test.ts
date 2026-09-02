@@ -66,6 +66,43 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * [ADR 0086](../../docs/adr/0086-what-refreshes-a-pulled-hud-readout.md) is
  * where the decision is proposed, and if the owner picks a different heartbeat
  * this file changes with it in the same commit.
+ *
+ * ## What "worst gap 255 ms" above is, corrected 2026-09-02 (issue #765)
+ *
+ * **The sentence above is kept because it is what this file measured and what
+ * it still measures. What it does not say is the two things that matter about
+ * the number**, and both were established after it was written.
+ *
+ * **First, 255 ms is arithmetic, not an observation.** `publishClockState` can
+ * only publish on a tick-loop wake, and `startTickLoop` wakes on
+ * `setInterval(..., 15)`, so the first wake at which the interval has elapsed
+ * is `Math.ceil(CLOCK_STATE_PUBLISH_INTERVAL_MS / 15) * 15` after the last
+ * publication — `ceil(250 / 15) * 15 = 255`. It is a function of **two**
+ * constants, and only one of them has a name: the wake is a bare literal in
+ * `startTickLoop`, which is why `WAKE_MS` below is a hand-copied 15 rather
+ * than an import. Verified by mutation rather than asserted:
+ * `CLOCK_STATE_PUBLISH_INTERVAL_MS` at 200 makes `worstGapMs` report **210**,
+ * which is `ceil(200 / 15) * 15`.
+ *
+ * **Second, in a browser it is a floor and not a bound.** PR #762
+ * (`73996787d4`) ran the same scenario in a real page
+ * (`tests/browser/playtest-2026-09-01-measurements-owed.playtest.ts`), four
+ * runs of 30 s: **118, 118, 118, 119** requests — this file's count confirmed
+ * almost exactly — but a median gap of **253–260 ms** and a tail of
+ * **292.8–299.6 ms**, with 46–58 of the ~118 gaps above 260 ms. The arithmetic
+ * above bounds the *worker's publication grid* under punctual timers; what a
+ * player waits adds worker timer lateness, the worker's own per-wake work and
+ * the main thread's delivery of the message, none of which any constant in
+ * this repository bounds. So this file's 255 ms is exactly right about the
+ * harness and understates a player's wait by about 18%, and the honest
+ * statement of the browser figure is a sample maximum over four 30-second runs
+ * on one container — not a bound. `docs/BENCHMARKING.md` is why no gate here
+ * can assert the browser figure at all.
+ *
+ * ADR 0086 §5's *"no gap above 260 ms"* and this file's 255 ms are the **same
+ * claim at two numbers** — 255 the exact arithmetic, 260 the rounded cushion
+ * §5 predicted against — and the same four runs falsify both. See that ADR's
+ * unsigned amendment of 2026-09-02.
  */
 
 const MAIN_PATH = join(__dirname, '../../src/main.ts');
@@ -264,6 +301,29 @@ describe('what refreshes a pulled HUD readout (#718)', () => {
       "src/main.ts's nine pulled readouts are refreshed by every message its listener does not early-return on, and in a prison with nobody housed that is the clock heartbeat and almost nothing else.",
     ).toBeGreaterThanOrEqual(floor);
 
+    /*
+     * **The ceiling below is derived from the constant it bounds, so on its own
+     * it cannot fail when that constant is retuned** -- which is #375's defect
+     * in the file ADR 0086 consequence 3 says owns this sentence, and #444
+     * item 3's *"and the fourth was missed"* in a fifth place.
+     *
+     * Measured 2026-09-02 (issue #765): `CLOCK_STATE_PUBLISH_INTERVAL_MS` at
+     * **200** leaves this file **5/5 green** -- the worst gap becomes 210, the
+     * derived ceiling falls to 215 with it, and this file's own docblock figure
+     * of 255 ms becomes false with nothing red. Ten times the heartbeat's rate
+     * on the boundary would pass the same way.
+     *
+     * So the interval is written out first, exactly as
+     * `tests/unit/worker-state-machine.test.ts` writes it out for the same
+     * reason and on the same constant, and the derived form is kept beside it
+     * because it is the half that reads as the contract. The observed value is
+     * 255 and the ceiling is 265, so there is 10 ms of slack: this pair
+     * bounds a *wake* change, and the literal bounds an *interval* change.
+     */
+    expect(
+      CLOCK_STATE_PUBLISH_INTERVAL_MS,
+      "this file's docblock states a worst gap of 255 ms, which is ceil(250 / 15) * 15 -- retuning the heartbeat changes that figure, so change this number deliberately rather than letting the ceiling below follow it",
+    ).toBe(250);
     expect(
       worstGapMs(trace, refreshesTheReadouts),
       'a pulled readout went longer than a quarter-second plus one tick-loop wake without being refreshed, in a running prison. See ADR 0086: the cadence is the clock heartbeat, and something has stopped it reaching the listener.',
