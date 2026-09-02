@@ -767,3 +767,25 @@ the `INCIDENTS` value and the alerts text. It is not a diff over the whole DOM.
 A change somewhere this pass did not sample would not have been seen. The six
 were chosen because they are the surfaces a player scanning for a warning would
 look at, and that choice is a judgement.
+
+## §10 — Every sentence this pass says is owed, and to whom
+
+`AGENTS.md` exclusion 4 reserves anything that reaches a player as a promise to
+the owner, and this pass wrote no player-facing copy. Collected, so nothing has
+to be re-derived from the sections above:
+
+| # | What is owed | Whose | Why it cannot be written here |
+| --- | --- | --- | --- |
+| 1 | A sentence explaining what `Medium` means, as a badge `title` **and** an accessible name. The open second half of #788. | Owner (copy) | It is the first thing a player reads about a prisoner they are being warned about. §3c. |
+| 2 | A sentence in the alerts column when a tier is raised — the channel already narrates the riot that caused it and says nothing about the consequence. | Owner (copy) | Same exclusion, and it would be a new locale key with a new producer. §3b. |
+| 3 | A decision about the **tone**: may a tier meant to read as a warning share `Minimal`'s `neutral`? `describePrisonerRow` ties tone to the regime deliberately, and #788's tier is forbidden to move a regime. | Owner (design) | Not copy, and not a bug in either change — the two decisions compose into it. §3a. |
+| 4 | Whether tier 2 is counted anywhere on the status strip at all. | Owner (design) | `projection.ts:783-790` declines a *tone* for the `HIGH RISK` chip for a reason that survives; it does not decide this. §3b. |
+| 5 | What, if anything, the game says when a build gesture cannot reach a tile because a panel is over it — or whether the panel should stop taking pointer events there. | Owner (design + copy) | Third sighting, first with a measured "no gesture works" rather than "a click was swallowed". §4. |
+| 6 | Whether `Travelling` and `Returning` should ever be seen, now that it is measured that they are not. This is the question ADR 0088 explicitly left open, and the honest input to it is that of three routes into a walk two are structurally unreachable. | Owner (design) | It is a balance and animation call, not a correctness one. §2d. |
+| 7 | Whether the Admit control should disable itself when a press would be refused, as the Buy control now does (#772) — three presses on a prison with no cell were all accepted and all refused. | Owner (design) | The same call #772 already made one control over, not extended by this pass. §2f below. |
+
+And one handover that is not the owner's:
+
+| # | What | Whose |
+| --- | --- | --- |
+| 8 | `src/simulation/security/default-sector.ts:98` says *"At one, the first hire is visibly posted"*. #533's empty-sector exemption (`sector-staffing.ts:189`) made that false in an empty prison, which is every prison at the moment a player hires their first guard. Measured in §1b. | Whoever owns `src/simulation/security/` — this branch is docs-only and did not edit it |
