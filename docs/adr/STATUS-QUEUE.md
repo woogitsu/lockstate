@@ -705,8 +705,9 @@ take it:
    **The overlap with the previous anchor's ten members is five** —
    `docs/HUD_PROJECTIONS.md`, `docs/adr/README.md`,
    `src/content/default-locale-en.ts`, `src/main.ts` and
-   `tests/unit/simulation-refusals.test.ts` — half the set, where the previous
-   anchor's overlap with *its* predecessor was one. That window was a
+   `tests/unit/simulation-refusals.test.ts` — five of this anchor's eleven and
+   five of the previous anchor's ten, where that anchor's overlap with *its*
+   predecessor was one. That window was a
    comment-correction sweep and three ADR arrivals; this one is four HUD
    changes, a documentation correction and an operating-method append, and the
    five shared members are the two documents and three code sites both kinds
