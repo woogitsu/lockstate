@@ -472,9 +472,19 @@ for the owner**, not as an edit for an agent.
 #667 asks for a paragraph in `docs/AGENT_WORKFLOW.md` about `ps` checks. At `af999415`
 (v0.0.350) it is not there. During this pass the harness reported
 `docs/AGENT_WORKFLOW.md` modified in `/workspace/lockstate` — the owner's own checkout,
-`git status --short` showing ` M docs/AGENT_WORKFLOW.md` — so it is very likely in flight.
-Verdict against `main` is (B); the owner will know better than this record whether that is
-already answered.
+`git status --short` showing ` M docs/AGENT_WORKFLOW.md` — and this record's first draft
+inferred from that that #667 was in flight.
+
+**That inference was wrong and is corrected here rather than deleted, because it is the
+same mistake this whole record is about.** The edit landed as `e0ca2bd5` (#803, v0.0.352),
+*"Five traps that cost a red CI today, written into the operating method"*, and it is a
+different subject: the five things it adds are the Playwright config location, `vitest`
+4.1.11's dead `--reporter=line`, the browser runner, uncollected tests and a reporter
+distinction — none of them `ps`. Checked rather than assumed:
+`git show origin/main:docs/AGENT_WORKFLOW.md | grep -n "false reds\|start and throughout"`
+is still empty at `03ad071e` (v0.0.352). **#667 is (B) on `main` today**, and "a file I saw
+being edited is being edited for the reason I have in mind" is exactly the shape of
+unevidenced cause `docs/AGENT_WORKFLOW.md` §3 forbids.
 
 ---
 
