@@ -249,6 +249,19 @@ export const HUD_MESSAGE_KEY = {
 
   minimapTitle: 'hud.minimap.title',
   minimapPlaceholder: 'hud.minimap.placeholder',
+  /**
+   * Replaces `minimapPlaceholder` the first time a click on the surface
+   * actually moves the camera (issue #793): the surface still draws no map
+   * (`hud.ts`'s own comment on it is unchanged and still true -- rendering
+   * belongs to the renderer and does not exist yet), so "not available yet"
+   * stops being the honest sentence the moment the surface has visibly *done*
+   * something, and this is what replaces it. Never reverts: once a session
+   * has a world the surface can navigate within, later clicks always find
+   * one too (`WorldRenderView.loadedBounds` only grows -- `system.ts:340-365`
+   * -- and a stopped session keeps its last one -- `simulation-snapshot-feed.ts`
+   * preserves `frame.world` across `simulation/stopped`).
+   */
+  minimapNavigable: 'hud.minimap.navigable',
   alertsTitle: 'hud.alerts.title',
   alertsEmpty: 'hud.alerts.empty',
   /**

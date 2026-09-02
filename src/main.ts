@@ -1204,9 +1204,35 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * median drift and a roughly 40 ms tail on top of it. **The six inline
    * comments below that still say "255ms" are about this browser wait, not
    * the harness one** -- the honest figure for them is "up to roughly 300 ms
-   * in a browser", and each now says which measurement its number is. ADR
-   * 0086 §2's own 260 ms bound is falsified by the same data; see that ADR's
-   * amendment.
+   * in a browser", and each now says which measurement its number is.
+   *
+   * **Two corrections to the paragraph above, 2026-09-02, and the first one is
+   * the reason the second matters.** It read *"ADR 0086 §2's own 260 ms bound
+   * is falsified by the same data"*, and §2 is not where that bound is: §2 is
+   * the *mechanism* -- the pull layer rides the clock heartbeat, not the counts
+   * channel -- and the same four runs **confirm** it, 118 requests against a
+   * silent counts channel. The falsified bound is §5's prediction, *"no gap
+   * above 260 ms"*. Citing the confirmed section as the falsified one inverts
+   * exactly the distinction this whole correction exists to keep.
+   *
+   * **And §5's 260 ms and the 255 ms above are one claim wearing two
+   * numbers**, which is why one measurement falsified both: 255 ms is what the
+   * worker's publication grid produces exactly, and 260 was §5 rounding it up
+   * as a cushion before predicting against it. **255 ms is arithmetic, not an
+   * observation.** `publishClockState` can only publish on a tick-loop wake
+   * and `startTickLoop` wakes on `setInterval(..., 15)`, so the gap is
+   * `Math.ceil(CLOCK_STATE_PUBLISH_INTERVAL_MS / 15) * 15` = 255 -- a function
+   * of two constants, only one of which has a name. Verified by mutation in
+   * `tests/foundation/hud-refresh-cadence-contract.test.ts`: the interval at
+   * 200 makes the worst gap 210.
+   *
+   * So in a browser 255 ms is a **floor**, not a bound: the arithmetic bounds
+   * the worker's grid under punctual timers, and a player's wait adds timer
+   * lateness, the worker's per-wake work and this thread's own delivery of the
+   * message, none of which any constant here bounds. **"~300ms" below is
+   * therefore a sample maximum over four 30-second runs on one container, not
+   * a bound either** -- it is the honest figure to budget against and the
+   * wrong figure to promise. See that ADR's unsigned amendment of 2026-09-02.
    */
   const roomNeedsReader = client === undefined ? undefined : new RoomNeedsReader(client);
   /*
@@ -1931,6 +1957,16 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * with it. So the cheaper gesture is the safe one here.
      */
     ...(objects === undefined ? {} : { worldObjects: objects }),
+    /*
+     * The minimap's click, joined straight to the camera it belongs to
+     * (issue #793). Unlike the build/room/object gestures above this is not
+     * routed through `HudIntent` at all: moving the camera never reaches the
+     * simulation (`AGENTS.md` boundary 1), so there is nothing for the intent
+     * gate or the refusal line to do with it, and `worldScene` is passed
+     * unconditionally -- it exists from the top of this module regardless of
+     * whether a worker started, exactly like every other camera control.
+     */
+    onMinimapNavigate: (point) => worldScene.navigateToMinimapPoint(point.fx, point.fy),
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
         /*

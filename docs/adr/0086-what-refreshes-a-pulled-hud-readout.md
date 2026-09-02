@@ -204,6 +204,14 @@ prison with two admitted, unhoused prisoners, clock running at ×1, and record
 moving need bars. A result that disagrees falsifies this ADR's §2 and most of
 what follows.
 
+> **That measurement was taken, and it split the prediction in two: the ~118
+> requests are confirmed and *"no gap above 260 ms"* is falsified.** The
+> sentence is kept as written because it is what this draft predicted; see the
+> **Amendment, 2026-09-02** below, which is unsigned. Note also what the
+> falsification does *not* reach: §2's mechanism is the half that was
+> confirmed, so a citation blaming "§2's 260 ms bound" (two of them existed
+> outside this file until 2026-09-02) has the sections the wrong way round.
+
 ### 6. The inventory — every pulled readout, what it depends on, and what publishes
 
 This is the part the brief called the most valuable, and the part nobody had
@@ -604,3 +612,50 @@ measurement:
   measurement confirms, not on the 260 ms figure it falsifies — so the
   recommendation's own argument is unweakened — but the recommendation itself
   remains unapproved regardless, exactly as it was before this measurement.
+
+### 5. Added 2026-09-02 by issue #765's sweep: 255 and 260 are one claim, and 255 was never a measurement
+
+> **Still the same unsigned amendment. This section decides nothing either**;
+> it removes a reason the owner would have had to guess at when answering §4's
+> first question.
+
+**§5's 260 ms and §3's 255 ms are the same claim wearing two numbers.** §3
+measured 255 ms on the harness; §5 then rounded it up to a cushioned 260 and
+predicted against the rounded figure. That is why one browser measurement
+falsified both, and why the seven `src/main.ts` comments quoting 255 and this
+ADR's own 260 could not have been corrected separately.
+
+**And 255 ms is arithmetic rather than an observation, which §3 did not say.**
+`publishClockState` can publish only from `onTickLoop`, and `startTickLoop`
+wakes on `setInterval(..., 15)`, so the first wake at which the interval has
+elapsed falls at
+`Math.ceil(CLOCK_STATE_PUBLISH_INTERVAL_MS / 15) * 15` after the last
+publication — `ceil(250 / 15) * 15 = 255`. It is a function of **two**
+constants and only one of them has a name; the wake is a bare literal in
+`startTickLoop`. Verified by mutation rather than asserted: with the interval
+at 200, `tests/foundation/hud-refresh-cadence-contract.test.ts` reports a worst
+gap of **210**, which is `ceil(200 / 15) * 15`.
+
+**So §4's first question is half answered.** It asks *"whether a bound that is
+routinely missed by 40–50% of its own gaps was never the right shape for a
+bound"*. On the mechanism: 255 ms bounds the **worker's publication grid under
+punctual timers**, and a player's wait adds three terms no constant in this
+repository bounds — worker timer lateness, the worker's own per-wake work (a
+tick pump of up to five kernel steps plus four publications), and the main
+thread's delivery and handling of the message while it renders. **In a browser
+255 ms is therefore a floor, not a bound**, and 292.8–299.6 ms is a sample
+maximum over four 30-second runs on one four-core container rather than a
+bound of any kind. A fixed millisecond promise is wrong *in kind* here, not
+merely in value — which is an argument for the percentile shape §4 offers as
+the alternative, and it remains the owner's choice.
+
+**What this section does not claim.** It does not re-open the Decision, and it
+does not assert that the browser figure could be gated: `docs/BENCHMARKING.md`
+records that CI fails on no wall-clock threshold and says not to introduce one
+until its four conditions are recorded, so `hud-refresh-cadence-contract.test.ts`
+can pin the arithmetic and nothing else. What that file gained in the same
+commit is the written-out interval pin §4's question needs to stay meaningful:
+its gap ceiling was `CLOCK_STATE_PUBLISH_INTERVAL_MS + WAKE_MS`, recomputed
+from the constant it bounded, so the interval at 200 left the file 5/5 green
+with its own docblock figure silently false — #375's defect in the file
+Consequence 3 says owns this sentence.

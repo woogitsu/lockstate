@@ -203,6 +203,17 @@ export class PrisonerRosterReader {
    * copy of the roster on the thread that owns no roster, which is the cache
    * `SimulationProjectionRequester`'s own header refuses to keep.
    *
+   * **"twice a second" is the counts cadence and this reader does not ride
+   * it (corrected 2026-09-02, issues #718 and #765).** The sentence is kept
+   * because the argument is unchanged and only gets stronger: what makes the
+   * main thread ask is the worker's clock heartbeat, and
+   * `CLOCK_STATE_PUBLISH_INTERVAL_MS` is 250 against the counts channel's 500 --
+   * measured at 120 refreshes in 30 s in a prison with nobody housed and 178 in
+   * one with two housed (ADR 0086 §3), so **up to about four a second, not
+   * two**. The spacing is `ceil(250 / 15) * 15` = 255 ms on the harness, with a
+   * 292.8-299.6 ms tail measured in a browser (PR #762). The cost this window
+   * refuses is therefore roughly double what this sentence priced.
+   *
    * **No `offset`, and no control that would change one.** The projection walks
    * entity *indices*, and `EntityStore` recycles an index behind a wrapping
    * generation when a prisoner leaves (ADR 0026), so an offset is not a stable

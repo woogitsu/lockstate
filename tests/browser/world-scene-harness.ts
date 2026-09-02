@@ -1,11 +1,15 @@
 import Phaser from 'phaser';
 import type { KeyValueStore } from '../../src/shared/key-value-store';
-import { EMPTY_RENDER_FRAME, type RenderFeed } from '../../src/rendering/feed/render-feed';
+import { EMPTY_RENDER_FRAME, type RenderFeed, type RenderFrame } from '../../src/rendering/feed/render-feed';
 import { WorldScene } from '../../src/rendering/scene/world-scene';
 import type { BuildToolPort, EdgeTarget, EditHistoryPort } from '../../src/rendering/build/edge-picking';
 import type { ObjectToolPort, RoomToolPort, TileRect } from '../../src/rendering/build/area-picking';
+import { WorldRenderView } from '../../src/rendering/world/world-view';
+import { chunkCoordinate } from '../../src/simulation/world/coordinates';
+import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import type {
   CameraScroll,
+  HarnessChunkPosition,
   HarnessEdge,
   HarnessPoint,
   HarnessRect,
@@ -34,13 +38,23 @@ import type {
  * (`Scale.RESIZE`, `CENTER_BOTH`), because the behaviour under test involves
  * `window`-level listeners and a canvas that fills the viewport.
  *
- * No atlases are loaded and the feed is empty. Nothing here draws anything worth
- * looking at, and it does not need to: the assertions are about where the camera
- * is pointing, how far it is zoomed, which world point it puts under a given
- * pixel, what the build tool was asked to place and what the edit history was
- * asked to reverse -- none of which depends on
- * there being art or a world. An empty world moves exactly as far per frame as a
- * full one.
+ * No atlases are loaded, and the feed is empty until a spec asks otherwise.
+ * Nothing here draws anything worth looking at, and it does not need to: the
+ * assertions are about where the camera is pointing, how far it is zoomed,
+ * which world point it puts under a given pixel, what the build tool was asked
+ * to place and what the edit history was asked to reverse -- none of which
+ * depends on there being art or a world. An empty world moves exactly as far
+ * per frame as a full one.
+ *
+ * **`loadChunks` is the one exception, and it exists for issue #793.** The
+ * minimap's mapping is the only behaviour on this scene that reads
+ * `WorldRenderView.loadedBounds`, so it is the only one that cannot be
+ * exercised against an empty feed at all -- `navigateToMinimapPoint` answers
+ * `false` and moves nothing. Materialising chunks here is what lets
+ * `world-scene-minimap.spec.ts` assert the mapping to the float against the
+ * camera position `frameCameraOnFirstWorld` independently arrives at, which
+ * the app-level gate cannot: it reads the camera back through an
+ * integer-pixel bisection of the canvas.
  */
 
 const CANVAS_PARENT_ID = 'world-scene-harness-root';
@@ -56,8 +70,31 @@ function memoryStore(): KeyValueStore {
   };
 }
 
-const emptyFeed: RenderFeed = {
-  readFrame: () => EMPTY_RENDER_FRAME,
+/**
+ * The frame the scene is served, and how many times it has actually asked for
+ * one.
+ *
+ * Empty until a spec calls `loadChunks`, which is why every spec that predates
+ * issue #793 sees exactly what it always saw: `EMPTY_RENDER_FRAME`, with no
+ * `loadedBounds`, so `frameCameraOnFirstWorld` never fires and the camera
+ * starts where Phaser put it.
+ *
+ * `reads` is the harness's own counter and not scene introspection. It is what
+ * makes "the scene has consumed this frame" answerable without guessing at
+ * Phaser's callback order: `lastLoadedBounds` is assigned and
+ * `frameCameraOnFirstWorld` is called in the same `update()` that calls
+ * `readFrame`, so one further read after a swap is the exact precondition a
+ * minimap spec needs, and a busy machine cannot shorten it the way a fixed
+ * count of animation frames can.
+ */
+let currentFrame: RenderFrame = EMPTY_RENDER_FRAME;
+let reads = 0;
+
+const feed: RenderFeed = {
+  readFrame: () => {
+    reads += 1;
+    return currentFrame;
+  },
 };
 
 /**
@@ -158,7 +195,7 @@ const objectTool: ObjectToolPort = {
 };
 
 const scene = new WorldScene({
-  feed: emptyFeed,
+  feed,
   keyValueStore: memoryStore(),
   buildTool,
   editHistory,
@@ -272,6 +309,41 @@ const harness: LockstateWorldSceneHarness = {
   },
   placedObjects: () => [...placedObjects],
   targetedObject: () => (targetedObject === undefined ? undefined : toHarnessRect(targetedObject)),
+  loadChunks: (chunkSize: number, chunks: readonly HarnessChunkPosition[]): Promise<void> => {
+    // A real `SparseWorld`, snapshotted exactly as the simulation worker
+    // snapshots its own, and projected by the production
+    // `WorldRenderView.fromSnapshot`. So `loadedBounds` -- the one thing the
+    // mapping under test reads -- is computed here by the same code that
+    // computes it in a running session, from a chunk layout the spec chose.
+    // A harness that assembled the rectangle itself would be handing the scene
+    // the answer and then checking the scene against it.
+    const world = new SparseWorld(chunkSize);
+    for (const chunk of chunks) {
+      world.load({ x: chunkCoordinate(chunk.chunkX), y: chunkCoordinate(chunk.chunkY) });
+    }
+    currentFrame = {
+      revision: currentFrame.revision + 1,
+      world: WorldRenderView.fromSnapshot(world.snapshot()),
+      structures: [],
+      actors: [],
+    };
+
+    const readsBefore = reads;
+    return new Promise<void>((resolve) => {
+      const poll = (): void => {
+        if (reads > readsBefore) {
+          resolve();
+          return;
+        }
+        requestAnimationFrame(poll);
+      };
+      requestAnimationFrame(poll);
+    });
+  },
+  navigateToMinimapPoint: (fx, fy) => scene.navigateToMinimapPoint(fx, fy),
+  displaceCamera: (scrollX, scrollY) => {
+    scene.cameras.main.setScroll(scrollX, scrollY);
+  },
 };
 
 window.lockstateWorldSceneHarness = harness;
