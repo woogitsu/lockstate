@@ -154,6 +154,22 @@ async function guardSamples(page: Page): Promise<readonly GuardDeltaSample[]> {
   );
 }
 
+/**
+ * The status word out of one staff roster row.
+ *
+ * `formatStaffRosterText` renders `Guard · Unassigned` and the row's own
+ * Dismiss button contributes a second line, so a laid-out row's `innerText` is
+ * `Guard · Unassigned\nDismiss`. The word this pass is about is the middle
+ * segment, and the first version of this function split on the newline
+ * separator instead of on the interpunct and reported every phase as
+ * `"Dismiss"` -- recorded because the instrument's own bug looked exactly like
+ * a roster that never says anything.
+ */
+function phaseOf(row: string): string {
+  const afterRole = row.split('·').slice(1).join('·');
+  return (afterRole.split('|')[0] ?? '').trim();
+}
+
 /** Every laid-out staff roster row's text, as a player reads it. */
 async function rosterRows(page: Page): Promise<readonly string[]> {
   return page.evaluate(() =>
@@ -627,7 +643,7 @@ test('act 1: a new hire stands on the post it is deployed to, so its walk has no
     if (tick >= from + 400) break;
     for (const row of await rosterRows(page)) {
       polls += 1;
-      const phase = row.split('|').slice(1).join('|').trim();
+      const phase = phaseOf(row);
       const seen = phaseCounts.get(phase);
       if (seen === undefined) phaseCounts.set(phase, { count: 1, firstTick: tick, lastTick: tick });
       else phaseCounts.set(phase, { count: seen.count + 1, firstTick: seen.firstTick, lastTick: tick });
@@ -669,8 +685,8 @@ test('act 1: a new hire stands on the post it is deployed to, so its walk has no
 /* ==================================================================== */
 
 /**
- * **`Medium` at intake, before `ClassificationEarlyWarningSystem` has ever
- * run.**
+ * **`Medium` at intake, which is a different fact from `Medium` as a warning
+ * and wears the same badge.**
  *
  * `classifyPrisoner` scores `sentenceLengthTicks >= 200_000` as one point and
  * adds a screening draw of -1, 0 or +1
@@ -682,13 +698,32 @@ test('act 1: a new hire stands on the post it is deployed to, so its walk has no
  * and `[0, 1, 2]` at or above it"* -- and that has been true since `9a25700c`
  * (2026-08-30).
  *
- * The early warning's first possible fire is tick 2,399 (`intervalTicks`
- * `DAY_LENGTH_TICKS`, `phaseTicks` `DAY_LENGTH_TICKS - 1`), so this act reads
- * the roster **before** it, and any `Medium` it finds cannot be #788's.
+ * ### How a `Medium` is attributed without a tick bound
+ *
+ * The first version of this act paused below tick 2,399 -- the early warning's
+ * first possible fire (`intervalTicks` `DAY_LENGTH_TICKS`, `phaseTicks`
+ * `DAY_LENGTH_TICKS - 1`) -- and read the roster there. That bound cannot
+ * survive needing a cell: building one runs the clock past 2,399 long before
+ * anybody is admitted. The replacement is stronger and needs no clock at all.
+ * `reviewClassification`'s score is `sentence + intakeHistory + findings +
+ * cleanConduct` (`src/simulation/prisoners/classification.ts:213`);
+ * `intakeHistory` is always 0 because `ADMISSION_REQUEST` hard-codes
+ * `priorIncidents: 0`; `cleanConduct` is never positive; and `findings` is 0
+ * with no incident and no confiscation on record. So with the incidents and
+ * contraband chips both reading zero, the early warning's ceiling is 1 and it
+ * **cannot** have written a `Medium`. Both chips are therefore read at the
+ * same moment as the roster.
+ *
+ * ### And the refusal a no-cell prison gives, since this act was already there
+ *
+ * The act as first written admitted with no cell at all and got **nothing**:
+ * 24 presses, `prisoners: 0`. So it now measures that refusal properly before
+ * building, because a control that can be pressed 24 times with no effect is
+ * the design directive's own subject.
  *
  * **The seed is drawn per prison** (`SessionController.createPrison` draws a
- * fresh `masterSeed` per call, #479), so this act is a sample and not a
- * reproduction: a re-run sees different tiers. That is stated in the log so a
+ * fresh `masterSeed` per call, #479), so the tiers here are a sample and not a
+ * reproduction: a re-run sees different ones. That is stated in the log so a
  * reader cannot mistake one run's tiers for the distribution.
  */
 test('act 2: what a Medium badge says when it arrives at intake, before the early warning has run (#788)', async ({ page }) => {
@@ -699,22 +734,39 @@ test('act 2: what a Medium badge says when it arrives at intake, before the earl
   await installTee(page);
   await openApp(page);
 
+  // ---- phase 1: what Admit does on a prison with no cell ----------------
   await page.getByRole('button', { name: 'New prison' }).click();
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await tab(page, 'overview').click();
+  log(act, `refusal band before any press: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  const admitBox = await page.locator('.hud-intake__admit').boundingBox();
+  if (admitBox !== null) {
+    log(act, `under the Admit control's centre: ${JSON.stringify(await underPoint(page, admitBox.x + admitBox.width / 2, admitBox.y + admitBox.height / 2))}`);
+  }
+  for (let index = 0; index < 3; index += 1) {
+    await page.locator('.hud-intake__admit').click();
+    await page.waitForTimeout(400);
+    log(
+      act,
+      `no-cell Admit press ${index + 1}: disabled=${String(await page.locator('.hud-intake__admit').getAttribute('disabled'))}` +
+        ` | refusal band ${JSON.stringify(await panelText(page, '.hud__refusal'))}` +
+        ` | event notice ${JSON.stringify(await panelText(page, '.hud__event'))}` +
+        ` | alerts ${JSON.stringify(await alertsText(page))}` +
+        ` | prisoners ${(await latestCounts(page))?.prisoners ?? -1}`,
+    );
+  }
+  log(act, `intake panel after three refused presses: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
 
-  // No cell, no bed, no guard. A prisoner with nowhere to go still reaches
-  // `'accommodation-assignment'`, which is in `REVIEWABLE_STAGES`, so they are
-  // classified and they are early-warning eligible -- which is what makes this
-  // act cost one build fewer than it looks like it should.
+  // ---- phase 2: a cell, then as many admissions as the panel accepts -----
+  const built = await buildSealedCell(page, { beds: 8, withToilet: true, label: act });
+  log(act, `cell (a SECOND prison -- phase 1 above used the first): ${JSON.stringify({ zoned: built.zoned, zoneAttempts: built.zoneAttempts, minimapClear: built.minimapClear })}`);
   const pressed = await admit(page, 24, act);
+  log(act, `refusal band after ${pressed} press(es): ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
 
-  await page.locator('.hud-strip__transport button').nth(2).click();
-  await page.waitForTimeout(200);
-  await page.locator('.hud-strip__transport button').nth(2).click();
-  const settled = await runToTick(page, 1_500, act);
+  const settled = await runToTick(page, (await currentTick(page)) + 2_400, act);
   await page.locator('.hud-strip__transport button').nth(0).click();
   await page.waitForTimeout(400);
-  log(act, `paused at tick ${settled}, which is below the early warning's first possible fire at 2,399`);
+  log(act, `paused at tick ${settled}; counts ${JSON.stringify(await latestCounts(page))}`);
 
   await tab(page, 'regime').click();
   await page.waitForTimeout(600);
@@ -725,6 +777,11 @@ test('act 2: what a Medium badge says when it arrives at intake, before the earl
   log(act, `distinct tiers: ${JSON.stringify([...new Set(rows.map((r) => r.riskTier))].sort())}`);
   log(act, `high-risk chip: ${JSON.stringify(await readChip(page, 'high-risk'))}`);
   log(act, `prisoners chip: ${JSON.stringify(await readChip(page, 'prisoners'))}`);
+  // The two chips that decide whether a `Medium` on that roster can possibly
+  // be the early warning's: with both at zero there is no disciplinary
+  // evidence, so `findings` is 0 and its ceiling is tier 1.
+  log(act, `incidents chip: ${JSON.stringify(await readChip(page, 'incidents'))}`);
+  log(act, `contraband chip: ${JSON.stringify(await readChip(page, 'contraband'))}`);
   log(act, `alerts column: ${JSON.stringify(await alertsText(page))}`);
   log(act, `whole Regime tab as text: ${JSON.stringify(await panelText(page, '.hud-regime'))}`);
   log(act, `admissions pressed: ${pressed}. The master seed is drawn per prison, so these tiers are ONE SAMPLE and a re-run will differ.`);
@@ -814,7 +871,7 @@ test('act 3: a sector sweep teleports a guard out and walks it back — how many
       lastRow = joined;
     }
     for (const row of rows) {
-      const phase = row.split('|').slice(1).join('|').trim();
+      const phase = phaseOf(row);
       const seen = phaseCounts.get(phase);
       if (seen === undefined) phaseCounts.set(phase, { count: 1, firstTick: tick, lastTick: tick });
       else phaseCounts.set(phase, { count: seen.count + 1, firstTick: seen.firstTick, lastTick: tick });
@@ -891,7 +948,19 @@ test('act 4: neglect until Medium — what changes on screen at that tick, and w
 
   const built = await buildSealedCell(page, { beds: 8, withToilet: false, label: act });
   log(act, `cell: ${JSON.stringify({ zoned: built.zoned, zoneAttempts: built.zoneAttempts, minimapClear: built.minimapClear })}`);
-  await admit(page, 8, act);
+  /*
+   * Twelve admissions against eight beds, not eight against eight.
+   *
+   * The integration fixture houses everybody and still opens its first riot at
+   * tick 1,801, so overcrowding is not required -- but it is the pressure
+   * `docs/research/2026-08-26-failure-modes.md`'s own in-place correction
+   * (#396) names as the reachable one, an unhoused arrival's `safety` being
+   * the need that actually decays to zero. Four arrivals with no bed cost
+   * nothing and can only shorten the wait for the evidence this act needs.
+   * Both halves are stated because if `Medium` does not arrive, which of them
+   * failed matters.
+   */
+  await admit(page, 12, act);
   log(act, `NO guards hired, and no toilet built: this is the neglect fixture, played`);
 
   await page.locator('.hud-strip__transport button').nth(2).click();
