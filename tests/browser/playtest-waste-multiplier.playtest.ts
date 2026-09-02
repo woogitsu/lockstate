@@ -749,8 +749,17 @@ test.describe('playtest: the waste multiplier', () => {
      * the object from `PlacedObjectRegistry` and never touches the order
      * (`object-placement-service.ts:448,453`), so `materialsAllocated` is never
      * released and the plank is gone -- which the Build panel's own
-     * `hud.build.remove-hint` states: *"One still being built is cancelled and
-     * its materials come back; a finished one is not refunded."*
+     * `hud.build.remove-hint` states: *"A finished one is not refunded."*
+     *
+     * **The quotation was updated on 2026-09-02 and the argument survives it.**
+     * This comment used to quote the hint's older, false form -- *"One still
+     * being built is cancelled and its materials come back; a finished one is
+     * not refunded."* -- whose first clause named the wrong currency (ruling 20
+     * pays money, not materials, and pays nothing once the crew has started).
+     * The owner replaced the sentence that day. Only the clause this paragraph
+     * actually leans on, the finished case, was ever true, and it is unchanged
+     * in the replacement -- so the reasoning above holds on the new wording
+     * exactly as it did on the old.
      *
      * So the wait matters: it is what makes this the finished case rather than
      * the cancelled one.
