@@ -345,6 +345,23 @@ that answers confidently and wrongly.
   which makes this the worst case of §4's rule about sentences asserting an
   absence.
 
+- **An agent that arms a monitor, a background command or a sleep-poll and
+  then stops calling tools has ended its turn, and nothing will wake it.**
+  Three agents did this on 2026-09-02 across four turns — one twice — each
+  time with a browser run in flight and each time reporting *"waiting for the
+  monitor to report before finishing"*. The monitor fired into a turn that no
+  longer existed. Two of the three had been told in their brief not to do it.
+  The mechanism is not subtle and is worth stating flatly: **a subagent's turn
+  ends with its last tool call; a background task completing does not start a
+  new one.** So a long-running command an agent needs the result of goes in
+  the **foreground**, in a single call with a high `timeout` (up to 600000 ms
+  is allowed), and is read in the same turn. A run that would exceed that is
+  narrowed with `--grep` rather than split across turns. Background tasks are
+  for the *coordinator*, whose session is woken by their completion; they are
+  a trap for the agents it dispatches. The cost of the four turns was not the
+  tokens — it was that each agent had to be resumed by hand, with the
+  instruction re-stated, before any work it had done became visible.
+
 ### Nothing may exist only in the container
 
 **Added 2026-08-29, after the owner named the failure mode this prevents.**
