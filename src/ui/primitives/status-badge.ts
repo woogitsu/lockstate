@@ -15,10 +15,33 @@ import { type IconId, createIcon } from './icon';
  * sector, a prison over capacity). Ordered here past `'danger'` for that
  * reason -- it is the top of the ladder, not a rung between `'warning'` and
  * `'danger'` -- and nothing else in the HUD emits it yet.
+ *
+ * **`'caution'` was added for issue #788's ruling of 2026-09-02**, the risk
+ * roster's third tone, and it is the same shape of ruling in the other
+ * direction: a state *weaker* than `'warning'`, for a prisoner at risk tier 2
+ * (`Medium`). Before it, tiers 0, 1 and 2 all read `'neutral'` -- because the
+ * roster badge's tone was the classification *group* and the group is
+ * `riskTier >= 3` -- so the tier ADR 0090's `ClassificationEarlyWarningSystem`
+ * exists to make visible arrived with no change of colour at all.
+ *
+ * Ordered here between `'success'` and `'warning'` because that is where it
+ * sits on the ladder, and named for the convention that already orders the two
+ * words this way outside this repository: on safety signage NOTICE precedes
+ * CAUTION precedes WARNING precedes DANGER, which is the same direction
+ * `'warning'`, `'danger'` and `'critical'` already run in here.
+ *
+ * **No existing tone would do**, and each was considered rather than skipped:
+ * `'warning'` is what the high-risk group reads, so tier 2 taking it would
+ * make `Medium` and `High` the same colour -- the very thing the ruling names;
+ * `'danger'` and `'critical'` are both *stronger* than `'warning'` and would
+ * say a tier-2 prisoner is worse than a tier-3 one; `'info'` is what the same
+ * badge already says for a prisoner still in intake, so it would collide
+ * inside one column; and `'success'` is not a claim anybody has made about a
+ * risk tier.
  */
-export type BadgeTone = 'neutral' | 'success' | 'warning' | 'danger' | 'critical' | 'info';
+export type BadgeTone = 'neutral' | 'success' | 'caution' | 'warning' | 'danger' | 'critical' | 'info';
 
-export const BADGE_TONES: readonly BadgeTone[] = ['neutral', 'success', 'warning', 'danger', 'critical', 'info'];
+export const BADGE_TONES: readonly BadgeTone[] = ['neutral', 'success', 'caution', 'warning', 'danger', 'critical', 'info'];
 
 export interface StatusBadgeOptions {
   readonly tone: BadgeTone;

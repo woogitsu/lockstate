@@ -4760,6 +4760,43 @@ test.describe('the Regime panel (issue #451)', () => {
   const SOLO_ROSTER: HudPrisonerRosterViewModel = { total: 1, everAdmitted: true, rows: ROSTER.rows.slice(0, 1) };
 
   /**
+   * One prisoner at each of the four risk tiers -- the fixture the owner's
+   * ruling of 2026-09-02 on issue #788 needs and `ROSTER` above does not
+   * contain.
+   *
+   * `ROSTER` holds tiers 1, 3, an intake row and tier 0, which is four
+   * branches of the *panel* and only three of the *ladder*: it has no tier-2
+   * row at all, so no assertion over it could have caught `Medium` reading in
+   * `Minimal`'s colour. This is the same four rows re-tiered, which is what
+   * `PRISONER_ROSTER_ROW_LIMIT` (four) leaves room for exactly.
+   *
+   * The groups are the ones `classificationGroupIdForTier` would actually
+   * write -- `'general-population'` for 0, 1 and 2, `'high-risk'` for 3 -- and
+   * that is the half of the pairing that matters here: the tier-2 row's group
+   * is the *ordinary* one, so a tone visible on it is a tone that did not
+   * require ADR 0090's early warning to move a group it is capped precisely to
+   * never move.
+   *
+   * Rows are in descending-tier order, which is the order
+   * `projectPrisonerRoster` publishes (#703 ruling 4), so the probe's row
+   * indices read High, Medium, Low, Minimal.
+   */
+  const TIER_LADDER_ROSTER: HudPrisonerRosterViewModel = {
+    total: 4,
+    everAdmitted: true,
+    rows: ([3, 2, 1, 0] as const).map((riskTier) => ({
+      entityId: 20 + riskTier,
+      name: { givenName: 'Ada', familyName: `Tier${String(riskTier)}` },
+      activityLabelKey: 'action.free-association.name',
+      travelling: false,
+      standingLabelKey: `risk-tier.${String(riskTier)}.name` as const,
+      classificationGroupId: riskTier >= 3 ? 'high-risk' : 'general-population',
+      riskTier,
+      lowestNeed: { needId: 'recreation', labelKey: 'need.recreation.name', permille: 1000, unmetForStateIncome: false },
+    })),
+  };
+
+  /**
    * Every message namespace the panel can paint a raw key out of.
    *
    * ADR 0011 resolves an unknown key to the key itself, so a missing catalog
@@ -4840,6 +4877,91 @@ test.describe('the Regime panel (issue #451)', () => {
     expect(probe.everAdmitted, 'this is the true "nobody yet" state').toBe('false');
   });
 
+  /**
+   * **The owner's ruling of 2026-09-02 on issue #788, measured on the real
+   * page.**
+   *
+   * `describePrisonerRow`'s own tests own the decision -- that is what
+   * `regime-panel.ts` exports it for -- so what is left for a browser is the
+   * half those cannot reach: **whether the tone is a colour**. A tone added to
+   * `BadgeTone` with no `.ui-badge[data-tone=...]` rule beside it type-checks,
+   * passes every node test, and paints `--badge-neutral-bg` on screen -- which
+   * is this ruling's own defect reintroduced one layer down, and no assertion
+   * over `data-tone` can see it, because the attribute is set either way.
+   *
+   * So the colours are read out of `getComputedStyle` rather than inferred
+   * from the attribute. The distinctness assertions are over the *painted*
+   * values; the attributes are asserted too, so a failure says which of the
+   * two layers moved.
+   */
+  test('gives Medium a colour of its own on screen, distinct from Minimal’s and High’s (#788)', async ({ page }) => {
+    await page.evaluate(
+      ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
+      [TIMETABLE, TIER_LADDER_ROSTER] as const,
+    );
+    const probe = await page.evaluate(() => window.lockstateUiHarness.regimeProbe());
+
+    // Four rows, and every one of them laid out -- `regimeProbe` filters to
+    // rows with client rects, so a hidden pooled row cannot supply a tone.
+    expect(probe.rows.map((row) => row.riskTier)).toEqual(['3', '2', '1', '0']);
+    for (const row of probe.rows) expect(row.box?.height, `row ${row.riskTier} has no box`).toBeGreaterThan(0);
+
+    const [high, medium, low, minimal] = probe.rows.map((row) => row.badgeTone);
+    expect(medium, 'Medium reads in Minimal’s colour, which is the defect #788 names').not.toBe(minimal);
+    expect(medium, 'Medium reads in High’s colour').not.toBe(high);
+    expect(minimal, 'Minimal and Low are one tone, and that is unchanged').toBe(low);
+    expect(probe.rows.map((row) => row.badgeTone)).toEqual(['warning', 'caution', 'neutral', 'neutral']);
+
+    // **What the browser actually painted**, in the same row order. A tone with
+    // no rule in `primitives.css` inherits `.ui-badge`'s own neutral pair, so
+    // this is the assertion the attributes above cannot make.
+    const painted = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.hud-regime__roster-row')]
+        .filter((row) => row.getClientRects().length > 0)
+        .map((row) => {
+          const badge = row.querySelector<HTMLElement>('.ui-badge');
+          if (badge === null) return null;
+          const style = getComputedStyle(badge);
+          return { color: style.color, background: style.backgroundColor };
+        }),
+    );
+
+    expect(painted).toHaveLength(4);
+    const [paintedHigh, paintedMedium, paintedLow, paintedMinimal] = painted;
+    expect(paintedMedium?.color, 'Medium is painted in Minimal’s colour').not.toBe(paintedMinimal?.color);
+    expect(paintedMedium?.background, 'Medium is painted on Minimal’s background').not.toBe(paintedMinimal?.background);
+    expect(paintedMedium?.color, 'Medium is painted in High’s colour').not.toBe(paintedHigh?.color);
+    expect(paintedMedium?.background, 'Medium is painted on High’s background').not.toBe(paintedHigh?.background);
+    // Minimal and Low are one tone, so they must be one paint -- which is what
+    // makes the three inequalities above a statement about the tones rather
+    // than about four arbitrary badges.
+    expect(paintedLow).toEqual(paintedMinimal);
+    // And none of the four is transparent or unset, which is what a badge with
+    // no rule at all would report.
+    for (const paint of painted) {
+      expect(paint?.color, 'a badge has no colour at all').toMatch(/^rgba?\(/);
+      expect(paint?.background, 'a badge has no background at all').toMatch(/^rgba?\(/);
+    }
+
+    // The word is still beside the colour, so nothing here made the colour the
+    // whole signal for a player who cannot see it. What is *still* missing is
+    // the sentence: the badge has no `title` and no screen-reader text, which
+    // is the copy half of #788 and the owner's under `AGENTS.md`'s fourth
+    // exclusion.
+    expect(probe.rows.map((row) => row.badgeText)).toEqual(['High', 'Medium', 'Low', 'Minimal']);
+
+    // The pairing that proves ADR 0090's cap was not spent to get the colour:
+    // the tier-2 row is on the ordinary timetable, and only the tier-3 row is
+    // in the restricted group.
+    expect(probe.rows.map((row) => row.classificationGroup)).toEqual([
+      'high-risk',
+      'general-population',
+      'general-population',
+      'general-population',
+    ]);
+    expect(probe.text, `an unresolved message key is on screen: ${probe.text}`).not.toMatch(RAW_KEY);
+  });
+
   test('a prison everybody has left draws no false sentence about non-admission (issue #506)', async ({ page }) => {
     // Same `total: 0` as the test above, and the opposite history: five
     // prisoners were admitted, served their sentences -- one fixed sentence
@@ -4904,6 +5026,12 @@ test.describe('the Regime panel (issue #451)', () => {
     expect(probe.rows[1]?.activityText).toBe('Yard Time');
     // The badge's word, which is what makes its colour readable without colour.
     expect(probe.rows.map((row) => row.badgeText)).toEqual(['Low', 'High', 'Classification', 'Minimal']);
+    // And the colour beside it, as the attribute rather than as a paint. The
+    // probe has read `badgeTone` since it was written and nothing asserted it
+    // here, which is why the tier-2 defect issue #788 names -- `Medium` wearing
+    // `Minimal`'s colour -- was invisible to this suite. This fixture holds no
+    // tier-2 row; the test below is the one that does.
+    expect(probe.rows.map((row) => row.badgeTone)).toEqual(['neutral', 'warning', 'info', 'neutral']);
 
     // ---- the worst-need bar (issue #535 decision 6) --------------------
     //

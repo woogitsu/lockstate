@@ -192,6 +192,16 @@
      not as an alarm light. */
   --moss-300: #86b596;
   --moss-alpha-14: rgba(134, 181, 150, 0.14);
+  /* A rung *below* `--amber-300` rather than past it: the same warm family at
+     a third of its saturation, for the state that has to read as quieter than
+     the tone that already means "urgent" everywhere it appears -- the owner's
+     ruling of 2026-09-02 on issue #788, the risk roster's third tone. It is
+     the mirror image of `--crimson-300` below, which was added by the same
+     shape of ruling in the other direction, and the reason both are raw ramp
+     entries rather than alpha variants of amber is that a re-skin has to be
+     able to move them independently. */
+  --straw-300: #bba881;
+  --straw-alpha-14: rgba(187, 168, 129, 0.14);
   --amber-300: #e8b463;
   --amber-alpha-14: rgba(232, 180, 99, 0.14);
   --clay-300: #d4785c;
@@ -229,6 +239,7 @@
   --accent-contrast: var(--ink-900);
 
   --status-success: var(--moss-300);
+  --status-caution: var(--straw-300);
   --status-warning: var(--amber-300);
   --status-danger: var(--clay-300);
   --status-critical: var(--crimson-300);
@@ -240,6 +251,8 @@
   --badge-neutral-fg: var(--text-subtle);
   --badge-success-bg: var(--moss-alpha-14);
   --badge-success-fg: var(--status-success);
+  --badge-caution-bg: var(--straw-alpha-14);
+  --badge-caution-fg: var(--status-caution);
   --badge-warning-bg: var(--amber-alpha-14);
   --badge-warning-fg: var(--status-warning);
   --badge-danger-bg: var(--clay-alpha-14);
