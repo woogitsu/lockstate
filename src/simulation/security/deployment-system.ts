@@ -1,6 +1,7 @@
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { NavigationSystem } from '../navigation/navigation-system';
 import type { RouteContext } from '../navigation/route-context';
+import { routeWaypoints } from '../navigation/route';
 import type { TilePosition } from '../world/coordinates';
 import { resolveStaffRouteContext } from './access-policy';
 import { isAtPost } from './deployment-phase';
@@ -215,6 +216,11 @@ export class DeploymentSystem implements SystemRegistration {
   }
 
   private continueDeploymentTravel(guardId: EntityId, tick: number): void {
+    // Between two tiles. `GuardLocomotionSystem` moves them every tick; this
+    // system reconsiders every ten, so most visits to a travelling guard stop
+    // here -- the change ADR 0088 makes, mirroring ADR 0059's for prisoners.
+    if (this.guards.locomotion.isWalking(guardId)) return;
+
     const requestId = this.guards.getPathRequestId(guardId);
     if (requestId === undefined) {
       const sectorId = this.guards.getSectorId(guardId);
@@ -238,9 +244,29 @@ export class DeploymentSystem implements SystemRegistration {
       return;
     }
 
-    const sectorId = this.guards.getSectorId(guardId)!;
-    const postTile = this.sectors.requireDefinition(sectorId).postTile;
-    this.guards.setTile(guardId, postTile);
+    /*
+     * The route is walked rather than applied in one step (ADR 0088,
+     * answering ADR 0059 open question 4 the way ADR 0059 itself answered it
+     * for prisoners). A one-waypoint route -- the guard was already standing
+     * on the post -- arrives immediately, matching `beginDeployment`'s own
+     * `isAtPost` fast path exactly.
+     */
+    if (this.guards.locomotion.beginWalk(guardId, routeWaypoints(outcome.result.route))) {
+      this.onArrivedAtPost(guardId);
+    }
+  }
+
+  /**
+   * Called when a guard's walk to its post finishes -- immediately, for a
+   * route with no distance in it, or by `GuardLocomotionSystem` on the tick a
+   * longer one ends (`createGuardLocomotionSystem` in `guard-locomotion.ts`
+   * is what dispatches an arrival here rather than to `PatrolSystem`).
+   *
+   * Public for that wiring alone, the same reason `ActionSystem.routeContextFor`
+   * is public: it is called from outside this class's own `update`, on a
+   * different cadence than this system runs on.
+   */
+  public onArrivedAtPost(guardId: EntityId): void {
     this.guards.setDeploymentPhase(guardId, 'on-post');
   }
 }

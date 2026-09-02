@@ -245,7 +245,7 @@ describe('kernel system ordering', () => {
    * per ADR 0009, by retiring incompatible challenge submissions through
    * the definition allow-lists.
    *
-   * ## The four times this list has changed, and what the ADR 0009 step came to
+   * ## Every time this list has changed, and what the ADR 0009 step came to
    *
    * `procurement` (order 110) was added with the purchase loop (#96, #89),
    * `economy.state-income` (order 120) with the state's per-prisoner-day
@@ -365,6 +365,29 @@ describe('kernel system ordering', () => {
    * playtest behind issue #767 are where a crossing is watched actually
    * firing.
    *
+   * **The eighth is `prisoners.classification-early-warning` (order 52), and
+   * it is a reviewed edit for the owner's ruling on issue #788** (ADR 0090):
+   * `Medium` must stop being a tier the periodic review can only skip over on
+   * its way to `High`. Inserted into the gap between `prisoners.intake` (50)
+   * and `prisoners.classification-review` (55), so no existing system moves --
+   * and it must run before the review it never disagrees with once both fire
+   * on the same tick (`schedule` doc on the system itself explains why the
+   * order does not need to matter for correctness, only for which of the two
+   * writes is the one a reader sees). Scheduled once a day
+   * (`intervalTicks: 2,400`, `phaseTicks: 2,399`) -- ten times more often than
+   * `prisoners.classification-review`'s ten-day interval, and every
+   * determinism test in this directory runs the scenario for 400 ticks, so
+   * exactly like `economy.state-income` and `economy.payroll` this system is
+   * registered, pinned here, and never fires in any of them. It can only ever
+   * raise a tier and only ever as far as `Medium`
+   * (`EARLY_WARNING_TIER_CEILING`), so even a test that ran one of these
+   * scenarios past tick 2,399 would see no *new* outcome from this system
+   * alone unless a prisoner had already accrued disciplinary findings by
+   * then -- none of these scenarios' incidents resolve or lapse that early.
+   * `tests/integration/risk-tier-neglect-reachability.test.ts` is where this
+   * system is watched actually raising a tier, well before the review that
+   * used to be the first thing to move it at all.
+   *
    * The retirement the sentence above requires was looked for and **there is
    * nothing in this repository to retire**, which is worth recording so the
    * next person does not go hunting for a list that does not exist:
@@ -385,6 +408,7 @@ describe('kernel system ordering', () => {
   it('pins the declared execution order of a real session', () => {
     expect(buildDeterminismScenario().kernel.systemExecutionOrder).toEqual([
       { id: 'prisoners.intake', order: 50 },
+      { id: 'prisoners.classification-early-warning', order: 52 },
       { id: 'prisoners.classification-review', order: 55 },
       { id: 'prisoners.needs-decay', order: 60 },
       { id: 'prisoners.discharge', order: 65 },
@@ -395,6 +419,17 @@ describe('kernel system ordering', () => {
       { id: 'economy.insolvency-rungs', order: 135 },
       { id: 'navigation', order: 150 },
       { id: 'prisoners.locomotion', order: 200 },
+      /*
+       * **Inserted right after the prisoner instance** (ADR 0088, answering
+       * ADR 0059 open question 4): both walk the same window, after
+       * navigation and before anything that reads an arrival, and neither
+       * depends on the other -- `LocomotionStore` is one instance per
+       * population, addressed by a different key in each (a component index
+       * for prisoners, an `EntityId` for guards). 201 rather than a shared
+       * 200, because the test below this one requires every declared order in
+       * a real session to be distinct.
+       */
+      { id: 'security.locomotion', order: 201 },
       { id: 'prisoners.actions', order: 250 },
       { id: 'operations.jobs', order: 260 },
       { id: 'contraband.intelligence', order: 265 },

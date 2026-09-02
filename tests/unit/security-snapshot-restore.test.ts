@@ -6,6 +6,7 @@ import { SecuritySectorRegistry, type SecuritySectorDefinition } from '../../src
 import { GuardRoster } from '../../src/simulation/security/guard-roster';
 import { DeploymentSystem } from '../../src/simulation/security/deployment-system';
 import { PatrolSystem } from '../../src/simulation/security/patrol-system';
+import { createGuardLocomotionSystem } from '../../src/simulation/security/guard-locomotion';
 import { constantDeploymentSchedule, type DeploymentSchedule } from '../../src/simulation/security/deployment-schedule';
 
 /**
@@ -73,6 +74,7 @@ describe('security snapshot/restore: sector control state and guard roster toget
 
     const kernel = new Kernel();
     kernel.registerSystem(navigation);
+    kernel.registerSystem(createGuardLocomotionSystem(guards, navigation, deployment, patrol));
     kernel.registerSystem(deployment);
     kernel.registerSystem(patrol);
 
@@ -81,12 +83,21 @@ describe('security snapshot/restore: sector control state and guard roster toget
 
     let tick = 0;
     for (; tick < 400 && guards.getPatrolWaypointIndex(g1) === undefined; tick += 1) kernel.step();
-    // One more scheduled cycle so the guard is genuinely mid-leg (a live pathRequestId), not merely just-started.
+    // One more scheduled cycle so the guard is genuinely mid-leg, not merely
+    // just-started. **This used to mean "holding a live pathRequestId"; since
+    // ADR 0088 gave guards a walk, the route for this short a leg resolves and
+    // the guard is walking it well inside ten ticks, so `pathRequestId` is
+    // clear again and `locomotion.isWalking` is the live signal instead** --
+    // marked in both directions (`docs/AGENT_WORKFLOW.md` §4) because the
+    // assertion below read the other way and was correct about the code it
+    // described. The scenario this test is about -- transient in-flight state
+    // that a restore must reset safely -- is the same scenario either way.
     for (let i = 0; i < 10; i += 1, tick += 1) kernel.step();
 
     expect(guards.getDeploymentPhase(g1)).toBe('travelling');
     expect(guards.getPatrolWaypointIndex(g1)).not.toBeUndefined();
-    expect(guards.getPathRequestId(g1)).toBeDefined();
+    expect(guards.getPathRequestId(g1)).toBeUndefined();
+    expect(guards.locomotion.isWalking(g1)).toBe(true);
     expect(guards.getDeploymentPhase(g2)).toBe('unassigned');
     expect(sectors.getControlState('block-a')).toBe('restricted');
     expect(cellBlock.doors.getById('cell-door-2')?.state).toBe('closed'); // fixture-authored 'open' baseline (i=2, not %7==0), restricted -> closed
@@ -125,6 +136,7 @@ describe('security snapshot/restore: sector control state and guard roster toget
     const restoredPatrol = new PatrolSystem(restoredSectors, restoredGuards, restoredNavigation);
     const restoredKernel = new Kernel();
     restoredKernel.registerSystem(restoredNavigation);
+    restoredKernel.registerSystem(createGuardLocomotionSystem(restoredGuards, restoredNavigation, restoredDeployment, restoredPatrol));
     restoredKernel.registerSystem(restoredDeployment);
     restoredKernel.registerSystem(restoredPatrol);
 
@@ -176,6 +188,7 @@ describe('the patrol and deployment counters a restore is given', () => {
 
     const kernel = new Kernel();
     kernel.registerSystem(navigation);
+    kernel.registerSystem(createGuardLocomotionSystem(guards, navigation, deployment, patrol));
     kernel.registerSystem(deployment);
     kernel.registerSystem(patrol);
     guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
