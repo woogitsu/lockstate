@@ -743,6 +743,48 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
     return refundedMinorUnits;
   }
 
+  /**
+   * `ConstructionProcurementSink.refundSurplusStock`.
+   *
+   * ## Why the goods leave the shelf before the money arrives
+   *
+   * `ProcurementSystem.refundMaterials` credits. If it credited and the
+   * withdrawal then failed, the press would have created value out of nothing
+   * -- which is `tests/integration/economy-money-conservation.test.ts`'s
+   * mutation M2 reached by a shorter route. So the stock is taken off the shelf
+   * first and the credit is asked for afterwards, and the one case where the
+   * credit comes back `0` -- an item the catalogue does not sell -- puts it
+   * straight back. That ordering is why this cannot pay for a brick it did not
+   * remove.
+   *
+   * ## No loop, unlike `refundSurplusDeliveries`
+   *
+   * That method loops because a delivery is indivisible: it takes whole
+   * deliveries and has to re-ask whether another one now fits. Stock is a
+   * quantity, so the whole answer is one `Math.min` and there is nothing to
+   * iterate.
+   */
+  public refundSurplusStock(itemId: string, demandedQuantity: number, limit: number): number {
+    if (!Number.isSafeInteger(limit) || limit <= 0) return 0;
+    const surplus = this.heldOrInFlightOf(itemId) - demandedQuantity;
+    /*
+     * `availableOf` and not `quantityOf`: reserved stock is claimed by a carry
+     * job that has not picked it up yet, and selling it would leave that job
+     * withdrawing material the prison has already been paid for.
+     */
+    const quantity = Math.min(surplus, limit, this.stock.availableOf(itemId));
+    if (quantity <= 0) return 0;
+
+    if (!this.stock.reserve(itemId, quantity).ok) return 0;
+    if (!this.stock.withdrawReserved(itemId, quantity).ok) {
+      this.stock.releaseReservation(itemId, quantity);
+      return 0;
+    }
+    const refundedMinorUnits = this.procurement.refundMaterials(itemId, quantity);
+    if (refundedMinorUnits === 0) this.stock.deposit(itemId, quantity);
+    return refundedMinorUnits;
+  }
+
   /** The biggest `jit:` delivery of `itemId` that fits inside `surplus`, by `(quantity, orderId)`. */
   private largestSurplusDelivery(itemId: string, surplus: number): PendingDelivery | undefined {
     let best: PendingDelivery | undefined;

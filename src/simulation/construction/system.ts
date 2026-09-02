@@ -646,7 +646,7 @@ export class ConstructionSystem implements SystemRegistration {
    * | state at the press | what the player gets |
    * | --- | --- |
    * | `planned` | nothing, and nothing was spent: `pendingOrderDemand` never counts a planned order, so no purchase was ever made for it |
-   * | `approved` | money -- the just-in-time deliveries its demand caused, where the whole delivery is now surplus |
+   * | `approved` | money -- what its demand caused to be bought, whether that is still a delivery on the road or has already landed on the shelf |
    * | `materials-pending` | the same |
    * | `assigned` | money -- the catalogue value of the allocation it is holding; the materials are **not** returned to stock |
    * | `in-progress` | nothing at all. The allocation is dropped unreleased and unpaid |
@@ -662,6 +662,28 @@ export class ConstructionSystem implements SystemRegistration {
    * `completed` and `Undo` returned them all, so it paid to let the crew
    * finish. ADR 0076's *"Amendment, 2026-09-01: taking a finished object away
    * returns nothing"* records it.
+   *
+   * **The `approved` and `materials-pending` rows read *"money -- the
+   * just-in-time deliveries its demand caused, where the whole delivery is now
+   * surplus"* until #717, and that sentence is kept because it is what the
+   * implementation did rather than what the ruling said.** Ruling 20 promises
+   * *money* in both states; the code only paid where the money still happened
+   * to be sitting in a **delivery**. `ProcurementSystem` is scheduled every
+   * tick and this system every tenth, so a just-in-time delivery is unloaded
+   * into the container up to ten ticks before the order that demanded it is
+   * offered to `tryAllocate` -- and for those ten ticks the order is
+   * `'materials-pending'`, holds no allocation, and has no delivery left to
+   * cancel. The press gave back **nothing** and left the bricks, which is
+   * issue #717's *"returns bricks, never money"* measured in the one window
+   * that sentence was still true in. It is the same shape of inversion the
+   * amendment of 2026-09-01 closed for `completed`: cancel a tick earlier and
+   * the whole price came back, cancel ten ticks later at `'assigned'` and the
+   * whole price came back, and in between the currency changed with nothing on
+   * screen relating the two. `refundSurplusOf` now runs
+   * `ConstructionProcurementSink.refundSurplusStock` behind
+   * `refundSurplusDeliveries`, bounded by the cancelled order's own
+   * requirement so that a stockpile the player pressed *Buy* for is not
+   * liquidated by one cancel press.
    *
    * **The ruling says *object* and this method cannot tell a bed from a wall,
    * so it is read as "a completed order".** The inversion is identical for a
@@ -778,6 +800,18 @@ export class ConstructionSystem implements SystemRegistration {
    * precisely the state a player is most likely to press it in, and the four
    * refundable states ruling 20 names would collapse to one.
    *
+   * **And an order cancelled *later* than that is holding nothing either, for
+   * ten ticks at a time, which is what #717 measured.** This system is
+   * scheduled every tenth tick and `ProcurementSystem` every tick, so between
+   * a delivery being unloaded and the order it was bought for reaching
+   * `tryAllocate` the material is on the shelf and the order still reads
+   * `'materials-pending'`. There is no delivery left to turn around there, so
+   * the delivery arm alone answered that press with nothing at all -- and
+   * `refundSurplusStock` is the arm that answers it, at the catalogue price,
+   * bounded by the order's own requirement. Both arms stop at the same line
+   * `withdrawOrdersAwaitingMaterial` stops at: the point where the next
+   * scheduled pass would find nothing to buy.
+   *
    * It is the supply-side mirror of `withdrawOrdersAwaitingMaterial`, which
    * #687 built for the opposite press: that one answers a cancelled *delivery*
    * by removing demand, this one answers a cancelled *order* by removing
@@ -823,11 +857,43 @@ export class ConstructionSystem implements SystemRegistration {
     if (stateAtCancellation !== 'approved' && stateAtCancellation !== 'materials-pending') return;
     const definition = BUILDABLE_REGISTRY.get(order.definitionId);
     if (definition === undefined) return;
+    /*
+     * Summed per item id rather than taken line by line, because
+     * `refundSurplusStock`'s bound is *this order's own requirement* and a
+     * definition is not forbidden from naming one item twice. Two lines of one
+     * brick are one requirement for two bricks, and handing the sink each line
+     * separately would bound the second call by a figure the first had already
+     * used up.
+     */
+    const requiredByItemId = new Map<string, number>();
+    for (const requirement of definition.materialsRequired) {
+      if (requirement.quantity <= 0) continue;
+      requiredByItemId.set(
+        requirement.itemId,
+        (requiredByItemId.get(requirement.itemId) ?? 0) + requirement.quantity,
+      );
+    }
     // Ascending item id: this credits the treasury, so the walk writes
     // simulation state (`docs/DETERMINISM.md`, "Canonical iteration order").
-    const itemIds = [...new Set(definition.materialsRequired.map((requirement) => requirement.itemId))].sort();
-    for (const itemId of itemIds) {
-      sink.refundSurplusDeliveries(itemId, this.demandedQuantityOf(itemId));
+    for (const itemId of [...requiredByItemId.keys()].sort()) {
+      /*
+       * Read once and handed to both arms. Neither of them touches the order
+       * book -- one cancels a delivery, the other takes stock off a shelf --
+       * so the demand this cancellation left standing cannot move between the
+       * two calls, and re-reading it would suggest it could.
+       */
+      const demanded = this.demandedQuantityOf(itemId);
+      /*
+       * **Deliveries first, stock second, and the order is the price.** A
+       * delivery refunds its own recorded `paidMinorUnits`, which is what
+       * `ProcurementSystem.cancel` exists to do and what closes the
+       * buy-low-cancel-high trade; stock can only be valued from the
+       * catalogue, because material on a shelf carries no record of what it
+       * cost. Selling the shelf while a delivery for the same item was still
+       * refundable would prefer the weaker figure for no reason.
+       */
+      sink.refundSurplusDeliveries(itemId, demanded);
+      sink.refundSurplusStock(itemId, demanded, requiredByItemId.get(itemId)!);
     }
   }
 

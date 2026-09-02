@@ -372,4 +372,59 @@ export interface ConstructionProcurementSink {
    * It must not throw.
    */
   refundSurplusDeliveries(itemId: string, demandedQuantity: number): number;
+
+  /**
+   * Sells back the `itemId` a cancelled order's demand left sitting on the
+   * shelf, and answers what that credited (issue #717).
+   *
+   * **The other half of `refundSurplusDeliveries`, and the reason it is a
+   * second method rather than a wider one is the currency.** That method
+   * refunds a delivery at its own recorded `paidMinorUnits`, which is what
+   * closes the buy-low-cancel-high trade; this one sells stock, which carries
+   * no such record -- the goods are fungible with everything else the
+   * container holds -- so it can only be valued at the catalogue price, the
+   * same figure `refundAllocatedMaterials` uses and for the same reason. Two
+   * prices means two methods, and the caller runs them in that order so that
+   * a recorded price is always preferred to a catalogue one.
+   *
+   * **The window it exists for.** `ProcurementSystem` is scheduled every tick
+   * and `ConstructionSystem` every tenth, so a just-in-time delivery is
+   * unloaded into the container up to ten ticks before the order that demanded
+   * it is offered to `tryAllocate`. In that window the order is still
+   * `'materials-pending'`, holds no allocation, and has no delivery in flight:
+   * its money is neither in the treasury, nor on the road, nor in the order.
+   * Ruling 20's `'materials-pending'` row promises money there, and without
+   * this the press gave back nothing at all and left the bricks -- #717's
+   * *"returns bricks, never money"*, in the one window that sentence was still
+   * true in.
+   *
+   * ## The two bounds, and why both are needed
+   *
+   * `demandedQuantity` is what the *rest* of the queue still wants, read after
+   * the cancellation, exactly as `refundSurplusDeliveries` reads it: nothing a
+   * remaining order still needs may be sold, or the next scheduled pass buys
+   * it straight back.
+   *
+   * `limit` is the **cancelled order's own requirement** for this item, and it
+   * is what keeps a cancel press from liquidating a stockpile the player chose
+   * to hold. A wall placed against ten hand-bought bricks buys nothing at all
+   * -- `procureForPendingOrders` counts held stock as supply -- so its
+   * cancellation must give back one wall's worth and leave the other eight
+   * where they are. It is the same figure ruling 20 hands the *same gesture
+   * ten ticks later*, when the order has reached `'assigned'` and
+   * `refundAllocatedMaterials` prices the allocation it is holding; the two
+   * adjacent states have to answer alike, because "which window you pressed
+   * in" is not a rule a player could have predicted.
+   *
+   * ## What it will not do
+   *
+   * It never touches reserved stock -- `Container.availableOf` nets
+   * reservations off, so material a carry job has claimed is not surplus -- and
+   * a line the catalogue cannot price is left on the shelf rather than
+   * destroyed, which is `refundAllocatedMaterials`' rule for the same case.
+   *
+   * It must not throw, for the reason every other method on this port must
+   * not: it is reached from a command dispatch and from `undo()`.
+   */
+  refundSurplusStock(itemId: string, demandedQuantity: number, limit: number): number;
 }
