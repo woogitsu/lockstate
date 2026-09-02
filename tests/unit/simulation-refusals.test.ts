@@ -806,6 +806,59 @@ describe('issue #492: a refusal is withdrawn once the simulation accepts the ver
   });
 });
 
+describe('issue #780: a zoning refusal is withdrawn by a different room type succeeding at the identical rectangle', () => {
+  it("a room.cell refused for being open does not survive a room.yard -- which needs no enclosure -- succeeding at the exact same rectangle", () => {
+    // The playtest reproduction (docs/research/2026-09-01-playing-the-rooms-surface.md,
+    // act 3), narrowed to the one case #492's own keying left open: not a
+    // *different* rectangle (the guarding test two blocks above pins that
+    // case exactly as it is), but the *same* rectangle, a *different* room
+    // type. `room.cell` requires `enclosed`; `room.yard` requires only
+    // `outdoors` and never reaches the enclosure check at all
+    // (`RoomZoningService.zone`, `zoning.ts:574`) -- so its success at this
+    // rectangle is a direct, positive answer to "is this rectangle enclosed",
+    // and the old `zoneSupersessionKey(roomCatalogId, x, y, width, height)`
+    // -- which folded the type into every one of `zone.*`'s eight reasons --
+    // could never see it: `zone:room.cell:20:20:8:8` and
+    // `zone:room.yard:20:20:8:8` are two different strings.
+    //
+    // 8x8 rather than #492's own 2x3, because `room.yard` authors an 8x8
+    // minimum (`room-catalog.ts`) and this rectangle has to satisfy both
+    // types' minimums to isolate the enclosure question from the size one.
+    const runtime = createNewSimulationRuntime(0x780);
+    submit(runtime, 0, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 20, y: 20, width: 8, height: 8 }));
+    expect(runtime.refusals.last?.reason).toBe('zone.not-enclosed');
+
+    submit(runtime, 1, packCommand({ type: 'ZoneRoom', roomId: 'room.yard', x: 20, y: 20, width: 8, height: 8 }));
+
+    expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.yard')).toHaveLength(1);
+    expect(
+      runtime.refusals.last,
+      'the yard needed no walls and stands where the cell was refused; the stale "must be enclosed" sentence must not still be the standing refusal',
+    ).toBeUndefined();
+    // The refusal really happened; only the standing record is withdrawn,
+    // exactly as #492's own build-order and admission cases assert.
+    expect(runtime.refusals.count).toBe(1);
+  });
+
+  it('leaves a different rectangle exactly as unenclosed as it was -- #492s own guard, unaffected by the #780 fix', () => {
+    // The companion case: the fix above must not have quietly widened into
+    // the reading the "leaves the line alone... narrow reading, not the wide
+    // one" test two blocks up exists to forbid. Same two types as above, two
+    // genuinely different rectangles.
+    const runtime = createNewSimulationRuntime(0x780);
+    submit(runtime, 0, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 2, y: 2, width: 2, height: 3 }));
+    expect(runtime.refusals.last?.reason).toBe('zone.not-enclosed');
+
+    submit(runtime, 1, packCommand({ type: 'ZoneRoom', roomId: 'room.yard', x: 12, y: 12, width: 8, height: 8 }));
+
+    expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.yard')).toHaveLength(1);
+    expect(
+      runtime.refusals.last?.reason,
+      'a yard succeeding twelve tiles away does not make the first rectangle enclosed',
+    ).toBe('zone.not-enclosed');
+  });
+});
+
 /**
  * Issue #514: eight rapid *Place order* presses at one tile and edge queued
  * eight distinct build orders for a wall only one of which could ever exist.

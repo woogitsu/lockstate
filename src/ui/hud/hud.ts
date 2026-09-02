@@ -1335,13 +1335,28 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    *     the translator returned `'none'`. The line is cleared only if the
    *     simulation is what is on it; a host refusal decided on this thread is
    *     not the session's to withdraw.
-   *   - **The same refusal again.** The counts channel is a snapshot on a
-   *     cadence, so an unchanged refusal is republished beside a changed
-   *     count. Nothing happens -- in particular the line is *not* taken back
-   *     from a host refusal the player has caused since, which is the whole
-   *     reason `RefusalLog` carries an ordinal.
-   *   - **A new one.** It is the most recently decided refusal, so it takes
-   *     the line under the rule the band already had.
+   *   - **The same refusal again, and the line is already showing it.** The
+   *     counts channel is a snapshot on a cadence, so an unchanged refusal is
+   *     republished beside a changed count. Nothing happens -- in particular
+   *     the line is *not* taken back from a *live* host refusal the player
+   *     has caused since, which is the whole reason `RefusalLog` carries an
+   *     ordinal.
+   *   - **A new one, or the same one with nowhere currently showing it.** A
+   *     fresh ordinal always takes the line, exactly as before. **Issue
+   *     #777's fix is the second half of this case**: an unchanged ordinal
+   *     *also* takes the line once `refusalSource` is `undefined` -- the band
+   *     is empty because a host refusal that was occupying it has since
+   *     cleared (`clearRefusal`, on that host action's own later success).
+   *     Before this fix the guard above matched on ordinal alone, so a
+   *     still-standing simulation refusal the band had already shown once
+   *     stayed permanently evicted: nothing ever republishes a *new* ordinal
+   *     for a fact that has not changed, and the old guard read "already
+   *     shown" as "nothing to do" even when the line had since been handed to
+   *     a host refusal and then emptied under it. The alerts list never had
+   *     this bug -- it is rebuilt from `next.refusal` on every publication
+   *     with no memory of what it last painted -- so the two surfaces
+   *     disagreed about the identical fact until this. See
+   *     `docs/adr/0091-what-clears-the-refusal-band.md`.
    */
   const applySimulationRefusal = (notice: HudRefusalNoticeViewModel | undefined): void => {
     if (notice === undefined) {
@@ -1349,7 +1364,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       if (refusalSource === 'simulation') clearRefusalLine();
       return;
     }
-    if (notice.sequence === simulationRefusalSequence) return;
+    if (notice.sequence === simulationRefusalSequence && refusalSource !== undefined) return;
     simulationRefusalSequence = notice.sequence;
     takeRefusalLine('simulation');
     refusalText.textContent = t(notice.labelKey);
