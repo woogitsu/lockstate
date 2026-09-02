@@ -632,10 +632,14 @@ or releases the posted guard. Nothing else moves it.
 
 ### 2d. The answer to the brief's question, plainly
 
-**Across every act in this pass — 2,511 ticks of dedicated sampling and 4,939
-render-delta publications carrying 4,486 guard records — a guard walked zero
-times.** Act 1: an empty prison, four hires, 460 ticks, zero. Act 3: a staffed
-six-resident prison, three completed contraband sweeps, 2,051 ticks, zero.
+**Across every act in this pass — 2,911 ticks of dedicated sampling and 2,700
+render-delta publications carrying 7,999 guard records — a guard walked zero
+times.** Act 1: an empty prison, four hires, 460 ticks, zero. Act 3 first run:
+a staffed six-resident prison, three completed contraband sweeps, 2,051 ticks,
+zero, with four teleports of six tiles in two or three ticks. Act 3 second run:
+a three-resident prison, three more sweeps, 2,067 ticks, zero, and no position
+change at all. Act 3 phase 2: a Release press, 400 ticks, zero (§2g, with its
+own limit stated).
 
 So: **a player cannot see a guard walk in a prison they can build in a starter
 session, at any speed, and it is not because the walk is too fast to see.**
@@ -737,25 +741,38 @@ Neither is claimed as a defect and neither touches either feature.
 **The weakest claim is §2d: "a guard walked zero times, so a player cannot see
 one."** Two things could make it wrong, and one of them is cheap to test.
 
-**The gap that matters.** "Zero walks in 2,511 sampled ticks" is a statement
-about two prisons — an empty one and a six-resident one with three guards —
-each played once, on one random master seed each. The route into a walk that
-§2c identifies (a staffing shortage arising while a spare guard stands away
-from its post) is *reachable*: a prison that grows past eight residents raises
-`resolveOccupancyScaledGuardCount` by one, and a player who dismisses or
-releases the posted guard manufactures a shortage immediately. **This pass did
-not sample either of those**, so what is established is "no walk happens by
-itself in a small prison", not "no walk is possible". Act 3's phase 2 was added
-to press Release and sample 400 ticks after it, precisely because that is the
-one player gesture that should produce one.
+**The gap that matters, and §2g half-closed it and half did not.** "Zero walks
+in 2,911 sampled ticks" is a statement about three prisons — an empty one, a
+six-resident one and a three-resident one, each played once on its own random
+master seed. §2c names the route into a walk: a staffing shortage arising while
+a spare guard stands **away** from its post. Act 3's phase 2 pressed the one
+control that manufactures the shortage — Release, on the ON DUTY row — and got
+no walk. But **that run had no spare standing away from the post**, which its
+own zero position changes prove, so it does not settle the question; it only
+shows that the gesture did not produce one there, and why it could not have.
 
-**What would change my mind, in order of cost:** a run that presses Release on
-the ON DUTY row with a spare standing off-post and finds a non-zero published
-velocity (cheap, and act 3's phase 2 is exactly that); or a prison grown past
-eight residents while a spare is away on a sweep (a longer act, not attempted).
-If either produces a walk, §2d weakens to *"a player who never touches the
-Release control and never passes eight residents sees no guard walk"*, which is
-still a real answer to ADR 0088's open question but a narrower one.
+So what is established is *"no walk happens by itself, and pressing Release
+with every guard already on the post produces none"*. What is **not**
+established is *"no walk is possible"*.
+
+**What would change my mind, in order of cost:**
+
+1. A run that gets a spare guard genuinely off-post first — a sweep whose
+   target is a prisoner standing somewhere other than the arrival tile, which
+   act 3's *first* run did get (its four teleports between (14,12) and (16,16)
+   are exactly that state) — and *then* presses Release. That combination is
+   one act away and this pass did not manage to get both in the same run.
+2. A prison grown past eight residents so `resolveOccupancyScaledGuardCount`
+   raises the requirement while a spare is away. A longer act; not attempted.
+3. Reading the submitted `ReleaseGuard` command off the worker tee, which would
+   at least separate "Release did nothing" from "Release worked and the guard
+   was re-posted inside `DeploymentSystem`'s 10-tick cycle". Cheapest of the
+   three and the one this act should have carried.
+
+If any of them produces a walk, §2d weakens to *"a player who never manages to
+coincide a staffing shortage with a spare guard standing elsewhere sees no
+guard walk"* — still a real answer to ADR 0088's open question, and a narrower
+one.
 
 **The second weakness is one I cannot close from this repository.** Everything
 about *how a walk reads on screen* — movement or glitch — is inferred from the
@@ -835,3 +852,65 @@ says nothing"*, `"Nobody was admitted — the request was refused"` against a
 **Not a defect claim about #788 or #740.** It is here because act 2's first
 version admitted 24 times into a prison with no cell and got `prisoners: 0`,
 and measuring why was cheaper than working around it.
+
+### 2g. The one gesture that should have produced a walk did not — and the run cannot say whether the gesture or the fixture is why
+
+**MEASURED, act 3's second run, phase 2** — `1 passed (11.2m)`, 666s standalone.
+Same fixture, a fresh prison and a fresh master seed: three residents (six
+Admit presses, three landed), three guards, sampled tick **27,745 to 29,812**
+at ×1 across three more complete sweeps, then Release pressed at tick
+**30,097** and 400 ticks sampled after it.
+
+Phase 1 of the second run reproduced phase 1 of the first exactly:
+
+```
+t27792: On Post // Unassigned // Unassigned
+t28224: On Post // On Search  // Unassigned      t28281: back to Unassigned
+t28829: On Post // On Search  // Unassigned      t28890: back to Unassigned
+t29397: On Post // On Search  // Unassigned      t29519: back to Unassigned
+[act3] guard 0/1/2: 950 delta sample(s) each, 0 with a non-zero velocity, 0 not on a tile centre
+[act3] walk episodes: []
+```
+
+— and this time with **no position change at all**, not even a teleport: every
+guard was published on one tile for the whole 2,067 ticks. With three residents
+all housed and all arriving at (16,16), the sweep's targets resolved to the
+tile the searching guard was already standing on.
+
+Then the Release press, with the target verified first:
+
+```
+[act3] under the Release control's centre: [{"tag":"SPAN","cls":"ui-action__label",...},
+  {"tag":"BUTTON","cls":"ui-action","pointerEvents":"auto"},
+  {"tag":"DIV","cls":"hud-staff__held-row",...}, ...]
+[act3] pressed Release at tick 30097; held panel now
+  "ON DUTY / 1 held · 2 free / Guard · Sector Post / Release / ..."
+[act3] phase 2 roster changes over 400 ticks after Release:
+t30268: On Post // Unassigned // Unassigned
+[act3p2] guard 0/1/2: 203 delta sample(s) each, 0 with a non-zero velocity, 0 not on a tile centre
+[act3] phase 2 walk episodes: []
+```
+
+**No walk. And two readings of that, only one of which this run can support.**
+
+- **What is established:** across 400 ticks after a verified press on the
+  Release control, 609 guard records carried no velocity and no off-tile
+  position, and the ON DUTY panel and the roster were byte-identical before and
+  after. To a player, pressing Release did nothing visible.
+- **What is NOT established, and this is the honest limit:** whether Release
+  *can* produce a walk. The precondition §2c identifies — a spare standing
+  **away** from the post — was absent in this run, which its own zero position
+  changes prove: all three guards were on (16,16) throughout. Re-posting a
+  guard that is already on the post is `beginDeployment`'s `isAtPost` fast path,
+  so no route could have been requested whichever guard the cycle picked.
+- **A third possibility this run cannot separate from the other two**: that the
+  released guard was re-posted within `DeploymentSystem`'s 10-tick cycle, which
+  is faster than the roster's ~250 ms heartbeat, so the panel never had a state
+  to show. Distinguishing it needs the submitted `ReleaseGuard` command read off
+  the worker tee, which this act does not log. **Named as unreached.**
+
+So the tally over both runs of act 3 and act 1 together — **4,939+950+203
+render-delta publications, six completed contraband sweeps, one Release press,
+2,911 ticks of dedicated sampling, zero walked steps** — is a strong negative
+result about *ordinary* play and an incomplete one about the one gesture that
+should break it.
