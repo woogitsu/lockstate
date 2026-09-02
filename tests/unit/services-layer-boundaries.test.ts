@@ -40,6 +40,25 @@ describe('trusted services layer boundaries', () => {
     expect(simulationFiles.length).toBeGreaterThan(10);
   });
 
+  /**
+   * A floor tolerates the corpus shrinking; it does not tolerate a whole
+   * subtree going unscanned while the floor is still cleared by the rest.
+   * Measured: with the walk given one line -- skip the `challenges` entry --
+   * `src/services/` drops from 36 files to 31, comfortably above `> 10`
+   * above, while a file inside `challenges/` importing Phaser and touching
+   * `document` sat unscanned and every assertion in this file stayed green
+   * (`docs/research/2026-09-02-the-unit-gates-that-cannot-fail.md`). Naming
+   * every subtree closes exactly that hole.
+   */
+  it('reaches every subtree of src/services/, not just enough files to clear the floor above', () => {
+    for (const subtree of ['challenges', 'entitlements', 'localization', 'telemetry']) {
+      expect(
+        serviceFiles.some((file) => file.relative.startsWith(`services/${subtree}/`)),
+        `src/services/${subtree}/ is empty or was not reached by this scan`,
+      ).toBe(true);
+    }
+  });
+
   it('imports no Phaser and touches no DOM or browser globals', () => {
     for (const { relative, source } of serviceFiles) {
       expect(source, `${relative} must not import Phaser`).not.toMatch(/from ['"]phaser['"]/i);
