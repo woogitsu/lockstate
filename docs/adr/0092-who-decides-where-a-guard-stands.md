@@ -49,12 +49,20 @@ added in this commit says `Proposed`, because this section does.
 
 ---
 
-## The owner ruled on four of these, 2026-09-02 — and rejected one recommendation
+## The owner ruled on five of these, 2026-09-02 — and rejected one recommendation
 
 **This section is the record of what was decided; the decisions below are left
 as written and each affected one is marked in place.** The document stays
-`Proposed` as a whole: four questions of its seven now have answers, three do
-not, and one new one was created by an answer.
+`Proposed` as a whole: **five** questions of its seven now have answers, two do
+not. The fifth ruling answers open question 6, which had itself been *created*
+by the first four — so the count of answered questions and the count of open
+ones both moved on the same day, in opposite directions.
+
+> **The sentence this replaces is kept, because the shape it describes is the
+> finding.** It read: *"four questions of its seven now have answers, three do
+> not, and one new one was created by an answer."* One ruling closing a question
+> that an earlier ruling opened is the loop this document was written to
+> demonstrate, and it closed within a day.
 
 **1. *Dyżur* means shifts, so this document answers half the feature.** The
 owner's original words were *"posterunku/dyżuru"* — post **or duty** — and the
@@ -110,6 +118,43 @@ the order takes the cheap gesture without giving up the field the engine wants.
 a rectangle. Decision 4's own list-of-waypoints storage means a non-rectangular
 route remains *expressible* in the save format and by a future gesture — the
 ruling constrains what the first tool can draw, not what the sector can hold.
+
+**5. Which of two competing sectors owns a guard: THE PLAYER'S SECTOR WINS.**
+Put to the owner as open question 6 — the question this document's own first
+four rulings created, and the one it marked as needing an answer *before* the
+placement command ships. Of the three candidate rules named there, the owner
+took the first: **a sector the player authored outranks the derived default,
+and the derived default becomes a fallback that posts only a guard nobody else
+has claimed.**
+
+**What this rules out, and why that matters more than what it rules in.**
+*Registration order* would have made the derived default permanently senior,
+because it exists from the first tick of a new prison and an authored sector
+cannot predate it — so the first post a player ever places would have been
+ignored, and the game would have read as broken rather than as arbitrated.
+*Higher occupancy pressure* needs no new concept, which was its whole appeal,
+and it is the only one of the three a player cannot predict: the same press
+would post a guard or not depending on a number the interface does not show.
+Against the standing design direction — the game is to be easy and friendly,
+with no hidden mechanics — an unpredictable arbiter is the worst of the three
+even though it is the cheapest.
+
+**The cost this ruling accepts, stated rather than discovered later.** It needs
+a distinction the code does not have today: *authored* versus *derived* sector.
+`deriveDefaultSecuritySector` produces the default and decision 6 leaves it
+unchanged, so the new field is a mark on the definition rather than a change to
+the derivation — and `claimableGuardIds` (`guard-roster.ts`), which today draws
+only from `'unassigned'` guards and arbitrates nothing, becomes the place the
+rule is enforced. **The first prison a player places a post in is still a
+prison with more requirement than roster** — six residents ask for exactly one
+guard — so this ruling does not make every requirement satisfiable; it makes
+the *unsatisfied* one the derived default's rather than the player's, which is
+the half a player can see.
+
+**What is still not decided by this.** Nothing here says what the interface
+tells a player whose derived default went unstaffed because their own post took
+the guard. That sentence is a new promise to a player and is the owner's; it is
+named in the open questions rather than written here.
 
 ## The decision, in one sentence
 
@@ -602,6 +647,21 @@ construction. Decision 6's clamp replaces a throw with a deterministic branch.
    predict. This wants deciding **before** the placement command ships, not
    after, because whichever rule is taken is immediately visible in whether a
    newly placed post gets a guard at all.
+
+   > **ANSWERED 2026-09-02: the player's sector wins.** Recorded as ruling 5
+   > above, with what it rules out and what it costs. **The question is left
+   > standing rather than deleted** because the three candidate rules it
+   > enumerates are the warrant for the one that was taken — a reader who only
+   > sees the answer cannot tell that *registration order* would have made the
+   > derived default permanently senior, or that *occupancy pressure* was
+   > rejected for being unpredictable rather than for being wrong. **It also
+   > asked to be decided before the placement command ships, and it was**, which
+   > is the one thing about it worth not losing.
+   >
+   > **One question it did not answer** and that is now the live one: what the
+   > interface says to a player whose derived default sits unstaffed because
+   > their own post took the only guard. That is a player-facing sentence and
+   > therefore the owner's.
 7. **Does a duty shift belong to the sector or to the guard?** Created by the
    same ruling, and out of scope for this document by the owner's own framing —
    named here so the second ADR does not start from nothing.
