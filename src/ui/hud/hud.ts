@@ -2101,6 +2101,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // until this line; the panel decides whether a shut fold states it, and
     // this line decides nothing.
     staffPanel.setDailyWageBill(next.counts.dailyWageBillMinorUnits);
+    // And the two treasury figures the hire button's enabled state is judged
+    // against, on the terms `buildPanel.setTreasury` above is passed the same
+    // `next.counts` on: the panel decides whether the selected role is
+    // affordable -- through the same `pressAffordabilityVerdict` `src/main.ts`
+    // judges the `hire-staff` press with -- and this line decides nothing.
+    staffPanel.setTreasury(next.counts);
     // And where the arrivals are, on identical terms: pulled, absent when
     // nothing asked, and passed straight through. The projection decided how
     // many are at each stage and which stage is terminal; the panel decides the
