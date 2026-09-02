@@ -746,8 +746,22 @@ says nothing"*, `"Nobody was admitted — the request was refused"` against a
   panel as the control; it is the *refusal* that does not use it.
 - **Nothing reaches the alerts column** — `"No active alerts"` through all
   three — and `.hud__event` is not laid out. The refusal band is the only
-  channel, and §7's third confirmation is that the band then keeps whatever it
-  last said for thousands of ticks.
+  channel, and §7 is where what that band then does is measured in both
+  directions.
+- **The sentence the player never sees exists and is specific.** The page
+  console carried, on each of the three presses:
+  `HUD action failed {"actionId":"admit-prisoner","error":{"name":"Error",
+  "message":"This prison has no room to hold a prisoner, so nobody can be
+  admitted into it."` — thrown at `src/main.ts:2710`. ADR 0011 keeps it off
+  screen deliberately; this pass adds only that it was captured verbatim from a
+  real run rather than read off the source.
+- **And a second refusal nobody has named.** Four of the 24 presses in this
+  act's *second* prison failed with
+  `"The simulation has not reported its command sequence yet; try again in a
+  moment."` (`src/ui/simulation-commands.ts:252`; the browser stack said `:167`, which is the served module offset and not the throw), which is why 24 presses
+  produced 20 prisoners. The player is told the same generic sentence for a
+  transient race as for a structural refusal. Reported as an observation: what
+  the player should be told about it is copy, and copy is the owner's.
 
 **Not a defect claim about #788 or #740.** It is here because act 2's first
 version admitted 24 times into a prison with no cell and got `prisoners: 0`,
