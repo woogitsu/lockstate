@@ -14,13 +14,22 @@ import type { SimulationContext, SystemRegistration } from '../kernel/system';
  * population keeps a population that a session does not have from costing it a
  * branch per tick.
  *
- * ### Why order 200
+ * ### Why order 200 (the prisoner instance), and why a second instance takes
+ * ### a different number rather than sharing it
  *
  * After `NavigationSystem` (150), which is what produces the routes walks are
  * built from, and before `ActionSystem` (250) and the security systems (270,
  * 280), which are the state machines that ask whether a walk has finished. A
  * walk that completes on tick *n* is therefore visible to its owner on tick
  * *n*, not on tick *n + 1*.
+ *
+ * `order` is a constructor parameter, not a fixed `200`, because ADR 0088 adds
+ * a second population's instance (`security.locomotion`) that has to run in
+ * the same window -- after navigation, before the systems that read an
+ * arrival -- but `tests/determinism/kernel-system-order.test.ts`'s own second
+ * case requires every declared order in a real session to be distinct, so the
+ * two instances cannot both default to 200. The guard instance is registered
+ * at 201; see `new-session.ts`.
  *
  * ### Why every tick
  *
@@ -31,12 +40,12 @@ import type { SimulationContext, SystemRegistration } from '../kernel/system';
  * the actors *in transit*, which is why `LocomotionStore` holds only those.
  */
 export class LocomotionSystem implements SystemRegistration {
-  public readonly order = 200;
   public readonly schedule = { intervalTicks: 1, phaseTicks: 0 };
 
   public constructor(
     public readonly id: string,
     private readonly advanceTicks: (ticks: number, tick: number) => void,
+    public readonly order: number = 200,
   ) {}
 
   public update(context: SimulationContext): void {

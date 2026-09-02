@@ -3,7 +3,6 @@ import {
   packRenderActorFields,
   RENDER_ACTOR_POPULATION_GUARD,
   RENDER_ACTOR_POPULATION_PRISONER,
-  RENDER_ACTORS_SUBTILE_UNITS,
   RenderActorsKeyframeWriter,
 } from '../protocol/render-actors-payload';
 
@@ -46,15 +45,24 @@ import {
  * it today -- see `actors-from-snapshot.ts`'s "No liveness join" paragraph,
  * which states the same fact for the snapshot channel this mirrors).
  *
- * ### Why a guard record always carries zero velocity and zero heading
+ * ### A guard record now carries the same sub-tile position and velocity a
+ * ### prisoner's does
  *
- * `GuardRecord.tileX`/`tileY` update only on arrival (`patrol-system.ts`);
- * ADR 0059 gave prisoners a `LocomotionStore` between two tiles and left
- * guards on that convention. There is no sub-tile position or velocity to
- * read for a guard, so writing one would be inventing simulation state this
- * layer does not have -- the same refusal `RenderActorSource.locomotion`'s own
- * comment states for prisoners, applied to a population that genuinely has
- * nothing to read.
+ * **This section used to say the opposite, and is corrected rather than
+ * silently rewritten** (`docs/AGENT_WORKFLOW.md` §4): it read *"`GuardRecord.tileX`/`tileY`
+ * update only on arrival … ADR 0059 gave prisoners a `LocomotionStore`
+ * between two tiles and left guards on that convention. There is no sub-tile
+ * position or velocity to read for a guard, so writing one would be inventing
+ * simulation state this layer does not have."* [ADR 0088](../../../docs/adr/0088-does-a-guard-walk-to-its-post.md)
+ * answers ADR 0059 open question 4 the way ADR 0059 itself answered it for
+ * prisoners: `GuardRoster.locomotion` is a second `LocomotionStore`, and
+ * `RenderGuardSource.locomotion` below reads it exactly as `RenderActorSource.locomotion`
+ * reads the prisoner one. Deployment travel and patrol legs walk; incident
+ * response and contraband search (`response-system.ts`, `search-system.ts`)
+ * still teleport on arrival, deliberately out of this decision's scope, so a
+ * guard on one of those errands still publishes zero velocity -- `read`
+ * answers that honestly for a key `GuardRoster.locomotion` holds no walk for,
+ * the same way it does for a prisoner standing still.
  *
  * ### Two passes, deliberately
  *
@@ -98,11 +106,17 @@ export interface RenderActorSource {
  *
  * No `entityStore`/liveness member, unlike `RenderActorSource`: `allGuardIds`
  * is already the live set (see the module comment's "Which slots are live"
- * section), and no `locomotion` member, because a guard has none to read.
+ * section). `locomotion` is required, not optional, for the reason
+ * `LocomotionStore.advance`'s own `canCross` parameter is required: a default
+ * that quietly drew every guard motionless would restore this file's own
+ * corrected paragraph above by omission, for a caller nobody wrote yet.
  */
 export interface RenderGuardSource {
   allGuardIds(): readonly number[];
   getTile(entityId: number): { readonly x: number; readonly y: number };
+  readonly locomotion: {
+    read(key: number, tileX: number, tileY: number, out: WalkReading): WalkReading;
+  };
 }
 
 /**
@@ -165,19 +179,22 @@ export function encodeRenderActorsKeyframe(
     );
   }
 
-  // Guards: zero velocity and zero heading on every record, because a
-  // `GuardRecord` tile updates only on arrival -- see the module comment's
-  // "Why a guard record always carries zero velocity and zero heading".
+  // Guards: read the same way prisoners are, above -- see the module
+  // comment's "A guard record now carries the same sub-tile position and
+  // velocity a prisoner's does". A guard `read` finds no walk for (standing,
+  // or on an errand that still teleports) answers with zero velocity on a
+  // tile-centre position, exactly like a standing prisoner.
   if (guards !== undefined) {
     for (const guardId of guardIds) {
       const tile = guards.getTile(guardId);
+      guards.locomotion.read(guardId, tile.x, tile.y, reading);
       writer.writeRecord(
         guardId,
-        packRenderActorFields(RENDER_ACTOR_POPULATION_GUARD, 0, 0),
-        tile.x * RENDER_ACTORS_SUBTILE_UNITS,
-        tile.y * RENDER_ACTORS_SUBTILE_UNITS,
-        0,
-        0,
+        packRenderActorFields(RENDER_ACTOR_POPULATION_GUARD, reading.headingX, reading.headingY),
+        reading.subX,
+        reading.subY,
+        Math.round(reading.velocitySubX * ticksPerWallSecond),
+        Math.round(reading.velocitySubY * ticksPerWallSecond),
       );
     }
   }

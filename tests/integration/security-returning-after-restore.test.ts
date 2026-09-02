@@ -9,6 +9,7 @@ import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/si
 import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
 import { constantDeploymentSchedule } from '../../src/simulation/security/deployment-schedule';
 import { DeploymentSystem } from '../../src/simulation/security/deployment-system';
+import { createGuardLocomotionSystem } from '../../src/simulation/security/guard-locomotion';
 import { GuardRoster } from '../../src/simulation/security/guard-roster';
 import { PatrolSystem } from '../../src/simulation/security/patrol-system';
 import { SecuritySectorRegistry, type SecuritySectorDefinition } from '../../src/simulation/security/sector';
@@ -277,6 +278,7 @@ describe('the same reload, in a sector that has a patrol route', () => {
 
     const kernel = new Kernel();
     kernel.registerSystem(navigation);
+    kernel.registerSystem(createGuardLocomotionSystem(guards, navigation, deployment, patrol));
     kernel.registerSystem(deployment);
     kernel.registerSystem(patrol);
     guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
@@ -287,10 +289,26 @@ describe('the same reload, in a sector that has a patrol route', () => {
   it('says Returning until the loop restarts, and Travelling after it', () => {
     const live = patrolSession();
     for (let index = 0; index < 400 && live.guards.getPatrolWaypointIndex(0) === undefined; index += 1) live.kernel.step();
-    for (let index = 0; index < 10; index += 1) live.kernel.step(); // genuinely mid-leg, not just-started
+    /*
+     * Advance until the guard has genuinely left the post tile, not merely
+     * requested the route. **This used to be a blind ten-tick wait for "a live
+     * pathRequestId"; since ADR 0088 gave guards a walk, this short a leg
+     * resolves and the guard is walking it well inside ten ticks, so a fixed
+     * count could land on either state** -- marked in both directions
+     * (`docs/AGENT_WORKFLOW.md` §4), the same correction
+     * `security-snapshot-restore.test.ts` makes for the same reason. Waiting
+     * for the tile itself to move is what the case below actually needs: a
+     * walk's sub-tile progress is never saved (ADR 0059's rule, unchanged for
+     * guards), so a snapshot taken before the first tile boundary is crossed
+     * would restore onto the post tile and never say `Returning` at all.
+     */
+    const postTile = live.definition.postTile;
+    for (let index = 0; index < 30 && live.guards.getTile(0).x === postTile.x && live.guards.getTile(0).y === postTile.y; index += 1) {
+      live.kernel.step();
+    }
 
     expect(live.guards.getDeploymentPhase(0)).toBe('travelling');
-    expect(live.guards.getPathRequestId(0)).toBeDefined();
+    expect(live.guards.getTile(0)).not.toEqual(postTile);
     const donor = live.guards.getSnapshot();
 
     const restored = patrolSession();

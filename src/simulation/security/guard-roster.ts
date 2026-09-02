@@ -1,5 +1,6 @@
 import { EntityStore, type EntityId, type EntityStoreSnapshot } from '../entity/entity-store';
 import type { ActorIdentityMinter } from '../identity/actor-identity';
+import { LocomotionStore } from '../locomotion';
 import type { Xoshiro128StarStar } from '../rng/xoshiro128starstar';
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 
@@ -45,6 +46,19 @@ export interface GuardRecord {
 export class GuardRoster {
   public readonly entityStore: EntityStore;
   private readonly records = new Map<EntityId, GuardRecord>();
+  /**
+   * Where a `'travelling'` guard is between the tile it left and the tile it
+   * is walking to (ADR 0088, answering [ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)
+   * open question 4 and completing the required `canCross` socket [ADR 0077](../../../docs/adr/0077-when-a-route-stops-being-valid.md)
+   * left for exactly this).
+   *
+   * One store per population, not a composite key into the prisoner one --
+   * `LocomotionStore`'s own header explains why -- and it lives here rather
+   * than on `DeploymentSystem` or `PatrolSystem` because both write a guard's
+   * tile and both need to ask whether a walk is still in progress; the roster
+   * is the one place already answering `getTile`/`setTile` for both.
+   */
+  public readonly locomotion = new LocomotionStore();
 
   public constructor(
     capacity: number,
@@ -123,6 +137,13 @@ export class GuardRoster {
    */
   public forget(entityId: EntityId): boolean {
     if (!this.records.delete(entityId)) return false;
+    // Forgets the heading too, not merely the walk -- `locomotion.cancelWalk`
+    // inside `unassign` below already dropped any walk in progress, but a
+    // dismissal can also destroy a guard who is `'on-search'` or `'on-post'`
+    // and has never been `unassign`ed, so this call is not redundant with it.
+    // Matches `releasePrisoner`'s "forgets the walk and the heading before the
+    // index is recycled".
+    this.locomotion.forget(entityId);
     this.entityStore.destroy(entityId);
     return true;
   }
@@ -173,6 +194,13 @@ export class GuardRoster {
     record.pathRequestId = undefined;
     record.patrolWaypointIndex = undefined;
     record.patrolLoopStartedAtTick = undefined;
+    // A walk in progress is abandoned on the tile it had reached, the same
+    // rule an interrupted prisoner errand follows. Unconditional rather than
+    // gated on the phase, for the reason `GuardReleaseService.release`'s own
+    // `pathRequestId` read is unconditional: a walk can be in progress under
+    // any phase that travels, and `cancelWalk` is total, so asking costs one
+    // `Map` miss for a guard that was not walking.
+    this.locomotion.cancelWalk(entityId);
   }
 
   public getPathRequestId(entityId: EntityId): string | undefined {
@@ -240,6 +268,12 @@ export class GuardRoster {
    */
   public loadSnapshot(snapshot: ReturnType<GuardRoster['getSnapshot']>): void {
     this.entityStore.loadSnapshot(snapshot.entityStore);
+    // No save carries a walk (ADR 0059's rule, unchanged for a second
+    // population): a restored `'travelling'` guard's path request named the
+    // previous `NavigationSystem` instance's queue and is dropped below in the
+    // same way, so any in-flight walk is equally unresumable and is cleared
+    // rather than left pointing at waypoints nothing will ever finish.
+    this.locomotion.clear();
     this.records.clear();
     for (const [entityId, record] of snapshot.records) {
       const restored: GuardRecord = { ...record };
