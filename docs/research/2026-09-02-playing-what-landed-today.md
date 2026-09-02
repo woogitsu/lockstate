@@ -671,3 +671,58 @@ reaching guards. And the *teleports* above cross the cell wall freely —
 `SearchSystem` writes `guards.setTile` directly — which is correct per ADR
 0059's deadline reasoning and is worth naming because it is what a player
 would see if guards were drawn moving: a guard appearing inside a sealed cell.
+
+## §7 — Three things confirmed CORRECT, which is a result
+
+1. **`ClassificationEarlyWarningSystem` does what ADR 0090 says it does, played
+   rather than unit-tested.** Act 4 reached tier 2 on eleven prisoners, every
+   `classificationGroup` still `general-population`, `prisonersHighRisk` still
+   0, and no row ever read `High` inside the 3,098 ticks after it. The cap
+   holds through the browser, the worker, the projection and the DOM, not only
+   in the kernel fixture.
+2. **The incident channel works and narrates in order.** The alerts column
+   carried, in the order a player reads it: a fight on Day 10, a riot on Day 11
+   (*"11 prisoners have stopped taking orders"*), and *"The prison is under
+   control again — no incident is still open"* on Day 12 with a `2×` occurrence
+   count. That is #703 ruling 13's shape working on a prison nobody scripted.
+3. **The empty-sector exemption is right, and the panel says the right thing.**
+   Four hires on an empty prison read `0 of 0 / Covered / This prison has the
+   guards it asks for` — #533's rule, and the sentence is true.
+
+And one thing confirmed for the third time, which is not new but is now dated
+again: **`.hud__refusal` keeps a stale refusal indefinitely.** At tick 26,514,
+act 4's band still read *"The object was not placed — something is already
+standing there."* — a refusal produced by a bed press around tick 17,700,
+about **8,800 ticks** and three and a half in-game days earlier, through a
+riot, a fight and eleven reclassifications.
+`docs/research/2026-09-01-playing-the-rooms-surface.md` found it and
+`docs/research/2026-09-02-the-first-five-minutes.md` reproduced it as the
+ordinary shape of play; this is a third sighting with a tick distance attached.
+
+## §8 — Two measurements this pass could not explain, reported as measurements
+
+**A measurement is not a diagnosis** (`docs/AGENT_WORKFLOW.md` §3), so these
+are stated with what would settle them and no cause attached.
+
+1. **Six bed orders produced an `accommodationCapacity` of five; eight orders
+   produced four.** Act 3 pressed six beds along row 12 of the cell, all six
+   produced a `PlaceObject` command, and the counts read
+   `roomCapacity=5 accommodationCapacity=5`. Act 4 pressed eight (six along
+   row 12, two along row 13), one produced no command at all (below), and the
+   counts read `4`. **A partial reading, offered as such:** `bed-wooden` is a
+   `1×2` buildable (`src/simulation/construction/definition.ts:283` states
+   *"`bed-wooden` is `1x2`, width 1, height 2"*), so a bed anchored on row 12
+   occupies rows 12 and 13 and act 4's two row-13 presses were refused —
+   which act 4's own refusal band confirms, reading *"something is already
+   standing there"*. That accounts for act 4's two, and **not** for the one
+   bed missing in each act along row 12 alone. **What would settle it:** the
+   refusal log read per press rather than at the end, which this pass did not
+   do.
+2. **One bed press on an in-room tile produced no command, with the canvas
+   under it.** Verbatim: `bed at (19,12) produced NO command; under it:
+   [{"tag":"CANVAS","cls":"","pointerEvents":"auto"}, ...]`. So this is not
+   §4's panel: the press reached the world canvas and the host submitted
+   nothing. **What would settle it:** the Build panel's arm label and pending
+   material stock read immediately before that press. Not measured.
+
+Neither is claimed as a defect and neither touches either feature.
