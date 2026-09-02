@@ -334,12 +334,76 @@ issue names.**
   the guard cross the prison — the "world looks alive" half of issue #740
   that a snap could never deliver, regardless of what the labels said.
 
+## Amendment, 2026-09-02: walking is not rarely seen, it is never seen
+
+**Unsigned as to its remedy; the measurement is not in question.** The owner
+has ruled that this amendment be recorded and that walking be made reachable;
+the design of *how* is being researched separately and is not decided here.
+
+**What the Status paragraph above told the owner, and where it fell short.** It
+records that they were told a newly hired guard spawns *on* its post tile, so
+`Travelling` would stay **rarely seen**. A playtest of this very change, run
+against `main` after it merged, measured something stronger:
+
+- **Zero walks.** Three prisons, six completed contraband sweeps, one press of
+  the only control that should break the pattern, **4,978 ticks** of sampling
+  and **2,700 render-delta publications carrying 7,945 guard records**: not one
+  record with a non-zero velocity or an off-tile position. `Travelling` never
+  reached the roster at all. `On Search` did, seven times, and every leg was a
+  **teleport of six tiles in two to three ticks** against the one-tile-per-two-
+  ticks the walk speed permits — which is the out-of-scope path behaving as
+  this document says it should.
+
+**Both converted errands are structurally unreachable in a starter session, and
+each was verified against the code rather than inferred from the samples.**
+
+1. **Deployment travel has no distance.** `NEW_PRISON_ORIGIN_TILE = { x: 16, y:
+   16 }` (`src/main.ts`) is where every `HireStaff` is sent, and
+   `deriveDefaultSecuritySectorPostTile` (`src/simulation/security/default-sector.ts`)
+   computes `chunk * tileChunkSize + floor(tileChunkSize / 2)`, which for chunk
+   (0,0) is **(16,16)**. The same tile. So `beginDeployment` always takes its
+   `isAtPost` branch — not usually, always.
+2. **A patrol leg has no route.** `patrolRoute` is *read* in four places —
+   `src/persistence/save-schema.ts` (as optional),
+   `src/simulation/presentation/security-projection.ts`,
+   `src/simulation/security/deployment-system.ts` and
+   `src/simulation/security/patrol-system.ts` — and **written nowhere under
+   `src/`**. `deriveDefaultSecuritySector` authors none, by decision.
+
+**So "rarely seen" and "never seen" differ in kind, not degree, and the
+difference matters to what was signed.** ADR 0036 decision 2's coincidence
+explains why a *hire* has no distance; it does not explain the patrol half, and
+the Status paragraph did not separate the two. A reader of this document would
+have concluded that walking happens and is merely uncommon. It does not happen.
+The signature is not withdrawn and nothing about the decision is reopened —
+what the decision *bought* is exactly what it says, a vocabulary that no longer
+names something impossible, and `Travelling` is now a state the simulation can
+enter. What was overstated is only how often the player would meet it.
+
+**This also gives open question 3 below its first measured input**, which is
+why it is added rather than left implicit: this ADR deliberately left *"how
+often a player should see a guard walking"* undecided, and the answer as built
+is "never", which nobody chose.
+
+**Why this is recorded rather than quietly fixed.** The Status paragraph is the
+record of what the owner was shown when they signed. Editing it to match the
+measurement would destroy that record and make the document look as though it
+had always been accurate. `docs/AGENT_WORKFLOW.md` §4's rule — mark both
+directions — applies with more force to a signed paragraph than to any comment.
+
 ## Open questions
 
 1. **Should incident response and contraband search walk too?** Both are
    named above as out of scope, with the same reasoning ADR 0059 gave. Taking
    this needs a severity/deadline analysis this ADR does not perform.
-2. **Is 128 units/tick still the right speed once a second population is
+2. **How often should a player see a guard walking, and what makes it
+   reachable?** Left undecided by this document and now **measured at zero**
+   (see the amendment above). The owner has ruled that it be made reachable;
+   the two candidate levers are the ones the amendment identifies — a hire that
+   arrives somewhere other than its post tile, and a sector that has a patrol
+   route to walk. Which of those, and whether the player authors either, is
+   under research and is not decided here.
+3. **Is 128 units/tick still the right speed once a second population is
    drawn walking it?** ADR 0059's speed table was built against prisoner
    starvation, a pressure guards do not have. Nothing here suggests a guard
    should walk at a different speed than a prisoner — an inconsistent pace
