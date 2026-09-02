@@ -765,7 +765,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
      * assistive-tech semantics with it.
      *
      * **This is the mechanical half only.** What the button *says* while
-     * disabled is untouched -- still `hud.security.staff.hire`, the same
+     * disabled is untouched -- still `hud.security.hire`, the same
      * sentence a press could have succeeded with a moment ago. Naming what
      * stops it and what would lift it is new player-facing copy, which
      * `AGENTS.md`'s fourth exclusion reserves to the owner, and it is ADR
