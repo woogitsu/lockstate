@@ -5,7 +5,11 @@ import { buildCellBlockFixture } from '../helpers/navigation-fixture';
 import { SecuritySectorRegistry } from '../../src/simulation/security/sector';
 import { GuardRoster } from '../../src/simulation/security/guard-roster';
 import { DeploymentSystem } from '../../src/simulation/security/deployment-system';
+import { createGuardLocomotionSystem, type PatrolArrivalSink } from '../../src/simulation/security/guard-locomotion';
 import { constantDeploymentSchedule, type DeploymentSchedule } from '../../src/simulation/security/deployment-schedule';
+
+/** No sector here defines a `patrolRoute`, so a walk never belongs to a patrol leg -- this sink is never called and exists only to satisfy `createGuardLocomotionSystem`'s signature. */
+const NO_PATROL: PatrolArrivalSink = { onArrivedAtLegTarget: () => {} };
 
 /**
  * `cell-door-1` (fixture-authored: state 'open', requiredSecurityClearance
@@ -34,6 +38,7 @@ describe('DeploymentSystem: deterministic assignment and no-teleport travel to p
 
     const kernel = new Kernel();
     kernel.registerSystem(navigation);
+    kernel.registerSystem(createGuardLocomotionSystem(guards, navigation, deployment, NO_PATROL));
     kernel.registerSystem(deployment);
 
     const g1 = guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
@@ -52,6 +57,69 @@ describe('DeploymentSystem: deterministic assignment and no-teleport travel to p
     expect(coverage).toEqual([{ sectorId: 'security-office', required: 2, assigned: 2, shortage: 0 }]);
   });
 
+  /**
+   * Issue #740: a deployed guard used to be snapped onto its post the moment
+   * its route resolved, so `'travelling'` lasted about as long as a path
+   * request and nothing on the render channel ever moved. This proves the
+   * opposite by watching *ticks*, not by asserting the final state alone --
+   * the same shape `tests/integration/wall-built-mid-walk.test.ts` uses for
+   * prisoners.
+   *
+   * **Mutation-tested.** Reverting `DeploymentSystem.continueDeploymentTravel`'s
+   * `beginWalk` branch to the old `this.guards.setTile(guardId, postTile);
+   * this.guards.setDeploymentPhase(guardId, 'on-post');` -- keeping every other
+   * ADR 0088 change in place -- turns this red: `arrivalTick` becomes the same
+   * tick the route resolved, `tilesCrossed.length` becomes `1`, and every
+   * `isWalking` sample after the first is `false`. Confirmed by hand; see the
+   * commit message for both outputs.
+   */
+  it('a deployed guard walks tile-by-tile to its post rather than being snapped there (#740)', () => {
+    const { cellBlock, navigation, sectors, guards } = buildScenario();
+    const schedules: DeploymentSchedule[] = [constantDeploymentSchedule('security-office', 1)];
+    const deployment = new DeploymentSystem(sectors, guards, navigation, schedules);
+
+    const kernel = new Kernel();
+    kernel.registerSystem(navigation);
+    kernel.registerSystem(createGuardLocomotionSystem(guards, navigation, deployment, NO_PATROL));
+    kernel.registerSystem(deployment);
+
+    const origin = cellBlock.canteenTiles[0]!;
+    const postTile = cellBlock.cellTiles[1]!;
+    const g1 = guards.hire('staff-role.guard', origin);
+    expect(guards.getTile(g1)).toEqual(origin); // not already standing on the post -- there is real distance to cover
+
+    const tilesCrossed: { readonly x: number; readonly y: number }[] = [origin];
+    let sawWalkingBeforeArrival = false;
+    let arrivalTick: number | undefined;
+    for (let tick = 0; tick < 400 && arrivalTick === undefined; tick += 1) {
+      kernel.step();
+      if (guards.locomotion.isWalking(g1)) sawWalkingBeforeArrival = true;
+      const tile = guards.getTile(g1);
+      const last = tilesCrossed[tilesCrossed.length - 1]!;
+      if (tile.x !== last.x || tile.y !== last.y) tilesCrossed.push({ x: tile.x, y: tile.y });
+      if (guards.getDeploymentPhase(g1) === 'on-post') arrivalTick = tick + 1;
+    }
+
+    expect(arrivalTick).toBeDefined();
+    // The claim in one number: a snap crosses the whole distance in the one
+    // tick the route resolves, so `tilesCrossed` would hold only the origin
+    // and the post. A walk holds every tile in between.
+    expect(tilesCrossed.length).toBeGreaterThan(2);
+    expect(tilesCrossed[tilesCrossed.length - 1]).toEqual(postTile);
+    // A guard that is snapped is never seen `isWalking` -- `beginWalk` returns
+    // `true` (arrived immediately) the very statement it is called in, so
+    // `LocomotionStore` never records a walk for this route at all.
+    expect(sawWalkingBeforeArrival).toBe(true);
+    // Consecutive tiles in the walk are one tile apart along one axis --
+    // `LocomotionStore.beginWalk`'s own invariant, checked here from the
+    // outside rather than trusted.
+    for (let index = 1; index < tilesCrossed.length; index += 1) {
+      const a = tilesCrossed[index - 1]!;
+      const b = tilesCrossed[index]!;
+      expect(Math.abs(a.x - b.x) + Math.abs(a.y - b.y)).toBe(1);
+    }
+  });
+
   it('reports a shortage, without fabricating a guard, when fewer are hired than required', () => {
     const { cellBlock, navigation, sectors, guards } = buildScenario();
     const schedules: DeploymentSchedule[] = [constantDeploymentSchedule('security-office', 3)];
@@ -59,6 +127,7 @@ describe('DeploymentSystem: deterministic assignment and no-teleport travel to p
 
     const kernel = new Kernel();
     kernel.registerSystem(navigation);
+    kernel.registerSystem(createGuardLocomotionSystem(guards, navigation, deployment, NO_PATROL));
     kernel.registerSystem(deployment);
 
     guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
@@ -92,6 +161,7 @@ describe('DeploymentSystem: deterministic assignment and no-teleport travel to p
 
     const kernel = new Kernel();
     kernel.registerSystem(navigation);
+    kernel.registerSystem(createGuardLocomotionSystem(guards, navigation, deployment, NO_PATROL));
     kernel.registerSystem(deployment);
 
     const g1 = guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);

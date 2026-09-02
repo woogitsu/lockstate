@@ -319,10 +319,21 @@ it is on.
   at a fixed post and the teleport-between-waypoints case that worried ADR 0059
   is the rare one, not the common one, and it degrades to exactly the
   motionless-snapshot look a prisoner had before ADR 0059 -- which shipped and
-  was fine. **What has not changed**: a guard record still carries zero
-  velocity and zero heading, always, because `GuardRecord.tileX`/`tileY` still
-  update only on arrival -- see "How a prisoner is drawn while walking" below
-  for what that costs a guard next to a walking prisoner.
+  was fine. **This paragraph then said "what has not changed" is that a guard
+  record always carries zero velocity and zero heading, and that is now false
+  for deployment travel and a patrol leg.** [ADR 0088](./adr/0088-does-a-guard-walk-to-its-post.md)
+  answers ADR 0059 open question 4 for exactly those two errands: `GuardRoster`
+  gained its own `LocomotionStore`, and `render-actors-keyframe.ts` reads it
+  the same way it already reads a prisoner's. Issue #740 measured the reason --
+  a guard's `'travelling'`/`'returning'` phase lasted about as long as a path
+  request and 95 roster samples across two acts never once caught it. **What
+  is still true, marked rather than silently dropped**: a guard on incident
+  response or contraband search duty (`response-system.ts`, `search-system.ts`)
+  is unconverted and still teleports on arrival, for the same balance/deadline
+  reason ADR 0059 gave for leaving every guard errand inert in the first
+  place -- see "How a prisoner is drawn while walking" below for what that
+  now means for one guard next to another, not only for a guard next to a
+  walking prisoner.
 
   > **Prisoner movement was in this list until ADR 0059, and the paragraph that
   > held it read:** *"The render delta channel is not what is missing for
@@ -359,11 +370,21 @@ it is on.
   paragraph used to say they were reachable "without waiting for anything" and
   named ADR 0040 slice 2 as the step that would do it. That step has landed
   (see "Guards, until #414's surviving half" above): a guard is drawn at
-  `GUARD_ACTOR_ASSET_ID`, at whatever tile `GuardRecord` last recorded, with
-  `deltaX`/`deltaY` always `0` -- there is no sub-tile position or velocity to
-  publish for a population that only ever teleports on arrival, so a guard
-  always renders in its idle clip, never its walk clip, unlike a prisoner
-  after ADR 0059.
+  `GUARD_ACTOR_ASSET_ID`.
+
+  **This paragraph then said `deltaX`/`deltaY` are always `0` because a guard
+  "only ever teleports on arrival", and that is no longer true of every
+  guard.** [ADR 0088](./adr/0088-does-a-guard-walk-to-its-post.md) gave a
+  guard on deployment travel or a patrol leg the same `LocomotionStore` a
+  prisoner has had since ADR 0059, so `render-actors-keyframe.ts` reads a real
+  sub-tile position, a real velocity and a real heading for those two errands
+  -- the guard walks its walk clip exactly as a prisoner does, at the same
+  speed, extrapolated the same way between publications. **What is unchanged,
+  marked rather than dropped**: a guard on incident response or contraband
+  search still has `GuardRecord.tileX`/`tileY` update only on arrival, so
+  *that* guard still renders motionless between two tiles and then snaps --
+  the same population, two different errands, two different answers, and a
+  reader has to ask which one a given guard is on rather than assume either.
 
 - **Environment art, for everything except floors, walls and doors.** Three of
   the 23 sheets under `public/game-content/source-art/` are now read

@@ -28,7 +28,6 @@ import {
   packRenderActorFields,
   RENDER_ACTOR_POPULATION_GUARD,
   RENDER_ACTOR_POPULATION_PRISONER,
-  RENDER_ACTORS_SUBTILE_UNITS,
 } from '../../src/simulation/protocol/render-actors-payload';
 import { readRenderActorsPayload, type ReadRenderActorRecord } from '../helpers/render-actors-reader';
 
@@ -143,18 +142,19 @@ function scenarioActors(runtime: SimulationRuntime): readonly ReadRenderActorRec
     });
   }
   // Guards, after every prisoner: `encodeRenderActorsKeyframe` writes the
-  // prisoner pass then the guard pass (ADR 0040 slice 2), and a guard's tile
-  // updates only on arrival, so it is read straight off the roster rather
-  // than through `LocomotionStore`.
+  // prisoner pass then the guard pass (ADR 0040 slice 2). Since ADR 0088 a
+  // guard has its own `LocomotionStore` on `GuardRoster.locomotion`, read the
+  // same way the prisoner one is above.
   for (const guardId of runtime.securityGuards.allGuardIds()) {
     const tile = runtime.securityGuards.getTile(guardId);
+    runtime.securityGuards.locomotion.read(guardId, tile.x, tile.y, reading);
     actors.push({
       entityId: guardId,
-      packedFields: packRenderActorFields(RENDER_ACTOR_POPULATION_GUARD, 0, 0),
-      subX: tile.x * RENDER_ACTORS_SUBTILE_UNITS,
-      subY: tile.y * RENDER_ACTORS_SUBTILE_UNITS,
-      velocitySubX: 0,
-      velocitySubY: 0,
+      packedFields: packRenderActorFields(RENDER_ACTOR_POPULATION_GUARD, reading.headingX, reading.headingY),
+      subX: reading.subX,
+      subY: reading.subY,
+      velocitySubX: reading.velocitySubX * TICKS_PER_WALL_SECOND,
+      velocitySubY: reading.velocitySubY * TICKS_PER_WALL_SECOND,
     });
   }
   return actors;
