@@ -23,10 +23,15 @@ comes back as the derivation rather than the payload is a finding. The inverse
 was also checked: is anything the runtime holds absent from the schema
 entirely, so it is lost on every reload regardless of what a save contains.
 
-All measurement ran through a scratch vitest file
-(`tests/determinism/zz-scratch-audit.test.ts`), created, run, and **deleted
-before this note was written** — nothing was left under `tests/`. Restored by
-hand: `git status --porcelain` in the worktree is empty.
+All measurement ran through a scratch vitest file under `tests/determinism/`
+(named `zz-scratch-audit.test.ts`, so it sorted last), created, run, and
+**deleted before this note was written** — nothing was left under `tests/`.
+Restored by hand: `git status --porcelain` in the worktree is empty. The
+filename is written bare rather than as a rooted path on purpose:
+`tests/foundation/documentation-links-contract.test.ts` checks every rooted
+path a document cites, and this one is absent by design, so citing it in full
+would be asking that gate to excuse a scratch harness that was never the
+finding.
 
 ## What was enumerated
 
