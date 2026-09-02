@@ -431,6 +431,15 @@ export interface ConstructionProcurementSink {
    * and a price question (ADR 0017 decision 5 reserves prices with the rest of
    * #29), so it is named and not taken."*
    *
+   * **The owner took it on 2026-09-02, and took the broad reading with this
+   * measurement in front of them.** They were offered three readings -- a
+   * narrow sell-back bounded by what *this order's demand* actually bought, the
+   * broad one bounded by the cancelled order's own requirement, and leaving the
+   * asymmetry standing -- and chose the broad one knowing it is a general
+   * material-to-money channel. So the paragraph below is not a warning about
+   * something nobody weighed; it is the priced consequence of a signed
+   * decision, and ADR 0076 records the same thing at the decision's own level.
+   *
    * This method takes it. What it does **not** take is the price question --
    * it invents no magnitude and uses the catalogue figure
    * `refundAllocatedMaterials` already uses, and ADR 0081's own principle is

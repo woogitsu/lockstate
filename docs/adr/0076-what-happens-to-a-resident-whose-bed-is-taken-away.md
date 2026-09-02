@@ -711,11 +711,53 @@ and not designed around. Whichever of the three the owner takes, the answer also
 decides whether `Undo` of a `completed` order keeps returning materials or joins
 the money rule.
 
-**Not decided either: whether surplus stock can be sold back.** Case 3 above —
-the delivery landed, the order had not allocated, the player gets bricks rather
-than money — closes only if a prison can sell material back to the catalogue.
-That is a new economic surface and a price question (ADR 0017 decision 5
-reserves prices with the rest of #29), so it is named and not taken.
+**Decided by the repository owner, 2026-09-02: surplus stock can be sold back,
+and the broad reading was taken with its cost in front of them.** The paragraph
+that reserved the question is kept below rather than overwritten, because what
+it reserved and *why* is the record of how the decision was reached.
+
+> **Superseded 2026-09-02 by the owner's ruling; kept because it records why an
+> agent could not take this.** *"Not decided either: whether surplus stock can
+> be sold back. Case 3 above — the delivery landed, the order had not
+> allocated, the player gets bricks rather than money — closes only if a prison
+> can sell material back to the catalogue. That is a new economic surface and a
+> price question (ADR 0017 decision 5 reserves prices with the rest of #29), so
+> it is named and not taken."*
+
+**What was signed, and what it costs, because the owner was shown the cost
+before choosing.** They were offered three readings — a narrow sell-back
+bounded by what *this order's demand* actually bought, the broad reading
+bounded by the cancelled order's own requirement, and leaving the asymmetry
+standing — together with the measurement that prices the broad one: **place a
+wall against a shelf you already hold, cancel it, and 2 bricks become 80 minor
+units; two commands, no clock wait, no crew, repeatable until the shelf is
+empty.** They took **the broad reading**.
+
+So this is a general material→money channel by construction, not by accident,
+and two consequences follow that are recorded here rather than discovered
+later:
+
+1. **It dissolves ADR 0075's locked position for any prison holding bricks.**
+   That position — a prison that cannot afford its first bed and cannot spend
+   its way out — was the subject of ADR 0075, and a player holding material now
+   has a route out of it. That is the point of the ruling rather than a side
+   effect of it, but ADR 0075's own statement of the trap is now conditional on
+   the prison holding nothing.
+2. **The narrow reading was rejected for a reason worth keeping.** It would
+   have needed per-order purchase provenance — a persisted field — against
+   ruling 20's stated property that no save format moves. The broad reading
+   needs none, and that asymmetry in cost is part of why it was chosen.
+
+**Case 3 is closed by this ruling.** The window it describes still exists — a
+delivery lands up to ten scheduled ticks before `tryAllocate` runs, which is
+`ProcurementSystem`'s `intervalTicks: 1` against `ConstructionSystem`'s `10` —
+but a cancellation inside it no longer strands the player, because the stock it
+leaves can be turned back into money.
+
+**What is still not decided is the price**, and it stays where ADR 0017
+decision 5 put it: the sell-back settles at the catalogue price the stock was
+bought at, and whether a prison should lose a margin on the round trip is a
+balance question with the rest of #29. The mechanism takes no position on it.
 
 ### What this amendment costs, stated rather than argued away
 
