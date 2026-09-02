@@ -193,15 +193,48 @@
   --moss-300: #86b596;
   --moss-alpha-14: rgba(134, 181, 150, 0.14);
   /* A rung *below* `--amber-300` rather than past it: the same warm family at
-     a third of its saturation, for the state that has to read as quieter than
-     the tone that already means "urgent" everywhere it appears -- the owner's
-     ruling of 2026-09-02 on issue #788, the risk roster's third tone. It is
-     the mirror image of `--crimson-300` below, which was added by the same
-     shape of ruling in the other direction, and the reason both are raw ramp
-     entries rather than alpha variants of amber is that a re-skin has to be
-     able to move them independently. */
-  --straw-300: #bba881;
-  --straw-alpha-14: rgba(187, 168, 129, 0.14);
+     roughly two fifths of its saturation, for the state that has to read as
+     quieter than the tone that already means "urgent" everywhere it appears --
+     the owner's ruling of 2026-09-02 on issue #788, the risk roster's third
+     tone. It is the mirror image of `--crimson-300` below, which was added by
+     the same shape of ruling in the other direction, and the reason both are
+     raw ramp entries rather than alpha variants of amber is that a re-skin has
+     to be able to move them independently.
+     **Darkened by the owner's second ruling of 2026-09-02, on the same issue.**
+     A playtest measured `--badge-caution-fg` (this token, through
+     `--status-caution`) against `--badge-neutral-fg` (`--text-subtle`,
+     `--paper-400`, relative luminance 0.434) at **1.07:1** -- a "Medium" and
+     a "Minimal" risk badge painted the same muted tan-grey, failing WCAG's
+     3:1 non-text-contrast floor and the whole reason `'caution'` exists.
+     Hue and saturation are unchanged (40.3 -> 39.6 degrees, 29.9 -> 30.7 %);
+     only lightness moved, from 62.0 % to 30.0 %, chosen as the smallest drop
+     that
+     clears 3:1 against `--paper-400` (3.38:1) *and* keeps a working margin on
+     both neighbours the ladder actually asserts: 3.17:1 against `--status-
+     success` and 3.89:1 against `--status-warning`, `tests/unit/
+     ui-design-tokens.test.ts` computes all three from this file rather than
+     pinning them, so none can rot back under 3:1 unnoticed. It could not be
+     much smaller: every hue/saturation combination inside the palette's
+     established 45-70 % lightness band (the band every other status hue in
+     this ramp sits in) tops out around 2.35:1 against `--paper-400`, because
+     `--paper-400` is itself lighter (relative luminance 0.434) than nearly
+     everything on that band -- 3:1 is reachable only by leaving it. Reported,
+     not hidden: leaving the band means `--badge-caution-fg` no longer matches
+     the other six badge foregrounds' text-vs-own-background contrast on
+     `--surface-raised` (5.73:1 before this change, 2.13:1 after, computed the
+     same way as issue #768's `--status-critical`, which was already below
+     4.5:1 -- 2.94:1 on this surface -- before either ruling touched this
+     file). Moving the badge chip's own contrast back over 4.5:1 would need a
+     background token decoupled from this darkened foreground (a solid or
+     near-opaque chip, unlike every other badge's translucent tint) or a
+     lighter `--paper-400` that every other consumer of `--text-subtle` would
+     also repaint under -- both are a second decision this ruling did not
+     make, so `--straw-alpha-14` below still mirrors this token's RGB at 14 %
+     exactly as its five siblings mirror theirs, and the chip stays visually
+     consistent with the rest of the badge family rather than becoming the one
+     exception. */
+  --straw-300: #645435;
+  --straw-alpha-14: rgba(100, 84, 53, 0.14);
   --amber-300: #e8b463;
   --amber-alpha-14: rgba(232, 180, 99, 0.14);
   --clay-300: #d4785c;
