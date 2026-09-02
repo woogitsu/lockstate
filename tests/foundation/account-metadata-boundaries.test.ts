@@ -34,7 +34,11 @@ function sqlConstant(sql: string, functionName: string): number | undefined {
 
 describe('the save-slot policy the client shows is the one the database enforces (#34, ADR 0013)', () => {
   /**
-   * `src/services/entitlements/products.ts:16` says of `BASE_SAVE_SLOTS`:
+   * `src/services/entitlements/products.ts:14` says of `BASE_SAVE_SLOTS`
+   * (this read `:16` from the day it was written and the file has not moved
+   * since -- the quoted sentence opens on line 14 and the declaration is on
+   * line 24; corrected 2026-09-02, and quote rather than count if the file
+   * grows):
    * *"MIRRORED IN SQL, and the SQL is the authoritative copy… Changing either
    * value here without changing it there makes the client's arithmetic
    * disagree with the server's, which surfaces as a slot that looks available

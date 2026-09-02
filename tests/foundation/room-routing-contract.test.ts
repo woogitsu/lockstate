@@ -22,6 +22,16 @@ import { SOLITARY_SANCTION_ROOM_CATALOG_ID } from '../../src/simulation/prisoner
  * `room.holding-cell` graduated by being named in a zoning test. All six read
  * as consumed there. Not one of them is somewhere a prisoner can go.
  *
+ * **`room.delivery-bay` left that list at `71617799` (2026-08-30), and the
+ * sentence above is corrected rather than replaced -- 2026-09-02.** It gained
+ * a test consumer at that commit and graduated out of *both* of that file's
+ * lists, so `room.storage-room` alone sits in `PROTECTED_BY_DECISION` and
+ * `room.delivery-bay` reads as consumed there for the same reason the other
+ * four do. **The six-room count and every word about the gap are unaffected:**
+ * all six still read as consumed one directory over and none of them is
+ * anywhere a prisoner can go, which is the whole claim. Only the route by
+ * which one of the six got there changed.
+ *
  * So this file asks the other question, and asks it of the mechanisms rather
  * than of the text: **for each room type in `src/content/room-catalog.ts`, is
  * there any authored route by which a prisoner ends up in it?** There are
