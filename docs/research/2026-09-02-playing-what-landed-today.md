@@ -113,8 +113,9 @@ container.
 **Can a player see a guard walk? No — not rarely, not briefly: not at all in
 any prison this pass could build.** Across three prisons, six completed
 contraband sweeps, one press of the only control that should break it, and
-2,911 ticks of dedicated sampling on the render channel the renderer draws
-from, **not one guard record carried a velocity or an off-tile position.** The
+4,978 ticks of dedicated sampling on the render channel the renderer draws
+from, **not one of 7,945 guard records carried a velocity or an off-tile
+position.** The
 reason is not that the walk is too fast to see. Of the three routes into a
 walk, two are structurally unreachable in a session a player can start — a
 hire already stands on the post tile it is deployed to (§1), and no sector has
@@ -372,9 +373,10 @@ or releases the posted guard. Nothing else moves it.
 
 ### 2d. The answer to the brief's question, plainly
 
-**Across every act in this pass — 2,911 ticks of dedicated sampling and 2,700
-render-delta publications carrying 7,999 guard records — a guard walked zero
-times.** Act 1: an empty prison, four hires, 460 ticks, zero. Act 3 first run:
+**Across every act in this pass — 4,978 ticks of dedicated sampling and 2,700
+render-delta publications carrying 7,945 guard records — a guard walked zero
+times.** The arithmetic, so it can be checked: 460 + 2,051 + 2,067 + 400 ticks;
+565 + 982 + 950 + 203 publications; 1,540 + 2,946 + 2,850 + 609 records. Act 1: an empty prison, four hires, 460 ticks, zero. Act 3 first run:
 a staffed six-resident prison, three completed contraband sweeps, 2,051 ticks,
 zero, with four teleports of six tiles in two or three ticks. Act 3 second run:
 a three-resident prison, three more sweeps, 2,067 ticks, zero, and no position
@@ -472,9 +474,9 @@ t30268: On Post // Unassigned // Unassigned
   to show. Distinguishing it needs the submitted `ReleaseGuard` command read off
   the worker tee, which this act does not log. **Named as unreached.**
 
-So the tally over both runs of act 3 and act 1 together — **4,939+950+203
+So the tally over both runs of act 3 and act 1 together — **2,700
 render-delta publications, six completed contraband sweeps, one Release press,
-2,911 ticks of dedicated sampling, zero walked steps** — is a strong negative
+4,978 ticks of dedicated sampling, zero walked steps** — is a strong negative
 result about *ordinary* play and an incomplete one about the one gesture that
 should break it.
 
@@ -898,7 +900,7 @@ Neither is claimed as a defect and neither touches either feature.
 one."** Two things could make it wrong, and one of them is cheap to test.
 
 **The gap that matters, and §2f half-closed it and half did not.** "Zero walks
-in 2,911 sampled ticks" is a statement about three prisons — an empty one, a
+in 4,978 sampled ticks" is a statement about three prisons — an empty one, a
 six-resident one and a three-resident one, each played once on its own random
 master seed. §2c names the route into a walk: a staffing shortage arising while
 a spare guard stands **away** from its post. Act 3's phase 2 pressed the one
