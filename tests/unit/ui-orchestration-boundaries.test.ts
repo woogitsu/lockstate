@@ -584,7 +584,14 @@ describe('UI orchestration boundaries', () => {
     for (const subtree of GATED_ELSEWHERE) {
       expect(allUiFiles.filter((entry) => subtreeOf(entry) === subtree).length, `src/ui/${subtree}/ is empty or gone`).toBeGreaterThan(4);
     }
-    expect(allUiFiles.length).toBe(orchestrationFiles.length + allUiFiles.filter((entry) => subtreeOf(entry) !== undefined).length);
+    // Not `allUiFiles.length === orchestrationFiles.length + (the rest)`: that
+    // partitions `allUiFiles` by the same predicate on both sides and is a
+    // tautology for any array whatsoever, including an empty one -- proved
+    // and reported in `docs/research/2026-09-02-the-unit-gates-that-cannot-fail.md`.
+    // The real floor belongs on the corpus itself, read independently of how
+    // it gets divided: 66 files today, so this tolerates ordinary change
+    // while still catching the walk collapsing.
+    expect(allUiFiles.length, 'src/ui/ scanned far fewer files than expected; the walk is broken').toBeGreaterThan(50);
   });
 
   it('imports no package, Phaser included', () => {
