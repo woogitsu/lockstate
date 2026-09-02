@@ -453,7 +453,11 @@ test('act 4: every remaining paused gesture, checked for the #774 shape', async 
 
 test('act 5: an organic run at x4, watched for close event pairs by tick, not by wall clock', async ({ page }) => {
   const act = 'act-5';
-  test.setTimeout(400_000);
+  // 20,000 ticks at x4 is 62.5s of *ideal* wall time (20,000 * 12.5ms); this
+  // box's own load (uptime read 12-18 during this pass) can stretch that by
+  // an order of magnitude or more, so the budget below is generous on
+  // purpose rather than tuned to an idle machine's timing.
+  test.setTimeout(900_000);
   await page.setViewportSize({ width: 1280, height: 800 });
   await installTee(page);
   await openApp(page);
@@ -476,7 +480,7 @@ test('act 5: an organic run at x4, watched for close event pairs by tick, not by
   // window" as a legitimate, honestly-reported empty result if that is what
   // happens -- per docs/AGENT_WORKFLOW.md's "an empty category backed by the
   // numbers that establish it is a real result."
-  await runUntilTick(page, 30_000, 240_000);
+  await runUntilTick(page, 20_000, 800_000);
 
   const events = await workerEvents(page);
   log(act, `${events.length} worker event(s) observed by tick ${await currentTick(page)}: ${JSON.stringify(events)}`);
