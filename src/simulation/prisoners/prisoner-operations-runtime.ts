@@ -8,6 +8,7 @@ import { LocomotionStore, LocomotionSystem } from '../locomotion';
 import type { NavigationSystem } from '../navigation/navigation-system';
 import { ActionSystem, type PrisonerRouteContextResolver } from './action-system';
 import type { AdmissionRequest } from './classification';
+import { ClassificationEarlyWarningSystem } from './classification-early-warning-system';
 import { ClassificationReviewSystem } from './classification-review-system';
 import { rateCellSharing, type CellSharingView } from './cell-sharing';
 import type { DisciplinaryEvidenceSource } from './disciplinary-record';
@@ -156,10 +157,12 @@ export interface PrisonerOperationsRuntimeOptions {
   readonly identityRngStreamName?: string;
   /**
    * Already-recorded incident and confiscation evidence, read by
-   * `ClassificationReviewSystem` (ADR 0032). Omitted, the review still runs and
-   * still moves a tier -- clean-conduct credit needs no evidence to accrue --
-   * so a test or scenario that wires no incident pipeline behaves sensibly
-   * rather than throwing.
+   * `ClassificationReviewSystem` (ADR 0032) and, since ADR 0090, by
+   * `ClassificationEarlyWarningSystem` too -- both fold the same evidence, one
+   * on a slower and unbounded schedule and one on a faster schedule capped at
+   * `Medium`. Omitted, both still run and still move a tier -- clean-conduct
+   * credit needs no evidence to accrue -- so a test or scenario that wires no
+   * incident pipeline behaves sensibly rather than throwing.
    *
    * A port rather than the two registries, because `IncidentLog` and
    * `ConfiscationLedger` are session-level: they span this runtime and the
@@ -224,7 +227,7 @@ export interface PrisonerOperationsRuntimeOptions {
  * driven utility-AI action selection) the same way `NavigationSystem`
  * composes issue #22's navigation scheduling: one object owning the
  * `EntityStore`-backed state and the `Kernel`-registrable systems that
- * operate on it. `registerOn(kernel)` wires all four systems; nothing
+ * operate on it. `registerOn(kernel)` wires every one of them; nothing
  * here spawns a prisoner or a room instance on its own -- that is real
  * session/scenario setup, not implicit default content.
  */
@@ -277,6 +280,8 @@ export class PrisonerOperationsRuntime {
   public readonly needsDecaySystem: NeedsDecaySystem;
   public readonly actionSystem: ActionSystem;
   public readonly classificationReviewSystem: ClassificationReviewSystem;
+  /** ADR 0090, issue #788: the faster, capped-lower companion that keeps `Medium` from being skipped. See its own docblock for why it is a second system rather than a change to `classificationReviewSystem`. */
+  public readonly classificationEarlyWarningSystem: ClassificationEarlyWarningSystem;
   public readonly dischargeSystem: PrisonerDischargeSystem;
   public readonly sanctionSystem: SanctionSystem;
 
@@ -360,6 +365,7 @@ export class PrisonerOperationsRuntime {
       options.contrabandIntroducer,
       options.contrabandRngStreamName,
     );
+    this.classificationEarlyWarningSystem = new ClassificationEarlyWarningSystem(this.entityStore, this.query, this.records, options.disciplinaryEvidence);
     this.sanctionPolicy = options.sanctionPolicy ?? DEFAULT_SANCTION_POLICY;
     this.sanctionSystem = new SanctionSystem(this.entityStore, this.query, this.records, this.coldState, this.roomInstances, this.accommodationPolicy);
     this.actionSystem = new ActionSystem(
@@ -439,6 +445,7 @@ export class PrisonerOperationsRuntime {
 
   public registerOn(kernel: Kernel): void {
     kernel.registerSystem(this.intakeSystem);
+    kernel.registerSystem(this.classificationEarlyWarningSystem);
     kernel.registerSystem(this.classificationReviewSystem);
     kernel.registerSystem(this.needsDecaySystem);
     kernel.registerSystem(this.dischargeSystem);
