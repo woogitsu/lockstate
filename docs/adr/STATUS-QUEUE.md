@@ -613,26 +613,137 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `aa762112` (**v0.0.383**) by the delta method this
-header describes, from the v0.0.377 anchor described below. **Six of the ten
+Re-anchored at `main` @ `98e05058` (**v0.0.388**) by the delta method this
+header describes, from the v0.0.383 anchor described below. **Five of the ten
 releases the budget allows, counted on the tree this commit is written
-against: `package.json` ships 0.0.383 at `aa762112` and the anchor being
-replaced named v0.0.377.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
+against: `package.json` ships 0.0.388 at `98e05058` and the anchor being
+replaced named v0.0.383.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
 **10**, exactly as the gate demands and as its own failure message insists.
 
-**This pass was dispatched at SIX of ten — one release past the halfway mark,
-after the previous pass had kept it exactly.** The rule reads: *"THE HALFWAY
-MARK IS A TASK, NOT A READING."* The halfway mark of this window was v0.0.382,
-reached when #830 landed; the trigger was read at v0.0.383 (`aa762112`), after
-#831. **The miss is one release and the reason is named**: the budget was read
-as part of a routine health check rather than watched as merges landed, and
-one merge went through between the reading that said four and the reading
-that said six. The previous pass proved the rule can be kept by reading the
-budget *at the moment a merge lands*; this pass shows that reading it on a
-schedule instead loses a release. **What made this pass urgent rather than
-merely late**: eight pull requests were open or in flight when the budget was
-read, which would have carried it to fourteen — so the anchor was taken
-before any of them, not after.
+**This pass was dispatched at FIVE of ten — the halfway mark exactly, and the
+reading that triggered it was taken at the moment a merge landed.** The rule
+reads: *"THE HALFWAY MARK IS A TASK, NOT A READING."* The previous pass went at
+six and diagnosed itself correctly: the budget had been read *on a schedule*
+rather than watched as merges landed, and one merge slipped between the reading
+that said four and the reading that said six. This pass applied that diagnosis
+instead of restating it — the budget was re-read immediately after each merge
+in the queue, and #840's landing is what moved it from four to five, which is
+where it was stopped. **Six pull requests were green and mergeable at that
+moment (#833, #834, #839, #843, #844, #846) and all six were held**, because
+merging them would have carried the budget to eleven and spent the window
+before the anchor was taken.
+
+**Window: 10 files across four implementing merges — #835, #832, #836 and
+#840 — with #837 excluded as self-referential, being the previous anchor's own
+pass.** The delta intersection over §§3-6 (lines 5656-10350 on this tree, 113
+distinct rooted paths) gives **five members**: `docs/AGENT_WORKFLOW.md`,
+`docs/adr/README.md`, `docs/research/README.md`,
+`src/content/default-locale-en.ts` and `src/ui/tokens.css`. Run both ways as
+the method requires: full-path returns six and basename returns the same six,
+and the sixth is this file, which is not in its own dependency set. **The
+window file that is a member of neither scan is worth naming, because the
+header's own prose discusses it and this pass nearly recorded it as
+falsified**: the previous anchor's pass 1 says of `ui-design-tokens.test.ts`
+that *"there is no such file"*, the window edits
+`tests/unit/ui-design-tokens.test.ts`, and the sentence survives untouched
+because it is scoped to `tests/foundation/` — where there is still no such
+file, checked rather than reasoned about. The other non-member is
+`tests/browser/playtest-waste-multiplier.playtest.ts`, which nothing in
+§§3-6 cites and which `playwright.config.ts`'s `testMatch: /.*\.spec\.ts$/`
+does not collect in any case.
+
+**Two live "verified at" claims moved to this anchor and both were re-run
+rather than carried.** §4's pair of absences in `supabase/migrations/`: the
+bare `grep -ril 'total_bytes\|max_total_bytes\|retention\|prune'` over that
+directory still returns exactly one file, and its only hit is still the
+*comment* at `20260826130000_server_stamp_updated_at.sql:68` about a **future**
+retention job. Scoping matters here and is recorded because the first run of it
+this pass was wrong: the same grep over `supabase/` rather than
+`supabase/migrations/` returns **two** files, the second being
+`supabase/tests/009_rls_policy_surface.test.sql`, which is outside the
+directory the claim is about. The claim says "over the directory" and it means
+it. §6's `ui-hud-messages.test.ts:269-275` citation is carried unchanged
+because `git diff --name-only` over that file across this window returns
+nothing at all, so the span #827 moved is still where the entry says it is.
+
+**§5's ADR 0025 entry is the claim this window could actually have broken, and
+this is the second consecutive window to edit a file it counts.** The entry
+counts `.css` files under `src/ui` and asserts `3.9` appears in none of them;
+the previous window added the `caution` tone's tokens and this one, through
+#840, rewrote three of them. Re-run on this tree: `find src/ui -name "*.css"`
+still returns **four**, and `grep -rn '3\.9' src/` still returns exactly one
+hit, `src/ui/primitives/icon.ts:77`, still `'M15.8 16.1h3.9'`, on a file this
+window does not touch. The entry survives in every clause. So does §5's
+`-1,250`/`-2,000` narration in `src/content/default-locale-en.ts`: three of
+this window's merges edited that file — #835 the Remove hint, and two keys
+this pass's own queue added — and none of them went near the sentences at
+`:229`, `:547`, `:620` or `:654` that carry the figure.
+
+**No counter moved — `Proposed` 39, `Accepted` 48, 87 ADR files, next free
+0094 — and the way they were counted is the finding.** They were recomputed by
+replicating this repository's own algorithm, `statusStatement` from
+`tests/foundation/adr-status-reference-contract.test.ts` (the first non-empty
+paragraph after `## Status`, then the first status keyword in it), rather than
+by a grep written for the occasion. The grep written for the occasion was tried
+first and **returned 42 Accepted and 37 Proposed** — 79 against 87 files, eight
+documents silently unclassified because their status paragraph runs past the
+three lines it read, and it would have written two confident wrong counters into
+this header. A file that exists to keep other files honest cannot count with an
+instrument it has not checked.
+
+**The "gap" figure is handed back rather than carried or corrected, because
+its own stated method does not reproduce it — and this pass first got that
+wrong in the other direction.** The previous pass records *"Gap unchanged at
+**four** (0051, 0082, 0084, 0088), re-enumerated by subtracting the two
+greps."* Three things in this file are called a gap and they are not the same
+thing: the numbers absent from `docs/adr/` (six on this tree — `0018`,
+`0030`, `0055`, `0058`, `0060`, `0072`), the difference between index rows and
+documents (one, the kept `0018` row), and the **self-quoting-cell gap** this
+sentence is actually about — index rows whose status cell quotes its own
+former `Proposed` wording. **This pass drafted a correction reading "the gap
+is six, not four" and retracted it before pushing**: it had measured missing
+file numbers and then contradicted a claim about self-quoting cells, which is
+the same class of error as reading a count out of the wrong instrument two
+paragraphs above. 0051, 0082, 0084 and 0088 are all present on disk; nothing
+about them was ever a missing number.
+
+What is left is a figure that cannot be re-derived as written. The stated
+subtraction gives `grep '^| \[' docs/adr/README.md | grep -c Proposed` = **43**
+minus `grep -c "cell read \`Proposed" docs/adr/README.md` = **2**, which is 41,
+not four. Enumerated directly instead — index rows for an ADR whose cell
+self-quotes `Proposed` — this tree returns **three**: `0051`, `0082` and
+`0088`. **`0084` is not among them**, though the last four readings name it and
+the reading before those named 0084, 0051 and 0082 as the three. So the figure
+has moved and the enumeration has changed membership twice, and neither the
+subtraction the sentence cites nor the count it states matches what is on
+disk. `docs/adr/README.md` **is** a member of this window (#832 corrected ADR
+0092's row), so a cell could legitimately have changed here. This is reported
+and not repaired: the previous figure is left standing beside this measurement
+rather than overwritten, per `docs/AGENT_WORKFLOW.md` §4's "mark both
+directions", and the next pass inherits a named question instead of a number
+it would have to trust.
+
+**The held-number sweep is empty of the thing it is for, and not empty, and the
+distinction is the whole reading.** Across **478** remote heads — nine more
+than the 469 the previous pass scanned — **no head holds an ADR number at or
+above the next free number**, so nothing on any branch can collide with a
+document drafted at 0094; that is the fifth consecutive clean reading of the
+risk. Scanned broadly rather than only for the risk, the same sweep returns
+**three held numbers, all at gap numbers below the maximum, and all abandoned**:
+`0018-construction-material-supply.md` on
+`claude/construction-materials-supply` — PR #91, closed and never merged,
+which is the case `docs/adr/README.md` already explains and
+`tests/foundation/documentation-links-contract.test.ts`'s allowlist already
+excuses, so the sweep confirms that documentation rather than finding anything;
+`0030-restoring-an-interrupted-incident-response.md` on
+`fix/352-incident-response-record-persistence` — PR #361, closed and never
+merged; and `0030-concurrent-use-ceiling-scope.md` on
+`claude/concurrent-use-ceiling-research`, which has **no pull request at all**.
+**Two different documents therefore claim 0030.** Neither is reachable from
+`main` and neither threatens 0094, so nothing is done about it here beyond
+saying so: if either draft is ever revived it collides with the other, not
+with the index, and whoever revives one needs to know the other exists. This
+is reported, not repaired — the branches are left exactly as they are.
 
 **And the reading itself has a trap that answers confidently and wrongly, hit
 by the coordinator twice now and named in the brief for this pass as having
@@ -1025,7 +1136,28 @@ anchors ago, one release late, and the honest reading is that a rule two
 passes have missed by two and then by one is being approached rather than
 kept.
 
-**The anchor before this one, kept — v0.0.377.** It read: *"Re-anchored at `main` @
+**The anchor before this one, kept — v0.0.383.** It read: *"Re-anchored at `main` @
+`aa762112` (**v0.0.383**) by the delta method this header describes, from the
+v0.0.377 anchor described below. Six of the ten releases the budget allows,
+counted on the tree this commit is written against."* It was dispatched at
+**six** of ten — one release past the halfway mark, after the pass before it had
+kept the mark exactly — and it named its own cause rather than the number:
+the budget had been read as part of a routine health check instead of watched
+as merges landed, so one merge slipped between a reading that said four and a
+reading that said six. That diagnosis is the reason this anchor exists at five;
+it was applied rather than quoted. Its window was 13 files across five
+implementing merges, its delta intersection eleven. It moved no counter —
+`Proposed` 39, `Accepted` 48, 87 rows, next free 0094 — and it recorded two
+firsts: a cited span that had moved for the first time since v0.0.358
+(`ui-hud-messages.test.ts`, `:218-224` to `:269-275` by #827, byte-identical),
+and the mutation the anchor before it had watched survive on this file, now
+caught by `tests/foundation/adr-status-queue-anchor-contract.test.ts`'s
+positional gate on the live next-free restatement (#831). It also carried
+forward the trap this header still documents below, the loose
+`grep -oP 'v0\.0\.\d+'` that answers **v0.0.281**.
+
+
+**The anchor before that one, kept — v0.0.377.** It read: *"Re-anchored at `main` @
 `708b68c7` (**v0.0.377**) by the delta method this header describes, from the
 v0.0.372 anchor described below. Five of the ten releases the budget allows,
 counted on the tree this commit is written against."* It was dispatched at
@@ -6440,6 +6572,59 @@ the two agreed at 39 five releases earlier, and one of them moved without the
 other. Recorded here rather than resolved, because resolving it means deciding
 which of the two is wrong about which document, and that is the pass's job.
 
+**Still THIRTY-NINE at `98e05058` (v0.0.388), five releases later — every
+counter unmoved for the third consecutive window, and the instrument that
+counted them changed.** `Proposed` **39** against **48** `Accepted` across
+**87** documents, and `docs/adr/README.md` agrees on its status column:
+`grep -cE '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **39**
+against **48** `Accepted` across **88** rows — 87 documents plus the kept
+`0018` row the index carries to explain where that number went. **Next free
+number: 0094**, matching the index. The split by where a status lives is
+unchanged and was re-run rather than carried: **37** of the 39 `Proposed`
+under a `## Status` heading and **two** (0064, 0067, still the only two) under
+a `- Status:` bullet, against **8** documents in total that use the bullet
+form (0001, 0002, 0003, 0004, 0014, 0021, 0064, 0067) — the other six are
+`Accepted`, which is why the previous reading's "two" is about `Proposed`
+documents and not about bullets, a distinction this pass had to check before
+it stopped reading the sentence as wrong.
+
+**The counters were recomputed with this repository's own algorithm, and the
+ad-hoc grep that was tried first disagreed with it.** `statusStatement` in
+`tests/foundation/adr-status-reference-contract.test.ts` takes the first
+non-empty paragraph after `## Status` and then the first status keyword in it;
+replicated exactly, it classifies all 87 documents. A grep written for the
+occasion — first status word within three lines of the heading — returned **42
+Accepted and 37 Proposed**, 79 of 87, leaving eight documents silently
+unclassified because their status paragraph runs longer than three lines, and
+it would have written two confident wrong counters into this header. Recorded
+because the failure is not the grep, it is having reached for one at all in a
+file whose whole purpose is that a claim about `main` gets measured with an
+instrument that has itself been checked.
+
+**The held-number sweep is empty of the thing it is for, and not empty, and
+that distinction is the reading.** Across **478** remote heads — nine more
+than 469 — **no head holds an ADR number at or above 0094**, so nothing on any
+branch can collide with a document drafted at the next free number; that is
+the fifth consecutive clean reading of the risk, and it is the claim the
+previous four readings were making. Swept more broadly than the risk, the same
+scan returns **three held numbers, all at absent numbers below the maximum,
+and all abandoned**: `0018-construction-material-supply.md` on
+`claude/construction-materials-supply` (PR #91, closed, never merged) — the
+case `docs/adr/README.md` already explains and
+`tests/foundation/documentation-links-contract.test.ts`'s allowlist already
+excuses, so here the sweep confirms that documentation rather than finding
+anything; `0030-restoring-an-interrupted-incident-response.md` on
+`fix/352-incident-response-record-persistence` (PR #361, closed, never
+merged); and `0030-concurrent-use-ceiling-scope.md` on
+`claude/concurrent-use-ceiling-research`, which has **no pull request at all**.
+**Two different documents therefore claim 0030.** Neither is reachable from
+`main` and neither threatens 0094, so nothing is done about it beyond saying
+so: whoever revives either draft collides with the other, not with the index,
+and needs to know the other exists. That same branch also carries both
+`0004-chunk-size-selection.md` and `0004-deterministic-kernel.md`, a duplicate
+from before the numbering rule existed — named for the same reason and left
+alone for the same reason. Reported, not repaired; no branch was touched.
+
 **The mutation the previous pass ran on this file and watched survive is now
 CAUGHT.** #831 (`dc720790`) added a positional gate to
 `tests/foundation/adr-status-queue-anchor-contract.test.ts`: a `Next free
@@ -6541,16 +6726,16 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `aa762112` — the same bare `grep -ril
+absences were re-verified at `98e05058` — the same bare `grep -ril
 'total_bytes\|max_total_bytes\|retention\|prune'` over the directory still
 returns exactly one file, and its only hit is still the *comment* in
 `20260826130000_server_stamp_updated_at.sql:68` about a **future** retention
 job, so neither absence has acquired an implementation that a path scan would
-have missed — as they were at `708b68c7`, at `b2941064`, at `1547c7f6`, at `9b8c8e85`, at
+have missed — as they were at `aa762112`, at `708b68c7`, at `b2941064`, at `1547c7f6`, at `9b8c8e85`, at
 `0e2eb7fb`, at `33a4a22e` and at
 `26434e8e` before it —
-`supabase/migrations/` is not among this window's 13 files, nor the previous
-window's 10, nor the 21 before that, nor the 21 before those, nor the 44 before those, nor `0e2eb7fb`'s 42, nor `33a4a22e`'s 47, nor `26434e8e`'s
+`supabase/migrations/` is not among this window's 10 files, nor the previous
+window's 13, nor the 10 before that, nor the 21 before that, nor the 21 before those, nor the 44 before those, nor `0e2eb7fb`'s 42, nor `33a4a22e`'s 47, nor `26434e8e`'s
 101, and the directory still holds twenty-three files, counted again — unchanged since the previous anchor, the
 one before it, the one before that, the one before that, the one before that, the one before that,
 the one before that, the one before that, the one before that, the one before
@@ -10259,7 +10444,7 @@ numbers were not the damage.** Stated so it can be checked:
   `prisoners-intake-system.test.ts:230` and `:529`;
   `entity-generation-wrap.test.ts:96`, `:124`, `:163`, `:178`, `:190` and
   `:204`; `unconsumed-command-contract.test.ts:204` and `:230`;
-  `ui-hud-messages.test.ts:269-275` (moved from `:218-224` by #827, byte-identical, re-verified at `aa762112`); `environment-art.test.ts:248` and `:256`;
+  `ui-hud-messages.test.ts:269-275` (moved from `:218-224` by #827, byte-identical, re-verified at `98e05058`); `environment-art.test.ts:248` and `:256`;
   `adr-status-reference-contract.test.ts:147-150`, `:405`, `:427` and `:431`;
   `docs/adr/README.md:103-110` and `:158`; `docs/TRUSTED_SERVICES.md:604`,
   `:607` and `:610`; `docs/adr/0013-…md:15`, `:19-21` and `:151`;
