@@ -404,3 +404,156 @@ and after `9dd6e601`. Doing that honestly needs a second worktree at the parent
 commit and a tick-indexed incident timeline on both — the shape
 `docs/AGENT_WORKFLOW.md` requires for a baseline — and it is a measurement, not
 a reading. **Not attempted here; named as unreached.**
+
+## §3 — When `Medium` arrives, four badge words change and nothing else on the screen moves
+
+**MEASURED, act 4** — `1 passed (8.6m)`, 511s standalone. The neglect fixture
+played with the mouse: a sealed, zoned 6×6 cell at (14,12)-(19,17), beds only
+and **no toilet**, **no guards**, twelve Admit presses (eleven landed; four
+housed, seven waiting with no bed). The Regime tab was open and the roster, the
+`HIGH RISK` chip, the `INCIDENTS` chip and the alerts column were sampled
+together, every sample stamped with the worker's tick.
+
+`Medium` is real, it arrives, and the player is not told. Verbatim, at the tick
+it was first seen:
+
+```
+[act4] === FIRST tier >= 2 observed at tick 26514 ===
+[act4] the sample at it: {"tick":26514,"tiers":["2","2","2","2"],
+  "badges":["Medium","Medium","Medium","Medium"],
+  "tones":["neutral","neutral","neutral","neutral"],
+  "highRisk":"0","incidentsChip":"0", "alerts":"A fight has broken out ... Day 10 ..."}
+[act4] full rows at that moment: [{"name":"Hana Okafor","badgeText":"Medium",
+  "badgeTitle":null,"badgeTone":"neutral","badgeAriaLabel":null,"rowTitle":null,
+  "riskTier":"2","classificationGroup":"general-population"}, ... ]
+```
+
+### 3a. The badge does not even change colour
+
+**This is the sharpest single finding of the pass, and it is stronger than the
+brief's hypothesis.** The brief asked whether *"a badge silently changes
+colour"*. It does not change colour at all: `badgeTone` is `neutral` on every
+`Medium` row, which is the same tone a `Minimal` or `Low` row carries.
+
+**READ, and it is by design rather than an oversight.**
+`describePrisonerRow` splits the badge into a word and a tone, and the tone is
+the *classification group*, not the tier
+(`src/ui/hud/regime-panel.ts:196-201`: *"a tier moving 1 -> 2 changes the word
+while a prisoner is still on the general-population timetable, and the tone
+changes on the move that actually changes their day"*).
+`classificationGroupIdForTier` is `riskTier >= 3`
+(`src/simulation/prisoners/classification.ts:57`), and
+`ClassificationEarlyWarningSystem` is capped at `EARLY_WARNING_TIER_CEILING`
+(2) precisely so that it can never move a regime
+(`src/simulation/prisoners/classification-early-warning-system.ts:161-168`).
+
+So the two decisions compose into a state neither author was choosing: **#788
+introduces a warning, and the layer that would show a warning is bound to a
+fact the warning is forbidden to change.** The whole of the change a player can
+see is one word in a small badge going from `Low` to `Medium`, in a panel four
+rows deep on a tab they may not have open.
+
+### 3b. Nothing else on the screen moves — measured as a diff, not asserted
+
+The act recorded every *distinct* screen state as a key over the tiers, the
+badge words, the tones, the `HIGH RISK` value, the `INCIDENTS` value and the
+alerts text. Across ticks 26,514 to 29,612 — **3,098 ticks, 1.3 in-game days,
+with eleven prisoners at `Medium`** — it recorded exactly **one** state:
+
+```
+[act4] every distinct screen state, in ticks:
+t26514: [["2","2","2","2"],["Medium",...],["neutral",...],"0","A fight ... ","0"]
+[act4] first tier >= 2 at tick: 26514
+[act4] final counts: {"tick":29612, ... "prisonersHighRisk":0 ... }
+[act4] high-risk chip at the end: {"value":"0","title":null,"srText":""}
+```
+
+- **The `HIGH RISK` chip stays `0`.** Correct and READ:
+  `prisonersHighRisk` is `riskTier >= 3`, so a tier-2 prisoner is invisible to
+  it by construction. The strip has no counter that a `Medium` can move.
+- **The `INCIDENTS` chip reads `0` / `Clear`** at the same moment the alerts
+  column says a riot broke out on Day 11 — because the riot has closed. So the
+  strip carries no trace of the evidence the tier was raised *from*, either.
+- **The alerts column names the incidents and never names the tier change.**
+  It read, at the `Medium` tick and unchanged 3,098 ticks later:
+  *"A fight has broken out between two prisoners. Day 10"*,
+  *"A riot has broken out — 11 prisoners have stopped taking orders. Day 11"*,
+  *"The prison is under control again — no incident is still open. 2× Day 12"*.
+  Eleven prisoners were reclassified between Day 11 and Day 12 and the channel
+  whose job is to say what happened says nothing about it.
+
+### 3c. There is no way for a player to learn why, and the press was verified
+
+Three things a player could try, each measured rather than assumed:
+
+```
+[act4] under the first roster row's centre (1136,572.4296875):
+  [{"tag":"DIV","cls":"hud-regime__roster-need","pointerEvents":"auto"},
+   {"tag":"DIV","cls":"hud-regime__roster-line",...},
+   {"tag":"SPAN","cls":"ui-value hud-regime__roster-name",...}, ...]
+[act4] after hovering the row for 700 ms, the badge's title is still null
+[act4] pressing the row produced 0 command(s)
+```
+
+The `elementsFromPoint` read is the point: **the press landed inside the row**,
+on `hud-regime__roster-need`, and produced nothing — so "the row is not
+interactive" is a fact about the row and not about a click that missed. Hovering
+adds no `title`. `badgeAriaLabel` and `rowTitle` are `null` on every row, so a
+screen reader gets the bare word too.
+
+**READ, and it confirms the shape rather than the count.**
+`createStatusBadge` sets exactly two things — `root.dataset['tone']` and
+`label.textContent` (`src/ui/primitives/status-badge.ts:40-41`) — and there is
+no `title`, `aria-label` or `aria-describedby` anywhere in the primitive. Its
+own docblock's reasoning is sound as far as it goes (*"a badge always carries a
+word, so a red-green colour-blind player, a monochrome display and a screen
+reader all get the same information"*) — but the information all three get is
+the word `Medium`, and the word is not defined anywhere in the game.
+`docs/research/2026-09-01-playing-the-people-surface.md` §1a found the same
+absence for `Minimal`/`Low`; what is new is that a word now *arrives*, as a
+warning, and arriving is the case where an unexplained word costs the player
+something.
+
+And the Regime panel has no control at all to press: grepping every
+`hud-regime__*` class name finds twenty-one, all of them values, rows,
+headers, notes and progress bars, and not one button.
+
+### 3d. What the roster row actually said, in full
+
+```
+PRISONERS
+4 of 11
+Hana Okafor / Association / Safety / Medium
+Ursula Rossi / Association / Safety / Medium
+Viktor Rossi / Idle / Bladder / Medium
+Lena Farkas / Idle / Bladder / Medium
+and 7 more
+```
+
+Four rows of eleven (`PRISONER_ROSTER_ROW_LIMIT` is 4,
+`src/ui/hud/regime-panel.ts:174`), so seven of the eleven `Medium` prisoners are
+not on screen at all. The row's other two words are the current activity and
+the *lowest need* — `Safety` and `Bladder` — which are, as it happens, the two
+facts that caused the tier change, sitting on the same line as the badge with
+nothing connecting them.
+
+### 3e. What is owed, and to whom
+
+**The copy is the owner's** under `AGENTS.md` exclusion 4, and this pass wrote
+none of it. What is owed is at least one of:
+
+1. **A sentence on the badge** saying what `Medium` means, as a `title` and an
+   accessible name. This is the open second half of #788.
+2. **A sentence in the alerts column** when a tier is raised, so the channel
+   that already narrates the riot narrates its consequence.
+3. **A decision about the tone**, which is not copy and *is* a design call:
+   whether a tier a player is meant to read as a warning may share
+   `Minimal`'s colour. `describePrisonerRow`'s reasoning ties tone to the
+   regime deliberately; #788 introduces the first tier change that is meant to
+   be noticed and cannot move the regime. Somebody has to say which rule wins.
+4. **A number for the `HIGH RISK` chip, or a second chip**, if a prison-wide
+   count of warnings is wanted at all. `src/ui/hud/projection.ts:783-790`
+   declines a tone for that chip for a stated reason that survives; it does not
+   decide whether tier 2 should be counted anywhere on the strip.
+
+**Owed to: the owner.** Options 1 and 2 are copy; 3 and 4 are design.

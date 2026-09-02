@@ -926,6 +926,75 @@ test('act 3: a sector sweep teleports a guard out and walks it back — how many
   log(act, `render-delta samples in the window: ${windowed.length} (of ${samples.length} since page load)`);
   const episodes = analyseGuardTracks(act, windowed);
   log(act, `walk episodes: ${JSON.stringify(episodes)}`);
+
+  /*
+   * **Phase 2, added after phase 1 measured zero walks.**
+   *
+   * Phase 1's sweeps all teleported and none produced a walk back, and the
+   * reason is readable in its own roster timeline: the guard a sweep claims is
+   * a *spare*. `claimableGuardIds` draws only from `unassignedGuardIds()`,
+   * which is `'unassigned'` only
+   * (`src/simulation/security/guard-roster.ts:236`), so the posted guard is
+   * never sent searching and never leaves its post; and a spare released back
+   * from a search has no post to walk to, because
+   * `DeploymentSystem.assignUnassignedGuards` only draws when the sector is
+   * short and a six-resident prison asks for exactly one guard
+   * (`DEFAULT_SECTOR_PRISONERS_PER_GUARD` is 8,
+   * `src/simulation/security/sector-staffing.ts:147`).
+   *
+   * So the missing ingredient is a **shortage while a spare is standing
+   * somewhere else**, and there is exactly one control that manufactures one:
+   * the Release button on the ON DUTY row, which frees the posted guard. The
+   * next deployment cycle then has a shortage of one and a pool of spares, and
+   * whichever it picks is walked from wherever the last sweep left it.
+   *
+   * This is the only player gesture found in this pass that can produce a
+   * guard walk, so it is measured rather than argued -- and the press is
+   * checked with `elementsFromPoint` first, because "Release did nothing" and
+   * "the click missed" look identical.
+   */
+  const heldRow = page.locator('.hud-staff__held-row', { hasText: 'Release' });
+  if ((await heldRow.count()) === 0) {
+    log(act, 'phase 2 SKIPPED: no ON DUTY row with a Release control was laid out');
+    return;
+  }
+  const releaseButton = heldRow.first().getByRole('button', { name: 'Release' });
+  const releaseBox = await releaseButton.boundingBox();
+  if (releaseBox !== null) {
+    log(act, `under the Release control's centre: ${JSON.stringify(await underPoint(page, releaseBox.x + releaseBox.width / 2, releaseBox.y + releaseBox.height / 2))}`);
+  }
+  const releasedAt = await currentTick(page);
+  await releaseButton.click();
+  log(act, `pressed Release at tick ${releasedAt}; held panel now ${JSON.stringify(await panelText(page, '.hud-staff__held'))}`);
+
+  const phaseTwoTimeline: string[] = [];
+  let lastPhaseTwoRow = '';
+  for (;;) {
+    const tick = await currentTick(page);
+    if (tick >= releasedAt + 400) break;
+    const joined = (await rosterRows(page)).join(' // ');
+    if (joined !== lastPhaseTwoRow) {
+      phaseTwoTimeline.push(`t${tick}: ${joined}`);
+      lastPhaseTwoRow = joined;
+    }
+    await page.waitForTimeout(60);
+  }
+  log(act, `phase 2 roster changes over 400 ticks after Release:\n${phaseTwoTimeline.join('\n')}`);
+  log(act, `phase 2 held panel: ${JSON.stringify(await panelText(page, '.hud-staff__held'))}`);
+
+  const phaseTwoSamples = (await guardSamples(page)).filter((sample) => sample.at >= releasedAt);
+  log(act, `phase 2 render-delta samples: ${phaseTwoSamples.length}`);
+  const phaseTwoEpisodes = analyseGuardTracks(`${act}p2`, phaseTwoSamples);
+  log(act, `phase 2 walk episodes: ${JSON.stringify(phaseTwoEpisodes)}`);
+  for (const episode of phaseTwoEpisodes) {
+    const ticks = episode.toTick - episode.fromTick;
+    log(
+      `${act}p2`,
+      `episode: guard ${episode.guard} walked (${episode.fromTile}) -> (${episode.toTile}) across ${ticks} tick(s)` +
+        ` = ${(ticks / 20).toFixed(2)}s at speed 1 and ${(ticks / 80).toFixed(2)}s at speed 4;` +
+        ` the roster refreshes on a 250 ms heartbeat, ~5 ticks at speed 1 and ~20 at speed 4`,
+    );
+  }
   for (const episode of episodes) {
     const ticks = episode.toTick - episode.fromTick;
     log(
