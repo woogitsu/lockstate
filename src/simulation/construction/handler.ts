@@ -221,6 +221,16 @@ export function createConstructionCommandHandler(
  * that deliveries are refused, which at -1,800 is *also* true but is not what
  * just happened and is not the rung the player has to climb back over.
  *
+ * **The -1,250/-2,000 pair above was overtaken a second time, and this note
+ * did not say so until now.** The owner's ruling on #771 (2026-09-01, ADR
+ * 0017's equalisation amendment) retired the split ruling 19 gave the two
+ * rungs: `'construction'` now reads the same -1,250 `'deliveries'` does. The
+ * argument the numbers were illustrating is unaffected -- a Buy press and a
+ * stalled queue are still two distinct spend classes and two distinct events,
+ * which is why `construction.materials-unfunded` still earns its own
+ * `RefusalReason` member below -- only the two example thresholds no longer
+ * differ, so a prison at -1,800 today has both refused rather than one.
+ *
  * ADR 0017's amendment §5 named this owed in those terms -- *"A halted
  * construction queue reports `hud.alert.refusal.purchase.insufficient-funds`
  * through `reportMaterialsFunding`, which is rung 1's sentence on rung 2's
@@ -233,8 +243,9 @@ export function createConstructionCommandHandler(
  * refusal id" is left exactly as it was written, because its *shape* of
  * argument is what says why the new id is not a smuggled second sentence for
  * the same fact: the namespaces exist so that a player is not sent to the
- * wrong control, and the two routes now genuinely answer different controls at
- * different thresholds.
+ * wrong control, and the two routes still genuinely answer different
+ * controls -- a Buy press versus a stalled queue -- even though #771's
+ * equalisation means they no longer do it at different thresholds.
  *
  * ## Why `purchase.insufficient-funds` and not a new refusal id
  *

@@ -622,6 +622,15 @@ describe('status strip: tone and badges', () => {
    * longer means *"the deepest a prison can go"* either (this ruling): the
    * floor itself is `critical`, one step further.
    *
+   * **"-2,000" above is ruling 19's figure and is a second thing this
+   * paragraph has since watched go stale.** The owner's ruling on #771
+   * (2026-09-01, ADR 0017's equalisation amendment) retired it: the build
+   * queue's own rung now reads the same -1,250 a Buy press already stops at,
+   * so `danger` no longer has a build queue exemption to be right or wrong
+   * about at all. Nothing tested below turns on the build queue's figure --
+   * `at()` drives `treasuryMinorUnits` and the deliveries-rung tone alone --
+   * so this is a second correction to the record, not a reopened test.
+   *
    * Colour is never the only signal in either split: the badge states the
    * remainder in words, and at the rung those words are
    * `0 left before deliveries stop`. **They stay that at the floor too** --
