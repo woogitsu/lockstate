@@ -128,9 +128,20 @@ export interface MaterialsProcurementReport {
  * a branch**: `JustInTimeMaterialsService.procureForPendingOrders` is the only
  * producer of that list and it asks `Treasury.canAfford(cost, 'construction')`
  * and nothing else, so the money that was refused was refused at the
- * construction rung -- -2,000 under the owner's ruling 19 of 2026-08-31 -- and
- * cannot be any other rung's. Nothing here has to *decide* which rung fired,
- * which is why there is no second member for "it was actually rung 1".
+ * construction rung, and cannot be any other rung's, because no other caller
+ * ever reaches this list. **That rung was -2,000 under the owner's ruling 19
+ * of 2026-08-31; it is not any more.** The owner's ruling on #771 (2026-09-01,
+ * ADR 0017's equalisation amendment) retired the split ruling 19 gave the
+ * two rungs and moved construction onto deliveries' own threshold, so today
+ * this is refused at -1,250
+ * (`INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS ===
+ * INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`, `src/simulation/economy/treasury.ts`).
+ * The two rungs sharing a value does not weaken "cannot be any other rung's"
+ * above -- that claim was never about the *floors* differing, it is about
+ * `procureForPendingOrders` being the only caller that ever asks `canAfford`
+ * under `'construction'`, which the equalisation did not touch. Nothing here
+ * has to *decide* which rung fired, which is why there is no second member
+ * for "it was actually rung 1".
  *
  * Not one of `PurchaseRefusalReason`'s members. `ProcurementSystem.purchase`
  * answers that union for a charge the player pressed *Buy* for, and the whole

@@ -25,19 +25,32 @@ const WATCHED_RUNGS = ['deliveries', 'construction'] as const;
  *
  * #767 was found by playing a payroll tick that took the treasury from
  * −1,220 to −2,180 in one step -- past both the deliveries rung (−1,250) and
- * the construction rung (−2,000) at once, because `PayrollSystem` draws on
- * the overdraft down to the **wages** floor (deeper than both), not down to
- * either of theirs. That is the common case and the one this ADR amendment
- * names, but it is not the only route: `ProcurementSystem`'s just-in-time
- * pass for a queued build order spends under the **construction** class,
- * whose own floor (−2,000) is deeper than the deliveries rung (−1,250) --
- * `Treasury.canAfford` only ever compares against the *spending* class's own
- * floor, so a construction-class purchase that lands the balance at, say,
- * −1,400 has crossed the shallower deliveries rung as a side effect of a
- * spend that was never refused. A check living inside `PayrollSystem` would
- * miss that case entirely; a check that reads the balance after every
- * balance-changing event in the tick, regardless of which system or command
- * moved it, catches both. Every caller that spends
+ * the construction rung (−2,000, as it then stood) at once, because
+ * `PayrollSystem` draws on the overdraft down to the **wages** floor (deeper
+ * than both), not down to either of theirs. That is the common case and the
+ * one this ADR amendment names, but it is not the only route:
+ * `ProcurementSystem`'s just-in-time pass for a queued build order spends
+ * under the **construction** class, and `Treasury.canAfford` only ever
+ * compares against the *spending* class's own floor -- so a
+ * construction-class purchase can cross the deliveries rung as a side effect
+ * of a spend that was never refused under `'deliveries'` at all.
+ *
+ * **Before the owner's ruling on #771 (2026-09-01, ADR 0017's equalisation
+ * amendment), construction's own floor (−2,000) was 750 minor units deeper
+ * than deliveries' (−1,250), so that side effect could land the balance
+ * anywhere in the 750-wide band between them** -- e.g. a construction
+ * purchase funded down to −1,400 had already crossed the shallower
+ * deliveries rung. **Since #771 the two floors are the same**
+ * (`INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS ===
+ * INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`, both −1,250), so a
+ * construction spend can no longer land the balance *past* the deliveries
+ * rung -- `canAfford` refuses anything that would -- but it can still land it
+ * exactly *at* −1,250, crossing the rung in the same step, without
+ * `'deliveries'` ever being asked -- narrower band, same shape. A check
+ * living inside `PayrollSystem` would miss that case entirely; a check that
+ * reads the balance after every balance-changing event in the tick,
+ * regardless of which system or command moved it, catches both. Every
+ * caller that spends
  * (`grep -rn "\.spend(" src/simulation`) does so from `order` 110
  * (`procurement`) or earlier (a command handler, dispatched before any
  * system runs that tick) or 130 (`payroll`); this system's `order` of 135

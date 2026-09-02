@@ -325,13 +325,19 @@ describe('the wire vocabulary is exactly what the twelve domains can produce', (
     // is the one namespace that is not a *command's* vocabulary at all: no
     // command is called Construction, and the refusal is the just-in-time
     // materials pass failing to fund a queue that is already standing. It is
-    // the eighth demonstration and the only one where the two sentences answer
-    // the same treasury call at *different thresholds* rather than different
-    // gestures -- ADR 0017 decision 8's rung 1 refuses a player's delivery at
-    // -1,250 and rung 2 refuses the queue's own materials at -2,000, so
-    // `purchase.insufficient-funds` on both told a prison at -1,800 that
-    // deliveries were refused when what stopped was construction. The test
-    // name said "eleven commands" until this member arrived; it says
+    // the eighth demonstration and, when this member arrived, was the only one
+    // where the two sentences answered the same treasury call at *different
+    // thresholds* rather than different gestures -- ADR 0017 decision 8's
+    // rung 1 refused a player's delivery at -1,250 and rung 2 refused the
+    // queue's own materials at -2,000, so `purchase.insufficient-funds` on
+    // both told a prison at -1,800 that deliveries were refused when what
+    // stopped was construction. The owner's ruling on #771 (2026-09-01, ADR
+    // 0017's equalisation amendment) retired that split: rung 2 now reads the
+    // same -1,250 rung 1 does, so the two sentences answer the same call at
+    // the same threshold too, and the two namespaces stay apart only for the
+    // reason every other pair here does -- a player pressing Buy and a player
+    // whose standing queue stalled are looking at two different controls. The
+    // test name said "eleven commands" until this member arrived; it says
     // "vocabularies" now, because that is what the twelve have always been and
     // the eleventh was the last one for which the two words coincided.
     const prefixes = new Set(REFUSAL_REASONS.map((reason) => reason.split('.')[0]));

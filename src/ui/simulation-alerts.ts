@@ -277,7 +277,7 @@ const FAULT_ROW_PREFIX = 'fault-';
  * sharpest instance of the rule this whole comment states.** It is the same
  * treasury refusing the same `ProcurementSystem.purchase` as
  * `purchase.insufficient-funds`, and it is a different sentence because it is
- * a different *rung*: the owner's ruling 19 of 2026-08-31 refuses a player's
+ * a different *rung*: the owner's ruling 19 of 2026-08-31 refused a player's
  * delivery at -1,250 and the build queue's own materials at -2,000, so one
  * sentence on both told a prison at -1,800 that deliveries were refused when
  * what had actually stopped was construction. Until the owner ruled on
@@ -285,6 +285,16 @@ const FAULT_ROW_PREFIX = 'fault-';
  * had one, because `reportMaterialsFunding` had no reason to record. That is
  * the mechanism working: a `Record` over a closed union is what made "rung 2
  * needs a sentence" a compile error rather than a wish.
+ *
+ * **Ruling 19's two thresholds are history, not the present.** The owner's
+ * later ruling on #771 (2026-09-01, ADR 0017's equalisation amendment)
+ * retired the -1,250/-2,000 split this paragraph's example depends on:
+ * `construction.materials-unfunded` and `purchase.insufficient-funds` now
+ * fire at the same -1,250. The row this section argues for still earns its
+ * keep -- the two remain different *events* on different controls, which is
+ * the fourth-instance rule this whole comment states -- but the -1,800
+ * example above is a snapshot of the band #771 closed, not a balance where
+ * the two sentences can still disagree today.
  *
  * **Those two now resolve to the host's own sentences** -- the owner's ruling
  * 23 of 2026-08-31, *"Te same słowa co host"*. One refusal is decided on either
