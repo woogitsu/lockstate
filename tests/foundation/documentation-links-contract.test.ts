@@ -234,6 +234,18 @@ const ABSENT_BY_DESIGN: ReadonlyMap<string, string> = new Map([
     // output; the comment's two mentions are conditional and both true.
     'the optional plugin input this repository does not supply, which is the point of the paragraph',
   ],
+  [
+    'docs/research/2026-09-02-the-unit-gates-that-cannot-fail.md -> src/simulation/navigation/browser/adapter.ts',
+    // The note names this path as the file it *created* to prove
+    // `tests/unit/navigation-no-phaser.test.ts` could not fail: a Phaser+DOM
+    // offender planted one level below a scan root whose `readdirSync` was
+    // never recursive. It was removed by hand after the measurement, so it
+    // exists in no commit -- and the path is the finding rather than
+    // decoration, because *which* level it sat on is what the non-recursive
+    // walk missed. `src/simulation/navigation/` holds fifteen files and no
+    // subdirectory, which is why a planted one was needed at all.
+    'named by that note as the offender it planted below a non-recursive scan root, removed after measuring',
+  ],
 ]);
 
 /** `source -> path`, the key `ABSENT_BY_DESIGN` is written in. */

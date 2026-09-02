@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 /**
  * Which modules in `src/` author the two fields that decide **where a guard
  * stands and what route it walks**, pinned as a set — and, for `patrolRoute`,
- * pinned at *nobody*.
+ * pinned at *nobody originating one*.
  *
  * This exists for one claim a behaviour test cannot make on its own:
  * **`PatrolSystem` is fully built and structurally unreachable in every
@@ -27,9 +27,26 @@ import { describe, expect, it } from 'vitest';
  * to have built"*. This file is not an objection to either. It is where the
  * *next* change to either has to say what it is doing: an authored route or a
  * movable post is a player-facing gesture with a persistence question behind
- * it (`restoreSessionSystems` skips the payload's copy of a sector the runtime
- * already holds), and adding a writer without answering that question would
- * leave every existing test green.
+ * it, and adding a writer without answering that question would leave every
+ * existing test green.
+ *
+ * **Amended 2026-09-02, for [ADR 0092](../../docs/adr/0092-who-decides-where-a-guard-stands.md)
+ * decision 3 — "the save payload is authoritative for a sector definition it
+ * carries."** `restoreSessionSystems` used to skip the payload's copy of a
+ * sector id the runtime already holds; it now applies `postTile`,
+ * `patrolRoute` and `expectedPatrolLoopTicks` onto it through
+ * `SecuritySectorRegistry.redefine` (decision 2's narrow mutator, added for
+ * this). That is why `session-systems.ts` and `sector.ts` gained new sites
+ * below. **None of them is a new producer.** `redefine` and the restore loop
+ * around it only ever move a value the payload already carried into the
+ * runtime's copy of the definition — they cannot manufacture a route or a
+ * tile that was not already sitting in `EncodedSessionSystems`, and nothing
+ * under `src/` writes a `patrolRoute` into that payload either (`captureSessionSystems`
+ * only ever copies `runtime.securitySectors.all()` back out). So the
+ * paragraph above is still true of *origination*: this file's job is
+ * distinguishing a relay site from an authoring one, not asserting there are
+ * none of either kind — read each list below with that distinction in mind
+ * rather than assuming a longer list means the underlying claim regressed.
  *
  * Written in the shape of `tests/foundation/deployment-phase-producer-contract.test.ts`,
  * for its stated reason: it reads real files off disk rather than a
@@ -108,42 +125,64 @@ describe('security sector authorship', () => {
     expect(countedReads('postTile').length).toBeGreaterThan(2);
   });
 
-  it('has no module in src/ that authors a patrol route', () => {
+  it('has no module in src/ that originates a patrol route -- relay sites are named, not counted as authors', () => {
     /*
-     * Two sites, and **neither is a value**. `sector.ts` declares the optional
-     * field on `SecuritySectorDefinition`; `save-schema.ts` declares the Zod
-     * leaf that would accept one out of a save. A save-schema leaf is worth
-     * pointing at rather than excluding: the persisted shape has been ready
-     * for a route since `SAVE_SCHEMA_VERSION` reached 5, so what is missing is
-     * an author and not a format.
+     * Five sites now, up from two, and **still none of them is a value**.
+     * `sector.ts` declares the optional field on `SecuritySectorDefinition`
+     * once (unchanged) and gains two more from `redefine` (ADR 0092 decision
+     * 2): the `changes.patrolRoute?` parameter position and the `patrolRoute:`
+     * key in the object it writes back into `this.definitions` -- both are
+     * the plumbing of a narrow setter, not a place that invents a route.
+     * `save-schema.ts` declares the Zod leaf that would accept one out of a
+     * save, unchanged. `session-systems.ts` is the one genuinely new site
+     * this ADR added: `redefine(sector.id, { …, patrolRoute: sector.patrolRoute
+     * … })` in the restore loop, which only ever forwards whatever
+     * `sector.patrolRoute` the payload already held.
      *
-     * A third entry here means somebody built a route. Read the persistence
-     * question in this file's header before deleting this expectation.
+     * A sixth entry, or a change to one of these five that starts computing a
+     * route from the world rather than relaying one, is what would mean
+     * somebody built a route. Read the persistence question in this file's
+     * header before deleting this expectation.
      */
     expect(countedSites('patrolRoute')).toEqual([
       'src/persistence/save-schema.ts x1',
-      'src/simulation/security/sector.ts x1',
+      'src/simulation/runtime/session-systems.ts x1',
+      'src/simulation/security/sector.ts x3',
     ]);
   });
 
   it('names every module that reads a patrol route, so a route that nothing walks is visible too', () => {
+    // `session-systems.ts` and `sector.ts` are new here for the same reason
+    // as above: `redefine`'s `changes.patrolRoute ?? current.patrolRoute`
+    // reads both sides of the merge, and the restore loop reads
+    // `sector.patrolRoute` twice (an `undefined` check, then the value
+    // itself) to decide whether to forward it at all.
     expect(countedReads('patrolRoute')).toEqual([
       'src/simulation/presentation/security-projection.ts x1',
+      'src/simulation/runtime/session-systems.ts x2',
       'src/simulation/security/deployment-system.ts x2',
       'src/simulation/security/patrol-system.ts x6',
+      'src/simulation/security/sector.ts x4',
     ]);
   });
 
-  it('gives a post tile exactly one producer, and it derives rather than accepts one', () => {
+  it('gives a post tile exactly one producer that computes rather than relays one', () => {
     /*
-     * Six of the seven sites are a declaration, a parameter name or a
-     * projection field. `default-sector.ts` is the one that computes a value
-     * that reaches `SecuritySectorRegistry.register`, and it computes it from
-     * the world — `chunk * tileChunkSize + floor(tileChunkSize / 2)` — with no
-     * input a player can supply.
+     * Seven of the eight sites are a declaration, a parameter name, a
+     * projection field or a relay. `default-sector.ts` is still the *only*
+     * one that computes a value from the world --
+     * `chunk * tileChunkSize + floor(tileChunkSize / 2)` — with no input a
+     * player can supply; that has not changed.
      *
-     * Two of the six are worth naming because they are what a moved post would
-     * have to stay consistent with: `deployment-phase.ts` decides whether a
+     * `session-systems.ts` is new (ADR 0092 decision 3): the restore loop's
+     * `redefine(sector.id, { postTile: sector.postTile, … })` forwards the
+     * payload's tile onto an already-registered sector. It is a relay of a
+     * value `default-sector.ts` (or, once a placement command exists, a
+     * player) already produced, not a second producer -- the distinction
+     * this file's header now spells out.
+     *
+     * Two of the eight are worth naming because they are what a moved post
+     * has to stay consistent with: `deployment-phase.ts` decides whether a
      * guard is standing on its post, and `security-projection.ts` publishes
      * the tile to `hud/security`, which `tests/foundation/projection-reachability-contract.test.ts`
      * records as having no reader.
@@ -151,32 +190,49 @@ describe('security sector authorship', () => {
     expect(countedSites('postTile')).toEqual([
       'src/persistence/save-schema.ts x1',
       'src/simulation/presentation/security-projection.ts x2',
+      'src/simulation/runtime/session-systems.ts x2',
       'src/simulation/security/default-sector.ts x1',
       'src/simulation/security/deployment-phase.ts x2',
       'src/simulation/security/deployment-system.ts x1',
-      'src/simulation/security/sector.ts x1',
+      'src/simulation/security/sector.ts x3',
     ]);
   });
 
-  it('offers no way to replace or remove a registered sector definition', () => {
+  it('offers exactly one narrow way to replace a registered sector definition, and no way to remove one', () => {
     /*
-     * ADR 0036 decision 4 point 2 states this as a decision and hands the
-     * consequence forward: *"`SecuritySectorRegistry` has no un-register and
-     * no replace, deliberately: it captures each governed door's baseline
-     * state at `register` time. Adding one is a decision about what happens to
-     * the sector's live control state and to anything naming it, and that
-     * decision is not this document's."*
+     * **This used to read "offers no way to replace or remove a registered
+     * sector definition," and the whole method list below used to end at
+     * `loadSnapshot` with no `redefine` in it.** ADR 0036 decision 4 point 2
+     * is quoted here for what it still gets right rather than for the
+     * conclusion the old title drew from it: *"`SecuritySectorRegistry` has no
+     * un-register and no replace, deliberately: it captures each governed
+     * door's baseline state at `register` time. Adding one is a decision
+     * about what happens to the sector's live control state and to anything
+     * naming it, and that decision is not this document's."* That decision
+     * is [ADR 0092](../../docs/adr/0092-who-decides-where-a-guard-stands.md)
+     * decision 2's, and the owner took it narrowly rather than not at all: a
+     * general `replace` was rejected for the exact hazard ADR 0036 names --
+     * it would have to decide what happens to a `doorIds` baseline the
+     * registry never captured for a door the sector no longer governs --
+     * so `redefine` can move only `postTile`, `patrolRoute` and
+     * `expectedPatrolLoopTicks`, cannot touch `id`, `gradeId` or `doorIds`,
+     * and leaves `controlStates` and `normalDoorStates` exactly as they were.
+     * There is still no un-register, and this file still has nothing to say
+     * about `loadSnapshot`'s own `!this.definitions.has(id)` skip -- that is
+     * a *scenario* sector never having been registered at all, a different
+     * case from decision 3's "the runtime already holds one."
      *
-     * So a post a player could move, or a route a player could redraw, cannot
-     * be expressed against this class at all — the registry is append-only and
-     * `register` throws on a duplicate id. That is the mechanical reason the
-     * feature is a decision rather than a wiring job, and it is pinned here so
-     * that adding the missing method is a deliberate edit to this line.
+     * A post a player could move, or a route a player could redraw, is
+     * therefore expressible against this class now, through exactly one
+     * named method -- pinned here so that widening `redefine` into a general
+     * replace, or adding an un-register, is a deliberate edit to this line
+     * rather than a side effect of something else.
      */
     expect(registryMethods()).toEqual([
       'constructor',
       'register',
       'getDefinition',
+      'redefine',
       'requireDefinition',
       'getControlState',
       'all',
