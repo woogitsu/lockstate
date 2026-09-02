@@ -354,6 +354,9 @@ describe('no player-visible sentence is assembled from a localized fragment and 
     // and a scan that read nothing satisfies it.
     // FLOOR at the measured values: 366 `.ts` files under `src/`, of which
     // these are the UI ones, and the localizer is called throughout them.
+    // 372 on 2026-09-02, and that number will be wrong again next week: the
+    // floors below are what this case asserts and neither of them counts
+    // `src/` as a whole. The tally is context, not a claim.
     expect(scanned.length, 'the scan resolved fewer UI modules than when this floor was set').toBeGreaterThanOrEqual(28);
     const callSites = scanned.reduce(
       (total, file) => total + [...file.source.matchAll(/(?:\bt|\.format|\.formatPlural)\s*\(/g)].length,

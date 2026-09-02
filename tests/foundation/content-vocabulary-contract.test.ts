@@ -23,7 +23,15 @@ import { SIMULATION_ENUM_GROUPS } from '../../src/content/simulation-message-key
  *
  * `src/content/object-catalog.ts:82`'s `object.desk` row had its
  * `capabilities: ['workstation']` changed to `['wrkstatoin-MUTANT']` -- a
- * plausible typo, in the dimension nothing checked. The 35 test files covering
+ * plausible typo, in the dimension nothing checked. **The pin above is
+ * `object-catalog.ts:82` because that is where the row was when the mutation
+ * was run (`489b0611`, 2026-08-26); the row is at `src/content/object-catalog.ts:103`
+ * today and has been since `bccdf58c`, the commit that added this file --
+ * corrected 2026-09-02.** The old number is kept because it is where the
+ * measurement was taken and the mutation is a dated record; the new one is
+ * beside it because a reader following the pin lands in a docblock about
+ * `capabilities` rather than on the row. Grep `object.desk` rather than
+ * either number. The 35 test files covering
  * `tests/foundation/` and every content and catalogue test returned a
  * **byte-identical** result to the unmutated baseline (`35 passed | 325
  * tests`), and `pnpm typecheck` passed, because `capabilities` is
@@ -343,6 +351,16 @@ describe('the message-key namespaces are counted, and no call site names one tha
    * labels, across 38 of the 42 namespaces, sit under a namespace no
    * `deriveSimulationMessageKey` call site names. Four namespaces have one --
    * `build-edge`, `build-order-state`, `intake-stage` and `guard-claim`.
+   *
+   * **Read the assertion, not that sentence, and not the two corrections
+   * under it either -- added 2026-09-02.** All three are dated records of a
+   * measurement and every one of them is now behind the tree: the live
+   * figures are the ones the `toEqual` below asserts, 114 of 176 labels across
+   * 30 of the 42 namespaces, with 12 namespaces holding a call site. They are
+   * kept rather than rewritten because the *direction* each records is the
+   * point of the census and is what a reader checks -- but the numbers in the
+   * prose are unguarded by construction and the ones in the assertion are the
+   * only ones anything fails on.
    *
    * **The counts moved by one, and the direction is the one this census is
    * for.** They read 151 of 171 until `action.free-association` was appended

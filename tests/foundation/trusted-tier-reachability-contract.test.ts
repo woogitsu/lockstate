@@ -63,6 +63,19 @@ import {
  * have a live server half, which was ADR 0044's discriminator — telemetry was
  * the one exception, and it is no longer in the list.
  *
+ * **Four remain parked, not three, and have since `e876245f` (#512) —
+ * corrected 2026-09-02.** The sentence above is kept because it is what was
+ * true when telemetry left, and its point stands: telemetry was the exception
+ * that had a server half and got wired. What rotted is the count, and it
+ * rotted in the same commit that fixed it elsewhere — `e876245f` added
+ * `src/ui/account/` to `PARKED_TREES` and rewrote the two paragraphs below to
+ * read "the four trees" and "three of these four have a live server half",
+ * and left this one alone. So the live reading is four parked, three of them
+ * with a server half. `PARKED_TREES` is the authority and the case that pins
+ * each entry's module count reads it directly; no assertion in this file
+ * counts the trees, which is why one paragraph could say three while the two
+ * below it said four.
+ *
  * ## Scope, stated rather than assumed
  *
  * `src/services/**` and `src/persistence/**`, plus one named exception below.

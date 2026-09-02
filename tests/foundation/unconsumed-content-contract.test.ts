@@ -33,6 +33,14 @@ import { defaultStaffRoleRegistry } from '../../src/content/staff-role-catalog';
  * it -- and it is worth recording that the first id to take it was one of the
  * three #141 was worried about.
  *
+ * **One of those three is still here, not two, since `71617799`
+ * (2026-08-30) -- corrected 2026-09-02.** The paragraph above is kept because
+ * the dock door's graduation is exactly the exit it describes and nothing
+ * about that has changed. What changed is that `room.delivery-bay` took the
+ * same exit two ADRs later, leaving `room.storage-room` as the only one of
+ * #141's three that this file still holds a reason for. See
+ * `PROTECTED_BY_DECISION` below for why no assertion here noticed.
+ *
  * The measurement it also delivers is #141's own recommendation 1: turn
  * "declared but unconsumed" from something four agents rediscover into a
  * line of output. `#97`'s `'brick'`/`'item.brick'` split went unnoticed for
@@ -93,6 +101,14 @@ const ROOT = join(__dirname, '../..');
  * The survivor is a **room**, and that is not a coincidence -- a room id has no
  * import-time validator behind it the way an object id named by a buildable now
  * does, so this list is the only thing standing between it and a sweep.
+ *
+ * **Nothing here policed that, and that is the more useful half of the
+ * correction.** The first case below pins the *membership* of the two lists
+ * against the measured unconsumed set, and the exact figures it asserts count
+ * the two lists together -- so an entry moving between them, or out of both
+ * with the set, moves no number this file checks. A sentence in this docblock
+ * counting entries is therefore unguarded by construction, which is what
+ * `docs/AGENT_WORKFLOW.md` §4 says about a sentence that states a tally.
  */
 const PROTECTED_BY_DECISION: Readonly<Record<string, string>> = {
   'room.storage-room': 'ADR 0017 (destination for procured materials) and #99 (destination for dismantle salvage) both depend on it; #141 flags it explicitly.',
