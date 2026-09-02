@@ -272,12 +272,44 @@ async function underPoint(page: Page, x: number, y: number): Promise<unknown> {
 const POST_TILE = { x: 16, y: 16 } as const;
 const CELL = { west: 12, north: 12, east: 17, south: 17 } as const;
 
+/**
+ * How far east the 6x6 footprint is shifted to clear `.hud-minimap`, and why
+ * the shift is clamped rather than merely computed.
+ *
+ * **MEASURED, and it cost act 4's first run.** At 1280x800 `calibrate()`
+ * answered an origin of `(-384, -624)`, which puts the cell's west wall at
+ * screen `x = 384` and rows 14 to 17 of it at screen `y = 318..528` -- inside
+ * `.hud-minimap`'s live rect of `x 12..410, y 317.8..718.8`. That panel has
+ * `pointer-events: auto` and has swallowed world clicks in this repository
+ * three times now (2026-08-29 at 900x600, 2026-09-01 at 1280x800,
+ * `docs/research/2026-09-02-the-world-view.md` §3 at four viewports), so the
+ * drag crosses it and four of the six west segments land on a panel instead of
+ * the world.
+ *
+ * `playtest-2026-09-01-the-people.playtest.ts` already solved this by shifting
+ * east; what it could not do, and what this fixture needs, is keep
+ * `POST_TILE` **inside** the room. A hire and an admission both arrive at
+ * (16,16), and if the cell does not contain that tile then no prisoner is ever
+ * housed and no guard is ever in the same room as one -- which would make acts
+ * 3 and 4 measure a different prison from the one they claim to. The footprint
+ * spans `west .. west + 5`, so containing 16 bounds the shift at 4. Clamped
+ * there rather than trusted, because the unclamped value is a function of a
+ * viewport and an origin and would silently move the post outside the room at
+ * some other size.
+ */
+function cellShiftClearing(minimapRight: number | undefined, originX: number): number {
+  if (minimapRight === undefined) return 0;
+  const wanted = Math.ceil((minimapRight + 40 - originX) / TILE) - CELL.west;
+  return Math.min(4, Math.max(0, wanted));
+}
+
 interface SealedCellResult {
   readonly origin: { readonly originX: number; readonly originY: number };
   readonly zoned: boolean;
   readonly zoneAttempts: number;
   readonly wallReport: readonly string[];
-  readonly minimapClear: boolean;
+  readonly shift: number;
+  readonly containsPostTile: boolean;
 }
 
 /**
@@ -354,27 +386,28 @@ async function buildSealedCell(
   const origin = await calibrate(page);
   log(act, `calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
 
-  const westX = origin.originX + CELL.west * TILE;
-  const eastX = origin.originX + (CELL.east + 1) * TILE;
-  const northY = origin.originY + CELL.north * TILE;
-  const southY = origin.originY + (CELL.south + 1) * TILE;
-
-  /*
-   * Whether the panel that has swallowed world clicks twice before is over
-   * this rectangle, measured rather than assumed. The cell footprint is fixed
-   * at (12,12)-(17,17) because it has to contain `POST_TILE`; if the minimap
-   * covers part of it, the `wallSide` repair above will say so tile by tile
-   * with an `elementsFromPoint` read, and this line is what lets the report
-   * name the cause without re-running.
-   */
+  // Read live, because the panel's rect depends on the viewport and has moved
+  // between every record that has measured it.
   const minimapRect = await page.evaluate(() => {
     const el = document.querySelector('.hud-minimap');
     if (el === null || (el as HTMLElement).offsetParent === null) return undefined;
     const r = el.getBoundingClientRect();
     return { left: r.left, right: r.right, top: r.top, bottom: r.bottom };
   });
-  const minimapClear = minimapRect === undefined || minimapRect.right < westX || minimapRect.top > southY;
-  log(act, `.hud-minimap rect ${JSON.stringify(minimapRect)}; cell spans screen x ${westX}..${eastX} y ${northY}..${southY}; clear of the panel: ${minimapClear}`);
+  const shift = cellShiftClearing(minimapRect?.right, origin.originX);
+  const west = CELL.west + shift;
+  const east = CELL.east + shift;
+  const containsPostTile = POST_TILE.x >= west && POST_TILE.x <= east && POST_TILE.y >= CELL.north && POST_TILE.y <= CELL.south;
+
+  const westX = origin.originX + west * TILE;
+  const eastX = origin.originX + (east + 1) * TILE;
+  const northY = origin.originY + CELL.north * TILE;
+  const southY = origin.originY + (CELL.south + 1) * TILE;
+  log(
+    act,
+    `.hud-minimap rect ${JSON.stringify(minimapRect)}; shift ${shift} tile(s) east -> cell (${west},${CELL.north})-(${east},${CELL.south})` +
+      ` at screen x ${westX}..${eastX} y ${northY}..${southY}; contains the post tile (${POST_TILE.x},${POST_TILE.y}): ${containsPostTile}`,
+  );
 
   // 60 `wall-brick`, which is `buildAndPopulate`'s own figure and its own
   // arithmetic: 24 wall segments are 48 bricks, and the toilet is one more.
@@ -392,13 +425,13 @@ async function buildSealedCell(
   log(act, `clock after two fast-forward presses: ${JSON.stringify(await currentClock(page))} at tick ${await currentTick(page)}`);
 
   await armBuildable(page, 'wall-brick');
-  const columns = [12, 13, 14, 15, 16, 17];
+  const columns = [0, 1, 2, 3, 4, 5].map((offset) => west + offset);
   const rows = [12, 13, 14, 15, 16, 17];
   const wallReport = [
     await wallSide(page, 'north', columns.map((x) => ({ x, y: CELL.north })), { x: westX + TILE / 2, y: northY }, { x: eastX - TILE / 2, y: northY }, (t) => ({ x: centreOf(origin, t.x, t.y).x, y: northY })),
     await wallSide(page, 'north', columns.map((x) => ({ x, y: CELL.south + 1 })), { x: westX + TILE / 2, y: southY }, { x: eastX - TILE / 2, y: southY }, (t) => ({ x: centreOf(origin, t.x, t.y).x, y: southY })),
-    await wallSide(page, 'west', rows.map((y) => ({ x: CELL.west, y })), { x: westX, y: northY + TILE / 2 }, { x: westX, y: southY - TILE / 2 }, (t) => ({ x: westX, y: centreOf(origin, t.x, t.y).y })),
-    await wallSide(page, 'west', rows.map((y) => ({ x: CELL.east + 1, y })), { x: eastX, y: northY + TILE / 2 }, { x: eastX, y: southY - TILE / 2 }, (t) => ({ x: eastX, y: centreOf(origin, t.x, t.y).y })),
+    await wallSide(page, 'west', rows.map((y) => ({ x: west, y })), { x: westX, y: northY + TILE / 2 }, { x: westX, y: southY - TILE / 2 }, (t) => ({ x: westX, y: centreOf(origin, t.x, t.y).y })),
+    await wallSide(page, 'west', rows.map((y) => ({ x: east + 1, y })), { x: eastX, y: northY + TILE / 2 }, { x: eastX, y: southY - TILE / 2 }, (t) => ({ x: eastX, y: centreOf(origin, t.x, t.y).y })),
   ];
   for (const line of wallReport) log(act, line);
 
@@ -417,7 +450,7 @@ async function buildSealedCell(
     }
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
-    await drag(page, centreOf(origin, CELL.west, CELL.north), centreOf(origin, CELL.east, CELL.south));
+    await drag(page, centreOf(origin, west, CELL.north), centreOf(origin, east, CELL.south));
     await page.locator('.hud-rooms__confirm').click();
     await page.waitForTimeout(800);
     zoned = ((await latestCounts(page))?.rooms ?? 0) > 0;
@@ -433,7 +466,7 @@ async function buildSealedCell(
   // The distance is what act 3 measures, so it is chosen rather than
   // incidental.
   for (const row of [12, 13]) {
-    for (let column = 12; column <= 17 && placed < options.beds; column += 1) {
+    for (let column = west; column <= east && placed < options.beds; column += 1) {
       const point = centreOf(origin, column, row);
       const before = (await sentCommands(page)).length;
       await press(page, point.x, point.y);
@@ -445,7 +478,7 @@ async function buildSealedCell(
   }
   if (options.withToilet) {
     await armBuildable(page, 'toilet-brick');
-    const point = centreOf(origin, 12, 17);
+    const point = centreOf(origin, west, 17);
     await press(page, point.x, point.y);
   }
   log(act, `${placed} bed order(s)${options.withToilet ? ' + 1 toilet' : ' and deliberately NO toilet'} placed`);
@@ -455,7 +488,7 @@ async function buildSealedCell(
   const built = await latestCounts(page);
   log(act, `built at tick ${built?.tick}: rooms=${built?.rooms} roomCapacity=${built?.roomCapacity} accommodationCapacity=${built?.accommodationCapacity}`);
 
-  return { origin, zoned, zoneAttempts: attempts, wallReport, minimapClear };
+  return { origin, zoned, zoneAttempts: attempts, wallReport, shift, containsPostTile };
 }
 
 async function admit(page: Page, count: number, act: string): Promise<number> {
@@ -759,7 +792,7 @@ test('act 2: what a Medium badge says when it arrives at intake, before the earl
 
   // ---- phase 2: a cell, then as many admissions as the panel accepts -----
   const built = await buildSealedCell(page, { beds: 8, withToilet: true, label: act });
-  log(act, `cell (a SECOND prison -- phase 1 above used the first): ${JSON.stringify({ zoned: built.zoned, zoneAttempts: built.zoneAttempts, minimapClear: built.minimapClear })}`);
+  log(act, `cell (a SECOND prison -- phase 1 above used the first): ${JSON.stringify({ zoned: built.zoned, zoneAttempts: built.zoneAttempts, shift: built.shift, containsPostTile: built.containsPostTile })}`);
   const pressed = await admit(page, 24, act);
   log(act, `refusal band after ${pressed} press(es): ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
 
@@ -843,7 +876,7 @@ test('act 3: a sector sweep teleports a guard out and walks it back — how many
   await openApp(page);
 
   const built = await buildSealedCell(page, { beds: 6, withToilet: true, label: act });
-  log(act, `cell: ${JSON.stringify({ zoned: built.zoned, zoneAttempts: built.zoneAttempts, minimapClear: built.minimapClear })}`);
+  log(act, `cell: ${JSON.stringify({ zoned: built.zoned, zoneAttempts: built.zoneAttempts, shift: built.shift, containsPostTile: built.containsPostTile })}`);
   await admit(page, 6, act);
   await hireGuards(page, 3, act);
   await openRosterFold(page);
@@ -947,7 +980,7 @@ test('act 4: neglect until Medium — what changes on screen at that tick, and w
   await openApp(page);
 
   const built = await buildSealedCell(page, { beds: 8, withToilet: false, label: act });
-  log(act, `cell: ${JSON.stringify({ zoned: built.zoned, zoneAttempts: built.zoneAttempts, minimapClear: built.minimapClear })}`);
+  log(act, `cell: ${JSON.stringify({ zoned: built.zoned, zoneAttempts: built.zoneAttempts, shift: built.shift, containsPostTile: built.containsPostTile })}`);
   /*
    * Twelve admissions against eight beds, not eight against eight.
    *
