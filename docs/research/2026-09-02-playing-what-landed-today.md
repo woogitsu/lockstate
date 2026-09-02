@@ -647,9 +647,9 @@ none of it. What is owed is at least one of:
 ## §4 — `.hud-minimap` does not merely swallow a click; it makes four world tiles unbuildable, and the drag over it fails silently
 
 **This is the one finding in this pass that is a defect claim, and it is not
-about either feature.** It is put in front of §2 and §3 because it cost two
-runs and because it is a third independent sighting of a panel that has twice
-been ruled *"not a defect claim — the camera pans"*.
+about either feature.** It is here rather than in a footnote because it cost
+two runs of this pass and because it is a third independent sighting of a
+panel that has twice been ruled *"not a defect claim — the camera pans"*.
 
 **MEASURED, act 4's first run** (kept verbatim; the run was stopped after this
 because everything downstream of it would have measured an unenclosed cell):
