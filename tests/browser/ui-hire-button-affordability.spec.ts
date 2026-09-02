@@ -3,7 +3,7 @@ import { type Page, expect, test } from './network-changed-fixture';
 import './ui-harness-api';
 
 /**
- * The Hire button's enabled state, in a real browser.
+ * The Hire button's availability, in a real browser.
  *
  * ## Where this came from
  *
@@ -12,14 +12,26 @@ import './ui-harness-api';
  * pressing"*, and its fix reported the class rather than only the instance:
  * the Hire button is judged by the same `judgeAffordability` /
  * `pressFloorMinorUnits` pair in `src/main.ts`'s `hire-staff` case, and its
- * enabled state ignored it too. `tests/browser/ui-buy-button-affordability.spec.ts`
+ * availability ignored it too. `tests/browser/ui-buy-button-affordability.spec.ts`
  * is this spec's template and its subject is the same mechanism one control
- * over: `disabled` now tracks the verdict the press itself will be judged
+ * over: `aria-disabled` now tracks the verdict the press itself will be judged
  * against (`pressAffordabilityVerdict`, `src/ui/affordability.ts`), computed
  * *before* the press rather than discovered by it.
  *
+ * **`aria-disabled` and not `disabled`, and on this control that is not a
+ * preference.** #772's first fix wrote the verdict onto the Buy button's
+ * `disabled` property; the narrowing of 2026-09-02 took it back off, because
+ * `disabled` removes the press, the press is what reaches `src/main.ts`'s
+ * pre-flight, and the pre-flight is the only producer of the sentence that
+ * explains the refusal. Here that sentence is
+ * `hud.refusal.hire-staff-past-floor` (the owner's ruling 18 of 2026-08-31)
+ * and `paintBuyTotal`'s own comment records that `hire-staff` is the **last**
+ * producer of `'past-the-overdraft-floor'` left after the Buy button stopped
+ * being one. So every case below reads *both* bits, and `hireDisabled` is
+ * asserted `false` beside every `hireUnavailable` that is `true`.
+ *
  * **The wording half is deliberately not this spec's subject.** `hireLabel` is
- * asserted to stay byte-identical between the enabled and disabled states
+ * asserted to stay byte-identical between the available and unavailable states
  * below, which is the proof that this change is mechanism only -- see
  * `staff-panel.ts`'s comment on `paintHire` for why naming what stops a press
  * and what would lift it is the owner's, under `AGENTS.md`'s fourth exclusion,
@@ -100,7 +112,31 @@ interface ButtonReading {
   readonly selected: string | null;
   readonly visible: boolean;
   readonly hireLabel: string;
+  /** `aria-disabled`: what the verdict writes. */
+  readonly hireUnavailable: boolean;
+  /**
+   * The `disabled` property: what the verdict must **not** write, and the
+   * reason this reading has two fields rather than one (see the header).
+   */
   readonly hireDisabled: boolean;
+}
+
+/**
+ * **What a sighted player can see, which no attribute assertion reaches.**
+ *
+ * The same guard `ui-buy-button-affordability.spec.ts`'s `buyOpacity` is, and
+ * kept per-control rather than deduplicated with it because the shared
+ * `.ui-action[aria-disabled='true']` rule in `primitives.css` is not the only
+ * way this control could stop dimming: `.hud-staff__hire` carries a class of
+ * its own and `hud.css` could override the opacity on it without touching the
+ * Buy button at all. Reads the computed value rather than the rule, so it
+ * holds however the dimming is expressed.
+ */
+async function hireOpacity(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    const button = document.querySelector<HTMLElement>('.hud-staff__hire');
+    return button === null ? Number.NaN : Number.parseFloat(window.getComputedStyle(button).opacity);
+  });
 }
 
 async function push(page: Page, viewModel: HudViewModel): Promise<ButtonReading> {
@@ -110,6 +146,7 @@ async function push(page: Page, viewModel: HudViewModel): Promise<ButtonReading>
     selected: probe.selected,
     visible: probe.visible,
     hireLabel: probe.hireLabel,
+    hireUnavailable: probe.hireUnavailable,
     hireDisabled: probe.hireDisabled,
   };
 }
@@ -117,7 +154,7 @@ async function push(page: Page, viewModel: HudViewModel): Promise<ButtonReading>
 test.describe('the Hire button says whether it can act before it is pressed (#772’s other half)', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
-  test('disables on a balance that refuses the hire, enables on one that does not, and never changes what it says', async ({
+  test('says so on a balance that refuses the hire, not on one that does not, keeps the press either way, and never changes what it says', async ({
     page,
   }) => {
     await page.goto(HARNESS_URL);
@@ -126,12 +163,18 @@ test.describe('the Hire button says whether it can act before it is pressed (#77
 
     /*
      * **Solvent**: nothing refuses an 80 hire at a balance of 24,920. The
-     * control starts, and stays, enabled.
+     * control starts, and stays, available.
      */
     const solvent = await push(page, viewModelAt(24_920));
     expect(solvent.visible, 'the Staff panel was not laid out on the Security tab').toBe(true);
     expect(solvent.selected, 'the harness’ one role was not still selected').toBe('staff-role.guard');
+    expect(solvent.hireUnavailable, 'a solvent prison’s Hire button says it cannot act').toBe(false);
     expect(solvent.hireDisabled, 'a solvent prison’s Hire button is disabled').toBe(false);
+    // The baseline the refused case is compared against, read rather than
+    // written out so the pair below says "dimmer than available" and not
+    // "0.5".
+    const availableOpacity = await hireOpacity(page);
+    expect(availableOpacity, 'an available Hire button is already dimmed').toBe(1);
 
     /*
      * **Past the mature hiring rung** (-1,250, which `'hiring'` shares with
@@ -145,7 +188,40 @@ test.describe('the Hire button says whether it can act before it is pressed (#77
      * would still be enabled here.
      */
     const refused = await push(page, viewModelAt(-1_180));
-    expect(refused.hireDisabled, 'a hire `judgeAffordability` would refuse still shows an enabled button').toBe(true);
+    expect(
+      refused.hireUnavailable,
+      'a hire `judgeAffordability` would refuse still shows a control claiming it can act',
+    ).toBe(true);
+
+    /*
+     * **And the press is still there** -- the narrowing of 2026-09-02, and on
+     * this control the assertion that keeps a sentence reachable at all.
+     *
+     * `src/main.ts`'s `hire-staff` case throws
+     * `HostRefusalError('past-the-overdraft-floor')`, `refusalMessageKey`
+     * narrows it to `hud.refusal.hire-staff-past-floor`, and since the Buy
+     * button stopped removing its own press this is the last control in the
+     * HUD that can produce that reason -- so a future change that wires the
+     * verdict onto `disabled` here would leave two authored sentences with no
+     * route to a player.
+     *
+     * Nothing is in flight at this point -- `setHudViewModel` dispatches no
+     * intent -- and a role is selected, so this reads the panel's own opinion
+     * rather than `createBusyGroup`'s or the no-selection case's.
+     */
+    expect(
+      refused.hireDisabled,
+      'the affordability verdict took the press away, so the refusal that explains it can never be reached',
+    ).toBe(false);
+
+    /*
+     * **And a player can see it**, which is the half of #772 that lives in
+     * `primitives.css` rather than in `staff-panel.ts` -- see `hireOpacity`.
+     */
+    expect(
+      await hireOpacity(page),
+      'the control that says it cannot act looks exactly like one that can, so a sighted player is told nothing before the press',
+    ).toBeLessThan(availableOpacity);
 
     /*
      * **The mechanism, not the wording.** The label is byte-identical to the
@@ -156,16 +232,20 @@ test.describe('the Hire button says whether it can act before it is pressed (#77
      * re-wording are two different changes, and only the first is this
      * change's.
      */
-    expect(refused.hireLabel, 'the disabled state said something the enabled state did not').toBe(solvent.hireLabel);
+    expect(refused.hireLabel, 'the unavailable state said something the available state did not').toBe(
+      solvent.hireLabel,
+    );
 
     /*
      * **Recovers.** The balance that was refused a moment ago is not a
-     * permanent state -- move it back and the identical button re-enables with
-     * no new element, no re-mount, nothing but the next `setHudViewModel` (a
-     * day's state income landing, in the real application).
+     * permanent state -- move it back and the identical button says so again
+     * with no new element, no re-mount, nothing but the next
+     * `setHudViewModel` (a day's state income landing, in the real
+     * application).
      */
     const recovered = await push(page, viewModelAt(24_920));
-    expect(recovered.hireDisabled, 'the button did not recover once the balance did').toBe(false);
+    expect(recovered.hireUnavailable, 'the button did not recover once the balance did').toBe(false);
+    expect(recovered.hireDisabled, 'the recovered button is disabled').toBe(false);
 
     /*
      * **Freshness, threaded rather than defaulted (issue #771's starter rung,
@@ -184,12 +264,15 @@ test.describe('the Hire button says whether it can act before it is pressed (#77
      * have refused 80 + 55.
      */
     const matureAtNinety = await push(page, viewModelAt(-1_160));
-    expect(matureAtNinety.hireDisabled, 'the mature hiring rung leaves 90 of room for an 80 hire').toBe(false);
+    expect(matureAtNinety.hireUnavailable, 'the mature hiring rung leaves 90 of room for an 80 hire').toBe(false);
 
     const freshAtTwentyFive = await push(page, viewModelAt(-1_160, 0));
     expect(
-      freshAtTwentyFive.hireDisabled,
+      freshAtTwentyFive.hireUnavailable,
       'a fresh, unfurnished prison’s starter rung leaves only 25 of room for an 80 hire',
     ).toBe(true);
+    // And the starter rung advises against the press without removing it
+    // either, for the reason the refused case above gives at length.
+    expect(freshAtTwentyFive.hireDisabled, 'the starter rung took the press away').toBe(false);
   });
 });

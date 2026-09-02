@@ -481,7 +481,7 @@ export interface StaffPanel {
    */
   setDailyWageBill(dailyWageBillMinorUnits: number | undefined): void;
   /**
-   * The two treasury figures the hire button's enabled state is judged
+   * The two treasury figures the hire button's availability is judged
    * against: `treasuryMinorUnits` and `roomCapacity`, published on every
    * `simulation/status-counts` tick and passed straight through -- the panel
    * decides the comparison (`pressAffordabilityVerdict`, the same one
@@ -499,8 +499,9 @@ export interface StaffPanel {
    * publication.** That setter takes `number | undefined` because absence is a
    * real state it has to render differently from `0` -- a shut fold states
    * nothing until counts have arrived. Affordability has no such state: the
-   * button starts enabled at the "nothing published yet" default below, which
-   * is what a HUD with no session behind it has always shown, and folding the
+   * button starts available at the "nothing published yet" default below,
+   * which is what a HUD with no session behind it has always shown, and
+   * folding the
    * two into one setter would make a wage bill that has not arrived and a
    * balance that has not arrived the same fact.
    */
@@ -526,9 +527,9 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
    * Zeroed and unfurnished-unknown until the first `setTreasury` call, which
    * is the same "nothing published yet" reading `EMPTY_HUD_VIEW_MODEL.counts`
    * gives every other figure on this HUD -- and at that default a hire is
-   * affordable, which is what this panel showed before it read a balance at
-   * all. `BuildPanel`'s own pair is the same two variables for the same
-   * reason.
+   * affordable, so the button starts available, which is what this panel
+   * showed before it read a balance at all. `BuildPanel`'s own pair is the
+   * same two variables for the same reason.
    */
   let treasuryMinorUnits = 0;
   let treasuryRoomCapacity: number | undefined;
@@ -699,6 +700,12 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
 
   function paintHire(): void {
     const role = selectedRole();
+    // Untouched by the affordability wiring below, and the two are different
+    // questions: this is *authority* -- no role chosen is no charge to send,
+    // so no press may happen at all -- where the verdict at the foot of this
+    // function is *advice* about a press that still lands. See
+    // `ActionButton.setUnavailable` for the general form of the split.
+    hire.setDisabled(role === undefined);
     // Hidden rather than emptied, and hidden together with the figures it
     // quotes: `hud.security.hire-hint` is a sentence about a price, so with no
     // role selected there is no price and no sentence. `.hud-staff__note[hidden]`
@@ -706,15 +713,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     // clamp -- the trap `heldEmpty` records one block down.
     const charge = describeHireCharge(role);
     hireNote.hidden = charge === undefined;
-    if (role === undefined || charge === undefined) {
-      // No selection is no charge, so there is nothing to judge and nothing to
-      // press: the `disabled` this used to set unconditionally at the top of
-      // the function, now set on the one path that reaches it without a
-      // charge. `tests/unit/ui-async-action-gate.test.ts` and
-      // `tests/unit/ui-focus-handoff.test.ts` both rest on this state.
-      hire.setDisabled(true);
-      return;
-    }
+    if (role === undefined || charge === undefined) return;
     hire.setLabel(
       t(HUD_MESSAGE_KEY.securityStaffHire, {
         role: t(role.labelKey),
@@ -732,7 +731,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       wage: localizer.formatNumber(charge.dailyWageMinorUnits),
     });
     /*
-     * **The control's enabled state tracks the same verdict the press itself
+     * **The control's availability tracks the same verdict the press itself
      * will be judged against, computed before the press rather than
      * discovered by it** -- the Hire half of what issue #772 fixed on the Buy
      * button, found by that change's own sweep for the defect class rather
@@ -741,8 +740,43 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
      * `judgeAffordability`, same `pressFloorMinorUnits`, same constant floor,
      * and `'hiring'` shares `'deliveries'`' rung
      * (`INSOLVENCY_RUNG_FLOORS_MINOR_UNITS`) so the one function serves both
-     * intents -- which is why a press this disables and a press this would
-     * have let through are never two approximations of one question.
+     * intents -- which is why a press this advises against and a press this
+     * would have let through are never two approximations of one question.
+     *
+     * **`setUnavailable`, not `setDisabled`, and on this control the reason is
+     * sharper than it was on the Buy button.** PR #799 wrote
+     * `setDisabled(verdict.refused)` on `buySubmit` and the narrowing of
+     * 2026-09-02 took it back off, because `disabled` removes the press and
+     * the press is the only producer of the sentence that explains the
+     * refusal. That argument applies here word for word with
+     * `hud.refusal.hire-staff-past-floor` in place of the purchase one --
+     * `src/main.ts`'s `hire-staff` case throws
+     * `HostRefusalError('past-the-overdraft-floor')`, `refusalMessageKey`
+     * (`src/ui/hud/projection.ts`) narrows it to that key, and the owner
+     * authored it under ruling 18 of 2026-08-31 for a limit a player has no
+     * other way of learning about.
+     *
+     * And it is sharper because of what `paintBuyTotal`'s own comment says
+     * about the day the Buy button was hard-disabled: *"the last producer of
+     * `'past-the-overdraft-floor'` left is `hire-staff`"*. This function is
+     * that producer. Wiring the verdict onto `disabled` here would have taken
+     * the reason away from the last control that could still reach it, so
+     * `refusalHireStaffPastFloor` would have had no producer at all and two
+     * authored sentences would have become unreachable copy -- which is
+     * `AGENTS.md`'s fourth exclusion arrived at from the other direction.
+     *
+     * `aria-disabled` keeps both halves: assistive technology reports the
+     * control as unavailable, `primitives.css` dims it beside `:disabled`, and
+     * the press still lands, is still refused on this thread, and the player
+     * is still told why.
+     *
+     * **The `disabled` bit is also not this panel's to keep**, for the reason
+     * `ActionButton.setUnavailable` gives: `hire.element` is in this panel's
+     * `controls`, and `createBusyGroup`'s `apply` assigns
+     * `control.disabled = busy` for every member on every busy transition, so
+     * a verdict written to `disabled` would be cleared the next time any
+     * command in the HUD settled and not repainted until the next
+     * `setTreasury` or change of role.
      *
      * **The figure judged is `hireChargeMinorUnits`, not the daily wage.** A
      * hire has two costs and only one of them is a press: the charge is one
@@ -753,23 +787,22 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
      * `src/main.ts` compares and therefore what this compares. The standing
      * cost is stated to the player by `hireNote` above and by the roster
      * header's wage bill, and it is deliberately not folded in here -- a
-     * button disabled for a bill that falls due tomorrow would refuse a press
-     * the simulation accepts, which is the #82/#207 failure this whole
-     * mechanism exists to avoid.
+     * control advising against a press for a bill that falls due tomorrow
+     * would be advising against one the simulation accepts.
      *
-     * **Disabled, not hidden.** The hire exists and stays offered; the
+     * **Unavailable, not hidden.** The hire exists and stays offered; the
      * balance that blocks it is a fact about *right now*, and the same press
      * goes through the next time income lands or a dismissal refunds a wage.
-     * `disabled` says exactly that -- inert, but still here -- and carries
-     * `primitives.css`'s own `opacity: 0.5; cursor: not-allowed` and the
-     * assistive-tech semantics with it.
+     * `aria-disabled` says exactly that -- advised against, but still here --
+     * where `hidden` would claim the roles section stopped meaning anything.
      *
-     * **This is the mechanical half only.** What the button *says* while
-     * disabled is untouched -- still `hud.security.hire`, the same
-     * sentence a press could have succeeded with a moment ago. Naming what
-     * stops it and what would lift it is new player-facing copy, which
-     * `AGENTS.md`'s fourth exclusion reserves to the owner, and it is ADR
-     * 0087 decision 2 / ADR 0089's territory rather than this change's.
+     * **This is the mechanical half only.** What the button *says* is
+     * untouched -- still `hud.security.hire`, byte for byte, whichever way the
+     * verdict falls. Naming what stops a press and what would lift it is new
+     * player-facing copy, which `AGENTS.md`'s fourth exclusion reserves to the
+     * owner, and it is ADR 0087 decision 2 / ADR 0089's territory rather than
+     * this change's. The refusal band is the one sentence that already exists,
+     * and keeping the press is what keeps it reachable.
      *
      * **Freshness, threaded exactly as `overdraftRemaining` and
      * `paintBuyTotal` thread it**: `treasuryRoomCapacity === 0`, never a bare
@@ -784,7 +817,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       treasuryMinorUnits,
       isFreshUnfurnishedPrison,
     );
-    hire.setDisabled(verdict.refused);
+    hire.setUnavailable(verdict.refused);
   }
 
   // ---- who is held, and the control that frees them (ADR 0034) ---------
@@ -1128,9 +1161,12 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       // active one: `setVisible` hides the panel without unmounting it, so a
       // publication that arrived on another tab has to have moved the button
       // by the time the player comes back rather than waiting for the next
-      // one. It is cheap -- one comparison, and no DOM write when the label
-      // and the disabled flag are what they already were -- and it is what
-      // `BuildPanel.setTreasury` does for the same publication.
+      // one. It is cheap -- one comparison, one text assignment and one
+      // `setAttribute` per publication, none of which changes layout when the
+      // value is what it already was -- and it is what
+      // `BuildPanel.setTreasury` does for the same publication, whose own
+      // comment records why "no DOM write when nothing changed" stopped being
+      // the right sentence once the verdict moved to an attribute.
       paintHire();
     },
     setVisible(visible: boolean): void {
