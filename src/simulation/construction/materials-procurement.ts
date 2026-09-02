@@ -416,12 +416,52 @@ export interface ConstructionProcurementSink {
    * adjacent states have to answer alike, because "which window you pressed
    * in" is not a rule a player could have predicted.
    *
+   * ## THIS TAKES A QUESTION ADR 0076 NAMED AND DID NOT TAKE
+   *
+   * **Unsigned, and it must not merge before the owner rules.**
+   * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+   * amendment of 2026-08-31 enumerates the three places an order's money can
+   * be, and its case 3 is exactly this window: *"In stock in the container.
+   * The goods arrived, the order had not yet allocated them […] A player who
+   * cancels in this window keeps the material and does not get the money, and
+   * that is a real asymmetry rather than an oversight."* The same amendment
+   * then names the remedy and declines it: *"**Not decided either: whether
+   * surplus stock can be sold back.** Case 3 above […] closes only if a prison
+   * can sell material back to the catalogue. That is a new economic surface
+   * and a price question (ADR 0017 decision 5 reserves prices with the rest of
+   * #29), so it is named and not taken."*
+   *
+   * This method takes it. What it does **not** take is the price question --
+   * it invents no magnitude and uses the catalogue figure
+   * `refundAllocatedMaterials` already uses, and ADR 0081's own principle is
+   * that *"a rule is not a magnitude"*. What it **does** take is the economic
+   * surface, and the cost is measured rather than argued:
+   * `tests/integration/economy-cancel-into-the-overdraft.test.ts`'s last case
+   * plays *place a wall against a shelf you already hold, then cancel it* and
+   * gets **80 minor units for two bricks, per gesture, with no clock wait and
+   * no crew** -- repeatable until the shelf is empty. So this is not only the
+   * window #717 measured; it is a general material-to-money channel, and it
+   * dissolves [ADR 0075](../../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)'s
+   * locked position for any prison holding bricks.
+   *
+   * **The narrow version is not available without a save-format decision.**
+   * Selling back only what *this order's own demand* caused to be bought needs
+   * per-order purchase provenance, and nothing records it:
+   * `procureForPendingOrders` buys the deficit, so an order placed against a
+   * full container costs nothing at all. That would be a persisted field, and
+   * ADR 0076's amendment states *"No save format moves"* as a property of
+   * ruling 20.
+   *
    * ## What it will not do
    *
    * It never touches reserved stock -- `Container.availableOf` nets
    * reservations off, so material a carry job has claimed is not surplus -- and
    * a line the catalogue cannot price is left on the shelf rather than
-   * destroyed, which is `refundAllocatedMaterials`' rule for the same case.
+   * destroyed, which is `refundAllocatedMaterials`' rule for the same case. The
+   * unpriced line is answered **before** anything is withdrawn, so nothing is
+   * ever put back: a `Container.deposit` outside `src/simulation/operations/`
+   * is an exception `docs/OPERATIONS.md`'s no-teleport rule has to name, and
+   * this port does not need one.
    *
    * It must not throw, for the reason every other method on this port must
    * not: it is reached from a command dispatch and from `undo()`.

@@ -73,6 +73,41 @@ import {
  * of the issue's *"an undo now keeps the debt"*, and the second case below
  * plays it.
  *
+ * ## What this branch takes, and why it is unsigned
+ *
+ * **ADR 0076's amendment names this window and declines to close it, so the
+ * change these cases measure is a proposal and not a fix that needs no
+ * decision.** Its case 3 is exactly the window above -- *"In stock in the
+ * container. The goods arrived, the order had not yet allocated them […] A
+ * player who cancels in this window keeps the material and does not get the
+ * money, and that is a real asymmetry rather than an oversight"* -- and its
+ * open questions add *"**Not decided either: whether surplus stock can be sold
+ * back.** […] That is a new economic surface and a price question (ADR 0017
+ * decision 5 reserves prices with the rest of #29), so it is named and not
+ * taken."*
+ *
+ * The last case in this file is the cost of taking it, measured rather than
+ * argued: **place a wall against a shelf you already hold and cancel it, and
+ * two bricks become 80 minor units, per gesture, with no clock wait and no
+ * crew.** That is a general material-to-money channel, not only #717's window,
+ * and it dissolves ADR 0075's locked position for any prison holding bricks.
+ * Three of ADR 0076's own sentences about this case are also contradicted by
+ * measurement and are reported rather than edited here:
+ *
+ * 1. *"The window is one scheduled construction tick wide"* -- it is **ten
+ *    ticks** wide in the clock a player experiences, because
+ *    `ProcurementSystem` is scheduled every tick and `ConstructionSystem`
+ *    every tenth. Measured: bricks land at tick 101 and allocate at tick 111.
+ * 2. *"the plank is in the container, and paying for it as well is the
+ *    one-press hazard"* -- paying for it **and leaving it there** is the
+ *    hazard. Paying for it and taking it out is not, and is exactly what the
+ *    `'assigned'` arm already does at the same catalogue price.
+ * 3. The case reads as one plank in a one-tick window. It is not: a drag buys
+ *    on the placing tick, so every delivery in it lands within a tick of every
+ *    other and **the whole drag occupies the window at once**. Measured, 328
+ *    walls put 26,240 -- the entire opening facility plus 1,240 of the
+ *    overdraft -- into it, and cancelling all of them there returned nothing.
+ *
  * Every command here goes through `packCommand` and the real kernel:
  * `tests/unit/simulation-refusals.test.ts` states the rule this file follows —
  * a fixture that calls the system directly does not exercise the route the bug
@@ -187,6 +222,53 @@ describe('cancelling a drag that spent into the standing overdraft (#717)', () =
     expect(session.stock(WALL_REQUIREMENT.itemId), 'and no bricks were conjured on the way back').toBe(0);
   }, 60_000);
 
+  it('gives back nothing for one order out of a drag whose stalled tail still wants those bricks', () => {
+    /*
+     * **The bound that stops the fix re-creating [#687](https://github.com/matmaxalez/lockstate/issues/687)
+     * one layer down**, and the stock-side twin of the delivery-side case
+     * `tests/integration/economy-money-conservation.test.ts` calls *"will not
+     * cancel one lorry two orders are waiting on"*.
+     *
+     * A drag longer than the overdraft funds splits into a funded head and a
+     * stalled tail: 340 walls cost 27,200 and the rung stops the queue at 328
+     * of them, so twelve orders stand in `'materials-pending'` with nothing
+     * bought for them. Once the head's deliveries land, the 656 bricks on the
+     * shelf are **short** of what the whole queue still wants -- 680 -- so
+     * cancelling one order does not make a single brick surplus. The bricks are
+     * what the tail is waiting on, and selling them would take the queue's own
+     * supply away at a balance where `procureForPendingOrders` cannot buy it
+     * back: the tail would stall for good and the press would have made the
+     * prison strictly worse at building, which is exactly #687's finding.
+     *
+     * So the honest answer here is **nothing back**, and it is a different
+     * sentence from "nothing was ever spent": money *was* spent, and it is
+     * sitting in bricks the rest of the queue is about to consume. The press
+     * shortens the queue by one order and leaves the supply where it is.
+     */
+    const walls = 340;
+    const session = createSession();
+    const orderIds = Array.from({ length: walls }, (unused, index) => `wall-${String(index)}`);
+
+    session.atOneTick(placements(orderIds));
+    const strandedBalance = session.runtime.treasury.balanceMinorUnits;
+    const funded = session.runtime.procurement.pendingDeliveries.length;
+    expect(funded, 'a funded head, and a tail the rung refused').toBeLessThan(walls);
+    expect(strandedBalance, 'stopped by the rung rather than by the drag running out').toBeLessThan(
+      INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS + WALL_COST,
+    );
+
+    session.run(PROCUREMENT_DELIVERY_DELAY_TICKS);
+    const shelf = session.stock(WALL_REQUIREMENT.itemId);
+    expect(shelf, 'the head\'s bricks, all of them landed').toBe(funded * WALL_REQUIREMENT.quantity);
+    expect(shelf, 'and short of what the whole queue still wants').toBeLessThan(walls * WALL_REQUIREMENT.quantity);
+
+    session.atOneTick([{ type: 'CancelBuildOrder', orderId: orderIds[0]! }]);
+    expect(session.runtime.treasury.balanceMinorUnits, 'nothing back: the tail needs those bricks').toBe(
+      strandedBalance,
+    );
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'and the shelf is untouched').toBe(shelf);
+  }, 60_000);
+
   it('gives back every minor unit once the bricks have landed, and unlocks the door the drag locked', () => {
     /*
      * ## Why 328 and not `WALLS_TO_GO_UNDER`
@@ -251,6 +333,54 @@ describe('cancelling a drag that spent into the standing overdraft (#717)', () =
     session.atOneTick([{ type: 'PurchaseMaterials', orderId: 'buy-plank-2', itemId: PLANK, quantity: 1 }]);
     expect(session.runtime.treasury.balanceMinorUnits, 'one plank, out of a whole facility').toBe(
       TREASURY_STARTING_BALANCE_MINOR_UNITS - PLANK_PRICE,
+    );
+  }, 60_000);
+
+  it('turns two bricks into eighty minor units per gesture, which is the surface the owner is being asked for', () => {
+    /*
+     * **The price of the change, measured, and the reason this branch is a
+     * proposal.** The stock arm does not know which bricks a cancelled order's
+     * own demand paid for -- `procureForPendingOrders` buys the *deficit*, so a
+     * wall placed against a full shelf costs nothing at all and nothing records
+     * that it did. It can therefore only ask "is this item surplus to what the
+     * queue still wants", and against a shelf the player filled by hand the
+     * answer is yes.
+     *
+     * So *place a wall, cancel the wall* is a sell-back button: two commands,
+     * no clock wait, no crew, 80 minor units a gesture, repeatable until the
+     * shelf is empty. Nothing is created -- the shelf falls by exactly the two
+     * bricks the treasury is paid for -- but the prison has gained the ability
+     * to convert material into money at will, which is the *"new economic
+     * surface"* ADR 0076's amendment named and left to the owner, and which
+     * would dissolve ADR 0075's locked position for any prison holding bricks.
+     *
+     * This case is here so the surface cannot be taken by accident: if the
+     * owner rules against it, this is the test that goes with the arm.
+     */
+    const session = createSession();
+    const stockpile = 12;
+    session.atOneTick([
+      { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: WALL_REQUIREMENT.itemId, quantity: stockpile },
+    ]);
+    session.run(PROCUREMENT_DELIVERY_DELAY_TICKS);
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'a shelf the player pressed Buy for').toBe(stockpile);
+    const afterBuying = session.runtime.treasury.balanceMinorUnits;
+
+    const gestures = 4;
+    for (let gesture = 0; gesture < gestures; gesture += 1) {
+      const orderId = `sell-${String(gesture)}`;
+      session.atOneTick([
+        { type: 'PlaceBuildOrder', orderId, definitionId: WALL, x: 3 + gesture, y: 3, edge: 'north', transactionId: `t${String(gesture)}` },
+      ]);
+      expect(session.runtime.procurement.pendingDeliveries, 'it bought nothing').toHaveLength(0);
+      session.atOneTick([{ type: 'CancelBuildOrder', orderId }]);
+    }
+
+    expect(session.runtime.treasury.balanceMinorUnits, 'four gestures, four walls\' worth of money').toBe(
+      afterBuying + gestures * WALL_COST,
+    );
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'and the shelf paid for it, brick for brick').toBe(
+      stockpile - gestures * WALL_REQUIREMENT.quantity,
     );
   }, 60_000);
 });

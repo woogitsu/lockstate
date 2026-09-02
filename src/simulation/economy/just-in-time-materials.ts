@@ -746,16 +746,28 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
   /**
    * `ConstructionProcurementSink.refundSurplusStock`.
    *
-   * ## Why the goods leave the shelf before the money arrives
+   * ## The price is settled before a single brick moves, and that is what
+   * keeps this out of `docs/OPERATIONS.md`'s no-teleport exception list
    *
-   * `ProcurementSystem.refundMaterials` credits. If it credited and the
-   * withdrawal then failed, the press would have created value out of nothing
-   * -- which is `tests/integration/economy-money-conservation.test.ts`'s
-   * mutation M2 reached by a shorter route. So the stock is taken off the shelf
-   * first and the credit is asked for afterwards, and the one case where the
-   * credit comes back `0` -- an item the catalogue does not sell -- puts it
-   * straight back. That ordering is why this cannot pay for a brick it did not
-   * remove.
+   * The obvious shape is *withdraw, then ask what it was worth, and put it back
+   * if the answer is nothing*. That shape works and it costs an architectural
+   * exception: a `Container.deposit` outside `src/simulation/operations/` is
+   * material appearing without a carry job, which
+   * `tests/foundation/documentation-claims-contract.test.ts` requires
+   * `docs/OPERATIONS.md`'s no-teleport rule to name module by module. Asking
+   * `procurableMaterial` **first** removes the need for the deposit and
+   * therefore the need for the exception: goods only ever leave the shelf on a
+   * path that is certain to pay for them.
+   *
+   * It also removes the window in which the credit and the withdrawal could
+   * come apart. Once the item is priced and `quantity` is a positive integer no
+   * larger than `availableOf`, `reserve` and `withdrawReserved` cannot refuse
+   * -- nothing runs between the clamp and the call -- and
+   * `ProcurementSystem.refundMaterials` cannot answer `0`, because those two
+   * conditions are exactly the two it answers `0` for. The guards below are
+   * kept anyway, and each returns **before** anything is credited: this is
+   * reached from a command dispatch and from `undo()`, so a refusal has to be
+   * an answer of `0` rather than a throw or a half-done exchange.
    *
    * ## No loop, unlike `refundSurplusDeliveries`
    *
@@ -766,6 +778,13 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
    */
   public refundSurplusStock(itemId: string, demandedQuantity: number, limit: number): number {
     if (!Number.isSafeInteger(limit) || limit <= 0) return 0;
+    /*
+     * A line the catalogue cannot price is left on the shelf rather than
+     * destroyed, which is `refundAllocatedMaterials`' rule for the same case --
+     * and asking here rather than after the withdrawal is what means nothing
+     * has to be put back.
+     */
+    if (procurableMaterial(itemId) === undefined) return 0;
     const surplus = this.heldOrInFlightOf(itemId) - demandedQuantity;
     /*
      * `availableOf` and not `quantityOf`: reserved stock is claimed by a carry
@@ -780,9 +799,7 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
       this.stock.releaseReservation(itemId, quantity);
       return 0;
     }
-    const refundedMinorUnits = this.procurement.refundMaterials(itemId, quantity);
-    if (refundedMinorUnits === 0) this.stock.deposit(itemId, quantity);
-    return refundedMinorUnits;
+    return this.procurement.refundMaterials(itemId, quantity);
   }
 
   /** The biggest `jit:` delivery of `itemId` that fits inside `surplus`, by `(quantity, orderId)`. */

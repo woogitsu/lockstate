@@ -1276,7 +1276,17 @@ decision about what to build next.
     `src/simulation/economy/procurement.ts`: `ProcurementSystem.cancel`, for a
     just-in-time delivery the cancellation made surplus, and
     `ProcurementSystem.refundMaterials`, which is new and sells an allocated
-    order's materials back at the catalogue price. **Neither is an income
+    order's materials back at the catalogue price. **The second of those gained
+    a second caller on the branch for
+    [#717](https://github.com/matmaxalez/lockstate/issues/717), and the
+    sentence above is kept because it is what ruling 20 shipped.** That branch
+    is **unsigned** -- it takes ADR 0076's own open question, *"whether surplus
+    stock can be sold back"* -- and if the owner takes it, `refundMaterials`
+    also sells back the stock a cancelled `'approved'` or
+    `'materials-pending'` order's demand left on the shelf, bounded by that
+    order's own requirement. **No file and no count moves either way**: it is
+    the same call in the same file, so *three sites* and *four events* stand,
+    which is why this is a marked sentence rather than a new bullet. **Neither is an income
     line** -- both are the prison's own money coming back, exactly as a
     cancelled purchase's refund is -- so neither is diverted to a loan under
     ADR 0075 decision 2, and neither may be added to a readout that shows
