@@ -335,7 +335,68 @@ Reported per `docs/AGENT_WORKFLOW.md`'s "watch your own instrument" rather
 than quietly patched and rerun, since the full series already answered the
 question this act was asked.
 
-## Finding 6 — the paused-command sibling sweep (#774): {pending act 4 results}
+## Finding 6 (checked, correct) — the paused-command sibling sweep: every gesture this pass could reach behaves the way ADR 0051 says it should, with the tick provably unmoved throughout
+
+**MEASURED**, act 4. A built, zoned, six-tile cell was paused at tick 11,603,
+and six of the thirteen `HudIntent`s ADR 0051 names — the ones not already
+covered by #749's own browser regression (`CancelBuildOrder`, `Undo`, `Redo`,
+`CancelMaterialPurchase`) — were pressed one after another with **no Play in
+between**, reading the panel and the tick after every one:
+
+| gesture | before → after | tick | band/refusal |
+| --- | --- | --- | --- |
+| `PurchaseMaterials` (10 bricks) | treasury 22,210 → 21,810 | 11,603 (unchanged) | delivery row appears at once (`"1 bought · 400 back if cancelled"`) |
+| `RemoveObject` | — (see instrument note) | 11,603 (unchanged) | refusal reaches the alerts list at once |
+| `UnzoneRoom` | rooms 1 → 0 | 11,603 (unchanged) | Rooms panel shows the room gone at once |
+| `AdmitPrisoner` (against the now-unzoned prison) | prisoners 0 → 0, refused | 11,603 (unchanged) | main-thread pre-check refuses before a command is even sent, per ADR 0051's own account of this exact branch (`src/main.ts:2041`) |
+| `HireStaff` | staff 0 → 1 | 11,603 (unchanged) | Staff panel shows the new hire at once |
+
+The final check in the log — `did ANY of the above ever move the clock off
+11,603? now at 11,603` — confirms the whole sweep ran without a single tick
+of simulation time passing, which is the entire premise ADR 0051 rests on
+(*"pausing stops time; it does not stop the player"*). Every one of the five
+gestures this pass could reach took effect on the panel **immediately**, with
+no need to press Play first — no sibling of the #774 shape (a success
+written to a log but not published until the next tick-loop wake) was found
+in any of them.
+
+**Why this matches the code, not just the observation.** `handleSubmitCommand`'s
+paused-drain branch (`src/simulation/worker/state-machine.ts:1179-1236`) calls
+`publishStatusCounts(now, true)` unconditionally whenever
+`dispatchDueCommands()` did something — the `true` argument is
+`dispatchedWhilePaused`, which by itself opens the interval gate
+(`publishStatusCounts`'s own docblock, `:576-600`) regardless of which of
+the six fields changed. So every one of these five gestures was always going
+to publish immediately once dispatched while paused; the sweep's contribution
+is confirming that is what actually reaches the panel a player is looking at,
+for gestures #749's own regression never exercised.
+
+**Instrument bug, found and reported.** The `RemoveObject` row's press target
+was computed from `cell.origin` alone, at a hard-coded tile `(12, 12)` — but
+`buildResilientCell`'s own tile-shift (`tileShift`, computed to clear
+`.hud-minimap`, `tests/browser/playtest-2026-09-01-the-people.playtest.ts:158-
+166`) is **not exposed on its return value**, so this act had no way to know
+the cell's beds actually sit two tiles east of that. The press landed on bare
+ground and was correctly refused — `"Nothing was removed — there is no
+object on that tile, and none being built there."` — which is not the
+`RemoveObject` success path this row was meant to check. **What it still
+proves**: a refusal this act did not intend reached the alerts list
+immediately, at the unchanged tick, which is itself one more data point for
+the same pattern every other row in this table shows, just not the specific
+gesture the row's label claims. This is reported rather than silently
+re-targeted and re-run: the pattern across the other five gestures (including
+this same refusal channel firing instantly for an *unintended* refusal) is
+strong enough that a sixth confirmation was judged not worth a second
+multi-minute run on a box that measured a load average of 16–18 during this
+act. A future pass wanting the `RemoveObject` success path specifically
+should have `buildResilientCell` return `westTile`/`eastTile` (or the
+computed `tileShift`) rather than re-deriving them.
+
+**What this pass did not reach.** `ReleaseGuard` — releasing a guard from a
+held duty claim (contraband search, incident response), not the roster
+`Dismiss` control — needs an actual stuck-guard incident to provoke, which
+this pass did not attempt to engineer. It is the one member of ADR 0051's
+thirteen this sweep leaves unchecked.
 
 ## Finding 7 — the alerts band's dwell floor at ×4: {pending act 5 results}
 
