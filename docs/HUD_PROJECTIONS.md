@@ -536,13 +536,16 @@ Four properties are worth stating because each is a decision:
   *"the counts cadence"*, and six sentences in this section said so; the
   composition root's nine comments said it with a number, *"up to 500ms for the
   next counts publication"*. **All of them were false the day they were
-  written.** `src/main.ts:1702` opens **one** listener for every worker-to-main
-  message, and its early return (`src/main.ts:1735-1740`) fires only when all
+  written.** `src/main.ts:1755` opens **one** listener for every worker-to-main
+  message, and its early return (`src/main.ts:1796-1804`) fires only when all
   six of its translators say nothing. `hudClockFromWorkerMessage`
   (`src/ui/simulation-clock.ts:22-57`) has no "nothing changed" arm — it
   returns a view model for *every* `simulation/clock-state` — so every one of
   those falls through to the nine-call refresh block at
-  `src/main.ts:1795-1804`. `publishClockState` posts one at most every 250 ms
+  `src/main.ts:1860-1868`. (**Those three citations read `1702`, `1735-1740`
+  and `1795-1804` until 2026-09-02** and all three had rotted; the quoted
+  sentences are unchanged, which is why the quotations are the durable half and
+  the line numbers are not.) `publishClockState` posts one at most every 250 ms
   and only when the tick has moved
   (`src/simulation/worker/state-machine.ts:438-462`), which is twice the rate
   of the counts channel and, crucially, **not change-gated on the counts**.
@@ -565,9 +568,32 @@ Four properties are worth stating because each is a decision:
   confirmed almost exactly — but **46-58 of the ~118 gaps exceeded 260 ms**,
   median gap **253-260 ms**, and a **tail of 292.8-299.6 ms**. The honest
   figure for "worst gap" in a browser is **up to roughly 300 ms**, not 255;
-  [ADR 0086](./adr/0086-what-refreshes-a-pulled-hud-readout.md) §2's own
+  [ADR 0086](./adr/0086-what-refreshes-a-pulled-hud-readout.md) **§5's** own
   260 ms bound is falsified by the same data (see that ADR's amendment,
   not yet accepted).
+
+  **That last clause said "§2's own 260 ms bound" until 2026-09-02 and named
+  the wrong section**, which inverted the very distinction this paragraph
+  exists to keep: §2 is the *mechanism* and the same four runs **confirm** it —
+  118 requests against a counts channel that published once. What is falsified
+  is §5's *prediction*, "no gap above 260 ms".
+
+  **And §5's 260 ms and §3's 255 ms are one claim at two numbers**, which is
+  why one measurement falsified both: 255 ms is exact and 260 was §5 rounding
+  it up before predicting against it. **255 ms is arithmetic, not an
+  observation** — `publishClockState` can publish only on a tick-loop wake and
+  `startTickLoop` wakes on `setInterval(..., 15)`, so the gap is
+  `ceil(CLOCK_STATE_PUBLISH_INTERVAL_MS / 15) * 15` = 255, a function of two
+  constants of which only one has a name.
+  `tests/foundation/hud-refresh-cadence-contract.test.ts` verifies it by
+  mutation: the interval at 200 gives 210. In a browser that arithmetic is a
+  **floor** rather than a bound — it bounds the worker's publication grid under
+  punctual timers, and a player's wait adds timer lateness, the worker's
+  per-wake work and the main thread's delivery, none of which any constant here
+  bounds. **"Up to roughly 300 ms" is therefore a sample maximum over four
+  30-second runs on one four-core container, not a bound**: the right figure to
+  budget against and the wrong one to promise. `docs/BENCHMARKING.md` is why no
+  gate in this repository can assert it.
 
   **What each of those six sentences was reaching for is still true** and is why
   they are corrected rather than deleted: none of these readouts is refreshed

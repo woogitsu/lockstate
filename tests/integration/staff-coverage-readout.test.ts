@@ -220,7 +220,23 @@ describe('hiring visibly fixes it, through the same command a player presses', (
     hire(runtime, 1);
     // 20 ticks, because `DeploymentSystem` runs every 10 and a hire standing on
     // the post tile is assigned on its next update rather than on the tick the
-    // command landed. Two cadences of the HUD's own 500ms poll, at worst.
+    // command landed.
+    //
+    // **The sentence that closed this comment is kept and corrected rather
+    // than overwritten (2026-09-02, issues #718 and #765).** It read: *"Two
+    // cadences of the HUD's own 500ms poll, at worst."* There is no 500 ms
+    // poll: `refreshStaffCoverage` is one of the nine *pulled* readouts, and
+    // what makes the main thread ask is the worker's clock heartbeat, not the
+    // change-gated counts channel -- `CLOCK_STATE_PUBLISH_INTERVAL_MS` is 250,
+    // and because `publishClockState` can only publish on a tick-loop wake the
+    // real spacing is `ceil(250 / 15) * 15` = 255 ms on the harness, measured
+    // at a 292.8-299.6 ms tail in a browser (PR #762, issue #765). So 20 ticks
+    // is a whole second, which is roughly **four** heartbeats rather than two
+    // counts cadences. What the old sentence was reaching for is unchanged and
+    // is why it is kept: the readout is refreshed several times inside this
+    // window, so the assertion below is not racing the cadence.
+    // `tests/foundation/hud-refresh-cadence-contract.test.ts` is the gate, and
+    // ADR 0086 is where the heartbeat is proposed as the contract.
     stepTo(runtime, runtime.kernel.tick + 20);
     expect(readout(runtime)).toMatchObject({
       required: 2,
