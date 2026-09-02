@@ -84,8 +84,21 @@ function sourceOf(
 const TICKS_PER_SECOND = 20;
 const SUB = LOCOMOTION_SUBTILE_UNITS;
 
-/** A stand-in `GuardRoster`, so the encoder's guard pass can be driven with literal tiles. */
-function guardSourceOf(guards: readonly { readonly id: number; readonly x: number; readonly y: number }[]): RenderGuardSource {
+/**
+ * A stand-in `GuardRoster`, so the encoder's guard pass can be driven with
+ * literal tiles. `walk` is `sourceOf`'s own optional field, for the same
+ * reason: since [ADR 0088](../../docs/adr/0088-does-a-guard-walk-to-its-post.md)
+ * a guard's `locomotion.read` is not a fixed zero, and this file's subject is
+ * the bytes it writes, not how a walk advances.
+ */
+function guardSourceOf(
+  guards: readonly {
+    readonly id: number;
+    readonly x: number;
+    readonly y: number;
+    readonly walk?: { readonly offsetX?: number; readonly offsetY?: number; readonly velocityX?: number; readonly velocityY?: number; readonly headingX?: number; readonly headingY?: number };
+  }[],
+): RenderGuardSource {
   const byId = new Map(guards.map((guard) => [guard.id, guard]));
   return {
     allGuardIds: () => guards.map((guard) => guard.id),
@@ -93,6 +106,18 @@ function guardSourceOf(guards: readonly { readonly id: number; readonly x: numbe
       const guard = byId.get(entityId);
       if (guard === undefined) throw new Error(`No such guard ${String(entityId)}.`);
       return { x: guard.x, y: guard.y };
+    },
+    locomotion: {
+      read(key: number, atX: number, atY: number, out: WalkReading): WalkReading {
+        const walk = byId.get(key)?.walk;
+        out.subX = atX * LOCOMOTION_SUBTILE_UNITS + (walk?.offsetX ?? 0);
+        out.subY = atY * LOCOMOTION_SUBTILE_UNITS + (walk?.offsetY ?? 0);
+        out.velocitySubX = walk?.velocityX ?? 0;
+        out.velocitySubY = walk?.velocityY ?? 0;
+        out.headingX = (walk?.headingX ?? 0) as -1 | 0 | 1;
+        out.headingY = (walk?.headingY ?? 0) as -1 | 0 | 1;
+        return out;
+      },
     },
   };
 }
@@ -384,9 +409,38 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
       [6 * SUB, 2 * SUB],
       [1 * SUB, 8 * SUB],
     ]);
-    // A guard's tile updates only on arrival (no `LocomotionStore` reading for
-    // guards, ADR 0059), so every guard record is motionless on the wire.
+    // Neither guard here is mid-walk (`guardSourceOf`'s stand-in answers zero
+    // for one with no `walk`), so both are motionless on the wire -- the same
+    // "standing still" answer a prisoner's `locomotion.read` gives, not a
+    // guard-specific rule. The next test is the one that used to be false.
     expect(guardRecords.every((record) => record.velocitySubX === 0 && record.velocitySubY === 0)).toBe(true);
+  });
+
+  it("carries a walking guard's sub-tile position and velocity, exactly like a prisoner's (ADR 0088)", () => {
+    // **This is the case ADR 0059 could not carry**: it read "no
+    // `LocomotionStore` reading for guards" here, and this test is the
+    // correction rather than a silent edit (`docs/AGENT_WORKFLOW.md` §4) --
+    // it fails against the encoder from before ADR 0088's `RenderGuardSource.locomotion`
+    // existed, because `guardSourceOf` could not even be built without a
+    // `locomotion` member for that encoder to call.
+    const buffer = encodeRenderActorsKeyframe(
+      sourceOf([{ id: 1, x: 0, y: 0 }]),
+      TICKS_PER_SECOND,
+      guardSourceOf([{ id: 10, x: 6, y: 2, walk: { offsetX: 64, velocityX: 128, headingX: 1 } }]),
+    );
+
+    const read = readRenderActorsPayload(buffer);
+    const guardRecord = read.records[1]!;
+    expect(guardRecord.subX).toBe(6 * SUB + 64);
+    expect(guardRecord.subY).toBe(2 * SUB);
+    // Sub-tile units a tick become sub-tile units a wall-clock second here --
+    // the same conversion `encodeRenderActorsKeyframe` applies to a walking
+    // prisoner, at the same `TICKS_PER_SECOND`.
+    expect(guardRecord.velocitySubX).toBe(128 * TICKS_PER_SECOND);
+    expect(guardRecord.velocitySubY).toBe(0);
+    // The population ordinal survives beside the heading, packed into the
+    // same word (`packRenderActorFields` is the production encoder for both).
+    expect(guardRecord.packedFields).toBe(packRenderActorFields(RENDER_ACTOR_POPULATION_GUARD, 1, 0));
   });
 
   it('omits the guards entirely when the caller passes none, exactly as it did before slice 2', () => {

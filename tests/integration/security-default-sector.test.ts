@@ -280,7 +280,13 @@ describe('deployment reaches a guard hired through the real command path', () =>
     expect(runtime.securityGuards.getPathRequestId(0)).toBe('security.deploy.0.1');
     expect(runtime.securityGuards.getTile(0)).toEqual(FAR_TILE);
 
-    stepTo(runtime, runtime.kernel.tick + 50);
+    // 50 ticks was the old budget, sized for route resolution alone (an
+    // abstracted arrival applied the moment the route resolved). Since ADR
+    // 0088 the guard also has to walk the ~32-tile route once it resolves;
+    // measured on this exact fixture, 74 ticks elapse between the hire
+    // landing and the guard reaching `'on-post'`. 150 keeps the margin the
+    // old figure had over its own measurement.
+    stepTo(runtime, runtime.kernel.tick + 150);
 
     expect(phases(runtime)).toEqual(['on-post']);
     expect(runtime.securityGuards.getTile(0)).toEqual(ORIGIN);
@@ -439,7 +445,20 @@ describe('an incident is triggered, responded to and closed, in a session starte
     // riot calls for (`lockdownSeverityThreshold` is 6) actually applied.
     expect(theRiot(runtime).state).toBe('responding');
     expect(runtime.securitySectors.getControlState(DEFAULT_SECTOR_ID)).toBe('lockdown');
-    expect(phases(runtime)).toEqual(['on-post', 'on-search', 'on-search', 'on-search', 'on-search']);
+    /*
+     * Guard 0's own phase here is a race this decision introduces rather than
+     * one this checkpoint is about: guards 1-4 are `IncidentResponseSystem`
+     * claimants, which still teleport on arrival (out of ADR 0088's scope,
+     * named in its "Consequences" section) -- so `'responding'` arrives the
+     * moment their routes resolve, unchanged. Guard 0 is the sector's own
+     * `DeploymentSystem` assignment walking the same distance from `FAR_TILE`
+     * since ADR 0088, and measured on this fixture it has not yet arrived at
+     * the tick the riot flips to `'responding'` -- still `'travelling'`,
+     * proving the walk is real rather than asserting it. The later checkpoint
+     * once every incident has closed is where guard 0's own arrival is
+     * asserted, below.
+     */
+    expect(phases(runtime)).toEqual(['travelling', 'on-search', 'on-search', 'on-search', 'on-search']);
     expect(runtime.incidentResponseSystem.claimedGuardIds()).toEqual([1, 2, 3, 4]);
     // Every responder walked from (0, 0) and is standing on the post tile: the
     // destination `requireDefinition(incident.sectorId).postTile` resolves to,
@@ -448,6 +467,10 @@ describe('an incident is triggered, responded to and closed, in a session starte
     expect(runtime.incidentResponseSystem.getMetrics()).toMatchObject({ respondersDispatched: 4, routeFailures: 0 });
 
     while (runtime.incidents.openIncidents().length > 0 && runtime.kernel.tick < RIOT_TICK + 600) runtime.kernel.step();
+    // Guard 0's own walk to post (see the comment above) has no reason left to
+    // race against once every incident is closed, so it is waited out here
+    // rather than left to chance for the settled-state check below.
+    while (runtime.securityGuards.getDeploymentPhase(0) !== 'on-post' && runtime.kernel.tick < RIOT_TICK + 600) runtime.kernel.step();
 
     // Resolved rather than lapsed, with nobody hurt -- the containment outcome
     // ADR 0032's consequence tier reads, produced by a session started from

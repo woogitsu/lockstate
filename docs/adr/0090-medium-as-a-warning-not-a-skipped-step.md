@@ -217,12 +217,42 @@ tick read gives 4,800 — see `kernel.ts:190-208` and
 `tests/integration/risk-tier-neglect-reachability.test.ts` for the offset),
 giving a player roughly 43,000 ticks (about 18 in-game days) of `Medium`
 warning before `High` arrives at tick 47,999 (observed as 48,000 in the same
-test's convention). A cadence any slower than a day risks the warning arriving
-too close to `High` to read as one; a cadence faster than a day was not chosen
+test's convention). A cadence any slower than a day was expected to risk the warning
+arriving too close to `High` to read as one, **and that expectation has since
+been measured and is weaker than it was stated as** — see the correction below;
+a cadence faster than a day was not chosen
 because nothing in this scenario's incident dynamics (riots quiet for
 `DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT`, 4,800 ticks, between them) needs
 sub-day granularity to catch, and running the evidence fold more often than
 that raises the cost named below for no observed benefit.
+
+**Correction, measured rather than argued (integrator, 2026-09-02, before this
+document was proposed for signature).** The sentence above rejected a slower
+cadence on a risk it did not measure. The measurement was then taken, as a
+mutation of the shipped code rather than a thought experiment: the early
+warning's `schedule` was changed in place to `intervalTicks: DAY_LENGTH_TICKS *
+10` — the authoritative review's own cadence — and
+`tests/integration/risk-tier-neglect-reachability.test.ts` re-run against the
+same neglect fixture. `Medium` was still reached, at tick **24,000**, and
+`High` did not move at all, staying at **48,000**. So a ten-day cadence still
+gives a player a **24,000-tick (~10 in-game day) `Medium` window** before
+`High`, which is not plausibly "too close to `High` to read as one".
+
+**The decision is unchanged and the reasoning for it is narrower.** Daily is
+still the right cadence, but the honest argument for it is *margin*, not
+necessity: it buys ~43,000 ticks of warning where ten-day buys ~24,000, and it
+decouples the warning's arrival from the authoritative review's own phase
+instead of landing on the same tick every ten days. What is **not** true is
+that a slower cadence fails to produce the waypoint at all. This matters
+because the owner is being asked to sign a mechanism, and a justification that
+overstates what forced it invites the wrong question later — the real question
+is how much warning a player is owed, which is a design call, and a range of
+cadences can serve it.
+
+**The mutation was restored by hand and the restore verified** (`sha256sum -c`
+matched the pre-mutation digest, `git status` clean, the suite green again at 2
+passed) — it is recorded here rather than left as a claim about a tree nobody
+can inspect.
 
 ### Ordering: 52, between intake (50) and the authoritative review (55)
 
