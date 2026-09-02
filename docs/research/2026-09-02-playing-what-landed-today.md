@@ -108,6 +108,59 @@ container.
 
 ---
 
+## The two answers, before the evidence
+
+**Can a player see a guard walk? No — not rarely, not briefly: not at all in
+any prison this pass could build.** Across three prisons, six completed
+contraband sweeps, one press of the only control that should break it, and
+2,911 ticks of dedicated sampling on the render channel the renderer draws
+from, **not one guard record carried a velocity or an off-tile position.** The
+reason is not that the walk is too fast to see. Of the three routes into a
+walk, two are structurally unreachable in a session a player can start — a
+hire already stands on the post tile it is deployed to (§1), and no sector has
+a patrol route (§1a) — and the third needs a staffing shortage to coincide with
+a spare guard standing somewhere other than the post, which nothing in
+ordinary play arranges (§2c). `Travelling` never appeared on the roster;
+`On Search` appeared seven times, and every one of its legs was a teleport of
+six tiles in two or three ticks (§2b). **The honest input to the question ADR
+0088 left open is therefore not "how often" but "under what condition at
+all".** §2f is where this pass's own attempt to force one fell short, and §9 is
+what would change my mind.
+
+What #740 did buy is real and is not diminished by that: the vocabulary now
+names states that exist, the mechanism is wired and order-pinned, and ADR
+0077's edge re-validation reaches guards. What is not true is any sentence
+implying a player will watch it happen.
+
+**What does a player see when `Medium` arrives, and can they act on it? One
+word changes in a badge four rows deep on a tab they may not have open, and
+nothing else on the screen moves — not even the badge's colour.** Measured on
+the neglect fixture played with the mouse: eleven prisoners reached tier 2 at
+tick 26,514, `badgeTone` stayed `neutral` — the same tone `Minimal` carries —
+the `HIGH RISK` chip stayed `0` (it counts `riskTier >= 3` by construction),
+the `INCIDENTS` chip read `Clear`, and the alerts column narrated the riot that
+caused the reclassification and never mentioned the reclassification. Across
+3,098 further ticks the act recorded exactly **one** distinct screen state.
+Hovering the row adds no `title`; pressing it produced zero commands with the
+press verified inside the row; the Regime panel has no control at all. So the
+answer to "can they act on it" is that they cannot even learn what it means
+(§3).
+
+**The sharpest thing in §3 is not a missing sentence, it is two sound decisions
+composing badly.** `describePrisonerRow` ties the badge's *tone* to the
+classification group deliberately, and `ClassificationEarlyWarningSystem` is
+capped at `Medium` precisely so it can never move a group. So #788 introduces
+the game's first tier change that is meant to be noticed, into the one layer
+that is bound to a fact it is forbidden to change. That is a design call, not a
+bug in either change, and it is item 3 of §10.
+
+**And one defect neither feature owns.** `.hud-minimap` does not merely swallow
+a click: at 1280×800 it makes four world tiles genuinely **unbuildable** — a
+drag drops exactly the segments whose screen points fall inside it and keeps
+the ones outside, and single presses on them reach the panel too (§4). Third
+sighting, first with the cause read off `elementsFromPoint` per tile rather
+than argued from load.
+
 ## §1 — A guard hired from the Staff panel never walks, and the two modules that make that true do not know about each other
 
 **MEASURED, act 1.** Four hires on a brand-new prison, clock at ×1, roster and
@@ -200,132 +253,6 @@ into. **Owed to: whoever owns `src/simulation/security/`.**
 four staff and no warning, and the next instrument to read that surface will
 step on it.
 
-## §5 — Corrections, in both directions
-
-### 5a. Three corrections to this pass's own brief
-
-1. **There is no `--suite playtest`.** Stated at length under "Reproduction"
-   above. The brief said to *"check `run-suite.ts` for the exact suite name for
-   playtests"*; the answer is that a playtest is not drivable from that wrapper
-   at all, by decision, and there is a foundation contract holding the
-   exclusion in writing.
-2. **The brief's first reference model, a 2026-09-02 playtest named
-   *the-clock*, is not in the tree.** It named three files to read and match;
-   that one has no file. `ls tests/browser/*.playtest.ts` lists 26 before this
-   pass added its own, two of them dated 2026-09-02 — *the-first-five-minutes*
-   and *the-world-view* — and `tests/browser/ui-clock-paused-readout.spec.ts`
-   is the only clock-named file in the directory. This file is matched against
-   those two plus `tests/browser/playtest-2026-09-01-the-people.playtest.ts`
-   and `tests/browser/playtest-740-does-a-guard-walk.playtest.ts`, which the
-   brief also named and which do exist.
-3. **"Hire a guard and deploy it somewhere far" is not a gesture the game
-   has.** There is no control that chooses where a hire stands or which post it
-   takes: `src/main.ts:2793` supplies the origin from a module constant, and
-   `DeploymentSystem.assignUnassignedGuards` chooses the sector. §1 is the
-   measurement; act 1 was rewritten around the gesture that exists rather than
-   the one the brief described.
-
-The brief's tick figures, by contrast, **check out**: 2,400 ticks a day, the
-early warning at `intervalTicks: 2,400` / `phaseTicks: 2,399`, `Medium` at
-4,800 and `High` at 48,000 in the neglect fixture's post-step convention, and
-the ~43,000-tick window between them are all in
-`tests/integration/risk-tier-neglect-reachability.test.ts` and were read there.
-
-### 5b. One correction to this corpus, in the other direction
-
-`docs/research/2026-09-01-playing-the-people-surface.md` §1b states:
-*"`classifyPrisoner`'s screening draw at `priorIncidents: 0` can only reach
-tiers 0 and 1 (`Minimal`, `Low`)"*, and concludes that `Medium` and `High`
-*"require actively neglecting a prisoner for a full in-game day or more"*.
-
-**That was already false when it was written.** `9a25700c` (2026-08-30, whose
-subject line is *"A sentence long enough to be a history: 14-90 in-game days
-(#659)"* and whose code comments attribute the ruling to #593 and ADR 0079)
-moved `MAX_SENTENCE_DAYS` to 90, which is 216,000 ticks against
-`LONG_SENTENCE_THRESHOLD_TICKS` of 200,000
-(`src/simulation/prisoners/sentence.ts:201` and
-`src/simulation/prisoners/classification.ts:41`), so the seven drawable
-sentences from 84 days up score the long-sentence point and `classifyPrisoner`
-can clamp to tier 2. `src/main.ts`'s own docblock records the change in as many
-words — *"the tiers reachable from this panel's request were `[0, 1]` at every
-drawable sentence and are `[0, 1]` below 84 in-game days and `[0, 1, 2]` at or
-above it"* — and `src/simulation/prisoners/intake-system.ts:483-486` marks the
-same property as *"spent on purpose"*.
-
-Records here are read-only history and are not edited to match current `main`;
-this is marked in a new record, which is what
-`docs/research/README.md` asks for. But the correction is not merely
-bookkeeping: **§3 below is about the consequence**, which is that the badge
-`Medium` now has two producers with two different meanings.
-
-## §4 — `.hud-minimap` does not merely swallow a click; it makes four world tiles unbuildable, and the drag over it fails silently
-
-**This is the one finding in this pass that is a defect claim, and it is not
-about either feature.** It is put in front of §2 and §3 because it cost two
-runs and because it is a third independent sighting of a panel that has twice
-been ruled *"not a defect claim — the camera pans"*.
-
-**MEASURED, act 4's first run** (kept verbatim; the run was stopped after this
-because everything downstream of it would have measured an unenclosed cell):
-
-```
-[act4] calibration: tile (0,0) top-left = (-384, -624)
-[act4] .hud-minimap rect {"left":12,"right":410,"top":317.8125,"bottom":718.8125}
-[act4] north run: 6 by drag; []; still missing []
-[act4] north run: 6 by drag; []; still missing []
-[act4] west run: 3 by drag; ["press at 12,15 produced NOTHING; under it:
-  [{"tag":"DIV","cls":"ui-panel__body","pointerEvents":"auto"},
-   {"tag":"SECTION","cls":"ui-panel hud-minimap","pointerEvents":"auto"},
-   {"tag":"CANVAS","cls":"","pointerEvents":"auto"}, ...]",
-  "press at 12,16 produced NOTHING; ... hud-minimap ...",
-  "press at 12,17 produced NOTHING; ... hud-minimap ..."];
-  still missing ["12,15","12,16","12,17"]
-[act4] west run: 6 by drag; []; still missing []
-```
-
-Read that against the geometry. Origin `(-384, -624)` puts tile column 12's
-west edge at screen `x = 384` and tile rows 12..17 at screen
-`y = 144, 208, 272, 336, 400, 464`, each 64px tall. The panel occupies
-`x 12..410, y 317.8..718.8`. So the west edges of tiles (12,15), (12,16) and
-(12,17) — and part of (12,14) — are inside it, and the two runs that laid the
-same wall on the *east* edge (`x = 768`, outside the panel) each produced all
-six segments.
-
-### Why this is different from the flake already on record
-
-`playtest-2026-09-01-the-people.playtest.ts`'s header documents a six-segment
-side producing three under machine load and declines to call it a defect,
-correctly, because *"it rests on dropped frames under load, which is
-wall-clock"*. **This run distinguishes the two causes without a timing
-argument at all**: the drag dropped exactly the three segments whose screen
-points `elementsFromPoint` places under a `pointer-events: auto` panel, the
-three it kept are the three outside it, and three subsequent single presses —
-one mousedown and one mouseup each, no interpolation — reached the panel too.
-A dropped frame does not choose its victims by screen rectangle.
-
-**So the player-facing statement is stronger than "a click is swallowed".** At
-this viewport and camera, **there is no gesture that builds on those tiles**:
-not a drag, not a press. And it is silent: `docs/research/2026-09-02-the-world-view.md`
-§3 already measured that a blocked click and a click that landed with nothing
-to report leave `.hud__refusal` and `.hud__event` byte-identical, so there is
-no third state for "this did not reach the world". This pass did not re-measure
-those two bands during the wall runs and does not claim to have — what it
-measured is the commands, and three of six were never submitted.
-
-### What is NOT claimed
-
-- **Not that the camera cannot be panned away from it.** It can, and
-  `docs/research/2026-09-02-the-world-view.md` §4 measured panning as unbounded
-  and exactly reversible. The claim is that a player who does not know to pan
-  gets a wall with holes in it and a refusal that blames the rectangle.
-- **Not a number for how much of the world this affects.** That is already
-  measured — 42.04%–44.42% of the canvas at four viewports, `.hud-minimap`
-  alone 14.5% at 1280×800, same note §1 — and this pass adds the consequence
-  rather than the fraction.
-- **Not that any sentence is missing.** What the right sentence would be, or
-  whether the panel should stop taking pointer events, is a player-facing
-  decision. **Owed to: the owner** (`AGENTS.md` exclusion 4).
-
 ## §2 — The only walk a player can provoke, and what it costs in ticks
 
 ### 2a. What was left after §1, read before it was played
@@ -371,39 +298,185 @@ at ×4, which the constant's own docblock states as *"640 px/s on screen at 1x
 inside it is about 62 tiles, or **124 ticks**; a walk across a 6×6 cell is
 **2 to 20 ticks**.
 
-## §6 — Do the two features interact? Measurably, no; arithmetically, by a bounded amount
+### 2b. Played: three complete sweeps, four teleports, and not one walked step
 
-The brief asked whether a `Medium` prisoner in a prison whose guards walk
-rather than teleport means slower incident coverage, and whether that is
-visible or measurable.
+**MEASURED, act 3** — `1 passed (9.6m)`, 574s standalone. A sealed, zoned 6×6
+cell at (14,12)-(19,17), six admissions (five housed, one waiting), three
+guards, sampled from tick **25,943 to 27,994** at ×1 — 2,051 ticks, which
+spans three 600-tick sweep boundaries.
 
-**REASONED from READ facts, and the answer is that ADR 0088 was scoped
-precisely to avoid this.** The three guard errands that bear on an incident are
-untouched by it:
+The roster, every change, in ticks:
 
-- **Incident response still teleports**, deliberately (#740's own commit
-  message: *"Incident response and contraband search guard travel are
-  unchanged and still teleport on arrival"*), and its destination is
-  `requireDefinition(incident.sectorId).postTile` — the tile the responder is
-  already standing on in a starter prison.
-- **A contraband sweep's outbound travel still teleports**
-  (`src/simulation/contraband/search-system.ts:372`).
-- **Coverage** is `DeploymentSystem.getCoverageReport`, which counts guards by
-  deployment phase, not by position. A guard walking back is `'travelling'`,
-  which the tally counts as neither `onPost` nor `onSearch`
-  (`src/simulation/presentation/security-projection.ts:165-168`).
+```
+t25963: On Post // Unassigned // Unassigned
+t26396: On Post // On Search  // Unassigned
+t26552: On Post // Unassigned // Unassigned
+t27001: On Post // On Search  // Unassigned
+t27139: On Post // Unassigned // Unassigned
+t27593: On Post // On Search  // Unassigned
+t27715: On Post // Unassigned // Unassigned
+[act3] phases seen with tick ranges: [["On Post",{"count":36,...}],
+  ["On Search",{"count":7,"firstTick":26396,"lastTick":27653}],
+  ["Unassigned",{"count":65,...}]]
+```
 
-So the only thing ADR 0088 adds to a coverage gap is the *walk-back* leg, and
-§2b prices it: the ticks measured there, against a 600-tick sweep period. That
-is the whole of the interaction, and it is small by construction rather than by
-luck.
+Three complete sweeps. And on the channel the renderer draws from:
 
-**What this pass did NOT do, stated rather than implied:** it did not run a
-prison to an incident with guards present and compare incident duration before
-and after `9dd6e601`. Doing that honestly needs a second worktree at the parent
-commit and a tick-indexed incident timeline on both — the shape
-`docs/AGENT_WORKFLOW.md` requires for a baseline — and it is a measurement, not
-a reading. **Not attempted here; named as unreached.**
+```
+[act3] render-delta samples in the window: 982 (of 3974 since page load)
+[act3] guard 0: 982 delta sample(s), 0 with a non-zero velocity, 0 not on a tile centre
+[act3] guard 1: 982 delta sample(s), 0 with a non-zero velocity, 0 not on a tile centre
+[act3]   guard 1 t26500 (14,12) -> t26502 (16,16): 6.000 tile(s) in 2 tick(s); walking could cover 1.0 -> TELEPORT
+[act3]   guard 1 t27009 (16,16) -> t27011 (14,12): 6.000 tile(s) in 2 tick(s); walking could cover 1.0 -> TELEPORT
+[act3]   guard 1 t27640 (14,12) -> t27643 (16,16): 6.000 tile(s) in 3 tick(s); walking could cover 1.5 -> TELEPORT
+[act3]   guard 1 t27680 (16,16) -> t27682 (14,12): 6.000 tile(s) in 2 tick(s); walking could cover 1.0 -> TELEPORT
+[act3] guard 2: 982 delta sample(s), 0 with a non-zero velocity, 0 not on a tile centre
+[act3] walk episodes: []
+```
+
+**2,946 guard records. Four position changes, every one of them six tiles in
+two or three ticks — against the one tile per two ticks a walk can cover — and
+zero samples with a velocity or an off-tile position.** The teleport/walk
+threshold here is arithmetic on ticks, not a judgement: `6 > 3/2`.
+
+`Travelling` never appeared on the roster. `On Search` did, seven times.
+
+### 2c. Why, and it is not a bug in #740
+
+The cause is in act 3's own roster timeline, and every step is READ:
+
+- **The posted guard is never sent searching.**
+  `claimableGuardIds(this.guards)` filters `source.unassignedGuardIds()`
+  (`src/simulation/security/post-eligibility.ts:107`), and
+  `unassignedGuardIds()` is *"`'unassigned'` only"*
+  (`src/simulation/security/guard-roster.ts:236-238`) — a decision
+  `guard-roster.ts:13-17` records deliberately, because it is what let search
+  duty ship without touching `deployment-system.ts`. So the guard that reads
+  `On Post` for the whole window never leaves its post, and
+  `walkBackToPost` never has any distance to cross.
+- **The spare that does the searching has no post to walk back to.** A
+  finished sweep calls `this.guards.unassign(guardId)`
+  (`src/simulation/contraband/search-system.ts:324`), and
+  `DeploymentSystem.assignUnassignedGuards` draws from the pool only while
+  `required - assigned > 0`. Six residents ask for exactly one guard:
+  `resolveOccupancyScaledGuardCount` is
+  `max(scheduled, ceil(occupants / DEFAULT_SECTOR_PRISONERS_PER_GUARD))` with
+  that constant at 8 (`src/simulation/security/sector-staffing.ts:147`, `:190`)
+  and the schedule's floor at 1. So the shortage is zero, and two guards stand
+  `Unassigned` on whatever tile the last search left them — for ever.
+
+**So the walk ADR 0088 built is gated on a shortage arising while a spare
+happens to be standing away from the post.** In ordinary play a shortage
+arises when occupancy crosses a multiple of eight, or when the player dismisses
+or releases the posted guard. Nothing else moves it.
+
+### 2d. The answer to the brief's question, plainly
+
+**Across every act in this pass — 2,911 ticks of dedicated sampling and 2,700
+render-delta publications carrying 7,999 guard records — a guard walked zero
+times.** Act 1: an empty prison, four hires, 460 ticks, zero. Act 3 first run:
+a staffed six-resident prison, three completed contraband sweeps, 2,051 ticks,
+zero, with four teleports of six tiles in two or three ticks. Act 3 second run:
+a three-resident prison, three more sweeps, 2,067 ticks, zero, and no position
+change at all. Act 3 phase 2: a Release press, 400 ticks, zero (§2f, with its
+own limit stated).
+
+So: **a player cannot see a guard walk in a prison they can build in a starter
+session, at any speed, and it is not because the walk is too fast to see.**
+There is no walk. `Travelling` should indeed stay rarely seen, as the owner was
+told — but the reason is not that the walk is brief; it is that of the three
+routes into a walk, two are structurally unreachable (a hire is already on its
+post; no sector has a patrol route) and the third needs a staffing shortage to
+coincide with a spare guard standing somewhere else.
+
+**What ADR 0088 bought, stated fairly, because this is not a negative result
+about the change:** the vocabulary is now honest (`Travelling` names a real
+state, and `Returning` names a real walk), the mechanism is wired and pinned
+(`createGuardLocomotionSystem` at order 201, `LocomotionSystem`'s order made a
+constructor parameter, `tests/determinism/kernel-system-order.test.ts` holding
+it), and the re-validation-at-the-edge rule reaches guards
+(`src/simulation/security/guard-locomotion.ts:64`). None of that is undone by
+there being nothing to watch yet. What is not true is any sentence implying a
+player will see it.
+
+### 2e. Does the walk path go around walls or through them? Not answerable from any prison a player can build
+
+**Not measured, and the reason is structural rather than a gap in effort.**
+Every tile a guard can be sent to in a starter session is inside the single
+room that also contains the post tile, because both `HireStaff` and
+`AdmitPrisoner` arrive at (16,16) and a cell that does not contain (16,16)
+houses nobody (§4's fixture note). A walk inside one open room crosses no wall
+edge, so no `canTraverseEdge` call can be observed refusing one.
+
+What *is* READ: the predicate is asked once per tile crossed rather than once
+per tick, with the walking guard's own staff role as the route context
+(`src/simulation/security/guard-locomotion.ts:64`), which is ADR 0077's rule
+reaching guards. And the *teleports* above cross the cell wall freely —
+`SearchSystem` writes `guards.setTile` directly — which is correct per ADR
+0059's deadline reasoning and is worth naming because it is what a player
+would see if guards were drawn moving: a guard appearing inside a sealed cell.
+
+### 2f. The one gesture that should have produced a walk did not — and the run cannot say whether the gesture or the fixture is why
+
+**MEASURED, act 3's second run, phase 2** — `1 passed (11.2m)`, 666s standalone.
+Same fixture, a fresh prison and a fresh master seed: three residents (six
+Admit presses, three landed), three guards, sampled tick **27,745 to 29,812**
+at ×1 across three more complete sweeps, then Release pressed at tick
+**30,097** and 400 ticks sampled after it.
+
+Phase 1 of the second run reproduced phase 1 of the first exactly:
+
+```
+t27792: On Post // Unassigned // Unassigned
+t28224: On Post // On Search  // Unassigned      t28281: back to Unassigned
+t28829: On Post // On Search  // Unassigned      t28890: back to Unassigned
+t29397: On Post // On Search  // Unassigned      t29519: back to Unassigned
+[act3] guard 0/1/2: 950 delta sample(s) each, 0 with a non-zero velocity, 0 not on a tile centre
+[act3] walk episodes: []
+```
+
+— and this time with **no position change at all**, not even a teleport: every
+guard was published on one tile for the whole 2,067 ticks. With three residents
+all housed and all arriving at (16,16), the sweep's targets resolved to the
+tile the searching guard was already standing on.
+
+Then the Release press, with the target verified first:
+
+```
+[act3] under the Release control's centre: [{"tag":"SPAN","cls":"ui-action__label",...},
+  {"tag":"BUTTON","cls":"ui-action","pointerEvents":"auto"},
+  {"tag":"DIV","cls":"hud-staff__held-row",...}, ...]
+[act3] pressed Release at tick 30097; held panel now
+  "ON DUTY / 1 held · 2 free / Guard · Sector Post / Release / ..."
+[act3] phase 2 roster changes over 400 ticks after Release:
+t30268: On Post // Unassigned // Unassigned
+[act3p2] guard 0/1/2: 203 delta sample(s) each, 0 with a non-zero velocity, 0 not on a tile centre
+[act3] phase 2 walk episodes: []
+```
+
+**No walk. And two readings of that, only one of which this run can support.**
+
+- **What is established:** across 400 ticks after a verified press on the
+  Release control, 609 guard records carried no velocity and no off-tile
+  position, and the ON DUTY panel and the roster were byte-identical before and
+  after. To a player, pressing Release did nothing visible.
+- **What is NOT established, and this is the honest limit:** whether Release
+  *can* produce a walk. The precondition §2c identifies — a spare standing
+  **away** from the post — was absent in this run, which its own zero position
+  changes prove: all three guards were on (16,16) throughout. Re-posting a
+  guard that is already on the post is `beginDeployment`'s `isAtPost` fast path,
+  so no route could have been requested whichever guard the cycle picked.
+- **A third possibility this run cannot separate from the other two**: that the
+  released guard was re-posted within `DeploymentSystem`'s 10-tick cycle, which
+  is faster than the roster's ~250 ms heartbeat, so the panel never had a state
+  to show. Distinguishing it needs the submitted `ReleaseGuard` command read off
+  the worker tee, which this act does not log. **Named as unreached.**
+
+So the tally over both runs of act 3 and act 1 together — **4,939+950+203
+render-delta publications, six completed contraband sweeps, one Release press,
+2,911 ticks of dedicated sampling, zero walked steps** — is a strong negative
+result about *ordinary* play and an incomplete one about the one gesture that
+should break it.
 
 ## §3 — When `Medium` arrives, four badge words change and nothing else on the screen moves
 
@@ -558,123 +631,206 @@ none of it. What is owed is at least one of:
 
 **Owed to: the owner.** Options 1 and 2 are copy; 3 and 4 are design.
 
-### 2b. Played: three complete sweeps, four teleports, and not one walked step
+## §4 — `.hud-minimap` does not merely swallow a click; it makes four world tiles unbuildable, and the drag over it fails silently
 
-**MEASURED, act 3** — `1 passed (9.6m)`, 574s standalone. A sealed, zoned 6×6
-cell at (14,12)-(19,17), six admissions (five housed, one waiting), three
-guards, sampled from tick **25,943 to 27,994** at ×1 — 2,051 ticks, which
-spans three 600-tick sweep boundaries.
+**This is the one finding in this pass that is a defect claim, and it is not
+about either feature.** It is put in front of §2 and §3 because it cost two
+runs and because it is a third independent sighting of a panel that has twice
+been ruled *"not a defect claim — the camera pans"*.
 
-The roster, every change, in ticks:
-
-```
-t25963: On Post // Unassigned // Unassigned
-t26396: On Post // On Search  // Unassigned
-t26552: On Post // Unassigned // Unassigned
-t27001: On Post // On Search  // Unassigned
-t27139: On Post // Unassigned // Unassigned
-t27593: On Post // On Search  // Unassigned
-t27715: On Post // Unassigned // Unassigned
-[act3] phases seen with tick ranges: [["On Post",{"count":36,...}],
-  ["On Search",{"count":7,"firstTick":26396,"lastTick":27653}],
-  ["Unassigned",{"count":65,...}]]
-```
-
-Three complete sweeps. And on the channel the renderer draws from:
+**MEASURED, act 4's first run** (kept verbatim; the run was stopped after this
+because everything downstream of it would have measured an unenclosed cell):
 
 ```
-[act3] render-delta samples in the window: 982 (of 3974 since page load)
-[act3] guard 0: 982 delta sample(s), 0 with a non-zero velocity, 0 not on a tile centre
-[act3] guard 1: 982 delta sample(s), 0 with a non-zero velocity, 0 not on a tile centre
-[act3]   guard 1 t26500 (14,12) -> t26502 (16,16): 6.000 tile(s) in 2 tick(s); walking could cover 1.0 -> TELEPORT
-[act3]   guard 1 t27009 (16,16) -> t27011 (14,12): 6.000 tile(s) in 2 tick(s); walking could cover 1.0 -> TELEPORT
-[act3]   guard 1 t27640 (14,12) -> t27643 (16,16): 6.000 tile(s) in 3 tick(s); walking could cover 1.5 -> TELEPORT
-[act3]   guard 1 t27680 (16,16) -> t27682 (14,12): 6.000 tile(s) in 2 tick(s); walking could cover 1.0 -> TELEPORT
-[act3] guard 2: 982 delta sample(s), 0 with a non-zero velocity, 0 not on a tile centre
-[act3] walk episodes: []
+[act4] calibration: tile (0,0) top-left = (-384, -624)
+[act4] .hud-minimap rect {"left":12,"right":410,"top":317.8125,"bottom":718.8125}
+[act4] north run: 6 by drag; []; still missing []
+[act4] north run: 6 by drag; []; still missing []
+[act4] west run: 3 by drag; ["press at 12,15 produced NOTHING; under it:
+  [{"tag":"DIV","cls":"ui-panel__body","pointerEvents":"auto"},
+   {"tag":"SECTION","cls":"ui-panel hud-minimap","pointerEvents":"auto"},
+   {"tag":"CANVAS","cls":"","pointerEvents":"auto"}, ...]",
+  "press at 12,16 produced NOTHING; ... hud-minimap ...",
+  "press at 12,17 produced NOTHING; ... hud-minimap ..."];
+  still missing ["12,15","12,16","12,17"]
+[act4] west run: 6 by drag; []; still missing []
 ```
 
-**2,946 guard records. Four position changes, every one of them six tiles in
-two or three ticks — against the one tile per two ticks a walk can cover — and
-zero samples with a velocity or an off-tile position.** The teleport/walk
-threshold here is arithmetic on ticks, not a judgement: `6 > 3/2`.
+Read that against the geometry. Origin `(-384, -624)` puts tile column 12's
+west edge at screen `x = 384` and tile rows 12..17 at screen
+`y = 144, 208, 272, 336, 400, 464`, each 64px tall. The panel occupies
+`x 12..410, y 317.8..718.8`. So the west edges of tiles (12,15), (12,16) and
+(12,17) — and part of (12,14) — are inside it, and the two runs that laid the
+same wall on the *east* edge (`x = 768`, outside the panel) each produced all
+six segments.
 
-`Travelling` never appeared on the roster. `On Search` did, seven times.
+### Why this is different from the flake already on record
 
-### 2c. Why, and it is not a bug in #740
+`playtest-2026-09-01-the-people.playtest.ts`'s header documents a six-segment
+side producing three under machine load and declines to call it a defect,
+correctly, because *"it rests on dropped frames under load, which is
+wall-clock"*. **This run distinguishes the two causes without a timing
+argument at all**: the drag dropped exactly the three segments whose screen
+points `elementsFromPoint` places under a `pointer-events: auto` panel, the
+three it kept are the three outside it, and three subsequent single presses —
+one mousedown and one mouseup each, no interpolation — reached the panel too.
+A dropped frame does not choose its victims by screen rectangle.
 
-The cause is in act 3's own roster timeline, and every step is READ:
+**So the player-facing statement is stronger than "a click is swallowed".** At
+this viewport and camera, **there is no gesture that builds on those tiles**:
+not a drag, not a press. And it is silent: `docs/research/2026-09-02-the-world-view.md`
+§3 already measured that a blocked click and a click that landed with nothing
+to report leave `.hud__refusal` and `.hud__event` byte-identical, so there is
+no third state for "this did not reach the world". This pass did not re-measure
+those two bands during the wall runs and does not claim to have — what it
+measured is the commands, and three of six were never submitted.
 
-- **The posted guard is never sent searching.**
-  `claimableGuardIds(this.guards)` filters `source.unassignedGuardIds()`
-  (`src/simulation/security/post-eligibility.ts:107`), and
-  `unassignedGuardIds()` is *"`'unassigned'` only"*
-  (`src/simulation/security/guard-roster.ts:236-238`) — a decision
-  `guard-roster.ts:13-17` records deliberately, because it is what let search
-  duty ship without touching `deployment-system.ts`. So the guard that reads
-  `On Post` for the whole window never leaves its post, and
-  `walkBackToPost` never has any distance to cross.
-- **The spare that does the searching has no post to walk back to.** A
-  finished sweep calls `this.guards.unassign(guardId)`
-  (`src/simulation/contraband/search-system.ts:324`), and
-  `DeploymentSystem.assignUnassignedGuards` draws from the pool only while
-  `required - assigned > 0`. Six residents ask for exactly one guard:
-  `resolveOccupancyScaledGuardCount` is
-  `max(scheduled, ceil(occupants / DEFAULT_SECTOR_PRISONERS_PER_GUARD))` with
-  that constant at 8 (`src/simulation/security/sector-staffing.ts:147`, `:190`)
-  and the schedule's floor at 1. So the shortage is zero, and two guards stand
-  `Unassigned` on whatever tile the last search left them — for ever.
+### What is NOT claimed
 
-**So the walk ADR 0088 built is gated on a shortage arising while a spare
-happens to be standing away from the post.** In ordinary play a shortage
-arises when occupancy crosses a multiple of eight, or when the player dismisses
-or releases the posted guard. Nothing else moves it.
+- **Not that the camera cannot be panned away from it.** It can, and
+  `docs/research/2026-09-02-the-world-view.md` §4 measured panning as unbounded
+  and exactly reversible. The claim is that a player who does not know to pan
+  gets a wall with holes in it and a refusal that blames the rectangle.
+- **Not a number for how much of the world this affects.** That is already
+  measured — 42.04%–44.42% of the canvas at four viewports, `.hud-minimap`
+  alone 14.5% at 1280×800, same note §1 — and this pass adds the consequence
+  rather than the fraction.
+- **Not that any sentence is missing.** What the right sentence would be, or
+  whether the panel should stop taking pointer events, is a player-facing
+  decision. **Owed to: the owner** (`AGENTS.md` exclusion 4).
 
-### 2d. The answer to the brief's question, plainly
+## §4b — Admit on a prison with no cell: three presses, three refusals, and the control never disables itself
 
-**Across every act in this pass — 2,911 ticks of dedicated sampling and 2,700
-render-delta publications carrying 7,999 guard records — a guard walked zero
-times.** Act 1: an empty prison, four hires, 460 ticks, zero. Act 3 first run:
-a staffed six-resident prison, three completed contraband sweeps, 2,051 ticks,
-zero, with four teleports of six tiles in two or three ticks. Act 3 second run:
-a three-resident prison, three more sweeps, 2,067 ticks, zero, and no position
-change at all. Act 3 phase 2: a Release press, 400 ticks, zero (§2g, with its
-own limit stated).
+**MEASURED, act 2 phase 1**, verbatim, with the press verified before it was
+made:
 
-So: **a player cannot see a guard walk in a prison they can build in a starter
-session, at any speed, and it is not because the walk is too fast to see.**
-There is no walk. `Travelling` should indeed stay rarely seen, as the owner was
-told — but the reason is not that the walk is brief; it is that of the three
-routes into a walk, two are structurally unreachable (a hire is already on its
-post; no sector has a patrol route) and the third needs a staffing shortage to
-coincide with a spare guard standing somewhere else.
+```
+[act2] under the Admit control's centre: [{"tag":"SPAN","cls":"ui-action__label",...},
+  {"tag":"BUTTON","cls":"ui-action hud-intake__admit","pointerEvents":"auto"}, ...]
+[act2] no-cell Admit press 1: disabled=null | refusal band "Nobody was admitted — the request was refused."
+  | event notice ".hud__event: not laid out" | alerts "No active alerts" | prisoners 0
+[act2] no-cell Admit press 2: disabled=null | ... identical ...
+[act2] no-cell Admit press 3: disabled=null | ... identical ...
+[act2] intake panel after three refused presses: "INTAKE / Collapse / Admit a prisoner /
+  A prison needs a cell before it can admit anyone. It does not need a free bed:
+  an arrival with none waits until a bed is free."
+```
 
-**What ADR 0088 bought, stated fairly, because this is not a negative result
-about the change:** the vocabulary is now honest (`Travelling` names a real
-state, and `Returning` names a real walk), the mechanism is wired and pinned
-(`createGuardLocomotionSystem` at order 201, `LocomotionSystem`'s order made a
-constructor parameter, `tests/determinism/kernel-system-order.test.ts` holding
-it), and the re-validation-at-the-edge rule reaches guards
-(`src/simulation/security/guard-locomotion.ts:64`). None of that is undone by
-there being nothing to watch yet. What is not true is any sentence implying a
-player will see it.
+This is a corroboration rather than a new finding, and the corroborating half
+is what is new. `docs/research/2026-09-02-the-first-five-minutes.md` already
+established the sentence — *"the first refusal a new player is likely to see
+says nothing"*, `"Nobody was admitted — the request was refused"` against a
+`main.ts` `Error` that ADR 0011 keeps off screen. What this adds:
 
-### 2e. Does the walk path go around walls or through them? Not answerable from any prison a player can build
+- **`disabled` is `null` on all three presses.** #772 taught the Buy control to
+  disable itself when a press would be refused — and CI's `browser` job caught
+  three `app-shell.spec.ts` tests that press Buy deliberately, which is on
+  record in `docs/AGENT_WORKFLOW.md`. Admit did not get the same treatment, so
+  the two controls one tab apart now behave differently about a press that
+  cannot succeed. Whether they should is item 7 in §10.
+- **The panel's own hint is right there and says exactly why**: *"A prison needs
+  a cell before it can admit anyone."* So the information exists on the same
+  panel as the control; it is the *refusal* that does not use it.
+- **Nothing reaches the alerts column** — `"No active alerts"` through all
+  three — and `.hud__event` is not laid out. The refusal band is the only
+  channel, and §7's third confirmation is that the band then keeps whatever it
+  last said for thousands of ticks.
 
-**Not measured, and the reason is structural rather than a gap in effort.**
-Every tile a guard can be sent to in a starter session is inside the single
-room that also contains the post tile, because both `HireStaff` and
-`AdmitPrisoner` arrive at (16,16) and a cell that does not contain (16,16)
-houses nobody (§4's fixture note). A walk inside one open room crosses no wall
-edge, so no `canTraverseEdge` call can be observed refusing one.
+**Not a defect claim about #788 or #740.** It is here because act 2's first
+version admitted 24 times into a prison with no cell and got `prisoners: 0`,
+and measuring why was cheaper than working around it.
 
-What *is* READ: the predicate is asked once per tile crossed rather than once
-per tick, with the walking guard's own staff role as the route context
-(`src/simulation/security/guard-locomotion.ts:64`), which is ADR 0077's rule
-reaching guards. And the *teleports* above cross the cell wall freely —
-`SearchSystem` writes `guards.setTile` directly — which is correct per ADR
-0059's deadline reasoning and is worth naming because it is what a player
-would see if guards were drawn moving: a guard appearing inside a sealed cell.
+## §5 — Corrections, in both directions
+
+### 5a. Three corrections to this pass's own brief
+
+1. **There is no `--suite playtest`.** Stated at length under "Reproduction"
+   above. The brief said to *"check `run-suite.ts` for the exact suite name for
+   playtests"*; the answer is that a playtest is not drivable from that wrapper
+   at all, by decision, and there is a foundation contract holding the
+   exclusion in writing.
+2. **The brief's first reference model, a 2026-09-02 playtest named
+   *the-clock*, is not in the tree.** It named three files to read and match;
+   that one has no file. `ls tests/browser/*.playtest.ts` lists 26 before this
+   pass added its own, two of them dated 2026-09-02 — *the-first-five-minutes*
+   and *the-world-view* — and `tests/browser/ui-clock-paused-readout.spec.ts`
+   is the only clock-named file in the directory. This file is matched against
+   those two plus `tests/browser/playtest-2026-09-01-the-people.playtest.ts`
+   and `tests/browser/playtest-740-does-a-guard-walk.playtest.ts`, which the
+   brief also named and which do exist.
+3. **"Hire a guard and deploy it somewhere far" is not a gesture the game
+   has.** There is no control that chooses where a hire stands or which post it
+   takes: `src/main.ts:2793` supplies the origin from a module constant, and
+   `DeploymentSystem.assignUnassignedGuards` chooses the sector. §1 is the
+   measurement; act 1 was rewritten around the gesture that exists rather than
+   the one the brief described.
+
+The brief's tick figures, by contrast, **check out**: 2,400 ticks a day, the
+early warning at `intervalTicks: 2,400` / `phaseTicks: 2,399`, `Medium` at
+4,800 and `High` at 48,000 in the neglect fixture's post-step convention, and
+the ~43,000-tick window between them are all in
+`tests/integration/risk-tier-neglect-reachability.test.ts` and were read there.
+
+### 5b. One correction to this corpus, in the other direction
+
+`docs/research/2026-09-01-playing-the-people-surface.md` §1b states:
+*"`classifyPrisoner`'s screening draw at `priorIncidents: 0` can only reach
+tiers 0 and 1 (`Minimal`, `Low`)"*, and concludes that `Medium` and `High`
+*"require actively neglecting a prisoner for a full in-game day or more"*.
+
+**That was already false when it was written.** `9a25700c` (2026-08-30, whose
+subject line is *"A sentence long enough to be a history: 14-90 in-game days
+(#659)"* and whose code comments attribute the ruling to #593 and ADR 0079)
+moved `MAX_SENTENCE_DAYS` to 90, which is 216,000 ticks against
+`LONG_SENTENCE_THRESHOLD_TICKS` of 200,000
+(`src/simulation/prisoners/sentence.ts:201` and
+`src/simulation/prisoners/classification.ts:41`), so the seven drawable
+sentences from 84 days up score the long-sentence point and `classifyPrisoner`
+can clamp to tier 2. `src/main.ts`'s own docblock records the change in as many
+words — *"the tiers reachable from this panel's request were `[0, 1]` at every
+drawable sentence and are `[0, 1]` below 84 in-game days and `[0, 1, 2]` at or
+above it"* — and `src/simulation/prisoners/intake-system.ts:483-486` marks the
+same property as *"spent on purpose"*.
+
+Records here are read-only history and are not edited to match current `main`;
+this is marked in a new record, which is what
+`docs/research/README.md` asks for. But the correction is not merely
+bookkeeping: **§3 below is about the consequence**, which is that the badge
+`Medium` now has two producers with two different meanings.
+
+## §6 — Do the two features interact? Measurably, no; arithmetically, by a bounded amount
+
+The brief asked whether a `Medium` prisoner in a prison whose guards walk
+rather than teleport means slower incident coverage, and whether that is
+visible or measurable.
+
+**REASONED from READ facts, and the answer is that ADR 0088 was scoped
+precisely to avoid this.** The three guard errands that bear on an incident are
+untouched by it:
+
+- **Incident response still teleports**, deliberately (#740's own commit
+  message: *"Incident response and contraband search guard travel are
+  unchanged and still teleport on arrival"*), and its destination is
+  `requireDefinition(incident.sectorId).postTile` — the tile the responder is
+  already standing on in a starter prison.
+- **A contraband sweep's outbound travel still teleports**
+  (`src/simulation/contraband/search-system.ts:372`).
+- **Coverage** is `DeploymentSystem.getCoverageReport`, which counts guards by
+  deployment phase, not by position. A guard walking back is `'travelling'`,
+  which the tally counts as neither `onPost` nor `onSearch`
+  (`src/simulation/presentation/security-projection.ts:165-168`).
+
+So the only thing ADR 0088 adds to a coverage gap is the *walk-back* leg, and
+§2b prices it: the ticks measured there, against a 600-tick sweep period. That
+is the whole of the interaction, and it is small by construction rather than by
+luck.
+
+**What this pass did NOT do, stated rather than implied:** it did not run a
+prison to an incident with guards present and compare incident duration before
+and after `9dd6e601`. Doing that honestly needs a second worktree at the parent
+commit and a tick-indexed incident timeline on both — the shape
+`docs/AGENT_WORKFLOW.md` requires for a baseline — and it is a measurement, not
+a reading. **Not attempted here; named as unreached.**
 
 ## §7 — Three things confirmed CORRECT, which is a result
 
@@ -741,7 +897,7 @@ Neither is claimed as a defect and neither touches either feature.
 **The weakest claim is §2d: "a guard walked zero times, so a player cannot see
 one."** Two things could make it wrong, and one of them is cheap to test.
 
-**The gap that matters, and §2g half-closed it and half did not.** "Zero walks
+**The gap that matters, and §2f half-closed it and half did not.** "Zero walks
 in 2,911 sampled ticks" is a statement about three prisons — an empty one, a
 six-resident one and a three-resident one, each played once on its own random
 master seed. §2c names the route into a walk: a staffing shortage arising while
@@ -804,113 +960,10 @@ to be re-derived from the sections above:
 | 4 | Whether tier 2 is counted anywhere on the status strip at all. | Owner (design) | `projection.ts:783-790` declines a *tone* for the `HIGH RISK` chip for a reason that survives; it does not decide this. §3b. |
 | 5 | What, if anything, the game says when a build gesture cannot reach a tile because a panel is over it — or whether the panel should stop taking pointer events there. | Owner (design + copy) | Third sighting, first with a measured "no gesture works" rather than "a click was swallowed". §4. |
 | 6 | Whether `Travelling` and `Returning` should ever be seen, now that it is measured that they are not. This is the question ADR 0088 explicitly left open, and the honest input to it is that of three routes into a walk two are structurally unreachable. | Owner (design) | It is a balance and animation call, not a correctness one. §2d. |
-| 7 | Whether the Admit control should disable itself when a press would be refused, as the Buy control now does (#772) — three presses on a prison with no cell were all accepted and all refused. | Owner (design) | The same call #772 already made one control over, not extended by this pass. §2f below. |
+| 7 | Whether the Admit control should disable itself when a press would be refused, as the Buy control now does (#772) — three presses on a prison with no cell were all accepted and all refused. | Owner (design) | The same call #772 already made one control over, not extended by this pass. §4b. |
 
 And one handover that is not the owner's:
 
 | # | What | Whose |
 | --- | --- | --- |
 | 8 | `src/simulation/security/default-sector.ts:98` says *"At one, the first hire is visibly posted"*. #533's empty-sector exemption (`sector-staffing.ts:189`) made that false in an empty prison, which is every prison at the moment a player hires their first guard. Measured in §1b. | Whoever owns `src/simulation/security/` — this branch is docs-only and did not edit it |
-
-## §2f — Admit on a prison with no cell: three presses, three refusals, and the control never disables itself
-
-**MEASURED, act 2 phase 1**, verbatim, with the press verified before it was
-made:
-
-```
-[act2] under the Admit control's centre: [{"tag":"SPAN","cls":"ui-action__label",...},
-  {"tag":"BUTTON","cls":"ui-action hud-intake__admit","pointerEvents":"auto"}, ...]
-[act2] no-cell Admit press 1: disabled=null | refusal band "Nobody was admitted — the request was refused."
-  | event notice ".hud__event: not laid out" | alerts "No active alerts" | prisoners 0
-[act2] no-cell Admit press 2: disabled=null | ... identical ...
-[act2] no-cell Admit press 3: disabled=null | ... identical ...
-[act2] intake panel after three refused presses: "INTAKE / Collapse / Admit a prisoner /
-  A prison needs a cell before it can admit anyone. It does not need a free bed:
-  an arrival with none waits until a bed is free."
-```
-
-This is a corroboration rather than a new finding, and the corroborating half
-is what is new. `docs/research/2026-09-02-the-first-five-minutes.md` already
-established the sentence — *"the first refusal a new player is likely to see
-says nothing"*, `"Nobody was admitted — the request was refused"` against a
-`main.ts` `Error` that ADR 0011 keeps off screen. What this adds:
-
-- **`disabled` is `null` on all three presses.** #772 taught the Buy control to
-  disable itself when a press would be refused — and CI's `browser` job caught
-  three `app-shell.spec.ts` tests that press Buy deliberately, which is on
-  record in `docs/AGENT_WORKFLOW.md`. Admit did not get the same treatment, so
-  the two controls one tab apart now behave differently about a press that
-  cannot succeed. Whether they should is item 7 in §10.
-- **The panel's own hint is right there and says exactly why**: *"A prison needs
-  a cell before it can admit anyone."* So the information exists on the same
-  panel as the control; it is the *refusal* that does not use it.
-- **Nothing reaches the alerts column** — `"No active alerts"` through all
-  three — and `.hud__event` is not laid out. The refusal band is the only
-  channel, and §7's third confirmation is that the band then keeps whatever it
-  last said for thousands of ticks.
-
-**Not a defect claim about #788 or #740.** It is here because act 2's first
-version admitted 24 times into a prison with no cell and got `prisoners: 0`,
-and measuring why was cheaper than working around it.
-
-### 2g. The one gesture that should have produced a walk did not — and the run cannot say whether the gesture or the fixture is why
-
-**MEASURED, act 3's second run, phase 2** — `1 passed (11.2m)`, 666s standalone.
-Same fixture, a fresh prison and a fresh master seed: three residents (six
-Admit presses, three landed), three guards, sampled tick **27,745 to 29,812**
-at ×1 across three more complete sweeps, then Release pressed at tick
-**30,097** and 400 ticks sampled after it.
-
-Phase 1 of the second run reproduced phase 1 of the first exactly:
-
-```
-t27792: On Post // Unassigned // Unassigned
-t28224: On Post // On Search  // Unassigned      t28281: back to Unassigned
-t28829: On Post // On Search  // Unassigned      t28890: back to Unassigned
-t29397: On Post // On Search  // Unassigned      t29519: back to Unassigned
-[act3] guard 0/1/2: 950 delta sample(s) each, 0 with a non-zero velocity, 0 not on a tile centre
-[act3] walk episodes: []
-```
-
-— and this time with **no position change at all**, not even a teleport: every
-guard was published on one tile for the whole 2,067 ticks. With three residents
-all housed and all arriving at (16,16), the sweep's targets resolved to the
-tile the searching guard was already standing on.
-
-Then the Release press, with the target verified first:
-
-```
-[act3] under the Release control's centre: [{"tag":"SPAN","cls":"ui-action__label",...},
-  {"tag":"BUTTON","cls":"ui-action","pointerEvents":"auto"},
-  {"tag":"DIV","cls":"hud-staff__held-row",...}, ...]
-[act3] pressed Release at tick 30097; held panel now
-  "ON DUTY / 1 held · 2 free / Guard · Sector Post / Release / ..."
-[act3] phase 2 roster changes over 400 ticks after Release:
-t30268: On Post // Unassigned // Unassigned
-[act3p2] guard 0/1/2: 203 delta sample(s) each, 0 with a non-zero velocity, 0 not on a tile centre
-[act3] phase 2 walk episodes: []
-```
-
-**No walk. And two readings of that, only one of which this run can support.**
-
-- **What is established:** across 400 ticks after a verified press on the
-  Release control, 609 guard records carried no velocity and no off-tile
-  position, and the ON DUTY panel and the roster were byte-identical before and
-  after. To a player, pressing Release did nothing visible.
-- **What is NOT established, and this is the honest limit:** whether Release
-  *can* produce a walk. The precondition §2c identifies — a spare standing
-  **away** from the post — was absent in this run, which its own zero position
-  changes prove: all three guards were on (16,16) throughout. Re-posting a
-  guard that is already on the post is `beginDeployment`'s `isAtPost` fast path,
-  so no route could have been requested whichever guard the cycle picked.
-- **A third possibility this run cannot separate from the other two**: that the
-  released guard was re-posted within `DeploymentSystem`'s 10-tick cycle, which
-  is faster than the roster's ~250 ms heartbeat, so the panel never had a state
-  to show. Distinguishing it needs the submitted `ReleaseGuard` command read off
-  the worker tee, which this act does not log. **Named as unreached.**
-
-So the tally over both runs of act 3 and act 1 together — **4,939+950+203
-render-delta publications, six completed contraband sweeps, one Release press,
-2,911 ticks of dedicated sampling, zero walked steps** — is a strong negative
-result about *ordinary* play and an incomplete one about the one gesture that
-should break it.
