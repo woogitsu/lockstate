@@ -329,6 +329,41 @@ const authoredMessages: Readonly<Record<string, string>> = {
 
   'hud.minimap.title': 'Minimap',
   'hud.minimap.placeholder': 'Minimap is not available yet',
+  /*
+   * **THIS WORDING IS OWNER-PENDING. The mechanism behind it is not.**
+   *
+   * `AGENTS.md`'s fourth exclusion keeps player-facing copy the owner's, and
+   * `src/simulation/runtime/new-session.ts` refuses to author a sentence for
+   * the standing overdraft on exactly that ground -- *"the copy that would
+   * explain it is the owner's under `AGENTS.md`'s fourth exclusion ... no
+   * sentence has been authored here"*. This one is drafted rather than
+   * refused, and the difference is which way the exclusion points:
+   *
+   * - Refusing to write a sentence for the overdraft leaves the player with
+   *   **no claim at all**, which is honest.
+   * - Refusing to write one here leaves `hud.minimap.placeholder` --
+   *   *"Minimap is not available yet"* -- standing on a surface that has
+   *   visibly just moved the camera. That is a false statement to the player,
+   *   which is the very defect the exclusion exists to prevent, so silence is
+   *   not the safe option.
+   *
+   * So the key ships with the mechanism and the *wording* is put to the owner
+   * separately, the way `hud.status.funds-treasury-floor-exhausted` above is:
+   * that sentence carries the same marking in three places -- its own comment
+   * here, `HUD_MESSAGE_KEY.fundsTreasuryFloorExhausted` in
+   * `src/ui/hud/messages.ts`, and `overdraftTone` in `src/ui/hud/projection.ts`
+   * (*"the clearest available draft, flagged owner-pending, not a
+   * placeholder"*) -- from #782 under the owner's #768 ruling. Drafted to be
+   * the clearest available sentence, not to be the owner's last word on it. What
+   * it has to convey is both halves of what the surface now is -- still no
+   * map drawn (rendering belongs to the renderer and does not exist yet,
+   * `hud.ts`'s own comment on the frame), and a click on it does something.
+   * Anything shorter drops one of the two.
+   *
+   * See `src/ui/hud/messages.ts`'s `minimapNavigable` for when it replaces the
+   * placeholder and why that never reverts, and
+   * `WorldScene.navigateToMinimapPoint` for what the surface represents.
+   */
   'hud.minimap.navigable': 'No map is drawn here yet — click to jump the camera there',
   'hud.alerts.title': 'Alerts',
   'hud.alerts.empty': 'No active alerts',
