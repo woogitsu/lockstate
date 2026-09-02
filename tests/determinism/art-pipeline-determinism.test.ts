@@ -80,6 +80,33 @@ const versionMatches = blender !== undefined && blender.version[0] === pinned[0]
 const canRunLive = blender !== undefined && (versionMatches || process.env.LOCKSTATE_ALLOW_BLENDER_MISMATCH === '1');
 
 describe('Blender-to-atlas pipeline determinism', () => {
+  /**
+   * Closes a vacuous-risk this file's own `entryPoints.length > 0` guard
+   * (below, "pins a concrete Blender version") does not: every static test
+   * here scans `entryPoints`, which is *discovered* by `readdirSync` rather
+   * than listed, so a script that stops being discovered -- renamed off
+   * `.py`, moved out of `tooling/blender/`, or excluded by a future change to
+   * the filter above -- disappears from every one of them at once, and
+   * `entryPoints.length > 0` does not notice as long as at least one script
+   * remains. Demonstrated: filtering out `pack-sprite-atlas.py` with a real
+   * `primitive_uv_sphere_add()` offender planted in it left all four static
+   * tests green.
+   *
+   * An exact, named list is the fix -- not a tighter floor, which would only
+   * move the same hole to a different number. Adding a fifth script that
+   * belongs in the pipeline is expected to fail this test until its name is
+   * added here; that is the point, not a false positive.
+   */
+  it('discovers exactly the Blender entry points this pipeline has today', () => {
+    expect(entryPoints).toEqual([
+      'create-environment-catalog.py',
+      'create-prisoner-base.py',
+      'export-directional-sprites.py',
+      'pack-sprite-atlas.py',
+      'scene-fingerprint.py',
+    ]);
+  });
+
   it.skipIf(!canRunLive)(
     'produces byte-identical artefacts from two independent runs',
     () => {
