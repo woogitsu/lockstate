@@ -484,11 +484,13 @@ structural verdict from reading the assertions and guards — weaker, and marked
 | `determinism/snapshot-restore-fidelity` | SOUND (**read**) | eight floors plus round-trip equality |
 | `determinism/status-counts-publication` | SOUND (**read**) | publication count bounded by written-out ticks |
 
-**Counts.** 75 examined — the 48 files in `tests/foundation/` and the 27 in `tests/determinism/`. **2 VACUOUS-RISK demonstrated by mutation** (`documentation-claims-`,
+**Counts.** 75 examined — the 48 files in `tests/foundation/` and the 27 in `tests/determinism/`.
+**2 VACUOUS-RISK demonstrated by mutation** (`documentation-claims-`,
 `times-sign-`), one of which is also **TAUTOLOGICAL** in its positive control. **1 VACUOUS-RISK by
 reading** (`art-pipeline-determinism`, low stakes). **1 walk root that matches nothing**
-(`comment-symbol-existence-`, benign direction). **6 ROTTED-PROSE** sites across five files. **2
-DRIFTED-PIN** (one of which never drifted). **0 TAUTOLOGICAL** in the sense of instance 1 —
+(`comment-symbol-existence-`, benign direction). **6 ROTTED-PROSE** sites across five files, all fixed,
+plus a seventh recorded and deliberately left (`save-rng-stream-compatibility`, which corrects
+itself in the next paragraph). **2 DRIFTED-PIN** (one of which never drifted), both fixed. **0 TAUTOLOGICAL** in the sense of instance 1 —
 `hud-refresh-cadence-` was the only one and #805 closed it, verified here. Eight mutations run;
 **six of the eight gates I tried to break went red**, and the two that did not are §2.
 
