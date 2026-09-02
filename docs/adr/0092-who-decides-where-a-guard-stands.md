@@ -2,11 +2,37 @@
 
 ## Status
 
-**Proposed, 2026-09-02. Not self-approved.** Nothing below is implemented and
-no code on this branch does any of it; the branch carries this document, the
-research record it rests on, and one contract test that pins the absences the
-document is about. A reader who disagrees with a decision here should treat it
-as open — the argument is the whole of the warrant.
+**Proposed, 2026-09-02. Not self-approved.** **One of the eight decisions is
+now implemented and the other seven are not**; a reader who disagrees with any
+of them should still treat the document as open, because the argument is the
+whole of the warrant and the owner has signed no part of it beyond what is
+named below.
+
+**Decision 3 landed on `main` in `4a53d292` (pull request #825).** The restore
+path now applies a sector definition the save payload carries, through
+`SecuritySectorRegistry.redefine`, instead of skipping any sector id the
+runtime already holds. That is the decision the owner marked *CONFIRMED as
+written*, and it is the only one that has been built. Nothing else here has a
+line of code behind it: no command, no `SetSectorPost`, no control a player can
+press, and no field a player can author.
+
+> **The sentence this replaces is kept, because how it came to be wrong is the
+> point.** It read: *"Nothing below is implemented and no code on this branch
+> does any of it; the branch carries this document, the research record it
+> rests on, and one contract test that pins the absences the document is
+> about."* Every word was true the day it was written. **It was falsified by
+> the very pull request that implemented the decision it describes** — #825
+> built decision 3 and never opened this file, so nothing brought the two into
+> contact, and the sentence went stale within one release of being written.
+> `docs/adr/STATUS-QUEUE.md`'s anchor at v0.0.377 caught it and handed it back
+> rather than editing it, which is why this correction is a separate change
+> with its own reasoning rather than a line buried in an anchor pass.
+>
+> **The lesson is mechanical, not moral**: an ADR that says *"nothing here is
+> implemented"* is a claim about the code, and it is the one claim in an ADR
+> that a pull request can invalidate without touching the ADR at all. A
+> document whose status says that should expect to be re-read whenever any of
+> its decisions ships, and no gate in this repository does that for it.
 
 Answers the owner's request of 2026-09-02, in their own words: *"warto dodać
 ustawienie posterunku/dyżuru w konkretnym miejscu lub na konkretnej trasie jak
