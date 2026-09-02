@@ -531,16 +531,63 @@ describe('the derived sector survives a save without a schema bump', () => {
     expect(restored.securityGuards.getTile(0)).toEqual(ORIGIN);
   });
 
-  it('carries a copy in the payload that is identical to the derived one, which is what makes skipping it safe', () => {
-    // `restoreSessionSystems` skips a sector id the runtime already holds, so
-    // the payload's row for this sector is never read. That is only sound while
-    // the two are the same definition, and this is the assertion that keeps it
-    // true: change the derivation without thinking about a save and this fails.
+  it('carries a copy in the payload that is identical to the derived one for a session nobody touched', () => {
+    // Since ADR 0092 decision 3, `restoreSessionSystems` applies the payload's
+    // row for a sector id the runtime already holds through `redefine` rather
+    // than skipping it -- so this is no longer "skipping is safe because the
+    // two never differ." It is the narrower property decision 3 itself asks
+    // to be kept: a session whose payload carries no player-authored fields
+    // still derives (and then confirms via a no-op `redefine`) the same
+    // definition it would have without a save in between at all.
     const bundle = captureSessionSnapshot(createNewSimulationRuntime(SEED));
     expect(bundle.simulation?.security.sectorDefinitions).toEqual([
       { id: DEFAULT_SECTOR_ID, gradeId: 'grade.general', doorIds: [], postTile: ORIGIN },
     ]);
     expect(bundle.simulation?.security.sectorDefinitions).toEqual(reload(bundle).securitySectors.all());
+  });
+
+  it("replaces the derived definition with the payload's when they differ -- the save wins (ADR 0092 decision 3)", () => {
+    // Decision 3's other required case: a payload row that is NOT identical to
+    // what a fresh derivation would produce must still survive the round trip.
+    // Hand-edit the captured row the way the ADR's own measurement did --
+    // a different post tile and a route the derivation never produces --
+    // and confirm the restored runtime holds the payload's copy, not the
+    // derivation's.
+    const bundle = captureSessionSnapshot(createNewSimulationRuntime(SEED));
+    const derived = bundle.simulation!.security.sectorDefinitions[0]!;
+    expect(derived.id).toBe(DEFAULT_SECTOR_ID);
+
+    const authoredPostTile = { x: tileCoordinate(20), y: tileCoordinate(20) };
+    const authoredRoute = [
+      { x: tileCoordinate(18), y: tileCoordinate(18) },
+      { x: tileCoordinate(19), y: tileCoordinate(19) },
+    ];
+    const authored: SessionSnapshotBundle = {
+      ...bundle,
+      simulation: {
+        ...bundle.simulation!,
+        security: {
+          ...bundle.simulation!.security,
+          sectorDefinitions: [{ ...derived, postTile: authoredPostTile, patrolRoute: authoredRoute, expectedPatrolLoopTicks: 500 }],
+        },
+      },
+    };
+
+    const restored = reload(authored);
+
+    expect(restored.securitySectors.requireDefinition(DEFAULT_SECTOR_ID)).toEqual({
+      id: DEFAULT_SECTOR_ID,
+      gradeId: derived.gradeId,
+      doorIds: derived.doorIds,
+      postTile: authoredPostTile,
+      patrolRoute: authoredRoute,
+      expectedPatrolLoopTicks: 500,
+    });
+    // Not (16,16): that would mean the derived default silently won instead.
+    expect(restored.securitySectors.requireDefinition(DEFAULT_SECTOR_ID).postTile).not.toEqual(ORIGIN);
+    // One sector, not two: this is a field-level override of the id the
+    // runtime already held, not a second sector registered beside it.
+    expect(restored.securitySectors.all()).toHaveLength(1);
   });
 
   it('gives the tier to a save written before it existed, with no migration and no version bump', () => {
