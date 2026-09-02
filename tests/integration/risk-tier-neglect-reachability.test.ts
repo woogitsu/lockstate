@@ -46,6 +46,22 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *   the control. If this run also produced a High-risk resident, the finding
  *   below would be about the review mechanism being broken rather than about
  *   neglect.
+ *
+ * ## The owner's ruling on #788, and what this file now also proves
+ *
+ * The owner ruled on #788 in two parts: the twenty in-game days this run's
+ * neglected prison takes to reach `High` is *right and not to be changed*, and
+ * the fact that `Medium` was never actually observed on the way there — one
+ * lapsed riot already saturates `MAX_FINDINGS_TERM`, so `ClassificationReviewSystem`'s
+ * one evaluation point before day 20 jumped straight from `Low`/`Minimal` to
+ * `High` — is *wrong*: "a player should see Medium as a warning rather than
+ * get High with no notice." ADR 0090 answers it with a second system,
+ * `ClassificationEarlyWarningSystem`, that runs once a day rather than once
+ * every ten, and can raise a tier only as far as `Medium`. It shares this
+ * file's fixtures and its evidence fold, so the same two runs now prove both
+ * halves of the ruling at once: the neglected prison visits `Medium` days
+ * before `High`, at the same `High` tick as before, and the well-run control
+ * is untouched (see each test's own assertions).
  */
 
 const SEED = 0x0cc0;
@@ -238,10 +254,56 @@ describe('the risk tiers above Low, in the real kernel (#788)', () => {
     expect(incidentOpenedAtTicks.length, 'the neglected prison must actually produce at least one incident for this run to test anything').toBeGreaterThan(0);
     expect(firstHigh, 'High (tier 3) must be reached from findings alone, priorIncidents pinned at 0 throughout').toBeDefined();
     // findings alone (riot: 2 base + 1 lapsed-unanswered surcharge = 3) already
-    // saturates `MAX_FINDINGS_TERM`, so every observed transition here lands
-    // directly on tier 3 without visibly pausing at tier 2 first -- reported
-    // rather than asserted away, since it is itself part of the answer.
+    // saturates `MAX_FINDINGS_TERM`, so `ClassificationReviewSystem`'s own
+    // score is still tier 3 the moment it first looks -- this is the
+    // authoritative review's arithmetic and ADR 0090 leaves it untouched.
     for (const [, assessment] of finalAssessments) expect(assessment.factors.findings).toBe(3);
+
+    // **Superseded 2026-09-02 by the assertions below, on the owner's ruling on
+    // #788 (ADR 0090): kept because it was true of this file before the ruling
+    // and the correction is worth being able to find.** This comment used to
+    // end here, reading: *"so every observed transition here lands directly on
+    // tier 3 without visibly pausing at tier 2 first -- reported rather than
+    // asserted away, since it is itself part of the answer."* That was the
+    // whole of what this run showed at the time: the only thing that ever
+    // wrote `riskTier` before the authoritative review's own floor (tick
+    // 47,999, systems-executed -- see the note on `firstHigh.tick` below for
+    // why this loop observes 48,000) was that same review, so there was no
+    // earlier point at which anything could have shown `Medium`.
+    // `ClassificationEarlyWarningSystem` is a second, independent,
+    // capped-at-`Medium` writer that runs once a day instead of once every
+    // ten, so it is what changes now: it catches the very first lapsed riot's
+    // findings well before day 20 and writes `Medium`, without moving a single
+    // constant `ClassificationReviewSystem` itself reads or the tick its own
+    // review fires at.
+    expect(firstMedium, 'Medium (tier 2) must now be a real, observed waypoint, not an arithmetic possibility nobody writes').toBeDefined();
+    expect(firstMedium?.riskTier, 'the early warning is capped at Medium -- it must never itself write High').toBe(2);
+    // **48,000, not 47,999.** `Kernel.step()` runs systems at
+    // `context.tick = this._tick` and only then increments `_tick`
+    // (`kernel.ts`), so `runtime.kernel.tick` read after `step()` -- which is
+    // exactly what this loop's `tick` variable is -- is one greater than the
+    // tick systems actually executed at
+    // (`docs/research/2026-09-01-are-the-risk-tiers-reachable.md` §5 names the
+    // same offset for the same fixture). The authoritative review really fires
+    // at systems-executed tick 47,999; this loop observes that as 48,000. That
+    // arithmetic is untouched by ADR 0090, so this is the ruling's constraint:
+    // the number this file would have observed here before the fix, unchanged.
+    expect(firstHigh?.tick, "High must still be reached at the tick the owner's ruling priced this pacing against").toBe(48_000);
+    // The early warning fires daily (`intervalTicks: 2,400`, `phaseTicks:
+    // 2,399`), so its first possible firing is systems-executed tick 2,399,
+    // observed here as 4,800 for the same reason `firstHigh.tick` is 48,000
+    // rather than 47,999 (its second firing, not its first: the very first
+    // riot opens at tick 1,801 and has not yet lapsed by the first daily
+    // check, so the earliest it can be counted as a finding is the second).
+    expect(firstMedium?.tick).toBe(4_800);
+    // The real point of both pins together: a player watching this prison
+    // gets `Medium` more than 43,000 ticks (about 18 in-game days) before
+    // `High` arrives, rather than the two tiers landing on the same tick.
+    expect(firstHigh!.tick - firstMedium!.tick, 'Medium must arrive with a real warning window before High, not on the same tick').toBeGreaterThan(40_000);
+    expect(
+      runtime.prisoners.classificationEarlyWarningSystem.getMetrics().warningsIssued,
+      'the early-warning system must actually have fired in a prison this neglected',
+    ).toBeGreaterThan(0);
   });
 
   it('a well-run, staffed prison produces no incidents and settles every tier at Minimal, over the same window', () => {
@@ -259,5 +321,14 @@ describe('the risk tiers above Low, in the real kernel (#788)', () => {
       expect(assessment.factors.findings, 'no findings without an incident').toBe(0);
       expect(assessment.riskTier, 'clean conduct alone settles a well-run prison at Minimal').toBe(0);
     }
+    for (const index of livingIndices(runtime)) {
+      expect(runtime.prisoners.records.riskTier[index], 'the persisted tier, not only the recomputed assessment, must settle at Minimal').toBe(0);
+    }
+    // ADR 0090: the early warning can only ever raise a tier, so a prison with
+    // no findings ever must give it nothing to raise.
+    expect(
+      runtime.prisoners.classificationEarlyWarningSystem.getMetrics().warningsIssued,
+      'a well-run prison must never trip the early warning -- it has no findings for it to see',
+    ).toBe(0);
   });
 });
