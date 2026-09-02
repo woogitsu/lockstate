@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { BADGE_TONES } from '../../src/ui/primitives/status-badge';
 
 /**
  * The design-token contract, made executable.
@@ -95,8 +96,10 @@ describe('token file structure', () => {
       '--accent-deep',
       '--accent-soft',
       '--status-success',
+      '--status-caution',
       '--status-warning',
       '--status-danger',
+      '--status-critical',
       '--status-info',
     ]) {
       expect(tokens.has(alias), `${alias} must be declared`).toBe(true);
@@ -121,8 +124,12 @@ describe('token file structure', () => {
       '--accent-deep': '#4a7fa5',
       '--accent-soft': 'rgba(134, 178, 207, 0.14)',
       '--status-success': '#86b596',
+      // A rung below `--status-warning` rather than past it, for issue #788's
+      // ruling of 2026-09-02 -- see `--straw-300` in `tokens.css`.
+      '--status-caution': '#bba881',
       '--status-warning': '#e8b463',
       '--status-danger': '#d4785c',
+      '--status-critical': '#b8455a',
       '--status-info': '#86b2cf',
     };
     for (const [alias, value] of Object.entries(expected)) {
@@ -133,10 +140,42 @@ describe('token file structure', () => {
   it('pairs every badge tone with both a background and a foreground', () => {
     // Pairing them in the token layer is what stops a call site from
     // assembling a mismatched combination.
-    for (const tone of ['neutral', 'success', 'warning', 'danger', 'info']) {
+    //
+    // **The list used to be five literals here -- `neutral`, `success`,
+    // `warning`, `danger`, `info` -- and it had already rotted**: `'critical'`
+    // was added to `BadgeTone` by issue #768's ruling of 2026-09-01 and never
+    // added here, so its pair went unchecked for a day. Reading `BADGE_TONES`
+    // instead means the next tone cannot be added to the type without this
+    // check finding it, which is the class rather than the instance. The
+    // vacuity guard below is what stops an emptied `BADGE_TONES` from passing.
+    expect(BADGE_TONES.length, 'BADGE_TONES is empty, so the loop below would prove nothing').toBeGreaterThanOrEqual(6);
+    for (const tone of BADGE_TONES) {
       expect(tokens.has(`--badge-${tone}-bg`), `--badge-${tone}-bg`).toBe(true);
       expect(tokens.has(`--badge-${tone}-fg`), `--badge-${tone}-fg`).toBe(true);
+      // And each resolves to something a browser would paint rather than to a
+      // dangling `var()` -- `resolveToken` throws on an undeclared name.
+      expect(resolveToken(`--badge-${tone}-bg`, tokens).length, `--badge-${tone}-bg`).toBeGreaterThan(0);
+      expect(resolveToken(`--badge-${tone}-fg`, tokens).length, `--badge-${tone}-fg`).toBeGreaterThan(0);
     }
+  });
+
+  it('gives every badge tone a foreground no other tone shares', () => {
+    // A tone whose colour is another tone's colour is a tone in the type and
+    // not on the screen, which is the whole of what issue #788's ruling of
+    // 2026-09-02 was about: `Medium` and `Minimal` were two states with one
+    // colour. This is that check for the vocabulary rather than for the one
+    // caller -- `describePrisonerRow`'s own tests hold the caller.
+    const byColour = new Map<string, string[]>();
+    for (const tone of BADGE_TONES) {
+      const colour = resolveToken(`--badge-${tone}-fg`, tokens);
+      byColour.set(colour, [...(byColour.get(colour) ?? []), tone]);
+    }
+    // `info` and `accent` are the same hue on purpose (`--status-info` is
+    // `var(--sky-300)`), and that is a *foreground* they share with a
+    // non-badge role rather than with another badge tone -- so this stays a
+    // check over `BADGE_TONES` alone.
+    const shared = [...byColour.entries()].filter(([, tones]) => tones.length > 1);
+    expect(shared, `two badge tones resolve to one colour: ${JSON.stringify(shared)}`).toEqual([]);
   });
 
   it('keeps the application background on the token layer', () => {
@@ -164,7 +203,9 @@ describe('components reference only the semantic layer', () => {
     const source = stylesheetRules(path);
     // Reaching a raw ramp directly is what would survive a re-skin and break
     // it: the alias would be repointed and this one rule would not follow.
-    expect(source).not.toMatch(/var\(--(?:ink|paper|sky|moss|amber|clay)-/);
+    // Extended twice since it was written, both times by a new raw hue: the
+    // list is the ramps that exist, so it grows when one does.
+    expect(source).not.toMatch(/var\(--(?:ink|paper|sky|moss|straw|amber|clay|crimson)-/);
   });
 
   it.each(componentStylesheets)('%s uses only tokens that exist', (path) => {
