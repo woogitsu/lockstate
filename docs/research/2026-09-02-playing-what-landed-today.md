@@ -726,3 +726,44 @@ are stated with what would settle them and no cause attached.
    material stock read immediately before that press. Not measured.
 
 Neither is claimed as a defect and neither touches either feature.
+
+## §9 — This pass's own weakest claim, and what would change my mind
+
+**The weakest claim is §2d: "a guard walked zero times, so a player cannot see
+one."** Two things could make it wrong, and one of them is cheap to test.
+
+**The gap that matters.** "Zero walks in 2,511 sampled ticks" is a statement
+about two prisons — an empty one and a six-resident one with three guards —
+each played once, on one random master seed each. The route into a walk that
+§2c identifies (a staffing shortage arising while a spare guard stands away
+from its post) is *reachable*: a prison that grows past eight residents raises
+`resolveOccupancyScaledGuardCount` by one, and a player who dismisses or
+releases the posted guard manufactures a shortage immediately. **This pass did
+not sample either of those**, so what is established is "no walk happens by
+itself in a small prison", not "no walk is possible". Act 3's phase 2 was added
+to press Release and sample 400 ticks after it, precisely because that is the
+one player gesture that should produce one.
+
+**What would change my mind, in order of cost:** a run that presses Release on
+the ON DUTY row with a spare standing off-post and finds a non-zero published
+velocity (cheap, and act 3's phase 2 is exactly that); or a prison grown past
+eight residents while a spare is away on a sweep (a longer act, not attempted).
+If either produces a walk, §2d weakens to *"a player who never touches the
+Release control and never passes eight residents sees no guard walk"*, which is
+still a real answer to ADR 0088's open question but a narrower one.
+
+**The second weakness is one I cannot close from this repository.** Everything
+about *how a walk reads on screen* — movement or glitch — is inferred from the
+render channel and from `tests/browser/actor-guard-rendering.spec.ts` proving a
+guard sprite is drawn from the guard atlas. **This pass never watched a guard
+move**, so it has no opinion at all on whether ten tiles a second reads as
+walking or as sliding. The constant's own docblock says 640 px/s is *"hurried,
+and the honest cost of a 2,400-tick day"*, and that judgement is untested by
+anybody, including this pass.
+
+**A third, smaller one.** §3's claim that nothing else on the screen moves is a
+diff over six fields — tiers, badge words, badge tones, the `HIGH RISK` value,
+the `INCIDENTS` value and the alerts text. It is not a diff over the whole DOM.
+A change somewhere this pass did not sample would not have been seen. The six
+were chosen because they are the surfaces a player scanning for a warning would
+look at, and that choice is a judgement.
