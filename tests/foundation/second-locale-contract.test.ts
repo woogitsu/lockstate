@@ -229,9 +229,9 @@ const LOCALIZER_CALL = /(?:\bt|\.format|\.formatPlural)\s*\(/;
  * pinned so a third cannot arrive unnoticed.
  */
 const ASSEMBLED_SENTENCES: Readonly<Record<string, string>> = {
-  'ui/hud/build-panel.ts:1739':
+  'ui/hud/build-panel.ts:1770':
     'aria-label for a delivery row\'s Cancel: `${t(buildDeliveryCancel)}: ${row.label.textContent}`',
-  'ui/hud/build-panel.ts:1969':
+  'ui/hud/build-panel.ts:2000':
     'aria-label for a queue row\'s Cancel: `${t(buildQueueCancel)}: ${row.label.textContent}`',
 };
 

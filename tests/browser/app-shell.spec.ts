@@ -691,6 +691,64 @@ async function setBuyQuantity(page: Page, quantity: number): Promise<void> {
   await field.press('Enter');
 }
 
+/**
+ * **Presses Buy for a total the published balance cannot cover, and asserts
+ * the two things that have to be true of the control before it is pressed.**
+ *
+ * ## Why an unaffordable press needs its own helper (issues #772, #799)
+ *
+ * Since #772 the Buy button carries the *same* affordability verdict the
+ * press is judged against (`pressAffordabilityVerdict`,
+ * `src/ui/affordability.ts`), so a control about to be refused says so before
+ * the press. PR #799 first wrote that verdict onto the `disabled` property,
+ * which removed the press -- and the press is the only route to
+ * `hud.refusal.purchase-materials-past-floor`, the sentence the owner
+ * authored under ruling 18 of 2026-08-31 for this exact limit. The three
+ * purchase tests below all press an unaffordable quantity on purpose and all
+ * three timed out on `element is not enabled`. The narrowing of 2026-09-02
+ * moved the verdict to `aria-disabled`: advised against, still pressable,
+ * still refused, still explained.
+ *
+ * So each of the two assertions here is load-bearing in a different
+ * direction, and neither is a restatement of the other:
+ *
+ *   - `aria-disabled="true"` is #772 itself. Drop it and the control is back
+ *     to saying nothing before the press.
+ *   - `disabled` staying `false` is what keeps this refusal reachable. Drop
+ *     it and every assertion after the press in all three tests becomes
+ *     unreachable UI. **Nothing is in flight here** -- each caller has already
+ *     waited out whatever it dispatched before -- so this reads the panel's
+ *     own opinion and not `createBusyGroup`'s, which holds every command
+ *     control disabled while one is in flight
+ *     (`src/ui/primitives/async-action.ts`).
+ *
+ * ## Why `force: true`
+ *
+ * Playwright's actionability treats `aria-disabled="true"` on a `button` as
+ * not-enabled -- `elementState(node, 'enabled')` calls `getAriaDisabled`,
+ * which is `isNativelyDisabled(el) || hasExplicitAriaDisabled(el)`
+ * (`playwright-core` 1.56.1, `injectedScriptSource.js`) -- so a plain
+ * `click()` would wait out the timeout on a control a real pointer activates
+ * immediately. `force` skips *that wait* and nothing else: it still dispatches
+ * real mouse events at the element's box, which is why it does **not** paper
+ * over a regression to a hard `disabled` -- a `disabled` button receives those
+ * events and fires no `click`, so the refusal assertions after the press would
+ * fail. The `toHaveJSProperty` above says the same thing one step earlier and
+ * with a better message.
+ */
+async function pressBuyExpectingRefusal(page: Page): Promise<void> {
+  const buy = page.locator('.hud-build__buy-submit');
+  await expect(buy, 'the Buy button did not say it could not act before the press (#772)').toHaveAttribute(
+    'aria-disabled',
+    'true',
+  );
+  await expect(
+    buy,
+    'the affordability verdict took the press away, so the refusal that explains it is unreachable (#799)',
+  ).toHaveJSProperty('disabled', false);
+  await buy.click({ force: true });
+}
+
 async function armBuildTool(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Build' }).click();
   // `.hud-build__arm`, not `.hud-build__map .ui-action`: the map block holds
@@ -7920,7 +7978,10 @@ test.describe('the assembled application', () => {
     await page.locator('.hud-build__buy .ui-number__input').fill('1000');
     await page.locator('.hud-build__buy .ui-number__input').press('Enter');
     await expect(buy).toHaveText('Buy 1000 × Brick · 40,000');
-    await buy.click();
+    // Which the control now says before it is pressed, and is still pressed --
+    // see `pressBuyExpectingRefusal` for why both halves matter and why the
+    // press is forced.
+    await pressBuyExpectingRefusal(page);
 
     const refusal = page.locator('.hud__refusal');
     await expect(refusal).toBeVisible();
@@ -8053,6 +8114,13 @@ test.describe('the assembled application', () => {
     const buy = page.locator('.hud-build__buy-submit');
 
     // ---- the first press: accepted, and paid for during the pause ----------
+    // Available before it, which is the other direction of the same claim the
+    // second press asserts: the verdict on the button is the verdict on the
+    // press, so an affordable quantity must not be advised against (#772).
+    await expect(buy, 'an affordable press was advised against before it happened').toHaveAttribute(
+      'aria-disabled',
+      'false',
+    );
     await buy.click();
     await expect
       .poll(async () => (await purchasesSent(page)).length, {
@@ -8073,7 +8141,12 @@ test.describe('the assembled application', () => {
     await expect(page.locator('[data-action-failed="true"]')).toHaveCount(0);
 
     // ---- the second press: refused here, and nothing leaves this thread ----
-    await buy.click();
+    // The balance the poll above waited for is the one this press is measured
+    // against, and it is also the one the button was repainted from
+    // (`setTreasury` -> `paintBuyTotal`, issue #772), so the control says it
+    // cannot act before the press as well as after it. Both are asserted, and
+    // the press still happens -- see `pressBuyExpectingRefusal`.
+    await pressBuyExpectingRefusal(page);
     await expect(refusal).toBeVisible();
     await expect(refusal).toHaveAttribute('data-action', 'purchase-materials');
     // **The sentence changed on 2026-08-31 (#703 ruling 18) and the key did
@@ -8284,7 +8357,7 @@ test.describe('the assembled application', () => {
     await openBuyRow(page);
     await setBuyQuantity(page, unaffordable);
     const buy = page.locator('.hud-build__buy-submit');
-    await buy.click();
+    await pressBuyExpectingRefusal(page);
 
     await expect(refusal).toBeVisible();
     await expect(refusal).toHaveAttribute('data-action', 'purchase-materials');
@@ -8328,6 +8401,16 @@ test.describe('the assembled application', () => {
      * on the figure itself.
      */
     await setBuyQuantity(page, 1);
+    // **And the advice recovers**, on the assembled page rather than only in
+    // the harness (`tests/browser/ui-buy-button-affordability.spec.ts` drives
+    // the same recovery against a pushed view model). One brick is affordable
+    // at this balance, so the control that was advising against a press a
+    // moment ago stops -- which is what makes the state above a statement
+    // about *this quantity at this balance* and not a button that latched.
+    await expect(buy, 'the Buy button went on advising against a press it would accept').toHaveAttribute(
+      'aria-disabled',
+      'false',
+    );
     await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
     await buy.click();
     await expect

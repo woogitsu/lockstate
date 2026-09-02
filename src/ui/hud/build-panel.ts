@@ -242,7 +242,7 @@ export interface BuildPanel {
    */
   setPendingDeliveries(deliveries: HudPendingDeliveriesViewModel | undefined): void;
   /**
-   * The two treasury figures the buy button's enabled state is judged
+   * The two treasury figures the buy button's availability is judged
    * against (issue #772): `treasuryMinorUnits` and `roomCapacity`, published
    * on every `simulation/status-counts` tick and passed straight through --
    * the panel decides the comparison (`pressAffordabilityVerdict`, the same
@@ -1563,33 +1563,64 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       }),
     );
     /*
-     * **Issue #772: the control's enabled state tracks the same verdict the
-     * press itself will be judged against, computed before the press rather
-     * than discovered by it.** `pressAffordabilityVerdict` is the exact
-     * comparison `src/main.ts` runs on `onPurchase` -- same
-     * `judgeAffordability`, same `pressFloorMinorUnits`, same constant floor
-     * -- so a press this disables and a press this would have let through are
-     * never two approximations of one question.
+     * **Issue #772: the control's state tracks the same verdict the press
+     * itself will be judged against, computed before the press rather than
+     * discovered by it.** `pressAffordabilityVerdict` is the exact comparison
+     * `src/main.ts` runs on `onPurchase` -- same `judgeAffordability`, same
+     * `pressFloorMinorUnits`, same constant floor -- so a press this marks
+     * unavailable and a press this would have let through are never two
+     * approximations of one question.
      *
-     * **Disabled, not hidden**, unlike `buyToggle` two paragraphs above: that
-     * comment's rule is for a control that would claim a purchase *exists*
-     * when it does not (nothing sells the buildable, or the removal gesture
-     * buys nothing) -- a permanent fact about the row. Affordability is the
-     * opposite shape: the purchase exists and stays offered, the balance
-     * that blocks it is a fact about *right now*, and the same press that is
-     * refused this tick goes through the next time a delivery lands or the
-     * quantity comes down. `disabled` says exactly that -- inert, but still
-     * here -- where `hidden` would claim the row itself stopped meaning
-     * anything.
+     * **`setUnavailable`, not `setDisabled`, and this is the narrowing of
+     * 2026-09-02.** PR #799 wrote `setDisabled(verdict.refused)` here. It was
+     * the right verdict on the wrong bit, and it cost a whole refusal route:
+     *
+     *   - `disabled` removes the press, and the press is what produces the
+     *     only sentence a player is ever given for this refusal --
+     *     `hud.refusal.purchase-materials-past-floor`, which the owner
+     *     authored under ruling 18 of 2026-08-31 precisely because the generic
+     *     line told a player nothing about a limit they had no other way of
+     *     learning. With `disabled`, that sentence, the
+     *     `data-action-failed` mark on this button and the `aria-describedby`
+     *     link between them became unreachable from this panel: the last
+     *     producer of `'past-the-overdraft-floor'` left is `hire-staff`. The
+     *     label is unchanged either way (see the split below), so a hard
+     *     `disabled` says "no" and nothing else, for ever.
+     *   - It never held, either. `buySubmit.element` is in this panel's
+     *     `controls`, and `createBusyGroup`'s `apply`
+     *     (`src/ui/primitives/async-action.ts`) assigns
+     *     `control.disabled = busy` for every member on every busy
+     *     transition -- so the gate re-enabled this button after *any*
+     *     command in the HUD settled, and nothing repainted it until the next
+     *     `setTreasury` or quantity change. A refusal reachable in that window
+     *     and nowhere else is an accident, not a design.
+     *
+     * `aria-disabled` keeps both halves: assistive technology reports the
+     * control as unavailable and `primitives.css` dims it, so #772's
+     * before-the-press signal is intact -- and the press still lands, is
+     * still refused on this thread, and the player is still told why. See
+     * `ActionButton.setUnavailable` for the general form of the distinction.
+     *
+     * **Unavailable, not hidden**, unlike `buyToggle` two paragraphs above:
+     * that comment's rule is for a control that would claim a purchase
+     * *exists* when it does not (nothing sells the buildable, or the removal
+     * gesture buys nothing) -- a permanent fact about the row. Affordability
+     * is the opposite shape: the purchase exists and stays offered, the
+     * balance that blocks it is a fact about *right now*, and the same press
+     * that is refused this tick goes through the next time a delivery lands or
+     * the quantity comes down. `aria-disabled` says exactly that -- advised
+     * against, but still here -- where `hidden` would claim the row itself
+     * stopped meaning anything.
      *
      * **This is the mechanical half only (issue #772's split).** What the
-     * button *says* while disabled is untouched -- still
-     * `hud.build.buy.submit`, the same sentence a press could still succeed
-     * with a moment ago. Naming what stops and what would lift it is new
-     * player-facing copy, which `AGENTS.md`'s fourth exclusion and this
-     * issue's own text both reserve to the owner, and ADR 0087's decision 2
-     * (a standing condition, gated on copy) or ADR 0089's reason-as-data
-     * mechanism are the places that sentence gets decided -- not here.
+     * button *says* is untouched -- still `hud.build.buy.submit`, byte for
+     * byte, whichever way the verdict falls. Naming what stops and what would
+     * lift it is new player-facing copy, which `AGENTS.md`'s fourth exclusion
+     * and this issue's own text both reserve to the owner, and ADR 0087's
+     * decision 2 (a standing condition, gated on copy) or ADR 0089's
+     * reason-as-data mechanism are the places that sentence gets decided --
+     * not here. The refusal band is the one sentence that already exists, and
+     * keeping the press is what keeps it reachable.
      *
      * **Freshness, threaded exactly as `overdraftRemaining` threads it**
      * (`src/ui/hud/projection.ts`): `treasuryRoomCapacity === 0`, never a
@@ -1600,7 +1631,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      */
     const isFreshUnfurnishedPrison = treasuryRoomCapacity === 0;
     const verdict = pressAffordabilityVerdict(total, treasuryMinorUnits, isFreshUnfurnishedPrison);
-    buySubmit.setDisabled(verdict.refused);
+    buySubmit.setUnavailable(verdict.refused);
   }
 
   function paintBuy(): void {
@@ -2251,9 +2282,16 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // filter currently shows, not whether the disclosure is open, so this
       // still repaints a hidden button rather than skip the work). Repainting
       // unconditionally is what the badge on the strip already does for the
-      // same balance (`strip.update`), and it is cheap: one comparison, no
-      // DOM write when the label and disabled flag do not change from what
-      // they already were.
+      // same balance (`strip.update`), and it is cheap: one comparison, one
+      // text assignment and one `setAttribute` per publication, none of which
+      // changes layout when the value is what it already was. **This sentence
+      // read "no DOM write when the label and disabled flag do not change"
+      // until 2026-09-02, and that stopped being true when the verdict moved
+      // from the `disabled` property to the `aria-disabled` attribute:
+      // assigning a property the value it holds is a no-op, and
+      // `setAttribute` with an unchanged value still writes.** The cost is a
+      // string comparison the engine makes either way; the reason the old
+      // sentence gave is gone, and the conclusion is not.
       paintBuyTotal();
     },
     setVisible(visible: boolean): void {

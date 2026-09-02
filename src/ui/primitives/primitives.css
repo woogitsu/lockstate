@@ -601,7 +601,18 @@
 
 .ui-action[data-tone='primary']:hover { background: var(--accent); color: var(--accent-contrast); }
 
-.ui-action:disabled { cursor: not-allowed; opacity: 0.5; }
+/* Two states, one appearance, and the difference is deliberate (issue #772,
+ * narrowed 2026-09-02). `:disabled` is a press that cannot happen;
+ * `[aria-disabled='true']` -- `ActionButton.setUnavailable` -- is a press that
+ * can happen and will be refused with a sentence saying why. A player needs to
+ * read "not right now" off both, so they look the same; only `disabled` takes
+ * the click. One selector for the pair rather than a second rule, so the two
+ * cannot drift apart -- including in what they do *not* do: the `:hover` rule
+ * above carries no `:not(:disabled)`, so a dimmed control has always lit up
+ * under the pointer, and this state inherits that unchanged rather than
+ * inventing a distinction #772 did not ask for. */
+.ui-action:disabled,
+.ui-action[aria-disabled='true'] { cursor: not-allowed; opacity: 0.5; }
 
 .ui-action__label { white-space: nowrap; }
 

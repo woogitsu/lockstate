@@ -295,13 +295,23 @@ export function judgeAffordability(
  * ## Why this exists as its own export (issue #772)
  *
  * A control that fires that command needs to answer the same question
- * *before* the player presses it, so its disabled state stops being
+ * *before* the player presses it, so that whether it can act stops being
  * discovered by pressing -- and `src/ui/hud/` may not import
  * `src/simulation/**` to reach `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` itself
  * (`AGENTS.md` boundary 1, pinned by `tests/unit/ui-hud-messages.test.ts`).
  * This module already may, for the reason `pressFloorMinorUnits`'s own
  * docblock gives, so it does the composing and a HUD panel gets back only the
  * verdict.
+ *
+ * **This answer is advice to a control, not a second gate, and the narrowing
+ * of 2026-09-02 is what makes that true.** Its one caller
+ * (`paintBuyTotal`, `src/ui/hud/build-panel.ts`) marks the button
+ * `aria-disabled` rather than `disabled`, so a refused press still reaches
+ * `src/main.ts` and is still answered there with the sentence naming the
+ * reason. This function moving a control's *availability* and the pre-flight
+ * deciding the *press* is the whole point of them sharing one comparison; if a
+ * caller ever used this verdict to remove the press, the refusal it prevents
+ * would be the only explanation the player was ever going to get.
  *
  * `isFreshUnfurnishedPrison` is required rather than defaulted, matching
  * `pressFloorMinorUnits` and `deliveriesRungFloorMinorUnits` above and for

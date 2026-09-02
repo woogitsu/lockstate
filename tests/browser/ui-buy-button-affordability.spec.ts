@@ -3,7 +3,7 @@ import { type Page, expect, test } from './network-changed-fixture';
 import './ui-harness-api';
 
 /**
- * The Buy button's enabled state, in a real browser (issue #772).
+ * The Buy button's availability, in a real browser (issue #772).
  *
  * ## What #772 found
  *
@@ -12,16 +12,30 @@ import './ui-harness-api';
  * already computes the answer on every press --
  * `judgeAffordability`'s `spendableMinorUnits` -- and threw it away. This
  * spec is the gate for the mechanical half of that issue: the control's
- * `disabled` attribute now tracks the same verdict the press itself will be
- * judged against (`pressAffordabilityVerdict`, `src/ui/affordability.ts`),
+ * `aria-disabled` attribute now tracks the same verdict the press itself will
+ * be judged against (`pressAffordabilityVerdict`, `src/ui/affordability.ts`),
  * computed *before* the press rather than discovered by it.
  *
+ * **`aria-disabled` and not `disabled`, and the difference is asserted rather
+ * than assumed (the narrowing of 2026-09-02).** PR #799 first wrote the
+ * verdict onto the `disabled` property. That answers #772 and destroys
+ * something else: `disabled` removes the press, the press is what reaches
+ * `src/main.ts`'s pre-flight, and the pre-flight is the only producer of
+ * `hud.refusal.purchase-materials-past-floor` this panel has -- the sentence
+ * the owner authored under ruling 18 of 2026-08-31 for exactly the limit a
+ * player has no other way of learning about. Three tests in
+ * `tests/browser/app-shell.spec.ts` drive that sentence through a real press
+ * on the assembled page, and all three went red. So the verdict advises and
+ * does not veto: every case below reads *both* bits, and `buyDisabled` is
+ * asserted `false` beside every `buyUnavailable` that is `true`.
+ *
  * **The wording half is deliberately not this spec's subject.** `buyLabel` is
- * asserted to stay byte-identical between the enabled and disabled states at
- * one point below, which is the proof that this change is mechanism only --
- * see `build-panel.ts`'s comment on `paintBuyTotal` for why naming what stops
- * and what would lift it is the owner's, under `AGENTS.md`'s fourth exclusion,
- * and ADR 0087 / ADR 0089's territory rather than this issue's.
+ * asserted to stay byte-identical between the available and unavailable
+ * states at one point below, which is the proof that this change is mechanism
+ * only -- see `build-panel.ts`'s comment on `paintBuyTotal` for why naming
+ * what stops and what would lift it is the owner's, under `AGENTS.md`'s
+ * fourth exclusion, and ADR 0087 / ADR 0089's territory rather than this
+ * issue's.
  *
  * ## What this covers that `pnpm test` cannot
  *
@@ -80,19 +94,32 @@ interface ButtonReading {
   readonly selected: string | null;
   readonly buyOpen: boolean;
   readonly buyLabel: string;
+  /** `aria-disabled`: what the verdict writes. */
+  readonly buyUnavailable: boolean;
+  /**
+   * The `disabled` property: what the verdict must **not** write, and the
+   * reason this reading has two fields rather than one (the narrowing of
+   * 2026-09-02, see the header above).
+   */
   readonly buyDisabled: boolean;
 }
 
 async function push(page: Page, viewModel: HudViewModel): Promise<ButtonReading> {
   await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), viewModel);
   const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
-  return { selected: probe.selected, buyOpen: probe.buyOpen, buyLabel: probe.buyLabel, buyDisabled: probe.buyDisabled };
+  return {
+    selected: probe.selected,
+    buyOpen: probe.buyOpen,
+    buyLabel: probe.buyLabel,
+    buyUnavailable: probe.buyUnavailable,
+    buyDisabled: probe.buyDisabled,
+  };
 }
 
 test.describe('the Buy button says whether it can act before it is pressed (#772)', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
-  test('disables on a balance that refuses the press, enables on one that does not, and never changes what it says', async ({
+  test('says so on a balance that refuses the press, not on one that does not, keeps the press either way, and never changes what it says', async ({
     page,
   }) => {
     await page.goto(HARNESS_URL);
@@ -106,11 +133,12 @@ test.describe('the Buy button says whether it can act before it is pressed (#772
 
     /*
      * **Solvent**: nothing refuses a 65 press at a balance of 24,920. The
-     * control starts, and stays, enabled.
+     * control starts, and stays, available.
      */
     const solvent = await push(page, viewModelAt(24_920));
     expect(solvent.selected, 'the wall-brick default was not still selected').toBe('door-wooden');
     expect(solvent.buyOpen, 'the disclosure did not open').toBe(true);
+    expect(solvent.buyUnavailable, 'a solvent prison’s Buy button says it cannot act').toBe(false);
     expect(solvent.buyDisabled, 'a solvent prison’s Buy button is disabled').toBe(false);
 
     /*
@@ -121,7 +149,32 @@ test.describe('the Buy button says whether it can act before it is pressed (#772
      * default (`pressFloorMinorUnits`'s own contract for an absent value).
      */
     const refused = await push(page, viewModelAt(-1_230));
-    expect(refused.buyDisabled, 'a press `judgeAffordability` would refuse still shows an enabled button').toBe(true);
+    expect(
+      refused.buyUnavailable,
+      'a press `judgeAffordability` would refuse still shows a control claiming it can act',
+    ).toBe(true);
+    /*
+     * **And the press is still there** -- the narrowing of 2026-09-02, and the
+     * assertion that makes it a fact rather than a comment.
+     *
+     * PR #799 wrote the verdict onto `disabled`, which took the press away and
+     * with it the only sentence a player is ever given for this refusal:
+     * `hud.refusal.purchase-materials-past-floor`, which the owner authored
+     * under ruling 18 of 2026-08-31 exactly because the generic line said
+     * nothing about the limit. `tests/browser/app-shell.spec.ts` drives that
+     * sentence through a real press on the assembled page and went red on all
+     * three of its purchase tests the moment the press was removed; this line
+     * is the same claim at the layer that can state it in one bit, so a future
+     * change that re-takes the press is caught here as well as there.
+     *
+     * Nothing is in flight at this point -- `setHudViewModel` dispatches no
+     * intent -- so this reads the panel's own opinion and not
+     * `createBusyGroup`'s.
+     */
+    expect(
+      refused.buyDisabled,
+      'the affordability verdict took the press away, so the refusal that explains it can never be reached',
+    ).toBe(false);
 
     /*
      * **The mechanism, not the wording.** The label is byte-identical to the
@@ -132,16 +185,19 @@ test.describe('the Buy button says whether it can act before it is pressed (#772
      * that disabling and re-wording are two different changes, and only the
      * first is this issue's.
      */
-    expect(refused.buyLabel, 'the disabled state said something the enabled state did not').toBe(solvent.buyLabel);
+    expect(refused.buyLabel, 'the unavailable state said something the available state did not').toBe(
+      solvent.buyLabel,
+    );
 
     /*
      * **Recovers.** The same balance that was refused a moment ago is not a
      * permanent state -- move the balance back and the identical button
-     * re-enables with no new element, no re-mount, nothing but the next
+     * says so again with no new element, no re-mount, nothing but the next
      * `setHudViewModel` (a delivery landing, in the real application).
      */
     const recovered = await push(page, viewModelAt(24_920));
-    expect(recovered.buyDisabled, 'the button did not recover once the balance did').toBe(false);
+    expect(recovered.buyUnavailable, 'the button did not recover once the balance did').toBe(false);
+    expect(recovered.buyDisabled, 'the recovered button is disabled').toBe(false);
 
     /*
      * **Freshness, threaded rather than defaulted (issue #771's starter rung,
@@ -155,12 +211,15 @@ test.describe('the Buy button says whether it can act before it is pressed (#772
      * way rather than defaulted.
      */
     const matureAtNinety = await push(page, viewModelAt(-1_160));
-    expect(matureAtNinety.buyDisabled, 'the mature floor leaves 90 of room for a 65 press').toBe(false);
+    expect(matureAtNinety.buyUnavailable, 'the mature floor leaves 90 of room for a 65 press').toBe(false);
 
     const freshAtTwentyFive = await push(page, viewModelAt(-1_160, 0));
     expect(
-      freshAtTwentyFive.buyDisabled,
+      freshAtTwentyFive.buyUnavailable,
       'a fresh, unfurnished prison’s starter rung leaves only 25 of room for a 65 press',
     ).toBe(true);
+    // And the starter rung advises against the press without removing it
+    // either, for the reason the mature-rung case above gives at length.
+    expect(freshAtTwentyFive.buyDisabled, 'the starter rung took the press away').toBe(false);
   });
 });
