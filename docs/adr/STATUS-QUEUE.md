@@ -891,8 +891,8 @@ take it:
      possible test of a mechanism that splits under concurrency — and it is
      recorded that way.
    - **`docs/adr/README.md`'s Next free number is 0092, and the held-number
-     sweep finds NOTHING HELD for the first time in this subsection's
-     history.** A fresh sweep of all **444** remote heads
+     sweep finds NOTHING HELD, against four consecutive readings that
+     found a hold.** A fresh sweep of all **444** remote heads
      (`git ls-remote --refs --heads origin`, then
      `git ls-tree --name-only <head> -- docs/adr/` over every one; eleven more
      heads than the previous anchor's 433) returns **0091** as the highest
@@ -902,8 +902,11 @@ take it:
      #800 landed 0091's row, moved the line to **0092**, and kept the
      paragraph it replaced as a marked supersession that records how 0090 was
      reserved. Nothing is owed to `docs/adr/README.md` here, which is worth
-     stating because eleven consecutive readings of this bullet have found a
-     number disk could not see and this one does not. It is reported rather
+     stating because every reading of this bullet since `5144eb9e` has found a
+     number held on a branch that disk could not see — 0088 at three of them,
+     0091 at the last — and this one finds none. **No claim is made about the
+     readings before `5144eb9e`**: establishing which of those found a hold
+     would mean re-reading each, and this pass did not. It is reported rather
      than edited either way: that file is not a re-anchor's surface.
    - **The self-quoting-cell gap is unchanged at FOUR**, re-run rather than
      reasoned about: the loose whole-row match
