@@ -3,7 +3,7 @@
 **Date:** 2026-09-02
 **Branch:** `docs/audit-the-gates-that-cannot-fail`, cut from `origin/main` at `9b8c8e85`
 (v0.0.358 (`9b8c8e85`)) in a worktree with `node_modules` symlinked to the main checkout.
-**Subject:** every file in `tests/foundation/` (49) and `tests/determinism/` (27), read for
+**Subject:** every file in `tests/foundation/` (48) and `tests/determinism/` (27) — 75 in all — read for
 assertions that are vacuous, tautological or self-referential — the class three of whose
 instances were found sideways earlier the same day.
 **Instrument:** `./node_modules/.bin/vitest run <file>` per file, never the whole suite. Eight
@@ -75,7 +75,7 @@ apart. `src/` is out of bounds for this branch: **reported, not repaired.**
 ## 1. The class, restated from what it actually looks like here
 
 The brief names the archetype as a self-referential bound. That is one instance of something
-narrower and more common, and after 76 files the honest statement of the class is this:
+narrower and more common, and after 75 files the honest statement of the class is this:
 
 > **An emptiness claim over a corpus is defended against the corpus vanishing and undefended
 > against the corpus shrinking.**
@@ -219,7 +219,7 @@ to say when it stops reaching one. Restored by hand; `sha256sum -c` OK.
 
 A gate that survives a mutation is a result, and four of the six mutations I ran to break something
 failed to break it. They are here in full because they are what makes §2 a finding about two files
-rather than a suspicion about seventy-six.
+rather than a suspicion about seventy-five.
 
 **`adr-numbering-contract.test.ts` — the model answer to §2.** Its floor is the weakest in either
 directory relative to its corpus: `toBeGreaterThan(10)` at line 205 against **87** ADR files. I
@@ -388,6 +388,17 @@ half: if it does time out, the gate has not run, and no output distinguishes tha
 `adr-status-reference-contract` at 1.92s is comfortable and the brief's 2–4s is a whole-file figure
 rather than a per-test one.
 
+**And one gate in these directories does not run at all, by design and in the open.**
+`tests/determinism/` reports `181 passed | 1 skipped (182)`, and the skip is
+`art-pipeline-determinism.test.ts`'s `it.skipIf(!canRunLive)` — the half that actually builds the
+pipeline twice and compares digests. Its docblock is explicit that *"It needs Blender, which CI does
+not have, so it skips when Blender is absent"*, and that the static half *"is not a substitute for
+the live check and does not pretend to be"*. That is the honest form of an unrunnable gate and I am
+not reporting it as a defect. It is here because it is the same fact as the timeout, stated
+deliberately instead of accidentally: **in CI, the determinism contract for the art pipeline is four
+`grep`s over Python source and nothing else** — which is exactly why the fifth item in §7 matters
+more than its size suggests, since those four `grep`s are floored only by `entryPoints.length > 0`.
+
 ---
 
 ## 6. Every contract examined
@@ -473,7 +484,7 @@ structural verdict from reading the assertions and guards — weaker, and marked
 | `determinism/snapshot-restore-fidelity` | SOUND (**read**) | eight floors plus round-trip equality |
 | `determinism/status-counts-publication` | SOUND (**read**) | publication count bounded by written-out ticks |
 
-**Counts.** 76 examined. **2 VACUOUS-RISK demonstrated by mutation** (`documentation-claims-`,
+**Counts.** 75 examined — the 48 files in `tests/foundation/` and the 27 in `tests/determinism/`. **2 VACUOUS-RISK demonstrated by mutation** (`documentation-claims-`,
 `times-sign-`), one of which is also **TAUTOLOGICAL** in its positive control. **1 VACUOUS-RISK by
 reading** (`art-pipeline-determinism`, low stakes). **1 walk root that matches nothing**
 (`comment-symbol-existence-`, benign direction). **6 ROTTED-PROSE** sites across five files. **2
@@ -487,8 +498,9 @@ DRIFTED-PIN** (one of which never drifted). **0 TAUTOLOGICAL** in the sense of i
 
 **Changed** (comments only, no assertion, nothing under `src/`): the six rotted tallies and pins in
 §4, each keeping the sentence that was believed and stating what is true now beside it, dated.
-Eight affected foundation contracts run green (65 tests); `tsc -b` and `tsc -b tsconfig.tools.json`
-both clean.
+Verified on this branch after merging `origin/main` at `34f32ed1` (v0.0.359): `tests/foundation/`
+**48 passed (48), 457 tests**, `tests/determinism/` **27 passed (27), 181 passed | 1 skipped**, and
+both typecheck projects clean — `tsc -b` and `tsc -b tsconfig.tools.json`.
 
 **Reported and deliberately not repaired**, because each changes what CI enforces or lives outside
 this branch's surface:
@@ -510,7 +522,7 @@ this branch's surface:
 ## 8. My weakest claim, and what would change my mind
 
 **The weakest claim in this note is the fifty-odd rows in §6 marked `read`.** They are structural
-verdicts: I read every assertion line in all 76 files and read about 35 of them in full, and for
+verdicts: I read every assertion line in all 75 files and read about 35 of them in full, and for
 the rest I reasoned from four properties — whether the file makes an emptiness claim, whether it
 floors its corpus, whether it compares two independently-read sets, and whether it carries a
 fixture that exercises the detector in both directions. That is a real argument and it is not a
@@ -535,7 +547,7 @@ question, not a finding.
 
 **A correlation I reached for and then had to withdraw.** I wanted to close with "the gates that
 document their own mutations are the gates that survive being mutated", and my own results falsify
-it: 27 of the 76 files mention a mutation, four carry a full *"Watched going red"* section, and
+it: 27 of the 75 files mention a mutation, four carry a full *"Watched going red"* section, and
 `times-sign-contract.test.ts:88-105` is one of the four **and** is §2b. Its three recorded
 mutations are a literal, a spacing and the `MASK` — all content-side, none touching the walk — and
 the third is described as *"the detector's own worst failure mode, a scan that quietly stops
@@ -546,7 +558,7 @@ records is `stripComments = () => ''`, and its docblock reasons carefully that t
 
 So the statement that survives contact with the evidence is narrower and, I think, more useful:
 
-> **One file in seventy-six records having mutated its own walk.**
+> **One file in seventy-five records having mutated its own walk.**
 > `adr-quotation-verbatim-contract.test.ts:161` — *"`docs/` dropped from the file walk: **2
 > failed**"*. Every other mutation recorded anywhere in these two directories edits the *content*
 > the scan reads, never the *set of files* it reads.
