@@ -343,6 +343,14 @@
   background: var(--surface-sunken);
   border: var(--hairline) solid var(--border-hairline);
   border-radius: var(--radius-sm);
+  /*
+   * The same affordance every other pressable control in this file already
+   * uses (`.ui-tab`, `.ui-action`, `primitives.css`) -- not a new visual
+   * language, just applying the existing one to a surface that is now really
+   * clickable (issue #793: it used to accept the click and do nothing with
+   * it, which is the defect this file exists to fix).
+   */
+  cursor: pointer;
 }
 
 /* The placeholder says so in words. An empty dark square is indistinguishable

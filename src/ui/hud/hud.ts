@@ -764,6 +764,34 @@ export interface MountHudOptions {
    */
   readonly worldObjects?: HudWorldObjectSource;
   /**
+   * Where a click on `.hud-minimap__surface` asks the camera to go (issue
+   * #793): a point normalized to the surface's own box, `0,0` at its
+   * top-left corner and `1,1` at its bottom-right, exactly as the caller
+   * reads it off `getBoundingClientRect()`. The mapping from that point to a
+   * world position is not this module's to make -- it belongs with the
+   * camera and the loaded-world bounds, both of which are the renderer's
+   * (`AGENTS.md` boundary 1; this file may not import `src/rendering/**`,
+   * `tests/unit/ui-hud-messages.test.ts`) -- so this is a plain callback
+   * rather than a port object like `worldBuild`/`worldRooms`/`worldObjects`:
+   * there is no shared mutable state for a port to carry, only one gesture
+   * translated into one call.
+   *
+   * Returns whether the camera actually moved. A click that lands while no
+   * world has ever been loaded (before a session exists, or on a page whose
+   * `Worker` never started) has nowhere to go, and `false` is how the HUD
+   * finds that out and says so -- swapping `hud.minimap.placeholder` for
+   * `hud.minimap.navigable` only once a click has actually landed somewhere,
+   * rather than leaving the surface's one sentence claiming "not available"
+   * forever once it demonstrably is. This is deliberately not on the gated
+   * `dispatchCommand`/`dispatchShell` paths every other control here uses:
+   * moving the camera never reaches the simulation, so there is nothing to
+   * gate and nothing for a host to refuse.
+   *
+   * Omitted, the surface stays exactly as inert as it always was -- the
+   * state of every harness in `tests/browser/` that does not pass it.
+   */
+  readonly onMinimapNavigate?: (point: { readonly fx: number; readonly fy: number }) => boolean;
+  /**
    * Receives every player action, and may be async.
    *
    * A *command* (`set-clock`) is gated: while one is in flight the transport
@@ -1413,12 +1441,27 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   });
 
   // ---- bottom-left minimap frame -----------------------------------
-  // A placeholder, honestly labelled in visible text. Minimap *rendering*
-  // belongs to the renderer, not to the HUD; this is the frame it will draw
-  // into.
+  // Rendering is still a placeholder, honestly labelled in visible text --
+  // minimap *rendering* belongs to the renderer, not to the HUD, and does
+  // not exist yet. Navigation is not (issue #793): the surface itself is a
+  // real click target, and every point on it maps to a world position
+  // through `onMinimapNavigate` (`WorldScene.navigateToMinimapPoint` owns the
+  // mapping -- see its own comment for what the surface represents and why).
+  const minimapPlaceholder = eyebrowText(t(HUD_MESSAGE_KEY.minimapPlaceholder), 'hud-minimap__placeholder');
   const minimapSurface = element('div', {
     className: 'hud-minimap__surface',
-    children: [eyebrowText(t(HUD_MESSAGE_KEY.minimapPlaceholder), 'hud-minimap__placeholder')],
+    children: [minimapPlaceholder],
+  });
+  minimapSurface.addEventListener('click', (event: MouseEvent) => {
+    const rect = minimapSurface.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+    const point = { fx: (event.clientX - rect.left) / rect.width, fy: (event.clientY - rect.top) / rect.height };
+    const navigated = options.onMinimapNavigate?.(point) ?? false;
+    // Only ever moves *toward* "navigable" -- a click that fails today still
+    // leaves the accurate `minimapPlaceholder` sentence standing, and a
+    // session's loaded world never disappears once one exists (see the
+    // message key's own comment), so this never has to move back.
+    if (navigated) minimapPlaceholder.textContent = t(HUD_MESSAGE_KEY.minimapNavigable);
   });
 
   const alertList = element('div', { className: 'hud-alerts__list' });
