@@ -104,6 +104,29 @@ interface ButtonReading {
   readonly buyDisabled: boolean;
 }
 
+/**
+ * **What a sighted player can see, which no attribute assertion reaches.**
+ *
+ * #772 is about the control answering "can I act" *before* the press. An
+ * `aria-disabled` attribute answers it for assistive technology and for this
+ * spec, and answers it for nobody looking at the screen unless a style picks
+ * it up -- so the whole narrowing of 2026-09-02 could go silently invisible
+ * by one selector being dropped from `primitives.css`, with every other
+ * assertion in this file still green. This reads the computed value rather
+ * than the rule, so it holds however the dimming is expressed.
+ *
+ * `opacity` and not a colour: it is the one declaration
+ * `.ui-action:disabled, .ui-action[aria-disabled='true']` carries that a
+ * computed style reports as a number, and `.ui-action` has no `transition`,
+ * so the value is settled the instant the attribute is written.
+ */
+async function buyOpacity(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    const button = document.querySelector<HTMLElement>('.hud-build__buy-submit');
+    return button === null ? Number.NaN : Number.parseFloat(window.getComputedStyle(button).opacity);
+  });
+}
+
 async function push(page: Page, viewModel: HudViewModel): Promise<ButtonReading> {
   await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), viewModel);
   const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
@@ -140,6 +163,10 @@ test.describe('the Buy button says whether it can act before it is pressed (#772
     expect(solvent.buyOpen, 'the disclosure did not open').toBe(true);
     expect(solvent.buyUnavailable, 'a solvent prison’s Buy button says it cannot act').toBe(false);
     expect(solvent.buyDisabled, 'a solvent prison’s Buy button is disabled').toBe(false);
+    // The baseline the refused case is compared against, read rather than
+    // written out so this pair says "dimmer than available" and not "0.5".
+    const availableOpacity = await buyOpacity(page);
+    expect(availableOpacity, 'an available Buy button is already dimmed').toBe(1);
 
     /*
      * **Past the mature deliveries rung** (-1,250): the same worked example
@@ -175,6 +202,15 @@ test.describe('the Buy button says whether it can act before it is pressed (#772
       refused.buyDisabled,
       'the affordability verdict took the press away, so the refusal that explains it can never be reached',
     ).toBe(false);
+
+    /*
+     * **And a player can see it**, which is the half of #772 that lives in
+     * `primitives.css` rather than in `build-panel.ts` -- see `buyOpacity`.
+     */
+    expect(
+      await buyOpacity(page),
+      'the control that says it cannot act looks exactly like one that can, so a sighted player is told nothing before the press',
+    ).toBeLessThan(availableOpacity);
 
     /*
      * **The mechanism, not the wording.** The label is byte-identical to the
