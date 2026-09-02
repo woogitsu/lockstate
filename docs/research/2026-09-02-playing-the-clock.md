@@ -141,8 +141,10 @@ obvious bug to silently fix:
   clock.speed > 1`. A player who presses Play and watches Fast-forward light
   up instead is a different, and arguably worse, kind of confusing.
 
-Per `AGENTS.md`'s standing mandate, a player-visible behaviour change here is
-the owner's call, not this pass's. What this pass *did* do, per
+Per `AGENTS.md`'s standing mandate, a player-visible behaviour change here
+looked like the owner's call rather than this pass's — **and on the integrator's
+reading it is not, for the reason recorded below: the question was already
+answered one function away.** What this pass did do, per
 `docs/AGENT_WORKFLOW.md` §3's "where a document and the code disagree, the
 code is right and the document rotted": corrected the docblock
 (`src/ui/hud/hud.ts:2149-2178`, current commit) to state the measured
@@ -154,11 +156,43 @@ comment says. Red-then-green was run by hand: with `case 'play'` temporarily
 changed to `speed: viewModel.clock.speed`, `"Play always asks for ×1..."`
 failed (`expected 1, received 2`); reverted, all three tests pass.
 
-**Recommendation for the owner:** decide whether Play should resume at the
-retained speed (matching the comment's original intent and Fast-forward's own
-behaviour) or keep resetting to ×1 (matching its own pressed-state semantics,
-"Play is the ×1 button"), and update `transportIntent` and its docblock
-together once decided.
+**Resolved by the integrator rather than escalated, and the evidence this
+pass said it was missing is the reason.** This section recommended putting the
+choice to the owner, and its own "weakest claim" note below identified exactly
+what was absent: the pressed-state argument was *"`projection.ts`'s current
+logic, not evidence of the original author's intent"*. That evidence exists,
+in the same file the pass was already reading, and was not cited:
+`nextFastForwardSpeed`'s docblock (`src/ui/hud/projection.ts`) states the rule
+outright — ***"Returning to ×1 is what the play button is for, so no tap is
+ever ambiguous about what it will do"*** — which is why the ladder runs
+1 → 2 → 4 → 2 and never wraps to 1 itself. That is stated intent, not inferred
+logic, and it is what turns the pressed-state observation from the strongest
+case *against* a naive fix into a settled reading:
+
+**The three controls are a radio group over {paused, ×1, fast}**, not a
+play/pause pair with a speed dial beside it. `Play` *is* the ×1 member, so
+`Play` asking for ×1 out of a pause is the button doing the one thing its own
+documentation says it is for, and `Fast-forward` carrying the retained speed
+is the ladder resuming where it was. Neither resets the other's state, and
+there is no uniform contract for them to violate — which is why the only thing
+that rotted was the paragraph claiming one.
+
+**Nor is it a hidden behaviour, which is the test the owner's standing design
+directive actually applies** (*"gra ma być łatwa przyjazna do grania, a nie
+jakieś ukryte funkcje"*). Because exactly one control is lit and `play: !fast`
+lights `Play` precisely at ×1, a player who presses `Play` out of a ×4 pause
+sees `Play` lit and `Fast-forward` dark: the resulting state is on screen, in
+the control they just pressed. A player who meant to keep the speed presses
+`Fast-forward`, which this same pass measured as resuming at ×2.
+
+So **the behaviour is unchanged and no owner ruling is owed.** What changed is
+that `transportIntent`'s docblock now cites where the asymmetry was decided
+instead of presenting it as undecided, and `tests/unit/ui-hud-transport-intent.test.ts`
+pins all three branches so the next edit to either path has to change a test
+rather than drift. The mandate's fourth exclusion covers *a player-visible
+promise the code does not keep* — and after this correction the code and its
+documentation make the same promise, so there is nothing in it for the owner
+to sign.
 
 **Weakest claim:** the pressed-state argument above (`play: !fast`) is
 `projection.ts`'s current logic, not evidence of the *original author's*
@@ -519,17 +553,23 @@ mechanism handled it exactly as ADR 0084 decision 4 specifies.
 ## Summary for the owner
 
 **What a sceptic should re-run first:** Finding 1 (`tests/browser/playtest-
-2026-09-02-the-clock.playtest.ts -g "act 1"`) — it is the one behavioural
-question this pass leaves genuinely open, because it is a design call and
-not a bug this pass was positioned to fix unilaterally.
+2026-09-02-the-clock.playtest.ts -g "act 1"`) — the measurement is solid and
+the *conclusion drawn from it has been corrected*, so re-running it is the
+fastest way to check both.
 
-1. **Decide Finding 1.** Should Play resume at the speed the player was
-   fast-forwarding at before a pause (matching `transportIntent`'s original,
-   now-corrected docblock and matching Fast-forward's own behaviour out of
-   the same pause), or keep resetting to ×1 (matching `transportPressedStates`'s
-   `play: !fast`, "Play is the ×1 button")? Either answer is a one-line change
-   to `src/ui/hud/hud.ts:2180-2183` plus a two-line change to
-   `tests/unit/ui-hud-transport-intent.test.ts`.
+1. **Finding 1 needs nothing from the owner, and the pass's own
+   recommendation that it did has been withdrawn.** This section originally
+   asked for a ruling on whether Play should resume at the retained speed. It
+   should not, and the reason is not a judgement call: `nextFastForwardSpeed`'s
+   docblock in `src/ui/hud/projection.ts` already states *"Returning to ×1 is
+   what the play button is for, so no tap is ever ambiguous about what it will
+   do"* — the authorial intent this pass correctly noted it was missing when it
+   flagged the pressed-state argument as its own weakest claim. With that
+   citation the three controls read as a radio group over {paused, ×1, fast},
+   `Play` is the ×1 member, and the asymmetry is the design rather than a
+   drift from it. Nothing about the behaviour changed; `transportIntent`'s
+   docblock now cites where it was decided instead of presenting it as
+   undecided. See Finding 1 for the full argument.
 2. **Consider whether a day boundary should say anything** (Finding 5). Two
    systems already track the two halves of the number that silently changes
    (the Security tab's wage bill, the `EARNED TODAY` chip) — nothing currently

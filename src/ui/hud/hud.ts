@@ -2175,21 +2175,47 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
  *   exactly the one this paragraph used to say did not reset silently.
  *
  * `tests/unit/ui-hud-transport-intent.test.ts` pins all three as measured.
- * Whether Play *should* instead resume at the retained speed — matching the
- * sentence this paragraph used to make, and matching Fast-forward's own
- * behaviour out of the same pause — is not decided here: it is a real,
- * player-visible design question (does resuming at ×1 read as the Play
- * button's own promise, or as a silently discarded fast-forward?) that
- * `AGENTS.md`'s standing mandate reserves to the owner rather than to
- * whichever agent next edits this switch.
+ *
+ * **The asymmetry is intentional, and it was already decided one file over —
+ * which the pass that measured it did not cite.** Reading it as an open
+ * design question was wrong, and the correction is recorded here rather than
+ * quietly applied. `nextFastForwardSpeed`'s own docblock
+ * (`src/ui/hud/projection.ts`) states the rule outright: *"Returning to ×1 is
+ * what the play button is for, so no tap is ever ambiguous about what it will
+ * do"* — which is why the fast-forward ladder runs 1 → 2 → 4 → 2 and never
+ * wraps back to 1 itself. And `transportPressedStates` in the same file
+ * returns `play: !fast` under the heading *"Exactly one transport control is
+ * pressed at any time, so the three buttons read as a state, not as three
+ * independent switches"*. Taken together the three controls are a **radio
+ * group over {paused, ×1, fast}**, not a play/pause pair with a speed dial
+ * beside it: `Play` *is* the ×1 member of that group, so `Play` asking for ×1
+ * out of a pause is the button doing the one thing it is for, and
+ * `Fast-forward` carrying the retained speed is the ladder resuming where it
+ * was. Neither is a reset of the other's state.
+ *
+ * **It is also not a hidden behaviour, which is the test the owner's standing
+ * design directive actually applies** (*"gra ma być łatwa przyjazna do grania,
+ * a nie jakieś ukryte funkcje"*): because exactly one control is lit and
+ * `play: !fast` lights `Play` precisely at ×1, a player who presses `Play`
+ * out of a ×4 pause sees `Play` lit and `Fast-forward` dark — the state is on
+ * screen, in the control they just pressed, rather than discarded silently.
+ * A player who meant to keep ×4 presses `Fast-forward`, which the same pass
+ * measured as resuming at ×2 on the ladder.
+ *
+ * So what rotted was **only this paragraph's claim of a single uniform
+ * contract**, and that claim is what the measurement refuted. The behaviour
+ * of all three controls is unchanged and now says why.
  */
 export function transportIntent(kind: TransportIntentKind, viewModel: HudViewModel): HudIntent {
   switch (kind) {
     case 'pause':
       return { kind: 'set-clock', mode: 'paused', speed: viewModel.clock.speed };
-    // See the docblock above: this is the measured asymmetry, not an
-    // oversight to "fix" without the owner's ruling on which of the two
-    // readings the button is meant to keep.
+    // See the docblock above: `Play` is the ×1 member of the transport's
+    // radio group (`transportPressedStates`'s `play: !fast`), and
+    // `nextFastForwardSpeed`'s docblock already states that returning to ×1
+    // is what this button is for. Asking for ×1 here is that rule, not an
+    // oversight -- a caller who wants the retained speed wants
+    // `fast-forward`, which is the case below.
     case 'play':
       return { kind: 'set-clock', mode: 'running', speed: 1 };
     case 'fast-forward':
