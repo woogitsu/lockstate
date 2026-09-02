@@ -37,7 +37,7 @@ import {
   type TileRect,
 } from '../build/area-picking';
 import { TileLayer } from '../phaser/tile-layer';
-import { TILE_SIZE_PX, visibleTileRange, type TileRange } from '../tile-metrics';
+import { TILE_SIZE_PX, tileToWorld, visibleTileRange, type TileBounds, type TileRange } from '../tile-metrics';
 import { VOID_COLOR } from '../world/appearance';
 
 /**
@@ -260,6 +260,16 @@ export class WorldScene extends Phaser.Scene {
   private hoveredObjectTile: TileRect | undefined;
   private objectOverlay: AreaOverlay | undefined;
   private framedOnWorld = false;
+  /**
+   * The most recent frame's `frame.world.loadedBounds` (issue #793).
+   *
+   * Refreshed every `update()`, from the exact same read `frameCameraOnFirstWorld`
+   * already takes -- no new subscription to the feed. `navigateToMinimapPoint`
+   * is the only reader: a minimap click can arrive between two `update()`s (an
+   * input event, not a render tick), and there is otherwise nowhere on this
+   * scene to ask "how big is the world right now" outside the render loop.
+   */
+  private lastLoadedBounds: TileBounds | undefined;
 
   public constructor(options: WorldSceneOptions) {
     super('WorldScene');
@@ -540,6 +550,7 @@ export class WorldScene extends Phaser.Scene {
     const frame = this.feed.readFrame(nowSeconds);
     const range = this.visibleTiles();
 
+    this.lastLoadedBounds = frame.world.loadedBounds;
     this.frameCameraOnFirstWorld(frame.world.loadedBounds);
     this.tiles?.update(frame, range);
     this.actors?.update(frame.actors, range, nowSeconds);
@@ -1094,6 +1105,59 @@ export class WorldScene extends Phaser.Scene {
       ((bounds.minTileX + bounds.maxTileX + 1) / 2) * TILE_SIZE_PX,
       ((bounds.minTileY + bounds.maxTileY + 1) / 2) * TILE_SIZE_PX,
     );
+  }
+
+  /**
+   * Moves the camera to the world position a point on `.hud-minimap__surface`
+   * represents (issue #793): the minimap accepted clicks and did nothing with
+   * them, and the owner's ruling is that it should navigate.
+   *
+   * **The mapping, established from the code rather than guessed.** The
+   * surface has no rendered content of its own (`hud.ts`'s comment on it:
+   * *"Minimap rendering belongs to the renderer, not to the HUD; this is the
+   * frame it will draw into"*) -- so before this change it represented no
+   * region of the world at all, which is itself the finding the issue asked
+   * for. The one existing definition of "how big is the world" in this
+   * codebase is `WorldRenderView.loadedBounds` -- everything the simulation
+   * has materialised, the same bounds `frameCameraOnFirstWorld` above uses to
+   * frame a session's first paint, and the same bounds `world-view.ts`'s own
+   * comment glosses as answering that exact question. `fx`/`fy` -- normalized
+   * to the surface's own box, `0,0` top-left and `1,1` bottom-right -- are
+   * read linearly across that rectangle in tile space, and the result is
+   * centred on the camera at this scene's own `TILE_SIZE_PX`. Two
+   * alternatives were considered and rejected: the *owned* chunks alone would
+   * leave every unowned-but-loaded tile the frontier can reach (#792 §4)
+   * outside the map, silently narrowing "the world" to less than the scene
+   * already draws; a *fixed* world size does not exist anywhere in this
+   * codebase to read (the world is sparse and grows by construction, exactly
+   * what boundary 8 asks for) and inventing one here would be a second,
+   * disagreeing definition of a fact `WorldRenderView` already owns.
+   *
+   * **Every point in the surface maps to a tile** as long as any world is
+   * loaded: the mapping is a plain linear reparameterisation of the whole
+   * `[0,1]x[0,1]` box onto the whole loaded rectangle, with no sub-region
+   * excluded. The one input that cannot be mapped is `lastLoadedBounds`
+   * itself being `undefined` -- no session has ever published a world to this
+   * feed, which is the state of the page before a prison exists (or of a
+   * `Worker`-less page, `NO_SIMULATION_FEED`) -- and that is reported to the
+   * caller as `false` rather than silently doing nothing, so the HUD can tell
+   * the player their click found nothing instead of repeating the exact
+   * silence issue #793 is about.
+   *
+   * Presentational only, per `AGENTS.md` boundary 1: reads `lastLoadedBounds`
+   * (a cached copy of a value already read for rendering) and writes only
+   * `this.cameras.main`. No simulation command is built or sent, matching
+   * every other camera gesture (drag, wheel, keyboard) on this scene.
+   */
+  public navigateToMinimapPoint(fx: number, fy: number): boolean {
+    const bounds = this.lastLoadedBounds;
+    if (bounds === undefined) return false;
+    const clampedX = Math.min(1, Math.max(0, fx));
+    const clampedY = Math.min(1, Math.max(0, fy));
+    const tileX = bounds.minTileX + clampedX * (bounds.maxTileX - bounds.minTileX + 1);
+    const tileY = bounds.minTileY + clampedY * (bounds.maxTileY - bounds.minTileY + 1);
+    this.cameras.main.centerOn(tileToWorld(tileX), tileToWorld(tileY));
+    return true;
   }
 
   /**

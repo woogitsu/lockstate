@@ -329,6 +329,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
 
   'hud.minimap.title': 'Minimap',
   'hud.minimap.placeholder': 'Minimap is not available yet',
+  'hud.minimap.navigable': 'No map is drawn here yet — click to jump the camera there',
   'hud.alerts.title': 'Alerts',
   'hud.alerts.empty': 'No active alerts',
 
