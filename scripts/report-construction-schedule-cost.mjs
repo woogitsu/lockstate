@@ -53,6 +53,25 @@
 // average at the time of the run is printed beside the numbers so a reader
 // can see what the figures were taken under.
 //
+// ## Section 1 measures the mechanism, because the premise needed checking
+//
+// #717's live half is that a build order cancelled after its bricks have
+// landed and before `tryAllocate` has run returns **nothing** -- ADR 0076's
+// amendment case 3. The scheduling remedy was proposed on the premise that
+// `intervalTicks: 1` closes that window because the order would reach
+// `assigned` in the same tick. **It does not, and section 1 is what says so.**
+// `ProcurementSystem.order` is 110 against `ConstructionSystem`'s 100
+// (`src/simulation/economy/procurement.ts:149`,
+// `src/simulation/construction/system.ts:207`), and `Kernel.register` sorts
+// ascending, so construction runs *before* procurement inside a tick and the
+// deposit is never visible to the same tick's allocation attempt at any
+// interval. Procurement's own class comment says exactly this and names the
+// only edit that would change it: *"Making the same-tick property real would
+// mean moving below 100, which is a deliberate reviewed edit rather than a
+// free one"*.
+//
+// So the window narrows from ten kernel ticks to one, and does not close.
+//
 // ## Why the interval is patched rather than edited
 //
 // `Kernel.step` reads `system.schedule.intervalTicks` on every tick
@@ -77,7 +96,7 @@ const TICKS = 400;
 const DRAG_SEGMENTS = 328;
 const WALL = 'wall-brick';
 
-const { createNewSimulationRuntime, packCommand } = await loadSimulationRuntimeModules();
+const { createNewSimulationRuntime, CONSTRUCTION_MATERIALS_CONTAINER_ID, packCommand } = await loadSimulationRuntimeModules();
 const { BUILDABLE_REGISTRY, ContainerMaterialsProvider } = await loadConstructionInstrumentationModules();
 
 /** Exact call counts on two production collaborators of `ConstructionSystem.update`. */
@@ -212,12 +231,87 @@ function reportWallClock(segments, repeats) {
   console.log(`difference:   ${(oneTotal - tenTotal).toFixed(3)} ms over ${String(TICKS)} ticks, ${(((oneTotal - tenTotal) / TICKS) * 1_000).toFixed(1)} us per tick averaged over the run`);
 }
 
+/**
+ * The tick the bricks land on, the tick the order leaves `materials-pending`,
+ * and what a cancellation gives back at every offset between the two.
+ *
+ * One `wall-brick` order rather than a drag, so nothing else is moving; a
+ * fresh session per cancellation, because a cancellation is not repeatable
+ * inside one session.
+ */
+function reportWindow(intervalTicks) {
+  const placeTick = 1;
+  const probe = createNewSimulationRuntime();
+  probe.construction.schedule.intervalTicks = intervalTicks;
+  const submit = (runtime, command, at) => {
+    const sequence = runtime.kernel.expectedSequence;
+    runtime.kernel.submitCommand(`cmd-${sequence}`, sequence, at, packCommand(command));
+  };
+  const oneWall = (runtime) => submit(runtime, { type: 'PlaceBuildOrder', orderId: 'w0', definitionId: WALL, x: 4, y: 4 }, placeTick);
+  const bricks = (runtime) => runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID).quantityOf('item.brick');
+  const stateOf = (runtime) => runtime.construction.getOrder('w0')?.state;
+
+  // When does each of the two things happen?
+  for (let tick = 0; tick < placeTick; tick += 1) probe.kernel.step();
+  oneWall(probe);
+  // `= null` alone infers the type `null`; every later assignment then fails
+  // and every read degrades to `never` (#602, and `report-tick-system-cost.mjs`
+  // carries the same note).
+  /** @type {number | null} */
+  let landedAt = null;
+  /** @type {number | null} */
+  let leftPendingAt = null;
+  let previous = bricks(probe);
+  for (let index = 0; index < 200 && leftPendingAt === null; index += 1) {
+    const tick = probe.kernel.tick;
+    probe.kernel.step();
+    if (landedAt === null && bricks(probe) > previous) landedAt = tick;
+    previous = bricks(probe);
+    const state = stateOf(probe);
+    if (state !== 'approved' && state !== 'materials-pending') leftPendingAt = tick;
+  }
+
+  console.log(`\n## The window at intervalTicks=${String(intervalTicks)}\n`);
+  if (leftPendingAt === null) throw new Error(`No order left materials-pending within 200 ticks at intervalTicks=${String(intervalTicks)}.`);
+  if (landedAt === null) {
+    // The bricks were never observable in the container between two ticks,
+    // which is the *closed* window: the deposit and the allocation happened
+    // inside one tick. Unreachable while `ProcurementSystem.order` (110) is
+    // above `ConstructionSystem.order` (100) at any interval -- and that is
+    // what this branch is here to be able to say. Mutating procurement's order
+    // to 90 and running at intervalTicks=1 reaches it.
+    console.log(`the bricks were never on the shelf between ticks: deposited and allocated inside tick ${String(leftPendingAt)} -- window 0 ticks`);
+  } else {
+    console.log(`bricks land during tick ${String(landedAt)}; the order leaves materials-pending during tick ${String(leftPendingAt)} -- ${String(leftPendingAt - landedAt)} tick(s) apart`);
+  }
+  console.log('\ncancel at tick  state before  balance before -> after   delta   bricks after');
+  for (let offset = -1; offset <= 11; offset += 1) {
+    const runtime = createNewSimulationRuntime();
+    runtime.construction.schedule.intervalTicks = intervalTicks;
+    for (let tick = 0; tick < placeTick; tick += 1) runtime.kernel.step();
+    oneWall(runtime);
+    const cancelTick = placeTick + 100 + offset;
+    while (runtime.kernel.tick < cancelTick) runtime.kernel.step();
+    const before = runtime.treasury.balanceMinorUnits;
+    const stateBefore = stateOf(runtime);
+    submit(runtime, { type: 'CancelBuildOrder', orderId: 'w0' }, cancelTick);
+    runtime.kernel.step();
+    const after = runtime.treasury.balanceMinorUnits;
+    console.log(
+      `${String(cancelTick).padStart(14)}  ${String(stateBefore).padEnd(12)}  ${String(before).padStart(6)} -> ${String(after).padStart(6)}  ${String(after - before).padStart(6)}   ${String(bricks(runtime)).padStart(5)}`,
+    );
+  }
+}
+
 async function main() {
   const repeats = Number.parseInt(process.argv[2] ?? String(DEFAULT_REPEATS), 10);
   if (!Number.isInteger(repeats) || repeats < 1) throw new RangeError(`Repeats must be a positive integer, got ${String(process.argv[2])}.`);
 
   console.log(`node ${process.version} on ${process.platform}/${process.arch}, ${String(os.cpus().length)} logical CPUs, load average ${os.loadavg().map((value) => value.toFixed(2)).join(' ')}`);
   console.log('Counted work is deterministic and load-independent; the wall clock below is not, and is reported as a minimum for that reason.');
+
+  reportWindow(10);
+  reportWindow(1);
 
   // An idle session first: the shape #261 is about, where the order book is
   // empty and `update` still runs.
