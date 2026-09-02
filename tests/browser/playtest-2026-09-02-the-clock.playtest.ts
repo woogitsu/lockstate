@@ -292,23 +292,42 @@ test('act 3: at the moment a day turns, does the player see anything besides the
   log(act, `after hiring one guard: staff=${hired?.staff} dailyWageBill=${hired?.dailyWageBillMinorUnits} treasury=${hired?.treasuryMinorUnits}`);
 
   // Fast forward to x4 and watch for two day boundaries (DAY_LENGTH_TICKS = 2,400).
+  //
+  // **Targeted relative to the tick setup actually left us at, not to a fixed
+  // absolute tick.** The first run of this act targeted 2,400 and 4,800
+  // directly and found both checks vacuous: buildResilientCell's own zoning
+  // retries (up to twelve, each waiting up to 5s, all run at x4) had already
+  // carried the session past both fixed targets before either runUntilTick
+  // call was even reached, so both returned immediately against stale
+  // history and reported the same two samples for "day 1-2" and "day 2-3"
+  // alike. Computing the targets from the tick we are actually at now is the
+  // fix; the real finding that first run's vacuous checkpoints could not
+  // produce was recovered from the unfiltered series instead and is recorded
+  // in docs/research/2026-09-02-playing-the-clock.md Finding 5, which also
+  // reports this as the instrument bug it is.
   await ff0(page);
   await ff0(page);
   log(act, `running at ${JSON.stringify(await currentClock(page))}`);
 
-  await runUntilTick(page, 2_500, 240_000);
+  const DAY_TICKS = 2_400;
+  const setupTick = await currentTick(page);
+  const firstBoundary = (Math.floor(setupTick / DAY_TICKS) + 1) * DAY_TICKS;
+  const secondBoundary = firstBoundary + DAY_TICKS;
+  log(act, `setup finished at tick ${setupTick}; targeting the next two day boundaries at ${firstBoundary} and ${secondBoundary}`);
+
+  await runUntilTick(page, firstBoundary + 100, 240_000);
   await page.waitForTimeout(300);
-  log(act, `--- around day-1-to-2 boundary (tick 2,400) ---`);
-  reportBoundary(act, await countsSeries(page), 2_400);
+  log(act, `--- around the day boundary at tick ${firstBoundary} ---`);
+  reportBoundary(act, await countsSeries(page), firstBoundary);
   log(act, `band at this point: ${JSON.stringify(await band(page))}`);
   log(act, `alerts list: ${JSON.stringify(await alertLines(page))}`);
   log(act, `worker events so far: ${JSON.stringify(await workerEvents(page))}`);
   log(act, `status strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
 
-  await runUntilTick(page, 4_900, 240_000);
+  await runUntilTick(page, secondBoundary + 100, 240_000);
   await page.waitForTimeout(300);
-  log(act, `--- around day-2-to-3 boundary (tick 4,800) ---`);
-  reportBoundary(act, await countsSeries(page), 4_800);
+  log(act, `--- around the day boundary at tick ${secondBoundary} ---`);
+  reportBoundary(act, await countsSeries(page), secondBoundary);
   log(act, `band at this point: ${JSON.stringify(await band(page))}`);
   log(act, `alerts list: ${JSON.stringify(await alertLines(page))}`);
   log(act, `worker events so far: ${JSON.stringify(await workerEvents(page))}`);
