@@ -244,6 +244,57 @@ what follows is what it needs decided.
 
 ---
 
+## Amendment, 2026-09-02: the owner OVERRULED decision 2's ordering
+
+**Put to the owner as this document's own weakest claim, and they took the
+fallback rather than the claim.** Decision 2 as drafted says duty outranks want
+inside a work block — a hungry prisoner carries before they cook. The owner
+ruled: **the need wins when it is urgent.** Decision 2's rank-0 rule stands for
+a prisoner whose needs are all in ordinary condition, and yields to a need that
+has become urgent.
+
+**The document said the threshold was a balance number it had no standing to
+choose. It was wrong about that, and the correction is the useful part of this
+amendment: the number already exists and belongs to the institution.**
+`STATE_INCOME_UNMET_NEED_LEVEL = 51` (`src/simulation/economy/income.ts:307`),
+against `NEED_MAX = 255` (`src/simulation/prisoners/needs.ts:14`), is the level
+below which **the state declines to pay for that prisoner-day** — six needs, one
+withheld term each, per ADR 0064's decision. Reusing it makes the rule read as
+one statement rather than two: *the institution will not send a prisoner on an
+errand while it is already failing to meet a need it is being docked for.*
+
+**So the rule is:** inside a work block with an available job, `action.carry`
+enters `candidates` at rank 0 **unless** the prisoner has a providable
+candidate for a need whose level is below `STATE_INCOME_UNMET_NEED_LEVEL`, in
+which case the carry is not placed at rank 0 and ordinary scoring decides. No
+new constant, and no fraction picked by this document.
+
+**One correction to the fallback as this document sketched it.** It proposed
+gating on *"the prisoner's best providable need-**score**"*. That quantity is
+wrong for a threshold: `scoreAction` is deficit × effect summed over the
+action's own effects, so its scale depends on how large that action's effects
+are and two actions relieving the same deficit score differently. A threshold
+on the need's **level** is comparable across every need and every action, and it
+is the quantity `STATE_INCOME_UNMET_NEED_LEVEL` is already expressed in. The
+sketch's shape is kept; its measurand is corrected.
+
+**What this costs, stated.** The carry's rank-0 rule stops being a pure
+function of the block and the board — it now reads needs too, so
+`planIdleSelection` evaluates one extra predicate per idle prisoner in a work
+block. That predicate is the same `firstProvidedCandidateIndex` walk the
+selection already performs (`utility-ai.ts:171`), so it is a reuse of a pass
+rather than a new one. Determinism is unaffected: need levels are integers in
+component storage and the threshold is a constant comparison.
+
+**What is still NOT decided, and is not decided here.** Whether a player is
+ever *told* that a prisoner skipped an errand because they were hungry. That is
+a player-facing sentence and therefore the owner's; it joins the three
+sentences this document already owes them.
+
+**This amendment does not make the document `Accepted`.** The owner ruled on
+decision 2's ordering and on nothing else; the other five decisions carry the
+same warrant they had, which is the argument and not a signature.
+
 ## Decision
 
 Six questions, in the order the brief put them, because each one's answer is an
@@ -344,6 +395,14 @@ as a score.** When the prisoner's active block allows `work` and
 0** of `candidates`; otherwise **it is not a candidate at all**. Duty outranks
 want: the regime says it is work time, the institution has a job, and kitchen,
 laundry and classroom duty are what a work block is *when the board is empty*.
+
+> **AMENDED 2026-09-02 by the owner: duty outranks want ONLY while no need is
+> urgent.** The rank-0 rule above is kept as written because it is still the
+> rule for a prisoner in ordinary condition, and because the amendment is a
+> *condition on* it rather than a replacement. A prisoner with a providable
+> candidate for a need below `STATE_INCOME_UNMET_NEED_LEVEL` (51 of 255) does
+> not get the carry at rank 0; ordinary scoring decides for them. See the
+> amendment section above for why that constant rather than a new one.
 
 Why a rule rather than a score, and why rank 0 rather than last:
 
@@ -692,9 +751,13 @@ discovered. Nothing here is done on this branch.
   boundary; a prisoner who picked up at 1,795 finishes the drop-off in the
   recreation block. The bound is the route length, and it is the same bound a
   120-tick kitchen shift already has.
-- **A hungry prisoner in a work block carries before they cook.** Duty
-  outranks want by construction. This is the mechanic #600 asks for and it is
-  also this document's weakest claim (below).
+- **A hungry prisoner in a work block carries before they cook — UNTIL the
+  hunger is urgent.** Duty outranks want by construction, bounded by the
+  owner's amendment of 2026-09-02: below `STATE_INCOME_UNMET_NEED_LEVEL` the
+  need takes the prisoner back. The unbounded form was this document's own
+  weakest claim and the owner overruled it; the sentence is kept in its amended
+  form rather than deleted, because *"carries before they cook"* is still what
+  a work block does for a prisoner who is merely peckish.
 - **Construction gets slower wherever the route exists, and only there.** A
   prison with neither room builds exactly as fast as today.
 - **The job board gains its first writer a player can reach**, and
@@ -708,6 +771,15 @@ discovered. Nothing here is done on this branch.
 ---
 
 ## What would change my mind
+
+> **This claim was put to the owner and OVERRULED on 2026-09-02, before any
+> playtest measured it.** The fallback described below was taken, and the
+> "fraction" it says this document cannot choose turned out not to need
+> choosing — `STATE_INCOME_UNMET_NEED_LEVEL` already exists and already means
+> what the rule needs it to mean. **The passage is kept unedited below** because
+> it is the reasoning that made the question worth asking, and because it
+> records that the document identified its own weakest claim correctly: that is
+> exactly the claim that did not survive.
 
 **The weakest claim is decision 2's ordering: that a job outranks a need
 inside a work block.** It is right for the mechanic #600 describes and it is
