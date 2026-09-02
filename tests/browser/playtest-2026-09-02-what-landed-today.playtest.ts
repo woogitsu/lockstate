@@ -761,7 +761,17 @@ test('act 1: a new hire stands on the post it is deployed to, so its walk has no
  */
 test('act 2: what a Medium badge says when it arrives at intake, before the early warning has run (#788)', async ({ page }) => {
   const act = 'act2';
-  test.setTimeout(600_000);
+  /*
+   * **1,800,000 rather than the 600,000 this act first carried, and the
+   * difference was a measured failure rather than caution.** The first clean
+   * run of this act reached `Test timeout of 600000ms exceeded` inside
+   * `runToTick`, at the line after it: building a cell with the mouse cost
+   * ~16,400 ticks, and settling a further 2,400 at speed 4 on a container at
+   * load average 20+ did not fit. Nothing about the act's *findings* depends
+   * on either number -- every sample below is stamped with the worker's tick
+   * -- but a budget that cannot hold the act produces no findings at all.
+   */
+  test.setTimeout(1_800_000);
   const started = Date.now();
   await page.setViewportSize({ width: 1280, height: 800 });
   await installTee(page);
@@ -796,7 +806,14 @@ test('act 2: what a Medium badge says when it arrives at intake, before the earl
   const pressed = await admit(page, 24, act);
   log(act, `refusal band after ${pressed} press(es): ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
 
-  const settled = await runToTick(page, (await currentTick(page)) + 2_400, act);
+  /*
+   * 600 ticks, not 2,400. `IntakeSystem` draws the sentence and calls
+   * `classifyPrisoner` on the transition into `'accommodation-assignment'`,
+   * within a few hundred ticks of an admission -- a whole in-game day was
+   * generosity this act does not need, and it is what did not fit the budget
+   * on the first clean run.
+   */
+  const settled = await runToTick(page, (await currentTick(page)) + 600, act);
   await page.locator('.hud-strip__transport button').nth(0).click();
   await page.waitForTimeout(400);
   log(act, `paused at tick ${settled}; counts ${JSON.stringify(await latestCounts(page))}`);

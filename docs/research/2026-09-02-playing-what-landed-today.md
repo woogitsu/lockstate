@@ -862,15 +862,23 @@ a reading. **Not attempted here; named as unreached.**
    Four hires on an empty prison read `0 of 0 / Covered / This prison has the
    guards it asks for` — #533's rule, and the sentence is true.
 
-And one thing confirmed for the third time, which is not new but is now dated
-again: **`.hud__refusal` keeps a stale refusal indefinitely.** At tick 26,514,
-act 4's band still read *"The object was not placed — something is already
-standing there."* — a refusal produced by a bed press around tick 17,700,
-about **8,800 ticks** and three and a half in-game days earlier, through a
-riot, a fight and eleven reclassifications.
-`docs/research/2026-09-01-playing-the-rooms-surface.md` found it and
+And one thing confirmed for the third time — **with a correction to how this
+section first stated it**. `docs/research/2026-09-01-playing-the-rooms-surface.md`
+found that `.hud__refusal` keeps a stale refusal and
 `docs/research/2026-09-02-the-first-five-minutes.md` reproduced it as the
-ordinary shape of play; this is a third sighting with a tick distance attached.
+ordinary shape of play. This pass adds a tick distance: at tick 26,514 act 4's
+band still read *"The object was not placed — something is already standing
+there."*, a refusal produced by a bed press around tick 17,700 — about
+**8,800 ticks**, three and a half in-game days, a riot, a fight and eleven
+reclassifications earlier.
+
+**This section originally called that "indefinitely", and act 2 refutes the
+word.** After 24 Admit presses — four of which the console shows being
+refused — act 2's band read `.hud__refusal: not laid out`, meaning hidden. So
+the band is not a one-way latch: it clears. What act 4 shows is that a refusal
+stays until *something supersedes it*, and in act 4 the refused presses were
+the last of their kind, so nothing did for 8,800 ticks. Both readings are kept
+because the stronger one is the one that would have been quoted.
 
 ## §8 — Two measurements this pass could not explain, reported as measurements
 
