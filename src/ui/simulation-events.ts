@@ -234,11 +234,24 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  * line"* -- so a success sentence can now displace a simulation event the
  * player has not read. That is the same class of defect
  * [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)
- * decision 4 is about -- **the one of that ADR's four decisions the owner did
- * not take on 2026-09-01, and it is still open**. No dwell or
- * priority rule is invented here: deciding it inside implementation code is
- * exactly what `AGENTS.md` forbids, and the collision is recorded so the owner
- * can rule on it with this producer in front of them.
+ * decision 4 is about.
+ *
+ * **That decision has since been taken, and the sentence this replaces is kept
+ * because it is why the collision was recorded rather than fixed.** It read:
+ * *"the one of that ADR's four decisions the owner did not take on 2026-09-01,
+ * and it is still open. No dwell or priority rule is invented here: deciding it
+ * inside implementation code is exactly what `AGENTS.md` forbids, and the
+ * collision is recorded so the owner can rule on it with this producer in front
+ * of them."* Recording it rather than inventing a rule was correct, and it
+ * worked: the owner ruled on decision 4 with this producer in front of them,
+ * choosing arbitration **by severity, the way the alerts list already evicts**
+ * -- and `EVENT_BAND_DWELL_FLOOR_MS = 600` in
+ * [`event-band-dwell.ts`](./hud/event-band-dwell.ts) is that ruling built: a
+ * 600 ms dwell floor with severity promotion, derived against a measured 625 ms
+ * shortest real gap at x4. So a success sentence can no longer displace an
+ * unread simulation event of equal or higher severity, which is exactly the
+ * cost this paragraph was written to name. The producer here is unchanged; what
+ * changed is that something downstream now arbitrates.
  */
 const EVENT_PRESENTATION: Readonly<
   Record<SimulationEventType, { readonly labelKey: LocalizationKey; readonly severity: HudSeverity }>
@@ -630,10 +643,20 @@ export function hudEventNoticeFromWorkerMessage(
        * loading a prison over a running one, emptying is `simulation/stopped`'s
        * job and it has already done it.
        *
-       * The band's own rule is untouched by this. It still carries the newest
-       * event and still replaces whatever it holds without arbitration, which
-       * is ADR 0084's decision 4 -- a dwell floor -- and that decision is not
-       * taken.
+       * The band's own rule is untouched by this.
+       *
+       * **What this sentence said about that rule has stopped being true, and
+       * is kept rather than overwritten.** It read: *"It still carries the
+       * newest event and still replaces whatever it holds without arbitration,
+       * which is ADR 0084's decision 4 -- a dwell floor -- and that decision is
+       * not taken."* The first half is still right: this function still returns
+       * the newest event and this file still arbitrates nothing. The second
+       * half is not -- ADR 0084 decision 4 **was** taken, and
+       * `EVENT_BAND_DWELL_FLOOR_MS = 600` (`event-band-dwell.ts`) is the
+       * arbitration, promoting by severity. The distinction worth keeping is
+       * that the arbitration is not *here*: this producer is unarbitrated by
+       * design and the floor is applied downstream, which is why nothing in
+       * this file had to change when the decision landed.
        */
       if (message.payload.restored === true) return undefined;
       const { event } = message.payload;
