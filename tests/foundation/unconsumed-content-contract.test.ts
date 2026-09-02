@@ -69,12 +69,30 @@ const ROOT = join(__dirname, '../..');
  * a defect**, not a cleanup -- which is what separates this list from the
  * one below it.
  *
- * Two entries, not three: `object.loading-dock-door` left with ADR 0028 phase
- * 4, which made it placeable. See the file docblock for why that strengthens
- * rather than weakens what #141 asked for. Both survivors are **rooms**, and
- * that is not a coincidence -- a room id has no import-time validator behind
- * it the way an object id named by a buildable now does, so this list is the
- * only thing standing between them and a sweep.
+ * **One entry, and the sentence above it used to say two.** Both corrections
+ * are marked rather than overwritten (`docs/AGENT_WORKFLOW.md` §4: *"a sentence
+ * asserting an absence or a count rots first"*), because each records a
+ * graduation that really happened:
+ *
+ * - *"Two entries, not three: `object.loading-dock-door` left with ADR 0028
+ *   phase 4, which made it placeable."* Still true. See the file docblock for
+ *   why that strengthens rather than weakens what #141 asked for.
+ * - `room.delivery-bay` left on 2026-08-30, in commit `71617799` (#610/#585),
+ *   by the weakened measure this file gates on: it gained a *test* consumer and
+ *   no `src/` consumer, so the stale-entry gate below required its row to go.
+ *   The count and the sentence *"Both survivors are **rooms**"* were not
+ *   updated with it, which is what this paragraph fixes -- and the id is
+ *   materially less protected than the sentence claimed for the two days that
+ *   followed, since a test naming a room is all that now stands between it and
+ *   a sweep. Its reason had read: *"ADR 0017 names it the intended physical
+ *   route for material procurement; #141 flags it explicitly as not to be
+ *   removed as dead content."* Every word of that is still true of ADR 0017
+ *   decision 4, and `tests/foundation/job-production-contract.test.ts`
+ *   measures how far the route is from existing.
+ *
+ * The survivor is a **room**, and that is not a coincidence -- a room id has no
+ * import-time validator behind it the way an object id named by a buildable now
+ * does, so this list is the only thing standing between it and a sweep.
  */
 const PROTECTED_BY_DECISION: Readonly<Record<string, string>> = {
   'room.storage-room': 'ADR 0017 (destination for procured materials) and #99 (destination for dismantle salvage) both depend on it; #141 flags it explicitly.',
