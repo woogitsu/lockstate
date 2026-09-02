@@ -14,6 +14,7 @@ import {
   formatPrisonerActivity,
   formatPrisonerName,
 } from '../../src/ui/hud';
+import { BADGE_TONES } from '../../src/ui/primitives/status-badge';
 import type { ProjectionMessageChannel } from '../../src/ui/simulation-projections';
 import { PrisonerRosterReader, prisonerRosterFromProjection } from '../../src/ui/simulation-prisoner-roster';
 
@@ -38,9 +39,11 @@ import { PrisonerRosterReader, prisonerRosterFromProjection } from '../../src/ui
  * including the one the simulation is not currently believed to produce.
  *
  * **That the badge word and the badge colour come from different fields.** The
- * word is the tier and the colour is the group, and they are the same
- * classification at two grains: a tier moving 1 -> 2 has to change the word
- * without changing the colour, and reaching 3 has to change both.
+ * word is the tier; the colour is the group for every tier but one, and the
+ * *tier* for tier 2 -- the owner's ruling of 2026-09-02 on issue #788. So a
+ * tier moving 0 -> 1 has to change the word without changing the colour,
+ * reaching 2 has to change the colour without moving the group, and reaching 3
+ * has to change the colour again and move the group with it.
  *
  * **That the total is the prison's and not the window's.** A mapping that
  * returned `rows.length` would make the panel's "N of M" read "4 of 4" in a
@@ -243,8 +246,12 @@ describe('every key the mapping can produce is real text in the bundled catalog'
 });
 
 describe('the badge says the tier in a word and the group in a colour', () => {
-  it('is neutral for general population, whatever the tier inside it', () => {
-    for (const riskTier of [0, 1, 2]) {
+  it('is neutral for the two tiers below the warning, whatever else is on the row', () => {
+    // **This loop ran over `[0, 1, 2]` until the owner's ruling of 2026-09-02
+    // on #788**, when tier 2 stopped sharing `Minimal`'s colour. Narrowed
+    // rather than deleted: tiers 0 and 1 are still one tone, and the reason --
+    // that nothing has been observed about these prisoners -- is unchanged.
+    for (const riskTier of [0, 1]) {
       const row = prisonerRosterFromProjection(page([projectedRow({ riskTier })])).rows[0]!;
       expect(describePrisonerRow(row), `tier ${String(riskTier)}`).toEqual({
         tone: 'neutral',
@@ -261,9 +268,57 @@ describe('the badge says the tier in a word and the group in a colour', () => {
 
     // Both halves move, and they are two different fields: the word because the
     // tier moved, the colour because the group did.
-    expect(describePrisonerRow(before)).toEqual({ tone: 'neutral', badgeKey: 'risk-tier.2.name' });
+    expect(describePrisonerRow(before)).toEqual({ tone: 'caution', badgeKey: 'risk-tier.2.name' });
     expect(describePrisonerRow(after)).toEqual({ tone: 'warning', badgeKey: 'risk-tier.3.name' });
     expect(t('risk-tier.2.name')).not.toBe(t('risk-tier.3.name'));
+  });
+
+  /**
+   * **The owner's ruling of 2026-09-02 on issue #788, as one assertion.**
+   *
+   * `Medium` gets a tone of its own -- distinct from `Minimal`'s and from
+   * `High`'s, bound to the *tier* rather than to the classification group --
+   * and the second half of the pairing is what proves the first was built
+   * without breaking ADR 0090's cap: the tier-2 row's `classificationGroupId`
+   * is still `'general-population'`, so nothing here needs the early warning
+   * to have moved a group, and `ClassificationEarlyWarningSystem` is still
+   * free to never write `High`.
+   *
+   * All four tiers are driven rather than only tier 2, because the claim is
+   * *distinctness* and a test that read one tone could not make it: a change
+   * that toned tier 1 the same way would pass a tier-2-only assertion.
+   */
+  it('gives tier 2 a tone of its own, and leaves the tier-2 prisoner’s group alone (#788)', () => {
+    const rows = [0, 1, 2, 3].map((riskTier) => {
+      const groupId = riskTier >= 3 ? 'high-risk' : 'general-population';
+      return prisonerRosterFromProjection(page([projectedRow({ riskTier, classificationGroupId: groupId })])).rows[0]!;
+    });
+    const tones = rows.map((row) => describePrisonerRow(row).tone);
+
+    // The ruling, stated as the two inequalities it is: not `Minimal`'s, and
+    // not `High`'s.
+    expect(tones[2], 'tier 2 must not read as tier 1 does').not.toBe(tones[1]);
+    expect(tones[2], 'tier 2 must not read as tier 3 does').not.toBe(tones[3]);
+    // And the tones themselves, so a rename cannot satisfy the inequalities by
+    // moving every tier at once.
+    expect(tones).toEqual(['neutral', 'neutral', 'caution', 'warning']);
+    // Every one of them is a tone the badge primitive and the token layer know
+    // about -- `tests/unit/ui-design-tokens.test.ts` is what pairs each with a
+    // background and a foreground.
+    for (const tone of tones) expect(BADGE_TONES, tone).toContain(tone);
+
+    // ADR 0090's cap, from this side of the worker boundary: the tier moved and
+    // the group did not.
+    expect(rows[2]?.riskTier).toBe(2);
+    expect(rows[2]?.classificationGroupId).toBe('general-population');
+    expect(rows[3]?.classificationGroupId).toBe('high-risk');
+    // The word is still the tier's, unchanged by any of this.
+    expect(rows.map((row) => row.standingLabelKey)).toEqual([
+      'risk-tier.0.name',
+      'risk-tier.1.name',
+      'risk-tier.2.name',
+      'risk-tier.3.name',
+    ]);
   });
 
   it('reads the group rather than recomputing the simulation’s threshold', () => {

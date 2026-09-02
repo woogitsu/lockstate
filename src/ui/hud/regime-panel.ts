@@ -194,11 +194,12 @@ type Translate = (key: LocalizationKey, parameters?: MessageParameters) => strin
  *
  * The **word** is the risk tier once classification has run -- Minimal, Low,
  * Medium, High -- and the intake stage before it. The **tone** is the
- * classification *group*. They are the same fact at two grains
+ * classification *group*, with one exception the owner ruled on and which the
+ * next section is about. They are largely the same fact at two grains
  * (`classificationGroupIdForTier` is `riskTier >= 3`), and splitting them is
- * what lets one badge carry both: a tier moving 1 -> 2 changes the word while a
- * prisoner is still on the general-population timetable, and the tone changes
- * on the move that actually changes their day.
+ * what lets one badge carry both: a tier moving 0 -> 1 changes the word while a
+ * prisoner is still on the general-population timetable, and the group's tone
+ * changes on the move that actually changes their day.
  *
  * Deriving one from the other here would be the failure this layer exists to
  * avoid -- the group is projected, so the panel reads it rather than
@@ -212,12 +213,73 @@ type Translate = (key: LocalizationKey, parameters?: MessageParameters) => strin
  * hygiene for 2,200 of the day's 2,400 ticks (`HIGH_RISK_REGIME`) -- which is a
  * fact about the prison the player is running, and the badge carries the word
  * beside the colour so the colour never stands alone.
+ *
+ * ### Tier 2 is the one tone that comes from the tier, and that is a ruling
+ *
+ * **The paragraph above said "the tone is the classification group", full
+ * stop, and that was true until the owner's ruling of 2026-09-02 on issue
+ * #788.** It is narrowed rather than deleted, because the reason it gave is
+ * intact for every other row and is exactly what made this case hard.
+ *
+ * Two sound decisions composed into a warning the warning layer could not
+ * show. This function tied the tone to the group *deliberately* -- the group is
+ * what changes a prisoner's day -- and ADR 0090's
+ * `ClassificationEarlyWarningSystem` is capped at `Medium` *precisely so it can
+ * never move a group*, because crossing into `high-risk` carries the restricted
+ * regime and ADR 0080's contraband draw with it. So the tier that ADR 0090
+ * exists to make visible was the one tier that could arrive with no change of
+ * colour at all: a playtest of 2026-09-02 measured eleven prisoners reaching
+ * tier 2 at tick 26,514 and the badge still reading `neutral` -- the tone
+ * `Minimal` carries -- for 3,098 further ticks.
+ *
+ * Neither decision is changed here. What changed is that **tier 2's tone comes
+ * from the tier**, and it is `caution`: its own tone, distinct from
+ * `Minimal`/`Low`'s `neutral` and from high risk's `warning`, and a rung below
+ * `warning` rather than above it (`BadgeTone`, which says why no existing tone
+ * would do). Tier 3 still takes its tone from the group, and the group is still
+ * the only thing that can say a prisoner's day has changed.
+ *
+ * The group is tested **first**, so a row whose group is `high-risk` reads
+ * `warning` whatever tier it carries. That ordering is not reachable from
+ * `projectPrisonerRoster` -- `classificationGroupIdForTier` writes the pair --
+ * and it is chosen rather than left to fall out, because the group is the
+ * stronger statement of the two and a disagreement should not be able to
+ * *demote* a restricted prisoner's badge.
+ *
+ * **What this does not do, and it is still owed.** The badge carries no `title`
+ * and no screen-reader text (ADR 0090 names the same gap under "What this does
+ * not decide"), so `Medium` now has a colour and still has no explanation. A
+ * colour with no name is not reachable by a screen reader at all, and the
+ * sentence that would name it is player-facing copy -- `AGENTS.md`'s fourth
+ * exclusion, the owner's.
  */
 export interface PrisonerRowReadout {
   readonly tone: BadgeTone;
   /** The badge's word: the tier for a classified prisoner, the intake stage for one still arriving. */
   readonly badgeKey: LocalizationKey;
 }
+
+/**
+ * The tier the owner's ruling of 2026-09-02 gives a tone of its own.
+ *
+ * `2`, spelled here for the reason the `'high-risk'` group id is spelled in
+ * this file and in `projection.ts`: `RiskTier` and
+ * `EARLY_WARNING_TIER_CEILING` live under `src/simulation/prisoners/`, and the
+ * HUD may not import the simulation (`AGENTS.md` boundary 1, enforced by
+ * `tests/unit/ui-hud-messages.test.ts`). The same number is
+ * `EARLY_WARNING_TIER_CEILING` on the other side of the boundary -- ADR 0090's
+ * cap -- and that is not a coincidence: this is the tier that system exists to
+ * make reachable, and the tier a prisoner can now sit at for roughly eighteen
+ * in-game days.
+ *
+ * A wrong number here would tone the wrong tier, which is why
+ * `tests/unit/ui-simulation-prisoner-roster.test.ts` drives all four tiers
+ * rather than only this one.
+ */
+const MEDIUM_RISK_TIER = 2;
+
+/** The classification group whose timetable is the restricted one. Spelled for `MEDIUM_RISK_TIER`'s reason. */
+const HIGH_RISK_GROUP_ID = 'high-risk';
 
 export function describePrisonerRow(row: HudPrisonerRowViewModel): PrisonerRowReadout {
   // No group at all: the prisoner is still in intake, and neither tier nor
@@ -227,8 +289,14 @@ export function describePrisonerRow(row: HudPrisonerRowViewModel): PrisonerRowRe
   if (row.classificationGroupId === undefined) {
     return { tone: 'info', badgeKey: row.standingLabelKey };
   }
+  // The group first, and only then the tier -- see the header. The group is
+  // the statement about the prisoner's day; the tier is the statement about
+  // where their record is heading.
+  if (row.classificationGroupId === HIGH_RISK_GROUP_ID) {
+    return { tone: 'warning', badgeKey: row.standingLabelKey };
+  }
   return {
-    tone: row.classificationGroupId === 'high-risk' ? 'warning' : 'neutral',
+    tone: row.riskTier === MEDIUM_RISK_TIER ? 'caution' : 'neutral',
     badgeKey: row.standingLabelKey,
   };
 }

@@ -197,6 +197,17 @@ describe('a build order that is cancelled says so, and says which of two things 
      * so no Build-panel row names one, and only an order finishing between a
      * projection and the press that answers it gets here.
      *
+     * **The clause about the materials became false on 2026-09-01 and is kept
+     * rather than overwritten, because it is why this case says nothing.** The
+     * owner's ruling of that date -- *"Taking a finished object away returns
+     * nothing. Not its materials, not its money."*, ADR 0076's amendment of
+     * that date -- reverses decision B: `cancelOrder`'s `hadGeometry` arm now
+     * drops the allocation unreleased, so a completed order's materials **are**
+     * gone. What is unchanged is the conclusion and the reason for it: neither
+     * of the two sentences this file has is true of a completed order -- the
+     * money still does not come back -- so it still says nothing, and the
+     * sentence it deserves is still the owner's. Found while measuring #717.
+     *
      * The sentence it deserves is the owner's to write. A change that adds one
      * fails here, which is the point.
      */
