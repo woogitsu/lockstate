@@ -2,12 +2,34 @@
 
 ## Status
 
-**Proposed, 2026-09-01.** Written on `fix/740-a-guard-walks-to-its-post`, with
-the implementation on the same branch, following the convention
-[ADR 0059](./0059-how-an-actor-gets-from-one-tile-to-the-next.md) set for
-itself. Nobody has approved it; the argument below is the whole of the
-warrant, and a reader who disagrees with it should treat the decision as open.
-**Never self-approved** — this is a proposal, not a ruling.
+**Accepted, 2026-09-02, by the repository owner.** They were shown the
+measurement this document rests on — 234 roster samples that never once read
+`Travelling`, and 842 render-delta samples with zero non-zero velocities — and
+the scope it proposes, and signed it as written: guards walk on **deployment
+travel and patrol legs only**, with incident response and contraband search
+still teleporting for the deadline and balance reasons
+[ADR 0059](./0059-how-an-actor-gets-from-one-tile-to-the-next.md) gave when it
+excluded every guard errand.
+
+**They were also told, before signing, what this does not buy.** A newly hired
+guard spawns *on* its derived sector's post tile (ADR 0036 decision 2's
+deliberate coincidence), so ordinary early-game hiring has no distance to
+cross, and `Travelling` will be a state a player sees rarely even now. The
+signature accepts that: the point is that the vocabulary stops naming
+something impossible, not that the animation becomes common. How often a
+player should see a guard walking is a separate question and is not decided
+here.
+
+**The paragraph below is kept rather than overwritten** (`docs/AGENT_WORKFLOW.md`
+§4: mark both directions), because it records the warrant this document had
+while it was still a proposal, and that warrant is what was signed:
+
+> **Proposed, 2026-09-01.** Written on `fix/740-a-guard-walks-to-its-post`, with
+> the implementation on the same branch, following the convention
+> [ADR 0059](./0059-how-an-actor-gets-from-one-tile-to-the-next.md) set for
+> itself. Nobody has approved it; the argument below is the whole of the
+> warrant, and a reader who disagrees with it should treat the decision as open.
+> **Never self-approved** — this is a proposal, not a ruling.
 
 **The number was assigned by this branch's own sweep**, per `AGENTS.md` and
 `docs/AGENT_WORKFLOW.md`: `docs/adr/README.md`'s stated next-free line reads
