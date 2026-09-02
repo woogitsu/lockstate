@@ -1,6 +1,7 @@
 import type { LocalizationKey } from '../../content/localization';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
+import { pressAffordabilityVerdict } from '../affordability';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
 import { createChoiceGroup, type ChoiceGroup, type ChoiceOption } from '../primitives/choice-group';
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
@@ -20,6 +21,7 @@ import {
   type HudBuildOrderViewModel,
   type HudBuildQueueViewModel,
   type HudBuildViewModel,
+  type HudCountsViewModel,
   type HudLocalizer,
   type HudPendingDeliveriesViewModel,
   type HudPendingDeliveryViewModel,
@@ -239,6 +241,20 @@ export interface BuildPanel {
    * `deliveriesBlock` in `createBuildPanel`.
    */
   setPendingDeliveries(deliveries: HudPendingDeliveriesViewModel | undefined): void;
+  /**
+   * The two treasury figures the buy button's availability is judged
+   * against (issue #772): `treasuryMinorUnits` and `roomCapacity`, published
+   * on every `simulation/status-counts` tick and passed straight through --
+   * the panel decides the comparison (`pressAffordabilityVerdict`, the same
+   * one `src/main.ts` judges the press itself with), this line decides
+   * nothing.
+   *
+   * The full `HudCountsViewModel` rather than two bare numbers, because it is
+   * the type the composition root already produces every tick and a fresh
+   * two-field type here would be a second shape for the same publication to
+   * be translated into on its way from `hud.ts` to this panel.
+   */
+  setTreasury(counts: HudCountsViewModel): void;
   setVisible(visible: boolean): void;
 }
 
@@ -742,6 +758,19 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   /** How many units the next purchase asks for, and which material it was last set for. */
   let quantity = 1;
   let quantityItemId: string | undefined;
+  /**
+   * The two treasury figures a purchase's affordability is judged against
+   * (issue #772), published on every `simulation/status-counts` tick and
+   * held here between publications so a quantity change alone can repaint
+   * the buy button without waiting for the next one.
+   *
+   * Zeroed and unfurnished until the first `setTreasury` call, which is the
+   * same "nothing published yet" reading `EMPTY_HUD_VIEW_MODEL.counts` gives
+   * every other figure on this HUD -- and, since the buy row cannot be open
+   * before a session exists to populate it, this default is never rendered.
+   */
+  let treasuryMinorUnits = 0;
+  let treasuryRoomCapacity: number | undefined;
 
   const selectedBuildable = () => model.buildables.find((entry) => entry.definitionId === selectedId);
   const selectedMaterial = () => selectedBuildable()?.material;
@@ -1520,6 +1549,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   function paintBuyTotal(): void {
     const material = selectedMaterial();
     if (material === undefined) return;
+    const total = material.unitPriceMinorUnits * quantity;
     buySubmit.setLabel(
       t(HUD_MESSAGE_KEY.buildBuySubmit, {
         count: quantity,
@@ -1529,9 +1559,79 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         // `src/content/procurement-catalog.ts` and the balance on the status
         // strip are quoted in the same units, so this is the number the
         // player compares against what they have.
-        total: localizer.formatNumber(material.unitPriceMinorUnits * quantity),
+        total: localizer.formatNumber(total),
       }),
     );
+    /*
+     * **Issue #772: the control's state tracks the same verdict the press
+     * itself will be judged against, computed before the press rather than
+     * discovered by it.** `pressAffordabilityVerdict` is the exact comparison
+     * `src/main.ts` runs on `onPurchase` -- same `judgeAffordability`, same
+     * `pressFloorMinorUnits`, same constant floor -- so a press this marks
+     * unavailable and a press this would have let through are never two
+     * approximations of one question.
+     *
+     * **`setUnavailable`, not `setDisabled`, and this is the narrowing of
+     * 2026-09-02.** PR #799 wrote `setDisabled(verdict.refused)` here. It was
+     * the right verdict on the wrong bit, and it cost a whole refusal route:
+     *
+     *   - `disabled` removes the press, and the press is what produces the
+     *     only sentence a player is ever given for this refusal --
+     *     `hud.refusal.purchase-materials-past-floor`, which the owner
+     *     authored under ruling 18 of 2026-08-31 precisely because the generic
+     *     line told a player nothing about a limit they had no other way of
+     *     learning. With `disabled`, that sentence, the
+     *     `data-action-failed` mark on this button and the `aria-describedby`
+     *     link between them became unreachable from this panel: the last
+     *     producer of `'past-the-overdraft-floor'` left is `hire-staff`. The
+     *     label is unchanged either way (see the split below), so a hard
+     *     `disabled` says "no" and nothing else, for ever.
+     *   - It never held, either. `buySubmit.element` is in this panel's
+     *     `controls`, and `createBusyGroup`'s `apply`
+     *     (`src/ui/primitives/async-action.ts`) assigns
+     *     `control.disabled = busy` for every member on every busy
+     *     transition -- so the gate re-enabled this button after *any*
+     *     command in the HUD settled, and nothing repainted it until the next
+     *     `setTreasury` or quantity change. A refusal reachable in that window
+     *     and nowhere else is an accident, not a design.
+     *
+     * `aria-disabled` keeps both halves: assistive technology reports the
+     * control as unavailable and `primitives.css` dims it, so #772's
+     * before-the-press signal is intact -- and the press still lands, is
+     * still refused on this thread, and the player is still told why. See
+     * `ActionButton.setUnavailable` for the general form of the distinction.
+     *
+     * **Unavailable, not hidden**, unlike `buyToggle` two paragraphs above:
+     * that comment's rule is for a control that would claim a purchase
+     * *exists* when it does not (nothing sells the buildable, or the removal
+     * gesture buys nothing) -- a permanent fact about the row. Affordability
+     * is the opposite shape: the purchase exists and stays offered, the
+     * balance that blocks it is a fact about *right now*, and the same press
+     * that is refused this tick goes through the next time a delivery lands or
+     * the quantity comes down. `aria-disabled` says exactly that -- advised
+     * against, but still here -- where `hidden` would claim the row itself
+     * stopped meaning anything.
+     *
+     * **This is the mechanical half only (issue #772's split).** What the
+     * button *says* is untouched -- still `hud.build.buy.submit`, byte for
+     * byte, whichever way the verdict falls. Naming what stops and what would
+     * lift it is new player-facing copy, which `AGENTS.md`'s fourth exclusion
+     * and this issue's own text both reserve to the owner, and ADR 0087's
+     * decision 2 (a standing condition, gated on copy) or ADR 0089's
+     * reason-as-data mechanism are the places that sentence gets decided --
+     * not here. The refusal band is the one sentence that already exists, and
+     * keeping the press is what keeps it reachable.
+     *
+     * **Freshness, threaded exactly as `overdraftRemaining` threads it**
+     * (`src/ui/hud/projection.ts`): `treasuryRoomCapacity === 0`, never a
+     * bare `false`, because a fresh, unfurnished prison is judged against the
+     * shallower starter rung and a caller that silently answered "not fresh"
+     * would reopen the -1,185/-1,250 gap PR #769 and #771's amendment closed
+     * (`deliveriesRungFloorMinorUnits`'s own docblock).
+     */
+    const isFreshUnfurnishedPrison = treasuryRoomCapacity === 0;
+    const verdict = pressAffordabilityVerdict(total, treasuryMinorUnits, isFreshUnfurnishedPrison);
+    buySubmit.setUnavailable(verdict.refused);
   }
 
   function paintBuy(): void {
@@ -2172,6 +2272,27 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     setPendingDeliveries(next: HudPendingDeliveriesViewModel | undefined): void {
       deliveries = next;
       paintDeliveries();
+    },
+    setTreasury(counts: HudCountsViewModel): void {
+      treasuryMinorUnits = counts.treasuryMinorUnits;
+      treasuryRoomCapacity = counts.roomCapacity;
+      // A publication can arrive while the buy row is closed -- most
+      // publications do -- and `paintBuyTotal` returns immediately for an
+      // undisclosed row (`selectedMaterial()` reads whatever the catalogue
+      // filter currently shows, not whether the disclosure is open, so this
+      // still repaints a hidden button rather than skip the work). Repainting
+      // unconditionally is what the badge on the strip already does for the
+      // same balance (`strip.update`), and it is cheap: one comparison, one
+      // text assignment and one `setAttribute` per publication, none of which
+      // changes layout when the value is what it already was. **This sentence
+      // read "no DOM write when the label and disabled flag do not change"
+      // until 2026-09-02, and that stopped being true when the verdict moved
+      // from the `disabled` property to the `aria-disabled` attribute:
+      // assigning a property the value it holds is a no-op, and
+      // `setAttribute` with an unchanged value still writes.** The cost is a
+      // string comparison the engine makes either way; the reason the old
+      // sentence gave is gone, and the conclusion is not.
+      paintBuyTotal();
     },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;

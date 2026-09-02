@@ -1356,6 +1356,13 @@ window.lockstateUiHarness = {
       buyOpen: buyToggle?.getAttribute('aria-expanded') === 'true',
       buyRowVisible: buyRow !== null && buyRow.offsetParent !== null,
       buyLabel: buySubmit?.textContent?.trim() ?? '',
+      // Two bits, not one, and the pair is the assertion (see
+      // `BuildProbe.buyDisabled`). A missing button reads as unavailable
+      // *and* disabled: both defaults say "no press is going to happen here",
+      // which is what an absent control means, and neither default can make a
+      // test about a present one pass by accident.
+      buyUnavailable: (buySubmit?.getAttribute('aria-disabled') ?? 'true') === 'true',
+      buyDisabled: buySubmit?.disabled ?? true,
       buyQuantity: buyQuantity?.value ?? '',
       texts: [...(panel?.querySelectorAll<HTMLElement>('button, label, span, h2') ?? [])]
         .map((node) => (node.textContent ?? '').trim())
@@ -1377,6 +1384,12 @@ window.lockstateUiHarness = {
       options: rows.map((row) => row.dataset['staffRole'] ?? ''),
       selected: rows.find((row) => row.dataset['selected'] === 'true')?.dataset['staffRole'] ?? null,
       hireLabel: hire?.textContent?.trim() ?? '',
+      // Two bits, not one, and the pair is the assertion (see
+      // `StaffProbe.hireDisabled`). A missing button reads as unavailable
+      // *and* disabled, on `buildProbe`'s terms: both defaults say "no press
+      // is going to happen here", which is what an absent control means, and
+      // neither default can make a test about a present one pass by accident.
+      hireUnavailable: (hire?.getAttribute('aria-disabled') ?? 'true') === 'true',
       hireDisabled: hire?.disabled ?? true,
       texts: [...(panel?.querySelectorAll<HTMLElement>('button, label, span, h2') ?? [])]
         .map((node) => (node.textContent ?? '').trim())

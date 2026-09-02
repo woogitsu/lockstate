@@ -228,6 +228,33 @@ export interface BuildProbe {
   readonly buyRowVisible: boolean;
   /** The buy button's whole label, which states the quantity, the material and the total. */
   readonly buyLabel: string;
+  /**
+   * Whether the buy button reports itself **unavailable** -- `aria-disabled`
+   * (issue #772): the control's availability is judged against the same
+   * `pressAffordabilityVerdict` the press itself is judged against, so this
+   * and `buyLabel` moving independently of each other is exactly the gap
+   * #772 is about.
+   */
+  readonly buyUnavailable: boolean;
+  /**
+   * Whether the buy button is **disabled** -- the DOM property, which is a
+   * different question from `buyUnavailable` and is read so a test can pin
+   * that they stay different (the narrowing of 2026-09-02).
+   *
+   * PR #799 put the affordability verdict on this bit, which removed the
+   * press and with it the only sentence a player is given for the refusal
+   * (`hud.refusal.purchase-materials-past-floor`, the owner's ruling 18 of
+   * 2026-08-31). A test that asserts `buyUnavailable` alone would go green
+   * again the day somebody re-wired the verdict onto `disabled` and re-took
+   * the press; asserting this one stays `false` is what makes the narrowing
+   * a fact rather than a comment.
+   *
+   * It is *not* always `false`: `createBusyGroup` holds every command control
+   * disabled while one is in flight
+   * (`src/ui/primitives/async-action.ts`), so this reads `true` inside that
+   * window. Only assertions taken while nothing is in flight mean anything.
+   */
+  readonly buyDisabled: boolean;
   /** What the quantity stepper currently shows. */
   readonly buyQuantity: string;
   /** Every visible label in the panel, so an unresolved `hud.*` key is caught. */
@@ -421,6 +448,32 @@ export interface StaffProbe {
   readonly selected: string | null;
   /** The hire button's whole label, which states the role and what the press will spend. */
   readonly hireLabel: string;
+  /**
+   * Whether the hire button reports itself **unavailable** -- `aria-disabled`
+   * (issue #772's other half): the control's availability is judged against
+   * the same `pressAffordabilityVerdict` the press itself is judged against,
+   * so this and `hireLabel` moving independently of each other is exactly the
+   * gap #772 is about, one control over from the Buy button.
+   */
+  readonly hireUnavailable: boolean;
+  /**
+   * Whether the hire button is **disabled** -- the DOM property, which is a
+   * different question from `hireUnavailable` and is read so a test can pin
+   * that they stay different, exactly as `BuildProbe.buyDisabled` is.
+   *
+   * The affordability verdict must never reach this bit: `disabled` removes
+   * the press, and the press is the only producer of
+   * `hud.refusal.hire-staff-past-floor`. It is the *last* producer of
+   * `'past-the-overdraft-floor'` anywhere in the HUD since the Buy button's
+   * narrowing of 2026-09-02 (see `paintBuyTotal`), so a verdict written here
+   * would leave that reason with no way to reach a player at all.
+   *
+   * It is *not* always `false`: no role selected disables it -- that is
+   * authority rather than advice -- and `createBusyGroup` holds every command
+   * control disabled while one is in flight
+   * (`src/ui/primitives/async-action.ts`). Only assertions taken with a role
+   * chosen and nothing in flight mean anything.
+   */
   readonly hireDisabled: boolean;
   /** Every visible label in the panel, so an unresolved `hud.*` key is caught. */
   readonly texts: readonly string[];

@@ -279,3 +279,63 @@ export function judgeAffordability(
     spendableMinorUnits,
   };
 }
+
+/**
+ * **Whether a press for `chargeMinorUnits` would be refused, judged the
+ * identical way `src/main.ts` judges the press itself.**
+ *
+ * This composes `judgeAffordability` with `pressFloorMinorUnits` exactly as
+ * both call sites in `src/main.ts` do inline --
+ * `judgeAffordability(total, viewModel.counts.treasuryMinorUnits,
+ * pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+ * viewModel.counts.roomCapacity === 0))` -- so that a caller asking "would
+ * this be refused" and the dispatch that later asks the real question cannot
+ * drift into two approximations of one comparison.
+ *
+ * ## Why this exists as its own export (issue #772)
+ *
+ * A control that fires that command needs to answer the same question
+ * *before* the player presses it, so that whether it can act stops being
+ * discovered by pressing -- and `src/ui/hud/` may not import
+ * `src/simulation/**` to reach `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` itself
+ * (`AGENTS.md` boundary 1, pinned by `tests/unit/ui-hud-messages.test.ts`).
+ * This module already may, for the reason `pressFloorMinorUnits`'s own
+ * docblock gives, so it does the composing and a HUD panel gets back only the
+ * verdict.
+ *
+ * **This answer is advice to a control, not a second gate, and the narrowing
+ * of 2026-09-02 is what makes that true.** Both callers -- `paintBuyTotal`
+ * (`src/ui/hud/build-panel.ts`) and `paintHire`
+ * (`src/ui/hud/staff-panel.ts`) -- mark their button `aria-disabled` rather
+ * than `disabled`, so a refused press still reaches `src/main.ts` and is
+ * still answered there with the sentence naming the reason. This function
+ * moving a control's *availability* and the pre-flight deciding the *press*
+ * is the whole point of them sharing one comparison; if a caller ever used
+ * this verdict to remove the press, the refusal it prevents would be the only
+ * explanation the player was ever going to get.
+ *
+ * **This paragraph said "its one caller" and named only the Buy button.** That
+ * was true for the hours between the narrowing and the Hire button being wired
+ * the same way, and the count is what rotted rather than the argument -- the
+ * shape of `AGENTS.md`'s own warning about sentences that state a tally. The
+ * subject is now stated instead: two panels, one comparison, neither of them
+ * taking a press away.
+ *
+ * `isFreshUnfurnishedPrison` is required rather than defaulted, matching
+ * `pressFloorMinorUnits` and `deliveriesRungFloorMinorUnits` above and for
+ * their same reason: a caller that forgot to pass it would silently get "not
+ * fresh" back, which is the direction that reopens the exact defect PR #769
+ * closed for the mature floor and #771's starter-rung amendment closed again
+ * for a fresh one.
+ */
+export function pressAffordabilityVerdict(
+  chargeMinorUnits: number,
+  balanceMinorUnits: number,
+  isFreshUnfurnishedPrison: boolean,
+): AffordabilityVerdict {
+  return judgeAffordability(
+    chargeMinorUnits,
+    balanceMinorUnits,
+    pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, isFreshUnfurnishedPrison),
+  );
+}
