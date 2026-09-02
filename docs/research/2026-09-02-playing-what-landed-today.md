@@ -442,10 +442,10 @@ the *classification group*, not the tier
 while a prisoner is still on the general-population timetable, and the tone
 changes on the move that actually changes their day"*).
 `classificationGroupIdForTier` is `riskTier >= 3`
-(`src/simulation/prisoners/classification.ts:57`), and
+(`src/simulation/prisoners/classification.ts:59`), and
 `ClassificationEarlyWarningSystem` is capped at `EARLY_WARNING_TIER_CEILING`
 (2) precisely so that it can never move a regime
-(`src/simulation/prisoners/classification-early-warning-system.ts:161-168`).
+(`src/simulation/prisoners/classification-early-warning-system.ts:151`, and its own comment at `:158-168`: *"this write can never move a prisoner's regime, only their published tier"*).
 
 So the two decisions compose into a state neither author was choosing: **#788
 introduces a warning, and the layer that would show a warning is bound to a
@@ -557,3 +557,117 @@ none of it. What is owed is at least one of:
    decide whether tier 2 should be counted anywhere on the strip.
 
 **Owed to: the owner.** Options 1 and 2 are copy; 3 and 4 are design.
+
+### 2b. Played: three complete sweeps, four teleports, and not one walked step
+
+**MEASURED, act 3** — `1 passed (9.6m)`, 574s standalone. A sealed, zoned 6×6
+cell at (14,12)-(19,17), six admissions (five housed, one waiting), three
+guards, sampled from tick **25,943 to 27,994** at ×1 — 2,051 ticks, which
+spans three 600-tick sweep boundaries.
+
+The roster, every change, in ticks:
+
+```
+t25963: On Post // Unassigned // Unassigned
+t26396: On Post // On Search  // Unassigned
+t26552: On Post // Unassigned // Unassigned
+t27001: On Post // On Search  // Unassigned
+t27139: On Post // Unassigned // Unassigned
+t27593: On Post // On Search  // Unassigned
+t27715: On Post // Unassigned // Unassigned
+[act3] phases seen with tick ranges: [["On Post",{"count":36,...}],
+  ["On Search",{"count":7,"firstTick":26396,"lastTick":27653}],
+  ["Unassigned",{"count":65,...}]]
+```
+
+Three complete sweeps. And on the channel the renderer draws from:
+
+```
+[act3] render-delta samples in the window: 982 (of 3974 since page load)
+[act3] guard 0: 982 delta sample(s), 0 with a non-zero velocity, 0 not on a tile centre
+[act3] guard 1: 982 delta sample(s), 0 with a non-zero velocity, 0 not on a tile centre
+[act3]   guard 1 t26500 (14,12) -> t26502 (16,16): 6.000 tile(s) in 2 tick(s); walking could cover 1.0 -> TELEPORT
+[act3]   guard 1 t27009 (16,16) -> t27011 (14,12): 6.000 tile(s) in 2 tick(s); walking could cover 1.0 -> TELEPORT
+[act3]   guard 1 t27640 (14,12) -> t27643 (16,16): 6.000 tile(s) in 3 tick(s); walking could cover 1.5 -> TELEPORT
+[act3]   guard 1 t27680 (16,16) -> t27682 (14,12): 6.000 tile(s) in 2 tick(s); walking could cover 1.0 -> TELEPORT
+[act3] guard 2: 982 delta sample(s), 0 with a non-zero velocity, 0 not on a tile centre
+[act3] walk episodes: []
+```
+
+**2,946 guard records. Four position changes, every one of them six tiles in
+two or three ticks — against the one tile per two ticks a walk can cover — and
+zero samples with a velocity or an off-tile position.** The teleport/walk
+threshold here is arithmetic on ticks, not a judgement: `6 > 3/2`.
+
+`Travelling` never appeared on the roster. `On Search` did, seven times.
+
+### 2c. Why, and it is not a bug in #740
+
+The cause is in act 3's own roster timeline, and every step is READ:
+
+- **The posted guard is never sent searching.**
+  `claimableGuardIds(this.guards)` filters `source.unassignedGuardIds()`
+  (`src/simulation/security/post-eligibility.ts:107`), and
+  `unassignedGuardIds()` is *"`'unassigned'` only"*
+  (`src/simulation/security/guard-roster.ts:236-238`) — a decision
+  `guard-roster.ts:13-17` records deliberately, because it is what let search
+  duty ship without touching `deployment-system.ts`. So the guard that reads
+  `On Post` for the whole window never leaves its post, and
+  `walkBackToPost` never has any distance to cross.
+- **The spare that does the searching has no post to walk back to.** A
+  finished sweep calls `this.guards.unassign(guardId)`
+  (`src/simulation/contraband/search-system.ts:324`), and
+  `DeploymentSystem.assignUnassignedGuards` draws from the pool only while
+  `required - assigned > 0`. Six residents ask for exactly one guard:
+  `resolveOccupancyScaledGuardCount` is
+  `max(scheduled, ceil(occupants / DEFAULT_SECTOR_PRISONERS_PER_GUARD))` with
+  that constant at 8 (`src/simulation/security/sector-staffing.ts:147`, `:190`)
+  and the schedule's floor at 1. So the shortage is zero, and two guards stand
+  `Unassigned` on whatever tile the last search left them — for ever.
+
+**So the walk ADR 0088 built is gated on a shortage arising while a spare
+happens to be standing away from the post.** In ordinary play a shortage
+arises when occupancy crosses a multiple of eight, or when the player dismisses
+or releases the posted guard. Nothing else moves it.
+
+### 2d. The answer to the brief's question, plainly
+
+**Across every act in this pass — 2,511 ticks of dedicated sampling and 4,939
+render-delta publications carrying 4,486 guard records — a guard walked zero
+times.** Act 1: an empty prison, four hires, 460 ticks, zero. Act 3: a staffed
+six-resident prison, three completed contraband sweeps, 2,051 ticks, zero.
+
+So: **a player cannot see a guard walk in a prison they can build in a starter
+session, at any speed, and it is not because the walk is too fast to see.**
+There is no walk. `Travelling` should indeed stay rarely seen, as the owner was
+told — but the reason is not that the walk is brief; it is that of the three
+routes into a walk, two are structurally unreachable (a hire is already on its
+post; no sector has a patrol route) and the third needs a staffing shortage to
+coincide with a spare guard standing somewhere else.
+
+**What ADR 0088 bought, stated fairly, because this is not a negative result
+about the change:** the vocabulary is now honest (`Travelling` names a real
+state, and `Returning` names a real walk), the mechanism is wired and pinned
+(`createGuardLocomotionSystem` at order 201, `LocomotionSystem`'s order made a
+constructor parameter, `tests/determinism/kernel-system-order.test.ts` holding
+it), and the re-validation-at-the-edge rule reaches guards
+(`src/simulation/security/guard-locomotion.ts:64`). None of that is undone by
+there being nothing to watch yet. What is not true is any sentence implying a
+player will see it.
+
+### 2e. Does the walk path go around walls or through them? Not answerable from any prison a player can build
+
+**Not measured, and the reason is structural rather than a gap in effort.**
+Every tile a guard can be sent to in a starter session is inside the single
+room that also contains the post tile, because both `HireStaff` and
+`AdmitPrisoner` arrive at (16,16) and a cell that does not contain (16,16)
+houses nobody (§4's fixture note). A walk inside one open room crosses no wall
+edge, so no `canTraverseEdge` call can be observed refusing one.
+
+What *is* READ: the predicate is asked once per tile crossed rather than once
+per tick, with the walking guard's own staff role as the route context
+(`src/simulation/security/guard-locomotion.ts:64`), which is ADR 0077's rule
+reaching guards. And the *teleports* above cross the cell wall freely —
+`SearchSystem` writes `guards.setTile` directly — which is correct per ADR
+0059's deadline reasoning and is worth naming because it is what a player
+would see if guards were drawn moving: a guard appearing inside a sealed cell.
