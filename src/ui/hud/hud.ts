@@ -2151,13 +2151,45 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 /**
  * What each transport button asks for, given what the clock is doing now.
  *
- * Pause never changes the speed, so unpausing resumes at the speed the
- * player chose rather than silently resetting to ×1.
+ * **The three controls do not treat "the speed the player chose" the same
+ * way, and that asymmetry is measured rather than assumed** — playing the
+ * clock (`docs/research/2026-09-02-playing-the-clock.md`,
+ * `tests/browser/playtest-2026-09-02-the-clock.playtest.ts` act 1) found this
+ * paragraph used to claim a single, uniform contract ("Pause never changes
+ * the speed, so unpausing resumes at the speed the player chose rather than
+ * silently resetting to ×1") that only one of the two ways out of a pause
+ * actually honours:
+ *
+ * - **Pause** never changes the retained speed — `viewModel.clock.speed` is
+ *   passed straight through, for `hudClockFromWorkerMessage` to keep across
+ *   the pause (`src/ui/simulation-clock.ts`) even though a paused
+ *   `ClockControl` carries no speed of its own for the worker to discard.
+ * - **Fast-forward, pressed directly out of a pause with no Play in
+ *   between,** *does* resume at the speed the player chose: it computes
+ *   `nextFastForwardSpeed` off the retained value, so a pause taken at ×4
+ *   comes back at ×2 rather than restarting the ladder from ×1. Measured:
+ *   pause at ×4, Fast-forward, reads ×2.
+ * - **Play always asks for ×1**, whatever the retained speed was — measured:
+ *   fast-forward to ×4, cycle down to ×2, Pause, Play reads ×1, not ×2. This
+ *   is the one path a player is most likely to mean by "unpausing", and it is
+ *   exactly the one this paragraph used to say did not reset silently.
+ *
+ * `tests/unit/ui-hud-transport-intent.test.ts` pins all three as measured.
+ * Whether Play *should* instead resume at the retained speed — matching the
+ * sentence this paragraph used to make, and matching Fast-forward's own
+ * behaviour out of the same pause — is not decided here: it is a real,
+ * player-visible design question (does resuming at ×1 read as the Play
+ * button's own promise, or as a silently discarded fast-forward?) that
+ * `AGENTS.md`'s standing mandate reserves to the owner rather than to
+ * whichever agent next edits this switch.
  */
 export function transportIntent(kind: TransportIntentKind, viewModel: HudViewModel): HudIntent {
   switch (kind) {
     case 'pause':
       return { kind: 'set-clock', mode: 'paused', speed: viewModel.clock.speed };
+    // See the docblock above: this is the measured asymmetry, not an
+    // oversight to "fix" without the owner's ruling on which of the two
+    // readings the button is meant to keep.
     case 'play':
       return { kind: 'set-clock', mode: 'running', speed: 1 };
     case 'fast-forward':
