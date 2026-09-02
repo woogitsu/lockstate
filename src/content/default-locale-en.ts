@@ -1049,25 +1049,39 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * and the refund only applies to the second: a thing already built out of the
    * materials does not give them back.
    *
-   * **`remove-hint` IS FALSE AS OF 2026-08-31 AND NO REPLACEMENT IS WRITTEN
-   * HERE, BECAUSE COPY IS THE OWNER'S** (`AGENTS.md`'s fourth exclusion). The
-   * owner's ruling 20 -- *"Anulowanie zwraca pieniądze zamiast cegieł"* and
-   * *"Pieniądze dopóki ekipa nie zaczęła"*, recorded in
-   * [ADR 0076](../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
-   * amendment of that date -- makes a cancelled order give back **money**
-   * rather than materials, and give back **nothing** once the crew has started
-   * it. So *"its materials come back"* names the wrong currency, and the
-   * sentence has no clause at all for the case where nothing comes back. The
-   * second half, *"a finished one is not refunded"*, is still true.
+   * **`remove-hint` WAS FALSE FROM 2026-08-31 TO 2026-09-02, AND THE OWNER HAS
+   * NOW WRITTEN THE REPLACEMENT.** The sentence in place names all three
+   * outcomes the code actually has: money back before the crew starts, nothing
+   * back after, and nothing for a finished object.
    *
-   * It is left standing rather than deleted for the reason a wrong sentence
-   * beats no sentence on a control that takes something away: removing it would
-   * leave the *Remove* tool with nothing said about it at all. Reported to the
-   * owner with the branch that made it false.
+   * > **The account of the falsehood is kept, because the two days are the
+   * > finding.** It read: *"`remove-hint` IS FALSE AS OF 2026-08-31 AND NO
+   * > REPLACEMENT IS WRITTEN HERE, BECAUSE COPY IS THE OWNER'S"*, and it was
+   * > right on both counts. The owner's ruling 20 -- *"Anulowanie zwraca
+   * > pieniądze zamiast cegieł"* and *"Pieniądze dopóki ekipa nie zaczęła"*,
+   * > recorded in [ADR 0076](../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+   * > amendment of that date -- had made a cancelled order give back **money**
+   * > rather than materials, and **nothing** once the crew had started it. So
+   * > *"its materials come back"* named the wrong currency and the sentence had
+   * > no clause at all for the case where nothing comes back. Only the second
+   * > half, *"a finished one is not refunded"*, was true, and it survives into
+   * > the replacement unchanged.
+   * >
+   * > **What the two days cost, and what to do differently.** The wrong
+   * > sentence was left standing deliberately, on the reasoning that a wrong
+   * > sentence beats no sentence on a control that takes something away -- and
+   * > that reasoning is still defensible. What was missing is that being
+   * > *reported* is not being *asked*: the note said "Reported to the owner
+   * > with the branch that made it false" and no one put the replacement to
+   * > them as a decision to make. A playtest re-measured it live on 2026-09-02
+   * > (cancelling an `In Progress` order moved the treasury 23,400 -> 23,400,
+   * > exactly zero), it was put to the owner as a choice between three
+   * > wordings, and it was answered the same hour. **A false player-facing
+   * > sentence needs a question, not a record.**
    */
   'hud.build.remove': 'Remove',
   'hud.build.remove-active': 'Stop removing',
-  'hud.build.remove-hint': 'Press any tile of an object to take it away. One still being built is cancelled and its materials come back; a finished one is not refunded.',
+  'hud.build.remove-hint': 'Press any tile of an object to take it away. One still being built is cancelled and refunds its money — but nothing comes back once the crew has started it. A finished one is not refunded.',
   'hud.build.remove-submit': 'Remove object here',
   'hud.build.disarm': 'Stop placing',
   'hud.build.arm-hint': 'Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera.',
