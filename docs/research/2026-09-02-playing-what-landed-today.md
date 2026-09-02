@@ -99,12 +99,23 @@ container.
 
 ### What each act cost
 
-| Act | What it played | Result |
-| --- | --- | --- |
-| 1 | four hires on an empty prison; render-delta positions and roster phases over 460 ticks at ×1 | `1 passed (1.3m)`, 79s standalone |
-| 2 | Admit on a prison with no cell, then a cell and 24 admissions; the Regime roster's badges | see §3 |
-| 3 | a cell, six residents, three guards; 2,000 ticks at ×1 across three sweep boundaries | see §2 |
-| 4 | the neglect fixture played: beds, no toilet, no guards, to the first `Medium` | see §4 |
+Each act builds its own prison with the mouse and is runnable alone with
+`-g "act N"`. The standalone cost is wall clock and is reported for planning
+only; nothing below is derived from it.
+
+| Act | What it played | Result | Standalone cost |
+| --- | --- | --- | --- |
+| 1 | four hires on an empty prison; render-delta positions and roster phases over 460 ticks at ×1 | `1 passed (1.3m)` | 79s |
+| 2 | Admit three times on a prison with no cell, then a cell and 24 admissions; the Regime roster's badges against the incidents and contraband chips | see §3f | see §3f |
+| 3, first run | a sealed cell, six residents, three guards; 2,051 ticks at ×1 across three sweep boundaries | `1 passed (9.6m)` | 574s |
+| 3, second run | the same plus phase 2: a Release press and 400 ticks after it | `1 passed (11.2m)` | 666s |
+| 4 | the neglect fixture played: beds, no toilet, no guards, twelve admissions, to the first `Medium` and 2,400 ticks past it | `1 passed (8.6m)` | 511s |
+
+Two runs were **stopped rather than reported**: act 4's first, once its own
+`elementsFromPoint` read showed the west wall landing on `.hud-minimap` (§4),
+because everything downstream would have measured an unenclosed cell; and one
+duplicate act-2 invocation that raced another into the same log file, which is
+`docs/AGENT_WORKFLOW.md`'s shared-scratchpad trap and mine to have avoided.
 
 ---
 
