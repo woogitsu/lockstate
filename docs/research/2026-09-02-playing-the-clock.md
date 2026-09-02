@@ -398,7 +398,103 @@ held duty claim (contraband search, incident response), not the roster
 this pass did not attempt to engineer. It is the one member of ADR 0051's
 thirteen this sweep leaves unchecked.
 
-## Finding 7 — the alerts band's dwell floor at ×4: {pending act 5 results}
+## Finding 7 (checked, correct) — a real, organic severity collision at ×4 confirms the promotion rule; the protective half is not independently re-verified live in this pass
+
+**MEASURED**, act 5, and this is the section the brief asks to be held to the
+strictest evidence standard — no finding here rests on a wall-clock reading
+this box's load could move. `uptime` before this act started:
+`load average: 4.86, 10.37, 9.58`; `uptime` after it finished:
+`load average: 7.68, 8.23, 8.78`. **This box was not idle at any point during
+this act**, so every conclusion below is stated in ticks and in the band's own
+painted sequence (a state trace, not a timing measurement), never in
+milliseconds read off this run.
+
+A two-bed, two-admission cell was run at ×4 for 20,119 ticks with no
+scripted intervention beyond the initial setup, and the worker's own event
+log (captured by the tee, never sampled) produced a **real, organic
+same-region collision**, not a synthetic one:
+
+```
+6 worker event(s): [
+  {"tick":10201,"type":"incidents.assault-opened"},
+  {"tick":10811,"type":"incidents.all-clear"},
+  {"tick":10851,"type":"incidents.riot-opened"},   <- 40 ticks after the all-clear above
+  {"tick":11461,"type":"incidents.all-clear"},
+  {"tick":15652,"type":"incidents.riot-opened"},
+  {"tick":16261,"type":"incidents.all-clear"}
+]
+gaps, in ticks: [610, 40, 610, 4191, 609]
+```
+
+The 40-tick gap (`incidents.all-clear` → `incidents.riot-opened`) is 2,000 ms
+of simulated time — **500 ms at ×4, under the 600 ms floor** — and is exactly
+the shape ADR 0084 decision 4 was ruled on: two events landing inside the
+floor. The band's own recorded spans across the whole run:
+
+```
+580f [null] ""
+89f  [warning] "A fight has broken out between two prisoners."
+5f   [info]    "The prison is under control again — no incident is still open."
+63f  [danger]  "A riot has broken out — 2 prisoners have stopped taking orders."
+412f [info]    "The prison is under control again — no incident is still open."
+90f  [danger]  "A riot has broken out — 2 prisoners have stopped taking orders."
+387f [info]    "The prison is under control again — no incident is still open."
+```
+
+**This confirms the promotion half of decision 4 on real, unscripted incident
+data**: the `info`-severity all-clear at tick 10,811 was on the line for only
+5 frames before the `danger`-severity riot at tick 10,851 took it —
+`outranks(riot, all-clear)` is true (`danger > info` in
+`SEVERITY_EVICTION_ORDER`), so `admitToEventBand`'s *"inside the floor and
+more severe: takes the line immediately"* branch fired, exactly as designed.
+That is not the #700 shape (a message written and never painted at all) —
+it painted for 5 real frames, which is 5 more than #700's own zero — and it
+is not a defect: the ruling's own words are that a more severe event *"takes
+the line immediately"* specifically so a player is never held on stale good
+news while a new, worse problem stands. A player watching only the band
+across this run would have seen: nothing → *fight* (89 frames, easily read)
+→ a bare flash of *under control* → *riot* (63 frames, easily read) →
+*under control* (412 frames) → *riot* (90 frames) → *under control*
+(387 frames). The one thing they might miss is being told the fight ended
+before being told a riot began — which the design deliberately does not
+protect, because the riot is the thing that "most needs to be seen at once."
+
+**What this pass does not independently confirm: the protective (delay) half
+of decision 4**, where a second event of *equal or lesser* severity arriving
+inside the floor must *wait* rather than replacing what is on the line. This
+run's own close collision happened to be a promotion (more severe), which
+takes the immediate branch and exercises no timing logic at all — `wakeInMs`
+is never armed for that branch. `tests/browser/ui-escape-sentence-survival.spec.ts`
+already carries a synthetic browser test for exactly the protective case
+(*"the dwell floor keeps the escape sentence on screen through the same-tick
+all-clear"*), and `tests/unit/event-band-dwell.test.ts` covers `admitToEventBand`
+directly as a pure function with no DOM or timer at all — but this pass did
+not re-run either live, on the judgement that a timing-sensitive suite is
+exactly what `docs/AGENT_WORKFLOW.md` warns not to run for a fresh
+conclusion on a box this loaded, and that re-stating an existing, passing
+test's own result without running it would be worse than saying so plainly.
+
+**Does the band become a blur at ×4?** No, on what this pass could observe:
+every distinct sentence this run produced held the line for tens to hundreds
+of frames (5 to 580), and the one 5-frame flash was a superseded low-priority
+sentence, not a lost one — the alerts list (durable, per ADR 0084 decisions
+1–3) shows the collapsed run correctly with its count and day:
+
+```
+"A fight has broken out between two prisoners. Day 5"
+"The prison is under control again — no incident is still open. 3× Day 7"
+"A riot has broken out — 2 prisoners have stopped taking orders. 2× Day 7"
+```
+
+Three all-clears and two riot-opens each collapse into one row with the
+right count, so a player who glances at the log rather than the band still
+gets an accurate tally — the band's brief flash costs nothing there.
+
+**Weakest claim:** one organic collision, in one run, on one small prison.
+It is real production data rather than a constructed scenario, which is its
+value, but a single occurrence is not a distribution — this pass does not
+claim 40 ticks is typical, only that it happened once, unprompted, and the
+mechanism handled it exactly as ADR 0084 decision 4 specifies.
 
 ---
 
@@ -410,6 +506,45 @@ thirteen this sweep leaves unchecked.
   retained speed rather than restarting it — part of Finding 1.
 - A reload always starts paused with no retained speed — Finding 4, and
   consistent with ADR 0051's own decided scope.
+- Every paused-command gesture this pass could reach (`PurchaseMaterials`,
+  `RemoveObject`'s refusal path, `UnzoneRoom`, `AdmitPrisoner`'s refusal,
+  `HireStaff`) took effect on the panel immediately, with the tick provably
+  unmoved — Finding 6. No sibling of the #774 shape was found in any of them.
+- The alerts band's severity-promotion rule (ADR 0084 decision 4) held on a
+  real, organic collision at ×4 — Finding 7. The protective (delay) half of
+  the same rule was not independently re-run live in this pass; it is covered
+  by `tests/browser/ui-escape-sentence-survival.spec.ts` and
+  `tests/unit/event-band-dwell.test.ts`, neither of which this pass reran.
+
+## Summary for the owner
+
+**What a sceptic should re-run first:** Finding 1 (`tests/browser/playtest-
+2026-09-02-the-clock.playtest.ts -g "act 1"`) — it is the one behavioural
+question this pass leaves genuinely open, because it is a design call and
+not a bug this pass was positioned to fix unilaterally.
+
+1. **Decide Finding 1.** Should Play resume at the speed the player was
+   fast-forwarding at before a pause (matching `transportIntent`'s original,
+   now-corrected docblock and matching Fast-forward's own behaviour out of
+   the same pause), or keep resetting to ×1 (matching `transportPressedStates`'s
+   `play: !fast`, "Play is the ×1 button")? Either answer is a one-line change
+   to `src/ui/hud/hud.ts:2180-2183` plus a two-line change to
+   `tests/unit/ui-hud-transport-intent.test.ts`.
+2. **Consider whether a day boundary should say anything** (Finding 5). Two
+   systems already track the two halves of the number that silently changes
+   (the Security tab's wage bill, the `EARNED TODAY` chip) — nothing currently
+   narrates their net at the moment they combine, in either direction (a good
+   day or a day that's merely less good). Not urgent — the day counter at
+   least correlates with the change — but named because nothing else in this
+   pass's evidence closes the question either way.
+3. **`ReleaseGuard`** (a held guard's release, not the roster's `Dismiss`) is
+   the one member of ADR 0051's thirteen commands this pass's paused-sweep did
+   not reach — it needs an actual held-guard incident to provoke, which this
+   pass did not attempt to engineer.
+
+Everything else this pass checked — the pause/dimming contract, the speed
+ladder's cycle, five of six reachable paused gestures, and the dwell floor's
+promotion rule on real incident data — held up exactly as documented.
 
 ## Own instrument, checked
 
@@ -419,3 +554,13 @@ thirteen this sweep leaves unchecked.
   (`repair steps: []` on all four walls, every run) — the `.hud-minimap`
   click-eating trap this file was written to route around did not need to
   fire this time, at the tile shift it already computes.
+- Act 3's own two day-boundary checkpoints were vacuous on the first run
+  (fixed absolute tick targets already passed by the time setup finished) —
+  found, reported and fixed in this file (targets are now computed relative
+  to the tick setup actually finishes at).
+- Act 4's `RemoveObject` row targeted a hard-coded tile that
+  `buildResilientCell`'s own minimap tile-shift had already moved the cell's
+  beds off of, so it exercised a refusal rather than the removal success
+  path — found and reported rather than silently re-targeted, since the same
+  tick-unchanged/immediate-publish pattern the row was checking for was
+  already confirmed by the other five gestures in the same sweep.
