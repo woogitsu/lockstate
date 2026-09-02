@@ -81,7 +81,7 @@ narrower and more common, and after 75 files the honest statement of the class i
 > against the corpus shrinking.**
 
 Every walking gate in these two directories carries a floor, and several carry four. The floors are
-uniformly and deliberately loose — `comment-symbol-existence-contract.test.ts:104` says so in
+uniformly and deliberately loose — `comment-symbol-existence-contract.test.ts:110` says so in
 words: *"The floors move with the corpus and are deliberately loose -- they are 'the scan still
 works' and not 'the corpus is this size'."* That is a defensible trade and it is stated, not
 hidden. But its consequence is not stated anywhere: **a floor set at a third of the live corpus is
@@ -106,7 +106,7 @@ this corpus relies on:
   `src/persistence/save-schema.ts` is in the scan; `times-sign-contract.test.ts:348` asserts one
   authored sentence survived the lex. An anchor only defends the directory it names.
 - **A floor at the measured value rather than below it.**
-  `canonical-iteration-contract.test.ts:232` pins `REPORT.siteCount >= 52` and its comment argues
+  `canonical-iteration-contract.test.ts:230` pins `REPORT.siteCount >= 52` and its comment argues
   the case better than I can: *"`toBeGreaterThan(40)` against 53 sites admitted the loss of a
   quarter of the corpus without a word. #278 was exactly that loss."*
   `localization-key-completeness.test.ts:98-110` makes the same argument at length and names the
