@@ -215,3 +215,35 @@ export function reviewClassification(input: ClassificationReviewInput): Classifi
 
   return { factors, score, riskTier, classificationGroupId: classificationGroupIdForTier(riskTier) };
 }
+
+// --- Early warning (issue #788, ADR 0090) ----------------------------------
+
+/**
+ * The highest tier `ClassificationEarlyWarningSystem` may ever write.
+ *
+ * **Medium, and not higher, on purpose.** The owner's ruling on #788 is in two
+ * parts: the twenty in-game days a neglected prison takes to reach `High`
+ * through `ClassificationReviewSystem` is *right and not to be changed*, and
+ * the fact that `Medium` never appears on the way there — a single lapsed
+ * incident already saturates `MAX_FINDINGS_TERM`, so the full review's one
+ * evaluation point jumps straight from whatever intake gave to `High` — is
+ * *wrong*. `CLASSIFICATION_REVIEW_INTERVAL_TICKS` and its batch schedule
+ * (`ClassificationReviewSystem`'s `phaseTicks = intervalTicks - 1`) put a hard
+ * floor under the full review: for any prisoner classified in a session's
+ * first review period, the earliest that review can ever run is exactly
+ * `2 * CLASSIFICATION_REVIEW_INTERVAL_TICKS - 1` (47,999), independent of when
+ * in that period they were admitted (see that system's own schedule
+ * docblock). So there is no earlier point at which the *full* review could
+ * show `Medium` without either delaying `High` past that floor — which the
+ * ruling forbids — or reaching it early, which would move the very pacing the
+ * ruling says is right.
+ *
+ * A ceiling of `2` is what lets a second, faster check add the missing
+ * waypoint without touching either one: capped here, it can raise a prisoner
+ * as far as `Medium` **long before** the full review's floor, and it can
+ * never write `High` itself, so the full review's own arithmetic, schedule
+ * and result at tick 47,999 are exactly what they were before this system
+ * existed. It is a floor under how *late* a warning can be, not a ceiling
+ * that limits what `reviewClassification` itself can reach.
+ */
+export const EARLY_WARNING_TIER_CEILING: RiskTier = 2;
