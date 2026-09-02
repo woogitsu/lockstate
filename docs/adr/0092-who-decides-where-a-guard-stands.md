@@ -49,6 +49,68 @@ added in this commit says `Proposed`, because this section does.
 
 ---
 
+## The owner ruled on four of these, 2026-09-02 — and rejected one recommendation
+
+**This section is the record of what was decided; the decisions below are left
+as written and each affected one is marked in place.** The document stays
+`Proposed` as a whole: four questions of its seven now have answers, three do
+not, and one new one was created by an answer.
+
+**1. *Dyżur* means shifts, so this document answers half the feature.** The
+owner's original words were *"posterunku/dyżuru"* — post **or duty** — and the
+scoping question was put to them directly, with the finding that
+`DeploymentBlock`'s multi-block form is an unauthored capability and that its
+validator `assertGaplessDeploymentSchedule` has **no call site in `src/` at
+all** (verified: it is exported at `deployment-schedule.ts:25` and named in two
+comments, and nothing calls it). They ruled that **duty means a time shift as
+well** — this guard stands here from dawn to noon, then another. So decision 8's
+out-of-scope list is now **wrong about the schedule**, and a second ADR is owed
+for it. This document's *"place, and route"* assumption is accurate as far as it
+goes and is no longer the whole subject.
+
+**2. A player-placed post creates a NEW sector; the recommended `redefine` is
+rejected.** Decision 2 recommended narrowing the registry with a `redefine`, and
+the owner **did not take it**: the registry stays append-only, the derived
+default stays untouched, and a placed post is a new sector beside it. The cost
+was stated when the question was put — *"wtedy dwa sektory rywalizują o tych
+samych strażników i trzeba rozstrzygnąć, który wygrywa"* — and the ruling was
+made with that in front of them, so **it is a known consequence rather than an
+oversight**. See open question 5 below, which this answer creates.
+
+**3. The save payload is authoritative — decision 3 is confirmed as written.**
+The owner was shown the measured defect (`session-systems.ts:731` does
+`continue` when the runtime already holds a sector of that id, and the derived
+default is registered first, so a bundle carrying `postTile: (20,20)` and two
+waypoints restores as (16,16) with no route, **silently**) and ruled that what
+the player placed must come back. The `continue` goes. No bump and no migration:
+`patrolRoute` has been in the V5 schema since it was written, and ADR 0038
+decision 1 covers an optional field whose absence has one meaning.
+
+Note the interaction with ruling 2, which the ruling's own framing anticipated:
+if a placed post is a *new* sector with its own id, `continue` never fires for
+it, so ruling 3 is belt and braces rather than the whole fix. It is still the
+right rule — a payload that carries a definition for a sector the runtime holds
+should not have it thrown away in silence — and it closes the case where the
+ids do coincide.
+
+**4. The route is drawn as a region and the ordered list is derived from it.**
+Decision 4's *storage* stands unchanged: the sector holds an ordered list of
+waypoints, because that is what `PatrolSystem` consumes and what makes its loop
+budget and metrics mean anything. What the owner chose is the **gesture**: the
+player paints a rectangle, and the perimeter walk is derived from it. The
+measurement is what makes this coherent rather than a compromise — the recorded
+run authored **four waypoints and the guard visited sixteen tiles, the
+rectangle's whole perimeter**, so a perimeter circuit is already what happens.
+Prison Architect's painted region was rejected as a *storage* model for the
+reason the research gives: a region has no order, so it cannot produce the loop,
+budget or metrics `PatrolSystem` already keeps. Drawing a region and deriving
+the order takes the cheap gesture without giving up the field the engine wants.
+
+**The stated cost of this, accepted:** a player cannot draw a route that is not
+a rectangle. Decision 4's own list-of-waypoints storage means a non-rectangular
+route remains *expressible* in the save format and by a future gesture — the
+ruling constrains what the first tool can draw, not what the sector can hold.
+
 ## The decision, in one sentence
 
 **A post and a patrol route are properties of a *sector*, authored by the
@@ -165,6 +227,13 @@ a rewrite.
 
 ### 2. A sector definition changes through one narrow `redefine`, and only three fields move
 
+> **NOT TAKEN. The owner ruled on 2026-09-02 that a placed post creates a new
+> sector instead, leaving the registry append-only and the derived default
+> untouched.** The reasoning below is kept because it is the argument the
+> decision was made against, and because open question 5 — which of two
+> competing sectors owns a guard — exists *because* this was declined. Read it
+> as the rejected option, not as the plan.
+
 `SecuritySectorRegistry` gains exactly one mutator:
 
 > `redefine(id, changes: { postTile?, patrolRoute?, expectedPatrolLoopTicks? })`
@@ -205,6 +274,8 @@ today, so this costs nothing observable now and will need re-examining the first
 time a sector has a perimeter.
 
 ### 3. The save payload is authoritative for a sector definition it carries — no bump, no migration
+
+> **CONFIRMED by the owner, 2026-09-02, as written.**
 
 `restoreSessionSystems` step 1 currently skips any sector id the runtime
 already holds (`src/simulation/runtime/session-systems.ts:731-733`), and
@@ -252,6 +323,11 @@ which wins. Rejected on ADR 0038's own preference for absence having one
 meaning.
 
 ### 4. A route is an ordered list of waypoints, and it belongs to the sector
+
+> **CONFIRMED as to storage; the gesture is decided differently.** The owner
+> ruled on 2026-09-02 that the player paints a rectangle and the ordered
+> perimeter walk is derived from it. The list below stays exactly as the
+> sector's storage; what changes is what the first tool draws.
 
 `patrolRoute: readonly TilePosition[]`, in walk order, closed by
 `PatrolSystem`'s existing return leg to the post. Every guard the sector posts
@@ -410,6 +486,12 @@ why an invisible lever is worse than an imperfect visible one.
 
 ### 8. Out of scope, named rather than left implicit
 
+> **PARTLY OVERTAKEN. The owner ruled on 2026-09-02 that a duty shift is in
+> scope for the feature**, so whatever this list says about scheduling who
+> stands a post and when is no longer the boundary. A second ADR is owed for
+> `DeploymentBlock`'s multi-block form; this document is not it, and nothing
+> below was written expecting it.
+
 - **Drawing a sector.** ADR 0036 open question 5 and issue #396's option 2. A
   sector still has no extent — `SecuritySectorDefinition` has no rectangle and
   never had one — and the derived sector remains the only one. This document
@@ -501,3 +583,28 @@ construction. Decision 6's clamp replaces a throw with a deterministic branch.
 5. **Is one route per sector enough?** Prison Architect's two colours exist only
    so routes can overlap, which is a symptom of many routes per area. With one
    sector there is one route, and the question arrives with the second sector.
+6. **Which of two competing sectors owns a guard, and by what rule?**
+   **Created by the owner's ruling of 2026-09-02**, and the sharpest of these
+   because it is now load-bearing rather than hypothetical. Declining decision
+   2's `redefine` means a placed post is a **new** sector standing beside the
+   derived default, so from the first placement onwards two sector requirements
+   draw from one guard roster. `claimableGuardIds` (`guard-roster.ts`) draws
+   only from `'unassigned'` guards, so nothing today arbitrates between two
+   requirements that both want one — and the first prison a player places a
+   post in is a prison with more requirement than roster, because six residents
+   ask for exactly one guard.
+   The candidate rules, none taken here: **the player's sector wins** and the
+   derived default becomes a fallback that only posts a guard nobody else
+   claimed; **registration order wins**, which makes the derived default
+   permanently senior and would read as the placed post being ignored;
+   **the requirement with the higher occupancy pressure wins**, which is the
+   only rule that needs no new concept but is also the only one a player cannot
+   predict. This wants deciding **before** the placement command ships, not
+   after, because whichever rule is taken is immediately visible in whether a
+   newly placed post gets a guard at all.
+7. **Does a duty shift belong to the sector or to the guard?** Created by the
+   same ruling, and out of scope for this document by the owner's own framing —
+   named here so the second ADR does not start from nothing.
+   `DeploymentBlock`'s multi-block form and `assertGaplessDeploymentSchedule`
+   (exported, **no caller in `src/`**) are the unauthored capability that would
+   carry it.
