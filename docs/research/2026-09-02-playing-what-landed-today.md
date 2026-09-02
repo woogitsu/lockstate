@@ -704,20 +704,25 @@ ordinary shape of play; this is a third sighting with a tick distance attached.
 **A measurement is not a diagnosis** (`docs/AGENT_WORKFLOW.md` §3), so these
 are stated with what would settle them and no cause attached.
 
-1. **Six bed orders produced an `accommodationCapacity` of five; eight orders
-   produced four.** Act 3 pressed six beds along row 12 of the cell, all six
-   produced a `PlaceObject` command, and the counts read
-   `roomCapacity=5 accommodationCapacity=5`. Act 4 pressed eight (six along
-   row 12, two along row 13), one produced no command at all (below), and the
-   counts read `4`. **A partial reading, offered as such:** `bed-wooden` is a
-   `1×2` buildable (`src/simulation/construction/definition.ts:283` states
+1. **Bed orders do not always all become beds, and it is run-to-run rather
+   than systematic — which is a correction to what this section first said.**
+   Act 3's first run pressed six beds along row 12, all six produced a
+   `PlaceObject` command, and the counts read
+   `roomCapacity=5 accommodationCapacity=5`. This section originally reported
+   that as one bed reliably going missing. **Act 3's second run, same fixture,
+   same footprint, read `roomCapacity=6 accommodationCapacity=6`** — so six of
+   six landed, and the earlier five was not a property of the fixture.
+   Act 4 pressed eight (six along row 12, two along row 13), one produced no
+   command at all (below), and the counts read `4`. `bed-wooden` is a `1×2`
+   buildable (`src/simulation/construction/definition.ts:283` states
    *"`bed-wooden` is `1x2`, width 1, height 2"*), so a bed anchored on row 12
-   occupies rows 12 and 13 and act 4's two row-13 presses were refused —
-   which act 4's own refusal band confirms, reading *"something is already
-   standing there"*. That accounts for act 4's two, and **not** for the one
-   bed missing in each act along row 12 alone. **What would settle it:** the
-   refusal log read per press rather than at the end, which this pass did not
-   do.
+   occupies rows 12 and 13, act 4's two row-13 presses were refused, and act
+   4's own refusal band confirms it: *"something is already standing there"*.
+   That accounts for all of act 4 and leaves **one run of one act** with an
+   unexplained missing bed. **What would settle it:** the refusal log read per
+   press rather than at the end, which this pass did not do. Marked in both
+   directions rather than overwritten, because a tally in a research note is
+   exactly the sentence `docs/AGENT_WORKFLOW.md` §4 says rots first.
 2. **One bed press on an in-room tile produced no command, with the canvas
    under it.** Verbatim: `bed at (19,12) produced NO command; under it:
    [{"tag":"CANVAS","cls":"","pointerEvents":"auto"}, ...]`. So this is not
