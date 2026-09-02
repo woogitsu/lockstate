@@ -1070,6 +1070,56 @@ test.describe('HUD shell', () => {
       expect(survived.source).toBe('host');
       expect(survived.action).toBe('set-clock');
     });
+
+    test('a resolved host refusal does not permanently evict a still-standing simulation refusal, and the corner agrees with the alerts list (issue #777)', async ({
+      page,
+    }) => {
+      // The reproduction #777 describes, driven deterministically through the
+      // harness's two levers rather than through real affordability timing:
+      // (1) a simulation refusal is standing -- both surfaces say so, from one
+      // view model. (2) a host-side refusal then occurs -- an unaffordable
+      // press, stood in for by `failIntents(true)` -- and takes the line, the
+      // same way it always has. (3) that same press then succeeds -- an
+      // affordable one -- and clears its own line, the same way it always
+      // has. What #777 is about is what happens *next*.
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withSimulationRefusal(1));
+      expect((await page.evaluate(() => window.lockstateUiHarness.refusalProbe())).source).toBe('simulation');
+
+      await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+      await page.evaluate(() => window.lockstateUiHarness.clickTransport('Pause'));
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().source))
+        .toBe('host');
+
+      await page.evaluate(() => window.lockstateUiHarness.failIntents(false));
+      await page.evaluate(() => window.lockstateUiHarness.clickTransport('Pause'));
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().source))
+        .toBeNull();
+
+      // The next thing the counts channel publishes -- identical to the one
+      // already shown, exactly as it republishes an unchanged refusal on its
+      // own cadence rather than only on a change -- must bring the
+      // still-standing simulation refusal back to the corner. Before the fix
+      // this line stayed empty forever: nothing publishes a *new* ordinal for
+      // a fact that has not changed, and the old guard read "already shown
+      // once" as "nothing to do" even with the line now empty under it.
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withSimulationRefusal(1));
+      const restored = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+      expect(restored.source, 'the corner permanently lost the still-standing simulation refusal').toBe('simulation');
+      expect(restored.visible).toBe(true);
+      expect(restored.text).toContain(REFUSAL_TEXT);
+      expect(restored.action).toBeNull();
+
+      // The alerts list reads the identical fact from the identical source
+      // (`next.alerts`, painted every `update()` regardless of the band's own
+      // history) and must say the same thing the corner now does.
+      const listRow = await page.evaluate(() => window.lockstateUiHarness.alertRowProbe());
+      expect(listRow.present, 'the two surfaces must agree about the same standing refusal').toBe(true);
+      expect(listRow.text).toContain(REFUSAL_TEXT);
+    });
   });
 
   test('the alerts section folds and unfolds from a single tap on its header', async ({ page }) => {

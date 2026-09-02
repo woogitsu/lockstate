@@ -1931,6 +1931,16 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * with it. So the cheaper gesture is the safe one here.
      */
     ...(objects === undefined ? {} : { worldObjects: objects }),
+    /*
+     * The minimap's click, joined straight to the camera it belongs to
+     * (issue #793). Unlike the build/room/object gestures above this is not
+     * routed through `HudIntent` at all: moving the camera never reaches the
+     * simulation (`AGENTS.md` boundary 1), so there is nothing for the intent
+     * gate or the refusal line to do with it, and `worldScene` is passed
+     * unconditionally -- it exists from the top of this module regardless of
+     * whether a worker started, exactly like every other camera control.
+     */
+    onMinimapNavigate: (point) => worldScene.navigateToMinimapPoint(point.fx, point.fy),
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
         /*
