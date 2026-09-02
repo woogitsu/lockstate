@@ -63,12 +63,56 @@ async function collectSourceFiles(directory: string): Promise<readonly string[]>
  */
 const POSITIVE_CONTROL = /\bexport\b/u;
 
-async function sourceFilesMatching(pattern: RegExp): Promise<readonly string[]> {
-  const files = await collectSourceFiles(path.join(repositoryRoot, 'src'));
+/**
+ * Every subtree the walk must reach, asserted by name.
+ *
+ * **The count floor below is not enough, and this is why.** The guard used to
+ * be `files.length > 100` alone, and `src/` holds 372 `.ts` files -- so
+ * dropping the largest subtree, `src/simulation/` (178 files), leaves 194 and
+ * the floor still passes. Measured, not reasoned: with one line in
+ * `collectSourceFiles` skipping `simulation`, a planted
+ * `compressPayloadProbe()` returning `"gzip"` in
+ * `src/simulation/economy/income.ts` left *"compresses nothing"* **green with
+ * the offender in the tree**.
+ *
+ * A count cannot close that direction, because the number a partial walk
+ * returns is still a large number. The set of subtrees can, and it fails by
+ * name -- so the message says which subtree stopped being read rather than
+ * that a number got smaller.
+ *
+ * **Adding a directory under `src/` is meant to fail here.** That is the point:
+ * a new subtree is a new place a documentation claim can be contradicted, and
+ * this contract should not silently stop covering it. Add the name.
+ */
+const REQUIRED_SRC_SUBTREES = [
+  'content',
+  'input',
+  'persistence',
+  'rendering',
+  'services',
+  'shared',
+  'simulation',
+  'ui',
+] as const;
 
-  // Vacuity guard: an empty or failed walk would make every assertion below
-  // pass while reading nothing.
+async function sourceFilesMatching(pattern: RegExp): Promise<readonly string[]> {
+  const src = path.join(repositoryRoot, 'src');
+  const files = await collectSourceFiles(src);
+
+  // Vacuity guard, first direction: an empty or failed walk would make every
+  // assertion below pass while reading nothing.
   expect(files.length, 'no TypeScript files found under src/; the walk is broken').toBeGreaterThan(100);
+
+  // Second direction, and the one a count cannot see: a walk that reached
+  // *some* of `src/`. See `REQUIRED_SRC_SUBTREES` above for the measurement.
+  const reached = new Set(
+    files.map((file) => path.relative(src, file).split(path.sep)[0]).filter((segment) => segment !== undefined),
+  );
+  const missing = REQUIRED_SRC_SUBTREES.filter((subtree) => !reached.has(subtree));
+  expect(
+    missing,
+    'the walk under src/ never reached these subtrees, so every claim below is unchecked for them -- either the walk is broken or a directory was renamed and this list was not',
+  ).toEqual([]);
 
   const matches: string[] = [];
   for (const file of files) {
