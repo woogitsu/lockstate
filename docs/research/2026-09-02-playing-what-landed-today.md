@@ -106,7 +106,7 @@ only; nothing below is derived from it.
 | Act | What it played | Result | Standalone cost |
 | --- | --- | --- | --- |
 | 1 | four hires on an empty prison; render-delta positions and roster phases over 460 ticks at ×1 | `1 passed (1.3m)` | 79s |
-| 2 | Admit three times on a prison with no cell, then a cell and 24 admissions; the Regime roster's badges against the incidents and contraband chips | see §3f | see §3f |
+| 2 | Admit three times on a prison with no cell, then a cell and 24 admissions; the Regime roster's badges against the incidents and contraband chips | `1 passed (5.1m)` | 301s |
 | 3, first run | a sealed cell, six residents, three guards; 2,051 ticks at ×1 across three sweep boundaries | `1 passed (9.6m)` | 574s |
 | 3, second run | the same plus phase 2: a Release press and 400 ticks after it | `1 passed (11.2m)` | 666s |
 | 4 | the neglect fixture played: beds, no toilet, no guards, twelve admissions, to the first `Medium` and 2,400 ticks past it | `1 passed (8.6m)` | 511s |
@@ -157,6 +157,14 @@ Hovering the row adds no `title`; pressing it produced zero commands with the
 press verified inside the row; the Regime panel has no control at all. So the
 answer to "can they act on it" is that they cannot even learn what it means
 (§3).
+
+**And the ~18-in-game-day warning window is a property of #788's fixture, not
+of the game.** Played on a prison built badly — 24 arrivals against six beds,
+no staff — **every one of the 24 read `Medium` by in-game day 6** (§3f). The
+roster is ordered by descending tier, so when every tier is equal the ordering
+carries no information either, and the four rows on screen are just the four
+lowest entity ids of twenty-four. Nothing about ADR 0090 is wrong here; what is
+wrong is reading one fixture's ticks as the pacing.
 
 **The sharpest thing in §3 is not a missing sentence, it is two sound decisions
 composing badly.** `describePrisonerRow` ties the badge's *tone* to the
@@ -644,6 +652,67 @@ none of it. What is owed is at least one of:
 
 **Owed to: the owner.** Options 1 and 2 are copy; 3 and 4 are design.
 
+### 3f. Act 2 tried to catch a `Medium` that intake wrote, and could not — and found something else
+
+**MEASURED, act 2** — `1 passed (5.1m)`, 301s standalone, after two earlier
+invocations that produced nothing usable (§"What each act cost"). A sealed
+zoned cell with six usable beds, 24 Admit presses (all 24 landed; six housed,
+eighteen waiting), no guards, paused at tick 15,537:
+
+```
+[act2] Regime roster rows on screen (4 of 24 admitted; PRISONER_ROSTER_ROW_LIMIT is 4):
+  [{"name":"Wanda Tamm","badgeText":"Medium","badgeTitle":null,"badgeTone":"neutral",
+    "badgeAriaLabel":null,"rowTitle":null,"riskTier":"2",
+    "classificationGroup":"general-population"}, ... all four identical ... ]
+[act2] distinct badge words: ["Medium"]     [act2] distinct tiers: ["2"]
+[act2] high-risk chip: {"value":"0",...}    [act2] prisoners chip: {"value":"24",...}
+[act2] incidents chip: {"value":"1",...}    [act2] contraband chip: {"value":"0",...}
+[act2] badge titles: [null,null,null,null]; badge aria-labels: [null,null,null,null];
+  row titles: [null,null,null,null]
+```
+
+**The act's own attribution test fails, and that is reported rather than
+glossed.** The design was: with the incidents and contraband chips both at
+zero there is no disciplinary evidence, so `reviewClassification`'s `findings`
+term is 0, the early warning's ceiling is tier 1, and a `Medium` on screen must
+be `classifyPrisoner`'s. **The incidents chip read `1`.** The alerts column
+says why — *"A fight has broken out between two prisoners. 2× Day 6"*, *"A riot
+has broken out — 24 prisoners have stopped taking orders. Day 7"* — so 24
+prisoners against six beds and no guards rioted before this act could read the
+roster, and the early warning had evidence to work with. **So this pass did not
+measure a `Medium` written at intake.** That claim stays READ, from
+`classifyPrisoner`'s arithmetic and `src/main.ts`'s own docblock (§5b), and is
+not upgraded.
+
+**What the act did find instead is worth more than what it was looking for.**
+
+- **Every one of the 24 prisoners reads `Medium`, by in-game day 6.** Not a
+  waypoint one prisoner passes: a uniform label. `projectPrisonerRoster` orders
+  the roster `(descending riskTier, ascending entity index)` — the ordering
+  `src/ui/hud/regime-panel.ts:168` calls *"a total order over state"* — so when
+  every tier is equal the ordering carries no information either, and the four
+  rows a player sees are just the four lowest entity ids of twenty-four.
+- **#788's ~18-in-game-day warning window is a property of its fixture, not of
+  the game.** The integration test measures `Medium` at 4,800 and `High` at
+  48,000 on eight residents in eight one-bed cells. Played on a prison a player
+  can build badly — 24 arrivals, six beds, no staff — `Medium` is on every row
+  by day 6, which is act 4's tick 26,514 finding at a different pace again
+  (eleven prisoners, twelve admissions, eight beds). **The tier arrives when
+  the neglect does**, and neither number generalises. Nothing about ADR 0090 is
+  wrong here; what is wrong is treating one fixture's ticks as the pacing.
+- **The badge is still bare at 24 rows as it was at 4**: `badgeTitle`,
+  `badgeAriaLabel` and `rowTitle` all `null`, tone `neutral`, on every row.
+- **And the refusal band disagreed with itself between two runs of this act.**
+  In the run that timed out it read `.hud__refusal: not laid out` after 24
+  presses; in this one, *"The object was not placed — something is already
+  standing there."* — a bed-placement refusal from around tick 7,600, still on
+  screen at 15,537, through 24 successful admissions, a fight and a riot.
+  Reported as an observation with no cause attached: what supersedes a refusal
+  is keyed (`refusals.supersede`), so a successful *admission* plausibly does
+  not displace a refused *object placement* — but this pass did not read the
+  supersession keys and does not claim that. §7 carries the correction this
+  produced.
+
 ## §4 — `.hud-minimap` does not merely swallow a click; it makes four world tiles unbuildable, and the drag over it fails silently
 
 **This is the one finding in this pass that is a defect claim, and it is not
@@ -777,14 +846,32 @@ and measuring why was cheaper than working around it.
    at all, by decision, and there is a foundation contract holding the
    exclusion in writing.
 2. **The brief's first reference model, a 2026-09-02 playtest named
-   *the-clock*, is not in the tree.** It named three files to read and match;
-   that one has no file. `ls tests/browser/*.playtest.ts` lists 26 before this
-   pass added its own, two of them dated 2026-09-02 — *the-first-five-minutes*
-   and *the-world-view* — and `tests/browser/ui-clock-paused-readout.spec.ts`
-   is the only clock-named file in the directory. This file is matched against
-   those two plus `tests/browser/playtest-2026-09-01-the-people.playtest.ts`
-   and `tests/browser/playtest-740-does-a-guard-walk.playtest.ts`, which the
-   brief also named and which do exist.
+   *the-clock*, was not in the tree at this branch's point — and landed on
+   `main` while this pass ran. Both directions are marked rather than one
+   overwritten.** At `0e2eb7fb`, `ls tests/browser/*.playtest.ts` listed 26
+   files, two of them dated 2026-09-02 (*the-first-five-minutes* and
+   *the-world-view*), and `tests/browser/ui-clock-paused-readout.spec.ts` was
+   the only clock-named file in the directory; so the brief named a file that
+   did not exist and this pass matched the two that did, plus
+   `tests/browser/playtest-2026-09-01-the-people.playtest.ts` and
+   `tests/browser/playtest-740-does-a-guard-walk.playtest.ts`. **`4bce0888`
+   ("Playing the clock — Play is the ×1 button …", #801) merged to `main` at
+   09:51 the same day** and added
+   `tests/browser/playtest-2026-09-02-the-clock.playtest.ts`, so the brief was
+   describing work in flight rather than a file that never existed. The
+   correction is kept because "the file is missing" and "the file arrived two
+   hours later" are different facts and only the second is fair to the brief.
+
+   **And it carries a handover for this file.** That commit's first change
+   *exports* `buildResilientCell` and `wallSide` from
+   `tests/browser/playtest-2026-09-01-the-people.playtest.ts` so the clock
+   playtest can reuse them. Nothing was exported at `0e2eb7fb`, so this
+   instrument wrote its own leaner `wallSide` and its own
+   `buildSealedCell` — which is now duplication rather than necessity, and
+   this one adds two things the shared pair does not have: a `withToilet: false`
+   mode (the neglect fixture) and `cellShiftClearing`'s clamp keeping tile
+   (16,16) inside the room. **Handed over:** whoever next touches these should
+   fold those two into the exported helper and delete this file's copy.
 3. **"Hire a guard and deploy it somewhere far" is not a gesture the game
    has.** There is no control that chooses where a hire stands or which post it
    takes: `src/main.ts:2793` supplies the origin from a module constant, and
@@ -974,7 +1061,18 @@ walking or as sliding. The constant's own docblock says 640 px/s is *"hurried,
 and the honest cost of a 2,400-tick day"*, and that judgement is untested by
 anybody, including this pass.
 
-**A third, smaller one.** §3's claim that nothing else on the screen moves is a
+**A fourth, and it is a claim this pass set out to make and could not.** §3f
+was designed to catch a `Medium` written by `classifyPrisoner` at intake, by
+reading the roster while the incidents and contraband chips were both zero. The
+incidents chip read `1`: 24 prisoners against six beds rioted before the act
+could read the roster, so the early warning had evidence and the attribution
+collapsed. **`Medium` at intake therefore remains READ and not MEASURED** — the
+arithmetic in `src/simulation/prisoners/classification.ts:84` and `src/main.ts`'s
+own docblock, not an observation. What would settle it: admit into a prison with
+enough beds that nothing riots, and read the roster with `incidents` at `0`.
+One act, not attempted.
+
+**A fifth, smaller one.** §3's claim that nothing else on the screen moves is a
 diff over six fields — tiers, badge words, badge tones, the `HIGH RISK` value,
 the `INCIDENTS` value and the alerts text. It is not a diff over the whole DOM.
 A change somewhere this pass did not sample would not have been seen. The six
