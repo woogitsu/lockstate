@@ -1135,10 +1135,21 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * model now carries three scalars for the reason above; the rest is
    * unaffected -- no material is named and the words are still not this
    * agent's own idea of the *subject*, only of the phrasing.
+   *
+   * **`queue-order` gained `· {total} back`, the owner's decision of
+   * 2026-09-02, in the same pattern `hud.build.delivery` already uses three
+   * lines below for the same money ("{count} × {material} · {total} back").**
+   * This is the whole of that decision's copy: no other wording changed, and
+   * `{total}` reads `0 back` when cancelling would give back nothing --
+   * deliberately, per the ruling, rather than hiding the row or the figure in
+   * that state. What `{total}` *is* -- `HudBuildOrderViewModel.cancelRefundMinorUnits`,
+   * read off `ConstructionSystem.previewCancelRefundMinorUnits` on the exact
+   * code path `CancelBuildOrder` pays through -- is argued at that method, not
+   * here; this comment is only the copy decision.
    */
   'hud.build.queue': 'Queued',
   'hud.build.queue-count': '{count} waiting · {started} being built',
-  'hud.build.queue-order': '{buildable} · {x}, {y} · {edge}',
+  'hud.build.queue-order': '{buildable} · {x}, {y} · {edge} · {total} back',
   'hud.build.queue-cancel': 'Cancel',
   'hud.build.queue-unnamed': 'Unnamed order',
   'hud.build.queue-more': 'and {count} more behind these — undo takes back a whole run.',

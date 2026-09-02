@@ -755,6 +755,27 @@ export interface HudBuildOrderViewModel {
   readonly tile: { readonly x: number; readonly y: number };
   readonly edge: HudBuildEdge;
   readonly state: HudBuildOrderState;
+  /**
+   * What cancelling this order right now would give back, in minor units --
+   * the owner's ruling of 2026-09-02, and the same figure
+   * `HudPendingDeliveryViewModel.paidMinorUnits` is for a pending delivery's
+   * own row.
+   *
+   * Read off `BuildQueueOrderViewModel.cancelRefundMinorUnits` unchanged: it
+   * is a fact about the treasury and the last purchase pass, and neither is on
+   * this thread (`AGENTS.md` boundary 1) -- `ConstructionSystem.previewCancelRefundMinorUnits`
+   * is where it is actually decided, on the same code path
+   * `CancelBuildOrder` pays through, and this field exists so the row does not
+   * have to guess at that decision from `state` alone. It cannot: two rows
+   * reading `'materials-pending'` can disagree about it, one whose delivery is
+   * still on the road and one whose delivery already landed
+   * (`tests/integration/economy-cancel-what-comes-back.test.ts`).
+   *
+   * `0` is a real, frequent answer -- a `'planned'` order, an `'in-progress'`
+   * one, and the landed-but-not-yet-allocated `'materials-pending'` case above
+   * all read it -- never "unknown".
+   */
+  readonly cancelRefundMinorUnits: number;
 }
 
 /**
