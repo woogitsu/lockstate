@@ -5415,6 +5415,25 @@ confirmed by a fresh sweep of all **420** remote heads — two more than the
 previous anchor's 418, and the same single branch — finding nothing above it
 anywhere, and it is still **not** a member of the thirty-four.
 
+**Still THIRTY-FOUR at `33a4a22e` (v0.0.346), six releases later — the second
+reading in this chain at which the set does not change at all, and this one
+for a stronger reason than the last.** `docs/adr/README.md` is not among this
+window's 47 files at all, so none of 0084's, 0085's or 0087's statuses could
+have moved and neither could any other row's — unlike the previous reading,
+where three documents were amended and simply did not flip a status, here
+nothing touched the index to begin with. `grep -cE '^\|.*\|
+*\*{0,2}Proposed' docs/adr/README.md` returns **34** against **47** `Accepted`
+and **81** rows, run fresh rather than assumed from the file being untouched.
+**The self-quoting-cell gap is unchanged at three**, re-run rather than
+carried: `grep '^| \[' docs/adr/README.md | grep -c Proposed` still returns
+**37**, and `grep -c "cell read \`Proposed" docs/adr/README.md` still returns
+**2**. **A re-swept, unmerged number was checked again rather than carried
+forward**: ADR 0088 still sits on `fix/740-a-guard-walks-to-its-post` alone,
+still open and unmerged as **PR #781**, confirmed by a fresh sweep of all
+**425** remote heads — five more than the previous anchor's 420 — finding
+nothing above it anywhere, and it is still **not** a member of the
+thirty-four.
+
 **A miscount this pass made and caught, recorded because the next reader will
 make it.** A first scan of this set returned **thirty-one** at `53e1405`,
 disagreeing with the anchor that wrote thirty, and the disagreement was
@@ -6299,6 +6318,31 @@ one direction.
   one. So the set of exceptions is unchanged at **five** (0056, 0059, 0074,
   0071, 0077) while the outstanding count moves with the header's own
   thirty-three-to-thirty-four: **thirty-four minus five is twenty-nine.**
+
+  **This bullet was never given its own reading at `26434e8e`, and that is a
+  gap this pass found rather than repeated.** The header's own pass 3 at that
+  anchor claimed *"the three places that count `Proposed` documents (§3's
+  opening, §5's first bullet, §6's `income.ts` bullet) all still agree at the
+  previous anchor's count and none of the three needed correcting"* — true of
+  §3's opening and of §6's `income.ts` bullet, each of which carries its own
+  *"STILL THIRTY-FOUR at `26434e8e`"* paragraph, and untrue of this one, whose
+  last dated entry before this correction was the `5144eb9e` paragraph above.
+  **The number the previous anchor asserted was never false**: none of that
+  window's eleven merges touched 0084, 0085, 0087 or §2's own eight entries,
+  so twenty-nine outstanding against five §2 rows held at `26434e8e` exactly
+  as it had at `5144eb9e` — what was missing is the confirmation sentence
+  itself, the mechanism this file's own header has named before as the shape
+  drift takes here: a count edited when re-derived directly and left standing
+  in its mirrors. **Twenty-nine is TWENTY-NINE across two anchors, `26434e8e`
+  and `33a4a22e`, confirmed together because the first was owed and never
+  paid.** Neither anchor's window touches `docs/adr/README.md` or any of §2's
+  eight entries — `26434e8e`'s eleven merges amended 0084, 0085 and 0087
+  without flipping a status; `33a4a22e`'s five did not touch the index at
+  all — so the set of exceptions is unchanged at **five** (0056, 0059, 0074,
+  0071, 0077) and the outstanding count is unchanged at **thirty-four minus
+  five is twenty-nine**, re-derived from `docs/adr/README.md`'s current 34
+  Proposed and §2's current eight entries rather than carried forward from
+  either superseded paragraph above.
 
   **What it is evidence *of* is the structural finding §2 already made and has
   now been handed at nine times the scale.** §2 says the rule is *"unsatisfiable
@@ -7330,6 +7374,16 @@ one direction.
   `hud.status.funds-*` locale keys #766 adds, both well above the test). The
   property the test proves is unchanged; only the line range is, again.
 
+  **And it is `:362-368` at `33a4a22e`, +7 in the same file for the second
+  window running.** #782's own `hud.status.funds-treasury-floor-exhausted`
+  comment — documenting the third tone issue #768's ruling added to the
+  `ALLOWED_MONEY_KEYS` set two tests above this one — lands inside the same
+  `describe` block, above `it('imports nothing from the simulation', …)`
+  rather than inside it, so the property is unaffected and only the citation
+  moved. Re-derived by opening the file rather than offset from the diff:
+  `it('imports nothing from the simulation'` now begins at `:362` and the
+  block closes at `:368`.
+
   **This entry's own anchor into that gate was wrong before the delta opened, not
   by it.** It read `:173-203` for the `AWAITING_PRODUCER` declaration, and
   `git show 54418b6:tests/foundation/unconsumed-command-contract.test.ts` puts the
@@ -7927,6 +7981,29 @@ two days after the twelfth landed (#444).
   funds per whole order — so this remains two citation corrections and one
   handed-over residue, not a reopening.
 
+  **Re-read again at `33a4a22e`, and the handover from the paragraph above is
+  checked rather than assumed still open — it is, and the sink's declaration
+  moves a second time.** `grep -n "construction rung"
+  src/simulation/construction/materials-procurement.ts` still returns line
+  131's *"-2,000 under the owner's ruling 19 of 2026-08-31"*, five merges
+  after the previous anchor recorded it stale and eleven after #785 actually
+  equalised the rung — the comment has now been wrong for two consecutive
+  anchors and this pass fixes neither, for the same reason the last one
+  didn't: a code comment is outside a re-anchor's own surface. `ConstructionProcurementSink`'s
+  declaration moves again, `:251` → **`:282`**, +31, from #782's two
+  `nextOrderShortfallMinorUnits` docblocks (issue #771's second finding — the
+  build queue panel now reads the cost of the *next* unfunded order rather
+  than the sum of every unfunded order, because ADR 0081 decision 2 can fund
+  a later, cheaper order while an earlier one still waits) landing above the
+  stale docblock, not inside it. `JustInTimeMaterialsService`'s class
+  declaration is **unmoved at `:304`**: #782's own shortfall-tracking code
+  (`nextOrderShortfallMinorUnits`, `sawUnfundedOrder`) lands at `:517`
+  onward, inside `procureForPendingOrders`, well below the declaration.
+  Neither #782 nor anything else in this window touches decision 7's
+  subject — a build order still buys what it needs at the press from the
+  treasury at catalogue price, unconditionally — so this remains one citation
+  correction and one handed-over residue, still not a reopening.
+
   **This does not reopen the entry and it is worth saying why**, because the
   change is large and the temptation is to reopen anything large. ADR 0017
   decision 7 says materials are just-in-time by default and holding is permitted
@@ -8312,6 +8389,33 @@ never recorded before this round:
   carries no count, re-verified by grep rather than assumed: `grep -c
   "Proposed" src/simulation/economy/income.ts` returns **0** at `26434e8e`,
   on the same tree as every previous reading.
+
+  **That claim about §5's first bullet was checked here and not there, which
+  is itself the finding this anchor's own pass 3 records above.** This
+  sentence read "unaffected in every term" and was right about the *number*
+  — twenty-nine outstanding, five §2 rows, both correct — and silent about
+  the fact that §5's first bullet's own text had no dated paragraph saying so
+  until this anchor added one. So the claim in this bullet was true and the
+  bullet it pointed at was, for one anchor, an assertion the reader could not
+  verify by turning to it. Both are corrected now: §5's first bullet carries
+  its own `26434e8e`-and-`33a4a22e` paragraph, and this sentence no longer
+  stands alone as the only place that said so.
+
+  **STILL THIRTY-FOUR at `33a4a22e`, six releases later — `docs/adr/README.md`
+  is not among this window's 47 files, so nothing here could have moved and
+  nothing needed to be flipped to stay unmoved.** `income.ts` is untouched in
+  this window either — not among the **47** files `git diff --name-only
+  26434e8e..HEAD` reports — and it still carries no count, re-verified by
+  grep rather than assumed: `grep -c "Proposed" src/simulation/economy/income.ts`
+  returns **0** at `33a4a22e`, on the same tree as every previous reading.
+  **So the count is now nine, one, one, none, nine, thirteen, seventeen,
+  twenty-one, twenty-two, twenty-seven, thirty, twenty-nine, thirty,
+  twenty-nine, thirty-two, thirty-one, thirty-three, thirty-four, thirty-four
+  and thirty-four — twenty readings of one sentence in one file, across
+  seventeen anchors and one correction commit that is deliberately not an
+  anchor.** The live consequence in §5's first bullet is unaffected in every
+  term and this time says so in both places: still **twenty-nine** outstanding
+  decisions, still **five** §2 rows.
 
   **`income.ts` did NOT change in this window, and the absence is inherited
   rather than re-established.** It is not among the **17** files
