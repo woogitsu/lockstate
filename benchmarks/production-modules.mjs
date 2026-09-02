@@ -80,6 +80,11 @@ const sourceRoot = pathToFileURL(path.join(repositoryRoot, 'src', path.sep)).hre
  */
 
 /**
+ * @typedef {Pick<typeof import('../src/simulation/construction/definition'), 'BUILDABLE_REGISTRY'>
+ *   & Pick<typeof import('../src/simulation/operations/inventory'), 'ContainerMaterialsProvider'>} ConstructionInstrumentationModules
+ */
+
+/**
  * @typedef {Pick<typeof import('../src/simulation/rng/xoshiro128starstar'), 'Xoshiro128StarStar'>
  *   & Pick<typeof import('../src/simulation/rng/seed'), 'deriveXoshiroState'>
  *   & Pick<typeof import('../src/simulation/rng/streams'), 'NamedRngStreams'>} SimulationRngModules
@@ -104,6 +109,7 @@ let optionsPromise;
 let rngPromise;
 let actorPublicationPromise;
 let runtimePromise;
+let constructionInstrumentationPromise;
 
 export function assertTypeScriptTransformEnabled() {
   if (process.features.typescript === 'transform') return;
@@ -253,6 +259,46 @@ export async function loadSimulationRuntimeModules() {
     });
   })();
   return runtimePromise;
+}
+
+/**
+ * The two production objects a construction-cost measurement has to count
+ * calls on, loaded once per process.
+ *
+ * `ConstructionSystem.update`'s per-order work is not reachable from the
+ * runtime handle: `orderedOrders`, `pendingOrderDemand` and the walk itself
+ * are private, and the provider instance is constructed inline inside
+ * `createNewSimulationRuntime`. What *is* reachable is the two collaborators
+ * every one of those passes goes through -- the buildable registry's `get`
+ * (once per pending order in `pendingOrderDemand`, once per non-terminal
+ * order in the walk) and `ContainerMaterialsProvider.tryAllocate` (once per
+ * `materials-pending` order in the walk). Counting calls on those two is
+ * therefore a measurement of the shipped code path rather than of a model of
+ * it, and it is deterministic -- same session, same number, any machine --
+ * which is what `docs/BENCHMARKING.md` requires of anything a conclusion
+ * rests on.
+ *
+ * Exported here rather than reached by a bare `import()` in the script so the
+ * symbols are typechecked against production the way the five loaders above
+ * are (#602).
+ *
+ * @returns {Promise<Readonly<ConstructionInstrumentationModules>>}
+ */
+export async function loadConstructionInstrumentationModules() {
+  assertTypeScriptTransformEnabled();
+  registerTypeScriptResolution();
+
+  constructionInstrumentationPromise ??= (async () => {
+    const [definition, inventory] = await Promise.all([
+      importSimulation('construction/definition.ts'),
+      importSimulation('operations/inventory.ts'),
+    ]);
+    return Object.freeze({
+      BUILDABLE_REGISTRY: definition.BUILDABLE_REGISTRY,
+      ContainerMaterialsProvider: inventory.ContainerMaterialsProvider,
+    });
+  })();
+  return constructionInstrumentationPromise;
 }
 
 /**
