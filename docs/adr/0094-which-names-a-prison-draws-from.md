@@ -139,9 +139,21 @@ units) are indistinguishable on screen and:
 
 | | NFC | NFD | ASCII `Wisniewski` |
 | --- | --- | --- | --- |
-| save checksum of `{familyName}` | `cdceca3d2d02efaa` | `a683780f4fb2919e` | `65414b36779d6373` |
+| save checksum of `{familyName}` | `hash cdceca3d2d02efaa` | `hash a683780f4fb2919e` | `hash 65414b36779d6373` |
 | `===` against the NFC form | — | `false` | `false` |
 | hit in a `fullNameCounts` map keyed NFC | — | `false` | `false` |
+
+The three checksums carry a `hash` word inside the code span rather than
+standing alone in one, and that is not decoration.
+`tests/foundation/documentation-commit-citation-contract.test.ts` reads a code
+span whose whole content is 7 to 40 hex digits as a commit sha and resolves
+it; `deterministicStateHash` output is 16 lowercase hex digits, which is
+exactly the shape of an abbreviated sha, so the gate flagged all three as
+commits that do not exist -- correctly, since nothing distinguishes the two
+shapes. The gate is not loosened for this: adding a 16-hex class to its
+`NOT_A_COMMIT` map would exempt real abbreviated shas of that length too, and
+that map's own rule is that an entry must be *true as written*. The document
+works around the collision instead, which costs a word.
 
 Two spellings of one name give two save checksums and count as two different
 people in the uniqueness multiset. Nothing in the repository normalises:
@@ -276,6 +288,12 @@ loosening a gate that currently passes.
   (`src/simulation/runtime/new-session.ts:481`) still takes the placeholder by
   default (`actor-identity.ts:205`), so a save written before this branch and
   a save written after it are byte-identical.
+- **Zero bundle cost while unwired**, measured on the production build rather
+  than assumed: the simulation-worker chunk contains `placeholder.v1` and
+  `Lindqvist` once each and contains no authored pool id and no authored name
+  at all, so the 2,520 names are tree-shaken out entirely. They begin costing
+  bytes on the day decision 2 gives them a reader, which is the right time for
+  a reviewer to weigh it and not now.
 - Nothing here gives the simulation a gender model, and the pools have one
   flat `givenNames` list each, because the simulation has nothing to attach
   one to — the placeholder's docblock said so and it is still true.

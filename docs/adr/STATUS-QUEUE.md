@@ -6421,9 +6421,24 @@ still the only two) under a `- Status:` bullet, out of **87** documents. The
 index agrees on its status column: `grep -cE '^\|.*\| *\*{0,2}Proposed'
 docs/adr/README.md` returns **39** against **48** `Accepted` across **87**
 rows. Gap unchanged at **four** (0051, 0082, 0084, 0088), re-enumerated by
-subtracting the two greps. **Next free number: 0094**, and the held-number
+subtracting the two greps. **Next free number: 0095**, and the held-number
 sweep is empty for the **fourth** consecutive reading: **469** remote heads
-(ten more than 459), highest prefix **0093**, on `main`.
+(ten more than 459), highest prefix **0093**, on `main`. **That number read
+0094 at this pass's own anchor and is corrected in place rather than in a new
+pass, because only the number moved**: `docs/adr/0094-which-names-a-prison-draws-from.md`
+reserved 0094 with its row in the index, so the index now states 0095 and this
+file has to agree or the positional gate two paragraphs down fires -- which it
+did, naming `:6424`, and is how this correction was found rather than
+remembered. **The counters above are deliberately not re-read**, because that
+needs a pass and this is not one; 0094 is `Proposed`, so a pass will find one
+more Proposed document and one more index row than the figures above.
+**A pass should also settle a disagreement that predates 0094**: at
+`98e05058` (v0.0.388) the on-disk count by this sequence's own method is
+**40** (38 under a `## Status` heading, 2 under a `- Status:` bullet) while
+`grep -cE '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **39** --
+the two agreed at 39 five releases earlier, and one of them moved without the
+other. Recorded here rather than resolved, because resolving it means deciding
+which of the two is wrong about which document, and that is the pass's job.
 
 **The mutation the previous pass ran on this file and watched survive is now
 CAUGHT.** #831 (`dc720790`) added a positional gate to
