@@ -2,9 +2,18 @@
 
 **Date:** 2026-09-02
 **Tree:** branch `docs/triage-the-open-issue-backlog`, cut from `origin/main` at `af999415`
-(v0.0.350). `origin/main` moved to `0e2eb7fb` (v0.0.351) while this pass ran — the merge
-of #798 for issue #788, which is out of this pass's scope and changes nothing any verdict
-below rests on except where §7 says so.
+(v0.0.350); `origin/main` at `03ad071e` (v0.0.352) merged in afterwards. Every verdict and
+every `file:line` below was taken at `af999415`. **Two commits arrived while this pass ran
+and both were re-checked against it**: `75a3797b` (#798, for the out-of-scope #788) adds
+ADR 0090 and `src/simulation/prisoners/classification-early-warning-system.ts`, and
+`e0ca2bd5` (#803) adds five mechanical traps to `docs/AGENT_WORKFLOW.md` — see §7 for the
+inference this record drew from the second one and then had to withdraw. **Exactly one
+citation below moved under them and is stated here rather than silently rewritten:**
+`src/simulation/prisoners/classification-review-system.ts:237`, cited in §1 for #593's
+re-ranging, is at `:253` on the branch tip; the line at `:237` now discusses the tick-47,999
+run instead. Nothing else in this record reads differently at either commit — the ADR index
+figures in §4 are explicitly dated to `af999415`, and ADR 0090 makes them 36 / 48 / 84 at
+`03ad071e`.
 **Corpus:** every open issue as of 2026-09-02, read from the REST API (`state=open`,
 two pages, 98 issues and 4 pull requests), less thirteen the owner reserved: #772, #777,
 #780, #788, #791, #793 and #794 (in flight in #798/#799/#800), and #584, #599, #604,
@@ -516,7 +525,9 @@ when spot-checking.
 mode this record keeps finding.** `./node_modules/.bin/vitest run tests/foundation/` on this
 branch reported `1 failed | 456 passed`, the failure being
 `comment-symbol-existence-contract.test.ts` → *"Test timed out in 5000ms"* at a load average
-of 16.4. Run alone: `3 passed (3.08s)`. This branch's whole diff is two markdown files under
+of 16.4. Run alone: `3 passed (3.08s)`. Reproduced three times on this branch, at load
+averages of 16.4, 11.9 and once after merging `origin/main` — the same file each time, and
+alone each time `3 passed`, most recently in 3.98 s against the 5 s timeout. This branch's whole diff is two markdown files under
 `docs/research/`, and that test reads only `.ts` under `src/` and `tests/`, so the blast
 radius rules it out before the re-run does — which is `docs/AGENT_WORKFLOW.md` §2's own
 arithmetic applied to a foundation suite rather than to a browser one. `tsc -b` and
