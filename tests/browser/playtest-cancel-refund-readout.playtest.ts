@@ -36,10 +36,6 @@ const log = (line: string): void => {
   console.log(`[cancel-refund-readout] ${line}`);
 };
 
-async function fundsChipText(page: Page): Promise<string> {
-  return panelText(page, '.hud-strip__funds, [data-chip="funds"], .hud-strip');
-}
-
 async function queueRowsText(page: Page): Promise<readonly string[]> {
   return page.evaluate(() =>
     [...document.querySelectorAll<HTMLElement>('.hud-build__queue-row')]
@@ -73,6 +69,18 @@ test('the Build queue row never says what Cancel will give back, though the amou
   await tab(page, 'build').click();
   const origin = await calibrate(page);
 
+  // The one sentence the Build panel offers about what a cancellation gives
+  // back is the Remove tool's arm hint -- read it live, before anything else,
+  // because `src/content/default-locale-en.ts:1049-1051` says in a comment
+  // beside the string that it has been false since ruling 20 (2026-08-31):
+  // "its materials come back" names the wrong currency (money, not materials,
+  // per `refundSurplusOf`) and has no clause at all for the in-progress case,
+  // where nothing comes back.
+  await page.locator('.hud-build__remove').click();
+  const removeHintText = await panelText(page, '.hud-build__map > .hud-build__note');
+  log(`REMOVE HINT, as rendered on the real page right now: "${removeHintText}"`);
+  await page.locator('.hud-build__remove').click(); // back off, as `calibrate` does
+
   // Buy plenty of bricks so every wall segment can be materially satisfied,
   // and let them land before placing anything -- isolates "which state is
   // the order in" from "is the container still short".
@@ -88,40 +96,59 @@ test('the Build queue row never says what Cancel will give back, though the amou
   await page.locator('.hud-strip__transport button').first().click();
   await page.waitForTimeout(200);
 
-  // Six wall segments in a row -- enough for several to sit "Awaiting the
-  // Crew" at once while one is "In Progress".
+  // Fifteen wall segments in a row -- one crew builds one at a time (#348),
+  // so with this many queued, most of them sit "Awaiting the Crew" for the
+  // whole time it takes to build every order ahead of them: a long plateau
+  // next to the short "In Progress" window, easy to poll into.
   await armBuildable(page, 'wall-brick');
   const westX = origin.originX + 12 * TILE;
   const y = origin.originY + 12 * TILE;
-  await drag(page, { x: westX + TILE / 2, y }, { x: westX + TILE / 2 + 6 * TILE, y });
+  await drag(page, { x: westX + TILE / 2, y }, { x: westX + TILE / 2 + 15 * TILE, y });
   log(`queue right after the drag: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
 
   // Open the queue fold so its rows paint (it starts collapsed).
-  const queueToggle = page.locator('.hud-build__queue > .ui-panel__header > .ui-panel__toggle, .hud-build__queue .ui-panel__toggle');
-  if ((await page.locator('.hud-build').getAttribute('data-queued')) !== null) {
-    const collapsed = await page.locator('.hud-build__queue').getAttribute('data-collapsed');
-    if (collapsed === 'true' || collapsed === null) await queueToggle.first().click();
-  }
+  const queueFold = page.locator('.hud-build__queue > .ui-section__header');
+  await queueFold.click();
   await page.waitForTimeout(300);
+  log(`queue-list visible after opening the fold: ${await page.locator('.hud-build__queue-list').isVisible()}`);
 
-  await fastForwardToMax(page);
+  // Resume at ×1 -- the slowest speed on offer -- rather than fast-forwarding:
+  // the first attempt at this instrument fast-forwarded here and the whole
+  // fifteen-order run completed inside a single 1s poll interval, so every
+  // sample it took read an empty queue. Poll every 150ms instead of every
+  // 1000ms, for the same reason.
+  await page.locator('.hud-strip__transport button').nth(1).click();
 
-  // Poll until we see one order "In Progress" and at least one other
-  // "Awaiting the Crew" simultaneously, or time out.
+  // Poll until we have seen at least one "In Progress" row and at least one
+  // "Awaiting the Crew" row -- not necessarily on the same sample, since a
+  // slow poll can still straddle the instant the crew moves on -- or time out.
   let assignedRow: { orderId: string; state: string; text: string } | undefined;
   let inProgressRow: { orderId: string; state: string; text: string } | undefined;
+  let samples = 0;
   const pollStarted = Date.now();
   for (;;) {
     const rows = await queueRowStates(page);
-    log(`tick ${await currentTick(page)}: rows=${JSON.stringify(rows)}`);
-    inProgressRow = rows.find((r) => r.state === 'in-progress');
-    assignedRow = rows.find((r) => r.state === 'assigned');
-    if (inProgressRow !== undefined && assignedRow !== undefined) break;
-    if (Date.now() - pollStarted > 240_000) {
-      log('gave up waiting for both an in-progress and an assigned row at once -- proceeding with whatever is available');
+    samples += 1;
+    if (samples <= 5 || samples % 20 === 0 || rows.length === 0) {
+      log(`sample ${samples}, tick ${await currentTick(page)}: rows=${JSON.stringify(rows)}`);
+    }
+    const foundInProgress = rows.find((r) => r.state === 'in-progress');
+    const foundAssigned = rows.find((r) => r.state === 'assigned');
+    if (foundInProgress !== undefined) inProgressRow = foundInProgress;
+    if (foundAssigned !== undefined) assignedRow = foundAssigned;
+    if (inProgressRow !== undefined && assignedRow !== undefined) {
+      log(`caught both at sample ${samples}: in-progress=${JSON.stringify(inProgressRow)} assigned=${JSON.stringify(assignedRow)}`);
       break;
     }
-    await page.waitForTimeout(1000);
+    if (rows.length === 0 && samples > 5) {
+      log('the queue emptied before both states were caught -- proceeding with whatever was seen');
+      break;
+    }
+    if (Date.now() - pollStarted > 120_000) {
+      log('gave up after 120s of polling -- proceeding with whatever was seen');
+      break;
+    }
+    await page.waitForTimeout(150);
   }
 
   // Pause the clock so the state we are about to cancel does not move under us.
@@ -129,16 +156,18 @@ test('the Build queue row never says what Cancel will give back, though the amou
   await page.waitForTimeout(300);
 
   // --- Cancel the "assigned" (Awaiting the Crew) row, if we caught one. ---
+  // Re-read its *current* state right before pressing Cancel: it was captured
+  // during the poll above and the clock kept running until the pause a moment
+  // ago, so it may have moved on since -- the row text logged is always live,
+  // read fresh off the DOM, never the stale sample.
   if (assignedRow !== undefined) {
     const before = await latestCounts(page);
     const rowLocatorBefore = page.locator(`.hud-build__queue-row[data-order="${assignedRow.orderId}"]`);
     const rowTextBeforeCancel = (await rowLocatorBefore.innerText()).replace(/\n+/g, ' | ').trim();
-    log(`ABOUT TO CANCEL an "Awaiting the Crew" row. Its own text (all a player has to go on): "${rowTextBeforeCancel}"`);
+    const liveState = await rowLocatorBefore.getAttribute('data-state');
+    log(`ABOUT TO CANCEL a row caught as "Awaiting the Crew"; its state right now is "${liveState}". Its own text (all a player has to go on): "${rowTextBeforeCancel}"`);
     log(`funds immediately before this cancel: ${before?.treasuryMinorUnits}`);
-    await rowLocatorBefore.locator('.hud-build__queue-text ~ *').first().click().catch(async () => {
-      // Fall back to the row's own cancel button by role.
-      await rowLocatorBefore.getByRole('button').click();
-    });
+    await rowLocatorBefore.locator('.ui-action').click();
     await page.waitForTimeout(1000);
     const after = await latestCounts(page);
     log(`funds immediately after that cancel: ${after?.treasuryMinorUnits}`);
@@ -160,9 +189,10 @@ test('the Build queue row never says what Cancel will give back, though the amou
     if ((await rowLocator.count()) > 0) {
       const before = await latestCounts(page);
       const rowTextBeforeCancel = (await rowLocator.innerText()).replace(/\n+/g, ' | ').trim();
-      log(`ABOUT TO CANCEL an "In Progress" row. Its own text: "${rowTextBeforeCancel}"`);
+      const liveState = await rowLocator.getAttribute('data-state');
+      log(`ABOUT TO CANCEL a row caught as "In Progress"; its state right now is "${liveState}". Its own text: "${rowTextBeforeCancel}"`);
       log(`funds immediately before this cancel: ${before?.treasuryMinorUnits}`);
-      await rowLocator.getByRole('button').click();
+      await rowLocator.locator('.ui-action').click();
       await page.waitForTimeout(1000);
       const after = await latestCounts(page);
       log(`funds immediately after that cancel: ${after?.treasuryMinorUnits}`);
