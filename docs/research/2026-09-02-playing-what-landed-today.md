@@ -789,3 +789,44 @@ And one handover that is not the owner's:
 | # | What | Whose |
 | --- | --- | --- |
 | 8 | `src/simulation/security/default-sector.ts:98` says *"At one, the first hire is visibly posted"*. #533's empty-sector exemption (`sector-staffing.ts:189`) made that false in an empty prison, which is every prison at the moment a player hires their first guard. Measured in §1b. | Whoever owns `src/simulation/security/` — this branch is docs-only and did not edit it |
+
+## §2f — Admit on a prison with no cell: three presses, three refusals, and the control never disables itself
+
+**MEASURED, act 2 phase 1**, verbatim, with the press verified before it was
+made:
+
+```
+[act2] under the Admit control's centre: [{"tag":"SPAN","cls":"ui-action__label",...},
+  {"tag":"BUTTON","cls":"ui-action hud-intake__admit","pointerEvents":"auto"}, ...]
+[act2] no-cell Admit press 1: disabled=null | refusal band "Nobody was admitted — the request was refused."
+  | event notice ".hud__event: not laid out" | alerts "No active alerts" | prisoners 0
+[act2] no-cell Admit press 2: disabled=null | ... identical ...
+[act2] no-cell Admit press 3: disabled=null | ... identical ...
+[act2] intake panel after three refused presses: "INTAKE / Collapse / Admit a prisoner /
+  A prison needs a cell before it can admit anyone. It does not need a free bed:
+  an arrival with none waits until a bed is free."
+```
+
+This is a corroboration rather than a new finding, and the corroborating half
+is what is new. `docs/research/2026-09-02-the-first-five-minutes.md` already
+established the sentence — *"the first refusal a new player is likely to see
+says nothing"*, `"Nobody was admitted — the request was refused"` against a
+`main.ts` `Error` that ADR 0011 keeps off screen. What this adds:
+
+- **`disabled` is `null` on all three presses.** #772 taught the Buy control to
+  disable itself when a press would be refused — and CI's `browser` job caught
+  three `app-shell.spec.ts` tests that press Buy deliberately, which is on
+  record in `docs/AGENT_WORKFLOW.md`. Admit did not get the same treatment, so
+  the two controls one tab apart now behave differently about a press that
+  cannot succeed. Whether they should is item 7 in §10.
+- **The panel's own hint is right there and says exactly why**: *"A prison needs
+  a cell before it can admit anyone."* So the information exists on the same
+  panel as the control; it is the *refusal* that does not use it.
+- **Nothing reaches the alerts column** — `"No active alerts"` through all
+  three — and `.hud__event` is not laid out. The refusal band is the only
+  channel, and §7's third confirmation is that the band then keeps whatever it
+  last said for thousands of ticks.
+
+**Not a defect claim about #788 or #740.** It is here because act 2's first
+version admitted 24 times into a prison with no cell and got `prisoners: 0`,
+and measuring why was cheaper than working around it.
