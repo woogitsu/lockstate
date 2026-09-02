@@ -69,15 +69,18 @@ for #777, and `src/ui/hud/hud.ts:1211-1259`,
 `src/simulation/runtime/session-commands.ts:137-166` and `:571-604` for #780.
 Re-opened at this branch's own cut:
 
-- `hud.ts`'s `applySimulationRefusal` is at **1346-1361** before this
-  branch's edit (not 1211-1259 or 1244-1256) — both issues were filed against
-  an earlier revision and the surrounding comments have grown since; the
-  *function* and its bug are exactly where both issues say, the *line
-  numbers* had drifted by about 100-130 lines each.
-- `session-commands.ts`'s `ZoneRoom` branch is at **133-177** and its
-  `RemoveObject` branch is at **624-658**, not 137-166/571-604 — the same
-  drift, larger for the second citation because `PlaceObject`'s branch (not
-  cited, and not touched here) sits between them and has grown.
+- `hud.ts`'s `applySimulationRefusal` was at **1346-1361** at this branch's
+  cut (`2025f7d7`), not 1211-1259 or 1244-1256 — both issues were filed
+  against an earlier revision and the surrounding comments have grown since;
+  the *function* and its bug are exactly where both issues say, the *line
+  numbers* had drifted by about 100-130 lines each. This branch's own edit
+  moves it again, to 1361-1375.
+- `session-commands.ts`'s `ZoneRoom` branch was at **133-177** and its
+  `RemoveObject` branch at **624-658** at the same cut, not 137-166/571-604 —
+  the same drift, larger for the second citation because `PlaceObject`'s
+  branch (not cited, and not touched here) sits between them and has grown.
+  This branch's own edit moves `ZoneRoom` to 135-194 and `RemoveObject`,
+  untouched in content, to 641-675.
 
 Every citation resolves to the code the issues describe; only the line
 numbers needed correcting, and they are corrected here per
