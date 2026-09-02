@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { classifiedAtTickOf } from '../../src/simulation/prisoners/classification-review-system';
 import { reviewClassification } from '../../src/simulation/prisoners/classification';
+import { classificationGroupIdFromIndex } from '../../src/simulation/prisoners/components';
 import { buildDisciplinaryIndex, CLEAN_DISCIPLINARY_RECORD, type DisciplinaryRecord } from '../../src/simulation/prisoners/disciplinary-record';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -201,6 +202,16 @@ interface FirstReached {
   readonly tick: number;
   readonly entityIndex: number;
   readonly riskTier: number;
+  /**
+   * The classification group the prisoner is in **at the tick this tier was
+   * first observed**, decoded.
+   *
+   * Captured in the loop rather than read after it, because it cannot be read
+   * after it: the run continues past `firstMedium` until `firstHigh`, and by
+   * then the authoritative review has moved that same prisoner into
+   * `'high-risk'` legitimately. The whole claim is about the *earlier* tick.
+   */
+  readonly classificationGroupId: string;
 }
 
 describe('the risk tiers above Low, in the real kernel (#788)', () => {
@@ -224,9 +235,10 @@ describe('the risk tiers above Low, in the real kernel (#788)', () => {
 
       for (const index of livingIndices(runtime)) {
         const riskTier = runtime.prisoners.records.riskTier[index]!;
-        if (firstMedium === undefined && riskTier >= 2) firstMedium = { tick, entityIndex: index, riskTier };
+        const classificationGroupId = classificationGroupIdFromIndex(runtime.prisoners.records.classificationGroupIndex[index]!);
+        if (firstMedium === undefined && riskTier >= 2) firstMedium = { tick, entityIndex: index, riskTier, classificationGroupId };
         if (firstHigh === undefined && riskTier >= 3) {
-          firstHigh = { tick, entityIndex: index, riskTier };
+          firstHigh = { tick, entityIndex: index, riskTier, classificationGroupId };
           break;
         }
       }
@@ -278,6 +290,39 @@ describe('the risk tiers above Low, in the real kernel (#788)', () => {
     // review fires at.
     expect(firstMedium, 'Medium (tier 2) must now be a real, observed waypoint, not an arithmetic possibility nobody writes').toBeDefined();
     expect(firstMedium?.riskTier, 'the early warning is capped at Medium -- it must never itself write High').toBe(2);
+    /**
+     * **The other half of ADR 0090's cap, and this file did not assert it
+     * before 2026-09-02.**
+     *
+     * The line above holds the cap on the *tier*. The cap on the *group* is
+     * the reason the tier cap exists at all -- crossing into `'high-risk'`
+     * carries the restricted regime and ADR 0080's contraband draw with it,
+     * and `tryWarn` writes
+     * `classificationGroupIdForTier(cappedTier)` rather than
+     * `assessment.classificationGroupId` precisely so it cannot -- and nothing
+     * here said so.
+     *
+     * Measured, not argued: mutating that one line to write the assessment's
+     * own (uncapped) group leaves **both** of this file's tests green and
+     * turns 18 tests red in seven *other* integration files -- the riot loop,
+     * the canteen and shower contention runs, the sanction loop, the yard
+     * ceiling -- because a prisoner wrongly confined changes what the whole
+     * prison does. Those catch it, but every one of them reports a changed
+     * *outcome* and none of them names the cause. This does.
+     *
+     * It also matters to the owner's ruling of 2026-09-02 on the badge tone:
+     * that ruling gives tier 2 a colour of its own *because* tier 2 cannot
+     * move a group. `tests/unit/ui-simulation-prisoner-roster.test.ts` pins
+     * the same pairing at the projection level; this is it on the real kernel.
+     */
+    expect(
+      firstMedium?.classificationGroupId,
+      'the early warning must never move a prisoner off the ordinary timetable -- only their published tier',
+    ).toBe('general-population');
+    // And the prisoner the authoritative review takes to High *is* moved, so
+    // the assertion above is a statement about the cap rather than about a
+    // group nothing in this run ever changes.
+    expect(firstHigh?.classificationGroupId, 'crossing into High is what moves the group, and it still does').toBe('high-risk');
     // **48,000, not 47,999.** `Kernel.step()` runs systems at
     // `context.tick = this._tick` and only then increments `_tick`
     // (`kernel.ts`), so `runtime.kernel.tick` read after `step()` -- which is

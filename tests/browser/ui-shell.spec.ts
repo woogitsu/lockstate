@@ -4883,17 +4883,16 @@ test.describe('the Regime panel (issue #451)', () => {
    *
    * `describePrisonerRow`'s own tests own the decision -- that is what
    * `regime-panel.ts` exports it for -- so what is left for a browser is the
-   * half those cannot reach: that the tone the function returns becomes an
-   * attribute on a badge that is actually laid out, in a stylesheet that has a
-   * rule for it. A tone added to `BadgeTone` with no `.ui-badge[data-tone=...]`
-   * rule beside it is a tone that type-checks, passes every unit test, and
-   * paints `--badge-neutral-bg` on screen -- which is the exact defect this
-   * ruling exists to remove, reintroduced one layer down.
+   * half those cannot reach: **whether the tone is a colour**. A tone added to
+   * `BadgeTone` with no `.ui-badge[data-tone=...]` rule beside it type-checks,
+   * passes every node test, and paints `--badge-neutral-bg` on screen -- which
+   * is this ruling's own defect reintroduced one layer down, and no assertion
+   * over `data-tone` can see it, because the attribute is set either way.
    *
-   * So this asserts three things a node test cannot: that four rows are drawn,
-   * that their `data-tone` values are three distinct tones with `Medium`
-   * separate from both its neighbours, and that the badge still carries its
-   * word.
+   * So the colours are read out of `getComputedStyle` rather than inferred
+   * from the attribute. The distinctness assertions are over the *painted*
+   * values; the attributes are asserted too, so a failure says which of the
+   * two layers moved.
    */
   test('gives Medium a colour of its own on screen, distinct from Minimal’s and High’s (#788)', async ({ page }) => {
     await page.evaluate(
@@ -4912,6 +4911,37 @@ test.describe('the Regime panel (issue #451)', () => {
     expect(medium, 'Medium reads in High’s colour').not.toBe(high);
     expect(minimal, 'Minimal and Low are one tone, and that is unchanged').toBe(low);
     expect(probe.rows.map((row) => row.badgeTone)).toEqual(['warning', 'caution', 'neutral', 'neutral']);
+
+    // **What the browser actually painted**, in the same row order. A tone with
+    // no rule in `primitives.css` inherits `.ui-badge`'s own neutral pair, so
+    // this is the assertion the attributes above cannot make.
+    const painted = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.hud-regime__roster-row')]
+        .filter((row) => row.getClientRects().length > 0)
+        .map((row) => {
+          const badge = row.querySelector<HTMLElement>('.ui-badge');
+          if (badge === null) return null;
+          const style = getComputedStyle(badge);
+          return { color: style.color, background: style.backgroundColor };
+        }),
+    );
+
+    expect(painted).toHaveLength(4);
+    const [paintedHigh, paintedMedium, paintedLow, paintedMinimal] = painted;
+    expect(paintedMedium?.color, 'Medium is painted in Minimal’s colour').not.toBe(paintedMinimal?.color);
+    expect(paintedMedium?.background, 'Medium is painted on Minimal’s background').not.toBe(paintedMinimal?.background);
+    expect(paintedMedium?.color, 'Medium is painted in High’s colour').not.toBe(paintedHigh?.color);
+    expect(paintedMedium?.background, 'Medium is painted on High’s background').not.toBe(paintedHigh?.background);
+    // Minimal and Low are one tone, so they must be one paint -- which is what
+    // makes the three inequalities above a statement about the tones rather
+    // than about four arbitrary badges.
+    expect(paintedLow).toEqual(paintedMinimal);
+    // And none of the four is transparent or unset, which is what a badge with
+    // no rule at all would report.
+    for (const paint of painted) {
+      expect(paint?.color, 'a badge has no colour at all').toMatch(/^rgba?\(/);
+      expect(paint?.background, 'a badge has no background at all').toMatch(/^rgba?\(/);
+    }
 
     // The word is still beside the colour, so nothing here made the colour the
     // whole signal for a player who cannot see it. What is *still* missing is
