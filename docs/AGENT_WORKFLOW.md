@@ -305,6 +305,46 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   the moment it becomes plausible that an agent will need one. Two agents that
   each read "next free" off `main` will both write 0050.
 
+### What the 2026-09-02 session cost, in mechanics
+
+Three more, all paid for on the same day, all of them the same shape: a check
+that answers confidently and wrongly.
+
+- **A pull request whose head conflicts with its base gets NO `pull_request`
+  workflow run at all.** GitHub builds no merge ref for a conflicted head, so
+  the workflows that trigger on `pull_request` never fire — only the checks
+  that come from elsewhere (`claude`, `supabase`) appear on the commit. **It
+  reads as "CI has not started yet" and it means "this pull request has a
+  conflict."** Waiting is the wrong response and can be waited on forever. The
+  test is one request: read `mergeable_state`, and if it is `dirty`, merge the
+  base branch in and push — the run starts on the merge commit. Two pull
+  requests sat in that state before the mechanism was diagnosed.
+
+- **`origin/main` inside a worktree can be stale, and a merge against it looks
+  like a success.** Worktrees share the repository's refs, but nothing fetches
+  for you: `git merge origin/main` in a worktree whose last fetch predates a
+  merge silently merges the *older* `main`, prints a normal diffstat, and exits
+  0. The conflict you expected does not appear, which is the misleading part —
+  absence of conflict reads as "already up to date". Caught only by checking
+  that a file the newer `main` was supposed to bring (`docs/adr/0092-*.md`)
+  was actually in the tree; it was not. **`git fetch origin main` immediately
+  before any merge in a worktree**, and where a specific merge is expected in
+  the base, assert one of its files exists rather than trusting the exit code.
+
+- **A player-facing string can be absent from the locale file and still
+  present in the game.** `src/content/default-locale-en.ts` merges
+  `simulationEnumMessages()` at `:1808`, which computes labels from the census
+  in `src/content/simulation-message-keys.ts` — so `grep` over the locale file
+  finds nothing for `risk-tier` while tier 2 renders as the literal text
+  `Medium`. A whole claim was built on that absence, put to the owner as a
+  question, and was wrong: the tier has a name and a screen reader reads it.
+  **For any "this string does not exist" claim, grep the census file too, and
+  confirm at the render site** — here `regime-panel.ts:650` passes
+  `t(readout.badgeKey)` and `status-badge.ts:64` assigns it to `textContent`.
+  A derived string is invisible to the search that would disprove the claim,
+  which makes this the worst case of §4's rule about sentences asserting an
+  absence.
+
 ### Nothing may exist only in the container
 
 **Added 2026-08-29, after the owner named the failure mode this prevents.**
