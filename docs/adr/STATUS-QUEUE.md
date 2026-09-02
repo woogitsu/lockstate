@@ -613,30 +613,33 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `1547c7f6` (**v0.0.364**) by the delta method this
-header describes, from the v0.0.358 anchor described below. **Six of the ten
+Re-anchored at `main` @ `b2941064` (**v0.0.372**) by the delta method this
+header describes, from the v0.0.364 anchor described below. **Eight of the ten
 releases the budget allows, counted on the tree this commit is written
-against: `package.json` ships 0.0.364 at `1547c7f6` and the anchor being
-replaced named v0.0.358.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
+against: `package.json` ships 0.0.372 at `b2941064` and the anchor being
+replaced named v0.0.364.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
 **10**, exactly as the gate demands and as its own failure message insists.
 
-**This pass was dispatched at SIX of ten, which is the rule the anchor before
-last wrote being missed by one release — recorded as a miss rather than folded
-into the account, the way the previous pass recorded its own.** That rule
-reads, in the capitals it was written in: *"THE HALFWAY MARK IS A TASK, NOT A
-READING."* The halfway mark of this window was v0.0.363; the trigger was read
-at `1547c7f6` (v0.0.364). One release is the smallest miss this series has
-recorded — the previous one was two, and the one before that an overrun of two
-past the whole budget — and it is recorded as a miss all the same, because
-both halves of the failure it guards against had already been paid for on the
-day the rule was written: once in a red `main` at twelve of ten, once in seven
-frozen pull requests at seven. **`main` moved under this pass, as the brief
-said it would**: #810 (`a3c135d9`, *"pin what cancelling gives back, and where
-#717 is still true"*) and its release bump `a9bed5b3` landed while this was
-being written, and `git diff --name-only 1547c7f6..a9bed5b3` does not contain
-this file. The anchor is the `origin/main` that was fetched and read against,
-`1547c7f6`, not the tip at the moment of the push — an anchor names the tree
-its claims were checked on, and no claim below was checked on `a9bed5b3`.
+**This pass was dispatched at EIGHT of ten, and the miss is three releases
+rather than one — the largest since the overrun, and recorded in the same
+capitals the rule was written in.** That rule reads: *"THE HALFWAY MARK IS A
+TASK, NOT A READING."* The halfway mark of this window was v0.0.367, reached
+when #815 landed; the trigger was read at v0.0.372 (`b2941064`), after #820. **The reason
+is worth writing down because it is a reason and not an excuse**: the pass
+was held deliberately while six pull requests drained one at a time, each
+waiting on `main`'s own run, on the judgement that anchoring twice — once
+mid-queue and once after — would cost two windows to describe one. That
+judgement is defensible and it still broke the rule, so it is recorded as a
+miss. **What it bought is measurable**: this window's seven implementing
+merges are described once, and the count of releases spent describing them is
+one rather than two.
+
+**Every merge in this window was made by the coordinator in a single drain,
+which is the first time that is true of a whole window** — #810, #811, #815,
+#818, #816, #817 and #820, each merged only after `main`'s run on the
+previous merge came back green on all of `verify`, `assets` and `browser`.
+The consequence for a reader is that the window has no merge in it whose CI
+state was assumed rather than read.
 
 **And the reading itself has a trap that answers confidently and wrongly, hit
 by the coordinator twice now and named in the brief for this pass as having
@@ -1029,7 +1032,32 @@ anchors ago, one release late, and the honest reading is that a rule two
 passes have missed by two and then by one is being approached rather than
 kept.
 
-**The anchor before this one, kept — v0.0.358.** It read: *"Re-anchored at `main` @
+**The anchor before this one, kept — v0.0.364.** It read: *"Re-anchored at `main` @
+`1547c7f6` (**v0.0.364**) by the delta method this header describes, from the
+v0.0.358 anchor described below. Six of the ten releases the budget allows,
+counted on the tree this commit is written against."* It was dispatched at six
+of ten and recorded that one-release miss rather than folding it into the
+account, noting it was the smallest the series had then recorded. Its window
+was 21 files against five implementing merges (#808, #806, #807, #809, #814)
+with #813 excluded as self-referential; its delta intersection was **two**
+members — `docs/research/README.md` and `src/ui/hud/hud.ts` — and it recorded
+the intersection as the coincidence case for a new reason: §§3-6 cite three
+files named `README.md` and only the genuinely cited one was in the window.
+Neither member's spans moved. `hud.ts` took one hunk below all seven of its
+citations and `HudIntent` stayed at 20, the second consecutive window to add
+behaviour without touching a member. It moved no counter — §2 at eight for the
+fifth consecutive anchor, `Proposed` at thirty-seven, next free at 0092 — and
+found **one live claim falsified by a branch rather than by a file**: §3's
+held-number sweep *"returns NOTHING"*, inverted one anchor after it was
+written, by 0092 being held on
+`docs/where-a-guard-stands-and-what-route-they-walk`. It ran the §2 scope rule
+to **zero of eight** by path, the first time that had happened, and nothing by
+subject. It also recorded the disk-scan form of the self-quoting trap: a bare
+`grep -c Proposed` over the 85 status lines returned 38, because 0013's
+*Accepted* line mentions its §§5-6 remaining Proposed.
+
+
+**The anchor before that one, kept — v0.0.358.** It read: *"Re-anchored at `main` @
 `9b8c8e85` (**v0.0.358**) by the delta method this header describes, from the
 v0.0.351 anchor described below. Seven of the ten releases the budget allows,
 counted on the tree this commit is written against: `package.json` ships
@@ -5553,6 +5581,24 @@ would replace the status. There was nothing to inherit — the queue was empty, 
 the next entry would be the whole of it. **That next entry is ADR 0029, above,
 and it arrived in exactly the predicted shape: with its own implementing change.**
 
+> **This paragraph's present tense is FALSE as of `b2941064` (v0.0.372), and it
+> is kept rather than overwritten because what it records is true history.**
+> *"A `Proposed` row in `docs/adr/README.md` is the only one"* was true when it
+> was written and there are **39** today, against 48 `Accepted` across 87 rows.
+> **The paragraph names the one way it expected to break and that is not the
+> way it broke.** It expected an ADR arriving with its own implementing change
+> to sit `Proposed` unnoticed, and guarded that with a mechanical trigger. What
+> actually happened is plainer and had no guard at all: thirty-eight more
+> `Proposed` rows arrived, one or two at a time, over sixty-odd releases, and
+> nobody re-read this sentence. **No gate could have caught it**, which is the
+> part worth keeping: §2's counters count §2's *entries*, and this sentence is
+> a claim about the *index's rows* — a different file, counted nowhere near
+> here. The property the exercise bought was real and it was spent by
+> accumulation rather than by any decision, and the mechanical trigger the
+> paragraph installed is what kept the *entries* at eight while the rows went
+> to thirty-nine.
+
+
 `docs/adr/README.md` and the root `README.md` were both corrected in this commit
 to stop claiming a queue; §6 records what was corrected and what was left.
 
@@ -6116,6 +6162,113 @@ status lines returns 38 because 0013's *Accepted* line says its §§5-6 *"remain
 Proposed"* — which the paragraph immediately below already records and which
 this pass hit anyway.
 
+**THIRTY-NINE at `b2941064` (v0.0.372), eight releases later — and this is the
+first reading in the sequence where the count moved because two ADRs arrived
+rather than because a sentence about them rotted.** 0092 and 0093 both landed
+in this window (#815 and #820), so the enumeration moves **thirty-seven →
+thirty-nine**. Counted on disk by the method every reading in this sequence
+has used — the first non-blank line under each document's own status
+statement, `## Status` heading or `- Status:` bullet alike — **thirty-seven**
+under a heading and **two** (0064, 0067, still the only two) under a bullet,
+out of **87** documents. The index agrees on its **status column**:
+`grep -cE '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **39**
+against **48** `Accepted` across **87** linked rows, and a leading-word scan
+of every status cell returns the same 39 and 48, summing to 87 with nothing
+left over. **`Accepted` did not move at all**: 48 before and 48 after, across
+a window of seven implementing merges.
+
+**The self-quoting-cell gap is unchanged at FOUR, and neither new row widened
+it.** The loose whole-row match `grep '^| \[' docs/adr/README.md | grep -c
+Proposed` returns **43** where the anchored status-column regex returns 39,
+and the four rows are still 0051's, 0082's, 0084's and 0088's — enumerated by
+subtracting the two greps against each other rather than by trusting the
+previous reading's list. So 0092's and 0093's rows join 0091's as the third
+and fourth consecutive plain `Proposed` arrivals to enter the count without
+widening the gap, which is the pattern that bullet predicted and had one
+instance of. The disk-scan form of the same trap is re-measured rather than
+carried: a bare `grep -c Proposed` over the **87** status lines returns
+**40**, and the one extra is **0013** — exactly the document the previous
+reading named, and the only one.
+
+**The held-number sweep returns nothing held, for the second time in this
+bullet's history and for a reason opposite to the first.** A sweep of all
+**452** remote heads (`git ls-remote --refs --heads origin`, then
+`git ls-tree --name-only <head> -- docs/adr/` over every one; three more heads
+than the 449 the previous reading swept) returns **0093** as the highest
+four-digit prefix anywhere — and it is on `main`. The first such reading found
+nothing because no open branch happened to draft an ADR; this one finds
+nothing because **both numbers that were held have landed**. `docs/adr/README.md`'s
+**Next free number: 0094** is therefore correct both as `max + 1` off disk and
+against every branch, which has not been true of that line since 0087.
+
+**And the previous anchor's hand-back was DISCHARGED rather than left to rot,
+which is worth recording because this file has more entries about instructions
+that rotted than about instructions that were followed.** That reading said
+two things: *"the next ADR drafted must be handed 0093 rather than read 0092
+off the line"*, and *"the pull request that lands 0092 owes the move of the
+line, as #800 moved it for 0091"*. Both happened. #820's ADR was handed 0093
+and never read the line; #815 moved the line to 0093 as it landed 0092, and
+#820 moved it to 0094 as it landed 0093 — so the line was moved twice in one
+window by the two pull requests that owed it. The conflict between those two
+moves was predicted **inside** #820's own paragraph before either merged, and
+resolved the way that paragraph specified: the branch landing second states
+the higher number and keeps the other's paragraph below it as a marked
+supersession.
+
+**One live sentence in §2 is FALSIFIED by this window's counters, and it is
+the sharpest instance of this file's own subject yet.** §2's closing account
+of why the queue was emptied says, in the present tense: *"From now on a
+`Proposed` row in `docs/adr/README.md` is the only one, so it reads as a
+request addressed to the owner rather than as background."* There are **39**
+today. The sentence is kept rather than overwritten, because what it records —
+that a single `Proposed` row was once a signal on its own, and that this was
+the property the queue-emptying exercise was for — is true history and is the
+reason the exercise was worth doing. What is corrected is the tense: the
+property was lost, and it was lost by accumulation rather than by any decision,
+which is the failure mode that sentence itself names two lines later when it
+says the property *"is fragile in exactly one way"*. It named the wrong way.
+The way it actually broke is that thirty-eight more `Proposed` rows arrived
+and nobody re-read the sentence — and no gate could have caught it, because
+§2's counters count §2's entries and not the index's rows.
+
+**§2's own entry count is unmoved at EIGHT for the sixth consecutive anchor**,
+and this window is the first in six where §2 has a member by path at all:
+`docs/adr/README.md` is cited at four places inside §2 and changed twice in
+this window. Its live citations were re-read rather than assumed, and none
+moved — both new rows were appended at the foot of the row block (`:157-251`),
+below every line citation §2 and §§3-6 make into that file, so `:44-52`,
+`:97`, `:100`, `:102-110`, `:103-110`, `:108` and `:158` all still name what
+they claim. By subject the window files nothing: #810 and #811 are economy and
+job-system measurement, #815 and #816 are ADR 0092 and ADR 0088's amendment,
+#817 and #818 are gate audits, and #820 is a Proposed ADR that implements
+nothing — none of them is ADR 0008 §2 or §3, the server entry point, ADR 0056,
+0059, 0074, 0071 or 0077. **The closest call, named rather than filed**: ADR
+0093 decision 3 would route a carry's two legs through `LocomotionStore`,
+which is the surface ADR 0059's §2 entry prices. It is not filed because 0093
+is `Proposed` and implements nothing, so no price has been paid; a reader
+landing 0093 should expect that entry to need a reading.
+
+**The delta intersection is THREE, and one member is reachable only by the
+bare-basename scan the previous two anchors recorded as a trap.** By rooted
+path §§3-6 cite 98 distinct files, of which two are in this window's 21:
+`docs/adr/README.md` and `docs/research/README.md`. The third,
+`docs/adr/0092-who-decides-where-a-guard-stands.md`, appears in §3 at `:6100`
+**as a bare filename with no directory** — so the rooted scan misses it
+entirely. Two anchors ago that scan was recorded as a trap that had produced a
+phantom, and one anchor ago as one that had added nothing; this is the first
+window in which it adds a real member. `docs/research/README.md`'s rule at
+`:9` holds verbatim, and the file took one appended row per research note with
+both #815's and #817's kept in landing order.
+
+**Nothing in this window touched `src/`.** Twenty-one files across seven
+implementing merges, and not one of them is under `src/` — three ADRs, two
+research notes, two indexes, eleven foundation tests, two integration tests
+and `package.json`. That is the first window in this file's history with no
+source file in it, and it is the reason no span in §§3-6 needed re-deriving:
+every span citation this file makes into `src/` was unreachable by this
+window's diff by construction.
+
+
 **A miscount this pass made and caught, recorded because the next reader will
 make it.** A first scan of this set returned **thirty-one** at `53e1405`,
 disagreeing with the anchor that wrote thirty, and the disagreement was
@@ -6152,11 +6305,16 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `1547c7f6`, as they were at `9b8c8e85`, at
+absences were re-verified at `b2941064` — a bare `grep -ril
+'total_bytes\|max_total_bytes\|retention\|prune'` over the directory returns
+exactly one file and its only hit is a *comment* in
+`20260826130000_server_stamp_updated_at.sql:68` about a **future** retention
+job, so neither absence has acquired an implementation that a path scan would
+have missed — as they were at `1547c7f6`, at `9b8c8e85`, at
 `0e2eb7fb`, at `33a4a22e` and at
 `26434e8e` before it —
-`supabase/migrations/` is not among this window's 20 files, nor the previous
-window's 44, nor `0e2eb7fb`'s 42, nor `33a4a22e`'s 47, nor `26434e8e`'s
+`supabase/migrations/` is not among this window's 21 files, nor the previous
+window's 21, nor the one before that's 44, nor `0e2eb7fb`'s 42, nor `33a4a22e`'s 47, nor `26434e8e`'s
 101, and the directory still holds twenty-three files, counted again — unchanged since the previous anchor, the
 one before it, the one before that, the one before that, the one before that, the one before that,
 the one before that, the one before that, the one before that, the one before
