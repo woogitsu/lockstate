@@ -1178,16 +1178,35 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * channel's change gate never bounded it at all.
    *
    * That distinction is not pedantry, because the counts channel *is* gated:
-   * measured on the real worker over 30 simulated seconds at x1, a prison with
-   * no occupied place publishes `simulation/status-counts` **once** -- the
-   * income accrual is the only per-tick mover among its twenty integers and it
-   * is a constant 0 while nobody is housed -- and refreshes these readouts
-   * **120 times**, worst gap 255 ms. Remove the clock term from that predicate
-   * and the same prison refreshes **once in thirty seconds**. What each of
-   * these comments was reaching for is still true -- none of these readouts is
-   * refreshed only on arrival -- and only the channel and the number were
-   * wrong. Whether the heartbeat should be the deliberate contract is
+   * measured on the **harness** (`SimulationWorkerStateMachine`, fake timers,
+   * no render thread, no competing work) over 30 simulated seconds at x1, a
+   * prison with no occupied place publishes `simulation/status-counts`
+   * **once** -- the income accrual is the only per-tick mover among its
+   * twenty integers and it is a constant 0 while nobody is housed -- and
+   * refreshes these readouts **120 times**, worst gap 255 ms. Remove the
+   * clock term from that predicate and the same prison refreshes **once in
+   * thirty seconds**. What each of these comments was reaching for is still
+   * true -- none of these readouts is refreshed only on arrival -- and only
+   * the channel and the number were wrong. Whether the heartbeat should be
+   * the deliberate contract is
    * [ADR 0086](../docs/adr/0086-what-refreshes-a-pulled-hud-readout.md).
+   *
+   * **255 ms is the harness figure, and it understated what a player actually
+   * waits by about 18% (issue #765).** PR #762 (`73996787d4`) ran this same
+   * scenario -- Regime tab, two admitted unhoused prisoners, clock at x1, 30
+   * s -- in a real browser
+   * (`tests/browser/playtest-2026-09-01-measurements-owed.playtest.ts`) and
+   * measured, over four runs: **118, 118, 118, 119 requests** (the harness's
+   * "120 times" mechanism confirmed almost exactly), but **46-58 of the ~118
+   * gaps exceeded 260 ms**, median gap **253-260 ms**, and a **tail of
+   * 292.8-299.6 ms**. The harness's 255 ms has fake timers and no render
+   * thread competing for the main thread; a browser adds roughly 5 ms of
+   * median drift and a roughly 40 ms tail on top of it. **The six inline
+   * comments below that still say "255ms" are about this browser wait, not
+   * the harness one** -- the honest figure for them is "up to roughly 300 ms
+   * in a browser", and each now says which measurement its number is. ADR
+   * 0086 §2's own 260 ms bound is falsified by the same data; see that ADR's
+   * amendment.
    */
   const roomNeedsReader = client === undefined ? undefined : new RoomNeedsReader(client);
   /*
@@ -1920,10 +1939,11 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * readout is being refreshed at all.
          *
          * Both directions are needed. Arriving on the Rooms tab asks
-         * immediately rather than waiting up to 255ms for the next clock
-         * heartbeat (this said "500ms for the next counts publication"; see
-         * `roomNeedsReader`'s header and #718), and leaving it takes the
-         * readout off, because from here
+         * immediately rather than waiting up to ~300ms in a browser for the
+         * next clock heartbeat (this said "500ms for the next counts
+         * publication" until #718, then the harness's "255ms" until #765 --
+         * see `roomNeedsReader`'s header for both measurements), and leaving
+         * it takes the readout off, because from here
          * on nothing is refreshing it. The panel clears its own copy when it is
          * hidden; this clears the view model, or the next publication would put
          * the stale one back.
@@ -1933,11 +1953,12 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           if (activeTab === 'rooms') refreshRoomNeeds();
           else applyRoomNeeds(undefined);
           // The build queue is the same arrangement one tab over: arriving asks
-          // at once rather than waiting up to 255ms for the next clock
-          // heartbeat, and leaving takes the block off, because from here on
-          // nothing is refreshing it. The panel clears its own copy when it is
-          // hidden; this clears the view model, or the next publication would
-          // put the stale one back.
+          // at once rather than waiting up to ~300ms in a browser for the next
+          // clock heartbeat (255ms is the harness figure; see
+          // roomNeedsReader's header, #765), and leaving takes the block off,
+          // because from here on nothing is refreshing it. The panel clears
+          // its own copy when it is hidden; this clears the view model, or the
+          // next publication would put the stale one back.
           if (activeTab === 'build') refreshBuildQueue();
           else applyBuildQueue(undefined);
           // And what has been bought and has not arrived, which lives on the
@@ -1951,27 +1972,34 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // And who is on the payroll, on the same tab and the same terms
           // (#533). Arriving asks at once for the coverage block's reason turned
           // round: a player who opened this tab because they are haemorrhaging
-          // money must not have to wait 255ms to see the control that stops it.
+          // money must not have to wait up to ~300ms in a browser (255ms is
+          // the harness figure; see roomNeedsReader's header, #765) to see the
+          // control that stops it.
           if (activeTab === 'security') refreshStaffRoster();
           else applyStaffRoster(undefined);
           // And how many guards the prison asks for against how many it has, on
           // the same tab and the same terms (ADR 0048). Arriving asks at once:
-          // waiting up to 255ms for the next clock heartbeat would mean a
-          // player who opened this tab *because* they suspected they were short
-          // sees an empty block first.
+          // waiting up to ~300ms in a browser for the next clock heartbeat
+          // (255ms is the harness figure; see roomNeedsReader's header, #765)
+          // would mean a player who opened this tab *because* they suspected
+          // they were short sees an empty block first.
           if (activeTab === 'security') refreshStaffCoverage();
           else applyStaffCoverage(undefined);
           // And the intake readout on the tab the Intake panel lives on, on
           // the same terms as both: arriving asks at once rather than waiting
-          // up to 255ms for the next clock heartbeat, and leaving takes the
-          // block off, because from here on nothing is refreshing it.
+          // up to ~300ms in a browser for the next clock heartbeat (255ms is
+          // the harness figure; see roomNeedsReader's header, #765), and
+          // leaving takes the block off, because from here on nothing is
+          // refreshing it.
           if (activeTab === 'overview') refreshIntakePipeline();
           else applyIntakePipeline(undefined);
           // And the two readouts on the fifth tab, on the same terms as every
           // one above (issue #451). Arriving asks at once rather than waiting
-          // up to 255ms for the next clock heartbeat, because this tab is
-          // the one a player opens to look at somebody in particular and an
-          // empty panel is indistinguishable from a prison holding nobody.
+          // up to ~300ms in a browser for the next clock heartbeat (255ms is
+          // the harness figure; see roomNeedsReader's header, #765), because
+          // this tab is the one a player opens to look at somebody in
+          // particular and an empty panel is indistinguishable from a prison
+          // holding nobody.
           if (activeTab === 'regime') refreshRegime();
           else applyRegime(undefined);
           if (activeTab === 'regime') refreshPrisonerRoster();

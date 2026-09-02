@@ -547,14 +547,27 @@ Four properties are worth stating because each is a decision:
   (`src/simulation/worker/state-machine.ts:438-462`), which is twice the rate
   of the counts channel and, crucially, **not change-gated on the counts**.
 
-  Measured on the real `SimulationWorkerStateMachine` over 30 simulated seconds
-  at ×1, classifying every posted message by the composition root's own six
-  translators: a prison with **no occupied place publishes
-  `simulation/status-counts` exactly once** and refreshes its readouts **120
-  times**, worst gap **255 ms**; a housed prison publishes 59 and refreshes 178.
-  The mutation says why this is load-bearing rather than incidental — remove the
-  clock term from that predicate and the same two prisons refresh **once in
-  thirty seconds**, which is issue #718's reported symptom exactly.
+  Measured on the **harness** (`SimulationWorkerStateMachine`, fake timers, no
+  render thread) over 30 simulated seconds at ×1, classifying every posted
+  message by the composition root's own six translators: a prison with **no
+  occupied place publishes `simulation/status-counts` exactly once** and
+  refreshes its readouts **120 times**, worst gap **255 ms**; a housed prison
+  publishes 59 and refreshes 178. The mutation says why this is load-bearing
+  rather than incidental — remove the clock term from that predicate and the
+  same two prisons refresh **once in thirty seconds**, which is issue #718's
+  reported symptom exactly.
+
+  **255 ms is the harness figure and understates what a player actually waits
+  by about 18% (issue #765).** PR #762 (`73996787d4`) ran the no-occupied-place
+  scenario in a real browser instead
+  (`tests/browser/playtest-2026-09-01-measurements-owed.playtest.ts`), four
+  runs of 30 s: **118, 118, 118, 119 requests** — the harness's "120 times"
+  confirmed almost exactly — but **46-58 of the ~118 gaps exceeded 260 ms**,
+  median gap **253-260 ms**, and a **tail of 292.8-299.6 ms**. The honest
+  figure for "worst gap" in a browser is **up to roughly 300 ms**, not 255;
+  [ADR 0086](./adr/0086-what-refreshes-a-pulled-hud-readout.md) §2's own
+  260 ms bound is falsified by the same data (see that ADR's amendment,
+  not yet accepted).
 
   **What each of those six sentences was reaching for is still true** and is why
   they are corrected rather than deleted: none of these readouts is refreshed

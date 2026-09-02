@@ -514,3 +514,93 @@ thread's own liveness.
 states that both produce 30 s and says which one it cannot distinguish without
 the browser. If the author's measurement was a running prison, something in it
 is not modelled here and §2 is wrong.
+
+## Amendment, 2026-09-02: the browser measurement §5 named landed, and this ADR's own bound is what it falsified
+
+> **Proposed amendment, not self-approved — awaiting the owner's signature.**
+> Drafted against `76e067c3` (v0.0.347) from a measurement already on `main`
+> (PR #762, `73996787d4`) and issue
+> [#765](https://github.com/matmaxalez/lockstate/issues/765), which named this
+> ADR as owed the correction. Nothing below changes a decision — Options A
+> through E and the recommendation are untouched, and `Status` remains
+> **Proposed, 2026-09-01, not self-approved** — it corrects a *number* this
+> document stated as a bound, and it must not be read as accepting this ADR by
+> the back door. It must not merge as accepted before the owner signs it.
+
+### 1. The measurement the weakest-claim section asked for
+
+§5's own words: *"open the Regime tab in a prison with two admitted, unhoused
+prisoners, clock running at ×1, and record … request timestamps for 30 s. The
+prediction from §3 is ~118 requests, no gap above 260 ms, and visibly moving
+need bars. A result that disagrees falsifies this ADR's §2 and most of what
+follows."* PR #762 ran exactly that scenario in a real browser
+(`tests/browser/playtest-2026-09-01-measurements-owed.playtest.ts`,
+`docs/research/2026-09-01-the-measurements-that-were-owed.md` §5), through
+`playtest-harness.ts`'s `buildAndPopulate({ beds: 0, admits: 2, guards: 0 })`,
+four runs of 30 s each:
+
+| run | requests / 30 s | shortest gap | median gap | longest gap | gaps > 260 ms |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **118** | 208.1 ms | 259.9 ms | **292.8 ms** | 58 |
+| 2 | **118** | 220.5 ms | 259.0 ms | **290.1 ms** | 54 |
+| 3 | **118** | 201.3 ms | 253.5 ms | **299.6 ms** | 46 |
+| 4 | **119** | 89.5 ms | 257.6 ms | **293.1 ms** | 49 |
+
+`hud/status-strip` was pulled the same number of times, in the same window, in
+every run — the whole pull layer riding one heartbeat, not the roster reader
+alone. Need bars moved visibly in every run (`data-need-permille`: 898→804→706
+and 875→776→678 over the 30 s, ≈6.4 permille/s).
+
+### 2. The verdict, split exactly as §5 asked it to be
+
+**§2's mechanism — the binding cadence is the clock heartbeat, not the counts
+channel — is CONFIRMED, not falsified.** 118 requests in 30 s, three runs out
+of four (119 the fourth), in a prison whose `simulation/status-counts` channel
+publishes once and falls silent, reproduces the harness's "120 times" table in
+§3 to within one message, in a real browser with a real render thread. Nothing
+about *which channel* refreshes the readout is in question.
+
+**§5's own numeric bound — "no gap above 260 ms" — is FALSIFIED, and this is
+the correction this amendment exists to make.** 46 to 58 of the roughly 118
+gaps in every run exceed 260 ms; the median sits at 253–260 ms already, and the
+tail reaches 292.8–299.6 ms across the four runs. The harness's 255 ms
+(`§3`, `§4`, and "The weakest claim" above) is a fake-timer figure with no
+render thread competing for the main thread; a browser adds roughly 5 ms of
+median drift and a roughly 40 ms tail on top of it. **255 ms understates what a
+player actually waits by about 18%** (299.6 / 255 ≈ 1.175).
+
+**This is not the "well above 260 ms" result "The weakest claim" section named
+as the trigger for option B.** 300 ms against a 260 ms bound is roughly 15%
+over, not multiples over, and no run showed anything a player would read as a
+freeze — every run kept moving need bars and landed within about 40 ms of the
+predicted worst case, not seconds off it. So this amendment does **not** by
+itself recommend re-opening the Decision toward option B; it corrects the
+number the Decision was reasoned against, and leaves the choice of what (if
+anything) to do about the gap between "no gap above 260 ms" and "no gap above
+roughly 300 ms" to the owner, per "What stays the owner's" above.
+
+### 3. What this does and does not touch elsewhere
+
+`src/main.ts:1185` and the six comments at `:1923`, `:1936`, `:1954`, `:1959`,
+`:1966` and `:1972`, plus `docs/HUD_PROJECTIONS.md:554`, stated 255 ms as if it
+were the figure a player meets. They are corrected in the same commit as this
+amendment to say **both** numbers and which measurement each is: 255 ms is the
+harness's, measured with fake timers and no render thread; the browser's own
+worst case is roughly 300 ms (292.8–299.6 ms across four runs). No player-
+facing sentence, locale key or control changes — this ADR's own "Nothing in
+this document is player-visible" holds exactly as before.
+
+### 4. What is left for the owner
+
+Two questions, neither answered here because both are judgement rather than
+measurement:
+
+- **Whether "no gap above ~300 ms at ×1 on a four-core container" is an
+  acceptable restatement of §5's bound**, or whether a bound that is routinely
+  missed by 40–50% of its own gaps was never the right shape for a bound and
+  should be replaced with a percentile statement instead.
+- **Whether this changes anything about the Decision.** Option E (name the
+  heartbeat, document it, pin it) was recommended on a mechanism claim this
+  measurement confirms, not on the 260 ms figure it falsifies — so the
+  recommendation's own argument is unweakened — but the recommendation itself
+  remains unapproved regardless, exactly as it was before this measurement.
