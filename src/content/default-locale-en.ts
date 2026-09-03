@@ -1430,6 +1430,54 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.security.coverage-short-hint': 'Hire {count} more to cover this population.',
   'hud.security.coverage-unguarded': 'Unguarded',
   'hud.security.coverage-unguarded-hint': 'Nobody is on duty. Hire {count} to cover this population.',
+  /*
+   * The owner's chosen wording of 2026-09-03, verbatim, and it is on the
+   * unguarded rung only.
+   *
+   * **What makes it true, checked against the code rather than against the
+   * brief that asked for it.** `SAFETY_COVERAGE_PROVISION_MULTIPLIER` in
+   * `src/simulation/prisoners/needs.ts` is `{ covered: 1, understaffed: 0.5,
+   * unguarded: 0 }`, so `SafetyCoverageSystem` provisions **nothing** to
+   * every occupant of a sector on this rung while `NeedsDecaySystem` goes on
+   * subtracting `safety`'s 0.05 a tick from them -- a net -0.05, which is
+   * 4,080 ticks from full to `STATE_INCOME_UNMET_NEED_LEVEL` (255 - 51, over
+   * 0.05). Nothing else in `src/` puts `safety` back: `action.sleep` carried
+   * `safety: 0.2` and `action.yard-recreation` `safety: 0.1` and both were
+   * removed (issue #588) precisely so that coverage would be the only
+   * instrument. So "nobody ... is kept safe" is the whole of what an empty
+   * post does, stated at the granularity the simulation works at:
+   * `SafetyCoverageSystem.walk` resolves the rung **per sector** and
+   * provisions each of that sector's occupants at it.
+   *
+   * **What it deliberately does not say, and why that is not a hedge.** An
+   * earlier wording of the owner's -- *"so nothing stops an incident in this
+   * sector"* -- was refused with the measurements in #848 and PR #854, and
+   * the refusal is the reason this sentence is about safety and not about
+   * incidents. Guard presence is an **amplifier**, not a gate:
+   * `staffingShortfall` carries weight `0.3` against a `hotThreshold` of
+   * `0.65` and "a furnished prison sits at `0.164` at its worst and is still
+   * below the line with no guards at all"
+   * (`src/simulation/incidents/sector-risk.ts`), and
+   * `IncidentResponseSystem.claimableResponders` draws from a **prison-wide**
+   * pool with no sector term in the dispatch path at all. This sentence
+   * therefore stays inside what `describeStaffCoverage`'s own docblock
+   * refuses under the heading *"What it deliberately does not say"* -- it
+   * names a need that stops being provisioned, not a riot that is coming.
+   *
+   * **"this sector" is the simulation's noun and today it denotes the whole
+   * prison**, which is worth writing down here because it is the half of
+   * this sentence a player cannot yet check. Every session a player can start
+   * has exactly one sector, derived rather than drawn:
+   * `DEFAULT_SECURITY_SECTOR_ID` is `'security-sector.prison'` and its grade
+   * docblock calls `grade.general` *"the only defensible grade for a sector
+   * that covers the whole prison"*. So the sentence's extent and the prison's
+   * extent are the same tiles, and the sentence becomes *more* precise -- not
+   * less true -- on the day a player can draw a second sector. What it will
+   * need then is a per-sector readout to sit on; this block's figures are
+   * summed across sectors (`src/ui/simulation-staff-coverage.ts` argues why),
+   * and the rung it renders is reached only when nobody is posted anywhere.
+   */
+  'hud.security.coverage-unguarded-consequence': 'No guard is posted here, so nobody in this sector is kept safe.',
 
   // The Regime panel on the fifth tab (issue #451). Two blocks: what each
   // classification group's day allows at this tick, and who is in the prison.
