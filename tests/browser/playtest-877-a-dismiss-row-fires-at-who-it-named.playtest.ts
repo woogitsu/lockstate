@@ -457,72 +457,57 @@ test.describe('the delivery rows fire at what they named', () => {
     await tab(page, 'build').click();
 
     /*
-     * Staggered **in ticks, not in wall clock** -- and two runs of this act
-     * were spent learning why that matters.
+     * **Bought one at a time with the clock running, spaced by a real timer** --
+     * and four runs of this act were spent arriving at that sentence. Each
+     * failure is recorded because each one looked like a finding.
      *
      * `PROCUREMENT_DELIVERY_DELAY_TICKS` is 100, counted from the tick the
-     * purchase is consumed. Six purchases made with the clock paused are all
-     * consumed on the same tick and therefore all arrive on the same tick: the
-     * block goes from three rows to none in one publication and **no row is
-     * ever re-pointed** (run 1: 0 re-pointings in 11,292ms, then nothing left
-     * to press). Spacing the buys by wall clock instead does not fix it,
-     * because on a loaded box a `buy()` takes several seconds and the whole
-     * batch had already landed before the first read (run 2: `pending=null`).
+     * purchase is *consumed*, so what makes a delivery row re-point is one
+     * purchase arriving while others are still in flight. Getting the prison
+     * into that state is the whole difficulty.
      *
-     * So the clock is driven by hand: buy, advance a fixed number of *ticks*,
-     * buy again. Arrival times are then 22 ticks apart whatever the machine is
-     * doing, and the last stretch stops 20 ticks short of the first arrival, so
-     * the measurement begins with a full list and a head that is about to
-     * leave -- which is the only state in which an index-bound row can
-     * re-point, and the state a player buying a few loads is in.
-     */
-    /*
-     * Runs to a tick and stops, polling **inside the page**.
+     * 1. **Bought while paused**: all consumed on the same tick, so all arrive
+     *    on the same tick. The block goes from three rows to none in one
+     *    publication and **no row is ever re-pointed** -- 0 re-pointings in
+     *    11,292ms, and then nothing left to press.
+     * 2. **Spaced by wall clock at 4x**: on a box at load average 22 a `buy()`
+     *    takes seconds, so the batch had landed before the first read
+     *    (`data-pending` = `null`).
+     * 3. **Staggered in ticks with `await currentTick(page)` in a poll loop**:
+     *    one Playwright round trip per sample, which at load average 25
+     *    overshot tick 100 to tick **862**.
+     * 4. **Staggered in ticks with `page.waitForFunction` polling in the page**:
+     *    still overshot, to tick 757, on an *idle* machine -- and that is the
+     *    finding worth carrying elsewhere. **The transport controls are
+     *    simulation commands and land late like every other press**
+     *    (`DEFAULT_LEAD_TICKS`, `src/ui/simulation-commands.ts`; presses are
+     *    measured at 36-55 ticks late). A `Pause` pressed the instant a target
+     *    tick is reached takes effect some 40-90 ticks after it, which is
+     *    larger than any stagger shorter than a delivery. **The clock cannot be
+     *    stepped precisely from the HUD at all**, so no amount of polling fixes
+     *    approach 3 or 4.
      *
-     * The obvious shape -- `await currentTick(page)` in a loop with a
-     * `waitForTimeout` -- is one Playwright round trip per sample, and on a box
-     * at load average 25 each of those took seconds: nine calls asking for tick
-     * 100 overshot to tick **862**, by which time every delivery had landed and
-     * `data-pending` read `null`. `waitForFunction` polls in the page at 20ms,
-     * so the overshoot is bounded by the clock publication interval instead of
-     * by how busy the machine is.
+     * What works is not to stop the clock. At speed 1 the kernel runs 20 ticks
+     * a wall second, so purchases spaced by a `waitForTimeout` -- a real timer,
+     * costing no round trip and immune to load -- arrive spaced by that many
+     * ticks. Eight of them primes a pipeline deeper than the three rows, and one
+     * more load per press keeps it primed while the measurement runs.
      */
-    const advanceTo = async (target: number): Promise<void> => {
-      await transport(page, 'play').click();
-      await page.waitForFunction(
-        (wanted) => {
-          const messages = (window as unknown as { lockstateFromWorker?: unknown[] }).lockstateFromWorker ?? [];
-          for (let index = messages.length - 1; index >= 0; index -= 1) {
-            const message = messages[index] as { kind?: string; payload?: { tick?: number } };
-            if (message.kind === 'simulation/clock-state') return (message.payload?.tick ?? -1) >= wanted;
-          }
-          return false;
-        },
-        target,
-        { polling: 20, timeout: 120_000 },
-      );
-      await transport(page, 'pause').click();
-    };
-
-    const STAGGER_TICKS = 22;
-    const LOADS = 8;
-    const restock = async (): Promise<number> => {
-      await transport(page, 'pause').click();
-      const base = await currentTick(page);
-      for (let index = 0; index < LOADS; index += 1) {
+    await transport(page, 'play').click();
+    note(`clock at speed 1; tick ${String(await currentTick(page))}`);
+    const restock = async (loads: number): Promise<void> => {
+      for (let index = 0; index < loads; index += 1) {
         await buy(page, 'wall-brick', 3);
-        await advanceTo(base + STAGGER_TICKS * (index + 1));
+        await page.waitForTimeout(600);
+        note(
+          `buy ${String(index + 1)}/${String(loads)} at tick ${String(await currentTick(page))}:`
+            + ` PurchaseMaterials on the wire = ${String((await wire(page, 'PurchaseMaterials', 'buildableId')).count)},`
+            + ` pending=${await page.locator('.hud-build__deliveries').getAttribute('data-pending')},`
+            + ` funds=${String((await latestCounts(page))?.treasuryMinorUnits)}`,
+        );
       }
-      // 20 ticks short of the first arrival (`DEFAULT_LEAD_TICKS` is what the
-      // first buy waited to be consumed, so it arrives at base + 20 + 100).
-      await advanceTo(base + 100);
-      await transport(page, 'play').click();
-      return base;
     };
-
-    const base = await restock();
-    note(`${String(LOADS)} loads bought, staggered ${String(STAGGER_TICKS)} ticks from tick ${String(base)};`
-      + ` now at tick ${String(await currentTick(page))} with the clock at speed 1`);
+    await restock(8);
     await bringIntoView(page, '.hud-build__deliveries');
     const initial = await readRows(page, DELIVERY_ROW, 'data-delivery');
     note(`delivery rows after buying: ${JSON.stringify(initial)}`);
@@ -538,6 +523,9 @@ test.describe('the delivery rows fire at what they named', () => {
     while (outcomes.length < 9 && Date.now() - startedAt < 240_000) {
       const delayMs = delays[attempt % delays.length]!;
       attempt += 1;
+      // One more load per press, so the pipeline stays deeper than the three
+      // rows for the whole measurement rather than draining under it.
+      await buy(page, 'wall-brick', 3);
       await bringIntoView(page, '.hud-build__deliveries');
       let rows = await readRows(page, DELIVERY_ROW, 'data-delivery');
       if (rows.length < 2) {
@@ -548,7 +536,7 @@ test.describe('the delivery rows fire at what they named', () => {
             + ` pending=${await page.locator('.hud-build__deliveries').getAttribute('data-pending')}`
             + `, funds=${String((await latestCounts(page))?.treasuryMinorUnits)} -- restocking`,
         );
-        await restock();
+        await restock(8);
         await bringIntoView(page, '.hud-build__deliveries');
         rows = await readRows(page, DELIVERY_ROW, 'data-delivery');
         if (rows.length < 2) continue;
