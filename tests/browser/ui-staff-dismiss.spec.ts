@@ -546,10 +546,17 @@ test.describe('a dismiss row fires at who it named (#877)', () => {
     await page.mouse.click(rows[0]!.x, rows[0]!.y);
     expect((await readConfirmation(page, CONFIRMATION(rows[0]!.label))).laidOut).toBe(true);
 
-    // Nobody hired: the section has no box at all, which is what the arrival
-    // state is and what leaving the Security tab produces.
+    /*
+     * Nobody hired: the section has no box at all, which is what the arrival
+     * state is and what leaving the Security tab produces (`src/main.ts` takes
+     * the roster off the view model on any tab but `security`).
+     *
+     * Asserted through the section rather than by re-opening the fold: a hidden
+     * section cannot be opened, so waiting for its rows would be waiting for
+     * something the state under test forbids.
+     */
     await publish(page, viewModel({ hired: 0, staff: [] }));
-    await openPayroll(page).catch(() => undefined);
+    await expect(page.locator('.hud-staff__roster'), 'the payroll section outlived the last dismissal').toBeHidden();
     expect(
       (await readConfirmation(page, CONFIRMATION(rows[0]!.label))).laidOut,
       'the confirmation outlived the block it was made in',
