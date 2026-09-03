@@ -579,6 +579,21 @@ legibility pass should rule out, and it is ruled out.
 | `PRISONERS` and its badge | admit six into a two-bed prison | `2`, no badge | `8` and a `6 with no bed` badge |
 | `EARNED TODAY` | let the day run | `0` at day 1 | `73 → 279 → 310 → 586 → 1,296 → 1,485` within one day, resetting at the boundary |
 
+**Taken from acts 3, 7 and 9 rather than from act 4**, which was written for
+exactly this and never finished: on this box its designation step was refused
+`zone.not-enclosed` ten times over four minutes and the act timed out. That is
+the known ordering defect in
+`2026-08-29-playtest-ordering-and-the-second-room.md` §7 and is not re-filed —
+but the **rate** is worth one line, because it is what a player would meet.
+Across the eleven prisons this pass built with the mouse, the Build panel
+reported the wall queue empty and the Rooms panel then refused the rectangle
+outright on **two** of them, each time for the full twelve-attempt, four-to-six
+minute retry budget, with the refusal band reading *"The room was not zoned —
+this room type must be enclosed, and the area you drew is open on at least one
+side."* on every attempt. The sentence names the cause correctly and the cause
+is not true: the wall is up. A player has no way to tell that apart from having
+drawn the rectangle wrong.
+
 **The sampling rule these depend on**, and it cost this pass one wrong
 suspicion (§10): a read taken seconds after another, on a clock at x4, is a
 read of a different world. `EARNED TODAY` at `279` and the worker's
