@@ -328,6 +328,33 @@ async function probeAffordances(page: Page): Promise<readonly Affordance[]> {
           parseFloat(style.paddingLeft) >= 4;
         const looksPressable = style.cursor === 'pointer' || paintedBox;
 
+        /*
+         * A label or an icon inside a real `<button>` inherits `cursor:
+         * pointer` and has no listener of its own, so the first run of this
+         * probe reported 101 "looks pressable and is not" on the Build tab and
+         * almost all of them were the insides of controls that work. Only an
+         * element with **no pressable ancestor** is a false affordance.
+         */
+        let insideSomethingPressable = false;
+        for (let n: HTMLElement | null = el.parentElement; n !== null; n = n.parentElement) {
+          const parentTag = n.tagName.toLowerCase();
+          const parentRole = n.getAttribute('role') ?? '';
+          const parentListeners = census?.get(n);
+          if (
+            parentTag === 'button' ||
+            parentTag === 'label' ||
+            (parentTag === 'a' && n.hasAttribute('href')) ||
+            parentRole === 'button' ||
+            parentRole === 'tab' ||
+            [...(parentListeners ?? [])].some((t) => /^(click|pointerdown|mousedown)$/.test(t))
+          ) {
+            insideSomethingPressable = true;
+            break;
+          }
+          if (n.classList.contains('hud') || n.classList.contains('save-panel')) break;
+        }
+        if (insideSomethingPressable && !isPressable) continue;
+
         if (!looksPressable && isPressable === false) continue;
         out.push({
           selector: describe(el),
@@ -738,6 +765,95 @@ test.describe('the whole screen at once', () => {
     const t3 = await currentTick(page);
     await page.waitForTimeout(8000);
     log(`   worker tick went ${t3} -> ${await currentTick(page)} over 8s after Pause`);
+  });
+
+  /**
+   * A seventh act, written after act 2 measured a healthy prison reading
+   * **`6 · COVERAGE · Covered`** on the strip and **`GUARD COVERAGE 1 of 1
+   * Covered`** on the Security panel at the same moment, with three guards
+   * hired.
+   *
+   * Two readouts, one screen. They are not the same quantity:
+   * `projectStatusMetrics`' `coverage` chip is `counts.prisonersCovered` --
+   * **people on the covered rung** -- and the panel's summary is
+   * `hud.security.coverage-summary`, `'{assigned} of {required}'`, over
+   * `HudStaffCoverageViewModel`, which is **guards**. They also do not share a
+   * derivation: the chip's word comes off `coverageTone`'s prisoner rungs and
+   * the panel's off `describeStaffCoverage`'s guard shortage, and
+   * `HudStaffCoverageViewModel.assigned` counts a guard *"already on post, or
+   * still walking there"* while a prisoner is only on the covered rung once
+   * somebody is actually standing the post.
+   *
+   * So the two can print different words about the same prison, and this act
+   * samples them **in one page evaluation** -- not two reads a second apart,
+   * which would make any disagreement a timing artifact -- once a second
+   * across a hire and across the walk that follows it.
+   */
+  test('act 7 — two readouts called coverage, sampled together', async ({ page }) => {
+    await installListenerCensus(page);
+    await installTee(page);
+    await page.setViewportSize(DESKTOP);
+    await openApp(page);
+    await buildAndPopulate(page, { beds: 6, admits: 6, guards: 0, label: 'act7' });
+
+    /** Both coverage readouts, plus the staff count, in one evaluation. */
+    const bothAtOnce = async (): Promise<Record<string, string>> =>
+      page.evaluate(() => {
+        const chip = document.querySelector<HTMLElement>('[data-metric="coverage"]');
+        const panel = document.querySelector<HTMLElement>('.hud-staff__coverage');
+        return {
+          stripValue: (chip?.querySelector('.ui-stat__value')?.textContent ?? '?').trim(),
+          stripBadge: (chip?.querySelector('.ui-badge')?.textContent ?? '(none)').trim(),
+          stripTone: chip?.getAttribute('data-tone') ?? 'none',
+          panelSummary: (panel?.querySelector('.hud-staff__coverage-summary')?.textContent ?? '?').trim(),
+          panelBadge: (panel?.querySelector('.ui-badge')?.textContent ?? '(none)').trim(),
+          panelTone: panel?.getAttribute('data-tone') ?? 'none',
+          panelHint: (panel?.querySelector('.hud-staff__note')?.textContent ?? '').trim(),
+          panelLaidOut: String(panel !== null && !panel.hidden && panel.getClientRects().length > 0),
+          staffChip: (
+            document.querySelector<HTMLElement>('[data-metric="staff"] .ui-stat__value')?.textContent ?? '?'
+          ).trim(),
+          prisonersChip: (
+            document.querySelector<HTMLElement>('[data-metric="prisoners"] .ui-stat__value')?.textContent ?? '?'
+          ).trim(),
+        };
+      });
+
+    const sample = async (label: string, seconds: number): Promise<void> => {
+      for (let i = 0; i < seconds; i += 1) {
+        const both = await bothAtOnce();
+        const agree = both['stripBadge'] === both['panelBadge'];
+        log(
+          `   ${label.padEnd(22)} t+${String(i).padStart(2)}s` +
+            ` STRIP ${String(both['stripValue']).padStart(3)} "${String(both['stripBadge'])}" (${String(both['stripTone'])})` +
+            ` | PANEL ${String(both['panelSummary']).padStart(7)} "${String(both['panelBadge'])}" (${String(both['panelTone'])})` +
+            ` | prisoners=${String(both['prisonersChip'])} staff=${String(both['staffChip'])}` +
+            ` | ${agree ? 'same word' : 'DIFFERENT WORDS ON ONE SCREEN'}` +
+            ` | hint=${JSON.stringify(both['panelHint'])}`,
+        );
+        await page.waitForTimeout(1000);
+      }
+    };
+
+    log('===== ACT 7 / six prisoners, nobody hired =====');
+    // The Security tab has to be the open one for the panel to be laid out, so
+    // both readouts are on screen together for a player as well as for a probe.
+    await tab(page, 'security').click();
+    await page.waitForTimeout(500);
+    await fastForwardToMax(page);
+    await sample('6 prisoners, 0 guards', 20);
+
+    log('===== ACT 7 / across a single hire, and the walk to post that follows =====');
+    const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
+    if ((await guardRow.count()) > 0) await guardRow.first().click();
+    await page.locator('.hud-staff__hire').click();
+    await sample('one guard hired', 60);
+
+    log('===== ACT 7 / and a second hire =====');
+    await page.locator('.hud-staff__hire').click();
+    await sample('two guards hired', 45);
+    log(`   counts: ${JSON.stringify(await latestCounts(page))}`);
+    log(`   whole staff panel: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
   });
 
 });
