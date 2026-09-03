@@ -370,6 +370,31 @@ async function readChip(page: Page): Promise<{ readonly byMetric: number; readon
 const transport = (page: Page, which: 'pause' | 'play' | 'fast-forward') =>
   page.locator('.hud-strip__transport button').nth(which === 'pause' ? 0 : which === 'play' ? 1 : 2);
 
+/**
+ * Opens the Build panel's QUEUED fold, without which there is no row to read
+ * and no button to press.
+ *
+ * **This is the trap that cost this file its first run.** The queue block is a
+ * `createCollapsibleSection` with `collapsed: true`
+ * (`src/ui/hud/build-panel.ts:1912`), so a fresh prison draws the header and
+ * the count and no rows at all: `panelText('.hud-build__queue')` reads
+ * `QUEUED / 2 waiting - 0 being built` and every `.hud-build__queue-row` has
+ * no client rect. A `data-order` locator therefore never resolves and the
+ * `Cancel` click waits until the test's own timeout, which reads exactly like
+ * a broken button.
+ *
+ * The section root carries `data-collapsed` and its header is the toggle
+ * (`src/ui/primitives/collapsible-section.ts:69,85`). Nothing is clicked when
+ * the fold is already open, so this is safe to call repeatedly.
+ */
+async function openQueueFold(page: Page): Promise<void> {
+  const section = page.locator('.hud-build__queue');
+  if ((await section.count()) === 0) return;
+  if ((await section.getAttribute('data-collapsed')) !== 'true') return;
+  await section.locator('.ui-section__header').click();
+  await page.waitForTimeout(150);
+}
+
 /** Opens a fresh prison with the Build tab showing and the probe attached. Leaves the clock paused, which is how a session starts (ADR 0051 finding 1). */
 async function freshPrison(page: Page): Promise<{ readonly x: number; readonly y: number }> {
   await installProbe(page);
@@ -402,6 +427,7 @@ async function measureCancel(page: Page, orderId: string, label: string): Promis
   const note = (line: string): void => {
     console.log(line);
   };
+  await openQueueFold(page);
   const before = await readWorker(page);
   const advertised = await readAdvertised(page);
   const dom = await readDomRows(page);
@@ -422,7 +448,9 @@ async function measureCancel(page: Page, orderId: string, label: string): Promis
   note(`  chip before: ${JSON.stringify(chipBefore)}`);
 
   const commandsBefore = (await sentCommands(page)).length;
-  await page.locator(`${QUEUE_ROW}[data-order="${orderId}"]`).getByRole('button', { name: 'Cancel' }).click();
+  const button = page.locator(`${QUEUE_ROW}[data-order="${orderId}"]`).getByRole('button', { name: 'Cancel' });
+  await button.waitFor({ state: 'visible', timeout: 15_000 });
+  await button.click();
   await page.waitForTimeout(700);
   const after = await readWorker(page);
   const chipAfter = await readChip(page);
@@ -466,6 +494,20 @@ async function runUntil(
   console.log(`GAVE UP waiting for ${label} after ${String(budgetMs)}ms; states were `
     + JSON.stringify(last.orders.map((order) => order.state)));
   return readWorker(page);
+}
+
+/**
+ * An order in `state` that the panel has actually drawn a row for.
+ *
+ * `BUILD_QUEUE_ROW_LIMIT` is 3 (`src/ui/hud/build-panel.ts:576`), so a queue of
+ * six has three rows and three orders with no control at all. Picking by worker
+ * state alone therefore aims at a `Cancel` button that does not exist, which
+ * looks like a hung click rather than a wrong target.
+ */
+async function pickRowInState(page: Page, reading: WorkerReading, state: string): Promise<string | undefined> {
+  await openQueueFold(page);
+  const drawn = new Set((await readDomRows(page)).map((row) => row.orderId));
+  return reading.orders.find((order) => order.state === state && drawn.has(order.id))?.id;
 }
 
 const stateCounts = (reading: WorkerReading): Record<string, number> => {
@@ -591,19 +633,21 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
       + ` treasury ${String(reached.treasuryMinorUnits)}`);
     note(`advertised now: ${JSON.stringify((await readAdvertised(page)).rows)}`);
 
-    const assigned = reached.orders.find((order) => order.state === 'assigned');
-    if (assigned !== undefined) await measureCancel(page, assigned.id, 'assigned');
-    else note('NO ORDER IN assigned, which is the finding for that row.');
+    note(`rows the panel drew: ${JSON.stringify(await readDomRows(page))}`);
+    const assigned = await pickRowInState(page, reached, 'assigned');
+    if (assigned !== undefined) await measureCancel(page, assigned, 'assigned');
+    else note('NO DRAWN ROW IN assigned, which is the finding for that row.');
 
     const afterAssigned = await readWorker(page);
-    const inProgress = afterAssigned.orders.find((order) => order.state === 'in-progress');
-    if (inProgress !== undefined) await measureCancel(page, inProgress.id, 'in-progress');
-    else note('NO ORDER IN in-progress, which is the finding for that row.');
+    const inProgress = await pickRowInState(page, afterAssigned, 'in-progress');
+    if (inProgress !== undefined) await measureCancel(page, inProgress, 'in-progress');
+    else note('NO DRAWN ROW IN in-progress, which is the finding for that row.');
 
     const afterInProgress = await readWorker(page);
-    const stillPending = afterInProgress.orders.find((order) => order.state === 'materials-pending' || order.state === 'approved');
+    const stillPending = (await pickRowInState(page, afterInProgress, 'materials-pending'))
+      ?? (await pickRowInState(page, afterInProgress, 'approved'));
     if (stillPending !== undefined) {
-      await measureCancel(page, stillPending.id, `${stillPending.state}, with bricks already in the container`);
+      await measureCancel(page, stillPending, 'approved or materials-pending, with bricks already in the container');
     }
 
     note('');
@@ -633,7 +677,8 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
     let advertisedAtPress = Number.NaN;
     while (Date.now() - startedAt < 30_000) {
       const reading = await readWorker(page);
-      const candidate = reading.orders.find((order) => order.state === 'assigned');
+      const drawnId = await pickRowInState(page, reading, 'assigned');
+      const candidate = reading.orders.find((order) => order.id === drawnId);
       if (candidate !== undefined) {
         const rows = await readAdvertised(page);
         const row = rows.rows.find((entry) => entry.orderId === candidate.id);
@@ -659,7 +704,9 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
       + ` DOM row ${String(domBefore?.back)} [${String(domBefore?.text)}]`);
     note(`before: tick ${String(before.tick)}, treasury ${String(before.treasuryMinorUnits)}, chip ${JSON.stringify(chipBefore)}`);
 
-    await page.locator(`${QUEUE_ROW}[data-order="${target.id}"]`).getByRole('button', { name: 'Cancel' }).click();
+    const button = page.locator(`${QUEUE_ROW}[data-order="${target.id}"]`).getByRole('button', { name: 'Cancel' });
+    await button.waitFor({ state: 'visible', timeout: 15_000 });
+    await button.click();
 
     // Eight seconds, sampled at 150ms, exactly as #853 sampled it -- with the
     // worker's own treasury beside the chip on every sample.
