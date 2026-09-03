@@ -475,4 +475,55 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
     expect(inventory.length + statesVisited.length, 'the sweep above actually ran').toBeGreaterThan(0);
     expect([...new Set(keyShaped.map((entry) => `${entry.text} @ ${entry.where}`))]).toEqual([]);
   });
+
+  /**
+   * The gap this file's own docblock names and had left open: the sweep
+   * *collects* "anything still readable is text that never passed through the
+   * catalogue" (the paragraph beginning "Before this file the locale was
+   * reachable from exactly two places"), but until this test only one shape of
+   * that -- a key that resolved to nothing -- was ever asserted on. A
+   * hard-coded English sentence with no `.` in it, like
+   * `aria-label="Lockstate game application"` was on `index.html:11`, is not
+   * key-shaped: `KEY_SHAPED` requires a dotted identifier, and "Lockstate game
+   * application" has none. It printed in every run's `PSEUDO-LOCALE SWEEP ::`
+   * report, in the `[attribute]` line for `main#app`, "not from the catalogue
+   * at all" in as many words -- and nothing above ever failed on it. That
+   * string now resolves through `app.shell.label`
+   * (`src/content/default-locale-en.ts`, `src/ui/app-shell-messages.ts`,
+   * applied at `src/main.ts`), so it comes back bracketed like everything
+   * else the catalogue owns; this test is what stops the next one from
+   * printing quietly instead.
+   *
+   * Two exemptions, both document-level and both deliberate rather than
+   * loosened to make room for a failure:
+   *
+   * - `document.title` (`kind: 'document'`, `where: '<title>'`). The owner's
+   *   ruling that opened this change is explicit that the title stays exactly
+   *   as it is -- `Lockstate.io` is the brand name, not player-facing prose,
+   *   and routing it through the catalogue was never asked for.
+   * - `<html lang>` (`kind: 'document'`, `where: '<html lang>'`). There is no
+   *   runtime locale switch (`installPseudoLocale`'s comment above states why
+   *   the sweep has to rewrite the served module to reach `en-XA` at all), so
+   *   this attribute is always the literal document language and never a
+   *   string a translator would see -- it names no catalogue entry to be
+   *   missing from.
+   *
+   * Every other finding the sweep collects is either bracketed -- reached
+   * through the catalogue, `Localizer.format` having produced it -- or it is
+   * exactly the leak this test exists to catch. A generated prisoner or staff
+   * name is not a third exemption: `regime-panel.ts` interpolates it into
+   * `HUD_MESSAGE_KEY.regimeRosterName` via `t(...)`, so it arrives bracketed
+   * (the template's `⟦ … ⟧` wraps the whole rendered string, name included --
+   * the "second class" of finding this file's own docblock describes under
+   * "Why the obvious rule is wrong"), not as a bare string this test would see
+   * at all.
+   */
+  test('no hard-coded English reaches the page outside document.title and <html lang>', () => {
+    const leaked = inventory.filter((entry) => entry.kind !== 'document' && !entry.bracketed);
+    expect(inventory.length + statesVisited.length, 'the sweep above actually ran').toBeGreaterThan(0);
+    expect(
+      [...new Set(leaked.map((entry) => `${JSON.stringify(entry.residue)} @ ${entry.where}`))],
+      'readable English reached the page without passing through the catalogue',
+    ).toEqual([]);
+  });
 });

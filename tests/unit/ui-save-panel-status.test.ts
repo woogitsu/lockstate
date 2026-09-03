@@ -255,6 +255,7 @@ describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () =
    */
   const MODULES = [
     'affordability.ts',
+    'app-shell-messages.ts',
     'brand-badge.ts',
     'brand-messages.ts',
     'build-tool.ts',

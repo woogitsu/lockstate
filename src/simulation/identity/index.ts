@@ -13,3 +13,14 @@
 
 export * from './actor-identity';
 export * from './name-pool';
+
+/*
+ * `./name-pools/` holds the authored content that replaces
+ * `PLACEHOLDER_ACTOR_NAME_POOL` -- nine pools of 120 given by 160 family
+ * names. It is **deliberately not re-exported here**, because nothing in
+ * `src/` reads it yet: which pool a prison draws from is
+ * `docs/adr/0094-which-names-a-prison-draws-from.md`, and that document is
+ * Proposed. A barrel export would make the pools look reachable from the
+ * places that take an `ActorNamePool` today, and they are not meant to be
+ * until the owner has read decision 2. Import the directory directly.
+ */

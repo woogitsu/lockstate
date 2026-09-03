@@ -33,9 +33,9 @@ const projection = (overrides: Partial<BuildQueueViewModel> = {}): BuildQueueVie
     offset: 0,
     limit: 3,
     rows: [
-      { orderId: 'order-01', definitionId: 'wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'in-progress' },
-      { orderId: 'order-02', definitionId: 'wall-brick', tile: { x: 3, y: 4 }, edge: 'north', state: 'assigned' },
-      { orderId: 'order-03', definitionId: 'door-wooden', tile: { x: 3, y: 5 }, edge: 'west', state: 'materials-pending' },
+      { orderId: 'order-01', definitionId: 'wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'in-progress', cancelRefundMinorUnits: 0 },
+      { orderId: 'order-02', definitionId: 'wall-brick', tile: { x: 3, y: 4 }, edge: 'north', state: 'assigned', cancelRefundMinorUnits: 80 },
+      { orderId: 'order-03', definitionId: 'door-wooden', tile: { x: 3, y: 5 }, edge: 'west', state: 'materials-pending', cancelRefundMinorUnits: 65 },
     ],
   },
   ...overrides,
@@ -106,7 +106,17 @@ describe('what the Build panel is told about the queue', () => {
       tile: { x: 3, y: 5 },
       edge: 'west',
       state: 'materials-pending',
+      cancelRefundMinorUnits: 65,
     });
+  });
+
+  it('carries the refund figure through unchanged, which is the whole of what this layer does with it', () => {
+    // The owner's ruling of 2026-09-02: this thread may not compute the
+    // figure (`AGENTS.md` boundary 1), only pass through what the projection
+    // already decided -- so a value the projection did not carry must not
+    // appear here, and one it did carry must survive exactly.
+    const queue = buildQueueFromProjection(projection(), labelKeyOf);
+    expect(queue.orders.map((order) => order.cancelRefundMinorUnits)).toEqual([0, 80, 65]);
   });
 
   it('says the queue is empty rather than saying nothing, which is a different fact', () => {
@@ -237,9 +247,9 @@ describe('the reader that asks for the queue', () => {
       total: 12,
       started: 1,
       orders: [
-        { orderId: 'order-01', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'in-progress' },
-        { orderId: 'order-02', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 3, y: 4 }, edge: 'north', state: 'assigned' },
-        { orderId: 'order-03', labelKey: 'hud.build.buildable.door-wooden', tile: { x: 3, y: 5 }, edge: 'west', state: 'materials-pending' },
+        { orderId: 'order-01', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'in-progress', cancelRefundMinorUnits: 0 },
+        { orderId: 'order-02', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 3, y: 4 }, edge: 'north', state: 'assigned', cancelRefundMinorUnits: 80 },
+        { orderId: 'order-03', labelKey: 'hud.build.buildable.door-wooden', tile: { x: 3, y: 5 }, edge: 'west', state: 'materials-pending', cancelRefundMinorUnits: 65 },
       ],
       materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 },
     });
