@@ -838,21 +838,58 @@ test.describe('the errand, watched through the interface', () => {
     log(`STATUS STRIP: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
 
     // ---- act 8: save and reload mid-errand --------------------------------
+    /*
+     * **The second errand is bought and watched entirely at 1x, and run 3's
+     * failure is why.** Run 3 bought at day-tick ~730 -- inside the 500-1,000
+     * work block -- then fast-forwarded looking for the *edge* of the next
+     * block, so the prisoner took and finished the errand at 4x while the
+     * instrument was still fast-forwarding, and there was never a live carry to
+     * capture. `PROCUREMENT_DELIVERY_DELAY_TICKS` is 100
+     * (`src/content/procurement-catalog.ts`), which is five seconds at 1x, and
+     * the carry is selected within one 20-tick reconsideration cycle of the
+     * delivery landing -- so the whole thing fits comfortably inside a work
+     * block with no fast-forward at all, provided the block has room left.
+     */
+    const afterFirst = await readWorker(page);
+    const roomLeftInTheBlock = (tick: number) => {
+      const dayTick = dayTickOf(tick);
+      return (dayTick >= 500 && dayTick < 850) || (dayTick >= 1300 && dayTick < 1650);
+    };
+    if (!roomLeftInTheBlock(afterFirst.tick)) {
+      log(`day-tick ${dayTickOf(afterFirst.tick)} leaves too little of the block for a 100-tick delivery; fast-forwarding to the next one`);
+      await fastForwardToMax(page);
+      const edgeStarted = Date.now();
+      while (Date.now() - edgeStarted < 90_000) {
+        const now = await readWorker(page);
+        if (nearlyAWorkBlock(now.tick)) break;
+        await page.waitForTimeout(150);
+      }
+      await playAtNormalSpeed(page);
+      // Into the block itself, so the delivery lands while somebody can carry.
+      const intoStarted = Date.now();
+      while (Date.now() - intoStarted < 30_000) {
+        const now = await readWorker(page);
+        if (roomLeftInTheBlock(now.tick)) break;
+      }
+    }
     await tab(page, 'build').click();
     await buy(page, 'wall-brick', 10);
-    await fastForwardToMax(page);
-    const secondEdge = await runToTheEdgeOfAWorkBlock('second errand', 90_000);
-    if (secondEdge === undefined) {
-      log('SAVE/RELOAD: no second delivery reached the bay in time; this half is not measured');
-      return;
-    }
     await playAtNormalSpeed(page);
+    log(`bought the second delivery at tick ${await currentTick(page)} (day-tick ${dayTickOf(await currentTick(page))}), clock at 1x`);
     await tab(page, 'regime').click();
 
     let capture: { readonly reading: WorkerReading; readonly roster: readonly string[] } | undefined;
+    let captureLine = '';
     const captureStarted = Date.now();
-    while (Date.now() - captureStarted < 60_000) {
+    while (Date.now() - captureStarted < 90_000) {
       const now = await readWorker(page);
+      const watched = latestJob(now);
+      const prisoner = now.prisoners[0];
+      const line = `job ${watched?.state ?? '-'}/${watched?.leg ?? '-'} | ${prisoner === undefined ? '-' : `(${prisoner.tile.x},${prisoner.tile.y}) ${ACTION_IDS[prisoner.actionIndex] ?? prisoner.actionIndex}/${ACTION_PHASES[prisoner.actionPhase]}`}`;
+      if (line !== captureLine) {
+        log(`CAPTURE-WATCH t${now.tick}(${dayTickOf(now.tick)}) ${line}`);
+        captureLine = line;
+      }
       const live = now.jobs.find((job) => job.state === 'travelling' || job.state === 'performing');
       if (live !== undefined) {
         // Pause *first*, then read: pausing does not freeze an outstanding
