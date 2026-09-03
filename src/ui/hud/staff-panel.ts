@@ -1268,19 +1268,19 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
   dismissConfirmation.id = dismissConfirmationId;
 
   /**
-   * Puts the standing arm on screen, or takes it off.
-   *
-   * Keyed on `row.staffId` and not on a remembered row index, for
-   * `pressDismiss`' reason: a position is not a stable name for anybody, and the
-   * whole of #877 is what happens when one is treated as though it were.
-   */
-  /**
    * Whether the confirmation had a box on the last paint, so *appearing* can be
    * told from being repainted. Only the transition scrolls: scrolling on every
    * publication would move the page under a player who is reading it.
    */
   let dismissConfirmationShown = false;
 
+  /**
+   * Puts the standing arm on screen, or takes it off.
+   *
+   * Keyed on `row.staffId` and not on a remembered row index, for
+   * `pressDismiss`' reason: a position is not a stable name for anybody, and the
+   * whole of #877 is what happens when one is treated as though it were.
+   */
   function paintDismissConfirmation(): void {
     for (const row of rosterRows) {
       const armed = armedDismissal !== undefined && row.staffId === armedDismissal.staffId;
