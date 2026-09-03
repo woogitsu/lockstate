@@ -551,115 +551,235 @@ test.describe('a prisoner’s day', () => {
     expect(prisoners.length).toBeGreaterThan(0);
   });
 
+
   /**
    * Act 2. ADR 0093's errand, driven with the mouse for the first time.
    *
-   * The layout, and why these tiles: `calibrate` puts tile (0,0) at
-   * `(-304, -574)` on this build, so the visible tile band in a 1440x900
-   * viewport is x in 5..27 and y in 9..23. The cell is `buildAndPopulate`'s
-   * (12,12)-(17,17); the delivery bay is (6,12)-(9,15), which is the catalogue
-   * minimum 4x4; the storeroom is (20,12)-(22,14), the catalogue minimum 3x3.
-   * All three are inside that band.
+   * ## Two things this act's first run cost, both kept because they will be
+   * paid again
+   *
+   * 1. **A large part of the canvas is not reachable by a mouse gesture, and
+   *    the failure is silent.** `.hud` is `position: fixed; inset: 0` with
+   *    `pointer-events: none`, but every panel inside it takes
+   *    `pointer-events: auto` (`hud.css`'s `.hud__aside > *, .hud__side > *`
+   *    rule), so a drag whose path crosses a panel is swallowed with no
+   *    refusal, no band and no console line. A first attempt put the delivery
+   *    bay at (6,12)-(9,15) -- comfortably inside the *viewport* -- and its
+   *    four wall runs produced 4, **0**, 1 and (never reached) commands. So
+   *    this act measures the reachable tiles with `elementFromPoint` before it
+   *    lays anything out, and prints the band it found; a layout chosen from
+   *    the viewport's arithmetic alone is a layout chosen from the wrong
+   *    rectangle.
+   * 2. **`buildAndPopulate` is too expensive to be act 2's prologue.** Its 6x6
+   *    cell, twelve panel dumps and 5 s designate retries spent about eight of
+   *    the ten minutes the first attempt had, and the test died mid-wall. This
+   *    act builds its own prison instead: a 2x3 cell, the catalogue minimum
+   *    (`room.cell` is `minWidth: 2, minHeight: 3, minTiles: 6`), one bed and
+   *    one toilet, one prisoner. 10 wall segments instead of 24.
+   *
+   * ## What is being played for
+   *
+   * `DeliveryBayCarryRoute` arms only when **both** logistics rooms hold the
+   * capability their own catalogue requirement names -- `'delivery-access'`
+   * from `object.loading-dock-door` in a `room.delivery-bay`, `'item-storage'`
+   * from `object.storage-rack` in a `room.storage-room`. From that moment
+   * `ProcurementSystem.update` stops depositing a delivery into the
+   * construction container and lands it in the bay's own container instead,
+   * raising a carry job; the goods reach construction only when a prisoner
+   * walks them across. So the questions are:
+   *
+   * - does a row ever read `Errand` (the label
+   *   `src/content/simulation-message-keys.ts` marks as *"a draft for the
+   *   owner's review"*), and how long after the delivery lands?
+   * - what does the Build panel say about an order whose bricks are sitting in
+   *   a shed forty tiles away? `BuildQueueViewModel`'s own comment says every
+   *   such order reads `'materials-pending'` *"whether its materials are on a
+   *   lorry or were never bought"*, and `materialsFunding.unfunded` is the
+   *   only other thing on that block.
    */
   test('the errand: a delivery that has to be carried', async ({ page }) => {
+    // Not the config's 600_000: act 2's first attempt died inside a wall run
+    // at exactly that mark with three other agents' suites on the box. A
+    // playtest is not a gate, so a budget here buys evidence rather than
+    // hiding a race -- and the run is read from its log either way.
+    test.setTimeout(1_500_000);
     const log = (line: string): void => {
       console.log(`[errand] ${line}`);
     };
 
     await installTee(page);
     await openApp(page);
-    const origin = await buildAndPopulate(page, { beds: 2, admits: 2, guards: 0, label: 'errand' });
-    log(`origin ${JSON.stringify(origin)}`);
-    log(`funds after the cell: ${String(await money(page))}`);
-
-    // ---- materials for the two logistics rooms -----------------------------
-    // 16 wall segments for the bay + 12 for the storeroom = 28 segments = 56
-    // bricks. 3 planks for the dock door, 2 for the racks. Bought generously,
-    // and while the route is still inactive, so these land directly.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
     await tab(page, 'build').click();
-    await buy(page, 'wall-brick', 70);
-    log(`buy rows available: ${JSON.stringify(await page.locator('.hud-build__list [data-buildable]').evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).dataset['buildable'])))}`);
-    // The Buy fold buys the *selected buildable's* material
-    // (`build-panel.ts`'s `onPurchase({ itemId: material.itemId, quantity })`),
-    // so the planks the door and the racks need are bought through their own
-    // rows. Both are `item.wood-plank`; 4 each is 8 against the 5 they consume.
+    const origin = await calibrate(page);
+    log(`origin ${JSON.stringify(origin)}; viewport ${JSON.stringify(page.viewportSize())}`);
+
+    // ---- which tiles can a gesture actually reach? -------------------------
+    const reach = await page.evaluate(
+      ({ originX, originY, tile }) => {
+        const rows: { y: number; xs: number[] }[] = [];
+        for (let ty = 0; ty <= 30; ty += 1) {
+          const centreY = originY + ty * tile + tile / 2;
+          if (centreY < 0 || centreY > window.innerHeight) continue;
+          const xs: number[] = [];
+          for (let tx = 0; tx <= 40; tx += 1) {
+            const centreX = originX + tx * tile + tile / 2;
+            if (centreX < 0 || centreX > window.innerWidth) continue;
+            const hit = document.elementFromPoint(centreX, centreY);
+            // Reachable means the world gets it: the hit is the canvas, or at
+            // least is not inside the HUD overlay.
+            const blocked = hit === null || hit.closest('.hud') !== null || hit.closest('.save-panel') !== null;
+            if (!blocked) xs.push(tx);
+          }
+          rows.push({ y: ty, xs });
+        }
+        return rows;
+      },
+      { originX: origin.originX, originY: origin.originY, tile: TILE },
+    );
+    for (const row of reach) {
+      const xs = row.xs;
+      log(
+        `reachable tiles at y=${row.y}: ${xs.length === 0 ? 'NONE' : `${xs.length} of them, x ${xs[0]}..${xs[xs.length - 1]}`}`
+          + `${xs.length > 0 && xs[xs.length - 1]! - xs[0]! + 1 !== xs.length ? ` (WITH GAPS: ${JSON.stringify(xs)})` : ''}`,
+      );
+    }
+
+    // ---- the layout, inside the band the probe found -----------------------
+    // Chosen against the probe rather than against the viewport, and every
+    // rectangle is its room type's catalogue minimum so the walls are as few
+    // as the content allows.
+    const CELL = { x0: 12, y0: 12, x1: 13, y1: 14 } as const; // 2x3, 10 segments
+    const BAY = { x0: 15, y0: 12, x1: 18, y1: 15 } as const; // 4x4, 16 segments
+    const STORE = { x0: 12, y0: 16, x1: 14, y1: 18 } as const; // 3x3, 12 segments
+    for (const [name, rect] of [
+      ['cell', CELL],
+      ['bay', BAY],
+      ['store', STORE],
+    ] as const) {
+      const unreachable: string[] = [];
+      for (let ty = rect.y0; ty <= rect.y1; ty += 1) {
+        const row = reach.find((candidate) => candidate.y === ty);
+        for (let tx = rect.x0; tx <= rect.x1; tx += 1) {
+          if (row === undefined || !row.xs.includes(tx)) unreachable.push(`${tx},${ty}`);
+        }
+      }
+      log(
+        `${name} at (${rect.x0},${rect.y0})-(${rect.x1},${rect.y1}):`
+          + ` ${unreachable.length === 0 ? 'every tile reachable' : `UNREACHABLE TILES ${JSON.stringify(unreachable)}`}`,
+      );
+    }
+
+    // ---- materials -----------------------------------------------------------
+    // 38 wall segments = 76 bricks, +1 for the toilet. 1 plank for the bed, 3
+    // for the dock door, 2 for the racks. Bought while the route is still
+    // unarmed, so all of it lands in the construction container directly.
+    await buy(page, 'wall-brick', 80);
+    await buy(page, 'bed-wooden', 2);
     await buy(page, 'loading-dock-door-wooden', 4);
-    await buy(page, 'storage-rack-wooden', 4);
+    await buy(page, 'storage-rack-wooden', 3);
     log(`funds after buying: ${String(await money(page))}`);
-    log(`deliveries: ${JSON.stringify(await panelText(page, '.hud-build__deliveries'))}`);
-    await page.waitForTimeout(4000);
+    await fastForwardToMax(page);
+    await page.waitForTimeout(3000);
+    log(`clock ${JSON.stringify(await currentClock(page))} at tick ${await currentTick(page)}`);
 
-    // ---- the bay ------------------------------------------------------------
-    await walls(page, origin, 6, 12, 9, 15, log);
-    await walls(page, origin, 20, 12, 22, 14, log);
+    // ---- the three rectangles ------------------------------------------------
+    await walls(page, origin, CELL.x0, CELL.y0, CELL.x1, CELL.y1, log);
+    await walls(page, origin, BAY.x0, BAY.y0, BAY.x1, BAY.y1, log);
+    await walls(page, origin, STORE.x0, STORE.y0, STORE.x1, STORE.y1, log);
     log(`queue right after the wall runs: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
-    const emptied = await waitForQueueEmpty(page, 300_000);
-    log(`queue empty ${emptied}ms after the runs, tick ${await currentTick(page)}`);
+    log(`queue empty ${await waitForQueueEmpty(page, 300_000)}ms later, tick ${await currentTick(page)}`);
 
-    const bayAttempts = await zoneRoom(page, origin, 'room.delivery-bay', { x: 6, y: 12 }, { x: 9, y: 15 }, log);
-    const storeAttempts = await zoneRoom(page, origin, 'room.storage-room', { x: 20, y: 12 }, { x: 22, y: 14 }, log);
-    log(`bay zoned after ${bayAttempts} attempt(s); storeroom after ${storeAttempts}`);
-    log(`rooms panel: ${await panelText(page, '.hud-rooms')}`);
-    if (bayAttempts < 0 || storeAttempts < 0) {
-      log('COULD NOT ZONE ONE OF THE TWO LOGISTICS ROOMS. That is this run’s finding rather than a step to work around.');
-      log(`counts: ${JSON.stringify(await latestCounts(page))}`);
+    const cellAttempts = await zoneRoom(page, origin, 'room.cell', { x: CELL.x0, y: CELL.y0 }, { x: CELL.x1, y: CELL.y1 }, log, 6);
+    const bayAttempts = await zoneRoom(page, origin, 'room.delivery-bay', { x: BAY.x0, y: BAY.y0 }, { x: BAY.x1, y: BAY.y1 }, log, 6);
+    const storeAttempts = await zoneRoom(page, origin, 'room.storage-room', { x: STORE.x0, y: STORE.y0 }, { x: STORE.x1, y: STORE.y1 }, log, 6);
+    log(`zoning attempts: cell ${cellAttempts}, bay ${bayAttempts}, store ${storeAttempts}`);
+    log(`counts after zoning: ${JSON.stringify(await latestCounts(page))}`);
+    if (cellAttempts < 0 || bayAttempts < 0 || storeAttempts < 0) {
+      log('COULD NOT ZONE ALL THREE ROOMS. That is this run’s finding rather than a step to work around.');
+      log(`rooms panel: ${await panelText(page, '.hud-rooms')}`);
       return;
     }
 
-    // ---- furnish both ends, which is what arms the route -------------------
+    // ---- furnish: the cell, then both ends of the route ---------------------
     await tab(page, 'build').click();
+    await armBuildable(page, 'bed-wooden');
+    const bedAt = centreOf(origin, CELL.x0, CELL.y0);
+    log(`bed at (${CELL.x0},${CELL.y0}): ${JSON.stringify(await press(page, bedAt.x, bedAt.y))}`);
+    await armBuildable(page, 'toilet-brick');
+    const toiletAt = centreOf(origin, CELL.x1, CELL.y1);
+    log(`toilet at (${CELL.x1},${CELL.y1}): ${JSON.stringify(await press(page, toiletAt.x, toiletAt.y))}`);
+    // The dock door is a 3x1 footprint, so the anchor is the westmost of three
+    // tiles and all three have to be inside the bay.
     await armBuildable(page, 'loading-dock-door-wooden');
-    const doorAt = centreOf(origin, 6, 13);
-    log(`dock door at tile (6,13) -> screen ${JSON.stringify(doorAt)}: ${JSON.stringify(await press(page, doorAt.x, doorAt.y))}`);
-    log(`band after the door: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+    const doorAt = centreOf(origin, BAY.x0, BAY.y0 + 1);
+    log(`dock door anchored at (${BAY.x0},${BAY.y0 + 1}): ${JSON.stringify(await press(page, doorAt.x, doorAt.y))}`);
     await armBuildable(page, 'storage-rack-wooden');
     for (const tile of [
-      { x: 20, y: 13 },
-      { x: 21, y: 13 },
+      { x: STORE.x0, y: STORE.y0 + 1 },
+      { x: STORE.x0 + 1, y: STORE.y0 + 1 },
     ]) {
       const point = centreOf(origin, tile.x, tile.y);
       log(`rack at (${tile.x},${tile.y}): ${JSON.stringify(await press(page, point.x, point.y))}`);
     }
-    log(`band after the racks: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
-    await waitForQueueEmpty(page, 240_000);
+    log(`band after the placements: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+    log(`queue empty ${await waitForQueueEmpty(page, 300_000)}ms later, tick ${await currentTick(page)}`);
     await page.waitForTimeout(2000);
     await tab(page, 'rooms').click();
-    log(`rooms panel with both ends furnished: ${await panelText(page, '.hud-rooms')}`);
+    log(`ROOMS PANEL WITH ALL THREE ROOMS FURNISHED:\n${await panelText(page, '.hud-rooms')}`);
+    log(`counts: ${JSON.stringify(await latestCounts(page))}`);
 
-    // ---- and now a purchase that has to be carried -------------------------
+    // ---- somebody to carry ---------------------------------------------------
+    await tab(page, 'overview').click();
+    await page.locator('.hud-intake__admit').click();
+    await page.waitForTimeout(3000);
+    log(`intake after one admission: ${await panelText(page, '.hud-intake')}`);
+    await tab(page, 'regime').click();
+    let housed = await readRoster(page);
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      housed = await readRoster(page);
+      if (housed.rows.length > 0 && housed.rows.every((row) => row.group !== null)) break;
+      await page.waitForTimeout(1000);
+    }
+    log(`roster once classified, tick ${housed.tick}: ${JSON.stringify(housed.rows)}`);
+    log(`timetable: ${JSON.stringify(await readTimetable(page))}`);
+
+    // ---- and now a purchase that has to be carried --------------------------
     await tab(page, 'build').click();
-    const fundsBefore = await money(page);
     const tickAtPurchase = await currentTick(page);
+    const fundsBefore = await money(page);
     await buy(page, 'wall-brick', 20);
     log(`bought 20 bricks at tick ${tickAtPurchase}; funds ${String(fundsBefore)} -> ${String(await money(page))}`);
     log(`deliveries readout: ${JSON.stringify(await panelText(page, '.hud-build__deliveries'))}`);
-    log(`pending attribute: ${await page.locator('.hud-build__deliveries').getAttribute('data-pending')}`);
+    log(`deliveries data-pending: ${await page.locator('.hud-build__deliveries').getAttribute('data-pending')}`);
 
-    // A build order for the bricks to be needed by, placed inside the cell so
-    // it cannot be refused for want of a room.
-    await armBuildable(page, 'toilet-brick');
-    const orderAt = centreOf(origin, 16, 16);
-    log(`toilet order at (16,16): ${JSON.stringify(await press(page, orderAt.x, orderAt.y))}`);
+    // An order for those bricks to be needed by. A wall segment costs 2
+    // bricks, so one segment placed outside every room needs the delivery to
+    // have arrived *in the construction container* before it can start.
+    await armBuildable(page, 'wall-brick');
+    const spare = centreOf(origin, BAY.x1 + 2, BAY.y0);
+    log(`a lone wall segment at (${BAY.x1 + 2},${BAY.y0}): ${JSON.stringify(await press(page, spare.x, spare.y))}`);
+    log(`queue with the order placed: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
 
     await tab(page, 'regime').click();
     const errandSamples: RosterSample[] = [];
     const queueTexts: string[] = [];
     const startedAt = Date.now();
     let firstErrandAt: RosterSample | undefined;
-    while (Date.now() - startedAt < 110_000) {
+    while (Date.now() - startedAt < 150_000) {
       const sample = await readRoster(page);
       errandSamples.push(sample);
       if (firstErrandAt === undefined && sample.rows.some((row) => /errand/i.test(row.activity))) {
         firstErrandAt = sample;
-        log(`FIRST ERRAND at tick ${sample.tick}, day ${sample.day}: ${JSON.stringify(sample.rows)}`);
+        log(`FIRST ERRAND at tick ${sample.tick} (${sample.tick - tickAtPurchase} ticks after the purchase), day ${sample.day}: ${JSON.stringify(sample.rows)}`);
       }
-      if (errandSamples.length % 30 === 0) {
+      if (errandSamples.length % 25 === 0) {
         await tab(page, 'build').click();
-        const queue = await panelText(page, '.hud-build__queue');
-        queueTexts.push(`t=${sample.tick} ${queue.replace(/\n/g, ' | ')}`);
+        queueTexts.push(`t=${sample.tick} queue ${(await panelText(page, '.hud-build__queue')).replace(/\n/g, ' | ')}`);
         await tab(page, 'regime').click();
       }
-      await page.waitForTimeout(700);
+      await page.waitForTimeout(500);
     }
 
     log(`samples: ${errandSamples.length}; ticks ${errandSamples[0]?.tick} -> ${errandSamples[errandSamples.length - 1]?.tick}`);
@@ -669,15 +789,19 @@ test.describe('a prisoner’s day', () => {
     log(JSON.stringify([...tally.entries()].sort((l, r) => r[1] - l[1])));
     log(
       firstErrandAt === undefined
-        ? 'NO ROW EVER READ "Errand" in the whole window. Either no carry was selected, or the roster cannot say so.'
-        : `An errand was on the roster from tick ${firstErrandAt.tick}.`,
+        ? 'NO ROW EVER READ "Errand" in the whole window. Either no carry was ever selected, or the roster cannot say so.'
+        : `An errand reached the roster ${firstErrandAt.tick - tickAtPurchase} ticks after the purchase was pressed.`,
     );
     log('=== WHAT THE BUILD PANEL SAID WHILE IT WAITED ===');
     for (const text of queueTexts) log(`  ${text}`);
+    await tab(page, 'build').click();
     log(`final queue: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
     log(`final deliveries: ${JSON.stringify(await panelText(page, '.hud-build__deliveries'))}`);
+    log(`final deliveries data-pending: ${await page.locator('.hud-build__deliveries').getAttribute('data-pending')}`);
     log(`final funds: ${String(await money(page))}`);
     log(`final counts: ${JSON.stringify(await latestCounts(page))}`);
+    log(`alerts list: ${await panelText(page, '.hud-alerts__list')}`);
+    log(`refusal band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
     log('=== TAPE ===');
     let previous = '';
     for (const sample of errandSamples) {
