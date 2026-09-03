@@ -474,12 +474,26 @@ async function measureCancel(page: Page, orderId: string, label: string): Promis
   const button = page.locator(`${QUEUE_ROW}[data-order="${orderId}"]`).getByRole('button', { name: 'Cancel' });
   await button.waitFor({ state: 'visible', timeout: 15_000 });
   await button.click();
+  /*
+   * The tick the press was scheduled for, which is the whole difference
+   * between this reading and a headless one.
+   * `tests/integration/construction-queue-row-pays-what-it-shows.test.ts`
+   * submits with `executeAtTick: runtime.kernel.tick` and steps once, so its
+   * command runs at the tick the row was read. A browser press runs at
+   * whatever `SimulationCommandSender.projectExecuteTick` chose, which is the
+   * bare reported tick while the clock is paused and that plus an elapsed
+   * estimate plus `DEFAULT_LEAD_TICKS` while it runs
+   * (`src/ui/simulation-commands.ts:77,188-192`).
+   */
+  const envelope = await lastSubmitEnvelope(page);
   await page.waitForTimeout(700);
   const after = await readWorker(page);
   const chipAfter = await readChip(page);
   const afterOrder = after.orders.find((candidate) => candidate.id === orderId);
 
   note(`  command sent: ${JSON.stringify((await sentCommands(page)).slice(commandsBefore))}`);
+  note(`  submitted at tick ${String(before.tick)}, scheduled to execute at ${String(envelope?.executeAtTick)}`
+    + ` (lead ${String((envelope?.executeAtTick ?? Number.NaN) - before.tick)} ticks)`);
   note(`  after: tick ${String(after.tick)}, treasury ${String(after.treasuryMinorUnits)},`
     + ` bricks held ${String(after.brickQuantity)} (reserved ${String(after.brickReserved)}),`
     + ` bricks in flight ${String(after.bricksInFlight)}, deliveries ${JSON.stringify(after.deliveries)}`);
@@ -659,6 +673,50 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
     expect(reached.orders.length).toBeGreaterThan(0);
   });
 
+  test('approved against a delivery the player bought by hand, still in flight', async ({ page }) => {
+    const note = (line: string): void => {
+      console.log(line);
+    };
+    const from = await freshPrison(page);
+
+    /*
+     * The case #853's own numbers came from, and the one that makes its
+     * `approved:0` correct rather than a defect.
+     *
+     * `refundSurplusDeliveries` will not cancel a delivery whose order id is
+     * not a `jit:` one -- stock the player chose to hold, the distinction #687
+     * drew through `isJustInTimePurchaseOrderId`. So an order placed while a
+     * hand-bought delivery covers its demand causes no purchase of its own
+     * (deficit = demand - held - inFlight) and has no `jit:` delivery for a
+     * cancellation to turn around. There is nothing surplus that this may
+     * take, and `0` is the honest figure.
+     */
+    await buy(page, 'wall-brick', 40);
+    const bought = await readWorker(page);
+    note(`after buying by hand: treasury ${String(bought.treasuryMinorUnits)},`
+      + ` bricks held ${String(bought.brickQuantity)}, in flight ${String(bought.bricksInFlight)},`
+      + ` deliveries ${JSON.stringify(bought.deliveries)}`);
+    note(`is that delivery a just-in-time one? ${String(bought.deliveries.every((delivery) => delivery.orderId.startsWith('jit:')))}`);
+
+    await dragWall(page, from, 4);
+    const placed = await readWorker(page);
+    note(`placed while it is still on the road: ${JSON.stringify(stateCounts(placed))},`
+      + ` treasury ${String(placed.treasuryMinorUnits)}, bricks held ${String(placed.brickQuantity)},`
+      + ` in flight ${String(placed.bricksInFlight)}, deliveries ${JSON.stringify(placed.deliveries)}`);
+    if (placed.orders.length === 0) {
+      note('NO ORDERS from the drag; nothing to measure.');
+      return;
+    }
+
+    const target = await pickRowInState(page, placed, 'approved');
+    if (target === undefined) {
+      note('NO DRAWN ROW IN approved, which is the finding.');
+      return;
+    }
+    await measureCancel(page, target, 'approved, against a hand-bought delivery still in flight');
+    expect(placed.orders.length).toBeGreaterThan(0);
+  });
+
   test('assigned and in-progress: bricks in the container first', async ({ page }) => {
     const note = (line: string): void => {
       console.log(line);
@@ -698,6 +756,7 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
       + ` treasury ${String(reached.treasuryMinorUnits)}`);
     note(`advertised now: ${JSON.stringify((await readAdvertised(page)).rows)}`);
 
+    await openQueueFold(page);
     note(`rows the panel drew: ${JSON.stringify(await readDomRows(page))}`);
     const assigned = await pickRowInState(page, reached, 'assigned');
     if (assigned !== undefined) await measureCancel(page, assigned, 'assigned');
