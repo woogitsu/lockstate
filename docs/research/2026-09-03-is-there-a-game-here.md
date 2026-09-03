@@ -4,14 +4,21 @@
 **Branch:** `playtest/is-there-a-game-here`, cut from `origin/main` at `f7adf652` (v0.0.419)
 **Instruments:** `tests/browser/playtest-2026-09-03-is-there-a-game-here.playtest.ts`,
 `tests/browser/playtest-2026-09-03-twenty-prisoners-ergonomics.playtest.ts`
-**Status:** the INCIDENTS question is **settled** (§5) and the guard A/B is in
-flight (§6.5). Nothing in this file is a decision, and nothing in it is a fix.
+**Status:** complete. Three instruments run, all green; the INCIDENTS question
+is **settled** (§5) and the branch's own question is answered in §10. Nothing in this file is a decision, and nothing in it is a fix.
 
 > **The one-line answer to the question this branch was cut for.** The INCIDENTS
 > chip is **not** a defect: in 20.4 in-game days with no guards it published
 > `activeIncidents: 1` at 178 of 1,255 publications and at all 15 publications
 > inside the one incident window whose length is known exactly. §5 has the
 > sample and the refuting sample. The `DEFECT` label stays withdrawn.
+>
+> **And the finding that came out of asking:** the Staff panel's only piece of
+> advice, *"Hire 2 to cover this population"*, buys coverage and buys **no
+> incident response at all** — 13 fights, 0 answered, 24 prisoners injured,
+> `respondersDispatched: 0`, beside a readout saying *"This prison has the
+> guards it asks for."* Six more hires flipped it to 12 answered of 12, and the
+> readout did not change one character. §9.
 
 > `.playtest.ts` is collected only by `tests/browser/playwright.playtest.config.ts`.
 > **Nothing in CI runs either instrument.** A playtest is evidence, never a gate.
