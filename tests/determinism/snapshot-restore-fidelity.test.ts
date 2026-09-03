@@ -407,13 +407,21 @@ describe('subsystem snapshot / restore fidelity', () => {
    *
    * Nine donors are the snapshot of an *independent* session -- the same
    * scenario, never stepped -- which is a valid state of the same subsystem
-   * that nothing in the run under test computed. Three are literals, because
-   * this scenario leaves `tunnels`, `jobWorkers` and `incidentResponse` in
-   * exactly the state a fresh session has: an empty tunnel registry, the same
-   * four idle workers, four zero counters. Those three were the most vacuous
-   * cases of all -- `tunnels` was `[] -> [] -> []` -- and a literal is the
-   * strongest available fix, since the expected document is then written out
-   * rather than read back from anything.
+   * that nothing in the run under test computed. Two are literals, because
+   * this scenario leaves `tunnels` and `incidentResponse` in exactly the state
+   * a fresh session has: an empty tunnel registry, four zero counters. Those
+   * were the most vacuous cases of all -- `tunnels` was `[] -> [] -> []` -- and
+   * a literal is the strongest available fix, since the expected document is
+   * then written out rather than read back from anything.
+   *
+   * **This paragraph said "Three are literals" and named `jobWorkers` as one
+   * of them** (*"the same four idle workers"*), and
+   * [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 4 retired
+   * `JobWorkerPool` -- so there is no such snapshot to round-trip and the
+   * third literal is gone with it. Corrected rather than overwritten, because
+   * what it recorded about the *scenario* is still true: the scenario has never
+   * busied a worker, and what it now leaves on the board is two carry jobs
+   * whose `assignedWorkerId` the `jobs` case round-trips.
    */
   it('subsystems with no in-flight travel state round-trip their snapshot unchanged', () => {
     const runtime = buildDeterminismScenario(SCENARIO_SEED);
@@ -453,32 +461,34 @@ describe('subsystem snapshot / restore fidelity', () => {
     roundTripIsExact('roomInstances', () => runtime.prisoners.roomInstances.getSnapshot(), (value) => runtime.prisoners.roomInstances.loadSnapshot(value), donorSession.prisoners.roomInstances.getSnapshot());
     roundTripIsExact('incidentTrigger', () => runtime.incidentTriggerSystem.getSnapshot(), (value) => runtime.incidentTriggerSystem.loadSnapshot(value), donorSession.incidentTriggerSystem.getSnapshot());
 
-    // The three the scenario itself cannot distinguish, with the donor written
+    // The two the scenario itself cannot distinguish, with the donor written
     // out instead. Each is a state its subsystem's own API can reach --
-    // `TunnelRegistry.start`/`advance`, `JobWorkerPool.setBusy`, four resolved
-    // and lapsed incidents -- so it is a document a real save can carry, not a
-    // shape invented to make an assertion fire.
+    // `TunnelRegistry.start`/`advance`, four resolved and lapsed incidents --
+    // so it is a document a real save can carry, not a shape invented to make
+    // an assertion fire.
+    //
+    // **There were three, and `jobWorkers` was the third.** It wrote
+    // `{ workers: [0, 2, 5], busy: [2] }` through `JobWorkerPool.setBusy`, and
+    // [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 4
+    // retired that class: eligibility is the regime's, busyness is the board's,
+    // and `operations.jobWorkers` is written empty and ignored on read
+    // (decision 5). There is no round trip left to be exact about -- the fact
+    // it carried is `assignedWorkerId` on each job, which `jobs` below already
+    // round-trips.
     roundTripIsExact('tunnels', () => runtime.tunnels.getSnapshot(), (value) => runtime.tunnels.loadSnapshot(value), [
       { id: 'tunnel-donor', startTile: { x: tileCoordinate(2), y: tileCoordinate(2) }, targetTile: { x: tileCoordinate(9), y: tileCoordinate(3) }, progress: 0.25 },
     ]);
-    roundTripIsExact('jobWorkers', () => runtime.jobWorkers.getSnapshot(), (value) => runtime.jobWorkers.loadSnapshot(value), {
-      workers: [0, 2, 5],
-      busy: [2],
-    });
     roundTripIsExact('incidentResponse', () => runtime.incidentResponseSystem.getSnapshot(), (value) => runtime.incidentResponseSystem.loadSnapshot(value), {
       metrics: { incidentsResolved: 3, incidentsLapsed: 2, respondersDispatched: 7, routeFailures: 1 },
     });
 
     // The scenario is what makes the nine donors above differ at all, so the
-    // three literals are here because it produces *nothing* for those
+    // two literals are here because it produces *nothing* for those
     // subsystems -- not because their donors were awkward to obtain. Pinned, so
-    // a scenario that later digs a tunnel or busies a worker is a failure that
-    // asks for the literal to be dropped rather than a case that silently goes
-    // back to comparing a fresh session against itself.
+    // a scenario that later digs a tunnel is a failure that asks for the
+    // literal to be dropped rather than a case that silently goes back to
+    // comparing a fresh session against itself.
     expect(donorSession.tunnels.getSnapshot(), 'the scenario now populates tunnels; use its snapshot as the donor').toEqual([]);
-    expect(toJsonValue(donorSession.jobWorkers.getSnapshot()), 'the scenario now changes the worker pool; use its snapshot as the donor').toEqual(
-      toJsonValue(runtime.jobWorkers.getSnapshot()),
-    );
     expect(
       toJsonValue(donorSession.incidentResponseSystem.getSnapshot()),
       'the scenario now moves the response metrics; use its snapshot as the donor',

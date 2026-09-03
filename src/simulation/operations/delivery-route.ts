@@ -7,16 +7,61 @@ import type { JobBoard } from './job';
  * decision 4 names as *"the intended physical route"* for procured materials,
  * and which `docs/adr/0093-a-carry-is-an-action.md` decision 2 makes real.
  *
- * Both have been zonable content with no reader since #141 flagged them.
- * `room.delivery-bay` also carries `object.loading-dock-door`'s
- * `'delivery-access'` capability, which `construction/definition.ts` records as
- * gating nothing; this route does not gate on it either, and that is
- * deliberate -- ADR 0093 decision 1 gives `action.carry` no
- * `requiredObjectCapability`, because there is no room ceiling to read and the
- * ceiling on how many prisoners carry is how many jobs are on the board.
+ * Both have been zonable content with no reader since #141 flagged them, and
+ * this module is the reader.
+ *
+ * **What gates on what, because there are two different gates here and
+ * conflating them is easy.** The *route* gates on each room holding its own
+ * authored capability -- see `DELIVERY_BAY_CAPABILITY` below for the gate and
+ * the prison that measured why it has to exist. The *action* does not:
+ * ADR 0093 decision 1 gives `action.carry` no `requiredObjectCapability`,
+ * because there is no room ceiling to read and the ceiling on how many
+ * prisoners carry is how many jobs are on the board.
  */
 export const DELIVERY_BAY_ROOM_CATALOG_ID = 'room.delivery-bay';
 export const STORAGE_ROOM_ROOM_CATALOG_ID = 'room.storage-room';
+
+/**
+ * The object capability each end of the route has to actually hold, and **the
+ * measured reason this gate exists at all.**
+ *
+ * ADR 0093 decision 2 says the route applies *"when a delivery comes due and
+ * both rooms exist"*. Built to the letter, that reading **bricks a new prison**,
+ * and it was measured rather than reasoned about: zone a bay and a storeroom
+ * before the first cell is furnished, and every delivery lands in the bay
+ * needing a carrier -- but the only carriers are prisoners, a prisoner is not
+ * admitted without a bed, and the bed is a build order waiting on the bricks
+ * sitting in the bay. On a probe prison the population never reached intake at
+ * all: `intakeStage` stayed short of `completed`, `actionIndex` stayed `-1`, and
+ * 24 delivery jobs sat `available` for ever.
+ *
+ * The gate is therefore *"both rooms **work**"* rather than *"both rooms
+ * exist"*, and the test is the one every other room-gated behaviour in this
+ * repository already uses: **is the capability the room's own authored
+ * requirement names actually standing in it** (`RoomInstance.objectCapabilities`,
+ * derived by `deriveRoomCapacity` from the objects the player placed). A bay
+ * with no loading dock door is not a delivery bay yet; a storeroom with no
+ * racks is not a storeroom yet.
+ *
+ * That dissolves the bootstrap by construction rather than by a number: the
+ * door and the racks are themselves build orders, so they are paid for by
+ * deliveries that still land directly -- and by the time both ends are
+ * furnished the prison has a population that can work them. It also introduces
+ * no balance value, which is what ADR 0017 decision 5 reserves.
+ *
+ * **Both capabilities are the ones this repository wrote down as waiting for
+ * exactly this consumer**, which is why neither is invented here.
+ * `tests/foundation/content-vocabulary-contract.test.ts` records
+ * `'delivery-access'` as declared by `object.loading-dock-door` and required
+ * by `room.delivery-bay` with no action gating on it, naming ADR 0017's
+ * procurement route as *"the system that would consume it"*; and
+ * `'item-storage'` as declared by `object.storage-rack` and required by
+ * `room.storage-room`, listed among the capabilities that *"appear in no
+ * `DEFAULT_ACTIONS` entry and in no other room's requirements"*. This is that
+ * system.
+ */
+export const DELIVERY_BAY_CAPABILITY = 'delivery-access';
+export const STORAGE_ROOM_CAPABILITY = 'item-storage';
 
 /**
  * The container id a `room.delivery-bay` instance is bound to.
@@ -48,7 +93,12 @@ export function deliveryBayContainerId(instanceId: string): string {
  * occupancy, no claim.
  */
 export interface RoomInstanceSource {
-  allByRoomCatalogId(roomCatalogId: string): readonly { readonly instanceId: string; readonly anchorTile: TilePosition }[];
+  allByRoomCatalogId(roomCatalogId: string): readonly {
+    readonly instanceId: string;
+    readonly anchorTile: TilePosition;
+    /** The union of the capabilities of the objects standing in the rectangle. Derived by `deriveRoomCapacity`, never authored per instance. */
+    readonly objectCapabilities: readonly string[];
+  }[];
 }
 
 /**
@@ -95,9 +145,11 @@ export interface DeliveryCarryRoute {
  * exists -- a total order derived from state, which is what ADR 0020 and ADR
  * 0029 decision 7 require of anything that decides an outcome.
  * `allByRoomCatalogId` is documented as sorted by `instanceId` and never Map
- * iteration order, so this reads the first element rather than sorting again.
+ * iteration order, so this takes the first *furnished* element in that order
+ * rather than sorting again. See `DELIVERY_BAY_CAPABILITY` for why "furnished"
+ * and not merely "zoned", and for the prison that measured the difference.
  *
- * ## When either room is missing
+ * ## When either room is missing or unfurnished
  *
  * `landAndRaiseCarry` answers `false` and the caller deposits directly, which
  * is ADR 0093 decision 2's graceful fallback and #811's *decision 1*. It is
@@ -129,7 +181,9 @@ export class DeliveryBayCarryRoute implements DeliveryCarryRoute {
 
   /** The bay a delivery lands in, with its container created on first use. */
   private bay(): { readonly containerId: string; readonly tile: TilePosition } | undefined {
-    const instance = this.rooms.allByRoomCatalogId(DELIVERY_BAY_ROOM_CATALOG_ID)[0];
+    const instance = this.rooms
+      .allByRoomCatalogId(DELIVERY_BAY_ROOM_CATALOG_ID)
+      .find((candidate) => candidate.objectCapabilities.includes(DELIVERY_BAY_CAPABILITY));
     if (instance === undefined) return undefined;
     const containerId = deliveryBayContainerId(instance.instanceId);
     if (this.containers.getById(containerId) === undefined) this.containers.register(new Container(containerId));
@@ -138,7 +192,9 @@ export class DeliveryBayCarryRoute implements DeliveryCarryRoute {
 
   /** The storeroom a delivery is carried to, bound to the container construction draws from. */
   private storeroom(): { readonly containerId: string; readonly tile: TilePosition } | undefined {
-    const instance = this.rooms.allByRoomCatalogId(STORAGE_ROOM_ROOM_CATALOG_ID)[0];
+    const instance = this.rooms
+      .allByRoomCatalogId(STORAGE_ROOM_ROOM_CATALOG_ID)
+      .find((candidate) => candidate.objectCapabilities.includes(STORAGE_ROOM_CAPABILITY));
     if (instance === undefined) return undefined;
     return { containerId: this.storageContainerId, tile: instance.anchorTile };
   }

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { Container } from '../../src/simulation/operations/inventory';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { pathsMentioning, type Hit } from '../helpers/entity-graph-walk';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
@@ -158,7 +160,34 @@ function prisonWithOneFullyLoadedPrisoner(): {
 
   runtime.gangs.register({ id: 'gang.test', territorySectorIds: [] });
   runtime.gangs.addMember('gang.test', entityId);
-  runtime.jobWorkers.register(entityId);
+  /*
+   * **An errand in progress, which is what `jobWorkers.register(entityId)`
+   * used to be** ([ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md)
+   * decision 4). `JobWorkerPool` is retired, so the store a departing prisoner
+   * has to be dropped from is the board's derived worker index -- and the only
+   * way into it is to actually be carrying something. Registering in a set
+   * cost one line; claiming a job costs four, and it is the stronger fixture:
+   * the release now has to *end the job and give the goods back*, not merely
+   * forget a member.
+   */
+  const errandSource = new Container('release-fixture-bay');
+  errandSource.deposit('item.brick', 4);
+  runtime.containers.register(errandSource);
+  runtime.containers.register(new Container('release-fixture-depot'));
+  runtime.jobs.submitCarryItem(
+    {
+      id: 'release-fixture-carry',
+      priority: 1,
+      itemId: 'item.brick',
+      quantity: 4,
+      sourceContainerId: 'release-fixture-bay',
+      sourceTile: { x: tileCoordinate(20), y: tileCoordinate(20) },
+      destinationContainerId: 'release-fixture-depot',
+      destinationTile: { x: tileCoordinate(24), y: tileCoordinate(24) },
+    },
+    runtime.kernel.tick,
+  );
+  expect(runtime.carryJobs.claimAvailableJobFor(entityId)?.id, 'the fixture is only meaningful if the prisoner is genuinely on an errand').toBe('release-fixture-carry');
   runtime.incidents.open(
     { id: 'incident.1', type: 'riot', sectorId: 'sector.default', participantIds: [entityId], severity: 2, causeFactors: [] },
     runtime.kernel.tick,
