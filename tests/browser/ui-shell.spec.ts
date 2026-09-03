@@ -5038,7 +5038,7 @@ test.describe('the Regime panel (issue #451)', () => {
     expect(probe.text, `an unresolved message key is on screen: ${probe.text}`).not.toMatch(RAW_KEY);
   });
 
-  test('a prison everybody has left draws no false sentence about non-admission (issue #506)', async ({ page }) => {
+  test('a prison everybody has left says so in its own sentence, not the new-prison one (issue #506)', async ({ page }) => {
     // Same `total: 0` as the test above, and the opposite history: five
     // prisoners were admitted, served their sentences -- one fixed sentence
     // each until #535 decision 5, a length drawn per prisoner since -- and
@@ -5056,6 +5056,22 @@ test.describe('the Regime panel (issue #451)', () => {
     // ruling makes this test's subject sharper rather than moving it: the new
     // sentence is false of this prison twice over -- it has held prisoners,
     // and the cell it tells the player to build is already standing.
+    //
+    // **REWRITTEN 2026-09-03, and the paragraph above is kept rather than
+    // deleted because it is the argument this test now discharges.** The owner
+    // ruled the missing sentence later the same day -- *"This prison is empty.
+    // Take somebody in to start again."* -- so what this state draws is no
+    // longer nothing. The subject is unchanged and the assertions get
+    // *stronger*: this prison must not read the new-prison sentence, which is
+    // still what a defect here would produce, and it must now read its own.
+    // A test that only demanded silence would pass on a panel that had lost
+    // the ability to say anything at all, which is exactly the state this
+    // ruling ended.
+    //
+    // Both literals are typed out rather than read from
+    // `defaultMessageCatalogEn`, per `docs/TESTING.md`: a fixture that supplies
+    // both sides of the comparison asserts nothing about the wording, and one
+    // specific ruled sentence is the whole subject.
     await page.evaluate(
       ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
       [TIMETABLE, DISCHARGED_ROSTER] as const,
@@ -5066,10 +5082,12 @@ test.describe('the Regime panel (issue #451)', () => {
     expect(probe.total).toBe('0');
     expect(probe.everAdmitted).toBe('true');
     expect(probe.rows).toEqual([]);
-    // The one assertion this whole test exists for: no box asserting
-    // non-admission over a prison that was, in fact, fully used.
-    expect(probe.emptyLaidOut, 'drew the false "No prisoners yet" box').toBe(false);
-    expect(probe.text).not.toContain('No prisoners yet.');
+    // The one assertion this whole test exists for, in both directions now:
+    // no sentence asserting non-admission over a prison that was, in fact,
+    // fully used -- and the sentence that is true of it, present.
+    expect(probe.text, 'drew the false "No prisoners yet" sentence').not.toContain('No prisoners yet.');
+    expect(probe.emptyLaidOut, 'drew no sentence at all, which is the state the 2026-09-03 ruling ended').toBe(true);
+    expect(probe.text).toContain('This prison is empty. Take somebody in to start again.');
     // Not being withheld either: a `total: 0` roster has nothing to page past.
     expect(probe.moreLaidOut).toBe(false);
     // The header still reads "0 of 0" -- a true statement about the present,

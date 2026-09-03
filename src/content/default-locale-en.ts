@@ -1609,7 +1609,51 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // second state still has none, and authoring one is the owner's under
   // `AGENTS.md`'s fourth exclusion -- the concern was put to them inside this
   // option's own description before they chose it, and they chose it.
+  //
+  // **That second state now has its own sentence, ruled by the owner later the
+  // same day**: `hud.regime.roster-emptied` below. The paragraph above is kept
+  // rather than rewritten (`docs/AGENT_WORKFLOW.md` §4) because what it
+  // records is still exactly right about *this* key -- this sentence is true of
+  // one state only, and the fix was a second sentence rather than a wider
+  // claim in this one.
   'hud.regime.roster-empty': 'No prisoners yet. Build a cell with a bed to take somebody in.',
+  // **The owner ruled this sentence on 2026-09-03**, shown it among candidates
+  // and choosing it in their own words: *"This prison is empty. Take somebody
+  // in to start again."* It is the sentence the key above has never been able
+  // to carry: a prison that admitted people and discharged all of them drew
+  // **no line at all** before this, because `regime-panel.ts` gated the box on
+  // `everAdmitted` being false and there was no true thing to put there.
+  //
+  // Same two-part shape as the key above, as ruled -- the state, then the one
+  // thing a player can do about it -- and it deliberately does *not* say
+  // "build a cell": in this state the cells already exist, which is the whole
+  // reason the other sentence could not be reused.
+  //
+  // **What the second half promises, and what makes the promise good.** "Take
+  // somebody in" is the Admit control, and two things had to be true before
+  // this sentence could ship. It has to exist wherever the player goes looking:
+  // it is on the **Overview** tab, which `hud-state.ts` makes the default, and
+  // `intake-panel.ts`'s own header records that placement as chosen so that
+  // "the control is the first thing a player sees rather than something to go
+  // looking for". And a press that cannot succeed has to *say so* rather than
+  // do nothing: since #869 it does -- `hud.refusal.admit-prisoner-no-room`
+  // reads *"Nobody was admitted -- this prison has no room to hold anybody."*
+  // Without that refusal this sentence would have been an instruction that can
+  // silently fail, which is precisely the class `AGENTS.md`'s fourth exclusion
+  // reserves to the owner, so it is recorded here as a dependency and not as a
+  // coincidence.
+  //
+  // **One thing this sentence does not solve, recorded rather than hidden.**
+  // The sentence is drawn on the **Regime** tab and the control it names is on
+  // **Overview**, so a player reads the instruction on one tab and carries it
+  // out on another. That is not new and not this ruling's doing -- the key
+  // above has the same shape, and the cell it tells a player to build is on the
+  // **Build** tab -- but under the owner's standing directive that the game be
+  // easy to play rather than a set of hidden features, a sentence that points
+  // at a control the player cannot see while reading it is worth naming. Filed
+  // rather than fixed here: fixing it means either moving a control or naming a
+  // tab in copy, and both are the owner's.
+  'hud.regime.roster-emptied': 'This prison is empty. Take somebody in to start again.',
 
   // What a refused control says (issue #207). Four comments in `src/` claimed
   // the HUD reported a refusal "on the control that was pressed" while the
