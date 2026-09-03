@@ -2,6 +2,7 @@ import { type Page, expect, test } from '@playwright/test';
 import {
   buildAndPopulate,
   buy,
+  currentTick,
   fastForwardToMax,
   installTee,
   latestCounts,
@@ -501,6 +502,19 @@ test.describe('the whole screen at once', () => {
     for (const line of d2.arrived) log(`   ARRIVED | ${line}`);
     for (const line of d2.gone) log(`   GONE    | ${line}`);
     log(`   strip now: ${JSON.stringify(await readStrip(page))}`);
+
+    /*
+     * And the whole prose of every tab, because act 2's line-set diff can only
+     * say which lines are *new* and a line that is new in one tab and old in
+     * another disappears from it. What a player can read is the text, printed.
+     */
+    log('===== ACT 3 / every sentence on every tab of this prison =====');
+    for (const id of TABS) {
+      await tab(page, id).click();
+      await page.waitForTimeout(400);
+      log(`-- tab ${id}`);
+      for (const line of (await readCurrentView(page)).split('\n')) log(`       | ${line}`);
+    }
   });
 
   test('act 4 — three numbers made to move', async ({ page }) => {
@@ -630,4 +644,100 @@ test.describe('the whole screen at once', () => {
       log(`   PRESS ${metric.padEnd(13)} changed ${d.arrived.length} line(s) on screen${d.arrived.length === 0 ? ' — NOTHING HAPPENED' : `: ${JSON.stringify(d.arrived.slice(0, 4))}`}`);
     }
   });
+  /**
+   * A sixth act, added after act 1 refuted the pass's own opening hypothesis.
+   *
+   * Act 1 asked how many numbers on screen are unlabelled and answered
+   * "essentially none" -- 158 of 163 tokens name themselves one or two hops
+   * away. So the question moved: the readouts *have* words, and the thing left
+   * to check is whether the words change when the world does. This act takes
+   * the one readout a new player asks about first -- **is the game running?** --
+   * and measures whether the screen answers it, because a new session is
+   * constructed paused and the whole sighted clock readout is `Day 1 / 0% /
+   * x1`, which is what a running clock prints too (#629, 2026-08-30).
+   *
+   * `transportPressedStates` exists and sets `aria-pressed`, so the state is
+   * on the wire. What this measures is whether it reaches a pixel: the
+   * computed background, border and colour of each of the three buttons in
+   * each of the three clock states, and the contrast between the pressed one
+   * and its two neighbours.
+   */
+  test('act 6 — does the screen say whether the clock is running', async ({ page }) => {
+    await installListenerCensus(page);
+    await installTee(page);
+    await page.setViewportSize(DESKTOP);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    const readTransport = async (label: string): Promise<void> => {
+      const rows = await page.evaluate(() => {
+        const parse = (c: string): readonly number[] => {
+          const m = /rgba?\(([^)]+)\)/.exec(c);
+          const parts = (m?.[1] ?? '').split(/[,\s/]+/).filter((p) => p !== '').map(Number);
+          return [(parts[0] ?? 0) / 255, (parts[1] ?? 0) / 255, (parts[2] ?? 0) / 255, parts[3] ?? 1];
+        };
+        const lin = (c: number): number => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+        const lum = (rgb: readonly number[]): number =>
+          0.2126 * lin(rgb[0] ?? 0) + 0.7152 * lin(rgb[1] ?? 0) + 0.0722 * lin(rgb[2] ?? 0);
+        return [...document.querySelectorAll('.hud-strip__transport button')].map((node) => {
+          const el = node as HTMLElement;
+          const style = getComputedStyle(el);
+          return {
+            label: el.getAttribute('aria-label') ?? '',
+            pressed: el.getAttribute('aria-pressed') ?? 'absent',
+            disabled: el.hasAttribute('disabled'),
+            background: style.backgroundColor,
+            backgroundLuminance: Number(lum(parse(style.backgroundColor)).toFixed(4)),
+            border: `${style.borderTopWidth} ${style.borderTopColor}`,
+            color: style.color,
+            outline: style.outlineWidth,
+            boxShadow: style.boxShadow.slice(0, 40),
+            opacity: style.opacity,
+          };
+        });
+      });
+      const speed = (await page.locator('.hud-clock__speed').innerText()).trim();
+      const day = (await page.locator('.hud-clock__day').innerText()).trim();
+      const progress = (await page.locator('.hud-clock__day-progress').innerText()).trim();
+      log(`   ${label.padEnd(26)} sighted clock reads "Day ${day} / ${progress} / ${speed}"`);
+      for (const r of rows) {
+        log(
+          `      ${r.label.padEnd(14)} aria-pressed=${r.pressed.padEnd(7)} bg=${r.background.padEnd(24)}` +
+            ` L=${String(r.backgroundLuminance).padEnd(8)} border=${r.border.padEnd(28)} colour=${r.color} shadow=${JSON.stringify(r.boxShadow)}`,
+        );
+      }
+      const luminances = rows.map((r) => r.backgroundLuminance);
+      const distinct = new Set(luminances.map((l) => l.toFixed(4))).size;
+      log(`      -> ${distinct} distinct button backgrounds out of ${rows.length}; luminances ${JSON.stringify(luminances)}`);
+    };
+
+    log('===== ACT 6 / the clock, in each of its states =====');
+    await readTransport('as a new session arrives');
+    // The tick is read from the worker rather than from the readout, so
+    // "running" is a fact about the simulation and not about the paint.
+    const t0 = await currentTick(page);
+    await page.waitForTimeout(8000);
+    const t1 = await currentTick(page);
+    log(`   worker tick went ${t0} -> ${t1} over 8s with nothing pressed`);
+
+    await page.locator('.hud-strip__transport button').nth(1).click();
+    await page.waitForTimeout(8000);
+    await readTransport('after pressing Play');
+    const t2 = await currentTick(page);
+    await page.waitForTimeout(8000);
+    log(`   worker tick went ${t2} -> ${await currentTick(page)} over 8s after Play`);
+
+    await fastForwardToMax(page);
+    await page.waitForTimeout(8000);
+    await readTransport('after two Fast forwards');
+
+    await page.locator('.hud-strip__transport button').nth(0).click();
+    await page.waitForTimeout(8000);
+    await readTransport('after pressing Pause');
+    const t3 = await currentTick(page);
+    await page.waitForTimeout(8000);
+    log(`   worker tick went ${t3} -> ${await currentTick(page)} over 8s after Pause`);
+  });
+
 });
