@@ -5,6 +5,31 @@ import { armBuildable, buy, calibrate, drag, openApp, panelText, sentCommands, t
 /**
  * **What `Cancel` actually gives back, per state, read off the worker.**
  *
+ * ## What this file settled, written after it ran
+ *
+ * `tests/integration/construction-queue-row-pays-what-it-shows.test.ts` (#843,
+ * `4652dbfc`) asserts that a row read at `assigned` pays the catalogue value of
+ * the material it holds, and #853 measured a row at `assigned` whose `Cancel`
+ * moved the FUNDS chip by nothing. **Both are right, and neither the state nor
+ * the projection is what separates them: it is the tick the command executes
+ * at.**
+ *
+ * That test's `dispatch` submits with `executeAtTick: runtime.kernel.tick` and
+ * calls `step()` immediately -- zero lead, so the press runs at the tick the
+ * row was priced at. A browser press runs at whatever
+ * `SimulationCommandSender.projectExecuteTick` chose, and `projectFromClock`
+ * adds an elapsed estimate **plus `DEFAULT_LEAD_TICKS`, which is 20**
+ * (`src/ui/simulation-commands.ts:77,188-192`), whenever the clock is running.
+ * Measured here: **36 to 55 ticks.** An `assigned` order becomes `in-progress`
+ * on the next scheduled construction pass, ten ticks away
+ * (`ConstructionSystem.schedule.intervalTicks: 10`), so the state the row was
+ * priced at is three to five passes stale by the time the command runs.
+ *
+ * With the clock paused the lead is 0 -- recorded per press -- and every state
+ * pays exactly what its row advertised. The figures and the caveats are in
+ * `docs/research/2026-09-03-what-cancel-actually-gives-back.md`; this file is
+ * the instrument, and it asserts nothing about them.
+ *
  * ## Why this file exists rather than the one beside it
  *
  * `playtest-2026-09-03-what-the-row-promised.playtest.ts` asked the same
