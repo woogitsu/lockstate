@@ -422,7 +422,7 @@ The prison is under control again — no incident is still open.   11×  Day 22 
 only when an escape was announced, so nothing in the game distinguishes "your
 guards put it down" from "it burned out on its own and everyone in it was
 hurt". The two outcomes are materially different in the code — the `resolved`
-branch (`:834`) writes `injuredEntityIds: []` and `propertyDamage:
+branch (`:835-841`) writes `injuredEntityIds: []` and `propertyDamage:
 floor(severity/2)`, against `lapse`'s every-participant and `min(10,
 severity)`, plus `LAPSED_INCIDENT_SURCHARGE_POINTS`
 (`src/simulation/prisoners/disciplinary-record.ts`) on each participant's
@@ -467,7 +467,7 @@ participant list and the full state timeline.
 from **no file under `src/ui/` and not from `src/main.ts`.** Same for
 `hud/prisoner-detail` (`types.ts:338`).
 
-`src/main.ts:1391` already says what this costs, in the repository's own words:
+`src/main.ts:1395` already says what this costs, in the repository's own words:
 
 > #450 spent ~4,200 lines making a prison capable of going wrong — an incident
 > writes a disciplinary record, `ClassificationReviewSystem` rewrites the

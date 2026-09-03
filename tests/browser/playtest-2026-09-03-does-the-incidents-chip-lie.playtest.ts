@@ -31,7 +31,7 @@
  *    happened to catch.
  *  - **every `simulation/event`**, with `event.tick`, the tick the thing
  *    happened on (`state-machine.ts:728`). `incidents.assault-opened` is
- *    appended by `EventLog.recordIncidentOpened`
+ *    appended by `SimulationEventLog.recordIncidentOpened`
  *    (`src/simulation/events/event-log.ts:537`), which is called when the
  *    incident opens -- so the fight row is not a separate story about a
  *    fight, it *is* the incident opening.
@@ -72,7 +72,7 @@
  * instrument also pulls `hud/incidents` straight off the worker, which reads
  * the same `IncidentLog` the chip's projection reads
  * (`src/simulation/worker/projection-catalog.ts:417` and
- * `.../status-counts.ts:61` both pass `runtime.incidents`) and returns
+ * `.../status-counts.ts:60` both pass `runtime.incidents`) and returns
  * `summary.stillOpen`, `countsByState` and a `timeline` per incident.
  *
  * - Ground truth says an incident is open and the chip says 0 -> `DEFECT`, and
