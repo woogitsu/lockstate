@@ -1002,7 +1002,32 @@ docblocks; `src/ui/affordability.ts` is unchanged in code because
 `HOST_PRESS_FLOOR_MINOR_UNITS` was already computed through
 `rungFloorMinorUnits('deliveries', …)`, which does not move.
 
-### 9. A cost the gate found and §5 did not price — not put to the owner, and not decided here
+### 9. A cost the gate found and §5 did not price — not put to the owner, and not decided here — SUPERSEDED, 2026-09-01
+
+> **Read the next amendment before acting on this section.** The question §9
+> leaves open was put to the owner and ruled on the same day, in *"Amendment,
+> 2026-09-01: a starter rung for a fresh, unfurnished prison"* immediately
+> below — which chose the second of the three shapes §9 names. **The ECON-002
+> lock this section reopens is shut on `main`**: a fresh, unfurnished prison's
+> `'deliveries'` floor is −1,185 rather than −1,250
+> (`INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS` in
+> `src/simulation/economy/treasury.ts`), so the 656-brick press §9's
+> reproduction depends on is refused three bricks earlier and the balance
+> never reaches the neighbourhood the trap needs. The gate says so in its own
+> case title: *"spends the grant and the starter rung on 654 bricks, and the
+> ECON-002 lock stays shut since the owner's second ruling on #771"*
+> (`tests/integration/economy-liquidity-hard-lock.test.ts`).
+>
+> **This marker exists because its absence caused the harm it now prevents.**
+> §9's own words and its *"not put to the owner"* heading are kept below
+> unchanged, per `docs/AGENT_WORKFLOW.md` §4's "mark both directions" — but
+> until this marker, only the *forward* direction was marked, in the next
+> amendment's banner. An audit pass on 2026-09-03 read §9 on its own, took the
+> reproduction as live, and reported *"one legal 656-brick purchase locks a
+> new prison out of the game"* as the most urgent player-facing defect in the
+> repository. It was stale prose, not a defect. A superseded section that does
+> not say so is read as current by whoever arrives at it by grep, which is how
+> every agent arrives.
 
 **This section is not part of what was accepted.** §5 is titled "stated
 rather than argued away" and did not state this; the banner at the top of
