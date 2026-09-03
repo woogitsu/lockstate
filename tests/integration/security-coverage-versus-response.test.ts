@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { projectStaff } from '../../src/simulation/presentation/staff-projection';
 import { projectStatusStrip } from '../../src/simulation/presentation/status-strip-projection';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { constantDeploymentSchedule } from '../../src/simulation/security/deployment-schedule';
 import { claimableGuardIds } from '../../src/simulation/security/post-eligibility';
-import { describeStaffCoverage } from '../../src/ui/hud/staff-panel';
+import { describeStaffCoverage } from '../../src/ui/hud';
+import { staffCoverageFromProjection } from '../../src/ui/simulation-staff-coverage';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
@@ -202,18 +204,20 @@ interface Reading {
 }
 
 function read(runtime: SimulationRuntime): Reading {
-  const coverage = runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick);
-  const totals = coverage.reduce(
-    (accumulator, entry) => ({
-      required: accumulator.required + entry.required,
-      assigned: accumulator.assigned + entry.assigned,
-      shortage: accumulator.shortage + entry.shortage,
-    }),
-    { required: 0, assigned: 0, shortage: 0 },
+  /*
+   * The whole production chain rather than a reduction of `getCoverageReport`
+   * by hand -- `projectStaff` sums the per-sector rows into
+   * `StaffViewModel.totals`, `staffCoverageFromProjection` copies the three
+   * figures across the worker boundary, and `describeStaffCoverage` picks the
+   * rung. That is the same route `staff-coverage-readout.test.ts` takes, and it
+   * is what makes the badge below *the badge a player is shown* rather than a
+   * restatement of how one is chosen.
+   */
+  const view = projectStaff(
+    { staff: runtime.securityGuards, deployment: runtime.deploymentSystem, patrol: runtime.patrolSystem },
+    runtime.kernel.tick,
   );
-  // Exactly the shape `projectStaff` sums into `StaffViewModel.totals` and
-  // `staffCoverageFromProjection` copies across the worker boundary, so the
-  // badge below is the badge a player is shown.
+  const totals = staffCoverageFromProjection(view);
   const readout = describeStaffCoverage(totals);
   const metrics = runtime.incidentResponseSystem.getMetrics();
   const strip = projectStatusStrip({
