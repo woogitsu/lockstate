@@ -613,11 +613,11 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `f36148d7` (**v0.0.393**) by the delta method this
-header describes, from the v0.0.388 anchor described below. **Five of the ten
+Re-anchored at `main` @ `402453a9` (**v0.0.402**) by the delta method this
+header describes, from the v0.0.393 anchor described below. **Nine of the ten
 releases the budget allows, counted on the tree this commit is written
-against: `package.json` ships 0.0.393 at `f36148d7` and the anchor being
-replaced named v0.0.388.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
+against: `package.json` ships 0.0.402 at `402453a9` and the anchor being
+replaced named v0.0.393.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
 **10**, exactly as the gate demands and as its own failure message insists.
 
 **This pass was dispatched at FIVE of ten — the halfway mark exactly, and the
@@ -1136,7 +1136,25 @@ anchors ago, one release late, and the honest reading is that a rule two
 passes have missed by two and then by one is being approached rather than
 kept.
 
-**The anchor before this one, kept — v0.0.388.** It read: *"Re-anchored at `main` @
+**The anchor before this one, kept — v0.0.393.** It read: *"Re-anchored at `main` @
+`f36148d7` (**v0.0.393**) by the delta method this header describes, from the
+v0.0.388 anchor described below. Five of the ten releases the budget
+allows."* It was taken at the halfway mark for the second consecutive pass and
+held six green mergeable pull requests rather than spend the window. Its window
+was 26 files across four implementing merges (#846, #848, #849, #850) and its
+delta intersection five. **It settled the "gap" figure the pass before it had
+handed back unresolved, and the answer was that the instrument had moved rather
+than the tree**: rows self-quoting `Proposed` with backticks are two (0051,
+0082) and rows quoting it with double quotes as well are three (adding 0088),
+so two anchors an hour apart differed by one character of grep and
+`docs/adr/README.md` had not changed 0088's row at all. It also recorded the
+first counter to move in four windows — `Proposed` 39 became 40 when ADR 0094
+landed — and **the first defect the branch cleanup caused**: the twenty-branch
+trial batch orphaned a commit cited in ADR 0063, because squash-merging leaves
+every intermediate commit on the branch and nowhere else.
+
+
+**The anchor before that one, kept — v0.0.388.** It read: *"Re-anchored at `main` @
 `98e05058` (**v0.0.388**) by the delta method this header describes, from the
 v0.0.383 anchor described below. Five of the ten releases the budget
 allows."* It was the **first pass in the sequence to be dispatched at the
@@ -6729,6 +6747,71 @@ re-export them and says so), so there is no accepted decision for the code to
 contradict. It becomes a §2 entry the moment the owner accepts decision 2, and
 that is the next thing this queue expects to gain.
 
+**Still FORTY at `402453a9` (v0.0.402), nine releases later — the largest
+window in this sequence and the first one taken at nine rather than at the
+halfway mark, deliberately.** `Proposed` **40** against **48** `Accepted`
+across **88** documents; the index agrees, **89** rows, and **Next free
+number: 0095** matching it. The absent numbers are the same six — `0018`,
+`0030`, `0055`, `0058`, `0060`, `0072`.
+
+**Why nine and not five.** The rule this header states is *"THE HALFWAY MARK IS
+A TASK, NOT A READING"*, and two consecutive passes kept it exactly. This one
+ran to nine on a decision rather than by drifting, and the reason is worth
+recording because the rule would otherwise look broken: the queue held six
+green mergeable pull requests plus two that landed mid-pass, and anchoring at
+five would have meant two passes over a 10,000-line file inside ninety minutes
+for a window of four files each. Nine leaves one release of headroom, which is
+thinner than this file likes and is the cost being named rather than hidden.
+**The gate never fired**, and `ANCHOR_STALENESS_BUDGET_RELEASES` was not
+touched: raising it *"should be argued for in the commit that raises it"*, and
+this is not that argument.
+
+**Window: 32 files across eight implementing merges — #843, #845, #852, #841,
+#833, #855, #854, #856 — with #851 excluded as self-referential, being the
+previous anchor's own pass.** The delta intersection over §§3-6 (lines
+5811-10691 on this tree, 121 distinct rooted paths) gives **ten members**
+besides this file: `.github/workflows/branch-gc.yml`,
+`docs/adr/0063-what-a-refused-restore-says-and-whose-fault-it-is.md`,
+`docs/research/README.md`, `src/content/default-locale-en.ts`,
+`src/simulation/construction/materials-procurement.ts`,
+`src/simulation/economy/just-in-time-materials.ts`,
+`src/simulation/economy/procurement.ts`, `src/ui/hud/build-panel.ts`,
+`tests/foundation/documentation-links-contract.test.ts` and
+`tests/unit/ui-hud-build-panel.test.ts`. Full-path and basename agree on
+eleven. **That is the widest intersection any pass here has had**, and the
+reason is that #833 and #843 worked the construction-and-procurement surface
+§5 cites more densely than any other.
+
+**Every standing claim re-run rather than carried.** §5's ADR 0025 entry:
+`find src/ui -name "*.css"` still **four**, and `grep -rn '3\.9' src/` still
+exactly one hit at `src/ui/primitives/icon.ts:77`. §4's two absences in
+`supabase/migrations/`: still exactly one file matching, its only hit still the
+*comment* about a future retention job, the directory still **23** files. §6's
+`ui-hud-messages.test.ts` span carried unchanged, this window not touching that
+file. §2 unmoved at **eight** live entries, and by subject this window files
+nothing.
+
+**The branch cleanup ran to completion in this window, and it cost one
+citation — mine.** The owner authorised the full set on 2026-09-03 and
+`branch-gc.yml` deleted **338** of 466 branches considered, zero failures; the
+remote went to **129**. Its 128 skips were 75 `wip/` snapshots, 26 with no
+merged pull request, **18 held by the citation guard**, 6 open-pull-request
+heads, 2 pushed-after-merge, and `main`. **And it orphaned a commit cited in
+`tests/foundation/documentation-links-contract.test.ts`, because that guard
+scanned `docs/` only** — a narrowing #852 argued for on the ground that *"a
+comment naming a commit is code this branch cleanup does not touch"*, which is
+false in the way that matters: the cleanup does not touch the comment, it
+deletes the branch that publishes the commit the comment names. #856 repaired
+the citation onto the published squash and widened the guard to every directory
+the gate reads. Measured on this tree: the old scope saw **342** cited shas and
+the new one sees **356**, so **fourteen** were invisible to it — eight in
+`tests/` and six in `src/`.
+
+**The held-number sweep is clean, and for the first time over a small
+remote.** No head among the **129** now present holds an ADR number at or above
+0095 — the sixth consecutive clean reading of the collision risk, and the first
+where the sweep is cheap rather than a walk over four hundred heads.
+
 **The counters were recomputed with this repository's own algorithm, and the
 ad-hoc grep that was tried first disagreed with it.** `statusStatement` in
 `tests/foundation/adr-status-reference-contract.test.ts` takes the first
@@ -6867,12 +6950,12 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `f36148d7` — the same bare `grep -ril
+absences were re-verified at `402453a9` — the same bare `grep -ril
 'total_bytes\|max_total_bytes\|retention\|prune'` over the directory still
 returns exactly one file, and its only hit is still the *comment* in
 `20260826130000_server_stamp_updated_at.sql:68` about a **future** retention
 job, so neither absence has acquired an implementation that a path scan would
-have missed — as they were at `98e05058`, at `aa762112`, at `708b68c7`, at `b2941064`, at `1547c7f6`, at `9b8c8e85`, at
+have missed — as they were at `f36148d7`, at `98e05058`, at `aa762112`, at `708b68c7`, at `b2941064`, at `1547c7f6`, at `9b8c8e85`, at
 `0e2eb7fb`, at `33a4a22e` and at
 `26434e8e` before it —
 `supabase/migrations/` is not among this window's 10 files, nor the previous
@@ -10585,7 +10668,7 @@ numbers were not the damage.** Stated so it can be checked:
   `prisoners-intake-system.test.ts:230` and `:529`;
   `entity-generation-wrap.test.ts:96`, `:124`, `:163`, `:178`, `:190` and
   `:204`; `unconsumed-command-contract.test.ts:204` and `:230`;
-  `ui-hud-messages.test.ts:269-275` (moved from `:218-224` by #827, byte-identical, re-verified at `f36148d7`); `environment-art.test.ts:248` and `:256`;
+  `ui-hud-messages.test.ts:269-275` (moved from `:218-224` by #827, byte-identical, re-verified at `402453a9`); `environment-art.test.ts:248` and `:256`;
   `adr-status-reference-contract.test.ts:147-150`, `:405`, `:427` and `:431`;
   `docs/adr/README.md:103-110` and `:158`; `docs/TRUSTED_SERVICES.md:604`,
   `:607` and `:610`; `docs/adr/0013-…md:15`, `:19-21` and `:151`;
