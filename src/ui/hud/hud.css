@@ -1979,6 +1979,49 @@
   display: flex;
   flex-direction: column;
   gap: var(--hud-build-map-gutter);
+  /*
+   * The list is the scroll region and its box is three rows tall, which is the
+   * whole of what let `BUILD_QUEUE_ROW_LIMIT` stop being three (#862).
+   *
+   * **The number is last change's measurement, not a new one.** Measured in the
+   * UI harness at all six viewports the browser suite visits, with the fold
+   * opened over a three-row window: the list box was **148px** at 1440x900,
+   * 1280x800, 1280x720, 1024x768 and 375x812, and **140px** at 900x600 -- which
+   * is `--tap-target` three times plus this gutter twice, and 140 rather than
+   * 148 there only because the `max-height: 700px` block at the foot of this
+   * file halves the gutter. So this `max-height` reproduces the height the
+   * opened block already had, to the pixel, at every one of them: what the
+   * queue costs this panel is unchanged by the pool behind it, and the rows
+   * past the third are reached by scrolling this box rather than by not
+   * existing at all.
+   *
+   * That matters because the queue's height is the one thing in this panel that
+   * was never affordable. `.hud-build[data-queued]` below buys the collapsed
+   * 45px header out of the catalogue's floor and there is nothing left to buy a
+   * second time, so a list that grew with the queue would put rows below the
+   * panel's fold -- which is exactly what #174, #220 and #625 each cost, and
+   * what a list of fourteen 44px rows in a 465px panel would have re-bought.
+   *
+   * `flex: 0 0 auto` rather than the `0 1 auto` the catalogue's list carries,
+   * and the difference is deliberate. `overflow-y: auto` sets a flex item's
+   * automatic minimum size to zero, so a shrinkable list under a panel holding
+   * more content than box has no floor of its own and can be squeezed to a
+   * sliver -- and this list is *always* over-full once the queue passes three,
+   * so that pressure is the normal state here rather than the exceptional one.
+   * The catalogue can afford `0 1 auto` because it carries an explicit
+   * `min-height` floor (`--hud-build-catalogue-floor`); refusing to shrink at
+   * all reaches the same guarantee here without a second floor to keep in step
+   * with this ceiling.
+   *
+   * `overflow-y` is the whole of what makes the rows past the box reachable, and
+   * it is the same mechanism `.hud-build__list` uses for the catalogue one
+   * section up in this same panel -- where `tests/browser/app-shell.spec.ts`
+   * asserts the list is *scrollable* in the arrival state for exactly this
+   * reason: rows a player cannot reach are what a donation costs (#174).
+   */
+  flex: 0 0 auto;
+  max-height: calc(var(--tap-target) * 3 + var(--hud-build-map-gutter) * 2);
+  overflow-y: auto;
 }
 
 /*

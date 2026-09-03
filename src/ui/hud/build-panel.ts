@@ -646,40 +646,95 @@ export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | u
 }
 
 /**
- * How many queued orders the block lists at once.
+ * How many queued orders the block holds a row for.
  *
- * **Three, and it is a measurement plus an argument. Both halves matter.**
+ * **Sixty-four, and it is a measurement plus an argument -- as three was, and
+ * both halves changed for a reason each (#862).**
  *
- * The measurement is the panel's, and it is the tightest in the interface.
- * `buyToggle`'s comment records it: at 900x600, Build tab, coordinates folded --
- * the state a player arrives in -- the panel's body holds 291.2px of content in
- * a 291.2px box and there is **7.8px** between the last section's bottom edge
- * and the fold. So an always-visible list of rows was never on the table; a
- * collapsed section of its own is 45px, which is already six times the whole
- * budget. That is why this block is `hidden` while nothing is queued -- an empty
- * queue is the state a player arrives in, and the arrival height is therefore
- * byte-identical to what #174 left -- and why it is *collapsed* when it appears,
- * so a queue costs a header and not a list until the player asks for one.
+ * ### What three was, and what falsified it
  *
- * The argument is what decides the number rather than making it as large as
- * fits. Since #348 the crew builds **one order at a time**, so the queue is a
- * schedule and this list is its head: row one is being built, row two is next,
- * row three is after that. An order thirteenth in line is not one a player needs
- * to reach, because nothing is going to happen to it for another six hundred
- * ticks -- and the control for "I have changed my mind about that whole run" is
- * `Undo`, which pops the transaction the run was drawn in. So the two controls
- * divide the work: `Undo` takes back a gesture, and a row takes back one order.
- * `hud.build.queue-more` says exactly that to a player with more queued than
- * these, and `hud.build.queue-count` always states the whole length, so the
- * panel never implies the queue is shorter than it is.
+ * The measurement was the panel's, and it is still the tightest in the
+ * interface. `buyToggle`'s comment records it: at 900x600, Build tab,
+ * coordinates folded -- the state a player arrives in -- the panel's body holds
+ * 291.2px of content in a 291.2px box and there is **7.8px** between the last
+ * section's bottom edge and the fold. So an always-visible list of rows was
+ * never on the table; a collapsed section of its own is 45px, which is already
+ * six times the whole budget. That is why this block is `hidden` while nothing
+ * is queued -- an empty queue is the state a player arrives in, and the arrival
+ * height is therefore byte-identical to what #174 left -- and why it is
+ * *collapsed* when it appears, so a queue costs a header and not a list until
+ * the player asks for one. **None of that is withdrawn.**
  *
- * The rows are also **pooled** -- created once here, repainted per publication --
- * and that is not only an allocation choice. Each row's cancel button joins the
- * HUD's busy group, and `createBusyGroup` has `add` and no `remove`: a block
- * that built a row per order would grow that group without bound over a session
- * and keep every dead button in it.
+ * What is withdrawn is the step from that measurement to a *row count*. The
+ * height a list costs the panel is a property of the list's **box**, not of how
+ * many rows are inside it, and `.hud-build__queue-list` in `hud.css` now bounds
+ * that box directly -- three rows tall, which is the 148px the opened list
+ * measured at before this change, with `overflow-y: auto` under it. So the
+ * opened block costs the panel exactly what it cost when this number was three,
+ * at every viewport, and the rows past the third are reached by scrolling the
+ * list rather than by not existing. That is the same mechanism
+ * `.hud-build__list` has always used for the catalogue one section up, in this
+ * same panel, and `tests/browser/app-shell.spec.ts` asserts that list is
+ * scrollable in the arrival state for exactly this reason: rows a player cannot
+ * reach are what a donation costs, and `overflow-y` is the whole of what makes
+ * them reachable (#174).
+ *
+ * The argument was that the queue is the crew's *schedule* and this list is its
+ * head -- row one being built, row two next, row three after that -- so an order
+ * thirteenth in line is not one a player needs to reach, `Undo` being the
+ * control for "I have changed my mind about that whole run". **Measured, that
+ * is what it cost:** with fourteen orders placed, three had a control and
+ * eleven had none at any of the six viewports the browser suite visits, because
+ * eleven of them had no row in the DOM at all. `Undo` is not a substitute --
+ * it pops the transaction the run was drawn in, so the player who wants one
+ * wall of fourteen back has to take all fourteen. ADR 0031 decision 4 named
+ * itself *"the decision most open to being overruled"* and named the trigger:
+ * *"If that proves to be the common case rather than the rare one"*. A batch of
+ * orders is the common case -- it is what a drag produces, and #348 is why the
+ * batch then sits there for hundreds of ticks.
+ *
+ * ### Why sixty-four
+ *
+ * Because that is how many orders **one gesture can place**.
+ * `MAX_RUN_SEGMENTS` in `src/rendering/build/edge-picking.ts` clamps a dragged
+ * wall run to 64 segments and one segment is one `PlaceBuildOrder`, so 64 is
+ * the longest queue a player can produce without meaning to produce two. It is
+ * not imported here -- `src/ui/hud/` may not import from `src/rendering/`
+ * (`AGENTS.md` boundary 1) -- and the two numbers agreeing is asserted by
+ * `tests/unit/ui-hud-build-panel.test.ts`, which may import both, exactly as
+ * `MAX_ZONE_SIDE_TILES` states its own agreement with the simulation's ceiling.
+ *
+ * A queue longer than one gesture still exists, and `hud.build.queue-more`
+ * still says how many are behind the last row while `hud.build.queue-count`
+ * always states the whole length -- so the panel never implies the queue is
+ * shorter than it is, which is the property that made three honest and makes
+ * sixty-four honest.
+ *
+ * **What it costs, measured rather than asserted.** This number is also the
+ * projection window `BuildQueueReader` asks for, and `projectBuildQueue` prices
+ * each row by walking the whole order book
+ * (`ConstructionSystem.previewCancelRefundMinorUnits` -> `demandedQuantityOf`),
+ * so the call is O(window x orders). Timed on this container over a real
+ * runtime, 200 calls per figure: with 328 orders queued -- the drag
+ * `tests/integration/economy-cancel-what-comes-back.test.ts` measures -- one
+ * projection costs 0.318ms at a window of 3 and **3.469ms** at 64; with 64
+ * orders queued it is 0.250ms against 0.739ms. The reader is driven by the
+ * worker's clock heartbeat at up to about four a second (ADR 0086 section 3),
+ * so the worst case a player can reach is roughly 14ms of worker time per
+ * second, and it drains as the queue does. That is the price of every order in
+ * a drag having a control, and it is worth paying.
+ *
+ * ### What has not changed: the rows are pooled
+ *
+ * Created once here, repainted per publication -- and that is not only an
+ * allocation choice. Each row's cancel button joins the HUD's busy group, and
+ * `createBusyGroup` has `add` and no `remove`: a block that built a row per
+ * order would grow that group without bound over a session and keep every dead
+ * button in it. A **fixed** pool is what closes that, at any size, which is why
+ * this number could move at all -- 64 buttons joined once at construction is
+ * bounded in exactly the way 3-per-publication would not be.
  */
-export const BUILD_QUEUE_ROW_LIMIT = 3;
+export const BUILD_QUEUE_ROW_LIMIT = 64;
 
 /**
  * How long a place in the queue list stays blank after the order it named
@@ -2275,7 +2330,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * different request, and this is where it is made.
    *
    * `BUILD_QUEUE_ROW_LIMIT` carries the height measurement and the argument for
-   * showing the head of the queue rather than all of it.
+   * how many orders the pool holds a row for -- **sixty-four since #862, and
+   * this sentence used to say "showing the head of the queue rather than all of
+   * it"**. It said that because the list's height was the row count; it is now
+   * the list's own box (`.hud-build__queue-list` in `hud.css`), so the head of
+   * the queue is what the box shows and the whole of it is what the list holds.
    */
   let queue: HudBuildQueueViewModel | undefined;
 
@@ -2431,9 +2490,40 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   const queueSection: CollapsibleSection = createCollapsibleSection({
     eyebrow: t(HUD_MESSAGE_KEY.buildQueue),
-    // Collapsed when it appears, for the reason `BUILD_QUEUE_ROW_LIMIT` gives:
-    // a queue then costs this panel a header and a count, and costs it a list
-    // only when the player asks for one.
+    /*
+     * Collapsed when it appears, for the reason `BUILD_QUEUE_ROW_LIMIT` gives:
+     * a queue then costs this panel a header and a count, and costs it a list
+     * only when the player asks for one.
+     *
+     * **#862 asked whether it should arrive open, now that the list's box is
+     * bounded, and the answer is measured rather than argued.** Unfolding was
+     * tried and the probe reverted: the section goes from 45px to 201px, and
+     * the panel pays that 156px out of the catalogue's list, which is the one
+     * block `hud.css` lets it take height from. In the UI harness, with
+     * fourteen orders queued, arriving open put the panel's own overflow at 0 at
+     * 1440x900, 1280x800, 1280x720, 1024x768 and 375x812 -- so it *fits* there,
+     * by shrinking the catalogue's list from 245px of 924px of rows to 89px,
+     * two rows of twenty-one -- and at **12px over its box at 900x600 with
+     * nothing having scrolled**, where the catalogue is already flat on its
+     * one-row floor and has nothing left to give. That harness hands this panel
+     * 128.7px more rail than the assembled page does, so 900x600 is not the only
+     * viewport where it does not fit in the application.
+     *
+     * Both halves of that are reasons to leave it shut. The 12px is #174's shape
+     * -- laid out below the unscrolled fold -- and the 156px is the donation ADR
+     * 0031's acceptance is explicitly conditional on not making bigger: its
+     * status section promotes open question 4 to blocking and says the catalogue
+     * *"needs a surface of its own -- its own scroll, a filter, or a different
+     * donor -- before more rows arrive"*. A queue that arrived open would spend
+     * that donor twice.
+     *
+     * What #862 is actually about is reachable underneath: one press on a header
+     * that states the queue's whole length now reveals a control for every order
+     * in it, where before it revealed three of fourteen. Whether the fold should
+     * also arrive open -- a two-row catalogue against a queue the player never
+     * has to open -- is a trade between two player-visible surfaces and is the
+     * owner's, with the figures above.
+     */
     collapsed: true,
     trailing: queueCount,
     onToggle: (collapsed) => {
@@ -2666,6 +2756,15 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      * row holding its box open for one publication is a row the arriving order
      * could not have, so a queue of twelve with three sent and two drawn has
      * ten behind the list and not nine.
+     *
+     * That also subsumes the other way `shown.orders.length` could be the wrong
+     * divisor (#862): a window longer than the pool, which nothing in
+     * production hands this panel -- `BuildQueueReader` asks for exactly
+     * `BUILD_QUEUE_ROW_LIMIT` rows -- but which a test that writes its own view
+     * model can. `drawn` cannot exceed `queueRows.length` either way, because
+     * the loop above assigns it by walking `queueRows` itself; a separate
+     * `Math.min(..., queueRows.length)` here would be guarding an invariant
+     * `drawn`'s own definition already guarantees.
      */
     const unlisted = Math.max(0, shown.total - drawn);
     queueMore.textContent = unlisted === 0 ? '' : t(HUD_MESSAGE_KEY.buildQueueMore, { count: unlisted });

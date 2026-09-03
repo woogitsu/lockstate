@@ -598,11 +598,15 @@ export const HUD_MESSAGE_KEY = {
    * reachable with the shipped catalogue. The row is still drawn, because an
    * order nobody can name is still an order a player may want to withdraw.
    *
-   * `buildQueueMore` states how many orders are queued behind the last row
-   * shown, and the reason there is no control to reach them is in
-   * `BUILD_QUEUE_ROW_LIMIT`: the list is the crew's schedule, so the rows are
-   * the orders that are about to happen, and taking a whole run back is what
-   * `Undo` is for.
+   * `buildQueueMore` states how many orders are queued behind the last row the
+   * block holds, and the reason there is no control to reach them is in
+   * `BUILD_QUEUE_ROW_LIMIT`. **What that reason is changed with #862**: it used
+   * to be that the list is the crew's schedule, so three rows were the orders
+   * about to happen and taking a whole run back was what `Undo` is for --
+   * measured, that left eleven of fourteen orders with no control at all. The
+   * pool is now sixty-four, the longest queue one gesture can place, so this
+   * line speaks to a player who has placed more than one such gesture's worth,
+   * and `Undo` is still the control it points them at.
    *
    * `buildQueueShortfall` is the queue's one sentence about **money**, and it
    * is the only member of this group that is not a fact about rows (#627,
