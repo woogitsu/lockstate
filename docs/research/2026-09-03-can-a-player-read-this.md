@@ -29,6 +29,37 @@ reads or a number a player is judged against, and `AGENTS.md`'s fourth
 exclusion reserves both. Each finding therefore states **what the words must
 convey**, never the words.
 
+## The answer, in one paragraph
+
+**A player can read every number on this screen and cannot read their prison.**
+The labelling is good — 158 of 163 number tokens on screen name themselves one
+or two hops away, and the one that does not is the clock's `×4`. The urgent
+things arrive where the eye already is: admitting six prisoners into a two-bed
+prison put `8` and `6 with no bed` on the strip while the player was on the
+Build tab, and a 24,000 order put `-100` on the FUNDS chip while they were on
+Regime. What is missing is everything between "a number" and "an emergency":
+the tab a session opens on gains **not one sentence** across eight working
+days, the readout that should tell a player whether to hire does not move when
+they hire, a working camera control says it is not available, and the row that
+names a prisoner puts a need and a risk tier side by side with no heading over
+either.
+
+## Ranked
+
+| # | label | finding |
+| --- | --- | --- |
+| 1 | DEFECT | Four numbers about guards on one screen, two of them called coverage — and hiring a second guard moves neither of the two, while the wage bill triples |
+| 2 | DEFECT | The minimap says it is not available and then answers a click; only a player who ignored the sentence is ever told |
+| 3 | DEFECT | The tab a session opens on gains no sentence at all between an empty prison and a working one |
+| 4 | DEFECT | A roster row is `name / activity / need / risk tier` with no heading over any column, and this pass misread it (§12) |
+| 5 | REFUTED | "The numbers are not labelled." One unlabelled readout on the whole screen |
+| 6 | FIXED | The clock says `PAUSED`, in a word and a second channel (#629 §1 closed) |
+| 7 | CONFIRMED | A refusal from tick 0, in two places at once, still on screen on day 7 (#894) |
+| 8 | CONFIRMED | All nine chips inert — zero listeners, measured by census and by pressing |
+| 9 | NOT A DEFECT | An urgent change *is* visible on a tab that does not report it |
+| 10 | TASTE | `EARNED TODAY` has no reference point on screen |
+| 11 | MEASURED | The sentence explaining the overdraft badge is a tooltip; already the owner's call |
+
 ---
 
 ## 1. DEFECT — four numbers about guards on one screen, two of them called
