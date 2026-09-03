@@ -75,6 +75,7 @@ const SAVED_ACTION_INDEX_MEANS: readonly (readonly [index: number, actionId: str
   [8, 'action.free-association'],
   [9, 'action.laundry-work'],
   [10, 'action.kitchen-work'],
+  [11, 'action.carry'],
 ];
 
 describe('a saved actionIndex still names the action it named when it was written', () => {
@@ -129,13 +130,14 @@ describe('a saved actionIndex still names the action it named when it was writte
   it('put each new entry at the end rather than beside its category siblings', () => {
     // The instances, stated separately from the rule. `action.free-association`
     // reads naturally next to the two recreation entries, `action.laundry-work`
-    // next to `action.shower`, whose need it shares, and `action.kitchen-work`
-    // next to `action.eat-meal`, whose need it shares -- and all three are
-    // precisely where they must not go: indices 1, 4, 5 and 6 already mean
-    // something on disk.
-    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 1]!.id).toBe('action.kitchen-work');
-    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 2]!.id).toBe('action.laundry-work');
-    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 3]!.id).toBe('action.free-association');
+    // next to `action.shower`, whose need it shares, `action.kitchen-work`
+    // next to `action.eat-meal`, whose need it shares, and `action.carry` next
+    // to the other two `work` entries -- and all four are precisely where they
+    // must not go: indices 1, 4, 5, 6, 9 and 10 already mean something on disk.
+    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 1]!.id).toBe('action.carry');
+    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 2]!.id).toBe('action.kitchen-work');
+    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 3]!.id).toBe('action.laundry-work');
+    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 4]!.id).toBe('action.free-association');
   });
 });
 
@@ -329,22 +331,43 @@ describe('every action category a schedule can allow, measured against the catal
     expect(roomGated.map((action) => action.id)).toContain('action.laundry-work');
   });
 
-  it('gives the work category a room a player can zone and furnish, not a second cell terminal', () => {
+  it('gives the work category a room a player can zone and furnish, and exactly one entry that is an errand instead', () => {
     /*
      * What ADR 0054 decided about `work`, stated where a future edit would
      * trip over it. The measurement it rests on is that no block anywhere
      * allows `work` alone -- so an `own-accommodation` work action would have
      * closed no gap and would only have duplicated `action.free-association`,
      * which is the "author it badly" ADR 0042 step 6 warned against.
+     *
+     * **`action.carry` is the one entry that is neither, and that is
+     * [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 1.**
+     * This assertion read *"a work action must name a room"* over the whole
+     * category, and the sentence is kept for the two room shifts and
+     * deliberately not extended to the errand: a carry has no room to gate on
+     * and no ceiling to read, because the job's `available -> assigned`
+     * transition *is* the claim and the ceiling on how many prisoners carry is
+     * how many jobs are on the board. It is still not an `own-accommodation`
+     * terminal either -- which is the property ADR 0054's argument above is
+     * actually about -- so the `job-board` kind is asserted by name rather
+     * than by exclusion.
      */
     const work = DEFAULT_ACTIONS.filter((action) => action.category === 'work');
-    expect(work.map((action) => action.id)).toEqual(['action.laundry-work', 'action.kitchen-work']);
-    for (const entry of work) {
-      expect(entry.target.kind, `${entry.id} is a work action, so it must name a room`).toBe('room-catalog-id');
+    expect(work.map((action) => action.id)).toEqual(['action.laundry-work', 'action.kitchen-work', 'action.carry']);
+
+    const errands = work.filter((entry) => entry.target.kind === 'job-board');
+    expect(errands.map((entry) => entry.id)).toEqual(['action.carry']);
+    for (const entry of errands) {
+      expect(entry.requiredObjectCapability, `${entry.id} targets a job, so there is no room capability to consume`).toBeUndefined();
+      expect(entry.needEffectsPerTick, `${entry.id} serves the institution, not a need`).toEqual({});
+    }
+
+    const shifts = work.filter((entry) => entry.target.kind !== 'job-board');
+    for (const entry of shifts) {
+      expect(entry.target.kind, `${entry.id} is a work shift, so it must name a room`).toBe('room-catalog-id');
       expect(entry.requiredObjectCapability, `${entry.id} must consume an object capability, or its room admits everyone`).toBeDefined();
     }
-    expect(work.map((entry) => (entry.target as { readonly roomCatalogId: string }).roomCatalogId)).toEqual(['room.laundry', 'room.kitchen']);
-    expect(work.map((entry) => entry.requiredObjectCapability)).toEqual(['laundry', 'food-preparation']);
+    expect(shifts.map((entry) => (entry.target as { readonly roomCatalogId: string }).roomCatalogId)).toEqual(['room.laundry', 'room.kitchen']);
+    expect(shifts.map((entry) => entry.requiredObjectCapability)).toEqual(['laundry', 'food-preparation']);
 
     const workOnlyBlocks = [...DEFAULT_REGIME_SCHEDULES, buildRiotRegimeSchedule('general-population')]
       .flatMap((schedule) => schedule.blocks)

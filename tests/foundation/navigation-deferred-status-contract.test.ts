@@ -67,7 +67,7 @@ const ORIGINAL_DECISION_SENTENCE =
 const AMENDMENT_HEADING = '## Amendment, 2026-08-25:';
 
 /**
- * The six production callers of `NavigationSystem.requestRoute`, which ADR
+ * The production callers of `NavigationSystem.requestRoute`, which ADR
  * 0007's own Context section enumerates.
  *
  * They are the reason the deletion is safe: each holds the single request id
@@ -76,11 +76,22 @@ const AMENDMENT_HEADING = '## Amendment, 2026-08-25:';
  * disagrees with the tree, the amendment's central claim has stopped being
  * true and the deletion needs revisiting -- which is why the disagreement is
  * a failure here rather than a comment somewhere.
+ *
+ * **There were six and there are five, because one of them was deleted rather
+ * than because one stopped reading the two-state status.**
+ * `operations/job-system.ts` -- **a file that no longer exists** -- held this
+ * list's third entry and requested a route for each of a carry's two legs;
+ * [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 3 gives both
+ * legs to `prisoners.actions`, which is the fourth entry and is still here. So
+ * the amendment's claim is *narrower in surface and unchanged in substance*:
+ * one fewer module asks for a route, and no module asks in a new way. That is
+ * the direction this gate exists to distinguish -- a consumer leaving is
+ * different from a consumer changing its mind, and only the second would put
+ * the deleted accessors back in question.
  */
 const TWO_STATE_CONSUMERS: readonly string[] = [
   'src/simulation/contraband/search-system.ts',
   'src/simulation/incidents/response-system.ts',
-  'src/simulation/operations/job-system.ts',
   'src/simulation/prisoners/action-system.ts',
   'src/simulation/security/deployment-system.ts',
   'src/simulation/security/patrol-system.ts',

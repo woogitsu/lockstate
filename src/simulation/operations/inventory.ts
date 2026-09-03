@@ -72,9 +72,42 @@ export class Container {
     return { ok: true };
   }
 
+  /**
+   * `[itemId, quantity, reserved]` per item this container actually holds
+   * something of, ascending by item id.
+   *
+   * **A row where both numbers are `0` is omitted, and that is a fix rather
+   * than a tidy-up.** `withdrawReserved` writes `stock.set(itemId, 0)` rather
+   * than deleting the key, so a container emptied of an item kept emitting
+   * `[itemId, 0, 0]` for the rest of the session -- while `loadSnapshot` below
+   * writes back only rows with a positive quantity or reservation. **The
+   * snapshot was therefore not a fixed point of itself**: `getSnapshot() ->
+   * loadSnapshot() -> getSnapshot()` lost the empty row, silently, and
+   * `snapshot() === restore()` is exactly what
+   * `tests/determinism/snapshot-restore-fidelity.test.ts` exists to require.
+   *
+   * **Measured rather than reasoned about, and it was latent rather than
+   * new.** The asymmetry predates
+   * [ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) by a long way;
+   * what that decision changed is that a container in the determinism scenario
+   * now *ends* a 200-tick run empty of bricks rather than holding the ones a
+   * teleporting carry had already delivered, so the fidelity gate reached the
+   * state for the first time and failed on it:
+   * `[["item.brick",0,0]]` against `[]`.
+   *
+   * **Nothing about the container's behaviour changes**, which is why this
+   * needs no save-format decision: `quantityOf`, `reservedOf` and
+   * `availableOf` all answer `0` for an absent row and for a zero row alike,
+   * no reader distinguishes them, and `carryItemJobSchema`'s sibling
+   * `containers` schema validates a row as `min(0)` either way. The two shapes
+   * were always the same fact; only one of them survived a reload.
+   */
   public getSnapshot(): readonly (readonly [string, number, number])[] {
     const itemIds = new Set([...this.stock.keys(), ...this.reservedQuantity.keys()]);
-    return [...itemIds].sort().map((itemId) => [itemId, this.quantityOf(itemId), this.reservedOf(itemId)] as const);
+    return [...itemIds]
+      .sort()
+      .map((itemId) => [itemId, this.quantityOf(itemId), this.reservedOf(itemId)] as const)
+      .filter(([, quantity, reserved]) => quantity > 0 || reserved > 0);
   }
 
   public loadSnapshot(snapshot: readonly (readonly [string, number, number])[]): void {

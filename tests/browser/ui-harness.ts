@@ -667,6 +667,7 @@ function buildQueueProbe(): BuildQueueProbe {
 function staffCoverageProbe(): StaffCoverageProbe {
   const block = document.querySelector<HTMLElement>('.hud-staff__coverage');
   const badge = block?.querySelector<HTMLElement>('.ui-badge') ?? null;
+  const consequence = block?.querySelector<HTMLElement>('.hud-staff__coverage-consequence') ?? null;
   return {
     blockLaidOut: block !== null && block.getClientRects().length > 0,
     tone: block?.dataset['tone'] ?? null,
@@ -675,9 +676,15 @@ function staffCoverageProbe(): StaffCoverageProbe {
     badgeTone: badge?.dataset['tone'] ?? null,
     hintText:
       [...(block?.querySelectorAll<HTMLElement>('.hud-staff__note') ?? [])]
+        // `.hud-staff__coverage-consequence` is a `.hud-staff__note` too and it
+        // is *below* the hint, so `find` still lands on the hint. Excluded
+        // anyway rather than relying on document order, because the order of
+        // two siblings is not the claim this field is making.
+        .filter((line) => !line.classList.contains('hud-staff__coverage-consequence'))
         .filter((line) => line.getClientRects().length > 0)
         .map((line) => (line.textContent ?? '').trim())
         .find((text) => text.length > 0) ?? '',
+    consequenceText: consequence !== null && consequence.getClientRects().length > 0 ? (consequence.textContent ?? '').trim() : '',
     blockBox: layoutBoxOf(block),
   };
 }

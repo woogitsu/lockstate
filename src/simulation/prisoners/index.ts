@@ -7,7 +7,6 @@ export * from './components';
 export * from './discharge-system';
 export * from './disciplinary-record';
 export * from './intake-system';
-export * from './job-worker-adapter';
 export * from './needs';
 export * from './needs-system';
 export * from './prisoner-operations-runtime';

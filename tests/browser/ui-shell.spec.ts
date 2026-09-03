@@ -2928,6 +2928,80 @@ test.describe('HUD shell', () => {
         expect(probe.hintText).not.toContain('hud.');
       });
 
+      test('says what an empty post costs, whole, and only where it costs that', async ({ page }) => {
+        /*
+         * The owner's chosen wording of 2026-09-03 -- *"No guard is posted
+         * here, so nobody in this sector is kept safe."* -- and this is the
+         * only layer that can see it: `vitest.config.ts` is
+         * `environment: 'node'` with no jsdom, so
+         * `tests/unit/ui-simulation-staff-coverage.test.ts` can prove
+         * `describeStaffCoverage` returns the key and prove the key resolves,
+         * and cannot prove a browser lays the sentence out.
+         *
+         * Three claims, and the third is the one that needed a browser.
+         * That the sentence is on the unguarded rung; that it is on neither
+         * other rung, because the two above it do provision safety and the
+         * sentence would be false there; and that it is **not clipped** at the
+         * viewport where `.hud-staff__note` is clamped to a single line. A
+         * clipped state-and-consequence sentence is worse than an absent one:
+         * the clause the clamp cuts is the whole of what it adds to the
+         * `Unguarded` badge above it.
+         */
+        for (const [width, height] of COVERAGE_VIEWPORTS) {
+          await page.setViewportSize({ width, height });
+          await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+          await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+
+          await page.evaluate(() =>
+            window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
+          );
+          const unguarded = (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage;
+
+          expect(unguarded.consequenceText, `no consequence sentence at ${width}x${height}`).toBe(
+            'No guard is posted here, so nobody in this sector is kept safe.',
+          );
+          // `expectNotClipped` rather than a `scrollHeight` of our own (#720):
+          // it catches `spilled` as well as `cut`, and this element is a flex
+          // item of `.hud-staff__coverage` with `overflow: visible`, so a
+          // sentence too tall for its box paints over the block below rather
+          // than vanishing. At 900x600 -- the one viewport in this list inside
+          // `@media (max-height: 700px)` -- it is also what fails if the
+          // one-line clamp exemption is ever dropped.
+          await expectNotClipped(
+            page,
+            '.hud-staff__coverage-consequence',
+            `the coverage block's consequence sentence at ${width}x${height}`,
+          );
+          // It says nothing about an incident, which is the refusal PR #854
+          // recorded and the reason this wording exists at all: guard presence
+          // amplifies risk and gates nothing.
+          expect(unguarded.consequenceText.toLowerCase()).not.toContain('riot');
+          expect(unguarded.consequenceText.toLowerCase()).not.toContain('incident');
+          expect(unguarded.consequenceText).not.toContain('hud.');
+
+          // The hint is still there and still carries the press that fixes it.
+          // The consequence sentence is an addition to the block, never a
+          // replacement for the action it prescribes.
+          expect(unguarded.hintText, `the hint lost its count at ${width}x${height}`).toContain('2');
+
+          await page.evaluate(() =>
+            window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 1, shortage: 1 }),
+          );
+          expect(
+            (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage.consequenceText,
+            `an understaffed prison is told nobody is kept safe at ${width}x${height}`,
+          ).toBe('');
+
+          await page.evaluate(() =>
+            window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 2, shortage: 0 }),
+          );
+          expect(
+            (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage.consequenceText,
+            `a covered prison is told nobody is kept safe at ${width}x${height}`,
+          ).toBe('');
+        }
+      });
+
       test('does not push the panel into a scroll at any shipped viewport', async ({ page }) => {
         // The block's author named this as their weakest claim: they argued
         // from another block's 219px at one viewport that a two-line block at

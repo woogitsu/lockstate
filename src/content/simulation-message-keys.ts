@@ -185,6 +185,23 @@ export const SIMULATION_ENUM_GROUPS = [
       // would say for laundry duty too, and `room.kitchen.name` names the
       // place rather than the activity).
       'action.kitchen-work': 'Kitchen Duty',
+      // Same rule again -- the cell says the job, not the place -- and **this
+      // is a draft for the owner's review, exactly as the line above it is.**
+      // ADR 0093's section *What is owed to the owner* names the carry's label
+      // as the first of three sentences it cannot write, and this file is not
+      // where that reservation can be honoured by omission: the group above
+      // declares `form: 'definition-id-field'` over `DEFAULT_ACTIONS`, and
+      // `tests/unit/simulation-message-keys.test.ts` requires each namespace to
+      // label *exactly* the ids its declaration declares. So an entry has to
+      // exist for `action.carry` the moment the catalogue holds it, and the
+      // choice is between a draft that is marked as one and a suite that
+      // cannot go green.
+      //
+      // "Errand" rather than "Carrying" (a phase, and `action-phase` already
+      // labels three of those), "Haulage" (the trade, not the shift) or
+      // "Delivery Duty" (which names the *purchase* a player made, and a carry
+      // will not always be a delivery once other producers arrive).
+      'action.carry': 'Errand',
     },
   },
   {
