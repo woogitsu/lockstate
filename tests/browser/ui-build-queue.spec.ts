@@ -484,6 +484,74 @@ test.describe('the Build panel queue', () => {
     expect(returned.rows).toEqual([]);
   });
 
+  test('draws its rows again after the tab has been away, with no publication to unstick it (#860, #88)', async ({
+    page,
+  }) => {
+    /*
+     * **The regression #860's own fix shipped, caught by `app-shell.spec.ts`'s
+     * #88 sweep and reproduced here in seconds instead of twenty-one minutes.**
+     *
+     * The sweep walks every tab at every viewport with six orders queued and
+     * the clock stopped, then comes back to Build and opens the queue fold. It
+     * failed on `expect(page.locator('.hud-build__queue-list')).toBeVisible()`
+     * -- the element resolved fourteen times and never had a box.
+     *
+     * The sequence is what matters, and `src/main.ts` supplies the first step:
+     * leaving the Build tab calls `applyBuildQueue(undefined)`, which is the
+     * honest state because nothing refreshes the queue from another tab.
+     * `paintQueue` then empties every pooled place. The first version of #860's
+     * settle window stamped `freedAtMs` there too, so on coming back **every
+     * place was inside its settle window and refused the six orders** -- and
+     * with the clock stopped there is no further publication to arrive after
+     * the window expires, so the block stayed empty for good.
+     *
+     * The correction is that a place with **no box** carries no settle window:
+     * the window exists so that a label a player may have read is not replaced
+     * under their pointer, and a place with no box has no label. See
+     * `pooled-row-binding.ts` and `BUILD_QUEUE_ROW_SETTLE_MS`.
+     *
+     * This is deliberately not a test about `freedAtMs`. It is the player's
+     * sequence -- look away, look back, open the fold -- and it asserts the
+     * three things the sweep needs and one it does not: that the list has a
+     * box, that all three rows are drawn, that each names its own order, and
+     * that each Cancel can actually be pressed.
+     */
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openBuildTab(page);
+    await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), queueOf(12));
+    expect((await probeQueue(page)).sectionLaidOut).toBe(true);
+
+    // Away and back, which is `applyBuildQueue(undefined)` and then a fresh
+    // answer -- the sweep's tab walk, in two lines.
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+    await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), queueOf(12));
+
+    // Opened, exactly as the #88 sweep opens it.
+    if ((await probeQueue(page)).open === false) {
+      await page.evaluate(() => window.lockstateUiHarness.toggleBuildQueue());
+    }
+    const listHasBox = await page.evaluate(
+      () => (document.querySelector('.hud-build__queue-list')?.getClientRects().length ?? 0) > 0,
+    );
+    expect(listHasBox, 'the queue list has no box after the tab came back').toBe(true);
+
+    const returned = await probeQueue(page);
+    expect(returned.rows.map((row) => row.orderId)).toEqual(['order-00', 'order-01', 'order-02']);
+    // Stronger than the sweep's `toBeVisible`, which one drawn row would
+    // satisfy: every row is drawn, each names its own order, and each control
+    // is genuinely pressable rather than merely present.
+    for (const row of returned.rows) {
+      expect(row.cancelHasOffsetParent, `${row.orderId}'s cancel has no offsetParent`).toBe(true);
+      expect(row.cancelDisabled, `${row.orderId}'s cancel is disabled`).toBe(false);
+      expect(row.cancelBox?.height ?? 0, `${row.orderId}'s cancel has no height`).toBeGreaterThan(0);
+    }
+    expect(await page.evaluate(() => window.lockstateUiHarness.pressBuildQueueCancel('order-02'))).toBe(true);
+    await expect
+      .poll(async () => (await intents(page)).filter((intent) => intent.includes('cancel-build-order')))
+      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-02' })]);
+  });
+
   test('leaves every revealed cancel inside the panel, scrolling to them where it has to', async ({ page }) => {
     /*
      * The property, and it is deliberately stated as one rather than as a

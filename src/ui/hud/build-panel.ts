@@ -1991,12 +1991,19 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * (*"so a press that somehow reached a hidden button cannot name a guard from
    * the last publication"*); this is the same rule, one panel over.
    */
-  function emptyQueueRow(row: QueueRow): void {
-    // The settle stamp goes with the emptying, on the same transition rule the
-    // `'holds-open'` branch of `paintQueue` uses: a place that named an order a
-    // moment ago must not take another one straight away, and a place that was
-    // already blank must not have its window restarted.
-    if (row.orderId !== undefined) row.freedAtMs = performance.now();
+  function emptyQueueRow(row: QueueRow, forgetSettle = false): void {
+    /*
+     * The settle stamp goes with the emptying, on the same transition rule the
+     * `'holds-open'` branch of `paintQueue` uses: a place that named an order a
+     * moment ago must not take another one straight away, and a place that was
+     * already blank must not have its window restarted, or it would never take
+     * another order at all.
+     *
+     * `forgetSettle` is the one case that must not stamp, and it is `#88`'s
+     * regression -- see `paintQueue`'s `shown === undefined` branch.
+     */
+    if (row.orderId !== undefined && !forgetSettle) row.freedAtMs = performance.now();
+    if (forgetSettle) row.freedAtMs = undefined;
     row.orderId = undefined;
     row.element.hidden = true;
     row.label.textContent = '';
@@ -2045,7 +2052,30 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     const shown = queue !== undefined && queue.total > 0 ? queue : undefined;
     queueSection.element.hidden = shown === undefined;
     if (shown === undefined) {
-      for (const row of queueRows) emptyQueueRow(row);
+      /*
+       * `forgetSettle`, and it is the correction to #860's first shipped fix.
+       *
+       * This branch is *"nothing has asked"* and *"nothing is queued"* -- and
+       * `src/main.ts` reaches it every time the player leaves the Build tab,
+       * because nothing refreshes the queue from another tab and a block left
+       * behind would be a list of ids that were true when they walked away.
+       * With the settle stamp applied here, every place came back inside its
+       * settle window and **refused the queue**; and with the clock stopped
+       * there is no later publication to arrive once the window expires, so the
+       * block stayed empty for good. `app-shell.spec.ts`'s #88 sweep caught it
+       * -- six orders queued, the clock stopped, `.hud-build__queue-list`
+       * resolved fourteen times with no box -- and
+       * `ui-build-queue.spec.ts`'s *"draws its rows again after the tab has
+       * been away"* is the same sequence in two lines.
+       *
+       * The settle window exists so that a label a player may have **read on
+       * this panel** is not replaced under their pointer. When the block itself
+       * stops being drawn there was no panel to read, so every place starts
+       * fresh. That is why this is the only emptying that forgets the window
+       * and the two inside `paintQueue`'s assignment loop do not: those happen
+       * while the block is on screen and a label was there a moment ago.
+       */
+      for (const row of queueRows) emptyQueueRow(row, true);
       queueCount.textContent = '';
       queueMore.textContent = '';
       // Nothing queued is nothing to wait for. The line goes with the block it
