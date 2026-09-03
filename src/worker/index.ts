@@ -160,6 +160,39 @@ import { resolveTelemetryIngestRoute, type TelemetryIngestRouteEnv } from './tel
  * `tests/unit/worker-telemetry-ingest.test.ts` runs the scan over this
  * directory, so the rule is enforced rather than remembered.
  *
+ * ## What has NOT been observed in a Worker runtime, stated because it matters
+ *
+ * Every guard above is asserted at unit level only
+ * (`tests/unit/worker-telemetry-ingest.test.ts`, 91 assertions, real
+ * `Request`/`Response` objects in Node). **Nothing below has been observed in
+ * workerd or in a deployment**, and one probe against `vite preview` came back
+ * disagreeing with an expectation in this file, so it is written down rather
+ * than smoothed over:
+ *
+ * - Serving the production build through `vite preview` (workerd) with
+ *   `LOCKSTATE_TELEMETRY_INGEST_PATH` supplied in a `.dev.vars` file,
+ *   `GET /internal/telemetry` answered **200 with the SPA shell** and
+ *   `POST /internal/telemetry` answered **405 with an empty body and the
+ *   `public/_headers` header set** — that is Static Assets' own method
+ *   refusal, not this handler's. So in that configuration the handler was
+ *   **not reached at all**, meaning either `vite preview` does not read
+ *   `.dev.vars`, or it does not apply `assets.run_worker_first`, or the
+ *   binding did not arrive. Which of the three is unresolved.
+ * - **A consequence for a claim made elsewhere in this change.**
+ *   `docs/TELEMETRY.md` and `./telemetry-ingest-route` warn that a client path
+ *   with no matching Worker route reaches the SPA shell with `200` and is
+ *   counted as a delivered batch. That probe suggests a `POST` to an
+ *   unclaimed path is answered **405** by Static Assets instead, which the
+ *   sink would treat as a failed batch and drop — a better outcome than the
+ *   warning describes. **Neither reading is confirmed for a real deployment**;
+ *   the warning is left standing because failing safe on the pessimistic
+ *   reading costs nothing and the optimistic one is one probe on one runtime.
+ *
+ * What the probe does establish is that the build produces a Worker and that
+ * asset responses still carry every header `public/_headers` declares with a
+ * `main` present. What it does not establish is that any guard above runs
+ * where it will have to run.
+ *
  * ## Rollback
  *
  * A bad static asset serves a stale page; a `main` that throws serves nothing

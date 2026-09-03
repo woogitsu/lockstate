@@ -27,11 +27,22 @@ import type { ReleaseIdentity } from './events';
  * of silently emitting requests the browser then blocks.
  *
  * The corresponding obligation is on the deployment, and it is real: the path
- * has to be served by something. Under the current `wrangler.jsonc` the site
- * is Static Assets with no Worker script, so **no route answers any path
- * today** and the configuration is unsettable in practice until one exists.
- * That is deliberately not fixed here — it is the owner's decision, recorded
- * with everything else it entails in the ADR.
+ * has to be served by something. This paragraph read *"no route answers any
+ * path today"* until 2026-09-03, when the owner authorised this project's
+ * first server entry point; `wrangler.jsonc` now declares `main` and
+ * `src/worker/` can answer a path. **What has not changed is that nothing
+ * answers one by default.** The Worker claims a route only when its own
+ * binding names it, and no environment sets that binding — so a path
+ * configured here today still reaches Static Assets and the SPA shell.
+ *
+ * That is the trap this file cannot close: the sender and the receiver are
+ * configured independently, both default to absent, and a *mismatch* is not a
+ * refusal but a `200` carrying the SPA shell, which the sink counts as a
+ * delivered batch. The two halves share one definition of a legal path
+ * (`resolveSameOriginIngestPath`, below) so they cannot disagree about what is
+ * legal, and nothing can make them agree about the value.
+ * `docs/DEPLOYMENT.md`, "What actually landed", says to set the Worker binding
+ * first for exactly this reason.
  *
  * ## Why the environment is required rather than guessed
  *

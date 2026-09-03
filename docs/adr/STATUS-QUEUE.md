@@ -5108,6 +5108,39 @@ than a reminder.**
 commit — which is this file's standing rule that landing the change an entry
 describes means updating the entry with it.
 
+**Updated 2026-09-03 rather than deleted, and the reason is the sentence above
+about what the owner is being asked for.** The approval arrived: the change was
+put to the owner as three options — prepare it for review without merging,
+leave the surface blocked, or build it and merge it — and they answered
+*"Zbuduj i zmerguj"* ("build it and merge it"). `AGENTS.md`'s "The owner's
+standing mandate" carries that in their words, dated, beside the reservation it
+releases; `docs/DEPLOYMENT.md`'s "What actually landed" answers the nine items
+one by one; ADR 0002 carries its dated `Amendment`, so the last item on the
+checklist is discharged and the paragraph above it is corrected in place rather
+than overwritten.
+
+**Why the row survives anyway.** Two of the nine items are answered by
+*absence*, and the absences are not this change's to fill:
+
+- **Item 3, what the Worker holds, and item 4, what it must not.** It holds one
+  string, the ingest path. There is no destination and no database credential,
+  because the `telemetry_events` table, its insert function and the **dedicated
+  least-privilege database role** are `supabase/migrations/` — exclusion 2,
+  untouched. So the sharp half of this row is still owed, exactly as the
+  paragraph above it says: that role is swept by nothing unless
+  `supabase/tests/003_data_api_grants.test.sql`'s role list is extended in the
+  same change that creates it.
+- **Item 5's request-rate bound**, which is deliberately not in the Worker: a
+  limiter must key on a value, the only one available is the caller's IP, and
+  ADR 0046 §7 item 2 forbids retaining one. It belongs at the edge, in
+  configuration — exclusion 3.
+
+**So what this row now records is narrower and still addressed to the owner:**
+the entry point is merged and inert, and telemetry collects nothing until a
+migration and two deploy variables land. It is deleted by the change that
+brings those, which is also the change that first makes
+`docs/TELEMETRY.md`'s 90/90/30 retention table capable of being true.
+
 ### ADR 0056 (2026-08-28) — the fix is decided, the second of simulated time it costs a player is not
 
 **Filed by the change that implements it, which is what §2's rule asks for.**
