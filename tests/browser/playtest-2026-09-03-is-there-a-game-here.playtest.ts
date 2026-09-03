@@ -322,7 +322,7 @@ test('a prison that works, run until it asks for something', async ({ page }) =>
   for (const box of BOXES) {
     let result = await zone(page, box.room, box.x, box.y, box.w, box.h);
     let attempts = 1;
-    while (result.status.includes('OPEN') && attempts < 6) {
+    while (/Open on at least one side/i.test(result.status) && attempts < 6) {
       await page.waitForTimeout(4000);
       result = await zone(page, box.room, box.x, box.y, box.w, box.h);
       attempts += 1;
@@ -401,7 +401,7 @@ test('a prison that works, run until it asks for something', async ({ page }) =>
   log(`ACT 6  alerts at the start: ${JSON.stringify(first.alerts)}`);
   log(`ACT 6  roster at the start: ${JSON.stringify(first.roster)}`);
 
-  const WATCH_MS = 1_500_000; // 25 minutes of wall clock at 4x
+  const WATCH_MS = Number(process.env['LOOK_AWAY_MS'] ?? 1_200_000); // 20 minutes of wall clock at 4x
   const EVERY_MS = 20_000;
   let lastAlerts = first.alerts;
   const firstChanges = new Map<string, string>();
