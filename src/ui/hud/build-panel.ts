@@ -577,6 +577,53 @@ export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | u
 export const BUILD_QUEUE_ROW_LIMIT = 3;
 
 /**
+ * How long a place in the queue list stays blank after the order it named
+ * leaves, before another order may appear there (#860).
+ *
+ * ## Why there is a number here at all
+ *
+ * Because a place in a list is what a player aims a destructive control by, and
+ * this list is rewritten about four times a second. `assignPooledRows` keeps
+ * every surviving order in the place it arrived in, which closes the case where
+ * the pool re-points a row -- and **that half alone was measured failing.** The
+ * pool is `BUILD_QUEUE_ROW_LIMIT` places over a queue that loses its head about
+ * every 625ms of wall clock at 4x, so inside a human decision the order a
+ * player aimed at has usually left the window altogether; the next order then
+ * took the place their pointer was already over. Two presses of three still
+ * cancelled a different wall.
+ *
+ * So a freed place is held blank, and this is how long for.
+ *
+ * ## Where the figure comes from, and what is *not* measured about it
+ *
+ * **Its lower bound is measured and its value is a judgement.** The browser run
+ * of 2026-09-03 pressed at instrumented decision delays of 0ms, 250ms and
+ * 600ms; every press at 0ms was aimed correctly and every press at 250ms and
+ * 600ms was not, and the elapsed time from the read to the click was larger
+ * than the nominal delay by the probe's own round trips -- about 450ms and
+ * 800ms. So the window has to be **at least** ~800ms to cover what has actually
+ * been seen to fail. One second is that, rounded up, and it is a claim about how
+ * long a person takes to read a short label and press the control beside it,
+ * which nothing in this repository has measured.
+ *
+ * It is deliberately **not** derived from `CLOCK_STATE_PUBLISH_INTERVAL_MS`.
+ * That constant is how fast the panel is redrawn; this one is how slowly a
+ * person acts, and tying the second to the first would make a rendering
+ * decision govern a safety one. Two publications' worth of blankness -- 500ms --
+ * was tried on paper and is inside the 800ms already observed to fail.
+ *
+ * ## What it costs, and why that cost needs no player-facing sentence
+ *
+ * While the queue churns the block draws fewer than its three rows: a place is
+ * blank for a second after each of its orders leaves. The count in the header
+ * and the "and N more" line are both counted against the rows actually drawn,
+ * so nothing on screen claims otherwise, and a blank row promises nothing --
+ * which is what keeps this a paint rule rather than a refusal needing a
+ * sentence of its own (`AGENTS.md` exclusion 4).
+ */
+export const BUILD_QUEUE_ROW_SETTLE_MS = 1_000;
+
+/**
  * What one queued row says it is, and where -- and, since the owner's ruling
  * of 2026-09-02, what cancelling it would give back.
  *
@@ -1877,6 +1924,8 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     readonly cancel: ActionButton;
     /** The order this row names, or `undefined` while it names nothing. */
     orderId: string | undefined;
+    /** When this place was last emptied. `assignPooledRows` reads it; see `BUILD_QUEUE_ROW_SETTLE_MS`. */
+    freedAtMs: number | undefined;
   }
 
   const queueRows: readonly QueueRow[] = Array.from({ length: BUILD_QUEUE_ROW_LIMIT }, (): QueueRow => {
@@ -1917,6 +1966,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         },
       }),
       orderId: undefined,
+      freedAtMs: undefined,
     };
     row.element.append(
       element('div', { className: 'hud-build__queue-text', children: [label, state] }),
@@ -1942,6 +1992,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * the last publication"*); this is the same rule, one panel over.
    */
   function emptyQueueRow(row: QueueRow): void {
+    // The settle stamp goes with the emptying, on the same transition rule the
+    // `'holds-open'` branch of `paintQueue` uses: a place that named an order a
+    // moment ago must not take another one straight away, and a place that was
+    // already blank must not have its window restarted.
+    if (row.orderId !== undefined) row.freedAtMs = performance.now();
     row.orderId = undefined;
     row.element.hidden = true;
     row.label.textContent = '';
@@ -2028,21 +2083,23 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     /*
      * Which row names which order -- `assignPooledRows`, not `orders[index]`,
      * and that substitution is the whole of #860's fix. Its header carries the
-     * measurement and the argument; what it means here is that a row keeps the
-     * order it took until that order leaves the window, so the press handler
-     * above cannot be handed an order the row never named.
-     *
-     * The cost is that this list is no longer in the crew's order once the
-     * queue has advanced: the freed row is at the top and the arriving order
-     * belongs at the back, and a fixed pool cannot have both. Every row carries
-     * its tile and its edge, which is what a player aims by
-     * (`projectBuildQueue`'s docblock), and `data-state` still accents the one
-     * the crew is on, so what is lost is the ordinal rather than the aim.
+     * measurement, the argument, and what the fix costs; what it means here is
+     * that a *place* in this list names one order for as long as that order is
+     * in the window, and that a new order only appears in a place that has been
+     * visibly blank for `BUILD_QUEUE_ROW_SETTLE_MS`. So the press handler above
+     * cannot be handed an order the row never named.
      */
     const orders = new Map(shown.orders.map((order) => [order.orderId, order]));
+    const nowMs = performance.now();
     const assignments = assignPooledRows(
-      queueRows.map((row) => row.orderId),
+      // `itemId` rather than `orderId`, because the rule is about pooled rows
+      // and not about build orders: the Staff panel's two pools and this
+      // panel's deliveries have the identical hazard and will hand it the
+      // identical shape.
+      queueRows.map((row) => ({ itemId: row.orderId, freedAtMs: row.freedAtMs })),
       shown.orders.map((order) => order.orderId),
+      nowMs,
+      BUILD_QUEUE_ROW_SETTLE_MS,
     );
 
     let drawn = 0;
@@ -2054,11 +2111,20 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       }
       if (assignment.kind === 'holds-open') {
         /*
-         * The order this row named has gone. It is emptied *now* -- no id, no
-         * label, no state, and the control reports itself unavailable -- but it
-         * keeps its box until the next publication, because hiding it would
-         * slide every row below it up a row's height into whatever pointer is
-         * resting there, which is #860 again by geometry instead of by binding.
+         * This place names nothing: its order has just gone, or it is still
+         * inside its settle window, or a row below it is occupied and giving
+         * this box up would move that row. It is emptied -- no id, no label, no
+         * state, and the control reports itself unavailable -- and it keeps its
+         * box, because hiding it would slide every row below it up a row's
+         * height into whatever pointer is resting there, which is #860 again by
+         * geometry instead of by binding.
+         *
+         * `freedAtMs` is stamped from the transition this loop can see for
+         * itself -- the row held an order before the assignment and holds none
+         * after -- which is why `assignPooledRows` does not have to return it.
+         * Stamped only on the transition, or a place that stayed blank would
+         * restart its own settle window on every publication and never take
+         * another order at all.
          *
          * `setUnavailable`, not `setDisabled`: `createBusyGroup`'s `apply`
          * assigns `disabled` to every member on every busy transition, so a
@@ -2068,6 +2134,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
          * authority is `row.orderId === undefined` in the handler above; this
          * is the signal, not the gate.
          */
+        if (row.orderId !== undefined) row.freedAtMs = nowMs;
         row.orderId = undefined;
         row.element.hidden = false;
         row.label.textContent = '';

@@ -341,15 +341,28 @@ test.describe('the Build panel queue', () => {
     expect(await page.evaluate(() => window.lockstateUiHarness.pressBuildQueueCancel('order-01'))).toBe(false);
     expect((await intents(page)).filter((intent) => intent.includes('cancel-build-order'))).toHaveLength(1);
 
-    // The next publication gives the box up, and only then does the list close
-    // over the gap.
+    /*
+     * And the blank place keeps its box for as long as `order-02` is below it,
+     * however many publications arrive -- giving it up would slide `order-02`
+     * up a row's height into a pointer resting on it. Only a trailing run of
+     * blank places gives its boxes up, which is why this list is still three
+     * rows tall for a queue of two.
+     */
     await page.evaluate(
       (model) => window.lockstateUiHarness.reportBuildQueue(model),
       { total: 11, started: 1, orders: [order(0, 'in-progress'), order(2, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
     );
+    const held = await probeQueue(page);
+    expect(held.rows.map((row) => row.orderId)).toEqual(['order-00', '', 'order-02']);
+    expect(held.rows[2]?.cancelBox?.y).toBe(afterPress.rows[2]?.cancelBox?.y);
+
+    // It is the *last* place that goes, and only when nothing is under it.
+    await page.evaluate(
+      (model) => window.lockstateUiHarness.reportBuildQueue(model),
+      { total: 11, started: 1, orders: [order(0, 'in-progress')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
+    );
     const closed = await probeQueue(page);
-    expect(closed.rows.map((row) => row.orderId)).toEqual(['order-00', 'order-02']);
-    expect(closed.rows).toHaveLength(2);
+    expect(closed.rows.map((row) => row.orderId)).toEqual(['order-00']);
   });
 
   test('never re-aims a pooled row, so a press cannot reach an order the row never named (#860)', async ({ page }) => {
@@ -414,12 +427,23 @@ test.describe('the Build panel queue', () => {
       .poll(async () => (await intents(page)).filter((intent) => intent.includes('cancel-build-order')))
       .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-01' })]);
 
-    // And the arriving order takes the freed row on the next publication, so
-    // the block does not go on drawing two rows for a queue of eleven.
-    await page.evaluate(
-      (model) => window.lockstateUiHarness.reportBuildQueue(model),
-      { total: 11, started: 1, orders: [order(1, 'in-progress'), order(2, 'assigned'), order(3, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
-    );
+    /*
+     * The freed place stays blank for `BUILD_QUEUE_ROW_SETTLE_MS`, and
+     * publications arriving inside that window do not fill it. This is the half
+     * the first version of the fix did not have, and it is the half the
+     * re-measurement of 2026-09-03 said was missing: keeping surviving orders
+     * in their places does nothing for the player whose order left, because the
+     * next order took the place their pointer was already over.
+     */
+    const advance = { total: 11, started: 1, orders: [order(1, 'in-progress'), order(2, 'assigned'), order(3, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 } } as HudBuildQueueViewModel;
+    await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), advance);
+    const stillBlank = await probeQueue(page);
+    expect(stillBlank.rows.map((row) => row.orderId)).toEqual(['', 'order-01', 'order-02']);
+
+    // Past the window, the waiting order takes it -- so the block does not go
+    // on drawing two rows for a queue of eleven for ever.
+    await page.waitForTimeout(1_200);
+    await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), advance);
     const refilled = await probeQueue(page);
     expect(refilled.rows.map((row) => row.orderId)).toEqual(['order-03', 'order-01', 'order-02']);
     expect(refilled.moreText).toContain('8');
