@@ -57,7 +57,7 @@ the other.
 | 1 | DEFECT | Four numbers about guards on one screen, two of them called coverage; hiring a second guard moves neither, correctly — and the ratio that decides when it *would* (one per eight) is nowhere on screen |
 | 2 | DEFECT | The minimap says it is not available and then answers a click; only a player who ignored the sentence is ever told |
 | 3 | DEFECT | The tab a session opens on gains no sentence at all between an empty prison and a working one |
-| 4 | DEFECT | A roster row is `name / activity / need / risk tier` with no heading over any column and no label on any cell, and this pass misread it (§4) |
+| 4 | DEFECT | A roster row puts a risk-tier pill on the same line as a need and its meter, with no heading and no label on any cell — this pass misread it twice (§4) |
 | 5 | REFUTED | "The numbers are not labelled." One unlabelled readout on the whole screen |
 | 6 | FIXED | The clock says `PAUSED`, in a word and a second channel (#629 §1 closed) |
 | 7 | CONFIRMED | A refusal from tick 0, in two places at once, still on screen on day 7 (#894) |
@@ -313,7 +313,8 @@ session opens on, what the prison is currently doing to the people in it.
 Which facts those are is a design call and therefore the owner's; the gap is
 that the count is presently zero.
 
-## 4. DEFECT — a roster row is four bare words, and this pass misread it
+## 4. DEFECT — a roster row puts a prisoner's risk pill on the same line as a
+need and its meter, and this pass misread it twice
 
 **This is the finding the pass would have missed by reading the code first**, so
 the misreading is the evidence and is recorded as such. Act 3's prose dump of
@@ -355,16 +356,44 @@ row, walking up for every `aria-label` and `title`.
   not even have a class of its own: it is a bare `ui-badge__text`, the same
   class carrying `Warning`, `Info` and `Covered` elsewhere on the same screen.
 
-**Why `Low` is the worst possible word here.** All four rows on screen read
-`Hygiene / Low` or `Hunger / Low`. Read as a need level, `Low` means *this
-prisoner is badly off* — a thing to act on. Read as a risk tier, `Low` means
-*this prisoner is no trouble* — a thing to ignore. **The two readings point in
-opposite directions**, and nothing on the row picks one. `Minimal` is the same
-trap one rung down.
+**Then a screenshot corrected this section, and the correction is kept in
+place rather than the section rewritten.** The DOM dump above lists only leaf
+elements *with text*, and the row has one element without: a segmented bar. On
+screen the row is
 
-**What the words must convey**, without this pass authoring them: which of the
-four values on a row is a need and which is a classification. Two headings, or
-two words per row, or a separator — the choice is player-visible copy and
+```
+Hana Zielen
+Association    Bladder ▮▮▮▮▮▯▯▯                    [ Low ]
+Lars Bakker
+Association    Bladder ▮▮▮▮▮▮▯▯                    [ Minimal ]
+```
+
+— name on its own line, then activity, then the need **with a meter beside
+it**, then the tier in a bordered pill hard against the right edge. So the two
+values *are* visually distinguished: one has a bar, the other is a pill. The
+first draft of this section said there was "nothing between them" and that was
+an artifact of reading a text dump, exactly as §13's two instrument defects
+were.
+
+**What survives the correction, and it is still a defect.** The pill sits on
+the same line as the need and its meter. `Bladder ▮▮▮▮▮▯▯▯ [Low]` reads as one
+statement — *bladder need, low* — and that reading is wrong: the pill is a
+classification of the **prisoner**, not a level of the **need**. Nothing on the
+line says which. The block heading is `Prisoners 4 of 8`; there are no column
+headings; there is no `aria-label` or `title` on the row or on any cell; and the
+pill's only class is `ui-badge__text`, shared with `Warning`, `Info` and
+`Covered` elsewhere on the same screen.
+
+**The screen even shows its own counter-example, and it does not help.** Three
+rows read `▮▮▮▮▮▯▯▯` with `Low`; the fourth reads `▮▮▮▮▮▮▯▯` — *more* filled —
+with `Minimal`. A player working from "the pill grades the bar" gets a
+consistent-looking answer either way, depending on which direction they think
+the bar runs, so the misreading is not self-correcting by observation. It has to
+be said in words.
+
+**What the words must convey**, without this pass authoring them: that the pill
+grades the prisoner and not the need beside it. A heading, or one word inside
+the pill, or moving it off that line — the choice is player-visible copy and
 therefore the owner's.
 
 ## 5. REFUTED — "the numbers on screen are not labelled"
