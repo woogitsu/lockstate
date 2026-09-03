@@ -556,3 +556,85 @@ response: `requiredResponders` was **2** for the assault, **4** for the escape
 attempt and **5** for the riot. So a twelve-prisoner prison that wants its
 riots answered needs the two the panel asks for *plus five more*, and nothing
 in the game says so. That is a prediction until the staged run reports.
+
+## 7. Nine numbers, and nothing to press
+
+**Instrument:** `tests/browser/playtest-2026-09-03-can-a-player-drill-in.playtest.ts`
+**Run:** 2026-09-03, tree `c5e24a6` (v0.0.425), 1.4 wall minutes, green.
+Log at `playtest-out/drill-run.log`.
+
+`HIGH RISK` went 0 → 9 on its own in §5's run. `INCIDENTS` went 0 → 1 and back
+eleven times. `PRISONERS` fell 12 → 9. So the question is what a player can do
+with a number that moved. Every chip was pressed:
+
+```
+the strip carries 9 chip(s): ["prisoners","high-risk","staff","coverage",
+                              "rooms","incidents","contraband","funds","earned-today"]
+chip "prisoners"    <div> cursor=auto -> NOTHING CHANGED commands 0->0
+chip "high-risk"    <div> cursor=auto -> NOTHING CHANGED commands 0->0
+chip "staff"        <div> cursor=auto -> NOTHING CHANGED commands 0->0
+chip "coverage"     <div> cursor=auto -> NOTHING CHANGED commands 0->0
+chip "rooms"        <div> cursor=auto -> NOTHING CHANGED commands 0->0
+chip "incidents"    <div> cursor=auto -> NOTHING CHANGED commands 0->0
+chip "contraband"   <div> cursor=auto -> NOTHING CHANGED commands 0->0
+chip "funds"        <div> cursor=auto -> NOTHING CHANGED commands 0->0
+chip "earned-today" <div> cursor=auto -> NOTHING CHANGED commands 0->0
+every [data-metric] chip's tag: DIV,DIV,DIV,DIV,DIV,DIV,DIV,DIV,DIV
+```
+
+### `HIDDEN` — the strip is nine read-only divs, and one of them is documented as pressable
+
+**Nine `div`s, `cursor: auto` on every one.** `createStatChip`
+(`src/ui/primitives/stat-chip.ts:60`) builds the root as `element('div', {
+className: 'ui-stat', ... })` and wires no listener, and
+`src/ui/hud/status-strip.ts` contains no `click` at all.
+
+`src/ui/hud/projection.ts:792` says of the HIGH RISK chip, in its own comment:
+
+> The Regime tab's own icon: this chip is the count of the prison that tab's
+> restricted timetable applies to, **and pressing it is what a player reading
+> the chip would go on to do.**
+
+That sentence is right about the player and the affordance does not exist. It
+is the cleanest statement in the repository of what §5's §6.2 measures: a
+number is published, a reader is expected to want more, and there is nowhere to
+go. With no incident surface anywhere (§6.2), no prisoner detail panel and no
+pressable chip, the strip is a dashboard on a machine with no dials.
+
+### The honest limit of this instrument, stated because it matters
+
+The `NOTHING CHANGED` column is **not** evidence on its own, and the run says
+so itself. The control — a Rooms catalogue row, which is a real
+`button[role=radio]` with `cursor: pointer` and certainly does something —
+*also* reported `NOTHING CHANGED`:
+
+```
+CONTROL: a Rooms catalogue row <button[role=radio]> cursor=pointer -> NOTHING CHANGED
+```
+
+Selecting a radio row changes the radio's own state and the arm label, and the
+snapshot this probe takes (active tab, panel collapse states, open dialogs, the
+refusal band, the HUD's text length) is blind to both. **So the control failed
+to validate the column, and the column is discarded.** What stands is the part
+the control *did* discriminate: the chips are `div`s with `cursor: auto`, the
+control is a `button` with `cursor: pointer`, and no listener exists on the
+former. A successor sharpening this should snapshot `aria-checked`,
+`data-selected` and the arm label rather than the text length.
+
+### The Regime panel, verbatim, on a new prison
+
+```
+REGIME | Collapse | TODAY'S BLOCKS
+General Population | 0% THROUGH | Allows Sleep
+High Risk | 0% THROUGH | Allows Sleep, Meal, Hygiene
+PRISONERS | 0 of 0 | No prisoners yet. Build a cell with a bed to take somebody in.
+```
+
+Two timetables side by side, one control on the panel (`Collapse`), and zero
+roster rows to press. This confirms §3's inventory by pressing rather than by
+counting, and it is where §5's measurement lands: those twelve lapsed incidents
+moved nine of nine prisoners onto the **High Risk** line above — *Allows Sleep,
+Meal, Hygiene* — and the player can neither see that it happened nor change
+either timetable. **The one causal loop the simulation runs end to end
+terminates in a control that does not exist.** That is the single most useful
+sentence this pass can offer about whether there is a game here.
