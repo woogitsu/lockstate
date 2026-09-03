@@ -48,13 +48,25 @@
 /**
  * The closed vocabulary of reasons a *host* refusal can name.
  *
- * One member, and that is not an oversight: a reason belongs here only once
- * some sentence differs because of it. `AffordabilityRefusal`'s other branch
+ * A reason belongs here only once some sentence differs because of it, which
+ * is the bar the second member had to clear: **the owner ruled a sentence for
+ * a refused Admit on 2026-09-03** (*"Nobody was admitted — this prison has no
+ * room to hold anybody."*), so `'no-room-to-hold-anybody'` now has a sentence
+ * to name and earns its place. Before the ruling it would not have -- and
+ * issue #869's first filing got that backwards, prescribing a thrown type as
+ * though the diagnostic English were the player's sentence. It is not: the
+ * message on this class is diagnostic and never reaches a player (see below),
+ * so a reason with no authored sentence would have been a locale key with no
+ * implementation, which `AGENTS.md`'s fourth exclusion exists to prevent.
+ *
+ * **This was one member and that was not an oversight**, and the sentence
+ * saying so is kept because the bar it states is the one the second member had
+ * to clear rather than a count that went stale. `AffordabilityRefusal`'s other branch
  * (`'malformed-charge'`) is deliberately **not** here -- a quantity that
  * arrived as `NaN` is a defect on this thread, and the generic refusal is the
  * true thing to say about it.
  */
-export type HostRefusalReason = 'past-the-overdraft-floor';
+export type HostRefusalReason = 'past-the-overdraft-floor' | 'no-room-to-hold-anybody';
 
 /** A pre-dispatch refusal that names its reason. */
 export class HostRefusalError extends Error {
