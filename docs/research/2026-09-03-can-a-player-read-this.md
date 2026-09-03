@@ -256,7 +256,7 @@ contains a digit, and reports **`hops`**: the number of steps from that leaf up
 to the nearest ancestor whose *visible* text (screen-reader-only spans removed)
 contains a word of three or more letters, together with that ancestor's text.
 It is a distance rather than a verdict because the verdict version got the
-answer wrong — see §10.
+answer wrong — see §11.
 
 Measured across all five tabs, at 1440x900:
 
@@ -420,7 +420,35 @@ several seconds apart on a clock running at x4, and the chip is that field
 read directly with no arithmetic. Recorded because the suspicion was wrong and
 the reason it was wrong is a sampling rule this record depends on elsewhere.
 
-## 10. This pass's instrument was wrong twice, and both are recorded
+## 10. MEASURED, and already the owner's call — the one sentence that explains
+the overdraft badge is hover-only
+
+Recorded rather than filed, because the owner ruled on it on 2026-09-01 and the
+ruling is in the code's own docblocks. The measurement is here because the
+consequence is easy to underestimate from the ruling's wording.
+
+While the balance is negative the FUNDS chip carries a badge stating a bare
+remainder — measured at `1,150 left` on a prison at `-100` — and a full
+sentence, `1,150 left before deliveries stop — past that, no materials can be
+ordered until the state pays what it owes.` The sentence is
+`StatChip.setDescription`, which writes the chip's `title` **and** a
+`screenReaderText` span (`src/ui/primitives/stat-chip.ts:93-94`). `.ui-sr-only`
+is `width: 1px; height: 1px; clip-path: inset(50%)`
+(`src/ui/primitives/primitives.css:73`).
+
+So on screen, for a sighted player who does not hover, the whole of what the
+chip says is **`-100`** and **`1,150 left`** — 1,150 left of what, unstated. The
+sentence that answers it is a tooltip. Both were on screen (in `innerText`)
+during act 3's overdraft window and both vanished together when the state paid
+and the balance went positive, which is the badge behaving exactly as its
+docblock says it should.
+
+The width argument the ruling weighed this against is real and measured
+elsewhere (a strip carrying every badge is 1,627px of content in a 1,256px row
+at 1280). This record only notes that the trade landed the *explanation* of a
+number on a hover, and that a hover is not a channel a player is told exists.
+
+## 11. This pass's instrument was wrong twice, and both are recorded
 
 - **The number probe measured itself.** The first `probeNumbers` asked whether
   a word appeared inside the number's "smallest grouping" and stopped its
