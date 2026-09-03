@@ -409,6 +409,13 @@ describe('ADR status references', () => {
     ).toEqual([]);
   });
 
+  /*
+   * An explicit timeout: this walks the whole tree and exceeded
+   * `vitest.config.ts`'s global 5,000 ms under contention on 2026-09-03.
+   * The measurement and the reasoning are in
+   * `comment-symbol-existence-contract.test.ts`, beside the slowest of them.
+   * No assertion changes; only the patience does.
+   */
   it('reads enough of the corpus, and enough claims in it, to be non-vacuous', () => {
     /*
      * The assertion this file exists for is `toEqual([])`, and a scan that
@@ -429,7 +436,7 @@ describe('ADR status references', () => {
       report.checked,
       'no ADR status claims matched anywhere in the corpus. Either every such sentence has been deleted -- unlikely -- or the claim patterns have stopped matching prose, which makes the assertion below vacuous',
     ).toBeGreaterThan(15);
-  });
+  }, 60_000);
 
   it('reports a false status claim, and leaves the true forms alone', () => {
     /*
@@ -462,6 +469,13 @@ describe('ADR status references', () => {
     expect(check('the ADR 0013 answer is `Proposed`, not `Accepted`')).toHaveLength(1);
   });
 
+  /*
+   * An explicit timeout: this walks the whole tree and exceeded
+   * `vitest.config.ts`'s global 5,000 ms under contention on 2026-09-03.
+   * The measurement and the reasoning are in
+   * `comment-symbol-existence-contract.test.ts`, beside the slowest of them.
+   * No assertion changes; only the patience does.
+   */
   it('never states a status an ADR does not hold', () => {
     const { report } = scanCorpus();
 
@@ -469,5 +483,5 @@ describe('ADR status references', () => {
       report.contradictions,
       'a sentence in this repository reports an ADR status the ADR does not hold. The ADR is right and the sentence is what changes -- unless the ADR is the one that drifted, in which case say so in the same commit. Dated records under docs/research/ and the quoted inventory in docs/adr/STATUS-QUEUE.md are exempt on purpose; if a claim there is what failed, the exemption is what needs fixing',
     ).toEqual([]);
-  });
+  }, 60_000);
 });
