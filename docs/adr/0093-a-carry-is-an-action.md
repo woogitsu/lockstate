@@ -10,11 +10,18 @@ ADR 0093 i wdrożę mechanikę"* (accept ADR 0093 and the mechanic will be
 implemented). That approves decisions 1 through 6 and the costs each states,
 and it approves nothing wider:
 
-- **The three sentences under *What is owed to the owner* are still owed.** The
-  action's label, the standing condition for a delivery waiting in a bay with
-  nobody to carry it, and whatever the detail panel says about goods in hand
-  remain the owner's under `AGENTS.md`'s fourth exclusion. An approval to build
-  the mechanic is not an approval to write them.
+- **Two of the three sentences under *What is owed to the owner* are still
+  owed, and the first of them is not.** The standing condition for a delivery
+  waiting in a bay with nobody to carry it, and whatever the detail panel says
+  about goods in hand, remain the owner's under `AGENTS.md`'s fourth exclusion.
+  An approval to build the mechanic is not an approval to write them.
+  **This bullet read "The three sentences … are still owed" until later the
+  same day**, and it is corrected rather than overwritten
+  (`docs/AGENT_WORKFLOW.md` §4): the acceptance really did leave all three
+  owed, and what changed them to two is a *separate* ruling recorded in
+  *Amendment, 2026-09-03: the action's label is the owner's word* below. The
+  sentence's original form is the record of what the acceptance alone
+  approved.
 - **The three open questions are still open.** Whether a carrier is
   interruptible by a regime change, what the cancel path owes a player, and
   whether a `'carrier-departed'` job deserves a notice were put to the owner as
@@ -54,7 +61,10 @@ Every `file:line` below was opened at that commit.
 **Every player-facing sentence this needs is deliberately absent.**
 `AGENTS.md`'s fourth exclusion reserves them; the section *What is owed to the
 owner* lists them. Where a word is owed, this document says so rather than
-proposing one.
+proposing one. **One of the three has since been ruled on by the owner and is
+no longer absent — the action's label, see the amendment of 2026-09-03 — and
+this paragraph is kept as written because it is true of the document as
+accepted and of the two sentences that are still owed.**
 
 ### The number
 
@@ -932,16 +942,62 @@ The owner's, because each is either outward-facing or a balance value:
 Player-facing sentences this feature cannot ship without, none of which this
 document writes:
 
-1. **The action's label.** The `action` namespace of
-   `src/content/simulation-message-keys.ts:159` carries one label per entry of
-   `DEFAULT_ACTIONS` — `action.kitchen-work` is `'Kitchen Duty'` at `:187`,
-   itself marked there as *"a draft for the owner's review"* — and
+1. ~~**The action's label.**~~ **SETTLED by the owner on 2026-09-03: the
+   label is *Errand*.** See *Amendment, 2026-09-03: the action's label is the
+   owner's word* below for the ruling and what it does not cover. **The item
+   as this document wrote it is kept rather than deleted**
+   (`docs/AGENT_WORKFLOW.md` §4), because two sentences are still owed and the
+   reason all three were is the same reason: it read *"The `action` namespace
+   of `src/content/simulation-message-keys.ts:159` carries one label per entry
+   of `DEFAULT_ACTIONS` — `action.kitchen-work` is `'Kitchen Duty'` at `:187`,
+   itself marked there as 'a draft for the owner's review' — and
    `tests/foundation/content-vocabulary-contract.test.ts` reads that namespace
    as a census. A carrying prisoner needs a word in the roster and the detail
-   panel, and the word is owed.
+   panel, and the word is owed."* Every clause of that still describes the
+   mechanism; only its closing clause, *"and the word is owed"*, stopped
+   being true.
+   `action.kitchen-work`'s own label is **still** a draft and is not covered by
+   this ruling.
 2. **The standing condition** for a delivery waiting in the bay with nobody in
-   a work block to carry it (decision 2).
+   a work block to carry it (decision 2). **Still owed.**
 3. **Whatever the detail panel says about goods in hand**, if it says anything:
    `PrisonerActionViewModel` today carries an action and a room; a carry has an
    item and a quantity, and whether a player sees them is a copy decision as
-   much as a projection one.
+   much as a projection one. **Still owed.**
+
+---
+
+## Amendment, 2026-09-03: the action's label is the owner's word
+
+**Approved by the repository owner, and it is their decision rather than an
+approval of one this document proposed.** Shown the candidate labels this
+document's entry had weighed — and told which one was already on screen as a
+marked draft — they answered:
+
+> **"Errand"**
+
+So `action.carry`'s label is **`'Errand'`**, settled copy, and item 1 of *What
+is owed to the owner* is discharged. **The string does not move**: the
+catalogue has read `'Errand'` since the mechanic landed this morning, because
+the `action` namespace declares `form: 'definition-id-field'` over
+`DEFAULT_ACTIONS` and `tests/unit/simulation-message-keys.test.ts` requires a
+namespace to label *exactly* the ids its declaration declares — so an entry had
+to exist the moment the catalogue held the id, and the only choice available
+was between a draft that said it was one and a suite that could not go green.
+What this amendment changes is that the entry is no longer provisional:
+`src/content/simulation-message-keys.ts` and
+`tests/foundation/content-vocabulary-contract.test.ts` each carried a comment
+calling the label a draft awaiting review, and each now records this ruling
+with the words it replaced.
+
+**What this ruling does not reach**, stated because a settled sentence beside
+two unsettled ones invites the wrong inference:
+
+- **`action.kitchen-work`'s `'Kitchen Duty'`** has been a draft awaiting the
+  owner's review since #532 and still is. The owner was asked about the
+  carry's label, not about the roster's labels as a class.
+- **Items 2 and 3 above.** The standing condition for a delivery waiting in a
+  bay is still unwritten and its `PrisonCondition` member is still unbuilt, and
+  the detail panel still says nothing about goods in hand.
+- **The three open questions** under *Open questions* are untouched, exactly as
+  the acceptance left them.

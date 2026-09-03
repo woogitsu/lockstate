@@ -462,13 +462,19 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // simulation stores, which is why the census counts a label the source
       // declaration does not declare.
       // 177 at ADR 0093: `action.carry` is one label added to the existing
-      // `action` namespace, so `namespaces` does not move. **The label is a
-      // draft for the owner's review**, exactly as `action.kitchen-work`'s is
-      // and for the reason `src/content/simulation-message-keys.ts` states at
-      // that entry: the group declares `form: 'definition-id-field'` over
-      // `DEFAULT_ACTIONS` and `tests/unit/simulation-message-keys.test.ts`
-      // requires a namespace to label exactly the ids its declaration declares,
-      // so an entry has to exist the moment the catalogue holds one.
+      // `action` namespace, so `namespaces` does not move. **The owner
+      // confirmed that label, "Errand", on 2026-09-03**, so it is settled
+      // copy and no longer provisional. **This comment read "**The label is a
+      // draft for the owner's review**, exactly as `action.kitchen-work`'s is"
+      // until then, and the reason it gave is unchanged** (marked in both
+      // directions, `docs/AGENT_WORKFLOW.md` §4): the reason was never about
+      // the word but about why an entry had to exist at all, which
+      // `src/content/simulation-message-keys.ts` states at that entry -- the
+      // group declares `form: 'definition-id-field'` over `DEFAULT_ACTIONS`
+      // and `tests/unit/simulation-message-keys.test.ts` requires a namespace
+      // to label exactly the ids its declaration declares, so an entry has to
+      // exist the moment the catalogue holds one. `action.kitchen-work`'s
+      // label is still a draft; only the carry's was ruled on.
       labels: 177,
       // 11 on `main` before issue #533, which itself moved this line from 10;
       // #533 gives `deployment-phase` its first call site, so it is 12. The

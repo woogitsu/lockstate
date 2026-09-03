@@ -23,10 +23,16 @@ the edge in front of an actor is still standing (2026-08-29, #581, filed by
 #615 — the fifth, the third consecutive row filed by a commit whose only job
 was the filing, and **the first filed as a debt rather than on time**: #581
 landed the ADR with no row at all, which is what #615 was opened to
-record), and ADR 0093's three player-facing sentences for the errand it built
+record), and ADR 0093's **two** remaining player-facing sentences for the
+errand it built
 (2026-09-03, the sixth — and **the first row ever filed for a document that is
 already `Accepted` and already implemented**: what waits is the copy, not a
-signature, which is a shape this section had not held before)** — **this clause
+signature, which is a shape this section had not held before; **that count
+read "three player-facing sentences" until the owner ruled the action's label
+later the same day, and the word is corrected rather than overwritten because
+the direction is the finding — this is the first entry in this section ever to
+*shrink* without being deleted, so the entry count stays at nine while what
+the entry is waiting for gets smaller**)** — **this clause
 read "eight entries" until ADR 0093's entry was filed, "seven entries" until
 #615's,
 "six entries" until #585's, "five entries"
@@ -5161,7 +5167,7 @@ cells is exercised nowhere, because no shipped session yet furnishes two.
 
 ---
 
-## 2. Nine entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, the Worker that lands with telemetry ingest, ADR 0056's price for keeping a player's orders in order, ADR 0059's price for making them walk, ADR 0074's price for reading a restored room's rectangle, ADR 0071's open-area amendment, ADR 0077's price for asking whether the edge in front of an actor is still standing, and ADR 0093's three player-facing sentences for the errand it built
+## 2. Nine entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, the Worker that lands with telemetry ingest, ADR 0056's price for keeping a player's orders in order, ADR 0059's price for making them walk, ADR 0074's price for reading a restored room's rectangle, ADR 0071's open-area amendment, ADR 0077's price for asking whether the edge in front of an actor is still standing, and ADR 0093's two remaining player-facing sentences for the errand it built
 
 **This heading has now read "empty", "exactly one entry: ADR 0029", "empty
 again", one entry, two, one, empty for the third time, one again, and — on
@@ -5914,15 +5920,40 @@ and the matching change to its [`README.md`](./README.md) row, **naming whether
 decision 6 is taken whole or in its narrower form**, because those are different
 games and the ADR says so. **Delete this entry in the same commit.**
 
-### ADR 0093 (2026-09-03) — the mechanic is accepted and built; the three sentences it needs are not
+### ADR 0093 (2026-09-03) — the mechanic is accepted and built; two of the three sentences it needs are not
 
 **What is waiting.** [ADR 0093](./0093-a-carry-is-an-action.md), *"A carry is
 an action"*, is **`Accepted, 2026-09-03, by the repository owner`** and its six
 decisions are **implemented**. Nothing about its *status* is outstanding, and
 that is what makes this entry a different shape from every other one in this
-section: what is waiting is not a signature on a decision, it is **three
-player-facing sentences the document deliberately did not write**, and one
-member of the `PrisonCondition` union that cannot exist until one of them does.
+section: what is waiting is not a signature on a decision, it is **two of the
+three player-facing sentences the document deliberately did not write**, and
+one member of the `PrisonCondition` union that cannot exist until one of them
+does.
+
+**This paragraph said "three" when the row was filed, and the word is
+corrected rather than overwritten** (`docs/AGENT_WORKFLOW.md` §4). Later on
+2026-09-03 the owner ruled the first of the three — the action's label,
+*"Errand"* — recorded in ADR 0093's *Amendment, 2026-09-03: the action's label
+is the owner's word*. **So this entry shrinks rather than being deleted**: it
+is filed for three sentences, one is settled, and it stays until the other two
+are. The count in this section's own heading, in the header paragraph at the
+top of this file and in §5's preamble moves with it, and **the entry count is
+unmoved at nine.**
+
+**The anchor was deliberately left alone by the edit that shrank this row.**
+Moving it is the integrator's budget and not this row's, exactly as the
+paragraph below already says of the reading it was taken against.
+
+**And that sentence has already been overtaken, which is why it is corrected
+here rather than left to rot.** It read: *"The `Re-anchored at` line still
+names `402453a9` (v0.0.402)"* — true when this row was written, and false from
+the moment the re-anchor to `3f8c00b0` (v0.0.407) lands, which the integrator
+had in flight in the same hour. Both directions are marked per
+`docs/AGENT_WORKFLOW.md` §4: the old reading is quoted above and the live line
+is whatever the anchor at the top of this file says, which is the only reading
+that cannot go stale. Whichever of the two changes lands second, nothing here
+needs a further edit.
 
 **The live anchor's reading of "eight" was correct when it was taken, and this
 is the ninth, filed after it.** The anchor pass at `402453a9` (v0.0.402)
@@ -5969,18 +6000,33 @@ materials arrive in the container construction draws from. Before this,
 `JobBoard.submitCarryItem` had exactly one occurrence under `src/` — its own
 declaration — and `JobWorkerPool.register` had no `src/` caller at all.
 
-**What settling the three sentences commits the project to.**
+**What settling the three sentences commits the project to** — item 1 as
+settled, items 2 and 3 as still owed.
 
-1. **The action's label.** `src/content/simulation-message-keys.ts` carries one
+1. **The action's label — SETTLED, 2026-09-03, by the owner: *"Errand"*.**
+   `src/content/simulation-message-keys.ts` carries one
    label per entry of `DEFAULT_ACTIONS`, and
    `tests/unit/simulation-message-keys.test.ts` requires each namespace to
    label *exactly* the ids its declaration declares — so an entry had to exist
-   the moment the catalogue held one. **It is there, reading `'Errand'`, and it
-   is marked in that file as a draft for the owner's review**, in the identical
-   form `action.kitchen-work`'s `'Kitchen Duty'` has carried since #532. This
-   is therefore the one of the three that is **already on screen**: the roster
-   and the detail panel will say *Errand* until the owner says otherwise. The
-   alternatives considered and rejected are written out beside it — *Carrying*
+   the moment the catalogue held one. That is why this was the one of the three
+   that was **already on screen**, and it is why the ruling moved no string:
+   the owner confirmed the word the catalogue already held. What changed is
+   that the entry stopped being provisional.
+
+   **What this item said while it was owed is kept rather than overwritten**
+   (`docs/AGENT_WORKFLOW.md` §4). It read: *"**It is there, reading `'Errand'`,
+   and it is marked in that file as a draft for the owner's review**, in the
+   identical form `action.kitchen-work`'s `'Kitchen Duty'` has carried since
+   #532. This is therefore the one of the three that is **already on screen**:
+   the roster and the detail panel will say Errand until the owner says
+   otherwise."* They have now said, and the draft marking is gone from
+   `src/content/simulation-message-keys.ts` and from
+   `tests/foundation/content-vocabulary-contract.test.ts`, each of which
+   records the ruling and the words it replaced. **`action.kitchen-work`'s
+   label is still a draft**, and that half of the comparison is untouched by
+   this ruling.
+
+   The alternatives considered and rejected are written out beside it — *Carrying*
    (a phase, and `action-phase` already labels three of those), *Haulage* (the
    trade, not the shift), *Delivery Duty* (names the purchase, and a carry will
    not always be a delivery once other producers arrive).
@@ -6025,11 +6071,14 @@ than arguing it. **This is not a defect ADR 0093 introduced**: it is what a
 work block already was, and the amendment is the first thing that reads it.
 
 **The exact line that would replace the status:** none — the status is already
-`Accepted`. **What would delete this entry is the owner writing the three
-sentences**, or ruling that the second and third are not owed. Whichever it is,
+`Accepted`. **What would delete this entry is the owner writing the two
+sentences that are left**, or ruling that they are not owed. Whichever it is,
 delete this entry in the same commit, and if the standing condition is taken,
 `src/simulation/protocol/types.ts` gains the member ADR 0093's change list
-records as item 9.
+records as item 9. **That sentence read "the owner writing the three
+sentences" until the first was written**, and the recipe is unchanged by the
+correction: a settled sentence shrinks this entry, and only the last one
+deletes it.
 
 ### ADR 0031 — accepted 2026-08-26, and the entry is deleted
 
@@ -7819,8 +7868,11 @@ deleted in the eleven releases, and this is one of the four places the header
 names as counting the queue, swept here for that reason.
 
 **NINE at ADR 0093's filing (2026-09-03), and the streak of anchors with no
-entry filed is over.** The ninth is ADR 0093's three player-facing sentences,
-and it is the first row in this section for a document that is already
+entry filed is over.** The ninth is ADR 0093's player-facing sentences — filed
+as three, **two** since the owner ruled the action's label later the same day,
+and the word "three" is corrected here rather than overwritten because the
+entry shrinking without being deleted is a first for this section — and
+it is the first row in this section for a document that is already
 `Accepted` and already implemented — so §2's own framing widens with it from
 *"decisions awaiting a signature"* to *"what the owner still has to decide"*,
 which is this file's title and always was. **The paragraph below is kept rather

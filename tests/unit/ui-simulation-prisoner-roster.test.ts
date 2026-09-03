@@ -487,8 +487,12 @@ describe('the reader asks for the rows the panel can draw and no more', () => {
   });
 
   it('answers undefined for a reply that carried no view, rather than an empty prison', async () => {
-    // An empty model would draw "Nobody has been admitted yet" over a prison
-    // nothing answered for, which is the one thing this readout must not do.
+    // An empty model would draw the empty-roster sentence -- "No prisoners
+    // yet. Build a cell with a bed to take somebody in." since the owner's
+    // ruling of 2026-09-03, "Nobody has been admitted yet" before it -- over a
+    // prison nothing answered for, which is the one thing this readout must
+    // not do. Either wording is a claim about a prison, and no claim may be
+    // made on a session's behalf before it answers.
     const channel = new FakeChannel();
     const reader = new PrisonerRosterReader(channel, { generateMessageId: () => 'req-1', replyTimeoutMs: 1_000 });
     const pending = reader.read();
