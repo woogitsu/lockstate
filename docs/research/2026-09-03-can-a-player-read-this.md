@@ -43,12 +43,13 @@ prison put `8` and `6 with no bed` on the strip while the player was on the
 Build tab, and a 24,000 order put `-100` on the FUNDS chip while they were on
 Regime. What is missing is everything between "a number" and "an emergency":
 the tab a session opens on gains **not one sentence** across eight working
-days; the rule that sets the whole security budget — one guard per eight
-prisoners — appears nowhere on screen, so `1 of 1` cannot be read forward; a
-working camera control says it is not available; and the row that names a
-prisoner puts a need and a risk tier side by side with no heading over either,
-sharing the word `Low`, which means *act now* on one scale and *ignore this* on
-the other.
+days; the Rooms catalogue hides 70% of itself with nothing saying so, `Cell`
+included, on the tab whose purpose is designating one; the rule that sets the
+whole security budget — one guard per eight prisoners — appears nowhere on
+screen, so `1 of 1` cannot be read forward; a working camera control says it is
+not available; and the row that names a prisoner puts a need and a risk pill on
+one line, sharing the word `Low`, which means *act now* on one scale and
+*ignore this* on the other.
 
 ## Ranked
 
@@ -58,13 +59,14 @@ the other.
 | 2 | DEFECT | The minimap says it is not available and then answers a click; only a player who ignored the sentence is ever told |
 | 3 | DEFECT | The tab a session opens on gains no sentence at all between an empty prison and a working one |
 | 4 | DEFECT | A roster row puts a risk-tier pill on the same line as a need and its meter, with no heading and no label on any cell — this pass misread it twice (§4) |
-| 5 | REFUTED | "The numbers are not labelled." One unlabelled readout on the whole screen |
-| 6 | FIXED | The clock says `PAUSED`, in a word and a second channel (#629 §1 closed) |
-| 7 | CONFIRMED | A refusal from tick 0, in two places at once, still on screen on day 7 (#894) |
-| 8 | CONFIRMED | All nine chips inert — zero listeners, measured by census and by pressing |
-| 9 | NOT A DEFECT | An urgent change *is* visible on a tab that does not report it |
-| 10 | TASTE | `EARNED TODAY` has no reference point on screen |
-| 11 | MEASURED | The sentence explaining the overdraft badge is a tooltip; already the owner's call |
+| 5 | CONFIRMED, extended | The Build catalogue hides 76% of itself and the Rooms catalogue 70%, with a 0px scrollbar gutter — `Cell` is below the fold on the tab for designating one |
+| 6 | REFUTED | "The numbers are not labelled." One unlabelled readout on the whole screen |
+| 7 | FIXED | The clock says `PAUSED`, in a word and a second channel (#629 §1 closed) |
+| 8 | CONFIRMED | A refusal from tick 0, in two places at once, still on screen on day 7 (#894) |
+| 9 | CONFIRMED | All nine chips inert — zero listeners, measured by census and by pressing; and nothing else on screen is dressed as a control it is not |
+| 10 | NOT A DEFECT | An urgent change *is* visible on a tab that does not report it |
+| 11 | TASTE | `EARNED TODAY` has no reference point on screen |
+| 12 | MEASURED | The sentence explaining the overdraft badge is a tooltip; already the owner's call |
 
 ---
 
@@ -305,7 +307,7 @@ in trouble.
   things rather than after the prison.
 - *"The strip is the prison summary, and it is always there."* True, and it is
   the reason six of the ten arriving lines are numbers. It is also the whole of
-  what a player gets: nine bare counts, no sentence, and — measured in §7 —
+  what a player gets: nine bare counts, no sentence, and — measured in §9 —
   nothing pressable to take them anywhere.
 
 **What the words must convey**, without this pass authoring them: on the tab a
@@ -372,7 +374,7 @@ Association    Bladder ▮▮▮▮▮▮▯▯                    [ Minimal ]
 it**, then the tier in a bordered pill hard against the right edge. So the two
 values *are* visually distinguished: one has a bar, the other is a pill. The
 first draft of this section said there was "nothing between them" and that was
-an artifact of reading a text dump, exactly as §13's two instrument defects
+an artifact of reading a text dump, exactly as §14's two instrument defects
 were.
 
 **What survives the correction, and it is still a defect.** The pill sits on
@@ -396,7 +398,59 @@ grades the prisoner and not the need beside it. A heading, or one word inside
 the pill, or moving it off that line — the choice is player-visible copy and
 therefore the owner's.
 
-## 5. REFUTED — "the numbers on screen are not labelled"
+## 5. CONFIRMED and EXTENDED — the two catalogues a player builds their prison
+from hide three quarters of themselves, and nothing on screen says so
+
+**The class is already on file twice** and is not re-filed:
+`2026-08-31-playing-the-twelve.md` §11 measured the save panel showing 95 of
+225px at 1280x800, with *"two buttons cut in half horizontally across their
+middle"* and *"no scrollbar is drawn to say so"*;
+`2026-09-01-playing-after-the-rulings.md` measured the alerts list at 181px of
+row in a 137px box, *"behind `overflow-y: auto` with no scrollbar drawn"*. What
+nobody had measured is the two lists a player actually builds from, and they are
+by far the largest instance.
+
+**This section was taken with the sibling pass's own instrument** —
+`probeLegibility` in
+`tests/browser/playtest-2026-09-03-can-a-player-read-this.playtest.ts`, its act
+A, run here for the first time. Fresh prison, nothing built, 1440x900:
+
+| tab | region | hidden / total | scrollbar gutter | elements entirely outside the viewport |
+| --- | --- | --- | --- | --- |
+| Build | `div.hud-build__list` | **701px of 924px (76%)** | `0.0px` | 36, incl. `button "Utility Panel"` at y=913 in an 900px viewport |
+| Rooms | `div.hud-rooms__list` | **585px of 837px (70%)** | `0.0px` | 29, incl. `button "Reception"` at y=913 |
+| Build / Rooms | `aside.save-panel` | 105px of 225px | `0.0px` | — |
+| Security | `aside.save-panel` | 47px of 225px | `0.0px` | — |
+
+At 375x812 the same regions hide 780 of 924, 676 of 837 and 129 of 225, and
+`div.hud-strip__metrics` reports `scrollbar-width: none` outright — the
+suppression #634 named, still there.
+
+**What that means for a player.** The Build catalogue holds nineteen
+buildables; roughly the first five fit. The Rooms catalogue holds eighteen room
+types; roughly the first four fit — `Staff Room`, `Classroom`, `Canteen`,
+`Kitchen`, and then the arm control. **`Cell` is below the fold on the tab whose
+whole purpose is designating one**, and `Cell` is the room a prison cannot admit
+anybody without (the Intake panel says so in its own hint). Nothing on either
+list is a scrollbar, a gradient, a chevron, or a count.
+
+`docs/HUD_PROJECTIONS.md` calls `.hud-rooms__list` *"the one box here that is
+meant to hold more than it shows"* and concludes *"the scroller is the only
+answer"* — so the scrolling is deliberate and this record does not dispute it.
+The gap is that the deliberate scroller is invisible: `overflow-y: auto` with a
+0px gutter renders identically to a list that ends.
+
+**The refuting sample, taken.** Is the fold an artifact of this viewport? No —
+it is worse at 375x812 and the prior records measured the same class at
+1280x800, 900x600 and 1920x1080. Is the content reachable? Yes, by scrolling,
+which is why this is a legibility defect and not a MISSING: everything works
+and nothing says it is there.
+
+**What the words must convey** — or in this case, what the *paint* must: that
+each list continues. A count in the section header, a visible scrollbar, or a
+fade would each do it; which one is a design call and the owner's.
+
+## 6. REFUTED — "the numbers on screen are not labelled"
 
 This pass opened by assuming a legibility problem it could not find.
 
@@ -428,7 +482,7 @@ The chip values are labelled one hop away — `span.ui-stat__body` reading
 while keeping its value. This pass measured 1440x900 only; the sibling pass
 measures 375x812.
 
-## 6. FIXED — the clock now says whether it is running
+## 7. FIXED — the clock now says whether it is running
 
 `2026-08-30-what-the-game-never-says.md` §1 recorded that a new session's clock
 is constructed paused and *"no word on screen says so — the whole sighted clock
@@ -449,7 +503,7 @@ Cross-checked against the worker rather than the paint: the tick moved
 after Pause. Two channels, both moving, both agreeing with the simulation. The
 readout named in #629 §1 is closed.
 
-## 7. CONFIRMED (#894) — one refusal from tick 0, rendered twice, still on
+## 8. CONFIRMED (#894) — one refusal from tick 0, rendered twice, still on
 screen on day 7
 
 The `calibrate` helper presses one empty tile with the Remove tool at the very
@@ -476,7 +530,7 @@ the day-9-from-tick-0 one already on file and because **the same sentence
 occupies two places on the screen at once**, which the existing record does not
 say.
 
-## 8. CONFIRMED — all nine status chips are inert; and nothing else on
+## 9. CONFIRMED — all nine status chips are inert; and nothing else on
 screen is dressed as a control it is not
 
 Already on file and not re-filed; recorded because the measurement is stronger
@@ -539,7 +593,7 @@ This is the measurement that puts §2 in its place: the minimap surface does
 *not* appear in the left-hand column, because it really is pressable. Its
 defect is the sentence painted on it, not the affordance.
 
-## 9. NOT A DEFECT — an important change *is* visible on a tab that does not
+## 10. NOT A DEFECT — an important change *is* visible on a tab that does not
 report it
 
 This was the pass's third hypothesis and the strip answers it.
@@ -573,7 +627,7 @@ do is carry a *sentence*, and §3 is what that costs. Both are true — the stri
 is the reason an urgent change is never missed and the reason an ordinary one is
 never explained.
 
-## 10. TASTE — `EARNED TODAY` is a number with no reference point anywhere on
+## 11. TASTE — `EARNED TODAY` is a number with no reference point anywhere on
 screen
 
 `EARNED TODAY` is `counts.stateIncomeAccruedTodayMinorUnits` unmodified
@@ -597,7 +651,7 @@ several seconds apart on a clock running at x4, and the chip is that field
 read directly with no arithmetic. Recorded because the suspicion was wrong and
 the reason it was wrong is a sampling rule this record depends on elsewhere.
 
-## 11. MEASURED, and already the owner's call — the one sentence that explains
+## 12. MEASURED, and already the owner's call — the one sentence that explains
 the overdraft badge is hover-only
 
 Recorded rather than filed, because the owner ruled on it on 2026-09-01 and the
@@ -625,7 +679,7 @@ elsewhere (a strip carrying every badge is 1,627px of content in a 1,256px row
 at 1280). This record only notes that the trade landed the *explanation* of a
 number on a hover, and that a hover is not a channel a player is told exists.
 
-## 12. Three numbers made to move, and all three moved
+## 13. Three numbers made to move, and all three moved
 
 The brief asked for three readouts to be forced to move by changing the world.
 All three did. Recorded because "the number is stale" is the first thing a
@@ -654,14 +708,14 @@ is not true: the wall is up. A player has no way to tell that apart from having
 drawn the rectangle wrong.
 
 **The sampling rule these depend on**, and it cost this pass one wrong
-suspicion (§10): a read taken seconds after another, on a clock at x4, is a
+suspicion (§11): a read taken seconds after another, on a clock at x4, is a
 read of a different world. `EARNED TODAY` at `279` and the worker's
 `stateIncomeAccruedTodayMinorUnits` at `1545` looked like the screen lying and
 were two samples ~20 s apart. Where a comparison had to be exact — §1's two
 coverage readouts — it was taken **inside one `page.evaluate`**, which is the
 only way two readouts can be compared at an instant.
 
-## 13. This pass's instrument was wrong twice, and both are recorded
+## 14. This pass's instrument was wrong twice, and both are recorded
 
 - **The number probe measured itself.** The first `probeNumbers` asked whether
   a word appeared inside the number's "smallest grouping" and stopped its
@@ -687,7 +741,7 @@ count and is not in doubt. Whether *that* is a defect rather than TASTE is a
 judgement about what a home screen owes a player, and the counter-argument —
 "a quiet interface is a working interface; the tab shouts when something is
 wrong and the strip carries the rest" — is coherent, is what the code argues in
-several places, and is the position §9 shows the strip actually delivering.
+several places, and is the position §10 shows the strip actually delivering.
 
 **What would change my mind:** an owner ruling that the Overview tab is
 deliberately a control surface rather than a summary. If it is, §3 is TASTE and
