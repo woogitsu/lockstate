@@ -488,6 +488,92 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
     }
   });
 
+  /**
+   * The two claims `docs/PRISONER_OPERATIONS.md` makes *about the size and
+   * shape of the action catalogue*, asserted against the catalogue.
+   *
+   * Both were false when this gate was written, and each was false in the way
+   * `docs/AGENT_WORKFLOW.md` §4 predicts: *"a sentence asserting an absence or
+   * a count rots first -- adding the thing it denies never touches the
+   * sentence denying it."*
+   *
+   * - The scope bullet's bold **10 candidate actions** was already one behind
+   *   its *own* prose, which enumerated an eleventh two lines below it, and
+   *   went two behind the code on 2026-09-03 when ADR 0093 appended
+   *   `action.carry`.
+   * - *"`action.free-association` is the catalogue's one entry with no need
+   *   effect"* stopped being true the same morning and for the same reason:
+   *   `action.carry` declares `needEffectsPerTick: {}` too, and `actions.ts`
+   *   says so in the carry's own comment -- *"the same property
+   *   `action.free-association` has, and for the same reason"*.
+   *
+   * Both are load-bearing rather than decorative. The count is the document's
+   * own statement of what "a representative slice" currently is, which is what
+   * an agent sizes a change against; and the second sentence is the *reason* an
+   * entry may be appended to a live catalogue at all -- a 0-score candidate can
+   * never displace one addressing a need -- so a reader who believes there is
+   * exactly one such entry will not go looking for the rule that makes the
+   * second one behave differently (`ActionSystem.planIdleSelection` puts the
+   * carry at rank 0 on a rule about the job board, not on its score).
+   *
+   * Counted from `DEFAULT_ACTIONS` rather than from a fixture, so the gate
+   * cannot be satisfied by a catalogue that happens to be the right size
+   * today.
+   */
+  it('agrees with DEFAULT_ACTIONS about how many candidate actions there are and how many serve no need', async () => {
+    const source = stripComments(
+      await readFile(path.join(repositoryRoot, 'src', 'simulation', 'prisoners', 'actions.ts'), 'utf8'),
+    );
+    const entries = [...source.matchAll(/\bid: '(action\.[a-z-]+)'[\s\S]*?needEffectsPerTick: \{([^}]*)\}/gu)].map(
+      (match) => ({ id: match[1]!, effects: match[2]!.trim() }),
+    );
+    expect(entries.length, 'no DEFAULT_ACTIONS entries parsed; the catalogue shape this gate reads has changed').toBeGreaterThan(5);
+
+    const doc = await readFile(path.join(repositoryRoot, 'docs', 'PRISONER_OPERATIONS.md'), 'utf8');
+    // Whitespace-collapsed because prose wraps, exactly as the status-counts
+    // gate above had to learn.
+    const flat = doc.replace(/\s+/gu, ' ');
+
+    expect(
+      flat.includes(`**${entries.length} candidate actions**`),
+      `docs/PRISONER_OPERATIONS.md does not say "**${entries.length} candidate actions**", but DEFAULT_ACTIONS holds ${entries.length}`,
+    ).toBe(true);
+
+    const serveNoNeed = entries.filter((entry) => entry.effects === '').map((entry) => entry.id);
+    expect(serveNoNeed.length, 'no entry declares an empty needEffectsPerTick; the second half of this gate is stale').toBeGreaterThan(0);
+    /*
+     * **A positive claim about the count, not a ban on the old sentence, and
+     * the first draft of this gate got that the wrong way round.** It asserted
+     * that the string *"catalogue's one entry with no need effect"* was
+     * ABSENT -- and then went red on the corrected document, because
+     * `docs/AGENT_WORKFLOW.md` §4 requires a correction to *quote* the sentence
+     * it corrects rather than overwrite it. A substring gate cannot tell a
+     * quotation from a live claim, so a gate written that way punishes the one
+     * habit this repository most wants. Asserting the *current* count is
+     * immune: the corrected paragraph states it, and a quotation of the old
+     * sentence beside it changes nothing.
+     */
+    const COUNT_WORDS: Readonly<Record<number, string>> = {
+      1: 'one entry with no need effect',
+      2: 'two entries with no need effect',
+      3: 'three entries with no need effect',
+      4: 'four entries with no need effect',
+      5: 'five entries with no need effect',
+    };
+    const phrase = COUNT_WORDS[serveNoNeed.length];
+    expect(phrase, `add ${serveNoNeed.length} to this gate's number-word table`).toBeDefined();
+    expect(
+      flat.includes(phrase!),
+      `docs/PRISONER_OPERATIONS.md does not say "${phrase!}", but DEFAULT_ACTIONS holds ${serveNoNeed.length}: ${serveNoNeed.join(', ')}`,
+    ).toBe(true);
+    for (const id of serveNoNeed) {
+      expect(
+        doc.includes(id),
+        `docs/PRISONER_OPERATIONS.md never names ${id}, which serves no need and is one of the entries the "no need effect" paragraph is about`,
+      ).toBe(true);
+    }
+  });
+
   it('names every module outside operations/ that deposits into a container, as the no-teleport rule claims to', async () => {
     /*
      * The claim being pinned, from `docs/OPERATIONS.md`'s "The no-teleport

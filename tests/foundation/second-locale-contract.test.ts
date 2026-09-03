@@ -227,11 +227,34 @@ const LOCALIZER_CALL = /(?:\bt|\.format|\.formatPlural)\s*\(/;
  * punctuation template -- copy that reaches a screen-reader user, so the
  * owner's under `AGENTS.md` exclusion 4. Recorded here rather than fixed, and
  * pinned so a third cannot arrive unnoticed.
+ *
+ * **The keys are `file:line` and they rot faster than anything else in this
+ * file.** Both moved three times inside one branch (#860) -- 1780 -> 1781 ->
+ * 1828 and 2010 -> 2100 -> 2167 -> 2197 -- every time because a docblock was
+ * added *above* an untouched site, never because a site changed. That is
+ * `docs/AGENT_WORKFLOW.md` §4's least-durable-citation rule paying for itself,
+ * and it is recorded here rather than fixed because the line number is what
+ * makes the failure message point at the offending expression. If a fourth
+ * assembled sentence ever has to be recorded, key the map on the quoted
+ * expression instead and let the reporter find the line.
  */
 const ASSEMBLED_SENTENCES: Readonly<Record<string, string>> = {
-  'ui/hud/build-panel.ts:1780':
+  /*
+   * **These two numbers moved four times on 2026-09-03 and neither side of the
+   * merge that produced them was right.** #874 put a shortfall line under the
+   * Buy control and #860 rewrote `paintQueue`'s row loop; each branch re-pinned
+   * these sites against its own tree, so the merge offered `:1828`/`:2197` on
+   * one side and `:1858`/`:2088` on the other and **both were stale on the
+   * merged tree**. The live numbers below were read off the merged file by
+   * grepping for the assembled expressions themselves, not taken from either
+   * branch. `docs/AGENT_WORKFLOW.md` §4 already names this shape: a `file:line`
+   * into a file under active edit is the least durable citation here, and a
+   * quoted sentence is the most -- which is why the value beside each key
+   * quotes the expression and the key is the part that rots.
+   */
+  'ui/hud/build-panel.ts:1906':
     'aria-label for a delivery row\'s Cancel: `${t(buildDeliveryCancel)}: ${row.label.textContent}`',
-  'ui/hud/build-panel.ts:2010':
+  'ui/hud/build-panel.ts:2275':
     'aria-label for a queue row\'s Cancel: `${t(buildQueueCancel)}: ${row.label.textContent}`',
 };
 

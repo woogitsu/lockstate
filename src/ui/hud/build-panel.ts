@@ -5,13 +5,14 @@ import { pressAffordabilityVerdict } from '../affordability';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
 import { createChoiceGroup, type ChoiceGroup, type ChoiceOption } from '../primitives/choice-group';
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
-import { element, eyebrowText, nextUiId, valueText } from '../primitives/dom';
+import { describeBy, element, eyebrowText, nextUiId, undescribeBy, valueText } from '../primitives/dom';
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createNumberField, type NumberField } from '../primitives/number-field';
 import { createPanel } from '../primitives/panel';
 import { rovingTabStop } from '../primitives/roving-focus';
 import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import { HUD_MESSAGE_KEY } from './messages';
+import { assignPooledRows } from './pooled-row-binding';
 import { toggleRemovalMode } from './tool-arming';
 import {
   HUD_BUILD_EDGES,
@@ -574,6 +575,53 @@ export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | u
  * and keep every dead button in it.
  */
 export const BUILD_QUEUE_ROW_LIMIT = 3;
+
+/**
+ * How long a place in the queue list stays blank after the order it named
+ * leaves, before another order may appear there (#860).
+ *
+ * ## Why there is a number here at all
+ *
+ * Because a place in a list is what a player aims a destructive control by, and
+ * this list is rewritten about four times a second. `assignPooledRows` keeps
+ * every surviving order in the place it arrived in, which closes the case where
+ * the pool re-points a row -- and **that half alone was measured failing.** The
+ * pool is `BUILD_QUEUE_ROW_LIMIT` places over a queue that loses its head about
+ * every 625ms of wall clock at 4x, so inside a human decision the order a
+ * player aimed at has usually left the window altogether; the next order then
+ * took the place their pointer was already over. Two presses of three still
+ * cancelled a different wall.
+ *
+ * So a freed place is held blank, and this is how long for.
+ *
+ * ## Where the figure comes from, and what is *not* measured about it
+ *
+ * **Its lower bound is measured and its value is a judgement.** The browser run
+ * of 2026-09-03 pressed at instrumented decision delays of 0ms, 250ms and
+ * 600ms; every press at 0ms was aimed correctly and every press at 250ms and
+ * 600ms was not, and the elapsed time from the read to the click was larger
+ * than the nominal delay by the probe's own round trips -- about 450ms and
+ * 800ms. So the window has to be **at least** ~800ms to cover what has actually
+ * been seen to fail. One second is that, rounded up, and it is a claim about how
+ * long a person takes to read a short label and press the control beside it,
+ * which nothing in this repository has measured.
+ *
+ * It is deliberately **not** derived from `CLOCK_STATE_PUBLISH_INTERVAL_MS`.
+ * That constant is how fast the panel is redrawn; this one is how slowly a
+ * person acts, and tying the second to the first would make a rendering
+ * decision govern a safety one. Two publications' worth of blankness -- 500ms --
+ * was tried on paper and is inside the 800ms already observed to fail.
+ *
+ * ## What it costs, and why that cost needs no player-facing sentence
+ *
+ * While the queue churns the block draws fewer than its three rows: a place is
+ * blank for a second after each of its orders leaves. The count in the header
+ * and the "and N more" line are both counted against the rows actually drawn,
+ * so nothing on screen claims otherwise, and a blank row promises nothing --
+ * which is what keeps this a paint rule rather than a refusal needing a
+ * sentence of its own (`AGENTS.md` exclusion 4).
+ */
+export const BUILD_QUEUE_ROW_SETTLE_MS = 1_000;
 
 /**
  * What one queued row says it is, and where -- and, since the owner's ruling
@@ -1513,11 +1561,58 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * rule `.hud-rooms__needs` records for the same shape of block.
    */
 
+  /*
+   * **What stops a press, and what would lift it** -- the wording half of
+   * issue #772, on the owner's sentence of 2026-09-03
+   * (`hud.build.buy-shortfall`).
+   *
+   * A line of its own rather than a second job for the arrival hint below it,
+   * and the shape is the one this panel already uses for the same kind of
+   * sentence: `.hud-build__queue-shortfall` is the queue's money line, drawn
+   * only while there is a shortfall and withdrawing to *no box* when there is
+   * not. The two sentences beside this control answer different questions --
+   * `hud.build.buy-hint` says what a press that goes through does, this says
+   * why one will not -- and a line that swapped between them would leave a
+   * player who has fixed their balance with no statement of what a purchase
+   * even is. `hud.rooms.arm-hint`'s "one line, two jobs" is the other
+   * available shape and it was not taken for that reason.
+   *
+   * **Above the hint and directly under the button**, because it is about the
+   * control immediately above it; the row is a flex column, so DOM order is
+   * reading order (`.hud-build__buy:not([hidden])`, `hud.css`).
+   *
+   * Its own class beside `.hud-build__note` for `.hud-build__queue-shortfall`'s
+   * reason: this panel has several notes and a spec has to be able to name
+   * this one without depending on document order. And it costs the panel
+   * nothing in the state a player is normally in -- `hidden` while the press
+   * is affordable, which is every state a solvent prison has.
+   */
+  const buyShortfall = eyebrowText('', 'hud-build__note hud-build__buy-shortfall');
+  buyShortfall.hidden = true;
+  /*
+   * The line is the Buy control's *description* while it stands, on the shape
+   * `rooms-panel.ts` uses for its Confirm note: a player who cannot see the
+   * line reaches a control that reports itself unavailable and is told
+   * "unavailable" and nothing else, which is the finding a keyboard-only
+   * playtest made about Confirm.
+   *
+   * Written per repaint rather than once at construction, unlike that note,
+   * because this one *withdraws*: `aria-describedby` pointing at a line with
+   * no box would describe the button with a sentence nobody can read. That is
+   * `markControl`'s own pattern in `hud.ts`, and `describeBy`/`undescribeBy`
+   * merge rather than replace -- so the refusal band's id and this id coexist
+   * on the button when a press has actually been refused, which is exactly
+   * the state this line is drawn in.
+   */
+  const buyShortfallId = nextUiId('hud-build-buy-shortfall');
+  buyShortfall.id = buyShortfallId;
+
   const buyRow = element('div', {
     className: 'hud-build__buy',
     children: [
       quantityField.element,
       buySubmit.element,
+      buyShortfall,
       eyebrowText(t(HUD_MESSAGE_KEY.buildBuyHint), 'hud-build__note'),
       /*
        * `deliveriesBlock` used to be the last child of this row, and the
@@ -1642,6 +1737,37 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     const isFreshUnfurnishedPrison = treasuryRoomCapacity === 0;
     const verdict = pressAffordabilityVerdict(total, treasuryMinorUnits, isFreshUnfurnishedPrison);
     buySubmit.setUnavailable(verdict.refused);
+    /*
+     * **And now it says what stops it** (the owner's sentence of 2026-09-03),
+     * which is the half the comment above records as reserved. The paragraph
+     * beginning *"This is the mechanical half only"* is kept rather than
+     * rewritten because it is the record of why this line did not exist for
+     * two days: what changed is the ruling, not the argument.
+     *
+     * The label is still untouched, and that part of it still holds --
+     * `hud.build.buy.submit` is byte-identical whichever way the verdict
+     * falls. The sentence is a line of its own, so nothing a screen reader
+     * announces as this control's *name* moved.
+     *
+     * **The money branch only.** `shortfallMinorUnits` is `0` on every verdict
+     * but `'past-the-floor'`, and a `'Not enough money'` sentence is false
+     * about a malformed charge -- so the condition is the refusal reason and
+     * not `verdict.refused`. `'malformed-charge'` is unreachable with the
+     * shipped catalogue (the quantity is a clamped integer and the price comes
+     * from `procurement-catalog.ts`), and it says nothing to a player either
+     * before or after this change.
+     *
+     * `formatNumber`, like every other money figure on this panel: the label
+     * above, the queue's shortfall and the delivery rows all go through it, and
+     * a second formatter here would be the same number rendered two ways.
+     */
+    const shortfallStands = verdict.refusal === 'past-the-floor';
+    buyShortfall.hidden = !shortfallStands;
+    buyShortfall.textContent = shortfallStands
+      ? t(HUD_MESSAGE_KEY.buildBuyShortfall, { amount: localizer.formatNumber(verdict.shortfallMinorUnits) })
+      : '';
+    if (shortfallStands) describeBy(buySubmit.element, buyShortfallId);
+    else undescribeBy(buySubmit.element, buyShortfallId);
   }
 
   function paintBuy(): void {
@@ -1874,8 +2000,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     readonly label: HTMLSpanElement;
     readonly state: HTMLSpanElement;
     readonly cancel: ActionButton;
-    /** The order this row currently names, or `undefined` while it is hidden. */
+    /** The order this row names, or `undefined` while it names nothing. */
     orderId: string | undefined;
+    /** When this place was last emptied. `assignPooledRows` reads it; see `BUILD_QUEUE_ROW_SETTLE_MS`. */
+    freedAtMs: number | undefined;
   }
 
   const queueRows: readonly QueueRow[] = Array.from({ length: BUILD_QUEUE_ROW_LIMIT }, (): QueueRow => {
@@ -1888,17 +2016,35 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       cancel: createActionButton({
         label: t(HUD_MESSAGE_KEY.buildQueueCancel),
         onActivate: () => {
-          // Read at press time, not captured at construction: the row is pooled
-          // and names whichever order the last publication put in it. A captured
-          // id would cancel whatever was here two seconds ago, which is the
-          // exact defect a pooled row exists to avoid paying for with
-          // allocations.
+          /*
+           * Read at press time, not captured at construction -- and that on its
+           * own was never enough, which is #860.
+           *
+           * The comment this replaces argued that a captured id *"would cancel
+           * whatever was here two seconds ago, which is the exact defect a
+           * pooled row exists to avoid paying for with allocations"*. That is
+           * still true and is still why the read is here. But reading at press
+           * time makes the id **current**, not **the one the player read**:
+           * while the pool bound `rows[i]` to `orders[i]`, one completion
+           * between the paint a player acted on and their click re-pointed
+           * every row, and this line then submitted the order that had just
+           * landed in it. Measured 2026-09-03 with a coordinate press: two of
+           * four cancelled a different wall, at decision delays of 250ms and
+           * 600ms, while both presses at a 0ms delay were aimed correctly.
+           *
+           * `assignPooledRows` is what closes it, by refusing to let this row
+           * name a different order at all. `orderId` is therefore the order
+           * this row has named since it took it, and `undefined` on a row whose
+           * order has left the window -- so a press reaches what the player was
+           * looking at, or reaches nothing.
+           */
           const { orderId } = row;
           if (orderId === undefined) return;
           options.onCancelOrder(orderId);
         },
       }),
       orderId: undefined,
+      freedAtMs: undefined,
     };
     row.element.append(
       element('div', { className: 'hud-build__queue-text', children: [label, state] }),
@@ -1908,6 +2054,43 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     queueList.append(row.element);
     return row;
   });
+
+  /**
+   * Takes a row out of the list entirely: no order, no box, and nothing left on
+   * it that could be read as a control aimed at something.
+   *
+   * The label and both data attributes are cleared as well as the id, which the
+   * loop this replaces did not do. A hidden row used to keep the `data-order`
+   * of whichever order was last in it, so a queue that shrank from three to two
+   * left a third row carrying a live-looking order id with `orderId` already
+   * `undefined` -- and a `[data-order="…"]` press then resolved to a row with no
+   * box and hung. That is the third of #859's side findings, and
+   * `staff-panel.ts`'s `paintHeld` already emptied its pooled rows this way
+   * (*"so a press that somehow reached a hidden button cannot name a guard from
+   * the last publication"*); this is the same rule, one panel over.
+   */
+  function emptyQueueRow(row: QueueRow, forgetSettle = false): void {
+    /*
+     * The settle stamp goes with the emptying, on the same transition rule the
+     * `'holds-open'` branch of `paintQueue` uses: a place that named an order a
+     * moment ago must not take another one straight away, and a place that was
+     * already blank must not have its window restarted, or it would never take
+     * another order at all.
+     *
+     * `forgetSettle` is the one case that must not stamp, and it is `#88`'s
+     * regression -- see `paintQueue`'s `shown === undefined` branch.
+     */
+    if (row.orderId !== undefined && !forgetSettle) row.freedAtMs = performance.now();
+    if (forgetSettle) row.freedAtMs = undefined;
+    row.orderId = undefined;
+    row.element.hidden = true;
+    row.label.textContent = '';
+    row.state.textContent = '';
+    delete row.element.dataset['order'];
+    delete row.element.dataset['state'];
+    row.cancel.setUnavailable(false);
+    row.cancel.element.setAttribute('aria-label', t(HUD_MESSAGE_KEY.buildQueueCancel));
+  }
 
   const queueSection: CollapsibleSection = createCollapsibleSection({
     eyebrow: t(HUD_MESSAGE_KEY.buildQueue),
@@ -1947,10 +2130,30 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     const shown = queue !== undefined && queue.total > 0 ? queue : undefined;
     queueSection.element.hidden = shown === undefined;
     if (shown === undefined) {
-      for (const row of queueRows) {
-        row.element.hidden = true;
-        row.orderId = undefined;
-      }
+      /*
+       * `forgetSettle`, and it is the correction to #860's first shipped fix.
+       *
+       * This branch is *"nothing has asked"* and *"nothing is queued"* -- and
+       * `src/main.ts` reaches it every time the player leaves the Build tab,
+       * because nothing refreshes the queue from another tab and a block left
+       * behind would be a list of ids that were true when they walked away.
+       * With the settle stamp applied here, every place came back inside its
+       * settle window and **refused the queue**; and with the clock stopped
+       * there is no later publication to arrive once the window expires, so the
+       * block stayed empty for good. `app-shell.spec.ts`'s #88 sweep caught it
+       * -- six orders queued, the clock stopped, `.hud-build__queue-list`
+       * resolved fourteen times with no box -- and
+       * `ui-build-queue.spec.ts`'s *"draws its rows again after the tab has
+       * been away"* is the same sequence in two lines.
+       *
+       * The settle window exists so that a label a player may have **read on
+       * this panel** is not replaced under their pointer. When the block itself
+       * stops being drawn there was no panel to read, so every place starts
+       * fresh. That is why this is the only emptying that forgets the window
+       * and the two inside `paintQueue`'s assignment loop do not: those happen
+       * while the block is on screen and a label was there a moment ago.
+       */
+      for (const row of queueRows) emptyQueueRow(row, true);
       queueCount.textContent = '';
       queueMore.textContent = '';
       // Nothing queued is nothing to wait for. The line goes with the block it
@@ -1985,15 +2188,77 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      */
     panel.element.dataset['queued'] = String(shown.total);
 
+    /*
+     * Which row names which order -- `assignPooledRows`, not `orders[index]`,
+     * and that substitution is the whole of #860's fix. Its header carries the
+     * measurement, the argument, and what the fix costs; what it means here is
+     * that a *place* in this list names one order for as long as that order is
+     * in the window, and that a new order only appears in a place that has been
+     * visibly blank for `BUILD_QUEUE_ROW_SETTLE_MS`. So the press handler above
+     * cannot be handed an order the row never named.
+     */
+    const orders = new Map(shown.orders.map((order) => [order.orderId, order]));
+    const nowMs = performance.now();
+    const assignments = assignPooledRows(
+      // `itemId` rather than `orderId`, because the rule is about pooled rows
+      // and not about build orders: the Staff panel's two pools and this
+      // panel's deliveries have the identical hazard and will hand it the
+      // identical shape.
+      queueRows.map((row) => ({ itemId: row.orderId, freedAtMs: row.freedAtMs })),
+      shown.orders.map((order) => order.orderId),
+      nowMs,
+      BUILD_QUEUE_ROW_SETTLE_MS,
+    );
+
+    let drawn = 0;
     for (const [index, row] of queueRows.entries()) {
-      const order = shown.orders[index];
-      if (order === undefined) {
-        row.element.hidden = true;
-        row.orderId = undefined;
+      const assignment = assignments[index];
+      if (assignment === undefined || assignment.kind === 'empty') {
+        emptyQueueRow(row);
         continue;
       }
+      if (assignment.kind === 'holds-open') {
+        /*
+         * This place names nothing: its order has just gone, or it is still
+         * inside its settle window, or a row below it is occupied and giving
+         * this box up would move that row. It is emptied -- no id, no label, no
+         * state, and the control reports itself unavailable -- and it keeps its
+         * box, because hiding it would slide every row below it up a row's
+         * height into whatever pointer is resting there, which is #860 again by
+         * geometry instead of by binding.
+         *
+         * `freedAtMs` is stamped from the transition this loop can see for
+         * itself -- the row held an order before the assignment and holds none
+         * after -- which is why `assignPooledRows` does not have to return it.
+         * Stamped only on the transition, or a place that stayed blank would
+         * restart its own settle window on every publication and never take
+         * another order at all.
+         *
+         * `setUnavailable`, not `setDisabled`: `createBusyGroup`'s `apply`
+         * assigns `disabled` to every member on every busy transition, so a
+         * `disabled` written here would be cleared the next time any command in
+         * the HUD settles (`ActionButton.setUnavailable`'s docblock records
+         * that collision). `aria-disabled` has one writer. Either way the
+         * authority is `row.orderId === undefined` in the handler above; this
+         * is the signal, not the gate.
+         */
+        if (row.orderId !== undefined) row.freedAtMs = nowMs;
+        row.orderId = undefined;
+        row.element.hidden = false;
+        row.label.textContent = '';
+        row.state.textContent = '';
+        delete row.element.dataset['order'];
+        delete row.element.dataset['state'];
+        row.cancel.setUnavailable(true);
+        row.cancel.element.setAttribute('aria-label', t(HUD_MESSAGE_KEY.buildQueueCancel));
+        continue;
+      }
+      const order = orders.get(assignment.itemId);
+      if (order === undefined) continue;
+      drawn += 1;
       row.orderId = order.orderId;
       row.element.hidden = false;
+      row.cancel.setUnavailable(false);
       row.label.textContent = formatBuildQueueOrderText(t, order, localizer.formatNumber(order.cancelRefundMinorUnits));
       row.state.textContent = t(buildOrderStateLabelKey(order.state));
       // The order id on the row, so a test can assert *which* order a control
@@ -2010,10 +2275,18 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       row.cancel.element.setAttribute('aria-label', `${t(HUD_MESSAGE_KEY.buildQueueCancel)}: ${row.label.textContent}`);
     }
 
-    // How many are behind the last row, and no control to reach them --
-    // `BUILD_QUEUE_ROW_LIMIT` argues that out, and the sentence itself points at
-    // the control that does take a whole run back.
-    const unlisted = Math.max(0, shown.total - shown.orders.length);
+    /*
+     * How many are behind the last row, and no control to reach them --
+     * `BUILD_QUEUE_ROW_LIMIT` argues that out, and the sentence itself points at
+     * the control that does take a whole run back.
+     *
+     * Counted against the rows this pass actually **drew** rather than against
+     * `shown.orders.length`, because those two are no longer the same number: a
+     * row holding its box open for one publication is a row the arriving order
+     * could not have, so a queue of twelve with three sent and two drawn has
+     * ten behind the list and not nine.
+     */
+    const unlisted = Math.max(0, shown.total - drawn);
     queueMore.textContent = unlisted === 0 ? '' : t(HUD_MESSAGE_KEY.buildQueueMore, { count: unlisted });
     queueMore.hidden = unlisted === 0;
 

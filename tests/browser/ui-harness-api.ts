@@ -257,6 +257,35 @@ export interface BuildProbe {
   readonly buyDisabled: boolean;
   /** What the quantity stepper currently shows. */
   readonly buyQuantity: string;
+  /**
+   * **The sentence that says what stops a press and what would lift it** --
+   * the wording half of #772, on the owner's ruling of 2026-09-03
+   * (`hud.build.buy-shortfall`), or `''` when nothing stops the press.
+   *
+   * The figure in it is the **shortfall**
+   * (`AffordabilityVerdict.shortfallMinorUnits`), which is neither the price
+   * the label above states nor the balance the FUNDS chip states -- so a test
+   * reading this can tell a right number from a plausible wrong one.
+   */
+  readonly buyShortfallText: string;
+  /**
+   * Whether the browser gave that line a box, which `buyShortfallText` cannot
+   * say: a `textContent` read is identical on a painted line and on one whose
+   * author `display` beat `[hidden]` the other way (#220's lesson, and the
+   * reason `.hud-build__buy-shortfall[hidden]` exists in `hud.css`).
+   */
+  readonly buyShortfallLaidOut: boolean;
+  /**
+   * `aria-describedby` on the Buy button, as the raw attribute.
+   *
+   * The line is the control's *description* while it stands, and it is removed
+   * again when it withdraws -- so this is what says a screen-reader user meets
+   * the sentence at the control rather than only somewhere on the panel. Read
+   * raw rather than as a boolean because the attribute is a *list*: the refusal
+   * band writes an id into it too (`markControl`, `src/ui/hud/hud.ts`), and the
+   * state after a real refused press carries both.
+   */
+  readonly buyDescribedBy: string;
   /** Every visible label in the panel, so an unresolved `hud.*` key is caught. */
   readonly texts: readonly string[];
   /** The queue fold (#348) -- see `BuildQueueProbe`. */
@@ -485,6 +514,21 @@ export interface StaffProbe {
    * chosen and nothing in flight mean anything.
    */
   readonly hireDisabled: boolean;
+  /**
+   * **The sentence that says what stops a hire and what would lift it** -- the
+   * owner's ruling of 2026-09-03 (`hud.security.hire-shortfall`, byte-identical
+   * to the Buy button's), or `''` when nothing stops the press.
+   *
+   * The figure is the shortfall against the *engagement fee* one press debits,
+   * not the daily wage the note beside it prices -- so this and `hireLabel`
+   * carry two different numbers about one press, and a test can tell them
+   * apart.
+   */
+  readonly hireShortfallText: string;
+  /** Whether the browser gave that line a box, on `buyShortfallLaidOut`'s terms. */
+  readonly hireShortfallLaidOut: boolean;
+  /** `aria-describedby` on the Hire button, raw, on `buyDescribedBy`'s terms. */
+  readonly hireDescribedBy: string;
   /** Every visible label in the panel, so an unresolved `hud.*` key is caught. */
   readonly texts: readonly string[];
   /** Which guards are held, and by what (ADR 0034) -- see `HeldGuardsProbe`. */

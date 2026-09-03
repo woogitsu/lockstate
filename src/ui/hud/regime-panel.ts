@@ -698,20 +698,28 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
     });
 
     rosterList.hidden = shown.length === 0;
-    // "Nobody has been admitted yet" is true of exactly one state: nobody
-    // ever has been (issue #506). A prison that admitted a batch and has
-    // since discharged all of it also reads `shown.length === 0`, and that
-    // sentence would be false of it -- five people were admitted, served
-    // their sentence and left, which is the opposite of "nobody". There is
-    // no shipped sentence that says the true thing (searched
-    // `default-locale-en.ts`: every other "nobody"/"empty" string names a
-    // different subject -- guards, alerts, rooms, saves -- and reusing one
-    // would only be a different false claim), and authoring one is the
-    // owner's call (`AGENTS.md`'s fourth exclusion covers any new
-    // player-facing sentence). So this state draws neither sentence: no box
-    // asserting non-admission that isn't true, and no invented substitute.
-    // The header above it still reads "0 of 0", which is not a claim about
-    // history.
+    // The empty sentence is true of exactly one state: nobody ever has been
+    // admitted (issue #506). A prison that admitted a batch and has since
+    // discharged all of it also reads `shown.length === 0`, and the sentence
+    // would be false of it -- five people were admitted, served their sentence
+    // and left, so neither "No prisoners yet" nor an instruction to build the
+    // cell they already have describes them. There is no shipped sentence that
+    // says the true thing (searched `default-locale-en.ts`: every other
+    // "nobody"/"empty" string names a different subject -- guards, alerts,
+    // rooms, saves -- and reusing one would only be a different false claim),
+    // and authoring one is the owner's call (`AGENTS.md`'s fourth exclusion
+    // covers any new player-facing sentence). So this state draws neither
+    // sentence: no box asserting non-admission that isn't true, and no
+    // invented substitute. The header above it still reads "0 of 0", which is
+    // not a claim about history.
+    //
+    // **This paragraph named the sentence as "Nobody has been admitted yet"
+    // until the owner ruled a replacement on 2026-09-03**, and both halves of
+    // what it argued survive that ruling unchanged: the sentence is still true
+    // of one state only, and the other state still has no sentence of its own.
+    // What moved is only which words this key holds -- see
+    // `hud.regime.roster-empty` in `default-locale-en.ts`, which keeps the
+    // ruling and the wording it replaced.
     rosterEmpty.hidden = shown.length > 0 || roster.everAdmitted;
     // Counted against `roster.total` and not against the rows that arrived: the
     // reader asks for one row budget's worth, so the window is what came back
