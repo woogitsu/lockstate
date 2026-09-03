@@ -944,4 +944,91 @@ test.describe('the whole screen at once', () => {
     log(`   whole minimap panel text: ${JSON.stringify(await panelText(page, '.hud-minimap'))}`);
   });
 
+  /**
+   * A ninth act, and the one this pass would have missed by reading code first.
+   *
+   * Act 3's prose dump of the Regime tab produced roster rows reading
+   *
+   * ```
+   * Carla Okafor
+   * Association
+   * Hygiene
+   * Minimal
+   * ```
+   *
+   * and this pass read the last two as a pair -- *minimal hygiene* -- which is
+   * wrong. `Minimal / Low / Medium / High` is the **risk tier**
+   * (`src/content/simulation-message-keys.ts:255`, and `regime-panel.ts`'s own
+   * docblock: *"The word is the risk tier once classification has run --
+   * Minimal, Low, Medium, High"*). The need beside it is a different fact about
+   * a different scale, and the two are adjacent with no column heading over
+   * either.
+   *
+   * So this act asks the DOM what, if anything, names each cell of a roster
+   * row: its class, its rendered text, its tone, and every `aria-label` and
+   * `title` on it or above it. A misreading by the pass itself is the strongest
+   * evidence a legibility record can carry, but only if the refuting sample --
+   * "something on screen does say which is which" -- is actually taken.
+   */
+  test('act 9 — what names each cell of a roster row', async ({ page }) => {
+    await installListenerCensus(page);
+    await installTee(page);
+    await page.setViewportSize(DESKTOP);
+    await openApp(page);
+    await buildAndPopulate(page, { beds: 6, admits: 8, guards: 1, label: 'act9' });
+    await fastForwardToMax(page);
+    await page.waitForTimeout(45_000);
+    await tab(page, 'regime').click();
+    await page.waitForTimeout(1000);
+
+    log('===== ACT 9 / the Regime tab roster, cell by cell =====');
+    const roster = await page.evaluate(() => {
+      const block = document.querySelector<HTMLElement>('.hud-regime__roster') ?? document.querySelector<HTMLElement>('.hud-regime');
+      const rows = [...(block?.querySelectorAll('[class*="roster-row"], [class*="roster__row"], .hud-regime__roster-list > *') ?? [])];
+      const describeCell = (el: HTMLElement): Record<string, string> => {
+        let named = '';
+        for (let n: Element | null = el; n !== null; n = n.parentElement) {
+          const label = n.getAttribute('aria-label') ?? '';
+          const title = n.getAttribute('title') ?? '';
+          if (label !== '') { named = `aria-label on ${n.tagName.toLowerCase()}.${(n.getAttribute('class') ?? '').split(/\s+/)[0] ?? ''}: ${label}`; break; }
+          if (title !== '') { named = `title on ${n.tagName.toLowerCase()}.${(n.getAttribute('class') ?? '').split(/\s+/)[0] ?? ''}: ${title}`; break; }
+          if (n.classList.contains('hud-regime')) break;
+        }
+        return {
+          class: (el.getAttribute('class') ?? '(none)'),
+          text: (el.textContent ?? '').trim(),
+          tone: el.getAttribute('data-tone') ?? '(none)',
+          named: named === '' ? 'NOTHING NAMES IT' : named,
+        };
+      };
+      return {
+        blockHeading: (block?.querySelector('.ui-eyebrow')?.textContent ?? '?').trim(),
+        blockFullText: (block?.innerText ?? '').replace(/\n/g, ' | ').slice(0, 400),
+        columnHeadings: [...(block?.querySelectorAll('th, [role="columnheader"], [class*="header"]') ?? [])].map(
+          (n) => (n.textContent ?? '').trim(),
+        ),
+        rows: rows.slice(0, 4).map((row) => ({
+          rowClass: (row as HTMLElement).getAttribute('class') ?? '(none)',
+          rowAria: (row as HTMLElement).getAttribute('aria-label') ?? '(none)',
+          rowTitle: (row as HTMLElement).getAttribute('title') ?? '(none)',
+          rowText: ((row as HTMLElement).innerText ?? '').replace(/\n/g, ' / ').trim(),
+          cells: [...row.querySelectorAll('*')]
+            .filter((n) => n.children.length === 0 && (n.textContent ?? '').trim() !== '')
+            .map((n) => describeCell(n as HTMLElement)),
+        })),
+      };
+    });
+    log(`   block heading: ${JSON.stringify(roster.blockHeading)}`);
+    log(`   column headings found: ${JSON.stringify(roster.columnHeadings)}`);
+    log(`   whole block: ${JSON.stringify(roster.blockFullText)}`);
+    for (const row of roster.rows) {
+      log(`   -- row ${JSON.stringify(row.rowText)}`);
+      log(`      class=${row.rowClass} aria=${JSON.stringify(row.rowAria)} title=${JSON.stringify(row.rowTitle)}`);
+      for (const cell of row.cells) {
+        log(`      cell ${JSON.stringify(cell['text']).padEnd(22)} tone=${String(cell['tone']).padEnd(9)} class=${String(cell['class']).padEnd(46)} ${String(cell['named'])}`);
+      }
+    }
+    log(`   counts: ${JSON.stringify(await latestCounts(page))}`);
+  });
+
 });
