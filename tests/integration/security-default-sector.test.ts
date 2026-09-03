@@ -590,6 +590,82 @@ describe('the derived sector survives a save without a schema bump', () => {
     expect(restored.securitySectors.all()).toHaveLength(1);
   });
 
+  it("keeps the payload's grade and perimeter too, and a lockdown then reaches the door the save named (#838)", () => {
+    /*
+     * The case above covers the three fields ADR 0092 decision 3 names
+     * explicitly. **`gradeId` and `doorIds` were the two it left behind, and
+     * they were discarded on every restore of every save** -- the audit that
+     * became issue #838 measured it (its note lands with its own pull
+     * request, so it is named rather than linked from here), and this pass
+     * re-measured it through the whole envelope (`createSaveEnvelope` -> JSON
+     * -> `decodeSaveEnvelope` -> restore) before changing anything: a row
+     * carrying `grade.high-security` and one door id came back as
+     * `grade.general` and `[]`.
+     *
+     * Hand-edited rather than commanded, for the reason the sibling case is:
+     * nothing in `src/` writes either field into a payload yet, so the gap is
+     * latent -- which is what makes a test the only thing standing between it
+     * and the first feature that reassigns a grade or extends a perimeter.
+     * The door is registered into the live session first so the *capture*
+     * writes it (an ungoverned door is persisted at its live state), and only
+     * the sector's row is edited.
+     *
+     * The last two assertions are the ones that make this about a prison
+     * rather than about a field: a lockdown of the restored sector has to
+     * reach the door the save said it governs, which means the baseline
+     * `redefine` adopted for that door has to be its state at restore time
+     * and not something re-derived.
+     */
+    const live = createNewSimulationRuntime(SEED);
+    live.navigation.doors.register({
+      id: 'door-838',
+      position: { x: tileCoordinate(10), y: tileCoordinate(10) },
+      side: 'left',
+      state: 'closed',
+      requiredSecurityClearance: 0,
+      costMultiplier: 1,
+    });
+
+    const bundle = captureSessionSnapshot(live);
+    const derived = bundle.simulation!.security.sectorDefinitions[0]!;
+    expect(derived).toEqual({ id: DEFAULT_SECTOR_ID, gradeId: 'grade.general', doorIds: [], postTile: ORIGIN });
+    expect(bundle.simulation!.navigation.doors.map((door) => door.id)).toEqual(['door-838']);
+
+    const authored: SessionSnapshotBundle = {
+      ...bundle,
+      simulation: {
+        ...bundle.simulation!,
+        security: {
+          ...bundle.simulation!.security,
+          sectorDefinitions: [{ ...derived, gradeId: 'grade.high-security', doorIds: ['door-838'] }],
+        },
+      },
+    };
+
+    const restored = reload(authored);
+
+    expect(restored.securitySectors.requireDefinition(DEFAULT_SECTOR_ID)).toEqual({
+      id: DEFAULT_SECTOR_ID,
+      gradeId: 'grade.high-security',
+      doorIds: ['door-838'],
+      postTile: ORIGIN,
+    });
+    // Not the derivation's `grade.general` / `[]`: that is the discard this closes.
+    expect(restored.securitySectors.requireDefinition(DEFAULT_SECTOR_ID).gradeId).not.toBe('grade.general');
+    expect(restored.securitySectors.requireDefinition(DEFAULT_SECTOR_ID).doorIds).not.toEqual([]);
+    // A perimeter the save recorded is a perimeter a lockdown cascades onto.
+    expect(restored.securitySectors.getBaselineDoorStates()).toEqual([['door-838', 'closed']]);
+    restored.securitySectors.setControlState(DEFAULT_SECTOR_ID, 'lockdown');
+    expect(restored.navigation.doors.getById('door-838')?.state).toBe('locked');
+    restored.securitySectors.setControlState(DEFAULT_SECTOR_ID, 'normal');
+    expect(restored.navigation.doors.getById('door-838')?.state).toBe('closed');
+    // And the row survives being saved again, rather than being quietly
+    // replaced by the derivation on the way out.
+    expect(captureSessionSnapshot(restored).simulation!.security.sectorDefinitions).toEqual([
+      { id: DEFAULT_SECTOR_ID, gradeId: 'grade.high-security', doorIds: ['door-838'], postTile: ORIGIN },
+    ]);
+  });
+
   it('gives the tier to a save written before it existed, with no migration and no version bump', () => {
     /*
      * A V5 payload from before ADR 0036: the section shapes are unchanged, and

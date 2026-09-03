@@ -76,7 +76,7 @@ export interface SecuritySectorDefinition {
 export class SecuritySectorRegistry {
   private readonly definitions = new Map<string, SecuritySectorDefinition>();
   private readonly controlStates = new Map<string, SectorControlState>();
-  /** Each governed door's state at the moment its sector was registered -- the baseline `'normal'` restores to. */
+  /** Each governed door's state at the moment a sector first claimed it -- at `register`, or at a `redefine` that widened a perimeter onto a door no sector held. The baseline `'normal'` restores to. */
   private readonly normalDoorStates = new Map<string, DoorState>();
 
   public constructor(private readonly doors: DoorRegistry) {}
@@ -99,32 +99,92 @@ export class SecuritySectorRegistry {
   /**
    * Narrow, explicit mutator for an already-registered sector
    * ([ADR 0092](../../../docs/adr/0092-who-decides-where-a-guard-stands.md)
-   * decision 2) -- the only three fields nothing else in the registry derives
-   * anything from. Throws for an unknown id, exactly like every other
-   * `id`-addressed method here. Deliberately cannot touch `id`, `gradeId` or
-   * `doorIds`: those are what `normalDoorStates` was captured against at
-   * `register` time (decision 2's own reasoning, and ADR 0036 decision 4
-   * point 2's "no un-register and no replace" before it), and this method
-   * leaves `controlStates` and `normalDoorStates` untouched for the same
-   * reason -- a sector under lockdown whose post moves stays under lockdown.
-   * A field absent from `changes` is left exactly as it is; `patrolRoute` and
+   * decision 2, widened by the restore-path defect #838 records). Throws for
+   * an unknown id, exactly like every other `id`-addressed method here.
+   * Cannot touch `id`, which is written into incident records, guard records,
+   * gang territory claims and `SectorRiskTracker` state (ADR 0036 decision 4
+   * point 1). `controlStates` is left exactly as it is -- a sector under
+   * lockdown whose post moves stays under lockdown. A field absent from
+   * `changes` is left exactly as it is; `patrolRoute` and
    * `expectedPatrolLoopTicks` are themselves optional on the definition, so
-   * "leave as is" already covers the only case decision 3's restore-path
-   * caller needs from a payload row that carries neither.
+   * "leave as is" already covers a payload row that carries neither.
+   *
+   * ## `gradeId` and `doorIds` used to be excluded, and the exclusion was the
+   * defect
+   *
+   * This docblock read, in full: *"the only three fields nothing else in the
+   * registry derives anything from ... Deliberately cannot touch `id`,
+   * `gradeId` or `doorIds`: those are what `normalDoorStates` was captured
+   * against at `register` time (decision 2's own reasoning, and ADR 0036
+   * decision 4 point 2's 'no un-register and no replace' before it), and this
+   * method leaves `controlStates` and `normalDoorStates` untouched for the
+   * same reason."* The hazard it names is real and is answered below rather
+   * than dismissed; what does not survive is the conclusion, because
+   * `redefine`'s only caller is the restore path and **the two excluded
+   * fields were therefore silently discarded on every restore of every save**
+   * -- measured through the real save boundary: a payload row carrying
+   * `gradeId: 'grade.high-security'` and `doorIds: ['door-probe']` restored as
+   * `'grade.general'` and `[]`, and a lockdown of the restored sector then
+   * left that door `'closed'` instead of `'locked'`. That is the same shape
+   * ADR 0092 decision 3 was confirmed to close for `postTile`/`patrolRoute`
+   * (*"the save wins over the derivation"*), and ADR 0036 decision 6 states
+   * the general form of it: *"Anything the payload already carries wins. The
+   * derivation is authoritative only where the payload is silent."*
+   *
+   * ## The two baseline questions decision 2 deferred, answered
+   *
+   * ADR 0036 decision 4 point 2 and ADR 0092 decision 2 both refuse a general
+   * `replace` because it *"would have to decide what happens to a baseline it
+   * never captured and to a door whose baseline it now holds for a sector
+   * that no longer governs it"*. Both halves are decided here, and neither
+   * answer is a default:
+   *
+   * 1. **A door this sector newly governs and that has no baseline yet gets
+   *    its current state captured as one**, exactly as `register` does for
+   *    every door it is handed. An unknown door id throws with `register`'s
+   *    own message -- the two branches of the restore loop cannot disagree
+   *    about whether a save naming a door that is not there is loadable.
+   * 2. **A door that already has a baseline keeps it**, whichever sector
+   *    captured it. A baseline is not invertible from a live state
+   *    (`'restricted'` maps both `'open'` and `'closed'` onto `'closed'`), so
+   *    re-capturing would adopt a control-state consequence as the state
+   *    `'normal'` restores to -- the permanent-lockdown hazard
+   *    `getBaselineDoorStates` exists to avoid.
+   * 3. **A door this sector stops governing, and that no remaining sector
+   *    governs, loses its baseline.** `getBaselineDoorStates` promises "each
+   *    *governed* door's baseline" and `captureSessionSystems` reads it to
+   *    decide whether a door is persisted at its baseline or at its live
+   *    state, so a stale entry would write an ungoverned door out at a state
+   *    it left behind.
+   *
+   * Validation runs before any mutation, so a rejected change leaves the
+   * registry exactly as it was rather than half-applied.
    */
   public redefine(
     id: string,
     changes: {
+      readonly gradeId?: string;
+      readonly doorIds?: readonly string[];
       readonly postTile?: TilePosition;
       readonly patrolRoute?: readonly TilePosition[];
       readonly expectedPatrolLoopTicks?: number;
     },
   ): void {
     const current = this.requireDefinition(id);
+    const doorIds = changes.doorIds === undefined ? current.doorIds : [...changes.doorIds];
+
+    const adoptedBaselines = new Map<string, DoorState>();
+    for (const doorId of doorIds) {
+      if (this.normalDoorStates.has(doorId)) continue; // answer 2: an existing baseline is never re-captured.
+      const door = this.doors.getById(doorId);
+      if (door === undefined) throw new RangeError(`Security sector "${id}" references unknown door id "${doorId}".`);
+      adoptedBaselines.set(doorId, door.state);
+    }
+
     this.definitions.set(id, {
       id: current.id,
-      gradeId: current.gradeId,
-      doorIds: current.doorIds,
+      gradeId: changes.gradeId ?? current.gradeId,
+      doorIds,
       postTile: changes.postTile ?? current.postTile,
       ...((changes.patrolRoute ?? current.patrolRoute) !== undefined
         ? { patrolRoute: changes.patrolRoute ?? current.patrolRoute }
@@ -133,6 +193,14 @@ export class SecuritySectorRegistry {
         ? { expectedPatrolLoopTicks: changes.expectedPatrolLoopTicks ?? current.expectedPatrolLoopTicks }
         : {}),
     });
+
+    for (const [doorId, state] of adoptedBaselines) this.normalDoorStates.set(doorId, state); // answer 1
+    for (const doorId of current.doorIds) {
+      // answer 3: dropped by this sector and claimed by no other.
+      if (doorIds.includes(doorId)) continue;
+      if (this.all().some((definition) => definition.doorIds.includes(doorId))) continue; // `all()` sorts by id: no Map-insertion enumeration (`canonical-iteration-contract`).
+      this.normalDoorStates.delete(doorId);
+    }
   }
 
   public requireDefinition(id: string): SecuritySectorDefinition {

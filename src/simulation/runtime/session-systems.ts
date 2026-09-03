@@ -757,23 +757,44 @@ export function restoreSessionSystems(
    *
    *    So: **register** an id the runtime does not hold yet (a scenario
    *    sector, or the first load of any save), and **redefine** -- decision
-   *    2's narrow mutator, restricted to `postTile`/`patrolRoute`/
-   *    `expectedPatrolLoopTicks` -- one it already holds, so the payload's
-   *    copy of those three fields wins over whatever `createNewSimulationRuntime`
-   *    derived. `redefine` cannot touch `id`, `gradeId` or `doorIds`, so this
-   *    can never re-point which doors a sector governs or which baseline
-   *    `normalDoorStates` restores to -- only decision 3's three fields move.
+   *    2's narrow mutator -- one it already holds, so the payload's copy of
+   *    the definition wins over whatever `createNewSimulationRuntime` derived.
+   *    `redefine` still cannot touch `id`, which is what incident records,
+   *    guard records, gang claims and `SectorRiskTracker` state name a sector
+   *    by (ADR 0036 decision 4 point 1).
    *    `tests/integration/security-default-sector.test.ts` still pins that an
    *    *untouched* save's payload and the fresh derivation are identical (the
    *    case this whole mechanism has to keep working), and now also pins that
    *    a *differing* payload row survives the round trip instead of being
    *    overwritten by the derivation.
+   *
+   *    **Two fields were left out of that and had to be added (#838).** This
+   *    paragraph read: *"redefine -- decision 2's narrow mutator, restricted
+   *    to `postTile`/`patrolRoute`/`expectedPatrolLoopTicks` -- ... `redefine`
+   *    cannot touch `id`, `gradeId` or `doorIds`, so this can never re-point
+   *    which doors a sector governs or which baseline `normalDoorStates`
+   *    restores to -- only decision 3's three fields move."* Every clause was
+   *    an accurate description of the mutator, and the last one was the
+   *    defect: this branch runs for the derived default sector on **every**
+   *    restore of **every** save, so the payload's `gradeId` and `doorIds`
+   *    were discarded every time, silently, with no `RestoredScope` entry
+   *    saying so. Measured through the real save boundary before the fix: a
+   *    row carrying `grade.high-security` and one door id restored as
+   *    `grade.general` and `[]`, and a lockdown of the restored sector left
+   *    that door `'closed'`. `redefine` now moves both, answering the two
+   *    baseline questions ADR 0036 decision 4 point 2 deferred rather than
+   *    routing around them -- see its own docblock. That is decision 3's rule
+   *    (*"authoritative for a sector definition it carries"*) and ADR 0036
+   *    decision 6's (*"anything the payload already carries wins"*) applied
+   *    to the whole row instead of three fields of it.
    */
   for (const sector of systems.security.sectorDefinitions) {
     if (runtime.securitySectors.getDefinition(sector.id) === undefined) {
       runtime.securitySectors.register({ ...sector });
     } else {
       runtime.securitySectors.redefine(sector.id, {
+        gradeId: sector.gradeId,
+        doorIds: sector.doorIds,
         postTile: sector.postTile,
         ...(sector.patrolRoute !== undefined ? { patrolRoute: sector.patrolRoute } : {}),
         ...(sector.expectedPatrolLoopTicks !== undefined ? { expectedPatrolLoopTicks: sector.expectedPatrolLoopTicks } : {}),

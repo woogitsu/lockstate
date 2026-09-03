@@ -33,11 +33,18 @@ import { describe, expect, it } from 'vitest';
  * **Amended 2026-09-02, for [ADR 0092](../../docs/adr/0092-who-decides-where-a-guard-stands.md)
  * decision 3 — "the save payload is authoritative for a sector definition it
  * carries."** `restoreSessionSystems` used to skip the payload's copy of a
- * sector id the runtime already holds; it now applies `postTile`,
- * `patrolRoute` and `expectedPatrolLoopTicks` onto it through
- * `SecuritySectorRegistry.redefine` (decision 2's narrow mutator, added for
- * this). That is why `session-systems.ts` and `sector.ts` gained new sites
- * below. **None of them is a new producer.** `redefine` and the restore loop
+ * sector id the runtime already holds; it now applies the payload's row onto
+ * it through `SecuritySectorRegistry.redefine` (decision 2's narrow mutator,
+ * added for this). That is why `session-systems.ts` and `sector.ts` gained new
+ * sites below.
+ *
+ * **Amended again 2026-09-03 (#838).** The sentence above read *"it now
+ * applies `postTile`, `patrolRoute` and `expectedPatrolLoopTicks` onto it"*,
+ * and those three were all it applied: `gradeId` and `doorIds` were dropped on
+ * every restore of every save, because the derived default sector always takes
+ * the `redefine` branch. `redefine` moves all five now, and the last
+ * expectation in this file is what makes a sixth field's exclusion visible
+ * rather than silent. **None of them is a new producer.** `redefine` and the restore loop
  * around it only ever move a value the payload already carried into the
  * runtime's copy of the definition — they cannot manufacture a route or a
  * tile that was not already sitting in `EncodedSessionSystems`, and nothing
@@ -114,6 +121,16 @@ function countedReads(field: string): readonly string[] {
 function registryMethods(): readonly string[] {
   const body = readFileSync(join(SOURCE_ROOT, 'simulation/security/sector.ts'), 'utf8');
   return [...body.matchAll(/^\s+public\s+([A-Za-z]+)\s*\(/gmu)].map((match) => match[1]!);
+}
+
+/** `readonly <name>:` declarations inside one `interface`/parameter block of `sector.ts`, in declaration order. */
+function readonlyFieldsOf(startMarker: string, endMarker: string): readonly string[] {
+  const body = readFileSync(join(SOURCE_ROOT, 'simulation/security/sector.ts'), 'utf8');
+  const start = body.indexOf(startMarker);
+  if (start === -1) throw new Error(`sector.ts no longer contains "${startMarker}" -- this contract cannot be vacuously green.`);
+  const end = body.indexOf(endMarker, start);
+  if (end === -1) throw new Error(`sector.ts no longer contains "${endMarker}" after "${startMarker}".`);
+  return [...body.slice(start, end).matchAll(/^\s*readonly\s+([A-Za-z]+)\??\s*:/gmu)].map((match) => match[1]!);
 }
 
 describe('security sector authorship', () => {
@@ -213,11 +230,20 @@ describe('security sector authorship', () => {
      * decision 2's, and the owner took it narrowly rather than not at all: a
      * general `replace` was rejected for the exact hazard ADR 0036 names --
      * it would have to decide what happens to a `doorIds` baseline the
-     * registry never captured for a door the sector no longer governs --
-     * so `redefine` can move only `postTile`, `patrolRoute` and
-     * `expectedPatrolLoopTicks`, cannot touch `id`, `gradeId` or `doorIds`,
-     * and leaves `controlStates` and `normalDoorStates` exactly as they were.
-     * There is still no un-register, and this file still has nothing to say
+     * registry never captured for a door the sector no longer governs.
+     *
+     * **This paragraph used to end** *"so `redefine` can move only `postTile`,
+     * `patrolRoute` and `expectedPatrolLoopTicks`, cannot touch `id`,
+     * `gradeId` or `doorIds`, and leaves `controlStates` and
+     * `normalDoorStates` exactly as they were"* -- an accurate description of
+     * the mutator, and the reason issue #838 exists: `redefine`'s only caller
+     * is the restore path, so the two excluded fields were discarded on every
+     * restore of every save. `redefine` now moves `gradeId` and `doorIds` too
+     * and answers both halves of the deferred baseline question in its own
+     * docblock (adopt a baseline no sector held, never re-capture one that
+     * exists, drop one nothing governs any more); `controlStates` is still
+     * left exactly as it was. There is still no un-register, and this file
+     * still has nothing to say
      * about `loadSnapshot`'s own `!this.definitions.has(id)` skip -- that is
      * a *scenario* sector never having been registered at all, a different
      * case from decision 3's "the runtime already holds one."
@@ -241,5 +267,38 @@ describe('security sector authorship', () => {
       'getSnapshot',
       'loadSnapshot',
     ]);
+  });
+  it('lets `redefine` move every field of a sector definition except its id -- a persisted field it cannot move is a field a restore discards (#838)', () => {
+    /*
+     * The forcing function issue #838 is the instance of, stated as the class.
+     *
+     * `SecuritySectorDefinition` is a **persisted** shape
+     * (`securitySectorDefinitionSchema` in `save-schema.ts`), and
+     * `restoreSessionSystems` applies a save's row for a sector the runtime
+     * already holds -- which, since ADR 0036, is the derived default sector on
+     * every restore of every save -- through `redefine` and nothing else. So a
+     * field `redefine` cannot move is a field the save carries, the restore
+     * reads, and the runtime then silently throws away. That is what happened
+     * to `gradeId` and `doorIds` between ADR 0092 decision 3 and #838:
+     * measured, a row carrying `grade.high-security` and one door id restored
+     * as `grade.general` and `[]`, and a lockdown of the restored sector left
+     * that door unlocked.
+     *
+     * `id` is the one deliberate exclusion and it is excluded here too: ADR
+     * 0036 decision 4 point 1 keeps it constant because incident records,
+     * guard records, gang territory claims and `SectorRiskTracker` state all
+     * name a sector by it.
+     *
+     * **So this expectation is not a copy of a list.** Adding a field to
+     * `SecuritySectorDefinition` turns it red until either `redefine` accepts
+     * the field or the restore path stops being the only way a payload row
+     * reaches the runtime. Widening it back the other way -- deleting a field
+     * from `redefine` -- turns it red too.
+     */
+    const definitionFields = readonlyFieldsOf('export interface SecuritySectorDefinition {', '\n}');
+    const redefineFields = readonlyFieldsOf('public redefine(', '): void {');
+
+    expect(definitionFields).toEqual(['id', 'gradeId', 'doorIds', 'postTile', 'patrolRoute', 'expectedPatrolLoopTicks']);
+    expect(redefineFields).toEqual(definitionFields.filter((field) => field !== 'id'));
   });
 });

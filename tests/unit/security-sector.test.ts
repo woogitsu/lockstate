@@ -110,3 +110,91 @@ describe('SecuritySectorRegistry: control-state cascade to governed doors', () =
     expect(restoredDoors.getById('sector-door-a')?.state).toBe('closed'); // was 'open' baseline -> restricted forces 'closed'
   });
 });
+
+/**
+ * `redefine`'s three answers to the baseline question ADR 0036 decision 4
+ * point 2 deferred — *"what happens to a baseline it never captured and to a
+ * door whose baseline it now holds for a sector that no longer governs it"* —
+ * pinned here rather than only in the restore-path integration case, because
+ * they are properties of this class and the restore path is only its first
+ * caller. Issue #838: `gradeId` and `doorIds` reach `redefine` at all because
+ * the payload's copy of them was otherwise discarded on every restore.
+ */
+describe('SecuritySectorRegistry.redefine: a moved perimeter and the baselines it moves with it', () => {
+  it('adopts a baseline for a door no sector held, and that baseline is what normal restores it to', () => {
+    const { doors, sectors } = buildRegistry();
+    doors.register(createGradedDoor('sector-door-d', { x: tileCoordinate(4), y: tileCoordinate(4) }, 'left', 'open', 'grade.high-security'));
+    expect(sectors.getBaselineDoorStates().map(([id]) => id)).not.toContain('sector-door-d');
+
+    sectors.redefine('sector-a', { doorIds: ['sector-door-a', 'sector-door-b', 'sector-door-c', 'sector-door-d'] });
+
+    expect(sectors.getBaselineDoorStates()).toContainEqual(['sector-door-d', 'open']);
+    sectors.setControlState('sector-a', 'lockdown');
+    expect(doors.getById('sector-door-d')?.state).toBe('locked');
+    sectors.setControlState('sector-a', 'normal');
+    expect(doors.getById('sector-door-d')?.state).toBe('open');
+  });
+
+  it('never re-captures a baseline it already holds, so a redefine under lockdown cannot make the lockdown permanent', () => {
+    const { doors, sectors } = buildRegistry();
+    sectors.setControlState('sector-a', 'lockdown');
+    expect(doors.getById('sector-door-a')?.state).toBe('locked');
+
+    // The perimeter is restated in full, exactly as the restore loop restates
+    // it, while every door sits at a control-state consequence rather than at
+    // its baseline. Re-capturing here would adopt 'locked' as the baseline and
+    // the prison could never be unlocked again.
+    sectors.redefine('sector-a', { doorIds: ['sector-door-a', 'sector-door-b', 'sector-door-c'], postTile: { x: tileCoordinate(9), y: tileCoordinate(9) } });
+
+    expect(sectors.getBaselineDoorStates()).toEqual([
+      ['sector-door-a', 'open'],
+      ['sector-door-b', 'closed'],
+      ['sector-door-c', 'locked'],
+    ]);
+    sectors.setControlState('sector-a', 'normal');
+    expect(doors.getById('sector-door-a')?.state).toBe('open');
+    expect(sectors.getControlState('sector-a')).toBe('normal');
+    expect(sectors.requireDefinition('sector-a').postTile).toEqual({ x: 9, y: 9 });
+  });
+
+  it('drops the baseline of a door it stops governing, and keeps one another sector still governs', () => {
+    const { doors, sectors } = buildRegistry();
+    sectors.register({ id: 'sector-b', gradeId: 'grade.general', doorIds: ['sector-door-c'], postTile: { x: tileCoordinate(7), y: tileCoordinate(7) } });
+
+    sectors.redefine('sector-a', { doorIds: ['sector-door-a'] });
+
+    // `sector-door-b` is nobody's now: `getBaselineDoorStates` promises every
+    // *governed* door's baseline, and `captureSessionSystems` reads it to
+    // decide whether a door is saved at its baseline or at its live state.
+    expect(sectors.getBaselineDoorStates()).toEqual([
+      ['sector-door-a', 'open'],
+      ['sector-door-c', 'locked'],
+    ]);
+    // And the door itself is untouched by losing its sector.
+    expect(doors.getById('sector-door-b')?.state).toBe('closed');
+    // A lockdown of what is left reaches exactly what is left.
+    sectors.setControlState('sector-a', 'lockdown');
+    expect(doors.getById('sector-door-a')?.state).toBe('locked');
+    expect(doors.getById('sector-door-b')?.state).toBe('closed');
+  });
+
+  it('rejects a perimeter naming a door that is not registered, with register\'s own message and no half-applied change', () => {
+    const { sectors } = buildRegistry();
+
+    expect(() => sectors.redefine('sector-a', { gradeId: 'grade.general', doorIds: ['sector-door-a', 'missing'] })).toThrow(/unknown door id/);
+
+    // Validation runs before any mutation: the grade did not move either.
+    expect(sectors.requireDefinition('sector-a')).toEqual({
+      id: 'sector-a',
+      gradeId: 'grade.high-security',
+      doorIds: ['sector-door-a', 'sector-door-b', 'sector-door-c'],
+      postTile: { x: 5, y: 1 },
+    });
+    expect(sectors.getBaselineDoorStates().map(([id]) => id)).toEqual(['sector-door-a', 'sector-door-b', 'sector-door-c']);
+  });
+
+  it('throws for an unknown sector id, like every other id-addressed method here', () => {
+    const { sectors } = buildRegistry();
+    expect(() => sectors.redefine('sector-nobody', { gradeId: 'grade.general' })).toThrow(/Unknown security sector id/);
+  });
+});

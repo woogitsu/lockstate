@@ -1348,10 +1348,53 @@ the first prison with an occupied cell fails its restore outright.
 `security-sector.prison` is a pure function of the world's chunk size and its
 owned chunks, so `createNewSimulationRuntime` derives it — which means a
 restored session derives it too, before the payload is applied, because
-`restoreSimulationRuntime` builds its session through that same function. The
+`restoreSimulationRuntime` builds its session through that same function.
+
+**The restore loop used to skip a sector id already registered, and since #825
+it applies the payload's row onto it instead.** This paragraph read: *"The
 restore loop therefore **skips a sector id already registered**: `register`
-throws on a duplicate, and the payload's row for this one is the same definition
-the derivation just produced.
+throws on a duplicate, and the payload's row for this one is the same
+definition the derivation just produced."* The first clause is why a guard is
+still needed at all -- `register` does throw on a duplicate, so without one
+every save would fail to load -- and the second is what stopped being true:
+[ADR 0092](./adr/0092-who-decides-where-a-guard-stands.md) decision 3 was
+confirmed by the owner on 2026-09-02 with the words *"the save wins over the
+derivation"*, and a payload row that differs from the derivation is now applied
+through `SecuritySectorRegistry.redefine` rather than dropped. The sentence
+above was written on 2026-08-28 (`2926c54a`) and became false on 2026-09-02
+(`4a53d292`).
+
+**#825 moved three of the five fields, and #838 moved the other two.**
+`redefine` was restricted to `postTile`, `patrolRoute` and
+`expectedPatrolLoopTicks`, so `gradeId` and `doorIds` were still discarded on
+every restore of every save -- measured through the whole envelope
+(`createSaveEnvelope` -> JSON -> `decodeSaveEnvelope` -> restore): a row
+carrying `grade.high-security` and one door id restored as `grade.general` and
+`[]`, and a lockdown of the restored sector then left that door `'closed'`
+instead of `'locked'`. `redefine` now moves every field of the definition
+except `id`, which stays constant because incident records, guard records, gang
+territory claims and `SectorRiskTracker` state all name a sector by it
+(ADR 0036 decision 4 point 1). Which fields a restore can carry is pinned as a
+*rule* rather than a list in
+`tests/foundation/security-sector-authorship-contract.test.ts`: every field of
+the persisted `SecuritySectorDefinition` except `id` must be one `redefine`
+accepts, because a persisted field it cannot move is a field a restore
+discards.
+
+**ADR 0092 decision 3's own three-field list is left standing there and
+completed here**, the way ADR 0042's persistence paragraph is (see "Adding an
+optional field without a version bump" above): the list was written to name the
+two fields a *player* would soon author, and the sentence it is a list inside
+of -- *"the save payload is authoritative for a sector definition it
+carries"* -- is the durable half and the one the code now implements. Nothing
+about the save *format* moved either time. `SAVE_SCHEMA_VERSION` stays 5 and
+there is no migration, on this section's own test: no persisted field is added,
+no persisted shape or unit changes, and no field's absence becomes ambiguous --
+`securitySectorDefinitionSchema` has required `gradeId` and `doorIds` since the
+section existed, so every save ever written carries both, and for every one of
+them the row equals the derivation (which is the assertion the identity case
+keeps). What changed is only which of two identical shapes the *restore*
+prefers.
 
 Three consequences worth stating plainly, none of which moves a version:
 
@@ -1363,11 +1406,18 @@ Three consequences worth stating plainly, none of which moves a version:
   `restoreSessionSystems` — after the two arrays are cleared and refilled from
   the payload — so an existing file gets a working security tier with no
   migration. Re-saving that file adds the three entries to it.
-- **The payload's copy is redundant, not authoritative, and a test says so.**
-  `tests/integration/security-default-sector.test.ts` asserts that what a
-  capture writes for this sector equals what a restore derives. If the
-  derivation rule ever changes, that assertion fails and whoever changed it has
-  to decide what an existing prison's post tile should be.
+- **The payload's copy is authoritative, and two tests say so.** This bullet
+  read *"the payload's copy is redundant, not authoritative, and a test says
+  so ... If the derivation rule ever changes, that assertion fails and whoever
+  changed it has to decide what an existing prison's post tile should be"* --
+  and ADR 0092 decision 3 names losing that forcing function as the price it
+  pays. The replacement is the pair the ADR asked for and no weaker:
+  `tests/integration/security-default-sector.test.ts` still asserts that a
+  session whose payload carries nothing player-authored captures exactly what a
+  restore derives (so this remains safe for every save that exists), and two
+  further cases assert that a *differing* row -- post and route from #825,
+  grade and perimeter from #838 -- survives the round trip instead of being
+  overwritten.
 
 Where the payload *does* carry an entry for this sector, it wins:
 `applyDefaultSecuritySector` leaves an existing sector, schedule or watch entry
@@ -1377,9 +1427,13 @@ derived one and keep it across a save. What cannot be expressed is
 
 ### A lockdown must stay liftable
 
-`SecuritySectorRegistry` records each governed door's state at `register` time
-as the baseline `'normal'` restores to, and computes every transition from
-that baseline rather than from the door's just-prior state. Writing the
+`SecuritySectorRegistry` records each governed door's state at the moment a
+sector first claims it -- at `register`, or at a `redefine` that widens a
+perimeter onto a door no sector held (#838) -- as the baseline `'normal'`
+restores to, and computes every transition from that baseline rather than from
+the door's just-prior state. A `redefine` never re-captures a baseline that
+already exists, for the same reason the save does not write the live state:
+the transition is not invertible. Writing the
 *live* door state into the save would therefore make a lockdown permanent: on
 restore, `'locked'` would become the new baseline and lifting the lockdown
 would lock the door again. The baseline is not recoverable from the live state

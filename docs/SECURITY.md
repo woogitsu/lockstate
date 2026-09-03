@@ -34,8 +34,9 @@ every governed door through `DoorRegistry.setState`, the only door mutation
 entry point #21/#22 expose, so a sector transition never bypasses
 navigation's own access-revision/cache invalidation:
 
-- **`'normal'`** restores each door to its state at sector *registration*
-  time (its baseline).
+- **`'normal'`** restores each door to its state at the moment a sector first
+  claimed it (its baseline) -- at *registration*, or at a `redefine` that
+  widened a perimeter onto a door no sector held (#838).
 - **`'restricted'`** closes every governed door whose baseline wasn't
   already `'locked'` (a door that's always locked, e.g. a vault, stays
   locked; everything else tightens to `'closed'` -- still passable with the
