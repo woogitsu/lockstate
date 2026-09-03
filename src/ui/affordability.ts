@@ -89,6 +89,40 @@ export interface AffordabilityVerdict {
    * obviously right until the twenty of room left is beside it.
    */
   readonly spendableMinorUnits: number;
+  /**
+   * **How much more money the prison needs before this charge goes through**,
+   * and `0` when it needs none.
+   *
+   * `charge - spendable`, which is the *shortfall* and deliberately neither of
+   * the two figures a reader might mistake it for: not the charge, and not the
+   * balance. At the worked example this module's own docblocks use -- a `65`
+   * plank against a balance of `-1,230` at the mature `-1,250` rung -- the
+   * charge is 65, the balance is -1,230, the spendable room is 20 and this is
+   * **45**. Four different numbers, and only the last one answers "what would
+   * lift it".
+   *
+   * ## Why it lives here rather than at the call site
+   *
+   * Because it is a restatement of the *same* comparison the refusal is
+   * decided by, and this module exists so that comparison has exactly one
+   * home (see the type's own docblock). A panel computing
+   * `charge - (balance - floor)` for itself would need the floor, which is
+   * what `pressFloorMinorUnits` was extracted to stop `src/ui/hud/` reaching
+   * for (`AGENTS.md` boundary 1) -- and it would be a second expression that
+   * could disagree with `refused` about whether there is a shortfall at all.
+   *
+   * ## Exactly the `'past-the-floor'` branch, and strictly positive there
+   *
+   * `refused` on that branch is `balance - charge < floor`, i.e.
+   * `charge - spendable > 0`, so a `'past-the-floor'` verdict always has a
+   * shortfall of at least one minor unit and every other verdict has none.
+   * `'malformed-charge'` reports `0` rather than a subtraction: the charge on
+   * that branch is not a number the state would carry, so "how much more you
+   * need" has no answer, and a `NaN` reaching a player-facing figure would be
+   * worse than the branch having nothing to say. That branch says nothing to
+   * a player today and this field does not change it.
+   */
+  readonly shortfallMinorUnits: number;
 }
 
 /**
@@ -277,6 +311,12 @@ export function judgeAffordability(
     chargeMinorUnits,
     balanceMinorUnits,
     spendableMinorUnits,
+    // Only the money branch has a shortfall, and there it is strictly
+    // positive -- see `AffordabilityVerdict.shortfallMinorUnits`. Written as
+    // the same subtraction the comparison above makes rather than as
+    // `Math.max(0, ...)` over every branch, so a reader can see that the two
+    // agree by construction instead of by a clamp.
+    shortfallMinorUnits: refusal === 'past-the-floor' ? chargeMinorUnits - spendableMinorUnits : 0,
   };
 }
 

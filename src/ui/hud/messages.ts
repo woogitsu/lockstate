@@ -408,6 +408,46 @@ export const HUD_MESSAGE_KEY = {
   buildBuySubmit: 'hud.build.buy-submit',
   buildBuyHint: 'hud.build.buy-hint',
   /**
+   * **What stops a Buy press, and what would lift it** -- the wording half of
+   * issue #772, authored by the owner on 2026-09-03.
+   *
+   * #772 split itself in two: *"the cheap, obviously-correct half is to use
+   * the number that already exists"*, and *"the half that is a decision, and
+   * so is not an agent's to take: what the control says"*. PR #799 shipped the
+   * first half on this button and PR #807 shipped it on `securityStaffHire`,
+   * and both said so in their own comments -- *"this is the mechanical half
+   * only"*, with the wording left to the owner under `AGENTS.md`'s fourth
+   * exclusion. This key is the second half.
+   *
+   * The sentence is the owner's, given as a choice among four candidates and
+   * chosen verbatim: *"Not enough money — you need {amount} more."* Nothing
+   * here paraphrases it, and the em dash is theirs.
+   *
+   * `{amount}` is the **shortfall** --
+   * `AffordabilityVerdict.shortfallMinorUnits` (`src/ui/affordability.ts`),
+   * `charge - (balance - floor)` -- and not the price, which the button's own
+   * label already states, nor the balance, which the FUNDS chip already
+   * states. Formatted through `HudLocalizer.formatNumber` like every other
+   * money figure on this HUD, in the same minor units and with no currency
+   * (#96).
+   *
+   * **It is one of the money words this panel's keys otherwise avoid, and
+   * that is why the key is named for the gap rather than for the money**: the
+   * sentence says "money" because the owner's sentence says it, and
+   * `tests/unit/ui-hud-messages.test.ts`'s allow-list is about *keys* that
+   * imply an income or a standing cost. A shortfall is neither.
+   *
+   * **Its twin is `securityStaffHireShortfall`, and the two carry byte-identical
+   * text.** One authored sentence, two call sites, on this file's own standing
+   * rule for that: *"a key here is a call site and never a string pool"*
+   * (`src/content/default-locale-en.ts`, at the four insolvency refusals), the
+   * precedent being `hud.build.step-up` / `hud.rooms.step-up`. What keeps them
+   * identical is a test rather than a shared key --
+   * `tests/unit/ui-hud-refusal-shortfall.test.ts` pins both against the
+   * owner's sentence and against each other.
+   */
+  buildBuyShortfall: 'hud.build.buy-shortfall',
+  /**
    * The queue block, which is what #348 made worth building.
    *
    * Construction now builds one order at a time, so a twelve-segment run
@@ -532,6 +572,19 @@ export const HUD_MESSAGE_KEY = {
   securityStaffSelected: 'hud.security.selected',
   securityStaffHire: 'hud.security.hire',
   securityStaffHint: 'hud.security.hire-hint',
+  /**
+   * What stops a Hire press, and what would lift it: the owner's sentence of
+   * 2026-09-03, byte-identical to `buildBuyShortfall`'s.
+   *
+   * A key of its own rather than the Build panel's, for the reason that key's
+   * docblock gives at length and this file's own rule states: one call site,
+   * one key. `{amount}` here is the shortfall against
+   * `staffHireCostMinorUnits` -- the engagement fee one press debits, which is
+   * what `src/main.ts` judges and therefore what `paintHire` compares -- and
+   * deliberately not the daily wage `securityStaffHint` beside it prices (see
+   * `paintHire`'s own comment on which of a hire's two costs is a press).
+   */
+  securityStaffHireShortfall: 'hud.security.hire-shortfall',
   /**
    * And what the press gets you, which is a guard and not yet a post.
    *

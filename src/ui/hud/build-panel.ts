@@ -5,7 +5,7 @@ import { pressAffordabilityVerdict } from '../affordability';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
 import { createChoiceGroup, type ChoiceGroup, type ChoiceOption } from '../primitives/choice-group';
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
-import { element, eyebrowText, nextUiId, valueText } from '../primitives/dom';
+import { describeBy, element, eyebrowText, nextUiId, undescribeBy, valueText } from '../primitives/dom';
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createNumberField, type NumberField } from '../primitives/number-field';
 import { createPanel } from '../primitives/panel';
@@ -1513,11 +1513,58 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * rule `.hud-rooms__needs` records for the same shape of block.
    */
 
+  /*
+   * **What stops a press, and what would lift it** -- the wording half of
+   * issue #772, on the owner's sentence of 2026-09-03
+   * (`hud.build.buy-shortfall`).
+   *
+   * A line of its own rather than a second job for the arrival hint below it,
+   * and the shape is the one this panel already uses for the same kind of
+   * sentence: `.hud-build__queue-shortfall` is the queue's money line, drawn
+   * only while there is a shortfall and withdrawing to *no box* when there is
+   * not. The two sentences beside this control answer different questions --
+   * `hud.build.buy-hint` says what a press that goes through does, this says
+   * why one will not -- and a line that swapped between them would leave a
+   * player who has fixed their balance with no statement of what a purchase
+   * even is. `hud.rooms.arm-hint`'s "one line, two jobs" is the other
+   * available shape and it was not taken for that reason.
+   *
+   * **Above the hint and directly under the button**, because it is about the
+   * control immediately above it; the row is a flex column, so DOM order is
+   * reading order (`.hud-build__buy:not([hidden])`, `hud.css`).
+   *
+   * Its own class beside `.hud-build__note` for `.hud-build__queue-shortfall`'s
+   * reason: this panel has several notes and a spec has to be able to name
+   * this one without depending on document order. And it costs the panel
+   * nothing in the state a player is normally in -- `hidden` while the press
+   * is affordable, which is every state a solvent prison has.
+   */
+  const buyShortfall = eyebrowText('', 'hud-build__note hud-build__buy-shortfall');
+  buyShortfall.hidden = true;
+  /*
+   * The line is the Buy control's *description* while it stands, on the shape
+   * `rooms-panel.ts` uses for its Confirm note: a player who cannot see the
+   * line reaches a control that reports itself unavailable and is told
+   * "unavailable" and nothing else, which is the finding a keyboard-only
+   * playtest made about Confirm.
+   *
+   * Written per repaint rather than once at construction, unlike that note,
+   * because this one *withdraws*: `aria-describedby` pointing at a line with
+   * no box would describe the button with a sentence nobody can read. That is
+   * `markControl`'s own pattern in `hud.ts`, and `describeBy`/`undescribeBy`
+   * merge rather than replace -- so the refusal band's id and this id coexist
+   * on the button when a press has actually been refused, which is exactly
+   * the state this line is drawn in.
+   */
+  const buyShortfallId = nextUiId('hud-build-buy-shortfall');
+  buyShortfall.id = buyShortfallId;
+
   const buyRow = element('div', {
     className: 'hud-build__buy',
     children: [
       quantityField.element,
       buySubmit.element,
+      buyShortfall,
       eyebrowText(t(HUD_MESSAGE_KEY.buildBuyHint), 'hud-build__note'),
       /*
        * `deliveriesBlock` used to be the last child of this row, and the
@@ -1642,6 +1689,37 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     const isFreshUnfurnishedPrison = treasuryRoomCapacity === 0;
     const verdict = pressAffordabilityVerdict(total, treasuryMinorUnits, isFreshUnfurnishedPrison);
     buySubmit.setUnavailable(verdict.refused);
+    /*
+     * **And now it says what stops it** (the owner's sentence of 2026-09-03),
+     * which is the half the comment above records as reserved. The paragraph
+     * beginning *"This is the mechanical half only"* is kept rather than
+     * rewritten because it is the record of why this line did not exist for
+     * two days: what changed is the ruling, not the argument.
+     *
+     * The label is still untouched, and that part of it still holds --
+     * `hud.build.buy.submit` is byte-identical whichever way the verdict
+     * falls. The sentence is a line of its own, so nothing a screen reader
+     * announces as this control's *name* moved.
+     *
+     * **The money branch only.** `shortfallMinorUnits` is `0` on every verdict
+     * but `'past-the-floor'`, and a `'Not enough money'` sentence is false
+     * about a malformed charge -- so the condition is the refusal reason and
+     * not `verdict.refused`. `'malformed-charge'` is unreachable with the
+     * shipped catalogue (the quantity is a clamped integer and the price comes
+     * from `procurement-catalog.ts`), and it says nothing to a player either
+     * before or after this change.
+     *
+     * `formatNumber`, like every other money figure on this panel: the label
+     * above, the queue's shortfall and the delivery rows all go through it, and
+     * a second formatter here would be the same number rendered two ways.
+     */
+    const shortfallStands = verdict.refusal === 'past-the-floor';
+    buyShortfall.hidden = !shortfallStands;
+    buyShortfall.textContent = shortfallStands
+      ? t(HUD_MESSAGE_KEY.buildBuyShortfall, { amount: localizer.formatNumber(verdict.shortfallMinorUnits) })
+      : '';
+    if (shortfallStands) describeBy(buySubmit.element, buyShortfallId);
+    else undescribeBy(buySubmit.element, buyShortfallId);
   }
 
   function paintBuy(): void {
