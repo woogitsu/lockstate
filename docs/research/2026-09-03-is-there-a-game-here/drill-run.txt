@@ -1,0 +1,28 @@
+[2m[WebServer] [22m[2m5:08:30 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+[2m[WebServer] [22m
+[2m[WebServer] [22m  [32m[1mVITE[22m v8.2.2[39m  [2mready in [0m[1m612[22m[2m[0m ms[22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5293[22m/[39m
+
+Running 1 test using 1 worker
+
+[2m[WebServer] [22m[2m5:08:31 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] scanning dependencies...
+[2m[WebServer] [22m[2m5:08:33 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
+[drill] the strip carries 9 chip(s): ["prisoners","high-risk","staff","coverage","rooms","incidents","contraband","funds","earned-today"]
+[drill] chip "prisoners" <div> cursor=auto -> NOTHING CHANGED commands 0->0
+[drill] chip "high-risk" <div> cursor=auto -> NOTHING CHANGED commands 0->0
+[drill] chip "staff" <div> cursor=auto -> NOTHING CHANGED commands 0->0
+[drill] chip "coverage" <div> cursor=auto -> NOTHING CHANGED commands 0->0
+[drill] chip "rooms" <div> cursor=auto -> NOTHING CHANGED commands 0->0
+[drill] chip "incidents" <div> cursor=auto -> NOTHING CHANGED commands 0->0
+[drill] chip "contraband" <div> cursor=auto -> NOTHING CHANGED commands 0->0
+[drill] chip "funds" <div> cursor=auto -> NOTHING CHANGED commands 0->0
+[drill] chip "earned-today" <div> cursor=auto -> NOTHING CHANGED commands 0->0
+[drill] Regime tab: 0 roster row(s) found
+[drill] first roster row: NO SUCH ELEMENT (.hud-regime__roster [data-entity], .hud-regime__roster li, .hud-regime__roster tr)
+[drill] REGIME PANEL, VERBATIM: REGIME | Collapse | TODAY'S BLOCKS | General Population | 0% THROUGH | Allows Sleep | High Risk | 0% THROUGH | Allows Sleep, Meal, Hygiene | PRISONERS | 0 of 0 | No prisoners yet. Build a cell with a bed to take somebody in.
+[drill] CONTROL: a Rooms catalogue row <button[role=radio]> cursor=pointer -> NOTHING CHANGED commands 0->0
+[drill] every [data-metric] chip's tag: DIV,DIV,DIV,DIV,DIV,DIV,DIV,DIV,DIV
+  ✓  1 tests/browser/playtest-2026-09-03-can-a-player-drill-in.playtest.ts:70:1 › can a player press the thing the game just told them about (1.4m)
+
+  1 passed (1.4m)

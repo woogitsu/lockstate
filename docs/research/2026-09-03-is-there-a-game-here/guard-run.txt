@@ -1,0 +1,152 @@
+[2m[WebServer] [22m[2m5:04:42 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+[2m[WebServer] [22m
+[2m[WebServer] [22m  [32m[1mVITE[22m v8.2.2[39m  [2mready in [0m[1m519[22m[2m[0m ms[22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5292[22m/[39m
+
+Running 1 test using 1 worker
+
+[2m[WebServer] [22m[2m5:04:44 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
+[guard] calibration: tile (0,0) top-left = (-304, -574)
+[guard] after buying: LockState.io | PRE-ALPHA | v0.0.425 · c5e24a6 | Lockstate, PRE-ALPHA build, version 0.0.425, commit c5e24a6. | 0 | PRISONERS | 0 | HIGH RISK | 0 | STAFF | 0 | COVERAGE | Covered | 0 | ROOMS | 0 | INCIDENTS | Clear | 0 | CONTRABAND | 22,080 | FUNDS | 0 | EARNED TODAY | DAY | 1 | Through the day | 0% | Pause | Play at normal speed | Fast forward | Speed 1× | PAUSED
+[guard] clock after two Fast forward presses: {"mode":"running","speed":4} at tick 373
+[guard] deliveries after running: ".hud-build__deliveries: not laid out"
+[guard] wall run north: 6 command(s) -> ["12,12 north","13,12 north","14,12 north","15,12 north","16,12 north","17,12 north"]
+[guard] wall run south: 6 command(s) -> ["12,18 north","13,18 north","14,18 north","15,18 north","16,18 north","17,18 north"]
+[guard] wall run west: 6 command(s) -> ["12,12 west","12,13 west","12,14 west","12,15 west","12,16 west","12,17 west"]
+[guard] wall run east: 6 command(s) -> ["18,12 west","18,13 west","18,14 west","18,15 west","18,16 west","18,17 west"]
+[guard] queue right after the wall runs (tick 3049): "QUEUED\n6 waiting · 1 being built"
+[guard] Build panel says the queue is empty at page t=4457ms, tick 3458
+[guard] designate attempt 1 at t+15180ms: rooms=1 | panel said ["OPEN ON AT LEAST ONE SIDE","MUST BE ENCLOSED"] | band "Nothing was removed — there is no object on that tile, and none being built there."
+[guard] zoned after 1 attempt(s), 15737ms after the queue emptied: rooms=1 accommodationCapacity=0
+[guard] 6 bed order(s) + 1 toilet placed
+[guard] at tick 6146: rooms=1 roomCapacity=6 accommodationCapacity=6
+[guard] queue: ".hud-build__queue: not laid out"
+[guard] rooms panel: ROOMS
+Collapse
+ROOM TYPE AND AREA
+Staff Room
+Classroom
+Canteen
+Kitchen
+Cell
+Selected
+Holding Cell
+Laundry
+Shower Room
+Delivery Bay
+Garbage Room
+Storage Room
+Infirmary
+Reception
+Common Room
+Yard
+Security Office
+Solitary Cell
+Utility Room
+ENTER COORDINATES
+Draw on map
+Remove rooms
+DRAG A RECTANGLE ACROSS THE TILES THIS ROOM SHOULD COVER.
+NEEDS AT LEAST 2 × 3 TILES
+MUST BE ENCLOSED
+NEEDS 1 × BED
+NEEDS 1 × TOILET
+ENCLOSURE
+Walled in on every side
+[guard] admit press durations (ms): [1322,1639,1335,1530,1308,1341,1170,1270,1277,1313,1405,1292]
+[guard] admit control disabled attribute now: null
+[guard] intake panel after 12 admissions: INTAKE
+Collapse
+Admit a prisoner
+6 waiting with no bed to sleep in
+A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits until a bed is free.
+IN INTAKE
+6 of 12
+6 at Cell Assignment
+[guard] no-place warning data: 6
+[guard] status strip: LockState.io | PRE-ALPHA | v0.0.425 · c5e24a6 | Lockstate, PRE-ALPHA build, version 0.0.425, commit c5e24a6. | 12 | PRISONERS | 6 with no bed | 0 | HIGH RISK | 0 | STAFF | 0 | COVERAGE | Unguarded | 1 | ROOMS | 1 | INCIDENTS | Assault | 0 | CONTRABAND | 22,080 | FUNDS | 1,355 | EARNED TODAY | DAY | 4 | Through the day | 75% | Pause | Play at normal speed | Fast forward | Speed 4× | ×4
+[guard] hire control reads: "Hire Guard · 80"
+[guard] after hiring 2: staff=2 dailyWageBill=160 funds=23560
+[guard] staff panel: STAFF
+GUARD COVERAGE
+2 of 2
+Covered
+This prison has the guards it asks for.
+WHO TO HIRE
+Guard
+Selected
+Hire Guard · 80
+Costs 80 now and 80 a day in wages, including today.
+A new guard starts unassigned.
+ON DUTY
+2 held · 0 free
+Guard · Sector Post
+Release
+Guard · Sector Post
+Release
+A released guard stays hired and goes back to the pool.
+ON THE PAYROLL
+160 a day
+[guard] staff panel right after two hires: STAFF | GUARD COVERAGE | 2 of 2 | Covered | This prison has the guards it asks for. | WHO TO HIRE | Guard | Selected | Hire Guard · 80 | Costs 80 now and 80 a day in wages, including today. | A new guard starts unassigned. | ON DUTY | 2 held · 0 free | Guard · Sector Post | Release | Guard · Sector Post | Release | A released guard stays hired and goes back to the pool. | ON THE PAYROLL | 160 a day
+[guard] staff panel eight seconds later: STAFF | GUARD COVERAGE | 2 of 2 | Covered | This prison has the guards it asks for. | WHO TO HIRE | Guard | Selected | Hire Guard · 80 | Costs 80 now and 80 a day in wages, including today. | A new guard starts unassigned. | ON DUTY | 2 held · 0 free | Guard · Sector Post | Release | Guard · Sector Post | Release | A released guard stays hired and goes back to the pool. | ON THE PAYROLL | 160 a day
+[guard] strip: LockState.io | PRE-ALPHA | v0.0.425 · c5e24a6 | Lockstate, PRE-ALPHA build, version 0.0.425, commit c5e24a6. | 12 | PRISONERS | 6 with no bed | 0 | HIGH RISK | 2 | STAFF | 12 | COVERAGE | Covered | 1 | ROOMS | 0 | INCIDENTS | Clear | 0 | CONTRABAND | 23,560 | FUNDS | 838 | EARNED TODAY | DAY | 5 | Through the day | 46% | Pause | Play at normal speed | Fast forward | Speed 4× | ×4
+[guard] tab overview: 2 mention(s) of "incident" outside the strip ["The prison is under control again — no incident is still open","Day 4WarningClear this alertThe prison is under control again — no incident is still open"]
+[guard] tab build: 2 mention(s) of "incident" outside the strip ["The prison is under control again — no incident is still open","Day 4WarningClear this alertThe prison is under control again — no incident is still open"]
+[guard] tab rooms: 2 mention(s) of "incident" outside the strip ["The prison is under control again — no incident is still open","Day 4WarningClear this alertThe prison is under control again — no incident is still open"]
+[guard] tab security: 2 mention(s) of "incident" outside the strip ["The prison is under control again — no incident is still open","Day 4WarningClear this alertThe prison is under control again — no incident is still open"]
+[guard] tab regime: 2 mention(s) of "incident" outside the strip ["The prison is under control again — no incident is still open","Day 4WarningClear this alertThe prison is under control again — no incident is still open"]
+[guard] PHASE A armed at tick 11911 with the two guards the panel asked for
+[guard] A 31s tick=14408 | summary {"total":2,"stillOpen":0,"resolved":0,"lapsed":2,"totalInjured":4,"totalPropertyDamage":6,"escapes":0} | responders {"incidentsResolved":0,"incidentsLapsed":2,"respondersDispatched":0,"routeFailures":0}
+[guard] A 62s tick=16939 | summary {"total":3,"stillOpen":0,"resolved":0,"lapsed":3,"totalInjured":6,"totalPropertyDamage":10,"escapes":0} | responders {"incidentsResolved":0,"incidentsLapsed":3,"respondersDispatched":0,"routeFailures":0}
+[guard] A 94s tick=19464 | summary {"total":4,"stillOpen":0,"resolved":0,"lapsed":4,"totalInjured":8,"totalPropertyDamage":14,"escapes":0} | responders {"incidentsResolved":0,"incidentsLapsed":4,"respondersDispatched":0,"routeFailures":0}
+[guard] A 125s tick=21956 | summary {"total":5,"stillOpen":0,"resolved":0,"lapsed":5,"totalInjured":10,"totalPropertyDamage":19,"escapes":0} | responders {"incidentsResolved":0,"incidentsLapsed":5,"respondersDispatched":0,"routeFailures":0}
+[guard] A 157s tick=24464 | summary {"total":6,"stillOpen":0,"resolved":0,"lapsed":6,"totalInjured":12,"totalPropertyDamage":24,"escapes":0} | responders {"incidentsResolved":0,"incidentsLapsed":6,"respondersDispatched":0,"routeFailures":0}
+[guard] A 188s tick=26951 | summary {"total":7,"stillOpen":0,"resolved":0,"lapsed":7,"totalInjured":14,"totalPropertyDamage":29,"escapes":0} | responders {"incidentsResolved":0,"incidentsLapsed":7,"respondersDispatched":0,"routeFailures":0}
+[guard] A 219s tick=29430 | summary {"total":9,"stillOpen":1,"resolved":0,"lapsed":8,"totalInjured":16,"totalPropertyDamage":34,"escapes":0} | responders {"incidentsResolved":0,"incidentsLapsed":8,"respondersDispatched":0,"routeFailures":0}
+[guard] A 250s tick=31929 | summary {"total":10,"stillOpen":1,"resolved":0,"lapsed":9,"totalInjured":18,"totalPropertyDamage":39,"escapes":0} | responders {"incidentsResolved":0,"incidentsLapsed":9,"respondersDispatched":0,"routeFailures":0}
+[guard] A 281s tick=34416 | summary {"total":11,"stillOpen":1,"resolved":0,"lapsed":10,"totalInjured":20,"totalPropertyDamage":44,"escapes":0} | responders {"incidentsResolved":0,"incidentsLapsed":10,"respondersDispatched":0,"routeFailures":0}
+[guard] A 312s tick=36911 | summary {"total":12,"stillOpen":1,"resolved":0,"lapsed":11,"totalInjured":22,"totalPropertyDamage":49,"escapes":0} | responders {"incidentsResolved":0,"incidentsLapsed":11,"respondersDispatched":0,"routeFailures":0}
+[guard] A 343s tick=39398 | summary {"total":13,"stillOpen":1,"resolved":0,"lapsed":12,"totalInjured":24,"totalPropertyDamage":54,"escapes":0} | responders {"incidentsResolved":0,"incidentsLapsed":12,"respondersDispatched":0,"routeFailures":0}
+[guard] === END OF PHASE A (2 hired, both posted) ===
+[guard]   ticks 11911 -> 39584
+[guard]   ground truth summary: {"total":13,"stillOpen":1,"resolved":0,"lapsed":12,"totalInjured":24,"totalPropertyDamage":54,"escapes":0}
+[guard]   states: ["active=1","notified=0","responding=0","resolved=0","lapsed=12"]
+[guard]   responseMetrics: {"incidentsResolved":0,"incidentsLapsed":12,"respondersDispatched":0,"routeFailures":0}
+[guard]   triggerMetrics: {"incidentsTriggered":13,"riotsTriggered":0,"retaliationsTriggered":0}
+[guard]   every incidents.* event so far: [{"tick":9000,"type":"incidents.assault-opened"},{"tick":9610,"type":"incidents.all-clear"},{"tick":12550,"type":"incidents.assault-opened"},{"tick":13160,"type":"incidents.all-clear"},{"tick":14950,"type":"incidents.assault-opened"},{"tick":15560,"type":"incidents.all-clear"},{"tick":17350,"type":"incidents.assault-opened"},{"tick":17960,"type":"incidents.all-clear"},{"tick":19750,"type":"incidents.assault-opened"},{"tick":20360,"type":"incidents.all-clear"},{"tick":22150,"type":"incidents.assault-opened"},{"tick":22760,"type":"incidents.all-clear"},{"tick":24550,"type":"incidents.assault-opened"},{"tick":25160,"type":"incidents.all-clear"},{"tick":26950,"type":"incidents.assault-opened"},{"tick":27560,"type":"incidents.all-clear"},{"tick":29350,"type":"incidents.assault-opened"},{"tick":29960,"type":"incidents.all-clear"},{"tick":31750,"type":"incidents.assault-opened"},{"tick":32360,"type":"incidents.all-clear"},{"tick":34150,"type":"incidents.assault-opened"},{"tick":34760,"type":"incidents.all-clear"},{"tick":36550,"type":"incidents.assault-opened"},{"tick":37160,"type":"incidents.all-clear"},{"tick":38950,"type":"incidents.assault-opened"}]
+[guard]   staff panel: STAFF | GUARD COVERAGE | 2 of 2 | Covered | This prison has the guards it asks for. | WHO TO HIRE | Guard | Selected | Hire Guard · 80 | Costs 80 now and 80 a day in wages, including today. | A new guard starts unassigned. | ON DUTY | 2 held · 0 free | Guard · Sector Post | Release | Guard · Sector Post | Release | A released guard stays hired and goes back to the pool. | ON THE PAYROLL | 160 a day
+[guard]   strip: LockState.io | PRE-ALPHA | v0.0.425 · c5e24a6 | Lockstate, PRE-ALPHA build, version 0.0.425, commit c5e24a6. | 12 | PRISONERS | 6 with no bed | 0 | HIGH RISK | 2 | STAFF | 12 | COVERAGE | Covered | 1 | ROOMS | 0 | INCIDENTS | Clear | 0 | CONTRABAND | 39,160 | FUNDS | 663 | EARNED TODAY | DAY | 17 | Through the day | 51% | Pause | Play at normal speed | Fast forward | Speed 4× | ×4
+[guard]   ALERTS COLUMN, VERBATIM: A fight has broken out between two prisoners. 13× Day 17 ; Warning ; Clear this alert ; The prison is under control again — no incident is still open. 13× Day 17 ; Info ; Clear this alert ; Nothing was removed — there is no object on that tile, and none being built there. ; Warning
+[guard]   counts: {"tick":39647,"prisoners":12,"prisonersInIntake":6,"prisonersHighRisk":0,"rooms":1,"roomCapacity":6,"accommodationCapacity":6,"roomOccupants":6,"treasuryMinorUnits":39160,"stateIncomeAccruedTodayMinorUnits":686,"dailyWageBillMinorUnits":160,"unpaidWagesMinorUnits":0,"staff":2}
+[guard] after hiring 6 more: STAFF | GUARD COVERAGE | 2 of 2 | Covered | This prison has the guards it asks for. | WHO TO HIRE | Guard | Selected | Hire Guard · 80 | Costs 80 now and 80 a day in wages, including today. | A new guard starts unassigned. | ON DUTY | 5 held · 3 free | Guard · Sector Post | Release | Guard · Sector Post | Release | Guard · Incident Response | Release | and 2 more | A released guard stays hired and goes back to the pool. | ON THE PAYROLL | 640 a day
+[guard] PHASE B armed at tick 41537 with eight guards hired
+[guard] B 31s tick=44011 | summary {"total":15,"stillOpen":0,"resolved":2,"lapsed":13,"totalInjured":26,"totalPropertyDamage":63,"escapes":0} | responders {"incidentsResolved":2,"incidentsLapsed":13,"respondersDispatched":6,"routeFailures":0}
+[guard] B 62s tick=46499 | summary {"total":16,"stillOpen":0,"resolved":3,"lapsed":13,"totalInjured":26,"totalPropertyDamage":65,"escapes":0} | responders {"incidentsResolved":3,"incidentsLapsed":13,"respondersDispatched":9,"routeFailures":0}
+[guard] B 93s tick=48977 | summary {"total":17,"stillOpen":0,"resolved":4,"lapsed":13,"totalInjured":26,"totalPropertyDamage":67,"escapes":0} | responders {"incidentsResolved":4,"incidentsLapsed":13,"respondersDispatched":12,"routeFailures":0}
+[guard] B 124s tick=51471 | summary {"total":18,"stillOpen":0,"resolved":5,"lapsed":13,"totalInjured":26,"totalPropertyDamage":69,"escapes":0} | responders {"incidentsResolved":5,"incidentsLapsed":13,"respondersDispatched":14,"routeFailures":0}
+[guard] B 156s tick=54039 | summary {"total":19,"stillOpen":0,"resolved":6,"lapsed":13,"totalInjured":26,"totalPropertyDamage":71,"escapes":0} | responders {"incidentsResolved":6,"incidentsLapsed":13,"respondersDispatched":16,"routeFailures":0}
+[guard] B 188s tick=56594 | summary {"total":20,"stillOpen":0,"resolved":7,"lapsed":13,"totalInjured":26,"totalPropertyDamage":73,"escapes":0} | responders {"incidentsResolved":7,"incidentsLapsed":13,"respondersDispatched":18,"routeFailures":0}
+[guard] B 220s tick=59159 | summary {"total":21,"stillOpen":0,"resolved":8,"lapsed":13,"totalInjured":26,"totalPropertyDamage":75,"escapes":0} | responders {"incidentsResolved":8,"incidentsLapsed":13,"respondersDispatched":20,"routeFailures":0}
+[guard] B 252s tick=61714 | summary {"total":22,"stillOpen":0,"resolved":9,"lapsed":13,"totalInjured":26,"totalPropertyDamage":77,"escapes":0} | responders {"incidentsResolved":9,"incidentsLapsed":13,"respondersDispatched":22,"routeFailures":0}
+[guard] B 283s tick=64218 | summary {"total":23,"stillOpen":0,"resolved":10,"lapsed":13,"totalInjured":26,"totalPropertyDamage":79,"escapes":0} | responders {"incidentsResolved":10,"incidentsLapsed":13,"respondersDispatched":24,"routeFailures":0}
+[guard] B 315s tick=66751 | summary {"total":24,"stillOpen":0,"resolved":11,"lapsed":13,"totalInjured":26,"totalPropertyDamage":81,"escapes":0} | responders {"incidentsResolved":11,"incidentsLapsed":13,"respondersDispatched":26,"routeFailures":0}
+[guard] B 346s tick=69267 | summary {"total":25,"stillOpen":0,"resolved":12,"lapsed":13,"totalInjured":26,"totalPropertyDamage":83,"escapes":0} | responders {"incidentsResolved":12,"incidentsLapsed":13,"respondersDispatched":28,"routeFailures":0}
+[guard] === END OF PHASE B (8 hired, two posted, six spare) ===
+[guard]   ticks 41537 -> 69743
+[guard]   ground truth summary: {"total":25,"stillOpen":0,"resolved":12,"lapsed":13,"totalInjured":26,"totalPropertyDamage":83,"escapes":0}
+[guard]   states: ["active=0","notified=0","responding=0","resolved=12","lapsed=13"]
+[guard]   responseMetrics: {"incidentsResolved":12,"incidentsLapsed":13,"respondersDispatched":28,"routeFailures":0}
+[guard]   triggerMetrics: {"incidentsTriggered":25,"riotsTriggered":0,"retaliationsTriggered":0}
+[guard]   every incidents.* event so far: [{"tick":9000,"type":"incidents.assault-opened"},{"tick":9610,"type":"incidents.all-clear"},{"tick":12550,"type":"incidents.assault-opened"},{"tick":13160,"type":"incidents.all-clear"},{"tick":14950,"type":"incidents.assault-opened"},{"tick":15560,"type":"incidents.all-clear"},{"tick":17350,"type":"incidents.assault-opened"},{"tick":17960,"type":"incidents.all-clear"},{"tick":19750,"type":"incidents.assault-opened"},{"tick":20360,"type":"incidents.all-clear"},{"tick":22150,"type":"incidents.assault-opened"},{"tick":22760,"type":"incidents.all-clear"},{"tick":24550,"type":"incidents.assault-opened"},{"tick":25160,"type":"incidents.all-clear"},{"tick":26950,"type":"incidents.assault-opened"},{"tick":27560,"type":"incidents.all-clear"},{"tick":29350,"type":"incidents.assault-opened"},{"tick":29960,"type":"incidents.all-clear"},{"tick":31750,"type":"incidents.assault-opened"},{"tick":32360,"type":"incidents.all-clear"},{"tick":34150,"type":"incidents.assault-opened"},{"tick":34760,"type":"incidents.all-clear"},{"tick":36550,"type":"incidents.assault-opened"},{"tick":37160,"type":"incidents.all-clear"},{"tick":38950,"type":"incidents.assault-opened"},{"tick":39560,"type":"incidents.all-clear"},{"tick":41350,"type":"incidents.assault-opened"},{"tick":41420,"type":"incidents.all-clear"},{"tick":43750,"type":"incidents.assault-opened"},{"tick":43820,"type":"incidents.all-clear"},{"tick":46150,"type":"incidents.assault-opened"},{"tick":46220,"type":"incidents.all-clear"},{"tick":48550,"type":"incidents.assault-opened"},{"tick":48620,"type":"incidents.all-clear"},{"tick":50950,"type":"incidents.assault-opened"},{"tick":51020,"type":"incidents.all-clear"},{"tick":53350,"type":"incidents.assault-opened"},{"tick":53420,"type":"incidents.all-clear"},{"tick":55750,"type":"incidents.assault-opened"},{"tick":55820,"type":"incidents.all-clear"},{"tick":58150,"type":"incidents.assault-opened"},{"tick":58220,"type":"incidents.all-clear"},{"tick":60550,"type":"incidents.assault-opened"},{"tick":60620,"type":"incidents.all-clear"},{"tick":62950,"type":"incidents.assault-opened"},{"tick":63020,"type":"incidents.all-clear"},{"tick":65350,"type":"incidents.assault-opened"},{"tick":65420,"type":"incidents.all-clear"},{"tick":67750,"type":"incidents.assault-opened"},{"tick":67820,"type":"incidents.all-clear"}]
+[guard]   staff panel: STAFF | GUARD COVERAGE | 2 of 2 | Covered | This prison has the guards it asks for. | WHO TO HIRE | Guard | Selected | Hire Guard · 80 | Costs 80 now and 80 a day in wages, including today. | A new guard starts unassigned. | ON DUTY | 2 held · 6 free | Guard · Sector Post | Release | Guard · Sector Post | Release | A released guard stays hired and goes back to the pool. | ON THE PAYROLL | 640 a day
+[guard]   strip: LockState.io | PRE-ALPHA | v0.0.425 · c5e24a6 | Lockstate, PRE-ALPHA build, version 0.0.425, commit c5e24a6. | 11 | PRISONERS | 5 with no bed | 3 | HIGH RISK | 8 | STAFF | 11 | COVERAGE | Covered | 1 | ROOMS | 0 | INCIDENTS | Clear | 6 | CONTRABAND | 47,680 | FUNDS | 136 | EARNED TODAY | DAY | 30 | Through the day | 11% | Pause | Play at normal speed | Fast forward | Speed 4× | ×4
+[guard]   ALERTS COLUMN, VERBATIM: A fight has broken out between two prisoners. 25× Day 29 ; Warning ; Clear this alert ; The prison is under control again — no incident is still open. 25× Day 29 ; Info ; Clear this alert ; Contraband found: Phone. 4× Day 21 ; Warning ; Clear this alert ; 1 released — their sentences are served. Day 20 ; Info ; Clear this alert ; Contraband found: Currency. Day 24 ; Warning ; Clear this alert ; Contraband found: Drugs. Day 24 ; Warning ; Clear this alert ; Nothing was removed — there is no object on that tile, and none being built there. ; Warning
+[guard]   counts: {"tick":70011,"prisoners":11,"prisonersInIntake":5,"prisonersHighRisk":3,"rooms":1,"roomCapacity":6,"accommodationCapacity":6,"roomOccupants":6,"treasuryMinorUnits":47680,"stateIncomeAccruedTodayMinorUnits":226,"dailyWageBillMinorUnits":640,"unpaidWagesMinorUnits":0,"staff":8}
+[guard] incidents opened across the whole run: 26
+[guard] incidents opened across the whole run: 26
+  ✓  1 tests/browser/playtest-2026-09-03-what-a-guard-buys.playtest.ts:156:1 › what does the one ongoing cost buy that a player can see (15.4m)
+
+  Slow test file: tests/browser/playtest-2026-09-03-what-a-guard-buys.playtest.ts (15.4m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  1 passed (15.4m)

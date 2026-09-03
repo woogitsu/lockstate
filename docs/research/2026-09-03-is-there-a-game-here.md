@@ -308,7 +308,7 @@ about those eight got worse, no alert escalated, and the eight were still there
 **Instrument:** `tests/browser/playtest-2026-09-03-does-the-incidents-chip-lie.playtest.ts`
 **Run:** 2026-09-03, tree `e128023` (v0.0.422 + this branch), 11.8 wall minutes,
 green. Full log committed beside this note at
-[`2026-09-03-is-there-a-game-here/chip-run.log`](./2026-09-03-is-there-a-game-here/chip-run.log).
+[`2026-09-03-is-there-a-game-here/chip-run.txt`](./2026-09-03-is-there-a-game-here/chip-run.txt).
 **Sample:** a prison with **zero guards**, twelve prisoners, six beds, one
 zoned cell — so nothing can answer an incident and every one of them runs the
 full length of its deadline.
@@ -569,7 +569,7 @@ in the game says so. That is a prediction until the staged run reports.
 
 **Instrument:** `tests/browser/playtest-2026-09-03-can-a-player-drill-in.playtest.ts`
 **Run:** 2026-09-03, tree `c5e24a6` (v0.0.425), 1.4 wall minutes, green.
-Log at [`2026-09-03-is-there-a-game-here/drill-run.log`](./2026-09-03-is-there-a-game-here/drill-run.log).
+Log at [`2026-09-03-is-there-a-game-here/drill-run.txt`](./2026-09-03-is-there-a-game-here/drill-run.txt).
 
 `HIGH RISK` went 0 → 9 on its own in §5's run. `INCIDENTS` went 0 → 1 and back
 eleven times. `PRISONERS` fell 12 → 9. So the question is what a player can do
@@ -708,7 +708,7 @@ leading need per prisoner, rather than dividing.
 
 **Instrument:** `tests/browser/playtest-2026-09-03-what-a-guard-buys.playtest.ts`
 **Run:** 2026-09-03, tree `c5e24a6` (v0.0.425), 15.4 wall minutes, green.
-Log at [`2026-09-03-is-there-a-game-here/guard-run.log`](./2026-09-03-is-there-a-game-here/guard-run.log).
+Log at [`2026-09-03-is-there-a-game-here/guard-run.txt`](./2026-09-03-is-there-a-game-here/guard-run.txt).
 **Shape:** one prison, one session, two phases. Six beds, twelve prisoners, one
 cell. Phase A hires **exactly the two the Staff panel asks for**. Phase B hires
 six more and changes nothing else.

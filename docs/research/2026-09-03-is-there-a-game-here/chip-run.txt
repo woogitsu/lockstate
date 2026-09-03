@@ -1,0 +1,162 @@
+[2m[WebServer] [22m[2m4:49:16 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+[2m[WebServer] [22m
+[2m[WebServer] [22m  [32m[1mVITE[22m v8.2.2[39m  [2mready in [0m[1m290[22m[2m[0m ms[22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5291[22m/[39m
+
+Running 1 test using 1 worker
+
+[2m[WebServer] [22m[2m4:49:17 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
+[chip] calibration: tile (0,0) top-left = (-304, -574)
+[chip] after buying: LockState.io | PRE-ALPHA | v0.0.422 · e128023 | Lockstate, PRE-ALPHA build, version 0.0.422, commit e128023. | 0 | PRISONERS | 0 | HIGH RISK | 0 | STAFF | 0 | COVERAGE | Covered | 0 | ROOMS | 0 | INCIDENTS | Clear | 0 | CONTRABAND | 22,080 | FUNDS | 0 | EARNED TODAY | DAY | 1 | Through the day | 0% | Pause | Play at normal speed | Fast forward | Speed 1× | PAUSED
+[chip] clock after two Fast forward presses: {"mode":"running","speed":4} at tick 324
+[chip] deliveries after running: ".hud-build__deliveries: not laid out"
+[chip] wall run north: 6 command(s) -> ["12,12 north","13,12 north","14,12 north","15,12 north","16,12 north","17,12 north"]
+[chip] wall run south: 6 command(s) -> ["12,18 north","13,18 north","14,18 north","15,18 north","16,18 north","17,18 north"]
+[chip] wall run west: 6 command(s) -> ["12,12 west","12,13 west","12,14 west","12,15 west","12,16 west","12,17 west"]
+[chip] wall run east: 6 command(s) -> ["18,12 west","18,13 west","18,14 west","18,15 west","18,16 west","18,17 west"]
+[chip] queue right after the wall runs (tick 1466): "QUEUED\n12 waiting · 1 being built"
+[chip] Build panel says the queue is empty at page t=9420ms, tick 2242
+[chip] designate attempt 1 at t+7620ms: rooms=1 | panel said ["OPEN ON AT LEAST ONE SIDE","MUST BE ENCLOSED"] | band "Nothing was removed — there is no object on that tile, and none being built there."
+[chip] zoned after 1 attempt(s), 7990ms after the queue emptied: rooms=1 accommodationCapacity=0
+[chip] 6 bed order(s) + 1 toilet placed
+[chip] at tick 3640: rooms=1 roomCapacity=6 accommodationCapacity=6
+[chip] queue: ".hud-build__queue: not laid out"
+[chip] rooms panel: ROOMS
+Collapse
+ROOM TYPE AND AREA
+Staff Room
+Classroom
+Canteen
+Kitchen
+Cell
+Selected
+Holding Cell
+Laundry
+Shower Room
+Delivery Bay
+Garbage Room
+Storage Room
+Infirmary
+Reception
+Common Room
+Yard
+Security Office
+Solitary Cell
+Utility Room
+ENTER COORDINATES
+Draw on map
+Remove rooms
+DRAG A RECTANGLE ACROSS THE TILES THIS ROOM SHOULD COVER.
+NEEDS AT LEAST 2 × 3 TILES
+MUST BE ENCLOSED
+NEEDS 1 × BED
+NEEDS 1 × TOILET
+ENCLOSURE
+Walled in on every side
+[chip] admit press durations (ms): [699,822,759,833,853,771,783,782,773,789,789,826]
+[chip] admit control disabled attribute now: null
+[chip] intake panel after 12 admissions: INTAKE
+Collapse
+Admit a prisoner
+6 waiting with no bed to sleep in
+A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits until a bed is free.
+IN INTAKE
+6 of 12
+6 at Cell Assignment
+[chip] no-place warning data: 6
+[chip] status strip: LockState.io | PRE-ALPHA | v0.0.422 · e128023 | Lockstate, PRE-ALPHA build, version 0.0.422, commit e128023. | 12 | PRISONERS | 6 with no bed | 0 | HIGH RISK | 0 | STAFF | 0 | COVERAGE | Unguarded | 1 | ROOMS | 0 | INCIDENTS | Clear | 0 | CONTRABAND | 23,880 | FUNDS | 385 | EARNED TODAY | DAY | 3 | Through the day | 22% | Pause | Play at normal speed | Fast forward | Speed 4× | ×4
+[chip] staff panel with zero hires: STAFF | GUARD COVERAGE | 0 of 2 | Unguarded | Nobody is on duty. Hire 2 to cover this population. | No guard is posted here, so nobody in this sector is kept safe. | WHO TO HIRE | Guard | Selected | Hire Guard · 80 | Costs 80 now and 80 a day in wages. | A new guard starts unassigned. | ON DUTY | 0 held · 0 free | Nobody is assigned right now. | A released guard stays hired and goes back to the pool.
+[chip] armed at tick 5507. counts={"tick":5515,"prisoners":12,"prisonersInIntake":6,"prisonersHighRisk":0,"rooms":1,"roomCapacity":6,"accommodationCapacity":6,"roomOccupants":6,"treasuryMinorUnits":23880,"stateIncomeAccruedTodayMinorUnits":537,"dailyWageBillMinorUnits":0,"unpaidWagesMinorUnits":0,"staff":0}
+[chip] ground truth before the watch: {"tick":5525,"view":{"schemaVersion":1,"active":[],"resolved":{"total":0,"offset":0,"limit":50,"rows":[]},"summary":{"total":0,"stillOpen":0,"resolved":0,"lapsed":0,"totalInjured":0,"totalPropertyDamage":0,"escapes":0},"countsByState":[{"state":"active","count":0},{"state":"notified","count":0},{"state":"responding","count":0},{"state":"resolved","count":0},{"state":"lapsed","count":0}],"countsByType":[{"type":"assault","count":0},{"type":"escape-attempt","count":0},{"type":"gang-retaliation","count":0},{"type":"riot","count":0}],"triggerMetrics":{"incidentsTriggered":0,"riotsTriggered":0,"retaliationsTriggered":0},"responseMetrics":{"incidentsResolved":0,"incidentsLapsed":0,"respondersDispatched":0,"routeFailures":0}}}
+[chip] 15s tick=6772 publications=86 chip>0 at 0 of them | assault-opened events=0 | incident events=0
+[chip] 31s tick=8057 publications=118 chip>0 at 15 of them | assault-opened events=1 | incident events=2
+[chip] 47s tick=9348 publications=149 chip>0 at 30 of them | assault-opened events=1 | incident events=4
+[chip] 64s tick=10642 publications=181 chip>0 at 30 of them | assault-opened events=1 | incident events=4
+[chip] 80s tick=11953 publications=213 chip>0 at 30 of them | assault-opened events=1 | incident events=4
+[chip] 97s tick=13271 publications=245 chip>0 at 34 of them | assault-opened events=1 | incident events=5
+[chip] 113s tick=14610 publications=278 chip>0 at 45 of them | assault-opened events=1 | incident events=6
+[chip] 130s tick=15925 publications=310 chip>0 at 45 of them | assault-opened events=1 | incident events=6
+[chip] 147s tick=17281 publications=343 chip>0 at 45 of them | assault-opened events=1 | incident events=6
+[chip] 164s tick=18673 publications=376 chip>0 at 59 of them | assault-opened events=1 | incident events=8
+[chip] 181s tick=20044 publications=410 chip>0 at 59 of them | assault-opened events=1 | incident events=8
+[chip] 198s tick=21377 publications=443 chip>0 at 59 of them | assault-opened events=1 | incident events=8
+[chip] 215s tick=22730 publications=476 chip>0 at 59 of them | assault-opened events=1 | incident events=8
+[chip] 231s tick=24064 publications=509 chip>0 at 73 of them | assault-opened events=1 | incident events=10
+[chip] 248s tick=25378 publications=541 chip>0 at 73 of them | assault-opened events=1 | incident events=10
+[chip] 265s tick=26713 publications=573 chip>0 at 73 of them | assault-opened events=1 | incident events=10
+[chip] 281s tick=28025 publications=606 chip>0 at 86 of them | assault-opened events=1 | incident events=11
+[chip] 298s tick=29345 publications=638 chip>0 at 88 of them | assault-opened events=1 | incident events=12
+[chip] 314s tick=30676 publications=671 chip>0 at 88 of them | assault-opened events=1 | incident events=12
+[chip] 331s tick=32009 publications=703 chip>0 at 88 of them | assault-opened events=1 | incident events=12
+[chip] 347s tick=33320 publications=735 chip>0 at 103 of them | assault-opened events=1 | incident events=14
+[chip] 364s tick=34636 publications=768 chip>0 at 103 of them | assault-opened events=1 | incident events=14
+[chip] 381s tick=35994 publications=801 chip>0 at 103 of them | assault-opened events=1 | incident events=14
+[chip] 397s tick=37306 publications=833 chip>0 at 108 of them | assault-opened events=1 | incident events=15
+[chip] 414s tick=38635 publications=865 chip>0 at 118 of them | assault-opened events=1 | incident events=16
+[chip] 431s tick=39984 publications=898 chip>0 at 118 of them | assault-opened events=1 | incident events=16
+[chip] 447s tick=41291 publications=930 chip>0 at 118 of them | assault-opened events=1 | incident events=16
+[chip] 463s tick=42614 publications=963 chip>0 at 133 of them | assault-opened events=1 | incident events=18
+[chip] 481s tick=43992 publications=996 chip>0 at 133 of them | assault-opened events=1 | incident events=18
+[chip] 498s tick=45346 publications=1030 chip>0 at 133 of them | assault-opened events=1 | incident events=18
+[chip] 514s tick=46682 publications=1062 chip>0 at 133 of them | assault-opened events=1 | incident events=18
+[chip] 531s tick=48031 publications=1095 chip>0 at 148 of them | assault-opened events=1 | incident events=20
+[chip] 547s tick=49342 publications=1127 chip>0 at 163 of them | assault-opened events=1 | incident events=22
+[chip] 563s tick=50609 publications=1159 chip>0 at 163 of them | assault-opened events=1 | incident events=22
+[chip] 579s tick=51876 publications=1190 chip>0 at 172 of them | assault-opened events=1 | incident events=23
+[chip] 595s tick=53141 publications=1221 chip>0 at 178 of them | assault-opened events=1 | incident events=24
+[chip] 611s tick=54449 publications=1253 chip>0 at 178 of them | assault-opened events=1 | incident events=24
+[chip] === VERDICT DATA ===
+[chip] ticks 5507 -> 54571 (49064 ticks, 20.4 in-game days)
+[chip] status-counts publications observed: 1255
+[chip] every distinct activeIncidents value ever published: [0,1]
+[chip] publications with activeIncidents > 0: 178 -> [{"tick":6902,"activeIncidents":1,"activeIncidentType":"assault"},{"tick":6943,"activeIncidents":1,"activeIncidentType":"assault"},{"tick":6984,"activeIncidents":1,"activeIncidentType":"assault"},{"tick":7025,"activeIncidents":1,"activeIncidentType":"assault"},{"tick":7066,"activeIncidents":1,"activeIncidentType":"assault"},{"tick":7106,"activeIncidents":1,"activeIncidentType":"assault"},{"tick":7147,"activeIncidents":1,"activeIncidentType":"assault"},{"tick":7188,"activeIncidents":1,"activeIncidentType":"assault"},{"tick":7229,"activeIncidents":1,"activeIncidentType":"assault"},{"tick":7270,"activeIncidents":1,"activeIncidentType":"assault"},{"tick":7310,"activeIncidents":1,"activeIncidentType":"assault"},{"tick":7351,"activeIncidents":1,"activeIncidentType":"assault"},{"tick":7392,"activeIncidents":1,"activeIncidentType":"assault"},{"tick":7433,"activeIncidents":1,"activeIncidentType":"assault"},{"tick":7474,"activeIncidents":1,"activeIncidentType":"assault"},{"tick":8330,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":8371,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":8412,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":8453,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":8493,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":8533,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":8574,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":8615,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":8656,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":8696,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":8737,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":8778,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":8819,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":8860,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":8900,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":13106,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":13147,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":13188,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":13229,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":13270,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":13310,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":13351,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":13392,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":13433,"activeIncidents":1,"activeIncidentType":"riot"},{"tick":13474,"activeIncidents":1,"activeIncidentType":"riot"}]
+[chip] incidents.* events (24): [{"tick":6900,"type":"incidents.assault-opened"},{"tick":7510,"type":"incidents.all-clear"},{"tick":8300,"type":"incidents.riot-opened"},{"tick":8910,"type":"incidents.all-clear"},{"tick":13100,"type":"incidents.riot-opened"},{"tick":13710,"type":"incidents.all-clear"},{"tick":17900,"type":"incidents.riot-opened"},{"tick":18510,"type":"incidents.all-clear"},{"tick":22700,"type":"incidents.riot-opened"},{"tick":23310,"type":"incidents.all-clear"},{"tick":27500,"type":"incidents.riot-opened"},{"tick":28110,"type":"incidents.all-clear"},{"tick":32300,"type":"incidents.riot-opened"},{"tick":32910,"type":"incidents.all-clear"},{"tick":37100,"type":"incidents.riot-opened"},{"tick":37710,"type":"incidents.all-clear"},{"tick":41900,"type":"incidents.riot-opened"},{"tick":42510,"type":"incidents.all-clear"},{"tick":46700,"type":"incidents.riot-opened"},{"tick":47310,"type":"incidents.all-clear"},{"tick":48000,"type":"incidents.escape-attempt-opened"},{"tick":48610,"type":"incidents.escape-succeeded"},{"tick":51500,"type":"incidents.riot-opened"},{"tick":52110,"type":"incidents.all-clear"}]
+[chip] assault-opened ticks: [6900]
+[chip]   assault opened at tick 6900: 15 publication(s) in [6900,7501] -> activeIncidents [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+[chip] --- the refuting sample: 37 pull(s) of hud/incidents beside the chip ---
+[chip]   tick 6805: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=0] | chip published 0
+[chip]   tick 8080: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=1] | chip published 0
+[chip]   tick 9370: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=2] | chip published 0
+[chip]   tick 10676: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=2] | chip published 0
+[chip]   tick 11994: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=2] | chip published 0
+[chip]   tick 13316: IncidentLog stillOpen=1 [active=1,notified=0,responding=0,resolved=0,lapsed=2] | chip published 1
+[chip]   tick 14641: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=3] | chip published 0
+[chip]   tick 15966: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=3] | chip published 0
+[chip]   tick 17350: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=3] | chip published 0
+[chip]   tick 18737: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=4] | chip published 0
+[chip]   tick 20094: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=4] | chip published 0
+[chip]   tick 21428: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=4] | chip published 0
+[chip]   tick 22771: IncidentLog stillOpen=1 [active=1,notified=0,responding=0,resolved=0,lapsed=4] | chip published 0
+[chip]   tick 24100: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=5] | chip published 0
+[chip]   tick 25430: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=5] | chip published 0
+[chip]   tick 26749: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=5] | chip published 0
+[chip]   tick 28067: IncidentLog stillOpen=1 [active=1,notified=0,responding=0,resolved=0,lapsed=5] | chip published 1
+[chip]   tick 29388: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=6] | chip published 0
+[chip]   tick 30719: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=6] | chip published 0
+[chip]   tick 32044: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=6] | chip published 0
+[chip]   tick 33362: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=7] | chip published 0
+[chip]   tick 34693: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=7] | chip published 0
+[chip]   tick 36032: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=7] | chip published 0
+[chip]   tick 37352: IncidentLog stillOpen=1 [active=1,notified=0,responding=0,resolved=0,lapsed=7] | chip published 1
+[chip]   tick 38693: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=8] | chip published 0
+[chip]   tick 40014: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=8] | chip published 0
+[chip]   tick 41334: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=8] | chip published 0
+[chip]   tick 42662: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=9] | chip published 0
+[chip]   tick 44036: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=9] | chip published 0
+[chip]   tick 45402: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=9] | chip published 0
+[chip]   tick 46727: IncidentLog stillOpen=1 [active=1,notified=0,responding=0,resolved=0,lapsed=9] | chip published 0
+[chip]   tick 48062: IncidentLog stillOpen=1 [active=1,notified=0,responding=0,resolved=0,lapsed=10] | chip published 0
+[chip]   tick 49362: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=11] | chip published 0
+[chip]   tick 50634: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=11] | chip published 0
+[chip]   tick 51902: IncidentLog stillOpen=1 [active=1,notified=0,responding=0,resolved=0,lapsed=11] | chip published 1
+[chip]   tick 53182: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=12] | chip published 0
+[chip]   tick 54502: IncidentLog stillOpen=0 [active=0,notified=0,responding=0,resolved=0,lapsed=12] | chip published 0
+[chip] ground truth at the end: {"tick":54560,"view":{"schemaVersion":1,"active":[],"resolved":{"total":12,"offset":0,"limit":50,"rows":[{"incidentId":"incident.assault.1","type":"assault","sectorId":"security-sector.prison","state":"lapsed","terminal":true,"severity":3,"severityBar":{"permille":300,"filled":3,"segments":10},"participantCount":2,"startedAtTick":6900,"ageTicks":47660,"outcome":{"injuredCount":2,"propertyDamage":3,"propertyDamageBar":{"permille":300,"filled":3,"segments":10},"escaped":false},"requiredResponders":2},{"incidentId":"incident.escape-attempt.11","type":"escape-attempt","sectorId":"security-sector.prison","state":"lapsed","terminal":true,"severity":7,"severityBar":{"permille":700,"filled":7,"segments":10},"participantCount":1,"startedAtTick":48000,"ageTicks":6560,"outcome":{"injuredCount":1,"propertyDamage":7,"propertyDamageBar":{"permille":700,"filled":7,"segments":10},"escaped":true},"requiredResponders":4},{"incidentId":"incident.riot.10","type":"riot","sectorId":"security-sector.prison","state":"lapsed","terminal":true,"severity":10,"severityBar":{"permille":1000,"filled":10,"segments":10},"participantCount":10,"startedAtTick":46700,"ageTicks":7860,"outcome":{"injuredCount":10,"propertyDamage":10,"propertyDamageBar":{"permille":1000,"filled":10,"segments":10},"escaped":false},"requiredResponders":5},{"incidentId":"incident.riot.12","type":"riot","sectorId":"security-sector.prison","state":"lapsed","terminal":true,"severity":10,"severityBar":{"permille":1000,"filled":10,"segments":10},"participantCount":9,"startedAtTick":51500,"ageTicks":3060,"outcome":{"injuredCount":9,"propertyDamage":10,"propertyDamageBar":{"permille":1000,"filled":10,"segments":10},"escaped":false},"requiredResponders":5},{"incidentId":"incident.riot.2","type":"riot","sectorId":"security-sector.prison","state":"lapsed","terminal":true,"severity":7,"severityBar":{"permille":700,"filled":7,"segments":10},"participantCount":12,"startedAtTick":8300,"ageTicks":46260,"outcome":{"injuredCount":12,"propertyDamage":7,"propertyDamageBar":{"permille":700,"filled":7,"segments":10},"escaped":false},"requiredResponders":4},{"incidentId":"incident.riot.3","type":"riot","sectorId":"security-sector.prison","state":"lapsed","terminal":true,"severity":10,"severityBar":{"permille":1000,"filled":10,"segments":10},"participantCount":12,"startedAtTick":13100,"ageTicks":41460,"outcome":{"injuredCount":12,"propertyDamage":10,"propertyDamageBar":{"permille":1000,"filled":10,"segments":10},"escaped":false},"requiredResponders":5},{"incidentId":"incident.riot.4","type":"riot","sectorId":"security-sector.prison","state":"lapsed","terminal":true,"severity":10,"severityBar":{"permille":1000,"filled":10,"segments":10},"participantCount":12,"startedAtTick":17900,"ageTicks":36660,"outcome":{"injuredCount":12,"propertyDamage":10,"propertyDamageBar":{"permille":1000,"filled":10,"segments":10},"escaped":false},"requiredResponders":5},{"incidentId":"incident.riot.5","type":"riot","sectorId":"security-sector.prison","state":"lapsed","terminal":true,"severity":10,"severityBar":{"permille":1000,"filled":10,"segments":10},"participantCount":12,"startedAtTick":22700,"ageTicks":31860,"outcome":{"injuredCount":12,"propertyDamage":10,"propertyDamageBar":{"permille":1000,"filled":10,"segments":10},"escaped":false},"requiredResponders":5},{"incidentId":"incident.riot.6","type":"riot","sectorId":"security-sector.prison","state":"lapsed","terminal":true,"severity":10,"severityBar":{"permille":1000,"filled":10,"segments":10},"participantCount":12,"startedAtTick":27500,"ageTicks":27060,"outcome":{"injuredCount":12,"propertyDamage":10,"propertyDamageBar":{"permille":1000,"filled":10,"segments":10},"escaped":false},"requiredResponders":5},{"incidentId":"incident.riot.7","type":"riot","sectorId":"security-sector.prison","state":"lapsed","terminal":true,"severity":10,"severityBar":{"permille":1000,"filled":10,"segments":10},"participantCount":12,"startedAtTick":32300,"ageTicks":22260,"outcome":{"injuredCount":12,"propertyDamage":10,"propertyDamageBar":{"permille":1000,"filled":10,"segments":10},"escaped":false},"requiredResponders":5},{"incidentId":"incident.riot.8","type":"riot","sectorId":"security-sector.prison","state":"lapsed","terminal":true,"severity":10,"severityBar":{"permille":1000,"filled":10,"segments":10},"participantCount":12,"startedAtTick":37100,"ageTicks":17460,"outcome":{"injuredCount":12,"propertyDamage":10,"propertyDamageBar":{"permille":1000,"filled":10,"segments":10},"escaped":false},"requiredResponders":5},{"incidentId":"incident.riot.9","type":"riot","sectorId":"security-sector.prison","state":"lapsed","terminal":true,"severity":10,"severityBar":{"permille":1000,"filled":10,"segments":10},"participantCount":11,"startedAtTick":41900,"ageTicks":12660,"outcome":{"injuredCount":11,"propertyDamage":10,"propertyDamageBar":{"permille":1000,"filled":10,"segments":10},"escaped":false},"requiredResponders":5}]},"summary":{"total":12,"stillOpen":0,"resolved":0,"lapsed":12,"totalInjured":117,"totalPropertyDamage":107,"escapes":1},"countsByState":[{"state":"active","count":0},{"state":"notified","count":0},{"state":"responding","count":0},{"state":"resolved","count":0},{"state":"lapsed","count":12}],"countsByType":[{"type":"assault","count":1},{"type":"escape-attempt","count":1},{"type":"gang-retaliation","count":0},{"type":"riot","count":10}],"triggerMetrics":{"incidentsTriggered":12,"riotsTriggered":10,"retaliationsTriggered":0},"responseMetrics":{"incidentsResolved":0,"incidentsLapsed":12,"respondersDispatched":0,"routeFailures":0}}}
+[chip] alerts at the end: A fight has broken out between two prisoners. Day 3 ; Warning ; Clear this alert ; The prison is under control again — no incident is still open. 11× Day 22 ; Info ; Clear this alert ; A riot has broken out — 12 prisoners have stopped taking orders. 7× Day 16 ; Critical ; Clear this alert ; A riot has broken out — 11 prisoners have stopped taking orders. Day 18 ; Critical ; Clear this alert ; A riot has broken out — 10 prisoners have stopped taking orders. Day 20 ; Critical ; Clear this alert ; A prisoner is trying to break out. Day 21 ; Critical ; Clear this alert ; Carla Duarte broke out — no guard reached them in time. Day 21 ; Critical ; Clear this alert ; A riot has broken out — 9 prisoners have stopped taking orders. Day 22 ; Critical ; Clear this alert ; Nothing was removed — there is no object on that tile, and none being built there. ; Warning
+[chip] strip at the end: LockState.io | PRE-ALPHA | v0.0.422 · e128023 | Lockstate, PRE-ALPHA build, version 0.0.422, commit e128023. | 9 | PRISONERS | 3 with no bed | 9 | HIGH RISK | 0 | STAFF | 0 | COVERAGE | Unguarded | 1 | ROOMS | 0 | INCIDENTS | Clear | 0 | CONTRABAND | 47,800 | FUNDS | 808 | EARNED TODAY | DAY | 23 | Through the day | 74% | Pause | Play at normal speed | Fast forward | Speed 4× | ×4
+  ✓  1 tests/browser/playtest-2026-09-03-does-the-incidents-chip-lie.playtest.ts:194:1 › does the INCIDENTS chip say so while a fight is open (11.8m)
+
+  Slow test file: tests/browser/playtest-2026-09-03-does-the-incidents-chip-lie.playtest.ts (11.8m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  1 passed (11.8m)
