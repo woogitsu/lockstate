@@ -175,6 +175,15 @@ review in the same form `action.kitchen-work`'s `'Kitchen Duty'` has carried
 since #532. `git log -S` puts it on `main` in `cd41a1d6`, the commit that
 accepted ADR 0093 (#863).
 
+**And the owner has since settled it as more than a draft.** `docs/adr/STATUS-QUEUE.md`
+at its v0.0.407 re-anchor (merged into `main` as `b995be09`, after this branch
+was cut) says: *"The owner has since confirmed *Errand* as the label, which
+settles that sentence and leaves two"*, naming the branch that carries the
+ruling. So the file comment beside `'action.carry': 'Errand'` still reads as a
+draft and the word itself is no longer awaiting a call. **The wrapper sentence
+is a different question and is not covered by that ruling** — see the paragraph
+on `Heading to Errand` below.
+
 **Correcting a record in this directory:**
 `docs/research/2026-09-03-what-the-owner-still-owes.md` says *"Not landed. PR
 #863 is open. `action.carry` does not exist in `src/`; `DEFAULT_ACTIONS` still
