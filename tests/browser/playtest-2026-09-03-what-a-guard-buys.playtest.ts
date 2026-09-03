@@ -247,12 +247,23 @@ test('what does the one ongoing cost buy that a player can see', async ({ page }
   await watch('A', PHASE_MS);
   await reportPhase('A (2 hired, both posted)', phaseAStart);
 
-  // ---- phase B: four more, so the responder pool is not empty ----------
-  await hireMore(4);
+  /*
+   * ---- phase B: six more, priced off the zero-guard run's ground truth ----
+   *
+   * Six and not four. The zero-guard probe's `hud/incidents` rows carry
+   * `requiredResponders` per incident, and they are **2** for an assault
+   * (severity 3), **4** for an escape attempt (severity 7) and **5** for a
+   * riot (severity 10) -- `Math.max(1, ceil(severity * 0.5))`. Two of the
+   * roster are held on the post, so answering the riot that dominates that
+   * run needs five *spare* on top of them. Four more would have left four
+   * spare and refuted the phase for an arithmetic reason rather than a
+   * behavioural one.
+   */
+  await hireMore(6);
   const phaseBStart = await currentTick(page);
-  log(`PHASE B armed at tick ${phaseBStart} with six guards hired`);
+  log(`PHASE B armed at tick ${phaseBStart} with eight guards hired`);
   await watch('B', PHASE_MS);
-  await reportPhase('B (6 hired, two posted, four spare)', phaseBStart);
+  await reportPhase('B (8 hired, two posted, six spare)', phaseBStart);
 
   const finalPull = await pullIncidents(page);
   log(`incidents opened across the whole run: ${finalPull.view?.summary.total ?? 'UNREADABLE'}`);
