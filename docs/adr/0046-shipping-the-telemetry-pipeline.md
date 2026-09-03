@@ -20,6 +20,33 @@ and cannot, until somebody sets two deployment variables** — which is the whol
 point of decision 2 and is the state every build in this repository is in.
 Accepting or rejecting this ADR changes no behaviour on its own.
 
+**Updated 2026-09-03, and the status above is unchanged on purpose.** Two of
+the three things this section named as outside a delegation have since been
+settled by the owner, and the third has not:
+
+- **The unauthenticated write path.** Settled, before any of it was built, by
+  [ADR 0008](./0008-trusted-service-boundary.md)'s *"Amendment, 2026-08-27: §3
+  is scoped by authority, so telemetry ingest needs no exception"* — the owner
+  chose the by-authority reading of §3. Open question 2 records what that
+  amendment does and does not buy.
+- **Where the data goes.** Settled on 2026-09-03: the owner authorised this
+  project's first server entry point, for this ingest and for nothing else.
+  `AGENTS.md` carries their words and the date. **A receiving half now exists**
+  — `src/worker/`, with the threat model in its own docblock — and it stores
+  nothing: the table, the insert function and the least-privilege role it would
+  write through are `supabase/migrations/`, which is still the owner's, so a
+  well-formed batch is refused with `destination-unconfigured` before its body
+  is read.
+- **The data-protection obligations.** Not settled. Decision 8's list is
+  untouched and every item on it is still open. Nothing about the entry point
+  makes any of them less owed; what it does mean is that they stop being
+  hypothetical the moment a destination and a path are configured together.
+
+So this ADR is still `Proposed`, and what changed is that two of its
+preconditions are met and its receiving half is built and inert. **Nothing here
+is a self-approval**: each bullet above records a decision somebody else took,
+with the document that carries it.
+
 **Drafted as `XXXX` under the central-assignment rule** (`docs/AGENT_WORKFLOW.md`
 §2) and assigned 0046 on landing, the next free number after 0042, 0043 and
 0045 were taken in the same integration pass. The draft did not edit
@@ -83,6 +110,20 @@ an IP address; a player-chosen prison name; an actor name from the name pool; or
 a prison id, because #338 records that prison ids are not UUIDs. `errorMessage`
 and `frames` are free text and are the two attributes most likely to carry any
 of them.
+
+**Corrected 2026-09-03: the prison-id item is wrong, and in the safe
+direction.** #338 is the issue in which prison ids *became* UUIDs, not one
+recording that they are not: it found `src/ui/save-panel.ts` minting
+`prison-${Date.now().toString(36)}` against a `prisons.id` column of type
+`uuid`, and the fix made the producer mint a UUID.
+`tests/foundation/cloud-prison-id-domain-contract.test.ts` now pins the
+producer's output against the DDL. So `redactText`'s UUID pattern **does**
+catch a prison id, and the ingest built for this ADR refuses such a batch
+outright — `tests/unit/worker-telemetry-ingest.test.ts` asserts that a prison
+id in an attribute is answered `unredacted`, identically for an id belonging to
+somebody else and one belonging to nobody. The other three items are unchanged
+and are the ones that matter: a prison *name* is player-chosen free text and
+redaction genuinely does not catch one.
 
 This is not a new finding and it is not a reason to withhold the pipeline —
 ADR 0010 already says redaction is *"a last line of defence, not the mechanism"*
@@ -469,8 +510,33 @@ All of it blocks the deployment.
 1. **Where does the path terminate?** The owner's. `wrangler.jsonc` today
    declares Static Assets with no Worker script (`main`), so **no route answers
    any path** and the configuration cannot usefully be set until one exists.
+
+   **Answered by the owner, 2026-09-03.** It terminates in a same-origin
+   Cloudflare Worker on this project's own domain, which is the first of the
+   three shapes decision 1 lists and the one that leaves `connect-src 'self'`
+   untouched. `wrangler.jsonc` now declares `main` and `src/worker/` holds the
+   handler; `AGENTS.md`'s "The owner's standing mandate" carries the owner's
+   words and the date, and `docs/DEPLOYMENT.md`'s "What actually landed"
+   answers the nine pre-merge items. **The sentence above is left as it stood**
+   because it was true when written, and the second half of it names what the
+   answer changes: a path *can* now be set. Nothing sets one — the route is
+   claimed only when a Worker binding names it, and no environment does.
 2. **Does ADR 0008 gain an unauthenticated-ingest exception, or does telemetry
    not deploy?** Decision 7 item 6. Not resolvable inside an implementation.
+
+   **Answered elsewhere, and neither branch of this question is what happened.**
+   [ADR 0008](./0008-trusted-service-boundary.md)'s *"Amendment, 2026-08-27: §3
+   is scoped by authority, so telemetry ingest needs no exception"* records the
+   owner choosing the by-authority reading of §3: it binds mutation paths over
+   state §2's authority table assigns to Z2, an ingest is entrusted to decide
+   nothing, so the path falls **outside** §3 and no exception is carved. That
+   amendment also adds threat **T13** for the price of permitting it, states in
+   part 4 that steps 3 and 5 bind anyway — server-side validation and
+   append-only storage — and states in part 6 that §3 step 1's only enforcement
+   sweeps database roles and is *"structurally blind to unauthenticated HTTP
+   ingest"*, so nothing red will appear if this boundary is later got wrong.
+   **This question is therefore closed and was closed before the ingest was
+   built**, which is the order decision 7 item 6 asked for.
 3. **Who is the controller, and where does the privacy notice live?**
 4. **Should `TELEMETRY_CONSENT_VERSION` be raised by this change?** Argued no:
    nothing new is collected in kind — the same six registered events with the

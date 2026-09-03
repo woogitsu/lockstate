@@ -147,6 +147,24 @@ project's first server-side execution surface, which the owner has directed
 lands together with the ingest as one reviewed change; `docs/DEPLOYMENT.md`
 carries the pre-merge checklist.
 
+**That surface landed on 2026-09-03**, authorised by the owner for this ingest
+and for nothing else, and the checklist is worked through in
+`docs/DEPLOYMENT.md`'s "What actually landed". Three consequences for the design
+this ADR states, and none of them loosens it. The endpoint takes the sample rate
+from **its own copy of the registry** and stamps its own arrival time, so
+neither of the two body fields a receiver might read is trusted — which is what
+makes the *"the applied rate travels with the event so the receiver can weight
+correctly instead of guessing"* sentence above safe against a sender that is not
+this client. The endpoint **logs nothing at all**, which is how "do not retain
+an IP address" is met: every request to a Worker carries one, and the only
+reliable way not to build an access log is not to write to it. And **consent is
+the one control the server cannot check**, because a decision lives in the
+browser's key/value store and the envelope's `consentVersion` is the client's
+claim about its own state; the admission function is called with no consent
+predicate rather than with a gate that permits everything, so the omission is
+visible in the call rather than hidden in a stub. What still does not exist is a
+destination, so nothing is collected; retention and deletion remain unenforced.
+
 ### Release correlation without public source maps
 `vite.config.ts` keeps `sourcemap: false` for shipped assets. Diagnostics
 carry `buildVersion` (and optionally a commit/version id) so a stack frame

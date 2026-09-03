@@ -1352,7 +1352,22 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * `hud.security.hire-unassigned` immediately below. The clamp sentence above
    * is left standing because it is still why the two are two keys.
    */
-  'hud.security.hire-hint': 'Costs {total} now and {wage} a day in wages.',
+  /*
+   * **"including today" is the owner's ruling of 2026-09-03, and it exists
+   * because this sentence was false on the first press of a new game.**
+   * `src/simulation/staff/hiring.ts` says in its own words that "a guard
+   * engaged at any point during a day costs two days' wage for that day",
+   * so hiring one guard cost 160 on day one -- measured, 25,000 -> 24,920 at
+   * the press and -> 24,840 at tick 2,408, with `DAY_LENGTH_TICKS` 2,400 and
+   * no other command sent (issue #868). The sentence read as 80 today and 80
+   * tomorrow.
+   *
+   * Put to the owner as three shapes: pro-rate the charge so the old sentence
+   * becomes true, replace the sentence, or add the two words that make it
+   * true. They chose the third, which leaves the mechanic alone -- so this is
+   * a wording change and not a balance one, deliberately.
+   */
+  'hud.security.hire-hint': 'Costs {total} now and {wage} a day in wages, including today.',
   /*
    * The same sentence, on the other control that spends money, and byte-identical
    * to `hud.build.buy-shortfall` above -- see that entry for the ruling, the date,
@@ -1642,6 +1657,22 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.refusal.zone-room': 'The room was not designated — the request was refused.',
   'hud.refusal.unzone-room': 'Nothing was removed — the request was refused.',
   'hud.refusal.admit-prisoner': 'Nobody was admitted — the request was refused.',
+  /*
+   * **The owner's ruling of 2026-09-03.** Until it, a refused Admit said only
+   * the generic line above while the real reason went to `console.warn` --
+   * `src/main.ts` threw a plain `Error` whose message is diagnostic English
+   * that ADR 0011 says deliberately never reaches a player, so nothing on
+   * screen named the missing thing (issue #869, whose first filing prescribed
+   * the wrong fix and was corrected).
+   *
+   * Chosen over "there is no bed to put anybody in" and over "build a cell
+   * with a bed first": the first names the object rather than the state, and
+   * the second is an instruction where every other refusal here describes a
+   * state. **The em dash is this file's own punctuation for a refusal** and
+   * matches every sibling; the ruling was written with a hyphen only because
+   * the question that carried it was.
+   */
+  'hud.refusal.admit-prisoner-no-room': 'Nobody was admitted — this prison has no room to hold anybody.',
   'hud.refusal.cancel-build-order': 'The order is still queued — the request was refused.',
   // The money is the point, so the sentence leads with it: this line is painted
   // when the host refuses before submitting, which for a cancellation means

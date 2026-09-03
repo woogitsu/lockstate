@@ -1222,6 +1222,7 @@ export const HUD_MESSAGE_KEY = {
    * prison in the same state and there is nothing different to do about them.
    */
   refusalAdmitPrisoner: 'hud.refusal.admit-prisoner',
+  refusalAdmitPrisonerNoRoom: 'hud.refusal.admit-prisoner-no-room',
   refusalCancelBuildOrder: 'hud.refusal.cancel-build-order',
   /**
    * A cancelled purchase the host refused before it was sent -- which here means
