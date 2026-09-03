@@ -580,6 +580,13 @@ test.describe('the whole screen at once', () => {
     };
 
     log('===== ACT 4 / number one: FUNDS, against a purchase =====');
+    // The Build tab first, and this is the same trap act 3 fell into: `buy`
+    // addresses `.hud-build__list`, `buildAndPopulate` leaves the Security tab
+    // open when it hires, and a Playwright click has no default timeout — so
+    // the act sat on an invisible control until the test timeout and measured
+    // nothing at all.
+    await tab(page, 'build').click();
+    await page.waitForTimeout(400);
     await pauseClock(page);
     await snapshot('paused, before the purchase');
     await buy(page, 'bed-wooden', 3);
