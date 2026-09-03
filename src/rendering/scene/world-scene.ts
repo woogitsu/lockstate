@@ -359,11 +359,14 @@ export class WorldScene extends Phaser.Scene {
      *
      * **Measured, at 1440x900, by
      * `tests/browser/playtest-878-what-a-drag-under-the-hud-reaches.playtest.ts`
-     * on the tree immediately before this change.** Seventy drags, each one
+     * across `a9219cfc` and `7bafc3a9` -- this branch's gate commit and the
+     * commit that added this listener to it, so the listener is the only
+     * difference between the two trees.** Seventy drags, each one
      * started on reachable canvas and pulled to the far edge of the visible
      * world: **1082 tiles drawn, 901 walls placed -- 83.3%, and 43 of the 70
      * drags built less than they drew**, the worst of them one wall for
-     * fourteen tiles. The same run on this tree reports 100% and no shortfall.
+     * fourteen tiles. With the listener the same run reports 1082 of 1082 --
+     * 100%, and not one of the seventy drags short.
      *
      * **Reachability is a different measurement, it does not move, and it is a
      * curve rather than a number.** How much of the world takes a pointer at
