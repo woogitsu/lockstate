@@ -695,3 +695,174 @@ is an inference and is not measured. What *is* measured is the gap between
 1,196 and 2,700, and the gap is the finding. A successor wanting the
 per-prisoner truth should read `hud/prisoner-roster`, which publishes the
 leading need per prisoner, rather than dividing.
+
+## 9. The best finding in this pass: the game's only staffing advice buys coverage and buys no response
+
+**Instrument:** `tests/browser/playtest-2026-09-03-what-a-guard-buys.playtest.ts`
+**Run:** 2026-09-03, tree `c5e24a6` (v0.0.425), 15.4 wall minutes, green.
+Log at `playtest-out/guard-run.log`.
+**Shape:** one prison, one session, two phases. Six beds, twelve prisoners, one
+cell. Phase A hires **exactly the two the Staff panel asks for**. Phase B hires
+six more and changes nothing else.
+
+### The two phases, side by side
+
+| | **phase A** — 2 hired | **phase B** — 8 hired |
+| --- | --- | --- |
+| ticks watched | 11,911 → 39,584 (11.5 days) | 41,537 → 69,743 (11.8 days) |
+| Staff panel headline | `2 of 2 · Covered` | `2 of 2 · Covered` |
+| the sentence under it | *"This prison has the guards it asks for."* | *"This prison has the guards it asks for."* |
+| `ON DUTY` | **`2 held · 0 free`** | **`2 held · 6 free`** |
+| COVERAGE chip | `12 · Covered` | `11 · Covered` |
+| incidents in the phase | 13 | 12 |
+| **`incidentsResolved`** | **0** | **12** |
+| `incidentsLapsed` | 12 | 1 |
+| **`respondersDispatched`** | **0** | **28** |
+| `routeFailures` | 0 | 0 |
+| `totalInjured` (cumulative) | 24 | 26 |
+| CONTRABAND chip | **0** | **6** |
+| payroll | 160 a day | 640 a day |
+
+### `HIDDEN` — what the numbers say
+
+**In phase A the prison answered nothing.** Thirteen fights, twelve of them run
+to the end of their deadline, twenty-four prisoners injured, and
+`respondersDispatched: 0` — not one guard was ever sent to one incident. And
+throughout it the game's staffing readout said `2 of 2 · Covered · This prison
+has the guards it asks for.`
+
+**In phase B, with six more hires and nothing else changed, it answered almost
+everything.** Twelve incidents, twelve resolved, one lapsed,
+`respondersDispatched: 28`, and only two further injuries.
+
+**And the readout is character-for-character the same in both.** `2 of 2 ·
+Covered · This prison has the guards it asks for` is what the player is shown
+in the state where every incident is contained *and* in the state where none of
+them is. The one difference visible anywhere is a single line further down the
+same panel — `2 held · 0 free` against `2 held · 6 free` — and nothing in the
+game says what a free guard is for. The only copy near it is
+`hud.security.held-hint`, *"A released guard stays hired and goes back to the
+pool."*
+
+The mechanism, and it is not a bug in any of its parts:
+
+- `DeploymentSystem.assignUnassignedGuards` posts guards up to the sector
+  requirement, and `requiredGuardCountFor`
+  (`src/simulation/security/deployment-system.ts:100`) scales that requirement
+  with occupancy. Twelve prisoners ask for two.
+- `IncidentResponseSystem.claimableResponders`
+  (`src/simulation/incidents/response-system.ts:453`) needs
+  `requiredResponderCount(severity)` guards and draws them from
+  `claimableGuardIds`, which is **`unassignedGuardIds()`** filtered by post
+  eligibility (`src/simulation/security/post-eligibility.ts:103`).
+
+A guard on a post is not unassigned. So the number the panel asks for is
+exactly the number that leaves the responder pool empty, and each system is
+right about its own half.
+
+**Phase B's hire is also the first thing that switched contraband on.** The
+CONTRABAND chip read `0` for the whole of phase A and for the whole of §5's
+zero-guard run, and reached `6` in phase B — *"Contraband found: Phone. 4×"*,
+*"Currency"*, *"Drugs"*. `SearchSystem` draws from the same free-guard pool, so
+one undocumented threshold gates two entire subsystems.
+
+**What a fix must convey** — the wording, the presentation and whether to
+change the *numbers* instead of the words are all the owner's: that the guards
+a prison "asks for" are the ones who stand posts, that answering an incident
+needs guards who are not standing one, and roughly how many. This run prices
+it: `requiredResponders` in the ground truth was **2** for an assault
+(severity 3), **4** for an escape attempt (severity 7) and **5** for a riot
+(severity 10). Nothing here proposes a sentence.
+
+### The refuting sample, and it is the important part
+
+The phases are consecutive in time, so **the obvious alternative explanation is
+that the flip is age, not the hire.** Three separate readings kill it:
+
+1. **`respondersDispatched` went 0 → 28 across the hire, and
+   `claimableResponders` is its only producer.** Phase A ran 27,673 ticks and
+   thirteen incidents without dispatching a single guard. A time effect does not
+   produce a counter that stays at exactly zero for eleven and a half in-game
+   days and then moves twenty-eight times in the next eleven.
+2. **`routeFailures: 0` in both phases**, so this is not guards failing to walk
+   somewhere in one phase and succeeding in the other.
+3. **The trigger conditions did not change.** Phase A's assaults opened at
+   ticks 9000, 12550, 14950, 17350, 19750, 22150, 24550, 26950, 29350, 31750,
+   34150, 36550, 38950 — eleven consecutive gaps of exactly **2,400**, which is
+   `DEFAULT_SECTOR_QUIET_TICKS_AFTER_ASSAULT`. Phase B kept producing them at
+   the same rate (`incidentsTriggered` 13 → 25 over a comparable window). The
+   prison was equally hot on both sides; only the answer changed.
+
+### And §6.1's finding, now with both arms of the comparison
+
+Phase B's alerts column, verbatim, after twenty-five fights of which **twelve
+were contained by guards and thirteen were not**:
+
+```
+A fight has broken out between two prisoners.        25×  Day 29  Warning
+The prison is under control again — no incident is still open.  25×  Day 29  Info
+```
+
+Two rows and two counts, both reading 25. Phase A's column, after thirteen
+fights of which **zero** were contained:
+
+```
+A fight has broken out between two prisoners.        13×  Day 17  Warning
+The prison is under control again — no incident is still open.  13×  Day 17  Info
+```
+
+The same two sentences with different numbers. This is §6.1 measured from both
+sides in one prison: **nothing the player is shown distinguishes a prison whose
+guards contain every fight from one whose guards contain none of them.**
+
+### `TASTE` — and here the money finally does something
+
+Phase B's payroll is **640 a day** against income the same run measured at
+roughly 725 a day (FUNDS 39,160 → 47,680 over 11.75 days). That is the first
+state in either run where the wage bill is the same order as the income, and it
+arrives exactly when the player buys the thing that makes the security half
+function. So the trade-off §3 went looking for and did not find *does* exist —
+it is "pay 88% of your income to make incidents matter" — and it is unreachable
+because nothing tells the player the purchase exists.
+
+## 10. So: is there a game here?
+
+**There is a simulation here and about a third of a game, and the missing part
+is the player's hands rather than the model.**
+
+The model works. Across §5 and §9 this pass watched, in a running browser: a
+per-prisoner flashpoint score open assaults; unanswered incidents injure
+everyone in them, damage property, and write disciplinary points with a
+surcharge for lapsing; those records reclassify prisoners (`HIGH RISK` 0 → 9 in
+§5) onto a restricted timetable; a state grant that pays five times more for a
+prisoner whose needs are served than for one whose are not; a responder pipeline
+that dispatches twenty-eight guards and contains twelve of thirteen incidents
+the moment the pool has anybody in it; and a contraband system that switches on
+with it. None of that is stubbed.
+
+What is missing is every place a player would reach in:
+
+- **the loop closes on a control that does not exist.** Incidents →
+  disciplinary record → risk tier → *the High Risk timetable*, and the Regime
+  panel has one button on it and it says `Collapse` (§7).
+- **the one purchase that makes the security half work is unnamed**, and the
+  one readout that could name it says the same thing whether you have made it
+  or not (§9).
+- **the one economic loop that already rewards ordinary play is unmeasured
+  on screen** (§8).
+- **nothing that happens can be inspected.** No incident surface on any tab,
+  no prisoner detail, and nine strip chips that are `div`s (§6.2, §7).
+
+That ordering is also the recommendation, and none of these is new
+architecture: three of the four are a projection that already exists finding a
+panel, and the fourth is a command for a timetable the panel already draws.
+
+**The weakest claim in this note, named.** Every measurement here comes from one
+prison shape — a single 6×6 cell block, six beds, twelve prisoners, one sector,
+`×4`. A prison with a canteen, a yard and a shower room serves more needs, earns
+more, and may produce a different incident mix entirely; §5's riot metronome and
+§9's assault metronome are both single-sector readings. What would change my
+mind about §10 is a run of the nine-room prison of §1 with eight or more guards
+hired: if the incident rate there is need-driven rather than quiet-period-driven,
+the "metronome" reading is an artifact of an under-built prison and the game has
+more tension in it than this note found.
