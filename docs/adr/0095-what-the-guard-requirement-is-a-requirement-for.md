@@ -249,10 +249,27 @@ pool stays one pool. What changes is that the coverage read model publishes a
 `describeStaffCoverage` gains a rung between `Covered` and `Understaffed` for
 the state row 2 of the table is in: *every post filled, nothing spare*.
 
-**Why a second figure rather than a bigger first one.** See the refutation of
-candidate 1 under "What was rejected" — raising `required` is not a partial fix
-that helps a little, it is strictly worse at identical cost, because the same
-number is the posting cap and the advice.
+**Why a second figure rather than a bigger first one, and this is measured
+rather than argued.** The obvious reading of #893 is *"the requirement should
+account for both budgets"*. It is not a partial fix that helps a little — it is
+**strictly worse at identical cost**, because `requiredGuardCountFor` is read by
+`assignUnassignedGuards` as well as by `getCoverageReport` (ADR 0048 decision 3,
+deliberately, so that what is enforced and what is published cannot disagree).
+Raising it therefore posts exactly the reserve the raise was meant to buy. The
+last case of `tests/integration/security-coverage-versus-response.test.ts` is
+that measurement — same seed, same population, six guards both times, and the
+only difference is what the sector asks for:
+
+| | `required` | `assigned` | spare | badge | resolved | lapsed | dispatched | contraband |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| six guards, derived requirement | 2 | 2 | 4 | `Covered` | **10** | **0** | **34** | 2 |
+| six guards, authored `scheduled: 6` | 6 | 6 | **0** | `Covered` | **0** | 9 | **0** | **0** |
+
+The wage bill is the same in both rows. So a requirement raised to the number a
+player *should* hire converts a prison that contains everything into one that
+contains nothing, and the badge cannot tell them apart either way. **This is why
+the reserve has to be a second figure and not a bigger first one, and it is the
+load-bearing evidence in this document.**
 
 **What the reserve figure should be, and this is the open part.** The response
 requirement is severity-dependent and severity is not known before an incident
@@ -413,10 +430,16 @@ prison. The instrument is what a retuning pass should argue against.
   section each gain a sentence naming the reserve, and
   `docs/INCIDENTS.md`'s "exists exactly when" paragraph is corrected on this
   branch regardless of whether any decision here is taken.
-- `tests/foundation/unconsumed-content-contract.test.ts` is the gate that would
-  catch a locale key added without a reader, which is the failure mode
-  `AGENTS.md`'s fourth exclusion names — so the key and the rung must land in one
-  change, never a key first.
+- **No gate catches a locale key added without a reader**, which is worth
+  stating because the natural assumption is that one does.
+  `tests/foundation/unconsumed-content-contract.test.ts` is about declared
+  *content ids*; `tests/unit/ui-hud-messages.test.ts` checks that every key in
+  `HUD_MESSAGE_KEYS` resolves to real text and that no HUD module hard-codes a
+  `hud.*` key outside `messages.ts` — both run from the key *towards* the
+  catalogue, and neither asks whether anything renders it. So the failure mode
+  `AGENTS.md`'s fourth exclusion names, *a locale key with no implementation
+  behind it*, is unguarded here: the key and the rung must land in one change,
+  never a key first, and that is a discipline rather than an assertion.
 
 ## Open questions
 
