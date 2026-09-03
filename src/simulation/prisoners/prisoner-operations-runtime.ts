@@ -8,6 +8,7 @@ import { LocomotionStore, LocomotionSystem } from '../locomotion';
 import type { NavigationSystem } from '../navigation/navigation-system';
 import type { CarryJobExecutor } from '../operations/carry-executor';
 import { ActionSystem, type PrisonerRouteContextResolver } from './action-system';
+import { DEFAULT_ACTIONS } from './actions';
 import type { AdmissionRequest } from './classification';
 import { ClassificationEarlyWarningSystem } from './classification-early-warning-system';
 import { ClassificationReviewSystem } from './classification-review-system';
@@ -37,6 +38,49 @@ import { residentsWithoutExistingPlace, RoomInstanceRegistry } from './room-inst
 import { DEFAULT_SANCTION_POLICY, SanctionSystem, SOLITARY_SANCTION_ROOM_CATALOG_ID, type SanctionPolicy } from './sanction-system';
 
 const PRISONER_COMPONENT_ID = 0;
+
+/**
+ * What a restore may do differently, and the one thing it currently can.
+ *
+ * ## `resumeRestoredCarriers`
+ *
+ * **Off, and the decision to turn it on is not this code's to make.**
+ *
+ * `loadSnapshot` drops every `travelling` prisoner to `'idle'`, which for every
+ * other action costs the two reconsideration cycles
+ * [ADR 0059](../../../docs/adr/0059-who-owns-a-walking-prisoners-position.md)
+ * open question 3 already prices. For a **carry** it costs more, because going
+ * idle is what forces `ActionSystem.planIdleSelection` to ask an eligibility
+ * question continuous play never asks: `action.carry` is category `work`, so a
+ * carrier restored near the end of a work block is filtered out of their own
+ * errand and walks off with the goods until the next work block opens.
+ * Measured on `f7adf652` at **1,280 ticks** against
+ * [ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 5's
+ * corrected bound of 40 -- issue #882, and
+ * `docs/research/2026-09-03-what-a-restore-costs-an-errand.md` for the
+ * construction and for the three terms the number is made of.
+ *
+ * With this option set, a restored prisoner whose action targets the job board
+ * keeps `'travelling'` instead. Nothing is re-selected, so no eligibility
+ * question is asked, and the errand costs the same two cycles every other
+ * action costs. That is ADR 0093 decision 5's own words -- *"A carrier is
+ * instead **re-seated from the board** after it loads -- `actionIndex` the
+ * carry, `travelling`, no request"* -- which the landing change did not build.
+ *
+ * **Why it is not simply on.** ADR 0093 carries two accepted sentences that
+ * disagree the moment anything asks an in-flight carrier to choose again:
+ * decision 2's *"A prisoner is offered a carry iff they are idle at a
+ * reconsideration, intake is `completed`, and their active block allows
+ * `work`"*, and Consequences' *"A carry outlasts its block. Like every action,
+ * it is not cut at a regime boundary."* Which of the two an amendment should
+ * keep is a decision about behaviour a player watches, and `AGENTS.md`'s fourth
+ * exclusion reserves it. This option exists so that the answer can be measured
+ * before it is chosen, not so that it can be chosen here.
+ */
+export interface PrisonerRestoreOptions {
+  readonly resumeRestoredCarriers?: boolean;
+}
+
 
 /**
  * Why an admission the player asked for was not carried out (#261 step 4).
@@ -833,8 +877,13 @@ export class PrisonerOperationsRuntime {
    * `atTick = 0`. `restoreSessionSystems` passes the real one; a fixture that
    * round-trips a snapshot without one gets a window that says it opened at 0,
    * which is what a fixture with no clock means.
+   *
+   * `options.resumeRestoredCarriers` is the gate described on
+   * `PrisonerRestoreOptions`. It is **off** by default and no production caller
+   * passes it, so the restore this method performs is byte-for-byte the one it
+   * performed before the option existed.
    */
-  public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot>, atTick = 0): void {
+  public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot>, atTick = 0, options: PrisonerRestoreOptions = {}): void {
     this.entityStore.loadSnapshot(snapshot.entityStore);
     this.records.loadSnapshot(snapshot.records);
     this.needs.loadSnapshot(snapshot.needs);
@@ -869,8 +918,31 @@ export class PrisonerOperationsRuntime {
     for (let index = 0; index <= this.entityStore.maxActiveIndex; index += 1) {
       if (!this.entityStore.isIndexAlive(index)) continue;
       if (this.currentAction.phase[index] !== travellingPhase) continue;
-      this.currentAction.phase[index] = idlePhase;
       const entityId = this.entityStore.getIdByIndex(index);
+      /*
+       * **The gate: a carrier stays a carrier across the load.** See
+       * `PrisonerRestoreOptions.resumeRestoredCarriers` for the measurement
+       * that is the argument for it and for why it is off.
+       *
+       * Decided from the *action*, not from the board: `JobBoard.loadSnapshot`
+       * runs after this method (`restoreSessionSystems` step 4, this is step 3),
+       * so there is no active job to consult yet and asking for one would be an
+       * ordering bug rather than a stricter test. The action's target kind is
+       * enough, because `continueTravelling` already closes both directions on
+       * the next cycle: a carrier whose job survived re-requests the leg
+       * (`ActionSystem.continueTravelling`'s stranded-request exit), and one
+       * whose job `CarryJobExecutor.reconcileRestoredJobs` ended drops to idle
+       * on the check that opens the same method.
+       *
+       * The stale `pathRequestId` still goes, for the reason the comment above
+       * gives -- it names a request the rebuilt `NavigationSystem` never
+       * received -- and the target is left alone because a carry writes none.
+       */
+      if (options.resumeRestoredCarriers === true && DEFAULT_ACTIONS[this.currentAction.actionIndex[index]!]?.target.kind === 'job-board') {
+        this.coldState.setPathRequestId(entityId, undefined);
+        continue;
+      }
+      this.currentAction.phase[index] = idlePhase;
       this.coldState.setActionTarget(entityId, undefined);
       this.coldState.setPathRequestId(entityId, undefined);
     }

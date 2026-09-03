@@ -59,6 +59,35 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * The capture ticks are **found by running the scenario** rather than written
  * down, so a change to any cadence moves what is captured instead of making
  * the file assert against ticks the carrier is no longer at.
+ *
+ * ## What this file measured and what it missed, added 2026-09-03 (#882)
+ *
+ * **Both statements above are true of an errand that fits inside one work
+ * block, and that is the only errand this file used to run.**
+ * `OFFER_THE_ERRAND_AT` is 520 and both legs finish by 721, so the block
+ * boundary at 1,000 is never crossed and the question the boundary asks is
+ * never put. Played through the UI, issue #882 crossed it and measured **380
+ * ticks** against the 40 this file pins.
+ *
+ * The mechanism is that going idle is not free for a carry the way it is for
+ * every other action. `PrisonerOperationsRuntime.loadSnapshot` drops a
+ * restored traveller to `'idle'`, which forces
+ * `ActionSystem.planIdleSelection` to ask an eligibility question continuous
+ * play never asks -- and `action.carry` is category `work`, so a carrier
+ * restored near the end of a work block is filtered out of the errand they are
+ * already holding the goods for. `describe('an errand saved across a block
+ * boundary')` below is that case, measured at the worst boundary rather than
+ * the one the playtest happened to hit:
+ * **1,280 ticks, 32 times the bound this file pins**, because the gap between
+ * the end of the 1,300-1,800 work block and the start of the next day's
+ * 500-1,000 one is 1,100 ticks.
+ *
+ * `docs/research/2026-09-03-what-a-restore-costs-an-errand.md` is the
+ * construction, the three terms the 1,280 is made of, and the four attempts
+ * that failed to lose the goods. The **candidate** that collapses it back to
+ * 40 is `PrisonerRestoreOptions.resumeRestoredCarriers`, off by default,
+ * measured here in both positions -- and which of ADR 0093's two disagreeing
+ * sentences an amendment should keep is not this file's to decide.
  */
 
 /** `ActionSystem.schedule.intervalTicks` -- the reconsideration cycle a restored traveller can lose. */
@@ -100,6 +129,48 @@ const ADMIT_AT = 100;
 const OFFER_THE_ERRAND_AT = 520;
 const HORIZON_TICKS = 1_400;
 
+/**
+ * Inside `GENERAL_POPULATION_REGIME`'s **second** `work` block (1,300-1,800),
+ * late enough that the drop-off leg is still being walked when the block ends.
+ *
+ * 1,640 rather than a rounder number because both legs have to fit: the carry
+ * is selected at 1,661, the pickup dwell ends at 1,740 and the drop-off walk
+ * runs 1,741-1,792, so the errand completes at 1,801 -- eight ticks after the
+ * block it was taken in has ended, which is `action.carry` outlasting its block
+ * exactly as ADR 0093's Consequences say it does. An offer much later than this
+ * is not selected at all until the next day, which is the *other* cost ADR 0093
+ * decision 2 already states (a delivery waiting in a bay for up to 1,100 ticks)
+ * and is not what this file measures.
+ */
+const OFFER_THE_LATE_ERRAND_AT = 1_640;
+/** Long enough to contain the next day's first work block, which is where a filtered-out carry resumes. */
+const LATE_HORIZON_TICKS = 4_000;
+
+/**
+ * **What the boundary costs today, measured, and the three terms it is made
+ * of.** Asserted exactly rather than as an upper bound, because each term is a
+ * property of authored data and a change in any of them should be read rather
+ * than absorbed:
+ *
+ * - **1,100** ticks: the gap from the end of the 1,300-1,800 work block to the
+ *   start of the next day's 500-1,000 one (`prisoners/regime.ts`). This is the
+ *   same figure ADR 0093 decision 2 states for a delivery with nobody to carry
+ *   it, which is the point -- a restore turns an errand already in hand back
+ *   into one nobody has started.
+ * - **+80**: the prisoner is not idle when the work block opens.
+ *   `action.sleep` selected at 2,761 runs its `minDurationTicks: 200` to 2,961,
+ *   and the carry is re-selected at 2,981. An action is not cut at a block
+ *   boundary -- the same rule the carry itself relies on.
+ * - **+100**: the walk the wandering created. The restored carrier walks the
+ *   goods home to its cell (arriving 1,877) and has to walk back out to the
+ *   drop-off tile, 2,981-3,069, plus the dwell.
+ *
+ * So 3,081 against a continuous 1,801. If this number moves, the question is
+ * which term moved; if it *falls to 40*, the gate below was turned on in
+ * production and this test is the one that should be rewritten, not silenced.
+ */
+const BLOCK_BOUNDARY_COST_TICKS = 1_280;
+
 const T = (x: number, y: number): TilePosition => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
 function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<typeof packCommand>): void {
@@ -128,7 +199,7 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
  * producer; `tests/foundation/job-production-contract.test.ts` is where the
  * producer is measured through `ZoneRoom` and `PurchaseMaterials`.
  */
-function buildScenario(): SimulationRuntime {
+function buildScenario(offerAt: number = OFFER_THE_ERRAND_AT): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
   submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: 6 }));
@@ -141,7 +212,7 @@ function buildScenario(): SimulationRuntime {
   stepTo(runtime, ADMIT_AT);
   submit(runtime, 'admit', packCommand({ type: 'AdmitPrisoner', sentenceLengthTicks: 200_000, priorIncidents: 0, ...ARRIVAL }));
 
-  stepTo(runtime, OFFER_THE_ERRAND_AT);
+  stepTo(runtime, offerAt);
   const depot = new Container('depot');
   depot.deposit('item.brick', 100);
   runtime.containers.register(depot);
@@ -205,8 +276,8 @@ function sample(ticks: readonly number[], count = 5): readonly number[] {
 }
 
 /** Runs to the horizon and answers the tick `errand-1` reached `completed`, or `-1`. */
-function completionTick(runtime: SimulationRuntime): number {
-  while (runtime.kernel.tick < HORIZON_TICKS) {
+function completionTick(runtime: SimulationRuntime, horizon: number = HORIZON_TICKS): number {
+  while (runtime.kernel.tick < horizon) {
     runtime.kernel.step();
     if (runtime.jobs.getById('errand-1')?.state === 'completed') return runtime.kernel.tick;
   }
@@ -214,10 +285,10 @@ function completionTick(runtime: SimulationRuntime): number {
 }
 
 /** Every tick between the offer and completion at which the carrier is in `phase`, on the continuous run. */
-function ticksCarryingIn(phase: (typeof ACTION_PHASES)[number]): readonly number[] {
-  const runtime = buildScenario();
+function ticksCarryingIn(phase: (typeof ACTION_PHASES)[number], offerAt: number = OFFER_THE_ERRAND_AT, horizon: number = HORIZON_TICKS): readonly number[] {
+  const runtime = buildScenario(offerAt);
   const ticks: number[] = [];
-  while (runtime.kernel.tick < HORIZON_TICKS && runtime.jobs.getById('errand-1')?.state !== 'completed') {
+  while (runtime.kernel.tick < horizon && runtime.jobs.getById('errand-1')?.state !== 'completed') {
     runtime.kernel.step();
     const reading = readCarrier(runtime);
     if (reading.actionId === 'action.carry' && reading.phase === phase) ticks.push(reading.tick);
@@ -279,6 +350,32 @@ function restoreAt(captureTick: number): SimulationRuntime {
   const interrupted = buildScenario();
   stepTo(interrupted, captureTick);
   return restoreSimulationRuntime(captureSessionSnapshot(interrupted), SEED).runtime;
+}
+
+/**
+ * The same restore, for an errand offered late in the second work block, with
+ * `PrisonerRestoreOptions.resumeRestoredCarriers` in whichever position is
+ * asked for.
+ *
+ * `resume: false` is written as the **two-argument** call rather than as an
+ * explicit `false`, which is what makes the assertions below a statement about
+ * the default and not only about the option: the pair of tests is the evidence
+ * that the gate is off in production, and no grep is required to believe it.
+ */
+function restoreLateErrandAt(captureTick: number, resume: boolean): SimulationRuntime {
+  const interrupted = buildScenario(OFFER_THE_LATE_ERRAND_AT);
+  stepTo(interrupted, captureTick);
+  const bundle = captureSessionSnapshot(interrupted);
+  return resume
+    ? restoreSimulationRuntime(bundle, SEED, { resumeRestoredCarriers: true }).runtime
+    : restoreSimulationRuntime(bundle, SEED).runtime;
+}
+
+/** Bricks in the depot plus bricks at the site plus bricks in a carrier's hands. */
+function bricksInTheWorld(runtime: SimulationRuntime): number {
+  const job = runtime.jobs.getById('errand-1');
+  const inHand = job !== undefined && !['completed', 'failed', 'cancelled'].includes(job.state) && job.leg === 'dropoff' ? job.quantity : 0;
+  return runtime.containers.require('depot').quantityOf('item.brick') + runtime.containers.require('site').quantityOf('item.brick') + inHand;
 }
 
 describe('an errand saved mid-leg: the measured cost of a restore', () => {
@@ -355,5 +452,114 @@ describe('an errand saved mid-leg: the measured cost of a restore', () => {
     stepTo(continuous, HORIZON_TICKS);
     stepTo(restored, HORIZON_TICKS);
     expect(persistableState(restored), `captured mid-dwell at tick ${dwellTick}`).toBe(persistableState(continuous));
+  });
+});
+
+/**
+ * **The case the file above never ran: a save taken while the errand is still
+ * being walked and the work block is about to end** (issue
+ * [#882](https://github.com/matmaxalez/lockstate/issues/882)).
+ *
+ * Nothing here re-derives the production arithmetic. The capture tick is the
+ * last tick the continuous run spends walking, found by running it; the
+ * continuous completion is measured; and the two numbers the assertions carry
+ * -- 1,280 and 40 -- are the measurement and the bound the file already pins.
+ */
+describe('an errand saved across a block boundary: what the restore costs', () => {
+  it('runs the late errand at all, so neither capture below is vacuous', () => {
+    const completed = completionTick(buildScenario(OFFER_THE_LATE_ERRAND_AT), LATE_HORIZON_TICKS);
+    expect(completed, 'the late errand never completed on the continuous run').toBeGreaterThan(0);
+    // The whole construction: the errand finishes *after* the work block it was
+    // taken in has ended. A fixture whose errand fitted inside the block would
+    // measure the file's first half a second time.
+    expect(completed).toBeGreaterThan(1_800);
+    const walking = ticksCarryingIn('travelling', OFFER_THE_LATE_ERRAND_AT, LATE_HORIZON_TICKS);
+    expect(walking[walking.length - 1], 'the last walking tick is not inside the work block').toBeLessThan(1_800);
+  });
+
+  it('costs 1,280 ticks with the restore as production performs it', () => {
+    const continuous = completionTick(buildScenario(OFFER_THE_LATE_ERRAND_AT), LATE_HORIZON_TICKS);
+    const walking = ticksCarryingIn('travelling', OFFER_THE_LATE_ERRAND_AT, LATE_HORIZON_TICKS);
+    const lastWalkingTick = walking[walking.length - 1]!;
+
+    const restored = restoreLateErrandAt(lastWalkingTick, false);
+    // The carrier comes back holding the goods and holding the job, and idle:
+    // the state that makes `planIdleSelection` ask the question.
+    expect(restored.jobs.activeJobFor(restored.prisoners.entityStore.getIdByIndex(0))?.leg).toBe('dropoff');
+    expect(restored.containers.require('site').quantityOf('item.brick')).toBe(0);
+
+    const completed = completionTick(restored, LATE_HORIZON_TICKS + 4_000);
+    expect(completed, `captured mid-walk at tick ${lastWalkingTick}`).toBeGreaterThan(0);
+    expect(completed - continuous, `captured mid-walk at tick ${lastWalkingTick}`).toBe(BLOCK_BOUNDARY_COST_TICKS);
+    // Thirty-two times the bound the first half of this file pins, and the
+    // reason the two halves disagree is the boundary and nothing else.
+    expect(BLOCK_BOUNDARY_COST_TICKS / RESTORED_TRAVEL_BOUND_TICKS).toBe(32);
+  });
+
+  it('loses none of the goods while it is late, which is the one thing the delay does not cost', () => {
+    const walking = ticksCarryingIn('travelling', OFFER_THE_LATE_ERRAND_AT, LATE_HORIZON_TICKS);
+    for (const captureTick of sample(walking)) {
+      const restored = restoreLateErrandAt(captureTick, false);
+      expect(bricksInTheWorld(restored), `at restore, captured at ${captureTick}`).toBe(100);
+      expect(completionTick(restored, LATE_HORIZON_TICKS + 4_000), `captured at ${captureTick}`).toBeGreaterThan(0);
+      expect(bricksInTheWorld(restored), `after completion, captured at ${captureTick}`).toBe(100);
+      expect(restored.containers.require('site').quantityOf('item.brick'), `captured at ${captureTick}`).toBe(10);
+      expect(restored.containers.require('depot').reservedOf('item.brick'), `captured at ${captureTick}`).toBe(0);
+    }
+  });
+
+  it('costs the ordinary two cycles instead, with resumeRestoredCarriers set', () => {
+    const continuous = completionTick(buildScenario(OFFER_THE_LATE_ERRAND_AT), LATE_HORIZON_TICKS);
+    const walking = ticksCarryingIn('travelling', OFFER_THE_LATE_ERRAND_AT, LATE_HORIZON_TICKS);
+
+    let anyDelay = false;
+    for (const captureTick of [...sample(walking), walking[walking.length - 1]!]) {
+      const restored = restoreLateErrandAt(captureTick, true);
+      // Never idle, so no eligibility question is asked -- which is the whole
+      // of what the gate changes.
+      expect(
+        ACTION_PHASES[restored.prisoners.currentAction.phase[restored.prisoners.entityStore.getIndex(restored.prisoners.entityStore.getIdByIndex(0))]!],
+        `captured at ${captureTick}`,
+      ).toBe('travelling');
+
+      const completed = completionTick(restored, LATE_HORIZON_TICKS + 4_000);
+      expect(completed, `captured at ${captureTick}`).toBeGreaterThan(0);
+      const delay = completed - continuous;
+      expect(delay, `captured at ${captureTick}`).toBeGreaterThanOrEqual(0);
+      expect(delay, `captured at ${captureTick}`).toBeLessThanOrEqual(RESTORED_TRAVEL_BOUND_TICKS);
+      expect(bricksInTheWorld(restored), `captured at ${captureTick}`).toBe(100);
+      expect(restored.containers.require('site').quantityOf('item.brick'), `captured at ${captureTick}`).toBe(10);
+      if (delay > 0) anyDelay = true;
+    }
+    expect(anyDelay, 'no sampled capture cost anything, so the bound above is untested').toBe(true);
+  });
+
+  it('gives the goods back when the board fails the errand under a resumed carrier', () => {
+    /*
+     * The other direction of ADR 0093 decision 5's restore rule, with the gate
+     * on. A carrier kept `'travelling'` whose job `reconcileRestoredJobs` ends
+     * -- here by naming a worker id this session does not hold -- must not walk
+     * on for an errand that no longer exists, and the goods must come back.
+     * `ActionSystem.continueTravelling` checks exactly this before it advances
+     * a carry, which is why the gate needs no extra path of its own.
+     */
+    const walking = ticksCarryingIn('travelling', OFFER_THE_LATE_ERRAND_AT, LATE_HORIZON_TICKS);
+    const interrupted = buildScenario(OFFER_THE_LATE_ERRAND_AT);
+    stepTo(interrupted, walking[walking.length - 1]!);
+    const bundle = captureSessionSnapshot(interrupted);
+    const jobs = bundle.simulation!.operations.jobs as readonly { assignedWorkerId?: number }[];
+    expect(jobs.length).toBe(1);
+    jobs[0]!.assignedWorkerId = 999;
+
+    const restored = restoreSimulationRuntime(bundle, SEED, { resumeRestoredCarriers: true }).runtime;
+    expect(restored.jobs.getById('errand-1')?.state).toBe('failed');
+    expect(restored.jobs.getById('errand-1')?.failReason).toBe('carrier-departed');
+    expect(restored.containers.require('depot').quantityOf('item.brick')).toBe(100);
+    expect(restored.containers.require('depot').reservedOf('item.brick')).toBe(0);
+
+    stepTo(restored, restored.kernel.tick + 120);
+    const index = restored.prisoners.entityStore.getIndex(restored.prisoners.entityStore.getIdByIndex(0));
+    expect(DEFAULT_ACTIONS[restored.prisoners.currentAction.actionIndex[index]!]?.id).not.toBe('action.carry');
+    expect(restored.containers.require('depot').quantityOf('item.brick')).toBe(100);
   });
 });

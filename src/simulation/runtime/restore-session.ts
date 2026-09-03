@@ -6,6 +6,7 @@ import type { NamedRngStreamState } from '../rng/streams';
 import type { WorldSnapshotV1 } from '../world/sparse-world';
 import { SparseWorld } from '../world/sparse-world';
 import { createNewSimulationRuntime, type SimulationRuntime } from './new-session';
+import type { PrisonerRestoreOptions } from '../prisoners/prisoner-operations-runtime';
 import { SnapshotRefusedError } from './restore-refusal';
 import { captureSessionSystems, restoreSessionSystems, type EncodedSessionSystems } from './session-systems';
 
@@ -370,7 +371,18 @@ export function captureSessionSnapshot(runtime: SimulationRuntime): SessionSnaps
  * merges the bundle's streams **over** the four this call has just derived
  * from it (#415), so it is what any stream the bundle omits is seeded from.
  */
-export function restoreSimulationRuntime(bundle: SessionSnapshotBundle, masterSeed = 0): RestoreResult {
+export function restoreSimulationRuntime(
+  bundle: SessionSnapshotBundle,
+  masterSeed = 0,
+  /**
+   * Handed to `restoreSessionSystems`, and through it to
+   * `PrisonerOperationsRuntime.loadSnapshot`, where the one option it holds is
+   * documented. No production caller passes it: `runtime-host.ts` and the
+   * worker state machine both restore with the defaults, so a save loads
+   * exactly as it loaded before this parameter existed.
+   */
+  options: PrisonerRestoreOptions = {},
+): RestoreResult {
   const world = SparseWorld.fromSnapshot(bundle.world);
   const runtime = createNewSimulationRuntime(bundle.masterSeed ?? masterSeed, { world });
 
@@ -390,7 +402,7 @@ export function restoreSimulationRuntime(bundle: SessionSnapshotBundle, masterSe
         'A session bundle carrying `simulation` must also carry `entities`: prisoner components describe entity slots.',
       );
     }
-    restoreSessionSystems(runtime, bundle.simulation, entityStore);
+    restoreSessionSystems(runtime, bundle.simulation, entityStore, options);
   } else if (entityStore !== undefined) {
     // V2 shape: liveness only, every other subsystem rebuilt empty.
     runtime.prisoners.entityStore.loadSnapshot(entityStore);

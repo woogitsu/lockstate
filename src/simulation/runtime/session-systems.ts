@@ -27,6 +27,7 @@ import {
   PrisonerRecordComponent,
 } from '../prisoners/components';
 import { NEED_IDS, NeedsComponent, type NeedId } from '../prisoners/needs';
+import type { PrisonerRestoreOptions } from '../prisoners/prisoner-operations-runtime';
 import type { PlacedObject } from '../objects';
 import { recoverRoomBoundsFromZoningPlane } from '../rooms/bounds-recovery';
 import { applyDefaultSecuritySector } from '../security/default-sector';
@@ -715,6 +716,13 @@ export function restoreSessionSystems(
   runtime: SimulationRuntime,
   systems: EncodedSessionSystems,
   entityStore: ReturnType<typeof decodeEntityStoreSnapshot>,
+  /**
+   * Passed straight to `PrisonerOperationsRuntime.loadSnapshot`, which is where
+   * the one option it currently holds is documented. Empty by default, so a
+   * caller that does not opt in gets the restore this function has always
+   * performed.
+   */
+  options: PrisonerRestoreOptions = {},
 ): void {
   // 1. Navigation doors at baseline, then sectors (which snapshot that
   //    baseline), then the control states that cascade onto the doors.
@@ -890,7 +898,8 @@ export function restoreSessionSystems(
   // `ActionMetrics.substitutionsCountedSinceTick`: the substitution counters
   // are per prisoner and no save carries them (issue #435), so a restore opens
   // a new counting window and this is the number that says so out loud.
-  runtime.kernel.tick);
+  runtime.kernel.tick,
+  options);
 
   // 4. Operations.
   runtime.containers.loadSnapshot(systems.operations.containers);
