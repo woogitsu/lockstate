@@ -1,9 +1,16 @@
 # Is there a game here? — a working prison, run for forty-eight days
 
+*(Then run twice more, with the guards changed. §5, §7 and §9 are the second
+sitting; §10 is the answer.)*
+
 **Date:** 2026-09-03
 **Branch:** `playtest/is-there-a-game-here`, cut from `origin/main` at `f7adf652` (v0.0.419)
 **Instruments:** `tests/browser/playtest-2026-09-03-is-there-a-game-here.playtest.ts`,
-`tests/browser/playtest-2026-09-03-twenty-prisoners-ergonomics.playtest.ts`
+`tests/browser/playtest-2026-09-03-twenty-prisoners-ergonomics.playtest.ts`,
+and three added after the first two returned:
+`playtest-2026-09-03-does-the-incidents-chip-lie.playtest.ts` (§5),
+`playtest-2026-09-03-what-a-guard-buys.playtest.ts` (§9),
+`playtest-2026-09-03-can-a-player-drill-in.playtest.ts` (§7)
 **Status:** complete. Three instruments run, all green; the INCIDENTS question
 is **settled** (§5) and the branch's own question is answered in §10. Nothing in this file is a decision, and nothing in it is a fix.
 
@@ -127,6 +134,16 @@ player.
 That is the finding this pass was sent to get, and it is the most important one
 in this note: **there is no game here yet.** Everything below is either an
 elaboration of why, or a defect found on the way.
+
+> **Narrowed by §9 and §10, and the narrowing matters.** That sentence was
+> written after a run that hired six guards and never got a response out of
+> any of them, and §9 found out why: with the sector requirement filled and
+> the pool empty, no incident can be answered. Hire past the requirement and
+> twelve of twelve are contained. So the accurate version is **§10's** — a
+> simulation and about a third of a game, with the missing part being the
+> player's hands rather than the model. "There is no game here yet" is kept
+> because it is what this pass believed at that point and because the
+> difference between the two sentences is the whole result.
 
 ### The INCIDENTS chip read 0 at all fifty samples while 26 fights fired
 
@@ -281,6 +298,12 @@ leading need of 20% of their prison and nothing about the other 80%, and there
 is no per-prisoner detail panel to open.
 
 ### Incidents — `DESIGN`, they happen and they do not matter
+> **Superseded by §9, in the direction of the game having more in it than this
+> said.** They matter a great deal, and this run could not see it because it
+> never had a claimable guard: `respondersDispatched` was 0 here and 0 across
+> §9's whole phase A. With a pool, §9 measured 12 of 12 contained, injuries
+> stopping, and the contraband system switching on. Kept rather than
+> overwritten, per `docs/AGENT_WORKFLOW.md` §4.
 26 fights in 33.7 days is roughly **one fight every 31 in-game hours**, which is
 frequent enough to be the game's pulse. Each one self-resolved, cost nothing
 observable, moved no chip, and produced two alert rows. A threat that resolves
@@ -564,6 +587,8 @@ response: `requiredResponders` was **2** for the assault, **4** for the escape
 attempt and **5** for the riot. So a twelve-prisoner prison that wants its
 riots answered needs the two the panel asks for *plus five more*, and nothing
 in the game says so. That is a prediction until the staged run reports.
+
+**It reported, and it held. §9.**
 
 ## 7. Nine numbers, and nothing to press
 
