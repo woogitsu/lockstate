@@ -223,6 +223,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       "Type-only: `LocalizationKey` from `src/content/localization`. A frozen registry of the interface-scale control's three message keys and nothing else, in the shape `src/ui/hud/messages.ts`, `save-panel-messages.ts` and `brand-messages.ts` all use; naming the key type is what lets `satisfies Readonly<Record<string, LocalizationKey>>` check every entry at compile time. Erased, so no content code runs because of it, and it names no other layer.",
   },
   {
+    file: 'src/ui/app-shell-messages.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey` from `src/content/localization`. A frozen registry of one key -- the accessible name of `<main id=\"app\">`, the element the whole application mounts into -- in the shape `display-scale-messages.ts`, `save-panel-messages.ts` and `brand-messages.ts` all use; naming the key type is what lets `satisfies Readonly<Record<string, LocalizationKey>>` check the entry at compile time. Erased, so no content code runs because of it, and it names no other layer. Added when `index.html`'s hard-coded `aria-label` moved into the catalogue, so `src/main.ts` -- the one file that reaches `document.getElementById('app')` -- has a key to resolve rather than a literal to splice in.",
+  },
+  {
     file: 'src/ui/display-scale.ts',
     tree: 'content',
     kind: 'type-only',
@@ -530,6 +537,7 @@ describe('UI orchestration boundaries', () => {
     // `ui-hud-messages.test.ts` both carry a guard for.
     expect(orchestrationFiles.map(({ file }) => file)).toEqual([
       'src/ui/affordability.ts',
+      'src/ui/app-shell-messages.ts',
       'src/ui/brand-badge.ts',
       'src/ui/brand-messages.ts',
       'src/ui/build-tool.ts',

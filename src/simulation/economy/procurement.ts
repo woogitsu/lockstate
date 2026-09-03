@@ -325,14 +325,39 @@ export class ProcurementSystem implements SystemRegistration {
    * non-integer quantity, and in both cases nothing is credited: the caller is
    * then holding goods it could not price, and must put them back rather than
    * destroy them.
+   *
+   * The pricing itself is `previewRefundMaterials`, called and then credited --
+   * so a caller that only needs to know what this *would* pay (the Build
+   * panel's queue row, ADR 0011's read-only side of the boundary) has the same
+   * arithmetic on offer without the side effect. See that method.
    */
   public refundMaterials(itemId: string, quantity: number): number {
+    const refundedMinorUnits = this.previewRefundMaterials(itemId, quantity);
+    if (refundedMinorUnits > 0) this.treasury.credit(refundedMinorUnits);
+    return refundedMinorUnits;
+  }
+
+  /**
+   * What `refundMaterials` would credit, without crediting it.
+   *
+   * The whole of `refundMaterials`'s pricing rule and none of its effect: `0`
+   * for an item the catalogue does not sell and for a non-positive or
+   * non-integer quantity, `unitPriceMinorUnits * quantity` otherwise. Pulled
+   * out rather than re-derived at the caller so the two can never disagree --
+   * a second formula here would be the exact hazard `AGENTS.md`'s "derive it
+   * from the same code path" rule exists to name.
+   *
+   * Its one caller today is `JustInTimeMaterialsService.previewAllocatedRefundMinorUnits`,
+   * which the Build panel's queue row reaches through
+   * `ConstructionSystem.previewCancelRefundMinorUnits` -- a projection-time
+   * question, never a command, so it must not move the treasury while it is
+   * being asked.
+   */
+  public previewRefundMaterials(itemId: string, quantity: number): number {
     if (!Number.isSafeInteger(quantity) || quantity <= 0) return 0;
     const material = procurableMaterial(itemId);
     if (material === undefined) return 0;
-    const refundedMinorUnits = material.unitPriceMinorUnits * quantity;
-    this.treasury.credit(refundedMinorUnits);
-    return refundedMinorUnits;
+    return material.unitPriceMinorUnits * quantity;
   }
 
   /** Deliveries not yet arrived, in the order they will arrive. */

@@ -106,6 +106,7 @@ import { DEFAULT_LOCALE } from './content/localization';
 import { defaultMessageCatalogEn } from './services/localization';
 import { Localizer } from './services/localization/localizer';
 import { createBrandBadge } from './ui/brand-badge';
+import { APP_SHELL_MESSAGE_KEY } from './ui/app-shell-messages';
 import { createTelemetryConsentPrompt } from './ui/telemetry-consent-prompt';
 import { createTelemetryPipeline } from './services/telemetry/pipeline';
 import { createCrashReporter } from './services/telemetry/crash-reporting';
@@ -3070,6 +3071,19 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
  * no simulation state at all -- so there is nothing for it to wait on.
  */
 const appRoot = document.getElementById('app');
+/*
+ * The accessible name of the whole application, applied here rather than left
+ * as `index.html`'s own `aria-label` (issue: the app-shell label leak). The
+ * HTML shell loads before any `Localizer` exists, so a label baked into the
+ * markup can never pass through the catalogue or the pseudo-locale sweep that
+ * checks every other player-facing string -- `APP_SHELL_MESSAGE_KEY.label`'s
+ * own doc says so. `localizer` above is the page's first one, so this is the
+ * earliest point a translated label can exist at all; before it, a
+ * screen-reader user who opens the page hears whatever `<main>`'s implicit
+ * role announces with no name -- nothing read for the region itself -- rather
+ * than English standing in ahead of translation.
+ */
+if (appRoot !== null) appRoot.setAttribute('aria-label', localizer.format(APP_SHELL_MESSAGE_KEY.label));
 const mountedHud =
   appRoot === null
     ? undefined

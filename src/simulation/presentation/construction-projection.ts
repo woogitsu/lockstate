@@ -98,9 +98,28 @@ export function isPendingBuildOrderState(state: BuildOrderLifecycleState): state
   return (PENDING_BUILD_ORDER_STATES as readonly BuildOrderLifecycleState[]).includes(state);
 }
 
-/** Read-only slice of `ConstructionSystem`. One method, and it is the one it already exposes. */
+/**
+ * Read-only slice of `ConstructionSystem`. Two methods, and both are ones it
+ * already exposes.
+ *
+ * `previewCancelRefundMinorUnits` joined `allOrders` for the owner's ruling of
+ * 2026-09-02: the queue row says what `CancelBuildOrder` would pay, in the
+ * same pattern the pending-deliveries row already uses
+ * (`HudPendingDeliveryViewModel.paidMinorUnits`), and that figure is a fact
+ * about the treasury and the last purchase pass -- neither of which this
+ * module or the HUD may hold (`AGENTS.md` boundary 1). `ConstructionSystem`
+ * is the one thing on this thread that already knows what `cancelOrder` pays,
+ * so it is asked rather than re-derived here.
+ */
 export interface BuildOrderSource {
   allOrders(): readonly BuildOrder[];
+  /**
+   * What cancelling `orderId` would credit the treasury right now, without
+   * cancelling it. See `ConstructionSystem.previewCancelRefundMinorUnits`,
+   * which this is read from unchanged -- this module adds no arithmetic of
+   * its own, only the call.
+   */
+  previewCancelRefundMinorUnits(orderId: string): number;
 }
 
 /**
@@ -201,6 +220,31 @@ export interface BuildQueueOrderViewModel {
    */
   readonly edge: BuildEdge;
   readonly state: PendingBuildOrderState;
+  /**
+   * What cancelling this order right now would credit the treasury, in minor
+   * units -- the owner's ruling of 2026-09-02, in the pattern
+   * `HudPendingDeliveryViewModel.paidMinorUnits` already set for a pending
+   * delivery's own row.
+   *
+   * Read from `BuildOrderSource.previewCancelRefundMinorUnits`, never
+   * computed here: `ConstructionSystem.previewCancelRefundMinorUnits`'s own
+   * comment is where the ruling-20 table and its two sharp edges are argued,
+   * and this field is that answer carried across the worker boundary
+   * unchanged, exactly as `materialsFunding` below is.
+   *
+   * `0` is a real answer and not a placeholder for "unknown" -- a `'planned'`
+   * order that never became demand, an `'in-progress'` order the crew has
+   * already started, and a `'materials-pending'` order whose materials landed
+   * in the last `PROCUREMENT_DELIVERY_DELAY_TICKS` all read `0` here, and each
+   * for a different reason ruling 20 states. It is not derivable from `state`
+   * alone -- that is the whole reason this field exists rather than being left
+   * for a reader to work out from the five-member `PendingBuildOrderState` --
+   * because two rows reading `'materials-pending'` can disagree about it: one
+   * whose delivery is still on the road pays, one whose delivery already
+   * landed does not, and `state` cannot tell them apart
+   * (`tests/integration/economy-cancel-what-comes-back.test.ts`).
+   */
+  readonly cancelRefundMinorUnits: number;
 }
 
 export interface BuildQueueViewModel {
@@ -292,16 +336,29 @@ export function projectBuildQueue(
   // `compareBuildOrderExecution`.
   const pending = [...source.allOrders()]
     .filter((order) => isPendingBuildOrderState(order.state))
-    .sort(compareBuildOrderExecution)
-    .map(
-      (order): BuildQueueOrderViewModel => ({
-        orderId: order.id,
-        definitionId: order.definitionId,
-        tile: toTileViewModel(order.location),
-        edge: resolveBuildEdge(order),
-        state: order.state as PendingBuildOrderState,
-      }),
-    );
+    .sort(compareBuildOrderExecution);
+
+  // Paged *before* the map, and that is new: `cancelRefundMinorUnits` below
+  // asks `source.previewCancelRefundMinorUnits`, which walks the whole order
+  // book per item id (`ConstructionSystem.demandedQuantityOf`) -- cheap for
+  // one row, and a drag of hundreds would make it O(orders^2) if it ran for
+  // every pending order rather than only the rows a panel can ever draw. A
+  // queue with no ceiling (`docs/HUD_PROJECTIONS.md` contract 5) is exactly
+  // the case `tests/integration/economy-cancel-what-comes-back.test.ts`
+  // measures at 328 orders, so this is not a theoretical saving. `total`
+  // still counts every pending order, from `pending.length` rather than from
+  // the page, so the header keeps telling the truth about the prison.
+  const page = pageOf(pending, request);
+  const rows: readonly BuildQueueOrderViewModel[] = page.rows.map(
+    (order): BuildQueueOrderViewModel => ({
+      orderId: order.id,
+      definitionId: order.definitionId,
+      tile: toTileViewModel(order.location),
+      edge: resolveBuildEdge(order),
+      state: order.state as PendingBuildOrderState,
+      cancelRefundMinorUnits: source.previewCancelRefundMinorUnits(order.id),
+    }),
+  );
 
   const unfundedItems = (funding?.lastReport.unfunded ?? []).map((item) => ({
     itemId: item.itemId,
@@ -311,7 +368,7 @@ export function projectBuildQueue(
 
   return {
     schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
-    orders: pageOf(pending, request),
+    orders: { total: page.total, offset: page.offset, limit: page.limit, rows },
     started: pending.reduce((count, order) => (order.state === 'in-progress' ? count + 1 : count), 0),
     materialsFunding: {
       unfunded: unfundedItems.length > 0,
