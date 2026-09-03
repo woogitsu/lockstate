@@ -630,12 +630,103 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `a0348955` (**v0.0.423**) by the delta method this
-header describes, from the v0.0.417 anchor kept below. **Six of the ten
+Re-anchored at `main` @ `ac58c457` (**v0.0.427**) by the delta method this
+header describes, from the v0.0.423 anchor kept below. **Four of the ten
 releases the budget allows, counted on the tree this commit is written
-against: `package.json` ships 0.0.423 at `a0348955` and the anchor being
-replaced named v0.0.417.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
+against: `package.json` ships 0.0.427 at `ac58c457` and the anchor being
+replaced named v0.0.423.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
 **10**, exactly as the gate demands and as its own failure message insists.
+
+**THE HALFWAY RULE IS KEPT, AND THIS TIME IT WAS KEPT AS A TASK RATHER THAN
+NOTICED AS A READING.** The previous anchor was taken at six of ten; this one
+was dispatched at **five**, the moment the halfway mark was reached, with three
+pull requests still queued — which is the point of the rule, because draining
+those three would have taken it to eight. The sequence now reads
+five, five, nine, five, six, **five**. Recorded because the rule this file
+states in capitals has been missed by two and then by one before, and a rule
+kept only when convenient is not a rule.
+
+**NOT ONE CITED SPAN MOVED, and the reason is checkable rather than lucky.**
+The window's four merges touch nine files between them, and of the four this
+file's §§3-6 actually cite, three are cited **by name only** and the fourth's
+one line-number citation is above everything that changed. So the pass cost
+nothing, and it says so rather than dressing a cheap window as a thorough one.
+
+**WHAT THIS PASS IS ACTUALLY FOR: it re-opened the ten corrections the previous
+anchor made, one window later, and all ten hold.** That is not ceremony. The
+v0.0.423 pass rewrote a §5 bullet whose every rooted anchor had been wrong for
+three passes, and a correction is only worth anything if it is *right* — a pass
+that corrects a number to another wrong number looks identical in a diff.
+Re-derived here, on this tree, by opening each one: the consent mount is still
+`src/main.ts:3138`; the telemetry import span still `:111-113`; the first
+`telemetry.enabled` gate still `:210`; `docs/DEPLOYMENT.md`'s "Automated
+deployment" heading still `:198`, so its six-row table is still `:200-207`; and
+`src/ui/hud/build-panel.ts:1307` still reads *"7.8px is the entire budget"*.
+**None of those files is in this window**, so the check is a check that the
+previous pass computed them correctly rather than that this window left them
+alone. It did.
+
+**The window, and the member set.** `a0348955..ac58c457`, **nine files**, eight
+of them besides this one, across **four** implementing merges — `2ff41656`/#887
+(the previous anchor's own pass), `665af1ad`/#885 (the research index's merge
+rule), `621b02d5`/#839 (accepted ADRs re-checked against `main`) and
+`fed1ebd1`/#888 (an emptied-out prison gets its own sentence, the owner's
+ruling) — plus the release bumps v0.0.424 through v0.0.427. #887 is **not**
+excluded as self-referential the way #858 was at an earlier anchor: it edited
+only this file, so it contributes nothing to the intersection either way, and
+saying so is cheaper than the exclusion rule it would otherwise invoke.
+
+The intersection over §§3-6 — lines **6518-11866 on this tree**, re-derived
+with `grep -n '^## '` on the tree the scan ran against, per the trap this
+header records — is **four members besides this file**:
+`docs/research/README.md`, `package.json`,
+`src/content/default-locale-en.ts` and `src/ui/hud/messages.ts`. Each was
+opened: `docs/research/README.md`'s rule at `:9` is word for word, on a file
+this window appended to twice, far below it; `src/ui/hud/messages.ts:95` still
+reads *"ADR 0017 -- Accepted"*, so §6's cleared status reference survived a
+window that edited that very file; `src/content/default-locale-en.ts` is cited
+by name only inside §5's same-commit list, with no span; and `package.json` is
+the anchor's own version, which is the one citation that cannot rot without the
+gate firing.
+
+**THE BASENAME SCAN PRODUCES A FALSE MEMBER FOR THE FIFTH CONSECUTIVE ANCHOR,
+AND IT IS THE SAME ONE.** Matching cited basenames against the window's returns
+eight rows where the exact-path intersection returns four. The extra that
+matters is `docs/adr/README.md`, matched because this window touches
+`docs/research/README.md` — a file §§3-6 make live claims about and which is
+**not in this window at all**. Five anchors in a row, always `README.md`,
+always the same two directories. This is no longer a warning about a scan; it
+is a property of a corpus that keeps its index and its research log under the
+same filename in two places, and the only fix that would end it is a scan that
+never compares basenames.
+
+**A HOLE IN THIS FILE'S OWN COVERAGE, found because this window walked into it.**
+`src/ui/hud/regime-panel.ts` is in this window — #888 changed a player-visible
+sentence in it — and **§§3-6 cite that file nowhere at all.** Its only mention
+anywhere here is inside a basename-scan bullet in the anchor narrative, under
+this file's H1 rather than in any numbered section, and that mention is *about*
+its neighbour `hud.ts` being cited seven times. **The first cut of this
+paragraph said "at `:1252`, in §2", and both halves were wrong** — a `file:line`
+into this file is the least durable citation in the corpus, so it is replaced
+by a description, and the section was misattributed because the nearest heading
+above that line is the H1. The corrected reading is **sharper than the one it
+replaces**: the mention lists `regime-panel.ts` among **eighteen non-members**
+the window checked and excluded, so the only trace this file has ever carried
+of it is a record of deciding it did not need reading. So one of the most player-facing
+files in the repository is invisible to every live-claim section of the document
+whose job is to say where an accepted decision and the code disagree.
+
+**Stated as a gap rather than repaired here, and deliberately.** Adding an entry
+would mean inventing a claim to make about a file nobody has audited, which is
+the opposite of what §5 is for — §5 holds claims that were *found*, not claims
+manufactured to fill a table. What is owed is an audit of that file against the
+decisions it implements, and the next reader should know that no such audit has
+ever been taken. **The delta method cannot find this class of gap by
+construction**: a file that is cited nowhere can never appear in an
+intersection, so the more player-facing work lands in it, the more invisible it
+becomes. That is the mirror of the previous anchor's finding — that pass learned
+*membership is not coverage*; this one adds that **absence from the member set
+is not absence of risk.**
 
 **THIS PASS SWEPT THE INTERSECTION, WHICH THE PREVIOUS ONE SAID IT HAD NOT,
 AND THE INHERITED DEBT WAS REAL.** The v0.0.417 account states plainly: *"It
@@ -1548,7 +1639,20 @@ anchors ago, one release late, and the honest reading is that a rule two
 passes have missed by two and then by one is being approached rather than
 kept.
 
-**The anchor before this one, kept — v0.0.417.** It read: *"Re-anchored at `main` @
+**The anchor before this one, kept — v0.0.423.** It read: *"Re-anchored at `main` @
+`a0348955` (**v0.0.423**) by the delta method this header describes, from the
+v0.0.417 anchor kept below. Six of the ten releases the budget allows."* It is
+the pass that ran the intersection sweep its predecessor had declined and
+handed forward, and found the debt real: **six citations in §5's telemetry
+bullet had rotted, none of them because of that window**, the worst of them
+193 lines out with only 11 attributable to the window that found it. Its
+finding is the one this file now treats as the method's own limit —
+**membership is not coverage**: a file can be a listed member, genuinely be in
+the window, have nothing in the window touch its cited spans, and still carry
+an anchor wrong for three passes. All ten of its corrections were re-opened one
+window later, on this tree, and all ten hold.
+
+**The anchor before that one, kept — v0.0.417.** It read: *"Re-anchored at `main` @
 `1e9b0a6a` (**v0.0.417**) by the delta method this header describes, from the
 v0.0.407 anchor kept below. Ten of the ten releases the budget allows."* It is
 the pass that established the finding this file now treats as structural —
@@ -7794,7 +7898,7 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `a0348955`, and at `1e9b0a6a` before it — the same bare `grep -ril
+absences were re-verified at `ac58c457`, and at `a0348955` and `1e9b0a6a` before it — the same bare `grep -ril
 'total_bytes\|max_total_bytes\|retention\|prune'` over the directory still
 returns exactly one file, and its only hit is still the *comment* in
 `20260826130000_server_stamp_updated_at.sql:68` about a **future** retention
@@ -8033,6 +8137,74 @@ as a member, be genuinely in the window, have nothing in the window touch its
 cited spans, and still carry an anchor that has been wrong for three passes.
 The only thing that catches that is opening the anchor, and the only reason
 this pass opened it is that the previous pass wrote down that it had not.
+
+## 3. What the anchor pass of 2026-09-03 evening re-opened, and the gap it found instead
+
+**Taken at `ac58c457` (v0.0.427), and this pass moved no citation because there
+was none to move.** Four of the ten releases the budget allows. Dispatched at
+five of ten — the halfway mark, kept as a task — with three pull requests
+queued whose merge would have taken the anchor to eight.
+
+**The window is `a0348955..ac58c457`: nine files, four merges.** #887 (the
+previous anchor's own pass, which touched only this file), #885 (the research
+index's merge rule), #839 (accepted ADRs re-checked against `main`) and #888
+(an emptied-out prison's own sentence, the owner's ruling of 2026-09-03).
+
+**Four members besides this file, each opened rather than inferred**:
+`docs/research/README.md` (rule at `:9`, word for word, on a file this window
+appended to twice far below it), `src/ui/hud/messages.ts` (`:95` still reads
+*"ADR 0017 -- Accepted"*, so §6's cleared reference survived a window that
+edited that file), `src/content/default-locale-en.ts` (cited by name only in
+§5's same-commit list, no span) and `package.json` (the anchor's own version).
+
+**The ten corrections the previous anchor made were re-opened one window later
+and all ten hold**, which is the substantive work of this pass rather than a
+formality: a correction to a wrong number is worthless if it corrects to
+another wrong number, and a diff cannot tell the two apart. Re-derived on this
+tree: `src/main.ts:3138` (the consent mount), `:111-113` (the telemetry import
+span), `:210` (the first `telemetry.enabled` gate),
+`docs/DEPLOYMENT.md:198` (the "Automated deployment" heading, so the six-row
+table is still `:200-207`), and `src/ui/hud/build-panel.ts:1307` (*"7.8px is
+the entire budget"*). **None of those files is in this window**, so this is a
+check on the previous pass's arithmetic and not on this window's restraint.
+
+**The finding is a hole in this file rather than in the code.**
+`src/ui/hud/regime-panel.ts` is in this window and **§§3-6 cite it nowhere at
+all** — its only mention here is `:1252`, in §2, and that mention is about its
+neighbour `hud.ts` being cited seven times. A file that carries player-visible
+sentences and that #888 just edited is invisible to every live-claim section of
+this document. Left as a named gap rather than filled, because filling it would
+mean inventing a claim about a file nobody has audited, and §5 holds claims that
+were found rather than claims manufactured to fill a table. **The delta method
+cannot find this class of gap by construction**: a file cited nowhere can never
+appear in an intersection, so the more player-facing work lands in it, the more
+invisible it becomes. Where the previous pass learned *membership is not
+coverage*, this one adds that **absence from the member set is not absence of
+risk**.
+
+**Next free number: 0095.** `docs/adr/README.md` states it and this file agrees;
+this window added no ADR. **The remote sweep was not re-run and this line is not
+warranted by one** — the index's own paragraph records the sweep that set 0095
+(481 heads, at `98e05058`), and nothing in this window touches `docs/adr/`
+except this file. A pass that restates a number it did not sweep for should say
+which it is doing.
+
+**What this pass did not do.** It did not sweep the remote for held ADR numbers.
+It did not audit `src/ui/hud/regime-panel.ts`, which is the gap it just named —
+naming a gap and closing it are different sizes of work, and the second is
+owed. **It was taken immediately afterwards, and the gap is real**: 88
+checkable assertions in that file, 82 opened on both sides, **seven findings,
+every one of them the document being wrong rather than the code**. The
+strongest is on the exported interface — `setRoster`'s docblock still says an
+emptied roster "draws no sentence at all" while `paintRoster` always draws one
+— and it went false in #888, whose diff on that file is a **single hunk 280
+lines below the docblock it falsified**. That is the shape this gap was always
+going to have: not a decision the code betrays, but a file whose comments
+nobody has ever had a reason to re-read.
+It re-derived citations into five files outside the window only because those
+five were the previous anchor's corrections; **every other citation outside the
+window's nine files stays unread**, which is the standing blind spot and is
+recorded here rather than implied.
 
 ## 4. The live risk to watch: ADR 0016 §2 is binding and nothing enforces it
 
@@ -11760,7 +11932,7 @@ numbers were not the damage.** Stated so it can be checked:
   `prisoners-intake-system.test.ts:230` and `:529`;
   `entity-generation-wrap.test.ts:96`, `:124`, `:163`, `:178`, `:190` and
   `:204`; `unconsumed-command-contract.test.ts:204` and `:230`;
-  `ui-hud-messages.test.ts:269-275` (moved from `:218-224` by #827, byte-identical, re-verified at `a0348955`, and at `1e9b0a6a` and `3f8c00b0` before it — three consecutive anchors unmoved, the last of them a window that edited this very file); `environment-art.test.ts:248` and `:256`;
+  `ui-hud-messages.test.ts:269-275` (moved from `:218-224` by #827, byte-identical, re-verified at `ac58c457`, and at `a0348955`, `1e9b0a6a` and `3f8c00b0` before it — four consecutive anchors unmoved, one of them a window that edited this very file and one a window that edited its subject module `src/ui/hud/messages.ts`); `environment-art.test.ts:248` and `:256`;
   `adr-status-reference-contract.test.ts:147-150`, `:405`, `:427` and `:431`;
   `docs/adr/README.md:103-110` and `:158`; `docs/TRUSTED_SERVICES.md:604`,
   `:607` and `:610`; `docs/adr/0013-…md:15`, `:19-21` and `:151`;
