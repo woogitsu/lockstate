@@ -459,7 +459,7 @@ contains a digit, and reports **`hops`**: the number of steps from that leaf up
 to the nearest ancestor whose *visible* text (screen-reader-only spans removed)
 contains a word of three or more letters, together with that ancestor's text.
 It is a distance rather than a verdict because the verdict version got the
-answer wrong — see §13.
+answer wrong — see §14.
 
 Measured across all five tabs, at 1440x900:
 
