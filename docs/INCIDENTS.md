@@ -536,12 +536,42 @@ capacity staffing stops buying prevention and starts buying containment.
 
 **The bound is worth naming, because it decides the shape of the play.**
 `DeploymentSystem` and `IncidentResponseSystem` draw from the same
-`unassignedGuardIds()` pool, so a staffing shortfall — the term that makes a riot
-possible at all — exists exactly when the responder pool is empty. A riot in a
-one-sector prison therefore cannot be answered by the guards whose absence
-caused it; it is answered by guards hired *after* it starts, inside the
-600-tick `responseDeadlineTicks`. That is coherent play rather than a defect, but
-it is a consequence of a single sector and it changes when a second one exists.
+`claimableGuardIds` pool, so posting spends the requirement out of the pool that
+answers incidents and never gives it back. A riot in a one-sector prison
+therefore cannot be answered by the guards whose absence caused it; it is
+answered by guards hired *after* it starts, inside the 600-tick
+`responseDeadlineTicks`, or by guards hired **above** the requirement and left
+spare. It is a consequence of a single sector and it changes when a second one
+exists.
+
+> **This paragraph asserted something false and is corrected rather than
+> rewritten, because the false step is the whole of
+> [#893](https://github.com/matmaxalez/lockstate/issues/893).** It read: *"so a
+> staffing shortfall — the term that makes a riot possible at all — exists
+> exactly when the responder pool is empty … That is coherent play rather than a
+> defect"*.
+>
+> **"Exists exactly when" is the error, and it runs one way only.** A shortfall
+> implies an empty pool; an empty pool does not imply a shortfall.
+> `tests/integration/security-coverage-versus-response.test.ts` measures the
+> counter-example: twelve prisoners for one bed asks for two guards, two guards
+> are hired, `getCoverageReport` publishes `required: 2, assigned: 2,
+> shortage: 0`, the Staff panel badges the prison `Covered` — and the claimable
+> pool is **0**, so across sixteen in-game days that prison resolved **0** of
+> ten incidents, dispatched **0** responders and found **0** contraband, with
+> `routeFailures: 0`. Six hires at the same seed resolve all ten and dispatch
+> 34.
+>
+> The *"coherent play"* conclusion rested on the reader picturing a prison that
+> is visibly short, where the panel is already telling the player to hire. The
+> prison above is being told the opposite, and how many guards it actually needs
+> is stated nowhere a player can read: the thresholds are `required + 1` to
+> search, `required + 2` to answer a severity-3 assault and `required + 4` for a
+> severity-8 riot. **Whether that should change is not settled here** —
+> [ADR 0095](./adr/0095-what-the-guard-requirement-is-a-requirement-for.md) is
+> `Proposed` and the replacement sentence is the owner's under `AGENTS.md`'s
+> fourth exclusion. What is settled is that this paragraph may not go on saying
+> the two conditions are the same condition.
 
 ## Scale
 

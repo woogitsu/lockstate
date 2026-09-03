@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { projectStatusStrip } from '../../src/simulation/presentation/status-strip-projection';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { constantDeploymentSchedule } from '../../src/simulation/security/deployment-schedule';
 import { claimableGuardIds } from '../../src/simulation/security/post-eligibility';
 import { describeStaffCoverage } from '../../src/ui/hud/staff-panel';
 import { wallRoomPerimeter } from '../helpers/room-walls';
@@ -16,8 +17,8 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * ## What this file is
  *
  * A **measurement instrument**, not a fix. It runs one prison at five hire
- * counts and records, at each, the three numbers a player can see and the four
- * they cannot. Its assertions are a characterisation of the ladder as built --
+ * counts and one authored schedule, and records at each the three numbers a
+ * player can see and the five they cannot. Its assertions are a characterisation of the ladder as built --
  * so that whichever way ADR 0095 is settled, the change is visible here as a
  * diff to a table rather than as an argument.
  *
@@ -51,7 +52,12 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * | 4 | `Covered` | 2 | 3 | 6 | 6 | 2 |
  * | 6 | `Covered` | 4 | **10** | **0** | **34** | 2 |
  *
- * Three things in that table are the whole finding.
+ * and one row that is not a hire count at all -- the same six guards under an
+ * authored `scheduled: 6` schedule, so all six are posted and none is spare:
+ *
+ * | 6, `scheduled: 6` | `Covered` | 0 | **0** | 9 | **0** | **0** |
+ *
+ * Four things in those tables are the whole finding.
  *
  * **The panel's own advice buys nothing it speaks about.** Rows 1 and 2 differ
  * by exactly the hire the `Understaffed` hint asks for, and every outcome
@@ -79,9 +85,16 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * "Who orders a search" and `SectorSearchDutySystem`'s own docblock both state
  * the search coupling in terms and call it deliberate. Nothing states the
  * response coupling for a prison with no shortage -- and
- * `docs/INCIDENTS.md` said the opposite until #893, asserting that the pool is
- * empty *exactly when* there is a staffing shortfall. Row 2 is the
- * counter-example: shortage `0`, pool `0`.
+ * `docs/INCIDENTS.md` asserted the opposite until this branch corrected it --
+ * that the pool is empty *exactly when* there is a staffing shortfall. Row 2 is
+ * the counter-example: shortage `0`, pool `0`.
+ *
+ * **And the obvious fix is refuted by the last row rather than by an argument.**
+ * `requiredGuardCountFor` is read by `assignUnassignedGuards` as well as by
+ * `getCoverageReport` (ADR 0048 decision 3, deliberately), so it is the posting
+ * cap *and* the advice: raising it to the number a player should hire posts
+ * exactly the reserve the raise was meant to buy, and the same six guards go
+ * from containing everything to containing nothing at an identical wage bill.
  *
  * ## Why an integration test and not a unit test
  *
@@ -115,6 +128,8 @@ const SIXTEEN_DAYS = DAY_LENGTH * 16;
 const POPULATION = 12;
 /** What `resolveOccupancyScaledGuardCount` asks of the derived sector at `POPULATION`, and therefore what the panel calls *Covered*. */
 const REQUIRED_AT_POPULATION = 2;
+/** `applyDefaultSecuritySector`'s derived sector -- the only one a session a player can start has. */
+const DEFAULT_SECTOR_ID = 'security-sector.prison';
 
 function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<typeof packCommand>): void {
   runtime.kernel.submitCommand(id, runtime.kernel.expectedSequence, runtime.kernel.tick, payload);
@@ -140,8 +155,20 @@ function hireGuards(runtime: SimulationRuntime, count: number, idPrefix: string)
  * `contraband-search-duty.test.ts` spaces them, so intake is not a single
  * simultaneous shock.
  */
-function prisonHiring(guardCount: number): SimulationRuntime {
+function prisonHiring(guardCount: number, scheduledGuardCount?: number): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
+  if (scheduledGuardCount !== undefined) {
+    /*
+     * An authored schedule, which is what ADR 0048 decision 3 says a schedule
+     * is -- `resolveOccupancyScaledGuardCount` *only ever raises*, so
+     * `max(scheduled, 2)` is `scheduled` here. Replaced in place rather than
+     * rewritten by a system, because `requiredGuardCountFor` reads this array
+     * every time and a system that wrote it would destroy the authored value
+     * (`sector-staffing.ts` records that first draft and why it was wrong).
+     */
+    runtime.securitySchedules.length = 0;
+    runtime.securitySchedules.push(constantDeploymentSchedule(DEFAULT_SECTOR_ID, scheduledGuardCount));
+  }
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
@@ -208,8 +235,8 @@ function read(runtime: SimulationRuntime): Reading {
   };
 }
 
-function readAfterSixteenDays(guardCount: number): Reading {
-  const runtime = prisonHiring(guardCount);
+function readAfterSixteenDays(guardCount: number, scheduledGuardCount?: number): Reading {
+  const runtime = prisonHiring(guardCount, scheduledGuardCount);
   stepTo(runtime, SIXTEEN_DAYS);
   return read(runtime);
 }
@@ -308,6 +335,37 @@ describe('the thresholds above the requirement, which are three and not one', ()
     // what makes the two gates identifiable as `requiredResponderCount` rather
     // than as an unexplained step.
     expect(fourSpare.dispatched).toBe(34);
+  });
+});
+
+describe('raising the requirement to the number a player should hire makes it strictly worse', () => {
+  /**
+   * The obvious fix -- *"the requirement should account for both budgets"* --
+   * refuted by measurement rather than by argument, and it is the load-bearing
+   * evidence in ADR 0095's rejection of that option.
+   *
+   * `requiredGuardCountFor` is read by `assignUnassignedGuards` *and* by
+   * `getCoverageReport` (ADR 0048 decision 3, deliberately, so that what is
+   * enforced and what is published cannot disagree). So the same number is the
+   * posting cap and the advice, and raising it posts exactly the reserve it was
+   * raised to buy.
+   */
+  it('posts the whole force and answers nothing, at the same wage bill that answered everything', () => {
+    const sixSpare = readAfterSixteenDays(6);
+    const sixPosted = readAfterSixteenDays(6, 6);
+
+    // Six guards, one seed, one population, and the only difference is what the
+    // sector asks for.
+    expect([sixSpare.required, sixSpare.assigned, sixSpare.spare]).toEqual([2, 2, 4]);
+    expect([sixPosted.required, sixPosted.assigned, sixPosted.spare]).toEqual([6, 6, 0]);
+
+    // Both read `Covered`, which is the point: the badge cannot tell them apart
+    // any more than it can tell two guards from six.
+    expect([sixSpare.badgeKey, sixPosted.badgeKey]).toEqual([COVERED, COVERED]);
+
+    expect([sixSpare.resolved, sixSpare.lapsed, sixSpare.dispatched]).toEqual([10, 0, 34]);
+    expect([sixPosted.resolved, sixPosted.lapsed, sixPosted.dispatched]).toEqual([0, 9, 0]);
+    expect([sixSpare.contraband, sixPosted.contraband]).toEqual([2, 0]);
   });
 });
 
