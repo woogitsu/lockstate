@@ -115,17 +115,28 @@ That is the finding this pass was sent to get, and it is the most important one
 in this note: **there is no game here yet.** Everything below is either an
 elaboration of why, or a defect found on the way.
 
-### `DEFECT` — the INCIDENTS chip read 0 at all fifty samples while 26 fights fired
+### The INCIDENTS chip read 0 at all fifty samples while 26 fights fired
 
 `INCIDENTS 0` with the badge `Clear` was on screen at every single sample,
-including the ones where the alerts column had just added a fight. A player
-watching the chips — which is what the chip row is for — would have concluded
-the prison had never had an incident.
+including the ones where the alerts column had just added a fight.
 
-What would establish the cause: whether the chip counts *open* incidents rather
-than incidents, and whether every fight in this run closed inside one sampling
-interval. What would establish the impact is nothing further — a chip that reads
-0 and `Clear` for 33 days of fights is misinformation whatever it is counting.
+**This was labelled `DEFECT` in an earlier draft of this note and that label
+was not earned.** `IncidentLog.openIncidents()` returns the *non-terminal*
+incidents, and `INCIDENT_STATES` runs `active → notified → responding →
+resolved | lapsed` with the last two terminal — so a chip reading 0 is
+**correct** if every one of those 26 fights opened and finished between two
+consecutive samples, and run 1's samples were twenty wall seconds apart, which
+at ×4 is about **1,930 ticks**. A sample interval three orders of magnitude
+longer than the thing being sampled is not evidence of anything. The correction
+is kept here rather than overwritten because the mistake is the instructive
+part: the measurement was real and the label was a guess.
+
+`playtest-2026-09-03-does-the-incidents-chip-lie.playtest.ts` settles it
+instead, by removing both the interval and the responder: an **in-page**
+observer polls the chip every 50 ms (about five ticks at ×4, and no Playwright
+round trip to be starved by a loaded box), pairs every new fight row with what
+the chip read at that instant, and the prison is built with **zero guards** so
+nothing can respond to an incident and shorten its life. Its verdict is §5.
 
 ### `DESIGN` — the prison empties itself, and nothing refills it
 
@@ -149,4 +160,132 @@ against a 480-a-day wage bill**, with twelve to twenty prisoners. Nothing else
 was ever spent. The whole nine-room prison cost 13,525 to build, so by day 85 a
 neglected prison holds seven times its own construction cost and has nothing to
 spend it on.
+
+## 3. The repeated decision, and whether it has a trade-off
+
+A management game lives on one decision the player makes over and over. This
+one has an inventory of controls rather than a loop, and instrument B counted
+it: every visible, pressable control on every tab.
+
+| tab | controls that *do* something | what they are |
+| --- | --- | --- |
+| OVERVIEW | **1** | `Admit a prisoner` |
+| BUILD | 21 catalogue rows + a category select + `Place on map` / `Remove` / `Buy` + a quantity stepper + a buy submit + a coordinate form of six steppers and `Place order` | placement |
+| ROOMS | 18 room-type rows + a four-field coordinate form + `Use these tiles` / `Draw on map` / `Remove rooms` | zoning |
+| SECURITY | **2** | `Guard` (the only role row) and `Hire Guard · 80` |
+| REGIME | **0** | two `Collapse` buttons and nothing else |
+
+Plus, on every tab, three transport buttons, five tab buttons, an interface-scale
+button and six prison-file buttons (`New prison`, `Save now`, `Export`,
+`Import`, `Load`, `Delete`).
+
+**So the repeated decision is "where do I put the next wall".** Build and Rooms
+hold 39 of the 43 controls that touch the prison, and the other four are Admit,
+Hire, and the role row you have to select before hiring.
+
+### `DESIGN` — the repeated decision has no trade-off, because everything is affordable
+
+A trade-off needs two things you cannot both have. In run 1 nothing competed:
+the treasury paid for every room in the plan on day 1 with 11,475 left over, and
+then grew by 2,464 a day for the rest of the run. Material prices never move —
+`src/content/procurement-catalog.ts` says so in its own header, and says why:
+*"One price per unit, and it never moves… there is nothing to gain by buying
+early."* So "what do I build next" has a right answer (all of it, in any order)
+rather than a choice.
+
+The one place the game does state a real cost is the Staff panel: `Hire Guard ·
+80` with *"Costs 80 now and 80 a day in wages."* That is a genuine ongoing
+commitment — and it buys nothing observable, which §4 measures.
+
+### `DESIGN` — the Regime tab is read-only, and that is where the loop should live
+
+The Regime panel shows two timetables running at once — in one sample,
+`General Population 43% THROUGH / Allows Work, Education, Free Association`
+above `High Risk 35% THROUGH / Allows Sleep, Meal, Hygiene` — and **offers no
+control to change either**. The blocks, their order, their lengths and which
+population gets which are all fixed content.
+
+This is the single largest missed loop in the build. Every action a prisoner can
+take is gated by a regime block (`src/simulation/prisoners/actions.ts` targets
+rooms; `regime.ts` decides which category is allowed when), so the timetable is
+already the lever that decides whether the shower room you paid for is ever
+used. Prison Architect's regime editor is the whole reason its rooms matter.
+Here the game computes the consequence of a timetable the player cannot touch.
+
+**What it would take is not new simulation.** The blocks exist, the categories
+exist, and the panel already renders them. What is missing is the ability to
+reorder or re-length them and a command to carry the change.
+
+## 4. Where the tension is
+
+Nowhere yet. Taken one candidate at a time, against run 1's samples.
+
+### Money — `DESIGN`, no tension
+Measured in §2: monotonic growth to seven times the prison's build cost. The one
+mechanism that could bite is payroll, and 480 a day against 2,464 a day of
+income never came close. There is an overdraft floor
+(`TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS = -2,500`,
+`src/simulation/economy/treasury.ts:295`) and nothing in an ordinary run walks
+towards it.
+
+### Safety — `DESIGN`, and this is the sharpest one
+Six guards were hired and **never assigned to anything**. The Staff panel said
+so, in these words, both before and after the six hires:
+
+```
+GUARD COVERAGE
+0 of 0
+Covered
+This prison has the guards it asks for.
+...
+ON DUTY
+0 held · 6 free
+Nobody is assigned right now.
+```
+
+Meanwhile the strip's COVERAGE chip read **exactly the PRISONERS count at every
+sample** — 20/20, 19/19, 15/15, 13/13, 12/12 — with the badge `Covered`. The
+chip's value is `counts.prisonersCovered`
+(`src/ui/hud/projection.ts:844`), and `projection.ts:373` states the rule it
+follows: *"a prison with nobody in a sector has all the coverage it needs."*
+
+So: **a prison with no sectors is fully covered by definition, and safety is
+free.** `safety` never once appeared as any prisoner's leading need in fifty
+roster samples. The pressure the earlier `2026-08-26-failure-modes.md` record
+found — an unhoused arrival's safety decaying to zero and a riot at tick 15,600
+— is not reachable in a prison that has a cell, because a cell is all it takes
+to be "covered".
+
+That also makes the six guards' 480 a day the purest possible bad deal: paying
+for something the game already gives you.
+
+### Needs — `DESIGN`, and the player cannot see them
+Across fifty samples the roster's need column named exactly three needs:
+**Hygiene**, **Hunger** and **Bladder**. `Sleep`, `Safety` and `Recreation` were
+never named once. The roster shows **four rows**, one need each, for a
+population of twelve to twenty — so at twenty prisoners a player can read the
+leading need of 20% of their prison and nothing about the other 80%, and there
+is no per-prisoner detail panel to open.
+
+### Incidents — `DESIGN`, they happen and they do not matter
+26 fights in 33.7 days is roughly **one fight every 31 in-game hours**, which is
+frequent enough to be the game's pulse. Each one self-resolved, cost nothing
+observable, moved no chip, and produced two alert rows. A threat that resolves
+itself is set dressing.
+
+### Contraband — `DESIGN`, a counter with no consequence
+CONTRABAND went 1 → 5 and the chip carried the name of the last item found
+(`Tool`, then `Currency`, then `Drugs`). Nothing was ever asked of the player
+about any of it — no search to order, no cell to shake down, no control anywhere
+on the Security tab.
+
+### Overcrowding — the one real demand the game made, and it is inert
+Twenty admissions into twelve beds left **eight prisoners at `Cell Assignment`
+for the rest of the run**. The game says so clearly and in three places at once:
+the PRISONERS chip grows a `8 with no bed` badge, the Intake panel reads
+`8 waiting with no bed to sleep in` and `IN INTAKE 8 of 20`, and its hint
+explains the rule. **That is the only thing in 33.7 days that pointed at a job
+for the player** — and it is a standing notice rather than a pressure: nothing
+about those eight got worse, no alert escalated, and the eight were still there
+33 days later.
 
