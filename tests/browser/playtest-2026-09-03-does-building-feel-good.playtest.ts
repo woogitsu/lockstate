@@ -1448,3 +1448,108 @@ test('act J: does Z take back a run', async ({ page }) => {
   note(`[J] event band: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
   await shot(page, 'J02-after-a-second-z');
 });
+
+/* ------------------------------------------------------------------ ACT K */
+
+/**
+ * Act J's first Z sent `{"type":"Undo"}`, left the treasury and the queue
+ * exactly where they were, and put *"The last change to the build queue was
+ * undone."* on the event band and in the alerts list. Its **second** Z gave
+ * back all 480 and emptied the queue.
+ *
+ * There is an obvious innocent explanation and this act exists to test it:
+ * `calibrate` fires about twenty-eight `RemoveObject` presses at empty tiles,
+ * every one refused. If a refused removal takes a place in the undo stack then
+ * act J's first Z popped one of *those*, and a player who never pressed Remove
+ * would see the first Z work.
+ *
+ * So two prisons, identical but for one press:
+ *
+ * K1 draws a run with **no Remove press anywhere before it** -- no
+ *    calibration, coordinates taken from the origin four separate runs have
+ *    now measured at (-304, -574), and checked against the tiles the orders
+ *    actually name -- then presses Z once.
+ * K2 does the same with **one Remove press on an empty tile** first.
+ *
+ * If K1's single Z takes back the run and K2's does not, the finding is that a
+ * refused Remove occupies a place in the undo stack. If neither does, it is
+ * that the first Undo of a session never works. Either way the sentence on the
+ * band is the same sentence, and in one of the two cases it is false.
+ *
+ * It also reads the alerts list's own controls, because act J showed a "Clear
+ * this alert" press beside the Info row and none beside the Warning one.
+ */
+test('act K: which Z is the one that works', async ({ page }) => {
+  test.setTimeout(600_000);
+
+  const measuredOrigin = { originX: -304, originY: -574 };
+
+  const walk = async (label: string, pressRemoveFirst: boolean): Promise<void> => {
+    await page.goto(APP_URL);
+    await page.waitForSelector('#game-root canvas');
+    await page.waitForSelector('.hud');
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await tab(page, 'build').click();
+    const started = Date.now();
+
+    if (pressRemoveFirst) {
+      await page.locator('.hud-build__remove').click();
+      const missed = await press(page, 700, 300);
+      await page.waitForTimeout(900);
+      note(`[${label}] one Remove press at an empty tile sent ${missed.length} command(s) ${JSON.stringify(missed.map((c) => `${String(c['type'])} ${String(c['x'])},${String(c['y'])}`))}`);
+      note(`[${label}] band after it: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+      if ((await page.locator('.hud-build__remove').innerText()).trim().toLowerCase().startsWith('stop')) {
+        await page.locator('.hud-build__remove').click();
+      }
+    } else {
+      note(`[${label}] no Remove press of any kind before this run`);
+    }
+
+    await armBuildable(page, 'wall-brick');
+    const before = await sample(page, started);
+    const runBefore = (await sentCommands(page)).length;
+    await drag(
+      page,
+      { x: measuredOrigin.originX + 13 * TILE, y: measuredOrigin.originY + 13 * TILE },
+      { x: measuredOrigin.originX + 18 * TILE, y: measuredOrigin.originY + 13 * TILE },
+    );
+    const runCmds = (await sentCommands(page)).slice(runBefore);
+    await page.waitForTimeout(1500);
+    const queued = await sample(page, started);
+    note(
+      `[${label}] the run: ${runCmds.length} order(s) at ${JSON.stringify(runCmds.map((c) => `${String(c['x'])},${String(c['y'])} ${String(c['edge'])}`))}` +
+        ` -- the origin is confirmed if those are tiles 13-18 on row 13`,
+    );
+    note(`[${label}] treasury ${before.treasury} -> ${queued.treasury} (took ${before.treasury - queued.treasury}) | queue ${JSON.stringify(queued.queue)}`);
+
+    await page.mouse.click(700, 300);
+    await page.waitForTimeout(300);
+    const preKey = (await sentCommands(page)).length;
+    await page.keyboard.press('KeyZ');
+    await page.waitForTimeout(2500);
+    const zCmds = (await sentCommands(page)).slice(preKey);
+    const after = await sample(page, started);
+    note(`[${label}] ONE Z sent ${zCmds.length} command(s): ${JSON.stringify(zCmds)}`);
+    note(`[${label}] treasury ${queued.treasury} -> ${after.treasury} (${after.treasury - queued.treasury >= 0 ? '+' : ''}${after.treasury - queued.treasury})`);
+    note(`[${label}] queue after ONE Z: ${JSON.stringify(after.queue)}`);
+    note(`[${label}] DID ONE Z TAKE BACK THE RUN? ${after.treasury === before.treasury ? 'YES -- the money is all back' : 'NO'}`);
+    note(`[${label}] the event band says: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
+    note(`[${label}] the alerts list:\n${await panelText(page, '.hud-alerts__list')}`);
+    const alertControls = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.hud-alerts__list > *')).map((n) => {
+        const el = n as HTMLElement;
+        return {
+          text: el.innerText.replace(/\n/g, ' / ').slice(0, 90),
+          buttons: Array.from(el.querySelectorAll('button')).map((b) => (b as HTMLElement).innerText.trim()),
+        };
+      }),
+    );
+    note(`[${label}] each alert row and the controls it offers: ${JSON.stringify(alertControls, null, 1)}`);
+    await shot(page, `${label}-after-one-z`);
+  };
+
+  await installTee(page);
+  await walk('K1', false);
+  await walk('K2', true);
+});
