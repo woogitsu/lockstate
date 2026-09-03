@@ -542,20 +542,62 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
     const single = placed.orders[0]!;
     await measureCancel(page, single.id, `approved, sole order (state ${single.state})`);
 
-    // Now five at once, and cancel one of them. The gesture buys the whole
-    // gesture's bricks, so one cancelled order leaves four still demanding
-    // them: `largestSurplusDelivery` only takes a delivery that fits entirely
-    // inside the surplus.
-    await dragWall(page, { x: from.x, y: from.y + 128 }, 5);
-    const many = await readWorker(page);
-    const pending = many.orders.filter((order) => order.state !== 'cancelled');
-    note('');
-    note(`after a 5-tile drag: ${JSON.stringify(stateCounts(many))}, ${String(pending.length)} live orders,`
-      + ` treasury ${String(many.treasuryMinorUnits)}, deliveries ${JSON.stringify(many.deliveries)}`);
-    if (pending.length > 1) {
-      await measureCancel(page, pending[0]!.id, `approved, one of ${String(pending.length)} (state ${pending[0]!.state})`);
-    } else {
-      note(`only ${String(pending.length)} live order after the 5-tile drag, so the "one of several" case is not reached here.`);
+    expect(placed.orders.length).toBeGreaterThan(0);
+  });
+
+  test('approved: one of a run of six, on its own page', async ({ page }) => {
+    const note = (line: string): void => {
+      console.log(line);
+    };
+    const from = await freshPrison(page);
+
+    /*
+     * A fresh page, and not a second drag inside the test above, because of a
+     * collision that test measured and that is worth stating rather than
+     * working around silently.
+     *
+     * A just-in-time purchase id is `jit:<tick>:<itemId>:<inFlightBefore>`
+     * (`justInTimePurchaseOrderId`, `src/simulation/economy/just-in-time-materials.ts:74`),
+     * and `inFlightBefore` is what separates two purchases of the same item at
+     * the same tick. With the clock paused every press lands at the *same*
+     * tick, so cancelling an order -- which cancels its delivery and lowers
+     * the in-flight total -- makes the *next* purchase at that tick compose an
+     * id a cancelled purchase already used. `ProcurementSystem` answers
+     * `duplicate-order`, which the caller treats as already satisfied, so
+     * nothing is bought and nothing is reported.
+     *
+     * Measured, on the run of 2026-09-03: after cancelling one of two orders
+     * at tick 0, a six-segment drag at tick 0 placed six orders, bought
+     * nothing, and left the treasury exactly where it was, with 2 bricks in
+     * flight against a demand of 14. That is a real sequence -- ADR 0051 lets
+     * a player do all of it while paused -- but it is not the case this test
+     * is about, and a run with no supply at all would answer `0 back` for a
+     * reason that has nothing to do with the surplus rule.
+     */
+    await dragWall(page, from, 6);
+    const placed = await readWorker(page);
+    const live = placed.orders.filter((order) => order.state !== 'cancelled');
+    note(`after a 6-tile drag: ${JSON.stringify(stateCounts(placed))}, ${String(live.length)} live orders,`
+      + ` treasury ${String(placed.treasuryMinorUnits)}, deliveries ${JSON.stringify(placed.deliveries)}`);
+    if (live.length < 2) {
+      note(`only ${String(live.length)} live order, so the "one of several" case is not reached.`);
+      return;
+    }
+
+    const drawn = await pickRowInState(page, placed, 'approved');
+    if (drawn === undefined) {
+      note('NO DRAWN ROW IN approved, which is the finding.');
+      return;
+    }
+    await measureCancel(page, drawn, `approved, one of ${String(live.length)}`);
+
+    // And now cancel the rest, one at a time, so the figure can be watched
+    // crossing from "no delivery fits inside the surplus" to "one does".
+    for (let index = 0; index < 6; index += 1) {
+      const reading = await readWorker(page);
+      const next = await pickRowInState(page, reading, 'approved');
+      if (next === undefined) break;
+      await measureCancel(page, next, `approved, ${String(reading.orders.filter((order) => order.state === 'approved').length)} still live`);
     }
 
     expect(placed.orders.length).toBeGreaterThan(0);
