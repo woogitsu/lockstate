@@ -310,6 +310,46 @@ export const STATE_INCOME_UNMET_NEED_LEVEL = 51;
  * How much of one prisoner-day the state withholds for each of the six needs
  * the prison is leaving unmet, in the same minor units.
  *
+ * ## Suspended at `0` by the owner, 2026-09-03 -- for now, and reversibly
+ *
+ * **The rate is `0`, so no unmet need costs a prison anything today.** The
+ * owner was shown the measured effect of the shipped `40`: a fully served
+ * prisoner was worth five times a neglected one, and over a twenty-day run a
+ * prison took 1,196 a day where 2,700-3,600 was available -- about two thirds
+ * of the grant withheld daily, with nothing on screen saying so. Offered four
+ * ways to surface it, they chose none and ruled instead:
+ *
+ * > usuń na razie kary, zobaczymy jak pogram i ocenię łatwość
+ *
+ * ("remove the penalties for now, we'll see how it plays and I'll judge the
+ * ease.") Recorded in their words with the date on it, per
+ * `docs/AGENT_WORKFLOW.md` §3 -- and amended into
+ * [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md),
+ * whose `Status` is untouched because suspending a decision is not the same
+ * act as withdrawing it.
+ *
+ * **"na razie" is "for now", and the shape of this change is that word.** The
+ * ruling is an experiment the owner runs while playing, not a deletion of the
+ * mechanic, so nothing here is deleted: the constant stays, every reader of it
+ * stays, `stateIncomeForPrisonerDay`'s formula stays, and the schedule is
+ * pinned by a test that is parameterised on this constant rather than on the
+ * number it holds. **Restoring the mechanic is `0` -> `40` on the line below
+ * and nothing else** -- and if that edit is made, the assertions in
+ * `tests/unit/economy-state-income.test.ts` under *"the state withholds part
+ * of a prisoner-day for each need the prison leaves unmet"* re-price
+ * themselves from the constant and stay true without being touched.
+ *
+ * **The scope of the ruling is exactly this constant.** The question put to
+ * the owner was about the state-income withholding and nothing else, so wages
+ * ([`payroll.ts`](./payroll.ts)), build costs, the overdraft floor
+ * ([ADR 0083](../../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md))
+ * and the solitary sanction are all untouched by it.
+ *
+ * **What every paragraph below describes is the mechanic at `40`.** They are
+ * left standing word for word rather than rewritten, because `40` is the
+ * number the ruling suspends and a reader restoring it needs the reasoning
+ * that chose it (`docs/AGENT_WORKFLOW.md` §4: mark both directions).
+ *
  * **Directional, not a committed balance decision**, the standing convention
  * for a new rule's numbers here (`DEFAULT_SECTOR_RISK_POLICY` and
  * `DEFAULT_ASSAULT_POLICY` both carry it, and issue #28 puts final balance out
@@ -342,9 +382,12 @@ export const STATE_INCOME_UNMET_NEED_LEVEL = 51;
  *
  * An integer, for `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS`'s reason: it
  * multiplies into a balance a save carries and a determinism fingerprint
- * hashes, and `docs/DETERMINISM.md` makes no exception for money.
+ * hashes, and `docs/DETERMINISM.md` makes no exception for money. That is why
+ * the suspension is `0` and not a fraction or a multiplier: `0` is an integer,
+ * it leaves the arithmetic exact, and it makes the withheld term vanish
+ * without changing the shape of the expression that computes it.
  */
-export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 40;
+export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 0;
 
 /** Integer division. `%` and `-` are exact on safe integers, so the quotient is exact rather than a rounded float. */
 function floorDiv(numerator: number, denominator: number): number {
