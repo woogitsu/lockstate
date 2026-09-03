@@ -75,8 +75,11 @@ The same convention is stated in five other places, and they are the sweep:
 `src/simulation/security/patrol-system.ts:131-134`,
 `src/simulation/security/deployment-system.ts:191`,
 `src/simulation/incidents/response-system.ts:595`,
-`src/simulation/contraband/search-system.ts:298` and
-`src/simulation/prisoners/job-worker-adapter.ts:30-31`.
+`src/simulation/contraband/search-system.ts:298` and — until
+[ADR 0093](./0093-a-carry-is-an-action.md) **deleted the file** —
+`prisoners/job-worker-adapter.ts:30-31`. The fifth site is
+therefore no longer a site: a carry is a prisoner action now and walks like
+any other.
 
 ---
 
@@ -262,10 +265,17 @@ already calls itself *"a candidate value, not a locked balance decision"*.
    ordering the selections alone fixed nothing. A walk moves the moment of
    claiming out of that pass, and sorting here is what keeps its guarantee true
    rather than true-on-the-tick-it-was-measured.
-5. **An external write to a walker's tile ends the walk.** There is one such
-   write outside `prisoners/`: `PrisonerJobWorkerAdapter.setPositionTile`.
-   `releasePrisoner` forgets the walk *and* the heading before the index is
-   recycled.
+5. **An external write to a walker's tile ends the walk.** **There are now
+   none such outside `prisoners/`, and this item read *"There is one such write
+   outside `prisoners/`: `PrisonerJobWorkerAdapter.setPositionTile`"* until
+   [ADR 0093](./0093-a-carry-is-an-action.md).** That adapter and the
+   `JobWorkerAdapter` interface behind it were **deleted** with `JobSystem`: a
+   carry is a prisoner action, so it walks through `LocomotionStore` like every
+   other action and `ActionSystem.routeContextFor` is already the one
+   expression for the clearance a carrier's doors are judged against. The rule
+   stands and has no remaining site — which is the whole of what ADR 0093
+   decision 3 bought. `releasePrisoner` forgets the walk *and* the heading
+   before the index is recycled.
 
 ### What the walk did to the claim rule, and why one line was added
 
@@ -556,14 +566,22 @@ designed for it, and is not claimed here.
   keyframe row; both carry layout 2's 20 bytes now, with the layout-1 figures
   kept beside them because the order-of-magnitude argument each supports is
   unchanged.
-- **Guards, incident responders, contraband searchers and job carriers still
-  teleport on arrival.** They are named in "What the code did" and not
-  converted: the two security paths are inert or one-shot in a session a player
-  can start (`deriveDefaultSecuritySector` authors no patrol route, so
-  `PatrolSystem` never runs), and the two incident paths are deadline-bounded,
-  so making their travel cost time changes whether an incident lapses — a
-  balance decision with its own evidence to gather. The renderer draws no guards
-  today, so nothing on screen teleports.
+- **Incident responders and contraband searchers still teleport on arrival.**
+  They are named in "What the code did" and not converted: the two incident
+  paths are deadline-bounded, so making their travel cost time changes whether
+  an incident lapses — a balance decision with its own evidence to gather.
+
+  **This bullet has lost two of its four nouns, and both are recorded rather
+  than overwritten.** It read *"Guards, incident responders, contraband
+  searchers and job carriers still teleport on arrival"*, and added the
+  parenthesis *"the two security paths are inert or one-shot in a session a
+  player can start (`deriveDefaultSecuritySector` authors no patrol route, so
+  `PatrolSystem` never runs) ... The renderer draws no guards today, so nothing
+  on screen teleports."* **Guards** went at [ADR 0088](./0088-does-a-guard-walk-to-its-post.md),
+  which converted deployment travel and patrol and scoped itself to those two.
+  **Job carriers** went at [ADR 0093](./0093-a-carry-is-an-action.md): a carry
+  is a prisoner action and prisoner actions walk. The carrier is not a fifth
+  site nobody signed — it stopped being a site at all.
 
 ## Open questions
 

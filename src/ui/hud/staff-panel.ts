@@ -248,6 +248,34 @@ export function formatHeldGuardText(
  * stops entirely at two guards. A shortage is a real and actionable fact about
  * staffing; it is not a prediction, and a sentence promising one would be false
  * in the first of those prisons.
+ *
+ * ### What it now does say, on the bottom rung only
+ *
+ * `consequenceKey` is the owner's chosen sentence of 2026-09-03 --
+ * *"No guard is posted here, so nobody in this sector is kept safe."* -- and
+ * it is here rather than in a fourth branch because it is a second thing
+ * about the *same* rung: `hintKey` names the press that fixes it and this
+ * names what is being paid until somebody presses.
+ *
+ * **It does not contradict the paragraph above, and the paragraph above is
+ * what made it possible to write.** An earlier wording of the owner's, *"so
+ * nothing stops an incident in this sector"*, was refused on this docblock's
+ * own grounds with the measurements in #848 and PR #854; guard presence is an
+ * amplifier and not a gate, so no coverage sentence may promise anything
+ * about an incident. What an empty post *does* zero is the safety
+ * provisioning: `SAFETY_COVERAGE_PROVISION_MULTIPLIER.unguarded` is `0`
+ * against a `safety` decay of 0.05 a tick, a net -0.05 that is 4,080 ticks
+ * from full to the level the state withholds against, and nothing else in the
+ * simulation puts `safety` back (both actions that used to were removed for
+ * that reason, issue #588). So the sentence names a need that stops being
+ * provisioned, which is a fact, rather than an outcome, which would be the
+ * prediction this docblock refuses.
+ *
+ * **`undefined` on the other two rungs**, and that is the multiplier rather
+ * than a choice about emphasis: `understaffed` provisions at half and still
+ * costs a long-stayer their safety over 20,400 ticks, but at a different rate
+ * needing a different verb, and `covered` provisions at a surplus. A sentence
+ * reused across all three would be false on one of them.
  */
 export interface StaffCoverageReadout {
   readonly tone: BadgeTone;
@@ -255,6 +283,14 @@ export interface StaffCoverageReadout {
   readonly badgeKey: LocalizationKey;
   /** The sentence under it: the action where there is one, the state where there is not. */
   readonly hintKey: LocalizationKey;
+  /**
+   * A second sentence saying what the rung *costs*, where the cost is total
+   * and stateable -- the `unguarded` rung and no other. Absent, not
+   * present-and-`undefined`, because `exactOptionalPropertyTypes` is on and
+   * the two other branches have nothing to say here rather than a nothing to
+   * say it with.
+   */
+  readonly consequenceKey?: LocalizationKey;
   /**
    * How many more hires clear the shortage -- the projection's own summed
    * figure, not `required - assigned`. Zero when nothing is short, and then it
@@ -272,6 +308,7 @@ export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): Staf
       tone: 'danger',
       badgeKey: HUD_MESSAGE_KEY.securityCoverageUnguarded,
       hintKey: HUD_MESSAGE_KEY.securityCoverageUnguardedHint,
+      consequenceKey: HUD_MESSAGE_KEY.securityCoverageUnguardedConsequence,
       hireCount: coverage.shortage,
     };
   }
@@ -549,10 +586,31 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
    * Two lines, deliberately: a header pairing the block's name with the pair of
    * figures, and one sentence. It is the smallest thing that lets a player act,
    * because the action it names is the button two blocks down.
+   *
+   * **Three on the bottom rung, since the owner's wording of 2026-09-03**, and
+   * the "deliberately" above is amended rather than overwritten because the
+   * reason it said two has not gone away. `coverageConsequence` is a
+   * *third* line and it is there only while `describeStaffCoverage` returns a
+   * `consequenceKey`, which is the `unguarded` rung alone -- a state one press
+   * of the button two blocks down leaves for good. So the block a player lives
+   * with is still two lines; the third arrives exactly where the smallest thing
+   * that lets a player act is no longer the whole of what they need to know,
+   * and the height it costs comes out of `.hud-staff__list`, which already
+   * scrolls and already has a floor.
+   *
+   * It is its own element rather than a second clause run on after the hint,
+   * following `hud.security.hire-unassigned` -- the note whose own exemption in
+   * the `@media (max-height: 700px)` block records what a run-on sentence
+   * measured there: `scrollHeight` 26 against `clientHeight` 13 at 900x600,
+   * with the trailing clause the one that was cut. A state-and-consequence
+   * sentence read to *"so nobody in this"* is worse than absent, so it carries
+   * `.hud-staff__coverage-consequence` and is exempted from the one-line clamp
+   * the same way.
    */
   const coverageSummary = valueText('', 'hud-staff__coverage-summary');
   const coverageBadge = createStatusBadge({ tone: 'neutral', text: '' });
   const coverageHint = eyebrowText('', 'hud-staff__note');
+  const coverageConsequence = eyebrowText('', 'hud-staff__note hud-staff__coverage-consequence');
 
   const coverageBlock = element('div', {
     className: 'hud-staff__coverage',
@@ -562,6 +620,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
         children: [eyebrowText(t(HUD_MESSAGE_KEY.securityCoverageTitle)), coverageSummary, coverageBadge.element],
       }),
       coverageHint,
+      coverageConsequence,
     ],
   });
   /*
@@ -596,6 +655,18 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       readout.hireCount > 0
         ? t(readout.hintKey, { count: localizer.formatNumber(readout.hireCount) })
         : t(readout.hintKey);
+    /*
+     * Emptied as well as hidden. `.hud-staff__note[hidden]` in `./hud.css`
+     * makes the attribute stick under the author `display` the short-viewport
+     * block sets, so the box does go away -- but a sentence left in the text
+     * node is still in the accessibility tree of some readers and is still
+     * found by a spec matching on text, and "no guard is posted here" is
+     * exactly the sentence that must not be readable in a prison that has
+     * guards posted. The same belt-and-braces `paintHeld` uses one block down.
+     */
+    const consequenceKey = readout.consequenceKey;
+    coverageConsequence.hidden = consequenceKey === undefined;
+    coverageConsequence.textContent = consequenceKey === undefined ? '' : t(consequenceKey);
   }
 
   // ---- who to hire ---------------------------------------------------

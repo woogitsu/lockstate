@@ -246,6 +246,46 @@ const ABSENT_BY_DESIGN: ReadonlyMap<string, string> = new Map([
     // subdirectory, which is why a planted one was needed at all.
     'named by that note as the offender it planted below a non-recursive scan root, removed after measuring',
   ],
+  /*
+   * **Four dated audit records naming two files ADR 0093 deleted.**
+   *
+   * The 2026-08-26 audit pass measured `JobSystem` and the test file that
+   * covered it, at line numbers that were correct that day.
+   * [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 4 retired
+   * the class -- a carry is an `ActionDefinition` now, so the walk belongs to
+   * `prisoners.actions` and the stock half survives as
+   * `src/simulation/operations/carry-executor.ts` -- and the test file was
+   * renamed with it.
+   *
+   * **These are allowlisted rather than edited, and `docs/research/README.md`
+   * is why**: *"a record here does not become wrong, it becomes older."* An
+   * audit note is a statement about the tree on the day it was taken, and
+   * repointing its citations at a file that did not exist then would make the
+   * record less true rather than more. `documentation-source-anchor-contract.test.ts`
+   * already takes the same position from the other side -- it does not police
+   * ranges under `docs/research/` at all, and pins the broken ones as a
+   * positive control instead.
+   *
+   * Each is true as written of the commit it was written at, which is the
+   * standard this allowlist sets. They are keyed on the pair, so none of them
+   * excuses a *new* citation of either path anywhere else.
+   */
+  [
+    'docs/research/audit-2026-08-26/04-architecture.md -> src/simulation/operations/job-system.ts',
+    'named by the 2026-08-26 architecture audit, at a commit where the file existed; ADR 0093 deleted it',
+  ],
+  [
+    'docs/research/audit-2026-08-26/05-performance.md -> src/simulation/operations/job-system.ts',
+    'named by the 2026-08-26 performance audit, at a commit where the file existed; ADR 0093 deleted it',
+  ],
+  [
+    'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts',
+    'named by the 2026-08-26 bug hunt, at a commit where the file existed; ADR 0093 deleted it',
+  ],
+  [
+    'docs/research/audit-2026-08-26/09-bug-hunt.md -> tests/unit/operations-job-system.test.ts',
+    'named by the 2026-08-26 bug hunt; ADR 0093 renamed the file operations-carry-executor.test.ts with the class it tests',
+  ],
 ]);
 
 /** `source -> path`, the key `ABSENT_BY_DESIGN` is written in. */

@@ -1296,7 +1296,7 @@ export class SimulationWorkerStateMachine {
    * another is a catalog entry rather than a protocol change.
    *
    * Both sentences carried a tally before (`the nine read models`, `a twelfth`)
-   * and both were already wrong at `06f5d7d`, the commit that wrote them, where
+   * and both were already wrong at `4da7b2a3`, the commit that wrote them, where
    * `PROJECTION_IDS` held twelve. Derive the number instead of restating it:
    * `node -e "import('./src/simulation/protocol/types.ts').then(m => console.log(m.PROJECTION_IDS.length))"`.
    *

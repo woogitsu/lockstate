@@ -1,27 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { Kernel } from '../../src/simulation/kernel/kernel';
-import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
-import type { RouteContext } from '../../src/simulation/navigation/route-context';
-import type { TilePosition } from '../../src/simulation/world/coordinates';
+import { CarryJobExecutor } from '../../src/simulation/operations/carry-executor';
 import { Container, ContainerRegistry } from '../../src/simulation/operations/inventory';
 import { JobBoard } from '../../src/simulation/operations/job';
-import { JobSystem, JobWorkerPool, type JobWorkerAdapter } from '../../src/simulation/operations/job-system';
 import { UtilityNetwork } from '../../src/simulation/operations/utility-network';
-import { buildCellBlockFixture } from '../helpers/navigation-fixture';
-
-const STAFF: RouteContext = { role: 'staff', securityClearance: 5, permissions: ['medical-wing'] };
-
-class MapWorkerAdapter implements JobWorkerAdapter {
-  private readonly positions = new Map<number, TilePosition>();
-  public set(entityId: number, tile: TilePosition): void { this.positions.set(entityId, tile); }
-  public getPositionTile(entityId: number): TilePosition {
-    const tile = this.positions.get(entityId);
-    if (tile === undefined) throw new Error(`No position for worker ${entityId}`);
-    return tile;
-  }
-  public setPositionTile(entityId: number, tile: TilePosition): void { this.positions.set(entityId, tile); }
-  public getRouteContext(): RouteContext { return STAFF; }
-}
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { CarryCrew } from '../helpers/carry-executor-harness';
 
 /**
  * Representative-prison-size correctness (and directional timing) proof
@@ -32,14 +15,19 @@ class MapWorkerAdapter implements JobWorkerAdapter {
  * matching/queue growth/inventory transfers stay correct and reasonably
  * fast at several hundred concurrent jobs and a several-hundred-node
  * utility network, and reports timing to the console as evidence.
+ *
+ * **The carry half no longer routes anybody**
+ * ([ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 4): the
+ * walk belongs to `prisoners.actions`, so what is measured here is matching,
+ * queue growth and the inventory transfer -- `CarryJobExecutor` -- and not
+ * pathfinding at scale. Navigation at scale has its own gates under
+ * `benchmarks/` and in `tests/determinism/`. The `NavigationSystem` and the
+ * cell-block fixture this file used to build have gone with the system that
+ * needed them, which is why the timing figure below is much smaller than the
+ * one this test used to print: it is a different measurement and it says so.
  */
 describe('operations scale: many concurrent jobs through the shared substrate', () => {
-  it('matches, executes and completes 300 concurrent carry jobs with 20 workers without pathological slowdown', () => {
-    const cellCount = 40;
-    const cellBlock = buildCellBlockFixture(cellCount);
-    const navigation = new NavigationSystem(cellBlock.world, { workBudgetPerTick: 4_000, agingIntervalTicks: 10, flowFieldActivationThreshold: 8 }, cellBlock.doors);
-    navigation.setLoadedChunks(cellBlock.chunkPositions);
-
+  it('matches, executes and completes 300 concurrent carry jobs with 20 carriers without pathological slowdown', () => {
     const containers = new ContainerRegistry();
     const source = new Container('source-0');
     const destination = new Container('destination-0');
@@ -48,19 +36,10 @@ describe('operations scale: many concurrent jobs through the shared substrate', 
     source.deposit('item.brick', 10_000);
 
     const board = new JobBoard();
-    const workers = new JobWorkerPool();
-    const adapter = new MapWorkerAdapter();
-    const jobSystem = new JobSystem(board, containers, workers, adapter, navigation);
-
-    const kernel = new Kernel();
-    kernel.registerSystem(navigation);
-    kernel.registerSystem(jobSystem);
-
+    const executor = new CarryJobExecutor(board, containers);
     const workerCount = 20;
-    for (let i = 1; i <= workerCount; i += 1) {
-      workers.register(i);
-      adapter.set(i, cellBlock.canteenTiles[0]!);
-    }
+    const carriers = Array.from({ length: workerCount }, (_unused, index) => index + 1);
+    const crew = new CarryCrew(executor, carriers);
 
     const jobCount = 300;
     for (let i = 0; i < jobCount; i += 1) {
@@ -71,18 +50,20 @@ describe('operations scale: many concurrent jobs through the shared substrate', 
           itemId: 'item.brick',
           quantity: 1,
           sourceContainerId: 'source-0',
-          sourceTile: cellBlock.cellTiles[i % cellBlock.cellTiles.length]!,
+          sourceTile: { x: tileCoordinate(2 + (i % 8)), y: tileCoordinate(1) },
           destinationContainerId: 'destination-0',
-          destinationTile: cellBlock.canteenTiles[1]!,
+          destinationTile: { x: tileCoordinate(12), y: tileCoordinate(1) },
         },
         0,
       );
     }
 
     const startedAt = performance.now();
-    for (let i = 0; i < 3_000; i += 1) kernel.step();
+    // 300 jobs over 20 carriers is 15 rounds, and a round is three cycles
+    // (claim, pickup, drop-off), so 45 is the floor and 200 is headroom.
+    crew.run(200);
     const wallMs = performance.now() - startedAt;
-    console.log(`[operations scale] jobs=${jobCount} workers=${workerCount} cells=${cellCount} wallMs=${wallMs.toFixed(1)}`);
+    console.log(`[operations scale] jobs=${jobCount} carriers=${workerCount} wallMs=${wallMs.toFixed(1)}`);
 
     const completed = board.allSorted().filter((job) => job.state === 'completed').length;
     expect(completed).toBe(jobCount);

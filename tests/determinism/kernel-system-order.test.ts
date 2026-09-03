@@ -431,7 +431,27 @@ describe('kernel system ordering', () => {
        */
       { id: 'security.locomotion', order: 201 },
       { id: 'prisoners.actions', order: 250 },
-      { id: 'operations.jobs', order: 260 },
+      /*
+       * **`operations.jobs` (260) is gone from this list, and removing a row
+       * is not lowering a floor** -- the floor is that every declared order in
+       * a real session is distinct and is read off the declarations alone, and
+       * both stay true.
+       *
+       * [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 4
+       * retires `JobSystem` as a `SystemRegistration`: a carry is an
+       * `ActionDefinition` now, so `prisoners.actions` at 250 both decides the
+       * errand and moves the carrier, and the lifecycle code survives as a
+       * pure executor that system *calls* rather than as a system that runs
+       * after it. The row is moved here the way ADR 0088 moved the pin for
+       * `security.locomotion`: named in the ADR, changed in the same commit,
+       * with the reason in the test.
+       *
+       * **What the old row was for is the point of removing it.** Two
+       * authorities wrote one prisoner in one tick -- 250 decided what the
+       * prisoner was doing and 260 overrode where they stood -- and
+       * `tests/foundation/two-authorities-one-prisoner-contract.test.ts` pinned
+       * the result. That file now pins the single authority instead.
+       */
       { id: 'contraband.intelligence', order: 265 },
       { id: 'security.deployment', order: 270 },
       /*
