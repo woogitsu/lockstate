@@ -447,7 +447,8 @@ the day-9-from-tick-0 one already on file and because **the same sentence
 occupies two places on the screen at once**, which the existing record does not
 say.
 
-## 8. CONFIRMED — all nine status chips are inert, measured by pressing them
+## 8. CONFIRMED — all nine status chips are inert; and nothing else on
+screen is dressed as a control it is not
 
 Already on file and not re-filed; recorded because the measurement is stronger
 than the one it confirms. `installListenerCensus` patches
@@ -481,6 +482,33 @@ PRESS funds         changed 6 line(s) on screen: ["607","51%","40% THROUGH","All
 `cursor: auto` is the honest half: nothing invites the press. The consequence
 for §3 is that the one surface a player has on every tab is a row of nine
 numbers that goes nowhere.
+
+**And the wider question the chips are an instance of is answered NO.** Asked
+of every visible element on all five tabs — does anything *look* pressable
+(`cursor: pointer`, or a painted box with its own border and background) while
+being unpressable (no `<button>`/`<a href>`/`[role]` and no
+`click`/`pointerdown`/`mousedown` in the census, itself or on any ancestor)?
+
+| tab | candidates examined | look pressable and are not | are pressable and do not look it |
+| --- | --- | --- | --- |
+| Overview | 33 | 3 | 0 |
+| Build | 64 | 3 | 1 |
+| Rooms | 55 | 3 | 1 |
+| Security | 36 | 3 | 0 |
+| Regime | 32 | 3 | 0 |
+
+The three are the same three on every tab and none of them has
+`cursor: pointer`: `div.display-scale` and `aside.save-panel`, flagged only by
+the *painted box* half of the heuristic, which is a guess about styling and not
+an affordance. **Not one element on any tab carries `cursor: pointer` without
+being pressable itself or sitting inside something that is.** The one in the
+other column is `div[role=radiogroup]` on Build and on Rooms — a `keydown`
+listener with `cursor: auto`, which is correct, because the rows inside it are
+the controls.
+
+This is the measurement that puts §2 in its place: the minimap surface does
+*not* appear in the left-hand column, because it really is pressable. Its
+defect is the sentence painted on it, not the affordance.
 
 ## 9. NOT A DEFECT — an important change *is* visible on a tab that does not
 report it
