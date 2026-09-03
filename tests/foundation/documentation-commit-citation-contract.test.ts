@@ -476,9 +476,45 @@ function jobsRunningVerify(): readonly VerifyJob[] {
   return found;
 }
 
+/*
+ * ## Why `src/` is scanned, and the measurement that put it here
+ *
+ * It was not, until 2026-09-03. The corpus was `docs/**.md` plus
+ * `tests/**.ts`, and the reason was reasonable on its face: a sha in prose is
+ * a claim about the tree, and prose lives in `docs/`. It is the same reasoning
+ * `.github/workflows/branch-gc.yml`'s citation guard shipped with, and #856 is
+ * the record of that guard's `docs/`-only scope causing the exact damage the
+ * guard existed to prevent -- a branch cleanup orphaned a commit named in a
+ * *test comment*, because "a comment naming a commit is code this cleanup does
+ * not touch" is false in the way that matters.
+ *
+ * This file had the same hole, one root further out. Measured over every
+ * backticked sha-shaped token in `docs`, `src`, `tests`, `scripts`, `tooling`
+ * and `benchmarks`: **369 of 372 tokens resolve to a commit in a full clone,
+ * and exactly one of those was not published by `origin` under this file's own
+ * definition** -- `src/simulation/worker/state-machine.ts` cited the commit
+ * that wrote two tallies it was correcting, and that commit survived only as
+ * pull request 304's head ref, on no branch and no tag. `git rev-list
+ * --remotes=origin --tags` does not walk `refs/pull/*`, so the citation was
+ * already dead to anyone with an ordinary clone, and this gate could not see
+ * it because it was not looking at `src/`. It is re-pointed at that pull
+ * request's merge commit on `main`, which is the same remedy the one entry
+ * `UNPUBLISHED_BY_ORIGIN` ever held was settled by: name the published commit
+ * instead of allowlisting the unpublished one.
+ *
+ * The three roots added beside `src/` -- `scripts`, `tooling`, `benchmarks` --
+ * are the rest of #856's widening, taken here for the same reason and measured
+ * clean in the same pass. Widening cost this corpus one citation, which is what
+ * a gate that was already true of most of the tree looks like when it stops
+ * being partly blind.
+ */
 const scannedFiles: readonly string[] = [
   ...filesUnder(join(REPOSITORY_ROOT, 'docs'), ['.md']),
+  ...filesUnder(join(REPOSITORY_ROOT, 'src'), ['.ts', '.tsx']),
   ...filesUnder(join(REPOSITORY_ROOT, 'tests'), ['.ts']),
+  ...filesUnder(join(REPOSITORY_ROOT, 'scripts'), ['.ts', '.mjs', '.js', '.sh']),
+  ...filesUnder(join(REPOSITORY_ROOT, 'tooling'), ['.ts', '.mjs', '.js']),
+  ...filesUnder(join(REPOSITORY_ROOT, 'benchmarks'), ['.ts']),
   ...filesUnder(join(REPOSITORY_ROOT, '.github'), ['.yml', '.yaml']),
   ...readdirSync(REPOSITORY_ROOT)
     .filter((entry) => entry.endsWith('.md'))
