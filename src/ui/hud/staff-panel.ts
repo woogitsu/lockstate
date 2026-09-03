@@ -3,7 +3,7 @@ import type { MessageParameters } from '../../services/localization/format';
 import { pressAffordabilityVerdict } from '../affordability';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
-import { element, eyebrowText, valueText } from '../primitives/dom';
+import { describeBy, element, eyebrowText, nextUiId, undescribeBy, valueText } from '../primitives/dom';
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createPanel } from '../primitives/panel';
 import { createStatusBadge, type BadgeTone } from '../primitives/status-badge';
@@ -769,6 +769,42 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     'hud-staff__note hud-staff__hire-unassigned',
   );
 
+  /*
+   * **What stops a hire, and what would lift it** -- the wording half of
+   * issue #772's class, on the owner's sentence of 2026-09-03
+   * (`hud.security.hire-shortfall`, byte-identical to the Buy button's).
+   *
+   * A line of its own, on `build-panel.ts`'s reasoning for the twin of this
+   * element and on this panel's own precedent one element up:
+   * `hireUnassignedNote` is a separate element rather than a second sentence
+   * inside `hireNote` because `@media (max-height: 700px)` clamps
+   * `.hud-staff__note` to one line, and a note carrying two sentences loses
+   * whichever one runs on -- measured at 900x600, `scrollHeight` 26 against
+   * `clientHeight` 13. This sentence is a whole clause or nothing, so it is
+   * exempted from that clamp in `hud.css` on exactly the terms
+   * `.hud-staff__hire-unassigned` is.
+   *
+   * **It withdraws to no box**, unlike either note beside it, which is why it
+   * needs `.hud-staff__note[hidden]` to keep winning over that author
+   * `display` -- the trap `.hud-build__queue-shortfall[hidden]` closes in the
+   * other panel and `heldEmpty` records one block down. A solvent prison never
+   * sees this line, so a permanent empty one would be furniture bought with
+   * the rail height #174 is about.
+   */
+  const hireShortfall = eyebrowText('', 'hud-staff__note hud-staff__hire-shortfall');
+  hireShortfall.hidden = true;
+  /*
+   * The line is the Hire control's description while it stands, and it is
+   * added and removed per repaint rather than wired once -- `markControl`'s
+   * pattern in `hud.ts`, for the reason `build-panel.ts` gives at its twin:
+   * `aria-describedby` pointing at a line with no box describes the control
+   * with a sentence nobody can read. `describeBy`/`undescribeBy` merge, so
+   * this coexists with the refusal band's own id on the button in the state
+   * where a press has actually been refused.
+   */
+  const hireShortfallId = nextUiId('hud-staff-hire-shortfall');
+  hireShortfall.id = hireShortfallId;
+
   function paintHire(): void {
     const role = selectedRole();
     // Untouched by the affordability wiring below, and the two are different
@@ -784,6 +820,16 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     // clamp -- the trap `heldEmpty` records one block down.
     const charge = describeHireCharge(role);
     hireNote.hidden = charge === undefined;
+    // The shortfall line goes with the price line, and for the same reason:
+    // with no role selected there is no charge, so there is no shortfall to
+    // name -- and a line left standing from the last selection would be a
+    // figure about a hire nobody has chosen. The `describeBy` link goes with
+    // it, so the control is never described by a line with no box.
+    if (charge === undefined) {
+      hireShortfall.hidden = true;
+      hireShortfall.textContent = '';
+      undescribeBy(hire.element, hireShortfallId);
+    }
     if (role === undefined || charge === undefined) return;
     hire.setLabel(
       t(HUD_MESSAGE_KEY.securityStaffHire, {
@@ -889,6 +935,32 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       isFreshUnfurnishedPrison,
     );
     hire.setUnavailable(verdict.refused);
+    /*
+     * **And now it says what stops it** (the owner's sentence of 2026-09-03).
+     * The paragraph above beginning *"This is the mechanical half only"* is
+     * kept rather than rewritten: what changed is that the sentence exists,
+     * not the argument for why this function could not author one.
+     *
+     * The label is still untouched -- `hud.security.hire` is byte-identical
+     * available and unavailable -- because the sentence is a line of its own
+     * and not part of the control's name.
+     *
+     * **The money branch only**, on the Buy button's terms: `shortfallMinorUnits`
+     * is `0` on every other verdict, and a *"Not enough money"* sentence would
+     * be false about a malformed charge. `{amount}` is the shortfall against
+     * `hireChargeMinorUnits` -- the figure this press debits, argued above --
+     * and not the daily wage `hireNote` prices, so the sentence and the
+     * control's availability answer the same question about the same number.
+     */
+    const shortfallStands = verdict.refusal === 'past-the-floor';
+    hireShortfall.hidden = !shortfallStands;
+    hireShortfall.textContent = shortfallStands
+      ? t(HUD_MESSAGE_KEY.securityStaffHireShortfall, {
+          amount: localizer.formatNumber(verdict.shortfallMinorUnits),
+        })
+      : '';
+    if (shortfallStands) describeBy(hire.element, hireShortfallId);
+    else undescribeBy(hire.element, hireShortfallId);
   }
 
   // ---- who is held, and the control that frees them (ADR 0034) ---------
@@ -1186,7 +1258,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     roles.element,
     element('div', {
       className: 'hud-staff__actions',
-      children: [hire.element, hireNote, hireUnassignedNote],
+      children: [hire.element, hireShortfall, hireNote, hireUnassignedNote],
     }),
     heldBlock,
     rosterSection.element,

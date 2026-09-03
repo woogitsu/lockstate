@@ -1756,6 +1756,16 @@
    panel has least of. */
 .hud-build__queue-shortfall[hidden] { display: none; }
 
+/* The same trap once more, for the line that says what stops a Buy press (the
+   owner's sentence of 2026-09-03, `hud.build.buy-shortfall`). It is hidden in
+   every state a solvent prison has, and it lives *inside* `.hud-build__buy`,
+   which is itself laid out by an author `display: flex` -- so without this rule
+   the row would carry an empty line the whole time it is open, at exactly the
+   two short viewports where opening it already scrolls the panel. Same shape as
+   the two rules above, and the class being beaten (`.hud-build__note`) is the
+   same shared one. */
+.hud-build__buy-shortfall[hidden] { display: none; }
+
 /*
  * What has been bought and has not arrived (#285), inside the buy disclosure.
  *
@@ -2419,6 +2429,24 @@
      This note is never hidden in any case: it quotes no figure, so there is no
      state in which it is unsafe to say. */
   .hud-staff__hire-unassigned {
+    display: block;
+    -webkit-line-clamp: none;
+    overflow: visible;
+  }
+
+  /* The line that says what stops a Hire press (the owner's sentence of
+     2026-09-03, `hud.security.hire-shortfall`), exempted on exactly the terms
+     `.hud-staff__hire-unassigned` above is. *"Not enough money"* with the
+     figure clipped off is not a shorter version of the sentence, it is the
+     sentence with the only actionable half removed -- the clamp's own rule is
+     that what stays clamped is "the notes a clipped line still leaves usable",
+     and this is not one of those.
+
+     `.hud-staff__note[hidden]` above still wins over this rule -- a class and
+     an attribute against one class -- and this one relies on that rather than
+     merely tolerating it, exactly as `.hud-staff__coverage-consequence` below
+     does: this note *is* hidden in every state a solvent prison has. */
+  .hud-staff__hire-shortfall {
     display: block;
     -webkit-line-clamp: none;
     overflow: visible;

@@ -22,8 +22,21 @@ import { SectorRiskTracker, type SectorRiskSample } from './sector-risk';
  * Supplies each sector's current risk inputs from real simulation state.
  * Injected rather than reaching into every subsystem directly, so this
  * system depends on none of them concretely -- the same decoupling
- * `JobSystem`'s `JobWorkerAdapter` (#25) and `SearchSystem`'s
- * `CategoryConcealmentResolver` (#27) use.
+ * `SearchSystem`'s `CategoryConcealmentResolver` (#27) uses, and
+ * `DeliveryBayCarryRoute`'s `RoomInstanceSource`
+ * (`src/simulation/operations/delivery-route.ts`) after it.
+ *
+ * **This sentence cited a second precedent that no longer exists**, and it is
+ * corrected rather than overwritten (`docs/AGENT_WORKFLOW.md` §4): it read
+ * *"the same decoupling `JobSystem`'s `JobWorkerAdapter` (#25) and
+ * `SearchSystem`'s `CategoryConcealmentResolver` (#27) use"*.
+ * [ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) deleted both
+ * `JobSystem` and `JobWorkerAdapter` -- decision 4 names the adapter's
+ * *"prisoners today, staff later"* generality as the thing that deliberately
+ * did not survive -- so the pattern is still the pattern and one of its two
+ * examples had to be replaced. The replacement is the port that took the same
+ * job in the same layer: a structural interface that keeps `operations/` from
+ * importing `prisoners/` for one query.
  */
 export type SectorRiskSampler = (sectorId: string, tick: number) => SectorRiskSample;
 

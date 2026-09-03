@@ -143,7 +143,12 @@ const requiredNotDeclared = requiredCapabilities.filter((capability) => !declare
  * different and narrower statement -- see the file docblock.
  */
 const UNGATED_BY_ANY_ACTION: Readonly<Record<string, string>> = {
-  'delivery-access': "Declared by `object.loading-dock-door` and required by `room.delivery-bay`, so the containment join reads it; no action gates on it. `src/simulation/construction/definition.ts` states it directly -- the capability appears \"in no `DEFAULT_ACTIONS` entry and in no other room's requirements\" -- and names ADR 0017's procurement route as the system that would consume it. The same comment records that what a player places is \"a capability marker on three tiles, not a passage\": it gates nothing and `DoorRegistry` does not read it.",
+  // **The second half of this reason was falsified by ADR 0093 and is corrected
+  // in place; the entry stays**, because this list is about *action* gating and
+  // `action.carry` declares no `requiredObjectCapability` at all. It read: *"...
+  // and names ADR 0017's procurement route as the system that would consume
+  // it."* That system now exists.
+  'delivery-access': "Declared by `object.loading-dock-door` and required by `room.delivery-bay`, so the containment join reads it; no action gates on it, because `action.carry`'s target is the job board and it declares no `requiredObjectCapability` -- ADR 0093 decision 1: the job's own `available -> assigned` transition is the claim, so there is no room ceiling to read. It is **not** unread: `DeliveryBayCarryRoute` (`src/simulation/operations/delivery-route.ts`, `DELIVERY_BAY_CAPABILITY`) requires a bay to hold it before a delivery will land there. `src/simulation/construction/definition.ts` also records that what a player places is \"a capability marker on three tiles, not a passage\": it gates nothing and `DoorRegistry` does not read it.",
   // `food-preparation` left this list at #532 and its entry is removed rather
   // than reworded, which is what the stale-entry gate below asks for. **Both
   // directions, because the half of its reason that was not falsified is the
@@ -156,7 +161,10 @@ const UNGATED_BY_ANY_ACTION: Readonly<Record<string, string>> = {
   // capability in `room.kitchen` -- and the meal-production half did not: the
   // action gains `hunger` directly and no meal exists as an item.
   'food-storage': 'Declared by `object.fridge`, required by `room.kitchen`. Gated on by no action, and no longer for the same reason as `food-preparation`, which `action.kitchen-work` now gates on (#532): that action names the two `food-preparation` objects and deliberately not the fridge, because one action consumes one capability (#326) and gating on a cold store would make it a work station. Nothing in the simulation produces or stores a meal as an object, which is the half of the old shared reason that is still true.',
-  'item-storage': "Declared by `object.storage-rack`, required by `room.storage-room`. `src/simulation/construction/definition.ts` lists it among the capabilities that \"appear in no `DEFAULT_ACTIONS` entry and in no other room's requirements\", and names #99's salvage destination as what would consume it.",
+  // **Corrected the same way and for the same reason as `delivery-access`
+  // above.** It read: *"... and names #99's salvage destination as what would
+  // consume it."* #99 is still unbuilt; a different consumer arrived.
+  'item-storage': "Declared by `object.storage-rack`, required by `room.storage-room`. Still in no `DEFAULT_ACTIONS` entry and in no other room's requirements, as `src/simulation/construction/definition.ts` says -- but read since ADR 0093 by `DeliveryBayCarryRoute` (`src/simulation/operations/delivery-route.ts`, `STORAGE_ROOM_CAPABILITY`), which requires a storeroom to hold it before it will be the destination of a carry. #99's salvage destination is still unbuilt.",
   'medical-supply': 'Declared by `object.medicine-cabinet`, required by `room.infirmary`. No action treats or medicates a prisoner; the health/treatment system that would gate on it does not exist.',
   'medical-treatment': "Declared by `object.medical-bed`, required by `room.infirmary`. It is load-bearing in the containment join and `src/simulation/construction/definition.ts` explains the asymmetry it produces -- a plain `object.bed` cannot satisfy an infirmary's requirement while a medical bed can satisfy a cell's -- but no action names it, so nothing a prisoner does depends on it.",
   seating: "Declared by `object.chair` and `object.bench`. Not gated on by any action, and the near miss is recorded in `src/simulation/construction/definition.ts`: a bench declares `'seating'` and `'recreation'` and **not** `'dining'`, so a canteen's dining capacity comes from its tables and its benches bound nothing. Whether a bench should carry `'dining'` is left open there deliberately (#326) and is a content decision, not this gate's to make.",

@@ -1278,6 +1278,7 @@ window.lockstateUiHarness = {
     const buyRow = document.querySelector<HTMLElement>('.hud-build__buy');
     const buySubmit = document.querySelector<HTMLButtonElement>('.hud-build__buy-submit');
     const buyQuantity = document.querySelector<HTMLInputElement>('.hud-build__buy .ui-number__input');
+    const buyShortfall = document.querySelector<HTMLElement>('.hud-build__buy-shortfall');
     const target = document.querySelector<HTMLElement>('.hud-build__target');
     const targetValue = document.querySelector<HTMLElement>('.hud-build__target .hud-build__target-value');
     const coordinates = [...document.querySelectorAll<HTMLElement>('.hud-build .ui-section')].find((section) =>
@@ -1371,6 +1372,15 @@ window.lockstateUiHarness = {
       buyUnavailable: (buySubmit?.getAttribute('aria-disabled') ?? 'true') === 'true',
       buyDisabled: buySubmit?.disabled ?? true,
       buyQuantity: buyQuantity?.value ?? '',
+      // The sentence that says what stops a press (the owner's wording of
+      // 2026-09-03). Three answers rather than one, on `BuildQueueProbe`'s
+      // terms: the text, a box the browser actually gave it, and the
+      // `aria-describedby` link -- a `textContent` read alone is identical on a
+      // line that was painted and one that has no box, which is the defect
+      // `.hud-build__buy-shortfall[hidden]` in `hud.css` exists to prevent.
+      buyShortfallText: buyShortfall?.textContent?.trim() ?? '',
+      buyShortfallLaidOut: buyShortfall !== null && buyShortfall.getClientRects().length > 0,
+      buyDescribedBy: buySubmit?.getAttribute('aria-describedby') ?? '',
       texts: [...(panel?.querySelectorAll<HTMLElement>('button, label, span, h2') ?? [])]
         .map((node) => (node.textContent ?? '').trim())
         .filter((text) => text.length > 0),
@@ -1383,6 +1393,7 @@ window.lockstateUiHarness = {
     const panel = document.querySelector<HTMLElement>('.hud-staff');
     const rows = [...document.querySelectorAll<HTMLElement>('.hud-staff__list [data-staff-role]')];
     const hire = document.querySelector<HTMLButtonElement>('.hud-staff__hire');
+    const hireShortfall = document.querySelector<HTMLElement>('.hud-staff__hire-shortfall');
 
     return {
       // `hidden` is inherited through the DOM, so `offsetParent` is what the
@@ -1398,6 +1409,11 @@ window.lockstateUiHarness = {
       // neither default can make a test about a present one pass by accident.
       hireUnavailable: (hire?.getAttribute('aria-disabled') ?? 'true') === 'true',
       hireDisabled: hire?.disabled ?? true,
+      // The same three answers `buildProbe` gives for the Buy button's line,
+      // for the same reason and about the same authored sentence.
+      hireShortfallText: hireShortfall?.textContent?.trim() ?? '',
+      hireShortfallLaidOut: hireShortfall !== null && hireShortfall.getClientRects().length > 0,
+      hireDescribedBy: hire?.getAttribute('aria-describedby') ?? '',
       texts: [...(panel?.querySelectorAll<HTMLElement>('button, label, span, h2') ?? [])]
         .map((node) => (node.textContent ?? '').trim())
         .filter((text) => text.length > 0),
