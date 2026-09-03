@@ -340,6 +340,61 @@ export class WorldScene extends Phaser.Scene {
     // all; it is VERIFIED now, and that spec is what keeps it so.
     this.input.addPointer(2);
 
+    /*
+     * ---- a gesture in progress belongs to the world, not to the HUD --------
+     *
+     * The HUD frames the world and never covers it, but the islands in it that
+     * take clicks have to take clicks: `.hud` is `pointer-events: none` and
+     * `hud.css`'s "Every interactive island opts back in" rule restores `auto`
+     * on `.hud-strip`, `.hud__corner > *`, `.hud__aside > *`, `.hud__side > *`
+     * and `.hud-tabs__inner`. Phaser listens for `mousemove` and `mouseup` on
+     * **this canvas** (`node_modules/phaser/src/input/mouse/MouseManager.js`,
+     * `startListeners`), so a left-drag that crossed one of those islands
+     * simply stopped being delivered: the last move the canvas heard was the
+     * last move `extendBuild` saw, `commitBuild` placed the run as it stood
+     * there, and a player who dragged four tiles got one wall and was told
+     * nothing at all -- no refusal, no alert, no console line (issue #878,
+     * measured at 84 of 308 visible tiles reliably reachable at 1440x900).
+     *
+     * `setPointerCapture` makes this canvas the target of every subsequent
+     * event for that pointer, so the rest of the drag arrives here whatever it
+     * passes over, and the release arrives here too. The reachable band stops
+     * mattering **while a gesture is in progress**, which is when it mattered.
+     *
+     * **Why capture rather than reconstructing the missing part of the run.**
+     * Interpolating between the last and first points the canvas heard would
+     * put back the *commands* and not the gesture: the ghost would still freeze
+     * at the island's edge, so the player would still be shown one thing and
+     * given another, and every other pointer gesture -- the area rectangle, the
+     * object footprint, the middle-drag pan -- would need its own copy of the
+     * same repair. This is one line at the mechanism, and it fixes the class.
+     *
+     * **What it does not change, and this is the constraint that ruled the
+     * alternatives out.** An island still takes a press that *lands* on it:
+     * capture is claimed from a `pointerdown` **on the canvas**, so a press
+     * that starts on the Build panel is never captured and the panel keeps it.
+     * A drag that starts on the canvas and ends over a control does not click
+     * that control -- which was already true, because a `click` needs its press
+     * and its release on one element.
+     *
+     * **Unconditional, and not narrowed to an armed tool.** The middle-drag
+     * pan loses its moves to an island in exactly the same way, and a
+     * `pointerType` branch here would be inert: touch is unaffected either way,
+     * because Touch Events are implicitly captured to the element the
+     * `touchstart` hit, which is measurably already this canvas -- a
+     * twelve-move touch drag from canvas across an island delivers every
+     * `touchmove` and the `touchend` here with no capture set at all.
+     *
+     * It is not removed on `pointerup`: capture is released implicitly by the
+     * browser when the pointer goes up or is cancelled, so releasing it by hand
+     * would be a second mechanism for something the platform already does.
+     */
+    const canvas = this.game.canvas;
+    const capturePointer = (event: PointerEvent): void => {
+      canvas.setPointerCapture(event.pointerId);
+    };
+    canvas.addEventListener('pointerdown', capturePointer);
+
     const keyDown = (event: KeyboardEvent): void => {
       this.handleActionEvents(this.keyboard.keyDown(event));
     };
@@ -496,6 +551,7 @@ export class WorldScene extends Phaser.Scene {
       window.removeEventListener('keydown', keyDown);
       window.removeEventListener('keyup', keyUp);
       window.removeEventListener('blur', blur);
+      canvas.removeEventListener('pointerdown', capturePointer);
       this.tiles?.destroy();
       this.actors?.destroy();
       this.buildOverlay?.destroy();
