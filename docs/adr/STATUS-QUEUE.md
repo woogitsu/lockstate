@@ -8,7 +8,7 @@ implementation.
 
 **Nothing here changes a status.** A status moves in the ADR and in the index,
 never in this file. What changed with this revision is what the file is *for*:
-§1 records **all thirteen** flips, §2 holds **eight entries — the two dated rulings
+§1 records **all thirteen** flips, §2 holds **nine entries — the two dated rulings
 #382 wrote into ADR 0008 §2, the 2026-08-27 amendment scoping that ADR's §3
 by authority, the preconditions on the change that gives this project its
 first server-side entry point, ADR 0056's price for keeping a player's
@@ -30,7 +30,13 @@ signature, which is a shape this section had not held before)** — **this claus
 read "eight entries" until ADR 0093's entry was filed, "seven entries" until
 #615's,
 "six entries" until #585's, "five entries"
-until #571's, and "four entries" until `07add3e`**, and the sentence saying four is corrected
+until #571's, and "four entries" until `07add3e`**. **The number above says
+nine from the `3f8c00b0` anchor, and it is corrected there rather than by the
+commit that earned the correction**: #863 filed ADR 0093's entry, moved
+§2's own heading and §5's preamble, wrote the *"read 'eight entries' until ADR
+0093's entry was filed"* clause immediately above — and left the number at
+eight, so this paragraph contradicted its own correction inside one sentence
+until it was read against §2's heading. And the sentence saying four is corrected
 rather than overwritten because the split is the finding: #485 filed ADR 0059's
 entry, moved §2's own heading with it and moved neither this paragraph nor §5's
 preamble, which is the third consecutive time the four places below have split
@@ -618,12 +624,265 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `402453a9` (**v0.0.402**) by the delta method this
-header describes, from the v0.0.393 anchor described below. **Nine of the ten
+Re-anchored at `main` @ `3f8c00b0` (**v0.0.407**) by the delta method this
+header describes, from the v0.0.402 anchor described below. **Five of the ten
 releases the budget allows, counted on the tree this commit is written
-against: `package.json` ships 0.0.402 at `402453a9` and the anchor being
-replaced named v0.0.393.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
+against: `package.json` ships 0.0.407 at `3f8c00b0` and the anchor being
+replaced named v0.0.402.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
 **10**, exactly as the gate demands and as its own failure message insists.
+
+**THE HALFWAY MARK IS KEPT AGAIN, after one pass that spent nine.** The rule
+this header states in capitals is *"THE HALFWAY MARK IS A TASK, NOT A
+READING"*, and the previous pass ran to nine on a decision it argued for and
+named as a cost rather than hid. This one was taken at five, so the sequence
+now reads five, five, nine, five — the mark kept three times in four, and
+recovered immediately after the one pass that spent past it.
+
+**Window: `402453a9..3f8c00b0`, 64 files, 63 of them besides this one, across
+five implementing merges — #857, #863, #859, #864 and #865 — with #858
+excluded as self-referential, being the previous anchor's own pass, and five
+release-bump commits (v0.0.403 through v0.0.407, the last of them `3f8c00b0`
+itself).** The five merges touch 8, 50, 3, 3 and 2 files and #858 touches only
+this one; those counts sum to 67 against a union of 64, and the three overlaps
+are worth naming because one of them is invisible. Two are ordinary — this
+file, edited by #858 and by #863, which filed §2's ADR 0093 row; and
+`docs/research/README.md`, appended by #859 and #864. **The third is a file
+that was born and died inside this window**: the scratch probe #863 left under
+`tests/determinism/` and #865 deleted, `zz-probe.test.ts`, which is in neither
+end of the diff and therefore **does not appear in the window's file list at
+all**. The brief for this pass named that deletion as something to look at; a
+`git diff` across the window's endpoints cannot see it, and the only reason
+this account can say what happened is `git show --name-only` on each merge in
+turn. **A file created and destroyed inside one window is a blind spot of the
+delta method itself**, not of this reading, and it is the first instance this
+header has had to record.
+
+**Taken from a fresh `origin/main`, and the merge the fetch brought was
+asserted by file rather than by exit code.** `git fetch origin main`
+immediately before the window was cut, per `docs/AGENT_WORKFLOW.md` §2's
+stale-worktree trap — *"a merge against it looks like a success"* — and the
+check that the fetch actually moved anything is that
+`tests/foundation/test-suite-carries-no-scratch-probe-contract.test.ts`, which
+is #865's and exists nowhere before it, is present in the tree this pass ran
+on.
+
+**Ten members besides this file, and the basename scan finally earns the
+warning three anchors have given it.** The delta intersection over §§3-6
+(lines 5951-10905 on this tree, 142 distinct path-like backticked spans)
+gives, by full path: `docs/adr/README.md`, `docs/research/README.md`,
+`src/content/default-locale-en.ts`, `src/simulation/economy/procurement.ts`,
+`src/simulation/prisoners/release.ts`,
+`src/simulation/runtime/session-systems.ts`, `src/ui/hud/hud.css`,
+`src/ui/hud/messages.ts`, `src/ui/hud/staff-panel.ts` and
+`tests/foundation/documentation-links-contract.test.ts`. `package.json` is read
+for its version rather than diffed, as every anchor's convention states. Run
+both ways as the method requires: the basename scan returns **twelve**, and the
+two extra are **phantoms** — `src/simulation/operations/index.ts` and
+`src/simulation/prisoners/index.ts`, reached only because §3 cites
+`src/simulation/identity/index.ts` and `index.ts` is the least distinctive
+basename in this repository. **Three consecutive anchors recorded that the
+basename intersection happened to give the right answer anyway, each for a
+different reason; this is the window where it does not**, which is a better
+argument for the full-path rule than three more coincidences would have been.
+
+**Two cited spans MOVED, both inside members, both by lines inserted above
+them, and both re-derived byte for byte rather than arithmetically.**
+`src/ui/hud/staff-panel.ts:489` is now **`:526`**, +37, from #857's coverage
+readout and its three panel hunks landing above it; the sentence the citation
+exists for is byte-identical — the setter that *"decides nothing"*, with
+`BuildPanel.setTreasury` named beside it as *"the same setter for the same
+reason on the Buy button"*. And `src/simulation/prisoners/release.ts:194` is
+now **`:216`**, +22, from #863 replacing `PrisonerWorkerReleasePort` with
+`PrisonerCarryReleasePort` above it; `entityStore.destroy(entityId);` is
+byte-identical, so §5's *"Question 2 is answered"* holds in every term. Both
+are corrected below with the old span kept beside the new one.
+
+**A third citation was wrong when it was WRITTEN, and it is a wrong file
+rather than a wrong line.** §2's ADR 0071 entry names the concurrent-use
+ceiling's *"three production callers"* as
+`src/simulation/prisoners/action-system.ts:820`, `:1067` and `:1082`. That file
+is a member of this window, so the three lines were opened: on `3f8c00b0` they
+are comment prose, and at `71617799` — the commit that wrote the citation —
+they were comment prose as well. The three callers that pass a capability were
+then, and are now, in `src/simulation/prisoners/room-instance-registry.ts`, at
+`:902`, `:941` and `:1109` on that tree and at **`:987`, `:1026` and `:1194`**
+on this one. **The claim holds and only its address is wrong**, which makes it
+a sharper instance of `docs/AGENT_WORKFLOW.md` §4's rule than any drifted
+anchor: no diff over any window could have caught this going wrong, because it
+never went wrong. Corrected in §2 in both directions and re-cited by symbol.
+
+**The counters moved, for the first time in this sequence by an ACCEPTANCE
+rather than an arrival.** `Proposed` **40 → 39**, `Accepted` **48 → 49**, **88**
+documents unchanged, because #863 recorded the owner accepting ADR 0093 and
+implemented it in the same change. Recomputed by replicating `statusStatement`
+from `tests/foundation/adr-status-reference-contract.test.ts` rather than with
+a grep written for the occasion, which is the instrument the v0.0.388 pass
+established and the reason it gave is unchanged. The index agrees on its status
+column — `grep -cE '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns
+**39** against **49** `Accepted` across **88** linked rows, which is 88
+documents, and **89** table rows once the kept `0018` row that carries no link
+is counted. **Next free number: 0095**, unmoved and matching the index, with
+the absent numbers the same six — `0018`, `0030`, `0055`, `0058`, `0060`,
+`0072`.
+
+**ADR 0093's §2 row predicted that move, named the wrong pair of numbers, and
+the cause is a stale block in this very header.** The row says *"The pass also
+records 'The three that count `Proposed` documents hold at THIRTY-SEVEN', and
+ADR 0093 was one of the thirty-seven: its acceptance of 2026-09-03 takes them
+to thirty-six"*, and attributes that sentence to *"The anchor pass at
+`402453a9` (v0.0.402)"*. **It is not that pass's sentence.** It belongs to the
+**v0.0.364** pass, written by #819, and it is still standing in the four-pass
+method block below — in the present tense, immediately beneath an anchor line
+that has moved five times since. The v0.0.402 pass's own reading is in §3 and
+reads *"Still FORTY at `402453a9` (v0.0.402)"*. So the row's direction is right
+in both halves and both of its numbers are wrong: the acceptance takes forty to
+thirty-nine, not thirty-seven to thirty-six. **The row is left exactly as it
+stands** — it is an accurate record of what its filer read, and what its filer
+read is this header — and what is corrected here is the header that misled it.
+
+**EVERYTHING FROM THE NEXT PARAGRAPH DOWN TO THE KEPT ANCHOR RECORDS IS A
+SUPERSEDED PASS ACCOUNT, AND NOTHING IN IT SAID SO UNTIL NOW.** Established
+with `git log -L <line>,<line>:docs/adr/STATUS-QUEUE.md` rather than by
+reading: the paragraphs opening *"This pass was dispatched at FIVE of ten"* and
+*"Window: 10 files across four implementing merges"* were last written by #847,
+the **v0.0.388** pass, and the four-pass method block under them was last
+written by #819, the **v0.0.364** pass — its pass 1 diffs
+`9b8c8e85..1547c7f6`, its pass 3 states *"The three that count `Proposed`
+documents hold at THIRTY-SEVEN"* and *"The four that count §2 all read eight"*,
+and its recommendation opens *"Re-anchoring at six of ten"*. Every number in it
+was true of the tree it was taken on and none of it is a reading of this
+anchor's tree. **It is kept and not rewritten**, per `docs/AGENT_WORKFLOW.md`
+§4, and it is labelled because the alternative has already cost something one
+commit into this window. **This is the same defect #864 fixed in ADR 0017 §9
+four commits earlier in this very window**: a superseded section that does not
+say so is read as current by whoever arrives at it, and marking both directions
+is the only thing that stops that. The live account of this anchor is the
+paragraphs above, in §3 under *"THIRTY-NINE at `3f8c00b0`"*, and in the marked
+corrections in §§2, 5 and 6.
+
+**§2's entry count is NINE, and one of the four places had not moved.** #863
+moved §2's own heading (*"## 2. Nine entries: …"*) and §5's preamble (*"NINE at
+ADR 0093's filing (2026-09-03)"*), and said in the row itself that the anchor
+*"is not this row's to move"*. The title states a subject and no count and
+cannot rot this way. **The fourth place, this header's opening paragraph, was
+contradicting itself inside one sentence**: it read *"§2 holds **eight
+entries**"* while its own correction clause two lines later read *"this clause
+read 'eight entries' until ADR 0093's entry was filed"*. Moved to nine here
+with the clause kept — the sixth time the four places have split on exactly the
+line the paragraph naming them predicts, and the first time the split was
+visible inside a single sentence rather than between two sections.
+
+**§5's first bullet and §6's `income.ts` mirror had both stopped being updated
+at `1547c7f6` — six anchors — and each of them already records having fallen
+into this exact split once before.** Their last dated readings are *"Thirty-two
+is THIRTY-TWO at `1547c7f6`, six releases later"* and *"STILL THIRTY-SEVEN at
+`1547c7f6`, six releases later"*, and no anchor at v0.0.372, 377, 383, 388, 393
+or 402 gave either one a reading. Both are extended below rather than
+overwritten, and this window gives them something to net rather than nothing:
+**thirty-nine `Proposed` documents, five of which carry a §2 row (0056, 0059,
+0071, 0074, 0077), so thirty-four outstanding decisions with no entry giving
+the owner the evidence.** **ADR 0093's row is the ninth §2 entry and it cannot
+enter that subtraction**, because its document is `Accepted` — the first time
+§2 has held a row the outstanding count has no use for, which is exactly what
+the row itself says makes it a different shape, and it is worth restating where
+the subtraction lives rather than only where the row does.
+
+**The self-quoting-cell figure moved, and this time the TREE moved it rather
+than the instrument.** The previous anchor settled that its predecessor's
+apparent movement was one character of grep and nothing in the index. Here
+`docs/adr/README.md` genuinely changed: #863 rewrote ADR 0093's status cell and
+kept its former wording inside it, *"**This cell read `Proposed, 2026-09-02.
+Not self-approved` until the acceptance**"*. So the narrow reading — cells
+quoting their own former wording in **backticks** — goes **two to three**
+(0051, 0082, **0093**), and the wide reading, which also counts the
+double-quoted form, goes **three to four** (adding 0088). Enumerated on both
+trees rather than subtracted, because the derivation this file's own sentence
+states has never computed its own figure.
+
+**Every standing claim re-run rather than carried.** §5's ADR 0025 entry, on a
+window that edited `src/ui/hud/hud.css` in two hunks (+9 at `:1372` and +20 at
+`:2427`): `find src/ui -name "*.css"` still returns **four** and `grep -rn
+'3\.9' src/` still returns exactly one hit, `src/ui/primitives/icon.ts:77`,
+still `'M15.8 16.1h3.9'`. §4's two absences in `supabase/migrations/`: the bare
+`grep -ril 'total_bytes\|max_total_bytes\|retention\|prune'` over the
+directory still returns exactly one file and its only hit is still the
+*comment* at `20260826130000_server_stamp_updated_at.sql:68` about a **future**
+retention job; the directory still holds **23** files. §6's
+`ui-hud-messages.test.ts:269-275` is byte-identical and that file is not in the
+window. `docs/research/README.md`'s rule at `:9` holds word for word on a file
+this window appended two rows to. And §5's `-1,250`/`-2,000` narration in
+`src/content/default-locale-en.ts` is unmoved at `:229`, `:547`, `:620` and
+`:654` — #857 added 48 lines to that file and every one of them landed below
+the last of the four.
+
+**The `Amendment`/`Addendum` heading count was re-derived because three ADR
+documents are in this window, and it did not move.**
+`grep -RniE '^#{2,6}\s+[*_\`]*(Amendment|Addendum)\b' docs/adr/*.md`,
+excluding this file and the index, returns **40 headed sections across 24
+documents** at `402453a9` and the same at `3f8c00b0`: #864's supersession
+marker on ADR 0017 §9 is a blockquote under an existing heading, and #863's
+edits to ADR 0059 are inside existing prose, so neither is a section. **The
+figure this file last states is 32 across 18, at `082959e7`**, and the drift
+from there to 40/24 was caused by commits outside this window — named here
+rather than corrected in place, for the reason the §6 item itself gives about a
+hand count and a derivable count never having been two readings of the same
+set.
+
+**The held-number sweep is clean over a remote that grew back.** `git ls-remote
+--refs --heads origin` returns **142** heads, up from the 129 the previous pass
+swept just after the branch cleanup, and `git ls-tree --name-only <head> --
+docs/adr/` over every one of them finds **no head holding an ADR number at or
+above 0095** — the seventh consecutive clean reading of the collision risk.
+Swept more broadly than the risk, the same scan returns the same three
+abandoned drafts and nothing new: `0018-construction-material-supply.md` on
+`claude/construction-materials-supply`, and two different documents both
+claiming **0030**, on `fix/352-incident-response-record-persistence` and on
+`claude/concurrent-use-ceiling-research`. Reported, not repaired; no branch was
+touched.
+
+**#864's supersession of ADR 0017 §9 touches nothing in this file, and that is
+recorded because it was expected to.** The brief for this pass named §9's
+reopened ECON-002 hard lock as the live player-facing defect an audit had
+reported and #864 withdrew. Grepped rather than reasoned about: `ECON-002`,
+*"not put to the owner"* and `§9` return **nothing** in this file, and ADR 0017
+appears here only as an `Accepted` document whose decisions 4, 5 and 7 §§2, 5
+and 6 discuss. **No economy decision counted anywhere in this file was ever
+that lock**, so nothing is withdrawn and nothing is recounted — which is worth
+one paragraph, because a pass that looked and found nothing is
+indistinguishable in silence from a pass that did not look.
+
+**Two of the owner's rulings of 2026-09-03 are NOT on `origin/main` at this
+window's close, so two things this file says are true of this window and are
+expected to be false within the day.** §2's ADR 0093 row says of the first of
+its three owed sentences that *"It is there, reading `'Errand'`, and it is
+marked in that file as a draft for the owner's review"* — re-verified here at
+`src/content/simulation-message-keys.ts:204`, with the marking two lines above
+it. The owner has since confirmed *Errand* as the label, which settles that
+sentence and leaves two; that ruling is on the branch
+`feat/two-rulings-of-2026-09-03`, which is not among the 142 remote heads this
+pass swept and is not in `402453a9..3f8c00b0`. The Buy and Hire refusal copy —
+which releases #772/#799, #807 and ADR 0087 decision 2 — is on
+`feat/the-refusal-says-how-much-is-missing`, likewise unpublished at this
+window's close. **Named rather than implemented or duplicated**: neither is
+this pass's surface, a re-anchor authors no player-visible sentence, and the
+row those rulings edit belongs to the commit that lands them.
+
+**What this pass is blind to, stated because a list of findings reads like
+coverage.** The window is `402453a9..3f8c00b0` — five implementing merges, 63
+files besides this one — and **a delta pass is blind to a claim that was
+already false when its window opened.** Three of this pass's findings are of
+exactly that class and not one came from a diff: §2's ADR 0071 citation, found
+by opening the three lines it names; the superseded header blocks, found by
+reading the file's own counts against each other; and the two count bullets
+that stopped six anchors ago, found the same way. Nothing here re-measured a
+behavioural claim in §5 — every measurement there is carried on the strength of
+its inputs still existing, which is what §5's ADR 0027 entry says about itself
+in terms — and **§1's thirteen flips were not re-read at all**. **And #856,
+which the brief for this pass placed in this window, is not in it**: `git
+merge-base --is-ancestor 2c9306a3 402453a9` returns true, it is the last
+implementing merge before the previous anchor, and that anchor's own account
+already lists it. Checked rather than trusted, which is the third consecutive
+pass whose brief needed correcting on its merge list.
 
 **This pass was dispatched at FIVE of ten — the halfway mark exactly, and the
 reading that triggered it was taken at the moment a merge landed.** The rule
@@ -1141,7 +1400,34 @@ anchors ago, one release late, and the honest reading is that a rule two
 passes have missed by two and then by one is being approached rather than
 kept.
 
-**The anchor before this one, kept — v0.0.393.** It read: *"Re-anchored at `main` @
+**The anchor before this one, kept — v0.0.402.** It read: *"Re-anchored at `main` @
+`402453a9` (**v0.0.402**) by the delta method this header describes, from the
+v0.0.393 anchor described below. Nine of the ten releases the budget
+allows."* It is the only pass in this sequence since the halfway-mark rule was
+written in capitals to have spent nine deliberately, and it argued for the
+choice rather than drifting into it: the queue held six green mergeable pull
+requests plus two that landed mid-pass, and anchoring at five would have meant
+two passes over a 10,000-line file inside ninety minutes for a window of four
+files each. Its window was 32 files across eight implementing merges (#843,
+#845, #852, #841, #833, #855, #854, #856), with #851 excluded as
+self-referential, and its delta intersection was **ten members besides this
+file — the widest any pass here has had**, because #833 and #843 worked the
+construction-and-procurement surface §5 cites more densely than any other. It
+moved no counter — `Proposed` 40, `Accepted` 48, 88 documents, next free 0095 —
+and its finding was **the cost of the completed branch cleanup**: 338 of 466
+branches deleted with zero failures, the remote down to 129, and one commit
+cited in a *test comment* orphaned, because the citation guard #852 had
+narrowed to `docs/` did not read `tests/` or `src/`. #856 repaired it and
+widened the guard; the old scope saw 342 cited shas and the new one 356.
+**Two things it left for its successor and both were taken here**: its record
+of §2 as *"unmoved at eight live entries"*, which #863 split one commit later
+by moving two of the four places that state it and not the other two; and its
+own `Proposed` reading of forty, which ADR 0093's acceptance in that same
+commit took to thirty-nine — the first movement in this chain caused by an
+acceptance rather than an arrival.
+
+
+**The anchor before that one, kept — v0.0.393.** It read: *"Re-anchored at `main` @
 `f36148d7` (**v0.0.393**) by the delta method this header describes, from the
 v0.0.388 anchor described below. Five of the ten releases the budget
 allows."* It was taken at the halfway mark for the second consecutive pass and
@@ -5435,6 +5721,26 @@ Measured at `05640b6` (v0.0.210):
   (`src/simulation/prisoners/action-system.ts:820`, `:1067`, `:1082`) all pass a
   capability and all sit behind a `room-catalog-id` target, so only
   `action.yard-recreation` on `room.yard` can reach it.
+
+  **The three coordinates above name the wrong FILE, and they did so on the day
+  they were written — corrected at the `3f8c00b0` anchor, in both directions.**
+  `src/simulation/prisoners/action-system.ts` is a member of that anchor's delta
+  window, so the three lines were opened rather than carried forward: on
+  `3f8c00b0` all three are comment prose, and at `71617799` — the commit that
+  wrote this citation — they were comment prose as well. The ceiling's three
+  callers that pass a capability were then, and are now, in
+  `src/simulation/prisoners/room-instance-registry.ts`: at `:902`, `:941` and
+  `:1109` on that tree, and at **`:987`, `:1026` and `:1194`** on this one.
+  **The claim holds in every term and only its address is wrong** — all three
+  pass a capability, and the `some` predicate among them is the one that
+  resolves a `room-catalog-id` target — so what is corrected is where to look
+  and not what is there. **Re-cited by symbol from here on**: the two `const
+  ceiling = this.concurrentUseCapacityFor(` sites and the `some` predicate
+  beside them, all three inside `RoomInstanceRegistry`. The original
+  coordinates are kept above rather than overwritten, because a `file:line`
+  that was **never** right is a sharper instance of `docs/AGENT_WORKFLOW.md`
+  §4's rule than any drifted one: no diff over any window could have caught it
+  going wrong, because it never went wrong.
 - **The exploit was residency's and is fixed by the other half of #585.** Three
   prisoners assigned above one standing bed earned **900 minor units a day
   before and 300 after**, against a control's unchanged 300, measured through
@@ -6934,6 +7240,115 @@ remote.** No head among the **129** now present holds an ADR number at or above
 0095 — the sixth consecutive clean reading of the collision risk, and the first
 where the sweep is cheap rather than a walk over four hundred heads.
 
+**THIRTY-NINE at `3f8c00b0` (v0.0.407), five releases later — the first
+counter in this sequence to move because a decision was ACCEPTED rather than
+because one arrived.** `Proposed` **39** against **49** `Accepted` across **88**
+documents. ADR 0093 is the document that moved: #863 records the owner
+accepting it — *"Zaakceptuj ADR 0093 i wdrożę mechanikę"* — and implements its
+six decisions in the same change, so one document crossed from one column to
+the other and the total did not move at all. Every previous movement in this
+chain was an arrival adding to `Proposed`; this one is a subtraction from it,
+and the two are not symmetric for §5's first bullet, which is corrected there.
+The index agrees on its status column: `grep -cE '^\|.*\| *\*{0,2}Proposed'
+docs/adr/README.md` returns **39** against **49** `Accepted` across **88**
+linked rows, **89** table rows with the kept `0018` row that carries no link.
+**Next free number: 0095**, unmoved and matching the index. The absent numbers
+are the same six — `0018`, `0030`, `0055`, `0058`, `0060`, `0072` — and 0094 is
+still the highest on disk, so `max + 1` and the stated line agree.
+
+**Counted with this repository's own instrument, and the instrument is the
+point rather than the number.** `statusStatement` from
+`tests/foundation/adr-status-reference-contract.test.ts` — the first non-empty
+paragraph after `## Status`, then the first status keyword in it, with the
+`- Status:` bullet form taken first where a document uses it — replicated
+exactly, classifies all 88 documents with none left over. Eight documents use
+the bullet form (0001, 0002, 0003, 0004, 0014, 0021, 0064, 0067) and two of
+those eight are the `Proposed` pair (0064, 0067) this chain has named as the
+only two since it began; the other six are `Accepted`, which is the
+distinction the v0.0.393 pass had to check before it stopped reading an earlier
+"two" as wrong.
+
+**The self-quoting-cell figure moved, and the TREE moved it this time.**
+Narrow reading — an index row whose status cell quotes its own former wording
+in backticks — goes from **two** (0051, 0082) to **three**, gaining **0093**,
+whose new cell carries *"**This cell read `Proposed, 2026-09-02. Not
+self-approved` until the acceptance**"*. The wide reading, which also counts
+the double-quoted form, goes from **three** to **four** (0051, 0082, 0088,
+0093). Enumerated on `402453a9` and on `3f8c00b0` rather than subtracted: the
+previous anchor established that one character of grep, not the index, had
+moved this figure before, and this is the first reading where a commit in the
+window actually changed a cell. **The mechanism is the one this file predicts**
+— a row flips status and keeps its old wording inside the new cell — so the
+figure should be expected to rise once per acceptance from here, which is worth
+more than the number.
+
+**The held-number sweep is clean over a remote that grew back.** `git ls-remote
+--refs --heads origin` returns **142** heads against the previous pass's 129,
+and `git ls-tree --name-only <head> -- docs/adr/` over every one finds **no
+head holding an ADR number at or above 0095** — the seventh consecutive clean
+reading of the collision risk. The highest number held anywhere is **0094**,
+on **nineteen** of the 142 heads, `main` among them. Swept more
+broadly, the same scan returns the same three abandoned drafts and nothing new:
+`0018-construction-material-supply.md` on
+`claude/construction-materials-supply`, and two different documents both
+claiming **0030**, on `fix/352-incident-response-record-persistence` and on
+`claude/concurrent-use-ceiling-research`. **Two different documents still claim
+0030**, neither is reachable from `main`, neither threatens 0095, and nothing
+was done about it beyond saying so for the third consecutive anchor.
+
+**§2's entry count moved to NINE, and the four places are named again because
+one of them had not been moved by the commit that moved the other two.** #863
+filed ADR 0093's row, moved §2's own heading and moved §5's preamble, and left
+this header's opening paragraph reading *"eight entries"* beside its own
+correction clause saying it had read eight *"until ADR 0093's entry was
+filed"*. Corrected in the opening paragraph at this anchor, clause kept. **By
+subject this window files nothing further**: #857 is a staff-coverage readout
+and a sentence the owner had already supplied, #859 and #864 are research
+records, #865 is a deleted probe and a new foundation contract, and #863 is the
+row itself — none of them is ADR 0008 §2 or §3, the server entry point, ADR
+0056, 0059, 0074, 0071 or 0077.
+
+**The §2 scope rule reached TWO entries by path in this window and neither
+needed a change, and a third was reached by its own filing.** §2's 48 cited
+path-like spans intersect the window's 63 in seven, of which four belong to ADR
+0093's own row (its document, `src/content/simulation-message-keys.ts`,
+`tests/determinism/kernel-system-order.test.ts` and
+`tests/integration/carry-need-threshold.test.ts`) and are therefore the row's
+own evidence rather than something the window did to it. The two that matter
+are **ADR 0059's entry**, whose subject document #863 amended in three places —
+the fifth site of the walk convention deleted, item 5's *"one such write
+outside `prisoners/`"* reduced to none, and two nouns removed from the
+teleport bullet — where **not one of the five costs that entry prices moves**:
+the walking speed, the 18-28% of the day in transit, ADR 0062's exact-equality
+result, the reconsider-at-the-door mitigation and the mid-journey save rule are
+all untouched, and ADR 0059 is still `Proposed`. And **ADR 0071's entry**,
+reached through `src/simulation/prisoners/action-system.ts`, where the three
+coordinates turned out to be wrong from birth — corrected in that entry, in
+both directions, and it is the only correction the scope rule has produced in
+its history that no window could have caused. **The closest call, named rather
+than filed**: #863 touches `src/simulation/runtime/session-systems.ts`, which
+is restore-path code, and ADR 0074's entry prices *reading a restored room's
+rectangle* — it is not filed because what #863 adds there is an
+`EncodedOperations` block and a carrier re-selection rule, a different object
+from a room's rectangle, and the same reasoning the v0.0.383 pass gave for
+#825's one registry call per sector.
+
+**Every standing claim in §§4-6 re-run rather than carried**, and each is
+recorded where it lives: the four `.css` files under `src/ui` and the single
+`3.9` hit, on a window that edited `src/ui/hud/hud.css`; the two absences in
+`supabase/migrations/`, on a directory still holding 23 files that this window
+does not touch; `docs/research/README.md`'s rule at `:9`, word for word on a
+file this window appended two rows to; and §6's
+`ui-hud-messages.test.ts:269-275`, byte-identical on a file outside the window.
+
+**What this reading is blind to.** It is a delta over `402453a9..3f8c00b0` and
+cannot see a claim that was already false when that window opened. Three of
+this pass's findings are of that class and none came from a diff — §2's ADR
+0071 coordinates, the superseded blocks in this file's own header, and the two
+count bullets that had not been read since `1547c7f6`. It also cannot see
+`zz-probe.test.ts`, added under `tests/determinism/` by #863 and deleted by
+#865 inside this same window, which appears in neither endpoint of the diff.
+
 **The counters were recomputed with this repository's own algorithm, and the
 ad-hoc grep that was tried first disagreed with it.** `statusStatement` in
 `tests/foundation/adr-status-reference-contract.test.ts` takes the first
@@ -7072,16 +7487,19 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `402453a9` — the same bare `grep -ril
+absences were re-verified at `3f8c00b0` — the same bare `grep -ril
 'total_bytes\|max_total_bytes\|retention\|prune'` over the directory still
 returns exactly one file, and its only hit is still the *comment* in
 `20260826130000_server_stamp_updated_at.sql:68` about a **future** retention
 job, so neither absence has acquired an implementation that a path scan would
-have missed — as they were at `f36148d7`, at `98e05058`, at `aa762112`, at `708b68c7`, at `b2941064`, at `1547c7f6`, at `9b8c8e85`, at
+have missed — as they were at `402453a9`, at `f36148d7`, at `98e05058`, at `aa762112`, at `708b68c7`, at `b2941064`, at `1547c7f6`, at `9b8c8e85`, at
 `0e2eb7fb`, at `33a4a22e` and at
 `26434e8e` before it —
-`supabase/migrations/` is not among this window's 10 files, nor the previous
-window's 13, nor the 10 before that, nor the 21 before that, nor the 21 before those, nor the 44 before those, nor `0e2eb7fb`'s 42, nor `33a4a22e`'s 47, nor `26434e8e`'s
+`supabase/migrations/` is not among this window's **63** files, nor the **32**
+of the window before it — **two counts added at the `3f8c00b0` anchor, where this
+chain is extended for the first time since v0.0.388, so every number after
+this dash is that anchor's or older and is kept exactly as it stood** — nor
+that window's 10, nor the window before it with 13, nor the 10 before that, nor the 21 before that, nor the 21 before those, nor the 44 before those, nor `0e2eb7fb`'s 42, nor `33a4a22e`'s 47, nor `26434e8e`'s
 101, and the directory still holds twenty-three files, counted again — unchanged since the previous anchor, the
 one before it, the one before that, the one before that, the one before that, the one before that,
 the one before that, the one before that, the one before that, the one before
@@ -8022,6 +8440,36 @@ one direction.
   time: this bullet counts entries that were never written, and that rule
   checks the ones that were. Neither found work.
 
+  **Thirty-two is THIRTY-FOUR at `3f8c00b0`, and the interval is the finding
+  rather than the number: this bullet had not been read for SIX anchors.** Its
+  last dated reading is the `1547c7f6` paragraph immediately above, and no
+  anchor at v0.0.372, v0.0.377, v0.0.383, v0.0.388, v0.0.393 or v0.0.402 gave
+  it one — while both of its terms moved underneath it. **This is the second
+  time this bullet has stopped being extended and the second time it was found
+  by reading it against its mirror rather than by any diff**; the paragraph
+  above records the first, at `cfab558`, and says in terms that neither copy's
+  own text says when the split opened. Re-derived here rather than carried:
+  **thirty-nine `Proposed` documents, five of which carry a §2 row (0056,
+  0059, 0071, 0074, 0077), so thirty-nine minus five is THIRTY-FOUR
+  outstanding decisions with no entry giving the owner the evidence, what
+  settling one commits the project to, or the line that would replace the
+  status.** The intermediate values are named from §3's own chain rather than
+  reconstructed here — *"THIRTY-NINE at `aa762112`"*, *"THIRTY-NINE is FORTY at
+  `f36148d7`"*, *"Still FORTY at `402453a9`"* — and they are deliberately not
+  added to this bullet as readings, because this bullet did not take them.
+  **ADR 0093's row is §2's NINTH entry and it cannot enter this subtraction at
+  all**, because its document is `Accepted, 2026-09-03, by the repository
+  owner`: it is not one of the thirty-nine, so the exceptions stay at five
+  while §2's own count moves to nine. **That is a new shape for this bullet and
+  it is worth stating where the subtraction lives**: for the first time the two
+  numbers this bullet works with can move in opposite directions, and a reader
+  who took "§2 holds nine entries" as "nine of the outstanding decisions are
+  priced" would be wrong by one. **And the counter moved for the first time by
+  an acceptance rather than an arrival** — every earlier movement in this
+  bullet's history was `Proposed` growing — so this is also the first reading
+  at which the abandonment streak this bullet tracks neither grew nor broke:
+  no ADR arrived in the window at all, so nothing was owed a row.
+
   **Thirty-one is THIRTY-TWO at `9b8c8e85`, seven releases later, and the
   exceptions still do not move.** One `Proposed` ADR arrived — **0091** (what
   clears the refusal band, #777/#780, landed by #800) — and **it carries no
@@ -8422,9 +8870,12 @@ one direction.
 
   - **Question 2 is answered**, as option C plus the accounting option C asked
     for. `EntityStore.destroy` now has a call site in `src/`
-    (`src/simulation/prisoners/release.ts:194` — this read `:156`; #484's
-    escape-attempt path and #485's locomotion clearing both added surfaces above
-    it) and prisoner indices are recycled
+    (`src/simulation/prisoners/release.ts:216` — this read `:194` through the
+    v0.0.402 anchor and `:156` before that; #484's escape-attempt path and
+    #485's locomotion clearing both added surfaces above it, and **ADR 0093's
+    port swap is the third — #863 replaced `PrisonerWorkerReleasePort` with
+    `PrisonerCarryReleasePort`, which moved this call down twenty-two lines
+    without changing a character of it**) and prisoner indices are recycled
     in an ordinary session. ADR 0026 carries this itself, dated, in an amendment
     that deliberately contradicts rather than rewrites the paragraph it
     supersedes: *"Question 2 is answered, as option C plus the accounting option C
@@ -9315,9 +9766,11 @@ one direction.
   control's behaviour to this file without adding a member**: #807 gave the
   Hire button the same can-it-act state #799 gave the Buy button, and routed
   the treasury to the staff panel as a setter rather than as an intent — the
-  panel's comment on it (`src/ui/hud/staff-panel.ts:489`) says the line
-  *"decides nothing"* and that `BuildPanel.setTreasury` *"is the same setter
-  for the same reason on the Buy button"*. The previous anchor's minimap
+  panel's comment on it (`src/ui/hud/staff-panel.ts:526` — **this read `:489`
+  through the v0.0.402 anchor; #857's staff-coverage readout added 37 lines
+  above it in this window and the comment itself is byte-identical**) says the
+  line *"decides nothing"* and that `BuildPanel.setTreasury` *"is the same
+  setter for the same reason on the Buy button"*. The previous anchor's minimap
   control was kept out of the union because it never reaches the simulation;
   this one because it decides nothing — two reasons, one count.
   `AWAITING_PRODUCER`'s declaration and gate comment in
@@ -10386,6 +10839,38 @@ never recorded before this round:
   touched — the weaker of the two results, reported as such for the sixth
   consecutive anchor.
 
+  **THIRTY-NINE at `3f8c00b0`, and this chain has a SIX-ANCHOR HOLE in it that
+  this reading does not paper over.** The sequence above ends at thirty-seven,
+  `1547c7f6`, and the next reading of it is this one: no anchor at v0.0.372,
+  v0.0.377, v0.0.383, v0.0.388, v0.0.393 or v0.0.402 extended it, and neither
+  did §5's first bullet, which stopped in the same window. **The two mirrors
+  went stale together, which is the third instance of exactly the split both of
+  them already record** — and the previous two were found the same way, by
+  reading one against the other rather than by any diff. **So the count is now
+  nine, one, one, none, nine, thirteen, seventeen, twenty-one, twenty-two,
+  twenty-seven, thirty, twenty-nine, thirty, twenty-nine, thirty-two,
+  thirty-one, thirty-three, thirty-four, thirty-four, thirty-four, thirty-six,
+  thirty-seven, thirty-seven and thirty-nine — twenty-four readings, and the
+  values the six skipped anchors would have contributed are named from §3's own
+  chain (thirty-nine at `aa762112`, forty at `f36148d7`, forty at `402453a9`)
+  and deliberately NOT counted as readings of this sentence, because this
+  sentence did not take them.** **The number moved by an acceptance rather than
+  an arrival, for the first time in twenty-four readings**: ADR 0093 crossed
+  from `Proposed` to `Accepted` in #863 and nothing arrived, so forty became
+  thirty-nine. The live consequence in §5's first bullet moves with it and says
+  so in its own text at this anchor: **thirty-four** outstanding decisions,
+  still **five** §2 rows (0056, 0059, 0071, 0074, 0077), and a ninth §2 entry
+  that the subtraction cannot use. **The reading order was §5's first bullet,
+  then §3's opening, then this bullet** — the same order the last two readings
+  used — and it is worth saying that the order was not what failed this time:
+  all three were read in one pass and what had failed was that no pass had read
+  any of them for six anchors. **`income.ts` did not change in this window**:
+  it is not among the **63** files `git diff --name-only 402453a9..3f8c00b0`
+  reports outside this one, and `grep -c "Proposed"
+  src/simulation/economy/income.ts` returns **0** at `3f8c00b0`, re-grepped
+  rather than assumed but against a file nothing touched — the weaker of the
+  two results, reported as such for the seventh consecutive anchor.
+
   **THIRTY-SEVEN at `9b8c8e85`, seven releases later — the number moved for
   the second consecutive anchor, and this is the first reading in the sequence
   taken when all four counting places already agreed.** One `Proposed` ADR
@@ -10799,7 +11284,7 @@ numbers were not the damage.** Stated so it can be checked:
   `prisoners-intake-system.test.ts:230` and `:529`;
   `entity-generation-wrap.test.ts:96`, `:124`, `:163`, `:178`, `:190` and
   `:204`; `unconsumed-command-contract.test.ts:204` and `:230`;
-  `ui-hud-messages.test.ts:269-275` (moved from `:218-224` by #827, byte-identical, re-verified at `402453a9`); `environment-art.test.ts:248` and `:256`;
+  `ui-hud-messages.test.ts:269-275` (moved from `:218-224` by #827, byte-identical, re-verified at `3f8c00b0`); `environment-art.test.ts:248` and `:256`;
   `adr-status-reference-contract.test.ts:147-150`, `:405`, `:427` and `:431`;
   `docs/adr/README.md:103-110` and `:158`; `docs/TRUSTED_SERVICES.md:604`,
   `:607` and `:610`; `docs/adr/0013-…md:15`, `:19-21` and `:151`;
