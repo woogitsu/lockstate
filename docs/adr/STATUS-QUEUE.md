@@ -5636,9 +5636,18 @@ top of this file and in §5's preamble moves with it, and **the entry count is
 unmoved at nine.**
 
 **The anchor was deliberately left alone by the edit that shrank this row.**
-The `Re-anchored at` line still names `402453a9` (v0.0.402); moving it is the
-integrator's budget and not this row's, exactly as the paragraph below already
-says of the reading it was taken against.
+Moving it is the integrator's budget and not this row's, exactly as the
+paragraph below already says of the reading it was taken against.
+
+**And that sentence has already been overtaken, which is why it is corrected
+here rather than left to rot.** It read: *"The `Re-anchored at` line still
+names `402453a9` (v0.0.402)"* — true when this row was written, and false from
+the moment the re-anchor to `3f8c00b0` (v0.0.407) lands, which the integrator
+had in flight in the same hour. Both directions are marked per
+`docs/AGENT_WORKFLOW.md` §4: the old reading is quoted above and the live line
+is whatever the anchor at the top of this file says, which is the only reading
+that cannot go stale. Whichever of the two changes lands second, nothing here
+needs a further edit.
 
 **The live anchor's reading of "eight" was correct when it was taken, and this
 is the ninth, filed after it.** The anchor pass at `402453a9` (v0.0.402)
