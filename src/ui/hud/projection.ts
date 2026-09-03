@@ -1124,6 +1124,16 @@ export function refusalMessageKey(actionId: string, reason?: HostRefusalReason):
         break;
     }
   }
+  /*
+   * The owner's ruling of 2026-09-03: a refused Admit names the missing thing
+   * rather than saying only that the request was refused. Narrowing by reason
+   * exactly as the overdraft floor above does, and falling through to the
+   * control's own key for every other reason, which is the property the
+   * docblock above calls "narrows a sentence and never invents one".
+   */
+  if (reason === 'no-room-to-hold-anybody' && actionId === 'admit-prisoner') {
+    return HUD_MESSAGE_KEY.refusalAdmitPrisonerNoRoom;
+  }
   switch (actionId) {
     case 'set-clock':
       return HUD_MESSAGE_KEY.refusalSetClock;

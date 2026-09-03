@@ -2434,6 +2434,68 @@
     overflow: visible;
   }
 
+  /* The priced hire sentence itself, exempted on the same terms as the two
+     rules below and above it -- and this one was forced by the owner's second
+     ruling of 2026-09-03 rather than chosen. `hud.security.hire-hint` gained
+     the words *"including today"* because without them it was false on the
+     first press of a new game: hiring bills two days' wage for the day it
+     happens, so day one cost 160 against a sentence that read as 80 today and
+     80 tomorrow (issue #868).
+
+     **Those two words are exactly what the clamp cuts.** At 900x600 the
+     lengthened sentence measured `scrollHeight` over `clientHeight` and
+     `ui-staff-wage.spec.ts`'s *"the hire sentence is being clipped at
+     900x600"* went red -- so a clipped line here would read *"Costs 80 now and
+     55 a day in wages"*, which is the sentence the ruling exists to replace,
+     with the correction silently removed. That is worse than a shorter
+     sentence: it is the old false one, restored by a box.
+
+     The clamp's own rule is that what stays clamped is "the notes a clipped
+     line still leaves usable". A price whose scope is cut off is not one of
+     those. The cost is the one `.hud-staff__hire-unassigned` already priced and
+     paid: `.ui-panel.hud-staff` is `overflow-y: auto`, so one more line of
+     `--font-size-eyebrow` moves the scroll threshold and loses nothing.
+
+     `.hud-staff__note[hidden]` above still wins over this rule -- a class and
+     an attribute against one class -- and this note is hidden whenever there is
+     no role to price. */
+  .hud-staff__hire-note {
+    display: block;
+    -webkit-line-clamp: none;
+    overflow: visible;
+  }
+
+  /* The dismiss confirmation (the owner's sentence of 2026-09-03,
+     `hud.security.roster-dismiss-confirm`), exempted for the same reason as the
+     hire sentence directly above and by the same route: the ruling supplied a
+     sentence, the sentence did not fit, and the box gives way rather than the
+     sentence.
+
+     *"Dismiss {name}? Their wage stops and they do not come back."* is two
+     lines at 900x600, measured: with this rule's selector unmatched the box
+     reports `scrollHeight` 26 against `clientHeight` 13, which is two lines cut
+     to one, and `tests/browser/ui-staff-dismiss.spec.ts` goes red on exactly
+     that reading. The clause the second line carries is *"and they do not come
+     back"* -- the whole of what makes this a warning rather than a second
+     rendering of the button beside it. Cut, it would ask the player to confirm
+     the reversible half of an irreversible act, which is worse than asking
+     nothing: a false reassurance produced by a box.
+
+     The clamp's own rule is that what stays clamped is "the notes a clipped line
+     still leaves usable", and the cost is the one `.hud-staff__hire-unassigned`
+     priced and paid: `.ui-panel.hud-staff` is `overflow-y: auto`, so one more
+     line of `--font-size-eyebrow` moves the scroll threshold and loses nothing.
+
+     `.hud-staff__note[hidden]` above still wins over this rule -- a class and an
+     attribute against one class -- and this note relies on that rather than
+     merely tolerating it: it is hidden in every state except the one press
+     between arming a dismissal and confirming it. */
+  .hud-staff__dismiss-confirm {
+    display: block;
+    -webkit-line-clamp: none;
+    overflow: visible;
+  }
+
   /* The line that says what stops a Hire press (the owner's sentence of
      2026-09-03, `hud.security.hire-shortfall`), exempted on exactly the terms
      `.hud-staff__hire-unassigned` above is. *"Not enough money"* with the

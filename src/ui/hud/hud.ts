@@ -1742,14 +1742,29 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
      * The refusal line still says what did not happen, and it is on screen at
      * every viewport.
      *
-     * **No confirmation step**, and that is a decision rather than an omission.
-     * A dismissal cannot be undone -- it destroys an entity -- so a confirm
-     * would be defensible; but this repository has no confirmation primitive,
-     * inventing a modal here would be a UI pattern decided inside one panel, and
-     * the control the player is reaching for is the way *out* of a trap they
-     * cannot otherwise escape. `hud.security.roster-hint` states the
-     * consequence beside the button instead. A confirm step is worth proposing
-     * once there is a pattern for one.
+     * **There is a confirmation step now, and this paragraph used to say there
+     * was not.** It read: *"**No confirmation step**, and that is a decision
+     * rather than an omission. A dismissal cannot be undone -- it destroys an
+     * entity -- so a confirm would be defensible; but this repository has no
+     * confirmation primitive, inventing a modal here would be a UI pattern
+     * decided inside one panel, and the control the player is reaching for is
+     * the way *out* of a trap they cannot otherwise escape.
+     * `hud.security.roster-hint` states the consequence beside the button
+     * instead. A confirm step is worth proposing once there is a pattern for
+     * one."*
+     *
+     * It is quoted rather than deleted because the proposal it asked for is what
+     * happened: issue #877 measured the dismiss row firing at the wrong person 4
+     * times out of 4, and the owner ruled on 2026-09-03 that a dismissal gets
+     * both a settle window on the row and a confirmation step -- *"Jedno i
+     * drugie"* -- and supplied the sentence the confirmation says. Every
+     * constraint that paragraph named still binds and the step is built to them:
+     * no modal, no second control, and the press that gets a player out of the
+     * trap is the first of the two rather than a new one. It lives in the panel
+     * that owns the rows, because what it has to name is the row's own label --
+     * `staff-panel.ts`'s `paintDismissConfirmation` and `hud/dismiss-arming.ts`.
+     * Nothing on this side of the boundary changed: this handler is still handed
+     * a staff id by a press that has already been confirmed.
      */
     onDismiss: (intent) => {
       dispatchCommand({ kind: 'dismiss-staff', staffId: intent.staffId });
