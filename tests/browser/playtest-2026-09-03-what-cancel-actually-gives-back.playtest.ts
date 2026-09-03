@@ -808,10 +808,18 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
     const from = await freshPrison(page);
     await buy(page, 'wall-brick', 40);
     await runUntil(page, (reading) => reading.brickQuantity >= 40, 60_000, '40 bricks in the container');
+    // Two runs, so there is a queue left to press against after half a dozen
+    // cancellations. Both drags land while the clock is paused and with 40
+    // bricks already in the container, so the deficit is zero and neither buys
+    // anything -- no delivery is involved in this test at all.
     await dragWall(page, from, 6);
+    await dragWall(page, { x: from.x, y: from.y + 128 }, 6);
     await openQueueFold(page);
-    if ((await readWorker(page)).orders.length === 0) {
-      note('NO ORDERS from the drag; nothing to measure.');
+    const queued = await readWorker(page);
+    note(`queued: ${JSON.stringify(stateCounts(queued))}, ${String(queued.orders.length)} orders,`
+      + ` bricks held ${String(queued.brickQuantity)}, deliveries ${JSON.stringify(queued.deliveries)}`);
+    if (queued.orders.length === 0) {
+      note('NO ORDERS from the drags; nothing to measure.');
       return;
     }
 
@@ -839,9 +847,10 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
       executeAtTick: number;
       stateAtRead: string;
       stateAfter: string;
+      aimedAtTheRowItRead: boolean;
     }[] = [];
     const startedAt = Date.now();
-    while (outcomes.length < 6 && Date.now() - startedAt < 120_000) {
+    while (outcomes.length < 8 && Date.now() - startedAt < 180_000) {
       const candidate = await page.evaluate((selector) => {
         for (const node of Array.from(document.querySelectorAll(selector))) {
           if (!(node instanceof HTMLElement)) continue;
@@ -860,10 +869,54 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
         continue;
       }
       const before = await readWorker(page);
-      await page.locator(`${QUEUE_ROW}[data-order="${candidate.orderId}"]`).getByRole('button', { name: 'Cancel' }).click({ timeout: 5_000 });
+      /*
+       * `catch` and carry on, because the failure is itself a reading. The
+       * queue rows are a pool of three that are re-pointed at whichever orders
+       * the last publication put in them
+       * (`src/ui/hud/build-panel.ts:1881`), so a row can be hidden or
+       * re-labelled between the read and the click -- Playwright reports
+       * `subtree intercepts pointer events` and then `element is not visible`.
+       * Measured on the run of 2026-09-03 at press 4 of 6.
+       */
+      try {
+        await page.locator(`${QUEUE_ROW}[data-order="${candidate.orderId}"]`).getByRole('button', { name: 'Cancel' }).click({ timeout: 4_000 });
+      } catch {
+        note(`press ${String(outcomes.length + 1)}: the row for ${candidate.orderId} was re-pointed or hidden before the click landed;`
+          + ' recorded and skipped.');
+        await page.waitForTimeout(400);
+        continue;
+      }
       const envelope = await lastSubmitEnvelope(page);
+      /*
+       * Which order the command actually names, read off the wire rather than
+       * assumed to be the one whose row was read.
+       *
+       * **This is the second thing the pool costs and it is not the same as
+       * the click that misses.** `row.cancel`'s handler reads `row.orderId`
+       * *at press time*, deliberately (`src/ui/hud/build-panel.ts:1893`), so a
+       * row re-pointed between the DOM read and the pointer going down submits
+       * a `CancelBuildOrder` for a **different order than the one the label
+       * described**. Measured on the run of 2026-09-03: two presses out of six
+       * moved the treasury by 80 while the order whose row had been read went
+       * on to `completed`, which is the signature of exactly that.
+       */
+      const cancelled = await page.evaluate(() => {
+        const messages = (window as unknown as ProbeWindow).lockstateSentToWorker ?? [];
+        for (let index = messages.length - 1; index >= 0; index -= 1) {
+          const message = messages[index] as {
+            kind?: string;
+            payload?: { command?: { data?: { type?: string; orderId?: string } } };
+          };
+          if (message.kind !== 'simulation/submit-command') continue;
+          const data = message.payload?.command?.data;
+          if (data?.type !== 'CancelBuildOrder') continue;
+          return data.orderId ?? '';
+        }
+        return '';
+      });
       await page.waitForTimeout(1_200);
       const after = await readWorker(page);
+      const stateAtRead = before.orders.find((order) => order.id === cancelled)?.state ?? 'gone';
       outcomes.push({
         advertisedOnTheRow: candidate.back,
         stateWord: candidate.text,
@@ -871,23 +924,27 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
         tickBefore: before.tick,
         tickAfter: after.tick,
         executeAtTick: envelope?.executeAtTick ?? -1,
-        stateAtRead: before.orders.find((order) => order.id === candidate.orderId)?.state ?? 'gone',
-        stateAfter: after.orders.find((order) => order.id === candidate.orderId)?.state ?? 'gone',
+        stateAtRead,
+        stateAfter: after.orders.find((order) => order.id === cancelled)?.state ?? 'gone',
+        aimedAtTheRowItRead: cancelled === candidate.orderId,
       });
       note(`press ${String(outcomes.length)}: row said ${String(candidate.back)} [${candidate.text}]`
-        + ` | worker state when read: ${String(before.orders.find((order) => order.id === candidate.orderId)?.state)}`
+        + ` | the command named ${cancelled === candidate.orderId ? 'that same order' : `a DIFFERENT order (${cancelled})`}`
+        + ` | that order's state when the row was read: ${stateAtRead}`
         + ` | submitted at tick ${String(before.tick)} to execute at ${String(envelope?.executeAtTick)}`
         + ` (lead ${String((envelope?.executeAtTick ?? Number.NaN) - before.tick)} ticks)`
         + ` | money ${String(after.treasuryMinorUnits - before.treasuryMinorUnits)}`
-        + ` | state after ${String(after.orders.find((order) => order.id === candidate.orderId)?.state)}`
+        + ` | state after ${String(after.orders.find((order) => order.id === cancelled)?.state)}`
         + ` | tick now ${String(after.tick)}`);
     }
     await transport(page, 'pause').click();
 
-    const honoured = outcomes.filter((outcome) => outcome.money === outcome.advertisedOnTheRow).length;
+    const aimed = outcomes.filter((outcome) => outcome.aimedAtTheRowItRead);
+    const honoured = aimed.filter((outcome) => outcome.money === outcome.advertisedOnTheRow).length;
     note('');
-    note(`PRESSES: ${String(outcomes.length)}; paid what the row said: ${String(honoured)};`
-      + ` paid less: ${String(outcomes.length - honoured)}`);
+    note(`PRESSES: ${String(outcomes.length)}, of which ${String(aimed.length)} named the order whose row was read.`);
+    note(`OF THOSE ${String(aimed.length)}: paid what the row said ${String(honoured)}; paid less ${String(aimed.length - honoured)}.`);
+    note(`presses that named a different order than the row described: ${String(outcomes.length - aimed.length)}`);
     note(`outcomes: ${JSON.stringify(outcomes)}`);
     expect(outcomes.length).toBeGreaterThan(0);
   });
