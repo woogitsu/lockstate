@@ -347,19 +347,54 @@ export class WorldScene extends Phaser.Scene {
      * take clicks have to take clicks: `.hud` is `pointer-events: none` and
      * `hud.css`'s "Every interactive island opts back in" rule restores `auto`
      * on `.hud-strip`, `.hud__corner > *`, `.hud__aside > *`, `.hud__side > *`
-     * and `.hud-tabs__inner`. Phaser listens for `mousemove` and `mouseup` on
-     * **this canvas** (`node_modules/phaser/src/input/mouse/MouseManager.js`,
-     * `startListeners`), so a left-drag that crossed one of those islands
-     * simply stopped being delivered: the last move the canvas heard was the
-     * last move `extendBuild` saw, `commitBuild` placed the run as it stood
-     * there, and a player who dragged four tiles got one wall and was told
-     * nothing at all -- no refusal, no alert, no console line (issue #878,
-     * measured at 84 of 308 visible tiles reliably reachable at 1440x900).
+     * and `.hud-tabs__inner`. Phaser listens for `mousemove` on **this canvas**
+     * and nowhere else (`node_modules/phaser/src/input/mouse/MouseManager.js`,
+     * `startListeners`; `boot` falls back to `manager.game.canvas` because
+     * `src/main.ts`'s game config sets no `input.mouseEventTarget`), so a
+     * left-drag that crossed one of those islands simply stopped being
+     * delivered: the last move the canvas heard was the last move `extendBuild`
+     * saw, `commitBuild` placed the run as it stood there, and a player who
+     * dragged seven tiles got five walls and was told nothing at all -- no
+     * refusal, no alert, no console line (issue #878).
+     *
+     * **Measured, at 1440x900, by
+     * `tests/browser/playtest-878-what-a-drag-under-the-hud-reaches.playtest.ts`
+     * on the tree immediately before this change.** Seventy drags, each one
+     * started on reachable canvas and pulled to the far edge of the visible
+     * world: **1082 tiles drawn, 901 walls placed -- 83.3%, and 43 of the 70
+     * drags built less than they drew**, the worst of them one wall for
+     * fourteen tiles. The same run on this tree reports 100% and no shortfall.
+     *
+     * Three other numbers from that instrument, because they are three
+     * different things and were conflated once. **202 of 308 visible tile
+     * centres take a press** -- that is `hud.css` alone and this change does
+     * not move it, before or after. **The largest rectangle in which a drag of
+     * any length in any direction never leaves reachable canvas is 144 of
+     * 308** (x 11..22, y 10..21) -- that was the region a drag could be
+     * trusted in. And **286 of 308 tiles could be reached by *some* drag even
+     * unfixed**, which is the number that looks like the defect and is not:
+     * the run is re-derived from the press on every move the canvas does hear,
+     * so a drag whose *last* move happens to land back on canvas recovers its
+     * whole run. Reachability was never the injury. Fidelity was.
      *
      * `setPointerCapture` makes this canvas the target of every subsequent
      * event for that pointer, so the rest of the drag arrives here whatever it
      * passes over, and the release arrives here too. The reachable band stops
      * mattering **while a gesture is in progress**, which is when it mattered.
+     *
+     * **Why this works at all, and it is not obvious.** Phaser never listens
+     * for `pointermove` -- only `mousemove` and `touchmove` -- so a capture
+     * that redirected *pointer* events alone would change nothing here. It
+     * redirects the compatibility mouse events too: a pointer captured to an
+     * element retargets the `mousemove`/`mouseup` derived from it to that same
+     * element. That is the load-bearing fact of this fix and it was measured
+     * rather than assumed -- the instrument above logs, for every move the
+     * canvas hears, both the event target and what
+     * `document.elementFromPoint` says was on top at that instant, and on this
+     * tree it reports three moves with `target=CANVAS` while
+     * `elementFromPoint` names `save-panel__button`, `save-panel__button`,
+     * `save-panel__actions`. Without the capture the same drag produces six
+     * moves, none of them over an island, and stops.
      *
      * **Why capture rather than reconstructing the missing part of the run.**
      * Interpolating between the last and first points the canvas heard would
@@ -375,19 +410,34 @@ export class WorldScene extends Phaser.Scene {
      * that starts on the Build panel is never captured and the panel keeps it.
      * A drag that starts on the canvas and ends over a control does not click
      * that control -- which was already true, because a `click` needs its press
-     * and its release on one element.
+     * and its release on one element. Both halves are asserted at every
+     * viewport by `tests/browser/world-scene-drag-under-the-hud.spec.ts`,
+     * which is the gate for this change: a fix that took the pointer away from
+     * the HUD would be a worse defect than the one it closed.
      *
      * **Unconditional, and not narrowed to an armed tool.** The middle-drag
-     * pan loses its moves to an island in exactly the same way, and a
-     * `pointerType` branch here would be inert: touch is unaffected either way,
-     * because Touch Events are implicitly captured to the element the
-     * `touchstart` hit, which is measurably already this canvas -- a
-     * twelve-move touch drag from canvas across an island delivers every
-     * `touchmove` and the `touchend` here with no capture set at all.
+     * pan loses its moves to an island in exactly the same way, so narrowing
+     * this to a build gesture would leave that half broken. A `pointerType`
+     * branch would be inert rather than wrong: touch never had this defect,
+     * because a touch drag reaches the scene through `touchmove`, which Phaser
+     * registers on this same canvas
+     * (`node_modules/phaser/src/input/touch/TouchManager.js`,
+     * `startListeners`, with the same `game.canvas` fallback), and the Touch
+     * Events specification captures every `touchmove` and `touchend` of a
+     * sequence to the element its `touchstart` hit. So there is nothing for a
+     * branch to protect and nothing for the capture to spoil.
      *
      * It is not removed on `pointerup`: capture is released implicitly by the
      * browser when the pointer goes up or is cancelled, so releasing it by hand
      * would be a second mechanism for something the platform already does.
+     *
+     * It is not guarded, either, and the reason is that both of
+     * `setPointerCapture`'s failure modes are excluded by where it is called
+     * from. It throws `NotFoundError` for a `pointerId` that is not an active
+     * pointer -- and this id came off a `pointerdown` that is being dispatched
+     * -- and `InvalidStateError` for an element not connected to a document,
+     * which cannot be true of the element that just received the event. A
+     * `try`/`catch` here would swallow a fault that means something else.
      */
     const canvas = this.game.canvas;
     const capturePointer = (event: PointerEvent): void => {

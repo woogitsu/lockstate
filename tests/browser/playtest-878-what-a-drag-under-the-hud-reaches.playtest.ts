@@ -52,10 +52,22 @@ import { TILE, armBuildable, calibrate, installTee, openApp, tab } from './playt
  *
  * ## What it costs
  *
- * One page load, one prison, one calibration and about seventy drags. The
- * playtest config gives a test 600 s; this uses a fraction of it on an idle
- * box, and it is not a gate, so a slow run is a slow measurement rather than a
- * red build.
+ * One page load, one prison, one calibration and about seventy drags, and
+ * almost all of it is Playwright round trips rather than work: measured at
+ * roughly 8.5 min on an idle box, against the playtest config's **600 s
+ * per-test budget**. So it needs that budget raised on the command line --
+ *
+ *     ./node_modules/.bin/playwright test \
+ *       --config tests/browser/playwright.playtest.config.ts \
+ *       --timeout 1200000 playtest-878-what-a-drag-under-the-hud-reaches
+ *
+ * -- and the first run of it that did not was killed at exactly 10.0 min with
+ * the sweep half done. The round trips have been cut where they could be (one
+ * `evaluate` a drag rather than two, and the tee sliced inside the page rather
+ * than serialised whole), and the ones that are left are the gesture itself:
+ * ten dispatches a drag, because the intermediate moves are the subject.
+ * Raising the budget is right rather than thinning the gesture -- this is not
+ * a gate, so a slow run is a slow measurement and not a red build.
  */
 
 /** One `mousemove` the canvas heard, and what was on top where it happened. */
@@ -140,14 +152,14 @@ test.describe('what a drag under the HUD reaches (#878)', () => {
     await tab(page, 'build').click();
 
     /*
-     * The "saved" panel is a transient island: it covers four tile centres at
-     * the top right for a few seconds after the prison is created, so a map
-     * read while it is up is not the map the sweep below runs against. Waited
-     * out rather than ignored, so the before and after runs of this file are
-     * reading the same page.
+     * `.save-panel` is one of the islands, and it is **not** transient: an
+     * earlier version of this file waited 30 s for it to hide before mapping,
+     * and the map it then read still named `save-panel` as the owner of four
+     * tile centres. The wait was removed rather than lengthened -- it measured
+     * nothing and cost 30 s a run. The panel is counted like any other island,
+     * and `readMap`'s `.hud, .save-panel` selector is why it is named rather
+     * than reported as a bare `<button>`.
      */
-    await page.locator('.save-panel').waitFor({ state: 'hidden', timeout: 30_000 }).catch(() => undefined);
-
     /*
      * A quarter of a tile is enough: every point below is a tile centre, so an
      * origin known to 16px still names the tile it means with 16px to spare,
@@ -250,18 +262,25 @@ test.describe('what a drag under the HUD reaches (#878)', () => {
      * the handful of commands one drag produced crosses the boundary. Measured
      * on this container: 8.2 min the other way.
      */
-    const submittedCount = async (): Promise<number> =>
-      page.evaluate(() => ((window as unknown as { lockstateSentToWorker?: unknown[] }).lockstateSentToWorker ?? []).length);
-    const placedSince = async (index: number): Promise<readonly Record<string, unknown>[]> =>
+    const placedSince = async (
+      index: number,
+    ): Promise<{ readonly placed: readonly Record<string, unknown>[]; readonly length: number }> =>
       page.evaluate((from) => {
         const raw = (window as unknown as { lockstateSentToWorker?: unknown[] }).lockstateSentToWorker ?? [];
-        return raw
+        const placed = raw
           .slice(from)
           .map((message) => message as { kind?: string; payload?: { command?: { data?: Record<string, unknown> } } })
           .filter((message) => message.kind === 'simulation/submit-command')
           .map((message) => message.payload?.command?.data ?? {})
           .filter((data) => data['type'] === 'PlaceBuildOrder');
+        return { placed, length: raw.length };
       }, index);
+    /*
+     * The tee's length is carried forward from the previous read rather than
+     * asked for again: a second `evaluate` is a second round trip, and the
+     * sweep does seventy of these.
+     */
+    let submitted = (await placedSince(0)).length;
 
     /** Drawn tiles and built walls, summed over every drag the sweep performs. */
     let drawnTiles = 0;
@@ -280,12 +299,6 @@ test.describe('what a drag under the HUD reaches (#878)', () => {
     ): Promise<readonly Record<string, unknown>[]> => {
       const from = point(a.tx, a.ty);
       const to = point(b.tx, b.ty);
-      const before = await submittedCount();
-      await page.evaluate(() => {
-        const probe = window as unknown as ProbeWindow;
-        probe.__dragProbeMoves = [];
-        probe.__dragProbeCaptured = [];
-      });
       await page.mouse.move(from.x, from.y);
       await page.mouse.down({ button: 'left' });
       await page.mouse.move((from.x + to.x) / 2, (from.y + to.y) / 2, { steps: 4 });
@@ -294,7 +307,9 @@ test.describe('what a drag under the HUD reaches (#878)', () => {
       // The submission is synchronous with the release; this is the tee's round
       // trip and not a wait on the simulation.
       await page.waitForTimeout(150);
-      const placed = await placedSince(before);
+      const read = await placedSince(submitted);
+      submitted = read.length;
+      const placed = read.placed;
       const intent = Math.abs(a.tx === b.tx ? b.ty - a.ty : b.tx - a.tx) + 1;
       drawnTiles += intent;
       builtWalls += placed.length;
@@ -325,6 +340,11 @@ test.describe('what a drag under the HUD reaches (#878)', () => {
     expect(crossing, 'no row on this page runs from reachable canvas into a HUD island').toBeDefined();
 
     const intended = crossing!.to - crossing!.from + 1;
+    await page.evaluate(() => {
+      const probe = window as unknown as ProbeWindow;
+      probe.__dragProbeMoves = [];
+      probe.__dragProbeCaptured = [];
+    });
     const produced = await drag({ tx: crossing!.from, ty: crossing!.ty }, { tx: crossing!.to, ty: crossing!.ty });
     const moves = await page.evaluate(() => (window as unknown as ProbeWindow).__dragProbeMoves ?? []);
     const captured = await page.evaluate(() => (window as unknown as ProbeWindow).__dragProbeCaptured ?? []);
