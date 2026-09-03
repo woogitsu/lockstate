@@ -67,7 +67,9 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  *
  * **The last one is the measurement, not just a gate.** With the expectation
  * adjusted to the two-sentence text so the clamp assertion could be reached,
- * *"Costs 80 now and 55 a day in wages. A new guard starts unassigned."* is
+ * *"Costs 80 now and 55 a day in wages. A new guard starts unassigned."*
+ * (the priced half now reads *"... in wages, including today."*, by the owner's
+ * ruling of 2026-09-03; this quotes the pair as ruling #639 approved it) is
  * clipped at 900x600 -- which is why the hire hint carries the owner's one
  * sentence and the displaced one comes back on a line of its own.
  *
@@ -164,6 +166,11 @@ interface WageReading {
   readonly unassignedLineClamp: string | null;
   readonly unassignedDisplay: string | null;
   readonly hintLineClamp: string | null;
+  /**
+   * The clamp on a `.hud-staff__note` that is deliberately still clamped, kept
+   * as the vacuity witness for the exemption assertions. See the pair below.
+   */
+  readonly clampedWitnessLineClamp: string | null;
   readonly hintWidth: number;
   readonly hintHeight: number;
   /** True when the clamp is cutting the sentence: more text than box. */
@@ -226,6 +233,10 @@ async function read(page: Page): Promise<WageReading> {
       unassignedLineClamp: unassigned === null ? null : getComputedStyle(unassigned).webkitLineClamp,
       unassignedDisplay: unassigned === null ? null : getComputedStyle(unassigned).display,
       hintLineClamp: hint === null ? null : getComputedStyle(hint).webkitLineClamp,
+      clampedWitnessLineClamp: (() => {
+        const witness = document.querySelector('.hud-staff__held-more');
+        return witness === null ? null : getComputedStyle(witness).webkitLineClamp;
+      })(),
       hintWidth: hintBox === undefined ? 0 : Math.round(hintBox.width * 100) / 100,
       hintHeight: hintBox === undefined ? 0 : Math.round(hintBox.height * 100) / 100,
       // A sentence the clamp is cutting has more content than box. `+ 0.5`
@@ -280,7 +291,20 @@ test.describe('the Staff panel says what a guard costs now and what it costs eve
      * fields, in the order the owner's sentence puts them**.
      */
     expect(reading.hintText, 'the panel drew no sentence under the hire button').toBe(
-      'Costs 80 now and 55 a day in wages.',
+      /*
+       * **Re-ruled by the owner on 2026-09-03; the sentence it replaced is
+       * quoted rather than overwritten** (`docs/AGENT_WORKFLOW.md` §4). It read
+       * *"Costs 80 now and 55 a day in wages."* -- ruling #639's words, and
+       * false on the first press of a new game, because hiring bills two days'
+       * wage for the day it happens (issue #868, measured 25,000 -> 24,920 at
+       * the press and -> 24,840 at tick 2,408).
+       *
+       * **The two added words are what the 900x600 clamp cut**, which is why
+       * `hud.css` now exempts `.hud-staff__hire-note` from it: a clipped line
+       * would read the old false sentence back, with the correction removed by
+       * a box. The clipping assertion further down is the one that caught it.
+       */
+      'Costs 80 now and 55 a day in wages, including today.',
     );
     // The assertions the text alone cannot make. #220 and #285 are this
     // repository's two shipped defects of exactly this shape: content that
@@ -377,10 +401,33 @@ test.describe('the Staff panel says what a guard costs now and what it costs eve
      * `max-height: 700px` block were not in force at all, both would read
      * `none` and the second expectation alone would pass for the wrong reason.
      */
+    /*
+     * **The witness moved, because the hint stopped being one.** This read
+     * `reading.hintLineClamp` and required `'1'`: the priced hint was the proof
+     * that the `max-height: 700px` block is in force at all, which is what
+     * stops the next expectation passing for the wrong reason.
+     *
+     * The owner's second ruling of 2026-09-03 lengthened that hint past one
+     * line -- *"including today"*, added because the sentence was false without
+     * it -- so `hud.css` now exempts `.hud-staff__hire-note` from the clamp
+     * too, and the hint reads `none`. **Keeping the old assertion would have
+     * meant either re-clamping a sentence the ruling exists to make whole, or
+     * deleting the vacuity guard.** Neither: the guard needs a note that is
+     * still clamped, and `.hud-staff__held-more` is one -- same panel, same
+     * base class, not exempted, and it belongs to the category `hud.css` says
+     * stays clamped, the notes "a clipped line still leaves usable". A
+     * list-overflow count reads fine with its tail cut; a price does not.
+     */
     expect(
-      reading.hintLineClamp,
+      reading.clampedWitnessLineClamp,
       'the short-viewport clamp is not in force at 900x600, so nothing here is testing an exemption from it',
     ).toBe('1');
+    // And the hint itself is now on the exempt side of that rule, which is the
+    // half the ruling forced. Asserted so a silent re-clamp fails here.
+    expect(
+      reading.hintLineClamp,
+      'the priced hire sentence is clamped again, so "including today" is being cut off',
+    ).not.toBe('1');
     expect(
       reading.unassignedLineClamp,
       'the restored line is clamped like its neighbour, so a locale whose sentence wraps loses the clause',
