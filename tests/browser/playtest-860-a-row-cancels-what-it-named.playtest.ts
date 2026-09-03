@@ -24,17 +24,47 @@ import { armBuildable, buy, calibrate, currentTick, drag, installTee, openApp, t
  *
  * A press can miss for two different reasons and they need different fixes:
  *
- * 1. **The row was re-pointed.** `paintQueue` binds `queueRows[i]` to
- *    `orders[i]` (`src/ui/hud/build-panel.ts`, the `for (const [index, row] of
- *    queueRows.entries())` loop), so when the head of the queue completes every
- *    surviving order slides up one row. The *element* under the pointer then
- *    names a different order, and `row.orderId` read at press time is that
- *    different order.
+ * 1. **The row was re-pointed.** `paintQueue` bound `queueRows[i]` to
+ *    `orders[i]` before #860, so when the head of the queue completed every
+ *    surviving order slid up one row. The *element* under the pointer then
+ *    named a different order, and `row.orderId` read at press time was that
+ *    different order. `assignPooledRows` is what stopped that.
  * 2. **The list got shorter.** The row is hidden, `row.orderId` is
  *    `undefined`, and the handler returns without submitting anything. The
  *    press is silently lost.
  *
  * Both are recorded per press, with the row index, so the reading says which.
+ *
+ * ## Three runs, and what each one said
+ *
+ * **Run 1, against `main`.** Four presses. Two aimed correctly at a 0ms delay;
+ * one wrong at 250ms and one wrong at 600ms. In both failures `rowAtPress` --
+ * what the pooled element named immediately before the click -- equalled what
+ * the command submitted and did not equal what had been read. That is the pool
+ * re-pointing the element, and it is #860's mechanism confirmed.
+ *
+ * **Run 2, against the first half of the fix** (every surviving order keeps its
+ * row). Three presses; one lost, and **two still wrong**, at 250ms and 600ms.
+ * The reason is arithmetic: three places over a queue losing its head every
+ * ~625ms of wall clock at 4x means the order a player aimed at has usually left
+ * the window, and keeping *survivors* in place does nothing for them. That run
+ * is why `BUILD_QUEUE_ROW_SETTLE_MS` and the no-compaction rule exist.
+ *
+ * **Run 3, against the whole fix.** Two presses. One at 600ms was **lost** --
+ * the place had gone blank and the press reached nothing, which is the safe
+ * outcome this design aims for. One at 0ms was still wrong, and its record says
+ * the mechanism is no longer the pool: `rowAtPress` was the *empty* string, so
+ * the element whose coordinates had been read named nothing at press time, and
+ * the `CancelBuildOrder` that was submitted therefore did not go through it. The
+ * click landed on a different row's control -- which means the Build panel's own
+ * layout moved under the coordinates between the read and the click.
+ *
+ * **That is a different defect from #860 and it is not in the pooled-row
+ * machinery.** It is panel layout motion under a pointer, and the candidates
+ * this file has not separated are the deliveries block gaining or losing its box
+ * above the queue (`paintDeliveries`), a `scrollIntoView`, and the shortfall
+ * line. Reported rather than diagnosed: one press is not a distribution, and
+ * naming a cause from it would be the move `docs/AGENT_WORKFLOW.md` §3 calls out.
  *
  * ## It is not a gate
  *
@@ -203,7 +233,7 @@ test.describe('a pooled queue row and the press that follows it', () => {
     const delays = [0, 250, 600];
     const startedAt = Date.now();
     let attempt = 0;
-    while (outcomes.length < 24 && Date.now() - startedAt < 420_000) {
+    while (outcomes.length < 24 && Date.now() - startedAt < 200_000) {
       const delayMs = delays[attempt % delays.length]!;
       attempt += 1;
       const rows = await readRows(page);
