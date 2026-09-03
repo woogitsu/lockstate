@@ -613,11 +613,11 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `98e05058` (**v0.0.388**) by the delta method this
-header describes, from the v0.0.383 anchor described below. **Five of the ten
+Re-anchored at `main` @ `f36148d7` (**v0.0.393**) by the delta method this
+header describes, from the v0.0.388 anchor described below. **Five of the ten
 releases the budget allows, counted on the tree this commit is written
-against: `package.json` ships 0.0.388 at `98e05058` and the anchor being
-replaced named v0.0.383.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
+against: `package.json` ships 0.0.393 at `f36148d7` and the anchor being
+replaced named v0.0.388.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
 **10**, exactly as the gate demands and as its own failure message insists.
 
 **This pass was dispatched at FIVE of ten — the halfway mark exactly, and the
@@ -1136,7 +1136,30 @@ anchors ago, one release late, and the honest reading is that a rule two
 passes have missed by two and then by one is being approached rather than
 kept.
 
-**The anchor before this one, kept — v0.0.383.** It read: *"Re-anchored at `main` @
+**The anchor before this one, kept — v0.0.388.** It read: *"Re-anchored at `main` @
+`98e05058` (**v0.0.388**) by the delta method this header describes, from the
+v0.0.383 anchor described below. Five of the ten releases the budget
+allows."* It was the **first pass in the sequence to be dispatched at the
+halfway mark by watching a merge land** rather than by reading the budget on a
+schedule, which is the fix the pass before it had prescribed for its own miss
+at six; it held six green mergeable pull requests rather than spend the window.
+Its window was 10 files across four implementing merges (#835, #832, #836,
+#840), with #837 excluded as self-referential, and its delta intersection was
+five. It moved no counter — `Proposed` 39, `Accepted` 48, 87 documents, next
+free 0094 — and it recorded three things this pass builds on directly: that the
+counters must be computed with `statusStatement` from
+`tests/foundation/adr-status-reference-contract.test.ts` rather than a grep
+written for the occasion (the grep it tried first answered 42/37 over 79 of 87
+documents); that the held-number sweep is clean for the collision risk it
+exists for while a broad sweep finds three abandoned drafts, two of them both
+claiming 0030; and that the **"gap" figure cannot be re-derived as written**.
+It also **wrote a retraction into this header**, of a correction reading *"the
+gap is six, not four"* that it drafted and withdrew before pushing, having
+measured absent ADR file numbers and used them to contradict a claim about
+self-quoting index cells.
+
+
+**The anchor before that one, kept — v0.0.383.** It read: *"Re-anchored at `main` @
 `aa762112` (**v0.0.383**) by the delta method this header describes, from the
 v0.0.377 anchor described below. Six of the ten releases the budget allows,
 counted on the tree this commit is written against."* It was dispatched at
@@ -6604,6 +6627,108 @@ form (0001, 0002, 0003, 0004, 0014, 0021, 0064, 0067) — the other six are
 documents and not about bullets, a distinction this pass had to check before
 it stopped reading the sentence as wrong.
 
+**THIRTY-NINE is FORTY at `f36148d7` (v0.0.393), five releases later — the
+first counter to move in four windows, and it moved for the plainest possible
+reason.** ADR 0094 landed (#849), it is `Proposed`, and nothing else changed
+status. Recomputed with `statusStatement` from
+`tests/foundation/adr-status-reference-contract.test.ts` as the previous pass
+established: **40** `Proposed` against **48** `Accepted` across **88**
+documents. The index agrees —
+`grep -cE '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **40**
+against **48** across **89** rows, which is 88 documents plus the kept `0018`
+row. **Next free number: 0095**, matching the index, moved by 0094 landing.
+The absent numbers are the same six — `0018`, `0030`, `0055`, `0058`, `0060`,
+`0072` — against 0001-0094 present.
+
+**The "gap" figure is settled, and the answer is that my own instrument moved
+it, not the tree.** The previous pass handed this back unresolved: it could not
+re-derive the stated figure of four and reported **three** (0051, 0082, 0088)
+from a direct enumeration. This pass ran the enumeration again and got
+**two** (0051, 0082) — and then found out why, which is the part worth having.
+The two readings differ in one character of my own grep:
+
+- Rows whose status cell quotes its own former wording with **backticks**
+  (`` `Proposed ``): **two** — 0051 and 0082.
+- Rows that quote it with **double quotes** as well: **three** — 0051, 0082
+  and 0088, whose cell reads *"It read \"Proposed, 2026-09-01. Not
+  self-approved\" until then."*
+
+Both are defensible readings of "self-quoting cell". The previous pass used the
+wider one and this pass first used the narrower, so **the figure that looked
+like it had moved between two anchors an hour apart had not moved at all**;
+`docs/adr/README.md` did not change 0088's row in this window, checked on the
+diff rather than assumed. The file's own stated derivation — *"subtracting the
+two greps"* — gives `grep '^| \[' docs/adr/README.md | grep -c Proposed` =
+**44** minus `grep -c "cell read \`Proposed" docs/adr/README.md` = **2**, so
+42, and matches none of two, three or four. So what is retired here is not the
+number but the **suspicion that something in the index was drifting**: nothing
+was. What remains is a sentence whose stated method does not compute its stated
+figure, and the fix belongs to whoever next edits that sentence — with the
+enumeration written out, in either reading, rather than a subtraction that
+computes something else.
+
+**The held-number sweep is clean for the risk, on a remote that shrank for the
+first time.** No head holds a number at or above 0095. And the branch count
+**fell from 482 to 462**: the twenty branches the owner authorised as a trial
+batch were deleted by `.github/workflows/branch-gc.yml` (#850), which is the
+first successful branch deletion in this repository's history by a workflow
+that verifies against `merged_at` rather than against reachability. The three
+abandoned drafts the previous pass named — `0018` on
+`claude/construction-materials-supply`, and two different documents both
+claiming `0030` — are all still present, all still skipped, and none was in
+the batch.
+
+**And that batch broke a citation, which is the finding this pass would not
+have had without it.** `tests/foundation/documentation-commit-citation-contract.test.ts`
+went red on `docs/adr/0063-what-a-refused-restore-says-and-whose-fault-it-is.md:79`,
+which cited two shas for #433's code: the squashed merge of #468, which is
+`6172774` and is on `main`, and **an intermediate commit of that same
+branch**, which is not. Because this repository squash-merges, an intermediate
+commit is on the branch and nowhere else. `agent/403-save-generations` was one
+of the twenty deleted, so deleting it removed the only published ref that
+commit was reachable from, and the citation stopped being checkable by anybody,
+CI included.
+
+Corrected there by citing only the published squash, which is what actually
+carries the code. **The orphaned sha is deliberately not quoted anywhere in
+this paragraph, and that is the second half of the lesson.** Writing it in the
+citation form would fail the same gate here — it did, on the first draft of
+this paragraph, twice on these very lines — and
+`UNPUBLISHED_BY_ORIGIN` is not the way out: that allowlist is empty, its own
+comment calls the emptiness *"a state to defend rather than a gap"*, and the
+one entry it ever held was settled by **naming the published commit instead**.
+So the commit is identified by what it is rather than by a sha nobody can
+resolve, which is also the only form a reader can still act on. A citation
+naming a commit that squash-merging was always going to erase is fragile
+whether or not a branch cleanup runs; the cleanup only made it fail sooner.
+
+**Measured before going further, because the same hazard scales.** Of the
+**383** commit shas cited across `docs/`, **316** are reachable from
+`origin/main` and **28 are reachable only from a branch**. Deleting those
+branches would orphan all twenty-eight the same way. Named for the next pass
+rather than fixed here: `docs/playtest-first-five-minutes` alone carries three
+(`20f88a7f`, `30b7bc95`, `55e9dc6`), `docs/playtest-rooms-2026-09-01` three
+more, and `agent/677-weapons-unreachable` three. **So the remaining ~348
+deletions are held**, not merely awaiting the owner's word: the workflow's
+verification is about whether a branch was *merged*, and this is a different
+question — whether anything still *cites* it — which nothing checks yet. That
+is the argument for the trial batch having been the right instruction, and it
+is the reason the full run should gain a citation guard before it is
+dispatched.
+
+**§2's entry count is unmoved at EIGHT, and by subject this window files
+nothing.** #846 routes an `aria-label` through the catalogue, #848 corrects a
+citation and records two refusals, #849 is authored name content plus a
+`Proposed` ADR, #850 is a workflow — none of them is ADR 0008 §2 or §3, the
+server entry point, ADR 0056, 0059, 0074, 0071 or 0077. **The closest call,
+named rather than filed**: #849 adds `src/simulation/identity/name-pools/` and
+ADR 0094 decision 2 prices a naming *plan* into the save, which is the shape
+§2 exists to hold — but decision 2 is `Proposed` and nothing in `src/` reads
+those pools yet (`src/simulation/identity/index.ts` deliberately does not
+re-export them and says so), so there is no accepted decision for the code to
+contradict. It becomes a §2 entry the moment the owner accepts decision 2, and
+that is the next thing this queue expects to gain.
+
 **The counters were recomputed with this repository's own algorithm, and the
 ad-hoc grep that was tried first disagreed with it.** `statusStatement` in
 `tests/foundation/adr-status-reference-contract.test.ts` takes the first
@@ -6742,12 +6867,12 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `98e05058` — the same bare `grep -ril
+absences were re-verified at `f36148d7` — the same bare `grep -ril
 'total_bytes\|max_total_bytes\|retention\|prune'` over the directory still
 returns exactly one file, and its only hit is still the *comment* in
 `20260826130000_server_stamp_updated_at.sql:68` about a **future** retention
 job, so neither absence has acquired an implementation that a path scan would
-have missed — as they were at `aa762112`, at `708b68c7`, at `b2941064`, at `1547c7f6`, at `9b8c8e85`, at
+have missed — as they were at `98e05058`, at `aa762112`, at `708b68c7`, at `b2941064`, at `1547c7f6`, at `9b8c8e85`, at
 `0e2eb7fb`, at `33a4a22e` and at
 `26434e8e` before it —
 `supabase/migrations/` is not among this window's 10 files, nor the previous
@@ -10460,7 +10585,7 @@ numbers were not the damage.** Stated so it can be checked:
   `prisoners-intake-system.test.ts:230` and `:529`;
   `entity-generation-wrap.test.ts:96`, `:124`, `:163`, `:178`, `:190` and
   `:204`; `unconsumed-command-contract.test.ts:204` and `:230`;
-  `ui-hud-messages.test.ts:269-275` (moved from `:218-224` by #827, byte-identical, re-verified at `98e05058`); `environment-art.test.ts:248` and `:256`;
+  `ui-hud-messages.test.ts:269-275` (moved from `:218-224` by #827, byte-identical, re-verified at `f36148d7`); `environment-art.test.ts:248` and `:256`;
   `adr-status-reference-contract.test.ts:147-150`, `:405`, `:427` and `:431`;
   `docs/adr/README.md:103-110` and `:158`; `docs/TRUSTED_SERVICES.md:604`,
   `:607` and `:610`; `docs/adr/0013-…md:15`, `:19-21` and `:151`;
