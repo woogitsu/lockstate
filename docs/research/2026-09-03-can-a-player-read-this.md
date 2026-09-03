@@ -244,12 +244,22 @@ Saved (generation gen-mtlvhvhs-8).
 ```
 
 Six numbers, all of them on the status strip that is on screen on every tab
-anyway; the speed readout; **a refusal from tick 0 (§5)**; an autosave notice.
+anyway; the speed readout; **a refusal from tick 0 (§7)**; an autosave notice.
 **Not one sentence about the prison.** The Intake panel's only prose is the
 same hint it carried when the prison was empty — *"A prison needs a cell before
 it can admit anyone. It does not need a free bed: an arrival with none waits
 until a bed is free."* — and the minimap square still says it is not available
 (§2).
+
+**Stated precisely, because the Intake panel is not mute in general.** On a
+prison that is *over* its accommodation it does gain lines: an eight-prisoner,
+six-bed prison in the same session read `2 waiting with no bed to sleep in` and
+`2 at Cell Assignment` there, unfolded. What §3 measures is a prison with eight
+beds for six people — one that is **fine** — and it is that state the tab has
+nothing to say about. The panel speaks when there is a shortfall and is silent
+when the prison is working, which is the same rule as the strip's tones and has
+the same consequence: the only prison this interface describes in words is one
+in trouble.
 
 **The refuting samples, taken.**
 
