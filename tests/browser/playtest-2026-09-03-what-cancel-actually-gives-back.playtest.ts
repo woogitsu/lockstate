@@ -777,4 +777,78 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
     note(`chip before ${String(chipBefore.byMetric)}, first sample after ${String(first?.chip)}`);
     expect(samples.length).toBeGreaterThan(0);
   });
+
+  test('the press a player actually makes: click the instant the row shows a figure, clock at 1x', async ({ page }) => {
+    const note = (line: string): void => {
+      console.log(line);
+    };
+    const from = await freshPrison(page);
+    await buy(page, 'wall-brick', 40);
+    await runUntil(page, (reading) => reading.brickQuantity >= 40, 60_000, '40 bricks in the container');
+    await dragWall(page, from, 6);
+    await openQueueFold(page);
+    if ((await readWorker(page)).orders.length === 0) {
+      note('NO ORDERS from the drag; nothing to measure.');
+      return;
+    }
+
+    /*
+     * The tightest press this file can make. Everything a player does before
+     * clicking -- read the row, decide -- is replaced by one DOM read, and the
+     * click follows it with nothing in between: no snapshot, no projection
+     * request, no worker round trip. The treasury is read from the worker
+     * *before* the loop and again after each press, so the interval between
+     * "the row said a number" and "the button went down" is a single
+     * `page.evaluate` rather than three.
+     *
+     * The point of the tally is the interval. `assigned` becomes
+     * `in-progress` on the next scheduled construction pass
+     * (`schedule.intervalTicks: 10`), and a press that arrives after it pays
+     * `0` by ruling 20 however honest the row was when it was read.
+     */
+    await transport(page, 'play').click();
+    const outcomes: { advertisedOnTheRow: number; stateWord: string; money: number; tickBefore: number; tickAfter: number }[] = [];
+    const startedAt = Date.now();
+    while (outcomes.length < 6 && Date.now() - startedAt < 120_000) {
+      const candidate = await page.evaluate((selector) => {
+        for (const node of Array.from(document.querySelectorAll(selector))) {
+          if (!(node instanceof HTMLElement)) continue;
+          if (node.hidden || node.getClientRects().length === 0) continue;
+          const text = (node.innerText ?? '').replace(/\s+/g, ' ').trim();
+          const match = /([\d\u00a0\u202f\s,.]+)\s*back/.exec(text);
+          if (match === null) continue;
+          const back = Number.parseInt(match[1]!.replace(/[^\d]/g, ''), 10);
+          if (!Number.isFinite(back) || back <= 0) continue;
+          return { orderId: node.getAttribute('data-order') ?? '', back, text };
+        }
+        return undefined;
+      }, QUEUE_ROW);
+      if (candidate === undefined) {
+        await page.waitForTimeout(25);
+        continue;
+      }
+      const before = await readWorker(page);
+      await page.locator(`${QUEUE_ROW}[data-order="${candidate.orderId}"]`).getByRole('button', { name: 'Cancel' }).click({ timeout: 5_000 });
+      await page.waitForTimeout(400);
+      const after = await readWorker(page);
+      outcomes.push({
+        advertisedOnTheRow: candidate.back,
+        stateWord: candidate.text,
+        money: after.treasuryMinorUnits - before.treasuryMinorUnits,
+        tickBefore: before.tick,
+        tickAfter: after.tick,
+      });
+      note(`press ${String(outcomes.length)}: row said ${String(candidate.back)} [${candidate.text}] ->`
+        + ` money ${String(after.treasuryMinorUnits - before.treasuryMinorUnits)}`
+        + ` (ticks ${String(before.tick)} -> ${String(after.tick)})`);
+    }
+    await transport(page, 'pause').click();
+
+    const honoured = outcomes.filter((outcome) => outcome.money === outcome.advertisedOnTheRow).length;
+    note('');
+    note(`PRESSES: ${String(outcomes.length)}; paid what the row said: ${String(honoured)};`
+      + ` paid less: ${String(outcomes.length - honoured)}`);
+    note(`outcomes: ${JSON.stringify(outcomes)}`);
+    expect(outcomes.length).toBeGreaterThan(0);
+  });
 });
