@@ -751,7 +751,27 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
     // What moved is only which words this key holds -- see
     // `hud.regime.roster-empty` in `default-locale-en.ts`, which keeps the
     // ruling and the wording it replaced.
-    rosterEmpty.hidden = shown.length > 0 || roster.everAdmitted;
+    //
+    // **The owner ruled the missing sentence on 2026-09-03, so the box no
+    // longer goes dark on the second state.** Everything the paragraph above
+    // argues is still true of `hud.regime.roster-empty`; what changed is that
+    // there is now a *second* key for the state that sentence was never true
+    // of. So the visibility test drops its `everAdmitted` half -- an empty
+    // roster always draws a line now -- and `everAdmitted` becomes the choice
+    // of *which* line. The two states are still two sentences and neither has
+    // been widened to cover the other, which is what the previous reading
+    // asked for and could not have.
+    rosterEmpty.hidden = shown.length > 0;
+    if (!rosterEmpty.hidden) {
+      // Re-set on every paint rather than only on the transition: `paintState`
+      // is keyed on the active tab and this element is pooled, so a roster that
+      // empties out while the player is on another tab would otherwise keep
+      // whichever sentence was current when it was last painted. The same
+      // pooled-row hazard #877 is about, one element wide.
+      rosterEmpty.textContent = t(
+        roster.everAdmitted ? HUD_MESSAGE_KEY.regimeRosterEmptied : HUD_MESSAGE_KEY.regimeRosterEmpty,
+      );
+    }
     // Counted against `roster.total` and not against the rows that arrived: the
     // reader asks for one row budget's worth, so the window is what came back
     // and the total is what the prison holds.
