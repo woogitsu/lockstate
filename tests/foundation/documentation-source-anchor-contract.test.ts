@@ -203,17 +203,35 @@ describe('every rooted file:line anchor in the documentation is in range', () =>
     expect(broken, 'these documented anchors name a line that is not there').toEqual([]);
   });
 
-  it('still finds the three known out-of-range anchors in docs/research/, which it does not police', () => {
-    // The positive control. `docs/research/README.md` keeps these records
-    // read-only -- "a record here does not become wrong, it becomes older" --
-    // so these three are not a defect and must not be edited. They are the
-    // evidence that the range check above can fail at all.
+  it('still finds the known unresolvable anchors in docs/research/, which it does not police', () => {
+    /*
+     * The positive control. `docs/research/README.md` keeps these records
+     * read-only -- "a record here does not become wrong, it becomes older" --
+     * so none of these is a defect and none must be edited. They are the
+     * evidence that the check above can fail at all.
+     *
+     * **This list held three entries, all of one shape -- an anchor gone *out
+     * of range* in a file that still exists -- until
+     * [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md).** Retiring
+     * `JobSystem` deleted the file six more anchors point *at*, which is a
+     * second shape (`no such file`), and it is worth naming because the two
+     * fail for different reasons and a reader of one entry would not have
+     * predicted the other. `documentation-links-contract.test.ts`'s
+     * `ABSENT_BY_DESIGN` carries the same six citations as bare paths, with the
+     * same reason.
+     */
     const broken = researchAnchors.map(faultOf).filter((fault): fault is string => fault !== undefined);
 
     expect(broken.sort()).toEqual([
+      'docs/research/audit-2026-08-26/04-architecture.md -> src/simulation/operations/job-system.ts:114: no such file',
+      'docs/research/audit-2026-08-26/05-performance.md -> src/simulation/operations/job-system.ts:154: no such file',
       'docs/research/audit-2026-08-26/05-performance.md -> src/simulation/world/coordinates.ts:144: out of range, src/simulation/world/coordinates.ts has 127 lines',
       'docs/research/audit-2026-08-26/05-performance.md -> src/simulation/world/coordinates.ts:167: out of range, src/simulation/world/coordinates.ts has 127 lines',
       'docs/research/audit-2026-08-26/05-performance.md -> src/simulation/world/coordinates.ts:175: out of range, src/simulation/world/coordinates.ts has 127 lines',
+      'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts:157: no such file',
+      'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts:196-201: no such file',
+      'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts:196-201: no such file',
+      'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts:215-224: no such file',
     ]);
   });
 });
