@@ -222,11 +222,28 @@ export async function drag(page: Page, a: { x: number; y: number }, b: { x: numb
   await page.waitForTimeout(150);
 }
 
-/** Measures the screen->tile transform against the real page, by bisection. */
-export async function calibrate(page: Page): Promise<{ originX: number; originY: number }> {
+/**
+ * Measures the screen->tile transform against the real page, by bisection.
+ *
+ * `probe` is where the bisection starts, and it must be a point on **canvas a
+ * pointer can actually reach**, together with the 64x64 pixels right and below
+ * it -- the bisection walks one tile in each direction from there. The default
+ * `(700, 300)` is canvas at 1440x900 and at 1920x1080, and it is *not* canvas
+ * at every viewport: the HUD's right-hand rail opts back into pointer events
+ * (`hud.css`, "Every interactive island opts back in") and reaches x=700 on a
+ * narrower page, at which point every press below lands on a panel, no
+ * `RemoveObject` is produced and this throws. A caller measuring more than one
+ * viewport therefore finds a free square first and passes it in -- see
+ * `tests/browser/world-scene-drag-under-the-hud.spec.ts`, which is where the
+ * parameter came from (issue #878).
+ */
+export async function calibrate(
+  page: Page,
+  probe: { readonly x: number; readonly y: number } = { x: 700, y: 300 },
+): Promise<{ originX: number; originY: number }> {
   await page.locator('.hud-build__remove').click();
-  const probeX = 700;
-  const probeY = 300;
+  const probeX = probe.x;
+  const probeY = probe.y;
   const at = async (x: number, y: number): Promise<{ x: number; y: number }> => {
     const commands = await press(page, x, y);
     const removal = commands.find((c) => c['type'] === 'RemoveObject');
