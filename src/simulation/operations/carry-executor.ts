@@ -251,6 +251,34 @@ export class CarryJobExecutor {
   }
 
   /**
+   * Ends the errand of a carrier who has **left the prison**, and forgets who
+   * they were.
+   *
+   * `failJob` with `'carrier-departed'`, plus one thing no other terminal
+   * transition does: it clears `assignedWorkerId`.
+   *
+   * **That clearing is [ADR 0026](../../../docs/adr/0026-entity-id-lifetime.md)
+   * question 2, not tidiness.** `EntityStore` recycles an index, so an id that
+   * named a departed prisoner eventually names a different one -- and a job row
+   * still carrying it would be a **persisted** claim about somebody who never
+   * ran that errand. `tests/unit/prisoner-release-completeness.test.ts` walks
+   * the live session graph for exactly this shape and found it: the release
+   * cleared the worker *index* and left the field the index is derived from.
+   *
+   * **Only this path clears it, and that asymmetry is the decision.** A
+   * completed or route-failed job keeps `assignedWorkerId`, because the
+   * prisoner it names is still in the prison and the record is true --
+   * `tests/foundation/job-production-contract.test.ts` and
+   * `tests/determinism/session-replay.test.ts` both read it to prove a
+   * prisoner, and not a system, did the carrying. What makes a departure
+   * different is that the *subject* of the record has gone.
+   */
+  public failDepartedCarrier(job: CarryItemJob): void {
+    this.failJob(job, 'carrier-departed');
+    job.assignedWorkerId = undefined;
+  }
+
+  /**
    * Fails every restored job whose assigned carrier this session cannot serve,
    * and answers how many it ended.
    *
@@ -276,7 +304,10 @@ export class CarryJobExecutor {
       if (job.state === 'available') continue;
       const workerId = job.assignedWorkerId;
       if (workerId !== undefined && isEligibleCarrier(workerId)) continue;
-      this.failJob(job, 'carrier-departed');
+      // The same clearing `failDepartedCarrier` explains, for the same reason:
+      // a restored job naming an id this session does not hold would hand the
+      // errand's history to whoever the recycled index goes to next.
+      this.failDepartedCarrier(job);
       ended += 1;
     }
     return ended;
