@@ -1274,6 +1274,13 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
    * `pressDismiss`' reason: a position is not a stable name for anybody, and the
    * whole of #877 is what happens when one is treated as though it were.
    */
+  /**
+   * Whether the confirmation had a box on the last paint, so *appearing* can be
+   * told from being repainted. Only the transition scrolls: scrolling on every
+   * publication would move the page under a player who is reading it.
+   */
+  let dismissConfirmationShown = false;
+
   function paintDismissConfirmation(): void {
     for (const row of rosterRows) {
       const armed = armedDismissal !== undefined && row.staffId === armedDismissal.staffId;
@@ -1290,6 +1297,20 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       armedDismissal === undefined
         ? ''
         : t(HUD_MESSAGE_KEY.securityRosterDismissConfirm, { name: armedDismissal.named });
+    /*
+     * Scrolled into view on the press that reveals it, which is `queueSection`'s
+     * rule one panel over: *"a disclosure that reveals a control the player
+     * cannot see has not revealed it."* This block is the last thing in a panel
+     * that is `overflow-y: auto`, so at the short viewports the line the whole
+     * confirmation rests on can be laid out below the panel's own fold -- and a
+     * confirmation the player cannot read is the worst outcome of the three,
+     * worse than no confirmation, because the second press still sacks somebody.
+     *
+     * `block: 'nearest'`, so a box already inside the fold is not moved.
+     */
+    const shown = armedDismissal !== undefined;
+    if (shown && !dismissConfirmationShown) dismissConfirmation.scrollIntoView({ block: 'nearest' });
+    dismissConfirmationShown = shown;
   }
 
   /*
