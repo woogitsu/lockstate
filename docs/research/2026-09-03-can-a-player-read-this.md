@@ -69,7 +69,7 @@ the other.
 ---
 
 ## 1. DEFECT — four numbers about guards on one screen, two of them called
-coverage, and the two a hire is meant to move do not move
+coverage, and the rule joining them is on no screen
 
 **Reproduction** (`act 2`): build a 6x6 cell with eight beds and a toilet,
 admit six prisoners, hire three guards, run to day 8 at x4, then read the
