@@ -77,6 +77,36 @@ outward-facing or unrevertable, which is the whole reason:
    rejected an entry point deliberately, and ADR 0046's telemetry ingest is the
    first thing that would need one. `docs/DEPLOYMENT.md` carries the nine-item
    pre-merge checklist that has to be worked and approved first.
+
+   **Released by the owner on 2026-09-03, for ADR 0046's ingest and for
+   nothing else.** The paragraph above is left as it stands rather than
+   rewritten, because it is the reservation that was released and a reader
+   needs to see what was given up. The decision was put to the owner as three
+   options — prepare the change for review without merging it, leave the
+   surface blocked, or build it and merge it — and they answered:
+
+   > Zbuduj i zmerguj
+
+   ("Build it and merge it.") **That is the owner's decision and not a
+   recommendation of this repository's**, which is why it is recorded here in
+   their words with the date on it, per `docs/AGENT_WORKFLOW.md` §3's rule that
+   an implementing agent does not approve its own work.
+
+   **What the release covers, exactly.** One `main` in `wrangler.jsonc` and the
+   Worker module it names, carrying the telemetry ingest ADR 0046 describes.
+   It is not a general licence to run server code: a second route, a second
+   handler, or any server-side behaviour that is not that ingest is back inside
+   this reservation and comes to the owner on its own terms. `src/worker/`'s
+   entry point states the same limit in its own docblock, with the threat model
+   for what it accepts from the open internet.
+
+   **What was not released, and is still owed.** Items 2 and 3 below are
+   untouched, and the ingest needs both before it stores anything: the
+   `telemetry_events` table, its insert function and the dedicated
+   least-privilege database role are `supabase/migrations/`, and the two Worker
+   variables that would configure a destination are deploy configuration. Until
+   those land the endpoint refuses every batch, which is why merging the entry
+   point changes no behaviour on `lockstate.io`.
 2. **`supabase/migrations/`.** An applied migration is history. Propose new
    migration content in an ADR or an issue instead. Rollback is not automated.
 3. **Deploy configuration** — `public/_headers`, `.github/workflows/deploy.yml`,
