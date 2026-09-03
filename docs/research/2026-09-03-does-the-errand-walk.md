@@ -124,7 +124,7 @@ to cross each door and comes back up to the anchor: (12,14) → (11,16) → (10,
 → (8,14), then (8,14) → (10,14) → (11,16) → (13,16) → (14,14). Nine
 intermediate tiles, one action.
 
-## Finding 2b — a carry job's `state` never becomes `travelling` or `performing`
+## Finding 1b — a carry job's `state` never becomes `travelling` or `performing`
 
 **Read off that table, then verified in the source.** The only states a job can
 hold in this build are `available`, `assigned`, `completed`, `failed` and
@@ -229,10 +229,15 @@ column cannot be showing one whatever a DOM sample says.
 The Build panel's `.hud-build__deliveries` block covers a *pending purchase* and
 not a delivery that has landed and is waiting for a carrier — **read off
 `src/ui/hud/build-panel.ts` ("what has been bought and has not arrived", #285,
-#703) rather than sampled**, so that clause is an inference too. `PRISON_CONDITIONS`
-(`src/simulation/protocol/types.ts`) still holds four members —
-`construction.unfunded`, `intake.no-place`, `treasury.construction-refused`,
-`treasury.deliveries-refused` — and none of them is this.
+#703) rather than sampled**, so that clause is an inference too.
+
+And `PRISON_CONDITIONS` (`src/simulation/protocol/types.ts`) still holds four
+members — `construction.unfunded`, `intake.no-place`,
+`treasury.construction-refused`, `treasury.deliveries-refused` — none of which
+is this. That is ADR 0093's change-list item 9, and its absence is deliberate:
+the sentence it would need is one of the three the document owes the owner, and
+a `PrisonCondition` member with no authored sentence behind it is the defect
+`AGENTS.md`'s fourth exclusion exists for.
 
 **That is the feature working as designed and as documented**, and the cost is
 the one ADR 0093 states: the wait is real and unexplained. 394 ticks is the

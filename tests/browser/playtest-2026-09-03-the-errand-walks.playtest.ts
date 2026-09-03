@@ -892,6 +892,16 @@ test.describe('the errand, watched through the interface', () => {
         if (roomLeftInTheBlock(now.tick)) break;
       }
     }
+    /*
+     * **The ids on the board before the second purchase, because `latestJob`
+     * is not enough here and run 6 proved it.** `JobBoard` never prunes a
+     * completed job, so between the buy and the new delivery coming due the
+     * newest job by `createdAtTick` is still the *first* errand -- already
+     * `completed`. Run 6's capture loop read that, hit its "the errand finished
+     * without a drop-off walk being sampled" exit on the first iteration, and
+     * reported a miss about a job that had ended two hundred ticks earlier.
+     */
+    const idsBeforeTheSecondBuy = new Set((await readWorker(page)).jobs.map((job) => job.id));
     await tab(page, 'build').click();
     await buy(page, 'wall-brick', 10);
     await playAtNormalSpeed(page);
@@ -903,7 +913,7 @@ test.describe('the errand, watched through the interface', () => {
     const captureStarted = Date.now();
     while (Date.now() - captureStarted < 90_000) {
       const now = await readWorker(page);
-      const watched = latestJob(now);
+      const watched = latestJob({ ...now, jobs: now.jobs.filter((job) => !idsBeforeTheSecondBuy.has(job.id)) });
       const prisoner = now.prisoners[0];
       const line = `job ${watched?.state ?? '-'}/${watched?.leg ?? '-'} | ${prisoner === undefined ? '-' : `(${prisoner.tile.x},${prisoner.tile.y}) ${ACTION_IDS[prisoner.actionIndex] ?? prisoner.actionIndex}/${ACTION_PHASES[prisoner.actionPhase]}`}`;
       if (line !== captureLine) {
@@ -970,7 +980,9 @@ test.describe('the errand, watched through the interface', () => {
     while (Date.now() - resumeStarted < 60_000) {
       const now = await readWorker(page);
       const activities = await rosterActivities(page, { alreadyOnTheRegimeTab: true });
-      const job = latestJob(now);
+      // The same filter as the capture loop, and for the same reason: the first
+      // errand's `completed` row is still on the board after the restore.
+      const job = latestJob({ ...now, jobs: now.jobs.filter((candidate) => !idsBeforeTheSecondBuy.has(candidate.id)) });
       const prisoner = now.prisoners[0];
       const line =
         `t${now.tick}(${dayTickOf(now.tick)}) ${prisoner === undefined ? 'no prisoner' : `(${prisoner.tile.x},${prisoner.tile.y}) ${ACTION_IDS[prisoner.actionIndex] ?? prisoner.actionIndex}/${ACTION_PHASES[prisoner.actionPhase]}`}` +
