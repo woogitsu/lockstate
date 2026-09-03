@@ -26,6 +26,28 @@ import { useSearchPolicy } from '../helpers/search-policy';
  */
 
 const SEED = 7;
+/**
+ * Far enough into the scenario that its two carry jobs have been picked up and
+ * delivered.
+ *
+ * **This was `200` for both of the tests that use it, and
+ * [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) moved it.** A carry
+ * used to be `operations.jobs`, which ran every five ticks from tick 0 and
+ * resolved each leg into a teleport, so both jobs had completed and both
+ * containers had moved long before 200. A carry is an action now, chosen by an
+ * idle prisoner whose block allows `work`, and `GENERAL_POPULATION_REGIME`'s
+ * first work block opens at **500** -- so at 200 the board and the containers
+ * were byte-identical to a session that had never been stepped, and the two
+ * *non-vacuity* guards below started failing. They are the assertions this
+ * file's whole design rests on (*"a donor equal to the run's own state would
+ * make the adoption assertion below true for a `loadSnapshot` that does
+ * nothing"*), so the horizon moves rather than the guard.
+ *
+ * 900 rather than the measured 801 at which both jobs complete: a horizon
+ * pinned to the measured tick would fail on any change that moved it by one.
+ */
+const TICKS_PAST_THE_FIRST_ERRAND = 900;
+
 const TOTAL_TICKS = 300;
 
 /**
@@ -405,28 +427,32 @@ describe('subsystem snapshot / restore fidelity', () => {
    * assertion; one that drops a field fails it too, because the whole donor
    * document has to reappear.
    *
-   * Nine donors are the snapshot of an *independent* session -- the same
+   * Ten donors are the snapshot of an *independent* session -- the same
    * scenario, never stepped -- which is a valid state of the same subsystem
-   * that nothing in the run under test computed. Two are literals, because
-   * this scenario leaves `tunnels` and `incidentResponse` in exactly the state
-   * a fresh session has: an empty tunnel registry, four zero counters. Those
-   * were the most vacuous cases of all -- `tunnels` was `[] -> [] -> []` -- and
-   * a literal is the strongest available fix, since the expected document is
-   * then written out rather than read back from anything.
+   * that nothing in the run under test computed. One is a literal, because
+   * this scenario leaves `tunnels` in exactly the state a fresh session has: an
+   * empty tunnel registry. That was the most vacuous case of all -- `tunnels`
+   * was `[] -> [] -> []` -- and a literal is the strongest available fix, since
+   * the expected document is then written out rather than read back from
+   * anything.
    *
-   * **This paragraph said "Three are literals" and named `jobWorkers` as one
-   * of them** (*"the same four idle workers"*), and
+   * **This paragraph said "Three are literals" and named two that are no
+   * longer literals at all, and both directions are kept because the reasons
+   * differ.** It named `jobWorkers` (*"the same four idle workers"*) and
+   * `incidentResponse` (*"four zero counters"*).
    * [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 4 retired
-   * `JobWorkerPool` -- so there is no such snapshot to round-trip and the
-   * third literal is gone with it. Corrected rather than overwritten, because
-   * what it recorded about the *scenario* is still true: the scenario has never
-   * busied a worker, and what it now leaves on the board is two carry jobs
-   * whose `assignedWorkerId` the `jobs` case round-trips.
+   * `JobWorkerPool`, so there is no such snapshot to round-trip and that
+   * literal is gone with the class; what the sentence recorded about the
+   * *scenario* is still true, and the fact the pool carried is now
+   * `assignedWorkerId` on each job, which the `jobs` case round-trips.
+   * `incidentResponse` **graduated to a live donor** instead, on the
+   * instruction its own pin left for the day the scenario started moving those
+   * metrics -- which `TICKS_PAST_THE_FIRST_ERRAND` is.
    */
   it('subsystems with no in-flight travel state round-trip their snapshot unchanged', () => {
     const runtime = buildDeterminismScenario(SCENARIO_SEED);
     submitScenarioCommands(runtime);
-    step(runtime, 200);
+    step(runtime, TICKS_PAST_THE_FIRST_ERRAND);
 
     /** An independent session, never stepped: a donor of states this run does not hold. */
     const donorSession = buildDeterminismScenario(SCENARIO_SEED);
@@ -479,21 +505,40 @@ describe('subsystem snapshot / restore fidelity', () => {
     roundTripIsExact('tunnels', () => runtime.tunnels.getSnapshot(), (value) => runtime.tunnels.loadSnapshot(value), [
       { id: 'tunnel-donor', startTile: { x: tileCoordinate(2), y: tileCoordinate(2) }, targetTile: { x: tileCoordinate(9), y: tileCoordinate(3) }, progress: 0.25 },
     ]);
-    roundTripIsExact('incidentResponse', () => runtime.incidentResponseSystem.getSnapshot(), (value) => runtime.incidentResponseSystem.loadSnapshot(value), {
-      metrics: { incidentsResolved: 3, incidentsLapsed: 2, respondersDispatched: 7, routeFailures: 1 },
-    });
+    /*
+     * **`incidentResponse` graduated out of the literal group, and the group's
+     * own rule is what sent it there.** Its literal donor was
+     * `{ metrics: { incidentsResolved: 3, incidentsLapsed: 2,
+     * respondersDispatched: 7, routeFailures: 1 } }`, written out *because* the
+     * scenario left the metrics at exactly a fresh session's zeroes -- and the
+     * pin below the group said so out loud: *"the scenario now moves the
+     * response metrics; use its snapshot as the donor"*. Raising the horizon
+     * past the first errand (see `TICKS_PAST_THE_FIRST_ERRAND`) is what moved
+     * them, so the instruction the pin left is followed here rather than the
+     * literal being kept alongside a run that now differs from it.
+     */
+    roundTripIsExact('incidentResponse', () => runtime.incidentResponseSystem.getSnapshot(), (value) => runtime.incidentResponseSystem.loadSnapshot(value), donorSession.incidentResponseSystem.getSnapshot());
 
-    // The scenario is what makes the nine donors above differ at all, so the
-    // two literals are here because it produces *nothing* for those
-    // subsystems -- not because their donors were awkward to obtain. Pinned, so
-    // a scenario that later digs a tunnel is a failure that asks for the
-    // literal to be dropped rather than a case that silently goes back to
-    // comparing a fresh session against itself.
+    // The scenario is what makes the ten donors above differ at all, so the one
+    // literal is here because it produces *nothing* for that subsystem -- not
+    // because its donor was awkward to obtain. Pinned, so a scenario that later
+    // digs a tunnel is a failure that asks for the literal to be dropped rather
+    // than a case that silently goes back to comparing a fresh session against
+    // itself.
     expect(donorSession.tunnels.getSnapshot(), 'the scenario now populates tunnels; use its snapshot as the donor').toEqual([]);
+    // **This pin fired and was followed rather than re-pinned.** It read
+    // `expect(toJsonValue(donorSession.incidentResponseSystem.getSnapshot()),
+    // 'the scenario now moves the response metrics; use its snapshot as the
+    // donor').toEqual(toJsonValue(runtime.incidentResponseSystem.getSnapshot()))`,
+    // and its whole purpose was to fail on the day the scenario started moving
+    // those metrics so that the literal would be replaced by the donor. That
+    // day is `TICKS_PAST_THE_FIRST_ERRAND`; the replacement is above; and the
+    // opposite pin now holds instead -- the two genuinely differ, which is what
+    // `roundTripIsExact` asserts for itself.
     expect(
       toJsonValue(donorSession.incidentResponseSystem.getSnapshot()),
-      'the scenario now moves the response metrics; use its snapshot as the donor',
-    ).toEqual(toJsonValue(runtime.incidentResponseSystem.getSnapshot()));
+      'the scenario stopped moving the response metrics; write the donor out as a literal again',
+    ).not.toEqual(toJsonValue(runtime.incidentResponseSystem.getSnapshot()));
   });
 
   /**
@@ -511,7 +556,7 @@ describe('subsystem snapshot / restore fidelity', () => {
   it('subsystems that reset in-flight travel on restore do so idempotently', () => {
     const runtime = buildDeterminismScenario(SCENARIO_SEED);
     submitScenarioCommands(runtime);
-    step(runtime, 200);
+    step(runtime, TICKS_PAST_THE_FIRST_ERRAND);
 
     /**
      * The same donor session the exactness test above uses, and for the same

@@ -451,6 +451,12 @@ describe('CarryJobExecutor: a container id the registry does not hold fails the 
     const job = restored.board.getById('carry-12');
     expect(job?.state).toBe('failed');
     expect(job?.failReason).toBe('carrier-departed');
+    // And the job no longer names the carrier who left. `EntityStore` recycles
+    // an index, so a persisted `assignedWorkerId` would eventually be a claim
+    // about somebody who never ran the errand (ADR 0026 question 2). Only this
+    // terminal path clears it -- a completed job keeps the record, and the
+    // control below is what makes that asymmetry visible.
+    expect(job?.assignedWorkerId).toBeUndefined();
     expect(restored.containers.require(SOURCE_ID).quantityOf('item.brick')).toBe(INITIAL_STOCK);
     expect(restored.containers.require(SOURCE_ID).reservedOf('item.brick')).toBe(0);
     expect(restored.containers.require(DESTINATION_ID).quantityOf('item.brick')).toBe(0);
@@ -477,6 +483,9 @@ describe('CarryJobExecutor: a container id the registry does not hold fails the 
     // save was taken, which is what the restore rule is for.
     restored.crew.step();
     expect(restored.board.getById('carry-13')?.state).toBe('completed');
+    // The completed job keeps its carrier: they are still in the prison, so the
+    // record is true. This is the control for `failDepartedCarrier`'s clearing.
+    expect(restored.board.getById('carry-13')?.assignedWorkerId).toBe(WORKER);
     expect(restored.containers.require(DESTINATION_ID).quantityOf('item.brick')).toBe(CARRIED);
     expect(restored.containers.require(SOURCE_ID).quantityOf('item.brick')).toBe(STOCK_WHILE_CARRIED);
   });

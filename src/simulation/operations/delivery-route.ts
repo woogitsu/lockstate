@@ -172,7 +172,7 @@ export interface DeliveryCarryRoute {
  */
 export class DeliveryBayCarryRoute implements DeliveryCarryRoute {
   public constructor(
-    private readonly rooms: RoomInstanceSource,
+    private readonly roomInstances: RoomInstanceSource,
     private readonly containers: ContainerRegistry,
     private readonly board: JobBoard,
     /** `CONSTRUCTION_MATERIALS_CONTAINER_ID`, passed in rather than imported: the constant lives in the composition root, which imports this module. */
@@ -181,7 +181,7 @@ export class DeliveryBayCarryRoute implements DeliveryCarryRoute {
 
   /** The bay a delivery lands in, with its container created on first use. */
   private bay(): { readonly containerId: string; readonly tile: TilePosition } | undefined {
-    const instance = this.rooms
+    const instance = this.roomInstances
       .allByRoomCatalogId(DELIVERY_BAY_ROOM_CATALOG_ID)
       .find((candidate) => candidate.objectCapabilities.includes(DELIVERY_BAY_CAPABILITY));
     if (instance === undefined) return undefined;
@@ -192,7 +192,7 @@ export class DeliveryBayCarryRoute implements DeliveryCarryRoute {
 
   /** The storeroom a delivery is carried to, bound to the container construction draws from. */
   private storeroom(): { readonly containerId: string; readonly tile: TilePosition } | undefined {
-    const instance = this.rooms
+    const instance = this.roomInstances
       .allByRoomCatalogId(STORAGE_ROOM_ROOM_CATALOG_ID)
       .find((candidate) => candidate.objectCapabilities.includes(STORAGE_ROOM_CAPABILITY));
     if (instance === undefined) return undefined;

@@ -1603,6 +1603,6 @@ export class ActionSystem implements SystemRegistration {
   public endCarryOnDeparture(entityId: EntityId): void {
     const job = this.carriedJob(entityId);
     if (job === undefined || this.carry === undefined) return;
-    this.carry.failJob(job, 'carrier-departed');
+    this.carry.failDepartedCarrier(job);
   }
 }

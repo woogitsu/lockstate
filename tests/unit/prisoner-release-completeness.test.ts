@@ -212,7 +212,15 @@ describe('what a released prisoner must be dropped from (ADR 0026 question 2)', 
     // -- and it has to find each store *by structure*, so a container that
     // silently stopped holding the prisoner fails here rather than making the
     // release look complete. Six stores and six owners: the name registry, both
-    // gang indexes, the cold state, the room registry and the labour pool.
+    // gang indexes, the cold state, the room registry and **the errand**.
+    //
+    // **The last of those was the labour pool until
+    // [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) deleted
+    // `JobWorkerPool`.** What replaced it is the job board's derived worker
+    // index, and it is a *stronger* case for this file rather than a
+    // like-for-like swap: the pool held a bare id and forgetting it cost
+    // nothing, while the index names a job holding a stock reservation, so a
+    // release that only forgot the id would strand goods as well as a slot.
     const holds = (fragment: string): number => before.filter((path) => path.includes(fragment)).length;
     expect({ paths: before, actorIdentity: holds('actorIdentity.byKind') }).toMatchObject({ actorIdentity: 1 });
     expect({ paths: before, gangIdByMember: holds('gangs.gangIdByMember') }).toMatchObject({ gangIdByMember: 1 });
@@ -221,13 +229,18 @@ describe('what a released prisoner must be dropped from (ADR 0026 question 2)', 
     expect({ paths: before, actionTarget: holds('coldState.currentActionTargetInstanceId') }).toMatchObject({ actionTarget: 1 });
     expect({ paths: before, pathRequest: holds('coldState.currentActionPathRequestId') }).toMatchObject({ pathRequest: 1 });
     expect({ paths: before, occupants: holds('roomInstances.occupants') }).toMatchObject({ occupants: 1 });
-    expect({ paths: before, jobWorkers: holds('jobWorkers.workers') }).toMatchObject({ jobWorkers: 1 });
+    expect({ paths: before, errandIndex: holds('board.activeByWorker') }).toMatchObject({ errandIndex: 1 });
+    expect({ paths: before, errandJob: holds('assignedWorkerId') }).toMatchObject({ errandJob: 1 });
     expect({ paths: before, history: holds('incidents.records') }).toMatchObject({ history: 1 });
     // The derived index the riot regime reads, asserted by name for the reason
     // every other line here is: a container that silently stopped holding the
     // prisoner must fail here rather than make the release look complete.
     expect({ paths: before, riotIndex: holds('incidents.openRiotCountByParticipant') }).toMatchObject({ riotIndex: 1 });
-    expect({ paths: before, releaseRelevant: releaseRelevant(before).length }).toMatchObject({ releaseRelevant: 8 });
+    // 9, from 8: the errand is two hits rather than the pool's one -- the
+    // board's worker index *and* the job's own `assignedWorkerId`, which is the
+    // field that index is derived from. Both have to go, and both do: ending
+    // the job clears the index and moves the job to a terminal state.
+    expect({ paths: before, releaseRelevant: releaseRelevant(before).length }).toMatchObject({ releaseRelevant: 9 });
 
     expect(runtime.prisoners.releasePrisoner(entityId)).toBe(true);
 
