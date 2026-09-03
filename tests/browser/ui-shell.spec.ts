@@ -5582,7 +5582,15 @@ test.describe('the Regime panel (issue #451)', () => {
       expect(await focusedPrisoner(page)).toBe('5');
       const moved = await rowsByPrisoner(page);
       expect(moved.rows.get('5')?.ariaChecked, 'arrowing onto a row selected it').toBe('false');
-      expect(await page.evaluate(() => window.lockstateUiHarness.hudIntents())).toEqual([]);
+      // No *selection* intent, rather than no intent at all: `beforeEach`
+      // clicked the tab, so `select-tab` is legitimately in the list and an
+      // `toEqual([])` here asserted the harness had done nothing.
+      expect(
+        (await page.evaluate(() => window.lockstateUiHarness.hudIntents())).filter((intent) =>
+          intent.includes('select-prisoner'),
+        ),
+        'arrowing onto a row told the host to fetch it',
+      ).toEqual([]);
       // The `0` moves with the focus, or tabbing out and back would return the
       // player to the row they arrowed away from.
       expect(moved.probe.rows.find((row) => row.tabIndex === 0)?.prisoner).toBe('5');
@@ -5630,7 +5638,13 @@ test.describe('the Regime panel (issue #451)', () => {
       );
       const stale = await rowsByPrisoner(page);
       expect(stale.probe.detail.laidOut, "a reply about prisoner 5 was painted under prisoner 3's name").toBe(false);
-      expect(stale.probe.text).not.toContain('Vanderweghe');
+      // Read off the block and not off the panel's text: prisoner 5 is on the
+      // roster in their own right, four rows up, so `probe.text` names them
+      // whatever the block does. The first version of this assertion looked for
+      // their surname in the whole panel and failed on the row.
+      expect(stale.probe.detail.prisoner).toBeNull();
+      expect(stale.probe.detail.nameText).toBe('');
+      expect(stale.probe.detail.needs).toEqual([]);
 
       // And the right answer still lands.
       await page.evaluate(
@@ -5718,7 +5732,14 @@ test.describe('the Regime panel (issue #451)', () => {
       // Nothing was authored to fill the gap: no new sentence reached the
       // screen, and the two the panel does own are about an *empty* roster,
       // which this prison is not.
-      expect(probe.text).not.toContain('Mara');
+      //
+      // Measured on the *block* rather than on the panel's text, for the reason
+      // the stale-reply case above gives: this prisoner is still on the roster
+      // in a real session -- what the host discovered is that the worker will
+      // not answer about them -- so the panel's text still names them from the
+      // row. The first version of this assertion looked for the name anywhere
+      // in the panel and failed on the row above.
+      expect(probe.detail.nameText).toBe('');
       expect(probe.text).not.toContain('released');
       expect(probe.text, `an unresolved message key is on screen: ${probe.text}`).not.toMatch(RAW_KEY);
     });

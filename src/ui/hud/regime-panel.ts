@@ -244,7 +244,7 @@ export const PRISONER_ROSTER_ROW_LIMIT = 4;
  *
  * A seventh need would therefore be **dropped rather than drawn**, silently,
  * which is exactly the failure a number spelled twice invites -- so
- * `tests/unit/regime-prisoner-detail.test.ts` imports `NEED_IDS` and holds the
+ * `tests/unit/ui-simulation-prisoner-detail.test.ts` imports `NEED_IDS` and holds the
  * two together, the shape `tests/unit/regime-need-bar.test.ts` already uses to
  * pin `NEED_BAR_MAX_PERMILLE` against the projection's own quantization.
  *
@@ -252,6 +252,32 @@ export const PRISONER_ROSTER_ROW_LIMIT = 4;
  * block repaints on the same cadence the roster does, so rebuilding would
  * discard and rebuild six `createSegmentedBar` bars up to about four times a
  * second for a list whose length never changes.
+ *
+ * ### What six of them cost, measured
+ *
+ * **81.0px for the whole block**, at every one of the five viewports the
+ * browser suite visits, and the panel does not scroll at any of them --
+ * `scrollHeight - clientHeight` is 0 with a prisoner selected. Taken on
+ * 2026-09-03 from `tests/browser/ui-shell.spec.ts`'s *"the chosen prisoner is
+ * reachable inside the panel at every viewport"*, which prints the figures on
+ * every run:
+ *
+ * | viewport | block | panel fold | overflow |
+ * | --- | --- | --- | --- |
+ * | 1280x720 | y=549.0..630.0 | 638.1 | 0.0 |
+ * | 1440x900 | y=729.0..810.0 | 818.1 | 0.0 |
+ * | 1024x768 | y=597.0..678.0 | 686.1 | 0.0 |
+ * | 900x600 | y=433.0..514.0 | 522.1 | 0.0 |
+ * | 375x812 | y=629.0..710.0 | 717.7 | 0.0 |
+ *
+ * **The two columns are what bought that, and the margin is thin.** Six needs
+ * down one column is six lines and five gutters; `hud.css` lays them out
+ * `repeat(2, minmax(0, 1fr))`, so the block is a heading line and three rows.
+ * At 900x600 it ends **8.1px above the fold** -- that is the whole of what is
+ * left, so a third need line, a sentence under the heading, or a 44px control
+ * of its own would put this block's own bottom past the fold and start the
+ * panel scrolling on a press. `revealDetail` is what would then have to carry
+ * it, and it is written and measured not to fire today.
  */
 export const PRISONER_DETAIL_NEED_ROW_LIMIT = 6;
 
@@ -1292,6 +1318,21 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
    * where they put it; and not on the press, because at that moment the block is
    * still empty and there is nothing to reveal -- it grows when the answer
    * arrives, which is up to about 300 ms later in a browser.
+   *
+   * **Measured, and it does not fire at any viewport the browser suite visits
+   * (2026-09-03).** The block is 81.0px with all six needs drawn -- a heading
+   * line and three rows of the two-column need grid -- and at every one of the
+   * five viewports it ends above the panel's fold with `scrollHeight -
+   * clientHeight` still 0: at 900x600, the tightest of them, it occupies
+   * y=433.0..514.0 in a panel clipped at y=522.1. So `below` is negative and
+   * this method returns having done nothing. It stays because the numbers it
+   * depends on are not this panel's to fix -- the timetable above it grows with
+   * the number of classification groups and the roster with
+   * `PRISONER_ROSTER_ROW_LIMIT` -- and the day either moves, a block a press
+   * created and nothing scrolled to would be a readout below its own fold,
+   * which is #174's defect wearing a different hat.
+   * `tests/browser/ui-shell.spec.ts`'s *"the chosen prisoner is reachable
+   * inside the panel at every viewport"* prints the five figures on every run.
    */
   function revealDetail(): void {
     const panelElement = panel.element;
