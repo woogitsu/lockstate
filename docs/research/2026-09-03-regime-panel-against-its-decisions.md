@@ -13,8 +13,12 @@ under `src/` was touched — `src/ui/hud/regime-panel.ts` was being edited by
 another agent (issue #895, the prisoner inspector) throughout this pass, so it
 was read and never written.
 
-**Ground.** Read on `origin/main` in a worktree at `ac58c457` (v0.0.427).
-`git fetch origin main` was run immediately before `git worktree add`, per
+**Ground.** Every claim below was read on `origin/main` in a worktree at
+`ac58c457` (v0.0.427). **`fc74aa3b` (v0.0.428) landed while this was being
+written and is merged in**, so the anchors below are true of v0.0.428 and the
+findings were taken at v0.0.427 — see the note on citation rot below, which is
+about exactly that gap. `git fetch origin main` was run immediately before both
+`git worktree add` and the merge, per
 `docs/AGENT_WORKFLOW.md`'s 2026-09-02 addendum about a stale `origin/main`
 inside a worktree; `ln -sfn /workspace/lockstate/node_modules
 <worktree>/node_modules` was made first, and every tool below was invoked as
@@ -26,8 +30,24 @@ document's note that `pnpm <script>` aborts in a worktree with a symlinked
 §4 rates a `file:line` into a document under active edit as the least durable
 citation here. `src/ui/hud/regime-panel.ts` was under active edit while this was
 written, so **every claim below leads with the quoted sentence and carries the
-line number second**. The numbers are true at `ac58c457` and a reader should
-expect them to move; the quotes are what to grep for.
+line number second**. The quotes are what to grep for.
+
+**That is not advice, it is what happened to this note in the hour it took to
+write.** `fc74aa3b` (v0.0.428) merged issue #877 while this pass was running.
+It touched no file this audit found a defect in — `src/ui/hud/regime-panel.ts`
+is untouched by it — but it added 356 lines to `src/ui/hud/staff-panel.ts`, 31
+to `src/ui/hud/hud.ts`, 20 to `src/ui/hud/messages.ts` and one HUD module to
+`tests/unit/ui-hud-messages.test.ts`'s pinned inventory, and **eleven anchors
+in the draft of this note went stale at once**: `staff-panel.ts:107` became
+`:108`, `:114` became `:116`, `:123` became `:125`, `:189-193` became
+`:222-225`, `:302` became `:335`, `:627-630` became `:661-663`;
+`hud.ts:1785` became `:1800`, `:1789` became `:1804`, `:1958` became `:1973`;
+`ui-hud-messages.test.ts:72` became `:73` and `:419-424` became `:420-425`.
+Every one was re-derived from its symbol and re-opened, and every one still
+lands on the code its sentence means. **Not one claim in this note changed** —
+only the coordinates did, which is the interval `docs/AGENT_WORKFLOW.md` §2's
+2026-09-02 bullet records as the finding in its own right. The anchors into
+`src/ui/hud/regime-panel.ts` will go the same way the moment #895 merges.
 
 ## Coverage, counted rather than claimed
 
@@ -74,7 +94,7 @@ does not attribute:
   the reader asks for one window and no offset
   (`src/ui/simulation-prisoner-roster.ts:217`).
 - **ADR 0025** — one panel in the rail's side slot, which is what makes the
-  height budget the panel spends available at all (`src/ui/hud/staff-panel.ts:114`).
+  height budget the panel spends available at all (`src/ui/hud/staff-panel.ts:116`).
 - **ADR 0003** — the worker publishes unsolicited, which is what makes a pulled
   readout move (`src/main.ts:1726`).
 - **ADR 0086** — what actually refreshes a pulled readout. The panel states a
@@ -103,7 +123,7 @@ that wrote them, and this file had never been read against its own code.
    agrees exactly with `src/ui/hud/hud-state.ts:18`, which is where the panel
    got it, so the two are consistent even though neither was re-measured.
 3. The 219.0 px held-guard block at 900x600 (`:117`). Agrees exactly with
-   `src/ui/hud/staff-panel.ts:107`, not re-measured.
+   `src/ui/hud/staff-panel.ts:108`, not re-measured.
 4. ADR 0086's harness table of 120 and 178 refreshes in 30 s
    (`docs/adr/0086-what-refreshes-a-pulled-hud-readout.md:116-118`). Read, not
    re-measured.
@@ -186,8 +206,8 @@ panel used to do.
 > one of the five bound to no panel, and `tests/browser/ui-shell.spec.ts`
 > pinned that emptiness deliberately rather than as an oversight.
 
-**What the code does.** `src/ui/hud/hud.ts:1785` constructs this very panel,
-`:1789` appends it to the rail, and `:1958` binds it to that tab:
+**What the code does.** `src/ui/hud/hud.ts:1800` constructs this very panel,
+`:1804` appends it to the rail, and `:1973` binds it to that tab:
 
 ```
     regimePanel.setVisible(state.activeTab === 'regime');
@@ -326,7 +346,7 @@ export const STATUS_COUNTS_PUBLISH_INTERVAL_MS = 500;
 
 **Why the panel kept it: it was not in the sweep's inventory.** ADR 0086 §8,
 *"Where the documentation says something else"*
-(`docs/adr/0086-what-refreshes-a-pulled-hud-readout.md:300-306`), enumerates the
+(`docs/adr/0086-what-refreshes-a-pulled-hud-readout.md:299-304`), enumerates the
 sites it corrects — `docs/HUD_PROJECTIONS.md` §9 at six line numbers and
 `src/main.ts` at nine. `src/ui/hud/regime-panel.ts` appears nowhere in that ADR
 at all (`grep -n "regime-panel\|regime panel"` over it returns nothing), so the
@@ -354,7 +374,7 @@ one sentence of fact should.
 
 **Which is wrong: the document**, in the same commit.
 
-**The claim**, `src/ui/hud/regime-panel.ts:88-90`:
+**The claim**, `src/ui/hud/regime-panel.ts:89-90`:
 
 > If the owner wants a different line, `STATE_INCOME_UNMET_NEED_LEVEL` is the
 > single edit and `describePrisonerNeed` is the single reader of the flag.
@@ -526,7 +546,7 @@ the next pass over this file should not re-derive it. Every item was checked by
 opening both sides.
 
 **Constants and arithmetic (10).** `HELD_GUARD_ROW_LIMIT` and
-`PENDING_DELIVERY_ROW_LIMIT` are both 3 (`src/ui/hud/staff-panel.ts:123`,
+`PENDING_DELIVERY_ROW_LIMIT` are both 3 (`src/ui/hud/staff-panel.ts:125`,
 `src/ui/hud/build-panel.ts:774`); `DEFAULT_PRISONER_CAPACITY` is 5,000
 (`src/simulation/runtime/new-session.ts:387`) and `MAX_PROJECTION_PAGE_LIMIT` is
 500 (`src/simulation/protocol/types.ts:369`); `DAY_LENGTH_TICKS` is 2,400
@@ -571,7 +591,7 @@ applied at `src/simulation/prisoners/classification-early-warning-system.ts:151`
 ADR 0090's *"What this does not decide"* item 3 names the same badge-copy gap
 in the same terms — *"`createStatusBadge` carries no `title`, no screen-reader
 text"* (`:282-283`) — and that is still true of the primitive, which sets only
-`data-tone` and `textContent` (`src/ui/primitives/status-badge.ts:56-71`); ADR
+`data-tone` and `textContent` (`src/ui/primitives/status-badge.ts:57-71`); ADR
 0080's decision 1 does put a contraband draw on the review that raises a
 prisoner into tier 3 (`docs/adr/0080-when-the-prison-asks-what-a-prisoner-is-carrying.md:235-239`);
 and `ClassificationReviewSystem` does write `classificationGroupIndex`
@@ -589,11 +609,11 @@ exactly this confusion at this exact render site.
 
 **The boundary (4).** `regime-panel.ts` imports nothing outside
 `src/ui/**` and `src/content/localization` (`:1-14`);
-`tests/unit/ui-hud-messages.test.ts:419-424` enforces that for every HUD module
-and `:72` lists `regime-panel.ts` by name, so the scan cannot silently skip it;
+`tests/unit/ui-hud-messages.test.ts:420-425` enforces that for every HUD module
+and `:73` lists `regime-panel.ts` by name, so the scan cannot silently skip it;
 `vitest.config.ts:5` is `environment: 'node'`, which is the premise for
 exporting the four pure helpers; and `describeStaffCoverage`, the precedent
-`:186` cites for that, exists at `src/ui/hud/staff-panel.ts:302`.
+`:186` cites for that, exists at `src/ui/hud/staff-panel.ts:335`.
 
 **The playtest, quoted exactly (1).** `:230-233`'s measurement is verbatim in
 `docs/research/2026-09-02-playing-what-landed-today.md:149-155`: *"eleven
@@ -636,7 +656,7 @@ panel body builds only `div` and `span`, with no `button`, no `tabIndex` and no
 listener anywhere in the file — so both `:172` and `:467-468` hold, and this is
 the claim a prisoner inspector would falsify first; `paintNeeds`
 (`src/ui/hud/rooms-panel.ts:1443-1448`) and `paintCoverage`
-(`src/ui/hud/staff-panel.ts:627-630`) both state the single-authority rule
+(`src/ui/hud/staff-panel.ts:661-663`) both state the single-authority rule
 `:771-776` cites, the first with *"measured, by deleting it and watching every
 assertion stay green"*; the collapse pattern is byte-for-byte the Intake
 panel's (`src/ui/hud/intake-panel.ts:342-345`) and `panel.setCollapsed` is an
@@ -648,7 +668,7 @@ attributes both callers set; `.hud-regime__roster-line` really carries
 `flex-wrap: wrap` (`src/ui/hud/hud.css:2200-2202`); the fold assertion exists
 verbatim (`tests/browser/ui-shell.spec.ts:5242`); and `formatHeldGuardText`
 really follows the entity-id fallback rule for the same stated reason
-(`src/ui/hud/staff-panel.ts:189-193`).
+(`src/ui/hud/staff-panel.ts:222-225`).
 
 **ADR 0015 and ADR 0022, both read to the end including their amendments (2).**
 ADR 0015's §*"The name is not localizable content"* supports `:393` — *"It is
@@ -698,7 +718,7 @@ alone**, per this pass's brief.
 
 **Finding 2**, and it is weak in a specific way rather than uncertain in its
 facts. Every fact under it is checked: the panel is constructed
-(`src/ui/hud/hud.ts:1785`) and bound (`:1958`), and the browser suite asserts
+(`src/ui/hud/hud.ts:1800`) and bound (`:1973`), and the browser suite asserts
 the panel renders rather than pinning emptiness (`tests/browser/ui-shell.spec.ts:4922`).
 What is arguable is whether a paragraph headed *"Why it is here"* should be read
 as a claim about the present at all. **What would change my mind:** any marker
