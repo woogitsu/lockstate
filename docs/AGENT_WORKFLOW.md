@@ -333,7 +333,9 @@ that answers confidently and wrongly.
 
 - **A player-facing string can be absent from the locale file and still
   present in the game.** `src/content/default-locale-en.ts` merges
-  `simulationEnumMessages()` at `:1808`, which computes labels from the census
+  `simulationEnumMessages()` — grep for `const derivedMessages =` rather than
+  for a line number, for the reason the paragraph below records — which computes
+  labels from the census
   in `src/content/simulation-message-keys.ts` — so `grep` over the locale file
   finds nothing for `risk-tier` while tier 2 renders as the literal text
   `Medium`. A whole claim was built on that absence, put to the owner as a
@@ -344,6 +346,22 @@ that answers confidently and wrongly.
   A derived string is invisible to the search that would disprove the claim,
   which makes this the worst case of §4's rule about sentences asserting an
   absence.
+
+  **This bullet cited that merge as `:1808`, and the coordinate was false
+  within the day — so the bullet became an instance of §4's own rule about a
+  `file:line` into a live file.** It was correct when written (`f00c7d15`,
+  where `const derivedMessages = simulationEnumMessages();` genuinely sat at
+  line 1808) and became false at `f19b9ef2`, *"fix(hud): the Remove hint says
+  what cancelling actually gives back (#835)"*, which added fourteen lines of
+  locale above it and moved the merge to `:1822`. Nothing about the claim
+  changed; only the coordinate did. It is corrected to a **symbol** rather than
+  to `:1822`, because a second number rots on the next string anybody adds, and
+  the correction is kept beside the claim rather than overwriting it because
+  the *interval* — one day, one unrelated commit — is the finding. The cost was
+  paid: an agent brief built on `:1808` sent its reader to a comment about
+  keyboard shortcuts, which is as misleading as the absence this bullet warns
+  about. The two render-site citations in the same bullet were re-opened at
+  `98e05058` and both still hold.
 
 - **An agent that arms a monitor, a background command or a sleep-poll and
   then stops calling tools has ended its turn, and nothing will wake it.**

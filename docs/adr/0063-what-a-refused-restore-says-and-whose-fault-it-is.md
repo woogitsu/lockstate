@@ -76,8 +76,8 @@ from opening the code rather than from reasoning about it.
 
 - **The briefing named `tests/fixtures/persistence/save-v1-in-progress.json` as
   a live specimen of a save that migrates and checksums cleanly and cannot be
-  restored.** It is not one any more. #433's code landed in `b456188` and
-  `6172774`, and `tests/integration/session-restore-failure.test.ts` restores
+  restored.** It is not one any more. #433's code landed in `6172774`, and
+  `tests/integration/session-restore-failure.test.ts` restores
   that fixture and reads both entity ids back out of the running session. The
   specimen that survives is the one that test file built to replace it: a V1
   ledger whose *written prefix* exceeds this build's `DEFAULT_PRISONER_CAPACITY`,
