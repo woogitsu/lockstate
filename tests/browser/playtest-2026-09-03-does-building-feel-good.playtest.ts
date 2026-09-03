@@ -1485,9 +1485,7 @@ test('act K: which Z is the one that works', async ({ page }) => {
   const measuredOrigin = { originX: -304, originY: -574 };
 
   const walk = async (label: string, pressRemoveFirst: boolean): Promise<void> => {
-    await page.goto(APP_URL);
-    await page.waitForSelector('#game-root canvas');
-    await page.waitForSelector('.hud');
+    await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(page.locator('.hud-clock__day')).toHaveText('1');
     await tab(page, 'build').click();
@@ -1552,4 +1550,71 @@ test('act K: which Z is the one that works', async ({ page }) => {
   await installTee(page);
   await walk('K1', false);
   await walk('K2', true);
+});
+
+/* ------------------------------------------------------------------ ACT L */
+
+/**
+ * The last thing that could refute act K, and it is the weakest point in the
+ * whole finding.
+ *
+ * Act K read the treasury and the queue 2.5 s after a single Z and found both
+ * unchanged while the event band said *"The last change to the build queue was
+ * undone."* Act J then pressed a second Z and the money came back. Two
+ * readings fit that: the first Z did nothing and the second one worked, **or**
+ * the first Z was simply slower than 2.5 s and what act J attributed to the
+ * second press was the first one landing late. Both end in the same state, so
+ * the two presses cannot tell them apart.
+ *
+ * One press can. Press Z **once**, run the clock, wait fifteen seconds, and
+ * read again. If the queue still holds six orders and the treasury is still
+ * down by 480 after that, the first Undo did nothing -- and the sentence the
+ * band showed at the time was false when it was shown.
+ */
+test('act L: was the first undo slow, or was it nothing', async ({ page }) => {
+  test.setTimeout(400_000);
+  await installTee(page);
+  await openApp(page);
+  const started = Date.now();
+
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await tab(page, 'build').click();
+  await armBuildable(page, 'wall-brick');
+
+  const before = await sample(page, started);
+  const runBefore = (await sentCommands(page)).length;
+  await drag(page, { x: -304 + 13 * TILE, y: -574 + 13 * TILE }, { x: -304 + 18 * TILE, y: -574 + 13 * TILE });
+  const runCmds = (await sentCommands(page)).slice(runBefore);
+  await page.waitForTimeout(1500);
+  const queued = await sample(page, started);
+  note(`[L] the run: ${runCmds.length} order(s), treasury ${before.treasury} -> ${queued.treasury} | queue ${JSON.stringify(queued.queue)}`);
+
+  await page.mouse.click(700, 300);
+  await page.waitForTimeout(300);
+  const preKey = (await sentCommands(page)).length;
+  await page.keyboard.press('KeyZ');
+  note(`[L] Z pressed once. Nothing else will be pressed for the rest of this act except the transport.`);
+  for (const wait of [500, 1000, 2000, 4000]) {
+    await page.waitForTimeout(wait);
+    const s = await sample(page, started);
+    note(`[L] paused, t+${s.ms}ms: treasury ${s.treasury} | queue ${JSON.stringify(s.queue)} | event ${JSON.stringify(await panelText(page, '.hud__event'))}`);
+  }
+  note(`[L] the Z press sent ${(await sentCommands(page)).slice(preKey).length} command(s): ${JSON.stringify((await sentCommands(page)).slice(preKey))}`);
+
+  // Now run the clock, in case an Undo needs a tick to be applied.
+  await transport(page, 'play').click();
+  for (let i = 0; i < 8; i += 1) {
+    await page.waitForTimeout(2000);
+    const s = await sample(page, started);
+    note(`[L] running, tick ${s.tick}: treasury ${s.treasury} | queue ${JSON.stringify(s.queue)}`);
+  }
+  await transport(page, 'pause').click();
+  await page.waitForTimeout(600);
+  const end = await sample(page, started);
+  note(`[L] FIFTEEN SECONDS AND ${end.tick} TICKS AFTER ONE Z: treasury ${queued.treasury} -> ${end.treasury}, queue ${JSON.stringify(end.queue)}`);
+  note(`[L] SO THE FIRST UNDO WAS ${end.treasury === before.treasury ? 'SLOW -- the money came back' : 'A NO-OP -- the money never came back'}`);
+  note(`[L] the event band still says: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
+  note(`[L] alerts:\n${await panelText(page, '.hud-alerts__list')}`);
+  await shot(page, 'L01-fifteen-seconds-after-one-z');
 });
