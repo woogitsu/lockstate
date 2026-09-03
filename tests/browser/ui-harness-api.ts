@@ -436,6 +436,16 @@ export interface StaffCoverageProbe {
   readonly badgeTone: string | null;
   /** The sentence under it -- the action, where there is one. */
   readonly hintText: string;
+  /**
+   * The consequence sentence below the hint -- what the rung costs -- or `''`
+   * on the two rungs that have none (the owner's wording of 2026-09-03).
+   *
+   * Its own field rather than a second entry in `hintText`, which reports only
+   * the first visible note: the two sentences answer different questions, and a
+   * probe that concatenated them could not tell a block that lost the
+   * consequence line from one that never had it.
+   */
+  readonly consequenceText: string;
   readonly blockBox: LayoutBox | null;
 }
 

@@ -132,7 +132,11 @@ export function fullRuntimeState(runtime: SimulationRuntime): JsonValue {
     prisonerActionMetrics: runtime.prisoners.actionSystem.getMetrics(),
     containers: runtime.containers.getSnapshot(),
     jobs: runtime.jobs.getSnapshot(),
-    jobWorkers: runtime.jobWorkers.getSnapshot(),
+    // `jobWorkers` used to be read here and is gone: ADR 0093 decision 4
+    // retired `JobWorkerPool`, and the fact it held -- which prisoner is on
+    // which errand -- is `assignedWorkerId` on each job in `jobs` above, which
+    // this fingerprint already carries.
+
     guards: runtime.securityGuards.getSnapshot(),
     sectorControlStates: runtime.securitySectors.getSnapshot(),
     deploymentMetrics: runtime.deploymentSystem.getMetrics(),

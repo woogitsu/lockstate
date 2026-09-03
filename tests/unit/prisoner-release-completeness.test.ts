@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { Container } from '../../src/simulation/operations/inventory';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { pathsMentioning, type Hit } from '../helpers/entity-graph-walk';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
@@ -103,11 +105,17 @@ function releaseRelevant(hits: readonly Hit[]): readonly Hit[] {
  * A prison with one furnished cell, and a prisoner in it who has been given
  * everything a prisoner in this codebase can hold.
  *
- * The gang membership and the labour-pool registration have no producer in
- * `src/` yet (`GangRegistry.addMember` is written only by `loadSnapshot`;
- * `JobWorkerPool.register` only by test scenarios), and they are set by hand
- * here for exactly that reason: a store with no producer today is still a store
- * a release has to drop, and it is the one most likely to be forgotten.
+ * The gang membership has no producer in `src/` yet -- `GangRegistry.addMember`
+ * is written only by `loadSnapshot` -- and it is set by hand here for exactly
+ * that reason: a store with no producer today is still a store a release has to
+ * drop, and it is the one most likely to be forgotten.
+ *
+ * **The errand is no longer in that category, and that is the change worth
+ * reading.** This sentence used to pair the gang with the labour pool, whose
+ * only writer was a test scenario (`JobWorkerPool.register` -- a method on a
+ * class ADR 0093 deleted and which no longer exists). The errand that replaced
+ * it has a real producer in `src/`, so the fixture below claims a real job
+ * through the board instead of adding an id to a set.
  */
 function prisonWithOneFullyLoadedPrisoner(): {
   runtime: SimulationRuntime;
@@ -158,7 +166,35 @@ function prisonWithOneFullyLoadedPrisoner(): {
 
   runtime.gangs.register({ id: 'gang.test', territorySectorIds: [] });
   runtime.gangs.addMember('gang.test', entityId);
-  runtime.jobWorkers.register(entityId);
+  /*
+   * **An errand in progress, which is what `JobWorkerPool.register` used to
+   * be called for** ([ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md)
+   * decision 4). That class was deleted and no longer exists, so the store a
+   * departing prisoner
+   * has to be dropped from is the board's derived worker index -- and the only
+   * way into it is to actually be carrying something. Registering in a set
+   * cost one line; claiming a job costs four, and it is the stronger fixture:
+   * the release now has to *end the job and give the goods back*, not merely
+   * forget a member.
+   */
+  const errandSource = new Container('release-fixture-bay');
+  errandSource.deposit('item.brick', 4);
+  runtime.containers.register(errandSource);
+  runtime.containers.register(new Container('release-fixture-depot'));
+  runtime.jobs.submitCarryItem(
+    {
+      id: 'release-fixture-carry',
+      priority: 1,
+      itemId: 'item.brick',
+      quantity: 4,
+      sourceContainerId: 'release-fixture-bay',
+      sourceTile: { x: tileCoordinate(20), y: tileCoordinate(20) },
+      destinationContainerId: 'release-fixture-depot',
+      destinationTile: { x: tileCoordinate(24), y: tileCoordinate(24) },
+    },
+    runtime.kernel.tick,
+  );
+  expect(runtime.carryJobs.claimAvailableJobFor(entityId)?.id, 'the fixture is only meaningful if the prisoner is genuinely on an errand').toBe('release-fixture-carry');
   runtime.incidents.open(
     { id: 'incident.1', type: 'riot', sectorId: 'sector.default', participantIds: [entityId], severity: 2, causeFactors: [] },
     runtime.kernel.tick,
@@ -176,7 +212,15 @@ describe('what a released prisoner must be dropped from (ADR 0026 question 2)', 
     // -- and it has to find each store *by structure*, so a container that
     // silently stopped holding the prisoner fails here rather than making the
     // release look complete. Six stores and six owners: the name registry, both
-    // gang indexes, the cold state, the room registry and the labour pool.
+    // gang indexes, the cold state, the room registry and **the errand**.
+    //
+    // **The last of those was the labour pool until
+    // [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) deleted
+    // `JobWorkerPool`.** What replaced it is the job board's derived worker
+    // index, and it is a *stronger* case for this file rather than a
+    // like-for-like swap: the pool held a bare id and forgetting it cost
+    // nothing, while the index names a job holding a stock reservation, so a
+    // release that only forgot the id would strand goods as well as a slot.
     const holds = (fragment: string): number => before.filter((path) => path.includes(fragment)).length;
     expect({ paths: before, actorIdentity: holds('actorIdentity.byKind') }).toMatchObject({ actorIdentity: 1 });
     expect({ paths: before, gangIdByMember: holds('gangs.gangIdByMember') }).toMatchObject({ gangIdByMember: 1 });
@@ -185,13 +229,18 @@ describe('what a released prisoner must be dropped from (ADR 0026 question 2)', 
     expect({ paths: before, actionTarget: holds('coldState.currentActionTargetInstanceId') }).toMatchObject({ actionTarget: 1 });
     expect({ paths: before, pathRequest: holds('coldState.currentActionPathRequestId') }).toMatchObject({ pathRequest: 1 });
     expect({ paths: before, occupants: holds('roomInstances.occupants') }).toMatchObject({ occupants: 1 });
-    expect({ paths: before, jobWorkers: holds('jobWorkers.workers') }).toMatchObject({ jobWorkers: 1 });
+    expect({ paths: before, errandIndex: holds('board.activeByWorker') }).toMatchObject({ errandIndex: 1 });
+    expect({ paths: before, errandJob: holds('assignedWorkerId') }).toMatchObject({ errandJob: 1 });
     expect({ paths: before, history: holds('incidents.records') }).toMatchObject({ history: 1 });
     // The derived index the riot regime reads, asserted by name for the reason
     // every other line here is: a container that silently stopped holding the
     // prisoner must fail here rather than make the release look complete.
     expect({ paths: before, riotIndex: holds('incidents.openRiotCountByParticipant') }).toMatchObject({ riotIndex: 1 });
-    expect({ paths: before, releaseRelevant: releaseRelevant(before).length }).toMatchObject({ releaseRelevant: 8 });
+    // 9, from 8: the errand is two hits rather than the pool's one -- the
+    // board's worker index *and* the job's own `assignedWorkerId`, which is the
+    // field that index is derived from. Both have to go, and both do: ending
+    // the job clears the index and moves the job to a terminal state.
+    expect({ paths: before, releaseRelevant: releaseRelevant(before).length }).toMatchObject({ releaseRelevant: 9 });
 
     expect(runtime.prisoners.releasePrisoner(entityId)).toBe(true);
 

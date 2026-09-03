@@ -23,7 +23,12 @@ the edge in front of an actor is still standing (2026-08-29, #581, filed by
 #615 — the fifth, the third consecutive row filed by a commit whose only job
 was the filing, and **the first filed as a debt rather than on time**: #581
 landed the ADR with no row at all, which is what #615 was opened to
-record)** — **this clause read "seven entries" until #615's entry was filed,
+record), and ADR 0093's three player-facing sentences for the errand it built
+(2026-09-03, the sixth — and **the first row ever filed for a document that is
+already `Accepted` and already implemented**: what waits is the copy, not a
+signature, which is a shape this section had not held before)** — **this clause
+read "eight entries" until ADR 0093's entry was filed, "seven entries" until
+#615's,
 "six entries" until #585's, "five entries"
 until #571's, and "four entries" until `07add3e`**, and the sentence saying four is corrected
 rather than overwritten because the split is the finding: #485 filed ADR 0059's
@@ -613,11 +618,11 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `f36148d7` (**v0.0.393**) by the delta method this
-header describes, from the v0.0.388 anchor described below. **Five of the ten
+Re-anchored at `main` @ `402453a9` (**v0.0.402**) by the delta method this
+header describes, from the v0.0.393 anchor described below. **Nine of the ten
 releases the budget allows, counted on the tree this commit is written
-against: `package.json` ships 0.0.393 at `f36148d7` and the anchor being
-replaced named v0.0.388.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
+against: `package.json` ships 0.0.402 at `402453a9` and the anchor being
+replaced named v0.0.393.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
 **10**, exactly as the gate demands and as its own failure message insists.
 
 **This pass was dispatched at FIVE of ten — the halfway mark exactly, and the
@@ -1136,7 +1141,25 @@ anchors ago, one release late, and the honest reading is that a rule two
 passes have missed by two and then by one is being approached rather than
 kept.
 
-**The anchor before this one, kept — v0.0.388.** It read: *"Re-anchored at `main` @
+**The anchor before this one, kept — v0.0.393.** It read: *"Re-anchored at `main` @
+`f36148d7` (**v0.0.393**) by the delta method this header describes, from the
+v0.0.388 anchor described below. Five of the ten releases the budget
+allows."* It was taken at the halfway mark for the second consecutive pass and
+held six green mergeable pull requests rather than spend the window. Its window
+was 26 files across four implementing merges (#846, #848, #849, #850) and its
+delta intersection five. **It settled the "gap" figure the pass before it had
+handed back unresolved, and the answer was that the instrument had moved rather
+than the tree**: rows self-quoting `Proposed` with backticks are two (0051,
+0082) and rows quoting it with double quotes as well are three (adding 0088),
+so two anchors an hour apart differed by one character of grep and
+`docs/adr/README.md` had not changed 0088's row at all. It also recorded the
+first counter to move in four windows — `Proposed` 39 became 40 when ADR 0094
+landed — and **the first defect the branch cleanup caused**: the twenty-branch
+trial batch orphaned a commit cited in ADR 0063, because squash-merging leaves
+every intermediate commit on the branch and nowhere else.
+
+
+**The anchor before that one, kept — v0.0.388.** It read: *"Re-anchored at `main` @
 `98e05058` (**v0.0.388**) by the delta method this header describes, from the
 v0.0.383 anchor described below. Five of the ten releases the budget
 allows."* It was the **first pass in the sequence to be dispatched at the
@@ -4852,7 +4875,7 @@ cells is exercised nowhere, because no shipped session yet furnishes two.
 
 ---
 
-## 2. Eight entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, the Worker that lands with telemetry ingest, ADR 0056's price for keeping a player's orders in order, ADR 0059's price for making them walk, ADR 0074's price for reading a restored room's rectangle, ADR 0071's open-area amendment, and ADR 0077's price for asking whether the edge in front of an actor is still standing
+## 2. Nine entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, the Worker that lands with telemetry ingest, ADR 0056's price for keeping a player's orders in order, ADR 0059's price for making them walk, ADR 0074's price for reading a restored room's rectangle, ADR 0071's open-area amendment, ADR 0077's price for asking whether the edge in front of an actor is still standing, and ADR 0093's three player-facing sentences for the errand it built
 
 **This heading has now read "empty", "exactly one entry: ADR 0029", "empty
 again", one entry, two, one, empty for the third time, one again, and — on
@@ -5584,6 +5607,123 @@ and what was read>.**` in
 and the matching change to its [`README.md`](./README.md) row, **naming whether
 decision 6 is taken whole or in its narrower form**, because those are different
 games and the ADR says so. **Delete this entry in the same commit.**
+
+### ADR 0093 (2026-09-03) — the mechanic is accepted and built; the three sentences it needs are not
+
+**What is waiting.** [ADR 0093](./0093-a-carry-is-an-action.md), *"A carry is
+an action"*, is **`Accepted, 2026-09-03, by the repository owner`** and its six
+decisions are **implemented**. Nothing about its *status* is outstanding, and
+that is what makes this entry a different shape from every other one in this
+section: what is waiting is not a signature on a decision, it is **three
+player-facing sentences the document deliberately did not write**, and one
+member of the `PrisonCondition` union that cannot exist until one of them does.
+
+**The live anchor's reading of "eight" was correct when it was taken, and this
+is the ninth, filed after it.** The anchor pass at `402453a9` (v0.0.402)
+checked the four places that count this section and found all four reading
+eight, which they did; this row and the three counters that move with it are a
+change *since* that reading, not a correction of it. **The anchor itself is
+untouched**, and it is not this row's to move.
+
+**Two numbers in that anchor are worth handing to whoever takes the next
+one.** The pass also records *"The three that count `Proposed` documents hold
+at THIRTY-SEVEN"*, and ADR 0093 was one of the thirty-seven: its acceptance of
+2026-09-03 takes them to **thirty-six**. And the same pass reports *"the fifth
+consecutive anchor at which no entry was filed"* — this row ends that streak.
+Neither sentence is edited here, because both are true of the commit they were
+taken at; they are named so the next reading does not have to rediscover why
+its own count differs.
+
+**Why it is filed here rather than in §5.** §5 is *"where an accepted decision
+and the code disagree"*, and they do not: the code implements every decision
+this file's title says the owner still has to decide about. What the owner still
+has to decide is the copy. That is this file's first half, and the rule this
+section states — *"nothing else in the corpus would tell the owner that a
+decision is waiting"* — is exactly why the row exists.
+
+**The evidence, which is a run rather than a reading.** Seed `0x0b1ec7`, a
+prison built through `Kernel.submitCommand`: a cell with a bed and a toilet, a
+4x4 walled `room.delivery-bay` holding a `loading-dock-door-wooden`, a 3x3
+walled `room.storage-room` holding two `storage-rack-wooden`, one prisoner
+admitted at tick 600, and one `PurchaseMaterials` at 1,350.
+
+| tick | the job | the prisoner |
+| --- | --- | --- |
+| 1,450 | `delivery.buy-3.1450` `available` | `action.free-association` |
+| 1,481 | `assigned`, pickup leg | `action.carry`, `travelling`, at (4, 6) |
+| 1,529 | | `performing` at the bay's anchor, (10, 6) |
+| 1,541 | leg → `dropoff` | `travelling` |
+| 1,621 | | `performing` at the storeroom's anchor, (20, 20) |
+| 1,641 | `completed` | `idle` at (20, 20) |
+| 1,661 | | back to ordinary life |
+
+So a delivery lands in a bay, a prisoner in a work block chooses the errand at
+rank 0, walks both legs through `LocomotionStore`, dwells at each end, and the
+materials arrive in the container construction draws from. Before this,
+`JobBoard.submitCarryItem` had exactly one occurrence under `src/` — its own
+declaration — and `JobWorkerPool.register` had no `src/` caller at all.
+
+**What settling the three sentences commits the project to.**
+
+1. **The action's label.** `src/content/simulation-message-keys.ts` carries one
+   label per entry of `DEFAULT_ACTIONS`, and
+   `tests/unit/simulation-message-keys.test.ts` requires each namespace to
+   label *exactly* the ids its declaration declares — so an entry had to exist
+   the moment the catalogue held one. **It is there, reading `'Errand'`, and it
+   is marked in that file as a draft for the owner's review**, in the identical
+   form `action.kitchen-work`'s `'Kitchen Duty'` has carried since #532. This
+   is therefore the one of the three that is **already on screen**: the roster
+   and the detail panel will say *Errand* until the owner says otherwise. The
+   alternatives considered and rejected are written out beside it — *Carrying*
+   (a phase, and `action-phase` already labels three of those), *Haulage* (the
+   trade, not the shift), *Delivery Duty* (names the purchase, and a carry will
+   not always be a delivery once other producers arrive).
+2. **The standing condition for a delivery waiting in a bay with nobody in a
+   work block to carry it.** ADR 0093 decision 2 requires this to be *visible*
+   as an [ADR 0087](./0087-whether-a-refusal-is-an-event-or-a-condition.md)
+   standing condition, and states the cost it makes visible: a bayed prison
+   whose population is outside a work block leaves a delivery waiting for up to
+   **1,100 ticks** — from the end of the 1,300–1,800 block to the start of the
+   next day's 500–1,000 block — and a build order waits with it. **It is not
+   built**, and the omission is deliberate rather than unfinished: a
+   `PrisonCondition` member with no authored sentence is the locale-key-with-no
+   -implementation defect `AGENTS.md`'s fourth exclusion exists for. Settling it
+   commits to one sentence and one union member; leaving it means the wait is
+   real and unexplained, which is the cost of *this* row rather than of the
+   decision.
+3. **Whatever the detail panel says about goods in hand**, if it says anything.
+   `PrisonerActionViewModel` carries an action and a room; a carry has an item
+   and a quantity, and whether a player sees them is a copy decision. Nothing
+   was added, so the panel currently says what it says for any action.
+
+**And the three open questions ADR 0093 puts to the owner are untouched by the
+build**: whether a carrier is interruptible by a regime change (the document
+says no, by analogy with every other action, and a lockdown that leaves a
+prisoner walking a crate across the yard is worth a ruling); what the cancel
+path owes a player who un-zones the bay or the storeroom mid-flight (ADR 0037
+open question 1, now reachable); and whether a `'carrier-departed'` job
+deserves a player-visible notice. The first of those is now the one with live
+traffic behind it.
+
+**One defect the build measured and did not fix, because fixing it is a
+balance decision.** A work block allows `work`, `education` and
+`free-association` only, so **a hungry prisoner cannot eat during one**;
+`action.free-association` scores 0 by construction; and the owner's amendment
+routes a prisoner whose hunger the state withholds for to
+`action.kitchen-work`, whose `hunger` effect is **1** a tick against
+`action.eat-meal`'s **4**. So the ruling sends a starving prisoner to the
+slowest of the three routes to hunger — which is strictly better than the
+errand, whose effect on hunger is nothing, and is not a cure.
+`tests/integration/carry-need-threshold.test.ts` measures the direction rather
+than arguing it. **This is not a defect ADR 0093 introduced**: it is what a
+work block already was, and the amendment is the first thing that reads it.
+
+**The exact line that would replace the status:** none — the status is already
+`Accepted`. **What would delete this entry is the owner writing the three
+sentences**, or ruling that the second and third are not owed. Whichever it is,
+delete this entry in the same commit, and if the standing condition is taken,
+`src/simulation/protocol/types.ts` gains the member ADR 0093's change list
+records as item 9.
 
 ### ADR 0031 — accepted 2026-08-26, and the entry is deleted
 
@@ -6729,6 +6869,71 @@ re-export them and says so), so there is no accepted decision for the code to
 contradict. It becomes a §2 entry the moment the owner accepts decision 2, and
 that is the next thing this queue expects to gain.
 
+**Still FORTY at `402453a9` (v0.0.402), nine releases later — the largest
+window in this sequence and the first one taken at nine rather than at the
+halfway mark, deliberately.** `Proposed` **40** against **48** `Accepted`
+across **88** documents; the index agrees, **89** rows, and **Next free
+number: 0095** matching it. The absent numbers are the same six — `0018`,
+`0030`, `0055`, `0058`, `0060`, `0072`.
+
+**Why nine and not five.** The rule this header states is *"THE HALFWAY MARK IS
+A TASK, NOT A READING"*, and two consecutive passes kept it exactly. This one
+ran to nine on a decision rather than by drifting, and the reason is worth
+recording because the rule would otherwise look broken: the queue held six
+green mergeable pull requests plus two that landed mid-pass, and anchoring at
+five would have meant two passes over a 10,000-line file inside ninety minutes
+for a window of four files each. Nine leaves one release of headroom, which is
+thinner than this file likes and is the cost being named rather than hidden.
+**The gate never fired**, and `ANCHOR_STALENESS_BUDGET_RELEASES` was not
+touched: raising it *"should be argued for in the commit that raises it"*, and
+this is not that argument.
+
+**Window: 32 files across eight implementing merges — #843, #845, #852, #841,
+#833, #855, #854, #856 — with #851 excluded as self-referential, being the
+previous anchor's own pass.** The delta intersection over §§3-6 (lines
+5811-10691 on this tree, 121 distinct rooted paths) gives **ten members**
+besides this file: `.github/workflows/branch-gc.yml`,
+`docs/adr/0063-what-a-refused-restore-says-and-whose-fault-it-is.md`,
+`docs/research/README.md`, `src/content/default-locale-en.ts`,
+`src/simulation/construction/materials-procurement.ts`,
+`src/simulation/economy/just-in-time-materials.ts`,
+`src/simulation/economy/procurement.ts`, `src/ui/hud/build-panel.ts`,
+`tests/foundation/documentation-links-contract.test.ts` and
+`tests/unit/ui-hud-build-panel.test.ts`. Full-path and basename agree on
+eleven. **That is the widest intersection any pass here has had**, and the
+reason is that #833 and #843 worked the construction-and-procurement surface
+§5 cites more densely than any other.
+
+**Every standing claim re-run rather than carried.** §5's ADR 0025 entry:
+`find src/ui -name "*.css"` still **four**, and `grep -rn '3\.9' src/` still
+exactly one hit at `src/ui/primitives/icon.ts:77`. §4's two absences in
+`supabase/migrations/`: still exactly one file matching, its only hit still the
+*comment* about a future retention job, the directory still **23** files. §6's
+`ui-hud-messages.test.ts` span carried unchanged, this window not touching that
+file. §2 unmoved at **eight** live entries, and by subject this window files
+nothing.
+
+**The branch cleanup ran to completion in this window, and it cost one
+citation — mine.** The owner authorised the full set on 2026-09-03 and
+`branch-gc.yml` deleted **338** of 466 branches considered, zero failures; the
+remote went to **129**. Its 128 skips were 75 `wip/` snapshots, 26 with no
+merged pull request, **18 held by the citation guard**, 6 open-pull-request
+heads, 2 pushed-after-merge, and `main`. **And it orphaned a commit cited in
+`tests/foundation/documentation-links-contract.test.ts`, because that guard
+scanned `docs/` only** — a narrowing #852 argued for on the ground that *"a
+comment naming a commit is code this branch cleanup does not touch"*, which is
+false in the way that matters: the cleanup does not touch the comment, it
+deletes the branch that publishes the commit the comment names. #856 repaired
+the citation onto the published squash and widened the guard to every directory
+the gate reads. Measured on this tree: the old scope saw **342** cited shas and
+the new one sees **356**, so **fourteen** were invisible to it — eight in
+`tests/` and six in `src/`.
+
+**The held-number sweep is clean, and for the first time over a small
+remote.** No head among the **129** now present holds an ADR number at or above
+0095 — the sixth consecutive clean reading of the collision risk, and the first
+where the sweep is cheap rather than a walk over four hundred heads.
+
 **The counters were recomputed with this repository's own algorithm, and the
 ad-hoc grep that was tried first disagreed with it.** `statusStatement` in
 `tests/foundation/adr-status-reference-contract.test.ts` takes the first
@@ -6867,12 +7072,12 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `f36148d7` — the same bare `grep -ril
+absences were re-verified at `402453a9` — the same bare `grep -ril
 'total_bytes\|max_total_bytes\|retention\|prune'` over the directory still
 returns exactly one file, and its only hit is still the *comment* in
 `20260826130000_server_stamp_updated_at.sql:68` about a **future** retention
 job, so neither absence has acquired an implementation that a path scan would
-have missed — as they were at `98e05058`, at `aa762112`, at `708b68c7`, at `b2941064`, at `1547c7f6`, at `9b8c8e85`, at
+have missed — as they were at `f36148d7`, at `98e05058`, at `aa762112`, at `708b68c7`, at `b2941064`, at `1547c7f6`, at `9b8c8e85`, at
 `0e2eb7fb`, at `33a4a22e` and at
 `26434e8e` before it —
 `supabase/migrations/` is not among this window's 10 files, nor the previous
@@ -7194,6 +7399,15 @@ first server-side entry point — so the "with the queue empty" opening no longe
 describes the file either. **Still three at `bb3a01e`**: no entry was added or
 deleted in the eleven releases, and this is one of the four places the header
 names as counting the queue, swept here for that reason.
+
+**NINE at ADR 0093's filing (2026-09-03), and the streak of anchors with no
+entry filed is over.** The ninth is ADR 0093's three player-facing sentences,
+and it is the first row in this section for a document that is already
+`Accepted` and already implemented — so §2's own framing widens with it from
+*"decisions awaiting a signature"* to *"what the owner still has to decide"*,
+which is this file's title and always was. **The paragraph below is kept rather
+than overwritten** (`docs/AGENT_WORKFLOW.md` §4), because the streak it records
+is the evidence for how rarely a row is filed at all. It read:
 
 **STILL EIGHT at `1547c7f6`, and the FIFTH consecutive anchor at which no
 entry was filed at all.** No ADR arrived in the window, so nothing was owed a
@@ -10585,7 +10799,7 @@ numbers were not the damage.** Stated so it can be checked:
   `prisoners-intake-system.test.ts:230` and `:529`;
   `entity-generation-wrap.test.ts:96`, `:124`, `:163`, `:178`, `:190` and
   `:204`; `unconsumed-command-contract.test.ts:204` and `:230`;
-  `ui-hud-messages.test.ts:269-275` (moved from `:218-224` by #827, byte-identical, re-verified at `f36148d7`); `environment-art.test.ts:248` and `:256`;
+  `ui-hud-messages.test.ts:269-275` (moved from `:218-224` by #827, byte-identical, re-verified at `402453a9`); `environment-art.test.ts:248` and `:256`;
   `adr-status-reference-contract.test.ts:147-150`, `:405`, `:427` and `:431`;
   `docs/adr/README.md:103-110` and `:158`; `docs/TRUSTED_SERVICES.md:604`,
   `:607` and `:610`; `docs/adr/0013-…md:15`, `:19-21` and `:151`;

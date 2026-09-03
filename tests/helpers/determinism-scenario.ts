@@ -183,9 +183,22 @@ export function buildDeterminismScenario(masterSeed: number = SCENARIO_SEED, opt
   const store = new Container('store');
   store.deposit('item.brick', 40);
   runtime.containers.register(store);
-  // Registered in descending entity id, so a job system that trusted
-  // registration order instead of `idleWorkers()`'s sort would diverge.
-  for (const entityId of incidental([...prisonerIds].reverse())) runtime.jobWorkers.register(entityId);
+  /*
+   * **No worker is registered any more, because there is no pool to register
+   * in** ([ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 4).
+   * This loop read *"Registered in descending entity id, so a job system that
+   * trusted registration order instead of `idleWorkers()`'s sort would
+   * diverge"*, and the property it defended has moved rather than gone:
+   * eligibility is the regime's now, and who gets a contended errand is
+   * `ActionSystem`'s idle scan -- descending need urgency, ties by ascending
+   * component index (ADR 0062). That order is defended by
+   * `tests/determinism/session-replay.test.ts` over this whole scenario, and
+   * the carriers below reach the board through it rather than through a set.
+   *
+   * The two jobs stay, and they are what makes this scenario exercise the
+   * carry at all: a prisoner in a `work` block with an available job takes the
+   * errand at rank 0.
+   */
   runtime.searchContainerLocations.set('store', TILE(2, 6));
   runtime.searchContainerLocations.set('construction-materials', TILE(3, 6));
   for (const job of incidental([

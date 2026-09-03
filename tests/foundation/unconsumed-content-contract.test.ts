@@ -111,7 +111,24 @@ const ROOT = join(__dirname, '../..');
  * `docs/AGENT_WORKFLOW.md` §4 says about a sentence that states a tally.
  */
 const PROTECTED_BY_DECISION: Readonly<Record<string, string>> = {
-  'room.storage-room': 'ADR 0017 (destination for procured materials) and #99 (destination for dismantle salvage) both depend on it; #141 flags it explicitly.',
+  /*
+   * **Empty, for the first time, and the entry that left is the point.**
+   *
+   * `'room.storage-room'` sat here with the reason *"ADR 0017 (destination for
+   * procured materials) and #99 (destination for dismantle salvage) both depend
+   * on it; #141 flags it explicitly."* Half of that has come true:
+   * [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 2 makes
+   * `ProcurementSystem` deliver into a `room.delivery-bay` and raise a carry to
+   * a `room.storage-room`, so `src/simulation/operations/delivery-route.ts`
+   * names the id and the room has a reader. #99's salvage destination is still
+   * ahead of it, which is a *second* consumer arriving later rather than a
+   * reason to keep the entry: this file's own stale-entry gate requires an
+   * entry to go when the id gains any reader.
+   *
+   * The reason is kept here rather than deleted because nothing about it was
+   * falsified -- it named the decision that would consume the room, and the
+   * decision consumed it.
+   */
 };
 
 /**
@@ -513,7 +530,17 @@ describe('every unconsumed content id is accounted for', () => {
       // named in `src/`), and no `src/` file gained a `'room.delivery-bay'`
       // literal -- `isOpenAreaRoom` reads an authored field off whatever id it
       // is handed and writes no id of its own.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 4, unconsumedBySrcOnly: 29 });
+      // 3 and 27, from 4 and 29: ADR 0093 decision 2 gives `room.storage-room`
+      // and `room.delivery-bay` their first `src/` readers in
+      // `src/simulation/operations/delivery-route.ts`, which names both ids as
+      // literals. `unconsumedBySrcAndTests` moves by one because only the
+      // storeroom still had an entry -- the bay had already graduated to a
+      // *test* consumer -- and `unconsumedBySrcOnly` moves by **two**, because
+      // that column counts what no `src/` file names and both rooms were in it.
+      // **This is the first time in this file's history that both columns have
+      // moved for the same change**, and it is the shape #141 asked for: a room
+      // a player could zone and furnish to no effect now does something.
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 3, unconsumedBySrcOnly: 27 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

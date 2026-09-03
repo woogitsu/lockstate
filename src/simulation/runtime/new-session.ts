@@ -42,12 +42,11 @@ import { createSessionCommandHandler } from './session-commands';
 import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
 import { Kernel } from '../kernel';
 import { NavigationSystem, type NavigationSystemOptions } from '../navigation';
-import { Container, ContainerMaterialsProvider, ContainerRegistry, JobBoard, JobSystem, JobWorkerPool, UtilityNetwork } from '../operations';
+import { CarryJobExecutor, Container, ContainerMaterialsProvider, ContainerRegistry, DeliveryBayCarryRoute, JobBoard, UtilityNetwork } from '../operations';
 import {
   NEED_IDS,
   NEED_MAX,
   PRISONER_SENTENCE_RNG_STREAM,
-  PrisonerJobWorkerAdapter,
   PrisonerOperationsRuntime,
   SafetyCoverageSystem,
   type DisciplinaryEvidenceSource,
@@ -269,8 +268,19 @@ export interface SimulationRuntime {
   readonly prisoners: PrisonerOperationsRuntime;
   readonly containers: ContainerRegistry;
   readonly jobs: JobBoard;
-  readonly jobWorkers: JobWorkerPool;
-  readonly jobSystem: JobSystem;
+  /**
+   * What a carry job does to stock, and no longer a registered system
+   * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 4).
+   *
+   * **`jobWorkers` and `jobSystem` are gone from this surface.**
+   * `JobWorkerPool` is retired because both of its sets are derivable --
+   * *registered* is *in a `work` block and idle*, which the regime decides
+   * each cycle, and *busy* is *named by an active job's `assignedWorkerId`*,
+   * which the board holds. `JobSystem` stopped being a `SystemRegistration`
+   * because `prisoners.actions` drives a carry now: it is the one authority
+   * that moves a prisoner.
+   */
+  readonly carryJobs: CarryJobExecutor;
   readonly electricity: UtilityNetwork;
   readonly water: UtilityNetwork;
   readonly securitySectors: SecuritySectorRegistry;
@@ -506,22 +516,40 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * Two more session-level stores hoisted above `prisoners` for the same reason
    * the two evidence logs are, and the reason is #441's release path.
    *
-   * `GangRegistry` records which prisoner belongs to which gang and
-   * `JobWorkerPool` records which prisoner is in the haulage labour pool; both
-   * are keyed by prisoner `EntityId`, and both have to forget a prisoner who
-   * has left the prison, or a recycled index eventually inherits a gang and a
-   * job queue (ADR 0026 question 2, answered in ADR 0050 decision 2). Their
-   * writers are still further down -- `IncidentTriggerSystem` reads the gangs,
-   * `JobSystem` drives the pool -- and this changes no arrow: both are bare
-   * constructors with no dependencies, exactly as `incidents` and
-   * `confiscations` above are, so hoisting them costs nothing.
+   * `GangRegistry` records which prisoner belongs to which gang and the job
+   * board records which prisoner is on which errand; both are keyed by
+   * prisoner `EntityId`, and both have to forget a prisoner who has left the
+   * prison, or a recycled index eventually inherits a gang and an errand
+   * (ADR 0026 question 2, answered in ADR 0050 decision 2). `GangRegistry`'s
+   * writer is still further down -- `IncidentTriggerSystem` reads the gangs --
+   * and this changes no arrow: every constructor below is bare, exactly as
+   * `incidents` and `confiscations` above are, so hoisting them costs nothing.
+   *
+   * **The second of the two used to be `JobWorkerPool`, hoisted for exactly
+   * this reason, and [ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md)
+   * decision 4 retired it.** What is hoisted in its place is the job substrate
+   * itself, and it has to come up here for a stronger reason than the release
+   * path: `PrisonerOperationsRuntime` constructs `ActionSystem`, and since a
+   * carry is an action the executor is one of its collaborators. The three
+   * lines below used to sit two hundred lines further down, next to
+   * `ConstructionSystem`'s materials provider, and the comment they carried
+   * about starting empty is kept with them.
+   *
+   * Issue #25's job/inventory substrate. Starts empty -- no default stock, no
+   * default containers beyond the one construction draws from -- exactly like
+   * navigation/prisoners wire real infrastructure without fabricating default
+   * content.
    */
   const gangs = new GangRegistry();
-  const jobWorkers = new JobWorkerPool();
+  const containers = new ContainerRegistry();
+  const constructionMaterials = new Container(CONSTRUCTION_MATERIALS_CONTAINER_ID);
+  containers.register(constructionMaterials);
+  const jobs = new JobBoard();
+  const carryJobs = new CarryJobExecutor(jobs, containers);
 
   /*
    * The contraband ground truth, hoisted to here for the same reason `gangs`
-   * and `jobWorkers` are and with the same consequence for the arrows: it is a
+   * and the job substrate are and with the same consequence for the arrows: it is a
    * bare constructor with no dependencies, and `PrisonerOperationsRuntime` now
    * needs it twice over
    * ([ADR 0061](../../../docs/adr/0061-what-the-prison-produces-on-its-own.md)).
@@ -582,7 +610,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
      */
     regimeOverride: createRiotRegimeOverride(incidents),
     gangs,
-    jobWorkers,
+    carryJobs,
     contraband,
     /*
      * How contraband gets into the prison (ADR 0061 decision 1). The rule is in
@@ -638,13 +666,8 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // it for the life of the session.
   const roomZoning = new RoomZoningService(world, prisoners.roomInstances, defaultRoomContentRegistry, roomCapacity, prisoners);
 
-  // Issue #25's job/inventory substrate. Starts empty -- no default stock,
-  // no default containers beyond the one construction draws from, no
-  // registered workers -- exactly like navigation/prisoners wire real
-  // infrastructure without fabricating default content.
-  const containers = new ContainerRegistry();
-  const constructionMaterials = new Container(CONSTRUCTION_MATERIALS_CONTAINER_ID);
-  containers.register(constructionMaterials);
+  // The job/inventory substrate is constructed above `prisoners`, which needs
+  // it: see the note there.
   /*
    * What makes a completed `door-wooden` order a door rather than a plank spent
    * on nothing.
@@ -736,7 +759,21 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * has been authored here.
    */
   treasury.setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
-  const procurement = new ProcurementSystem(treasury, constructionMaterials);
+  /*
+   * ADR 0017 decision 4's physical route, and the first thing in a session a
+   * player can start that puts a job on the board
+   * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 2).
+   *
+   * It reads the room registry the player's own `ZoneRoom` commands write, so
+   * it is live rather than configured: zone a `room.delivery-bay` and a
+   * `room.storage-room` and deliveries start walking; zone neither and the
+   * direct deposit continues unchanged. The bay's container is derived from the
+   * bay's instance id and the storeroom is bound to the container construction
+   * already draws from, so **nothing about either binding is persisted** and
+   * `ContainerMaterialsProvider` and `ConstructionSystem` are untouched.
+   */
+  const deliveryCarryRoute = new DeliveryBayCarryRoute(prisoners.roomInstances, containers, jobs, CONSTRUCTION_MATERIALS_CONTAINER_ID);
+  const procurement = new ProcurementSystem(treasury, constructionMaterials, deliveryCarryRoute);
   /*
    * The treasury is the third argument since #703 ruling 12: an order is funded
    * whole or not at all, so the service has to ask whether the *order's* cost is
@@ -854,10 +891,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    */
   const loans = options.loanTerms === undefined ? undefined : new LoanBook(treasury, options.loanTerms);
   const stateIncome = new StateIncomeSystem(treasury, prisoners, loans);
-
-  const jobs = new JobBoard();
-  const jobWorkerAdapter = new PrisonerJobWorkerAdapter(prisoners);
-  const jobSystem = new JobSystem(jobs, containers, jobWorkers, jobWorkerAdapter, navigation);
 
   // Empty until a session/scenario places real generators/consumers --
   // same "no fabricated default content" convention as `containers`/`jobs`.
@@ -1397,7 +1430,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(insolvencyRungs);
   kernel.registerSystem(navigation);
   prisoners.registerOn(kernel);
-  kernel.registerSystem(jobSystem);
   kernel.registerSystem(intelligenceSystem);
   kernel.registerSystem(guardLocomotionSystem);
   kernel.registerSystem(deploymentSystem);
@@ -1435,8 +1467,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     prisoners,
     containers,
     jobs,
-    jobWorkers,
-    jobSystem,
+    carryJobs,
     electricity,
     water,
     securitySectors,
