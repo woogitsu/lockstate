@@ -2472,12 +2472,14 @@
      sentence.
 
      *"Dismiss {name}? Their wage stops and they do not come back."* is two
-     lines at 900x600, and the clause the clamp cuts is *"and they do not come
+     lines at 900x600, measured: with this rule's selector unmatched the box
+     reports `scrollHeight` 26 against `clientHeight` 13, which is two lines cut
+     to one, and `tests/browser/ui-staff-dismiss.spec.ts` goes red on exactly
+     that reading. The clause the second line carries is *"and they do not come
      back"* -- the whole of what makes this a warning rather than a second
-     rendering of the button beside it. A confirmation that reads *"Dismiss
-     Guard? Their wage stops"* asks the player to confirm the reversible half of
-     an irreversible act, which is worse than asking nothing: it is a false
-     reassurance produced by a box.
+     rendering of the button beside it. Cut, it would ask the player to confirm
+     the reversible half of an irreversible act, which is worse than asking
+     nothing: a false reassurance produced by a box.
 
      The clamp's own rule is that what stays clamped is "the notes a clipped line
      still leaves usable", and the cost is the one `.hud-staff__hire-unassigned`
