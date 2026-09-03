@@ -872,3 +872,171 @@ test('act F: cost, regret, and being told what to do', async ({ page }) => {
   note(`[F4] band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
   await shot(page, 'F08-after-cancelling');
 });
+
+/* ------------------------------------------------------------------ ACT G */
+
+/**
+ * The samples act F needed and did not get, each one chosen because it could
+ * refute what act F appeared to show.
+ *
+ * G1 **the refuting sample for the stuck refusal.** `hud.ts` promises a
+ *    refusal clears *"when the same action later succeeds"*. Act F aimed its
+ *    successful Remove at a wall, which is edge geometry, and the press
+ *    produced no command at all -- so the promise was never tested. Here the
+ *    object is a **bed**, on a tile, pressed at the tile centre, and the
+ *    Remove that follows is checked for having actually been sent before the
+ *    band is read.
+ * G2 **one press, one wall.** Act F's single press on a gridline produced
+ *    zero commands while a drag along the same line produced five. Nine
+ *    offsets across one tile, counted, so the report can say what fraction of
+ *    a tile is a dead zone rather than guessing.
+ * G3 **cancel, with the clock genuinely stopped.** Act F cancelled after 12 s
+ *    at 4x had already drained the queue, so it measured nothing. Nothing runs
+ *    here between the order and the cancel.
+ * G4 **what each tab says**, read off the panels themselves rather than off a
+ *    container that turned out to hold no text.
+ * G5 **is a price hiding in an attribute** -- `title`, `aria-label`,
+ *    `aria-description` -- anywhere in the panel a player has not opened.
+ */
+test('act G: the refuting samples', async ({ page }) => {
+  test.setTimeout(600_000);
+  await installTee(page);
+  await openApp(page);
+  const started = Date.now();
+
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+  /* --- G4: every tab, panel by panel --- */
+  for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+    await tab(page, id).click();
+    await page.waitForTimeout(250);
+    const panels = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.ui-panel'))
+        .filter((n) => (n as HTMLElement).getClientRects().length > 0)
+        .map((n) => (n as HTMLElement).innerText.replace(/\n+/g, ' / ').trim()),
+    );
+    note(`[G4] ${id}: ${panels.length} panel(s) laid out`);
+    for (const text of panels) note(`[G4]   ${text}`);
+  }
+
+  /* --- G5: a price in an attribute? --- */
+  await tab(page, 'build').click();
+  await page.locator('.hud-build__list [data-buildable="bed-wooden"]').click();
+  await page.waitForTimeout(200);
+  const attributes = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('.hud-build *'))
+      .filter((n) => (n as HTMLElement).getClientRects().length > 0)
+      .flatMap((n) =>
+        ['title', 'aria-label', 'aria-description', 'aria-describedby', 'data-cost', 'data-price'].flatMap((name) => {
+          const value = n.getAttribute(name);
+          return value === null ? [] : [`${n.className.toString().slice(0, 40)} [${name}]=${value}`];
+        }),
+      ),
+  );
+  note(`[G5] every attribute in the visible Build panel that could carry a price:`);
+  for (const line of attributes) note(`[G5]   ${line}`);
+  note(`[G5] any of them containing a digit: ${JSON.stringify(attributes.filter((a) => /[0-9]/.test(a)))}`);
+
+  /* --- G2: nine offsets across one tile, one press each --- */
+  const origin = await calibrate(page);
+  note(`[G2] origin (${origin.originX}, ${origin.originY})`);
+  await armBuildable(page, 'wall-brick');
+  const baseX = origin.originX + 20 * TILE;
+  const baseY = origin.originY + 10 * TILE;
+  for (const dy of [0, 2, 8, 16, 31, 32, 33, 48, 56, 62, 63]) {
+    const before = (await sentCommands(page)).length;
+    await press(page, baseX + TILE / 2, baseY + dy);
+    const got = (await sentCommands(page)).slice(before);
+    const armed = (await page.locator('.hud-build__arm').innerText()).trim();
+    note(
+      `[G2] press at tile-centre-x, +${String(dy).padStart(2)}px into the tile: ${got.length} command(s)` +
+        `${got.length > 0 ? ` -> ${String(got[0]?.['x'])},${String(got[0]?.['y'])} ${String(got[0]?.['edge'])}` : ''}` +
+        ` | arm control still reads ${JSON.stringify(armed)}` +
+        ` | band ${JSON.stringify(await panelText(page, '.hud__refusal'))}`,
+    );
+    if (armed.toLowerCase().startsWith('place')) {
+      note('[G2]   (the tool had DISARMED itself; re-arming)');
+      await page.locator('.hud-build__arm').click();
+    }
+  }
+  await shot(page, 'G01-nine-presses');
+
+  /* --- G1: the refuting sample. A bed, on a tile, removed. --- */
+  const bandBefore = await panelText(page, '.hud__refusal');
+  note(`[G1] band before anything: ${JSON.stringify(bandBefore)}`);
+  await armBuildable(page, 'bed-wooden');
+  const bedTile = { tx: 24, ty: 14 };
+  const bedPoint = centreOf(origin, bedTile.tx, bedTile.ty);
+  const bedCmds = await press(page, bedPoint.x, bedPoint.y);
+  note(`[G1] a bed pressed at the CENTRE of tile (${bedTile.tx},${bedTile.ty}): ${bedCmds.length} command(s) ${JSON.stringify(bedCmds)}`);
+  if (bedCmds.length === 0) {
+    note('[G1] the pointer route gave nothing; using the typed route so the sample can still be taken');
+    await placeAt(page, 'bed-wooden', bedTile.tx, bedTile.ty);
+  }
+  await transport(page, 'fast').click();
+  await transport(page, 'fast').click();
+  for (let i = 0; i < 40; i += 1) {
+    if ((await panelText(page, '.hud-build__queue')).includes('not laid out')) break;
+    await page.waitForTimeout(1000);
+  }
+  await transport(page, 'pause').click();
+  await page.waitForTimeout(600);
+  note(`[G1] the bed is built at tick ${await currentTick(page)}`);
+  await shot(page, 'G02-bed-built');
+
+  await page.locator('.hud-build__remove').click();
+  const removeCmds = await press(page, bedPoint.x, bedPoint.y);
+  await page.waitForTimeout(900);
+  note(`[G1] the Remove press sent ${removeCmds.length} command(s): ${JSON.stringify(removeCmds)}`);
+  const bandAfter = await panelText(page, '.hud__refusal');
+  note(`[G1] band after a Remove that WAS sent: ${JSON.stringify(bandAfter)}`);
+  note(`[G1] DID THE STUCK REFUSAL CLEAR? ${bandBefore === bandAfter ? 'NO -- identical text' : 'YES'}`);
+  note(`[G1] alerts list: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+  await shot(page, 'G03-after-a-remove-that-was-sent');
+  if ((await page.locator('.hud-build__remove').innerText()).trim().toLowerCase().startsWith('stop')) {
+    await page.locator('.hud-build__remove').click();
+  }
+
+  /* --- G3: cancel, nothing running --- */
+  const beforeOrder = await sample(page, started);
+  await armBuildable(page, 'wall-brick');
+  const runBefore = (await sentCommands(page)).length;
+  await drag(
+    page,
+    { x: origin.originX + 26 * TILE + TILE / 2, y: origin.originY + 16 * TILE },
+    { x: origin.originX + 30 * TILE + TILE / 2, y: origin.originY + 16 * TILE },
+  );
+  const runCmds = (await sentCommands(page)).slice(runBefore);
+  await page.waitForTimeout(900);
+  const afterOrder = await sample(page, started);
+  note(`[G3] a 4-tile run: ${runCmds.length} order(s), treasury ${beforeOrder.treasury} -> ${afterOrder.treasury} (cost ${beforeOrder.treasury - afterOrder.treasury})`);
+  note(`[G3] the queue block as a player reads it:\n${await panelText(page, '.hud-build__queue')}`);
+  note(`[G3] the deliveries block:\n${await panelText(page, '.hud-build__deliveries')}`);
+  const rows = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('.hud-build__queue-row')).map((n) => {
+      const el = n as HTMLElement;
+      return { text: el.innerText.replace(/\n/g, ' / '), laidOut: el.getClientRects().length > 0, order: el.getAttribute('data-order') };
+    }),
+  );
+  note(`[G3] ${rows.length} row element(s), ${rows.filter((r) => r.laidOut).length} laid out, for ${runCmds.length} order(s):`);
+  for (const row of rows) note(`[G3]   ${JSON.stringify(row)}`);
+  note(`[G3] the "more" line: ${JSON.stringify(await panelText(page, '.hud-build__queue-more'))}`);
+  await shot(page, 'G04-five-orders-queued-paused');
+
+  // Cancel every control the panel offers, with the clock stopped.
+  for (let n = 0; n < 8; n += 1) {
+    const buttons = page.locator('.hud-build__queue-row button:visible');
+    if ((await buttons.count()) === 0) break;
+    const before = await sample(page, started);
+    await buttons.nth(0).click();
+    await page.waitForTimeout(700);
+    const after = await sample(page, started);
+    note(`[G3] cancel ${n + 1}: treasury ${before.treasury} -> ${after.treasury} (+${after.treasury - before.treasury}) | queue ${JSON.stringify(after.queue)}`);
+  }
+  const end = await sample(page, started);
+  note(`[G3] TOTAL: paid ${beforeOrder.treasury - afterOrder.treasury} for the run, got back ${end.treasury - afterOrder.treasury}, net ${beforeOrder.treasury - end.treasury}`);
+  note(`[G3] band at the end: ${JSON.stringify(end.refusal)}`);
+  note(`[G3] deliveries at the end:\n${await panelText(page, '.hud-build__deliveries')}`);
+  await shot(page, 'G05-after-cancelling-paused');
+});
