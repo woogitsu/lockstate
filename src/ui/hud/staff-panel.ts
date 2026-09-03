@@ -7,7 +7,9 @@ import { describeBy, element, eyebrowText, nextUiId, undescribeBy, valueText } f
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createPanel } from '../primitives/panel';
 import { createStatusBadge, type BadgeTone } from '../primitives/status-badge';
+import { pressDismiss, retainDismissArming, type DismissArming } from './dismiss-arming';
 import { HUD_MESSAGE_KEY } from './messages';
+import { assignPooledRows } from './pooled-row-binding';
 import type {
   HudCountsViewModel,
   HudHeldGuardViewModel,
@@ -148,6 +150,37 @@ export const HELD_GUARD_ROW_LIMIT = 3;
  * a measurement nobody took.
  */
 export const STAFF_ROSTER_ROW_LIMIT = 3;
+
+/**
+ * How long a freed roster place stays visibly blank before anybody else may
+ * appear in it (issue #877).
+ *
+ * `assignPooledRows` reads it, its header carries the whole argument for why a
+ * pooled row needs one at all, and `BUILD_QUEUE_ROW_SETTLE_MS` one panel over is
+ * the same figure for the same reason. Matching that figure is deliberate: the
+ * two blocks pose the player the identical question -- read a row, decide,
+ * press -- and a settle window is a claim about how long a person takes to do
+ * that, which is not a property of which list they are looking at.
+ *
+ * **What #877 measured, and what it does and does not settle.** Against unfixed
+ * `main`, six presses at #860's three decision delays: 4 of the 4 that reached
+ * the wire submitted `DismissStaff` for somebody other than the person the row's
+ * label named -- including at a **0 ms** delay, which the build queue was not,
+ * because the publication caused by the player's *first* dismissal lands inside
+ * the time their second press takes. The read-to-click times were up to about
+ * 1.7 s. So the lower bound this window has to cover is real and measured; its
+ * exact value is still the weakest number in the design, exactly as
+ * `BUILD_QUEUE_ROW_SETTLE_MS` says of itself.
+ *
+ * **It is not what makes a dismissal safe, and that is the difference from the
+ * build queue.** A cancelled build order can be queued again; a dismissal
+ * destroys an entity. What bounds the harm here is the confirmation step the
+ * owner ruled alongside this window (`hud/dismiss-arming.ts`): a press that
+ * lands on a place the window did not protect arms it and states who it is aimed
+ * at, so the window's job is narrowed to keeping the *first* press from being a
+ * question about the wrong person.
+ */
+export const STAFF_ROSTER_ROW_SETTLE_MS = 1_000;
 
 /** What one press of a dismiss control asks for: a staff id and nothing else. */
 export interface StaffPanelDismissIntent {
@@ -1090,20 +1123,52 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
    * that dismisses them.
    *
    * `staffId` is read at *press* time rather than captured when the row is
-   * built, for the held rows' reason and with a sharper consequence: the row is
+   * built. **That was once the whole of this docblock and it was never enough,
+   * which is issue #877.** The sentence it used to end on is worth keeping,
+   * because it is still true and is still why the read is here: *"the row is
    * pooled and names whichever staff member the last publication put in it, so a
    * captured id would sack whoever was in this row two seconds ago -- and a
-   * dismissal, unlike a release, cannot be undone by waiting.
+   * dismissal, unlike a release, cannot be undone by waiting."*
+   *
+   * What it missed is that reading at press time makes the id **current**, not
+   * **the one the player read**. This block bound `rows[i]` to `staff[i]`, the
+   * roster is windowed and sorted by ascending entity id, and a dismissal
+   * removes somebody -- so one dismissal shifts every row after it up and pulls
+   * the next person into the window. Measured in a browser on 2026-09-03 against
+   * unfixed `main`: **4 of the 4 presses that reached the wire submitted
+   * `DismissStaff` for somebody other than the person the row's label named**,
+   * and in every one of them the pooled element's `data-staff` at press time
+   * equalled what was submitted. Nothing on the code path was wrong; the screen
+   * position came to hold a different person between the read and the click.
+   *
+   * `assignPooledRows` is what closes it, exactly as it closed #860 one panel
+   * over, and `freedAtMs` is the state that rule needs from this row. `staffId`
+   * is therefore the person this row has named since it took them, and
+   * `undefined` on a row whose person has left the window -- so a press reaches
+   * the person the player was looking at, or reaches nobody.
    */
   interface RosterRow {
     readonly element: HTMLElement;
     readonly label: HTMLSpanElement;
     readonly dismiss: ActionButton;
-    /** The staff member this row currently names, or `undefined` while it is hidden. */
+    /** The staff member this row currently names, or `undefined` while it names nobody. */
     staffId: number | undefined;
+    /** When this place was last emptied. `assignPooledRows` reads it; see `STAFF_ROSTER_ROW_SETTLE_MS`. */
+    freedAtMs: number | undefined;
   }
 
   const rosterList = element('div', { className: 'hud-staff__held-list' });
+
+  /**
+   * The dismissal one press away from happening, or `undefined` while none is
+   * (the owner's ruling of 2026-09-03; `hud/dismiss-arming.ts` carries the
+   * argument and the decision).
+   *
+   * Panel state and not simulation state: nothing outside this panel can see it,
+   * an arm asks the host for nothing, and it is dropped rather than persisted
+   * whenever the block stops naming that person.
+   */
+  let armedDismissal: DismissArming | undefined;
 
   const rosterRows: readonly RosterRow[] = Array.from({ length: STAFF_ROSTER_ROW_LIMIT }, (): RosterRow => {
     const label = valueText('', 'hud-staff__held-label');
@@ -1115,10 +1180,31 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
         onActivate: () => {
           const { staffId } = row;
           if (staffId === undefined) return;
-          options.onDismiss({ staffId });
+          /*
+           * Two presses, and which one this is, is `pressDismiss`' decision
+           * rather than an expression here -- for the reason that module's
+           * header gives: nothing headless can reach this closure, so a
+           * mutation written inline would survive every unit test there is.
+           *
+           * The label is quoted at the press and carried on the arming, so the
+           * confirmation box says what *this* row said when it was pressed.
+           */
+          const press = pressDismiss(armedDismissal, { staffId, named: row.label.textContent ?? '' });
+          if (press.kind === 'arms') {
+            armedDismissal = press.arming;
+            paintDismissConfirmation();
+            return;
+          }
+          // Disarmed before the command goes out, not after: the row is about to
+          // stop naming this person, and an arm left standing across that would
+          // be a question about somebody the next publication has removed.
+          armedDismissal = undefined;
+          paintDismissConfirmation();
+          options.onDismiss({ staffId: press.staffId });
         },
       }),
       staffId: undefined,
+      freedAtMs: undefined,
     };
     row.element.append(element('div', { className: 'hud-staff__held-text', children: [label] }), row.dismiss.element);
     row.element.hidden = true;
@@ -1126,7 +1212,85 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     return row;
   });
 
+  /**
+   * Takes a roster row out of the list entirely: nobody named, no box, and
+   * nothing left on it that could be read as a control aimed at anybody.
+   *
+   * `emptyQueueRow` in `build-panel.ts` is the same function one panel over and
+   * `forgetSettle` means the same thing there: the settle stamp goes with the
+   * *emptying*, so a place that named somebody a moment ago cannot take another
+   * person straight away and a place that was already blank does not have its
+   * window restarted -- or it would never take anybody again.
+   *
+   * The one case that must not stamp is the block losing its box. See
+   * `paintRoster`'s `shown === undefined` branch for why, and for the regression
+   * that taught the Build panel the same lesson.
+   */
+  function emptyRosterRow(row: RosterRow, forgetSettle = false): void {
+    if (row.staffId !== undefined && !forgetSettle) row.freedAtMs = performance.now();
+    if (forgetSettle) row.freedAtMs = undefined;
+    row.staffId = undefined;
+    row.element.hidden = true;
+    row.label.textContent = '';
+    row.dismiss.setDisabled(true);
+    row.dismiss.setUnavailable(false);
+    delete row.element.dataset['staff'];
+    delete row.element.dataset['dismiss'];
+  }
+
   const rosterMore = eyebrowText('', 'hud-staff__note hud-staff__held-more');
+
+  /**
+   * The confirmation the armed control asks for, in the owner's own sentence
+   * (`hud.security.roster-dismiss-confirm`, ruled 2026-09-03).
+   *
+   * **A line in the block rather than a modal, and rather than a second
+   * control.** A modal would be a UI pattern decided inside one panel, which is
+   * the objection `hud.ts` recorded when it declined to invent one; a Cancel
+   * button beside each Dismiss would be three more controls on a page whose
+   * every control is inventoried and reachability-checked by
+   * `app-shell.spec.ts`, bought to undo a state that costs nothing while it
+   * stands. Nothing is blocked while an arm is up: the player may press another
+   * row, collapse the fold, or leave the tab, and each of those drops it.
+   *
+   * **Below the list rather than inside the armed row.** A second line inside a
+   * row would change that row's height and slide every row under it -- which is
+   * #860's defect by geometry instead of by binding, arriving in the middle of
+   * the gesture this line exists to make safe.
+   *
+   * It is the armed control's `aria-describedby` while it stands, added and
+   * removed per repaint on `hireShortfall`'s pattern above: a description
+   * pointing at a line with no box describes the control with nothing.
+   */
+  const dismissConfirmation = eyebrowText('', 'hud-staff__note hud-staff__dismiss-confirm');
+  dismissConfirmation.hidden = true;
+  const dismissConfirmationId = nextUiId('hud-staff-dismiss-confirm');
+  dismissConfirmation.id = dismissConfirmationId;
+
+  /**
+   * Puts the standing arm on screen, or takes it off.
+   *
+   * Keyed on `row.staffId` and not on a remembered row index, for
+   * `pressDismiss`' reason: a position is not a stable name for anybody, and the
+   * whole of #877 is what happens when one is treated as though it were.
+   */
+  function paintDismissConfirmation(): void {
+    for (const row of rosterRows) {
+      const armed = armedDismissal !== undefined && row.staffId === armedDismissal.staffId;
+      if (armed) {
+        row.element.dataset['dismiss'] = 'armed';
+        describeBy(row.dismiss.element, dismissConfirmationId);
+      } else {
+        delete row.element.dataset['dismiss'];
+        undescribeBy(row.dismiss.element, dismissConfirmationId);
+      }
+    }
+    dismissConfirmation.hidden = armedDismissal === undefined;
+    dismissConfirmation.textContent =
+      armedDismissal === undefined
+        ? ''
+        : t(HUD_MESSAGE_KEY.securityRosterDismissConfirm, { name: armedDismissal.named });
+  }
 
   /*
    * What the prison pays every in-game day, in the header, so it survives the
@@ -1163,10 +1327,25 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     eyebrow: t(HUD_MESSAGE_KEY.securityRosterTitle),
     collapsed: true,
     trailing: rosterWageBill,
-    onToggle: (collapsed) => rosterSection.setCollapsed(collapsed),
+    onToggle: (collapsed) => {
+      rosterSection.setCollapsed(collapsed);
+      // Collapsing drops a standing arm, and it is the player's own way out of
+      // one. A confirmation the player cannot see is not a confirmation, and an
+      // arm that survived the fold would be a control that sacks somebody on its
+      // first press the next time the block is opened.
+      if (collapsed && armedDismissal !== undefined) {
+        armedDismissal = undefined;
+        paintDismissConfirmation();
+      }
+    },
   });
   rosterSection.element.classList.add('hud-staff__roster');
-  rosterSection.body.append(rosterList, rosterMore, eyebrowText(t(HUD_MESSAGE_KEY.securityRosterHint), 'hud-staff__note'));
+  rosterSection.body.append(
+    rosterList,
+    dismissConfirmation,
+    rosterMore,
+    eyebrowText(t(HUD_MESSAGE_KEY.securityRosterHint), 'hud-staff__note'),
+  );
 
   let roster: HudStaffRosterViewModel | undefined;
   /**
@@ -1186,7 +1365,12 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     // this block's own rule rather than the held block's: a roster section on a
     // prison with no staff is a header promising a list that cannot exist, and
     // the panel already has a "Who to hire" section saying what to do about it.
-    rosterSection.element.hidden = roster === undefined || roster.hired === 0;
+    //
+    // The two states are collapsed into one local, because everything below has
+    // to treat them identically: a block with no box had no labels on screen for
+    // a player to have read, so no place in it is protecting anything.
+    const shown = roster !== undefined && roster.hired > 0 ? roster : undefined;
+    rosterSection.element.hidden = shown === undefined;
 
     // The header's figure, decided by the pure `describeDailyWageBill` and
     // rendered here. Emptied rather than left standing when it answers
@@ -1205,47 +1389,134 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
         ? ''
         : t(HUD_MESSAGE_KEY.securityRosterWageBill, { total: localizer.formatNumber(bill) });
 
-    if (roster === undefined) {
-      // Every pooled row emptied as well as hidden, so a press that somehow
-      // reached a hidden button cannot name somebody from the last publication.
-      for (const row of rosterRows) {
-        row.staffId = undefined;
-        row.element.hidden = true;
-        row.dismiss.setDisabled(true);
-        delete row.element.dataset['staff'];
-      }
+    if (shown === undefined) {
+      /*
+       * Every pooled row emptied as well as hidden, so a press that somehow
+       * reached a hidden button cannot name somebody from the last publication.
+       *
+       * `forgetSettle`, and it is `paintQueue`'s correction one panel over
+       * rather than a new decision. The settle window exists so that a label a
+       * player may have **read on this block** is not replaced under their
+       * pointer; when the block itself has no box there was nothing to read, so
+       * every place starts fresh. Stamping here instead is what shipped in
+       * #860's first version and turned the equivalent block permanently empty:
+       * every place came back inside its window and refused the publication, and
+       * with the clock stopped there is no later publication to arrive once the
+       * window expires.
+       *
+       * A standing arm goes with the box for the same reason -- see
+       * `retainDismissArming`, which reaches the same answer from the rows.
+       */
+      for (const row of rosterRows) emptyRosterRow(row, true);
+      rosterMore.hidden = true;
+      rosterMore.textContent = '';
+      armedDismissal = retainDismissArming(armedDismissal, []);
+      paintDismissConfirmation();
       return;
     }
 
-    const staff = roster.staff.slice(0, STAFF_ROSTER_ROW_LIMIT);
-    rosterRows.forEach((row, index) => {
-      const member = staff[index];
-      if (member === undefined) {
-        row.staffId = undefined;
-        row.element.hidden = true;
-        row.dismiss.setDisabled(true);
-        delete row.element.dataset['staff'];
-        return;
+    const rosterWindow = shown.staff.slice(0, STAFF_ROSTER_ROW_LIMIT);
+    const members = new Map(rosterWindow.map((member) => [String(member.entityId), member]));
+    /*
+     * Which row names whom -- `assignPooledRows`, not `staff[index]`, and that
+     * substitution is the whole of #877's fix. `RosterRow`'s docblock carries the
+     * measurement; `pooled-row-binding.ts`'s header carries the argument and what
+     * the rule costs. What it means here is that a *place* in this list names one
+     * person for as long as that person is on the roster's window, and that
+     * somebody new only appears in a place that has been visibly blank for
+     * `STAFF_ROSTER_ROW_SETTLE_MS`. So the press handler above cannot be handed a
+     * person the row never named.
+     *
+     * The ids go in as strings because the rule is about pooled rows and not
+     * about staff: the Build panel's queue hands it the identical shape, and its
+     * own comment says so in the other direction.
+     */
+    const nowMs = performance.now();
+    const assignments = assignPooledRows(
+      rosterRows.map((row) => ({
+        itemId: row.staffId === undefined ? undefined : String(row.staffId),
+        freedAtMs: row.freedAtMs,
+      })),
+      rosterWindow.map((member) => String(member.entityId)),
+      nowMs,
+      STAFF_ROSTER_ROW_SETTLE_MS,
+    );
+
+    let drawn = 0;
+    for (const [index, row] of rosterRows.entries()) {
+      const assignment = assignments[index];
+      if (assignment === undefined || assignment.kind === 'empty') {
+        emptyRosterRow(row);
+        continue;
       }
+      if (assignment.kind === 'holds-open') {
+        /*
+         * This place names nobody: their employment has just ended, or the place
+         * is still inside its settle window, or a row below it is occupied and
+         * giving this box up would slide that row up a row's height into whatever
+         * pointer is resting there -- which is #877 again by geometry instead of
+         * by binding.
+         *
+         * `freedAtMs` is stamped from the transition this loop can see for itself
+         * -- the row named somebody before the assignment and names nobody after
+         * -- which is why `assignPooledRows` does not have to return it. Stamped
+         * only on the transition, or a place that stayed blank would restart its
+         * own window on every publication and never take anybody again.
+         *
+         * `setUnavailable`, not `setDisabled`: `createBusyGroup`'s `apply`
+         * assigns `disabled` to every member on every busy transition, so a
+         * `disabled` written here would be cleared the next time any command in
+         * the HUD settles. Either way the authority is `row.staffId === undefined`
+         * in the handler above; this is the signal, not the gate.
+         */
+        if (row.staffId !== undefined) row.freedAtMs = nowMs;
+        row.staffId = undefined;
+        row.element.hidden = false;
+        row.label.textContent = '';
+        delete row.element.dataset['staff'];
+        delete row.element.dataset['dismiss'];
+        row.dismiss.setUnavailable(true);
+        continue;
+      }
+      const member = members.get(assignment.itemId);
+      if (member === undefined) continue;
+      drawn += 1;
       row.staffId = member.entityId;
       row.label.textContent = formatStaffRosterText(t, member);
       row.element.hidden = false;
       row.dismiss.setDisabled(false);
+      row.dismiss.setUnavailable(false);
       // The row's identity for a browser probe, in the shape `data-guard` gives
       // the held rows and needed for the same reason: the rows are pooled, so
       // "the second row" is not a stable name for a person.
       row.element.dataset['staff'] = String(member.entityId);
-    });
-
-    rosterList.hidden = staff.length === 0;
-    // Counted against `roster.hired` and not against `roster.staff.length`: the
-    // reader asks for one row budget's worth of rows, so the window is what
-    // arrived and the total is what the prison employs.
-    const remaining = roster.hired - staff.length;
-    rosterMore.hidden = remaining <= 0;
-    if (remaining > 0) {
-      rosterMore.textContent = t(HUD_MESSAGE_KEY.securityHeldMore, { count: localizer.formatNumber(remaining) });
     }
+
+    // Keyed on the window and not on `drawn`, deliberately: a pass in which
+    // every place is holding itself open draws no rows and must still keep its
+    // boxes, or the list would collapse under the pointer the boxes are being
+    // held for.
+    rosterList.hidden = rosterWindow.length === 0;
+    /*
+     * Counted against `shown.hired` and against the rows this pass actually
+     * **drew**, which are no longer the same subtraction the window gives: a
+     * place holding its box open is a place the arriving person could not have,
+     * so a payroll of twelve with three sent and two drawn has ten behind the
+     * list and not nine. `paintQueue`'s overflow line is counted the same way and
+     * for the same reason.
+     */
+    const remaining = Math.max(0, shown.hired - drawn);
+    rosterMore.hidden = remaining <= 0;
+    rosterMore.textContent =
+      remaining <= 0 ? '' : t(HUD_MESSAGE_KEY.securityHeldMore, { count: localizer.formatNumber(remaining) });
+
+    // Last, because it reads what the loop above decided: an arm survives only
+    // while some drawn row still names that person.
+    armedDismissal = retainDismissArming(
+      armedDismissal,
+      rosterRows.map((row) => row.staffId),
+    );
+    paintDismissConfirmation();
   }
 
   const panel = createPanel({

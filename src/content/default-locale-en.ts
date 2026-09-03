@@ -1479,6 +1479,35 @@ const authoredMessages: Readonly<Record<string, string>> = {
    */
   'hud.security.roster-wage-bill': '{total} a day',
   'hud.security.roster-dismiss': 'Dismiss',
+  /*
+   * The confirmation the armed dismiss control asks for (the owner's ruling of
+   * 2026-09-03 on issue #877, in their words and unedited).
+   *
+   * The ruling that supplied it also settled the mechanism, and it settled it
+   * with **both** options rather than one: asked whether a dismissal should get
+   * a settle window on the row or a confirmation step, the owner answered
+   * *"Jedno i drugie"* -- one and the other. So the row cannot be re-pointed
+   * under the player *and* the press that sacks somebody is the second one.
+   *
+   * **It does not fit the 900x600 clamp, and the box gives way rather than the
+   * sentence.** `@media (max-height: 700px)` in `src/ui/hud/hud.css` gives every
+   * `.hud-staff__note` `-webkit-line-clamp: 1`, and at that viewport this
+   * sentence is two lines -- the clause the clamp would cut is *"and they do not
+   * come back"*, which is the half that makes it a warning rather than a
+   * restatement of the button. `.hud-staff__dismiss-confirm` is exempted there,
+   * on exactly the terms `.hud-staff__hire-note` was exempted on when the same
+   * thing happened to the owner's hire sentence (issue #884): a whole clause or
+   * nothing, and the sentence is never the thing that is shortened to fit.
+   *
+   * `{name}` is filled with the row's own label, verbatim -- what the player
+   * read on the row they pressed. It is not a personal name, because a staff
+   * member has none: `HudStaffRosterRowViewModel` carries an entity id, a role
+   * key and a status key, so two guards doing the same thing render the same
+   * row and this sentence names them the same way. That is a real limit of the
+   * read model rather than of this string, it is reported as one, and no wording
+   * is invented here to paper over it.
+   */
+  'hud.security.roster-dismiss-confirm': 'Dismiss {name}? Their wage stops and they do not come back.',
   'hud.security.roster-hint': 'A dismissed staff member leaves the prison for good, and their wage stops.',
 
   // The Staff panel's coverage block (ADR 0048). `hud.security.coverage-summary`

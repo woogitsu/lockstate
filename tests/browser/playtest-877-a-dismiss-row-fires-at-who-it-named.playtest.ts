@@ -169,7 +169,7 @@ async function wire(page: Page, type: string, field: string): Promise<WireRead> 
         };
         if (shaped.kind !== 'simulation/submit-command') continue;
         const data = shaped.payload?.command?.data;
-        if (data?.['type'] !== commandType) continue;
+        if (data === undefined || data['type'] !== commandType) continue;
         count += 1;
         last = String(data[idField as string] ?? '');
       }
