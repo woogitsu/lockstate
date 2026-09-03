@@ -93,7 +93,7 @@ async function probeLegibility(page: Page): Promise<{
   return page.evaluate(() => {
     const describe = (node: Element): string => {
       const el = node as HTMLElement;
-      const cls = (el.className || '').split(/\s+/).filter((c) => c.startsWith('hud') || c.startsWith('ui-') || c.startsWith('save')).slice(0, 3).join('.');
+      const cls = (el.getAttribute('class') ?? '').split(/\s+/).filter((c) => c.startsWith('hud') || c.startsWith('ui-') || c.startsWith('save')).slice(0, 3).join('.');
       return `${el.tagName.toLowerCase()}${cls === '' ? '' : `.${cls}`}`;
     };
 
@@ -265,7 +265,7 @@ async function probeTones(page: Page) {
       const fore: readonly number[] = fa >= 1 ? [fr, fg2, fb] : over([fr, fg2, fb], fa, painted);
       const text = (el.innerText ?? el.textContent ?? '').replace(/\n+/g, ' ').trim();
       out.push({
-        selector: `${el.tagName.toLowerCase()}.${(el.className || '').split(/\s+/)[0]}`,
+        selector: `${el.tagName.toLowerCase()}.${(el.getAttribute('class') ?? '').split(/\s+/)[0] ?? ''}`,
         tone: el.getAttribute('data-tone') ?? el.getAttribute('data-kind'),
         text: text.slice(0, 48),
         hasWords: /[A-Za-z]{3}/.test(text),
@@ -306,7 +306,7 @@ async function probeWordless(page: Page) {
       }
       const parentText = (el.parentElement?.innerText ?? '').replace(/\n+/g, ' ').trim();
       out.push({
-        selector: `${el.tagName.toLowerCase()}.${(el.className || '').split(/\s+/).slice(0, 2).join('.')}`,
+        selector: `${el.tagName.toLowerCase()}.${(el.getAttribute('class') ?? '').split(/\s+/).slice(0, 2).join('.')}`,
         text,
         named: named === '' ? 'NOTHING NAMES IT' : named,
         siblingText: parentText.slice(0, 70),
