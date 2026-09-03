@@ -27,18 +27,39 @@ export type PurchaseSpendClass = Extract<SpendClass, 'deliveries' | 'constructio
  *
  * #96 describes the whole loop as **money → purchase → delivery arrives at
  * the bay → carry jobs move it to the site → `ContainerMaterialsProvider`
- * consumes it.** This implements the first two arrows and the last one. The
- * physical route in the middle — `room.delivery-bay`, a carry job, a
+ * consumes it.** Since
+ * [ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) this class
+ * implements **all four arrows**, and the middle one is the `carryRoute`
+ * constructor parameter below: `update` hands a due delivery to
+ * `DeliveryCarryRoute.landAndRaiseCarry`, which lands it in the bay's own
+ * container and raises the carry to the storeroom, and falls back to the direct
+ * deposit only when that answers `false`.
+ *
+ * **This paragraph said the opposite, and it is corrected rather than
+ * overwritten** (`docs/AGENT_WORKFLOW.md` §4: mark both directions), because a
+ * reader who meets the old sentence somewhere else needs to know which half of
+ * it survived. It read: *"This implements the first two arrows and the last
+ * one. The physical route in the middle — `room.delivery-bay`, a carry job, a
  * construction site with a location — is **not** here, and the reason is a
  * fact rather than a preference: `room.delivery-bay` and
  * `object.loading-dock-door` are declared content that no session instantiates
  * (#141), so there is no bay to deliver to. Building one would mean deciding
  * where a new prison's bay sits and when a carry job is raised, which is
- * scenario design and logistics policy respectively.
+ * scenario design and logistics policy respectively. So a delivery lands
+ * directly in the container construction draws from, and that is scaffolding
+ * rather than the finished shape."*
  *
- * So a delivery lands directly in the container construction draws from, and
- * that is scaffolding rather than the finished shape. It is recorded here and
- * on #96 rather than left for a reader to discover from the absence of a bay.
+ * Every clause of that was true when it was written, and two of them are still
+ * true of a prison that has not built the route: the deposit really does go
+ * straight into the container construction draws from, and it really is
+ * `docs/OPERATIONS.md`'s second no-teleport exception. What changed is that the
+ * room *is* instantiated — a player zones it from the Rooms panel and furnishes
+ * it from the Build panel, watched through the interface in
+ * `docs/research/2026-09-03-does-the-errand-walk.md` — so *"there is no bay to
+ * deliver to"* is now a statement about one kind of prison rather than about
+ * the game, and the two questions the paragraph declined to answer were
+ * answered by ADR 0093 decision 2: the bay's anchor tile, and the tick a
+ * delivery comes due. `update`'s own comment carries what that costs a player.
  *
  * ## Ordering, because this writes simulation state
  *
