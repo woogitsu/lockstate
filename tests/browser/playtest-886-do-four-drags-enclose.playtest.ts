@@ -136,8 +136,8 @@ test.describe('probe 886', () => {
       ];
       for (const run of runs) {
         const under = await page.evaluate(
-          ([ax, ay]) => document.elementFromPoint(ax, ay)?.tagName ?? 'NOTHING',
-          [run.a.x, run.a.y],
+          (at: { x: number; y: number }) => document.elementFromPoint(at.x, at.y)?.tagName ?? 'NOTHING',
+          run.a,
         );
         const before = (await sentCommands(page)).length;
         await drag(page, run.a, run.b);
