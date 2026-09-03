@@ -49,13 +49,22 @@ import { armBuildable, buy, calibrate, currentTick, drag, installTee, openApp, p
  * ## Three things this file got wrong before it worked, kept because the next
  * playtest will hit all three
  *
- * 1. **The FUNDS chip is not addressable by `[data-metric]`.**
- *    `playtest-restored-coverage.playtest.ts` uses
- *    `[data-metric="coverage"] .ui-stat__value` and calls it *"the strip's DOM
- *    contract"*, but `createStatChip` (`src/ui/primitives/stat-chip.ts:46`)
- *    writes no such attribute and nothing under `src/ui/` sets one. Reading it
- *    that way returns `NaN` silently. This file finds the chip the way a player
- *    does, by its label.
+ * 1. **`grep -rn 'data-metric' src/` finds nothing, and the attribute exists
+ *    anyway.** `src/ui/hud/status-strip.ts:145` sets it as
+ *    `chip.element.dataset['metric'] = descriptor.id`, which no search for the
+ *    attribute's own name will ever match. So
+ *    `[data-metric="funds"] .ui-stat__value` **works** --
+ *    `tests/browser/app-shell.spec.ts:4703` uses exactly that and its failure
+ *    log shows the locator resolving thirteen times.
+ *
+ *    **An earlier version of this header claimed the opposite, and the way it
+ *    got there is the more useful warning.** A draft was edited to use that
+ *    selector, the edit silently failed, the run therefore executed the
+ *    PREVIOUS version, and its `NaN` was read as evidence against a selector
+ *    that had never been exercised. Reading an outcome from a run that did not
+ *    contain the change is the same error as asserting a mechanism without
+ *    measuring it. This file still finds the chip by its label, which needs no
+ *    attribute at all -- but not for the reason first written down.
  * 2. **The first number on the strip is the build's version, not money.** A
  *    draft that took `/([\d,]+)/` off the strip's first line parsed
  *    `v0.0.398 · a35121c`.
@@ -114,7 +123,13 @@ async function readRows(page: Page): Promise<readonly RowReading[]> {
   });
 }
 
-/** The FUNDS chip's value, found by its own label. See fact 1 in the header. */
+/**
+ * The FUNDS chip's value, found by its own label.
+ *
+ * `[data-metric="funds"] .ui-stat__value` would work too -- see fact 1 in the
+ * header, and the correction under it. A label lookup is kept because it
+ * depends on nothing but what a player can see.
+ */
 async function money(page: Page): Promise<number> {
   const text = await page.evaluate(() => {
     for (const chip of Array.from(document.querySelectorAll('.ui-stat'))) {
