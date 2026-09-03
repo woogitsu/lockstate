@@ -1937,7 +1937,33 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     orderId: string | undefined;
   }
 
-  const queueRows: readonly QueueRow[] = Array.from({ length: BUILD_QUEUE_ROW_LIMIT }, (): QueueRow => {
+  /**
+   * The pool: at most `BUILD_QUEUE_ROW_LIMIT` rows, created as the queue first
+   * needs them and reused for ever after.
+   *
+   * **Lazily rather than all at once, and that changed with #862 for a reason
+   * a test found.** The pool used to be built eagerly, `Array.from({ length:
+   * BUILD_QUEUE_ROW_LIMIT })`, which was free while the limit was three and is
+   * not free at sixty-four: `tests/browser/app-shell.spec.ts`'s #88 sweep
+   * asserts that the set of controls *never laid out in any state* equals an
+   * explicit exempt list, and sixty-four rows against the six orders that test
+   * places would have put fifty-eight `Cancel` buttons on that list. Extending
+   * a pinned list is allowed here; extending it by fifty-eight entries that
+   * move whenever this constant does is not the same thing as recording a
+   * genuine exemption, and the sweep's finding is real: a control that is never
+   * drawn is a control nothing can vouch for.
+   *
+   * Growing on demand costs nothing the eager version did not, and gives two
+   * things back. A session that never queues anything holds no rows at all, and
+   * the HUD's busy group -- `add` with no `remove` -- gains a member only when
+   * a queue has actually been that long. The bound the group depends on is
+   * unchanged, because it was never "created up front": it is that the pool has
+   * a **ceiling** and rows past it are reused rather than built.
+   */
+  const queueRows: QueueRow[] = [];
+
+  /** One row: two lines of readout, and the one control that withdraws it. */
+  function createQueueRow(): QueueRow {
     const label = valueText('', 'hud-build__queue-label');
     const state = eyebrowText('', 'hud-build__queue-state');
     const row: QueueRow = {
@@ -1966,7 +1992,20 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     row.element.hidden = true;
     queueList.append(row.element);
     return row;
-  });
+  }
+
+  /**
+   * Grows the pool until it can draw `count` orders, and never past its
+   * ceiling.
+   *
+   * The clamp is here rather than at the call site because it is the invariant
+   * the busy group depends on, and an invariant that lives at one call site is
+   * one refactor away from living nowhere.
+   */
+  function ensureQueueRows(count: number): void {
+    const wanted = Math.min(count, BUILD_QUEUE_ROW_LIMIT);
+    while (queueRows.length < wanted) queueRows.push(createQueueRow());
+  }
 
   const queueSection: CollapsibleSection = createCollapsibleSection({
     eyebrow: t(HUD_MESSAGE_KEY.buildQueue),
@@ -2075,6 +2114,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      */
     panel.element.dataset['queued'] = String(shown.total);
 
+    // The pool grows to what this publication needs before anything is painted,
+    // so a queue that has just become longer than any before it draws every
+    // order it can this time rather than next time.
+    ensureQueueRows(shown.orders.length);
+
     for (const [index, row] of queueRows.entries()) {
       const order = shown.orders[index];
       if (order === undefined) {
@@ -2108,15 +2152,18 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      * Counted against the rows this block **can hold** and not only against the
      * window it was handed, which are two numbers rather than one. Today they
      * agree by construction -- `BuildQueueReader` asks the projection for
-     * exactly `BUILD_QUEUE_ROW_LIMIT` rows and the pool is that long -- so
-     * `shown.orders.length` alone was right for as long as one constant fed
-     * both. It was right for the wrong reason: hand this panel a longer window
+     * exactly `BUILD_QUEUE_ROW_LIMIT` rows and the pool's ceiling is that
+     * number -- so `shown.orders.length` alone was right for as long as one
+     * constant fed both. It is the **ceiling** here and not `queueRows.length`,
+     * which is how far the pool has grown so far: a publication of two orders
+     * after one of ten leaves ten rows in the list and must still report the
+     * tail behind *two*. It was right for the wrong reason: hand this panel a longer window
      * than its pool, as the harness does the moment a test writes its own view
      * model, and the old line reported *nothing* behind the list while eleven
      * of fourteen orders had no row. Measured that way on 2026-09-03 before
      * this change. The honest tail is the queue minus what a row can reach.
      */
-    const unlisted = Math.max(0, shown.total - Math.min(shown.orders.length, queueRows.length));
+    const unlisted = Math.max(0, shown.total - Math.min(shown.orders.length, BUILD_QUEUE_ROW_LIMIT));
     queueMore.textContent = unlisted === 0 ? '' : t(HUD_MESSAGE_KEY.buildQueueMore, { count: unlisted });
     queueMore.hidden = unlisted === 0;
 

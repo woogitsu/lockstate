@@ -3375,26 +3375,55 @@ test.describe('the assembled application', () => {
        * The queue block open (#348), which is this panel's third player-opened
        * state and the buy row's argument one block down.
        *
-       * Its three Cancel controls exist in the DOM at every moment -- the rows
-       * are pooled, so the HUD's busy group, which has `add` and no `remove`,
-       * cannot grow over a session -- and are laid out in none of the states
-       * above. Without this the `neverLaidOut` check below fails and names them,
-       * which is the gate working: a control the sweep can never see is a control
-       * this test cannot claim is reachable. Six orders are queued and the clock
-       * is stopped, from before the loop.
+       * Its Cancel controls are laid out in none of the states above. Without
+       * this the `neverLaidOut` check below fails and names them, which is the
+       * gate working: a control the sweep can never see is a control this test
+       * cannot claim is reachable. Six orders are queued and the clock is
+       * stopped, from before the loop, so there are six of them.
+       *
+       * **"Its three Cancel controls exist in the DOM at every moment" is
+       * withdrawn as of #862, and both halves of it moved.** The rows are still
+       * pooled -- the HUD's busy group has `add` and no `remove`, and a row per
+       * order would grow it without bound over a session -- but the pool's
+       * ceiling is now `BUILD_QUEUE_ROW_LIMIT` = 64 rather than 3, and it is
+       * filled *on demand*: a panel that has never seen a queue holds no rows,
+       * and this one holds exactly the six the orders below need. That is why
+       * the count in this sweep follows the orders rather than the constant, and
+       * it is why the ceiling could move at all -- what the busy group depends
+       * on is that the pool has a ceiling, not that it is built up front.
        */
       const queueFold = page.locator('.hud-build__queue > .ui-section__header');
       await expect(queueFold, `the queue fold is missing at ${width}x${height}`).toBeVisible();
       await queueFold.click();
       await expect(page.locator('.hud-build__queue-list')).toBeVisible();
 
-      // Every revealed control is inside the panel's *visible* box, measured
-      // the way #174 measures it and for the reason the buy row's own check
-      // above gives: opening a fold that reveals controls below the panel's own
-      // fold has not revealed them. `controlReachability` below cannot make this
-      // claim, because it calls `scrollIntoView` first. Measured over all three
-      // rows rather than one, because they are stacked and only the last is at
-      // risk -- 38px, 90px and 142px of clearance at 1280x720 today.
+      /*
+       * Every revealed control is inside the panel's *visible* box, measured
+       * the way #174 measures it and for the reason the buy row's own check
+       * above gives: opening a fold that reveals controls below the panel's own
+       * fold has not revealed them.
+       *
+       * **Each row is scrolled to before it is measured, and that is new with
+       * #862.** The sentence this replaces said the opposite -- *"`controlReachability`
+       * below cannot make this claim, because it calls `scrollIntoView` first.
+       * Measured over all three rows rather than one, because they are stacked
+       * and only the last is at risk -- 38px, 90px and 142px of clearance at
+       * 1280x720 today"* -- and it was right about a list whose box held every
+       * row it drew. `.hud-build__queue-list` is now a scroll container capped
+       * at three rows, because the queue's own height is bought out of the
+       * catalogue's floor and there is nothing to buy it a second time, so a
+       * sixth row is *clipped by the list* rather than laid out below the
+       * panel's fold. Those are different defects and only the second is #174:
+       * the first is a list longer than its box, which `controlReachability`'s
+       * own docblock already calls *"not a defect"*.
+       *
+       * So the claim this block still makes, and it is the one worth making, is
+       * that no row is reachable **only** by scrolling something the player
+       * cannot: after the row's own list has been scrolled to it, the control is
+       * inside the panel's visible box at both edges. `railIntegrity` below
+       * carries the other half -- that a box with more content than room is one
+       * a pointer can actually scroll.
+       */
       const queueBoxes = await page.evaluate(() => {
         const panel = document.querySelector('.hud-build');
         if (panel === null) return null;
@@ -3405,6 +3434,7 @@ test.describe('the assembled application', () => {
           .map((row) => {
             const control = row.querySelector('.ui-action');
             if (control === null) return { order: row.getAttribute('data-order') ?? '', above: -1, below: -1 };
+            control.scrollIntoView({ block: 'nearest' });
             const c = control.getBoundingClientRect();
             return {
               order: row.getAttribute('data-order') ?? '',

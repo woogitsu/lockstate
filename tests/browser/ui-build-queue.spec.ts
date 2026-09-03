@@ -72,8 +72,19 @@ function order(index: number, state: HudBuildQueueViewModel['orders'][number]['s
 }
 
 /**
- * A queue of `total` orders showing the first three, which is what the reader
- * asks for and what the block draws.
+ * A queue of `total` orders showing the first three.
+ *
+ * **That used to be "which is what the reader asks for and what the block
+ * draws", and #862 made the first half false.** `BuildQueueReader` now asks the
+ * projection for `BUILD_QUEUE_ROW_LIMIT` = 64 rows, so a real twelve-order
+ * queue arrives with all twelve in the window. The three-row window this
+ * fixture builds is still a state the panel must handle and still a state
+ * production produces -- it is what a queue *longer* than the pool looks like --
+ * so every case in this file is measuring something reachable, and what it is
+ * measuring is the narrow-window branch rather than the common one.
+ *
+ * The batch of orders that arrives whole, which is what #862 is about, is
+ * measured in `tests/browser/ui-build-queue-reach.spec.ts`.
  *
  * Twelve by default: one drag along twelve edges is the gesture #348 turned into
  * a 730-tick wait, and it is the gesture this whole surface is sized for.
