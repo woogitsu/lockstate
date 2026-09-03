@@ -370,7 +370,7 @@ contains a digit, and reports **`hops`**: the number of steps from that leaf up
 to the nearest ancestor whose *visible* text (screen-reader-only spans removed)
 contains a word of three or more letters, together with that ancestor's text.
 It is a distance rather than a verdict because the verdict version got the
-answer wrong — see §12.
+answer wrong — see §13.
 
 Measured across all five tabs, at 1440x900:
 
@@ -562,7 +562,28 @@ elsewhere (a strip carrying every badge is 1,627px of content in a 1,256px row
 at 1280). This record only notes that the trade landed the *explanation* of a
 number on a hover, and that a hover is not a channel a player is told exists.
 
-## 12. This pass's instrument was wrong twice, and both are recorded
+## 12. Three numbers made to move, and all three moved
+
+The brief asked for three readouts to be forced to move by changing the world.
+All three did. Recorded because "the number is stale" is the first thing a
+legibility pass should rule out, and it is ruled out.
+
+| readout | the change | before | after |
+| --- | --- | --- | --- |
+| `FUNDS` | order 600 bricks (24,000) from Build | `23,900` | `-100` on returning to Regime, then `420`, `860`, `1,300` over the next 60 s as the state paid |
+| `COVERAGE` chip and its word | hire one guard into a six-prisoner prison | `0 · Unguarded` (danger) | `6 · Covered`, one one-second sample later |
+| `PRISONERS` and its badge | admit six into a two-bed prison | `2`, no badge | `8` and a `6 with no bed` badge |
+| `EARNED TODAY` | let the day run | `0` at day 1 | `73 → 279 → 310 → 586 → 1,296 → 1,485` within one day, resetting at the boundary |
+
+**The sampling rule these depend on**, and it cost this pass one wrong
+suspicion (§10): a read taken seconds after another, on a clock at x4, is a
+read of a different world. `EARNED TODAY` at `279` and the worker's
+`stateIncomeAccruedTodayMinorUnits` at `1545` looked like the screen lying and
+were two samples ~20 s apart. Where a comparison had to be exact — §1's two
+coverage readouts — it was taken **inside one `page.evaluate`**, which is the
+only way two readouts can be compared at an instant.
+
+## 13. This pass's instrument was wrong twice, and both are recorded
 
 - **The number probe measured itself.** The first `probeNumbers` asked whether
   a word appeared inside the number's "smallest grouping" and stopped its
@@ -579,3 +600,26 @@ number on a hover, and that a hover is not a channel a player is told exists.
   any element with a pressable ancestor.
 
 Both are why this record leads with a refutation.
+
+## Weakest claim, and what would change my mind
+
+**§3 is the weakest**, and specifically its label. That 52 of the Overview
+tab's 58 lines are identical between an empty prison and a working one is a
+count and is not in doubt. Whether *that* is a defect rather than TASTE is a
+judgement about what a home screen owes a player, and the counter-argument —
+"a quiet interface is a working interface; the tab shouts when something is
+wrong and the strip carries the rest" — is coherent, is what the code argues in
+several places, and is the position §9 shows the strip actually delivering.
+
+**What would change my mind:** an owner ruling that the Overview tab is
+deliberately a control surface rather than a summary. If it is, §3 is TASTE and
+the finding is only that its name promises otherwise.
+
+The strongest claims, by contrast, are §2 and §4, because both are a
+*contradiction* rather than an absence: a sentence saying a working control does
+not exist, and two scales whose shared vocabulary points opposite ways. Neither
+needs a judgement about design intent to be wrong.
+
+**What this pass did not measure.** Narrow viewports (the sibling pass covers
+375x812); anything after a reload; the four `hud/*` routes with no reader
+(#895); and whether the roster's `and 4 more` can be reached at all.
