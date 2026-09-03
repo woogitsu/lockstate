@@ -59,6 +59,40 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  * cannot see is the end-to-end path -- that a `dismiss-staff` intent really
  * takes somebody off the payroll -- and `tests/browser/app-shell.spec.ts` is
  * where that is driven, three presses per viewport.
+ *
+ * ## What was watched going red
+ *
+ * Four mutations of the production code, each restored **by hand** and checked
+ * with `sha256sum -c` against hashes taken before the first of them. Baseline:
+ * `6 passed (19.8s)`.
+ *
+ * | mutation | result |
+ * | --- | --- |
+ * | `assignPooledRows` replaced by the index binding it displaced | 2 failed, 4 passed -- *"the press did not sack the person the row named"*, `[2]` against `[3]` |
+ * | `STAFF_ROSTER_ROW_SETTLE_MS` set to `0` | 2 failed, 4 passed -- *"the person who arrived took the place the dismissal freed"* |
+ * | `pressDismiss` returning `'dismisses'` unconditionally | 5 failed, 1 passed (and 5 of 11 in the unit suite) |
+ * | the clamp exemption's selector unmatched in `hud.css` | 1 failed -- *"the confirmation is being clipped at 900x600: scrollHeight 26 against clientHeight 13"* |
+ *
+ * **The first of those is #877 itself, reproduced by this gate**: person 2's row
+ * was read, person 1's dismissal was published, the two presses landed on the
+ * coordinate person 2's label had been at, and `DismissStaff` went out for
+ * **person 3**.
+ *
+ * **The last is the measurement that justifies the exemption, not just a gate.**
+ * With the selector unmatched the owner's sentence measures `scrollHeight` 26
+ * against `clientHeight` 13 at 900x600 -- two lines cut to one, and the clause
+ * cut is *"and they do not come back"*. This is #884's finding one element over,
+ * and the answer is the same one: the box gives way, never the sentence.
+ *
+ * **The second mutation also found something worth recording.** With the window
+ * at `0` the arriving person takes the freed place *within a single
+ * publication*, because `hud.ts` paints this block twice per update --
+ * `setStaffRoster` and then `setDailyWageBill`, both of which call
+ * `paintRoster`. `assignPooledRows` refuses an arrival into a place emptied by
+ * the *same* pass, so the first paint holds the place open; it is the second
+ * paint, one tick of the same publication later, that the window is what stops.
+ * So this settle window is load-bearing at a much shorter timescale than the
+ * human one it is sized for, and would be even if a player never hesitated.
  */
 
 const HARNESS_URL = '/tests/browser/ui-harness.html';
@@ -127,7 +161,7 @@ function viewModel(staffRoster: HudStaffRosterViewModel): HudViewModel {
 interface RowReading {
   /** `data-staff`, or `null` on a place naming nobody. */
   readonly staffId: string | null;
-  /** What the row says about them. */
+  /** What the row's readout says about them, which is what the confirmation quotes. */
   readonly label: string;
   /** `data-dismiss`, so an armed row can be told from the rest. */
   readonly dismiss: string | null;
@@ -156,12 +190,16 @@ async function readRows(page: Page): Promise<readonly RowReading[]> {
     const rows = [...document.querySelectorAll<HTMLElement>('.hud-staff__roster .hud-staff__held-row')];
     return rows.map((row): RowReading => {
       const control = row.querySelector<HTMLButtonElement>('.ui-action');
+      // The row's *readout*, not the whole row: the row also contains the
+      // control, whose own word would otherwise land inside the label and inside
+      // every sentence built from it.
+      const readout = row.querySelector<HTMLElement>('.hud-staff__held-label');
       const box = control?.getBoundingClientRect();
       const x = box === undefined ? -1 : box.left + box.width / 2;
       const y = box === undefined ? -1 : box.top + box.height / 2;
       return {
         staffId: row.dataset['staff'] ?? null,
-        label: (row.textContent ?? '').trim(),
+        label: (readout?.textContent ?? '').trim(),
         dismiss: row.dataset['dismiss'] ?? null,
         laidOut: row.offsetParent !== null,
         x,
@@ -323,18 +361,39 @@ test.describe('a dismiss row fires at who it named (#877)', () => {
     await publish(page, viewModel(roster([2, 3, 4], 3)));
 
     const after = await readRows(page);
+
+    // Two presses, because a dismissal is confirmed (the owner's ruling of
+    // 2026-09-03). Both at the captured coordinate, never at a locator, and made
+    // before anything below is asserted: the player presses where they read, and
+    // a gate that checked the layout first would decline to make the press the
+    // defect is about.
+    await page.mouse.click(aimedAt.x, aimedAt.y);
+    await page.mouse.click(aimedAt.x, aimedAt.y);
+
     /*
-     * The invariant, stated as the places rather than as the list: person 2 is
-     * still in the second place and person 3 in the third, and the place person
-     * 1 was in names nobody. Under the index binding this read `['2', '3', '4']`
-     * -- every place re-pointed by one dismissal.
+     * The whole of #877 in one line, and it is asserted **before** the shape of
+     * the list below deliberately: what the player suffers is the wrong person
+     * being sacked, and a gate whose first red is about a `data-staff` array
+     * would report the mechanism instead of the harm. Restoring the index
+     * binding makes this read `[3]`.
+     */
+    expect(await dismissals(page), 'the press did not sack the person the row named').toEqual([2]);
+
+    /*
+     * And the mechanism, stated as the places rather than as the list: person 2
+     * was still in the second place and person 3 in the third, and the place
+     * person 1 was in named nobody. Under the index binding this reads
+     * `['2', '3', '4']` -- every place re-pointed by one dismissal.
+     *
+     * Read from the state captured before the press, so the assertion is about
+     * the publication under test and not about what the confirmed press then did.
      */
     expect(
       after.map((row) => row.staffId),
       'a dismissal re-pointed the places under the player',
     ).toEqual([null, '2', '3']);
     /*
-     * And the freed place keeps its **box** while a place after it is occupied.
+     * And the freed place kept its **box** while a place after it was occupied.
      * Hiding it would slide the two rows below it up a row's height into
      * whatever pointer was resting there, which is the same defect by geometry
      * rather than by binding.
@@ -343,16 +402,23 @@ test.describe('a dismiss row fires at who it named (#877)', () => {
       after.map((row) => row.laidOut),
       'the freed place gave its box up, so the rows below it moved under the pointer',
     ).toEqual([true, true, true]);
-    // The place is at the same coordinate it was read at, which is what makes
-    // the press below a press at the row the player aimed at.
-    expect(Math.abs(after[1]!.y - aimedAt.y), 'the second place moved between the read and the press').toBeLessThan(1);
-
-    // Two presses, because a dismissal is confirmed (the owner's ruling of
-    // 2026-09-03). Both at the captured coordinate, never at a locator.
-    await page.mouse.click(aimedAt.x, aimedAt.y);
-    await page.mouse.click(aimedAt.x, aimedAt.y);
-
-    expect(await dismissals(page), 'the press did not sack the person the row named').toEqual([2]);
+    /*
+     * And the place did not move, which is a second way the same harm arrives
+     * and was measured while proving this test can fail.
+     *
+     * `.hud__side` carries `margin-top: auto`, so the Staff panel is anchored to
+     * the **foot** of the rail: anything that shortens the panel's content moves
+     * every row in it *down*. With the overflow line counted the old way -- the
+     * payroll minus the window rather than minus the rows drawn -- the line goes
+     * from *"and 1 more"* to hidden across this publication, the panel loses a
+     * line of `--font-size-eyebrow`, and the second place was measured **15.19px**
+     * lower than where it was read. Keeping the count honest is therefore not
+     * only about the sentence; it is what stops the list sliding under a pointer.
+     */
+    expect(
+      Math.abs(after[1]!.y - aimedAt.y),
+      'the second place moved between the read and the press, so a press at the read coordinate is aimed at a different row',
+    ).toBeLessThan(1);
   });
 
   /**
@@ -378,11 +444,12 @@ test.describe('a dismiss row fires at who it named (#877)', () => {
 
     /*
      * And the overflow line counts what was **drawn**, not what the window
-     * carried: three people are behind a list showing two, so this says two
-     * rather than one. A count taken against the window would tell a player the
-     * list is one person shorter than it is.
+     * carried. The payroll is three and the list is showing two, so one person
+     * is behind it. Counted the old way -- the payroll minus the *window* -- the
+     * subtraction is `3 - 3` and the line is **hidden**, telling a player that
+     * everybody they employ is on screen while one of them is not.
      */
-    await expect(page.locator('.hud-staff__roster .hud-staff__held-more')).toHaveText('and 2 more');
+    await expect(page.locator('.hud-staff__roster .hud-staff__held-more')).toHaveText('and 1 more');
   });
 
   test('the first press of two arms the row and sends nothing', async ({ page }) => {
