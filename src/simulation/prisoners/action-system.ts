@@ -1,10 +1,13 @@
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
-import type { EntityStore } from '../entity/entity-store';
+import { isNeedUnmetForStateIncome } from '../economy/income';
+import type { EntityId, EntityStore } from '../entity/entity-store';
 import { EntityQuery } from '../entity/query';
 import type { LocomotionStore } from '../locomotion';
 import type { NavigationSystem } from '../navigation/navigation-system';
 import { routeWaypoints } from '../navigation/route';
 import type { RouteContext } from '../navigation/route-context';
+import type { CarryJobExecutor } from '../operations/carry-executor';
+import type { CarryItemJob } from '../operations/job';
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 import { DEFAULT_ACTIONS, type ActionDefinition } from './actions';
 import {
@@ -18,7 +21,7 @@ import {
   type PrisonerRecordComponent,
   type SubstitutionRecordComponent,
 } from './components';
-import type { NeedsComponent } from './needs';
+import { NEED_IDS, type NeedId, type NeedsComponent } from './needs';
 import { findRegimeSchedule, resolveActiveRegimeBlock, type ActionCategory, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
 import type { RoomInstance, RoomInstanceRegistry } from './room-instance-registry';
 import { firstProvidedCandidateIndex, isActionCategoryAllowed, rankActions, scoreAction, urgencyOfProvidedCandidate } from './utility-ai';
@@ -159,6 +162,87 @@ export const DEFAULT_PRISONER_ROUTE_CONTEXT_RESOLVER: PrisonerRouteContextResolv
   permissions: classificationGroupId === 'high-risk' ? [] : ['general-population'],
 });
 
+/**
+ * The one entry of `DEFAULT_ACTIONS` whose target is a job rather than a room
+ * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 1).
+ *
+ * Resolved once from the catalogue rather than re-found per prisoner per cycle,
+ * and by `target.kind` rather than by id, because the kind is what every arm
+ * below actually branches on -- an id comparison would be a second spelling of
+ * the same fact and the one that drifts when the id is renamed.
+ */
+const CARRY_ACTION = DEFAULT_ACTIONS.find((action) => action.target.kind === 'job-board');
+
+/**
+ * What a candidate action resolved to: a room to walk to, or a job to walk for.
+ *
+ * `resolveTargetInstance` returned `RoomInstance | undefined` until ADR 0093,
+ * and this union is the whole of what widening it costs. `beginNextAction`
+ * reads a tile off either through `destinationTileOf` below, and nothing else
+ * in this system has to know which arm it got except the four places that
+ * genuinely differ: the seat claim, the arrival, the dwell and the travel
+ * failure.
+ */
+type ResolvedActionTarget =
+  | { readonly kind: 'room'; readonly instance: RoomInstance }
+  | { readonly kind: 'job'; readonly job: CarryItemJob };
+
+/**
+ * Where the prisoner has to stand to do this.
+ *
+ * A room's anchor tile, or -- for a carry -- the tile of the leg the job is
+ * currently on. **The leg is read at the moment the walk is requested**, which
+ * is what makes one action span two journeys: `continuePerforming` flips
+ * `job.leg` to `'dropoff'` and asks for a route again, and this function then
+ * answers with the other tile.
+ */
+function destinationTileOf(target: ResolvedActionTarget): TilePosition {
+  if (target.kind === 'room') return target.instance.anchorTile;
+  return target.job.leg === 'pickup' ? target.job.sourceTile : target.job.destinationTile;
+}
+
+/**
+ * Does this action relieve a need the state is already docking the prison for
+ * leaving unmet?
+ *
+ * **The owner's amendment of 2026-09-02 to ADR 0093 decision 2, and the
+ * measurand it corrects.** The draft gated the carry's rank-0 rule on *"the
+ * prisoner's best providable need-**score**"*, and the amendment records why
+ * that quantity is wrong for a threshold: `scoreAction` is deficit x effect
+ * summed over the action's own effects, so its scale depends on how large that
+ * action's effects are and two actions relieving the same deficit score
+ * differently. A threshold on the need's **level** is comparable across every
+ * need and every action.
+ *
+ * **The threshold is `STATE_INCOME_UNMET_NEED_LEVEL` and no new constant, and
+ * it is read through `isNeedUnmetForStateIncome` rather than by a second
+ * comparison against the same number.** `economy/income.ts` says of that
+ * predicate *"This is the one copy"*, for the drift reason this repository has
+ * paid for repeatedly, and the rule ADR 0093 states is deliberately the same
+ * statement the money already makes: *the institution will not send a prisoner
+ * on an errand while it is already failing to meet a need it is being docked
+ * for.*
+ *
+ * The constant's own docblock disclaims being the player-facing *"your
+ * prisoners are unhappy"* line. That disclaimer is about a different use -- a
+ * readout -- and the owner's ruling is what governs here: this is a statement
+ * about what the institution declines to do, which is the same kind of
+ * statement the withholding is.
+ */
+function relievesAnUnmetNeed(needs: NeedsComponent, index: number, action: ActionDefinition): boolean {
+  // `NEED_IDS` order rather than `Object.keys(needEffectsPerTick)`, which is
+  // authoring order in a literal and therefore not a property of state. The
+  // answer is a boolean so nothing depends on the order -- but the iteration
+  // discipline is the one `unmetNeedCount` keeps for the identical scan, and a
+  // canonical walk cannot become the thing that drifts.
+  for (const needId of NEED_IDS as readonly NeedId[]) {
+    const effect = action.needEffectsPerTick[needId] ?? 0;
+    if (effect <= 0) continue;
+    if (isNeedUnmetForStateIncome(needs.get(index, needId))) return true;
+  }
+  return false;
+}
+
 function sameTile(a: TilePosition, b: TilePosition): boolean {
   return a.x === b.x && a.y === b.y;
 }
@@ -263,6 +347,24 @@ export class ActionSystem implements SystemRegistration {
      * before.
      */
     private readonly regimeOverride: PrisonerRegimeOverrideResolver = () => undefined,
+    /**
+     * The job board's executor, and the reason a carry is an action rather
+     * than a second authority that moves a prisoner
+     * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md)).
+     *
+     * **Optional, for the reason `PrisonerReleaseSurfaces`' four session-level
+     * ports are optional**: the board spans prisoners and haulage and is not
+     * owned by `PrisonerOperationsRuntime`, so a fixture that stands up the
+     * prisoner slice alone genuinely has none. An absent executor means
+     * `action.carry` is **never a candidate** -- `carryAvailableFor` answers
+     * `false` -- which is the same answer an empty board gives, so every such
+     * fixture behaves exactly as it did before this decision.
+     *
+     * `exactOptionalPropertyTypes` is on, so an omitted argument and an
+     * explicit `undefined` are the same thing here and neither can be a
+     * silently half-wired board.
+     */
+    private readonly carry?: CarryJobExecutor,
   ) {}
 
   public getMetrics(): ActionMetrics {
@@ -513,6 +615,11 @@ export class ActionSystem implements SystemRegistration {
       }
     }
 
+    if (action.target.kind === 'job-board') {
+      this.continueCarry(entityId, index, action, tick);
+      return;
+    }
+
     if (applyNeedEffects(this.needs, index, action, this.schedule.intervalTicks)) {
       this.currentAction.needFulfilledLastTick[index] = tick;
     }
@@ -529,6 +636,100 @@ export class ActionSystem implements SystemRegistration {
       this.coldState.setActionTarget(entityId, undefined);
       this.actionsCompleted += 1;
     }
+  }
+
+  /**
+   * One reconsideration cycle of a prisoner on an errand: the dwell at this
+   * leg's end, and then the leg's effect on stock.
+   *
+   * **The carry's half of `continuePerforming`**
+   * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 3),
+   * and the reason it is a method of its own rather than three more branches in
+   * that one: a carry's exits are the *job's* rather than the room's, and none
+   * of the four statements around the call site applies to it -- there is no
+   * claim to release, no target instance to look up, no need to fulfil, and the
+   * `elapsed >= minDurationTicks` test means something different.
+   *
+   * **`minDurationTicks` is the dwell at each end, not the action's life.** A
+   * carry's life is the job's: it ends when the job reaches `completed`,
+   * `failed` or `cancelled`. So a pickup that is over turns the job round and
+   * asks for a second route rather than ending anything, and only the drop-off
+   * counts an `actionsCompleted`.
+   *
+   * **The dwell timer is `phaseStartedAtTick`, which the save carries**, and
+   * that retires the deliberate exclusion `docs/PERSISTENCE.md` recorded: the
+   * old `JobSystem` kept it in a `performingSince` map that no snapshot held,
+   * so a restored `'performing'` job restarted its dwell.
+   */
+  private continueCarry(entityId: number, index: number, action: ActionDefinition, tick: number): void {
+    const job = this.carriedJob(entityId);
+    if (job === undefined || this.carry === undefined) {
+      // The job ended under them -- failed on another path, cancelled, or the
+      // board never had it. Counted for the reason the room-that-stopped-existing
+      // arm above counts: the prisoner demanded something and it was not there.
+      this.currentAction.phase[index] = phaseIndex('idle');
+      this.coldState.setActionTarget(entityId, undefined);
+      this.unmetDemandCycles += 1;
+      return;
+    }
+
+    const elapsed = tick - this.currentAction.phaseStartedAtTick[index]!;
+    if (elapsed < action.minDurationTicks) return;
+
+    if (job.leg === 'pickup') {
+      if (!this.carry.pickUp(job)) {
+        // Already failed and compensated by the executor (ADR 0037); this side
+        // only has to stop carrying.
+        this.currentAction.phase[index] = phaseIndex('idle');
+        this.unmetDemandCycles += 1;
+        return;
+      }
+      // `job.leg` is `'dropoff'` now, so the same action asks for its second
+      // route. This is the one place an action requests a route while already
+      // `performing`, and it is what makes two journeys one action.
+      this.beginCarryLeg(entityId, index, job, tick);
+      return;
+    }
+
+    if (!this.carry.dropOff(job)) {
+      this.currentAction.phase[index] = phaseIndex('idle');
+      this.unmetDemandCycles += 1;
+      return;
+    }
+    this.currentAction.phase[index] = phaseIndex('idle');
+    this.actionsCompleted += 1;
+  }
+
+  /**
+   * Sends a carrier off on the leg the job is currently on.
+   *
+   * `beginNextAction`'s travel half for the second leg, and deliberately the
+   * same three statements in the same order -- request, remember the id, set
+   * `travelling` -- so that a carrier's route request is indistinguishable from
+   * any other prisoner's to `NavigationSystem` and to
+   * `docs/NAVIGATION.md`'s abandonment rules. The request id keeps the
+   * `prisoner.<id>.<n>` shape for exactly that reason: there is one walker
+   * model now, so a second id shape would be a second thing to reason about.
+   *
+   * A carrier already standing on the leg's tile dwells immediately, which is
+   * `JobSystem.beginLeg`'s own `sameTile` shortcut kept: a pickup and a
+   * drop-off in the same place is a legitimate errand and must not need a
+   * degenerate route to resolve.
+   */
+  private beginCarryLeg(entityId: number, index: number, job: CarryItemJob, tick: number): void {
+    const destination = job.leg === 'pickup' ? job.sourceTile : job.destinationTile;
+    const currentTile: TilePosition = { x: tileCoordinate(this.position.tileX[index]!), y: tileCoordinate(this.position.tileY[index]!) };
+    if (sameTile(currentTile, destination)) {
+      this.currentAction.phase[index] = phaseIndex('performing');
+      this.currentAction.phaseStartedAtTick[index] = tick;
+      return;
+    }
+    this.requestSequence += 1;
+    const requestId = `prisoner.${entityId}.${this.requestSequence}`;
+    this.navigation.requestRoute(requestId, currentTile, destination, this.routeContextFor(index), 1, tick);
+    this.coldState.setPathRequestId(entityId, requestId);
+    this.currentAction.phase[index] = phaseIndex('travelling');
+    this.currentAction.phaseStartedAtTick[index] = tick;
   }
 
   /**
@@ -626,6 +827,28 @@ export class ActionSystem implements SystemRegistration {
      * So the journey is abandoned at the next reconsideration, as it always
      * was, and the prisoner stops on the tile they had reached.
      */
+    /*
+     * **The carry's version of the same check: the *job* went away while they
+     * were walking for it** ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md)
+     * decision 1). A carry writes no `currentActionTargetInstanceId`, so the
+     * room check below cannot see it -- the errand's existence is a fact about
+     * the board.
+     *
+     * Reachable through `CarryJobExecutor.cancel` and through any other path
+     * that fails a job under its carrier; checked here for the reason the room
+     * check is checked here rather than in `arrive`, which the comment below
+     * gives in full: a check only on arrival would march the prisoner the whole
+     * way for an errand that had stopped existing.
+     */
+    const travellingAction = DEFAULT_ACTIONS[this.currentAction.actionIndex[index]!];
+    if (travellingAction !== undefined && travellingAction.target.kind === 'job-board' && this.carriedJob(entityId) === undefined) {
+      this.locomotion.cancelWalk(index);
+      this.abandonRoute(entityId);
+      this.currentAction.phase[index] = phaseIndex('idle');
+      this.unmetDemandCycles += 1;
+      return;
+    }
+
     const targetInstanceId = this.coldState.getActionTarget(entityId);
     if (targetInstanceId !== undefined && this.roomInstances.getById(targetInstanceId) === undefined) {
       this.locomotion.cancelWalk(index);
@@ -652,6 +875,24 @@ export class ActionSystem implements SystemRegistration {
 
     const requestId = this.coldState.getPathRequestId(entityId);
     if (requestId === undefined) {
+      /*
+       * **A carrier asks for the leg again instead of giving up.** For every
+       * other action this is bookkeeping that cannot be read back, and the
+       * prisoner goes idle and re-selects. A carry differs because the errand
+       * outlives the selection: the job is still `'assigned'` to this prisoner,
+       * so going idle would leave the goods reserved and unmoved until the next
+       * work block came round. Asking again is `JobSystem.continueTravelling`'s
+       * own shape (`if (job.pathRequestId === undefined) this.beginLeg(...)`)
+       * kept, and it is defence in depth rather than a live path:
+       * `beginNextAction` and `beginCarryLeg` each write the request in the
+       * same statement run as the phase, and `loadSnapshot` clears both *and*
+       * drops the prisoner to `idle`.
+       */
+      const strandedJob = travellingAction?.target.kind === 'job-board' ? this.carriedJob(entityId) : undefined;
+      if (strandedJob !== undefined) {
+        this.beginCarryLeg(entityId, index, strandedJob, tick);
+        return;
+      }
       this.currentAction.phase[index] = phaseIndex('idle');
       this.coldState.setActionTarget(entityId, undefined);
       return;
@@ -666,6 +907,21 @@ export class ActionSystem implements SystemRegistration {
     if (!outcome.result.ok) {
       this.routeFailures += 1;
       this.unmetDemandCycles += 1;
+      /*
+       * **A carry that cannot be routed fails its job, which is what gives the
+       * goods back** (ADR 0093 decision 1). `CarryJobExecutor.failJob` runs
+       * `compensateHeldStock`, so a route lost on the pickup leg releases the
+       * reservation and one lost on the drop-off leg puts the carried quantity
+       * back in the container it came from -- ADR 0037 option A, and the first
+       * time that ADR's third exception carries live traffic.
+       *
+       * The navigation vocabulary is passed straight through rather than
+       * rewritten into `CARRY_JOB_FAIL_REASONS`' spelling, which is what
+       * `CarryItemJob.failReason` documents as deliberate: two vocabularies
+       * because they are decided by two systems.
+       */
+      const failedJob = travellingAction?.target.kind === 'job-board' ? this.carriedJob(entityId) : undefined;
+      if (failedJob !== undefined) this.carry?.failJob(failedJob, outcome.result.failure.reason);
       this.currentAction.phase[index] = phaseIndex('idle');
       this.coldState.setActionTarget(entityId, undefined);
       return;
@@ -761,6 +1017,39 @@ export class ActionSystem implements SystemRegistration {
    * moments now, and they were one statement before.
    */
   private arrive(entityId: number, index: number, tick: number): void {
+    const arrivingAction = DEFAULT_ACTIONS[this.currentAction.actionIndex[index]!];
+    if (arrivingAction !== undefined && arrivingAction.target.kind === 'job-board') {
+      /*
+       * **A carry's arrival: there is no room to re-check and no seat to
+       * claim, so the prisoner simply enters the dwell**
+       * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 3).
+       *
+       * The one thing that can have gone wrong on the way is that the *job*
+       * ended under them -- another path failed or cancelled it -- and that is
+       * the mirror of the room-that-stopped-existing check the room arm makes
+       * two statements below. It counts an unmet cycle for the same reason
+       * that one does: the prisoner walked somewhere and what they walked for
+       * was not there.
+       */
+      const job = this.carriedJob(entityId);
+      if (job === undefined) {
+        this.currentAction.phase[index] = phaseIndex('idle');
+        this.coldState.setActionTarget(entityId, undefined);
+        this.unmetDemandCycles += 1;
+        return;
+      }
+      const legTile = job.leg === 'pickup' ? job.sourceTile : job.destinationTile;
+      // Written again for the reason the room arm gives: the walk has already
+      // stepped the prisoner onto this tile one tile at a time, so this is
+      // exact rather than corrective, and it keeps the degenerate
+      // one-waypoint route writing the same position the long way round would.
+      this.position.tileX[index] = legTile.x;
+      this.position.tileY[index] = legTile.y;
+      this.currentAction.phase[index] = phaseIndex('performing');
+      this.currentAction.phaseStartedAtTick[index] = tick;
+      return;
+    }
+
     const targetInstanceId = this.coldState.getActionTarget(entityId);
     const instance = targetInstanceId === undefined ? undefined : this.roomInstances.getById(targetInstanceId);
     if (instance === undefined) {
@@ -858,6 +1147,13 @@ export class ActionSystem implements SystemRegistration {
    * leave no trace.
    */
   private claimUseIfNeeded(entityId: number, action: ActionDefinition, instanceId: string): boolean {
+    // `job-board` joins `own-accommodation` in the "claims nothing here" arm,
+    // and for a stronger reason than the cell's: there is no room to claim a
+    // seat in at all. **The job's `available -> assigned` transition is the
+    // claim** and it was taken at selection, in
+    // `CarryJobExecutor.claimAvailableJobFor`, together with the stock
+    // reservation it must not be separated from
+    // ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 1).
     if (action.target.kind !== 'room-catalog-id') return true;
     // The same capability `resolveTargetInstance` selected against, handed over
     // rather than re-derived, so the seat claimed here is the seat the room was
@@ -899,6 +1195,41 @@ export class ActionSystem implements SystemRegistration {
     return resolveActiveRegimeBlock(schedule, tick).allowedCategories;
   }
 
+  /**
+   * Is there an errand this prisoner could be given right now?
+   *
+   * **Two ways, and the second is what makes a restore need no new field**
+   * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decisions 2
+   * and 5):
+   *
+   * - the board has an `available` job, which is the fact decision 2 states;
+   * - or this prisoner already holds one, which is how a carrier restored from
+   *   a save resumes. `PrisonerOperationsRuntime.loadSnapshot` drops every
+   *   `travelling` prisoner to `idle`, so a carrier comes back idle with the
+   *   carry still in `actionIndex` and its job still `'assigned'` on the
+   *   board -- and because their own active job makes the carry providable
+   *   again, the next reconsideration cycle re-selects it and
+   *   `resolveTargetInstance` resumes the leg the job records. The ADR's own
+   *   sketch re-seated the carrier as `travelling` with no request; this
+   *   reaches the same state through the path that already exists instead of
+   *   adding one, and it is the same one restore rule -- the board is the
+   *   authority on where the goods are, in both readings. The other direction
+   *   is `CarryJobExecutor.reconcileRestoredJobs`.
+   *
+   * **The second clause reads this prisoner's own claim and no one else's**,
+   * which is what keeps it inside ADR 0062 decision 3's rule that the ordering
+   * key *"may not read a claim"*. That rule is about contention -- a key that
+   * depended on who had already been served this cycle would be a function of
+   * the scan position it is supposed to be deciding. `activeJobFor(entityId)`
+   * is a keyed read of the asking prisoner's own state, exactly as the
+   * `own-accommodation` arm of `prisonProvides` reads their own cell.
+   */
+  private carryAvailableFor(entityId: number): boolean {
+    if (this.carry === undefined) return false;
+    if (this.carry.board.activeJobFor(entityId) !== undefined) return true;
+    return this.carry.board.availableJobsSorted().length > 0;
+  }
+
   private planIdleSelection(entityId: number, index: number, tick: number): PlannedSelection {
     const classificationGroupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
     // The override, where one stands, *replaces* the timetable rather than
@@ -909,8 +1240,20 @@ export class ActionSystem implements SystemRegistration {
     // walk is still ADR 0041's.
     const schedule = this.regimeOverride(entityId, classificationGroupId) ?? findRegimeSchedule(this.regimeSchedules, classificationGroupId);
     const block = resolveActiveRegimeBlock(schedule, tick);
-    const legalActions = DEFAULT_ACTIONS.filter((action) => isActionCategoryAllowed(action, block.allowedCategories));
-    const candidates = rankActions(this.needs, index, legalActions);
+    /*
+     * **`action.carry` is filtered out entirely unless there is an errand to
+     * run, and that is what keeps every jobless scenario byte-identical**
+     * (ADR 0093 decisions 2 and 6). A candidate merely *ranked last* would
+     * still shift `providedIndex` and the substitution counters for every
+     * prisoner in every work block, in every prison that has never seen a job.
+     */
+    const carryEligible = CARRY_ACTION !== undefined
+      && isActionCategoryAllowed(CARRY_ACTION, block.allowedCategories)
+      && this.carryAvailableFor(entityId);
+    const legalActions = DEFAULT_ACTIONS.filter(
+      (action) => isActionCategoryAllowed(action, block.allowedCategories) && (action !== CARRY_ACTION || carryEligible),
+    );
+    const ranked = rankActions(this.needs, index, legalActions);
     // `needUrgency` split in two (issue #435), so that one walk over
     // `prisonProvides` answers both of the questions that depend on it: how
     // badly this prisoner wants what they are about to ask for, which orders
@@ -918,9 +1261,62 @@ export class ActionSystem implements SystemRegistration {
     // which is what tells a substitution's cause from its fact. Asking twice
     // would double a `RoomInstanceRegistry.hasPlaceForUse` per unprovidable
     // candidate per prisoner per cycle for a number the first walk already knew.
-    const providedIndex = firstProvidedCandidateIndex(candidates, (action) => this.prisonProvides(entityId, action));
-    const urgency = urgencyOfProvidedCandidate(this.needs, index, candidates, providedIndex);
-    return { entityId, index, classificationGroupId, candidates, providedIndex, urgency };
+    const rankedProvidedIndex = firstProvidedCandidateIndex(ranked, (action) => this.prisonProvides(entityId, action));
+
+    /*
+     * **Duty outranks want inside a work block -- until the need is urgent.**
+     *
+     * ADR 0093 decision 2 places the carry at rank 0 on a *rule* about the
+     * board rather than on a score, because a carry has no need effect and
+     * therefore scores exactly 0: a 0-score candidate is reached only when
+     * nothing better resolves, which is issue #600 option (b) by another
+     * route. The regime says it is work time and the institution has a job;
+     * kitchen, laundry and classroom duty are what a work block is *when the
+     * board is empty*.
+     *
+     * **The owner OVERRULED the unbounded form of that on 2026-09-02**, and
+     * the bound is the one condition below: a prisoner whose best available
+     * relief addresses a need the state is already docking the prison for does
+     * not get the carry at rank 0, and ordinary scoring decides for them --
+     * which, at a score of 0, puts the errand last. See
+     * `relievesAnUnmetNeed` for the measurand and why it is a level rather
+     * than a score.
+     *
+     * **What this costs, stated.** The rank-0 rule stops being a pure function
+     * of the block and the board: it now reads needs too. The predicate is
+     * evaluated against the candidate `firstProvidedCandidateIndex` already
+     * found, so it is a reuse of that pass rather than a second one, and
+     * determinism is unaffected -- need levels are integers in component
+     * storage and the threshold is a constant comparison.
+     */
+    const bestProvidable = rankedProvidedIndex < 0 ? undefined : ranked[rankedProvidedIndex]!;
+    const aNeedIsUrgent = bestProvidable !== undefined
+      && bestProvidable !== CARRY_ACTION
+      && relievesAnUnmetNeed(this.needs, index, bestProvidable);
+
+    if (carryEligible && CARRY_ACTION !== undefined && !aNeedIsUrgent) {
+      // Promoted rather than sorted into place, which is what leaves
+      // `rankActions` untouched and pure (ADR 0093 decision 6). The rest of the
+      // ranking keeps its own total order; only the carry's position is decided
+      // by the rule.
+      const candidates = [CARRY_ACTION, ...ranked.filter((action) => action !== CARRY_ACTION)];
+      // `prisonProvides` answers *"the board has a job"* without reading who
+      // took it, so the promoted carry is providable and `providedIndex` is 0.
+      // A prisoner who then finds no available job -- somebody scanned earlier
+      // reserved the last one -- continues to their need-ranked candidates
+      // under ADR 0041 decision 1 and is counted as a *contended*
+      // substitution, which is an accurate count: somebody else got the job.
+      return { entityId, index, classificationGroupId, candidates, providedIndex: 0, urgency: scoreAction(this.needs, index, CARRY_ACTION) };
+    }
+
+    return {
+      entityId,
+      index,
+      classificationGroupId,
+      candidates: ranked,
+      providedIndex: rankedProvidedIndex,
+      urgency: urgencyOfProvidedCandidate(this.needs, index, ranked, rankedProvidedIndex),
+    };
   }
 
   /**
@@ -1000,18 +1396,28 @@ export class ActionSystem implements SystemRegistration {
       const target = this.resolveTargetInstance(entityId, chosen);
       if (target === undefined) continue;
 
+      const destination = destinationTileOf(target);
       // The no-travel path into `performing` is the second of the two places a
       // claim is taken, and it is settled *before* anything is written: a refusal
       // must not leave an action index, a target or an `actionsStarted` behind for
       // an action that never began. It can only be refused when several prisoners
       // reconsider on the same tick, since `findAvailableForUse` was consulted two
       // statements ago and nothing else moves in between.
-      const arrivesImmediately = sameTile(currentTile, target.anchorTile);
-      if (arrivesImmediately && !this.claimUseIfNeeded(entityId, chosen, target.instanceId)) continue;
+      const arrivesImmediately = sameTile(currentTile, destination);
+      if (arrivesImmediately && target.kind === 'room' && !this.claimUseIfNeeded(entityId, chosen, target.instance.instanceId)) continue;
 
       this.recordSubstitution(index, rank, plan.providedIndex);
       this.currentAction.actionIndex[index] = actionIndexOf(chosen.id);
-      this.coldState.setActionTarget(entityId, target.instanceId);
+      /*
+       * **A carry writes no target, and the map is already absence-tolerant**
+       * (ADR 0093 decision 1). `currentActionTargetInstanceId` stays a
+       * room-instance id; the prisoner -> job link is the job's own
+       * `assignedWorkerId`, read the other way round through
+       * `JobBoard.activeJobFor`. Clearing rather than leaving it is what stops
+       * a carrier publishing the room of the shift they were on before the
+       * errand.
+       */
+      this.coldState.setActionTarget(entityId, target.kind === 'room' ? target.instance.instanceId : undefined);
       this.actionsStarted += 1;
 
       if (arrivesImmediately) {
@@ -1022,7 +1428,7 @@ export class ActionSystem implements SystemRegistration {
 
       this.requestSequence += 1;
       const requestId = `prisoner.${entityId}.${this.requestSequence}`;
-      this.navigation.requestRoute(requestId, currentTile, target.anchorTile, this.routeContextFor(index), 1, tick);
+      this.navigation.requestRoute(requestId, currentTile, destination, this.routeContextFor(index), 1, tick);
       this.coldState.setPathRequestId(entityId, requestId);
       this.currentAction.phase[index] = phaseIndex('travelling');
       this.currentAction.phaseStartedAtTick[index] = tick;
@@ -1115,14 +1521,44 @@ export class ActionSystem implements SystemRegistration {
       const instanceId = this.coldState.getAccommodation(entityId);
       return instanceId !== undefined && this.roomInstances.getById(instanceId) !== undefined;
     }
+    /*
+     * **"Is there an errand" is a fact about the board, which persists** --
+     * exactly as `hasPlaceForUse` is a fact about the room registry -- and it
+     * reads no other prisoner's claim (ADR 0093 decision 2; see
+     * `carryAvailableFor`).
+     */
+    if (action.target.kind === 'job-board') return this.carryAvailableFor(entityId);
     return this.roomInstances.hasPlaceForUse(action.target.roomCatalogId, action.requiredObjectCapability);
   }
 
-  private resolveTargetInstance(entityId: number, action: ActionDefinition): RoomInstance | undefined {
+  /**
+   * **`resolveTargetInstance`'s job arm: the admission `JobSystem.assignAvailableJobs`
+   * used to perform, moved intact** (ADR 0093 decisions 1 and 4).
+   *
+   * The job this prisoner is already on wins over a new one, which is what
+   * makes a carry outlive a reconsideration cycle and a restore: the two legs
+   * are one action, and the second leg is resolved by *finding the same job
+   * again* rather than by holding a target in cold state.
+   *
+   * `CarryJobExecutor.claimAvailableJobFor` is where the two container checks
+   * and the `Container.reserve` live, so the stock is claimed before anybody
+   * walks and two carriers cannot set off for one crate.
+   */
+  private resolveCarryTarget(entityId: number): ResolvedActionTarget | undefined {
+    if (this.carry === undefined) return undefined;
+    const active = this.carry.board.activeJobFor(entityId);
+    if (active !== undefined) return { kind: 'job', job: active };
+    const claimed = this.carry.claimAvailableJobFor(entityId);
+    return claimed === undefined ? undefined : { kind: 'job', job: claimed };
+  }
+
+  private resolveTargetInstance(entityId: number, action: ActionDefinition): ResolvedActionTarget | undefined {
     if (action.target.kind === 'own-accommodation') {
       const instanceId = this.coldState.getAccommodation(entityId);
-      return instanceId === undefined ? undefined : this.roomInstances.getById(instanceId);
+      const instance = instanceId === undefined ? undefined : this.roomInstances.getById(instanceId);
+      return instance === undefined ? undefined : { kind: 'room', instance };
     }
+    if (action.target.kind === 'job-board') return this.resolveCarryTarget(entityId);
     // `findAvailableForUse`, not `findAvailableResidence`: this asks "can this
     // prisoner use this room now", which is bounded by the room's
     // concurrent-use capacity and not by how many live there (ADR 0028
@@ -1130,6 +1566,42 @@ export class ActionSystem implements SystemRegistration {
     // -- it resolves by id -- which is why a prisoner who holds a cell keeps
     // sleeping, eating in cell and using the toilet whatever stands in the
     // room, and why the first bed placed buys three needs rather than one.
-    return this.roomInstances.findAvailableForUse(action.target.roomCatalogId, action.requiredObjectCapability);
+    const instance = this.roomInstances.findAvailableForUse(action.target.roomCatalogId, action.requiredObjectCapability);
+    return instance === undefined ? undefined : { kind: 'room', instance };
+  }
+
+  /**
+   * The job this prisoner is carrying for, or `undefined` for a prisoner who is
+   * not on an errand.
+   *
+   * Read from the board by entity id rather than from
+   * `PrisonerColdState.currentActionTargetInstanceId`, which is **not written**
+   * for a carry (ADR 0093 decision 1): that field is published as
+   * `targetRoomInstanceId` and resolved through the room registry, so a job id
+   * in it would be a lie in a field name and the save would carry the lie.
+   */
+  private carriedJob(entityId: number): CarryItemJob | undefined {
+    return this.carry?.board.activeJobFor(entityId);
+  }
+
+  /**
+   * Ends the errand of a prisoner who is leaving the prison, giving the goods
+   * back under ADR 0037.
+   *
+   * **The replacement for `JobWorkerPool.unregister` on the release path**
+   * (ADR 0093 decision 4, #441's release path). The pool is retired, so a
+   * departing carrier's job cannot merely lose its worker: it would sit
+   * `'assigned'` to an id that names nobody, holding a reservation nothing
+   * would release, for the rest of the session. `'carrier-departed'` is the
+   * `CARRY_JOB_FAIL_REASONS` member added for it, and the save reader's
+   * `failReason: z.string().optional()` tolerates it without a bump.
+   *
+   * Total: a prisoner on no errand is a keyed miss, which is what every
+   * departure path wants to be able to assume.
+   */
+  public endCarryOnDeparture(entityId: EntityId): void {
+    const job = this.carriedJob(entityId);
+    if (job === undefined || this.carry === undefined) return;
+    this.carry.failJob(job, 'carrier-departed');
   }
 }

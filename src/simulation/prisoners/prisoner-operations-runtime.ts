@@ -6,6 +6,7 @@ import type { ActorIdentityLifecycle } from '../identity/actor-identity';
 import type { Kernel } from '../kernel/kernel';
 import { LocomotionStore, LocomotionSystem } from '../locomotion';
 import type { NavigationSystem } from '../navigation/navigation-system';
+import type { CarryJobExecutor } from '../operations/carry-executor';
 import { ActionSystem, type PrisonerRouteContextResolver } from './action-system';
 import type { AdmissionRequest } from './classification';
 import { ClassificationEarlyWarningSystem } from './classification-early-warning-system';
@@ -27,7 +28,6 @@ import {
   releasePrisoner,
   type PrisonerGangReleasePort,
   type PrisonerReleaseSurfaces,
-  type PrisonerWorkerReleasePort,
   type PrisonerContrabandReleasePort,
 } from './release';
 import { NeedsComponent } from './needs';
@@ -183,12 +183,23 @@ export interface PrisonerOperationsRuntimeOptions {
    */
   readonly gangs?: PrisonerGangReleasePort;
   /**
-   * The haulage labour pool (`src/simulation/operations/job-system.ts`). Same
-   * ownership and optionality as `gangs`: `JobWorkerPool` is session state,
-   * `JobSystem` will hand a job to any registered worker, and a departed
-   * prisoner left in it is a job assigned to a slot somebody else now occupies.
+   * The job board's executor (`src/simulation/operations/carry-executor.ts`),
+   * and since [ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) a
+   * collaborator of `ActionSystem` rather than only a release surface: a carry
+   * is an action, so this runtime is what drives one.
+   *
+   * Same ownership and optionality as `gangs`: the board is session state that
+   * spans prisoners and haulage, and a fixture standing up the prisoner slice
+   * alone genuinely has none -- in which case `action.carry` is never a
+   * candidate and every such fixture behaves exactly as it did before the
+   * decision.
+   *
+   * **This option used to be `jobWorkers`, the haulage labour pool.** ADR 0093
+   * decision 4 retired `JobWorkerPool` because both of its sets are derivable,
+   * and a departing carrier's job is now *ended* rather than the worker being
+   * dropped from a set -- see `PrisonerCarryReleasePort`.
    */
-  readonly jobWorkers?: PrisonerWorkerReleasePort;
+  readonly carryJobs?: CarryJobExecutor;
   /**
    * The contraband ground truth (`src/simulation/contraband/item.ts`). Same
    * ownership and optionality as `gangs`: it is session state, and a prisoner
@@ -391,6 +402,7 @@ export class PrisonerOperationsRuntime {
       // build one from itself, and it must not read the clock
       // (`PrisonerRegimeOverrideResolver`'s own contract).
       combineRegimeOverrides(options.regimeOverride, (entityId) => (this.isServingSolitarySanction(entityId) ? HIGH_RISK_REGIME : undefined)),
+      options.carryJobs,
     );
     this.locomotionSystem = new LocomotionSystem('prisoners.locomotion', (ticks, tick) =>
       this.locomotion.advance(
@@ -436,7 +448,11 @@ export class PrisonerOperationsRuntime {
       // registry", which is the distinction `PrisonerReleaseSurfaces` relies on.
       ...(options.identity !== undefined ? { identity: options.identity } : {}),
       ...(options.gangs !== undefined ? { gangs: options.gangs } : {}),
-      ...(options.jobWorkers !== undefined ? { jobWorkers: options.jobWorkers } : {}),
+      // The port is this runtime's own `ActionSystem`, which is the one thing
+      // that knows how a carry ends. Supplied only where a board exists, so an
+      // absent board stays an absent key rather than a port that can do
+      // nothing (`PrisonerReleaseSurfaces`' four optional entries).
+      ...(options.carryJobs !== undefined ? { carry: this.actionSystem } : {}),
       locomotion: this.locomotion,
       ...(options.contraband !== undefined ? { contraband: options.contraband } : {}),
     };

@@ -1,5 +1,6 @@
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, procurableMaterial } from '../../content/procurement-catalog';
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
+import type { DeliveryCarryRoute } from '../operations/delivery-route';
 import type { Container } from '../operations/inventory';
 import type { SpendClass, Treasury } from './treasury';
 
@@ -153,6 +154,17 @@ export class ProcurementSystem implements SystemRegistration {
   public constructor(
     private readonly treasury: Treasury,
     private readonly destination: Container,
+    /**
+     * ADR 0017 decision 4's physical route, where the player has built one
+     * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 2).
+     *
+     * **Optional, and absent means today's behaviour exactly.** A fixture that
+     * stands up the economy alone has no rooms and no job board, and a session
+     * whose player has zoned no bay or no storeroom has no route either -- so
+     * the two cases are the same case, and `update` below asks the port and
+     * takes its answer rather than branching on whether it exists.
+     */
+    private readonly carryRoute?: DeliveryCarryRoute,
   ) {}
 
   /**
@@ -377,6 +389,33 @@ export class ProcurementSystem implements SystemRegistration {
 
     this.pending = this.pending.filter((delivery) => delivery.arrivesAtTick > context.tick);
     for (const delivery of arrived) {
+      /*
+       * **The delivery lands in the bay and is carried to the storeroom
+       * wherever the player has built both, and lands in the construction
+       * container directly wherever they have not**
+       * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 2,
+       * which is ADR 0017 decision 4's physical route).
+       *
+       * The direct deposit is what `docs/OPERATIONS.md` records as the second
+       * deliberate exception to the no-teleport rule and calls *scaffolding*.
+       * It stops being scaffolding on the first line below and stays the
+       * exception it is on the second -- and the fallback is the graceful one
+       * #600 itself prefers, for the three reasons `DeliveryBayCarryRoute`
+       * states: zero regression for every existing save, no stranded early
+       * prison, and no balance number ADR 0017 decision 5 reserves.
+       *
+       * **What this costs a player who has built the route, said plainly.**
+       * The materials no longer become available for construction at
+       * `arrivesAtTick`. They become available at `arrivesAtTick` plus a
+       * carrier's selection latency (up to one 20-tick reconsideration cycle,
+       * or up to the next `work` block), plus the walk to the bay, a dwell, the
+       * walk to the storeroom and a dwell -- at two ticks a tile plus up to 20
+       * per dwell. **Where the bay sits and where the storeroom sits therefore
+       * become a choice the player is making**, which is #600's *"construction
+       * time becomes a function of geometry"* arriving by the only route that
+       * makes it true.
+       */
+      if (this.carryRoute?.landAndRaiseCarry(delivery.orderId, delivery.itemId, delivery.quantity, context.tick) === true) continue;
       this.destination.deposit(delivery.itemId, delivery.quantity);
     }
   }

@@ -3,7 +3,19 @@ import type { ActionCategory } from './regime';
 
 export type ActionTarget =
   | { readonly kind: 'own-accommodation' }
-  | { readonly kind: 'room-catalog-id'; readonly roomCatalogId: string };
+  | { readonly kind: 'room-catalog-id'; readonly roomCatalogId: string }
+  /**
+   * **A job on the board rather than a room**
+   * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 1).
+   *
+   * It names no room and no catalogue id, because a job carries its own tiles:
+   * `CarryItemJob.sourceTile` on the pickup leg and `destinationTile` on the
+   * drop-off. `ActionSystem` already branches on `target.kind` in
+   * `resolveTargetInstance`, `prisonProvides` and `claimUseIfNeeded`, so a
+   * third kind is a third arm of the same data-driven branch and not a
+   * per-action condition chain (`AGENTS.md` boundary 6).
+   */
+  | { readonly kind: 'job-board' };
 
 export interface ActionDefinition {
   readonly id: string;
@@ -333,5 +345,64 @@ export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
   {
     id: 'action.kitchen-work', category: 'work', target: { kind: 'room-catalog-id', roomCatalogId: 'room.kitchen' },
     requiredObjectCapability: 'food-preparation', needEffectsPerTick: { hunger: 1 }, minDurationTicks: 120,
+  },
+
+  /*
+   * The errand, and the third member of `work`. **Appended, for the reason the
+   * paragraph above this array gives at length.**
+   *
+   * This is [ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md), accepted
+   * by the repository owner on 2026-09-03 after they had chosen option (c) of
+   * issue [#600](https://github.com/matmaxalez/lockstate/issues/600) on
+   * 2026-09-02: a carry stops being a second authority that moves a prisoner
+   * and becomes an action the prisoner chooses. Before it, `operations.jobs`
+   * ran at order 260 on every session's kernel with an empty board and an empty
+   * pool for ever, and `JobBoard.submitCarryItem` had exactly one occurrence
+   * under `src/` -- its own declaration.
+   *
+   * Every field, and the reason for each. **None of the values is a balance
+   * number**, which is what let this entry be authored without an owner ruling
+   * on any of them:
+   *
+   * - **`category: 'work'`.** The category both work blocks already allow
+   *   (`regime.ts`, 500-1,000 and 1,300-1,800 of `GENERAL_POPULATION_REGIME`)
+   *   and the one #600 is about. No change to `ACTION_CATEGORIES` and no change
+   *   to any schedule -- which is also how two consequences arrive for free:
+   *   `HIGH_RISK_REGIME` has no `work` block, so a high-risk prisoner never
+   *   carries, and `RIOT_ALLOWED_CATEGORIES` has no `work`, so nobody carries
+   *   during a riot. Both are the regime doing what a regime is for.
+   * - **`target: { kind: 'job-board' }`.** See the union above.
+   * - **`needEffectsPerTick: {}`.** A carry serves the institution and not a
+   *   need. Giving it an effect on an existing need would be a second authored
+   *   route to that need (the convention `action.laundry-work` argues at
+   *   length), and inventing a need for it is the balance step ADR 0042 routes
+   *   to its own step 4. The consequence for selection is a score of exactly
+   *   **0** -- the floor, since no authored effect is negative -- which is why
+   *   `ActionSystem.planIdleSelection` promotes the carry to rank 0 on a *rule*
+   *   about the board rather than leaving it to scoring: a labour budget spent
+   *   only after every need is served would be a different mechanic (#600
+   *   option (b)).
+   * - **`requiredObjectCapability` absent.** There is no room to gate on and no
+   *   ceiling to read; the ceiling on how many prisoners carry is how many jobs
+   *   are on the board. Unlike `room.yard`'s absence, this one is not about the
+   *   room's own ground either -- `claimUseIfNeeded` takes no claim at all for
+   *   this kind, because the job's `available -> assigned` transition *is* the
+   *   claim (ADR 0093 decision 1).
+   * - **`minDurationTicks: 5`**, which is `PICKUP_DROPOFF_DURATION_TICKS` from
+   *   the retired `JobSystem` moved into the catalogue: **the dwell at each end
+   *   of a leg, not the action's life.** A carry's life is the job's -- it ends
+   *   when the job reaches `completed`, `failed` or `cancelled` -- so
+   *   `continuePerforming`'s `elapsed >= action.minDurationTicks` test means,
+   *   for this kind alone, *"the dwell at this end is over"*. Observed at the
+   *   20-tick reconsideration cadence a 5-tick dwell costs up to 20, which is
+   *   the same granularity every other action already has.
+   *
+   * **It fulfils no need, so `ActionSystem` does not stamp
+   * `needFulfilledLastTick` while it runs** -- the same property
+   * `action.free-association` has, and for the same reason.
+   */
+  {
+    id: 'action.carry', category: 'work', target: { kind: 'job-board' },
+    needEffectsPerTick: {}, minDurationTicks: 5,
   },
 ];

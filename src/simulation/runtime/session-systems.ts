@@ -215,6 +215,24 @@ export interface EncodedOperations {
   /** `[containerId, [[itemId, quantity, reserved], ...]]`. Container *ids* are carried too: a restored session has only the construction container until this registers the rest. */
   readonly containers: readonly (readonly [string, readonly (readonly [string, number, number])[]])[];
   readonly jobs: readonly CarryItemJob[];
+  /**
+   * **Written empty and read as nothing, deliberately**
+   * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 5).
+   *
+   * `JobWorkerPool` is retired: eligibility is the regime's and busyness is
+   * the board's. Removing this key would be the save bump the decision refuses
+   * to spend -- an older build refuses a save on a missing required key, and
+   * `save-schema.ts` validates it as required -- so the writer keeps emitting
+   * `{ workers: [], busy: [] }` and the reader keeps validating it and ignores
+   * it. Two empty arrays against a `SAVE_SCHEMA_VERSION` move, which is the
+   * same trade ADR 0038 decision 4 makes for keeping `masterSeed` optional.
+   *
+   * **An older save with a non-empty pool loads cleanly.** A listed worker who
+   * holds an assigned job is resumed from the board -- their own active job
+   * makes `action.carry` providable again (`ActionSystem.carryAvailableFor`) --
+   * and one who does not was merely *eligible*, which is now a question the
+   * regime answers every cycle rather than a stored fact.
+   */
   readonly jobWorkers: { readonly workers: readonly number[]; readonly busy: readonly number[] };
   readonly electricity: EncodedUtilityNetwork;
   readonly water: EncodedUtilityNetwork;
@@ -609,7 +627,7 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     operations: {
       containers: runtime.containers.getSnapshot().map(([id, stock]) => [id, stock.map((entry) => [entry[0], entry[1], entry[2]] as const)] as const),
       jobs: runtime.jobs.getSnapshot().map((job) => ({ ...job })),
-      jobWorkers: { ...runtime.jobWorkers.getSnapshot() },
+      jobWorkers: { workers: [], busy: [] },
       electricity: utilitySnapshot(runtime.electricity),
       water: utilitySnapshot(runtime.water),
     },
@@ -877,7 +895,26 @@ export function restoreSessionSystems(
   // 4. Operations.
   runtime.containers.loadSnapshot(systems.operations.containers);
   runtime.jobs.loadSnapshot(systems.operations.jobs.map((job) => ({ ...job })));
-  runtime.jobWorkers.loadSnapshot(systems.operations.jobWorkers);
+  /*
+   * **The board's half of ADR 0093 decision 5's one restore rule**, and it has
+   * to run after `prisoners.loadSnapshot` above because the predicate reads the
+   * restored population.
+   *
+   * A carrier restored mid-errand needs nothing here: `loadSnapshot` dropped
+   * every `travelling` prisoner to `idle`, the carry is still in their
+   * `actionIndex`, and their own active job makes it providable again -- so the
+   * next reconsideration cycle re-selects the carry and
+   * `ActionSystem.resolveTargetInstance` resumes the leg the job records, from
+   * the tile the save carried. What needs closing is the *other* direction: a
+   * job assigned to an id that no longer names a living prisoner would sit
+   * `'assigned'` for the rest of the session holding a reservation nothing
+   * would release. `'carrier-departed'` is the reason it is failed with, and
+   * `compensateHeldStock` gives the goods back under ADR 0037.
+   *
+   * `operations.jobWorkers` is deliberately not restored -- see
+   * `EncodedOperations.jobWorkers`.
+   */
+  runtime.carryJobs.reconcileRestoredJobs((workerId) => runtime.prisoners.entityStore.isAlive(workerId));
   runtime.electricity.loadSnapshot(systems.operations.electricity);
   runtime.water.loadSnapshot(systems.operations.water);
 
