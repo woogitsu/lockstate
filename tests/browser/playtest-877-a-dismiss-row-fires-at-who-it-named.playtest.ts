@@ -113,6 +113,19 @@ async function readRows(page: Page, selector: string, attribute: string): Promis
         const button = node.querySelector('button');
         if (!(button instanceof HTMLElement)) continue;
         const box = button.getBoundingClientRect();
+        /*
+         * Inside the viewport, not merely laid out -- and the first run of this
+         * instrument was wasted on the difference. `.ui-panel.hud-staff` is
+         * `overflow-y: auto`, so the roster sits below the fold of a 1440x900
+         * window: its three rows reported boxes at y=819, 871 and **923**, the
+         * last of which is off the bottom of the page. Every press at those
+         * coordinates submitted nothing, which reads exactly like the safe
+         * outcome a fix is supposed to produce and is really a click that
+         * landed outside the window. A player cannot press what is not on
+         * screen either, so a row that is not is not a measurement.
+         */
+        if (box.bottom > window.innerHeight || box.top < 0) continue;
+        if (box.right > window.innerWidth || box.left < 0) continue;
         out.push({
           index,
           subjectId: node.getAttribute(attr as string) ?? '',
@@ -173,6 +186,22 @@ async function openFold(page: Page, section: string): Promise<void> {
   if ((await header.getAttribute('aria-expanded')) === 'true') return;
   await header.click();
   await page.waitForTimeout(150);
+}
+
+/**
+ * Scrolls a block into the middle of the panel that owns it, **before** any box
+ * is read.
+ *
+ * Never between a read and a press: a scroll there is layout motion under the
+ * pointer, which is the separate defect #860's third run found and did not
+ * diagnose. Here it is part of arriving at the list, which is what a player
+ * does with a panel that scrolls.
+ */
+async function bringIntoView(page: Page, selector: string): Promise<void> {
+  await page.evaluate((sel) => {
+    document.querySelector(sel)?.scrollIntoView({ block: 'center' });
+  }, selector);
+  await page.waitForTimeout(200);
 }
 
 async function hireGuards(page: Page, count: number): Promise<void> {
@@ -305,6 +334,7 @@ test.describe('the dismiss rows fire at who they named', () => {
     // a session.
     await hireGuards(page, 9);
     await openFold(page, '.hud-staff__roster');
+    await bringIntoView(page, '.hud-staff__roster');
     note(`hired ${String(await hiredCount(page))}; roster header reads`
       + ` ${JSON.stringify((await page.locator('.hud-staff__roster > .ui-section__header').innerText()).trim())}`);
 
@@ -316,6 +346,7 @@ test.describe('the dismiss rows fire at who they named', () => {
     // does; the ordering in `GuardRoster.allGuardIds` says it cannot without a
     // removal, and only a dismissal removes.
     await sampleChurn(page, ROSTER_ROW, 'data-staff', 'roster (clock at max, nobody dismissed)', 12_000);
+    note(`roster rows in view before the presses: ${JSON.stringify(await readRows(page, ROSTER_ROW, 'data-staff'))}`);
 
     const outcomes: Outcome[] = [];
     const delays = [0, 250, 600] as const;
@@ -324,6 +355,7 @@ test.describe('the dismiss rows fire at who they named', () => {
     for (const delayMs of delays) {
       if ((await hiredCount(page)) < 5) await hireGuards(page, 5);
       await openFold(page, '.hud-staff__roster');
+      await bringIntoView(page, '.hud-staff__roster');
       const rows = await readRows(page, ROSTER_ROW, 'data-staff');
       const target = rows[rows.length - 1];
       if (target === undefined || target.subjectId === '') continue;
@@ -363,6 +395,7 @@ test.describe('the dismiss rows fire at who they named', () => {
       for (let repeat = 0; repeat < 2; repeat += 1) {
         if ((await hiredCount(page)) < 6) await hireGuards(page, 6);
         await openFold(page, '.hud-staff__roster');
+        await bringIntoView(page, '.hud-staff__roster');
         const rows = await readRows(page, ROSTER_ROW, 'data-staff');
         const first = rows[0];
         const second = rows[rows.length - 1];
@@ -427,6 +460,7 @@ test.describe('the delivery rows fire at what they named', () => {
     // *purchase*, and what re-points a row is one of them landing.
     for (let index = 0; index < 6; index += 1) await buy(page, 'wall-brick', 4 + index);
     await page.waitForTimeout(300);
+    await bringIntoView(page, '.hud-build__deliveries');
     const initial = await readRows(page, DELIVERY_ROW, 'data-delivery');
     note(`delivery rows after buying: ${JSON.stringify(initial)}`);
     note(`deliveries block says pending=${await page.locator('.hud-build__deliveries').getAttribute('data-pending')}`);
@@ -447,6 +481,7 @@ test.describe('the delivery rows fire at what they named', () => {
     while (outcomes.length < 9 && Date.now() - startedAt < 200_000) {
       const delayMs = delays[attempt % delays.length]!;
       attempt += 1;
+      await bringIntoView(page, '.hud-build__deliveries');
       let rows = await readRows(page, DELIVERY_ROW, 'data-delivery');
       if (rows.length === 0) {
         for (let index = 0; index < 6; index += 1) await buy(page, 'wall-brick', 4 + index);
@@ -563,6 +598,7 @@ test.describe('the held-guard rows fire at who they named', () => {
     await page.waitForTimeout(3000);
     note(`held block: ${JSON.stringify((await page.locator('.hud-staff__held').innerText()).replace(/\s+/g, ' ').trim())}`);
 
+    await bringIntoView(page, '.hud-staff__held');
     const initial = await readRows(page, HELD_ROW, 'data-guard');
     note(`held rows: ${JSON.stringify(initial)}`);
     if (initial.length === 0) {
@@ -577,6 +613,7 @@ test.describe('the held-guard rows fire at who they named', () => {
     const outcomes: Outcome[] = [];
     for (const delayMs of [0, 250, 600] as const) {
       for (let repeat = 0; repeat < 2; repeat += 1) {
+        await bringIntoView(page, '.hud-staff__held');
         const rows = await readRows(page, HELD_ROW, 'data-guard');
         const target = rows[rows.length - 1];
         if (target === undefined || target.subjectId === '') continue;
