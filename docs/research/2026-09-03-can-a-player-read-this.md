@@ -31,10 +31,77 @@ convey**, never the words.
 
 ---
 
-## 1. DEFECT — two readouts on one screen are both called coverage, count
-different populations, and are told apart by nothing on screen
+## 1. DEFECT — four numbers about guards on one screen, two of them called
+coverage, counting different populations
 
-*(evidence pending act 7; see §1.3)*
+**Reproduction** (`act 2`): build a 6x6 cell with eight beds and a toilet,
+admit six prisoners, hire three guards, run to day 8 at x4, then read the
+status strip and the Security tab.
+
+What is on screen at that moment:
+
+| where | reads | what it counts |
+| --- | --- | --- |
+| strip, `STAFF` chip | `3` | staff |
+| strip, `COVERAGE` chip | `6 · COVERAGE · Covered` | **prisoners** on the covered rung |
+| Security panel, coverage block | `GUARD COVERAGE  1 of 1  Covered` | **guards** assigned of required |
+| Security panel, held summary | `1 held · 2 free` | guards on post / in the pool |
+
+Worker counts at the read: `prisoners: 6`, `staff: 3`,
+`dailyWageBillMinorUnits: 240`.
+
+**The two "coverage" readouts are different quantities off different
+derivations, and neither says so.** `projectStatusMetrics`' `coverage`
+descriptor is `value: counts.prisonersCovered`
+(`src/ui/hud/projection.ts:844`) with its word from `coverageBadge` over the
+prisoner rungs `prisonersUnguarded` / `prisonersUnderstaffed`. The panel's
+summary is `hud.security.coverage-summary`, `'{assigned} of {required}'`, over
+`HudStaffCoverageViewModel` — `required` is *"Guards the prison asks for,
+summed over every sector"* and `assigned` *"Guards assigned to a sector —
+already on post, or still walking there"* (`view-model.ts:1785-1792`) — with
+its word from `describeStaffCoverage` over `shortage`.
+
+So a player reading left to right gets `3 STAFF`, then `6 COVERAGE`, then opens
+Security and gets `1 of 1` and `1 held · 2 free`. Four figures about two
+populations. **Only `1 held · 2 free` names its own units.** `6` under a label
+reading `COVERAGE` beside a security icon, in a prison holding six prisoners
+and three guards, is a number a reasonable player will read as either — and
+which one they pick changes what they do next, because one of them is the
+number a hire moves and the other is not.
+
+**The refuting samples, taken.**
+
+- *"They are the same quantity read twice, and the difference is a stale
+  publication."* Refuted at the source rather than by timing: the two read
+  different fields of different view models, argued above, and the strip's own
+  docblock (`projection.ts`, `coverageBadge`) says where the panel's two counts
+  are *"readable in full"* — the panel — which only makes sense if they are not
+  the chip's number.
+- *"The words tell them apart."* Partly. The panel's label is `Guard coverage`
+  and the strip's is `Coverage`, so the distinction is present in one word on
+  one of the two. It is not present in the badge: **both render the single word
+  `Covered`**, out of one shared string set (`hud.security.coverage-met`), and
+  the strip's chip deliberately reuses the panel's vocabulary so *"the panel and
+  the strip cannot come to disagree about what a rung is called"*. That is a
+  good property for a *rung* and it is what makes the two readouts look like
+  restatements of each other.
+
+**What is not established, and named as such.** Whether the two can print
+*contradictory* words at the same instant — the panel `Covered` because
+`assigned === required` while a guard is still walking, against the strip
+`Unguarded` because no prisoner is yet on the covered rung. The derivations
+allow it and `assigned`'s own doc comment ("already on post, **or still walking
+there**") is why. `act 7` samples both readouts in one page evaluation across a
+hire to settle it; on the box this pass ran on, its designation step was refused
+twelve times over four minutes (`zone.not-enclosed`, the known ordering defect
+in `2026-08-29-playtest-ordering-and-the-second-room.md` §7) and the act never
+reached its samples. **So the contradiction is a hypothesis, not a finding.**
+The finding above does not depend on it.
+
+**What the words must convey**, without this pass authoring them: which
+population each number counts. The strip's chip is the one that needs it — the
+panel already says `Guard`.
+
 
 ## 2. DEFECT — the minimap says it is not available, and then answers a click
 
