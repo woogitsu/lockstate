@@ -638,3 +638,60 @@ Meal, Hygiene* — and the player can neither see that it happened nor change
 either timetable. **The one causal loop the simulation runs end to end
 terminates in a control that does not exist.** That is the single most useful
 sentence this pass can offer about whether there is a game here.
+
+## 8. `HIDDEN` — the one loop that already works is the one nothing tells you about
+
+Read off §5's zero-guard run, which hired nobody and therefore had **no wage
+bill at all**, so every movement in the treasury is income:
+
+| | day 3 | day 23 |
+| --- | --- | --- |
+| FUNDS | 23,880 | 47,800 |
+| EARNED TODAY | 385 | 808 |
+| PRISONERS | 12 | 9 |
+
+**+23,920 over twenty in-game days: about 1,196 a day.** Now the code's own
+prices. `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS` is **300**
+(`src/simulation/economy/income.ts:115`), and the grant per prisoner is
+
+```
+Math.max(0, 300 - 40 * unmetNeeds)      // income.ts:411
+```
+
+with `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` at **40** (`:347`). So
+a prison of nine to twelve prisoners serving every need would take **2,700 to
+3,600 a day**, and this one took 1,196.
+
+**Roughly two thirds of the grant was being withheld, every day, for twenty
+days, and nothing anywhere said so.** That is the finding: six needs at 40 each
+means a fully served prisoner is worth **five times** a wholly neglected one
+(300 against the floor of 60), which is a genuinely steep incentive attached to
+the exact activity the player already spends 39 of the 43 controls on — build
+the rooms that serve the needs. It is the one closed loop in the build where the
+player's ordinary action has a large, immediate, economic payoff.
+
+And it is invisible. The `earned-today` chip carries `tone: undefined, badge:
+undefined, description: undefined` (`src/ui/hud/projection.ts:1053-1055`), so
+it is a bare number. Nothing in `src/content/default-locale-en.ts` contains the
+word *withheld* or *unmet* in any player-facing string, and no field on the
+status-counts payload carries the withheld amount, so the number is not even
+available to a panel that wanted it.
+
+**What a fix must convey** — the wording and the presentation are the owner's:
+that today's income is short of what the population could earn, and that the
+shortfall is unserved needs. Nothing here proposes a sentence, a chip or a
+panel.
+
+**The refuting sample.** If the arithmetic were being read wrongly, the run
+would have earned near the full grant and the gap would be my error rather than
+the game's. `earned-today` at day 23 was **808** against nine prisoners: 90 a
+prisoner where 300 is the ceiling, which is the same shortfall the
+twenty-day average shows, taken from a different chip on a different day.
+
+**The weakest claim here, named** (`docs/research/README.md`'s rule): the
+per-prisoner figures above are divisions of a whole-prison total by a headcount
+that fell 12 → 9 during the window, so "about 4 to 5 needs unmet per prisoner"
+is an inference and is not measured. What *is* measured is the gap between
+1,196 and 2,700, and the gap is the finding. A successor wanting the
+per-prisoner truth should read `hud/prisoner-roster`, which publishes the
+leading need per prisoner, rather than dividing.
