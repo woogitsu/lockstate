@@ -152,7 +152,72 @@ not what it says — and choosing that is a player-visible promise, so it is the
 owner's.
 
 
-## 3. REFUTED — "the numbers on screen are not labelled"
+## 3. DEFECT — the tab a player arrives on gains nothing when the prison
+starts working
+
+**Reproduction** (`act 2`, one browser session, no reload): read the whole
+visible text of all five tabs on a fresh prison at day 1; build a 6x6 cell with
+eight beds and a toilet, admit six prisoners, hire three guards, run to day 8 at
+x4; read all five tabs again. Compare line by line.
+
+| tab | lines on the fresh prison | of those, word-for-word identical on the working prison |
+| --- | --- | --- |
+| Overview (the tab a session opens on) | 58 | **52** |
+| Build | 95 | 89 |
+| Security | 69 | 60 |
+| Regime | 66 | 54 |
+
+Every line that *arrived* on the Overview tab across those eight days:
+
+```
+6            (the PRISONERS chip)
+3            (the STAFF chip)
+26,630       (the FUNDS chip)
+586          (the EARNED TODAY chip)
+8            (the day)
+33%          (through the day)
+Speed 4× / ×4
+Nothing was removed — there is no object on that tile, and none being built there.
+Warning
+Saved (generation gen-mtlvhvhs-8).
+```
+
+Six numbers, all of them on the status strip that is on screen on every tab
+anyway; the speed readout; **a refusal from tick 0 (§5)**; an autosave notice.
+**Not one sentence about the prison.** The Intake panel's only prose is the
+same hint it carried when the prison was empty — *"A prison needs a cell before
+it can admit anyone. It does not need a free bed: an arrival with none waits
+until a bed is free."* — and the minimap square still says it is not available
+(§2).
+
+**The refuting samples, taken.**
+
+- *"Nothing is wrong, so there is nothing to say."* This is the sample that
+  matters and it does not clear the finding. The prison is not merely
+  untroubled, it is *running*: six people are being housed, fed and paid for,
+  three guards are on the payroll for 240 a day, and 1,545 of state income has
+  accrued today. None of that is a warning; all of it is what the player built
+  and would like to see. The comparison is against a prison in which **nothing
+  whatsoever has happened**, and the tab they arrive on cannot tell the two
+  apart except by six digits.
+- *"The information is elsewhere."* Confirmed, and it is why this is filed as a
+  defect about a tab and not a missing feature. The Security tab does gain
+  real lines — `1 of 1`, `1 held · 2 free`, `Guard · Sector Post`, `Release`,
+  `ON THE PAYROLL`, `240 a day` — and the Regime tab carries a roster block
+  with a count and an `and 4 more`. So the prison is legible; it is legible
+  only to a player who goes looking, on tabs named after the tools that change
+  things rather than after the prison.
+- *"The strip is the prison summary, and it is always there."* True, and it is
+  the reason six of the ten arriving lines are numbers. It is also the whole of
+  what a player gets: nine bare counts, no sentence, and — measured in §7 —
+  nothing pressable to take them anywhere.
+
+**What the words must convey**, without this pass authoring them: on the tab a
+session opens on, what the prison is currently doing to the people in it.
+Which facts those are is a design call and therefore the owner's; the gap is
+that the count is presently zero.
+
+## 4. REFUTED — "the numbers on screen are not labelled"
 
 This pass opened by assuming a legibility problem it could not find.
 
@@ -161,7 +226,7 @@ contains a digit, and reports **`hops`**: the number of steps from that leaf up
 to the nearest ancestor whose *visible* text (screen-reader-only spans removed)
 contains a word of three or more letters, together with that ancestor's text.
 It is a distance rather than a verdict because the verdict version got the
-answer wrong — see §6.
+answer wrong — see §8.
 
 Measured across all five tabs, at 1440x900:
 
@@ -184,7 +249,7 @@ The chip values are labelled one hop away — `span.ui-stat__body` reading
 while keeping its value. This pass measured 1440x900 only; the sibling pass
 measures 375x812.
 
-## 4. FIXED — the clock now says whether it is running
+## 5. FIXED — the clock now says whether it is running
 
 `2026-08-30-what-the-game-never-says.md` §1 recorded that a new session's clock
 is constructed paused and *"no word on screen says so — the whole sighted clock
@@ -205,7 +270,7 @@ Cross-checked against the worker rather than the paint: the tick moved
 after Pause. Two channels, both moving, both agreeing with the simulation. The
 readout named in #629 §1 is closed.
 
-## 5. CONFIRMED (#894) — one refusal from tick 0, rendered twice, still on
+## 6. CONFIRMED (#894) — one refusal from tick 0, rendered twice, still on
 screen on day 7
 
 The `calibrate` helper presses one empty tile with the Remove tool at the very
@@ -232,7 +297,42 @@ the day-9-from-tick-0 one already on file and because **the same sentence
 occupies two places on the screen at once**, which the existing record does not
 say.
 
-## 6. This pass's instrument was wrong twice, and both are recorded
+## 7. CONFIRMED — all nine status chips are inert, measured by pressing them
+
+Already on file and not re-filed; recorded because the measurement is stronger
+than the one it confirms. `installListenerCensus` patches
+`EventTarget.prototype.addEventListener` from before the app's first script, so
+this is a census of every listener the application actually installed rather
+than a search for the ones a reader expected:
+
+```
+CHIP prisoners     <div> cursor=auto  tabIndex=-1 role="" listeners=[] descendantsWithListeners=0 title=""
+CHIP high-risk     <div> cursor=auto  tabIndex=-1 role="" listeners=[] descendantsWithListeners=0 title=""
+CHIP staff         <div> cursor=auto  tabIndex=-1 role="" listeners=[] descendantsWithListeners=0 title=""
+CHIP coverage      <div> cursor=auto  tabIndex=-1 role="" listeners=[] descendantsWithListeners=0 title=""
+CHIP rooms         <div> cursor=auto  tabIndex=-1 role="" listeners=[] descendantsWithListeners=0 title=""
+CHIP incidents     <div> cursor=auto  tabIndex=-1 role="" listeners=[] descendantsWithListeners=0 title=""
+CHIP contraband    <div> cursor=auto  tabIndex=-1 role="" listeners=[] descendantsWithListeners=0 title=""
+CHIP funds         <div> cursor=auto  tabIndex=-1 role="" listeners=[] descendantsWithListeners=0 title=""
+CHIP earned-today  <div> cursor=auto  tabIndex=-1 role="" listeners=[] descendantsWithListeners=0 title=""
+```
+
+Not one listener on any chip, and none on any of their descendants either. Four
+were then pressed with `{ force: true }` and the whole HUD text diffed either
+side of each press; every line that changed was the clock advancing:
+
+```
+PRESS prisoners     changed 6 line(s) on screen: ["25,570","93","8","8%"]
+PRESS coverage      changed 5 line(s) on screen: ["279","23%","Allows Work, Education, Free Association","28% THROUGH"]
+PRESS incidents     changed 4 line(s) on screen: ["488","41%","97% THROUGH","49% THROUGH"]
+PRESS funds         changed 6 line(s) on screen: ["607","51%","40% THROUGH","Allows Meal"]
+```
+
+`cursor: auto` is the honest half: nothing invites the press. The consequence
+for §3 is that the one surface a player has on every tab is a row of nine
+numbers that goes nowhere.
+
+## 8. This pass's instrument was wrong twice, and both are recorded
 
 - **The number probe measured itself.** The first `probeNumbers` asked whether
   a word appeared inside the number's "smallest grouping" and stopped its
