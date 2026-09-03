@@ -576,7 +576,8 @@ export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | u
 export const BUILD_QUEUE_ROW_LIMIT = 3;
 
 /**
- * What one queued row says it is, and where.
+ * What one queued row says it is, and where -- and, since the owner's ruling
+ * of 2026-09-02, what cancelling it would give back.
  *
  * Pure and exported for the reason `buildEdgeChoiceOptions` and
  * `formatBuildTargetText` are: the default Vitest environment is `node`
@@ -587,13 +588,22 @@ export const BUILD_QUEUE_ROW_LIMIT = 3;
  * An order the host names no buildable for still gets a row -- see
  * `HudBuildOrderViewModel.labelKey` -- and this is where it gets its word.
  * Dropping such a row would hide the only control that reaches the order.
+ *
+ * `total` is a formatted string rather than `order.cancelRefundMinorUnits`
+ * itself, on the same terms `formatPendingDeliveryText`'s own `total`
+ * parameter is: number formatting is `HudLocalizer.formatNumber`'s job, which
+ * this function has no access to and must not reimplement, and the delivery
+ * row two lines above this one in the locale
+ * (`hud.build.delivery`, "{total} back") sets the pattern this row now
+ * follows for the same money.
  */
-export function formatBuildQueueOrderText(t: Translate, order: HudBuildOrderViewModel): string {
+export function formatBuildQueueOrderText(t: Translate, order: HudBuildOrderViewModel, total: string): string {
   return t(HUD_MESSAGE_KEY.buildQueueOrder, {
     buildable: t(order.labelKey ?? HUD_MESSAGE_KEY.buildQueueUnnamed),
     x: order.tile.x,
     y: order.tile.y,
     edge: t(edgeLabelKey(order.edge)),
+    total,
   });
 }
 
@@ -1984,7 +1994,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       }
       row.orderId = order.orderId;
       row.element.hidden = false;
-      row.label.textContent = formatBuildQueueOrderText(t, order);
+      row.label.textContent = formatBuildQueueOrderText(t, order, localizer.formatNumber(order.cancelRefundMinorUnits));
       row.state.textContent = t(buildOrderStateLabelKey(order.state));
       // The order id on the row, so a test can assert *which* order a control
       // is aimed at rather than only that a control exists. The same job

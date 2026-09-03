@@ -76,6 +76,37 @@ export function justInTimePurchaseOrderId(tick: number, itemId: string, inFlight
 }
 
 /**
+ * The biggest `jit:` delivery of `itemId` in `deliveries` that fits inside
+ * `surplus`, by `(quantity, orderId)`.
+ *
+ * A free function rather than a method, so `JustInTimeMaterialsService.refundSurplusDeliveries`
+ * and `previewSurplusRefundMinorUnits` can share exactly this selection rule
+ * over two different lists -- the live `pendingDeliveries` for the first, a
+ * local working copy for the second -- without either restating it. See
+ * `ConstructionProcurementSink.previewSurplusRefundMinorUnits` for why the
+ * two loops cannot share more than this.
+ */
+function largestSurplusDelivery(
+  deliveries: readonly PendingDelivery[],
+  itemId: string,
+  surplus: number,
+): PendingDelivery | undefined {
+  let best: PendingDelivery | undefined;
+  for (const delivery of deliveries) {
+    if (delivery.itemId !== itemId) continue;
+    if (delivery.quantity > surplus) continue;
+    if (!isJustInTimePurchaseOrderId(delivery.orderId)) continue;
+    if (best === undefined) {
+      best = delivery;
+      continue;
+    }
+    if (delivery.quantity > best.quantity) best = delivery;
+    else if (delivery.quantity === best.quantity && delivery.orderId < best.orderId) best = delivery;
+  }
+  return best;
+}
+
+/**
  * Buys what the build queue needs and the prison does not have
  * ([ADR 0017](../../../docs/adr/0017-money-primary-resource-model.md)
  * decision 7, issue #627).
@@ -728,7 +759,7 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
     for (;;) {
       const surplus = this.heldOrInFlightOf(itemId) - demandedQuantity;
       if (surplus <= 0) break;
-      const candidate = this.largestSurplusDelivery(itemId, surplus);
+      const candidate = largestSurplusDelivery(this.procurement.pendingDeliveries, itemId, surplus);
       if (candidate === undefined) break;
       const outcome = this.procurement.cancel(candidate.orderId);
       /*
@@ -743,21 +774,53 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
     return refundedMinorUnits;
   }
 
-  /** The biggest `jit:` delivery of `itemId` that fits inside `surplus`, by `(quantity, orderId)`. */
-  private largestSurplusDelivery(itemId: string, surplus: number): PendingDelivery | undefined {
-    let best: PendingDelivery | undefined;
-    for (const delivery of this.procurement.pendingDeliveries) {
-      if (delivery.itemId !== itemId) continue;
-      if (delivery.quantity > surplus) continue;
-      if (!isJustInTimePurchaseOrderId(delivery.orderId)) continue;
-      if (best === undefined) {
-        best = delivery;
-        continue;
-      }
-      if (delivery.quantity > best.quantity) best = delivery;
-      else if (delivery.quantity === best.quantity && delivery.orderId < best.orderId) best = delivery;
+  /**
+   * `ConstructionProcurementSink.previewSurplusRefundMinorUnits`.
+   *
+   * The same loop `refundSurplusDeliveries` runs, over the same selection
+   * rule (`largestSurplusDelivery`, shared rather than restated) -- with one
+   * difference, and it is the whole reason this method exists rather than
+   * being a second caller of that one: each round removes its candidate from
+   * a **local copy** of `pendingDeliveries` and decrements a **local** running
+   * total instead of calling `this.procurement.cancel`, so nothing pending is
+   * touched and no money moves. `heldOrInFlightOf` is read once, up front,
+   * for the same reason -- the real loop re-reads it from `pendingDeliveries`
+   * because cancelling shrinks that list; this loop shrinks its own copy
+   * instead and keeps the running total in step with it by hand.
+   */
+  public previewSurplusRefundMinorUnits(itemId: string, demandedQuantity: number): number {
+    let refundedMinorUnits = 0;
+    let heldOrInFlight = this.heldOrInFlightOf(itemId);
+    const remaining = [...this.procurement.pendingDeliveries];
+    for (;;) {
+      const surplus = heldOrInFlight - demandedQuantity;
+      if (surplus <= 0) break;
+      const candidate = largestSurplusDelivery(remaining, itemId, surplus);
+      if (candidate === undefined) break;
+      const index = remaining.indexOf(candidate);
+      remaining.splice(index, 1);
+      heldOrInFlight -= candidate.quantity;
+      refundedMinorUnits += candidate.paidMinorUnits;
     }
-    return best;
+    return refundedMinorUnits;
+  }
+
+  /**
+   * `ConstructionProcurementSink.previewAllocatedRefundMinorUnits`.
+   *
+   * `refundAllocatedMaterials`'s pricing, over `ProcurementSystem.previewRefundMaterials`
+   * rather than `refundMaterials`, so nothing is credited: a line the
+   * catalogue cannot price answers `0` and is skipped, exactly as
+   * `refundAllocatedMaterials` leaves such a line for `materialsProvider` to
+   * release rather than pricing it here.
+   */
+  public previewAllocatedRefundMinorUnits(allocations: readonly MaterialRequirement[]): number {
+    let total = 0;
+    for (const allocation of allocations) {
+      if (allocation.quantity <= 0) continue;
+      total += this.procurement.previewRefundMaterials(allocation.itemId, allocation.quantity);
+    }
+    return total;
   }
 
   /**

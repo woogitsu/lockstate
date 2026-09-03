@@ -97,6 +97,15 @@ export type BuildableLabelLookup = (definitionId: string) => LocalizationKey | u
  * `HudBuildQueueMaterialsFundingViewModel` for why three scalars are the whole
  * of what a consumer can use today.
  *
+ * **`cancelRefundMinorUnits` is carried across per row, unchanged, on the same
+ * terms `materialsFunding` is (the owner's ruling of 2026-09-02).** It is a
+ * fact about the treasury and the last purchase pass -- `ConstructionSystem.previewCancelRefundMinorUnits`'s
+ * own comment argues why -- so this layer copies it rather than computing it,
+ * exactly as it copies `materialsFunding` rather than deriving it from the
+ * rows. Unlike that block, this one *is* about a row, so it stays where the
+ * rest of `BuildQueueOrderViewModel` maps rather than joining the block above.
+ *
+
  * A row whose buildable the host cannot name keeps its place. That is the
  * opposite of `roomNeedsFromProjections`, which *skips* a room the catalogue
  * cannot name, and the difference is what the row is for: a nameless room need
@@ -119,6 +128,7 @@ export function buildQueueFromProjection(
       tile: { x: row.tile.x, y: row.tile.y },
       edge: row.edge,
       state: row.state,
+      cancelRefundMinorUnits: row.cancelRefundMinorUnits,
     };
   });
 

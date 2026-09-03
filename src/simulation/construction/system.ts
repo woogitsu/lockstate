@@ -832,6 +832,93 @@ export class ConstructionSystem implements SystemRegistration {
   }
 
   /**
+   * What `cancelOrder(orderId)` would credit the treasury right now, without
+   * calling it -- the figure the Build panel's queue row shows beside its own
+   * Cancel button (the owner's ruling of 2026-09-02).
+   *
+   * ## Why a preview and not the row reading `cancelOrder`'s own return
+   *
+   * `cancelOrder` answers `void` and mutates on every call -- it flips the
+   * order to `'cancelled'`, drops its allocation, and (through the sink) may
+   * turn a delivery around -- and the row is painted from a **projection**,
+   * read on a cadence with no press behind it
+   * (`src/simulation/presentation/construction-projection.ts`). Reading the
+   * figure the same way the row reads everything else would cancel the order
+   * to find out what cancelling it pays.
+   *
+   * ## The table this reads, and where it actually lives
+   *
+   * `cancelOrder`'s own docblock carries the owner's ruling 20 table -- what
+   * state pays what -- and this method's branches are that table, because a
+   * preview has no mutated `order.state` to dispatch on and therefore cannot
+   * be folded into `refundSurplusOf`'s existing dispatch the way this method's
+   * one sibling call is. What is **not** restated is any arithmetic: every
+   * money figure below is computed by `sink.previewSurplusRefundMinorUnits` or
+   * `sink.previewAllocatedRefundMinorUnits`, the exact non-mutating twins of
+   * the two calls `cancelOrder` itself makes
+   * (`sink.refundSurplusDeliveries`, `sink.refundAllocatedMaterials`) --
+   * sharing their selection and pricing rules with those methods by
+   * construction, not by this method's own judgement about what they would
+   * answer.
+   *
+   * `demandedQuantityOf(itemId, id)` is the one place this diverges from
+   * `refundSurplusOf`'s own call to it, and it has to: `refundSurplusOf` runs
+   * after `cancelOrder` has already written `order.state = 'cancelled'`, so
+   * the demand walk excludes this order for free. This method must not write
+   * that, so it passes the order's own id to exclude it explicitly instead --
+   * see `pendingOrderDemand`'s comment.
+   *
+   * `0` for an id that names no order, for a terminal state (`isCancellable`
+   * says no), and for every state ruling 20 (and the owner's ruling of
+   * 2026-09-01 for `completed`) pays nothing for: `'planned'`,
+   * `'in-progress'`, `'completed'`. `0` also when no procurement sink is
+   * wired -- a bare `ConstructionSystem` has no treasury to credit, and
+   * `cancelOrder` pays no money there either, exactly as `refundSurplusOf`
+   * itself returns early for the same reason.
+   *
+   * Never throws and never asserts `isCancellable` past the early return:
+   * this is read by a projection request, which the same contract
+   * `refundSurplusDeliveries` and its siblings are held to (must not throw)
+   * binds transitively -- a row that cannot be cancelled simply reads `0`.
+   */
+  public previewCancelRefundMinorUnits(orderId: string): number {
+    const order = this.orders.get(orderId);
+    if (order === undefined || !isCancellable(order.state)) return 0;
+    const sink = this.materialsProcurement;
+    if (sink === undefined) return 0;
+
+    const stateAtCancellation = order.state;
+    if (order.materialsAllocated.length > 0) {
+      // Only `'assigned'` reaches here paying anything: `'in-progress'` and
+      // `'completed'` are the two states `cancelOrder` destroys an allocation
+      // for rather than pricing it (ruling 20, and the owner's ruling of
+      // 2026-09-01 for `completed`), and both hold a non-empty
+      // `materialsAllocated` exactly as `'assigned'` does.
+      if (stateAtCancellation === 'in-progress' || stateAtCancellation === 'completed') return 0;
+      return sink.previewAllocatedRefundMinorUnits(order.materialsAllocated);
+    }
+
+    // Empty `materialsAllocated` and cancellable is `'planned'`, `'approved'`
+    // or `'materials-pending'`: the three states that have not allocated yet.
+    // Only the last two are `refundSurplusOf`'s own candidates -- `'planned'`
+    // never became demand, so `pendingOrderDemand` never counted it and no
+    // purchase was ever made for it.
+    if (stateAtCancellation !== 'approved' && stateAtCancellation !== 'materials-pending') return 0;
+    const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+    if (definition === undefined) return 0;
+    // Ascending item id, matching `refundSurplusOf`'s own walk -- this reads no
+    // simulation state, but a preview that visited items in a different order
+    // from the real cancellation would be a second opinion about the walk
+    // rather than a read of it.
+    const itemIds = [...new Set(definition.materialsRequired.map((requirement) => requirement.itemId))].sort();
+    let refundMinorUnits = 0;
+    for (const itemId of itemIds) {
+      refundMinorUnits += sink.previewSurplusRefundMinorUnits(itemId, this.demandedQuantityOf(itemId, order.id));
+    }
+    return refundMinorUnits;
+  }
+
+  /**
    * Takes queued orders back off the book until the prison no longer has to
    * buy `itemId` again -- the demand-side answer to a cancelled just-in-time
    * delivery (issue #687).
@@ -962,9 +1049,13 @@ export class ConstructionSystem implements SystemRegistration {
     return withdrawn;
   }
 
-  /** What the queue still wants of one item, read off `pendingMaterialDemand` so the two can never disagree. */
-  private demandedQuantityOf(itemId: string): number {
-    for (const requirement of this.pendingMaterialDemand(this.orderedOrders())) {
+  /**
+   * What the queue still wants of one item, read off `pendingMaterialDemand`
+   * so the two can never disagree. `excludeOrderId` is threaded through to it;
+   * see that method's own comment for why it exists.
+   */
+  private demandedQuantityOf(itemId: string, excludeOrderId?: string): number {
+    for (const requirement of this.pendingMaterialDemand(this.orderedOrders(), excludeOrderId)) {
       if (requirement.itemId === itemId) return requirement.quantity;
     }
     return 0;
@@ -1286,9 +1377,20 @@ export class ConstructionSystem implements SystemRegistration {
    * leaves the worst case exactly where it is"*. ADR 0082 proposes a persisted
    * placement ordinal and is unsigned, so nothing here anticipates it.
    */
-  private pendingOrderDemand(orders: readonly BuildOrder[]): readonly QueuedOrderDemand[] {
+  /**
+   * `excludeOrderId` is second and optional, and every existing caller passes
+   * neither -- `procureQueuedMaterials` and `pendingMaterialDemand`'s own
+   * production caller (`refundSurplusOf`) both want the demand as the order
+   * book stands. It exists for `previewCancelRefundMinorUnits`: a preview must
+   * not mutate `order.state` to ask "what if this one had already been
+   * cancelled", where `refundSurplusOf` gets that answer for free because
+   * `cancelOrder` has already written `'cancelled'` by the time it calls this
+   * chain. Passing an id here is the read-only route to the same exclusion.
+   */
+  private pendingOrderDemand(orders: readonly BuildOrder[], excludeOrderId?: string): readonly QueuedOrderDemand[] {
     const demand: QueuedOrderDemand[] = [];
     for (const order of orders) {
+      if (order.id === excludeOrderId) continue;
       if (order.state !== 'approved' && order.state !== 'materials-pending') continue;
       const definition = BUILDABLE_REGISTRY.get(order.definitionId);
       if (definition === undefined) continue;
@@ -1336,9 +1438,10 @@ export class ConstructionSystem implements SystemRegistration {
    * nothing and is left for the walk to fail, which is where the reason the
    * player is told is decided.
    */
-  private pendingMaterialDemand(orders: readonly BuildOrder[]): readonly MaterialRequirement[] {
+  /** `excludeOrderId` is threaded straight through to `pendingOrderDemand`; see its own comment. */
+  private pendingMaterialDemand(orders: readonly BuildOrder[], excludeOrderId?: string): readonly MaterialRequirement[] {
     const demand = new Map<string, number>();
-    for (const order of this.pendingOrderDemand(orders)) {
+    for (const order of this.pendingOrderDemand(orders, excludeOrderId)) {
       for (const requirement of order.requirements) {
         demand.set(requirement.itemId, (demand.get(requirement.itemId) ?? 0) + requirement.quantity);
       }
