@@ -32,7 +32,7 @@ convey**, never the words.
 ---
 
 ## 1. DEFECT — four numbers about guards on one screen, two of them called
-coverage, counting different populations
+coverage, and the two a hire is meant to move do not move
 
 **Reproduction** (`act 2`): build a 6x6 cell with eight beds and a toilet,
 admit six prisoners, hire three guards, run to day 8 at x4, then read the
@@ -86,17 +86,47 @@ number a hire moves and the other is not.
   good property for a *rung* and it is what makes the two readouts look like
   restatements of each other.
 
-**What is not established, and named as such.** Whether the two can print
-*contradictory* words at the same instant — the panel `Covered` because
-`assigned === required` while a guard is still walking, against the strip
-`Unguarded` because no prisoner is yet on the covered rung. The derivations
-allow it and `assigned`'s own doc comment ("already on post, **or still walking
-there**") is why. `act 7` samples both readouts in one page evaluation across a
-hire to settle it; on the box this pass ran on, its designation step was refused
-twelve times over four minutes (`zone.not-enclosed`, the known ordering defect
-in `2026-08-29-playtest-ordering-and-the-second-room.md` §7) and the act never
-reached its samples. **So the contradiction is a hypothesis, not a finding.**
-The finding above does not depend on it.
+**The escalation this pass expected is REFUTED, and here is the sample that
+did it.** The hypothesis was that the two could print *contradictory* words at
+one instant — the panel `Covered` because `assigned === required` while the
+guard is still walking, against the strip `Unguarded` because no prisoner is yet
+on the covered rung. `assigned`'s own doc comment ("already on post, **or still
+walking there**") is why that looked reachable. `act 7` sampled both readouts
+**in one page evaluation**, once a second, on a six-prisoner prison: 20 samples
+with nobody hired, 60 across a hire and the walk after it, 45 across a second
+hire. **125 samples, `same word` on every one.** The transition is one sample
+wide:
+
+```
+one guard hired  t+ 0s STRIP 0 "Unguarded" (danger) | PANEL 0 of 1 "Unguarded" (danger) | prisoners=6 staff=0
+one guard hired  t+ 1s STRIP 6 "Covered"   (none)   | PANEL 1 of 1 "Covered"   (success)| prisoners=6 staff=1
+```
+
+There is no walk-to-post window at all at this scale. The word contradiction
+does not exist and this record does not claim it.
+
+**What those 125 samples found instead, and it is worse for a player than the
+contradiction would have been.** Hold the population at six and hire a *second*
+guard:
+
+```
+one guard hired  t+59s STRIP 6 "Covered" | PANEL 1 of 1 "Covered" | staff=1 | hint="This prison has the guards it asks for."
+two guards hired t+24s STRIP 6 "Covered" | PANEL 1 of 1 "Covered" | staff=2 | hint="This prison has the guards it asks for."
+```
+
+**Neither coverage readout moves. Not the chip, not the summary, not the word,
+not the sentence.** The only thing on screen that changes is the `STAFF` chip
+counting up and the wage bill under `ON THE PAYROLL` — measured at `80 a day`
+for one guard and `240 a day` for three. So the readout a player would use to
+decide whether to hire is the one readout a hire cannot move, and the readout
+that *does* move is the bill. A player who hires three guards to be safe has
+paid three times the wage for a screen that is identical to the one-guard
+screen except for two digits.
+
+That is not `#893` — which is that `2 of 2 · Covered` reads identically whether
+an incident can be answered — but it is its neighbour, measured from the other
+side: the same `1 of 1 · Covered · This prison has the guards it asks for.`
+renders at one guard and at three, with six prisoners either way.
 
 **What the words must convey**, without this pass authoring them: which
 population each number counts. The strip's chip is the one that needs it — the
