@@ -1618,3 +1618,161 @@ test('act L: was the first undo slow, or was it nothing', async ({ page }) => {
   note(`[L] alerts:\n${await panelText(page, '.hud-alerts__list')}`);
   await shot(page, 'L01-fifteen-seconds-after-one-z');
 });
+
+/* ------------------------------------------------------------------ ACT M */
+
+/**
+ * **How many interactions is one usable cell, from a fresh prison?** Every
+ * press, drag and keystroke counted, with the state read at each stage so the
+ * count is honest about what it bought.
+ *
+ * This replaces act B's count rather than repeating it. Act B ran the mouse
+ * perimeter correctly -- *"FOUR DRAGS WANTED 16 SEGMENTS AND PRODUCED 16"*,
+ * exactly on the perimeter of (13,11)-(16,14) -- and then spent eight more
+ * interactions typing in segments that were already there, because its
+ * bookkeeping compared the edges it wanted against the edges the game reports
+ * as literal strings. **The game normalises an edge to the lower-numbered
+ * tile:** the south edge of (13,14) comes back as `13,15 north` and the east
+ * edge of (16,12) as `17,12 west`, which is one boundary named one way rather
+ * than two boundaries. Act B read those sixteen correct segments as eight
+ * missing ones, queued eight duplicates, and then hung for the rest of its
+ * ten-minute budget on an edge chooser control. The perimeter needs no typed
+ * fallback at all.
+ *
+ * The count is reported in three parts, because they are three different
+ * questions: what the walls cost, what zoning cost, and what furnishing cost.
+ * Transport presses are counted separately again -- a player has to start the
+ * clock, but "how many presses to build a cell" should not be inflated by how
+ * many times a test decided to change speed.
+ */
+test('act M: the interaction budget for one usable cell', async ({ page }) => {
+  test.setTimeout(600_000);
+  await installTee(page);
+  await openApp(page);
+  const started = Date.now();
+  const presses = new Presses('M');
+  let transportPresses = 0;
+  const runClock = async (which: 'pause' | 'play' | 'fast'): Promise<void> => {
+    transportPresses += 1;
+    await transport(page, which).click();
+  };
+
+  await presses.click(page.getByRole('button', { name: 'New prison' }), 'New prison');
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await presses.click(tab(page, 'build'), 'Build tab');
+  const origin = await calibrate(page);
+  note(`[M] origin (${origin.originX}, ${origin.originY}); the cell will be (13,11)-(16,14)`);
+
+  /* ---- part one: the walls ---- */
+  await presses.click(page.locator('.hud-build__list [data-buildable="wall-brick"]'), 'select Brick wall');
+  await presses.click(page.locator('.hud-build__arm'), 'arm the wall tool');
+  const west = origin.originX + 13 * TILE;
+  const east = origin.originX + 17 * TILE;
+  const north = origin.originY + 11 * TILE;
+  const south = origin.originY + 15 * TILE;
+  const runs = [
+    { name: 'north', a: { x: west + TILE / 2, y: north }, b: { x: east - TILE / 2, y: north } },
+    { name: 'south', a: { x: west + TILE / 2, y: south }, b: { x: east - TILE / 2, y: south } },
+    { name: 'west', a: { x: west, y: north + TILE / 2 }, b: { x: west, y: south - TILE / 2 } },
+    { name: 'east', a: { x: east, y: north + TILE / 2 }, b: { x: east, y: south - TILE / 2 } },
+  ];
+  const beforeWalls = await sample(page, started);
+  const segments = new Set<string>();
+  for (const run of runs) {
+    const before = (await sentCommands(page)).length;
+    await presses.drag(page, run.a, run.b, `wall run ${run.name}`);
+    const got = (await sentCommands(page)).slice(before);
+    for (const c of got) segments.add(`${String(c['x'])},${String(c['y'])} ${String(c['edge'])}`);
+    note(`[M] run ${run.name}: ${got.length} segment(s) -> ${JSON.stringify(got.map((c) => `${String(c['x'])},${String(c['y'])} ${String(c['edge'])}`))}`);
+  }
+  note(`[M] four drags produced ${segments.size} distinct segments; a 4x4 perimeter needs 16`);
+  const wallPresses = presses.total;
+  await page.waitForTimeout(1200);
+  const afterWallOrders = await sample(page, started);
+  note(`[M] WALLS ORDERED in ${wallPresses} interactions. treasury ${beforeWalls.treasury} -> ${afterWallOrders.treasury} (took ${beforeWalls.treasury - afterWallOrders.treasury}) | queue ${JSON.stringify(afterWallOrders.queue)}`);
+  await shot(page, 'M01-perimeter-ordered');
+
+  await runClock('fast');
+  await runClock('fast');
+  for (let i = 0; i < 90; i += 1) {
+    const text = await panelText(page, '.hud-build__queue');
+    if (text.includes('not laid out')) break;
+    if (i % 12 === 0) note(`[M] building: ${text.replace(/\n/g, ' / ')} at tick ${await currentTick(page)}`);
+    await page.waitForTimeout(2000);
+  }
+  await runClock('pause');
+  await page.waitForTimeout(600);
+  const wallsUp = await sample(page, started);
+  note(`[M] the perimeter is up at tick ${wallsUp.tick}. treasury ${wallsUp.treasury}`);
+  note(`[M] status strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+  await shot(page, 'M02-walls-up');
+
+  /* ---- part two: zoning it ---- */
+  await presses.click(tab(page, 'rooms'), 'Rooms tab');
+  note(`[M] the Rooms panel as it arrives:\n${await panelText(page, '.hud-rooms')}`);
+  await presses.click(page.locator('.hud-rooms__list [data-room="room.cell"]'), 'select Cell');
+  note(`[M] with Cell selected the panel says:\n${await panelText(page, '.hud-rooms')}`);
+  await presses.click(page.locator('.hud-rooms__arm'), 'arm the zone tool');
+  let zoned = false;
+  for (let attempt = 1; attempt <= 3 && !zoned; attempt += 1) {
+    await presses.drag(page, centreOf(origin, 13, 11), centreOf(origin, 16, 14), `zone drag attempt ${attempt}`);
+    note(`[M] after the zone drag the panel says:\n${await panelText(page, '.hud-rooms')}`);
+    await shot(page, `M03-zone-drawn-attempt-${attempt}`);
+    const confirm = page.locator('.hud-rooms__confirm');
+    if ((await confirm.count()) > 0 && (await confirm.isVisible())) {
+      await presses.click(confirm, `Confirm the room (attempt ${attempt})`);
+    } else {
+      note('[M] no Confirm control was visible after the drag');
+    }
+    await page.waitForTimeout(1400);
+    const counts = await latestCounts(page);
+    note(`[M] attempt ${attempt}: rooms=${counts?.rooms} band ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+    zoned = (counts?.rooms ?? 0) > 0;
+    if (!zoned) {
+      await presses.click(page.locator('.hud-rooms__list [data-room="room.cell"]'), 're-select Cell');
+      await presses.click(page.locator('.hud-rooms__arm'), 're-arm the zone tool');
+    }
+  }
+  const zonePresses = presses.total;
+  note(`[M] ZONED=${zoned} after ${zonePresses} interactions in total (${zonePresses - wallPresses} for the zoning)`);
+  note(`[M] the Rooms panel now:\n${await panelText(page, '.hud-rooms')}`);
+  await shot(page, 'M04-zoned');
+
+  /* ---- part three: a bed and a toilet ---- */
+  await presses.click(tab(page, 'build'), 'Build tab');
+  for (const [id, label, tx, ty] of [
+    ['bed-wooden', 'Bed', 14, 12],
+    ['toilet-brick', 'Toilet', 15, 13],
+  ] as const) {
+    await presses.click(page.locator(`.hud-build__list [data-buildable="${id}"]`), `select ${label}`);
+    const armLabel = (await page.locator('.hud-build__arm').innerText()).trim();
+    if (armLabel.toLowerCase().startsWith('place')) await presses.click(page.locator('.hud-build__arm'), `arm the ${label}`);
+    const point = centreOf(origin, tx, ty);
+    const cmds = await presses.press(page, point.x, point.y, `place the ${label} at (${tx},${ty})`);
+    await page.waitForTimeout(1200);
+    note(`[M] ${label}: ${cmds.length} order(s) | band ${JSON.stringify(await panelText(page, '.hud__refusal'))} | queue ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+  }
+  await shot(page, 'M05-furniture-ordered');
+
+  await runClock('fast');
+  await runClock('fast');
+  for (let i = 0; i < 60; i += 1) {
+    if ((await panelText(page, '.hud-build__queue')).includes('not laid out')) break;
+    await page.waitForTimeout(2000);
+  }
+  await runClock('pause');
+  await page.waitForTimeout(800);
+
+  const done = await latestCounts(page);
+  note(`[M] ==== ONE USABLE CELL ====`);
+  note(`[M] tick ${done?.tick}: rooms=${done?.rooms} roomCapacity=${done?.roomCapacity} accommodationCapacity=${done?.accommodationCapacity} treasury=${done?.treasuryMinorUnits}`);
+  note(`[M] INTERACTIONS: walls ${wallPresses}, zoning ${zonePresses - wallPresses}, furniture ${presses.total - zonePresses}, TOTAL ${presses.total}`);
+  note(`[M] plus ${transportPresses} transport presses (start/stop the clock), so ${presses.total + transportPresses} presses of any kind`);
+  note(`[M] money spent: 25000 -> ${done?.treasuryMinorUnits}`);
+  note(`[M] the Rooms panel at the end:\n${await panelText(page, '.hud-rooms')}`);
+  await presses.click(tab(page, 'overview'), 'Overview tab, to see whether a prisoner can now be admitted');
+  note(`[M] the Intake panel now says:\n${await panelText(page, '.hud-intake')}`);
+  note(`[M] status strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+  await shot(page, 'M06-one-usable-cell');
+  presses.report();
+});
