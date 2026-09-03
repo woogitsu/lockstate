@@ -63,8 +63,12 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  * ## What was watched going red
  *
  * Four mutations of the production code, each restored **by hand** and checked
- * with `sha256sum -c` against hashes taken before the first of them. Baseline:
- * `6 passed (19.8s)`.
+ * with `sha256sum -c` against hashes taken before the first of them. Baseline
+ * on the restored tree, which is this file as it stands: `6 passed (29.2s)`.
+ * (The intermediate figure logged while the assertions below were being ordered
+ * was `6 passed (19.8s)`; the slower one is the honest baseline because it is
+ * the run of the spec that shipped, taken on the same busy box as the
+ * mutations.)
  *
  * | mutation | result |
  * | --- | --- |
