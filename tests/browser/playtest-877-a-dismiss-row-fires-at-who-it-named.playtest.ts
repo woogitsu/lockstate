@@ -456,38 +456,83 @@ test.describe('the delivery rows fire at what they named', () => {
     await expect(page.locator('.hud-clock__day')).toHaveText('1');
     await tab(page, 'build').click();
 
-    // Separate purchases rather than one large one: the block lists one row per
-    // *purchase*, and what re-points a row is one of them landing.
-    for (let index = 0; index < 6; index += 1) await buy(page, 'wall-brick', 4 + index);
-    await page.waitForTimeout(300);
+    /*
+     * Staggered **in ticks, not in wall clock** -- and two runs of this act
+     * were spent learning why that matters.
+     *
+     * `PROCUREMENT_DELIVERY_DELAY_TICKS` is 100, counted from the tick the
+     * purchase is consumed. Six purchases made with the clock paused are all
+     * consumed on the same tick and therefore all arrive on the same tick: the
+     * block goes from three rows to none in one publication and **no row is
+     * ever re-pointed** (run 1: 0 re-pointings in 11,292ms, then nothing left
+     * to press). Spacing the buys by wall clock instead does not fix it,
+     * because on a loaded box a `buy()` takes several seconds and the whole
+     * batch had already landed before the first read (run 2: `pending=null`).
+     *
+     * So the clock is driven by hand: buy, advance a fixed number of *ticks*,
+     * buy again. Arrival times are then 22 ticks apart whatever the machine is
+     * doing, and the last stretch stops 20 ticks short of the first arrival, so
+     * the measurement begins with a full list and a head that is about to
+     * leave -- which is the only state in which an index-bound row can
+     * re-point, and the state a player buying a few loads is in.
+     */
+    const advanceTo = async (target: number): Promise<void> => {
+      await transport(page, 'play').click();
+      for (;;) {
+        if ((await currentTick(page)) >= target) break;
+        await page.waitForTimeout(120);
+      }
+      await transport(page, 'pause').click();
+    };
+
+    const STAGGER_TICKS = 22;
+    const LOADS = 8;
+    const restock = async (): Promise<number> => {
+      await transport(page, 'pause').click();
+      const base = await currentTick(page);
+      for (let index = 0; index < LOADS; index += 1) {
+        await buy(page, 'wall-brick', 3);
+        await advanceTo(base + STAGGER_TICKS * (index + 1));
+      }
+      // 20 ticks short of the first arrival (`DEFAULT_LEAD_TICKS` is what the
+      // first buy waited to be consumed, so it arrives at base + 20 + 100).
+      await advanceTo(base + 100);
+      await transport(page, 'play').click();
+      return base;
+    };
+
+    const base = await restock();
+    note(`${String(LOADS)} loads bought, staggered ${String(STAGGER_TICKS)} ticks from tick ${String(base)};`
+      + ` now at tick ${String(await currentTick(page))} with the clock at speed 1`);
     await bringIntoView(page, '.hud-build__deliveries');
     const initial = await readRows(page, DELIVERY_ROW, 'data-delivery');
     note(`delivery rows after buying: ${JSON.stringify(initial)}`);
     note(`deliveries block says pending=${await page.locator('.hud-build__deliveries').getAttribute('data-pending')}`);
     expect(initial.length).toBeGreaterThan(0);
 
-    await transport(page, 'play').click();
-    await transport(page, 'fast-forward').click();
-    await page.waitForTimeout(200);
-    await transport(page, 'fast-forward').click();
-    note(`clock running; tick ${String(await currentTick(page))}`);
-
-    await sampleChurn(page, DELIVERY_ROW, 'data-delivery', 'deliveries (clock at max, nothing pressed)', 10_000);
+    await sampleChurn(page, DELIVERY_ROW, 'data-delivery', 'deliveries (speed 1, nothing pressed)', 10_000);
 
     const outcomes: Outcome[] = [];
     const delays = [0, 250, 600] as const;
     let attempt = 0;
     const startedAt = Date.now();
-    while (outcomes.length < 9 && Date.now() - startedAt < 200_000) {
+    while (outcomes.length < 9 && Date.now() - startedAt < 240_000) {
       const delayMs = delays[attempt % delays.length]!;
       attempt += 1;
       await bringIntoView(page, '.hud-build__deliveries');
       let rows = await readRows(page, DELIVERY_ROW, 'data-delivery');
-      if (rows.length === 0) {
-        for (let index = 0; index < 6; index += 1) await buy(page, 'wall-brick', 4 + index);
-        await page.waitForTimeout(250);
+      if (rows.length < 2) {
+        // Fewer than two rows cannot show a re-pointing: the hazard is one
+        // leaving while another is still there.
+        note(
+          `attempt ${String(attempt)}: only ${String(rows.length)} row(s) in view,`
+            + ` pending=${await page.locator('.hud-build__deliveries').getAttribute('data-pending')}`
+            + `, funds=${String((await latestCounts(page))?.treasuryMinorUnits)} -- restocking`,
+        );
+        await restock();
+        await bringIntoView(page, '.hud-build__deliveries');
         rows = await readRows(page, DELIVERY_ROW, 'data-delivery');
-        if (rows.length === 0) continue;
+        if (rows.length < 2) continue;
       }
       const target = rows[rows.length - 1]!;
       if (target.subjectId === '') continue;
