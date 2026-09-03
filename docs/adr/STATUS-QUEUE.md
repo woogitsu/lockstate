@@ -630,99 +630,107 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `33cf0701` (**v0.0.432**) by the delta method this
-header describes, from the v0.0.427 anchor kept below. **Five of the ten
+Re-anchored at `main` @ `14f37a60` (**v0.0.438**) by the delta method this
+header describes, from the v0.0.432 anchor kept below. **Six of the ten
 releases the budget allows, counted on the tree this commit is written
-against: `package.json` ships 0.0.432 at `33cf0701` and the anchor being
-replaced named v0.0.427.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
+against: `package.json` ships 0.0.438 at `14f37a60` and the anchor being
+replaced named v0.0.432.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
 **10**, exactly as the gate demands and as its own failure message insists.
 
-**THE HALFWAY RULE IS KEPT FOR THE SECOND CONSECUTIVE ANCHOR, and this time
-with three pull requests held rather than two.** Dispatched at exactly five of
-ten with #905, #892 and #897 green and waiting; draining them first would have
-put this pass at eight. The sequence now reads five, five, nine, five, six,
-five, **five**.
+**THE HALFWAY RULE WAS BROKEN BY ONE, AND THE BREAK IS RECORDED RATHER THAN
+EXCUSED.** The rule this file states in capitals is that five of ten makes the
+re-anchor a task and not a reading. This pass was dispatched at **six**. The
+mechanism is worth writing down because it is not carelessness and it will
+recur: the anchor stood at **three** when the merge queue began draining, and
+the drain itself spent the budget — #897 took it to four, #907 to five, #908 to
+six — so the halfway mark was crossed *between two merges of a queue already in
+flight*, with no reading in between at which anybody was looking at the number.
+The sequence now reads five, five, nine, five, six, five, **six**. **The lesson
+is narrower than "keep the rule": a drain of N pull requests spends N releases,
+so the rule has to be evaluated against the anchor the drain will END at, not
+the one it starts from.** Three queued at three of ten is six of ten before
+anything is read, and that was knowable before the first merge.
 
-**TWO LIVE CITATIONS MOVED AND TWO DATED ONES CORRECTLY DID NOT, which is the
-distinction this pass is really about.** Of the eleven members besides this
-file, six are cited by name only and five carry line numbers. Opening all five:
+**THE INTERSECTION SWEEP FOUND SEVEN MOVED CITATIONS AND, IN THE MIDDLE OF
+THEM, A VALUE THAT WAS WRONG WHEN IT WAS WRITTEN AND HAD BEEN WRONG FOR THREE
+ANCHORS.** That last is this anchor's real result, and it is a finding against
+one of my own passes rather than against the code:
 
-- **`src/ui/hud/hud.ts:153` → `:165`.** §6 carries another entry's note that
-  this line *"now declares `HudRoomGesture`"*; on this tree `:153` is a bare
-  `}` and the declaration is at **`:165`**. Corrected, with the old value kept
-  beside it.
-- **`tests/unit/ui-hud-messages.test.ts:269-275` → `:270-276`.** The
-  `ALLOWED_MONEY_KEYS` staleness loop, byte-identical, one line down. **This
-  is the first time it has moved in five anchors** — it was re-verified as
-  landing at `3f8c00b0`, `1e9b0a6a`, `a0348955` and `ac58c457`, the last of
-  those a few hours ago.
-- **`src/ui/hud/hud.ts:271` and `:444-449` were left exactly as written**, and
-  that is a decision rather than an oversight. Both are **dated in their own
-  sentences** — *"At `bb3a01e` `export type HudIntent =` is at
-  `src/ui/hud/hud.ts:271`"* and *"`arm-build-tool` (`src/ui/hud/hud.ts:444-449`
-  at `cfab558`)"*. A dated anchor is a record of where something was at a named
-  commit, so re-pointing it would destroy the record rather than repair it.
-  **The extract-open-print check finds these two exactly as loudly as it finds
-  a real mover**, and telling them apart is a reading of the sentence and not
-  of the number.
-- **`src/simulation/protocol/types.ts` holds on all five of its anchors** —
-  `:12` and `:23` are the two handshake channel names in the kind list, `:223`
-  and `:442` the two matching `z.literal` schema kinds, and `:173` is still
-  `protocolVersion: z.literal(SIMULATION_PROTOCOL_VERSION)`. A coherent
-  quartet plus one, all landing, on a file this window touched.
+- **§5's second `telemetry.enabled` gate read `:3136` at `a0348955`. It is
+  `:3133` there.** Off by three from the moment it was entered, and unmoved
+  since, so `ac58c457` and `33cf0701` both give 3133 too. **The other four
+  values in the same sequence are all exactly right** — re-derived by the same
+  grep at `9b8c8e85`, `0e2eb7fb`, `26434e8e` and `5144eb9e`. One wrong value in
+  a run of five, and its shape names its cause: the gate sits **five lines
+  above the mount** at every one of those trees, and `3136` is `3138 − 2`, the
+  mount's own value minus a guessed gap. **That is a computed offset, which the
+  same bullet says three paragraphs above is the one derivation it has never
+  accepted — and the pass that wrote the rule is the pass that broke it, in the
+  same commit.** Corrected here to **`:3297`**, derived by opening it.
+- **Six citations moved, and by two different amounts from one window.** The
+  telemetry import span `:111-113` → **`:113-115`**; the pipeline build `:171` →
+  **`:173`**; the crash listeners `:215-222` → **`:217-224`**; the §5 prose hit
+  `:187` → **`:189`**; the first gate `:209-212` → **`:211-214`** — all **+2**,
+  from #895's two single-line imports at `:42` and `:70`. And the consent mount
+  `:3138-3143` → **`:3302-3307`**, **+164**, which is the whole of what #895
+  added to the file. **So the two halves of that bullet moved unequally for the
+  fourth consecutive anchor**, 2 against 164, which is the standing argument
+  for opening every anchor instead of applying a shift. Every moved span was
+  checked byte-identical to its predecessor before the number was changed.
 
-**Both movers are #877's, and they moved by different amounts.**
-`db5a1914`/#891 edited `src/ui/hud/hud.ts` (`8e4beff9`) and
-`tests/unit/ui-hud-messages.test.ts` (`52838020`, naming the new HUD module in
-the pinned inventory). Twelve lines and one. The different-amounts finding this
-header has recorded three times before therefore holds a fourth: **a single
-shift figure would have been wrong for one of the two**, which is why every
-anchor here is opened rather than offset.
+**A DATED CITATION HELD, A COUNT DID NOT, AND ONLY ONE OF THOSE IS A DEFECT.**
+`src/ui/hud/hud.ts` is a member and this window edited it, so all three of its
+anchors were opened:
 
-**THE PREVIOUS ANCHOR'S NAMED GAP CLOSED ITSELF, and the mechanism is worth
-recording because nobody designed it.** That pass found `src/ui/hud/regime-panel.ts`
-cited **nowhere** in §§3-6 and wrote the hole down rather than filling it. On
-this tree that file **is** a member of the intersection — because the gap
-paragraph itself cites it. So the act of recording a coverage hole pulled the
-uncovered file into the next window's member set, and the delta method now
-sees a file it was structurally blind to one window ago.
+- **`:165` still declares `HudRoomGesture`**, confirmed by `grep -n` rather
+  than by the file having looked unchanged. It survives because **#895's
+  earliest edit to `hud.ts` is at `:640`** and every one of its anchors is
+  above that.
+- **`:271` and `:444-449` were left exactly as written**, for the third
+  consecutive anchor, because both are dated in their own sentences (`bb3a01e`,
+  `cfab558`). The extract-open-print check flags them as loudly as a real
+  mover; the discriminator is the sentence, never the number.
+- **`HudIntent` is twenty-one members and §6 says nineteen — and nineteen is
+  not wrong.** It is dated to `cfab558` and it is correct there. But this
+  entry's whole subject is a hand count that drifts, and it has drifted twice
+  more since the last correction: `dismiss-alert` made it twenty by `33cf0701`,
+  and `select-prisoner` — #895, inside *this* window — makes it twenty-one. So
+  the current figure is **added beside** the dated one rather than replacing
+  it, with the union's opening and closing lines given at all three trees so
+  the next reader need not trust the arithmetic. **This is the difference
+  between a stale citation and an extended one, and conflating them is how a
+  dated record gets destroyed in the name of repairing it.**
 
-**That is a smaller result than it sounds and the difference matters.** Being a
-member means the next pass is *told to look*; it does not mean anything about
-the file has been read. The audit that actually read it was a separate pass,
-taken deliberately, and it found **seven findings, every one of them the
-document being wrong rather than the code** — the strongest on the exported
-interface of `setRoster`, false since #888. So the honest reading is that
-**naming a gap buys attention and not coverage**, which is the same distinction
-the anchor before last drew when it learned that membership is not coverage.
+**The window, and the member set.** `33cf0701..14f37a60`, **28 files**, 27 of
+them besides this one, across **four** implementing merges — `420cabe3`/#905
+(the prisoner inspector, and the only commit in this window that moves a cited
+line), `da83ea68`/#892 (the mid-line tie-break), `24ef7aec`/#897 (three counts
+of one quantity pinned) and `ebe29e7c`/#907 plus `9543634c`/#908 (the two
+playtests) — plus `fc1fbf08`/#906, the previous anchor's own pass, which edited
+only this file and so contributes nothing to the intersection either way.
+Release bumps v0.0.433 through v0.0.438 at `14f37a60`.
 
-**The window, and the member set.** `ac58c457..33cf0701`, **39 files**, 38 of
-them besides this one, across **five** implementing merges — `db5a1914`/#891
-(the dismiss row fires at who it names, plus the owner's confirmation
-sentence), `aa0a243b`/#844 (five audit verdicts), `07c83df4`/#896 (the previous
-anchor's own pass), `620b1dd8`/#900 (the owner's ruling suspending the
-unmet-need withholding) and `49aa1370`/#898 (a wall drag builds every segment
-it drew) — plus the release bumps v0.0.428 through v0.0.432.
+The intersection over §§3-6 — lines **6722-12220 on this tree**, re-derived
+with `grep -n '^## '` on the tree the scan ran against, per the trap this
+header records — is **seven members besides this file**:
+`docs/HUD_PROJECTIONS.md`, `docs/research/README.md`, `package.json`,
+`src/main.ts`, `src/ui/hud/hud.css`, `src/ui/hud/hud.ts` and
+`src/ui/hud/regime-panel.ts`. Four of the seven are cited by name only, with no
+span. `docs/research/README.md`'s rule at `:9` is word for word **on a file
+this window appended to twice** — #907 and #908 both added a row, and both
+append at the single point that makes any two such notes conflict by
+construction, which is the one place this window could plausibly have broken it.
 
-The intersection over §§3-6 — lines **6622-12038 on this tree**, re-derived
-with `grep -n '^## '` on the tree the scan ran against — is **eleven members
-besides this file**: `docs/HUD_PROJECTIONS.md`, `docs/research/README.md`,
-`package.json`, `src/content/default-locale-en.ts`,
-`src/simulation/economy/income.ts`, `src/simulation/protocol/types.ts`,
-`src/ui/hud/hud.css`, `src/ui/hud/hud.ts`, `src/ui/hud/messages.ts`,
-`src/ui/hud/regime-panel.ts` and `tests/unit/ui-hud-messages.test.ts`.
-`docs/research/README.md`'s rule at `:9` is word for word, on a file this
-window appended to; `src/ui/hud/messages.ts:28` still carries the *"{count}
-waiting with no bed to sleep in"* comment it is cited for.
+**The basename scan produces a false member for the seventh consecutive
+anchor, and this time it produced a false *citation* as well.** Matching
+citations by basename rather than by path returned `README.md:59` as though it
+belonged to `docs/research/README.md`. It is the **root** `README.md` —
+ADR-0014's status quote — and the root `README.md` is not in this window at
+all, so a pass trusting the basename would have opened the wrong file, found
+the line intact, and recorded a verification it had not performed. Seven
+anchors, and the failure is always the same filename. **The scan is not wrong
+about basenames; it is being asked a question basenames cannot answer.**
 
-**The basename scan produces a false member for the sixth consecutive anchor,
-and this time there are two.** Twenty-two rows against eleven real ones. Both
-extras are the pair this header has now named five times running —
-`docs/adr/README.md`, matched through `docs/research/README.md` — plus
-`src/simulation/identity/index.ts`, matched through nothing in this window at
-all except another file's basename. Six anchors, same two directories, same
-filename. The scan is not wrong about basenames; it is being asked a question
-basenames cannot answer.
 
 **THE HALFWAY RULE IS KEPT, AND THIS TIME IT WAS KEPT AS A TASK RATHER THAN
 NOTICED AS A READING.** The previous anchor was taken at six of ten; this one
@@ -1726,7 +1734,21 @@ anchors ago, one release late, and the honest reading is that a rule two
 passes have missed by two and then by one is being approached rather than
 kept.
 
-**The anchor before this one, kept — v0.0.427.** It read: *"Re-anchored at `main` @
+**The anchor before this one, kept — v0.0.432.** It read: *"Re-anchored at `main` @
+`33cf0701` (**v0.0.432**) by the delta method this header describes, from the
+v0.0.427 anchor kept below. Five of the ten releases the budget allows."* It
+kept the halfway rule for the second consecutive anchor and did it with three
+pull requests held rather than two, which is the point of the rule. Its result
+was a distinction rather than a repair: **two live citations moved and two
+dated ones correctly did not**, and it said in terms that the
+extract-open-print check flags a decoy exactly as loudly as a real mover, so
+the discriminator has to be the sentence around the number and never the
+number. **This anchor is the one that found the cost of getting that wrong in
+the other direction** — its own `:3136`, entered by a computed offset one pass
+earlier, which three anchors read past because the sentence around it looked
+like every other sentence in the sequence.
+
+**The anchor before that one, kept — v0.0.427.** It read: *"Re-anchored at `main` @
 `ac58c457` (**v0.0.427**) by the delta method this header describes, from the
 v0.0.423 anchor kept below. Four of the ten releases the budget allows."* It
 moved no citation and said so plainly rather than dressing a cheap window as a
@@ -7998,7 +8020,7 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `33cf0701`, and at `ac58c457`, `a0348955` and `1e9b0a6a` before it — the same bare `grep -ril
+absences were re-verified at `14f37a60`, and at `33cf0701`, `ac58c457`, `a0348955` and `1e9b0a6a` before it — the same bare `grep -ril
 'total_bytes\|max_total_bytes\|retention\|prune'` over the directory still
 returns exactly one file, and its only hit is still the *comment* in
 `20260826130000_server_stamp_updated_at.sql:68` about a **future** retention
@@ -8385,6 +8407,108 @@ It re-opened only the five line-number citations inside the window's 39 files;
 blind spot. It did not re-open the previous anchor's corrections, because that
 pass had just done so for the ten before it and re-checking a check is where
 this exercise stops paying.
+
+## 3. What the anchor pass of 2026-09-04 opened, and the wrong-when-written value it found in its own predecessor's work
+
+**Taken at `14f37a60` (v0.0.438).** Six of the ten releases the budget allows,
+**which is one past the halfway rule and the break is recorded rather than
+excused.** The anchor stood at three when the merge queue began draining, and
+the drain spent the budget: #897 took it to four, #907 to five, #908 to six. So
+the halfway mark was crossed between two merges of a queue already in flight,
+at no point at which anybody was reading the number. **The lesson is narrower
+than "keep the rule": a drain of N pull requests spends N releases, so the rule
+has to be evaluated against the anchor the drain will END at.** Three queued at
+three of ten is six of ten before a line is read, and that was knowable before
+the first merge.
+
+**Window `33cf0701..14f37a60`: 28 files, four implementing merges** — #905 (the
+prisoner inspector, and the only commit in the window that moves a cited line),
+#892 (the mid-line tie-break), #897 (three counts of one quantity pinned) and
+#907 plus #908 (the two playtests) — plus #906, the previous anchor's own pass,
+which edited only this file.
+
+**Seven members besides this file**, four cited by name only and three carrying
+line numbers. All three were opened.
+
+**Seven live citations moved. Six of them are one commit's, and the seventh was
+never right at all.**
+
+| citation | was | is |
+| --- | --- | --- |
+| the telemetry import span | `src/main.ts:111-113` | **`:113-115`** |
+| the pipeline build | `src/main.ts:171` | **`:173`** |
+| the crash listeners | `src/main.ts:215-222` | **`:217-224`** |
+| §5's prose hit | `src/main.ts:187` | **`:189`** |
+| the first `telemetry.enabled` gate | `src/main.ts:209-212` | **`:211-214`** |
+| the consent mount | `src/main.ts:3138-3143` | **`:3302-3307`** |
+| the second `telemetry.enabled` gate | `src/main.ts:3136` — **wrong when written** | **`:3297`** |
+
+The first five are **+2**, from #895's two single-line imports at `:42` and
+`:70`. The consent mount is **+164**, the whole of what #895 added to the file.
+**So the two halves of that bullet moved unequally for the fourth consecutive
+anchor**, 2 against 164 — the standing argument for opening every anchor rather
+than applying a shift. Every moved span was checked byte-identical to its
+predecessor before its number was changed.
+
+**THE SEVENTH IS THIS PASS'S REAL RESULT, and it is a finding against one of
+this header's own earlier passes rather than against the code.** §5's second
+`telemetry.enabled` gate read `:3136` at `a0348955`. Opening that tree,
+`grep -n 'if (telemetry.enabled && appRoot !== null)' src/main.ts` returns
+**3133**. It returns 3133 at `ac58c457` and at `33cf0701` too, so the value was
+three lines out from the moment it was entered and no later window moved it —
+**wrong for three anchors, and wrong when written.** The other four values in
+the same sequence are all exactly right, re-derived by the same grep: `:3108`
+at `9b8c8e85`, `:3072` at `0e2eb7fb`, `:3044` at `26434e8e`, `:3023` at
+`5144eb9e`. One wrong value in a run of five, and its shape names its cause:
+**the gate sits five lines above the mount at every one of those trees, and
+`3136` is `3138 − 2`** — the mount's own value minus a guessed gap. That is a
+computed offset, and the same bullet states three paragraphs above that a
+computed offset is the one derivation it has never accepted. **The pass that
+wrote the rule is the pass that broke it, in the same commit, and two later
+passes re-read the rule without re-deriving the number.**
+
+A consequence rather than a separate finding: that bullet's claim that the two
+gates *"moved at `a0348955` by different amounts — the first by one and the
+second by 28"* rests on the wrong value. The second moved `3108 → 3133`, which
+is **25**. The conclusion it supports is untouched, and better evidenced here at
+2 against 164.
+
+**A dated citation held, a count did not, and only one of those is a defect.**
+`src/ui/hud/hud.ts:165` still declares `HudRoomGesture`, confirmed by `grep -n`
+rather than by the file having looked unchanged — it survives because #895's
+earliest edit to that file is at `:640` and every one of its anchors is above
+it. `:271` and `:444-449` were left exactly as written for the third
+consecutive anchor, both being dated in their own sentences. And **`HudIntent`
+is twenty-one members where §6 says nineteen — but nineteen is not wrong**: it
+is dated to `cfab558` and correct there. `dismiss-alert` made it twenty by
+`33cf0701` and `select-prisoner`, #895, inside this window, makes it
+twenty-one. The current figure is added beside the dated one rather than
+replacing it. **That distinction is the whole discipline: a stale citation is
+repaired, an extended one is appended to, and conflating them destroys a dated
+record in the name of fixing it.**
+
+**Next free number: 0095.** `docs/adr/README.md` states it and this file agrees,
+checked against the index rather than against memory. ADR 0095 is still
+`Proposed` on an unmerged branch with no pull request opened for it, so `main`
+still reads 0095 and this restatement is not warranted by a remote sweep, which
+was not re-run here.
+
+**The basename scan produced a false *citation* this time, not just a false
+member.** Matching citations by basename rather than by path returned
+`README.md:59` as though it belonged to `docs/research/README.md`. It is the
+**root** `README.md` — ADR-0014's status quote — and the root `README.md` is
+not in this window at all. A pass trusting it would have opened the wrong file,
+found the line intact, and recorded a verification it never performed. **That is
+worse than the false member this header has now named seven times**, because a
+false member costs a read and a false citation buys a false clean.
+
+**What this pass did not do.** It did not sweep the remote for held ADR
+numbers. It opened only the three line-number citations inside the window's 28
+files; every citation into a file outside them stays unread, which is the
+standing blind spot. It did **not** re-open the previous anchor's two
+corrections, and on the evidence above that policy is the one worth revisiting:
+`:3136` survived three anchors precisely because each pass either trusted its
+predecessor or was not told to look.
 
 ## 4. The live risk to watch: ADR 0016 §2 is binding and nothing enforces it
 
@@ -9899,11 +10023,11 @@ one direction.
 
   **Re-run at `bb3a01e`, the same grep is not clean and the conclusion inverts.**
   `grep -rn "services/telemetry" src/ --include=*.ts` outside the directory
-  returns `src/main.ts:111-113` (`createTelemetryPipeline`, `createCrashReporter`,
+  returns `src/main.ts:113-115` (`createTelemetryPipeline`, `createCrashReporter`,
   and a `CancelScheduledPump` type import) and
   `src/ui/telemetry-consent-prompt.ts:8`. **The first of those read `:98-100`
-  until `53e1405`, `:103-105` until `0352116`, and `:105-107` until
-  `a0348955`**, and is corrected here rather
+  until `53e1405`, `:103-105` until `0352116`, `:105-107` until
+  `a0348955`, and `:111-113` until `33cf0701`**, and is corrected here rather
   than overwritten for the
   reason this bullet keeps every previous value: the sequence is the argument.
   **The `:105-107` value was stale before the window that corrected it**, not
@@ -9914,10 +10038,13 @@ one direction.
   `src/services/telemetry/recorder.ts` in its own header, so a reader running
   the raw grep now sees seven and the six this sentence is about are still the
   six outside.
-  `src/main.ts:171` builds the
-  pipeline as the first thing after `GAME_VERSION`, and the `error` and
+  `src/main.ts:173` builds the
+  pipeline as the first thing after `GAME_VERSION` (**this read `:171` until
+  `33cf0701`**), and the `error` and
   `unhandledrejection` listeners that call `crashReporter.reportUnhandledError`
-  are at **`:215-222`**
+  are at **`:217-224`** (**this read `:215-222` until `33cf0701`**; the span is
+  byte-identical, two lines down, because #895's two single-line imports at
+  `:42` and `:70` are the only thing this window put above it)
   (**this read `:163-204` until `0352116` and `:165-206` until `a0348955`;
   the span is retired and replaced by two anchors, because a single span for
   "builds the pipeline and registers the listeners" stopped containing the
@@ -9954,15 +10081,20 @@ one direction.
   `58220f7` intersection and that pass listed it as one. It moved **44 more** in
   this window, to `:2945-2950`, from #710's ninth chip and #716's overdraft work
   together, so the value written here was 64 lines out by the time it was
-  opened; **and then it went stale for a third consecutive anchor and is
+  opened; **and then it went stale for a third consecutive anchor and was
   `:3138-3143` at `a0348955`** — 193 lines out, of which only 11 belong to the
   window that found it, because the `1e9b0a6a` pass declined to sweep the
   intersection `src/main.ts` was a named member of and the value was already
   182 out when that pass ended. **This is the worst this pair has ever been,
   and the run of unread anchors is now three where it had never been two.** The
   offset was not computed: `grep -n 'createTelemetryConsentPrompt({'
-  src/main.ts` returns 3138 on the tree this anchor names, which is the only
-  derivation this bullet has ever accepted)**). **The import span
+  src/main.ts` returned 3138 on the tree that anchor named, which is the only
+  derivation this bullet has ever accepted. **It then held for two anchors —
+  `ac58c457` and `33cf0701` both give 3138 — and moves 164 here, to
+  `:3302-3307`**, which is the whole of what #895's prisoner inspector added to
+  `src/main.ts` and therefore the file's entire net growth in this window; the
+  six lines are byte-identical to the six at `:3138-3143`, and the same grep
+  returns 3302 on the tree this anchor names)**). **The import span
   moved for the fourth consecutive anchor**, having held across the four before
   that: `:82-84`, then `:87-89`, then `:96-98`, then `:98-100` — two lines
   down, because #533's dismissal work added an import to the block above it, and
@@ -9983,9 +10115,11 @@ one direction.
   has **still** never moved, on a file no window has touched — six anchors now,
   five of which have moved and the sixth being the only one cited by symbol.
   **Two hits this sentence has never named, recorded because the next reader
-  will run the grep and count six**: `src/main.ts:187` (this read `:172`, then
+  will run the grep and count six**: `src/main.ts:189` (this read `:172`, then
   `:174`, then `:179` from `53e1405`, then `:181` at `0352116`
-  with the import span above it, and is **six further down at `a0348955`**) and `src/ui/telemetry-consent-prompt.ts:17` are
+  with the import span above it, **six further down at `a0348955`**, and is
+  **two further down again at `14f37a60`**, moving with the import span as it
+  always has) and `src/ui/telemetry-consent-prompt.ts:17` are
   prose inside doc comments, not imports. **The count in this sentence was `four` until this anchor and it was
   right then**; the import span gaining a third line (`CancelScheduledPump`) is
   what makes it six, and the `src/main.ts` prose hit moved with the rest, from
@@ -10097,14 +10231,40 @@ one direction.
   anything, because the transport's destination comes from deployment
   configuration, nothing sets it, and with it absent the pipeline constructs
   *nothing* — so the consent prompt is not mounted either
-  (`src/main.ts:209-212`, and `:3136` at `a0348955` — both gate on
+  (`src/main.ts:211-214`, and `:3297` at `14f37a60` — both gate on
   `telemetry.enabled`; the first read `:208-211` from `5144eb9e` until
-  `a0348955`, which is the longest either has held, and the second read `:3108`
+  `a0348955` and `:209-212` until `33cf0701`, and the second read `:3108`
   at `9b8c8e85`, `:3072` at
   `0e2eb7fb`, `:3044` at
   `26434e8e` and through `33a4a22e`, `:3023` at `5144eb9e`, and
-  `:203-206`/`:2941` before that). **Both moved at `a0348955` and by different
-  amounts again — the first by one and the second by 28** — which is the third
+  `:203-206`/`:2941` before that).
+
+  **THE SECOND GATE'S PREVIOUS VALUE WAS WRONG WHEN IT WAS WRITTEN, AND STAYED
+  WRONG FOR THREE ANCHORS.** This entry read `:3136` at `a0348955`. Opening
+  that tree, `grep -n 'if (telemetry.enabled && appRoot !== null)' src/main.ts`
+  returns **3133**, not 3136 — and it returns 3133 at `ac58c457` and at
+  `33cf0701` as well, so the value was three lines out from the moment it was
+  entered and no later window moved it. **The other four values in the same
+  sequence are all exactly right**, re-derived here by the same grep: `:3108`
+  at `9b8c8e85`, `:3072` at `0e2eb7fb`, `:3044` at `26434e8e` and `:3023` at
+  `5144eb9e`. So this is one wrong value in a run of five, and the shape of the
+  error names its cause: **the gate sits five lines above the mount at every
+  one of those trees, and `3136` is `3138 − 2`** — the mount's value minus a
+  guessed gap. That is an offset, and the sentence three paragraphs above says
+  in terms that a computed offset *"is not the derivation this bullet has ever
+  accepted"*. **The pass that wrote it was the same pass that wrote that
+  sentence** (the v0.0.423 anchor, correcting this bullet's every rooted value
+  at once), which is the sharpest thing this anchor found: the rule and its
+  violation landed in one commit, and the violation survived the two passes
+  that re-read the rule. A consequence worth naming rather than silently
+  fixing: the claim that the two gates *"moved at `a0348955` by different
+  amounts — the first by one and the second by 28"* rests on that wrong value.
+  The second gate moved `3108 → 3133`, which is **25**, not 28. The
+  *conclusion* — that the two halves move unequally and an offset would be
+  wrong for one of them — is untouched and is, if anything, better evidenced
+  now: **in this window the first gate moves 2 and the second 164.**
+
+  Which is the fourth
   consecutive anchor at which the two halves of this bullet have moved
   unequally, and the reason the shift is never applied as an offset.
   **Both read `:201-204` and `:2877` until `0352116`, and the second of the two
@@ -10415,6 +10575,17 @@ one direction.
   `grep -c "readonly kind: '"` between `export type HudIntent =` and the
   union's close — three of them room-related (`zone-room`, `unzone-room`,
   `arm-room-tool`), which is the half of this sentence that did not move.
+  **That nineteen is still right at `cfab558` and the union is now
+  twenty-one**, counted the same way at `14f37a60`: `dismiss-alert` took it to
+  twenty by `33cf0701`, and `select-prisoner` — #895's prisoner inspector,
+  which landed inside *this* window — takes it to twenty-one. The dated figure
+  is left standing because it is true of the tree it names; the current one is
+  added beside it because **this entry's entire subject is a hand count that
+  drifts, and it has now drifted twice more since the last correction.** The
+  three room-related members are unchanged, so that half of the sentence still
+  has not moved. Derivation, so the next reader need not trust the arithmetic:
+  the union opens at `:321` and its body ends at `:668` on this tree, against
+  `:321`/`:641` at `33cf0701` and `:311`/`:604` at `cfab558`.
   (**This read "eighteen" and had been false for one anchor.** The nineteenth
   is `dismiss-staff`, added by **#533 at `a8a446e`**, which is in the
   `82ae630..e1813b7` window — `git show 82ae630:src/ui/hud/hud.ts` has no such
@@ -12114,7 +12285,7 @@ numbers were not the damage.** Stated so it can be checked:
   `prisoners-intake-system.test.ts:230` and `:529`;
   `entity-generation-wrap.test.ts:96`, `:124`, `:163`, `:178`, `:190` and
   `:204`; `unconsumed-command-contract.test.ts:204` and `:230`;
-  `ui-hud-messages.test.ts:270-276` (moved from `:218-224` by #827 and from `:269-275` by #891, byte-identical throughout, re-verified at `33cf0701`, and `ac58c457`, `a0348955`, `1e9b0a6a` and `3f8c00b0` before that — **four consecutive anchors unmoved and then a move**, and the move is one line, from `52838020` naming a new HUD module in the pinned inventory above the loop); `environment-art.test.ts:248` and `:256`;
+  `ui-hud-messages.test.ts:270-276` (moved from `:218-224` by #827 and from `:269-275` by #891, byte-identical throughout, re-verified at `14f37a60` — where the file is outside the window and the loop is still at `:273-275` inside the cited span — and `33cf0701`, `ac58c457`, `a0348955`, `1e9b0a6a` and `3f8c00b0` before that — **four consecutive anchors unmoved, then a move, then unmoved again**, and the move is one line, from `52838020` naming a new HUD module in the pinned inventory above the loop); `environment-art.test.ts:248` and `:256`;
   `adr-status-reference-contract.test.ts:147-150`, `:405`, `:427` and `:431`;
   `docs/adr/README.md:103-110` and `:158`; `docs/TRUSTED_SERVICES.md:604`,
   `:607` and `:610`; `docs/adr/0013-…md:15`, `:19-21` and `:151`;
