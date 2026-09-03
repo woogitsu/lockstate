@@ -4699,10 +4699,45 @@ test.describe('the assembled application', () => {
         timeout: 20_000,
       })
       .toBe(String(purchases));
-    await page.locator('.hud-strip__transport [title="Pause"]').click();
+    /*
+     * **The funds assertion goes BEFORE the pause, and that ordering is the
+     * whole of issue #842.**
+     *
+     * It used to read: poll `data-pending` to five, click Pause, assert funds.
+     * That treats *"five deliveries are pending"* as *"five purchases have been
+     * charged"*, and those are not the same statement. Measured in a browser
+     * with the clock running, sampling every 100ms:
+     *
+     *     t+100ms  spent 240  pending=3
+     *     t+200ms  spent 240  pending=4
+     *     t+300ms  spent 320  pending=5   <-- pending is FIVE, four are debited
+     *     t+400ms  spent 400  pending=5
+     *
+     * `data-pending` is written by the projection ahead of the debit landing,
+     * so the poll can trip with one or two purchases still outstanding. Pausing
+     * there froze the clock those debits needed, the shortfall became permanent,
+     * and `toHaveText`'s ten seconds of retries could not rescue it: CI's log
+     * shows thirteen polls all reading the same short value. It failed twice
+     * that way -- `dc720790` at 24,680 and PR #839's job at 24,760, which are
+     * **exactly one and two purchases** short of 24,600.
+     *
+     * Asserting first is self-synchronising: `toHaveText` retries while the
+     * clock is still running, so the outstanding debits land. There is room for
+     * it -- a debit lands within ~100ms, and a delivery needs
+     * `PROCUREMENT_DELIVERY_DELAY_TICKS` -- and the Pause below then does only
+     * what its own comment says it is for, keeping the deliveries in flight for
+     * the rest of the test rather than also freezing the accounting.
+     *
+     * **The economy was never wrong**, which is worth stating because the first
+     * report of #842 read like a money leak. Five presses against a paused
+     * clock debit exactly 400 and hold it (ADR 0051 dispatches a purchase
+     * during a pause and charges for it), and five against a running clock
+     * reach 400 too if nothing stops the clock first.
+     */
     await expect(funds).toHaveText(
       fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - purchases * 2 * unitPriceOf('item.brick')),
     );
+    await page.locator('.hud-strip__transport [title="Pause"]').click();
 
     // Closed again: the arrival state, with five purchases outstanding.
     await page.locator('.hud-build__buy-toggle').click();
