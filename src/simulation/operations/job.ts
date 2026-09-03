@@ -253,10 +253,26 @@ export class JobBoard {
    * `NavigationSystem` instance's queue -- a freshly constructed one (this
    * method's own snapshot scope) never received that request and would
    * never resolve it, leaving the job stuck in `'travelling'` forever.
-   * Drop it back to `'assigned'` (clearing the stale id) so
-   * `JobSystem.beginLeg` re-requests routing on the next scheduled tick --
-   * the same restore convention `PrisonerOperationsRuntime.loadSnapshot`
-   * uses for mid-travel prisoners.
+   * Drop it back to `'assigned'` (clearing the stale id) so the routing is
+   * requested again -- the same restore convention
+   * `PrisonerOperationsRuntime.loadSnapshot` uses for mid-travel prisoners.
+   *
+   * **This branch is a migration path and nothing else since
+   * [ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md), and the
+   * sentence above named a deleted symbol until 2026-09-03.** It said the drop
+   * was *"so `JobSystem.beginLeg` re-requests routing on the next scheduled
+   * tick"*; `JobSystem` and `beginLeg` both went with that decision, and the
+   * re-request now comes from the carrier's own next reconsideration --
+   * `ActionSystem` re-selects the carry (their active job makes it providable)
+   * and `beginCarryLeg` asks for the route. **No save this build writes can
+   * hold a `'travelling'` job at all**: nothing in `src/` assigns that state,
+   * or `'performing'`, or `'reserved'`. The three members stay in
+   * `JobLifecycleState` because a save written *before* ADR 0093 can carry
+   * them, which is exactly what this branch is for -- and note that
+   * `'performing'` gets no equivalent normalisation, because a pre-0093 save's
+   * carrier has no `action.carry` in its `actionIndex` either and
+   * `CarryJobExecutor.reconcileRestoredJobs` is the path that decides such a
+   * job's fate.
    */
   public loadSnapshot(snapshot: readonly CarryItemJob[]): void {
     this.jobs.clear();

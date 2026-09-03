@@ -23,7 +23,12 @@ before its watch window. That is the whole of what this record answers.
 
 ## The answer, in one line
 
-**The errand works when a player watches it, and the roster says "Errand".**
+**The errand works when a player watches it, and the roster says "Errand"** —
+four reproductions, 114 to 126 ticks each, both legs walked. **It also survives
+a save and reload taken mid-walk with the goods in hand, and costs 380 ticks
+doing it rather than the 40 ADR 0093 decision 5 predicts**, because a restore
+turns an in-flight action back into a selection and the work block had ended by
+the time the carrier was reconsidered (Finding 9).
 
 ## The prison, and how it was built
 
@@ -98,12 +103,13 @@ Read off that table, and each is a separate claim ADR 0093 makes:
 - **The whole errand cost 114 ticks** from selection (7790) to completion
   (7904), of which 51 were the pickup leg and its dwell.
 
-### Reproduced, twice, with the same interval
+### Reproduced four times, with the same interval
 
-Run 4 built the same prison from scratch and ran the same watch. **Selection to
-`completed` was 114 ticks in run 3 and 114 ticks in run 4** (7773 → 7887), and
-its *second* errand — sampled faster, because the capture loop reads no DOM —
-gives the fullest walk in this record:
+Runs 4, 6 and 7 built the same prison from scratch and ran the same watch.
+**Selection to `completed` was 114 ticks in run 3, 114 in run 4 (7773 → 7887),
+118 in run 6 (7869 → 7987) and 126 in run 7 (7841 → 7967)** — and run 4's
+*second* errand, sampled faster because the capture loop reads no DOM, gives the
+fullest walk in this record:
 
 | tick | prisoner tile | action / phase | job state / leg |
 | --- | --- | --- | --- |
@@ -379,17 +385,85 @@ while a delivery waits. What a player would be shown either way is nothing:
 there is no sentence anywhere about a prisoner skipping an errand, and ADR
 0093's amendment says explicitly that whether one exists is the owner's.
 
+## Finding 9 — a restore turns an in-flight errand back into a selection
+
+**Measured, run 7, and it corrects an ADR 0093 sentence and a bound.** The
+instrument bought a second delivery, watched at 1x until the carrier was
+mid-walk on the **drop-off** leg with the goods already withdrawn, paused,
+pressed `Save now`, navigated the page for real, and loaded the save from the
+save panel.
+
+| tick | day-tick | prisoner | action / phase | job | bay | store | roster |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 8181 | 981 | (8,14) | `action.carry` / travelling | `assigned` / dropoff | empty | 25 | **Heading to Errand** |
+| *save taken here, clock paused* | | | | | | | |
+| 8181 | 981 | (8,14) | `action.carry` / **idle** | `assigned` / dropoff | empty | 25 | **Errand** |
+| 8214 | **1014** | (8,14) | **`action.free-association`** / travelling | `assigned` / dropoff | empty | 25 | **Heading to Association** |
+| 8246 | 1046 | (12,14) | `action.free-association` / performing | `assigned` / dropoff | empty | 25 | Association |
+| 8409 | 1209 | (12,14) | `action.eat-in-cell` / performing | `assigned` / dropoff | empty | 25 | Eating in Cell |
+| 8521 | **1321** | (12,14) | **`action.carry`** / travelling | `assigned` / dropoff | empty | 25 | **Heading to Errand** |
+| 8551 | 1351 | (14,15) | `action.carry` / travelling | `assigned` / dropoff | empty | 25 | Errand |
+| 8561 | 1361 | (14,14) | `action.carry` / idle | **`completed`** | empty | **35** | Errand |
+
+**Nothing is lost and conservation holds** — the store goes 25 → 35 in the end,
+the job completes, and the second delivery's ten bricks arrive. That is the
+good news and it is the larger half of the result.
+
+**But the errand cost 380 ticks across the restore, against decision 5's
+corrected bound of 40**, and the mechanism is not a slow restore: it is that a
+restore turns an action that was *in flight* back into an action that has to be
+*chosen*. `PrisonerOperationsRuntime.loadSnapshot` drops every traveller to
+`idle` — which is correction 2 in ADR 0093's own "three things the landing
+change found" — and the next reconsideration then runs `planIdleSelection`
+under **the block that is running now**. The save landed at day-tick 981; the
+work block ends at 1,000; and `action.carry` is *filtered out of `candidates`
+entirely* when the active block does not allow `work`. So at day-tick 1014 the
+prisoner picked free association and **walked back to the cell carrying the
+delivery**, and resumed only when the second work block opened at 1,300 — 340
+ticks of block boundary on top of the 40 the restore itself costs.
+
+**The ADR sentence this corrects, quoted so a grep finds it.** ADR 0093's
+*Consequences* say: *"**A carry outlasts its block.** Like every action, it is
+not cut at a regime boundary; a prisoner who picked up at 1,795 finishes the
+drop-off in the recreation block."* That is **true of a continuous run** — a
+`travelling` or `performing` prisoner is not reconsidered, so the boundary
+cannot reach them — and **false across a restore**, because the restore makes
+them idle and the boundary then decides. The document did not have to consider
+the interaction, because decision 5's restore rule and the Consequences'
+block-boundary claim were written about different things.
+
+**What the player is shown while it happens: a prisoner walking to
+"Association".** The goods are nowhere on screen — `PrisonerActionViewModel`
+carries no item and no quantity, there is no detail panel (Finding 4), the bay
+container reads empty and the storeroom has not been credited, so the ten
+bricks a player paid for are in nobody's sight for 340 ticks. A build order
+waiting on them waits with them.
+
+**Two things about this I did not establish, and both would change how it should
+be read:**
+
+- **A save taken *outside* a work block.** `reconcileRestoredJobs` is called
+  with `isEligibleCarrier = (workerId) => runtime.prisoners.entityStore.isAlive(workerId)`
+  (`src/simulation/runtime/session-systems.ts:917`) — liveness only, not
+  eligibility — so a live carrier's job is kept whatever the block, and I expect
+  the same outcome with a longer wait. I did not run it. **UNKNOWN.**
+- **Whether 380 is near the worst case.** ADR 0093's own figure for the
+  analogous wait is **1,100 ticks** (end of the 1,300–1,800 block to the start
+  of the next day's 500–1,000 block), and a save taken at day-tick 1,799 rather
+  than 981 should cost about that. Not run.
+
 ## What was not reached
 
-- **Save and reload mid-errand.** Run 2 missed the live carry because it
-  sampled at 4x; run 3 missed it because it bought the second delivery inside a
-  work block and then fast-forwarded looking for the *edge* of the next one, so
-  the prisoner took and finished the errand at 4x while the instrument was
-  still fast-forwarding. The instrument now buys and watches the second errand
-  entirely at 1x. ADR 0093 decision 5's corrected bound — **two reconsideration
-  cycles, 40 ticks** — is therefore still only measured headlessly, by
-  `tests/determinism/job-performing-restart-bound.test.ts`, and what a *player*
-  sees across a mid-errand reload is unobserved.
+- **Save and reload mid-errand was reached on the fourth attempt, and the
+  three misses are worth recording because each was the instrument and not the
+  game.** Run 2 sampled at 4x and the whole errand fitted between two samples;
+  run 3 bought the second delivery inside a work block and then fast-forwarded
+  looking for the *edge* of the next one, so the errand ran and finished at 4x
+  while the instrument was still fast-forwarding; runs 4 and 5 waited for the
+  *job* to read `travelling` or `performing`, which a carry job never does
+  (Finding 1b); run 6 read the previous errand's `completed` row, because
+  `JobBoard` never prunes one and it was still the newest by `createdAtTick`.
+  Run 7 is Finding 9.
 - **A contended errand.** One prisoner, one job. ADR 0093 decision 2's
   ordering — one job, six prisoners, the other five counted as *contended*
   substitutions — is unobserved in play.
