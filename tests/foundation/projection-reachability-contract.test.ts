@@ -443,6 +443,13 @@ describe('every projection the worker can produce has a route out of it', () => 
     expect(read(`${UI_DIR}/simulation-projections.ts`)).toContain("kind: 'simulation/request-projection',");
   });
 
+  /*
+   * An explicit timeout: this walks the whole tree and exceeded
+   * `vitest.config.ts`'s global 5,000 ms under contention on 2026-09-03.
+   * The measurement and the reasoning are in
+   * `comment-symbol-existence-contract.test.ts`, beside the slowest of them.
+   * No assertion changes; only the patience does.
+   */
   it('gives every projection id a reader, or a reason blocking one', () => {
     for (const id of PROJECTION_IDS) {
       const readers = readersOf(id);
@@ -464,7 +471,7 @@ describe('every projection the worker can produce has a route out of it', () => 
         expect(reason!.trim().length, `${id}'s UNPAINTED_PROJECTION_IDS entry needs a reason, not a label`).toBeGreaterThan(80);
       }
     }
-  });
+  }, 60_000);
 
   it('keeps the unpainted-projection list honest in the other direction', () => {
     const declared = new Set<string>(PROJECTION_IDS);

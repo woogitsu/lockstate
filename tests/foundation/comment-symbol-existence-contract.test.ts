@@ -387,6 +387,25 @@ async function collectFiles(directory: string, extensions: readonly string[]): P
 }
 
 describe('a comment that names a symbol names one that exists', () => {
+  /*
+   * **An explicit timeout, because this test outgrew the global one.**
+   * `vitest.config.ts` sets `testTimeout: 5_000`, which is right for the
+   * roughly four and a half thousand fast tests it governs and wrong for the
+   * handful of contracts that walk the whole tree. Measured on 2026-09-03 with
+   * nine agents working (load average 42 on four cores), the four whole-tree
+   * walks in `tests/foundation/` ran 5,248 / 7,314 / 7,889 / 19,967 ms -- so
+   * `vitest run tests/foundation/` was a lottery on a busy machine, and CI has
+   * been green on an idle runner by margin rather than by design. Raising the
+   * patience changes no assertion; the walk and every claim it makes are
+   * untouched. The global stays tight so a genuinely hung test still fails in
+   * five seconds.
+   *
+   * Two more are the next candidates and are deliberately left alone until
+   * they exceed it: `documentation-source-anchor-contract`'s anchor
+   * resolution and `documentation-claims-contract`'s treasury-credit census,
+   * both observed over 5,000 ms under heavier contention and both comfortably
+   * under it in the measurement above.
+   */
   it('resolves every member path and screaming constant cited in src/ and tests/', async () => {
     const vocabularyFiles = [
       ...(await collectFiles(path.join(repositoryRoot, 'src'), ['.ts'])),
@@ -427,7 +446,7 @@ describe('a comment that names a symbol names one that exists', () => {
       unresolved,
       'a comment names a symbol that does not exist. Rename it to the real one, or -- if it is genuinely gone -- say so in the same comment, as this tree already does for `RoomSystem.validateRoom` and `NEVER_LAID_OUT_AT_375`',
     ).toEqual([]);
-  });
+  }, 60_000);
 
   /**
    * The control, in both directions, against text whose verdict is known.
