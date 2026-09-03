@@ -102,7 +102,8 @@ describe('CarryJobExecutor: the carry-item lifecycle end to end', () => {
     expect(source.quantityOf('item.brick')).toBe(6);
     expect(source.reservedOf('item.brick')).toBe(0);
     // The board is the authority on busyness now, and it has forgotten this
-    // carrier: `JobWorkerPool.isBusy` was the old reading of the same fact.
+    // carrier: `JobWorkerPool.isBusy` was the old reading of the same fact, on a
+    // class ADR 0093 deleted and which no longer exists.
     expect(crew.isBusy(WORKER)).toBe(false);
   });
 

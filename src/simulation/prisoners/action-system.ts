@@ -1589,7 +1589,8 @@ export class ActionSystem implements SystemRegistration {
    * back under ADR 0037.
    *
    * **The replacement for `JobWorkerPool.unregister` on the release path**
-   * (ADR 0093 decision 4, #441's release path). The pool is retired, so a
+   * (ADR 0093 decision 4, #441's release path). That class no longer exists --
+   * it was removed with the system that owned it -- so a
    * departing carrier's job cannot merely lose its worker: it would sit
    * `'assigned'` to an id that names nobody, holding a reservation nothing
    * would release, for the rest of the session. `'carrier-departed'` is the

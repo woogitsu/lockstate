@@ -126,7 +126,7 @@ was written. No save version moves.
 `JobSystem` is constructed at `src/simulation/runtime/new-session.ts:860` and
 registered at `src/simulation/runtime/new-session.ts:1400`. It declares
 `id = 'operations.jobs'`, `order = 260` and `schedule = { intervalTicks: 5 }`
-(`src/simulation/operations/job-system.ts:78-80`), and the order is pinned at
+(`job-system.ts:78-80`, a file this decision **deletes**), and the order is pinned at
 `tests/determinism/kernel-system-order.test.ts:434`. So it is not dead code and
 not declared-and-never-called: it runs on every session's kernel, every five
 ticks.
@@ -134,14 +134,14 @@ ticks.
 What it is handed is nothing. `JobBoard.submitCarryItem` has exactly one
 occurrence under `src/` and it is the declaration
 (`src/simulation/operations/job.ts:106`); `JobWorkerPool.register`
-(`src/simulation/operations/job-system.ts:28`) is called from no file under
+(`job-system.ts:28`, in the file this decision **deletes**) is called from no file under
 `src/`. The only things in this repository that ever put a job on a board or a
 prisoner in the pool are two test helpers doing so by hand
 (`tests/helpers/determinism-scenario.ts:188` and `:195`;
 `tests/determinism/job-performing-restart-bound.test.ts:62` and `:65`). The
 adapter that would move a prisoner for a job says of itself that no prisoner is
 registered by default and that doing so is *"a session/scenario/future-regime
-decision"* (`src/simulation/prisoners/job-worker-adapter.ts:12-16`). #811 calls
+decision"* (`job-worker-adapter.ts:12-16`, in the file this decision **deletes**). #811 calls
 this a consumer with no writer, the mirror image of the dead-room shape, and
 that is exact.
 
@@ -187,7 +187,7 @@ were found working:
 
 The carry completed at tick 691 — pickup dwell, `withdrawReserved`, a route to
 the depot, and `PrisonerJobWorkerAdapter.setPositionTile`
-(`src/simulation/prisoners/job-worker-adapter.ts:40`) writing the destination
+(`job-worker-adapter.ts:40`, in the file this decision **deletes**) writing the destination
 tile when the route resolved. From that tick the prisoner stands **26 tiles**,
 by Manhattan distance, from the nearest tile of the kitchen rectangle (#811's
 "eighteen" is the Chebyshev distance from the room's anchor; both say *out of
@@ -226,7 +226,7 @@ checked rather than asserted:
   `writeTile` closure `LocomotionSystem` advances a walk through.
 - `src/simulation/prisoners/prisoner-operations-runtime.ts:959` — admission,
   placing a new prisoner on the origin tile before intake.
-- `src/simulation/prisoners/job-worker-adapter.ts:43` — the job system's
+- `job-worker-adapter.ts:43` (in the file this decision **deletes**) — the job system's
   write, and the one that is *external* to the action path.
 
 And every caller of `LocomotionStore.cancelWalk` on a prisoner:
@@ -368,7 +368,7 @@ below is a balance number:
   ceiling to read; the ceiling on how many prisoners carry is how many jobs are
   on the board.
 - **`minDurationTicks: 5`**, which is `PICKUP_DROPOFF_DURATION_TICKS`
-  (`src/simulation/operations/job-system.ts:63`) moved into the catalogue: the
+  (`job-system.ts:63`, in the file this decision **deletes**) moved into the catalogue: the
   dwell at *each end* of a leg, not the action's life. **A carry's life is the
   job's**: it ends when the job reaches `completed`, `failed` or `cancelled`,
   and `continuePerforming`'s `elapsed >= action.minDurationTicks` test means,
@@ -603,7 +603,7 @@ nothing that names an entity model. What moves where:
   behaviour. **ADR 0037 holds without amendment**: the two cases it decides
   (a reservation on the pickup leg, goods in hand on the drop-off leg) are
   still exhaustive, `compensateHeldStock` is still the one implementation for
-  both paths, and `tests/unit/operations-job-system.test.ts`'s conservation
+  both paths, and `operations-job-system.test.ts`'s conservation
   pins move with the code rather than being rewritten.
 - `performingSince` is deleted: the dwell timer is `phaseStartedAtTick`, which
   the save carries (decision 5).
@@ -750,11 +750,11 @@ discovered. Nothing here is done on this branch.
    `planIdleSelection`, `prisonProvides`, `resolveTargetInstance`,
    `beginNextAction`, `continueTravelling`, `arrive`, `continuePerforming`;
    the constructor takes the board and the executor.
-3. `src/simulation/operations/job-system.ts` — `JobSystem` and
+3. `operations/job-system.ts` (**deleted**) — `JobSystem` and
    `JobWorkerPool` removed; the executor extracted; `JobWorkerAdapter`
    removed. `src/simulation/operations/job.ts` — `activeJobFor` and its
    derived map; `'carrier-departed'` appended to `CARRY_JOB_FAIL_REASONS`.
-4. `src/simulation/prisoners/job-worker-adapter.ts` — deleted.
+4. `prisoners/job-worker-adapter.ts` — deleted.
 5. `src/simulation/prisoners/release.ts` and
    `prisoner-operations-runtime.ts` — the release port and the restore rule.
 6. `src/simulation/runtime/new-session.ts` and `session-systems.ts` — no

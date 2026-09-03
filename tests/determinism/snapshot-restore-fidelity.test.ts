@@ -468,7 +468,8 @@ describe('subsystem snapshot / restore fidelity', () => {
     // an assertion fire.
     //
     // **There were three, and `jobWorkers` was the third.** It wrote
-    // `{ workers: [0, 2, 5], busy: [2] }` through `JobWorkerPool.setBusy`, and
+    // `{ workers: [0, 2, 5], busy: [2] }` through `JobWorkerPool.setBusy` -- a
+    // method on a class this repository no longer declares, deleted when
     // [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 4
     // retired that class: eligibility is the regime's, busyness is the board's,
     // and `operations.jobWorkers` is written empty and ignored on read

@@ -105,11 +105,17 @@ function releaseRelevant(hits: readonly Hit[]): readonly Hit[] {
  * A prison with one furnished cell, and a prisoner in it who has been given
  * everything a prisoner in this codebase can hold.
  *
- * The gang membership and the labour-pool registration have no producer in
- * `src/` yet (`GangRegistry.addMember` is written only by `loadSnapshot`;
- * `JobWorkerPool.register` only by test scenarios), and they are set by hand
- * here for exactly that reason: a store with no producer today is still a store
- * a release has to drop, and it is the one most likely to be forgotten.
+ * The gang membership has no producer in `src/` yet -- `GangRegistry.addMember`
+ * is written only by `loadSnapshot` -- and it is set by hand here for exactly
+ * that reason: a store with no producer today is still a store a release has to
+ * drop, and it is the one most likely to be forgotten.
+ *
+ * **The errand is no longer in that category, and that is the change worth
+ * reading.** This sentence used to pair the gang with the labour pool, whose
+ * only writer was a test scenario (`JobWorkerPool.register` -- a method on a
+ * class ADR 0093 deleted and which no longer exists). The errand that replaced
+ * it has a real producer in `src/`, so the fixture below claims a real job
+ * through the board instead of adding an id to a set.
  */
 function prisonWithOneFullyLoadedPrisoner(): {
   runtime: SimulationRuntime;
@@ -161,9 +167,10 @@ function prisonWithOneFullyLoadedPrisoner(): {
   runtime.gangs.register({ id: 'gang.test', territorySectorIds: [] });
   runtime.gangs.addMember('gang.test', entityId);
   /*
-   * **An errand in progress, which is what `jobWorkers.register(entityId)`
-   * used to be** ([ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md)
-   * decision 4). `JobWorkerPool` is retired, so the store a departing prisoner
+   * **An errand in progress, which is what `JobWorkerPool.register` used to
+   * be called for** ([ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md)
+   * decision 4). That class was deleted and no longer exists, so the store a
+   * departing prisoner
    * has to be dropped from is the board's derived worker index -- and the only
    * way into it is to actually be carrying something. Registering in a set
    * cost one line; claiming a job costs four, and it is the stronger fixture:

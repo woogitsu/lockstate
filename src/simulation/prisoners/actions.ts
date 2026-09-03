@@ -388,9 +388,11 @@ export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
    *   room's own ground either -- `claimUseIfNeeded` takes no claim at all for
    *   this kind, because the job's `available -> assigned` transition *is* the
    *   claim (ADR 0093 decision 1).
-   * - **`minDurationTicks: 5`**, which is `PICKUP_DROPOFF_DURATION_TICKS` from
-   *   the retired `JobSystem` moved into the catalogue: **the dwell at each end
-   *   of a leg, not the action's life.** A carry's life is the job's -- it ends
+   * - **`minDurationTicks: 5`**, which is the value the constant
+   *   `PICKUP_DROPOFF_DURATION_TICKS` held in `JobSystem` before ADR 0093
+   *   deleted both -- neither the constant nor the system exists any longer --
+   *   moved into the catalogue: **the dwell at each end of a leg, not the
+   *   action's life.** A carry's life is the job's -- it ends
    *   when the job reaches `completed`, `failed` or `cancelled` -- so
    *   `continuePerforming`'s `elapsed >= action.minDurationTicks` test means,
    *   for this kind alone, *"the dwell at this end is over"*. Observed at the
