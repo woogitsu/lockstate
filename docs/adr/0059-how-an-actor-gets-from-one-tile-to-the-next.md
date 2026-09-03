@@ -166,10 +166,17 @@ restored session resumes mid-stride.
    supplies data rather than a story about it.
 2. **It costs no save format and no new persisted concept.** A walk is the
    second half of the transient travel state `loadSnapshot` already drops
-   (`PrisonerOperationsRuntime.loadSnapshot` drops every restored traveller to
-   `idle` because their path request named a queue entry a rebuilt
-   `NavigationSystem` does not hold), so it is dropped for exactly that reason
-   and `SAVE_SCHEMA_VERSION` does not move.
+   (`PrisonerOperationsRuntime.loadSnapshot` clears every restored traveller's
+   path request, because it named a queue entry a rebuilt `NavigationSystem`
+   does not hold), so it is dropped for exactly that reason and
+   `SAVE_SCHEMA_VERSION` does not move.
+
+   **This bullet said `loadSnapshot` *"drops every restored traveller to
+   `idle`"*, and issue #882 made that false of a carrier** — one is now kept
+   `'travelling'` per ADR 0093 decision 5, because for a carry going idle costs
+   an eligibility question rather than a cycle. The correction changes nothing
+   here: it was always the cleared *request* and not the phase that made the
+   walk unresumable, and the save format still does not move.
 3. **It is integer arithmetic on a four-neighbour graph.**
    `src/simulation/navigation/region-graph.ts`'s `neighbors` offers four
    neighbours, so every leg of every route this repository can produce is one
@@ -390,9 +397,12 @@ because they are the ones that could have gone wrong:
   `tests/determinism/canonical-iteration-contract.test.ts` carries the exemption
   and that argument.
 - **A save/restore round trip is not byte-identical for a prisoner who was
-  walking.** It never was — travellers have always been dropped to `idle` on
+  walking.** It never was — a restored traveller has always lost its route on
   load — but the state now covers a whole journey rather than a tick or two, so
-  it is reached often. Measured on `tests/integration/riot-regime-loop.test.ts`:
+  it is reached often. (**The clause read *"travellers have always been dropped
+  to `idle` on load"*** and issue #882 made it false of a carrier, which ADR
+  0093 decision 5 keeps `'travelling'`; the round trip is no more byte-identical
+  for them than before, because the walk still goes.) Measured on `tests/integration/riot-regime-loop.test.ts`:
   a save taken mid-journey and stepped 400 ticks has both sessions performing
   the **same set of actions** and one reconsideration cycle apart in how much of
   one of them they get through — 592 ticks of association and 28 travelling

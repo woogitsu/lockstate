@@ -790,6 +790,44 @@ here rather than in a commit message nobody keeps:**
    the tile the save carried. Same one restore rule, reached without adding a
    path. The other direction — a job whose carrier is not in this session — is
    `CarryJobExecutor.reconcileRestoredJobs`, as decision 5 requires.
+
+   **WITHDRAWN, 2026-09-03, by measurement — this was not a correction to the
+   document, it was a deviation from it, and the last sentence of it was
+   false.** Kept above rather than deleted because what it claimed is the whole
+   finding. *"Same one restore rule"* is refuted by
+   [#882](https://github.com/matmaxalez/lockstate/issues/882): the two routes
+   agree inside a work block and **diverge by up to 1,280 ticks across a regime
+   block boundary**, because re-selection asks an eligibility question that
+   re-seating never asks. Going idle sends the carrier through
+   `ActionSystem.planIdleSelection`, which reads
+   `isActionCategoryAllowed(CARRY_ACTION, block.allowedCategories)` before it
+   asks whether this prisoner already holds an errand and `&&` short-circuits —
+   so a carrier restored near the end of a work block is filtered out of the
+   errand whose goods are in its hands, walks them back to its cell, and keeps
+   them through the meal and sleep blocks until the next work block opens. That
+   is 32× the bound this document's item 3 corrects to, and it breaks
+   *Consequences*' *"A carry outlasts its block"*.
+
+   **Decision 5 is now built as written**, in
+   `PrisonerOperationsRuntime.loadSnapshot`: a restored prisoner whose action
+   targets the job board keeps `'travelling'`, and `continueTravelling`'s
+   stranded-request arm asks for the leg again. Nothing was added to reach it —
+   that arm already existed and was documented as unreachable — and no save key
+   or version moved, so the rest of decision 5 stands. This is recorded as a
+   **conformance** change and not as an amendment: decision 2's *"offered a
+   carry iff they are idle at a reconsideration … and their active block allows
+   `work`"* governs a prisoner being offered an errand, and a re-seated carrier
+   is never idle, so it is never offered one. The construction, the three terms
+   the 1,280 is made of, and the four adversarial paths that failed to lose the
+   goods are `docs/research/2026-09-03-what-a-restore-costs-an-errand.md`.
+
+   **What remains open, and it is decision 2's to settle rather than this
+   item's:** the short-circuit above means *any* future path that leaves a
+   prisoner idle while a non-terminal errand is still assigned to them inherits
+   the whole 1,280. None does today — every exit that idles a carrier fails the
+   job first — and reordering the gate would offer a carry in a block that
+   forbids `work`, which contradicts decision 2. Open question 1 below (a
+   regime change under a carrier) is the same question from the other side.
 3. **Decision 5's restore bound is two reconsideration cycles, not one.** It
    predicted *"a restored carrier loses at most one reconsideration cycle to
    the travel restart"*; measured, the worst mid-walk capture costs **40

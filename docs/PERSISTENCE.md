@@ -531,13 +531,28 @@ work are not.**
     back with the prisoner, so `continuePerforming`'s
     `elapsed >= action.minDurationTicks` test resumes where it was.
   - **A save taken mid-walk costs at most two `ActionSystem` reconsideration
-    cycles — 40 ticks.** `PrisonerOperationsRuntime.loadSnapshot` drops every
-    traveller to `idle`, so up to 20 ticks pass before the carrier re-selects,
-    and re-selecting re-does the request-then-collect handshake for up to
-    another 20. **ADR 0093 decision 5 predicted one cycle; the measurement is
-    two**, and the prediction is corrected rather than the code, because this is
-    the exclusion *every* action already has under ADR 0059 open question 3 and
-    not a property of the carry.
+    cycles — 40 ticks.** `PrisonerOperationsRuntime.loadSnapshot` clears the
+    carrier's path request, so `continueTravelling` asks for the leg again on
+    the next cycle (up to 20 ticks) and collects the answer on the one after
+    (up to 20 more). **ADR 0093 decision 5 predicted one cycle; the measurement
+    is two**, and the prediction is corrected rather than the code, because this
+    is the exclusion *every* action already has under ADR 0059 open question 3
+    and not a property of the carry.
+
+    **This bullet read *"drops every traveller to `idle`, so up to 20 ticks
+    pass before the carrier re-selects"* and issue #882 is what corrected
+    it.** Re-selection was the landing change's substitute for what decision 5
+    actually says — *"a carrier is instead re-seated from the board after it
+    loads"* — and it recorded the substitute as *"the same one restore rule,
+    reached without adding a path"*. It is not the same rule: **inside a work
+    block both cost 40 ticks, and across a regime block boundary re-selection
+    cost up to 1,280**, because it asks whether `work` is allowed *now* and
+    re-seating asks nobody anything. Decision 5 is built as written and the 40
+    now holds at every capture, on the boundary as well as inside a block. The
+    old figure is kept here because "it cost 1,280 and now costs 40" is only
+    checkable against a written-down 1,280;
+    `docs/research/2026-09-03-what-a-restore-costs-an-errand.md` is the
+    construction.
 
   **The old reading is kept below rather than deleted**, because "the cost was
   five ticks and is now zero" is a claim a reader can only check if the five is

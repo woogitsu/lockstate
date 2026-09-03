@@ -230,3 +230,73 @@ furnished kitchen, laundry or classroom makes a need-serving `work`-block action
 providable, and each refusal costs a 120-tick shift; hunger's decay of 0.05 a
 tick against `action.kitchen-work`'s +1 bounds it to about one shift, so I
 expect **+140 at most** — but I did not build that prison and did not measure it.
+
+---
+
+## Addendum, same day: the second candidate was built, and §7's framing was too cautious by half
+
+**Everything measured above stands.** What is corrected here is the last
+section's *disposition*, not any number in it.
+
+§7 put two candidates to the owner and said which of ADR 0093's two disagreeing
+sentences an amendment should keep was theirs. That is right about the **first**
+candidate — issue #882's reordering of the category gate, which would offer a
+carry in a block that forbids `work` and so contradicts decision 2 — and it is
+wrong to have left the **second** in the same envelope. §7 had already
+established why:
+
+> Re-seating asks nobody anything: the prisoner is never idle, so decision 2's
+> *iff* never applies, and the carrier walks on through the meal block exactly
+> as Consequences says a carry does.
+
+A change that contradicts neither accepted sentence, and that decision 5 states
+in its own accepted words, is **conformance with the ADR rather than an
+amendment to it**, and nothing in `AGENTS.md` reserves it. Its fourth exclusion
+covers *adding* a player-visible promise the code does not keep; honouring one
+the ADR already made is the opposite act. Decision 5 was therefore built as
+written: `PrisonerOperationsRuntime.loadSnapshot` keeps a restored prisoner
+whose action targets the job board `'travelling'`, and
+`continueTravelling`'s stranded-request arm — which existed already, and was
+documented as unreachable — asks for the leg again. The gate that was pushed
+first, an off-by-default `resumeRestoredCarriers`, is gone: nothing passed it,
+so it left every save loading exactly as §1 measured.
+
+**The 1,280 is gone at every capture this record measured**, replaced by the 40
+that §2's arithmetic predicts once the regime gap stops applying, and the
+1,280 is kept above as the number the change removed.
+
+**Two things in this record are corrected by the change rather than by
+argument:**
+
+- §1's third numbered fact — the `&&` short-circuit at
+  `action-system.ts:1251` — is **unchanged and still live**. It is now
+  unreachable rather than fixed: no path in `src/` leaves a prisoner idle while
+  a non-terminal errand is assigned to them, because every exit that idles a
+  carrier fails the job first. That is the class this change does not close, and
+  it is named in the test file and in ADR 0093's item 2.
+- §1's closing observation — that *"a carry outlasts its block"* is a guarantee
+  **nobody is asked for**, surviving only as long as nothing makes an in-flight
+  carrier idle — is the most durable sentence in this record, and it is now the
+  reason the fix is two lines. A restore was the only thing that made one idle.
+
+**One new measurement, and it retires a line of code rather than adding one.**
+The first version of the fix cleared the carrier's stale `pathRequestId` inside
+the branch. It cannot be observed: `PrisonerColdState.getSnapshot` does not emit
+`currentActionPathRequestId` at all and its `loadSnapshot` clears that map
+wholesale, several statements earlier in the same method. Checked rather than
+reasoned about, because the fixture does reach the window where the id is live —
+40 of the 112 travelling ticks carry one (1,661–1,680 and 1,741–1,760, the
+20 ticks between each leg's request and its collection) — and a capture at
+1,661 restores with `requestId undefined` with the line and without it, at the
+same completion tick. The statement was removed. **The identical statement in
+the drop-to-idle branch beside it is equally dead**; it predates this work and
+is left alone, reported here rather than changed.
+
+**Weakest claim in this addendum:** that no path in `src/` leaves a prisoner
+idle holding a non-terminal carry job. It is established by reading the exits —
+`pickUp` and `dropOff` return `false` only after `failJob`; `continueCarry`,
+`arrive` and `continueTravelling` each drop out when `carriedJob` is gone — and
+not by a search that could not miss one. What would change my mind: any exit
+that sets the phase to `idle` without either failing the job or completing it.
+Such a path would inherit the whole 1,280, which is why the class is named
+rather than assumed closed.

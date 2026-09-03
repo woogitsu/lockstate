@@ -132,9 +132,14 @@ it appeared".
 **Why a player would report this as a ghost rather than as a wall bug.** The
 fault is temporal and leaves nothing behind: the wall is correct afterwards, the
 topology is correct afterwards, and **no save carries a walk** —
-`PrisonerOperationsRuntime.loadSnapshot` drops every restored traveller to
-`idle`. So it looks exactly like an actor ghosting through a build that goes
+`PrisonerOperationsRuntime.loadSnapshot` clears every restored traveller's
+route. So it looks exactly like an actor ghosting through a build that goes
 away on reload, which is the hardest class of report to act on.
+
+(That sentence read *"drops every restored traveller to `idle`"*, and issue
+#882 made the phase half false of a carrier, which ADR 0093 decision 5 keeps
+`'travelling'`. The load-bearing claim is unchanged: no save carries a walk,
+whatever phase the actor comes back in.)
 
 ### The finding the brief did not expect: guards are not affected, and that is decided
 

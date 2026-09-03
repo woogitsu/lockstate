@@ -219,11 +219,19 @@ this room", and then `occupancyOf`'s sibling stops being a fact about the world
 Second, and decisively: **a reservation has to be released on the travel
 failure paths, and those are the paths that leak.** `continueTravelling` has
 three of them (no path request, a failed route, a vanished target) and
-`PrisonerOperationsRuntime.loadSnapshot` has a fourth, which drops every
+`PrisonerOperationsRuntime.loadSnapshot` has a fourth, which drops a restored
 `travelling` prisoner to `idle` because their path request died with the
 previous `NavigationSystem`. Claiming on arrival makes all four leak-proof by
 construction rather than by four correct release calls — a traveller holds
-nothing, so there is nothing to forget. Given that a leaked claim silently
+nothing, so there is nothing to forget.
+
+**The fourth path said *"drops every `travelling` prisoner"* and issue #882
+made that false of a carrier**, which ADR 0093 decision 5 now keeps
+`'travelling'` across the load. It does not weaken this argument, and the
+reason is the argument itself: a traveller holds no claim, so a traveller who
+stays a traveller has nothing to release either. `ActionSystem.reinstateUseClaims`
+excludes them twice over — it tests the phase, and it tests
+`target.kind === 'room-catalog-id'`, which `action.carry`'s `job-board` is not. Given that a leaked claim silently
 reduces a room's capacity for the rest of the session, the design that cannot
 leak is worth two wasted walks.
 
@@ -391,9 +399,12 @@ payload that can disagree with the state that produced it — the argument ADR
 0028 decision 6 already made for the two derived capacities, one system over.
 So `PrisonerOperationsRuntime.loadSnapshot` rebuilds them, and the order is
 load-bearing: the registry's `loadSnapshot` clears every claim, the existing
-loop drops every `travelling` prisoner to `idle` and clears its target, and
-`ActionSystem.reinstateUseClaims` runs last, over `EntityQuery.execute`'s
-ascending index order.
+loop drops a restored `travelling` prisoner to `idle` and clears its target,
+and `ActionSystem.reinstateUseClaims` runs last, over `EntityQuery.execute`'s
+ascending index order. (**That middle step read *"every `travelling`
+prisoner"*** until issue #882; a restored carrier is now kept `'travelling'`
+per ADR 0093 decision 5, and the rebuild is unaffected for the reason the
+fourth travel-failure path above gives.)
 
 Both failure directions are closed by that shape rather than by care:
 

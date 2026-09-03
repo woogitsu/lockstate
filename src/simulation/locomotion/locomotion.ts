@@ -29,13 +29,23 @@ import type { TilePosition } from '../world/coordinates';
  * under addition where a float accumulator is exact only in practice.
  *
  * Not saved, because a walk is already transient state that no save carries.
- * `PrisonerOperationsRuntime.loadSnapshot` drops every restored traveller to
- * `idle` and clears its path request, and `GuardRoster.loadSnapshot` documents
- * the same mid-leg reset, both because the path request named a queue entry in
- * a `NavigationSystem` a restored session rebuilds empty. A walk is the second
- * half of exactly that state, so it is dropped for exactly that reason, and
- * **no save-format field is added by this module** -- the actor resumes from
- * the tile it had reached, which is the tile the snapshot already carried.
+ * `PrisonerOperationsRuntime.loadSnapshot` clears every restored actor's path
+ * request, and `GuardRoster.loadSnapshot` documents the same mid-leg reset,
+ * both because the path request named a queue entry in a `NavigationSystem` a
+ * restored session rebuilds empty. A walk is the second half of exactly that
+ * state, so it is dropped for exactly that reason, and **no save-format field
+ * is added by this module** -- the actor resumes from the tile it had reached,
+ * which is the tile the snapshot already carried.
+ *
+ * **That sentence read *"drops every restored traveller to `idle` and clears
+ * its path request"* until issue #882, and the first half is no longer true of
+ * one traveller.** A restored *carrier* keeps `'travelling'` (ADR 0093
+ * decision 5) and asks for its leg again rather than re-selecting. Nothing
+ * about this module changes: `LocomotionSystem.clear` still drops the walk, the
+ * carrier still resumes from the tile the snapshot carried, and it is still the
+ * request rather than the phase that makes a walk unresumable. The correction
+ * is recorded because a reader who finds a `travelling` prisoner with no walk
+ * after a load should read it as expected rather than as corruption.
  *
  * ### What it costs
  *
