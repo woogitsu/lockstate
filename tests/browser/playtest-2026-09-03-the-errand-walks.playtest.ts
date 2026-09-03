@@ -735,56 +735,62 @@ test.describe('the errand, watched through the interface', () => {
     const beforeBuy = await readWorker(page);
     log(`ROUTE SHOULD NOW BE LIVE. tick ${beforeBuy.tick}, jobs ${beforeBuy.jobs.length}, containers ${JSON.stringify(beforeBuy.containers.map((c) => c[0]))}`);
 
+    /*
+     * **Bought at a tick chosen so the delivery lands just *before* a work
+     * block, with the clock already at 1x, and run 5 is why.** Furnishing
+     * finished at day-tick 686 that run -- inside the 500-1,000 block, because
+     * the machine was busier and everything before it took longer -- so the
+     * delivery came due while somebody was already eligible and the errand was
+     * taken and finished at 4x before the instrument could drop to 1x. The
+     * watch then had nothing `available` to wait for and gave up.
+     *
+     * `PROCUREMENT_DELIVERY_DELAY_TICKS` is 100, so buying anywhere in day-tick
+     * 300-380 lands the delivery at 400-480: after the 400-500 meal/hygiene
+     * block has begun and before the work block opens at 500. Nothing can take
+     * it early, and the whole errand is then watched at 1x from before the
+     * first tick it could be selected on.
+     */
+    const dayTickOfNow = (tick: number) => ((tick % 2400) + 2400) % 2400;
+    await fastForwardToMax(page);
+    const windowStarted = Date.now();
+    for (;;) {
+      const tick = await currentTick(page);
+      if (dayTickOfNow(tick) >= 300 && dayTickOfNow(tick) < 380) break;
+      if (Date.now() - windowStarted > 120_000) throw new Error(`never reached day-tick 300-380; stuck at ${tick}`);
+      await page.waitForTimeout(120);
+    }
+    await playAtNormalSpeed(page);
     await tab(page, 'build').click();
     await buy(page, 'wall-brick', 10);
-    log(`bought 10 bricks at tick ${await currentTick(page)}; a delivery is due 100 ticks later`);
+    const buyTick = await currentTick(page);
+    log(`bought 10 bricks at tick ${buyTick} (day-tick ${dayTickOfNow(buyTick)}) with the clock at 1x; a delivery is due 100 ticks later`);
 
-    // ---- act 7: the watch window, coarse then fine ------------------------
+    // ---- act 7: the watch window, all of it at 1x -------------------------
     /*
      * The first `work` block of `GENERAL_POPULATION_REGIME` is 500-1000 of the
      * day and the second 1300-1800 (`src/simulation/prisoners/regime.ts`), so
      * a carry can only be *selected* inside one of those. A carry already in
      * flight is not cut at the boundary (ADR 0093 Consequences).
      *
-     * Two phases, and the split is run 2's finding about its own instrument
-     * (see `playAtNormalSpeed`): **4x to get to the work block, 1x to watch
-     * it.** At 4x the whole errand fits between two samples.
+     * **Watched entirely at 1x**, which is run 2's finding about its own
+     * instrument (see `playAtNormalSpeed`) and run 5's about its own timing:
+     * at 4x the whole errand fits between two samples, and a coarse 4x phase
+     * that waits for the *edge* of a work block loses the errand outright when
+     * the delivery happens to land inside one. Act 6 puts the buy where the
+     * delivery cannot come due before the block opens, so there is no coarse
+     * phase left to get wrong.
      */
-    const dayTickOf = (tick: number) => ((tick % 2400) + 2400) % 2400;
+    const dayTickOf = dayTickOfNow;
     const nearlyAWorkBlock = (tick: number) => {
       const dayTick = dayTickOf(tick);
       return (dayTick >= 440 && dayTick < 500) || (dayTick >= 1240 && dayTick < 1300);
     };
-
-    /** 4x until there is a job on the board and a work block is about to open. */
-    const runToTheEdgeOfAWorkBlock = async (label: string, budgetMs: number): Promise<WorkerReading | undefined> => {
-      const started = Date.now();
-      let announced = false;
-      while (Date.now() - started < budgetMs) {
-        const now = await readWorker(page);
-        const job = latestJob(now);
-        if (job !== undefined && !announced) {
-          announced = true;
-          log(`>> [${label}] a carry job is on the board at tick ${now.tick} (day-tick ${dayTickOf(now.tick)}): ${describeJob(job)}`);
-          log(`   [${label}] the bay holds ${JSON.stringify(now.containers.filter((c) => c[0].startsWith('container:')))} and the roster says ${JSON.stringify(await rosterActivities(page))}`);
-        }
-        if (job !== undefined && job.state === 'available' && nearlyAWorkBlock(now.tick)) {
-          log(`>> [${label}] a work block opens within 60 ticks (tick ${now.tick}, day-tick ${dayTickOf(now.tick)}); dropping to 1x`);
-          return now;
-        }
-        await page.waitForTimeout(150);
-      }
-      log(`>> [${label}] gave up waiting for a job and a work block inside ${budgetMs}ms`);
-      return undefined;
-    };
-
-    const edge = await runToTheEdgeOfAWorkBlock('first errand', 90_000);
-    expect(edge, 'no delivery ever reached the bay as an available carry job').not.toBeUndefined();
-
-    await playAtNormalSpeed(page);
+    // Still used by act 8's fallback, where the second delivery has to be
+    // bought inside a block and the block may already be over.
     await tab(page, 'regime').click();
 
     let lastLine = '';
+    let jobAnnouncedAt = -1;
     let carrySelectedAt = -1;
     let pickedUpAt = -1;
     let completedAt = -1;
@@ -808,6 +814,11 @@ test.describe('the errand, watched through the interface', () => {
         walk.push(line);
         lastLine = comparable;
       }
+      if (job !== undefined && jobAnnouncedAt < 0) {
+        jobAnnouncedAt = now.tick;
+        log(`>> A CARRY JOB IS ON THE BOARD at tick ${now.tick} (day-tick ${dayTickOf(now.tick)}): ${describeJob(job)}`);
+        log(`   the bay holds ${JSON.stringify(now.containers.filter((c) => c[0].startsWith('container:')))} and the roster says ${JSON.stringify(activities)}`);
+      }
       if (prisoner !== undefined && ACTION_IDS[prisoner.actionIndex] === 'action.carry' && carrySelectedAt < 0) {
         carrySelectedAt = now.tick;
         log(`>> THE PRISONER TOOK THE ERRAND at tick ${now.tick}. THE ROSTER SAYS ${JSON.stringify(activities)}`);
@@ -826,7 +837,10 @@ test.describe('the errand, watched through the interface', () => {
         break;
       }
     }
-    log(`TIMELINE: errand selected ${carrySelectedAt}, picked up ${pickedUpAt}, completed ${completedAt}; ${walk.length} distinct states`);
+    log(
+      `TIMELINE: job on the board ${jobAnnouncedAt}, errand selected ${carrySelectedAt},` +
+        ` picked up ${pickedUpAt}, completed ${completedAt}; ${walk.length} distinct states`,
+    );
 
     // What the player is shown at the end, with the clock stopped so the roster
     // and the worker cannot be a reconsideration cycle apart.
