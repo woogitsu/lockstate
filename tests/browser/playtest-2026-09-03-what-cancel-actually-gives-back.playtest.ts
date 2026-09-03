@@ -367,6 +367,29 @@ async function readChip(page: Page): Promise<{ readonly byMetric: number; readon
   });
 }
 
+/**
+ * The `executeAtTick` and `sequence` the last submitted command carried.
+ *
+ * The whole envelope, not the `data` `sentCommands` extracts: `executeAtTick`
+ * lives on `payload` beside `command`
+ * (`src/simulation/protocol/types.ts:266`), and it is the number that decides
+ * *when* a press takes effect. `SimulationCommandSender.projectFromClock`
+ * adds `DEFAULT_LEAD_TICKS` -- 20, one second at the kernel's 20 Hz
+ * (`src/ui/simulation-commands.ts:77`) -- to its estimate whenever the clock
+ * is running, and returns the bare reported tick when it is paused.
+ */
+async function lastSubmitEnvelope(page: Page): Promise<{ readonly executeAtTick: number; readonly sequence: number } | undefined> {
+  return page.evaluate(() => {
+    const messages = (window as unknown as ProbeWindow).lockstateSentToWorker ?? [];
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      const message = messages[index] as { kind?: string; payload?: { executeAtTick?: number; sequence?: number } };
+      if (message.kind !== 'simulation/submit-command') continue;
+      return { executeAtTick: message.payload?.executeAtTick ?? -1, sequence: message.payload?.sequence ?? -1 };
+    }
+    return undefined;
+  });
+}
+
 const transport = (page: Page, which: 'pause' | 'play' | 'fast-forward') =>
   page.locator('.hud-strip__transport button').nth(which === 'pause' ? 0 : which === 'play' ? 1 : 2);
 
@@ -807,7 +830,16 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
      * `0` by ruling 20 however honest the row was when it was read.
      */
     await transport(page, 'play').click();
-    const outcomes: { advertisedOnTheRow: number; stateWord: string; money: number; tickBefore: number; tickAfter: number }[] = [];
+    const outcomes: {
+      advertisedOnTheRow: number;
+      stateWord: string;
+      money: number;
+      tickBefore: number;
+      tickAfter: number;
+      executeAtTick: number;
+      stateAtRead: string;
+      stateAfter: string;
+    }[] = [];
     const startedAt = Date.now();
     while (outcomes.length < 6 && Date.now() - startedAt < 120_000) {
       const candidate = await page.evaluate((selector) => {
@@ -829,7 +861,8 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
       }
       const before = await readWorker(page);
       await page.locator(`${QUEUE_ROW}[data-order="${candidate.orderId}"]`).getByRole('button', { name: 'Cancel' }).click({ timeout: 5_000 });
-      await page.waitForTimeout(400);
+      const envelope = await lastSubmitEnvelope(page);
+      await page.waitForTimeout(1_200);
       const after = await readWorker(page);
       outcomes.push({
         advertisedOnTheRow: candidate.back,
@@ -837,10 +870,17 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
         money: after.treasuryMinorUnits - before.treasuryMinorUnits,
         tickBefore: before.tick,
         tickAfter: after.tick,
+        executeAtTick: envelope?.executeAtTick ?? -1,
+        stateAtRead: before.orders.find((order) => order.id === candidate.orderId)?.state ?? 'gone',
+        stateAfter: after.orders.find((order) => order.id === candidate.orderId)?.state ?? 'gone',
       });
-      note(`press ${String(outcomes.length)}: row said ${String(candidate.back)} [${candidate.text}] ->`
-        + ` money ${String(after.treasuryMinorUnits - before.treasuryMinorUnits)}`
-        + ` (ticks ${String(before.tick)} -> ${String(after.tick)})`);
+      note(`press ${String(outcomes.length)}: row said ${String(candidate.back)} [${candidate.text}]`
+        + ` | worker state when read: ${String(before.orders.find((order) => order.id === candidate.orderId)?.state)}`
+        + ` | submitted at tick ${String(before.tick)} to execute at ${String(envelope?.executeAtTick)}`
+        + ` (lead ${String((envelope?.executeAtTick ?? Number.NaN) - before.tick)} ticks)`
+        + ` | money ${String(after.treasuryMinorUnits - before.treasuryMinorUnits)}`
+        + ` | state after ${String(after.orders.find((order) => order.id === candidate.orderId)?.state)}`
+        + ` | tick now ${String(after.tick)}`);
     }
     await transport(page, 'pause').click();
 
