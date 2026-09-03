@@ -396,6 +396,22 @@ there is no sentence anywhere about a prisoner skipping an errand, and ADR
 
 ## Finding 9 — a restore turns an in-flight errand back into a selection
 
+> **FIXED since this was measured, and this record is left exactly as it was
+> played.** Everything below is what the game did on the commit run 7 played,
+> and the mechanism it identifies is right. It became
+> [#882](https://github.com/matmaxalez/lockstate/issues/882);
+> `docs/research/2026-09-03-what-a-restore-costs-an-errand.md` reproduced it
+> headless, found the worst case to be **1,280 ticks** rather than the 380 run
+> 7 happened to hit, and established that the fix was already an accepted
+> decision nobody had built — ADR 0093 decision 5's *"a carrier is instead
+> re-seated from the board after it loads"*.
+> `PrisonerOperationsRuntime.loadSnapshot` now keeps a restored carrier
+> `'travelling'`, so a restore no longer turns an errand into a selection and
+> the *Consequences* sentence this finding calls false across a restore is
+> true again. **The 380 is worth keeping visible**: this is the record that
+> found it, and a playtest that reads a number a headless sweep then multiplies
+> by 3.4 is the argument for playing the game.
+
 **Measured, run 7, and it corrects an ADR 0093 sentence and a bound.** The
 instrument bought a second delivery, watched at 1x until the carrier was
 mid-walk on the **drop-off** leg with the goods already withdrawn, paused,
