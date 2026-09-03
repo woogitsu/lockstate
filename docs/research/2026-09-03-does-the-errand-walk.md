@@ -98,6 +98,69 @@ Read off that table, and each is a separate claim ADR 0093 makes:
 - **The whole errand cost 114 ticks** from selection (7790) to completion
   (7904), of which 51 were the pickup leg and its dwell.
 
+### Reproduced, twice, with the same interval
+
+Run 4 built the same prison from scratch and ran the same watch. **Selection to
+`completed` was 114 ticks in run 3 and 114 ticks in run 4** (7773 → 7887), and
+its *second* errand — sampled faster, because the capture loop reads no DOM —
+gives the fullest walk in this record:
+
+| tick | prisoner tile | action / phase | job state / leg |
+| --- | --- | --- | --- |
+| 8013 | (12,14) | `action.free-association` / idle | `available` / pickup |
+| 8024 | (12,14) | `action.carry` / travelling | `assigned` / pickup |
+| 8047 | (11,16) | `action.carry` / travelling | `assigned` / pickup |
+| 8053 | (10,14) | `action.carry` / travelling | `assigned` / pickup |
+| 8059 | (8,14) | `action.carry` / performing | `assigned` / pickup |
+| 8082 | (8,14) | `action.carry` / travelling | `assigned` / **dropoff** |
+| 8105 | (10,14) | `action.carry` / travelling | `assigned` / dropoff |
+| 8111 | (11,16) | `action.carry` / travelling | `assigned` / dropoff |
+| 8116 | (13,16) | `action.carry` / travelling | `assigned` / dropoff |
+| 8122 | (14,14) | `action.carry` / performing | `assigned` / dropoff |
+| 8144 | (14,14) | `action.carry` / idle | **`completed`** / dropoff |
+
+Selection 8024 → `completed` 8144 is **120 ticks**, and the path dips to row 16
+to cross each door and comes back up to the anchor: (12,14) → (11,16) → (10,14)
+→ (8,14), then (8,14) → (10,14) → (11,16) → (13,16) → (14,14). Nine
+intermediate tiles, one action.
+
+## Finding 2b — a carry job's `state` never becomes `travelling` or `performing`
+
+**Read off that table, then verified in the source.** The only states a job can
+hold in this build are `available`, `assigned`, `completed`, `failed` and
+`cancelled`: `JobBoard` assigns `'assigned'` (`job.ts:189`), `'cancelled'`
+(`:242`) and, through `endJob`, `'completed'` or `'failed'` (`:203`), and
+`submitCarryItem` mints `'available'` (`:146`). Nothing anywhere writes
+`'reserved'`, `'travelling'` or `'performing'`.
+
+That is correct under ADR 0093 and is a consequence nothing wrote down: the
+phase belongs to the *prisoner* now
+(`CurrentActionComponent.actionPhase`), because a carry is an action, so
+`JobLifecycleState` is wider than its writer by three members. Two costs, both
+small and both reported rather than fixed:
+
+- **`JobBoard.loadSnapshot` normalises a restored `'travelling'` job back to
+  `'assigned'` and says why: *"so `JobSystem.beginLeg` re-requests routing on
+  the next scheduled tick"*.** `JobSystem.beginLeg` does not exist; the
+  equivalent is `ActionSystem.beginCarryLeg`, reached through the prisoner's own
+  reselection. The normalisation itself is still needed — a save written by the
+  pre-ADR-0093 build can carry `'travelling'` — but no save this build writes
+  can, so the branch is now purely a migration path and its comment names a
+  deleted symbol. **A `'performing'` job in such a save is not normalised**, and
+  I did not establish whether that leaks: `CarryJobExecutor.reconcileRestoredJobs`
+  fails and compensates any active job whose `assignedWorkerId` is not an
+  eligible carrier this session, which should cover it, and I did not construct
+  the save to prove it. **UNKNOWN, and named as the one thing here worth a
+  test.**
+- **`src/content/simulation-message-keys.ts`'s `job-state` namespace authors a
+  label for all eight**, including `Travelling` and `Working` for states that
+  cannot occur. Nothing renders the namespace today, so no player sees it.
+
+A third, in the same class and found the same way:
+`src/simulation/incidents/trigger-system.ts` cites *"the same decoupling
+`JobSystem`'s `JobWorkerAdapter` (#25) … use"* in the present tense, and
+neither the system nor the adapter exists.
+
 ## Finding 2 — the label is "Errand", and it is on screen
 
 The owner's ruling landed. `src/content/simulation-message-keys.ts:204` reads
@@ -142,11 +205,31 @@ decision 2 requires and item 9 of its change list deliberately did not build:
 | 3 | 7396 | 7790 | **394** | roster: `Sleeping` |
 | 3 (second) | 8027 | not captured | — | roster: `Heading to Errand` |
 
-`.hud__refusal` was **not laid out** and `.hud-alerts` was **absent** at every
-sample in every run, including the samples taken with the clock paused. The
-Build panel's `.hud-build__deliveries` block covers a *pending purchase*, not a
-delivery that has landed and is waiting for a carrier, so it says nothing about
-this either. `PRISON_CONDITIONS`
+`.hud__refusal` was **not laid out** at every sample in every run, including
+the samples taken with the clock paused — which is the refusal band showing
+nothing, and it is the one instrument reading here that is a measurement of a
+real selector (`src/ui/hud/hud.ts:1060`; three `app-shell.spec.ts` assertions
+address it the same way).
+
+**The alerts column was NOT read, and the instrument's own claim about it is
+withdrawn.** Every run logged `.hud-alerts: ABSENT`, which is the probe naming
+a selector that does not exist: the column is `.hud-alerts__list`
+(`src/ui/hud/hud.ts:1482`). The instrument is corrected for future runs and this
+paragraph does not rest on it — **what replaces it is a stronger claim read off
+the source.** `SimulationEventLog` has **twelve** recorders — discharge,
+resident relocated, escape succeeded, contraband discovered, unpaid wages,
+insolvency rung crossed, incident opened, build order cancelled, construction
+undone, construction redone, delivery cancelled, incidents all clear — and
+**none of them is about a carry, a delivery landing in a bay, or a carrier
+departing**; no file under `src/simulation/operations/`, no
+`ActionSystem` carry path and no `ProcurementSystem` path holds a
+`SimulationEventLog` at all. So there is no producer for such an alert, and the
+column cannot be showing one whatever a DOM sample says.
+
+The Build panel's `.hud-build__deliveries` block covers a *pending purchase* and
+not a delivery that has landed and is waiting for a carrier — **read off
+`src/ui/hud/build-panel.ts` ("what has been bought and has not arrived", #285,
+#703) rather than sampled**, so that clause is an inference too. `PRISON_CONDITIONS`
 (`src/simulation/protocol/types.ts`) still holds four members —
 `construction.unfunded`, `intake.no-place`, `treasury.construction-refused`,
 `treasury.deliveries-refused` — and none of them is this.

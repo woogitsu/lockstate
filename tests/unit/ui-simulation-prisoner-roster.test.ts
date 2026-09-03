@@ -372,6 +372,51 @@ describe('the row renders as sentences rather than as keys', () => {
     const row = prisonerRosterFromProjection(page([projectedRow({ currentActionId: undefined, actionPhase: 'idle' })])).rows[0]!;
     expect(formatPrisonerActivity(t, row)).toBe('Idle');
   });
+
+  /**
+   * **The errand reaches the roster, which is the only place in the shipped HUD
+   * that names what a prisoner is doing.**
+   *
+   * `hud/prisoner-detail` has a projection route and no reader in `src/ui/`
+   * (`tests/foundation/projection-reachability-contract.test.ts`), so this cell
+   * is the whole of what a player is told about a carry. Watched happening on
+   * 2026-09-03 -- `docs/research/2026-09-03-does-the-errand-walk.md` records
+   * nine samples of one errand at 1x, four of them in the travelling form --
+   * and nothing in CI held it: the case above exercises the same two branches
+   * with `action.shower`, which targets a room-catalog id, and a carry is the
+   * one entry of `DEFAULT_ACTIONS` whose target is not a place at all.
+   *
+   * **It deliberately does not pin the words.** `'Errand'` is marked in
+   * `src/content/simulation-message-keys.ts` as a draft for the owner's review,
+   * and the wrapper is `hud.regime.roster-heading`; both are the owner's under
+   * `AGENTS.md`'s fourth exclusion, and a test pinning them would have to be
+   * edited by the ruling that changes them. What is pinned is that the cell
+   * resolves to a *sentence* rather than to a key or to a template with a hole
+   * in it, and that the walking form is the wrapped one -- which is what fails
+   * if the projection stops publishing `currentActionId` for a carry, if the
+   * census loses the entry, or if the `travelling` flag stops reading the
+   * phase. `tests/unit/simulation-message-keys.test.ts` already gates that an
+   * entry *exists* for every `DEFAULT_ACTIONS` id; this gates that it arrives
+   * here.
+   */
+  it('names a prisoner on an errand, performing and walking, without leaking a key or a placeholder', () => {
+    const performing = prisonerRosterFromProjection(page([projectedRow({ currentActionId: 'action.carry' })])).rows[0]!;
+    expect(performing.activityLabelKey).toBe('action.carry.name');
+    const errand = formatPrisonerActivity(t, performing);
+    expect(errand).not.toBe('action.carry.name');
+    expect(errand).not.toContain('{');
+    expect(errand.trim().length).toBeGreaterThan(0);
+
+    const travelling = prisonerRosterFromProjection(
+      page([projectedRow({ currentActionId: 'action.carry', actionPhase: 'travelling' })]),
+    ).rows[0]!;
+    expect(travelling.travelling).toBe(true);
+    const heading = formatPrisonerActivity(t, travelling);
+    expect(heading).toContain(errand);
+    expect(heading).not.toBe(errand);
+    expect(heading).not.toContain('{');
+    expect(heading).not.toBe(HUD_MESSAGE_KEY.regimeRosterHeading);
+  });
 });
 
 class FakeChannel implements ProjectionMessageChannel {

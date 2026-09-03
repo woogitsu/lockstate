@@ -834,7 +834,13 @@ test.describe('the errand, watched through the interface', () => {
     log(`PAUSED READING: ${(await sample()).line}`);
     log(`REGIME PANEL: ${(await panelText(page, '.hud-regime')).replace(/\n/g, ' | ')}`);
     log(`REFUSAL BAND: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
-    log(`ALERTS: ${(await panelText(page, '.hud-alerts')).replace(/\n/g, ' | ')}`);
+    /*
+     * `.hud-alerts__list`, and the class is a correction: runs 1 to 5 read
+     * `.hud-alerts`, which does not exist, and logged `ABSENT` -- a probe
+     * naming a selector wrong, not a finding about the column. The column is
+     * `src/ui/hud/hud.ts:1482`.
+     */
+    log(`ALERTS: ${(await panelText(page, '.hud-alerts__list')).replace(/\n/g, ' | ')}`);
     log(`STATUS STRIP: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
 
     // ---- act 8: save and reload mid-errand --------------------------------
@@ -890,7 +896,25 @@ test.describe('the errand, watched through the interface', () => {
         log(`CAPTURE-WATCH t${now.tick}(${dayTickOf(now.tick)}) ${line}`);
         captureLine = line;
       }
-      const live = now.jobs.find((job) => job.state === 'travelling' || job.state === 'performing');
+      /*
+       * **A carry job's `state` never becomes `'travelling'` or `'performing'`,
+       * and run 4 cost a whole run finding that out.** Those two
+       * `JobLifecycleState` members belonged to `JobSystem`, which ADR 0093
+       * deleted; a delivery job now goes `available` -> `assigned` ->
+       * `completed`, and the phase lives on the *prisoner*
+       * (`CurrentActionComponent.actionPhase`), because a carry is an action.
+       * So "the errand is in flight" is a question about the carrier, not
+       * about the job -- and the sample worth capturing is the one ADR 0093
+       * decision 5's 40-tick bound is about: **mid-walk on the drop-off leg,
+       * with the goods in hand** (ADR 0037's second case).
+       */
+      const phase = prisoner === undefined ? undefined : ACTION_PHASES[prisoner.actionPhase];
+      const carrying = prisoner !== undefined && ACTION_IDS[prisoner.actionIndex] === 'action.carry' && phase !== 'idle';
+      const live = carrying && watched?.leg === 'dropoff' && phase === 'travelling' ? watched : undefined;
+      if (watched?.state === 'completed' || watched?.state === 'failed') {
+        log(`CAPTURE: the second errand reached ${watched.state} without a drop-off-leg walk being sampled`);
+        break;
+      }
       if (live !== undefined) {
         // Pause *first*, then read: pausing does not freeze an outstanding
         // debit, so reading and then pausing measures a different tick
