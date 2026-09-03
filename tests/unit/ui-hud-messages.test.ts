@@ -67,6 +67,7 @@ const HUD_MODULE_NAMES = [
   'intake-panel.ts',
   'label-parameters.ts',
   'messages.ts',
+  'pooled-row-binding.ts',
   'projection.ts',
   'regime-panel.ts',
   'rooms-panel.ts',
