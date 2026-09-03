@@ -3665,13 +3665,27 @@ test.describe('the assembled application', () => {
        */
       for (let remaining = STAFF_ROSTER_ROW_LIMIT - 1; remaining >= 0; remaining -= 1) {
         await rosterRows.first().locator('.ui-action').click();
-        // Armed, not sent: asserted rather than assumed, so a confirm step that
-        // silently stopped arming would fail here instead of leaving the
-        // dismissals below to pass for the wrong reason.
-        await expect(
-          page.locator('.hud-staff__roster .hud-staff__held-row[data-dismiss="armed"]'),
-          `the first press did not arm a roster row at ${width}x${height}`,
-        ).toHaveCount(1);
+        /*
+         * Armed, not sent -- asserted rather than assumed, so a confirm step
+         * that silently stopped arming would fail here instead of leaving the
+         * dismissals below to pass for the wrong reason.
+         *
+         * **Once per viewport, on the first of the three, and the reason is this
+         * test's budget rather than tidiness.** It is the most expensive test in
+         * the suite, `test.slow()` triples its 60 s and its own comment above
+         * records 14-28 s on an idle machine -- but it has been measured at
+         * **2.9 m against that 3.0 m** on a box running other suites
+         * (`docs/AGENT_WORKFLOW.md`, the contention canaries). The confirm step
+         * already doubles this block's presses from 15 to 30 across the sweep,
+         * which is irreducible; a poll per press is not, so it is spent where it
+         * proves the same thing.
+         */
+        if (remaining === STAFF_ROSTER_ROW_LIMIT - 1) {
+          await expect(
+            page.locator('.hud-staff__roster .hud-staff__held-row[data-dismiss="armed"]'),
+            `the first press did not arm a roster row at ${width}x${height}`,
+          ).toHaveCount(1);
+        }
         await rosterRows.first().locator('.ui-action').click();
         await expect(
           staffMetric,
