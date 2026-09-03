@@ -2231,6 +2231,129 @@
 
 .hud-regime__roster-more[hidden] { display: none; }
 
+/* A row that holds a prisoner is a press target, and this is the whole of what
+   that costs the layout: a cursor and a focus ring. No padding, no minimum
+   height and no background -- `PRISONER_ROSTER_ROW_LIMIT` in `regime-panel.ts`
+   measures four rows at 44.7px against the 54.75px its arithmetic allows, and
+   the rows are 27.5px when the activity line does not wrap, so a tap-target
+   floor of 44px here would push the fourth row out of the panel's fold at
+   900x600. The row is already 27.5px tall and spans the panel's full width,
+   which is a larger target than any of the 44px controls in this rail; what a
+   floor would buy is height it does not need.
+
+   `cursor: pointer` only while the row *is* a control: `role` is written by
+   `paintRoster` and removed by `clearRowData`, so a vacated pooled row keeps
+   the plain cursor and cannot advertise a press that reaches nobody. */
+.hud-regime__roster-row[role='radio'] { cursor: pointer; }
+
+/* The selected row, and it is a **background step and nothing else**:
+   `tests/unit/ui-design-tokens.test.ts` allows separation from "a 1px hairline
+   and a background step, and from nothing else", the row already carries a
+   badge whose tone is the prisoner's classification -- a second tint over it
+   would put two meanings on one rectangle -- and a background costs no
+   geometry, so the fold measurement above is untouched by a row being chosen.
+   `outline` is deliberately left for focus, one rule down: two outlines on one
+   rectangle is the pair that cannot both be seen. Colour never stands alone
+   here either -- `aria-checked` is what says "selected" to a screen reader, and
+   `data-selected` is what says it to a probe. */
+.hud-regime__roster-row[aria-checked='true'] { background: var(--surface-sunken); }
+
+/* The keyboard's route has to be visible, and this row is not one of the
+   `.ui-*` primitives `primitives.css` gives the shared ring to -- it is a
+   `div` carrying `role="radio"`, for the reason `clearRowData` records. Same
+   two declarations as `.hud-build__category:focus-visible`, with the offset
+   turned **inward**: `.ui-panel.hud-regime` is `overflow-x: hidden`, so a ring
+   drawn 2px outside a row that spans the panel's full width would be clipped on
+   both sides. */
+.hud-regime__roster-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Regime panel: the one prisoner the player is looking at (issue #895) */
+/* ------------------------------------------------------------------ */
+
+/* The inspector, third block in the panel body. Same gutter and hairline
+   treatment as the roster above it, so the three regions of one panel do not
+   read as three designs.
+
+   `display: none` on `[hidden]` for the reason `.hud-regime__blocks` carries
+   it: an author `display` beats the user agent's `[hidden] { display: none }`,
+   and this block has one. Nobody selected is the arrival state of the tab for
+   every player, so the attribute has to win. */
+.hud-regime__detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: var(--hairline) solid var(--border-hairline);
+}
+
+.hud-regime__detail[hidden] { display: none; }
+
+/* The name left and the badge right: the shape every readout line in this HUD
+   uses. `align-items: center` so a wrapped name keeps the badge beside its
+   middle, exactly as `.hud-regime__roster-row` does. */
+.hud-regime__detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* The heading of the block, and it is a name rather than a label -- so it wraps
+   and breaks like the row's name above it and not like an eyebrow. */
+.hud-regime__detail-name {
+  color: var(--text-heading);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.hud-regime__detail-header > .ui-badge { flex: 0 0 auto; }
+
+/* Six needs in **two columns**, which is a height decision and was measured.
+   One column is six lines of about 15px plus five gutters; two columns is three
+   lines, and this panel is a scroll container competing with the timetable and
+   the roster for a 900x600 rail. `minmax(0, 1fr)` rather than `1fr` so a long
+   need word shrinks its own column instead of widening the grid past the
+   panel. */
+.hud-regime__detail-needs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1) var(--space-2);
+}
+
+/* One need: its word, then its bar. `space-between` so the six bars line up on
+   their column's right edge and the block reads as a scale rather than as six
+   sentences. `min-width: 0` is what lets the word shrink; the bar never does,
+   because a bar squeezed to nothing is a readout with no value. */
+.hud-regime__detail-need {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.hud-regime__detail-need[hidden] { display: none; }
+
+.hud-regime__detail-need > .ui-bar { flex: 0 0 auto; }
+
+/* Matches `.hud-regime__roster-need-name`: a label rather than a heading, and
+   it never wraps -- the six need words are single short catalogue words, and a
+   wrapped one would be the thing that makes the line taller. `overflow: hidden`
+   so a longer word in another locale is clipped by its own column rather than
+   pushing the bar out of it. */
+.hud-regime__detail-need-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-transform: none;
+  letter-spacing: 0;
+  min-width: 0;
+}
+
 /* ------------------------------------------------------------------ */
 /* Bottom-centre tab bar                                               */
 /* ------------------------------------------------------------------ */

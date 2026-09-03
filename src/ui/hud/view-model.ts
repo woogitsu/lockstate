@@ -1600,6 +1600,22 @@ export interface HudViewModel {
    * empty prison on behalf of a session that has said nothing.
    */
   readonly prisonerRoster?: HudPrisonerRosterViewModel;
+  /**
+   * The one prisoner the player selected, in as much detail as the simulation
+   * will say and this layer can render honestly -- or absent because nothing
+   * asked (issue #895).
+   *
+   * The ninth pulled field, and the first whose absence has **two** causes that
+   * are both "nothing is answering for this": nobody is selected, and the
+   * selected prisoner has since been released. Neither is drawn as a claim
+   * about the prison, which is why this field says nothing about *which*
+   * prisoner is selected -- that is chrome the Regime panel owns, exactly as
+   * which buildable is selected is chrome the Build panel owns. What crosses
+   * here is only the answer, and it carries its own `entityId` so that a reply
+   * about somebody the player has since moved off cannot be painted as though
+   * it were about their current choice.
+   */
+  readonly prisonerDetail?: HudPrisonerDetailViewModel;
 }
 
 /**
@@ -1758,6 +1774,65 @@ export interface HudPrisonerRosterViewModel {
    * for what the panel does with it.
    */
   readonly everAdmitted: boolean;
+}
+
+/**
+ * One prisoner, as the inspector says them (issue #895).
+ *
+ * Four of these five fields are the roster row's own, declared identically and
+ * deliberately: the inspector is the same person read at a second scale, so the
+ * name, the badge word, the group and the tier are the same facts and are
+ * rendered by the same pure functions -- `formatPrisonerName` and
+ * `describePrisonerRow` take a structural parameter for exactly that reason.
+ * Redeclaring them as a different shape would mean two ways of saying that a
+ * prisoner is `high-risk`, and the panel would have to choose one per surface.
+ *
+ * The fifth is what the inspector exists for. `needs` is **all six**, where a
+ * row carries the one that happens to be lowest -- and the difference is money
+ * rather than detail: the state withholds part of a prisoner's day of the
+ * operating grant *per unmet need* (`unmetNeedCount`, the sum
+ * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` multiplies), so a prisoner
+ * costing the prison four needs' worth and one costing it one look the same on
+ * the roster and different here.
+ *
+ * **What is not here is not missing**, and `src/ui/simulation-prisoner-detail.ts`
+ * carries the list with a reason for each: the tile and the accommodation
+ * because neither answers "where is this person" (`docs/HUD_PROJECTIONS.md`
+ * gaps 10 and 11), the gang because no gang id has a word or a producer, and
+ * the sentence and the current action because every sentence that would frame
+ * either figure is new player-facing copy -- `AGENTS.md`'s fourth exclusion,
+ * the owner's.
+ */
+export interface HudPrisonerDetailViewModel {
+  /**
+   * The prisoner this answer is about, so a panel can refuse to paint a reply
+   * about somebody the player has since moved off. It is the projection's
+   * `EntityId`, which packs an index with a generation and is never reissued
+   * (`packEntityId`, and ADR 0026 question 1's retirement at generation
+   * 4,095) -- so it names this prisoner or nobody, and never somebody else.
+   */
+  readonly entityId: number;
+  /**
+   * Absent until the intake pipeline's `reception` stage mints one, and absent
+   * for every prisoner when the session supplies no identity registry -- the
+   * same two cases the roster row's own `name` is absent for.
+   */
+  readonly name?: HudActorNameViewModel;
+  /** The badge word: the tier once classification has run, the intake stage before it. */
+  readonly standingLabelKey: LocalizationKey;
+  /** The stable classification-group id, absent until classification has run. It decides the badge's tone. */
+  readonly classificationGroupId?: string;
+  /** `0` (minimal) to `3` (high risk); absent until classification has run. */
+  readonly riskTier?: number;
+  /**
+   * Every need, in the projection's own `NEED_IDS` order and not re-sorted.
+   *
+   * Six today, and the count is the projection's rather than this file's: a
+   * consumer that assumed six would be wrong the day a seventh need is
+   * declared, which is why `regime-panel.ts` spells its row budget out with a
+   * unit test holding it against `NEED_IDS.length`.
+   */
+  readonly needs: readonly HudPrisonerNeedViewModel[];
 }
 
 /**
