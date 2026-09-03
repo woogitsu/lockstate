@@ -13,7 +13,7 @@ Per the issue's explicit scope, this is deliberately bounded:
 
 - **6 core needs** (hunger, sleep, hygiene, bladder, safety, recreation),
   not the full eventual need catalog.
-- **10 candidate actions**, **2 classification groups**
+- **12 candidate actions**, **2 classification groups**
   (general-population, high-risk) each with their own regime schedule --
   enough to prove the mechanism (data-driven actions, regime-gated
   eligibility, capacity/permission-aware routing), not a balanced,
@@ -22,13 +22,29 @@ Per the issue's explicit scope, this is deliberately bounded:
   [ADR 0042](./adr/0042-attaching-consequences-to-the-simulation-loop.md)
   decision 1, the tenth is `action.laundry-work`, appended for
   [ADR 0054](./adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)
-  decision 3, and the eleventh is `action.kitchen-work`, appended for issue
-  #532 (see *Actions* below for why appending is the load-bearing word).
+  decision 3, the eleventh is `action.kitchen-work`, appended for issue
+  #532 (see *Actions* below for why appending is the load-bearing word), and
+  the twelfth is `action.carry`, appended for
+  [ADR 0093](./adr/0093-a-carry-is-an-action.md).
   `action.kitchen-work` is `action.laundry-work`'s shape applied to
   `room.kitchen` with no new figure in it: `'food-preparation'`, `hunger` at 1
   against `action.eat-meal`'s 4, 120 ticks. It is a place to work and not a
   supplier of the canteen -- no meal exists as an item and the canteen never
-  asks whether anybody cooked.
+  asks whether anybody cooked. `action.carry` is the odd one and the *Actions*
+  section says how: category `work`, **no room at all** -- its target is the
+  third `ActionTarget` kind, `{ kind: 'job-board' }`, so the tiles come off the
+  job rather than off a room instance -- no need effect, and a 5-tick
+  `minDurationTicks` that means *the dwell at one end of one leg* rather than
+  the action's life, which is the job's.
+
+  **This bold figure read `10` and was wrong in two different ways; both are
+  recorded rather than overwritten**, because a tally that disagrees with the
+  list beside it is exactly what `docs/AGENT_WORKFLOW.md` §4 says rots first.
+  It was already one behind *this bullet's own prose*, which enumerated an
+  eleventh three lines below it, before ADR 0093 put it two behind the code on
+  2026-09-03. `tests/foundation/documentation-claims-contract.test.ts` now
+  counts `DEFAULT_ACTIONS` and fails on this sentence rather than leaving the
+  next reader to notice, which is the only durable form the claim has.
   **All seven `ACTION_CATEGORIES` now have content.**
   `tests/unit/prisoners-action-catalog.test.ts` carried the seventh, `work`,
   with the reason it did not until ADR 0054 authored it, and its
@@ -347,19 +363,45 @@ it is narrower than the question above:
 "earned today" chip: a player can see a bar go amber and can see the chip fall,
 and no surface connects the two. That is still open and still the owner's.
 
-**`action.free-association` is the catalogue's one entry with no need effect,
-and that is deliberate.** `scoreAction` sums `deficit x effect`, so an action
-with no effects scores exactly 0 -- the floor, since no authored effect is
-negative -- and it can therefore never displace a candidate addressing a need
-that is even slightly unmet. It is reached when nothing better resolves, and
-in an exact 0-0 tie where every legal alternative is already at `NEED_MAX`. It
-targets `own-accommodation` and names no capability, because an entry that
-exists to close a hole has to resolve wherever the hole opens and a
-`room-catalog-id` target would need the very room whose absence opens it.
+**`action.free-association` and `action.carry` are the catalogue's two entries
+with no need effect, and in both cases that is deliberate.** `scoreAction` sums
+`deficit x effect`, so an action with no effects scores exactly 0 -- the floor,
+since no authored effect is negative -- and it can therefore never displace a
+candidate addressing a need that is even slightly unmet. It is reached when
+nothing better resolves, and in an exact 0-0 tie where every legal alternative
+is already at `NEED_MAX`. `action.free-association` targets
+`own-accommodation` and names no capability, because an entry that exists to
+close a hole has to resolve wherever the hole opens and a `room-catalog-id`
+target would need the very room whose absence opens it.
 `ActionSystem.continuePerforming` does not stamp `needFulfilledLastTick` while
-it runs: that field reaches the HUD verbatim through
+either runs: that field reaches the HUD verbatim through
 `projectPrisonerDetail`, and a "need fulfilled at tick N" that no need was
 fulfilled at is a sentence the simulation would not be keeping.
+
+**This paragraph opened *"`action.free-association` is the catalogue's one
+entry with no need effect"* and that sentence was false from 2026-09-03**, when
+[ADR 0093](./adr/0093-a-carry-is-an-action.md) appended `action.carry` with
+`needEffectsPerTick: {}` -- `actions.ts` says so in the carry's own comment,
+*"the same property `action.free-association` has, and for the same reason"*.
+It is corrected rather than replaced because everything the paragraph goes on
+to argue is true of both entries, and because the reason the sentence rotted is
+the reason it was worth writing: a 0-score candidate cannot displace a need,
+which is what makes appending one to a live catalogue safe.
+
+**What is *not* the same about the two, and is why believing there is only one
+misleads a reader.** `action.carry` is not reached by scoring at all in the
+ordinary case: `ActionSystem.planIdleSelection` **promotes it to rank 0** when
+the regime block allows `work` and the job board has an errand
+(ADR 0093 decision 2), so an errand is taken *before* needs are served rather
+than after -- bounded by the owner's overrule of 2026-09-02, which is
+`relievesAnUnmetNeed`: a prisoner whose best providable candidate would relieve
+a need the state is already docking the prison for keeps their place in the
+ranking, and at a score of 0 the errand then goes last. It is also filtered out
+of the candidate list entirely whenever the board has nothing, which is what
+leaves every jobless prison byte-identical.
+`tests/foundation/documentation-claims-contract.test.ts` counts the entries
+with an empty `needEffectsPerTick` and fails on the old sentence, so the next
+appended one cannot slip past this paragraph the way this one did.
 
 ## Utility AI: deterministic scoring and selection
 
