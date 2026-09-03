@@ -239,9 +239,22 @@ const LOCALIZER_CALL = /(?:\bt|\.format|\.formatPlural)\s*\(/;
  * expression instead and let the reporter find the line.
  */
 const ASSEMBLED_SENTENCES: Readonly<Record<string, string>> = {
-  'ui/hud/build-panel.ts:1828':
+  /*
+   * **These two numbers moved four times on 2026-09-03 and neither side of the
+   * merge that produced them was right.** #874 put a shortfall line under the
+   * Buy control and #860 rewrote `paintQueue`'s row loop; each branch re-pinned
+   * these sites against its own tree, so the merge offered `:1828`/`:2197` on
+   * one side and `:1858`/`:2088` on the other and **both were stale on the
+   * merged tree**. The live numbers below were read off the merged file by
+   * grepping for the assembled expressions themselves, not taken from either
+   * branch. `docs/AGENT_WORKFLOW.md` §4 already names this shape: a `file:line`
+   * into a file under active edit is the least durable citation here, and a
+   * quoted sentence is the most -- which is why the value beside each key
+   * quotes the expression and the key is the part that rots.
+   */
+  'ui/hud/build-panel.ts:1906':
     'aria-label for a delivery row\'s Cancel: `${t(buildDeliveryCancel)}: ${row.label.textContent}`',
-  'ui/hud/build-panel.ts:2197':
+  'ui/hud/build-panel.ts:2275':
     'aria-label for a queue row\'s Cancel: `${t(buildQueueCancel)}: ${row.label.textContent}`',
 };
 

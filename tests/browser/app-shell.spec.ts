@@ -8445,7 +8445,33 @@ test.describe('the assembled application', () => {
     await expect(buy).toHaveAttribute('data-action-failed', 'true');
     const refusalId = await refusal.getAttribute('id');
     expect(refusalId).not.toBeNull();
-    await expect(buy).toHaveAttribute('aria-describedby', String(refusalId));
+    /*
+     * **`aria-describedby` is a token LIST, and this asserted equality until
+     * the owner's ruling of 2026-09-03 put the shortfall on the control.**
+     * It read `toHaveAttribute('aria-describedby', String(refusalId))` and
+     * went red with `Received: "hud-build-buy-shortfall-6 hud-refusal-1"`.
+     * That failure was the assertion's, not the interface's: a refused Buy
+     * now has two things to say -- how much is missing, and that nothing was
+     * bought -- and a control that references only one of them would be
+     * withholding the other from a screen reader. Equality on a
+     * space-separated list is a claim that no second description may ever
+     * exist, which is not a property this surface should have.
+     *
+     * Both tokens are now asserted **by name and independently**, so this is
+     * strictly stronger than the equality it replaces: it still fails if the
+     * refusal stops being referenced, and it now also fails if the shortfall
+     * line stops being. Order is deliberately not asserted; see below.
+     */
+    const describedBy = (await buy.getAttribute('aria-describedby')) ?? '';
+    const describedTokens = describedBy.split(/\s+/u).filter((token) => token.length > 0);
+    expect(describedTokens).toContain(String(refusalId));
+    const shortfall = page.locator('.hud-build__buy-shortfall');
+    await expect(shortfall).toHaveCount(1);
+    const shortfallId = await shortfall.getAttribute('id');
+    expect(shortfallId).not.toBeNull();
+    expect(describedTokens).toContain(String(shortfallId));
+    // Exactly these two, so a third description cannot be added unnoticed.
+    expect(describedTokens).toHaveLength(2);
 
     // Nothing left this thread, so the worker has nothing it *could* report
     // about this press: the throw happened instead of the submit, not
