@@ -1,12 +1,16 @@
 # Can a player read this?
 
 **Date:** 2026-09-03 · **Version:** v0.0.422 (`31578e6`, `playtest/can-a-player-read-this`)
-· **Method:** played in a real browser through
-`tests/browser/playtest-2026-09-03-the-whole-screen-at-once.playtest.ts` and
-`tests/browser/playtest-2026-09-03-can-a-player-read-this.playtest.ts`, both on
-`tests/browser/playwright.playtest.config.ts`. **Neither is a CI gate**;
+· **Method:** played in a real browser at 1440x900 through the nine acts of
+`tests/browser/playtest-2026-09-03-the-whole-screen-at-once.playtest.ts` on
+`tests/browser/playwright.playtest.config.ts`. **Not a CI gate**;
 `tests/browser/playwright.config.ts` is `testMatch: /.*\.spec\.ts$/` and never
 collects a `.playtest.ts`.
+
+The sibling file `tests/browser/playtest-2026-09-03-can-a-player-read-this.playtest.ts`
+on the same branch judges the same question one surface at a time — clipping,
+overflow, silent scrollers, tone contrast, 375x812 — and **was read, not run,
+by this pass**. Nothing below is sourced from it.
 
 ## The question
 
