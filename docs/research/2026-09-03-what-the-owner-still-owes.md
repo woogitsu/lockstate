@@ -4,6 +4,14 @@
 was opened at that commit. Every prose claim quoted from a document is quoted
 rather than cited by line, per `docs/AGENT_WORKFLOW.md` §4.
 
+> **Corrected on landing, by the integrator.** One claim in this note was
+> wrong, and it was its most serious: §8's *"un-put economy decision"* — ADR
+> 0017 §9's reopened ECON-002 hard lock, ranked Tier 1 in §9 as *"a player who
+> makes one legal purchase can lock a prison out of the game"*. **It was
+> superseded prose, not a live defect.** The withdrawal is written into §8 and
+> §9 rather than deleted, and ADR 0017 §9 carries a supersession marker as of
+> the same commit. Everything else here was left as the pass wrote it.
+
 This is a **reading** deliverable. Nothing in `src/` was touched, no
 player-facing string was written or changed, and **none of the questions below
 is answered here** — assembling them is the whole job. `AGENTS.md`'s fourth
@@ -20,8 +28,9 @@ places" suggests, and it is concentrated rather than scattered.**
 On `main` today there are **six draft strings awaiting a wording call** (eight
 locale keys) and **seven places where a sentence was deliberately not written
 and the surface is waiting for one**. That is **thirteen wording obligations**,
-plus **eight `STATUS-QUEUE.md` §2 signature/approval rows** and **one
-un-put economy decision**. Of the thirteen wording items, **five were created in
+plus **eight `STATUS-QUEUE.md` §2 signature/approval rows**. *(A ninth item, an
+un-put economy decision, was counted here and is withdrawn — see the correction
+banner above and §8.)* Of the thirteen wording items, **five were created in
 the last two days** (2026-09-01 to 2026-09-02) and only **four have been waiting
 longer than five days**.
 
@@ -276,15 +285,26 @@ for this category.
 
 ### Carries a non-wording owner decision, still open
 
-- **`docs/adr/0017-money-primary-resource-model.md` §9**, *"A cost the gate found
-  and §5 did not price — **not put to the owner**, and not decided here"*.
-  **This is the one item in this note that blocks a player rather than an
-  agent.** ADR 0075's ECON-002 hard lock reopened: a new prison that makes *"one
-  legal, unrefused 656-brick purchase"* reaches a state it cannot earn its way
-  out of by any command the game offers, before it has built a single bed. The
-  section says of itself that the acceptance banner above it *"was true of §5 as
-  written and is not true of the cost below"*. Waiting since `53267d7e` (#771,
-  #785), **2026-09-01**.
+- ~~**`docs/adr/0017-money-primary-resource-model.md` §9**, the reopened
+  ECON-002 hard lock.~~ **WITHDRAWN — this entry was wrong, and it was this
+  note's most serious claim.** §9 *is* headed *"not put to the owner"*, and it
+  was, on the same day: the amendment immediately below it — *"Amendment,
+  2026-09-01: a starter rung for a fresh, unfurnished prison"* — records the
+  owner's ruling on exactly the three shapes §9 names, choosing the second.
+  **The lock is shut on `main`.** A fresh, unfurnished prison's `'deliveries'`
+  floor is −1,185 rather than −1,250, so the 656-brick press this entry called
+  *"one legal, unrefused purchase"* is refused three bricks earlier and the
+  balance never reaches the trap's neighbourhood. Verified against the gate
+  rather than against prose: `tests/integration/economy-liquidity-hard-lock.test.ts`
+  passes 6 of 6 and its case is titled *"spends the grant and the starter rung
+  on 654 bricks, and the ECON-002 lock stays shut since the owner's second
+  ruling on #771"*. Nothing is owed here.
+
+  **Kept rather than deleted, because the mistake is the finding.** §9 carried
+  no forward pointer, so reading it alone — which is how grep arrives at a
+  section — yielded a live-looking critical defect. This pass read the section
+  and not the heading after it. ADR 0017 §9 now carries a supersession marker
+  in the same commit as this withdrawal, so the next pass cannot repeat it.
 - `docs/adr/0070-dismissing-a-staff-member.md` Status — *"Two things here are
   explicitly not decided"*: the severance/refund amount and the
   guards-per-prisoner ratio. 2026-08-29.
@@ -344,9 +364,9 @@ for this category.
 2. **§7 row 3**, the server entry point's pre-merge approval. ADR 0046's
    telemetry ingest cannot land at all without it, and it is the one approval
    `deploy.yml` will never pause to ask for.
-3. **ADR 0017 §9**, the reopened ECON-002 hard lock. Not wording, and *"not put to
-   the owner"* by the section's own heading — a player who makes one legal
-   purchase can lock a prison out of the game.
+3. ~~**ADR 0017 §9**, the reopened ECON-002 hard lock.~~ **Withdrawn** — see §8.
+   The section is superseded by the amendment below it and the lock is shut on
+   `main`, measured against the gate. Tier 1 has two items, not three.
 
 **Tier 2 — an answer fills a surface that is blank or bare today.**
 
@@ -375,6 +395,12 @@ for this category.
   that the wording subset is reached from `src/` independently.
 - **Issue comments were not swept.** An obligation living only in a comment
   thread is outside this note. §1 lists the issue numbers actually read.
+- **The one claim here that was checked against a test rather than against
+  prose is the one that turned out false.** §8's ECON-002 entry was withdrawn
+  on landing because the gate contradicted the ADR section it was read from.
+  Every other verdict in this note rests on prose plus a `file:line`, which is
+  the same standard that produced the withdrawn one — so read the rest knowing
+  that a section stating its own openness is not evidence that it is still open.
 - **"Waiting since" is the commit that introduced the marking, not the commit
   that created the underlying gap.** For A6 the two differ and both are given.
   For B4 the ruling predates the marking.
