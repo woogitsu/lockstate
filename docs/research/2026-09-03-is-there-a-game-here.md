@@ -81,3 +81,72 @@ in-game days.
 **Every wall-clock number in this note was taken under that load and none of
 them is a performance claim.** Tick counts and press counts are not affected by
 it; press *durations* are, and are marked where they appear.
+
+## 2. The headline: how long you can look away
+
+**`DESIGN`. Thirty-three in-game days, and the game asked for nothing.**
+
+Run 1 built a prison, admitted twenty prisoners, hired six guards, and then
+pressed nothing at all. Every twenty wall seconds it read all nine status-strip
+chips, the alerts column, the refusal band and the whole regime roster. It was
+stopped by hand at 1,013 wall seconds. In that window:
+
+| | at the start | at the end |
+| --- | --- | --- |
+| tick | 122,894 | 203,724 |
+| day | 52 | 85 |
+| PRISONERS | 20 | 12 |
+| STAFF | 6 | 6 |
+| INCIDENTS | 0 | **0** |
+| CONTRABAND | 1 | 5 |
+| FUNDS | 15,135 | **98,175** |
+| EARNED TODAY | 678 | 1,133 |
+
+**80,830 ticks — 33.7 in-game days — with no input.** Nothing broke, nothing
+was ever owed a decision, and the prison got monotonically richer. What
+happened in that window was not nothing: the alerts column recorded **26
+fights** (`"A fight has broken out between two prisoners. 26× Day 78"`), five
+contraband finds, and nine releases. Every fight was followed by `"The prison is
+under control again — no incident is still open."` with the same running count.
+So the prison had 26 fights and resolved 26 fights without ever needing a
+player.
+
+That is the finding this pass was sent to get, and it is the most important one
+in this note: **there is no game here yet.** Everything below is either an
+elaboration of why, or a defect found on the way.
+
+### `DEFECT` — the INCIDENTS chip read 0 at all fifty samples while 26 fights fired
+
+`INCIDENTS 0` with the badge `Clear` was on screen at every single sample,
+including the ones where the alerts column had just added a fight. A player
+watching the chips — which is what the chip row is for — would have concluded
+the prison had never had an incident.
+
+What would establish the cause: whether the chip counts *open* incidents rather
+than incidents, and whether every fight in this run closed inside one sampling
+interval. What would establish the impact is nothing further — a chip that reads
+0 and `Clear` for 33 days of fights is misinformation whatever it is counting.
+
+### `DESIGN` — the prison empties itself, and nothing refills it
+
+PRISONERS fell 20 → 19 → 15 → 13 → 12 across the window, entirely through
+`"1 released — their sentences are served."` (nine of them). **Nothing brings a
+prisoner in except the player pressing Admit.** So an unattended prison does not
+degrade, it *drains*: the population trends to zero, the population-linked
+income trends to zero with it, and the only thing that ever grows is the
+treasury.
+
+The consequence for pacing is worth stating plainly. In Prison Architect the
+intake is a *pressure* — prisoners keep arriving whether you are ready or not,
+and that is the engine of the whole game. Here intake is a button. A prison left
+alone becomes emptier and richer, which is the opposite of a management game's
+default direction.
+
+### `DESIGN` — money is not a constraint after the build
+
+The treasury grew from 15,135 to 98,175 in 33.7 days: about **+2,464 a day
+against a 480-a-day wage bill**, with twelve to twenty prisoners. Nothing else
+was ever spent. The whole nine-room prison cost 13,525 to build, so by day 85 a
+neglected prison holds seven times its own construction cost and has nothing to
+spend it on.
+
