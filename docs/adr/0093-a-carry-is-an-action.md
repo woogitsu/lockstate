@@ -2,23 +2,51 @@
 
 ## Status
 
-**Proposed, 2026-09-02. Not self-approved.** Nothing below is implemented and
-no code on this branch does any of it; the branch carries this document and one
-foundation test that pins the incoherence the document is about, as the tree
-has it today. A reader who disagrees with a decision here should treat it as
-open — the argument is the whole of the warrant.
+**Accepted, 2026-09-03, by the repository owner — all six decisions, and
+nothing this document reserves.** Shown this document's six decisions as
+written — including the amendment of 2026-09-02 already inside it and the three
+player-facing sentences it says it cannot write — they answered *"Zaakceptuj
+ADR 0093 i wdrożę mechanikę"* (accept ADR 0093 and the mechanic will be
+implemented). That approves decisions 1 through 6 and the costs each states,
+and it approves nothing wider:
 
-**What the owner decided, and what they did not.** On 2026-09-02 the owner
-ruled on issue [#600](https://github.com/matmaxalez/lockstate/issues/600)
-between the three options pull request #811 priced for *who owns a working
-prisoner's body*, and chose the third with its cost in front of them: **a carry
-is an action** — the job system's carry becomes a `work`-category
-`ActionDefinition` whose target is a job on the board, so one authority moves
-the prisoner and the use claim *is* the job. That ruling is why this document
-is about option (c) and not about (a) or (b), and it is recorded below as the
-reason the option is taken. **It is not a signature on the design of (c) that
-follows.** Everything under *Decision* is this document's own answer to what
-(c) leaves open, and every one of those answers is proposed.
+- **The three sentences under *What is owed to the owner* are still owed.** The
+  action's label, the standing condition for a delivery waiting in a bay with
+  nobody to carry it, and whatever the detail panel says about goods in hand
+  remain the owner's under `AGENTS.md`'s fourth exclusion. An approval to build
+  the mechanic is not an approval to write them.
+- **The three open questions are still open.** Whether a carrier is
+  interruptible by a regime change, what the cancel path owes a player, and
+  whether a `'carrier-departed'` job deserves a notice were put to the owner as
+  the owner's and were not answered by this ruling.
+- **Nothing in *What would change my mind* is retracted by the acceptance.** The
+  passage records what the document thought its weakest claim was, and the
+  owner's amendment already overruled it; both are kept as they stand.
+
+**This cell read `Proposed, 2026-09-02. Not self-approved` until the
+acceptance, and what it said is kept rather than overwritten**
+(`docs/AGENT_WORKFLOW.md` §4: mark both directions). It read: *"Nothing below
+is implemented and no code on this branch does any of it; the branch carries
+this document and one foundation test that pins the incoherence the document is
+about, as the tree has it today. A reader who disagrees with a decision here
+should treat it as open — the argument is the whole of the warrant."* The first
+half of that stopped being true with the change that landed the mechanic; the
+second half is what the acceptance replaces.
+
+**What the owner decided on 2026-09-02, and what they did not decide then.** On
+2026-09-02 the owner ruled on issue
+[#600](https://github.com/matmaxalez/lockstate/issues/600) between the three
+options pull request #811 priced for *who owns a working prisoner's body*, and
+chose the third with its cost in front of them: **a carry is an action** — the
+job system's carry becomes a `work`-category `ActionDefinition` whose target is
+a job on the board, so one authority moves the prisoner and the use claim *is*
+the job. That ruling is why this document is about option (c) and not about (a)
+or (b), and it is recorded below as the reason the option is taken. **It was not
+a signature on the design of (c) that follows** — that came separately, on
+2026-09-03, and is the section above. This paragraph used to end *"and every one
+of those answers is proposed"*; it is kept in its corrected form because the
+two-stage shape is the record: the option was chosen on one day and its design
+signed on another.
 
 Measured on v0.0.364 (`1547c7f6`), the head of `main` when this branch was cut.
 Every `file:line` below was opened at that commit.
@@ -48,7 +76,9 @@ lands first turns out to hold 0093: this file, its row in `docs/adr/README.md`
 and every citation of "ADR 0093" move together.
 
 **The document sets its own status and the index only reports it.** The row
-added in this commit says `Proposed`, because this section does.
+added in this commit said `Proposed`, because this section did; it says
+`Accepted` now, because this section does. The direction of that dependency is
+the point and has not changed.
 
 ### What this document rests on, and where it corrects its own brief
 
@@ -291,9 +321,13 @@ ever *told* that a prisoner skipped an errand because they were hungry. That is
 a player-facing sentence and therefore the owner's; it joins the three
 sentences this document already owes them.
 
-**This amendment does not make the document `Accepted`.** The owner ruled on
-decision 2's ordering and on nothing else; the other five decisions carry the
-same warrant they had, which is the argument and not a signature.
+**This amendment did not make the document `Accepted`.** The owner ruled on
+decision 2's ordering and on nothing else; the other five decisions carried the
+same warrant they had, which was the argument and not a signature. **The
+signature came the next day** — 2026-09-03, recorded in the *Status* section
+above — and this paragraph is kept in the past tense rather than deleted,
+because the gap between the ruling and the acceptance is a fact about how this
+decision was made.
 
 ## Decision
 
