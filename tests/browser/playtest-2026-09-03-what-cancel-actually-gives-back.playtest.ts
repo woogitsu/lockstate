@@ -848,11 +848,29 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
       stateAtRead: string;
       stateAfter: string;
       aimedAtTheRowItRead: boolean;
+      row: string;
     }[] = [];
     const startedAt = Date.now();
-    while (outcomes.length < 8 && Date.now() - startedAt < 180_000) {
-      const candidate = await page.evaluate((selector) => {
-        for (const node of Array.from(document.querySelectorAll(selector))) {
+    while (outcomes.length < 8 && Date.now() - startedAt < 300_000) {
+      /*
+       * Alternating the **first** paying row and the **last**, because the two
+       * are not the same question and taking only the first would answer the
+       * narrower one.
+       *
+       * Rows are drawn in the crew's own walk order
+       * (`compareBuildOrderExecution`), so row 1 is the order being built and
+       * the first paying row is the very next one to start -- ten ticks from
+       * `in-progress` on the next scheduled pass. The last of the three is one
+       * or two whole walls further back, which is 50 ticks of work each
+       * (`workRequired: 50`, `progress += 10` per pass). If the lead beats even
+       * that, the `assigned` figure is not reachable at all while the clock
+       * runs; if it does not, it is reachable for a row further down the list
+       * and not for the one at the top.
+       */
+      const takeLast = outcomes.length % 2 === 1;
+      const candidate = await page.evaluate(([selector, last]) => {
+        const paying: { orderId: string; back: number; text: string }[] = [];
+        for (const node of Array.from(document.querySelectorAll(selector as string))) {
           if (!(node instanceof HTMLElement)) continue;
           if (node.hidden || node.getClientRects().length === 0) continue;
           const text = (node.innerText ?? '').replace(/\s+/g, ' ').trim();
@@ -860,10 +878,11 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
           if (match === null) continue;
           const back = Number.parseInt(match[1]!.replace(/[^\d]/g, ''), 10);
           if (!Number.isFinite(back) || back <= 0) continue;
-          return { orderId: node.getAttribute('data-order') ?? '', back, text };
+          paying.push({ orderId: node.getAttribute('data-order') ?? '', back, text });
         }
-        return undefined;
-      }, QUEUE_ROW);
+        if (paying.length === 0) return undefined;
+        return last === true ? paying[paying.length - 1] : paying[0];
+      }, [QUEUE_ROW, takeLast] as const);
       if (candidate === undefined) {
         await page.waitForTimeout(25);
         continue;
@@ -927,8 +946,10 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
         stateAtRead,
         stateAfter: after.orders.find((order) => order.id === cancelled)?.state ?? 'gone',
         aimedAtTheRowItRead: cancelled === candidate.orderId,
+        row: takeLast ? 'last paying row' : 'first paying row',
       });
-      note(`press ${String(outcomes.length)}: row said ${String(candidate.back)} [${candidate.text}]`
+      note(`press ${String(outcomes.length)} (${takeLast ? 'last' : 'first'} paying row):`
+        + ` row said ${String(candidate.back)} [${candidate.text}]`
         + ` | the command named ${cancelled === candidate.orderId ? 'that same order' : `a DIFFERENT order (${cancelled})`}`
         + ` | that order's state when the row was read: ${stateAtRead}`
         + ` | submitted at tick ${String(before.tick)} to execute at ${String(envelope?.executeAtTick)}`
@@ -945,6 +966,11 @@ test.describe('what Cancel gives back, per state, read off the worker', () => {
     note(`PRESSES: ${String(outcomes.length)}, of which ${String(aimed.length)} named the order whose row was read.`);
     note(`OF THOSE ${String(aimed.length)}: paid what the row said ${String(honoured)}; paid less ${String(aimed.length - honoured)}.`);
     note(`presses that named a different order than the row described: ${String(outcomes.length - aimed.length)}`);
+    for (const which of ['first paying row', 'last paying row']) {
+      const group = aimed.filter((outcome) => outcome.row === which);
+      note(`  ${which}: ${String(group.filter((outcome) => outcome.money === outcome.advertisedOnTheRow).length)}`
+        + ` of ${String(group.length)} paid what the row said`);
+    }
     note(`outcomes: ${JSON.stringify(outcomes)}`);
     expect(outcomes.length).toBeGreaterThan(0);
   });
