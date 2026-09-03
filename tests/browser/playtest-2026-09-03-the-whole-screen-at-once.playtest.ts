@@ -55,6 +55,18 @@ const log = (line: string): void => {
 };
 
 /**
+ * Where the screenshots go.
+ *
+ * **Not under `test-results/`, and that is a measured cost rather than a
+ * preference.** Playwright wipes its `outputDir` -- `test-results` by default
+ * -- before every run, so the first pass of this file wrote nine screenshots
+ * there and the second pass deleted all nine before a single one had been
+ * looked at. `LOCKSTATE_PLAYTEST_SHOTS` overrides; the fallback is a sibling
+ * directory nothing else owns.
+ */
+const SHOTS = process.env['LOCKSTATE_PLAYTEST_SHOTS'] ?? 'playtest-shots';
+
+/**
  * Records, for every element that ever gets one, which event types it is
  * listening for -- installed before the app's first script so nothing is
  * missed.
@@ -87,46 +99,71 @@ interface NumberSighting {
   readonly token: string;
   readonly leafText: string;
   readonly leafSelector: string;
-  readonly groupSelector: string;
-  readonly groupWords: string;
-  readonly named: boolean;
-  readonly namedBy: string;
-  readonly tab: string;
+  readonly hops: number;
+  readonly namerSelector: string;
+  readonly namerText: string;
+  readonly srOnly: string;
+  readonly ariaOrTitle: string;
 }
 
 /**
- * Every visible run of digits inside the HUD, with whatever names it.
+ * Every visible run of digits inside the HUD, with the nearest thing that
+ * names it and **how far away that thing is**.
  *
- * ## What counts as "named"
+ * ## Why a distance and not a boolean
  *
- * A number is *named* when a word of three or more letters appears either in
- * the number's own leaf text or inside the smallest enclosing **grouping** --
- * a chip, a row, a list item, a labelled field. That is the unit a player's
- * eye actually takes in at once; a word four ancestors up in a panel header
- * does not tell them what the third number in the fifth row is.
+ * The first version of this probe asked "is there a word inside the number's
+ * smallest grouping", and its grouping walk stopped on any class matching
+ * `^ui-[a-z]+$` -- which `ui-value` is. Every chip value in the strip
+ * therefore reported its own `<span>` as its grouping, found no word in it,
+ * and was counted UNNAMED. It is not: `PRISONERS` is a sibling 1 hop up.
+ * That run claimed 71 unnamed tokens on a populated prison and the number was
+ * an artifact of this function.
  *
- * The grouping is found by walking up to the first ancestor that either
- * carries a class ending in `__row`/`__item`/`__field`, or is one of the
- * primitive wrappers (`ui-stat`, `ui-field`, `ui-number`, `ui-badge`,
- * `ui-bar`), or is an `li`/`tr`/`label`. Failing all of those, the walk stops
- * at the panel and the number is reported as named by the panel, which is the
- * generous reading -- so the unnamed count is a floor, not a ceiling.
+ * So it now measures the thing that has no free parameters: `hops`, the number
+ * of steps from the number's own leaf up to the **nearest ancestor whose text
+ * contains a word of three or more letters**, plus that ancestor's whole text.
+ * A player judges the pairing from those two facts -- 1 hop to a 12-character
+ * ancestor is a labelled number; 6 hops to a 400-character panel is a number
+ * sitting alone. `hops` is `-1` when no ancestor up to `.hud` has a word at
+ * all, which is the only unarguable "nothing on screen names this".
+ *
+ * Screen-reader-only text is reported in its own column rather than counted as
+ * naming, because this pass asks what is *on screen*.
  */
-async function probeNumbers(page: Page, tabId: string): Promise<readonly NumberSighting[]> {
-  return page.evaluate((currentTab) => {
-    const GROUP = /(__row|__item|__field|__entry|__line|__stat|^ui-stat$|^ui-field$|^ui-number$|^ui-badge$|^ui-bar$|^ui-meter$)/;
+async function probeNumbers(page: Page): Promise<readonly NumberSighting[]> {
+  return page.evaluate(() => {
     const describe = (el: Element): string => {
       const cls = (el.getAttribute('class') ?? '').split(/\s+/).filter((c) => c !== '').slice(0, 3).join('.');
       return `${el.tagName.toLowerCase()}${cls === '' ? '' : `.${cls}`}`;
     };
-    const isPanel = (el: Element): boolean =>
-      el.classList.contains('hud') ||
-      el.classList.contains('save-panel') ||
-      (el.getAttribute('class') ?? '').split(/\s+/).some((c) => /^(hud|ui)-[a-z]+$/.test(c) && c !== 'ui-badge');
+    const isScreenReaderOnly = (el: HTMLElement): boolean => {
+      const box = el.getBoundingClientRect();
+      const style = getComputedStyle(el);
+      return (
+        (box.width <= 1 && box.height <= 1) ||
+        style.clip === 'rect(0px, 0px, 0px, 0px)' ||
+        style.clipPath === 'inset(50%)'
+      );
+    };
+    /** The visible text of `el`, with every screen-reader-only span removed. */
+    const visibleTextOf = (el: HTMLElement): string => {
+      let text = '';
+      const walk = (node: Node): void => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          text += node.textContent ?? '';
+          return;
+        }
+        if (!(node instanceof HTMLElement)) return;
+        if (node.hidden || isScreenReaderOnly(node)) return;
+        for (const child of node.childNodes) walk(child);
+      };
+      for (const child of el.childNodes) walk(child);
+      return text.replace(/\s+/g, ' ').trim();
+    };
 
     const out: NumberSighting[] = [];
-    const roots = document.querySelectorAll('.hud, .save-panel');
-    for (const root of roots) {
+    for (const root of document.querySelectorAll('.hud, .save-panel')) {
       for (const node of root.querySelectorAll('*')) {
         const el = node as HTMLElement;
         if (el.children.length > 0) continue;
@@ -134,54 +171,47 @@ async function probeNumbers(page: Page, tabId: string): Promise<readonly NumberS
         const style = getComputedStyle(el);
         if (style.visibility === 'hidden' || style.opacity === '0') continue;
         if (el.closest('svg') !== null) continue;
+        if (isScreenReaderOnly(el)) continue;
         const leafText = (el.textContent ?? '').trim();
         if (!/\d/.test(leafText)) continue;
-        // Screen-reader-only text is not on screen; it is measured separately.
-        if (style.clip === 'rect(0px, 0px, 0px, 0px)' || (el.getBoundingClientRect().width <= 1 && el.getBoundingClientRect().height <= 1)) continue;
+        // A leaf that already carries its own word is named at zero distance.
+        const tokens = leafText.match(/-?[\d][\d,._:%\u00d7\/]*/g) ?? [leafText];
 
-        const tokens = leafText.match(/-?[\d][\d,._:%×/]*/g) ?? [leafText];
-
-        // The smallest grouping around it.
-        let group: Element = el;
-        for (let n: Element | null = el; n !== null; n = n.parentElement) {
-          group = n;
-          const classes = (n.getAttribute('class') ?? '').split(/\s+/);
-          if (classes.some((c) => GROUP.test(c))) break;
-          if (/^(li|tr|label|button)$/.test(n.tagName.toLowerCase())) break;
-          if (isPanel(n)) break;
+        let hops = -1;
+        let namer: HTMLElement | undefined;
+        let step = 0;
+        for (let n: HTMLElement | null = el; n !== null; n = n.parentElement) {
+          if (/[A-Za-z]{3}/.test(visibleTextOf(n))) {
+            hops = step;
+            namer = n;
+            break;
+          }
+          if (n === root) break;
+          step += 1;
         }
-        const groupText = (group as HTMLElement).innerText ?? group.textContent ?? '';
-        const words = groupText.replace(/\s+/g, ' ').trim();
-        const hasWord = /[A-Za-z]{3}/.test(words);
-        const aria =
-          el.getAttribute('aria-label') ??
-          el.parentElement?.getAttribute('aria-label') ??
-          (group as HTMLElement).getAttribute('aria-label') ??
-          '';
-        const title = el.getAttribute('title') ?? (group as HTMLElement).getAttribute('title') ?? '';
-        const namedBy = hasWord
-          ? `words in ${describe(group)}: ${JSON.stringify(words.slice(0, 60))}`
-          : aria !== ''
-            ? `aria-label only: ${JSON.stringify(aria)}`
-            : title !== ''
-              ? `title only: ${JSON.stringify(title)}`
-              : 'NOTHING';
+        const srOnly = [...el.parentElement?.querySelectorAll('*') ?? []]
+          .filter((n) => n instanceof HTMLElement && isScreenReaderOnly(n))
+          .map((n) => (n.textContent ?? '').trim())
+          .filter((t) => t !== '')
+          .join(' / ');
+        const aria = el.getAttribute('aria-label') ?? el.parentElement?.getAttribute('aria-label') ?? '';
+        const title = el.getAttribute('title') ?? el.parentElement?.getAttribute('title') ?? '';
         for (const token of tokens) {
           out.push({
             token,
             leafText: leafText.slice(0, 40),
             leafSelector: describe(el),
-            groupSelector: describe(group),
-            groupWords: words.slice(0, 70),
-            named: hasWord,
-            namedBy,
-            tab: currentTab,
+            hops,
+            namerSelector: namer === undefined ? 'NONE' : describe(namer),
+            namerText: namer === undefined ? '' : visibleTextOf(namer).slice(0, 90),
+            srOnly: srOnly.slice(0, 70),
+            ariaOrTitle: `${aria}${title === '' ? '' : ` | title=${title}`}`.slice(0, 70),
           });
         }
       }
     }
     return out;
-  }, tabId);
+  });
 }
 
 /** Chip-by-chip state of the strip: what it says, and in what tone. */
@@ -349,18 +379,21 @@ test.describe('the whole screen at once', () => {
       for (const id of TABS) {
         await tab(page, id).click();
         await page.waitForTimeout(400);
-        const sightings = await probeNumbers(page, id);
+        const sightings = await probeNumbers(page);
         log(`-- tab ${id}: ${sightings.length} number tokens on screen`);
         for (const s of sightings) {
-          if (s.named) named += 1;
+          if (s.hops >= 0 && s.hops <= 2) named += 1;
           else unnamed += 1;
           log(
-            `   ${s.named ? 'NAMED  ' : 'UNNAMED'} ${JSON.stringify(s.token).padEnd(12)} leaf=${s.leafSelector.padEnd(30)} group=${s.groupSelector.padEnd(28)} ${s.namedBy}`,
+            `   hops=${String(s.hops).padStart(2)} ${JSON.stringify(s.token).padEnd(12)} leaf=${s.leafSelector.padEnd(34)}` +
+              ` namer=${s.namerSelector.padEnd(30)} ${JSON.stringify(s.namerText)}` +
+              (s.srOnly === '' ? '' : ` sr=${JSON.stringify(s.srOnly)}`) +
+              (s.ariaOrTitle === '' ? '' : ` aria=${JSON.stringify(s.ariaOrTitle)}`),
           );
         }
-        await page.screenshot({ path: `test-results/whole-screen/${stage}-${id}.png`, fullPage: false });
+        await page.screenshot({ path: `${SHOTS}/${stage}-${id}.png`, fullPage: false });
       }
-      log(`ACT 1 / ${stage} TOTAL: ${named} named, ${unnamed} UNNAMED number tokens across the five tabs`);
+      log(`ACT 1 / ${stage} TOTAL: ${named} tokens named within 2 hops, ${unnamed} named only further away or not at all, across the five tabs`);
       log(`ACT 1 / ${stage} strip: ${JSON.stringify(await readStrip(page))}`);
     }
   });
@@ -375,7 +408,7 @@ test.describe('the whole screen at once', () => {
 
     log('===== ACT 2 / a prison where nothing has happened yet =====');
     const freshStrip = await readStrip(page);
-    for (const chip of freshStrip) log(`   FRESH ${chip.metric.padEnd(13)} ${JSON.stringify(chip.visible)} tone=${chip.tone} badge=${chip.badge} title=${JSON.stringify(chip.title)}`);
+    for (const chip of freshStrip) log(`   FRESH ${(chip.metric ?? '?').padEnd(13)} ${JSON.stringify(chip.visible)} tone=${chip.tone} badge=${chip.badge} title=${JSON.stringify(chip.title)}`);
     const freshScreen = await readWholeScreen(page);
 
     await tab(page, 'overview').click();
@@ -385,7 +418,7 @@ test.describe('the whole screen at once', () => {
 
     log('===== ACT 2 / a prison that is running well: 6 prisoners, 8 beds, 3 guards =====');
     const wellStrip = await readStrip(page);
-    for (const chip of wellStrip) log(`   WELL  ${chip.metric.padEnd(13)} ${JSON.stringify(chip.visible)} tone=${chip.tone} badge=${chip.badge} title=${JSON.stringify(chip.title)}`);
+    for (const chip of wellStrip) log(`   WELL  ${(chip.metric ?? '?').padEnd(13)} ${JSON.stringify(chip.visible)} tone=${chip.tone} badge=${chip.badge} title=${JSON.stringify(chip.title)}`);
     const wellScreen = await readWholeScreen(page);
     log(`   counts: ${JSON.stringify(await latestCounts(page))}`);
 
@@ -394,9 +427,9 @@ test.describe('the whole screen at once', () => {
       const well = wellStrip.find((c) => c.metric === fresh.metric);
       if (well === undefined) continue;
       if (fresh.visible === well.visible && fresh.tone === well.tone) {
-        log(`   SAME ${fresh.metric.padEnd(13)} ${JSON.stringify(fresh.visible)} tone=${fresh.tone}`);
+        log(`   SAME ${(fresh.metric ?? '?').padEnd(13)} ${JSON.stringify(fresh.visible)} tone=${fresh.tone}`);
       } else {
-        log(`   moved ${fresh.metric.padEnd(12)} ${JSON.stringify(fresh.visible)} -> ${JSON.stringify(well.visible)} tone ${fresh.tone} -> ${well.tone}`);
+        log(`   moved ${(fresh.metric ?? '?').padEnd(12)} ${JSON.stringify(fresh.visible)} -> ${JSON.stringify(well.visible)} tone ${fresh.tone} -> ${well.tone}`);
       }
     }
     for (const id of ['__strip', ...TABS]) {
