@@ -7,6 +7,7 @@ export {
   stateIncomeForCompletedDay,
   stateIncomeForOccupiedPlaces,
   stateIncomeForPrisonerDay,
+  stateIncomeForPrisonerDayAt,
   unmetNeedCount,
   type OccupiedPlaceSource,
   type PrisonerDayGrantSource,
