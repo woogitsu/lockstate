@@ -668,3 +668,207 @@ test('act E: what a drag under the HUD feels like', async ({ page }) => {
   }
   await shot(page, 'E02-after-the-runs');
 });
+
+/* ------------------------------------------------------------------ ACT F */
+
+/**
+ * The five questions acts A-E left open, each one a thing a player does
+ * without being told to.
+ *
+ * F1 **what does it cost, and when am I told.** Every catalogue row, read the
+ *    way a player reads it: the row itself, the arm control, the WHERE
+ *    readout, and only then the Buy fold. Then one wall is placed and the
+ *    funds delta compared against everything the panel had offered first.
+ * F2 **the warning that will not go away.** `hud.ts` says a refusal *"stays
+ *    until the same action later succeeds"*. So: miss with Remove, then hit
+ *    with Remove, and see whether it does.
+ * F3 **running out of money with orders queued.** Spend the treasury down,
+ *    then order a run, and read what the queue says about the wall it cannot
+ *    pay for.
+ * F4 **changing my mind.** Order six, build one, cancel the rest, and count
+ *    what came back.
+ * F5 **does anything ever say what to build.** Every tab, on a prison with
+ *    nothing in it.
+ */
+test('act F: cost, regret, and being told what to do', async ({ page }) => {
+  test.setTimeout(600_000);
+  await installTee(page);
+  await openApp(page);
+  const started = Date.now();
+
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+  /* --- F5 first, because it is about the prison before anything happens --- */
+  for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+    await tab(page, id).click();
+    await page.waitForTimeout(200);
+    note(`[F5] the ${id} tab on an empty prison:\n${(await panelText(page, '.hud__side')).replace(/^/gm, '      ')}`);
+  }
+  note(`[F5] alerts list: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+  note(`[F5] event band: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
+  await shot(page, 'F01-empty-prison-overview');
+
+  /* --- F1: what does each row tell me about its price? --- */
+  await tab(page, 'build').click();
+  const ids = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('.hud-build__list [data-buildable]')).map((n) => n.getAttribute('data-buildable') ?? ''),
+  );
+  note(`[F1] ${ids.length} catalogue rows`);
+  for (const id of ids) {
+    const row = page.locator(`.hud-build__list [data-buildable="${id}"]`);
+    await row.click();
+    await page.waitForTimeout(90);
+    const shown = await page.evaluate(() => {
+      const q = (sel: string): string => {
+        const n = document.querySelector<HTMLElement>(sel);
+        if (n === null) return 'ABSENT';
+        if (n.hidden || n.getClientRects().length === 0) return 'not laid out';
+        return (n.innerText ?? '').replace(/\n/g, ' / ').trim();
+      };
+      return {
+        row: q('.hud-build__list [aria-pressed="true"], .hud-build__list [data-selected="true"]'),
+        arm: q('.hud-build__arm'),
+        target: q('.hud-build__target'),
+        buyFold: q('.hud-build__buy'),
+        buySubmit: q('.hud-build__buy-submit'),
+        anyMoneyOnScreenInThePanel: (document.querySelector<HTMLElement>('.hud-build')?.innerText ?? '')
+          .split('\n')
+          .filter((line) => /[0-9]/.test(line))
+          .join(' | '),
+      };
+    });
+    note(`[F1] ${id.padEnd(26)} closed-fold: arm=${JSON.stringify(shown.arm)} target=${JSON.stringify(shown.target)} buyFold=${JSON.stringify(shown.buyFold)} | numerals anywhere in the panel: ${JSON.stringify(shown.anyMoneyOnScreenInThePanel)}`);
+  }
+
+  // And now the one press that reveals a price, on the row a player starts on.
+  await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+  await page.locator('.hud-build__buy-toggle').click();
+  await page.waitForTimeout(200);
+  note(`[F1] with the Buy fold OPEN, brick wall: submit reads ${JSON.stringify((await page.locator('.hud-build__buy-submit').innerText()).trim())}`);
+  note(`[F1] the fold as a player reads it:\n${await panelText(page, '.hud-build__buy')}`);
+  await shot(page, 'F02-buy-fold-open');
+  await page.locator('.hud-build__buy-toggle').click();
+
+  // Measure what one wall actually takes.
+  const origin = await calibrate(page);
+  note(`[F2] the Remove probe calibration just missed ${''}-- band now: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  const beforeWall = await sample(page, started);
+  await armBuildable(page, 'wall-brick');
+  const gridX = origin.originX + 8 * TILE;
+  const gridY = origin.originY + 8 * TILE;
+  const wallCmds = await press(page, gridX + TILE / 2, gridY);
+  await page.waitForTimeout(400);
+  const afterWall = await sample(page, started);
+  note(`[F1] ONE wall: ${wallCmds.length} order(s), funds ${beforeWall.funds} -> ${afterWall.funds} (treasury ${beforeWall.treasury} -> ${afterWall.treasury}, delta ${beforeWall.treasury - afterWall.treasury})`);
+  note(`[F1] the panel after it: queue=${JSON.stringify(afterWall.queue)} deliveries=${JSON.stringify(afterWall.deliveries)}`);
+
+  /* --- F2: does a successful Remove clear the missed one? --- */
+  note(`[F2] band before the clock runs: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  note(`[F2] alerts before the clock runs: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+  await transport(page, 'fast').click();
+  await transport(page, 'fast').click();
+  for (let i = 0; i < 40; i += 1) {
+    const text = await panelText(page, '.hud-build__queue');
+    if (text.includes('not laid out')) break;
+    await page.waitForTimeout(1000);
+  }
+  await transport(page, 'pause').click();
+  await page.waitForTimeout(400);
+  note(`[F2] the wall is up at tick ${await currentTick(page)}. band still: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  await shot(page, 'F03-wall-up-band-still-there');
+
+  await page.locator('.hud-build__remove').click();
+  const removed = await press(page, gridX + TILE / 2, gridY);
+  await page.waitForTimeout(700);
+  note(`[F2] a Remove that should HIT: ${removed.length} command(s) ${JSON.stringify(removed)}`);
+  note(`[F2] band after a Remove that hit: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  note(`[F2] alerts after it: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+  note(`[F2] is there any control that dismisses the band or an alert row? ${JSON.stringify(
+    await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.hud__refusal button, .hud-alerts__list button, .hud__event button')).map(
+        (n) => (n as HTMLElement).innerText.trim(),
+      ),
+    ),
+  )}`);
+  await shot(page, 'F04-after-a-remove-that-hit');
+  const removeStillArmed = (await page.locator('.hud-build__remove').innerText()).trim();
+  if (removeStillArmed.toLowerCase().startsWith('stop')) await page.locator('.hud-build__remove').click();
+
+  /* --- F3: spend it all, then order a wall --- */
+  await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+  const buyToggle = page.locator('.hud-build__buy-toggle');
+  if (await page.locator('.hud-build__buy').isHidden()) await buyToggle.click();
+  const qty = page.locator('.hud-build__buy .ui-number__input');
+  const submit = page.locator('.hud-build__buy-submit');
+  for (let round = 0; round < 12; round += 1) {
+    const s = await sample(page, started);
+    if (s.treasury < 20_000) break;
+    await qty.fill('500');
+    await page.waitForTimeout(150);
+    if ((await submit.getAttribute('aria-disabled')) === 'true') break;
+    await submit.click();
+    await page.waitForTimeout(400);
+    note(`[F3] bought 500 bricks; treasury now ${(await sample(page, started)).treasury}`);
+  }
+  // Trim to nearly nothing.
+  for (const step of [100, 50, 10, 5, 1]) {
+    for (let round = 0; round < 60; round += 1) {
+      await qty.fill(String(step));
+      await page.waitForTimeout(120);
+      if ((await submit.getAttribute('aria-disabled')) === 'true') break;
+      await submit.click();
+      await page.waitForTimeout(220);
+    }
+    note(`[F3] after the ${step}s: treasury ${(await sample(page, started)).treasury} shortfall ${JSON.stringify(await panelText(page, '.hud-build__buy-shortfall'))}`);
+  }
+  const broke = await sample(page, started);
+  note(`[F3] broke: funds=${broke.funds} treasury=${broke.treasury}`);
+  note(`[F3] status strip while broke: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+  await shot(page, 'F05-broke');
+
+  // Now order a run with no money. Bricks are in stock; money is not.
+  await armBuildable(page, 'wall-brick');
+  const runBefore = (await sentCommands(page)).length;
+  await drag(page, { x: origin.originX + 12 * TILE, y: origin.originY + 12 * TILE }, { x: origin.originX + 16 * TILE, y: origin.originY + 12 * TILE });
+  const runCmds = (await sentCommands(page)).slice(runBefore);
+  await page.waitForTimeout(600);
+  note(`[F3] a 4-tile run with no money produced ${runCmds.length} order(s)`);
+  note(`[F3] band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  note(`[F3] queue: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+  note(`[F3] treasury after it: ${(await sample(page, started)).treasury}`);
+  await shot(page, 'F06-ordered-while-broke');
+  await transport(page, 'fast').click();
+  await transport(page, 'fast').click();
+  await page.waitForTimeout(12_000);
+  await transport(page, 'pause').click();
+  await page.waitForTimeout(400);
+  note(`[F3] 12s later at 4x, tick ${await currentTick(page)}: queue ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+  note(`[F3] band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  note(`[F3] full build panel while stuck:\n${await panelText(page, '.hud-build')}`);
+  await shot(page, 'F07-stuck-with-no-money');
+
+  /* --- F4: changing my mind --- */
+  const rows = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('.hud-build__queue-row')).map((n) => {
+      const el = n as HTMLElement;
+      return { text: el.innerText.replace(/\n/g, ' / '), laidOut: el.getClientRects().length > 0 };
+    }),
+  );
+  note(`[F4] queue rows offered: ${JSON.stringify(rows)}`);
+  const beforeCancel = await sample(page, started);
+  const cancelButtons = page.locator('.hud-build__queue-row button');
+  const cancelCount = await cancelButtons.count();
+  note(`[F4] ${cancelCount} cancel control(s) on screen for ${runCmds.length} order(s)`);
+  for (let i = 0; i < cancelCount; i += 1) {
+    if (await cancelButtons.nth(0).isVisible()) {
+      await cancelButtons.nth(0).click();
+      await page.waitForTimeout(500);
+      note(`[F4] cancel ${i + 1}: treasury ${(await sample(page, started)).treasury} queue ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+    }
+  }
+  const afterCancel = await sample(page, started);
+  note(`[F4] cancelling gave back ${afterCancel.treasury - beforeCancel.treasury} (treasury ${beforeCancel.treasury} -> ${afterCancel.treasury})`);
+  note(`[F4] band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  await shot(page, 'F08-after-cancelling');
+});
