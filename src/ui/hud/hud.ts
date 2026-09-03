@@ -637,7 +637,34 @@ export type HudIntent =
       readonly armed: boolean;
       readonly roomId: string | undefined;
       readonly removing: boolean;
-    };
+    }
+  /**
+   * The player chose one prisoner to look at, or cleared their choice
+   * (issue #895).
+   *
+   * *Chrome*, exactly like the two arming intents above: the Regime panel has
+   * already applied it -- the row is checked and the inspector is waiting for an
+   * answer -- and it asks the simulation to change nothing, so it is never
+   * gated. Blocking it while a clock command was in flight would drop an
+   * interaction that costs the prison nothing.
+   *
+   * **An entity id and nothing else, and `undefined` is a value rather than an
+   * absent field.** The host turns an id into a `hud/prisoner-detail` request
+   * and `undefined` into "stop asking"; the HUD does not know that such a
+   * projection exists, and could not have minted the id -- it came *in*, on the
+   * roster view model, from the projection that names the window.
+   *
+   * **Why an id is a safe name for a person where a roster *offset* is not.**
+   * `src/ui/simulation-prisoner-roster.ts` refuses paging because `EntityStore`
+   * recycles an index behind a wrapping generation, so "page 3" would silently
+   * be a different three prisoners after a release. An `EntityId` is not that
+   * index: it packs the index *with* the generation, and ADR 0026 question 1's
+   * answer retires a slot at generation 4,095 rather than reissuing the id its
+   * first life carried. So this names the prisoner the player pressed or names
+   * nobody -- a state both the host and the panel handle -- and it can never
+   * quietly name somebody else.
+   */
+  | { readonly kind: 'select-prisoner'; readonly prisonerId: number | undefined };
 
 /**
  * Why this page cannot run a simulation at all.
@@ -875,6 +902,22 @@ export interface HudHandle {
    * page after every attempt to obtain a worker, not only the transitions.
    */
   setUnavailable(notice: HudUnavailableNotice | undefined): void;
+  /**
+   * Tells the HUD that the prisoner the player selected is not in the prison
+   * any more (issue #895).
+   *
+   * Deliberately not part of `HudViewModel`, for the reason `setBuildTarget`
+   * above is not: the view model is snapshot-shaped, and this is an *event* --
+   * the one reply `hud/prisoner-detail` gives for a released prisoner, which
+   * `PrisonerDetailReader` answers as `'released'`. Folding it in would need a
+   * field that means "the last thing I asked about is gone", which the next
+   * snapshot would then have to carry or contradict.
+   *
+   * `HudViewModel.prisonerDetail` going absent is the *other* half and cannot
+   * stand in for this one: it covers nothing-asked, a read in flight and a
+   * failed read, none of which makes the player's choice false.
+   */
+  clearPrisonerSelection(): void;
   getState(): HudShellState;
   /** Applies a shell action programmatically -- restoring a saved UI state, or a test. */
   dispatch(action: HudShellAction): void;
@@ -1793,11 +1836,23 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // ---- bottom-right regime panel (Regime tab) -----------------------
   /*
    * The fifth occupant of `.hud__side`, and the one that retires the last tab
-   * bound to no panel (issue #451). It issues no command and takes no
-   * selection, so it joins no busy group: everything it holds is a readout
-   * pulled while this tab is the one showing.
+   * bound to no panel (issue #451). It issues no command, so it joins no busy
+   * group: everything it holds is a readout pulled while this tab is the one
+   * showing.
+   *
+   * **"and takes no selection" was true until issue #895 and is corrected
+   * rather than deleted**, because the half that matters is unchanged: it takes
+   * one selection -- which prisoner the inspector is about -- and that
+   * selection is *chrome*, so it still issues no command and still joins no
+   * busy group. `runReported` rather than `dispatchCommand` is what says so
+   * below, exactly as it does for the two arming intents.
    */
-  const regimePanel: RegimePanel = createRegimePanel({ localizer });
+  const regimePanel: RegimePanel = createRegimePanel({
+    localizer,
+    onSelectPrisoner: (prisonerId) => {
+      runReported('select-prisoner', () => options.onIntent?.({ kind: 'select-prisoner', prisonerId }), reportError);
+    },
+  });
 
   const side = element('div', {
     className: 'hud__side',
@@ -2195,6 +2250,15 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // turned into; the total is the projection's own count of the live
     // population, not the length of the window; this line decides nothing.
     regimePanel.setRoster(next.prisonerRoster);
+    // And the one prisoner the player selected, on identical terms (issue #895).
+    // The projection read the six needs off the store it owns and computed
+    // which of them the state is withholding grant over; the panel decides the
+    // tone and the order of the lines; this line decides nothing.
+    //
+    // After the roster deliberately, so that a snapshot carrying both leaves the
+    // checked row and the block below it agreeing about the same prisoner rather
+    // than one tick apart.
+    regimePanel.setPrisonerDetail(next.prisonerDetail);
     // Last, so that a snapshot which both empties the alerts list and carries
     // a refusal leaves the band and the log agreeing about the same record.
     applySimulationRefusal(next.refusal);
@@ -2215,6 +2279,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     update,
     setBuildTarget: (target) => buildPanel.setTarget(target),
     setUnavailable,
+    clearPrisonerSelection: () => regimePanel.clearPrisonerSelection(),
     getState: () => state,
     dispatch: (action: HudShellAction) => {
       applyState(hudShellReducer(state, action));

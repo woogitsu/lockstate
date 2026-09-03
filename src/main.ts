@@ -39,6 +39,7 @@ import {
   type HudIntakePipelineViewModel,
   type HudIntent,
   type HudPendingDeliveriesViewModel,
+  type HudPrisonerDetailViewModel,
   type HudPrisonerRosterViewModel,
   type HudRegimeViewModel,
   type HudRoomNeedsViewModel,
@@ -66,6 +67,7 @@ import { HeldGuardsReader } from './ui/simulation-held-guards';
 import { StaffRosterReader } from './ui/simulation-staff-roster';
 import { StaffCoverageReader } from './ui/simulation-staff-coverage';
 import { PrisonerRosterReader } from './ui/simulation-prisoner-roster';
+import { PrisonerDetailReader } from './ui/simulation-prisoner-detail';
 import { RegimeReader } from './ui/simulation-regime';
 import { PendingDeliveriesReader } from './ui/simulation-pending-deliveries';
 import { RoomNeedsReader } from './ui/simulation-room-needs';
@@ -1403,8 +1405,42 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * to resolve.
    */
   const prisonerRosterReader = client === undefined ? undefined : new PrisonerRosterReader(client);
+  /**
+   * The ninth reader on #104's channel, and the first that asks about **one**
+   * named thing rather than about a window (issue #895).
+   *
+   * Every reader above it asks a question with no subject -- who is in the
+   * prison, what is queued, how many guards are missing -- and gets whatever
+   * the projection's own window holds. This one carries an `EntityId` the
+   * *player* chose, off the roster row they pressed, so it is the first place in
+   * this file where the interface's own state decides what the worker is asked.
+   *
+   * It is also the cheapest read on the channel: `projectPrisonerDetail` is
+   * `O(1)` in the prison -- one liveness check, one index, six needs -- where
+   * the roster's is `O(window)` and the room list's is `O(instances)`. So the
+   * inspector costs one extra message per refresh beside the roster's, which is
+   * why it rides that same cadence rather than a slower one of its own.
+   *
+   * No lookup is handed to it, exactly as none is handed to the roster reader:
+   * every word it produces is a message key derived from an id the simulation
+   * published, and `src/content/simulation-message-keys.ts` is where those ids
+   * are labelled.
+   */
+  const prisonerDetailReader = client === undefined ? undefined : new PrisonerDetailReader(client);
   const regimeReader = client === undefined ? undefined : new RegimeReader(client);
   let activeTab: HudTabId = INITIAL_HUD_SHELL_STATE.activeTab;
+  /**
+   * Which prisoner the player selected, as the host's own copy of the panel's
+   * chrome (issue #895).
+   *
+   * The Regime panel owns the selection -- it applies a press immediately,
+   * which is what a player sees -- and this is the half of it the panel cannot
+   * own: *what to ask the worker on every refresh*. It is written only by the
+   * `select-prisoner` intent and by the released case below, so the two copies
+   * cannot drift in any direction the player can see: a press sets both, and
+   * only this side can discover that the prisoner is gone.
+   */
+  let selectedPrisonerId: number | undefined;
 
   /**
    * Puts a readout on the view model, or takes it off.
@@ -1664,6 +1700,88 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       .catch(() => applyPrisonerRoster(undefined));
   };
 
+  /**
+   * Puts the selected prisoner on the view model, or takes them off. The same
+   * absent-property dance the others do, and for the same reason: "nothing has
+   * asked" and "this is what the prisoner's needs are" are different facts, and
+   * only the second is a statement about somebody (issue #895).
+   */
+  const applyPrisonerDetail = (next: HudPrisonerDetailViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.prisonerDetail === undefined) return;
+      const { prisonerDetail: _cleared, ...withoutDetail } = viewModel;
+      viewModel = withoutDetail;
+    } else {
+      viewModel = { ...viewModel, prisonerDetail: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  /**
+   * Asks about the prisoner the player selected, and stops when there is
+   * nobody to ask about (issue #895).
+   *
+   * Three guards rather than the usual two, and the third is the point: no
+   * reader, not on the Regime tab, **and nobody selected**. The last is what
+   * makes this readout cost the worker nothing in the ordinary case -- a player
+   * on the Regime tab who has pressed no row sends no message at all, which is
+   * the property `src/ui/simulation-projections.ts` calls "a panel that is
+   * closed asks for nothing", one row deeper.
+   */
+  const refreshPrisonerDetail = (): void => {
+    const prisonerId = selectedPrisonerId;
+    if (prisonerDetailReader === undefined || activeTab !== 'regime' || prisonerId === undefined) return;
+    void prisonerDetailReader
+      .read(prisonerId)
+      .then((read) => {
+        // "A read was already in flight" is not an answer, so it leaves what is
+        // on screen alone rather than blanking it -- the rule every reader in
+        // this file follows, spelled as a `kind` here because this reader has a
+        // third case the others do not.
+        if (read.kind === 'busy') return;
+        if (read.kind === 'released') {
+          /*
+           * The worker says there is no such live prisoner, which is the one
+           * answer that makes the player's own selection false.
+           *
+           * `projectPrisonerDetail` returns nothing for exactly one reason --
+           * `!entityStore.isAlive(entityId)` -- so this is a discharge or a
+           * release (#441) and not a transport failure. Both copies of the
+           * selection are dropped: this one, so the next refresh asks nothing,
+           * and the panel's, so the block leaves and the roster's one tab stop
+           * goes back to the top of the list instead of to a row that no longer
+           * exists.
+           *
+           * The block leaves **without a sentence**, and that is deliberate
+           * rather than unfinished: what would go there -- "this prisoner has
+           * been released" -- is a new player-facing sentence, which is
+           * `AGENTS.md`'s fourth exclusion and the owner's. A placeholder would
+           * be a promise the code does not keep; silence is merely less than
+           * the player deserves, and it is reported as owed rather than filled
+           * in here.
+           */
+          selectedPrisonerId = undefined;
+          applyPrisonerDetail(undefined);
+          hud?.clearPrisonerSelection();
+          return;
+        }
+        // And a late answer about somebody the player has since moved off is
+        // dropped here as well as in the panel. Two guards for one race, on
+        // purpose: this one stops a stale reply reaching the view model at all,
+        // and the panel's `entityId` check is what makes the *painted* block
+        // provably about the checked row.
+        if (read.detail.entityId !== selectedPrisonerId) return;
+        applyPrisonerDetail(read.detail);
+      })
+      // A refusal, a timeout, or a worker that went away. The block comes off
+      // and the selection stays: a prisoner nothing is currently answering for
+      // is still the prisoner the player chose, and the next refresh asks again.
+      // Blanking the block matters here for the roster's reason one readout up
+      // -- six needs under somebody's name, with nothing answering for them, is
+      // a claim about a person.
+      .catch(() => applyPrisonerDetail(undefined));
+  };
+
   const refreshRoomNeeds = (): void => {
     if (roomNeedsReader === undefined || activeTab !== 'rooms') return;
     void roomNeedsReader
@@ -1883,6 +2001,23 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       applyStaffCoverage(undefined);
       applyRegime(undefined);
       applyPrisonerRoster(undefined);
+      /*
+       * The inspector comes off with them, and the *selection* comes off with
+       * it -- which is the one place this readout differs from the eight above
+       * (issue #895).
+       *
+       * A stopped session is not a released prisoner, so it is not
+       * `clearPrisonerSelection`'s case; but an `EntityId` names a slot in the
+       * `EntityStore` of *that* session, and the next session's store starts
+       * empty and hands out its own ids from index zero. Keeping the id across a
+       * stop would mean asking a new prison about a number that once meant
+       * somebody, which is the only way this id can come to name a different
+       * person -- see the `select-prisoner` intent for why it cannot happen
+       * within one session. The panel is told, so the checked row goes with it.
+       */
+      selectedPrisonerId = undefined;
+      applyPrisonerDetail(undefined);
+      hud?.clearPrisonerSelection();
     } else {
       refreshRoomNeeds();
       refreshBuildQueue();
@@ -1893,6 +2028,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       refreshStaffCoverage();
       refreshRegime();
       refreshPrisonerRoster();
+      refreshPrisonerDetail();
     }
   });
 
@@ -2041,12 +2177,40 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           else applyRegime(undefined);
           if (activeTab === 'regime') refreshPrisonerRoster();
           else applyPrisonerRoster(undefined);
+          // And the third readout on that tab, on the same terms with one
+          // difference: it asks only if the player has selected somebody, so
+          // arriving on the tab with nothing selected sends no message
+          // (`refreshPrisonerDetail`'s third guard). The selection itself
+          // survives the trip -- it is the panel's chrome, and the Build
+          // panel's selected buildable survives a tab change too -- so coming
+          // back resumes the same question rather than making the player press
+          // the row again (issue #895).
+          if (activeTab === 'regime') refreshPrisonerDetail();
+          else applyPrisonerDetail(undefined);
           return;
         }
 
         // Chrome: the HUD has already applied it locally and there is nothing
         // for a host to do.
         case 'toggle-panel':
+          return;
+
+        /*
+         * Chrome, with the same shape as `select-tab` above: the panel has
+         * already applied it, and the half that lives out here is *what the
+         * host asks the worker for* (issue #895).
+         *
+         * Both directions, for `select-tab`'s reason. A press asks immediately
+         * rather than leaving the player looking at an empty block for up to
+         * about 300 ms in a browser (see `roomNeedsReader`'s header for that
+         * measurement), and a clearing press takes the answer off at once --
+         * the panel has already stopped drawing it, and leaving it on the view
+         * model would let the next publication put it back.
+         */
+        case 'select-prisoner':
+          selectedPrisonerId = intent.prisonerId;
+          if (selectedPrisonerId === undefined) applyPrisonerDetail(undefined);
+          else refreshPrisonerDetail();
           return;
 
         case 'arm-build-tool': {

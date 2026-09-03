@@ -370,6 +370,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       "Type-only: `StaffViewModel` from `src/simulation/presentation/staff-projection`. The eleventh of the translators outside `src/ui/hud/` and the seventh that reads a *pulled* read model, and it is the **second** reader of `hud/staff` -- beside `simulation-staff-coverage.ts` above, which asks the same projection with `limit: 0` for totals and no rows. Two readers on one projection because they ask for different things, not because one was forgotten: merging them would tie a warning readout's cadence to a control list's and publish a window one of them cannot use. Erased, so no simulation code runs on its account -- the projection executes in the worker. A `value` import here would be the sharpest violation in this manifest alongside `simulation-held-guards.ts`'s: it would mean the main thread had started deciding *who is employed* from a roster it does not own, and every row it produced carries a staff id that a press **destroys** (#533).",
   },
   {
+    file: 'src/ui/simulation-prisoner-detail.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      "Type-only: `PrisonerDetailViewModel` from `src/simulation/presentation/prisoner-projection` (issue #895). The thirteenth of the translators outside `src/ui/hud/` and the ninth that reads a *pulled* read model, and the first of any of them whose request names **one** row -- `hud/prisoner-detail` is `target: 'entity'`, so the id the player pressed on a roster row is what crosses. It derives no message key of its own and therefore has no `content` entry beside this one, unlike its sibling: the two rules it needs are `prisonerNeed` and `prisonerStandingLabelKey`, exported from `src/ui/simulation-prisoner-roster.ts` so that the roster and the inspector cannot disagree about a prisoner whose classification has not run yet -- a same-tree import, which this gate does not and should not see. Erased, so no simulation code runs on its account; the projection executes in the worker, and it has to, because `projectPrisonerDetail` starts with `entityStore.isAlive(entityId)` over a store this thread does not hold, and its `unmetForStateIncome` per need is `STATE_INCOME_UNMET_NEED_LEVEL` applied in `src/simulation/economy/income.ts`. A `value` import here would mean the main thread had started deciding what the state is withholding from whom, which is a balance number on the thread that owns none.",
+  },
+  {
     file: 'src/ui/simulation-prisoner-roster.ts',
     tree: 'content',
     kind: 'value',
@@ -557,6 +564,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-held-guards.ts',
       'src/ui/simulation-intake.ts',
       'src/ui/simulation-pending-deliveries.ts',
+      'src/ui/simulation-prisoner-detail.ts',
       'src/ui/simulation-prisoner-roster.ts',
       'src/ui/simulation-projections.ts',
       'src/ui/simulation-regime.ts',
