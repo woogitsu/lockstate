@@ -226,7 +226,7 @@ contains a digit, and reports **`hops`**: the number of steps from that leaf up
 to the nearest ancestor whose *visible* text (screen-reader-only spans removed)
 contains a word of three or more letters, together with that ancestor's text.
 It is a distance rather than a verdict because the verdict version got the
-answer wrong — see §8.
+answer wrong — see §10.
 
 Measured across all five tabs, at 1440x900:
 
@@ -332,7 +332,65 @@ PRESS funds         changed 6 line(s) on screen: ["607","51%","40% THROUGH","All
 for §3 is that the one surface a player has on every tab is a row of nine
 numbers that goes nowhere.
 
-## 8. This pass's instrument was wrong twice, and both are recorded
+## 8. NOT A DEFECT — an important change *is* visible on a tab that does not
+report it
+
+This was the pass's third hypothesis and the strip answers it.
+
+**Reproduction** (`act 3`, event 1): build a cell with **two** beds, admit two
+prisoners, run to day 5, then sit on the **Build** tab — where a player who has
+just finished building actually is — and admit six more from Overview without
+coming back. Diff the whole visible text of the Build tab either side.
+
+Every line that arrived, on a tab that has no intake panel on it:
+
+```
+8               (the PRISONERS chip, up from 2)
+6 with no bed   (a warning badge that was not there before)
+23,900 / 49 / 6 / 9%   (funds, earned today, the day, day progress)
+```
+
+`prisonersInIntake: 6`, `roomOccupants: 2`, `accommodationCapacity: 2` at the
+read. So the fact that six people have nowhere to sleep reached the screen
+*with a word on it*, on a tab that does not own the subject, at the moment it
+happened. Reproduced twice, in two separate sessions, with the same two lines
+(`8`, `6 with no bed`).
+
+Event 2, the same shape for money: order 600 bricks (24,000) from Build, return
+to **Regime**, and the FUNDS chip reads **`-100`** on arrival — the balance
+crossing into the overdraft is on screen on a tab that has nothing to do with
+money.
+
+**The refuting sample is the finding above**, inverted: what the strip cannot
+do is carry a *sentence*, and §3 is what that costs. Both are true — the strip
+is the reason an urgent change is never missed and the reason an ordinary one is
+never explained.
+
+## 9. TASTE — `EARNED TODAY` is a number with no reference point anywhere on
+screen
+
+`EARNED TODAY` is `counts.stateIncomeAccruedTodayMinorUnits` unmodified
+(`projection.ts:1048`), and its descriptor comments say so: *"No tone and no
+badge, for the same reason `funds` has neither: 'a good day' is a threshold, and
+nobody has set one."* Measured values within one session on a six-prisoner
+prison: `0`, `279`, `310`, `586`, `1,296`, `1,485` — the same day, sampled a few
+seconds apart, because it accrues continuously and resets at the boundary.
+
+Filed as TASTE and not as a defect because it is discoverable, correct and
+labelled. Recorded because it is the one chip on the strip that a player has no
+way to judge: `586` is not comparable to the `FUNDS` chip beside it, not
+comparable to yesterday, and not comparable to what the prison could earn.
+Whether it should be judged against anything is a design call and therefore the
+owner's.
+
+**Not to be confused with a lie.** An earlier reading of this pass suspected
+one: the chip read `279` while the worker's latest published
+`stateIncomeAccruedTodayMinorUnits` was `1545`. Refuted — the two reads were
+several seconds apart on a clock running at x4, and the chip is that field
+read directly with no arithmetic. Recorded because the suspicion was wrong and
+the reason it was wrong is a sampling rule this record depends on elsewhere.
+
+## 10. This pass's instrument was wrong twice, and both are recorded
 
 - **The number probe measured itself.** The first `probeNumbers` asked whether
   a word appeared inside the number's "smallest grouping" and stopped its
