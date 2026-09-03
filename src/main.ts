@@ -2744,7 +2744,18 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * by pressing.
            */
           if (viewModel.counts.rooms === 0) {
-            throw new Error('This prison has no room to hold a prisoner, so nobody can be admitted into it.');
+            /*
+             * `HostRefusalError`, not a plain `Error`: the owner ruled a
+             * sentence for this refusal on 2026-09-03, so the reason now has
+             * one to name and the player is told what is missing instead of
+             * only that the press was refused. The message stays diagnostic
+             * English and still never reaches a player (ADR 0011) -- it is the
+             * *reason* that selects the sentence, in `hud/projection.ts`.
+             */
+            throw new HostRefusalError(
+              'no-room-to-hold-anybody',
+              'This prison has no room to hold a prisoner, so nobody can be admitted into it.',
+            );
           }
           sender.submit({
             type: 'AdmitPrisoner',

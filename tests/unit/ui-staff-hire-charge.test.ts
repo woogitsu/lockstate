@@ -110,7 +110,22 @@ describe('the hire hint quotes both halves of what a guard costs (#639)', () => 
     // records it as the owner's approved string. The two numbers are the
     // fixture's, so the assertion fails if either placeholder is filled from
     // the other field.
-    expect(sentence).toBe('Costs 80 now and 55 a day in wages.');
+    /*
+     * **Re-ruled by the owner on 2026-09-03, and the sentence it replaced is
+     * quoted rather than overwritten** (`docs/AGENT_WORKFLOW.md` §4). It read
+     * *"Costs 80 now and 55 a day in wages."* -- ruling #639's own words, and
+     * **false on the first press of a new game**: hiring a guard costs two
+     * days' wage for the day it happens (`src/simulation/staff/hiring.ts` says
+     * so in its own docblock), so day one billed 160 for one guard against a
+     * note that read as 80 today and 80 tomorrow (issue #868, measured
+     * 25,000 -> 24,920 at the press and -> 24,840 at tick 2,408).
+     *
+     * Three shapes went to the owner: pro-rate the charge so the old sentence
+     * becomes true, replace the sentence, or add the two words that make it
+     * true. **They chose the third**, so the mechanic is untouched and this is
+     * a wording change only.
+     */
+    expect(sentence).toBe('Costs 80 now and 55 a day in wages, including today.');
     // The word the payroll block is named for. Stated as its own case because
     // the hint and the `On the payroll` header are meant to name one category,
     // and a reworded hint that dropped it would break that pairing silently.
@@ -140,7 +155,10 @@ describe('the hire hint quotes both halves of what a guard costs (#639)', () => 
     // `wageBand.minPerDay` moves the button, the charge and the payroll and
     // would leave this sentence quoting the old figure.
     const template = resolveLocalizationKey(defaultLocaleEnCatalog, HUD_MESSAGE_KEY.securityStaffHint);
-    expect(template).toBe('Costs {total} now and {wage} a day in wages.');
+    // Same ruling as above; the placeholders are unchanged and only the tail
+    // moved, which is what makes this a wording change rather than a new
+    // authority over the price.
+    expect(template).toBe('Costs {total} now and {wage} a day in wages, including today.');
     expect(template).not.toMatch(/\d/);
   });
 });
