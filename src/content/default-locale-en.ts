@@ -1518,10 +1518,31 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.regime.roster-unnamed': 'Prisoner {id}',
   'hud.regime.roster-heading': 'Heading to {activity}',
   'hud.regime.roster-more': 'and {count} more',
-  // Not "No prisoners": an empty prison is the state every new game starts in
-  // and the Overview tab has the control that ends it, so the line says where
-  // to go rather than restating the count above it.
-  'hud.regime.roster-empty': 'Nobody has been admitted yet.',
+  // **The owner ruled this sentence on 2026-09-03**, shown it among candidates
+  // and choosing it in their own words: *"No prisoners yet. Build a cell with a
+  // bed to take somebody in."* Two sentences in one string, as ruled -- the
+  // state, then the one thing a player can do about it -- and the same voice as
+  // `hud.security.coverage-unguarded-consequence` above, which that key's own
+  // comment records as *"the owner's chosen wording of 2026-09-03"* too.
+  //
+  // **This read "Nobody has been admitted yet." until that ruling, and the
+  // argument it carried is kept rather than overwritten**
+  // (`docs/AGENT_WORKFLOW.md` §4). It read: *"Not \"No prisoners\": an empty
+  // prison is the state every new game starts in and the Overview tab has the
+  // control that ends it, so the line says where to go rather than restating
+  // the count above it."* The ruling overrules its first half -- the sentence
+  // now opens on the exact words that argument refused -- and keeps its second:
+  // it still says where to go, and says it as an instruction rather than by
+  // naming a tab.
+  //
+  // **The state this sentence is not true of is a prison that emptied out**,
+  // and it does not have to be: `regime-panel.ts` draws this line only while
+  // `everAdmitted` is false (issue #506), so a prison that admitted people and
+  // has since discharged all of them draws no sentence here at all. That
+  // second state still has none, and authoring one is the owner's under
+  // `AGENTS.md`'s fourth exclusion -- the concern was put to them inside this
+  // option's own description before they chose it, and they chose it.
+  'hud.regime.roster-empty': 'No prisoners yet. Build a cell with a bed to take somebody in.',
 
   // What a refused control says (issue #207). Four comments in `src/` claimed
   // the HUD reported a refusal "on the control that was pressed" while the
