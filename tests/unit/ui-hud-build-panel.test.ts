@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SIMULATION_ENUM_GROUPS, deriveSimulationMessageKey, type SimulationEnumGroup } from '../../src/content';
+import { MAX_RUN_SEGMENTS } from '../../src/rendering/build/edge-picking';
 import { Localizer, buildMessageCatalog, defaultMessageCatalogEn } from '../../src/services/localization';
 import { BUILD_EDGES, DEFAULT_BUILD_EDGE } from '../../src/simulation/construction';
 import {
@@ -508,14 +509,35 @@ describe('a queued row names its own order', () => {
     expect(started).toContain(shipped.formatNumber(0));
   });
 
-  it('bounds how many rows the block ever holds', () => {
-    // Not a preference: `BUILD_QUEUE_ROW_LIMIT` carries the panel's height
-    // measurement and the argument for showing the head of the queue. A list
-    // that grew with the queue is what the 7.8px arrival budget forbids, and
-    // pooling the rows is what keeps the HUD's busy group -- which has `add` and
-    // no `remove` -- from growing over a session.
-    expect(BUILD_QUEUE_ROW_LIMIT).toBeGreaterThan(1);
-    expect(BUILD_QUEUE_ROW_LIMIT).toBeLessThanOrEqual(4);
+  it('holds a row for every order one gesture can place, and no more than a fixed pool', () => {
+    /*
+     * Two claims, and neither is a preference.
+     *
+     * **The floor is `MAX_RUN_SEGMENTS`.** A dragged wall run is clamped to that
+     * many segments and one segment is one `PlaceBuildOrder`, so it is the
+     * longest queue a player can produce without meaning to produce two -- and
+     * #862 measured what a smaller pool costs: with fourteen orders placed,
+     * three had a cancel control and eleven had no row in the DOM at all, at
+     * every viewport. The number is not imported into `src/ui/hud/`, which may
+     * not read `src/rendering/` (`AGENTS.md` boundary 1); this test may import
+     * both, which is where `MAX_ZONE_SIDE_TILES` states its own agreement with
+     * the simulation's ceiling too.
+     *
+     * **The ceiling is that the pool is fixed and small.** Each row's cancel
+     * button joins the HUD's busy group, `createBusyGroup` has `add` and no
+     * `remove`, and a block that built a row per order would grow that group
+     * without bound over a session. A fixed pool closes that at any size; what
+     * this bound refuses is a pool sized to a queue with no ceiling
+     * (`docs/HUD_PROJECTIONS.md` contract 5), which the projection's own paging
+     * comment measures at 328 orders.
+     *
+     * The height that used to bound this number does not any more, and that is
+     * the substitution #862 made: `.hud-build__queue-list` in `hud.css` caps the
+     * list's *box* at three rows with `overflow-y: auto` under it, so what the
+     * block costs the panel is the box and no longer the row count.
+     */
+    expect(BUILD_QUEUE_ROW_LIMIT).toBeGreaterThanOrEqual(MAX_RUN_SEGMENTS);
+    expect(BUILD_QUEUE_ROW_LIMIT).toBeLessThanOrEqual(MAX_RUN_SEGMENTS * 2);
   });
 });
 
