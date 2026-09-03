@@ -596,23 +596,23 @@ test('act 7 -- what each of the five tabs actually shows, and what the panels cl
   }
 });
 
-test('act 8 -- the whole chain to a living prisoner, counted, and what tells the player it worked', async ({ page }) => {
+test('act 8 -- the whole chain to a living prisoner, counted, in the order a player would try it', async ({ page }) => {
   const act = 'act 8';
   const hand = new Hand(act);
   await installTee(page);
   await openApp(page);
 
   await page.locator('.save-panel__button', { hasText: 'New prison' }).click();
-  hand.count('press New prison');
+  hand.count('press "New prison"');
   await page.waitForTimeout(2500);
   await tab(page, 'build').click();
   hand.count('press the BUILD tab');
   await page.waitForTimeout(500);
   const origin = await calibrate(page);
   await page.locator('.hud-strip__transport button').nth(2).click();
-  hand.count('press Fast forward');
+  hand.count('press Fast forward (2x)');
   await page.locator('.hud-strip__transport button').nth(2).click();
-  hand.count('press Fast forward again (to 4x)');
+  hand.count('press Fast forward again (4x)');
 
   await page.locator('.hud-build__arm').click();
   hand.count('press "Place on map"');
@@ -626,103 +626,135 @@ test('act 8 -- the whole chain to a living prisoner, counted, and what tells the
     hand.count(`drag a wall run (${a[0]},${a[1]})->(${b[0]},${b[1]})`);
   }
   await waitForQueueEmpty(page);
+  log(act, `perimeter up. pulse: ${await pulse(page)}`);
 
-  // A door, so the cell can be reached.
-  const doorHand = new Hand(`${act} door`);
-  await page.locator('.hud-build__list [data-buildable="door-wooden"]').click();
-  doorHand.count('scroll/click "Wooden door"');
-  hand.count('click "Wooden door" in the list');
-  let arm = (await page.locator('.hud-build__arm').innerText()).trim();
-  log(act, `arm label after picking the door: ${JSON.stringify(arm)}`);
-  if (/^(place|draw)/i.test(arm)) {
-    await page.locator('.hud-build__arm').click();
-    doorHand.count(`press "${arm}"`);
-    hand.count(`press "${arm}"`);
-  }
-  log(act, `door click => ${JSON.stringify(await press(page, centreOf(origin, 15, 18).x, centreOf(origin, 15, 18).y))}`);
-  doorHand.count('click the tile');
-  hand.count('click the tile for the door');
-  doorHand.report('ONE door, Build tab already open, a tool already armed');
-
-  // A bed.
-  const bedHand = new Hand(`${act} bed`);
+  /*
+   * **The naive order first, because it is the order the panels teach.**
+   * The Build list holds Bed at position 3 and the Rooms tab is a separate
+   * tab, so a player who has just drawn four walls reaches for a bed next.
+   * Recorded verbatim, refusal and all.
+   */
   await page.locator('.hud-build__list [data-buildable="bed-wooden"]').click();
-  bedHand.count('click "Bed"');
-  hand.count('click "Bed" in the list');
-  arm = (await page.locator('.hud-build__arm').innerText()).trim();
+  hand.count('click "Bed" in the build list');
+  let arm = (await page.locator('.hud-build__arm').innerText()).trim();
+  log(act, `arm label with Bed picked: ${JSON.stringify(arm)}`);
   if (/^(place|draw)/i.test(arm)) {
     await page.locator('.hud-build__arm').click();
-    bedHand.count(`press "${arm}"`);
     hand.count(`press "${arm}"`);
   }
-  log(act, `bed click => ${JSON.stringify(await press(page, centreOf(origin, 15, 15).x, centreOf(origin, 15, 15).y))}`);
-  bedHand.count('click the tile');
-  hand.count('click the tile for the bed');
-  bedHand.report('ONE bed, from the same open panel');
-  await waitForQueueEmpty(page);
-  await page.screenshot({ path: `${SHOTS}/40-cell-shell-with-bed-and-door.png` });
-  log(act, `pulse: ${await pulse(page)}`);
+  log(act, `naive bed click => ${JSON.stringify(await press(page, centreOf(origin, 15, 15).x, centreOf(origin, 15, 15).y))}`);
+  hand.count('click a tile inside the walls, for the bed');
+  await page.waitForTimeout(1500);
+  log(act, `after the naive bed: ${await pulse(page)}`);
+  await page.screenshot({ path: `${SHOTS}/50-bed-before-zoning.png` });
 
-  // Designate it a Cell. Note what is selected on arrival.
-  const roomHand = new Hand(`${act} room`);
+  /*
+   * So: zone first. Which raises the question the Cell rule asks --
+   * "NEEDS 1 x BED, NEEDS 1 x TOILET" -- against an empty shell. Does the
+   * game let a player zone a cell that has neither yet?
+   */
   await tab(page, 'rooms').click();
-  roomHand.count('press the ROOMS tab');
   hand.count('press the ROOMS tab');
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(700);
   const preselected = await page.evaluate(
     () =>
       Array.from(document.querySelectorAll<HTMLElement>('.hud-rooms [data-room]')).find((n) =>
         (n.innerText ?? '').includes('Selected'),
       )?.getAttribute('data-room') ?? 'none',
   );
-  log(act, `the Rooms panel arrives with ${preselected} selected -- the player wants room.cell`);
+  log(act, `Rooms arrives with ${preselected} pre-selected; the player wants room.cell (5th of 18)`);
+
+  const roomHand = new Hand(`${act} room`);
   await page.locator('.hud-rooms [data-room="room.cell"]').click();
-  roomHand.count('click "Cell" in the list (5th of 18)');
-  hand.count('click "Cell" in the list');
+  roomHand.count('click "Cell" in the 18-item list');
+  hand.count('click "Cell" in the room list');
   await page.waitForTimeout(400);
-  log(act, `cell requirements shown => ${JSON.stringify((await panelText(page, '.hud-rooms')).slice(-400))}`);
-  const drawLabel = (await page.locator('.hud-rooms__draw').innerText()).trim();
-  await page.locator('.hud-rooms__draw').click();
-  roomHand.count(`press "${drawLabel}"`);
-  hand.count(`press "${drawLabel}"`);
+  log(act, `Cell rule reads => ${JSON.stringify((await panelText(page, '.hud-rooms__rule')).replace(/\s+/g, ' '))}`);
+  const armLabel = (await page.locator('.hud-rooms__arm').innerText()).trim();
+  await page.locator('.hud-rooms__arm').click();
+  roomHand.count(`press "${armLabel}"`);
+  hand.count(`press "${armLabel}"`);
   await page.waitForTimeout(300);
+
   const n0 = (await sentCommands(page)).length;
   await drag(page, centreOf(origin, 14, 14), centreOf(origin, 17, 17));
-  roomHand.count('drag the rectangle across the interior');
-  hand.count('drag the room rectangle');
-  await page.waitForTimeout(1200);
-  log(act, `designation sent ${(await sentCommands(page)).length - n0} command(s)`);
-  roomHand.report('ONE cell designation, from the Build tab');
-  await page.waitForTimeout(2500);
-  log(act, `pulse after designating: ${await pulse(page)}`);
-  await page.screenshot({ path: `${SHOTS}/41-cell-designated.png` });
+  roomHand.count('drag the rectangle over the interior');
+  hand.count('drag the room rectangle (14,14)->(17,17)');
+  await page.waitForTimeout(900);
+  log(act, `after the drag, ${(await sentCommands(page)).length - n0} command(s) sent`);
+  log(act, `status => ${JSON.stringify((await panelText(page, '.hud-rooms__status')).replace(/\s+/g, ' '))}`);
+  log(act, `area => ${JSON.stringify((await panelText(page, '.hud-rooms__area')).replace(/\s+/g, ' '))}`);
+  log(act, `enclosure => ${JSON.stringify((await panelText(page, '.hud-rooms__enclosure')).replace(/\s+/g, ' '))}`);
+  log(act, `needs => ${JSON.stringify((await panelText(page, '.hud-rooms__needs')).replace(/\s+/g, ' '))}`);
+  await page.screenshot({ path: `${SHOTS}/51-rectangle-dragged.png` });
+
+  // Is there a confirm step, and is it pressable?
+  const confirm = page.locator('.hud-rooms__confirm');
+  if ((await confirm.count()) > 0 && (await confirm.isVisible())) {
+    const cl = (await confirm.innerText()).trim();
+    const enabled = await confirm.isEnabled();
+    log(act, `confirm control: ${JSON.stringify(cl)} enabled=${enabled}`);
+    if (enabled) {
+      await confirm.click();
+      roomHand.count(`press "${cl}"`);
+      hand.count(`press "${cl}"`);
+      await page.waitForTimeout(1500);
+    }
+  } else {
+    log(act, 'no confirm control laid out');
+  }
+  roomHand.report('ONE cell zoned, counted from the moment the Rooms tab opened');
+  log(act, `after zoning: ${await pulse(page)}`);
+  log(act, `status => ${JSON.stringify((await panelText(page, '.hud-rooms__status')).replace(/\s+/g, ' '))}`);
+  await page.screenshot({ path: `${SHOTS}/52-after-zoning.png` });
+
+  // Now the bed, and the toilet the rule asks for.
+  await tab(page, 'build').click();
+  hand.count('press the BUILD tab again');
+  await page.waitForTimeout(500);
+  const objHand = new Hand(`${act} one object`);
+  for (const [id, tx, ty, label] of [
+    ['bed-wooden', 15, 15, 'Bed (3rd of 21)'],
+    ['toilet-brick', 16, 16, 'Toilet (20th of 21, needs a scroll)'],
+  ] as readonly [string, number, number, string][]) {
+    const h = new Hand(`${act} ${id}`);
+    await page.locator(`.hud-build__list [data-buildable="${id}"]`).click();
+    h.count(`click "${label}"`);
+    hand.count(`click "${label}"`);
+    if (id === 'bed-wooden') objHand.count(`click "${label}"`);
+    arm = (await page.locator('.hud-build__arm').innerText()).trim();
+    if (/^(place|draw)/i.test(arm)) {
+      await page.locator('.hud-build__arm').click();
+      h.count(`press "${arm}"`);
+      hand.count(`press "${arm}"`);
+      if (id === 'bed-wooden') objHand.count(`press "${arm}"`);
+    }
+    const cmds = await press(page, centreOf(origin, tx, ty).x, centreOf(origin, tx, ty).y);
+    h.count(`click the tile (${tx},${ty})`);
+    hand.count(`click the tile (${tx},${ty})`);
+    if (id === 'bed-wooden') objHand.count(`click the tile (${tx},${ty})`);
+    log(act, `${id} => ${cmds.length} command(s) ${JSON.stringify(cmds.map((c) => c['type']))}`);
+    await page.waitForTimeout(1200);
+    log(act, `  pulse: ${await pulse(page)}`);
+    h.report(`ONE ${id}, with the Build tab already open and a tool already armed`);
+  }
+  objHand.report('THE COMMONEST ACTION IN THE GAME: placing one furniture item');
+  await waitForQueueEmpty(page);
+  await page.screenshot({ path: `${SHOTS}/53-bed-and-toilet-built.png` });
+  log(act, `cell furnished. pulse: ${await pulse(page)}`);
+  await tab(page, 'rooms').click();
+  await page.waitForTimeout(600);
+  log(act, `rooms rows => ${JSON.stringify((await panelText(page, '.hud-rooms__rows')).replace(/\s+/g, ' '))}`);
 
   // Admit somebody.
   const admitHand = new Hand(`${act} admit`);
   await page.locator('.hud-intake__admit').click();
   admitHand.count('press "Admit a prisoner"');
   hand.count('press "Admit a prisoner"');
-  admitHand.report('ONE admission, with the Intake island already on screen');
-  await page.waitForTimeout(4000);
-  log(act, `pulse after admitting: ${await pulse(page)}`);
-  await page.screenshot({ path: `${SHOTS}/42-admitted.png` });
+  admitHand.report('ONE admission');
+  await page.waitForTimeout(5000);
+  log(act, `after admitting: ${await pulse(page)}`);
+  await page.screenshot({ path: `${SHOTS}/54-admitted.png` });
 
-  // Watch for two in-game minutes of play. Does anything happen? Does the
-  // game say anything about how it is going?
-  const t0 = await currentTick(page);
-  for (let i = 0; i < 8; i += 1) {
-    await page.waitForTimeout(15_000);
-    log(act, `  t=${(await currentTick(page)) - t0} ticks: ${await pulse(page)}`);
-  }
-  await page.screenshot({ path: `${SHOTS}/43-two-minutes-of-a-resident.png` });
-  hand.report('EVERYTHING: from an empty browser tab to one prisoner in one cell');
-
-  // Finally: is there any goal, score, or objective surface anywhere?
-  const goalish = await page.evaluate(() =>
-    Array.from(document.querySelectorAll<HTMLElement>('body *'))
-      .filter((n) => n.children.length === 0)
-      .map((n) => (n.innerText ?? '').trim())
-      .filter((t) => /objective|goal|target|task|tutorial|next step|score|rating|grade|help/i.test(t)),
-  );
-  log(act, `anything goal-shaped on screen: ${JSON.stringify(goalish)}`);
+  hand.report('EVERYTHING: an empty browser tab to one prisoner in one furnished cell');
 });
