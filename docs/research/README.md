@@ -48,6 +48,28 @@ So the standing rules for anything added here:
 
 ## Records
 
+**Every new record appends its row at the same place, so any two branches that
+add one conflict here by construction. Resolve it by keeping BOTH rows, in
+landed order: the row already on `main` first, the arriving branch's second.**
+
+That is written down because it was resolved by hand **seven times on
+2026-09-03 alone** — #834, #838, #839 (twice), #844 (twice) and #876 — and each
+time the resolver had to re-derive the same answer. It is not a defect in any
+of those branches and it is not something to fix by editing somebody else's
+row: the mechanism is that this table has one append point and passes work in
+parallel.
+
+**Do not resolve it by taking one side.** Both rows are records of work that
+happened, this file is read-only history by the rule three paragraphs above,
+and dropping a row loses the only index entry a note has. A `git checkout
+--theirs` here silently deletes a record.
+
+**Landed order rather than date order, deliberately.** Date order reads better
+and is worse to merge: it puts the insertion point in the middle of the table,
+so two branches adding notes from the same day conflict *and* have to agree on
+an ordering nobody can compute from their own side. Landed order is decidable
+from one side alone.
+
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
 | [2026-08-25 room zoning gesture](./2026-08-25-room-zoning-gesture.md) | What gesture designates a room, and where does the control live? | ADR 0022 |
