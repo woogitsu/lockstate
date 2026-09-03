@@ -127,9 +127,19 @@ export interface PrisonerNeedViewModel {
   /** `permille: 0` is a fully unmet need; `1000` is fully satisfied. */
   readonly level: BoundedValue;
   /**
-   * Whether the state withholds part of this prisoner's day of the operating
-   * grant because of this need -- `isNeedUnmetForStateIncome`, the same
-   * predicate `unmetNeedCount` sums to compute the money.
+   * Whether the state counts this need as unmet when it settles this
+   * prisoner's day of the operating grant -- `isNeedUnmetForStateIncome`, the
+   * same predicate `unmetNeedCount` sums to compute the money.
+   *
+   * **This read "whether the state withholds part of this prisoner's day of
+   * the operating grant because of this need", and it stopped being true on
+   * 2026-09-03**, when the owner suspended
+   * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` at `0` while they play
+   * (their words are in that constant's docblock). The flag itself did not
+   * move a bit: it is the same predicate over the same threshold, and it is
+   * what the money is computed from at any rate. Only the withholding it
+   * implied is suspended, so the old wording is kept beside the correction
+   * rather than replaced (`docs/AGENT_WORKFLOW.md` §4).
    *
    * **A fact about what the state pays, not a claim about what a player should
    * be alarmed by**, and the two are deliberately separate:

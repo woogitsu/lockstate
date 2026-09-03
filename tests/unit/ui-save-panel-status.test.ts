@@ -275,6 +275,7 @@ describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () =
     'simulation-held-guards.ts',
     'simulation-intake.ts',
     'simulation-pending-deliveries.ts',
+    'simulation-prisoner-detail.ts',
     'simulation-prisoner-roster.ts',
     'simulation-projections.ts',
     'simulation-regime.ts',

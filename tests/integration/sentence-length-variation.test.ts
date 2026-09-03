@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { stateIncomeForCompletedDay, STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS, unmetNeedCount } from '../../src/simulation/economy/income';
+import {
+  STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS,
+  stateIncomeForCompletedDay,
+  stateIncomeForPrisonerDayAt,
+  unmetNeedCount,
+} from '../../src/simulation/economy/income';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { wallRoomPerimeter } from '../helpers/room-walls';
@@ -7,6 +12,16 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
 /**
  * Issue #535 decision 5, end to end: **a sentence is drawn at admission, and
  * the grant-withholding schedule that could never fire now fires.**
+ *
+ * **Suspended, 2026-09-03.** The owner set
+ * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0` for now -- the
+ * ruling and their words are in that constant's docblock -- so the schedule
+ * fires and withholds nothing. The sentence above is left as it stands because
+ * it is the reachability finding this file was built for and reachability is
+ * what it still measures: the prisoner is in the prison when the boundaries
+ * arrive, and the counts the schedule reads are asserted at both the shipped
+ * rate and at ADR 0064's `40` (`docs/AGENT_WORKFLOW.md` §4: mark both
+ * directions).
  *
  * Everything below goes through the real kernel, the real `ZoneRoom` and
  * `AdmitPrisoner` commands and the real `StateIncomeSystem` arithmetic, in the
@@ -269,7 +284,7 @@ describe('a sentence drawn at admission (#535 decision 5)', () => {
     expect(namedRuntime.prisoners.classificationReviewSystem.assess(namedId, namedRuntime.kernel.tick)?.factors.sentence).toBe(0);
   });
 
-  it('is what makes the state withhold a grant for a neglected prisoner, which the old fixed sentence never could', () => {
+  it('is what keeps a neglected prisoner in the prison long enough for the state to see them at all, which the old fixed sentence never could', () => {
     // The boundaries the two room-gated needs cross, derived in this file's
     // header and written out rather than computed here.
     const HYGIENE_BOUNDARY = 11_999;
@@ -294,15 +309,29 @@ describe('a sentence drawn at admission (#535 decision 5)', () => {
     expect(grantAt(2_399)).toBe(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS);
     expect(grantAt(9_599)).toBe(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS);
 
-    // Day 5: `hygiene` has fallen through the threshold and one term of the
-    // schedule is withheld. Written as literals -- 300 less 40 -- and not as
+    // Day 5: `hygiene` has fallen through the threshold, and day 6:
+    // `recreation` follows.
+    //
+    // **These two assertions read 260 and 220 until the owner's ruling of
+    // 2026-09-03** -- *"usuń na razie kary, zobaczymy jak pogram i ocenię
+    // łatwość"* -- which set
+    // `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0`. What this
+    // file measures is that the *prisoner is still there* when those boundaries
+    // arrive, which is decision 5's whole point and is unchanged; the unmet
+    // counts below are that measurement and they still read 1 and 2. So each
+    // boundary now asserts both figures: the flat rate the state pays today,
+    // and what the same measured count costs at ADR 0064's own rate, written
+    // as literals -- 300 less 40, then less 80 -- and not as
     // `RATE - WITHHELD`, which would hold for any pair of numbers.
-    expect(grantAt(HYGIENE_BOUNDARY)).toBe(260);
-    expect(unmetNeedCount(runtime.prisoners.needs, runtime.prisoners.entityStore.getIndex(entityId))).toBe(1);
+    const unmetAt = (): number => unmetNeedCount(runtime.prisoners.needs, runtime.prisoners.entityStore.getIndex(entityId));
 
-    // Day 6: `recreation` follows, and two terms are withheld.
-    expect(grantAt(RECREATION_BOUNDARY)).toBe(220);
-    expect(unmetNeedCount(runtime.prisoners.needs, runtime.prisoners.entityStore.getIndex(entityId))).toBe(2);
+    expect(grantAt(HYGIENE_BOUNDARY)).toBe(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS);
+    expect(unmetAt()).toBe(1);
+    expect(stateIncomeForPrisonerDayAt(40, unmetAt())).toBe(260);
+
+    expect(grantAt(RECREATION_BOUNDARY)).toBe(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS);
+    expect(unmetAt()).toBe(2);
+    expect(stateIncomeForPrisonerDayAt(40, unmetAt())).toBe(220);
     expect(runtime.prisoners.entityStore.isAlive(entityId), 'the prisoner must still be holding the place they are being underpaid for').toBe(true);
 
     // And the counterfactual, on the same prison and the same seed: the

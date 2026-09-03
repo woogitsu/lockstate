@@ -331,11 +331,32 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
      * control, which it has never been before, and the control's own case says
      * by how much and why.
      *
+     * **It is 26,305 since the owner's ruling of 2026-09-03, and this is the
+     * fourth move of this literal.** *"usuń na razie kary, zobaczymy jak
+     * pogram i ocenię łatwość"* ("remove the penalties for now, we'll see how
+     * it plays and I'll judge the ease") set
+     * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0`, so every 40
+     * this prison was charged for an unmet `safety` comes back:
+     * `26,145 + 4 x 40 = 26,305`. **Four** of them, measured -- which is the
+     * first time this file has been able to say how many days of this run were
+     * actually charged, because the withholding was never separable from the
+     * balance before. The control below was charged five, and that one-day gap
+     * is the same accident of arrival ticks the table above sets out.
+     *
+     * **Every reading above is kept rather than replaced**, and the sequence
+     * is now 29,315 (the exploit), 26,395 (A(ii) closed the income half),
+     * 26,275 (ADR 0078's withholding moved it), 26,145 (the materials half
+     * closed too), and 26,305 (the withholding suspended). The finding this
+     * file exists for is untouched by all five: the exploit no longer turns
+     * one plank into three paying residents, and with nothing withheld the
+     * remaining gap between the two arms is materials alone -- which the
+     * control's own relation now says in one line.
+     *
      * Written as the literal it is, not as a subtraction or as the control's
      * balance read back, either of which the code under test could satisfy with
      * any pair of numbers.
      */
-    expect(runtime.treasury.balanceMinorUnits).toBe(26_145);
+    expect(runtime.treasury.balanceMinorUnits).toBe(26_305);
   });
 
   it('control: the same prison, the same plank, the same ticks, without the undo', () => {
@@ -375,8 +396,16 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
      * on the earlier side of a day boundary. The full derivation, with the
      * measured admission and crossing ticks for both arms, is on the case
      * above.
+     *
+     * **It is 26,435 since the owner's ruling of 2026-09-03**, which suspended
+     * the withheld share at `0`: `26,235 + 5 x 40 = 26,435`. Five 40s here
+     * against the other arm's four, so the *sentence* above about this arm
+     * being charged one more day's withholding than the recycled one is still
+     * exactly right -- it is the only part of the derivation the ruling leaves
+     * standing, and it is left standing rather than rewritten
+     * (`docs/AGENT_WORKFLOW.md` §4).
      */
-    expect(runtime.treasury.balanceMinorUnits).toBe(26_235);
+    expect(runtime.treasury.balanceMinorUnits).toBe(26_435);
     /*
      * The relation between the two arms, asserted against **production content**
      * rather than against literals -- so a change to what an unmet need costs
@@ -392,13 +421,21 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
      * now strictly worse than playing it straight**, which is the plainest
      * statement this file has ever been able to make about the loop.
      *
+     * **The ruling of 2026-09-03 did not touch this assertion, and that is
+     * the whole argument for having written it against production content.**
+     * With the withheld share at `0` the right-hand side is two planks and
+     * nothing else, both balances moved (by four 40s and five), and this line
+     * needed no edit: 130 either way. The relation keeps its sign and its
+     * meaning -- recycling is still strictly worse than playing it straight,
+     * now by the full price of the two planks rather than by 90 of it.
+     *
      * It is not a fixture supplying both sides of its own comparison
      * (`docs/TESTING.md`): the left-hand side is this arm's live balance, the
-     * 26,145 is the other arm's independently pinned literal, and the
+     * 26,305 is the other arm's independently pinned literal, and the
      * right-hand side is two pieces of production content neither test
      * computes.
      */
-    expect(runtime.treasury.balanceMinorUnits - 26_145).toBe(
+    expect(runtime.treasury.balanceMinorUnits - 26_305).toBe(
       2 * procurableMaterial('item.wood-plank')!.unitPriceMinorUnits -
         STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS,
     );

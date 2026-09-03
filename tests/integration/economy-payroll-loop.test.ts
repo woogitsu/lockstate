@@ -196,8 +196,20 @@ describe('hiring before there is anybody to guard is a decision the balance now 
      * The 2.5%-of-income shape of the wage bill that this step used to report
      * is unchanged -- 240 a day against income that starts at 2,400 -- and it
      * is still the finding rather than a defect.
+     *
+     * **It reads 45,840 again since the owner's ruling of 2026-09-03**, which
+     * set `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0` while they
+     * play and judge difficulty -- *"usuń na razie kary, zobaczymy jak pogram
+     * i ocenię łatwość"*. That is the *same figure* the paragraph above says
+     * this assertion carried before ADR 0064, to the minor unit, and it is
+     * kept as a whole rather than rewritten because the two readings are now
+     * the two sides of one suspended decision: 45,840 with nothing withheld,
+     * 42,640 with 3,200 withheld over ten days for being a row of cells and
+     * nothing else. `tests/integration/needs-state-grant-loop.test.ts` prices
+     * that same 3,200 off its own measured days at ADR 0064's rate, so the
+     * figure this arm gives up is not lost.
      */
-    expect(runtime.treasury.balanceMinorUnits).toBe(42_640);
+    expect(runtime.treasury.balanceMinorUnits).toBe(45_840);
   });
 });
 
@@ -279,15 +291,30 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * equals `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`, so a balance
      * sinking past the shared -1,250 crosses both in the same tick -- 16,799,
      * day 7, exactly where deliveries already fires, not two days later.
+     *
+     * **The shared rung is crossed on day 8 since the owner's ruling of
+     * 2026-09-03, not day 7, and the day it moved by is the measurement.**
+     * With `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` at `0` this
+     * prison's income no longer falls as its needs go unserved, so it sinks at
+     * a flat 360 a day instead of accelerating: 1,520 - 360n, past -1,250 on
+     * day 8 (-1,360) rather than on day 7. Everything the sentence above says
+     * about *which* rungs fire and about their firing together is untouched --
+     * only when. Kept rather than rewritten for that reason
+     * (`docs/AGENT_WORKFLOW.md` §4).
      */
     expect(runtime.events.since(0), 'the two rungs above the wages floor, crossed together before any payday is missed').toEqual([
-      { sequence: 1, tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.deliveries-refused' },
-      { sequence: 2, tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.construction-refused' },
+      { sequence: 1, tick: DAY_LENGTH_TICKS * 8 - 1, type: 'economy.deliveries-refused' },
+      { sequence: 2, tick: DAY_LENGTH_TICKS * 8 - 1, type: 'economy.construction-refused' },
     ]);
 
-    // Day 10 is the first it cannot meet: 140 of room against a 520 bill.
-    stepTo(runtime, DAY_LENGTH_TICKS * 10);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(380);
+    // **Day 12 is the first it cannot meet, and this read day 10 until the
+    // ruling of 2026-09-03.** A prison that is no longer charged for its
+    // unserved needs takes two more in-game days to miss a payday: day 11
+    // leaves it at -2,440, and day 12 has 60 of room against a 960 bill, so it
+    // pays 660 out of the overdraft, lands on the floor and owes 300 -- where
+    // the withheld schedule had it owing 380 on day 10.
+    stepTo(runtime, DAY_LENGTH_TICKS * 12);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(300);
 
     // The two rung crossings above are still the only two of their kind: this
     // is one missed payday, not one event overall, now that the ladder's
@@ -296,7 +323,7 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     expect(afterFirstMiss.length, 'one missed payday is one wages-unpaid sentence').toBe(1);
     // The figure the player is told is the arrears the save also carries, not
     // the day's shortfall by some other arithmetic.
-    expect(afterFirstMiss[0]).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 380 });
+    expect(afterFirstMiss[0]).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 300 });
 
     const message = workerToMainMessageSchema.parse({
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -321,7 +348,7 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
     const sentence = localizer.format(notice.labelKey, notice.labelParameters);
     expect(sentence, 'the player must not be shown a raw message key').not.toContain('hud.alert.event');
-    expect(sentence, 'and the sentence must name what is owed').toContain('380');
+    expect(sentence, 'and the sentence must name what is owed').toContain('300');
 
     /*
      * **Once a day while it stays broke, not twice a second.** This is the
@@ -330,17 +357,27 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * ceiling is a property of where the producer sits and not of a filter
      * downstream.
      */
-    stepTo(runtime, DAY_LENGTH_TICKS * 13);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_940);
+    stepTo(runtime, DAY_LENGTH_TICKS * 15);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_380);
     // Filtered to `economy.wages-unpaid` for the reason the first check above
-    // is: the two rung-crossing events from day 7 and day 9 are still on the
-    // channel (nothing here retires them) and are not paydays.
+    // is: the two rung-crossing events from day 8 are still on the channel
+    // (nothing here retires them) and are not paydays. **This comment said
+    // "day 7 and day 9" while `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`
+    // sat above the deliveries floor, and both rungs have shared one day since
+    // the owner's ruling on #771; the day itself moved from 7 to 8 with the
+    // ruling of 2026-09-03.**
+    //
+    // **Three more in-game days ran from day 12 rather than from day 10, and
+    // the debt compounds at 360 a day rather than 520**, so four missed
+    // paydays now total 1,380 where they totalled 1,940. What this checks is
+    // one sentence per payday, and that is a property of where the producer
+    // sits rather than of either figure.
     const afterFourMisses = runtime.events.since(0).filter((event) => event.type === 'economy.wages-unpaid');
     expect(
       afterFourMisses.length,
       'a prison that stays broke says so once per payday -- four missed paydays, four sentences',
     ).toBe(4);
-    expect(afterFourMisses.at(-1)).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 1_940 });
+    expect(afterFourMisses.at(-1)).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 1_380 });
     // And the ladder's whole shape in one assertion: two rung crossings while
     // solvent, then one wages-unpaid sentence per missed payday thereafter --
     // six events for six real things that happened, none of them repeated.
@@ -406,33 +443,56 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * ([ADR 0064](../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)).
      * The direction is still the one worth stating: a prison that is failing its
      * prisoners reaches insolvency sooner and digs out of it more slowly.
+     *
+     * **And it reads 600 again since the owner's ruling of 2026-09-03**, which
+     * set `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0` while they
+     * play. Day 5 is no longer the first day the state pays this prison less
+     * -- there is no such day -- so it is simply the day the balance goes under
+     * water: 80 in hand plus 600 against a 960 bill, the whole bill met out of
+     * the overdraft, -280 and owing nothing. The paragraph above is kept as it
+     * stands because it is what the withheld schedule does to this same
+     * prison, and because the direction it states is exactly what the owner is
+     * now judging by playing.
      */
     stepTo(runtime, DAY_LENGTH_TICKS * 5);
-    expect(runtime.treasury.balanceMinorUnits).toBe(-360);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-280);
     expect(runtime.payroll.unpaidWagesMinorUnits, 'the overdraft is what pays it, so nothing is owed').toBe(0);
 
     /*
      * And down it goes: 440 more on day 6, then 520 a day once `recreation`
      * crosses the line on day 7 as well -- the 960 bill less an income that is
      * itself falling. -800, -1,320, -1,840, -2,360.
+     *
+     * **Since the ruling of 2026-09-03 it goes down at a flat 360 a day, and
+     * the accelerating series above is what the withheld schedule did to it.**
+     * Nothing about the income falls any more, so the balance is 1,520 - 360n
+     * exactly: -640, -1,000, -1,360, -1,720. The old series is kept because
+     * the difference between the two -- a prison sinking faster the worse it
+     * treats its prisoners, against one sinking at the rate of its own payroll
+     * -- is the whole of what the owner asked to feel while they play.
      */
     stepTo(runtime, DAY_LENGTH_TICKS * 9);
-    expect(runtime.treasury.balanceMinorUnits).toBe(-2_360);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-1_720);
     expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0);
 
     /*
-     * Day 10 is the first payday the prison cannot meet, and the rung is what
-     * says so: 140 of room against a 520 bill. It pays the 140, lands exactly on
-     * -2,500 and owes 380. From there the balance does not move again -- the
-     * rung holds -- and the debt compounds at 520 a day.
+     * Day 12 is the first payday the prison cannot meet, and the rung is what
+     * says so: 60 of room against a 960 bill. It pays 660, lands exactly on
+     * -2,500 and owes 300. From there the balance does not move again -- the
+     * rung holds -- and the debt compounds at 360 a day.
+     *
+     * **This was day 10, 140 of room against a 520 bill, 380 owed, compounding
+     * at 520 a day**, and every one of those figures is the withheld
+     * schedule's. Two extra in-game days of solvency is what the ruling buys
+     * this prison.
      */
-    stepTo(runtime, DAY_LENGTH_TICKS * 10);
+    stepTo(runtime, DAY_LENGTH_TICKS * 12);
     expect(runtime.treasury.balanceMinorUnits, 'exactly the wage rung, which is the floor').toBe(-2_500);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(380);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(300);
 
-    stepTo(runtime, DAY_LENGTH_TICKS * 13);
+    stepTo(runtime, DAY_LENGTH_TICKS * 15);
     expect(runtime.treasury.balanceMinorUnits, 'and no payday may pass it').toBe(-2_500);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_940);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_380);
   });
 
   /**
@@ -522,13 +582,18 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
       return -1;
     };
 
-    // Day 7 (-1,320): the shared rung. A player pressing Buy is refused, and the
+    // Day 8 (-1,360): the shared rung. A player pressing Buy is refused, and the
     // sentence they are shown is `AGENTS.md`'s fourth exclusion -- see the four
     // keys named at `src/content/default-locale-en.ts`. Construction fires with
     // it, the same day, at the same balance -- this is #771's own finding, read
     // off a real sink rather than probed as a boundary.
+    //
+    // **Day 7 (-1,320) until the owner's ruling of 2026-09-03.** With nothing
+    // withheld for an unserved need the sink is a flat 360 a day and the
+    // shared rung is one day later. What this case measures is the *order* of
+    // the rungs, which is unchanged.
     const deliveriesStopped = firstDayThat((state) => !state.deliveries);
-    expect(deliveriesStopped, 'deliveries are refused first').toBe(7);
+    expect(deliveriesStopped, 'deliveries are refused first').toBe(8);
     expect(rungs().construction, 'and construction is refused with it, not two days later').toBe(false);
     expect(rungs().wages, 'and the staff are still being paid').toBe(0);
 
@@ -543,16 +608,17 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      */
     const constructionStopped = deliveriesStopped;
 
-    // Day 10 (-2,500): wages. The payday takes the 140 of room the rung
-    // leaves and owes the other 380.
+    // Day 12 (-2,500): wages. The payday takes the 60 of room the rung leaves,
+    // pays 660 out of the overdraft and owes the other 300. **Day 10, 140 of
+    // room and 380 owed, until the owner's ruling of 2026-09-03.**
     const wagesUnpaid = firstDayThat((state) => state.wages > 0);
-    expect(wagesUnpaid, 'wages go unpaid last').toBe(10);
+    expect(wagesUnpaid, 'wages go unpaid last').toBe(12);
     expect(runtime.treasury.balanceMinorUnits).toBe(-2_500);
 
     // The ordering itself, stated as the assertion it is rather than left to be
     // read off the numbers: the two discretionary rungs are equal, and both
     // precede wages.
-    expect([deliveriesStopped, constructionStopped, wagesUnpaid]).toEqual([7, 7, 10]);
+    expect([deliveriesStopped, constructionStopped, wagesUnpaid]).toEqual([8, 8, 12]);
     expect(deliveriesStopped).toBe(constructionStopped);
     expect(constructionStopped).toBeLessThan(wagesUnpaid);
 
@@ -570,11 +636,18 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
   it('says so on the status channel rather than accruing an invisible debt', () => {
     // Day 5 and `0 / 360` until the owner's ruling 19 of 2026-08-31 moved the
     // third rung to the floor; the channel carries the same three figures.
+    //
+    // **Day 10 and `380` until the owner's ruling of 2026-09-03**, which set
+    // `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0`. The subject
+    // here is that a debt is *on the channel* rather than invisible, so the
+    // measurement moves to the first day there is a debt to carry: day 12,
+    // where the same prison owes 300 instead of day 10's 380. Reading day 10
+    // now would assert `0` and would stop testing anything.
     const runtime = overcommitted();
-    stepTo(runtime, DAY_LENGTH_TICKS * 10);
+    stepTo(runtime, DAY_LENGTH_TICKS * 12);
     const counts = projectStatusCounts(runtime, runtime.kernel.tick);
     expect(counts.treasuryMinorUnits).toBe(-2_500);
-    expect(counts.unpaidWagesMinorUnits).toBe(380);
+    expect(counts.unpaidWagesMinorUnits).toBe(300);
     expect(counts.dailyWageBillMinorUnits).toBe(960);
   });
 
@@ -606,28 +679,46 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * which is the same recovery seen from the other side of ruling 19's third
      * rung. It is still unconditional and still needs no command beyond the
      * admissions.
+     *
+     * **The hole is 480 shallower since the owner's ruling of 2026-09-03**:
+     * -1,360 on day 8 rather than -1,840, because a flat 360 a day sinks this
+     * prison instead of an accelerating one. **And the lever got weaker at the
+     * same time, which is the part worth reporting.** Six arrivals used to take
+     * the income from 440 a day to 2,240 -- their six undiminished 300s beside
+     * the two long-standing prisoners' 220s -- and the *reason* the lever
+     * worked so well was that the prison had been earning so little. With
+     * nothing withheld the same six take it from 600 to 2,400, so the climb is
+     * 1,440 a day against 1,280: faster in absolute terms, and a far smaller
+     * multiple of what the prison was already earning. Every figure in the
+     * quoted block above and in this paragraph is kept, because the pair of
+     * them is the clearest statement in this file of what the suspended
+     * mechanic was doing to the game's difficulty.
      */
     const runtime = overcommitted();
     stepTo(runtime, DAY_LENGTH_TICKS * 8);
     expect(runtime.payroll.unpaidWagesMinorUnits, 'the overdraft has met every payday so far').toBe(0);
-    expect(runtime.treasury.balanceMinorUnits).toBe(-1_840);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-1_360);
 
     admit(runtime, 6, 2);
     stepTo(runtime, DAY_LENGTH_TICKS * 9);
     expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(8);
     /*
-     * Six arrivals start at `NEED_MAX` on every need, so they are paid the
-     * undiminished 300 while the two long-standing prisoners are paid 220:
-     * 2,240 of income against a 960 bill, which is 1,280 towards the hole.
+     * Six arrivals start at `NEED_MAX` on every need. **They used to be paid
+     * the undiminished 300 while the two long-standing prisoners were paid
+     * 220 -- 2,240 of income against a 960 bill, 1,280 towards the hole** --
+     * and since the ruling of 2026-09-03 all eight are paid 300: 2,400 against
+     * the same bill, 1,440 towards a hole that is itself shallower.
      */
     expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0);
-    expect(runtime.treasury.balanceMinorUnits).toBe(-560);
+    expect(runtime.treasury.balanceMinorUnits).toBe(80);
 
-    // Day 10 puts the prison back above water, and it keeps climbing after
-    // that, so the recovery is a recovery rather than a pause.
+    // Day 10 puts the prison further above water, and it keeps climbing after
+    // that, so the recovery is a recovery rather than a pause. **It crossed
+    // zero on day 10 and read 720 there until the ruling of 2026-09-03**; the
+    // crossing is now a day earlier, on day 9 above.
     stepTo(runtime, DAY_LENGTH_TICKS * 10);
-    expect(runtime.treasury.balanceMinorUnits).toBe(720);
+    expect(runtime.treasury.balanceMinorUnits).toBe(1_520);
     stepTo(runtime, DAY_LENGTH_TICKS * 11);
-    expect(runtime.treasury.balanceMinorUnits).toBe(2_000);
+    expect(runtime.treasury.balanceMinorUnits).toBe(2_960);
   });
 });

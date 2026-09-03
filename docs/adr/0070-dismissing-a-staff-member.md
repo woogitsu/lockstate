@@ -298,3 +298,72 @@ about the ordering.
 
 The second weakest is the **height** claim, which is why it is stated as the
 narrow version above rather than the one I would like to make.
+
+## Amendment, 2026-09-03: there is a confirmation step, and the roster row it sits on no longer fires at the wrong person
+
+Two of this document's claims are now false, and both are left standing above
+rather than rewritten, because each is the reservation that was lifted and a
+reader needs to see what was given up.
+
+**1. "No confirmation step on an irreversible control."** That bullet reads, in
+full: *"There is no confirmation primitive in this repository and inventing a
+modal inside one panel would be a UI pattern decided in the wrong place.
+`hud.security.roster-hint` states the consequence beside the button. Worth
+proposing once a pattern exists."*
+
+The proposal it asked for was made and answered. Issue #877 measured the
+dismiss row firing at somebody other than the person its label named — **4 of
+the 4 presses that reached the wire** — and the owner ruled on 2026-09-03 that
+a dismissal gets both a settle window on the row and a confirmation step, in
+their words *"Jedno i drugie"* (*one and the other*), and supplied the sentence
+the confirmation says. That is the owner's decision and not this repository's
+recommendation, which is why it is recorded here in their words with the date
+on it.
+
+Every constraint the bullet named still binds, and the step is built to them.
+It is **not a modal**: nothing is blocked while an arm stands, and the player
+may press another row, collapse the fold or leave the tab. It adds **no second
+control**, which matters beyond taste — `tests/browser/app-shell.spec.ts`
+inventories every control on the page and checks each is reachable, so a Cancel
+beside each Dismiss would be three more controls bought to undo a state that
+costs nothing while it stands. And the press that gets a player out of the trap
+this control exists for is the **first** of the two rather than a new one. The
+decision is `src/ui/hud/dismiss-arming.ts`, a pure reducer for the reason
+`hud/tool-arming.ts` is one: `vitest.config.ts` is `environment: 'node'` with
+no jsdom, so a decision left inside a DOM listener could not be proved at all.
+
+`hud.security.roster-hint` still states the consequence beside the button. The
+confirmation is a fourth drafted string rather than a third, so the "**Four
+locale strings are drafted and flagged**, and no more" bullet is now five:
+`hud.security.roster-dismiss-confirm` joins it, and it is the owner's own
+sentence rather than a draft for review.
+
+**2. "The expanded height of the new roster block has not been measured."** It
+is measured now, which is what that bullet asked for:
+`tests/browser/ui-staff-dismiss.spec.ts` reads every roster row's control box at
+1280x1024 and at 900x600 and refuses one that is not inside the window, and
+`tests/browser/app-shell.spec.ts` has driven the block open at all five
+viewports since it landed — that file is where the five-viewport claim lives, and
+on this branch it is the pull request's own `browser` job that runs it, because
+the three local attempts all exhausted its 180 s budget on a box carrying other
+agents' suites. What the new spec adds at 900x600 is the
+confirmation's own box, which is exempted from that viewport's single-line clamp
+in `src/ui/hud/hud.css` for the reason issue #884 established one element over:
+without the exemption the owner's sentence measures `scrollHeight` 26 against
+`clientHeight` 13 — two lines cut to one, and the clause cut is *"and they do
+not come back"*. The box gives way, never the sentence.
+
+**What this amendment does not touch.** Open question 1 — whether hiring and
+dismissal should be undoable — is untouched and is not answered by a confirm
+step: confirming is not undoing, and `DismissStaff` still carries no
+`transactionId`. Nothing about the command, the simulation-side ordering, or the
+completeness claim moved.
+
+**A limit of the read model, reported rather than worked around.** The
+confirmation names the person by quoting the row's own label, and
+`HudStaffRosterRowViewModel` carries an entity id, a role key and a status key
+and no personal name — so two guards doing the same thing render identical rows
+and the sentence names them identically. The confirmation is therefore exactly
+as specific as the row it quotes, which is the honest guarantee, and no wording
+was invented here to improve on it. Making a row name a person distinguishably
+is a change to what a player reads and stays the owner's.

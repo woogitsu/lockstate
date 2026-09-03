@@ -254,3 +254,84 @@ describe('a press becomes a drag at half a tile, and not before', () => {
     expect(DRAG_AXIS_THRESHOLD_PX).toBeLessThan(TILE_SIZE_PX);
   });
 });
+
+/**
+ * A press exactly on a tile's mid-line, which is the one press the two picks
+ * used to disagree about (issue #886).
+ *
+ * Every other press has a nearer side and both functions find the same one.
+ * On the mid-line there is no nearer side, so each has to break a tie -- and
+ * `pickEdgeAtWorld`'s own comment states its rule (*"ties break towards north,
+ * then west"*, which is towards the pressed tile), while `pickEdgeOnAxis`'s
+ * `withinY < 0.5` sent the same press to the tile **below**, and `withinX <
+ * 0.5` to the tile to its **right**. Two consequences, and the second is what
+ * a player sees:
+ *
+ * - It contradicts what `edgeRunFromDrag` says it does -- *"The press says
+ *   which tile; the drag says which way"* -- and what the three tests above
+ *   assert in those words: *"the tile the player pressed is still the tile the
+ *   run starts on"*. On the mid-line it was not.
+ * - The hover ghost is painted from `pickEdgeAtWorld` (`previewHover` in
+ *   `src/rendering/scene/world-scene.ts`) and the run from `pickEdgeOnAxis`,
+ *   so hovering the centre of a tile drew the wall on that tile's top line and
+ *   dragging sideways -- with the edge kind unchanged, so no axis change to
+ *   explain the jump -- moved it to the line below.
+ *
+ * Measured in the browser before this was fixed, at the real origin
+ * (-304, -574) with `wall-brick` armed: four drags through the centres of the
+ * boundary tiles of the 4x4 at (12,18) laid their north edges on row 19 and
+ * their west edges on column 13, so the walls bounded (13,19)-(15,21) and the
+ * 4x4 was refused `zone.not-enclosed`. The same four drags traced along the
+ * tile boundary lines laid all sixteen perimeter edges and zoned first time.
+ * `tests/browser/playtest-886-do-four-drags-enclose.playtest.ts` is that
+ * measurement.
+ *
+ * **What this does not claim.** Aligning the tie does not make a drag through
+ * the tile centres enclose the tiles it crossed, and nothing in this module
+ * could: the mid-line is equidistant from the two lines a wall could go on, so
+ * whichever way the tie falls, two of the four sides land one tile from where
+ * a player aiming at the middle of the tiles meant. What it buys is that the
+ * ghost and the run agree, and that the run starts on the tile that was
+ * pressed.
+ */
+describe('a press on a tile mid-line stays on the tile it pressed (#886)', () => {
+  it('agrees with the click pick on a horizontal mid-line', () => {
+    // Dead centre: equidistant from all four sides, so this is the tie on both
+    // axes at once and `pickEdgeAtWorld` resolves it north.
+    const centre = inTile(4, 6, 0.5, 0.5);
+    expect(pickEdgeAtWorld(centre)).toEqual({ tileX: 4, tileY: 6, edge: 'north' });
+    expect(pickEdgeOnAxis(centre, 'x')).toEqual({ tileX: 4, tileY: 6, edge: 'north' });
+  });
+
+  it('agrees with the click pick on a vertical mid-line', () => {
+    // Half across, above centre: nearest of the four sides is north, and the
+    // west/east pair is the tie. On the y axis the answer must be the pressed
+    // tile's own west edge.
+    const press = inTile(4, 6, 0.5, 0.2);
+    expect(pickEdgeOnAxis(press, 'y')).toEqual({ tileX: 4, tileY: 6, edge: 'west' });
+  });
+
+  it('starts a horizontal run on the tile the player pressed', () => {
+    const press = inTile(4, 6, 0.5, 0.5);
+    const run = edgeRunFromDrag(press, inTile(7, 6, 0.5, 0.5));
+    expect(run[0]).toEqual({ tileX: 4, tileY: 6, edge: 'north' });
+    expect(run).toHaveLength(4);
+  });
+
+  it('starts a vertical run on the tile the player pressed', () => {
+    const press = inTile(4, 6, 0.5, 0.5);
+    const run = edgeRunFromDrag(press, inTile(4, 9, 0.5, 0.5));
+    expect(run[0]).toEqual({ tileX: 4, tileY: 6, edge: 'west' });
+    expect(run).toHaveLength(4);
+  });
+
+  it('still takes the far line for a press past the mid-line', () => {
+    // The tie is the only thing that moved. A press one pixel into the lower
+    // half is still the line below, which is what makes the mid-line a
+    // boundary rather than a shifted rule.
+    const belowMidline = { x: inTile(4, 6, 0.5, 0.5).x, y: inTile(4, 6, 0.5, 0.5).y + 1 };
+    expect(pickEdgeOnAxis(belowMidline, 'x')).toEqual({ tileX: 4, tileY: 7, edge: 'north' });
+    const rightOfMidline = { x: inTile(4, 6, 0.5, 0.5).x + 1, y: inTile(4, 6, 0.5, 0.5).y };
+    expect(pickEdgeOnAxis(rightOfMidline, 'y')).toEqual({ tileX: 5, tileY: 6, edge: 'west' });
+  });
+});

@@ -1352,7 +1352,22 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * `hud.security.hire-unassigned` immediately below. The clamp sentence above
    * is left standing because it is still why the two are two keys.
    */
-  'hud.security.hire-hint': 'Costs {total} now and {wage} a day in wages.',
+  /*
+   * **"including today" is the owner's ruling of 2026-09-03, and it exists
+   * because this sentence was false on the first press of a new game.**
+   * `src/simulation/staff/hiring.ts` says in its own words that "a guard
+   * engaged at any point during a day costs two days' wage for that day",
+   * so hiring one guard cost 160 on day one -- measured, 25,000 -> 24,920 at
+   * the press and -> 24,840 at tick 2,408, with `DAY_LENGTH_TICKS` 2,400 and
+   * no other command sent (issue #868). The sentence read as 80 today and 80
+   * tomorrow.
+   *
+   * Put to the owner as three shapes: pro-rate the charge so the old sentence
+   * becomes true, replace the sentence, or add the two words that make it
+   * true. They chose the third, which leaves the mechanic alone -- so this is
+   * a wording change and not a balance one, deliberately.
+   */
+  'hud.security.hire-hint': 'Costs {total} now and {wage} a day in wages, including today.',
   /*
    * The same sentence, on the other control that spends money, and byte-identical
    * to `hud.build.buy-shortfall` above -- see that entry for the ruling, the date,
@@ -1464,6 +1479,35 @@ const authoredMessages: Readonly<Record<string, string>> = {
    */
   'hud.security.roster-wage-bill': '{total} a day',
   'hud.security.roster-dismiss': 'Dismiss',
+  /*
+   * The confirmation the armed dismiss control asks for (the owner's ruling of
+   * 2026-09-03 on issue #877, in their words and unedited).
+   *
+   * The ruling that supplied it also settled the mechanism, and it settled it
+   * with **both** options rather than one: asked whether a dismissal should get
+   * a settle window on the row or a confirmation step, the owner answered
+   * *"Jedno i drugie"* -- one and the other. So the row cannot be re-pointed
+   * under the player *and* the press that sacks somebody is the second one.
+   *
+   * **It does not fit the 900x600 clamp, and the box gives way rather than the
+   * sentence.** `@media (max-height: 700px)` in `src/ui/hud/hud.css` gives every
+   * `.hud-staff__note` `-webkit-line-clamp: 1`, and at that viewport this
+   * sentence is two lines -- the clause the clamp would cut is *"and they do not
+   * come back"*, which is the half that makes it a warning rather than a
+   * restatement of the button. `.hud-staff__dismiss-confirm` is exempted there,
+   * on exactly the terms `.hud-staff__hire-note` was exempted on when the same
+   * thing happened to the owner's hire sentence (issue #884): a whole clause or
+   * nothing, and the sentence is never the thing that is shortened to fit.
+   *
+   * `{name}` is filled with the row's own label, verbatim -- what the player
+   * read on the row they pressed. It is not a personal name, because a staff
+   * member has none: `HudStaffRosterRowViewModel` carries an entity id, a role
+   * key and a status key, so two guards doing the same thing render the same
+   * row and this sentence names them the same way. That is a real limit of the
+   * read model rather than of this string, it is reported as one, and no wording
+   * is invented here to paper over it.
+   */
+  'hud.security.roster-dismiss-confirm': 'Dismiss {name}? Their wage stops and they do not come back.',
   'hud.security.roster-hint': 'A dismissed staff member leaves the prison for good, and their wage stops.',
 
   // The Staff panel's coverage block (ADR 0048). `hud.security.coverage-summary`
@@ -1594,7 +1638,51 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // second state still has none, and authoring one is the owner's under
   // `AGENTS.md`'s fourth exclusion -- the concern was put to them inside this
   // option's own description before they chose it, and they chose it.
+  //
+  // **That second state now has its own sentence, ruled by the owner later the
+  // same day**: `hud.regime.roster-emptied` below. The paragraph above is kept
+  // rather than rewritten (`docs/AGENT_WORKFLOW.md` §4) because what it
+  // records is still exactly right about *this* key -- this sentence is true of
+  // one state only, and the fix was a second sentence rather than a wider
+  // claim in this one.
   'hud.regime.roster-empty': 'No prisoners yet. Build a cell with a bed to take somebody in.',
+  // **The owner ruled this sentence on 2026-09-03**, shown it among candidates
+  // and choosing it in their own words: *"This prison is empty. Take somebody
+  // in to start again."* It is the sentence the key above has never been able
+  // to carry: a prison that admitted people and discharged all of them drew
+  // **no line at all** before this, because `regime-panel.ts` gated the box on
+  // `everAdmitted` being false and there was no true thing to put there.
+  //
+  // Same two-part shape as the key above, as ruled -- the state, then the one
+  // thing a player can do about it -- and it deliberately does *not* say
+  // "build a cell": in this state the cells already exist, which is the whole
+  // reason the other sentence could not be reused.
+  //
+  // **What the second half promises, and what makes the promise good.** "Take
+  // somebody in" is the Admit control, and two things had to be true before
+  // this sentence could ship. It has to exist wherever the player goes looking:
+  // it is on the **Overview** tab, which `hud-state.ts` makes the default, and
+  // `intake-panel.ts`'s own header records that placement as chosen so that
+  // "the control is the first thing a player sees rather than something to go
+  // looking for". And a press that cannot succeed has to *say so* rather than
+  // do nothing: since #869 it does -- `hud.refusal.admit-prisoner-no-room`
+  // reads *"Nobody was admitted -- this prison has no room to hold anybody."*
+  // Without that refusal this sentence would have been an instruction that can
+  // silently fail, which is precisely the class `AGENTS.md`'s fourth exclusion
+  // reserves to the owner, so it is recorded here as a dependency and not as a
+  // coincidence.
+  //
+  // **One thing this sentence does not solve, recorded rather than hidden.**
+  // The sentence is drawn on the **Regime** tab and the control it names is on
+  // **Overview**, so a player reads the instruction on one tab and carries it
+  // out on another. That is not new and not this ruling's doing -- the key
+  // above has the same shape, and the cell it tells a player to build is on the
+  // **Build** tab -- but under the owner's standing directive that the game be
+  // easy to play rather than a set of hidden features, a sentence that points
+  // at a control the player cannot see while reading it is worth naming. Filed
+  // rather than fixed here: fixing it means either moving a control or naming a
+  // tab in copy, and both are the owner's.
+  'hud.regime.roster-emptied': 'This prison is empty. Take somebody in to start again.',
 
   // What a refused control says (issue #207). Four comments in `src/` claimed
   // the HUD reported a refusal "on the control that was pressed" while the
@@ -1642,6 +1730,22 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.refusal.zone-room': 'The room was not designated — the request was refused.',
   'hud.refusal.unzone-room': 'Nothing was removed — the request was refused.',
   'hud.refusal.admit-prisoner': 'Nobody was admitted — the request was refused.',
+  /*
+   * **The owner's ruling of 2026-09-03.** Until it, a refused Admit said only
+   * the generic line above while the real reason went to `console.warn` --
+   * `src/main.ts` threw a plain `Error` whose message is diagnostic English
+   * that ADR 0011 says deliberately never reaches a player, so nothing on
+   * screen named the missing thing (issue #869, whose first filing prescribed
+   * the wrong fix and was corrected).
+   *
+   * Chosen over "there is no bed to put anybody in" and over "build a cell
+   * with a bed first": the first names the object rather than the state, and
+   * the second is an instruction where every other refusal here describes a
+   * state. **The em dash is this file's own punctuation for a refusal** and
+   * matches every sibling; the ruling was written with a hyphen only because
+   * the question that carried it was.
+   */
+  'hud.refusal.admit-prisoner-no-room': 'Nobody was admitted — this prison has no room to hold anybody.',
   'hud.refusal.cancel-build-order': 'The order is still queued — the request was refused.',
   // The money is the point, so the sentence leads with it: this line is painted
   // when the host refuses before submitting, which for a cancellation means

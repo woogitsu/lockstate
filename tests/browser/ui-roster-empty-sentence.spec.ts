@@ -44,14 +44,20 @@ import { expect, test } from './network-changed-fixture';
  *
  * ## What it does not cover
  *
- * **The prison that emptied out.** `regime-panel.ts` draws this line only
- * while `everAdmitted` is false (issue #506), and the ruled sentence is false
- * of a prison that held prisoners and discharged the last of them -- there the
- * cell it tells the player to build is already standing. That state draws no
- * sentence today, it is owed its own, and authoring one is the owner's under
- * `AGENTS.md`'s fourth exclusion. `ui-shell.spec.ts`'s *"a prison everybody
- * has left draws no false sentence about non-admission"* is what holds the
- * panel to drawing nothing there in the meantime.
+ * **The prison that emptied out -- no longer uncovered, and no longer this
+ * file's gap.** This paragraph read: *"That state draws no sentence today, it
+ * is owed its own, and authoring one is the owner's under `AGENTS.md`'s fourth
+ * exclusion."* The owner ruled it on 2026-09-03 -- *"This prison is empty.
+ * Take somebody in to start again."* -- so `regime-panel.ts` no longer gates
+ * the box on `everAdmitted` at all; it gates the *wording* on it, and an empty
+ * roster always draws a line. The companion gate is
+ * `ui-shell.spec.ts`'s *"a prison everybody has left says so in its own
+ * sentence, not the new-prison one"*, which was rewritten in the same commit
+ * and now asserts both directions: the new-prison sentence absent, the
+ * emptied-out sentence present. **This file is still only about the
+ * never-admitted state**, and deliberately so -- what it uniquely proves is
+ * that the state a real new game starts in is reachable in play, which a
+ * hand-fed view model cannot say.
  */
 
 /** The application entry, as `app-shell.spec.ts` names it. */
