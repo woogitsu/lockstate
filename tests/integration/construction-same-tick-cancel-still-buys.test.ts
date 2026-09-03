@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { PROCURABLE_MATERIALS } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
-import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
+import { TREASURY_STARTING_BALANCE_MINOR_UNITS, justInTimePurchaseOrderId } from '../../src/simulation/economy';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
 
 /**
  * **Issue #861: six build orders placed, nothing bought.**
@@ -198,5 +199,59 @@ describe('a cancel at the same tick must not make the next order look like a rep
     expect(runtime.treasury.balanceMinorUnits, 'and the passes inside the flight bought nothing more').toBe(afterTwo);
     expect(runtime.procurement.pendingDeliveries, 'still two deliveries, not a queue of them').toHaveLength(2);
     expect(runtime.justInTimeMaterials.heldOrInFlightOf(BRICK)).toBe(2 * WALL_REQUIREMENT.quantity);
+  });
+
+  it('and the session it repairs can still be saved, and its deliveries still cancelled', () => {
+    /*
+     * **The half of this fix that a green suite did not catch, and the reason
+     * this case reaches for a save and a command rather than for a figure.**
+     * The purchase whose id collided now carries a suffix, and a purchase order
+     * id is an `identifierSchema` in two places that both reach a player:
+     * `economySectionSchema`'s `procurement.pending[].orderId`, so an id that
+     * fails it cannot be **saved**, and `CancelMaterialPurchase.orderId`, so an
+     * id that fails it cannot be **cancelled**. The first draft of this fix
+     * suffixed with `#`, which that schema rejects; every test above was green
+     * on it, because none of them saved the session or cancelled the delivery.
+     *
+     * So this case takes #861's own sequence, checks that it really did have to
+     * disambiguate an id -- otherwise it would prove nothing -- and then puts
+     * that id through both gates.
+     */
+    const runtime = createNewSimulationRuntime(SEED);
+    pressWhilePaused(runtime, wall('order-1', 3));
+    pressWhilePaused(runtime, wall('order-2', 4));
+    pressWhilePaused(runtime, { type: 'CancelBuildOrder', orderId: 'order-2' });
+    pressWhilePaused(runtime, wall('order-3', 5));
+
+    /*
+     * Which delivery is the disambiguated one is read as *"not one of the base
+     * ids"* rather than by looking for the separator, so this case cannot be
+     * satisfied by a separator it agrees with: any suffix at all, of any shape,
+     * lands outside this set and goes through both gates below.
+     */
+    const baseIds = new Set<string>();
+    for (let inFlightBefore = 0; inFlightBefore <= 3 * WALL_REQUIREMENT.quantity; inFlightBefore += 1) {
+      baseIds.add(justInTimePurchaseOrderId(runtime.kernel.tick, BRICK, inFlightBefore));
+    }
+    const disambiguated = runtime.procurement.pendingDeliveries.filter((delivery) => !baseIds.has(delivery.orderId));
+    expect(disambiguated, 'this sequence must actually reach a collision, or the case below proves nothing').toHaveLength(1);
+    const collidedId = disambiguated[0]!.orderId;
+
+    /* Gate one: the save. `captureSessionSnapshot` validates against the real schema. */
+    const bundle = captureSessionSnapshot(runtime);
+    const restored = restoreSimulationRuntime(bundle, SEED).runtime;
+    expect(
+      restored.procurement.pendingDeliveries.map((delivery) => delivery.orderId),
+      'the restored session holds the same deliveries, suffix and all',
+    ).toEqual(runtime.procurement.pendingDeliveries.map((delivery) => delivery.orderId));
+
+    /* Gate two: the command. A delivery a player cannot cancel is a control that lies. */
+    const balanceBefore = restored.treasury.balanceMinorUnits;
+    pressWhilePaused(restored, { type: 'CancelMaterialPurchase', orderId: collidedId });
+    expect(
+      restored.procurement.pendingDeliveries.map((delivery) => delivery.orderId),
+      'the delivery the player named is the one that left',
+    ).not.toContain(collidedId);
+    expect(restored.treasury.balanceMinorUnits, 'and the refund landed').toBeGreaterThan(balanceBefore);
   });
 });

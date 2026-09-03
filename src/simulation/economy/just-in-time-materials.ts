@@ -99,7 +99,7 @@ export function isJustInTimePurchaseOrderId(orderId: string): boolean {
  * ## What separates two purchases now, and why it is not the build order's id
  *
  * **`attempt`: the first free id in the sequence
- * `<base>`, `<base>#1`, `<base>#2`, ...**, chosen by
+ * `<base>`, `<base>/1`, `<base>/2`, ...**, chosen by
  * `JustInTimeMaterialsService.freeJustInTimePurchaseOrderId` against the
  * pending deliveries themselves. The base is unchanged, so the id a purchase
  * carries is the same one it carried before in every case that never collided;
@@ -147,11 +147,26 @@ export function justInTimePurchaseOrderId(
 ): string {
   const base = `${JUST_IN_TIME_ORDER_ID_PREFIX}${tick}:${itemId}:${inFlightBefore}`;
   /*
-   * `attempt === 0` is the whole id and not `<base>#0`, deliberately: every id
+   * `attempt === 0` is the whole id and not `<base>/0`, deliberately: every id
    * that never collided is unchanged, so no save, no `data-delivery` attribute
    * and no pinned string moves for a purchase this defect never touched.
+   *
+   * **`/` and not `#`, and this is not cosmetic.** A purchase order id is an
+   * `identifierSchema` (`src/simulation/protocol/types.ts`) in two places that
+   * both reach a player: `economySectionSchema`'s `procurement.pending[].orderId`,
+   * so an id that fails it cannot be **saved**, and
+   * `CancelMaterialPurchase.orderId`, so an id that fails it cannot be
+   * **cancelled** -- the command is refused before it reaches the kernel. That
+   * regex is `/^[A-Za-z0-9][A-Za-z0-9._:/-]*$/`, which admits `/` and rejects
+   * `#`; the first draft of this fix used `#` and would have made the very
+   * session it repairs unsaveable. Pinned by
+   * `tests/unit/construction-just-in-time-materials.test.ts` against
+   * `identifierSchema` itself rather than against a copy of the character set,
+   * and measured end to end through a save round trip and a real
+   * `CancelMaterialPurchase` in
+   * `tests/integration/construction-same-tick-cancel-still-buys.test.ts`.
    */
-  return attempt === 0 ? base : `${base}#${attempt}`;
+  return attempt === 0 ? base : `${base}/${attempt}`;
 }
 
 /**
