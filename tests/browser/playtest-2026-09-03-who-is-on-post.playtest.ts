@@ -1,6 +1,15 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { buy, currentTick, installTee, openApp, panelText, sentCommands, tab } from './playtest-harness';
+import {
+  buildAndPopulate,
+  buy,
+  currentTick,
+  installTee,
+  openApp,
+  panelText,
+  sentCommands,
+  tab,
+} from './playtest-harness';
 
 /**
  * **Who is on post, what the prison was charged for them, and what it is told
@@ -203,11 +212,12 @@ async function coverage(page: Page): Promise<CoverageReading> {
     );
     return {
       tone: block.dataset['tone'] ?? '',
-      blockHidden: block.hidden || block.getClientRects().length === 0,
+      blockHidden: block.hidden === true || block.getClientRects().length === 0,
       summary: block.querySelector<HTMLElement>('.hud-staff__coverage-summary')?.innerText.trim() ?? '',
       badge: block.querySelector<HTMLElement>('.ui-badge')?.innerText.trim() ?? '',
       hint: notes.map((node) => node.innerText.trim()).join(' | '),
-      consequenceHidden: consequence === null ? true : consequence.hidden || consequence.getClientRects().length === 0,
+      consequenceHidden:
+        consequence === null ? true : consequence.hidden === true || consequence.getClientRects().length === 0,
       consequenceText: consequence === null ? 'ABSENT' : (consequence.textContent ?? ''),
       sentenceVisible: (block.innerText ?? '').includes(sentence),
     };
@@ -239,7 +249,7 @@ async function refusalBand(page: Page): Promise<{ hidden: boolean; text: string;
     const band = document.querySelector<HTMLElement>('.hud__refusal');
     if (band === null) return { hidden: true, text: 'ABSENT', source: null };
     return {
-      hidden: band.hidden || band.getClientRects().length === 0,
+      hidden: band.hidden === true || band.getClientRects().length === 0,
       text: (band.innerText ?? '').replace(/\s+/g, ' ').trim(),
       source: band.getAttribute('data-source'),
     };
@@ -349,7 +359,7 @@ test.describe('who is on post', () => {
     const hired = await pollUntil(
       page,
       async () => await rawCounts(page),
-      (counts) => (counts?.['staff'] ?? 0) === 1,
+      (counts) => Number(counts?.['staff'] ?? 0) === 1,
       20_000,
     );
     note(`the press sent: ${JSON.stringify((await sentCommands(page)).slice(commandsBeforeHire))}`);
@@ -382,14 +392,29 @@ test.describe('who is on post', () => {
       await page.locator('.hud-intake__admit').click();
       await page.waitForTimeout(250);
     }
+    /*
+     * **This is where the first run of this file found something, and it is
+     * kept exactly as it was rather than repaired into a working step.**
+     * `IntakeSystem` refuses an admission into a prison with no accommodation,
+     * so a prison that has not been built cannot be populated -- the band and
+     * the console line below are the reading. The rung this act was written to
+     * reach is reached instead by the third test, which builds a cell first.
+     */
+    note(`refusal band after three Admit presses: ${JSON.stringify(await refusalBand(page))}`);
     await tab(page, 'security').click();
     const withPrisoners = await pollUntil(
       page,
       async () => await rawCounts(page),
-      (counts) => (counts?.['prisoners'] ?? 0) >= 3,
-      60_000,
+      (counts) => Number(counts?.['prisoners'] ?? 0) >= 3,
+      20_000,
     );
-    note(`three admitted after ${String(withPrisoners.ms)}ms: ${JSON.stringify(withPrisoners.value)}`);
+    note(`prisoners after ${String(withPrisoners.ms)}ms: ${JSON.stringify(withPrisoners.value)}`);
+    note(
+      withPrisoners.satisfied
+        ? 'three prisoners are in.'
+        : 'FINDING: nobody was admitted. A prison with no cell cannot hold anybody, so this route'
+          + ' cannot reach the unguarded rung at all -- see the third test.',
+    );
 
     // With one guard hired and prisoners in the sector, this is the `covered`
     // or `understaffed` rung -- either way the sentence must not be readable.
@@ -397,7 +422,7 @@ test.describe('who is on post', () => {
       page,
       async () => await coverage(page),
       (reading) => reading.summary !== '' && reading.summary !== '0 of 0',
-      60_000,
+      20_000,
     );
     note(`coverage with 3 prisoners and 1 guard after ${String(guardedPoll.ms)}ms: ${JSON.stringify(guardedPoll.value)}`);
     note(`COVERAGE chip: ${JSON.stringify(await chip(page, 'coverage'))}`);
@@ -433,7 +458,7 @@ test.describe('who is on post', () => {
     const fired = await pollUntil(
       page,
       async () => await rawCounts(page),
-      (counts) => (counts?.['staff'] ?? -1) === 0,
+      (counts) => Number(counts?.['staff'] ?? -1) === 0,
       30_000,
     );
     note(`the press sent: ${JSON.stringify((await sentCommands(page)).slice(commandsBeforeFire))}`);
@@ -460,7 +485,7 @@ test.describe('who is on post', () => {
       page,
       async () => await coverage(page),
       (reading) => reading.tone === 'danger',
-      60_000,
+      20_000,
     );
     note(`coverage after firing the only guard, after ${String(unguardedPoll.ms)}ms: ${JSON.stringify(unguardedPoll.value)}`);
     note(`COVERAGE chip: ${JSON.stringify(await chip(page, 'coverage'))}`);
@@ -485,7 +510,7 @@ test.describe('who is on post', () => {
       page,
       async () => await coverage(page),
       (reading) => !reading.sentenceVisible && reading.tone !== 'danger',
-      60_000,
+      20_000,
     );
     note(`the sentence left after ${String(cleared.ms)}ms / ${String(cleared.polls)} polls: ${JSON.stringify(cleared.value)}`);
     note(`counts now: ${JSON.stringify(await rawCounts(page))}`);
@@ -565,6 +590,154 @@ test.describe('who is on post', () => {
       band.satisfied
         ? `WHAT THE PLAYER IS TOLD: ${JSON.stringify(band.value.text)} (data-source ${JSON.stringify(band.value.source)}).`
         : 'FINDING: a refused hire produced NO band at all. The player pressed Hire and the game said nothing.',
+    );
+
+    expect(true).toBe(true);
+  });
+});
+
+/**
+ * **The rung PR #857's sentence was written for, reached by building a prison
+ * rather than by injecting a view model.**
+ *
+ * `tests/browser/ui-shell.spec.ts` already gates the sentence at five
+ * viewports -- and it gets there through
+ * `window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0,
+ * shortage: 2 })`, a hand-written view model pushed straight at the panel. So
+ * what is proven today is that the panel renders the sentence when it is
+ * *told* `assigned: 0`. What nobody has measured is whether a real session
+ * ever tells it that, how long the telling takes, and whether one press of
+ * the button the block points at takes it away.
+ *
+ * The route is the whole difference: `SafetyCoverageSystem` (order 275,
+ * `intervalTicks` 10) walks after `DeploymentSystem` (270),
+ * `DeploymentSystem.getCoverageReport` is what `projectStaff` sums, the sum
+ * crosses on a `hud/staff` **pull** that `refreshStaffCoverage`
+ * (`src/main.ts:1581`) issues only while the Security tab is open and only on
+ * the clock heartbeat -- and `resolveOccupancyScaledGuardCount` answers `0`
+ * for a sector holding nobody, so the rung does not exist until somebody is
+ * admitted. Five things in series, none of them exercised by a pushed view
+ * model.
+ */
+test.describe('the unguarded rung, reached by playing', () => {
+  test('a prison with prisoners and no guard says the sentence, and one hire takes it away', async ({ page }) => {
+    await installTee(page);
+    await openApp(page);
+
+    // A cell, four beds, four prisoners and **no guards**: the first run of
+    // this file measured that a prison with no accommodation refuses every
+    // admission, so the population has to be housed before the requirement
+    // this act is about can exist at all.
+    await buildAndPopulate(page, { beds: 4, admits: 4, guards: 0, label: 'unguarded' });
+
+    await tab(page, 'security').click();
+    note('=== a built, populated, unstaffed prison ===');
+    note(`counts: ${JSON.stringify(await rawCounts(page))}`);
+
+    const appeared = await pollUntil(
+      page,
+      async () => await coverage(page),
+      (reading) => reading.tone === 'danger',
+      120_000,
+    );
+    note(`the block reached the danger rung after ${String(appeared.ms)}ms / ${String(appeared.polls)} polls: ${JSON.stringify(appeared.value)}`);
+    note(`COVERAGE chip: ${JSON.stringify(await chip(page, 'coverage'))}`);
+    note(`census: ${JSON.stringify(await rawCounts(page))}`);
+    note(`the whole staff panel a player reads:\n${await panelText(page, '.hud-staff')}`);
+
+    if (!appeared.satisfied) {
+      note('FINDING: a populated prison with nobody hired never reached the unguarded rung in 120s.');
+      expect(true).toBe(true);
+      return;
+    }
+
+    note(
+      appeared.value.consequenceText.trim() === SENTENCE
+        ? `THE SENTENCE IS THE OWNER'S WORDING, byte for byte: ${JSON.stringify(appeared.value.consequenceText)}`
+        : `SENTENCE MISMATCH: rendered ${JSON.stringify(appeared.value.consequenceText)} against ${JSON.stringify(SENTENCE)}.`,
+    );
+    note(
+      appeared.value.sentenceVisible
+        ? 'And it is in the block’s rendered text, so it is laid out rather than merely present.'
+        : 'FINDING: the sentence is in the DOM and NOT in the block’s rendered text.',
+    );
+    note(`the hint beside it: ${JSON.stringify(appeared.value.hint)}`);
+    note(`the summary: ${JSON.stringify(appeared.value.summary)}; badge ${JSON.stringify(appeared.value.badge)}`);
+
+    // ---- one press, and does it go? ---------------------------------------
+    note('=== one hire, which is what the block tells the player to do ===');
+    const fundsBefore = await funds(page);
+    const tickBefore = await currentTick(page);
+    await page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]').first().click();
+    await page.locator('.hud-staff__hire').click();
+
+    /*
+     * Two separate things to time, and conflating them is how a reading here
+     * would be wrong: the guard is hired at once (`staff` goes to 1) and is
+     * *posted* only on `DeploymentSystem`'s next pass, so `assigned` -- and
+     * therefore the rung -- moves later. The window between them is a prison
+     * paying a guard and being told nobody is kept safe, which is honest, and
+     * being told to *hire one more*, which is not what it needs.
+     */
+    const hired = await pollUntil(page, async () => await rawCounts(page), (counts) => Number(counts?.['staff'] ?? 0) >= 1, 30_000);
+    note(`staff reached 1 after ${String(hired.ms)}ms`);
+    const midway = await coverage(page);
+    note(`the block immediately after the hire landed: ${JSON.stringify(midway)}`);
+
+    const left = await pollUntil(
+      page,
+      async () => await coverage(page),
+      (reading) => !reading.sentenceVisible,
+      120_000,
+    );
+    note(`the sentence left after ${String(left.ms)}ms / ${String(left.polls)} polls: ${JSON.stringify(left.value)}`);
+    note(`ticks across that window: ${String((await currentTick(page)) - tickBefore)}`);
+    note(`FUNDS ${String(fundsBefore)} -> ${String(await funds(page))}`);
+    note(`census: ${JSON.stringify(await rawCounts(page))}`);
+    note(`COVERAGE chip: ${JSON.stringify(await chip(page, 'coverage'))}`);
+    note(
+      left.satisfied
+        ? 'ONE PRESS CLEARED IT, which is what the block promises.'
+        : 'FINDING: the sentence outlived a successful hire by more than 120s.',
+    );
+
+    // ---- and does it come back? -------------------------------------------
+    note('=== dismiss the only guard again: does the sentence return? ===');
+    await openRosterFold(page);
+    await page.waitForTimeout(400);
+    const rows = await rosterRows(page);
+    note(`payroll rows: ${JSON.stringify(rows)}`);
+    if (rows.length === 0) {
+      note('FINDING: no roster row to dismiss, so the return trip cannot be played.');
+      expect(true).toBe(true);
+      return;
+    }
+    const beforeFire = await rawCounts(page);
+    const beforeFireFunds = await funds(page);
+    await page
+      .locator(`.hud-staff__roster .hud-staff__held-row[data-staff="${rows[0]!.staff}"]`)
+      .getByRole('button', { name: 'Dismiss' })
+      .click();
+    const returned = await pollUntil(
+      page,
+      async () => await coverage(page),
+      (reading) => reading.sentenceVisible,
+      120_000,
+    );
+    note(`the sentence returned after ${String(returned.ms)}ms / ${String(returned.polls)} polls: ${JSON.stringify(returned.value)}`);
+    const afterFire = await rawCounts(page);
+    note(`FUNDS ${String(beforeFireFunds)} -> ${String(await funds(page))}`);
+    note(
+      `treasury across the Dismiss press: ${String(Number(afterFire?.['treasuryMinorUnits'] ?? 0) - Number(beforeFire?.['treasuryMinorUnits'] ?? 0))}`
+        + ` -- ADR 0070 decision 3 says a dismissal moves no money, in a populated prison too.`,
+    );
+    note(`wage bill: ${String(beforeFire?.['dailyWageBillMinorUnits'])} -> ${String(afterFire?.['dailyWageBillMinorUnits'])}`);
+    note(`census: ${JSON.stringify(afterFire)}`);
+    note(`the whole staff panel:\n${await panelText(page, '.hud-staff')}`);
+    note(
+      returned.satisfied
+        ? 'IT COMES BACK, so the sentence tracks the rung in both directions.'
+        : 'FINDING: firing the last guard did not bring the sentence back within 120s.',
     );
 
     expect(true).toBe(true);
