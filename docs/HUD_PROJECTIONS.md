@@ -1279,7 +1279,12 @@ decision about what to build next.
     the income line: ADR 0017 decision 3, on decision 6's basis — the state
     pays per prisoner-day, accrued per occupied place — at 300 minor units a
     prisoner-day less what unmet needs withhold, credited once per in-game day
-    on its last tick. The second is a cancelled purchase's refund
+    on its last tick. **Unmet needs withhold nothing as of 2026-09-03**, the
+    repository owner having suspended the share at `0` while they play and
+    judge difficulty ([ADR 0064](./adr/0064-what-an-unmet-need-costs-a-prison.md)'s
+    amendment of that date carries their words); the clause is kept rather than
+    cut because the arithmetic it describes is unchanged and only its rate is
+    (`docs/AGENT_WORKFLOW.md` §4). The second is a cancelled purchase's refund
     (`ProcurementSystem.cancel`), which is not an income line and never was.
 
     **The third arrived with [ADR 0075](./adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)

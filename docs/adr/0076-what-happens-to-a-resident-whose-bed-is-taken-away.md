@@ -473,6 +473,18 @@ charge for becomes rare, which weakens the case for it.
   recycled prison now earns one resident's income where it earned three, and the
   40 minor units still separating it from the control are an unmet-need
   withholding that file derives in place and that has nothing to do with places.
+  **Corrected 2026-09-03: there is no 40 any more.** The repository owner
+  suspended the withheld share at `0` while they play and judge difficulty —
+  their ruling, in their words, is in
+  [ADR 0064](./0064-what-an-unmet-need-costs-a-prison.md)'s dated amendment of
+  that date — so what separates the two arms is now **130 minor units of
+  materials alone**, two planks at 65, and the recycled arm sits below the
+  control rather than above it. The sentence before this one is kept rather
+  than rewritten because the 40 it names is what the withholding does to this
+  same pair of prisons and will do again if the rate returns
+  (`docs/AGENT_WORKFLOW.md` §4: mark both directions); what it says about
+  **places** — that the withholding had nothing to do with them — is unaffected
+  either way, and is the half this bullet actually turns on.
   **What is outstanding is therefore B alone**, together with the gate this ADR
   made non-optional for it: one refund per order, the allocation emptied in the
   same step, and a conservation test over `Remove` → `Undo` and

@@ -885,6 +885,16 @@ export const statusCountsSchema = z
      * that particular 40, and a single percentage cannot say which rung the
      * missing ones are on.
      *
+     * **There are no 40s to attribute today, 2026-09-03.** The owner suspended
+     * the withheld share at `0` while they play and judge difficulty -- the
+     * ruling is in `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`'s own
+     * docblock -- so no grant is smaller than the headline rate for want of a
+     * guard. The paragraph above is kept as the reason these three counts have
+     * the shape they have, and the shape is unaffected: `SafetyCoverageSystem`
+     * still decides whether `safety` is unmet, the counts still say which rung
+     * the uncovered are on, and a restored rate needs no change to this payload
+     * (`docs/AGENT_WORKFLOW.md` §4: mark both directions).
+     *
      * They sum to the population **standing in a sector**, which in the
      * shipped single-sector topology is every living prisoner on owned land
      * (ADR 0048 decision 1) -- not necessarily to `prisoners` above, which
