@@ -10,6 +10,13 @@ entry point, `supabase/migrations/`, deploy configuration, and any
 player-visible promise the code does not keep). Read it before deciding whether
 a question is yours to answer.
 
+**The first of those four was released on 2026-09-03, narrowly.** The owner
+authorised the one `main` and the one Worker module that carry ADR 0046's
+telemetry ingest, in their own words and dated, in that section. Nothing else
+about server-side execution moved: a second route or any server behaviour that
+is not that ingest is still theirs, and so are the other three exclusions —
+including the migration the ingest needs before it can store anything.
+
 Additional Claude-specific rules:
 - Use repository docs and ADRs as the source of truth.
 - Prefer small reviewable commits tied to GitHub Issues.

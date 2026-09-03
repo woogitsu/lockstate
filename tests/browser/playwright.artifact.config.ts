@@ -58,10 +58,30 @@ const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
  * is the same line a worktree's pnpm abort used to produce and reads like a
  * broken harness. This says which command was not run.
  */
-const distIndex = resolve(repositoryRoot, 'dist', 'index.html');
-if (!existsSync(distIndex)) {
+/*
+ * **Two layouts, because a server entry point moved the client.** Until
+ * `wrangler.jsonc` gained a `main`, the production build put the client at
+ * `dist/index.html`. With a Worker entry present, Cloudflare's Vite plugin
+ * splits the output per environment -- the client to `dist/client/` and the
+ * Worker to `dist/<worker name>/` -- and this check went red naming a path the
+ * build had stopped writing, with the whole suite failing before its one spec
+ * ran. `scripts/verify-cloudflare-build.mjs` already knew (it prints
+ * "Verified Cloudflare production output: dist/<name>/wrangler.json ->
+ * dist/client"); this file did not, which is the gap.
+ *
+ * Both are accepted rather than the new one substituted, so this suite runs on
+ * a tree with a Worker and on one without. The error below names every path it
+ * tried, because "No production build at <one path>" was true and unhelpful:
+ * there *was* a production build, three directories over.
+ */
+const distCandidates = [
+  resolve(repositoryRoot, 'dist', 'client', 'index.html'),
+  resolve(repositoryRoot, 'dist', 'index.html'),
+];
+const distIndex = distCandidates.find((candidate) => existsSync(candidate));
+if (distIndex === undefined) {
   throw new Error(
-    `No production build at ${distIndex}. This suite runs the built client, so it has to be built first: \`pnpm build\` (or \`node scripts/cloudflare-task.mjs build production\`). It deliberately does not build one itself -- a suite that builds its own subject can pass on a tree nobody deployed.`,
+    `No production build at any of ${distCandidates.join(' or ')}. This suite runs the built client, so it has to be built first: \`pnpm build\` (or \`node scripts/cloudflare-task.mjs build production\`). It deliberately does not build one itself -- a suite that builds its own subject can pass on a tree nobody deployed.`,
   );
 }
 

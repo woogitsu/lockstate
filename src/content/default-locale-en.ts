@@ -1096,6 +1096,46 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.buy-submit': 'Buy {count} × {material} · {total}',
   'hud.build.buy-hint': 'Arrives while the clock runs, into the stock a build draws from.',
   /*
+   * **The sentence a refused Buy press shows, and it is the owner's own.**
+   *
+   * Authored 2026-09-03. It was put to the owner as a clickable choice among
+   * four candidate wordings, and they chose this one; the value below is their
+   * chosen string verbatim, em dash included. No agent authored, shortened or
+   * re-punctuated any part of it -- `AGENTS.md`'s fourth exclusion reserves a
+   * player-facing sentence to the owner, and issue #772 reserved *this*
+   * sentence in those words: *"the half that is a decision, and so is not an
+   * agent's to take: what the control says"*.
+   *
+   * It closes the wording half of #772 on both controls that spend money. The
+   * mechanical half shipped in PR #799 (Buy) and PR #807 (Hire) and said so in
+   * its own comments -- *"this is the mechanical half only ... naming what
+   * stops and what would lift it is new player-facing copy"* -- so from this
+   * ruling the control both advises against the press *and* says what would
+   * lift it, which is the pair #772 asked for.
+   *
+   * `{amount}` is the **shortfall**: how much more money the prison needs
+   * before this press goes through, `charge - (balance - floor)`, from
+   * `AffordabilityVerdict.shortfallMinorUnits` (`src/ui/affordability.ts`).
+   * Deliberately not the price -- `hud.build.buy-submit` one line up already
+   * states that -- and not the balance, which `hud.status.funds` states. The
+   * three are three different numbers in the state a player meets this
+   * sentence in, which is what `tests/browser/ui-refusal-shortfall.spec.ts`
+   * measures rather than assumes.
+   *
+   * No currency, on `hud.build.buy-submit`'s own terms (#96 named none), and
+   * formatted through the same `formatNumber` every other money figure on this
+   * HUD goes through -- there is no second formatter.
+   *
+   * **`hud.security.hire-shortfall` carries this exact text**, because the
+   * owner ruled one sentence and there are two controls that spend money. Two
+   * keys and not one, on this file's standing rule for that -- *"a key here is
+   * a call site and never a string pool"*, argued at the four insolvency
+   * refusals below, with `hud.build.step-up` / `hud.rooms.step-up` as the
+   * precedent. `tests/unit/ui-hud-refusal-shortfall.test.ts` is what keeps the
+   * two identical.
+   */
+  'hud.build.buy-shortfall': 'Not enough money — you need {amount} more.',
+  /*
    * The queue (#348, and the surface that finally gives `CancelBuildOrder` a
    * producer).
    *
@@ -1314,6 +1354,18 @@ const authoredMessages: Readonly<Record<string, string>> = {
    */
   'hud.security.hire-hint': 'Costs {total} now and {wage} a day in wages.',
   /*
+   * The same sentence, on the other control that spends money, and byte-identical
+   * to `hud.build.buy-shortfall` above -- see that entry for the ruling, the date,
+   * and why there are two keys for one authored sentence.
+   *
+   * `{amount}` is the shortfall against what **one press** costs: the engagement
+   * fee `staffHireCostMinorUnits` charges, which is what `src/main.ts` judges a
+   * `hire-staff` press by. Not the daily wage the line above prices, and not the
+   * two added together -- a sentence that named tomorrow's bill would be telling
+   * the player they are short of money for a press the simulation accepts.
+   */
+  'hud.security.hire-shortfall': 'Not enough money — you need {amount} more.',
+  /*
    * The half of the old hint that the owner's approved sentence displaced, back
    * as a key and a line of its own (issue #639 ruling 2, approved 2026-08-30).
    *
@@ -1518,10 +1570,31 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.regime.roster-unnamed': 'Prisoner {id}',
   'hud.regime.roster-heading': 'Heading to {activity}',
   'hud.regime.roster-more': 'and {count} more',
-  // Not "No prisoners": an empty prison is the state every new game starts in
-  // and the Overview tab has the control that ends it, so the line says where
-  // to go rather than restating the count above it.
-  'hud.regime.roster-empty': 'Nobody has been admitted yet.',
+  // **The owner ruled this sentence on 2026-09-03**, shown it among candidates
+  // and choosing it in their own words: *"No prisoners yet. Build a cell with a
+  // bed to take somebody in."* Two sentences in one string, as ruled -- the
+  // state, then the one thing a player can do about it -- and the same voice as
+  // `hud.security.coverage-unguarded-consequence` above, which that key's own
+  // comment records as *"the owner's chosen wording of 2026-09-03"* too.
+  //
+  // **This read "Nobody has been admitted yet." until that ruling, and the
+  // argument it carried is kept rather than overwritten**
+  // (`docs/AGENT_WORKFLOW.md` §4). It read: *"Not \"No prisoners\": an empty
+  // prison is the state every new game starts in and the Overview tab has the
+  // control that ends it, so the line says where to go rather than restating
+  // the count above it."* The ruling overrules its first half -- the sentence
+  // now opens on the exact words that argument refused -- and keeps its second:
+  // it still says where to go, and says it as an instruction rather than by
+  // naming a tab.
+  //
+  // **The state this sentence is not true of is a prison that emptied out**,
+  // and it does not have to be: `regime-panel.ts` draws this line only while
+  // `everAdmitted` is false (issue #506), so a prison that admitted people and
+  // has since discharged all of them draws no sentence here at all. That
+  // second state still has none, and authoring one is the owner's under
+  // `AGENTS.md`'s fourth exclusion -- the concern was put to them inside this
+  // option's own description before they chose it, and they chose it.
+  'hud.regime.roster-empty': 'No prisoners yet. Build a cell with a bed to take somebody in.',
 
   // What a refused control says (issue #207). Four comments in `src/` claimed
   // the HUD reported a refusal "on the control that was pressed" while the

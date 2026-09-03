@@ -995,7 +995,11 @@ decision about what to build next.
     gives every one of them, and discharged within the same window (ADR
     0050 "What this does not decide"), and the Regime panel's roster-empty
     sentence, "Nobody has been admitted yet", was shown over that prison as
-    though nobody ever had been. `projectPrisonerRoster` now carries
+    though nobody ever had been. **That sentence reads "No prisoners yet.
+    Build a cell with a bed to take somebody in." since the owner's ruling of
+    2026-09-03**; the wording quoted above is what was measured and is kept as
+    the record, and the two states this gap is about are unmoved by the
+    change. `projectPrisonerRoster` now carries
     `everAdmitted` (`PrisonerOperationsRuntime.admittedCount > 0`,
     `prisoner-projection.ts`), read at the one door every real admission
     passes through, so the two states are distinguishable at the projection
@@ -1009,10 +1013,15 @@ decision about what to build next.
     for exactly as long as it takes to admit and discharge again in the
     restored session. And the panel itself still authors no sentence for the
     "fully discharged" state: `regime-panel.ts`'s `paintRoster` draws
-    neither the false "Nobody has been admitted yet" nor an invented
+    neither the empty-roster sentence, which is false of it, nor an invented
     replacement there, because the sentence that should replace it is a new
     player-facing string and `AGENTS.md`'s fourth exclusion keeps that the
-    owner's.
+    owner's. **The owner's ruling of 2026-09-03 settled the sentence for the
+    *never admitted* state and not this one** -- "No prisoners yet. Build a
+    cell with a bed to take somebody in." is false of a prison that emptied
+    out for one more reason than its predecessor was, because the cell it tells
+    the player to build is already standing. So this half of the gap is
+    unclosed and is owed to the owner as its own sentence.
 
 ### Rooms
 

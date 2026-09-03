@@ -4915,7 +4915,7 @@ test.describe('the Regime panel (issue #451)', () => {
     // Not "0 prisoners" and not the empty-prison sentence: a session that has
     // said nothing must not have a claim about the prison made on its behalf.
     expect(probe.emptyLaidOut).toBe(false);
-    expect(probe.text).not.toContain('Nobody has been admitted yet');
+    expect(probe.text).not.toContain('No prisoners yet.');
     // Matched without regard to case: the panel header is an eyebrow, and
     // `innerText` carries the `text-transform: uppercase` the browser applied,
     // so what is on screen is "REGIME".
@@ -4938,8 +4938,10 @@ test.describe('the Regime panel (issue #451)', () => {
     expect(probe.total).toBe('0');
     expect(probe.rows).toEqual([]);
     expect(probe.emptyLaidOut, 'the empty prison drew a blank box instead of the sentence').toBe(true);
-    expect(probe.emptyText).toBe('Nobody has been admitted yet.');
-    expect(probe.text).toContain('Nobody has been admitted yet.');
+    // The owner's ruling of 2026-09-03, byte for byte. It read "Nobody has
+    // been admitted yet." until then; the state under test is unchanged.
+    expect(probe.emptyText).toBe('No prisoners yet. Build a cell with a bed to take somebody in.');
+    expect(probe.text).toContain('No prisoners yet. Build a cell with a bed to take somebody in.');
     // Nothing is being withheld: "and N more" is about a population bigger than
     // the window, and there is no population.
     expect(probe.moreLaidOut).toBe(false);
@@ -5042,11 +5044,18 @@ test.describe('the Regime panel (issue #451)', () => {
     // each until #535 decision 5, a length drawn per prisoner since -- and
     // were all discharged (ADR 0050, "What this does not decide"), so the
     // population is back to
-    // zero, and "Nobody has been admitted yet" would be false of it. There is
+    // zero, and the empty-roster sentence would be false of it. There is
     // no shipped sentence that says the true thing instead (searched
     // `default-locale-en.ts`; see `regime-panel.ts`'s `paintRoster` comment),
     // so the panel is required to draw *neither* box rather than the wrong
     // one.
+    //
+    // **The sentence this refuses to draw is the owner's ruling of 2026-09-03,
+    // "No prisoners yet. Build a cell with a bed to take somebody in.", and
+    // was "Nobody has been admitted yet." when this test was written.** The
+    // ruling makes this test's subject sharper rather than moving it: the new
+    // sentence is false of this prison twice over -- it has held prisoners,
+    // and the cell it tells the player to build is already standing.
     await page.evaluate(
       ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
       [TIMETABLE, DISCHARGED_ROSTER] as const,
@@ -5059,8 +5068,8 @@ test.describe('the Regime panel (issue #451)', () => {
     expect(probe.rows).toEqual([]);
     // The one assertion this whole test exists for: no box asserting
     // non-admission over a prison that was, in fact, fully used.
-    expect(probe.emptyLaidOut, 'drew the false "Nobody has been admitted yet" box').toBe(false);
-    expect(probe.text).not.toContain('Nobody has been admitted yet');
+    expect(probe.emptyLaidOut, 'drew the false "No prisoners yet" box').toBe(false);
+    expect(probe.text).not.toContain('No prisoners yet.');
     // Not being withheld either: a `total: 0` roster has nothing to page past.
     expect(probe.moreLaidOut).toBe(false);
     // The header still reads "0 of 0" -- a true statement about the present,

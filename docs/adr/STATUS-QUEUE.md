@@ -23,10 +23,16 @@ the edge in front of an actor is still standing (2026-08-29, #581, filed by
 #615 — the fifth, the third consecutive row filed by a commit whose only job
 was the filing, and **the first filed as a debt rather than on time**: #581
 landed the ADR with no row at all, which is what #615 was opened to
-record), and ADR 0093's three player-facing sentences for the errand it built
+record), and ADR 0093's **two** remaining player-facing sentences for the
+errand it built
 (2026-09-03, the sixth — and **the first row ever filed for a document that is
 already `Accepted` and already implemented**: what waits is the copy, not a
-signature, which is a shape this section had not held before)** — **this clause
+signature, which is a shape this section had not held before; **that count
+read "three player-facing sentences" until the owner ruled the action's label
+later the same day, and the word is corrected rather than overwritten because
+the direction is the finding — this is the first entry in this section ever to
+*shrink* without being deleted, so the entry count stays at nine while what
+the entry is waiting for gets smaller**)** — **this clause
 read "eight entries" until ADR 0093's entry was filed, "seven entries" until
 #615's,
 "six entries" until #585's, "five entries"
@@ -624,12 +630,35 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `3f8c00b0` (**v0.0.407**) by the delta method this
-header describes, from the v0.0.402 anchor described below. **Five of the ten
+Re-anchored at `main` @ `1e9b0a6a` (**v0.0.417**) by the delta method this
+header describes, from the v0.0.407 anchor kept below. **Ten of the ten
 releases the budget allows, counted on the tree this commit is written
-against: `package.json` ships 0.0.407 at `3f8c00b0` and the anchor being
-replaced named v0.0.402.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
+against: `package.json` ships 0.0.417 at `1e9b0a6a` and the anchor being
+replaced named v0.0.407.** `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
 **10**, exactly as the gate demands and as its own failure message insists.
+
+**THE BUDGET WAS EXACTLY SPENT AGAIN, IN ONE HOUR, AND THE REASON IS
+STRUCTURAL RATHER THAN NEGLECT.** The previous anchor was taken at five of ten
+and the halfway rule was kept. It then went to ten of ten in a single sitting
+because **every merge cuts a release**: nine changes landed in that window and
+the Version workflow bumped `package.json` ten times. So a queue with nine
+pull requests in it costs nine releases to drain, and **no anchor taken before
+a drain can survive one** — the halfway rule, which exists to stop an anchor
+drifting through inattention, cannot help here, because the spending is the
+queue moving rather than time passing. Recorded rather than solved: whoever
+next has the standing to change this file's contract should know that the
+budget's unit is releases and the queue's unit is also releases, and that the
+two are the same number. Nothing here raises the budget.
+
+**What this pass covered, stated because it is narrower than the header
+describes.** The window is `3f8c00b0..1e9b0a6a`: PRs #866, #834, #872, #867,
+#879, #838, #871, #876 and #880. This pass moved the anchor, kept the previous
+account, and corrected **one** claim it had independently verified — the
+detail-panel half of §2's first entry, below. **It did not sweep the window's
+diff intersection**, which the header's method asks for, and it is not a
+substitute for one; the next pass inherits that. A delta pass is blind to a
+claim that was already false when its window opened, and this pass was
+narrower than a delta pass on top of that.
 
 **THE HALFWAY MARK IS KEPT AGAIN, after one pass that spent nine.** The rule
 this header states in capitals is *"THE HALFWAY MARK IS A TASK, NOT A
@@ -1400,7 +1429,17 @@ anchors ago, one release late, and the honest reading is that a rule two
 passes have missed by two and then by one is being approached rather than
 kept.
 
-**The anchor before this one, kept — v0.0.402.** It read: *"Re-anchored at `main` @
+**The anchor before this one, kept — v0.0.407.** It read: *"Re-anchored at `main` @
+`3f8c00b0` (**v0.0.407**) by the delta method this header describes, from the
+v0.0.402 anchor described below. Five of the ten releases the budget
+allows."* It kept the halfway-mark rule, after the pass before it spent nine,
+and its own subtitle was *"three claims that no diff could catch"*. It was
+also the last anchor taken before the queue drain that spent the whole budget
+in an hour, which is the finding recorded above rather than beside it: taking
+this one at five was correct and made no difference, because the nine merges
+that followed cut ten releases between them.
+
+**The anchor before that one, kept — v0.0.402.** It read: *"Re-anchored at `main` @
 `402453a9` (**v0.0.402**) by the delta method this header describes, from the
 v0.0.393 anchor described below. Nine of the ten releases the budget
 allows."* It is the only pass in this sequence since the halfway-mark rule was
@@ -5161,7 +5200,7 @@ cells is exercised nowhere, because no shipped session yet furnishes two.
 
 ---
 
-## 2. Nine entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, the Worker that lands with telemetry ingest, ADR 0056's price for keeping a player's orders in order, ADR 0059's price for making them walk, ADR 0074's price for reading a restored room's rectangle, ADR 0071's open-area amendment, ADR 0077's price for asking whether the edge in front of an actor is still standing, and ADR 0093's three player-facing sentences for the errand it built
+## 2. Nine entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, the Worker that lands with telemetry ingest, ADR 0056's price for keeping a player's orders in order, ADR 0059's price for making them walk, ADR 0074's price for reading a restored room's rectangle, ADR 0071's open-area amendment, ADR 0077's price for asking whether the edge in front of an actor is still standing, and ADR 0093's two remaining player-facing sentences for the errand it built
 
 **This heading has now read "empty", "exactly one entry: ADR 0029", "empty
 again", one entry, two, one, empty for the third time, one again, and — on
@@ -5393,6 +5432,39 @@ than a reminder.**
 **And this entry is deleted** by the pull request that adds `main`, in the same
 commit — which is this file's standing rule that landing the change an entry
 describes means updating the entry with it.
+
+**Updated 2026-09-03 rather than deleted, and the reason is the sentence above
+about what the owner is being asked for.** The approval arrived: the change was
+put to the owner as three options — prepare it for review without merging,
+leave the surface blocked, or build it and merge it — and they answered
+*"Zbuduj i zmerguj"* ("build it and merge it"). `AGENTS.md`'s "The owner's
+standing mandate" carries that in their words, dated, beside the reservation it
+releases; `docs/DEPLOYMENT.md`'s "What actually landed" answers the nine items
+one by one; ADR 0002 carries its dated `Amendment`, so the last item on the
+checklist is discharged and the paragraph above it is corrected in place rather
+than overwritten.
+
+**Why the row survives anyway.** Two of the nine items are answered by
+*absence*, and the absences are not this change's to fill:
+
+- **Item 3, what the Worker holds, and item 4, what it must not.** It holds one
+  string, the ingest path. There is no destination and no database credential,
+  because the `telemetry_events` table, its insert function and the **dedicated
+  least-privilege database role** are `supabase/migrations/` — exclusion 2,
+  untouched. So the sharp half of this row is still owed, exactly as the
+  paragraph above it says: that role is swept by nothing unless
+  `supabase/tests/003_data_api_grants.test.sql`'s role list is extended in the
+  same change that creates it.
+- **Item 5's request-rate bound**, which is deliberately not in the Worker: a
+  limiter must key on a value, the only one available is the caller's IP, and
+  ADR 0046 §7 item 2 forbids retaining one. It belongs at the edge, in
+  configuration — exclusion 3.
+
+**So what this row now records is narrower and still addressed to the owner:**
+the entry point is merged and inert, and telemetry collects nothing until a
+migration and two deploy variables land. It is deleted by the change that
+brings those, which is also the change that first makes
+`docs/TELEMETRY.md`'s 90/90/30 retention table capable of being true.
 
 ### ADR 0056 (2026-08-28) — the fix is decided, the second of simulated time it costs a player is not
 
@@ -5914,15 +5986,40 @@ and the matching change to its [`README.md`](./README.md) row, **naming whether
 decision 6 is taken whole or in its narrower form**, because those are different
 games and the ADR says so. **Delete this entry in the same commit.**
 
-### ADR 0093 (2026-09-03) — the mechanic is accepted and built; the three sentences it needs are not
+### ADR 0093 (2026-09-03) — the mechanic is accepted and built; two of the three sentences it needs are not
 
 **What is waiting.** [ADR 0093](./0093-a-carry-is-an-action.md), *"A carry is
 an action"*, is **`Accepted, 2026-09-03, by the repository owner`** and its six
 decisions are **implemented**. Nothing about its *status* is outstanding, and
 that is what makes this entry a different shape from every other one in this
-section: what is waiting is not a signature on a decision, it is **three
-player-facing sentences the document deliberately did not write**, and one
-member of the `PrisonCondition` union that cannot exist until one of them does.
+section: what is waiting is not a signature on a decision, it is **two of the
+three player-facing sentences the document deliberately did not write**, and
+one member of the `PrisonCondition` union that cannot exist until one of them
+does.
+
+**This paragraph said "three" when the row was filed, and the word is
+corrected rather than overwritten** (`docs/AGENT_WORKFLOW.md` §4). Later on
+2026-09-03 the owner ruled the first of the three — the action's label,
+*"Errand"* — recorded in ADR 0093's *Amendment, 2026-09-03: the action's label
+is the owner's word*. **So this entry shrinks rather than being deleted**: it
+is filed for three sentences, one is settled, and it stays until the other two
+are. The count in this section's own heading, in the header paragraph at the
+top of this file and in §5's preamble moves with it, and **the entry count is
+unmoved at nine.**
+
+**The anchor was deliberately left alone by the edit that shrank this row.**
+Moving it is the integrator's budget and not this row's, exactly as the
+paragraph below already says of the reading it was taken against.
+
+**And that sentence has already been overtaken, which is why it is corrected
+here rather than left to rot.** It read: *"The `Re-anchored at` line still
+names `402453a9` (v0.0.402)"* — true when this row was written, and false from
+the moment the re-anchor to `3f8c00b0` (v0.0.407) lands, which the integrator
+had in flight in the same hour. Both directions are marked per
+`docs/AGENT_WORKFLOW.md` §4: the old reading is quoted above and the live line
+is whatever the anchor at the top of this file says, which is the only reading
+that cannot go stale. Whichever of the two changes lands second, nothing here
+needs a further edit.
 
 **The live anchor's reading of "eight" was correct when it was taken, and this
 is the ninth, filed after it.** The anchor pass at `402453a9` (v0.0.402)
@@ -5969,18 +6066,46 @@ materials arrive in the container construction draws from. Before this,
 `JobBoard.submitCarryItem` had exactly one occurrence under `src/` — its own
 declaration — and `JobWorkerPool.register` had no `src/` caller at all.
 
-**What settling the three sentences commits the project to.**
+**What settling the three sentences commits the project to** — item 1 as
+settled, items 2 and 3 as still owed.
 
-1. **The action's label.** `src/content/simulation-message-keys.ts` carries one
+1. **The action's label — SETTLED, 2026-09-03, by the owner: *"Errand"*.**
+   `src/content/simulation-message-keys.ts` carries one
    label per entry of `DEFAULT_ACTIONS`, and
    `tests/unit/simulation-message-keys.test.ts` requires each namespace to
    label *exactly* the ids its declaration declares — so an entry had to exist
-   the moment the catalogue held one. **It is there, reading `'Errand'`, and it
-   is marked in that file as a draft for the owner's review**, in the identical
-   form `action.kitchen-work`'s `'Kitchen Duty'` has carried since #532. This
-   is therefore the one of the three that is **already on screen**: the roster
-   and the detail panel will say *Errand* until the owner says otherwise. The
-   alternatives considered and rejected are written out beside it — *Carrying*
+   the moment the catalogue held one. That is why this was the one of the three
+   that was **already on screen**, and it is why the ruling moved no string:
+   the owner confirmed the word the catalogue already held. What changed is
+   that the entry stopped being provisional.
+
+   **What this item said while it was owed is kept rather than overwritten**
+   (`docs/AGENT_WORKFLOW.md` §4). It read: *"**It is there, reading `'Errand'`,
+   and it is marked in that file as a draft for the owner's review**, in the
+   identical form `action.kitchen-work`'s `'Kitchen Duty'` has carried since
+   #532. This is therefore the one of the three that is **already on screen**:
+   the roster and the detail panel will say Errand until the owner says
+   otherwise."* They have now said, and the draft marking is gone from
+   `src/content/simulation-message-keys.ts` and from
+   `tests/foundation/content-vocabulary-contract.test.ts`, each of which
+   records the ruling and the words it replaced.
+
+   **But the quoted sentence was wrong about half of itself, and that half is
+   corrected here rather than left standing.** It said *"the roster and the
+   detail panel will say Errand"*. The roster does — measured through the
+   interface on 2026-09-03, four independent reproductions, the row reading
+   `Errand` while performing and `Heading to Errand` while travelling. **There
+   is no detail panel.** `hud/prisoner-detail` has a projection route and no
+   reader at all: `grep -rn 'prisoner-detail' src/ui/ src/main.ts` returns
+   nothing, which the integrator ran rather than inferred. So the ruling
+   settles what the roster says and leaves the detail panel's sentence — the
+   third of the three this entry owes — with nowhere to appear until something
+   reads that route. Both directions are marked: the old sentence is quoted
+   above and this is what is true of the tree. **`action.kitchen-work`'s
+   label is still a draft**, and that half of the comparison is untouched by
+   this ruling.
+
+   The alternatives considered and rejected are written out beside it — *Carrying*
    (a phase, and `action-phase` already labels three of those), *Haulage* (the
    trade, not the shift), *Delivery Duty* (names the purchase, and a carry will
    not always be a delivery once other producers arrive).
@@ -6025,11 +6150,14 @@ than arguing it. **This is not a defect ADR 0093 introduced**: it is what a
 work block already was, and the amendment is the first thing that reads it.
 
 **The exact line that would replace the status:** none — the status is already
-`Accepted`. **What would delete this entry is the owner writing the three
-sentences**, or ruling that the second and third are not owed. Whichever it is,
+`Accepted`. **What would delete this entry is the owner writing the two
+sentences that are left**, or ruling that they are not owed. Whichever it is,
 delete this entry in the same commit, and if the standing condition is taken,
 `src/simulation/protocol/types.ts` gains the member ADR 0093's change list
-records as item 9.
+records as item 9. **That sentence read "the owner writing the three
+sentences" until the first was written**, and the recipe is unchanged by the
+correction: a settled sentence shrinks this entry, and only the last one
+deletes it.
 
 ### ADR 0031 — accepted 2026-08-26, and the entry is deleted
 
@@ -7013,6 +7141,52 @@ and #825 adds one registry call per sector — a different object and a bounded
 count (`SecuritySectorRegistry.all()` is one sector in every prison a player
 can make today).
 
+## 3. What the anchor pass of 2026-09-03 re-read, and the one claim it moved
+
+**Taken at `1e9b0a6a` (v0.0.417), and this pass is narrower than the header's method.**
+It is the pass the anchor above required, written because the gate will not
+let an anchor move without one — and that gate is right to insist: a moved
+anchor with no pass behind it is a file claiming to have been checked against
+a tree nobody read.
+
+**Three claims re-verified against this tree, by re-running the check rather
+than re-reading the sentence.**
+
+1. **ADR 0079 §5 and §6 are still absent from the database.** `grep -ril
+   'total_bytes\|max_total_bytes\|retention\|prune'` over
+   `supabase/migrations/` returns **exactly one file**, and its only hit is
+   still the *comment* at
+   `20260826130000_server_stamp_updated_at.sql:68` about a **future**
+   retention job — read at the line, not counted. So neither absence has
+   acquired an implementation a path scan would miss. **One thing worth
+   recording about how this was checked:** the first run of it was scoped to
+   `supabase/` rather than `supabase/migrations/` and returned two files,
+   which looked like a rotted claim and was not — it was the checker's own
+   scope. The sentence says "over the directory" and the directory is the
+   migrations one. A re-verification run at the wrong scope reports a defect
+   that does not exist, which is the same class of error as trusting the
+   sentence without running anything.
+2. **`ui-hud-messages.test.ts:269-275` still holds a real assertion block**,
+   read at the lines. Byte-identity with `:218-224` before #827 moved it is
+   **not** re-established here and is carried forward on the earlier pass's
+   word: this pass confirms the lines are live code and not that they are the
+   same bytes, and says so rather than restating a stronger claim than it
+   made.
+3. **Next free number: 0095.** `docs/adr/README.md` states it, and disk agrees
+   for the second consecutive anchor: the highest four-digit prefix under
+   `docs/adr/` is **0094**, so `max + 1` off disk and the stated line both
+   give 0095. **No remote sweep was performed at this anchor**, so a number
+   held only on an unmerged branch would be invisible to both — which is the
+   lag `docs/adr/README.md` has now recorded twelve times, and the reason its
+   own sweep is the authority and this restatement is not.
+
+**What this pass did not do.** It did not sweep the window's diff
+intersection, and it did not re-read §§4-6's claims against the nine merges in
+the window. It moved the anchor, kept the previous account, corrected §2's
+detail-panel claim, and re-ran the three checks above. The next pass inherits
+the sweep, and this paragraph exists so that nobody reads the moved anchor as
+evidence the whole file was checked.
+
 **THIRTY-NINE at `aa762112` (v0.0.383), six releases later — every counter
 unmoved for the second consecutive window, and for the same reason: the one
 ADR this window touched (0092, by #829) was edited in its Status and not
@@ -7487,12 +7661,12 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `3f8c00b0` — the same bare `grep -ril
+absences were re-verified at `1e9b0a6a` — the same bare `grep -ril
 'total_bytes\|max_total_bytes\|retention\|prune'` over the directory still
 returns exactly one file, and its only hit is still the *comment* in
 `20260826130000_server_stamp_updated_at.sql:68` about a **future** retention
 job, so neither absence has acquired an implementation that a path scan would
-have missed — as they were at `402453a9`, at `f36148d7`, at `98e05058`, at `aa762112`, at `708b68c7`, at `b2941064`, at `1547c7f6`, at `9b8c8e85`, at
+have missed — as they were at `3f8c00b0`, at `402453a9`, at `f36148d7`, at `98e05058`, at `aa762112`, at `708b68c7`, at `b2941064`, at `1547c7f6`, at `9b8c8e85`, at
 `0e2eb7fb`, at `33a4a22e` and at
 `26434e8e` before it —
 `supabase/migrations/` is not among this window's **63** files, nor the **32**
@@ -7819,8 +7993,11 @@ deleted in the eleven releases, and this is one of the four places the header
 names as counting the queue, swept here for that reason.
 
 **NINE at ADR 0093's filing (2026-09-03), and the streak of anchors with no
-entry filed is over.** The ninth is ADR 0093's three player-facing sentences,
-and it is the first row in this section for a document that is already
+entry filed is over.** The ninth is ADR 0093's player-facing sentences — filed
+as three, **two** since the owner ruled the action's label later the same day,
+and the word "three" is corrected here rather than overwritten because the
+entry shrinking without being deleted is a first for this section — and
+it is the first row in this section for a document that is already
 `Accepted` and already implemented — so §2's own framing widens with it from
 *"decisions awaiting a signature"* to *"what the owner still has to decide"*,
 which is this file's title and always was. **The paragraph below is kept rather
@@ -11284,7 +11461,7 @@ numbers were not the damage.** Stated so it can be checked:
   `prisoners-intake-system.test.ts:230` and `:529`;
   `entity-generation-wrap.test.ts:96`, `:124`, `:163`, `:178`, `:190` and
   `:204`; `unconsumed-command-contract.test.ts:204` and `:230`;
-  `ui-hud-messages.test.ts:269-275` (moved from `:218-224` by #827, byte-identical, re-verified at `3f8c00b0`); `environment-art.test.ts:248` and `:256`;
+  `ui-hud-messages.test.ts:269-275` (moved from `:218-224` by #827, byte-identical, re-verified at `1e9b0a6a` and at `3f8c00b0` before it); `environment-art.test.ts:248` and `:256`;
   `adr-status-reference-contract.test.ts:147-150`, `:405`, `:427` and `:431`;
   `docs/adr/README.md:103-110` and `:158`; `docs/TRUSTED_SERVICES.md:604`,
   `:607` and `:610`; `docs/adr/0013-…md:15`, `:19-21` and `:151`;
