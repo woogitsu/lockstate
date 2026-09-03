@@ -1371,7 +1371,10 @@ test('act I: the fold, the key nobody is told about, and the overflow', async ({
   /* --- I2 part two: does Z undo, and does anything say it happened? --- */
   const preUndo = await sample(page, started);
   note(`[I2] before Z: treasury ${preUndo.treasury} | queue ${JSON.stringify(preUndo.queue)}`);
-  await page.locator('#game-root canvas').click({ position: { x: 5, y: 5 } });
+  // Focus the world by pressing a point the HUD does not cover -- (5,5) is
+  // under the status strip, and Playwright refuses that click as intercepted,
+  // which is what ended this act on its first run.
+  await page.mouse.click(700, 300);
   await page.waitForTimeout(200);
   const preKeyCommands = (await sentCommands(page)).length;
   await page.keyboard.press('KeyZ');
@@ -1383,4 +1386,65 @@ test('act I: the fold, the key nobody is told about, and the overflow', async ({
   note(`[I2] band ${JSON.stringify(postUndo.refusal)} | event band ${JSON.stringify(await panelText(page, '.hud__event'))}`);
   note(`[I2] alerts ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
   await shot(page, 'I04-after-pressing-z');
+});
+
+/* ------------------------------------------------------------------ ACT J */
+
+/**
+ * Does bare **Z** take back a run, and does anything say it happened?
+ *
+ * Split out of act I rather than folded back into it: act I is ten minutes of
+ * play and this is the one measurement it lost, at the very end, to a click
+ * Playwright refused as intercepted. A sample worth re-taking is worth being
+ * cheap to re-take.
+ *
+ * `src/input/bindings.ts:64` binds `edit.undo` to `KeyZ` in the `world` and
+ * `construction` contexts, and `hud.build.queue-more` is the only place in the
+ * interface that mentions undo at all -- *"and {count} more behind these --
+ * undo takes back a whole run"* -- inside a section that arrives collapsed.
+ */
+test('act J: does Z take back a run', async ({ page }) => {
+  test.setTimeout(300_000);
+  await installTee(page);
+  await openApp(page);
+  const started = Date.now();
+
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await tab(page, 'build').click();
+  const origin = await calibrate(page);
+  await armBuildable(page, 'wall-brick');
+
+  const before = await sample(page, started);
+  const runBefore = (await sentCommands(page)).length;
+  await drag(page, { x: origin.originX + 13 * TILE, y: origin.originY + 13 * TILE }, { x: origin.originX + 18 * TILE, y: origin.originY + 13 * TILE });
+  const runCmds = (await sentCommands(page)).slice(runBefore);
+  await page.waitForTimeout(1500);
+  const queued = await sample(page, started);
+  note(`[J] a 5-tile run: ${runCmds.length} order(s), treasury ${before.treasury} -> ${queued.treasury} (took ${before.treasury - queued.treasury})`);
+  note(`[J] queue: ${JSON.stringify(queued.queue)}`);
+
+  // The world, at a point no HUD island covers.
+  await page.mouse.click(700, 300);
+  await page.waitForTimeout(300);
+  const preKey = (await sentCommands(page)).length;
+  await page.keyboard.press('KeyZ');
+  await page.waitForTimeout(2000);
+  const zCmds = (await sentCommands(page)).slice(preKey);
+  const after = await sample(page, started);
+  note(`[J] pressing Z sent ${zCmds.length} command(s): ${JSON.stringify(zCmds)}`);
+  note(`[J] treasury ${queued.treasury} -> ${after.treasury} (${after.treasury - queued.treasury >= 0 ? '+' : ''}${after.treasury - queued.treasury})`);
+  note(`[J] queue after Z: ${JSON.stringify(after.queue)}`);
+  note(`[J] refusal band: ${JSON.stringify(after.refusal)}`);
+  note(`[J] event band: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
+  note(`[J] alerts: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+  await shot(page, 'J01-after-z');
+
+  // And a second Z, to see whether it walks back further or refuses.
+  await page.keyboard.press('KeyZ');
+  await page.waitForTimeout(2000);
+  const second = await sample(page, started);
+  note(`[J] a second Z: treasury ${after.treasury} -> ${second.treasury} | queue ${JSON.stringify(second.queue)} | band ${JSON.stringify(second.refusal)}`);
+  note(`[J] event band: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
+  await shot(page, 'J02-after-a-second-z');
 });
