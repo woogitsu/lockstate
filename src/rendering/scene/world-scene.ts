@@ -365,14 +365,32 @@ export class WorldScene extends Phaser.Scene {
      * drags built less than they drew**, the worst of them one wall for
      * fourteen tiles. The same run on this tree reports 100% and no shortfall.
      *
-     * Three other numbers from that instrument, because they are three
-     * different things and were conflated once. **202 of 308 visible tile
-     * centres take a press** -- that is `hud.css` alone and this change does
-     * not move it, before or after. **The largest rectangle in which a drag of
-     * any length in any direction never leaves reachable canvas is 144 of
-     * 308** (x 11..22, y 10..21) -- that was the region a drag could be
-     * trusted in. And **286 of 308 tiles could be reached by *some* drag even
-     * unfixed**, which is the number that looks like the defect and is not:
+     * **Reachability is a different measurement, it does not move, and it is a
+     * curve rather than a number.** How much of the world takes a pointer at
+     * all is `hud.css` against the window size -- the HUD is a frame of roughly
+     * fixed pixel width around a playfield that shrinks -- so a single headline
+     * figure for it is a figure about one window.
+     * `tests/browser/playtest-878-viewports.playtest.ts` reports it across the
+     * five viewports `ui-shell.spec.ts` already covers, and every row of it is
+     * **identical before and after this change**, which is the point of
+     * including it: nothing a renderer does can move where the HUD is, so a fix
+     * that appeared to would be measuring something else.
+     *
+     *   viewport   canvas share   press-reachable tiles   largest free rect
+     *   1440x900   64.1%          198 of 308 (64.3%)      144 of 308
+     *   1280x720   56.1%          136 of 240 (56.7%)      100 of 240
+     *   1024x768   49.6%           92 of 192 (47.9%)       60 of 192
+     *    900x600   36.7%           40 of 126 (31.7%)       21 of 126
+     *    375x812    8.2%          no 64x64 square of reachable canvas exists
+     *
+     * The first column is a fixed 16px sample grid with no calibrated origin in
+     * it, and it is there because the tile counts are phase-sensitive: the same
+     * method on the same tree read 198 and 202 free tile centres at 1440x900
+     * from two different bisection squares, and a separate measurement read
+     * 194. All three are the same ~64%.
+     *
+     * What the drag fidelity above measures is therefore **not** reachability.
+     * 286 of 308 tiles could be reached by *some* drag even unfixed, because
      * the run is re-derived from the press on every move the canvas does hear,
      * so a drag whose *last* move happens to land back on canvas recovers its
      * whole run. Reachability was never the injury. Fidelity was.
