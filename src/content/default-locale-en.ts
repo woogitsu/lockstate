@@ -1149,10 +1149,21 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * model now carries three scalars for the reason above; the rest is
    * unaffected -- no material is named and the words are still not this
    * agent's own idea of the *subject*, only of the phrasing.
+   *
+   * **`queue-order` gained `· {total} back`, the owner's decision of
+   * 2026-09-02, in the same pattern `hud.build.delivery` already uses three
+   * lines below for the same money ("{count} × {material} · {total} back").**
+   * This is the whole of that decision's copy: no other wording changed, and
+   * `{total}` reads `0 back` when cancelling would give back nothing --
+   * deliberately, per the ruling, rather than hiding the row or the figure in
+   * that state. What `{total}` *is* -- `HudBuildOrderViewModel.cancelRefundMinorUnits`,
+   * read off `ConstructionSystem.previewCancelRefundMinorUnits` on the exact
+   * code path `CancelBuildOrder` pays through -- is argued at that method, not
+   * here; this comment is only the copy decision.
    */
   'hud.build.queue': 'Queued',
   'hud.build.queue-count': '{count} waiting · {started} being built',
-  'hud.build.queue-order': '{buildable} · {x}, {y} · {edge}',
+  'hud.build.queue-order': '{buildable} · {x}, {y} · {edge} · {total} back',
   'hud.build.queue-cancel': 'Cancel',
   'hud.build.queue-unnamed': 'Unnamed order',
   'hud.build.queue-more': 'and {count} more behind these — undo takes back a whole run.',
@@ -1810,6 +1821,16 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // in the status strip changes.
   'display.scale.region': 'Interface scale',
   'display.scale.cycle': 'Change the interface scale',
+
+  // The accessible name of `<main id="app">` -- the whole application, not one
+  // region of it, which is why the namespace is `app.` and not `hud.` or
+  // `brand.`. It used to be `aria-label="Lockstate game application"` baked
+  // into `index.html` itself: correct text, wrong home, because the HTML shell
+  // loads before any `Localizer` exists and that string never passed through
+  // this catalogue or the pseudo-locale sweep that checks it. `src/main.ts`
+  // now sets it here, on the same element, as soon as the localizer is built.
+  // The wording is carried across unchanged; see `src/ui/app-shell-messages.ts`.
+  'app.shell.label': 'Lockstate game application',
 };
 
 /**

@@ -125,8 +125,11 @@ describe('token file structure', () => {
       '--accent-soft': 'rgba(134, 178, 207, 0.14)',
       '--status-success': '#86b596',
       // A rung below `--status-warning` rather than past it, for issue #788's
-      // ruling of 2026-09-02 -- see `--straw-300` in `tokens.css`.
-      '--status-caution': '#bba881',
+      // ruling of 2026-09-02 -- see `--straw-300` in `tokens.css`. Darkened by
+      // the owner's second ruling on the same issue, same day: the contrast
+      // gate below computes why this exact value, from this file, rather than
+      // asserting it only here.
+      '--status-caution': '#645435',
       '--status-warning': '#e8b463',
       '--status-danger': '#d4785c',
       '--status-critical': '#b8455a',
@@ -182,6 +185,157 @@ describe('token file structure', () => {
     // `#101317` was already the app background before tokens existed; the
     // alias must not have quietly changed it.
     expect(resolveToken('--surface-base', tokens)).toBe('#101317');
+  });
+});
+
+/**
+ * WCAG 2.x contrast, computed from a resolved `#rrggbb` token value rather
+ * than pasted -- the shape the owner's ruling of 2026-09-02 on issue #788
+ * asked for. A pasted expected ratio would hold for any implementation,
+ * including a broken one; this recomputes both colours' relative luminance
+ * from `tokens.css` on every run, so a future edit to either raw ramp entry
+ * is what the assertions below actually re-check.
+ */
+function hexChannels(hex: string): readonly [number, number, number] {
+  const match = /^#([0-9a-fA-F]{6})$/.exec(hex);
+  if (match === null) {
+    throw new Error(`expected a resolved #rrggbb colour, got ${JSON.stringify(hex)} -- extend this helper before trusting its output`);
+  }
+  const value = match[1]!;
+  return [Number.parseInt(value.slice(0, 2), 16), Number.parseInt(value.slice(2, 4), 16), Number.parseInt(value.slice(4, 6), 16)];
+}
+
+/** WCAG 2.x relative luminance of an sRGB channel, 0-255 in, 0-1 out. */
+function linearise(channel: number): number {
+  const c = channel / 255;
+  return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+}
+
+/** WCAG 2.x relative luminance of a `#rrggbb` colour. */
+function relativeLuminance(hex: string): number {
+  const [r, g, b] = hexChannels(hex);
+  return 0.2126 * linearise(r) + 0.7152 * linearise(g) + 0.0722 * linearise(b);
+}
+
+/** WCAG 2.x contrast ratio between two `#rrggbb` colours, always >= 1. */
+function contrastRatio(hexA: string, hexB: string): number {
+  const [lumA, lumB] = [relativeLuminance(hexA), relativeLuminance(hexB)];
+  const [lighter, darker] = lumA >= lumB ? [lumA, lumB] : [lumB, lumA];
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+/**
+ * A token layer that composites badge chip against a surface, resolved to
+ * the `#rrggbb` a browser would actually paint -- what `getComputedStyle`
+ * reads is one blended colour, whichever of `rgba(r, g, b, a)` (a translucent
+ * tint, still this file's formula for six of the seven badge tones) or
+ * `#rrggbb` (opaque, `'caution'`'s own background since the owner's third
+ * ruling of 2026-09-02) the resolved token turns out to be. An opaque colour
+ * composites to itself; only a translucent one needs the surface at all, so
+ * this is also what makes the assertion below correct *and* a real gate
+ * against a future edit that makes the chip translucent again -- it would
+ * recompute the blend rather than throw on an unexpected format.
+ */
+function paintedColour(resolved: string, surfaceHex: string): string {
+  const opaque = /^#([0-9a-fA-F]{6})$/.exec(resolved);
+  if (opaque !== null) return resolved;
+  const translucent = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)$/.exec(resolved);
+  if (translucent === null) {
+    throw new Error(`expected a resolved #rrggbb or rgba(...) colour, got ${JSON.stringify(resolved)} -- extend this helper before trusting its output`);
+  }
+  const [, rStr, gStr, bStr, aStr] = translucent;
+  const [r, g, b, a] = [Number(rStr), Number(gStr), Number(bStr), Number(aStr)];
+  const [sr, sg, sb] = hexChannels(surfaceHex);
+  const blend = (c: number, s: number): number => Math.round(c * a + s * (1 - a));
+  return `#${[blend(r, sr), blend(g, sg), blend(b, sb)].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+}
+
+describe('badge tone contrast (issue #788, the owner\'s ruling of 2026-09-02)', () => {
+  /**
+   * **The measured defect.** A playtest read `getComputedStyle` on a
+   * `'caution'` badge (risk tier `Medium`) and a `'neutral'` one (tier `Low`)
+   * side by side and found their foregrounds -- `--badge-caution-fg` and
+   * `--badge-neutral-fg` -- painting at **1.07:1**, on top of an archived
+   * screenshot showing both as one muted tan-grey chip. `'caution'` exists
+   * *only* to make `Medium` distinguishable from `Low` at a glance
+   * (`status-badge.ts`'s own doc comment on `BadgeTone`), so a 1.07:1 pair is
+   * that tone failing the one thing it was added for. WCAG 2.x's floor for
+   * non-text (graphical object) contrast is 3:1 (SC 1.4.11); the assertion
+   * below is that floor, not a number this file invented.
+   *
+   * Both colours are resolved through `resolveToken`, which follows every
+   * `var()` indirection down to the raw ramp hex `tokens.css` would actually
+   * paint -- `--badge-caution-fg` -> `--status-caution` -> `--straw-300`, and
+   * `--badge-neutral-fg` -> `--text-subtle` -> `--paper-400` -- so an edit to
+   * either alias or either raw ramp entry re-runs this exact check rather
+   * than needing a second, hand-updated copy of it.
+   */
+  it('paints the caution badge at least 3:1 from the neutral badge (WCAG 1.4.11 floor)', () => {
+    const cautionFg = resolveToken('--badge-caution-fg', tokens);
+    const neutralFg = resolveToken('--badge-neutral-fg', tokens);
+    const ratio = contrastRatio(cautionFg, neutralFg);
+    expect(ratio, `caution (${cautionFg}) vs neutral (${neutralFg}) = ${ratio.toFixed(3)}:1`).toBeGreaterThanOrEqual(3);
+  });
+
+  /**
+   * The ladder this sits on, named in `status-badge.ts`'s doc comment on
+   * `'caution'`: "ordered here between `'success'` and `'warning'` because
+   * that is where it sits on the ladder." Strengthening caution against
+   * neutral must not do it by sliding caution into either neighbour's own
+   * colour, and neither neighbour was actually safe before this ruling:
+   * measured against the *old* `--straw-300` (`#bba881`), caution sat at
+   * 1.23:1 from warning and 1.00:1 from success -- both closer collisions
+   * than the 1.07:1 the ruling was written to fix, just never named. Fixing
+   * the named pair moved both as a side effect, which is what these two
+   * checks confirm rather than assume: they are computed the same way as the
+   * primary assertion above, not merely `not.toBe`, so a future edit that
+   * keeps the tones distinct but thins either margin back toward 1:1 fails
+   * here too.
+   */
+  it('keeps caution at least 3:1 from success, its neighbour down the ladder', () => {
+    const cautionFg = resolveToken('--badge-caution-fg', tokens);
+    const successFg = resolveToken('--badge-success-fg', tokens);
+    const ratio = contrastRatio(cautionFg, successFg);
+    expect(ratio, `caution (${cautionFg}) vs success (${successFg}) = ${ratio.toFixed(3)}:1`).toBeGreaterThanOrEqual(3);
+  });
+
+  it('keeps caution at least 3:1 from warning, its neighbour up the ladder', () => {
+    const cautionFg = resolveToken('--badge-caution-fg', tokens);
+    const warningFg = resolveToken('--badge-warning-fg', tokens);
+    const ratio = contrastRatio(cautionFg, warningFg);
+    expect(ratio, `caution (${cautionFg}) vs warning (${warningFg}) = ${ratio.toFixed(3)}:1`).toBeGreaterThanOrEqual(3);
+  });
+
+  /**
+   * **The badge's own text, half of what the owner's second ruling of
+   * 2026-09-02 reported as an unresolved conflict and the third ruling,
+   * same day, resolved.** Darkening `--badge-caution-fg` to clear 3:1 against
+   * neutral (the test above) forced its relative luminance down to ~0.093 --
+   * too dark for WCAG's 4.5:1 *text* contrast (SC 1.4.3) against the
+   * translucent 14 %-tint chip every other badge tone paints, on
+   * `--surface-raised` (the only surface `.hud-regime` -- the panel that
+   * paints every `'caution'` badge -- ever gives it): that pairing measured
+   * 5.73:1 before the darkening and 2.13:1 after, both recorded in
+   * `tokens.css`'s comment on `--straw-300`. The fix was an opaque
+   * `--badge-caution-bg` (`--straw-100` in `tokens.css`, same hue and
+   * saturation as the darkened foreground, only lighter) rather than a
+   * translucent one, so `paintedColour` above resolves it to itself with no
+   * compositing needed -- and still takes `--surface-raised` as its fallback
+   * surface, because the property this test is actually pinning is "the
+   * chip is opaque enough not to need one", and a translucent regression
+   * should fail on the real number the panel would paint, not on a format
+   * `paintedColour` cannot parse.
+   */
+  it("keeps caution's own text at least 4.5:1 on its own badge background (WCAG 1.4.3)", () => {
+    const cautionFg = resolveToken('--badge-caution-fg', tokens);
+    const cautionBgToken = resolveToken('--badge-caution-bg', tokens);
+    const surfaceRaised = resolveToken('--surface-raised', tokens);
+    const paintedBg = paintedColour(cautionBgToken, surfaceRaised);
+    const ratio = contrastRatio(cautionFg, paintedBg);
+    expect(
+      ratio,
+      `caution text (${cautionFg}) on caution's own background (${cautionBgToken} -> painted ${paintedBg} on --surface-raised ${surfaceRaised}) = ${ratio.toFixed(3)}:1`,
+    ).toBeGreaterThanOrEqual(4.5);
   });
 });
 

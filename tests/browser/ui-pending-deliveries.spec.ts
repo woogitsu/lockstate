@@ -517,9 +517,9 @@ test.describe('the Build panel deliveries block', () => {
           total: 6,
           started: 1,
           orders: [
-            { orderId: 'order-00', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 4, y: 4 }, edge: 'north', state: 'in-progress' },
-            { orderId: 'order-01', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 4, y: 5 }, edge: 'north', state: 'assigned' },
-            { orderId: 'order-02', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 4, y: 6 }, edge: 'north', state: 'assigned' },
+            { orderId: 'order-00', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 4, y: 4 }, edge: 'north', state: 'in-progress', cancelRefundMinorUnits: 0 },
+            { orderId: 'order-01', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 4, y: 5 }, edge: 'north', state: 'assigned', cancelRefundMinorUnits: 80 },
+            { orderId: 'order-02', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 4, y: 6 }, edge: 'north', state: 'assigned', cancelRefundMinorUnits: 80 },
           ],
           materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 },
         }),
