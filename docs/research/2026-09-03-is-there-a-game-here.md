@@ -4,8 +4,14 @@
 **Branch:** `playtest/is-there-a-game-here`, cut from `origin/main` at `f7adf652` (v0.0.419)
 **Instruments:** `tests/browser/playtest-2026-09-03-is-there-a-game-here.playtest.ts`,
 `tests/browser/playtest-2026-09-03-twenty-prisoners-ergonomics.playtest.ts`
-**Status:** WORK IN PROGRESS — the runs are in flight; sections below are filled as
-they land. Nothing in this file is a decision, and nothing in it is a fix.
+**Status:** the INCIDENTS question is **settled** (§5) and the guard A/B is in
+flight (§6.5). Nothing in this file is a decision, and nothing in it is a fix.
+
+> **The one-line answer to the question this branch was cut for.** The INCIDENTS
+> chip is **not** a defect: in 20.4 in-game days with no guards it published
+> `activeIncidents: 1` at 178 of 1,255 publications and at all 15 publications
+> inside the one incident window whose length is known exactly. §5 has the
+> sample and the refuting sample. The `DEFECT` label stays withdrawn.
 
 > `.playtest.ts` is collected only by `tests/browser/playwright.playtest.config.ts`.
 > **Nothing in CI runs either instrument.** A playtest is evidence, never a gate.
@@ -289,3 +295,264 @@ for the player** — and it is a standing notice rather than a pressure: nothing
 about those eight got worse, no alert escalated, and the eight were still there
 33 days later.
 
+
+## 5. The INCIDENTS chip: **NOT a defect.** The label is withdrawn for good
+
+**Instrument:** `tests/browser/playtest-2026-09-03-does-the-incidents-chip-lie.playtest.ts`
+**Run:** 2026-09-03, tree `e128023` (v0.0.422 + this branch), 11.8 wall minutes,
+green. Full log kept at `playtest-out/chip-run.log`.
+**Sample:** a prison with **zero guards**, twelve prisoners, six beds, one
+zoned cell — so nothing can answer an incident and every one of them runs the
+full length of its deadline.
+
+### What was measured
+
+| | |
+| --- | --- |
+| ticks watched | 5,507 → 54,571 (**49,064 ticks, 20.4 in-game days**) |
+| `simulation/status-counts` publications observed | **1,255** |
+| every distinct `activeIncidents` value ever published | **`[0, 1]`** |
+| publications that published `activeIncidents > 0` | **178 of 1,255 (14.2%)** |
+| incidents opened | **12** (1 assault, 10 riots, 1 escape attempt) |
+| incidents `resolved` | **0** |
+| incidents `lapsed` | **12** |
+
+**The chip reaches 1, it names the kind, and it is on screen for a seventh of
+the run.** Each of those 178 publications carried `activeIncidentType` as well
+as the count — `"assault"` for the first burst, `"riot"` for the rest — so the
+badge read *Assault* and *Riot* rather than the generic *Active*.
+
+The tight measurement is the assault, because it is the one incident whose open
+window is known exactly. It opened at tick **6,900**. `responseDeadlineTicks` is
+600 and no responder could ever be claimed, so it was open until 7,501:
+
+```
+assault opened at tick 6900: 15 publication(s) in [6900,7501]
+   -> activeIncidents [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+```
+
+**Fifteen publications inside the window, fifteen of them reading 1**, the first
+at tick 6,902 — two ticks after the incident opened. There is no lag and there
+is no gap.
+
+### The refuting sample, and it refuted nothing
+
+37 pulls of `hud/incidents` were taken beside the chip, reading the same
+`IncidentLog` the chip's projection reads. The direction of every disagreement
+that could have convicted the chip — **ground truth open while the chip says
+zero** — was checked at each one. Four pulls found `stillOpen=1`, and the chip
+had published `1` at all four:
+
+```
+tick 13316: IncidentLog stillOpen=1 [active=1,...] | chip published 1
+tick 28067: IncidentLog stillOpen=1 [active=1,...] | chip published 1
+tick 37352: IncidentLog stillOpen=1 [active=1,...] | chip published 1
+tick 51902: IncidentLog stillOpen=1 [active=1,...] | chip published 1
+```
+
+Three further pulls read `stillOpen=1` beside a last-published `0` — at ticks
+22,771, 46,727 and 48,062 — and **that is this instrument's own artifact, not a
+lag in the game.** The loop fetches the counts series, writes a log line that
+awaits a `currentTick` round trip, and only then pulls; so the `chip published`
+column is stale by however long those two awaits took. The assault window above
+is the clean measurement and it has no such ordering, which is why the verdict
+rests on it.
+
+### So what was the earlier measurement?
+
+Exactly what §2's own correction said it was: a sampling artifact. Run 1 read
+the chip every twenty wall seconds, which at ×4 is ~1,930 ticks; an incident is
+open for ~610. Fourteen per cent of publications carrying a `1` is a coin that
+comes up tails six times out of seven, and run 1 flipped it fifty times at
+intervals three times longer than the thing it was measuring.
+
+**The `DEFECT` label was withdrawn on this branch before it was relayed, and
+this run is why it should stay withdrawn.** Recorded at length rather than
+deleted, because the instructive part is that the *measurement* was real both
+times and only the label was wrong.
+
+### What the brief for this probe got wrong, corrected
+
+The probe was briefed on the argument that removing every guard removes the only
+thing that can move an incident to a terminal state. It does not.
+`LEGAL_TRANSITIONS` (`src/simulation/incidents/incident.ts:24`) gives `active`
+the edge `active → lapsed`, so an unanswered incident still terminates itself.
+What zero guards actually buys is a **known dwell time** — 601 ticks, from
+`responseDeadlineTicks: 600` (`response-system.ts:27`) and `isPastDeadline`
+(`:601`) — and that is what made the sample decisive.
+
+## 6. What the same run found on the way, none of it about the chip
+
+Every item here was read off the same log. Each is labelled `DEFECT` (the code
+does the wrong thing), `HIDDEN` (it does the right thing and a player cannot
+find it — a defect under the owner's directive of 2026-09-03) or `TASTE` (it
+works, it is discoverable, it is not fun).
+
+### 6.1 `HIDDEN` — twelve unanswered incidents, and the prison said it was under control every time
+
+All twelve incidents `lapsed`: nobody responded, and `lapse`
+(`src/simulation/incidents/response-system.ts:604`) injures **every**
+participant and damages property in proportion to severity. The worst of them,
+verbatim from the ground-truth pull:
+
+```
+incident.riot.10  type=riot  state=lapsed  severity=10  participantCount=10
+  outcome={ injuredCount: 10, propertyDamage: 10, escaped: false }
+  requiredResponders=5
+```
+
+Ten prisoners in a riot, ten of them injured, maximum property damage, nobody
+sent. What the alerts column said about it, verbatim:
+
+```
+A riot has broken out — 10 prisoners have stopped taking orders.  Day 20  Critical
+The prison is under control again — no incident is still open.   11×  Day 22  Info
+```
+
+**A contained incident produces those same two rows.** `reportAllClearIfCalm`
+(`response-system.ts:268`) runs on *both* terminal transitions and is suppressed
+only when an escape was announced, so nothing in the game distinguishes "your
+guards put it down" from "it burned out on its own and everyone in it was
+hurt". The two outcomes are materially different in the code — the `resolved`
+branch (`:834`) writes `injuredEntityIds: []` and `propertyDamage:
+floor(severity/2)`, against `lapse`'s every-participant and `min(10,
+severity)`, plus `LAPSED_INCIDENT_SURCHARGE_POINTS`
+(`src/simulation/prisoners/disciplinary-record.ts`) on each participant's
+record — and identical in what the player is told.
+
+**This is the class of the defect #683 fixed the instance of.** That issue was
+"a successful escape and a contained attempt produced the same two rows", and
+the owner's ruling of 2026-08-30 authored `hud.alert.event.incidents.escape-succeeded`
+for it. It fired correctly in this run and it is the one place the distinction
+reaches the player:
+
+```
+Carla Duarte broke out — no guard reached them in time.  Day 21  Critical
+```
+
+The assault, the riot and the gang retaliation have no such sentence.
+`docs/AGENT_WORKFLOW.md` §3: fix the class, not the instance.
+
+**What a fix must convey** — the wording is the owner's alone: that the
+incident *ended without a response*, and that this cost more than a contained
+one would have. Nothing here proposes a sentence.
+
+**The refuting sample.** If any of the twelve had actually been contained, the
+all-clear would have been telling the truth and there would be no finding. The
+ground-truth pull answers it outright: `countsByState` ends
+`resolved=0, lapsed=12`, and `responseMetrics.incidentsResolved` is `0`. There
+was nothing to be under control about.
+
+### 6.2 `HIDDEN` — the read model that would answer "what did that cost me" is built, paged and pulled by nothing
+
+Everything quoted in 6.1 came out of `hud/incidents`. That projection is
+complete: `active` rows, a paged `resolved` list, `summary` with
+`totalInjured` / `totalPropertyDamage` / `escapes`, `countsByState`,
+`countsByType`, `triggerMetrics`, `responseMetrics` — and per row a
+`severityBar` and a `propertyDamageBar`, which are `BoundedValue`s, i.e. *bar
+view models somebody built for a bar*. `hud/incident-detail` adds the
+participant list and the full state timeline.
+
+`grep -rn 'hud/incidents\|hud/incident-detail' src/` finds them declared in
+`src/simulation/protocol/types.ts:344`, projected in
+`src/simulation/worker/projection-catalog.ts:417` and `:435`, and referenced
+from **no file under `src/ui/` and not from `src/main.ts`.** Same for
+`hud/prisoner-detail` (`types.ts:338`).
+
+`src/main.ts:1391` already says what this costs, in the repository's own words:
+
+> #450 spent ~4,200 lines making a prison capable of going wrong — an incident
+> writes a disciplinary record, `ClassificationReviewSystem` rewrites the
+> prisoner's tier and group from it, and `ActionSystem` puts them on a
+> different timetable — and the whole of what reached the player from that
+> chain was `activeIncidents`, one integer on one stat tile.
+
+This run is that sentence measured. It is also the sharpest instance of the
+owner's directive — *"nie jakieś ukryte funkcje"* — in the build.
+
+**Where the chain does reach the player, and credit where it is due.** The
+strip's HIGH RISK chip went **0 → 9** across the run while PRISONERS fell 12 →
+9: every surviving prisoner was reclassified to high risk off the disciplinary
+records those twelve lapsed incidents wrote. So the loop runs and its *output*
+is on screen. What is missing is any way to connect the nine to the twelve.
+
+### 6.3 `TASTE` — the riot is a metronome, and you could set a watch by it
+
+Every riot in the run, by the tick it opened:
+
+```
+8300  13100  17900  22700  27500  32300  37100  41900  46700  51500
+```
+
+The gaps: **4800, 4800, 4800, 4800, 4800, 4800, 4800, 4800, 4800.** Nine
+intervals, no variance, and 4,800 is exactly
+`DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT`
+(`src/simulation/incidents/trigger-system.ts:84`).
+
+The trigger is saturated: conditions are hot continuously, so a riot opens on
+the first tick it is permitted to, forever. The quiet period is not a floor on
+the rate here, it *is* the rate. Nothing is wrong — `sampleSectorRisk` and the
+sustained-hot window are doing what they were written to do — but the effect is
+that the prison's headline threat arrives on a fixed timetable a player could
+learn, and that no action of theirs visibly moved it.
+
+That the assault fired **once** in 20.4 days against its own 2,400-tick quiet
+period is the other half of the same reading: `IncidentTriggerSystem` prefers
+the riot when the sector is hot (`:309` skips a sector that already has one
+open), so the per-prisoner trigger the flashpoint model was built for barely
+gets a turn.
+
+### 6.4 The Rooms panel's stale enclosure verdict still reproduces
+
+**Confirmed, not new.** Recorded in
+[`2026-08-31-playing-the-nine-changes.md`](./2026-08-31-playing-the-nine-changes.md)
+§3a and [`2026-08-29-playtest-ordering-and-the-second-room.md`](./2026-08-29-playtest-ordering-and-the-second-room.md)
+§7. Reproduced verbatim on today's tree, from this run's log:
+
+```
+designate attempt 1 at t+7620ms: rooms=1
+  | panel said ["OPEN ON AT LEAST ONE SIDE","MUST BE ENCLOSED"]
+```
+
+The panel's live verdict (`hud.rooms.enclosure-open`, *"Open on at least one
+side"*) was on screen for an enclosed rectangle, and the designation the player
+would have been discouraged from making succeeded on the first press. No new
+diagnosis is offered here and none of the earlier passes' cause is re-derived.
+
+### 6.5 Withdrawn: §4's claim that a populated prison always reads *Covered*
+
+§4 above says a prison with no sectors is fully covered by definition and that
+safety is therefore free, on a Staff panel reading *"GUARD COVERAGE 0 of 0 /
+Covered"*. **On this tree, with twelve prisoners and no guards, the panel reads
+the opposite** — verbatim:
+
+```
+GUARD COVERAGE | 0 of 2 | Unguarded
+Nobody is on duty. Hire 2 to cover this population.
+No guard is posted here, so nobody in this sector is kept safe.
+```
+
+and the strip's COVERAGE chip read `0` with the badge `Unguarded` at the start
+of the run and at the end of it. `requiredGuardCountFor`
+(`src/simulation/security/deployment-system.ts:100`) scales the requirement
+with occupancy, `Math.ceil(occupants / DEFAULT_SECTOR_PRISONERS_PER_GUARD)`
+over a floor of 1, so twelve prisoners ask for two and the readout says so.
+
+Marked as a withdrawal rather than edited away, per
+`docs/AGENT_WORKFLOW.md` §4. What produced §4's reading is not established
+here, and this note does not guess: the two runs built different prisons, and
+"I measured the opposite, I do not know why the earlier reading differed" is
+the whole of the claim.
+
+**The question §4 was reaching for survives the correction and is sharper than
+it was**, and it is what `playtest-2026-09-03-what-a-guard-buys.playtest.ts`
+was written to settle: the panel asks for two, `DeploymentSystem` posts both of
+them, and `IncidentResponseSystem.claimableResponders`
+(`src/simulation/incidents/response-system.ts:453`) draws responders from
+`claimableGuardIds` — which is `unassignedGuardIds()` filtered by post
+eligibility (`src/simulation/security/post-eligibility.ts:103`). **A guard on a
+post is not in that list.** Meanwhile this run's own ground truth prices the
+response: `requiredResponders` was **2** for the assault, **4** for the escape
+attempt and **5** for the riot. So a twelve-prisoner prison that wants its
+riots answered needs the two the panel asks for *plus five more*, and nothing
+in the game says so. That is a prediction until the staged run reports.
