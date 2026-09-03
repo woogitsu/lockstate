@@ -856,4 +856,76 @@ test.describe('the whole screen at once', () => {
     log(`   whole staff panel: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
   });
 
+  /**
+   * An eighth act, written after act 5's affordance sweep put
+   * `span.ui-eyebrow.hud-minimap__placeholder` -- **"MINIMAP IS NOT AVAILABLE
+   * YET"**, 198x26, `cursor: pointer`, no listener of its own -- on screen on
+   * every one of the five tabs.
+   *
+   * `hud.ts` gives `.hud-minimap__surface` a real `click` listener that calls
+   * `onMinimapNavigate` and moves the camera, and swaps the sentence for
+   * `hud.minimap.navigable` **only once a click has actually landed
+   * somewhere**. So the question this act answers by pressing rather than by
+   * reading: on arrival the panel says the minimap is not available, and if a
+   * press proves otherwise, the only player who is ever told is the one who
+   * ignored the sentence.
+   *
+   * The sentence changing is itself the proof that the camera moved -- the
+   * swap is gated on `onMinimapNavigate` returning `true` -- so this needs no
+   * access to the camera, which `AGENTS.md` boundary 1 keeps out of the HUD
+   * anyway.
+   */
+  test('act 8 — the minimap says it is not available, and then answers a click', async ({ page }) => {
+    await installListenerCensus(page);
+    await installTee(page);
+    await page.setViewportSize(DESKTOP);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await page.waitForTimeout(3000);
+
+    const describeMinimap = async (label: string): Promise<void> => {
+      const state = await page.evaluate(() => {
+        const census = (window as unknown as { lockstateListenerCensus?: WeakMap<EventTarget, Set<string>> })
+          .lockstateListenerCensus;
+        const surface = document.querySelector<HTMLElement>('.hud-minimap__surface');
+        const placeholder = document.querySelector<HTMLElement>('.hud-minimap__placeholder');
+        const panel = document.querySelector<HTMLElement>('.hud-minimap');
+        const box = surface?.getBoundingClientRect();
+        return {
+          sentence: (placeholder?.textContent ?? '(absent)').trim(),
+          surfaceCursor: surface === null ? '?' : getComputedStyle(surface).cursor,
+          placeholderCursor: placeholder === null ? '?' : getComputedStyle(placeholder).cursor,
+          surfaceListeners: [...(census?.get(surface as EventTarget) ?? [])].join(',') || 'none',
+          surfaceRole: surface?.getAttribute('role') ?? '(none)',
+          surfaceTag: surface?.tagName.toLowerCase() ?? '?',
+          surfaceTabIndex: String(surface?.tabIndex ?? '?'),
+          surfaceAria: surface?.getAttribute('aria-label') ?? '(none)',
+          surfaceTitle: surface?.getAttribute('title') ?? '(none)',
+          panelTitle: (panel?.querySelector('.ui-panel__title, .ui-eyebrow')?.textContent ?? '?').trim(),
+          box: box === undefined ? '?' : `${Math.round(box.width)}x${Math.round(box.height)}@${Math.round(box.left)},${Math.round(box.top)}`,
+        };
+      });
+      log(`   ${label}`);
+      for (const [key, value] of Object.entries(state)) log(`      ${key.padEnd(18)} ${JSON.stringify(value)}`);
+    };
+
+    log('===== ACT 8 / the minimap, as a new player meets it =====');
+    await describeMinimap('on arrival, nothing pressed');
+
+    // A press in the middle of the surface, the way a player who ignored the
+    // sentence would.
+    const surface = page.locator('.hud-minimap__surface');
+    const box = await surface.boundingBox();
+    log(`   pressing the centre of the surface at ${JSON.stringify(box)}`);
+    await surface.click({ position: { x: Math.round((box?.width ?? 100) / 3), y: Math.round((box?.height ?? 100) / 3) } });
+    await page.waitForTimeout(1500);
+    await describeMinimap('after one press on it');
+
+    // And whether the panel is even open on arrival, since a folded panel is a
+    // sentence nobody reads either way.
+    log(`   minimap panel collapsed attribute: ${JSON.stringify(await page.locator('.hud-minimap').getAttribute('data-collapsed'))}`);
+    log(`   whole minimap panel text: ${JSON.stringify(await panelText(page, '.hud-minimap'))}`);
+  });
+
 });
