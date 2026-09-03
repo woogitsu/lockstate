@@ -5619,11 +5619,20 @@ player-facing sentences the document deliberately did not write**, and one
 member of the `PrisonCondition` union that cannot exist until one of them does.
 
 **The live anchor's reading of "eight" was correct when it was taken, and this
-is the ninth, filed after it.** `docs/adr/README.md`'s anchor pass at
-`f36148d7` (v0.0.393) checked the four places that count this section and found
-all four reading eight, which they did; this row and the three counters that
-move with it are a change *since* that reading, not a correction of it. The
-anchor itself is untouched.
+is the ninth, filed after it.** The anchor pass at `402453a9` (v0.0.402)
+checked the four places that count this section and found all four reading
+eight, which they did; this row and the three counters that move with it are a
+change *since* that reading, not a correction of it. **The anchor itself is
+untouched**, and it is not this row's to move.
+
+**Two numbers in that anchor are worth handing to whoever takes the next
+one.** The pass also records *"The three that count `Proposed` documents hold
+at THIRTY-SEVEN"*, and ADR 0093 was one of the thirty-seven: its acceptance of
+2026-09-03 takes them to **thirty-six**. And the same pass reports *"the fifth
+consecutive anchor at which no entry was filed"* — this row ends that streak.
+Neither sentence is edited here, because both are true of the commit they were
+taken at; they are named so the next reading does not have to rediscover why
+its own count differs.
 
 **Why it is filed here rather than in §5.** §5 is *"where an accepted decision
 and the code disagree"*, and they do not: the code implements every decision
