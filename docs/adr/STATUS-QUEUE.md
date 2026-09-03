@@ -703,8 +703,16 @@ never compares basenames.
 **A HOLE IN THIS FILE'S OWN COVERAGE, found because this window walked into it.**
 `src/ui/hud/regime-panel.ts` is in this window — #888 changed a player-visible
 sentence in it — and **§§3-6 cite that file nowhere at all.** Its only mention
-anywhere here is at `:1252`, in §2, and that mention is *about* the fact that
-its neighbour `hud.ts` is cited seven times. So one of the most player-facing
+anywhere here is inside a basename-scan bullet in the anchor narrative, under
+this file's H1 rather than in any numbered section, and that mention is *about*
+its neighbour `hud.ts` being cited seven times. **The first cut of this
+paragraph said "at `:1252`, in §2", and both halves were wrong** — a `file:line`
+into this file is the least durable citation in the corpus, so it is replaced
+by a description, and the section was misattributed because the nearest heading
+above that line is the H1. The corrected reading is **sharper than the one it
+replaces**: the mention lists `regime-panel.ts` among **eighteen non-members**
+the window checked and excluded, so the only trace this file has ever carried
+of it is a record of deciding it did not need reading. So one of the most player-facing
 files in the repository is invisible to every live-claim section of the document
 whose job is to say where an accepted decision and the code disagree.
 
@@ -8183,7 +8191,16 @@ which it is doing.
 
 **What this pass did not do.** It did not sweep the remote for held ADR numbers.
 It did not audit `src/ui/hud/regime-panel.ts`, which is the gap it just named —
-naming a gap and closing it are different sizes of work, and the second is owed.
+naming a gap and closing it are different sizes of work, and the second is
+owed. **It was taken immediately afterwards, and the gap is real**: 88
+checkable assertions in that file, 82 opened on both sides, **seven findings,
+every one of them the document being wrong rather than the code**. The
+strongest is on the exported interface — `setRoster`'s docblock still says an
+emptied roster "draws no sentence at all" while `paintRoster` always draws one
+— and it went false in #888, whose diff on that file is a **single hunk 280
+lines below the docblock it falsified**. That is the shape this gap was always
+going to have: not a decision the code betrays, but a file whose comments
+nobody has ever had a reason to re-read.
 It re-derived citations into five files outside the window only because those
 five were the previous anchor's corrections; **every other citation outside the
 window's nine files stays unread**, which is the standing blind spot and is
