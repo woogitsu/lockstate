@@ -758,3 +758,128 @@ test('act 8 -- the whole chain to a living prisoner, counted, in the order a pla
 
   hand.report('EVERYTHING: an empty browser tab to one prisoner in one furnished cell');
 });
+
+test('act 9 -- the enclosure the wall tool actually made, and the rest of the chain', async ({ page }) => {
+  const act = 'act 9';
+  const hand = new Hand(act);
+  await installTee(page);
+  await openApp(page);
+  await page.locator('.save-panel__button', { hasText: 'New prison' }).click();
+  hand.count('press "New prison"');
+  await page.waitForTimeout(2500);
+  await tab(page, 'build').click();
+  hand.count('press the BUILD tab');
+  await page.waitForTimeout(500);
+  const origin = await calibrate(page);
+  await page.locator('.hud-strip__transport button').nth(2).click();
+  hand.count('press Fast forward');
+  await page.locator('.hud-strip__transport button').nth(2).click();
+  hand.count('press Fast forward again');
+
+  await page.locator('.hud-build__arm').click();
+  hand.count('press "Place on map"');
+  const runs: readonly [readonly [number, number], readonly [number, number]][] = [
+    [[13, 13], [18, 13]],
+    [[13, 18], [18, 18]],
+    [[13, 13], [13, 18]],
+    [[18, 13], [18, 18]],
+  ];
+  const placed: string[] = [];
+  for (const [a, b] of runs) {
+    const n = (await sentCommands(page)).length;
+    await drag(page, centreOf(origin, a[0], a[1]), centreOf(origin, b[0], b[1]));
+    hand.count(`drag a wall run (${a[0]},${a[1]})->(${b[0]},${b[1]})`);
+    for (const c of (await sentCommands(page)).slice(n))
+      placed.push(`${c['definitionId']}@${c['x']},${c['y']}:${c['edge']}`);
+  }
+  log(act, `--- what the four drags actually placed ---`);
+  for (const p of placed) log(act, `  ${p}`);
+  await waitForQueueEmpty(page);
+  await page.screenshot({ path: `${SHOTS}/60-what-four-drags-enclose.png` });
+
+  await tab(page, 'rooms').click();
+  hand.count('press the ROOMS tab');
+  await page.waitForTimeout(700);
+  await page.locator('.hud-rooms [data-room="room.cell"]').click();
+  hand.count('click "Cell"');
+  await page.waitForTimeout(300);
+
+  /*
+   * Which rectangle is the enclosure? Try each candidate through the typed
+   * coordinate fields, so the answer is not confounded by a truncated drag,
+   * and read the refusal the game gives for each. This is the question a
+   * player has to answer with nothing but trial and error.
+   */
+  const tries: readonly [number, number, number, number, string][] = [
+    [14, 14, 4, 4, 'the interior a player would think is "inside the walls"'],
+    [13, 13, 6, 6, 'the full 6x6 the drags spanned'],
+    [13, 13, 5, 5, 'the 5x5 the edge-walls actually close'],
+  ];
+  await page.locator('.hud-rooms__coordinates-hint, .hud-rooms__coordinates').first().click().catch(() => {});
+  for (const [x, y, w, h, why] of tries) {
+    const open = await page.locator('.hud-rooms__coord-x').isVisible();
+    if (!open) await page.locator('.hud-rooms__coordinates > *').first().click();
+    await page.locator('.hud-rooms__coord-x').fill(String(x));
+    await page.locator('.hud-rooms__coord-y').fill(String(y));
+    await page.locator('.hud-rooms__coord-width').fill(String(w));
+    await page.locator('.hud-rooms__coord-height').fill(String(h));
+    await page.locator('.hud-rooms__coordinates-submit').click();
+    await page.waitForTimeout(1500);
+    log(act, `try ${x},${y} ${w}x${h} (${why})`);
+    log(act, `   rooms chip=${await page.locator('[data-metric="rooms"] .ui-stat__value').innerText()}`);
+    log(act, `   alerts=${JSON.stringify((await panelText(page, '.hud-alerts__list')).replace(/\s+/g, ' ').slice(0, 180))}`);
+  }
+  await page.screenshot({ path: `${SHOTS}/61-which-rectangle-zones.png` });
+  log(act, `pulse: ${await pulse(page)}`);
+  log(act, `rooms rows => ${JSON.stringify((await panelText(page, '.hud-rooms__rows')).replace(/\s+/g, ' ').slice(0, 400))}`);
+
+  // With a room zoned, the bed and the toilet.
+  await tab(page, 'build').click();
+  hand.count('press the BUILD tab');
+  await page.waitForTimeout(500);
+  for (const [id, tx, ty] of [
+    ['bed-wooden', 15, 15],
+    ['toilet-brick', 16, 16],
+  ] as readonly [string, number, number][]) {
+    await page.locator(`.hud-build__list [data-buildable="${id}"]`).click();
+    hand.count(`click "${id}" in the build list`);
+    const arm = (await page.locator('.hud-build__arm').innerText()).trim();
+    if (/^(place|draw)/i.test(arm)) {
+      await page.locator('.hud-build__arm').click();
+      hand.count(`press "${arm}"`);
+    }
+    const cmds = await press(page, centreOf(origin, tx, ty).x, centreOf(origin, tx, ty).y);
+    hand.count(`click the tile (${tx},${ty})`);
+    await page.waitForTimeout(1500);
+    log(act, `${id}@${tx},${ty} => ${cmds.length} cmd; alerts=${JSON.stringify((await panelText(page, '.hud-alerts__list')).replace(/\s+/g, ' ').slice(0, 160))}`);
+  }
+  await waitForQueueEmpty(page);
+  await page.screenshot({ path: `${SHOTS}/62-furnished.png` });
+  log(act, `pulse: ${await pulse(page)}`);
+
+  // A door, so somebody can get in.
+  await page.locator('.hud-build__list [data-buildable="door-wooden"]').click();
+  hand.count('click "Wooden door"');
+  const darm = (await page.locator('.hud-build__arm').innerText()).trim();
+  if (/^(place|draw)/i.test(darm)) {
+    await page.locator('.hud-build__arm').click();
+    hand.count(`press "${darm}"`);
+  }
+  log(act, `door => ${JSON.stringify(await press(page, centreOf(origin, 15, 13).x, centreOf(origin, 15, 13).y))}`);
+  hand.count('click the tile (15,13) for the door');
+  await waitForQueueEmpty(page);
+  log(act, `pulse: ${await pulse(page)}`);
+
+  // The Intake island is not laid out on Build/Rooms, so a tab press is owed.
+  log(act, `intake visible on the Build tab: ${await page.locator('.hud-intake__admit').isVisible()}`);
+  await tab(page, 'overview').click();
+  hand.count('press the OVERVIEW tab, to reach the Admit button at all');
+  await page.waitForTimeout(600);
+  log(act, `intake visible on the Overview tab: ${await page.locator('.hud-intake__admit').isVisible()}`);
+  await page.locator('.hud-intake__admit').click();
+  hand.count('press "Admit a prisoner"');
+  await page.waitForTimeout(5000);
+  log(act, `after admitting: ${await pulse(page)}`);
+  await page.screenshot({ path: `${SHOTS}/63-admitted.png` });
+  hand.report('EVERYTHING: an empty browser tab to one prisoner in one furnished cell');
+});
