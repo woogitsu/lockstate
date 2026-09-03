@@ -12,6 +12,7 @@ import { createPanel } from '../primitives/panel';
 import { rovingTabStop } from '../primitives/roving-focus';
 import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import { HUD_MESSAGE_KEY } from './messages';
+import { assignPooledRows } from './pooled-row-binding';
 import { toggleRemovalMode } from './tool-arming';
 import {
   HUD_BUILD_EDGES,
@@ -1874,7 +1875,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     readonly label: HTMLSpanElement;
     readonly state: HTMLSpanElement;
     readonly cancel: ActionButton;
-    /** The order this row currently names, or `undefined` while it is hidden. */
+    /** The order this row names, or `undefined` while it names nothing. */
     orderId: string | undefined;
   }
 
@@ -1888,11 +1889,28 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       cancel: createActionButton({
         label: t(HUD_MESSAGE_KEY.buildQueueCancel),
         onActivate: () => {
-          // Read at press time, not captured at construction: the row is pooled
-          // and names whichever order the last publication put in it. A captured
-          // id would cancel whatever was here two seconds ago, which is the
-          // exact defect a pooled row exists to avoid paying for with
-          // allocations.
+          /*
+           * Read at press time, not captured at construction -- and that on its
+           * own was never enough, which is #860.
+           *
+           * The comment this replaces argued that a captured id *"would cancel
+           * whatever was here two seconds ago, which is the exact defect a
+           * pooled row exists to avoid paying for with allocations"*. That is
+           * still true and is still why the read is here. But reading at press
+           * time makes the id **current**, not **the one the player read**:
+           * while the pool bound `rows[i]` to `orders[i]`, one completion
+           * between the paint a player acted on and their click re-pointed
+           * every row, and this line then submitted the order that had just
+           * landed in it. Measured 2026-09-03 with a coordinate press: two of
+           * four cancelled a different wall, at decision delays of 250ms and
+           * 600ms, while both presses at a 0ms delay were aimed correctly.
+           *
+           * `assignPooledRows` is what closes it, by refusing to let this row
+           * name a different order at all. `orderId` is therefore the order
+           * this row has named since it took it, and `undefined` on a row whose
+           * order has left the window -- so a press reaches what the player was
+           * looking at, or reaches nothing.
+           */
           const { orderId } = row;
           if (orderId === undefined) return;
           options.onCancelOrder(orderId);
@@ -1908,6 +1926,31 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     queueList.append(row.element);
     return row;
   });
+
+  /**
+   * Takes a row out of the list entirely: no order, no box, and nothing left on
+   * it that could be read as a control aimed at something.
+   *
+   * The label and both data attributes are cleared as well as the id, which the
+   * loop this replaces did not do. A hidden row used to keep the `data-order`
+   * of whichever order was last in it, so a queue that shrank from three to two
+   * left a third row carrying a live-looking order id with `orderId` already
+   * `undefined` -- and a `[data-order="…"]` press then resolved to a row with no
+   * box and hung. That is the third of #859's side findings, and
+   * `staff-panel.ts`'s `paintHeld` already emptied its pooled rows this way
+   * (*"so a press that somehow reached a hidden button cannot name a guard from
+   * the last publication"*); this is the same rule, one panel over.
+   */
+  function emptyQueueRow(row: QueueRow): void {
+    row.orderId = undefined;
+    row.element.hidden = true;
+    row.label.textContent = '';
+    row.state.textContent = '';
+    delete row.element.dataset['order'];
+    delete row.element.dataset['state'];
+    row.cancel.setUnavailable(false);
+    row.cancel.element.setAttribute('aria-label', t(HUD_MESSAGE_KEY.buildQueueCancel));
+  }
 
   const queueSection: CollapsibleSection = createCollapsibleSection({
     eyebrow: t(HUD_MESSAGE_KEY.buildQueue),
@@ -1947,10 +1990,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     const shown = queue !== undefined && queue.total > 0 ? queue : undefined;
     queueSection.element.hidden = shown === undefined;
     if (shown === undefined) {
-      for (const row of queueRows) {
-        row.element.hidden = true;
-        row.orderId = undefined;
-      }
+      for (const row of queueRows) emptyQueueRow(row);
       queueCount.textContent = '';
       queueMore.textContent = '';
       // Nothing queued is nothing to wait for. The line goes with the block it
@@ -1985,15 +2025,65 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      */
     panel.element.dataset['queued'] = String(shown.total);
 
+    /*
+     * Which row names which order -- `assignPooledRows`, not `orders[index]`,
+     * and that substitution is the whole of #860's fix. Its header carries the
+     * measurement and the argument; what it means here is that a row keeps the
+     * order it took until that order leaves the window, so the press handler
+     * above cannot be handed an order the row never named.
+     *
+     * The cost is that this list is no longer in the crew's order once the
+     * queue has advanced: the freed row is at the top and the arriving order
+     * belongs at the back, and a fixed pool cannot have both. Every row carries
+     * its tile and its edge, which is what a player aims by
+     * (`projectBuildQueue`'s docblock), and `data-state` still accents the one
+     * the crew is on, so what is lost is the ordinal rather than the aim.
+     */
+    const orders = new Map(shown.orders.map((order) => [order.orderId, order]));
+    const assignments = assignPooledRows(
+      queueRows.map((row) => row.orderId),
+      shown.orders.map((order) => order.orderId),
+    );
+
+    let drawn = 0;
     for (const [index, row] of queueRows.entries()) {
-      const order = shown.orders[index];
-      if (order === undefined) {
-        row.element.hidden = true;
-        row.orderId = undefined;
+      const assignment = assignments[index];
+      if (assignment === undefined || assignment.kind === 'empty') {
+        emptyQueueRow(row);
         continue;
       }
+      if (assignment.kind === 'holds-open') {
+        /*
+         * The order this row named has gone. It is emptied *now* -- no id, no
+         * label, no state, and the control reports itself unavailable -- but it
+         * keeps its box until the next publication, because hiding it would
+         * slide every row below it up a row's height into whatever pointer is
+         * resting there, which is #860 again by geometry instead of by binding.
+         *
+         * `setUnavailable`, not `setDisabled`: `createBusyGroup`'s `apply`
+         * assigns `disabled` to every member on every busy transition, so a
+         * `disabled` written here would be cleared the next time any command in
+         * the HUD settles (`ActionButton.setUnavailable`'s docblock records
+         * that collision). `aria-disabled` has one writer. Either way the
+         * authority is `row.orderId === undefined` in the handler above; this
+         * is the signal, not the gate.
+         */
+        row.orderId = undefined;
+        row.element.hidden = false;
+        row.label.textContent = '';
+        row.state.textContent = '';
+        delete row.element.dataset['order'];
+        delete row.element.dataset['state'];
+        row.cancel.setUnavailable(true);
+        row.cancel.element.setAttribute('aria-label', t(HUD_MESSAGE_KEY.buildQueueCancel));
+        continue;
+      }
+      const order = orders.get(assignment.itemId);
+      if (order === undefined) continue;
+      drawn += 1;
       row.orderId = order.orderId;
       row.element.hidden = false;
+      row.cancel.setUnavailable(false);
       row.label.textContent = formatBuildQueueOrderText(t, order, localizer.formatNumber(order.cancelRefundMinorUnits));
       row.state.textContent = t(buildOrderStateLabelKey(order.state));
       // The order id on the row, so a test can assert *which* order a control
@@ -2010,10 +2100,18 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       row.cancel.element.setAttribute('aria-label', `${t(HUD_MESSAGE_KEY.buildQueueCancel)}: ${row.label.textContent}`);
     }
 
-    // How many are behind the last row, and no control to reach them --
-    // `BUILD_QUEUE_ROW_LIMIT` argues that out, and the sentence itself points at
-    // the control that does take a whole run back.
-    const unlisted = Math.max(0, shown.total - shown.orders.length);
+    /*
+     * How many are behind the last row, and no control to reach them --
+     * `BUILD_QUEUE_ROW_LIMIT` argues that out, and the sentence itself points at
+     * the control that does take a whole run back.
+     *
+     * Counted against the rows this pass actually **drew** rather than against
+     * `shown.orders.length`, because those two are no longer the same number: a
+     * row holding its box open for one publication is a row the arriving order
+     * could not have, so a queue of twelve with three sent and two drawn has
+     * ten behind the list and not nine.
+     */
+    const unlisted = Math.max(0, shown.total - drawn);
     queueMore.textContent = unlisted === 0 ? '' : t(HUD_MESSAGE_KEY.buildQueueMore, { count: unlisted });
     queueMore.hidden = unlisted === 0;
 
