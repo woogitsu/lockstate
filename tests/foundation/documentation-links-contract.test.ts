@@ -377,8 +377,23 @@ describe('every rooted path cited in the documentation is on disk', () => {
  *   `docs/adr/0007-navigation-work-budgets-and-flow-fields.md`. The contract
  *   written to catch confident pointers at files that are not there carried
  *   one in its own explanation of what it catches, for as long as it has
- *   existed: `7a887b3` wrote that sentence on 2026-08-24 and nothing touched
- *   the filename in it until 2026-08-28. That is the best argument this block
+ *   existed: `ea98c353` wrote that sentence on 2026-08-24 and nothing touched
+ *   the filename in it until 2026-08-28.
+ *
+ *   **This cited an intermediate commit of its own branch until 2026-09-03,
+ *   when a branch cleanup orphaned it.** That commit's subject was
+ *   byte-identical to `ea98c353`'s apart from the issue number the squash
+ *   renumbered, and it carried this very sentence with this very filename in
+ *   it -- but it was only ever reachable from
+ *   `claude/doc-path-citation-gate`, so deleting that branch left the
+ *   citation resolvable by nobody, `documentation-commit-citation-contract`
+ *   included. **The orphaned sha is deliberately not quoted here**: writing it
+ *   in the citation form fails the same gate, `UNPUBLISHED_BY_ORIGIN` is empty
+ *   by design and its own comment calls that emptiness *"a state to defend
+ *   rather than a gap"*, and the one entry it ever held was settled by naming
+ *   the published commit instead. Squash-merging leaves every intermediate
+ *   commit on the branch and nowhere else, so a citation naming one carries a
+ *   deletion date it does not print. That is the best argument this block
  *   has for existing, so it is written here rather than left in a commit
  *   message.
  *
