@@ -4,14 +4,18 @@
 a Build-panel queue row advertising `80 back` for an order in `assigned`
 ("Awaiting the Crew") whose `Cancel` moved the FUNDS chip by nothing across
 eight seconds. `tests/integration/construction-queue-row-pays-what-it-shows.test.ts`
-(landed on `main` at v0.0.402 (`402453a9`) with #843) asserts the opposite in its
-*"the money case at `assigned`: the catalogue value of the material it is
-holding"* case. **Both are true. This record settles which mechanism makes them
-both true, from the worker's own state rather than from the chip.**
+(landed with #843, `4652dbfc`) asserts the opposite in its *"the money case at
+`assigned`: the catalogue value of the material it is holding"* case. **Both are
+true. This record settles which mechanism makes them both true, from the
+worker's own state rather than from the chip.**
 
 Measured on `docs/what-cancel-actually-gives-back`, cut from `origin/main` at
-v0.0.401 (`d0957d6b`), with
+v0.0.401 (`d0957d6b`) — which already carried that test — with
 `tests/browser/playtest-2026-09-03-what-cancel-actually-gives-back.playtest.ts`.
+`origin/main` (`402453a9`) was merged into the branch **after** every
+measurement below and nothing was re-taken against it; its three files are a
+workflow, the release bump and a documentation gate, none of which this
+question touches.
 Nothing in `src/` was changed, and no player-facing string was touched:
 `AGENTS.md`'s fourth exclusion puts the row's wording with the owner.
 
