@@ -441,31 +441,50 @@ jobs:
 
 
           def cited_shas():
-              """Every commit sha the documentation cites, mapped to where.
+              """Every commit sha the corpus cites, mapped to where.
 
               Read off the working tree rather than the API, because that is
-              what the gate reads and the two must agree. `docs/` only: the gate
-              scans source comments too, but a comment naming a commit is code
-              this branch cleanup does not touch, and widening the scan here
-              would make the guard refuse branches for citations no deletion can
-              break.
+              what the gate reads and the two must agree.
+
+              **THIS SCANNED `docs/` ONLY UNTIL 2026-09-03, AND THAT NARROWING
+              CAUSED THE EXACT DAMAGE THIS GUARD EXISTS TO PREVENT.** The
+              reason given for it was: *"the gate scans source comments too,
+              but a comment naming a commit is code this branch cleanup does
+              not touch, and widening the scan here would make the guard refuse
+              branches for citations no deletion can break."* The second clause
+              is false, and the first is beside the point. A cleanup does not
+              need to touch the comment; it only needs to delete the branch
+              that publishes the commit the comment names. On 2026-09-03 a run
+              of this workflow deleted 338 branches and orphaned exactly one
+              citation -- in `tests/foundation/documentation-links-contract.test.ts`,
+              a *test comment*, which this function could not see.
+
+              So the walk now covers every directory the gate itself reads.
+              The cost is real and is the right trade: the guard will refuse
+              some branch whose only claim on life is a sha in a source
+              comment, and a reader who wants it gone has to repoint that
+              comment at the published squash first. That is one edit against
+              a citation nobody can resolve.
               """
               index = {}
-              for root, _, files in os.walk("docs"):
-                  for filename in files:
-                      if not filename.endswith(".md"):
-                          continue
-                      path = os.path.join(root, filename)
-                      try:
-                          with open(path, encoding="utf-8") as handle:
-                              contents = handle.read()
-                      except OSError:
-                          continue
-                      for match in CITATION.finditer(contents):
-                          token = match.group(1)
-                          if any(shape.match(token) for shape in NOT_A_COMMIT):
+              for root in ("docs", "src", "tests", "scripts", "tooling", "benchmarks"):
+                  if not os.path.isdir(root):
+                      continue
+                  for directory, _, files in os.walk(root):
+                      for filename in files:
+                          if not filename.endswith((".md", ".ts", ".tsx", ".mjs", ".js", ".sql", ".css")):
                               continue
-                          index.setdefault(token, path)
+                          path = os.path.join(directory, filename)
+                          try:
+                              with open(path, encoding="utf-8") as handle:
+                                  contents = handle.read()
+                          except (OSError, UnicodeDecodeError):
+                              continue
+                          for match in CITATION.finditer(contents):
+                              token = match.group(1)
+                              if any(shape.match(token) for shape in NOT_A_COMMIT):
+                                  continue
+                              index.setdefault(token, path)
               return index
 
           CITED = cited_shas()
