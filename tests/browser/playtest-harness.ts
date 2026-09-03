@@ -222,11 +222,40 @@ export async function drag(page: Page, a: { x: number; y: number }, b: { x: numb
   await page.waitForTimeout(150);
 }
 
-/** Measures the screen->tile transform against the real page, by bisection. */
-export async function calibrate(page: Page): Promise<{ originX: number; originY: number }> {
+/**
+ * Measures the screen->tile transform against the real page, by bisection.
+ *
+ * `probe` is where the bisection starts, and it must be a point on **canvas a
+ * pointer can actually reach**, together with the 64x64 pixels right and below
+ * it -- the bisection walks one tile in each direction from there. The default
+ * `(700, 300)` is canvas at 1440x900 and at 1920x1080, and it is *not* canvas
+ * at every viewport: the HUD's right-hand rail opts back into pointer events
+ * (`hud.css`, "Every interactive island opts back in") and reaches x=700 on a
+ * narrower page, at which point every press below lands on a panel, no
+ * `RemoveObject` is produced and this throws. A caller measuring more than one
+ * viewport therefore finds a free square first and passes it in -- see
+ * `tests/browser/world-scene-drag-under-the-hud.spec.ts`, which is where the
+ * parameter came from (issue #878).
+ *
+ * `precisionPx` is how tightly the bisection is driven, and it is a **cost**
+ * dial rather than a quality one: each halving is one more real press, and one
+ * press is a mouse move, a press, a release, a settle and two reads of the
+ * worker tee. `1` -- the default, and what every playtest here has always had
+ * -- costs six presses per axis. A caller that only needs to land *inside* a
+ * tile rather than on its exact centre can stop far earlier: at `16` the origin
+ * is known to a quarter of a tile, so a computed tile centre still falls inside
+ * the tile it names with 16px to spare, and it costs two presses per axis. The
+ * gate named above uses that, because it repeats this calibration once per
+ * viewport and the presses were the largest single cost in it.
+ */
+export async function calibrate(
+  page: Page,
+  probe: { readonly x: number; readonly y: number } = { x: 700, y: 300 },
+  precisionPx = 1,
+): Promise<{ originX: number; originY: number }> {
   await page.locator('.hud-build__remove').click();
-  const probeX = 700;
-  const probeY = 300;
+  const probeX = probe.x;
+  const probeY = probe.y;
   const at = async (x: number, y: number): Promise<{ x: number; y: number }> => {
     const commands = await press(page, x, y);
     const removal = commands.find((c) => c['type'] === 'RemoveObject');
@@ -237,7 +266,7 @@ export async function calibrate(page: Page): Promise<{ originX: number; originY:
   const base = await at(probeX, probeY);
   let lo = probeX;
   let hi = probeX + TILE;
-  while (hi - lo > 1) {
+  while (hi - lo > precisionPx) {
     const mid = Math.floor((lo + hi) / 2);
     const tile = await at(mid, probeY);
     if (tile.x === base.x) lo = mid;
@@ -247,7 +276,7 @@ export async function calibrate(page: Page): Promise<{ originX: number; originY:
 
   lo = probeY;
   hi = probeY + TILE;
-  while (hi - lo > 1) {
+  while (hi - lo > precisionPx) {
     const mid = Math.floor((lo + hi) / 2);
     const tile = await at(probeX, mid);
     if (tile.y === base.y) lo = mid;
