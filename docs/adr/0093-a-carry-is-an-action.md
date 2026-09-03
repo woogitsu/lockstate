@@ -742,7 +742,61 @@ is *"not a candidate"* rather than *"ranked last"*.
 ## What this changes in the code, if it stands
 
 Named so the landing change can be reviewed against a list rather than
-discovered. Nothing here is done on this branch.
+discovered.
+
+**BUILT, and the sentence that used to end this paragraph is kept because it
+is what changed.** It read *"Nothing here is done on this branch."* Every item
+below except **9** landed with the owner's acceptance of 2026-09-03; item 9 is
+the `PrisonCondition` member, and it is **deliberately not built** because its
+sentence is one of the three under *What is owed to the owner* and
+`AGENTS.md`'s fourth exclusion reserves it. A condition with no authored
+sentence behind it is exactly the defect that exclusion exists for.
+
+**Three things the landing change found that this document had wrong, recorded
+here rather than in a commit message nobody keeps:**
+
+1. **The route gates on each room being *furnished*, not merely zoned.**
+   Decision 2 says the producer applies *"when a delivery comes due and both
+   rooms exist"*. Built to that letter, **it bricks a new prison**, and it was
+   measured rather than argued: zone a bay and a storeroom before the first
+   cell is furnished and every delivery lands in the bay needing a carrier —
+   but the only carriers are prisoners, a prisoner is not admitted without a
+   bed, and the bed is a build order waiting on the bricks in the bay. On the
+   probe prison intake never completed, `actionIndex` stayed `-1` for 2,400
+   ticks, and 24 delivery jobs sat `available` for ever. The gate is therefore
+   *"both rooms work"*, tested the way every other room-gated behaviour in this
+   repository is tested — the capability the room's own authored requirement
+   names is standing in it (`'delivery-access'`, `'item-storage'`, both of
+   which `tests/foundation/content-vocabulary-contract.test.ts` already
+   recorded as awaiting exactly this consumer). No balance number, and the
+   bootstrap dissolves by construction: the dock door and the racks are build
+   orders paid for by deliveries that still land directly.
+2. **A restored carrier is resumed by re-selection, not re-seated as
+   `travelling`.** Decision 5 sketched *"a carrier is instead re-seated from
+   the board after it loads — `actionIndex` the carry, `travelling`, no
+   request"*. `PrisonerOperationsRuntime.loadSnapshot` already drops every
+   traveller to `idle`, and a prisoner's own active job makes the carry
+   providable again, so the existing path resolves the leg the job records from
+   the tile the save carried. Same one restore rule, reached without adding a
+   path. The other direction — a job whose carrier is not in this session — is
+   `CarryJobExecutor.reconcileRestoredJobs`, as decision 5 requires.
+3. **Decision 5's restore bound is two reconsideration cycles, not one.** It
+   predicted *"a restored carrier loses at most one reconsideration cycle to
+   the travel restart"*; measured, the worst mid-walk capture costs **40
+   ticks**, because a restored traveller pays the cycle twice — dropped to
+   `idle` (up to 20), then the request-then-collect handshake (up to 20 more).
+   That is what *every* action costs across a restore (ADR 0059 open question
+   3), so the prediction is corrected and the code is not.
+
+**And one thing outside this document's own surface, found by building it:**
+`Container.getSnapshot` was not a fixed point of `Container.loadSnapshot`.
+`withdrawReserved` writes `stock.set(id, 0)` rather than deleting the key, so
+an emptied item kept emitting `[id, 0, 0]` while the reader wrote back only
+positive rows. Latent for as long as the class has existed; reachable for the
+first time because a carry now takes a work block to happen, so the
+determinism scenario's container *ends* a run empty. Fixed by omitting rows
+that hold nothing, which changes no behaviour — `quantityOf`, `reservedOf` and
+`availableOf` answer `0` either way.
 
 1. `src/simulation/prisoners/actions.ts` — the third `ActionTarget` kind and
    one appended entry.
@@ -764,15 +818,32 @@ discovered. Nothing here is done on this branch.
    `operations/` — the landing change decides the file; this document decides
    that it is derived.
 9. `src/simulation/protocol/types.ts` — one `PrisonCondition` member for a
-   delivery waiting for a carrier (sentence owed).
+   delivery waiting for a carrier (sentence owed). **NOT BUILT**: see the
+   paragraph above this list.
 10. Tests: the catalogue gate extended; the order pin moved; the determinism
-    scenario and its three dependants re-pinned; `job-performing-restart-bound`
-    rewritten; `operations-job-system.test.ts` retargeted at the executor;
+    scenario and its dependants re-pinned; `job-performing-restart-bound`
+    rewritten; `operations-job-system.test.ts` retargeted at the executor and
+    renamed `operations-carry-executor.test.ts` with the class it tests;
     `two-authorities-one-prisoner-contract.test.ts`'s second half rewritten to
-    say what a carrying prisoner *is*.
+    say what a carrying prisoner *is*. **Two additions this list did not
+    foresee:** `job-production-contract.test.ts` is rewritten rather than
+    re-pinned — both of its zeroes move and its call-site scan inverts from
+    `toEqual([])` to exactly one caller — and
+    `tests/integration/carry-need-threshold.test.ts` is new, because the
+    owner's amendment of 2026-09-02 had no guard at all. **A fourth
+    determinism dependant appeared** that "its three dependants" did not name:
+    `tests/integration/economy-state-income-persistence.test.ts`, whose
+    just-in-time figure moves because fewer bricks have been carried into the
+    construction container by tick 0.
 11. Documents: ADR 0059's two sentences, `docs/OPERATIONS.md`'s exception,
-    `docs/PERSISTENCE.md:519`, `docs/DETERMINISM.md`'s matching limitation,
-    `docs/adr/README.md` rows for 0037 and 0059 if their status prose changes.
+    `docs/PERSISTENCE.md`'s `performingSince` exclusion,
+    `docs/DETERMINISM.md`'s matching limitation. **The `README.md` rows for
+    0037 and 0059 did not need changing**, because neither ADR's *status*
+    moved: 0037 holds without amendment and 0059's two sentences are corrected
+    in place inside the document. Also needed, and not on this list: the six
+    dated citations in `docs/research/audit-2026-08-26/` that point at the
+    deleted file, allowlisted rather than edited because
+    `docs/research/README.md` keeps those records read-only.
 
 ---
 
