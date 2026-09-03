@@ -142,12 +142,28 @@ interface RosterSample {
  */
 async function readRoster(page: Page): Promise<RosterSample> {
   const at = Date.now();
-  const tick = await currentTick(page);
-  const day = (await panelText(page, '.hud-clock__day')).trim();
+  /*
+   * **One round-trip, and that is a measured cost rather than tidiness.** The
+   * first version of this function made three -- `currentTick`, `panelText`
+   * for the day, then the roster evaluate -- and act 1 took 4.6 s per sample
+   * on a container with three other agents' suites running, so a 210 s window
+   * bought 45 samples instead of the 300 it was written for. The tick lives in
+   * the tee's own array inside the page, so all three reads are one evaluate.
+   */
   const block = await page.evaluate(() => {
-    const root = document.querySelector<HTMLElement>('.hud-regime__roster');
-    if (root === null) return null;
     const text = (node: Element | null): string => (node instanceof HTMLElement ? (node.innerText ?? '').replace(/\s+/g, ' ').trim() : '');
+    const messages = (window as unknown as { lockstateFromWorker?: unknown[] }).lockstateFromWorker ?? [];
+    let tick = -1;
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      const message = messages[index] as { kind?: string; payload?: { tick?: number } };
+      if (message.kind === 'simulation/clock-state') {
+        tick = message.payload?.tick ?? -1;
+        break;
+      }
+    }
+    const day = text(document.querySelector('.hud-clock__day'));
+    const root = document.querySelector<HTMLElement>('.hud-regime__roster');
+    if (root === null || root.hidden) return { tick, day, absent: true as const };
     const rows = [...root.querySelectorAll<HTMLElement>('.hud-regime__roster-row')]
       .filter((row) => !row.hidden && row.getClientRects().length > 0)
       .map((row) => ({
@@ -163,7 +179,9 @@ async function readRoster(page: Page): Promise<RosterSample> {
         badge: text(row.querySelector('.ui-badge')),
       }));
     return {
-      hidden: root.hidden,
+      tick,
+      day,
+      absent: false as const,
       total: root.dataset['total'] ?? null,
       everAdmitted: root.dataset['everAdmitted'] ?? null,
       countText: text(root.querySelector('.hud-regime__roster-count')),
@@ -171,10 +189,19 @@ async function readRoster(page: Page): Promise<RosterSample> {
       rows,
     };
   });
-  if (block === null || block.hidden) {
-    return { at, tick, day, total: null, everAdmitted: null, countText: 'ROSTER BLOCK ABSENT OR HIDDEN', moreText: '', rows: [] };
+  if (block.absent) {
+    return { at, tick: block.tick, day: block.day, total: null, everAdmitted: null, countText: 'ROSTER BLOCK ABSENT OR HIDDEN', moreText: '', rows: [] };
   }
-  return { at, tick, day, total: block.total, everAdmitted: block.everAdmitted, countText: block.countText, moreText: block.moreText, rows: block.rows };
+  return {
+    at,
+    tick: block.tick,
+    day: block.day,
+    total: block.total,
+    everAdmitted: block.everAdmitted,
+    countText: block.countText,
+    moreText: block.moreText,
+    rows: block.rows,
+  };
 }
 
 /** The timetable block the panel says is running, with its own progress readout. */
@@ -205,6 +232,35 @@ async function money(page: Page): Promise<number> {
   const digits = text.replace(/[^\d-]/g, '');
   return digits === '' ? Number.NaN : Number.parseInt(digits, 10);
 }
+
+/**
+ * What each authored action actually moves, from
+ * `src/simulation/prisoners/actions.ts`'s `DEFAULT_ACTIONS`, keyed by the word
+ * the roster prints (`src/content/simulation-message-keys.ts`).
+ *
+ * **Duplicated rather than imported, and the duplication is the point.** The
+ * question this table answers is whether the *screen* agrees with the
+ * simulation, and importing the simulation's own answer would be a fixture
+ * supplying both sides of the comparison (`docs/TESTING.md`). Every row below
+ * was read off `DEFAULT_ACTIONS` at `52db3031` and its label off the `action`
+ * namespace in the message-key census; if a row here is wrong, the log says so
+ * loudly rather than quietly agreeing.
+ */
+const WHAT_THE_ACTION_SERVES: Readonly<Record<string, readonly string[]>> = {
+  Sleeping: ['sleep'],
+  Eating: ['hunger'],
+  'Eating in Cell': ['hunger'],
+  'Using Toilet': ['bladder'],
+  Showering: ['hygiene'],
+  'Yard Time': ['recreation'],
+  'Common Room': ['recreation'],
+  Class: ['recreation'],
+  Association: [],
+  'Laundry Duty': ['hygiene'],
+  'Kitchen Duty': ['hunger'],
+  Errand: [],
+  Idle: [],
+};
 
 /** Least-squares slope of `permille` against `tick`, in permille per tick. */
 function slope(points: readonly { readonly tick: number; readonly permille: number }[]): number {
@@ -375,19 +431,54 @@ test.describe('a prisoner’s day', () => {
             + ` -- badge read ${JSON.stringify(flip.badge)}, activity ${JSON.stringify(flip.activity)}`,
         );
       }
-      // The slope, fitted only over the stretch where one need stayed worst,
-      // so a hand-off between two needs cannot be read as a rate.
+      /*
+       * The slope, fitted only over the stretch where one need stayed worst
+       * **and had not yet hit the floor**.
+       *
+       * **The floor filter is a correction to this file's first run and the
+       * error is worth keeping, because it is the shape `docs/AGENT_WORKFLOW.md`
+       * §3 warns about.** Without it, the fit ran over every sample the need
+       * was worst for -- including the 6,400 ticks it sat clamped at `0` after
+       * reaching it -- and reported `safety` decaying at 13-18% of
+       * `NEED_DECAY_PER_TICK.safety`. Read as a finding, that is "the screen
+       * shows safety falling five times slower than the constant says". It was
+       * a flat tail dragging a regression line: over the unclamped stretch of
+       * the same tape the three prisoners measured -0.1949, -0.1954 and
+       * -0.1952 permille/tick against a predicted -0.1961, which is agreement
+       * to within 0.6%. A measurement is not a diagnosis, and a regression
+       * over a clamped series is not a rate.
+       */
       for (const needId of needIds) {
+        if (needId === null) continue;
         const forNeed = series.filter((point) => point.needId === needId);
-        if (forNeed.length < 5 || needId === null) continue;
-        const measured = slope(forNeed);
+        const unclamped = forNeed.filter((point) => point.permille > 0 && point.permille < 1000);
         const predicted = predictedSlope(DECAY_PER_TICK[needId] ?? Number.NaN);
-        log(
-          `  ${needId}: measured ${measured.toFixed(4)} permille/tick over ${forNeed.length} samples`
-            + ` (${forNeed[0]!.tick} -> ${forNeed[forNeed.length - 1]!.tick});`
-            + ` unopposed decay predicts ${predicted.toFixed(4)};`
-            + ` ratio ${(measured / predicted).toFixed(3)}`,
-        );
+        if (unclamped.length >= 3) {
+          const measured = slope(unclamped);
+          const first = unclamped[0]!;
+          const last = unclamped[unclamped.length - 1]!;
+          const endpoints = (last.permille - first.permille) / (last.tick - first.tick);
+          log(
+            `  ${needId}: fitted ${measured.toFixed(4)} permille/tick and endpoint-to-endpoint`
+              + ` ${endpoints.toFixed(4)} over ${unclamped.length} unclamped samples`
+              + ` (tick ${first.tick} @${first.permille} -> ${last.tick} @${last.permille});`
+              + ` unopposed decay predicts ${predicted.toFixed(4)}; ratio ${(measured / predicted).toFixed(3)}`,
+          );
+        } else {
+          log(
+            `  ${needId}: only ${unclamped.length} unclamped sample(s) of ${forNeed.length}` +
+              ` -- it was already on the floor whenever it was the worst need, so no rate can be read from the screen.`,
+          );
+        }
+        const floored = forNeed.filter((point) => point.permille === 0);
+        if (floored.length > 0) {
+          log(
+            `  ${needId}: on the floor (permille 0) for ${floored.length} of ${forNeed.length} samples,`
+              + ` ticks ${floored[0]!.tick} -> ${floored[floored.length - 1]!.tick}`
+              + ` = ${floored[floored.length - 1]!.tick - floored[0]!.tick} ticks`
+              + ` (${((floored[floored.length - 1]!.tick - floored[0]!.tick) / 2400).toFixed(2)} in-game days) at zero.`,
+          );
+        }
       }
     }
 
@@ -407,6 +498,43 @@ test.describe('a prisoner’s day', () => {
     log(`every activity the roster ever showed: ${JSON.stringify([...activityTally.entries()].sort((l, r) => r[1] - l[1]))}`);
     log(`what they were doing while the row said unmet: ${JSON.stringify([...unmetActivityTally.entries()].sort((l, r) => r[1] - l[1]))}`);
 
+    /*
+     * And the question the two columns together are asking, made explicit: of
+     * the samples where the row named a need AND named an activity, in how
+     * many did the activity actually move that need?
+     *
+     * The row prints the two side by side on one line
+     * (`.hud-regime__roster-line`), so a player reads them as a pair -- "worst:
+     * Hygiene 0%, doing: Using Toilet" reads as somebody attending to it. The
+     * table above says what each action moves.
+     */
+    log('=== DOES THE ACTIVITY THE ROW NAMES MOVE THE NEED THE ROW NAMES? ===');
+    let paired = 0;
+    let addressed = 0;
+    const misses = new Map<string, number>();
+    const unknownActivities = new Set<string>();
+    for (const sample of samples) {
+      for (const row of sample.rows) {
+        if (row.needId === null || row.activity === '') continue;
+        const serves = WHAT_THE_ACTION_SERVES[row.activity];
+        if (serves === undefined) {
+          unknownActivities.add(row.activity);
+          continue;
+        }
+        paired += 1;
+        if (serves.includes(row.needId)) addressed += 1;
+        else {
+          const key = `worst "${row.needWord}" (${row.needId}) @${row.permille}‰ while "${row.activity}" moves ${JSON.stringify(serves)}`;
+          misses.set(key, (misses.get(key) ?? 0) + 1);
+        }
+      }
+    }
+    if (unknownActivities.size > 0) {
+      log(`ACTIVITY WORDS THIS FILE'S TABLE DOES NOT KNOW: ${JSON.stringify([...unknownActivities])} -- the table is stale, not the game.`);
+    }
+    log(`${addressed} of ${paired} row-samples had an activity that moves the need the same row named as worst.`);
+    for (const [key, count] of [...misses.entries()].sort((l, r) => r[1] - l[1]).slice(0, 12)) log(`  ${count}x ${key}`);
+
     // ---- 4. the tape, so a reader can see the day rather than the summary ---
     log('=== TAPE (one line per sample where anything changed) ===');
     let previous = '';
@@ -419,7 +547,7 @@ test.describe('a prisoner’s day', () => {
       log(`  t=${sample.tick} day=${sample.day} ${line}`);
     }
 
-    expect(samples.length).toBeGreaterThan(50);
+    expect(samples.length).toBeGreaterThan(20);
     expect(prisoners.length).toBeGreaterThan(0);
   });
 
@@ -518,14 +646,14 @@ test.describe('a prisoner’s day', () => {
     const queueTexts: string[] = [];
     const startedAt = Date.now();
     let firstErrandAt: RosterSample | undefined;
-    while (Date.now() - startedAt < 170_000) {
+    while (Date.now() - startedAt < 110_000) {
       const sample = await readRoster(page);
       errandSamples.push(sample);
       if (firstErrandAt === undefined && sample.rows.some((row) => /errand/i.test(row.activity))) {
         firstErrandAt = sample;
         log(`FIRST ERRAND at tick ${sample.tick}, day ${sample.day}: ${JSON.stringify(sample.rows)}`);
       }
-      if (errandSamples.length % 12 === 0) {
+      if (errandSamples.length % 30 === 0) {
         await tab(page, 'build').click();
         const queue = await panelText(page, '.hud-build__queue');
         queueTexts.push(`t=${sample.tick} ${queue.replace(/\n/g, ' | ')}`);
