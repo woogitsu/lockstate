@@ -160,6 +160,42 @@ jobs:
     # below can only issue a DELETE for a branch name the classifier returned,
     # which is a name it read from the API and re-checked against an allowlist.
     steps:
+      # WHY THIS JOB NOW NEEDS A CHECKOUT, having deliberately not had one.
+      #
+      # The first version of this workflow was pure API: `merged_at` and a
+      # matching `head.sha` are the whole of the merge question, and neither
+      # needs git history. The citation guard below asks a DIFFERENT question --
+      # does anything in `docs/` still cite a commit that only this branch
+      # publishes -- and that one cannot be answered without the graph.
+      #
+      # It is not a hypothetical. The trial batch of twenty the owner
+      # authorised on 2026-09-03 deleted `agent/403-save-generations`, and
+      # `documentation-commit-citation-contract` went red on
+      # `docs/adr/0063-what-a-refused-restore-says-and-whose-fault-it-is.md`,
+      # which cited an intermediate commit of #468's branch. Squash-merging
+      # puts one commit on `main` and leaves every intermediate commit on the
+      # branch and nowhere else, so a fully merged branch can still be the only
+      # publisher of a commit somebody wrote a sentence about. Measured over the
+      # whole corpus at that point: of 383 shas cited across `docs/`, 316 were
+      # reachable from `origin/main` and **28 only from a branch**.
+      #
+      # `fetch-depth: 0` because the guard reads `origin/main..origin/<branch>`
+      # for every candidate, and at the action's default depth of 1 there is no
+      # history to walk -- the same reason delete-branches.yml gives for its own
+      # full fetch.
+      #
+      # `persist-credentials: false`, unlike delete-branches.yml's checkout:
+      # this job deletes through the REST API with `github.token` and never with
+      # `git push`, so the credential has no reason to survive into a shell.
+      # tests/foundation/ci-configuration-contract.test.ts requires `false` of
+      # every checkout that does not state a reason for `true`, and this one has
+      # none.
+      - name: Checkout for the citation guard
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
       - name: Verify every candidate against the API, then delete only what verified
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -186,6 +222,7 @@ jobs:
           import json
           import os
           import re
+          import subprocess
           import sys
           import time
           import urllib.error
@@ -217,6 +254,18 @@ jobs:
           # requests per hour per repository, so a single dispatch cannot clear
           # much more than that many branches however patient it is.
           DELETE_PAUSE_SECONDS = 0.5
+          # The citation form documentation-commit-citation-contract.test.ts
+          # polices: a backtick span whose ENTIRE content is a hex run of
+          # abbreviated-to-full sha length. Kept identical to that file's own
+          # CITATION, because a guard recognising a different set of citations
+          # than the gate would let through exactly the deletions the gate then
+          # fails on.
+          CITATION = re.compile(r"`([0-9a-f]{7,40})`")
+          # Hexadecimal by coincidence, from the same file's NOT_A_COMMIT: an
+          # all-decimal run of eight or more is a migration timestamp, an
+          # Actions run id or a byte count; a trailing-f decimal is a C# float
+          # literal quoted out of decompiled source.
+          NOT_A_COMMIT = (re.compile(r"^\d{8,}$"), re.compile(r"^\d+f$"))
 
 
           def fail(message):
@@ -391,6 +440,83 @@ jobs:
               absent = []
 
 
+          def cited_shas():
+              """Every commit sha the documentation cites, mapped to where.
+
+              Read off the working tree rather than the API, because that is
+              what the gate reads and the two must agree. `docs/` only: the gate
+              scans source comments too, but a comment naming a commit is code
+              this branch cleanup does not touch, and widening the scan here
+              would make the guard refuse branches for citations no deletion can
+              break.
+              """
+              index = {}
+              for root, _, files in os.walk("docs"):
+                  for filename in files:
+                      if not filename.endswith(".md"):
+                          continue
+                      path = os.path.join(root, filename)
+                      try:
+                          with open(path, encoding="utf-8") as handle:
+                              contents = handle.read()
+                      except OSError:
+                          continue
+                      for match in CITATION.finditer(contents):
+                          token = match.group(1)
+                          if any(shape.match(token) for shape in NOT_A_COMMIT):
+                              continue
+                          index.setdefault(token, path)
+              return index
+
+          CITED = cited_shas()
+          if not CITED:
+              fail(
+                  "no commit citation was found anywhere under docs/. That is not a"
+                  " documentation state in this repository; it means the scan or the"
+                  " checkout is broken, and the guard below would then protect nothing."
+              )
+
+          def cited_commit_only_this_branch_publishes(name):
+              """(sha, citing file) if deleting this branch would orphan a citation.
+
+              A commit is at risk when it is reachable from the branch, NOT
+              reachable from the default branch, and cited in the documentation.
+              Squash-merging is what makes that set non-empty for a fully merged
+              branch: the merge puts one new commit on the default branch and
+              leaves every commit of the branch itself unreachable from it.
+
+              Prefix-matched in the direction the citation form requires: a
+              citation is 7 to 40 hex characters and the commit is 40, so an
+              abbreviated citation matches when the full sha starts with it.
+              Deliberately NOT the other direction -- a 40-character citation
+              never matches a shorter commit id, because there is no such thing.
+              """
+              try:
+                  walk = subprocess.run(
+                      ["git", "rev-list", "origin/" + default_branch + "..origin/" + name],
+                      capture_output=True,
+                      text=True,
+                      timeout=120,
+                      check=False,
+                  )
+              except (OSError, subprocess.SubprocessError) as error:
+                  fail(
+                      "git rev-list failed for " + name + ": " + str(error) + "."
+                      " The guard cannot be skipped on an error, because an unanswered"
+                      " question here is the one that deletes a cited commit."
+                  )
+              if walk.returncode != 0:
+                  fail(
+                      "git rev-list origin/" + default_branch + "..origin/" + name
+                      + " exited " + str(walk.returncode) + ": " + walk.stderr.strip()[:300]
+                      + ". Refusing to continue: this is the read that protects a citation."
+                  )
+              for line in walk.stdout.split():
+                  for token, path in CITED.items():
+                      if line.startswith(token):
+                          return (line[:7], path)
+              return None
+
           def classify(branch):
               """(verdict, pull-or-None, reason) for one branch.
 
@@ -418,6 +544,24 @@ jobs:
 
               merged = merged_by_sha.get((name, sha))
               if merged is not None:
+                  # Merged is necessary and no longer sufficient. See the
+                  # checkout step's comment: a squash-merged branch can still be
+                  # the only publisher of a commit the documentation cites, and
+                  # deleting it turns that citation into one nobody -- CI
+                  # included -- can resolve.
+                  at_risk = cited_commit_only_this_branch_publishes(name)
+                  if at_risk is not None:
+                      return (
+                          "skipped",
+                          merged,
+                          "merged, but "
+                          + at_risk[1]
+                          + " cites "
+                          + at_risk[0]
+                          + ", which only this branch publishes -- deleting it would"
+                          " orphan that citation. Cite the published squash instead,"
+                          " then re-dispatch",
+                      )
                   return ("deletable", merged, "")
 
               latest = merged_by_ref.get(name)
