@@ -58,6 +58,7 @@ async function fill(page: Page, selector: string, value: string, reason: string)
 
 let selectedBuildable = '';
 let selectedEdge = '';
+let lostOrders = 0;
 
 async function openBuildCoordinates(page: Page): Promise<void> {
   await click(page, '.hud__tabs [data-tab="build"]', 'tab:build');
@@ -68,6 +69,27 @@ async function openBuildCoordinates(page: Page): Promise<void> {
   await expect(section).toHaveAttribute('data-collapsed', 'false');
 }
 
+let lastX = Number.NaN;
+let lastY = Number.NaN;
+
+/**
+ * One typed order, **verified**, and retried when the press produced nothing.
+ *
+ * The retry is not defensiveness, it is the first run's finding: 134 typed
+ * orders produced 130 commands, four presses vanished with only a
+ * `console.warn` behind them, and four of nine rooms then failed to zone
+ * `not-enclosed` because a perimeter with a one-segment hole is not a
+ * perimeter. The mechanism is in `src/ui/simulation-commands.ts`: a *rejected*
+ * command sets `sequenceSynced = false` (`:328`) and every `submit` after it
+ * throws `'The simulation has not reported its command sequence yet'`
+ * (`:252`) until the next snapshot restores the baseline. So the loss comes in
+ * runs, not singly.
+ *
+ * Ordering with the clock **paused** is what avoids it rather than papering
+ * over it: `projectFromClock` (`:189`) returns the last reported tick exactly
+ * when the clock is not running, so there is no lead to undershoot and nothing
+ * to reject.
+ */
 async function order(
   page: Page,
   buildableId: string,
@@ -75,23 +97,39 @@ async function order(
   y: number,
   edge?: 'north' | 'west',
 ): Promise<number> {
-  const before = (await sentCommands(page)).length;
-  if (selectedBuildable !== buildableId) {
-    await click(page, `.hud-build__list [data-buildable="${buildableId}"]`, 'select buildable');
-    selectedBuildable = buildableId;
-    selectedEdge = '';
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    const before = (await sentCommands(page)).length;
+    if (selectedBuildable !== buildableId) {
+      await click(page, `.hud-build__list [data-buildable="${buildableId}"]`, 'select buildable');
+      selectedBuildable = buildableId;
+      selectedEdge = '';
+    }
+    const fields = page.locator('.hud-build__coords .ui-number__input');
+    // A field is only retyped when the number changes, which is what a player
+    // laying a run along one row would do. The naive count -- every field every
+    // time -- is reported beside it in the note.
+    if (lastX !== x || attempt > 1) {
+      await fields.nth(0).fill(String(x));
+      countPress('type tile x');
+      lastX = x;
+    }
+    if (lastY !== y || attempt > 1) {
+      await fields.nth(1).fill(String(y));
+      countPress('type tile y');
+      lastY = y;
+    }
+    if (edge !== undefined && selectedEdge !== edge) {
+      await click(page, `.hud-build__coordinates [data-choice="${edge}"]`, 'choose edge');
+      selectedEdge = edge;
+    }
+    await click(page, '.hud-build__coordinates .ui-action', 'place order');
+    const produced = (await sentCommands(page)).length - before;
+    if (produced > 0) return produced;
+    lostOrders += 1;
+    log(`  LOST ORDER (attempt ${attempt}) ${buildableId} at (${x},${y}) ${edge ?? ''} — band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+    await page.waitForTimeout(1200);
   }
-  const fields = page.locator('.hud-build__coords .ui-number__input');
-  await fields.nth(0).fill(String(x));
-  countPress('type tile x');
-  await fields.nth(1).fill(String(y));
-  countPress('type tile y');
-  if (edge !== undefined && selectedEdge !== edge) {
-    await click(page, `.hud-build__coordinates [data-choice="${edge}"]`, 'choose edge');
-    selectedEdge = edge;
-  }
-  await click(page, '.hud-build__coordinates .ui-action', 'place order');
-  return (await sentCommands(page)).length - before;
+  return 0;
 }
 
 async function buy(page: Page, buildableId: string, quantity: number): Promise<void> {
@@ -139,6 +177,13 @@ async function zone(
     rooms: counts?.rooms ?? -1,
     refusal: (await panelText(page, '.hud__refusal')).replace(/\n/g, ' '),
   };
+}
+
+async function setSpeed(page: Page, which: 'Pause' | 'Play at normal speed' | 'Fast forward'): Promise<void> {
+  await page.locator('.hud-strip__transport button', { hasText: '' }).first().waitFor();
+  await page.getByRole('button', { name: which, exact: true }).click();
+  countPress(`transport:${which}`);
+  await page.waitForTimeout(400);
 }
 
 // ---- the plan -------------------------------------------------------------
@@ -229,6 +274,8 @@ interface Sample {
   readonly alerts: string;
   readonly refusal: string;
   readonly roster: string;
+  readonly rosterRows: number;
+  readonly alertRows: number;
   readonly rosterCount: string;
   readonly counts: unknown;
 }
@@ -246,6 +293,8 @@ async function sample(page: Page, startedAt: number): Promise<Sample> {
     alerts: (await panelText(page, '.hud-alerts__list')).replace(/\n/g, ' ; '),
     refusal: (await panelText(page, '.hud__refusal')).replace(/\n/g, ' '),
     roster: (await panelText(page, '.hud-regime__roster-list')).replace(/\n/g, ' ; '),
+    rosterRows: await page.locator('.hud-regime__roster-row:visible').count(),
+    alertRows: await page.locator('.hud-alerts__list > *').count(),
     rosterCount: (await panelText(page, '.hud-regime__roster-count')).replace(/\n/g, ' '),
     counts: await latestCounts(page),
   };
@@ -266,9 +315,11 @@ test('a prison that works, run until it asks for something', async ({ page }) =>
 
   await tab(page, 'build').click();
   const origin = await calibrate(page);
-  const visX = [Math.ceil(-origin.originX / TILE), Math.floor((1440 - origin.originX) / TILE) - 1];
-  const visY = [Math.ceil(-origin.originY / TILE), Math.floor((900 - origin.originY) / TILE) - 1];
-  log(`ACT 0  calibration origin=(${origin.originX},${origin.originY}); the viewport shows tiles x ${visX[0]}..${visX[1]}, y ${visY[0]}..${visY[1]} = ${(visX[1] - visX[0] + 1) * (visY[1] - visY[0] + 1)} tiles`);
+  const firstVisibleX = Math.ceil(-origin.originX / TILE);
+  const lastVisibleX = Math.floor((1440 - origin.originX) / TILE) - 1;
+  const firstVisibleY = Math.ceil(-origin.originY / TILE);
+  const lastVisibleY = Math.floor((900 - origin.originY) / TILE) - 1;
+  log(`ACT 0  calibration origin=(${origin.originX},${origin.originY}); the viewport shows tiles x ${firstVisibleX}..${lastVisibleX}, y ${firstVisibleY}..${lastVisibleY} = ${(lastVisibleX - firstVisibleX + 1) * (lastVisibleY - firstVisibleY + 1)} tiles`);
 
   // ---- ACT 1: buy the materials --------------------------------------
   const wallSegments = BOXES.flatMap((b) => perimeter(b));
@@ -293,6 +344,11 @@ test('a prison that works, run until it asks for something', async ({ page }) =>
   log(`ACT 1  deliveries: ${(await panelText(page, '.hud-build__deliveries')).replace(/\n/g, ' | ')}`);
 
   // ---- ACT 2: the walls, typed --------------------------------------
+  // **Paused while ordering.** See `order`'s docblock: a running clock is what
+  // makes a press rejectable, and a rejection silently eats the presses that
+  // follow it. A player pausing to lay out a building is also the natural
+  // gesture, so this is not a harness-only trick.
+  await setSpeed(page, 'Pause');
   await openBuildCoordinates(page);
   const wallsStarted = Date.now();
   const pressesBeforeWalls = presses;
@@ -308,7 +364,9 @@ test('a prison that works, run until it asks for something', async ({ page }) =>
       );
     }
   }
-  log(`ACT 2  ${wallSegments.length} typed orders -> ${commandsFromWalls} commands, in ${Math.round((Date.now() - wallsStarted) / 1000)}s, ${presses - pressesBeforeWalls} presses`);
+  log(`ACT 2  ${wallSegments.length} typed orders -> ${commandsFromWalls} commands, in ${Math.round((Date.now() - wallsStarted) / 1000)}s, ${presses - pressesBeforeWalls} presses, ${lostOrders} press(es) produced nothing and were retried`);
+  await setSpeed(page, 'Fast forward');
+  await setSpeed(page, 'Fast forward');
   log(`ACT 2  queue: ${(await panelText(page, '.hud-build__queue')).replace(/\n/g, ' | ')}`);
   log(`ACT 2  refusal band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
   await page.screenshot({ path: 'playtest-out/01-walls-ordered.png' });
@@ -318,6 +376,7 @@ test('a prison that works, run until it asks for something', async ({ page }) =>
   await page.screenshot({ path: 'playtest-out/02-walls-built.png' });
 
   // ---- ACT 3: zone the rooms ----------------------------------------
+  await setSpeed(page, 'Pause');
   const pressesBeforeZoning = presses;
   for (const box of BOXES) {
     let result = await zone(page, box.room, box.x, box.y, box.w, box.h);
@@ -346,7 +405,9 @@ test('a prison that works, run until it asks for something', async ({ page }) =>
       log(`ACT 4  NO COMMAND for ${item.id} at (${item.x},${item.y}) in the ${item.room} — band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
     } else placed += 1;
   }
-  log(`ACT 4  ${placed}/${FURNITURE.length} objects ordered (${refusedObjects} produced nothing), ${presses - pressesBeforeFurniture} presses`);
+  log(`ACT 4  ${placed}/${FURNITURE.length} objects ordered (${refusedObjects} produced nothing after four attempts), ${presses - pressesBeforeFurniture} presses, ${lostOrders} lost presses in total so far`);
+  await setSpeed(page, 'Fast forward');
+  await setSpeed(page, 'Fast forward');
   await waitForQueueEmpty(page, 900_000);
   await page.waitForTimeout(3000);
   log(`ACT 4  ${t()} furnished. counts=${JSON.stringify(await latestCounts(page))}`);
@@ -355,6 +416,7 @@ test('a prison that works, run until it asks for something', async ({ page }) =>
   await page.screenshot({ path: 'playtest-out/03-furnished.png' });
 
   // ---- ACT 5: staff and prisoners -----------------------------------
+  await setSpeed(page, 'Pause');
   await click(page, '.hud__tabs [data-tab="security"]', 'tab:security');
   log(`ACT 5  staff panel before hiring:\n${await panelText(page, '.hud-staff')}`);
   const pressesBeforeHiring = presses;
@@ -384,7 +446,9 @@ test('a prison that works, run until it asks for something', async ({ page }) =>
     await page.waitForTimeout(120);
   }
   log(`ACT 5  ${admitMs.length} admissions, ${presses - pressesBeforeAdmit} presses, per-press ms=${JSON.stringify(admitMs)}`);
-  await page.waitForTimeout(4000);
+  await setSpeed(page, 'Fast forward');
+  await setSpeed(page, 'Fast forward');
+  await page.waitForTimeout(8000);
   log(`ACT 5  intake panel:\n${await panelText(page, '.hud-intake')}`);
   log(`ACT 5  ${t()} counts=${JSON.stringify(await latestCounts(page))}`);
   log(`ACT 5  TOTAL TO BUILD AND POPULATE: ${pressReport()}`);
@@ -421,7 +485,7 @@ test('a prison that works, run until it asks for something', async ({ page }) =>
       }
     }
     if (samples.length % 6 === 0) {
-      log(`ACT 6  ${Math.round(s.wallMs / 1000)}s tick=${s.tick} day=${await panelText(page, '.hud-clock__day')} metrics=${JSON.stringify(s.metrics)}`);
+      log(`ACT 6  ${Math.round(s.wallMs / 1000)}s tick=${s.tick} day=${await panelText(page, '.hud-clock__day')} rosterRows=${s.rosterRows} alertRows=${s.alertRows} metrics=${JSON.stringify(s.metrics)}`);
       log(`ACT 6  ...roster=${JSON.stringify(s.roster)}`);
       log(`ACT 6  ...alerts=${JSON.stringify(s.alerts)} refusal=${JSON.stringify(s.refusal)}`);
     }
@@ -458,10 +522,48 @@ test('a prison that works, run until it asks for something', async ({ page }) =>
   }
   await page.screenshot({ path: 'playtest-out/05-after-the-long-run.png' });
 
-  // And at 1x, to judge pacing at the speed a player actually watches.
-  await click(page, '.hud-strip__transport button', 'pause');
-  await page.waitForTimeout(500);
-  log(`ACT 8  paused. clock=${JSON.stringify(await currentClock(page))} counts=${JSON.stringify(await latestCounts(page))}`);
-  await page.screenshot({ path: 'playtest-out/06-paused.png' });
-  log(`ACT 8  FINAL ${pressReport()}`);
+  // ---- ACT 8: and at 1x, which is the speed pacing is judged at ------
+  await setSpeed(page, 'Play at normal speed');
+  await page.waitForTimeout(1000);
+  log(`ACT 8  clock at 1x: ${JSON.stringify(await currentClock(page))}`);
+  const oneX: string[] = [];
+  const oneXStart = await currentTick(page);
+  for (let i = 0; i < 6; i += 1) {
+    const before = await sample(page, watchStarted);
+    await page.waitForTimeout(15_000);
+    const after = await sample(page, watchStarted);
+    oneX.push(
+      `${i * 15}s->${(i + 1) * 15}s: ticks ${before.tick}->${after.tick} (+${after.tick - before.tick}); roster ${JSON.stringify(after.roster)}; alerts ${after.alerts === before.alerts ? 'UNCHANGED' : 'changed'}; funds ${before.metrics['funds']}->${after.metrics['funds']}`,
+    );
+    await page.screenshot({ path: `playtest-out/1x-${i}.png` });
+  }
+  log(`ACT 8  ninety seconds at 1x, which is ${(await currentTick(page)) - oneXStart} ticks:\n  ${oneX.join('\n  ')}`);
+
+  // ---- ACT 9: what a returning player can read, and can press -------
+  await setSpeed(page, 'Pause');
+  await page.waitForTimeout(600);
+  log(`ACT 9  paused. clock=${JSON.stringify(await currentClock(page))} counts=${JSON.stringify(await latestCounts(page))}`);
+  for (const selector of ['.hud-strip', '.hud-alerts__list', '.hud-intake', '.hud-regime', '.hud-staff', '.hud-rooms', '.hud-build__queue', '.hud__refusal']) {
+    log(`ACT 9  ${selector}:\n${await panelText(page, selector)}`);
+  }
+  for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+    await click(page, `.hud__tabs [data-tab="${id}"]`, `tab:${id}`);
+    await page.waitForTimeout(400);
+    const controls = await page.evaluate(() => {
+      const hud = document.querySelector('.hud');
+      if (hud === null) return 'no .hud';
+      const rows: string[] = [];
+      for (const node of hud.querySelectorAll<HTMLElement>('button, input, select, [role="button"], [role="radio"], [role="switch"]')) {
+        if (node.getClientRects().length === 0) continue;
+        const label = (node.getAttribute('aria-label') ?? node.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 56);
+        const off = (node as HTMLButtonElement).disabled === true || node.getAttribute('aria-disabled') === 'true';
+        rows.push(`${off ? 'OFF' : ' ON'} ${node.tagName.toLowerCase()} ${JSON.stringify(label)}`);
+      }
+      return rows.join('\n');
+    });
+    log(`ACT 9  CONTROLS on ${id} (${controls.split('\n').length} visible):\n${controls}`);
+    await page.screenshot({ path: `playtest-out/tab-${id}-populated.png` });
+  }
+  log(`ACT 9  FINAL ${pressReport()}`);
+  log(`ACT 9  lost presses across the whole session: ${lostOrders}`);
 });
