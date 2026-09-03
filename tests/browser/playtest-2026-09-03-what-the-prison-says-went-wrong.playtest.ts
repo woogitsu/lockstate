@@ -91,6 +91,31 @@ async function publishedEvents(page: Page): Promise<readonly WorkerEvent[]> {
   );
 }
 
+/**
+ * Every distinct refusal the worker has published on `simulation/status-counts`,
+ * with the tick of the publication that first carried it.
+ *
+ * The refusal itself carries no tick, so the envelope's is the closest thing
+ * to "when was this raised" a reader has -- which is exactly what makes the
+ * staleness of the band measurable at all.
+ */
+async function refusalHistory(page: Page): Promise<readonly { sequence: number; reason: string; firstSeenTick: number; lastSeenTick: number }[]> {
+  return page.evaluate(() => {
+    const seen = new Map<number, { sequence: number; reason: string; firstSeenTick: number; lastSeenTick: number }>();
+    for (const message of (window as unknown as { lockstateFromWorker?: unknown[] }).lockstateFromWorker ?? []) {
+      const typed = message as { kind?: string; payload?: { tick?: number; refusal?: { sequence: number; reason: string } } };
+      if (typed.kind !== 'simulation/status-counts') continue;
+      const refusal = typed.payload?.refusal;
+      if (refusal === undefined) continue;
+      const tick = typed.payload?.tick ?? -1;
+      const existing = seen.get(refusal.sequence);
+      if (existing === undefined) seen.set(refusal.sequence, { sequence: refusal.sequence, reason: refusal.reason, firstSeenTick: tick, lastSeenTick: tick });
+      else seen.set(refusal.sequence, { ...existing, lastSeenTick: tick });
+    }
+    return [...seen.values()];
+  });
+}
+
 /** The Contraband chip: its count and whatever the badge beside it says (`''` for no badge). */
 async function contrabandChip(page: Page): Promise<{ value: string; badge: string }> {
   return page.evaluate(() => {
@@ -155,6 +180,7 @@ async function reconcile(page: Page, act: string): Promise<void> {
     act,
     `event ordinals published but not on a row of their own: ${JSON.stringify(missing.map((event) => `${event.sequence}:${event.type}`))}`,
   );
+  log(act, `refusals the worker published: ${JSON.stringify(await refusalHistory(page))}`);
 }
 
 /** Hires `count` guards from the Security tab. */
@@ -250,4 +276,60 @@ test('act 3: nine event rows -- does the list evict the least severe or the olde
   await watchAlerts(page, 'act3', 120_000, () => false);
   await reconcile(page, 'act3');
   log('act3', `counts: ${JSON.stringify(await latestCounts(page))}`);
+});
+
+test('act 4: one false sentence, and how long the prison goes on saying it', async ({ page }) => {
+  await installTee(page);
+  await openApp(page);
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await tab(page, 'build').click();
+
+  // The smallest refusal this game has: arm removal and press an empty tile.
+  // No prison, no materials, no clock -- one press.
+  await page.locator('.hud-build__remove').click();
+  await page.mouse.move(700, 300);
+  await page.mouse.down({ button: 'left' });
+  await page.mouse.up({ button: 'left' });
+  await page.waitForTimeout(300);
+  await page.locator('.hud-build__remove').click();
+
+  await fastForwardToMax(page);
+  await page.waitForTimeout(2_000);
+  const raised = await readAlerts(page);
+  log('act4', `right after the press, tick ${raised.tick}: band=${JSON.stringify(raised.refusalBand)}`);
+  for (const row of raised.rows) log('act4', `    ${row.id}${row.dismissible ? ' (x)' : '    '} ${JSON.stringify(row.text)}`);
+
+  // Now play for six in-game days without touching the world again.
+  await watchAlerts(page, 'act4', 180_000, () => false, 10_000);
+  const later = await readAlerts(page);
+  log('act4', `after playing on, tick ${later.tick}: band=${JSON.stringify(later.refusalBand)}`);
+  for (const row of later.rows) log('act4', `    ${row.id}${row.dismissible ? ' (x)' : '    '} ${JSON.stringify(row.text)}`);
+  log('act4', `refusals the worker published: ${JSON.stringify(await refusalHistory(page))}`);
+  log('act4', `dismiss controls in the whole list: ${await page.locator('.hud-alerts__list [data-alert-dismissible]').count()}`);
+  log('act4', `rows in the whole list: ${await page.locator('.hud-alerts__list [data-alert]').count()}`);
+});
+
+test('act 5: clearing a row -- does the x work, and does the row stay gone', async ({ page }) => {
+  await installTee(page);
+  await openApp(page);
+  await buildAndPopulate(page, { beds: 4, admits: 6, guards: 0, label: 'act5' });
+  await fastForwardToMax(page);
+
+  const opened = await watchAlerts(page, 'act5', 300_000, (sample) =>
+    sample.rows.filter((row) => row.id.startsWith('event-')).length >= 2,
+  );
+  const target = opened.rows.find((row) => row.id.startsWith('event-'));
+  if (target === undefined) throw new Error('no event row to clear');
+  log('act5', `clearing ${target.id} at tick ${opened.tick}: ${JSON.stringify(target.text)}`);
+
+  await page.locator(`.hud-alerts__list [data-alert="${target.id}"] .ui-row__action`).click();
+  await page.waitForTimeout(1_500);
+  const afterClear = await readAlerts(page);
+  log('act5', `immediately after: ${JSON.stringify(afterClear.rows.map((row) => row.id))}`);
+
+  // The question a dismissal has to answer is not "did it disappear" but
+  // "does it stay gone while the same statement can arrive again".
+  const settled = await watchAlerts(page, 'act5', 180_000, () => false);
+  log('act5', `two minutes later: ${JSON.stringify(settled.rows.map((row) => row.id))}`);
+  await reconcile(page, 'act5');
 });
