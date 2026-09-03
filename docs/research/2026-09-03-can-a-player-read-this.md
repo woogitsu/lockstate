@@ -43,16 +43,18 @@ prison put `8` and `6 with no bed` on the strip while the player was on the
 Build tab, and a 24,000 order put `-100` on the FUNDS chip while they were on
 Regime. What is missing is everything between "a number" and "an emergency":
 the tab a session opens on gains **not one sentence** across eight working
-days, the readout that should tell a player whether to hire does not move when
-they hire, a working camera control says it is not available, and the row that
-names a prisoner puts a need and a risk tier side by side with no heading over
-either.
+days; the rule that sets the whole security budget — one guard per eight
+prisoners — appears nowhere on screen, so `1 of 1` cannot be read forward; a
+working camera control says it is not available; and the row that names a
+prisoner puts a need and a risk tier side by side with no heading over either,
+sharing the word `Low`, which means *act now* on one scale and *ignore this* on
+the other.
 
 ## Ranked
 
 | # | label | finding |
 | --- | --- | --- |
-| 1 | DEFECT | Four numbers about guards on one screen, two of them called coverage — and hiring a second guard moves neither of the two, while the wage bill triples |
+| 1 | DEFECT | Four numbers about guards on one screen, two of them called coverage; hiring a second guard moves neither, correctly — and the ratio that decides when it *would* (one per eight) is nowhere on screen |
 | 2 | DEFECT | The minimap says it is not available and then answers a click; only a player who ignored the sentence is ever told |
 | 3 | DEFECT | The tab a session opens on gains no sentence at all between an empty prison and a working one |
 | 4 | DEFECT | A roster row is `name / activity / need / risk tier` with no heading over any column and no label on any cell, and this pass misread it (§4) |
