@@ -4,6 +4,7 @@ import type {
   HudIntakePipelineViewModel,
   HudStaffCoverageViewModel,
   HudPendingDeliveriesViewModel,
+  HudPrisonerDetailViewModel,
   HudPrisonerRosterViewModel,
   HudRegimeViewModel,
   HudRoomNeedsViewModel,
@@ -627,6 +628,34 @@ export interface RegimeRosterRowProbe {
   readonly needTone: string | null;
   readonly needValueText: string | null;
   /**
+   * Whether the row is a control, and whether it is the chosen one
+   * (issue #895).
+   *
+   * Four readings of one fact, because they have four different failure modes
+   * and the whole point of a selectable row is that no single one of them is
+   * the surface:
+   *
+   * - `role` -- `"radio"` on a row that holds somebody and **absent** on a
+   *   vacated pooled row. The absence is load-bearing rather than tidy:
+   *   `app-shell.spec.ts`'s #88 sweep asserts that the controls it can never
+   *   lay out are exactly its written exemption list, so a pooled row that
+   *   stayed a control while empty would fail it.
+   * - `tabIndex` -- the roving tab stop. Exactly one filled row carries `0`
+   *   and the rest carry `-1`, which is what makes the group one `Tab` stop
+   *   rather than four.
+   * - `ariaChecked` -- what a screen reader is told, so the selection is not
+   *   carried by colour alone.
+   * - `selected` -- `data-selected`, what the stylesheet and a probe read.
+   *
+   * `tabIndex` is the resolved property rather than the attribute, so a row
+   * with no `tabindex` at all reports `-1` on a `div` and the attribute is read
+   * through `role` instead.
+   */
+  readonly role: string | null;
+  readonly tabIndex: number;
+  readonly ariaChecked: string | null;
+  readonly selected: string | null;
+  /**
    * The row's border box.
    *
    * Not a way to detect a row overflowing sideways -- it is a flex item of a
@@ -635,6 +664,50 @@ export interface RegimeRosterRowProbe {
    * off the buttons rather than off the row's `scrollWidth`. What it is for is
    * the vertical question: where this row sits against the panel's fold.
    */
+  readonly box: LayoutBox | null;
+}
+
+/**
+ * One need line of the inspector (issue #895).
+ *
+ * The same six readings a roster row gives for its one worst need, per need --
+ * which is the whole of what this block adds. `unmet` on all six is the
+ * *composition* of `unmetNeedCount`, the figure
+ * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` multiplies; the roster's
+ * single row can only ever say whether that count is at least one.
+ */
+export interface RegimeDetailNeedProbe {
+  /** `data-need`, the stable simulation id rather than the translated word. */
+  readonly need: string | null;
+  readonly permille: string | null;
+  readonly unmet: string | null;
+  /** The need's word as drawn, so the bar's colour never stands alone. */
+  readonly nameText: string;
+  /** `data-tone` and `aria-valuetext` on the bar: the accessible half of the same fact. */
+  readonly tone: string | null;
+  readonly valueText: string | null;
+}
+
+/**
+ * The inspector under the roster: the one prisoner the player selected
+ * (issue #895).
+ *
+ * `laidOut` is `getClientRects()` and not the attribute, for the reason every
+ * other block in this probe is read that way: this panel's stylesheet gives
+ * several of its own children an author `display`, which beats the user agent's
+ * `[hidden] { display: none }`, so "this block is not on screen" is a claim only
+ * a real layout can settle.
+ */
+export interface RegimePrisonerDetailProbe {
+  readonly laidOut: boolean;
+  /** `data-prisoner`: which prisoner the block is about, without parsing a name. */
+  readonly prisoner: string | null;
+  /** The heading, which is the prisoner's name -- the block authors no heading of its own. */
+  readonly nameText: string;
+  readonly badgeText: string;
+  readonly badgeTone: string | null;
+  /** Only the need lines the browser drew: the rows are pooled, exactly as the roster's are. */
+  readonly needs: readonly RegimeDetailNeedProbe[];
   readonly box: LayoutBox | null;
 }
 
@@ -722,6 +795,19 @@ export interface RegimeProbe {
    */
   readonly lastLineBottom: number;
   readonly panelBox: LayoutBox | null;
+  /**
+   * The inspector, and it is deliberately **not** folded into
+   * `lastLineBottom` above (issue #895).
+   *
+   * That figure is the roster's own reachability measurement -- the assertion
+   * *"keeps the last line of the roster inside the panel's fold at every
+   * viewport"* turns on it, in the state where nobody is selected and this
+   * block has no box at all. Adding a block that only exists after a press to
+   * the same number would change what that assertion measures without saying
+   * so. The inspector's own box is reported here instead, so a spec that wants
+   * the selected state measures it against `panelVisibleBottom` explicitly.
+   */
+  readonly detail: RegimePrisonerDetailProbe;
 }
 
 export interface LayoutProbe {
@@ -1298,7 +1384,24 @@ export interface LockstateUiHarness {
    * -- everybody admitted has since left -- draws neither sentence (issue
    * #506; see `regime-panel.ts`'s `paintRoster`).
    */
-  reportRegime(regime: HudRegimeViewModel | undefined, roster?: HudPrisonerRosterViewModel): void;
+  reportRegime(
+    regime: HudRegimeViewModel | undefined,
+    roster?: HudPrisonerRosterViewModel,
+    detail?: HudPrisonerDetailViewModel,
+  ): void;
+  /**
+   * Tells the HUD that the prisoner the player selected has been released
+   * (issue #895).
+   *
+   * The one thing `reportRegime` above cannot express, and the reason it cannot
+   * is the point: `HudViewModel.prisonerDetail` going absent covers
+   * nothing-asked, a read in flight and a failed read, none of which makes the
+   * player's choice false. In the real app this is what the host does when
+   * `PrisonerDetailReader.read` answers `'released'` -- `projectPrisonerDetail`
+   * returning nothing, which happens for exactly one reason,
+   * `!entityStore.isAlive(entityId)`.
+   */
+  clearPrisonerSelection(): void;
   roomsProbe(): RoomsProbe;
   roomsLayoutProbe(): RoomsLayoutProbe;
   buildLayoutProbe(): BuildLayoutProbe;

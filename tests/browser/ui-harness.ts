@@ -18,6 +18,7 @@ import {
   type HudRoomGesture,
   type HudBuildQueueViewModel,
   type HudPendingDeliveriesViewModel,
+  type HudPrisonerDetailViewModel,
   type HudPrisonerRosterViewModel,
   type HudRegimeViewModel,
   type HudRoomNeedsViewModel,
@@ -50,6 +51,7 @@ import type {
   LockstateUiHarness,
   RefusalProbe,
   RegimeBlockProbe,
+  RegimeDetailNeedProbe,
   RegimeProbe,
   RegimeRosterRowProbe,
   RepaintFormatterCost,
@@ -741,6 +743,15 @@ function regimeProbe(): RegimeProbe {
         prisoner: row.dataset['prisoner'] ?? '',
         classificationGroup: row.dataset['classificationGroup'] ?? null,
         riskTier: row.dataset['riskTier'] ?? null,
+        // Whether the row is a control at all, and whether it is the chosen
+        // one (issue #895). `getAttribute` for the two ARIA carriers, because
+        // *absent* is a distinct state from `"false"` on both -- a vacated
+        // pooled row has no `role` and no `aria-checked`, which is what keeps
+        // it out of the #88 control sweep's inventory.
+        role: row.getAttribute('role'),
+        tabIndex: row.tabIndex,
+        ariaChecked: row.getAttribute('aria-checked'),
+        selected: row.dataset['selected'] ?? null,
         nameText: textOf(row.querySelector('.hud-regime__roster-name')),
         activityText: textOf(row.querySelector('.hud-regime__roster-activity')),
         badgeText: textOf(badge),
@@ -775,6 +786,36 @@ function regimeProbe(): RegimeProbe {
       ...(drawn(empty) && empty !== undefined ? [empty] : []),
     ].reduce((lowest, node) => Math.max(lowest, node.getBoundingClientRect().bottom), 0),
     panelBox: layoutBoxOf(panel),
+    // The inspector, and its need lines are filtered by `getClientRects()` for
+    // the reason every list in this probe is: they are pooled, so a line with
+    // no need in it is present in the DOM and must not be reported as one the
+    // player can see.
+    detail: (() => {
+      const block = document.querySelector<HTMLElement>('.hud-regime__detail');
+      const badge = block?.querySelector<HTMLElement>('.ui-badge') ?? null;
+      const needs = [...(block?.querySelectorAll<HTMLElement>('.hud-regime__detail-need') ?? [])].filter((line) =>
+        drawn(line),
+      );
+      return {
+        laidOut: drawn(block),
+        prisoner: block?.dataset['prisoner'] ?? null,
+        nameText: textOf(block?.querySelector('.hud-regime__detail-name')),
+        badgeText: textOf(badge),
+        badgeTone: badge?.dataset['tone'] ?? null,
+        needs: needs.map((line): RegimeDetailNeedProbe => {
+          const bar = line.querySelector<HTMLElement>('.ui-bar');
+          return {
+            need: line.dataset['need'] ?? null,
+            permille: line.dataset['needPermille'] ?? null,
+            unmet: line.dataset['needUnmet'] ?? null,
+            nameText: textOf(line.querySelector('.hud-regime__detail-need-name')),
+            tone: bar?.dataset['tone'] ?? null,
+            valueText: bar?.getAttribute('aria-valuetext') ?? null,
+          };
+        }),
+        box: layoutBoxOf(block),
+      };
+    })(),
   };
 }
 
@@ -1471,12 +1512,25 @@ window.lockstateUiHarness = {
    * absent property: `exactOptionalPropertyTypes` is on, and the panel branches
    * on the field being there at all.
    */
-  reportRegime(regime: HudRegimeViewModel | undefined, roster?: HudPrisonerRosterViewModel): void {
+  reportRegime(
+    regime: HudRegimeViewModel | undefined,
+    roster?: HudPrisonerRosterViewModel,
+    detail?: HudPrisonerDetailViewModel,
+  ): void {
     hud?.update({
       ...BASE_VIEW_MODEL,
       ...(regime === undefined ? {} : { regime }),
       ...(roster === undefined ? {} : { prisonerRoster: roster }),
+      // The third block of the same panel (issue #895), on the same terms as
+      // the two above and in the same call for the same reason: its height is
+      // the panel's, so a spec measuring the selected state has to be able to
+      // publish all three at once.
+      ...(detail === undefined ? {} : { prisonerDetail: detail }),
     });
+  },
+
+  clearPrisonerSelection(): void {
+    hud?.clearPrisonerSelection();
   },
 
   clickHireStaff(): boolean {

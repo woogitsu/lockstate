@@ -131,7 +131,20 @@ import type {
  * which is a promise the code keeps (`stateIncomeForPrisonerDay` really does
  * pay less), and it is the shipped constant rather than a number chosen here.
  * If the owner wants a different line, `STATE_INCOME_UNMET_NEED_LEVEL` is the
- * single edit and `describePrisonerNeed` is the single reader of the flag.
+ * single edit.
+ *
+ * **The clause that followed that one said `describePrisonerNeed` is "the
+ * single reader of the flag", and it is corrected rather than deleted because
+ * it names the property worth keeping.** It was already false when an audit
+ * found it on 2026-09-03: `paintRoster` reads `prisoner.lowestNeed.unmetForStateIncome`
+ * directly to write `data-need-unmet`, reaching past the helper because
+ * `PrisonerNeedReadout` carries the *tone* and not the flag. Issue #895 adds a
+ * third reader for the same reason, `paintDetail`'s per-need
+ * `data-need-unmet`, and one more layer of the same shape: the tone rule now
+ * lives in `describeNeed` and `describePrisonerNeed` is that function applied
+ * to the row's worst need. What is true, and is what the clause was protecting,
+ * is that **`describeNeed` is the single place the flag becomes a colour**;
+ * every other reader copies it out as data for a probe and decides nothing.
  *
  * ### What it still deliberately does not show
  *
@@ -569,10 +582,29 @@ export interface RegimePanel {
   /**
    * Repaint the roster from a fresh `hud/prisoner-roster` reply.
    *
-   * `undefined` hides the block. `total: 0` draws the empty sentence only
-   * when `everAdmitted` is also false -- see `paintRoster`'s own comment
-   * (issue #506) for why a roster that emptied by discharge draws no
-   * sentence at all rather than this one, which would be false of it.
+   * `undefined` hides the block. A roster with `total: 0` **always** draws a
+   * sentence, and `everAdmitted` chooses which: `hud.regime.roster-empty` for a
+   * prison nobody has ever been admitted to, and `hud.regime.roster-emptied`
+   * for one whose whole population has since left. Both keys exist and neither
+   * has been widened to cover the other -- see `paintRoster`'s own comment for
+   * why they are two sentences.
+   *
+   * **This paragraph said the opposite until 2026-09-03 and is corrected
+   * rather than overwritten** (`docs/AGENT_WORKFLOW.md` §4, and the shape the
+   * rest of this file already uses), because it was true for months and the
+   * reason it gave is still the reason the second key exists. It read:
+   *
+   * > `undefined` hides the block. `total: 0` draws the empty sentence only
+   * > when `everAdmitted` is also false -- see `paintRoster`'s own comment
+   * > (issue #506) for why a roster that emptied by discharge draws no
+   * > sentence at all rather than this one, which would be false of it.
+   *
+   * It became false at `96ec6130` (#888), where the owner's ruling supplied the
+   * sentence the emptied-out state had never had: the paint site and the
+   * comment beside it were both updated and this docblock, 280 lines above, was
+   * not. The interval is the finding -- this is the **exported interface**, the
+   * thing another module reads to learn what the method does, and it disagreed
+   * with the method for hours while `paintRoster` itself read correctly.
    */
   setRoster(roster: HudPrisonerRosterViewModel | undefined): void;
   /**
