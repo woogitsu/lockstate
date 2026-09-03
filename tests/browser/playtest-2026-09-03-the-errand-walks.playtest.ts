@@ -335,6 +335,22 @@ async function readWorker(page: Page): Promise<WorkerReading> {
   });
 }
 
+/**
+ * The most recently raised carry job.
+ *
+ * By `createdAtTick` and not `jobs[jobs.length - 1]`: `JobBoard.allSorted()`
+ * orders by id, a delivery job's id is `delivery.<orderId>.<tick>` and an
+ * `orderId` is a UUID, so the newest job is in an arbitrary position. `JobBoard`
+ * never prunes a completed job either, so a second delivery's arrival cannot be
+ * read off the tail of the array.
+ */
+function latestJob(reading: WorkerReading): JobReading | undefined {
+  return reading.jobs.reduce<JobReading | undefined>(
+    (best, job) => (best === undefined || job.createdAtTick > best.createdAtTick ? job : best),
+    undefined,
+  );
+}
+
 function stock(reading: WorkerReading, containerId: string, itemId: string): { quantity: number; reserved: number } {
   const container = reading.containers.find((entry) => entry[0] === containerId);
   const line = (container?.[1] ?? []).find((entry) => entry[0] === itemId);
@@ -343,10 +359,23 @@ function stock(reading: WorkerReading, containerId: string, itemId: string): { q
 
 // ---- the Build panel's typed route --------------------------------------
 
+/**
+ * The catalogue row, clicked only when the selection actually has to change.
+ *
+ * **Measured before it was written.** Run 2 spent **4 minutes** of a 10-minute
+ * budget on 34 typed orders -- about 7s each -- and 30 of those 34 re-selected
+ * `wall-brick`, which was already selected. The click is what costs: the
+ * catalogue is a 44px scroller, so Playwright scrolls the row into view and
+ * waits for it to be stable on every one of them.
+ */
+let selectedBuildableId: string | undefined;
+
 async function selectBuildable(page: Page, id: string): Promise<void> {
+  if (selectedBuildableId === id) return;
   const row = page.locator(`.hud-build__list [data-buildable="${id}"]`);
   await expect(row).toHaveCount(1);
   await row.click();
+  selectedBuildableId = id;
 }
 
 async function openCoordinates(page: Page): Promise<void> {
@@ -404,6 +433,23 @@ async function pause(page: Page): Promise<void> {
   await page.waitForTimeout(200);
 }
 
+/**
+ * 1x, which is what makes the walk observable at all.
+ *
+ * **Run 2's finding about its own instrument.** At 4x the clock runs 80 ticks a
+ * wall-clock second (`FixedStepClock`'s `stepMilliseconds = 50`), and a whole
+ * errand -- selection, a 4-tile leg, a dwell, a 6-tile leg, a dwell -- is
+ * about 70 ticks. So the entire mechanic fitted between two samples: run 2
+ * caught tick 7897 with the job already `completed` and never saw a single
+ * intermediate tile or a single roster cell reading "Errand". At 1x the same
+ * errand takes 3.5s, which a poll with no artificial delay samples every
+ * tick or two.
+ */
+async function playAtNormalSpeed(page: Page): Promise<void> {
+  await page.locator('.hud-strip__transport button').nth(1).click();
+  await page.waitForTimeout(200);
+}
+
 /** Waits until every build order has left the queue, reporting the states it saw. */
 async function waitForQueueEmpty(page: Page, label: string, timeoutMs = 200_000): Promise<void> {
   const started = Date.now();
@@ -446,8 +492,10 @@ async function runUntilTick(page: Page, target: number, timeoutMs = 200_000): Pr
  * `formatPrisonerActivity` (`src/ui/hud/regime-panel.ts`), which is the only
  * place in the shipped HUD that names what a prisoner is doing.
  */
-async function rosterActivities(page: Page): Promise<readonly string[]> {
-  await tab(page, 'regime').click();
+async function rosterActivities(page: Page, options: { readonly alreadyOnTheRegimeTab?: boolean } = {}): Promise<readonly string[]> {
+  // The tab click is skipped in the fine-grained watch: it costs a round trip
+  // per sample, and at 1x a round trip is a tick.
+  if (options.alreadyOnTheRegimeTab !== true) await tab(page, 'regime').click();
   return page.evaluate(() =>
     [...document.querySelectorAll<HTMLElement>('.hud-regime__roster-row')]
       // The rows are pooled: the panel lays out `PRISONER_ROSTER_ROW_LIMIT` of
@@ -562,6 +610,7 @@ test.describe('the errand, watched through the interface', () => {
     // ---- act 2: the shell, one typed order at a time, clock paused --------
     let commands = 0;
     let orders = 0;
+    const placingStarted = Date.now();
     for (let x = BAY_LEFT; x <= RIGHT_WALL - 1; x += 1) {
       commands += await place(page, 'wall-brick', x, ROOM_TOP, 'north');
       commands += await place(page, 'wall-brick', x, ROOM_BOTTOM + 1, 'north');
@@ -574,7 +623,10 @@ test.describe('the errand, watched through the interface', () => {
         orders += 1;
       }
     }
-    log(`shell: ${orders} typed orders produced ${commands} commands (one each is what the numeric route promises)`);
+    log(
+      `shell: ${orders} typed orders produced ${commands} commands (one each is what the numeric route promises)` +
+        ` in ${Date.now() - placingStarted}ms, ${Math.round((Date.now() - placingStarted) / orders)}ms an order`,
+    );
     expect(commands).toBe(orders);
 
     await fastForwardToMax(page);
@@ -687,128 +739,185 @@ test.describe('the errand, watched through the interface', () => {
     await buy(page, 'wall-brick', 10);
     log(`bought 10 bricks at tick ${await currentTick(page)}; a delivery is due 100 ticks later`);
 
-    // ---- act 7: the watch window ------------------------------------------
-    // The first `work` block of `GENERAL_POPULATION_REGIME` is 500-1000 of the
-    // day and the second 1300-1800 (`src/simulation/prisoners/regime.ts`), so
-    // a carry can only be *selected* inside one of those. A carry already in
-    // flight is not cut at the boundary (ADR 0093 Consequences).
+    // ---- act 7: the watch window, coarse then fine ------------------------
+    /*
+     * The first `work` block of `GENERAL_POPULATION_REGIME` is 500-1000 of the
+     * day and the second 1300-1800 (`src/simulation/prisoners/regime.ts`), so
+     * a carry can only be *selected* inside one of those. A carry already in
+     * flight is not cut at the boundary (ADR 0093 Consequences).
+     *
+     * Two phases, and the split is run 2's finding about its own instrument
+     * (see `playAtNormalSpeed`): **4x to get to the work block, 1x to watch
+     * it.** At 4x the whole errand fits between two samples.
+     */
+    const dayTickOf = (tick: number) => ((tick % 2400) + 2400) % 2400;
+    const nearlyAWorkBlock = (tick: number) => {
+      const dayTick = dayTickOf(tick);
+      return (dayTick >= 440 && dayTick < 500) || (dayTick >= 1240 && dayTick < 1300);
+    };
+
+    /** 4x until there is a job on the board and a work block is about to open. */
+    const runToTheEdgeOfAWorkBlock = async (label: string, budgetMs: number): Promise<WorkerReading | undefined> => {
+      const started = Date.now();
+      let announced = false;
+      while (Date.now() - started < budgetMs) {
+        const now = await readWorker(page);
+        const job = latestJob(now);
+        if (job !== undefined && !announced) {
+          announced = true;
+          log(`>> [${label}] a carry job is on the board at tick ${now.tick} (day-tick ${dayTickOf(now.tick)}): ${describeJob(job)}`);
+          log(`   [${label}] the bay holds ${JSON.stringify(now.containers.filter((c) => c[0].startsWith('container:')))} and the roster says ${JSON.stringify(await rosterActivities(page))}`);
+        }
+        if (job !== undefined && job.state === 'available' && nearlyAWorkBlock(now.tick)) {
+          log(`>> [${label}] a work block opens within 60 ticks (tick ${now.tick}, day-tick ${dayTickOf(now.tick)}); dropping to 1x`);
+          return now;
+        }
+        await page.waitForTimeout(150);
+      }
+      log(`>> [${label}] gave up waiting for a job and a work block inside ${budgetMs}ms`);
+      return undefined;
+    };
+
+    const edge = await runToTheEdgeOfAWorkBlock('first errand', 90_000);
+    expect(edge, 'no delivery ever reached the bay as an available carry job').not.toBeUndefined();
+
+    await playAtNormalSpeed(page);
+    await tab(page, 'regime').click();
+
     let lastLine = '';
-    let jobAppearedAt = -1;
     let carrySelectedAt = -1;
     let pickedUpAt = -1;
     let completedAt = -1;
-    const carryTiles: string[] = [];
-    const watchStarted = Date.now();
-    while (Date.now() - watchStarted < 120_000) {
-      const { reading: now, line } = await sample();
-      const comparable = line.replace(/tick \d+ day-tick \d+/, '').replace(/since \d+/g, '');
+    /** Every distinct (tick, tile, phase, leg, roster cell) the errand passed through. */
+    const walk: string[] = [];
+    const fineStarted = Date.now();
+    while (Date.now() - fineStarted < 90_000) {
+      const now = await readWorker(page);
+      const activities = await rosterActivities(page, { alreadyOnTheRegimeTab: true });
+      const job = latestJob(now);
+      const prisoner = now.prisoners[0];
+      const line =
+        `t${now.tick}(${dayTickOf(now.tick)}) ${prisoner === undefined ? 'no prisoner' : `(${prisoner.tile.x},${prisoner.tile.y}) ${ACTION_IDS[prisoner.actionIndex] ?? prisoner.actionIndex}/${ACTION_PHASES[prisoner.actionPhase]}`}` +
+        ` | job ${job?.state ?? '-'}/${job?.leg ?? '-'}` +
+        ` | bay ${JSON.stringify(now.containers.filter((c) => c[0].startsWith('container:')).map((c) => c[1]))}` +
+        ` | store ${stock(now, CONSTRUCTION_CONTAINER, BRICK).quantity}` +
+        ` | ROSTER ${JSON.stringify(activities)}`;
+      const comparable = line.replace(/^t\d+\(\d+\) /, '');
       if (comparable !== lastLine) {
         log(line);
+        walk.push(line);
         lastLine = comparable;
       }
-      const job = now.jobs[now.jobs.length - 1];
-      const prisoner = now.prisoners[0];
-      if (job !== undefined && jobAppearedAt < 0) {
-        jobAppearedAt = now.tick;
-        log(`>> a carry job is on the board at tick ${now.tick}: ${describeJob(job)}`);
-      }
-      if (prisoner !== undefined && ACTION_IDS[prisoner.actionIndex] === 'action.carry') {
-        if (carrySelectedAt < 0) {
-          carrySelectedAt = now.tick;
-          log(`>> THE PRISONER TOOK THE ERRAND at tick ${now.tick}. ROSTER SAYS ${JSON.stringify(await rosterActivities(page))}`);
-        }
-        carryTiles.push(`t${now.tick} (${prisoner.tile.x},${prisoner.tile.y}) ${ACTION_PHASES[prisoner.actionPhase]} leg ${job?.leg ?? '-'} state ${job?.state ?? '-'}`);
+      if (prisoner !== undefined && ACTION_IDS[prisoner.actionIndex] === 'action.carry' && carrySelectedAt < 0) {
+        carrySelectedAt = now.tick;
+        log(`>> THE PRISONER TOOK THE ERRAND at tick ${now.tick}. THE ROSTER SAYS ${JSON.stringify(activities)}`);
       }
       if (job?.leg === 'dropoff' && pickedUpAt < 0) {
         pickedUpAt = now.tick;
-        log(`>> PICKED UP at tick ${now.tick}; bay now ${JSON.stringify(now.containers.filter((c) => c[0].startsWith('container:')))}`);
+        log(`>> PICKED UP at tick ${now.tick}; the bay now holds ${JSON.stringify(now.containers.filter((c) => c[0].startsWith('container:')))}`);
       }
       if (job?.state === 'completed' && completedAt < 0) {
         completedAt = now.tick;
-        log(`>> THE ERRAND COMPLETED at tick ${now.tick}. construction bricks ${JSON.stringify(stock(now, CONSTRUCTION_CONTAINER, BRICK))}`);
+        log(`>> THE ERRAND COMPLETED at tick ${now.tick}; construction bricks ${JSON.stringify(stock(now, CONSTRUCTION_CONTAINER, BRICK))}`);
         break;
       }
       if (job?.state === 'failed' || job?.state === 'cancelled') {
         log(`>> THE ERRAND ${job.state.toUpperCase()} at tick ${now.tick}: ${describeJob(job)}`);
         break;
       }
-      await page.waitForTimeout(200);
     }
-    log(`TIMELINE: job on board ${jobAppearedAt}, errand selected ${carrySelectedAt}, picked up ${pickedUpAt}, completed ${completedAt}`);
-    log(`WALK: ${carryTiles.join(' | ')}`);
+    log(`TIMELINE: errand selected ${carrySelectedAt}, picked up ${pickedUpAt}, completed ${completedAt}; ${walk.length} distinct states`);
 
-    // What the player is shown, read with the clock stopped so the roster and
-    // the worker cannot be a cycle apart.
+    // What the player is shown at the end, with the clock stopped so the roster
+    // and the worker cannot be a reconsideration cycle apart.
     await pause(page);
-    const paused = await sample();
-    log(`PAUSED READING: ${paused.line}`);
+    log(`PAUSED READING: ${(await sample()).line}`);
     log(`REGIME PANEL: ${(await panelText(page, '.hud-regime')).replace(/\n/g, ' | ')}`);
     log(`REFUSAL BAND: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
     log(`ALERTS: ${(await panelText(page, '.hud-alerts')).replace(/\n/g, ' | ')}`);
-    log(`OVERVIEW: ${(await panelText(page, '.hud-overview')).replace(/\n/g, ' | ')}`);
+    log(`STATUS STRIP: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
 
     // ---- act 8: save and reload mid-errand --------------------------------
     await tab(page, 'build').click();
     await buy(page, 'wall-brick', 10);
     await fastForwardToMax(page);
-    let capture: WorkerReading | undefined;
+    const secondEdge = await runToTheEdgeOfAWorkBlock('second errand', 90_000);
+    if (secondEdge === undefined) {
+      log('SAVE/RELOAD: no second delivery reached the bay in time; this half is not measured');
+      return;
+    }
+    await playAtNormalSpeed(page);
+    await tab(page, 'regime').click();
+
+    let capture: { readonly reading: WorkerReading; readonly roster: readonly string[] } | undefined;
     const captureStarted = Date.now();
-    while (Date.now() - captureStarted < 120_000) {
+    while (Date.now() - captureStarted < 60_000) {
       const now = await readWorker(page);
       const live = now.jobs.find((job) => job.state === 'travelling' || job.state === 'performing');
       if (live !== undefined) {
-        capture = now;
+        // Pause *first*, then read: pausing does not freeze an outstanding
+        // debit, so reading and then pausing measures a different tick
+        // (`docs/AGENT_WORKFLOW.md`).
+        await pause(page);
+        capture = { reading: await readWorker(page), roster: await rosterActivities(page, { alreadyOnTheRegimeTab: true }) };
         break;
       }
-      await page.waitForTimeout(120);
     }
+
     if (capture === undefined) {
-      log('SAVE/RELOAD: no second errand reached travelling or performing inside the window; this half is not measured');
-    } else {
-      // Pause *then* read: an outstanding debit is not frozen by pausing, so
-      // the order is load-bearing (`docs/AGENT_WORKFLOW.md`).
-      await pause(page);
-      const atPause = await sample();
-      log(`MID-ERRAND CAPTURE (paused): ${atPause.line}`);
-
-      await page.getByRole('button', { name: 'Save now' }).click();
-      await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ', { timeout: 30_000 });
-      log(`saved: ${await panelText(page, '.save-panel__status')}`);
-
-      await installProbe(page);
-      await openApp(page);
-      await page.locator('.save-panel__item').first().click();
-      await page.waitForTimeout(2500);
-      const afterLoad = await sample();
-      log(`AFTER LOAD: ${afterLoad.line}`);
-
-      await fastForwardToMax(page);
-      let resumeLine = '';
-      let restoredCompletedAt = -1;
-      const resumeStarted = Date.now();
-      while (Date.now() - resumeStarted < 90_000) {
-        const { reading: now, line } = await sample();
-        const comparable = line.replace(/tick \d+ day-tick \d+/, '').replace(/since \d+/g, '');
-        if (comparable !== resumeLine) {
-          log(`RESUME ${line}`);
-          resumeLine = comparable;
-        }
-        const job = now.jobs[now.jobs.length - 1];
-        if (job?.state === 'completed' && restoredCompletedAt < 0) {
-          restoredCompletedAt = now.tick;
-          log(
-            `>> THE RESTORED ERRAND COMPLETED at tick ${now.tick}.` +
-              ` Captured at ${atPause.reading.tick}, so ${now.tick - atPause.reading.tick} ticks across the restore.`,
-          );
-          break;
-        }
-        if (job?.state === 'failed' || job?.state === 'cancelled') {
-          log(`>> THE RESTORED ERRAND ${job.state.toUpperCase()} at tick ${now.tick}: ${describeJob(job)}`);
-          break;
-        }
-        await page.waitForTimeout(200);
-      }
-      if (restoredCompletedAt < 0) log('the restored errand did not reach `completed` inside the resume window');
+      log('SAVE/RELOAD: the second errand never showed `travelling` or `performing`; this half is not measured');
+      return;
     }
+
+    log(`MID-ERRAND CAPTURE (paused) at tick ${capture.reading.tick}: jobs [${capture.reading.jobs.map(describeJob).join(' ;; ')}]`);
+    log(`MID-ERRAND prisoner: ${capture.reading.prisoners.map((p) => describePrisoner(p, ACTION_IDS)).join(' ;; ')}`);
+    log(`MID-ERRAND ROSTER: ${JSON.stringify(capture.roster)}`);
+
+    await page.getByRole('button', { name: 'Save now' }).click();
+    await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ', { timeout: 30_000 });
+    log(`saved: ${await panelText(page, '.save-panel__status')}`);
+
+    // A real navigation, not a state reset.
+    await installProbe(page);
+    await openApp(page);
+    await page.locator('.save-panel__item').first().click();
+    await page.waitForTimeout(2500);
+    const afterLoad = await readWorker(page);
+    log(`AFTER LOAD at tick ${afterLoad.tick}: jobs [${afterLoad.jobs.map(describeJob).join(' ;; ')}]`);
+    log(`AFTER LOAD prisoner: ${afterLoad.prisoners.map((p) => describePrisoner(p, ACTION_IDS)).join(' ;; ')}`);
+    log(`AFTER LOAD ROSTER: ${JSON.stringify(await rosterActivities(page))}`);
+
+    await playAtNormalSpeed(page);
+    await tab(page, 'regime').click();
+    let resumeLine = '';
+    let restoredCompletedAt = -1;
+    const resumeStarted = Date.now();
+    while (Date.now() - resumeStarted < 60_000) {
+      const now = await readWorker(page);
+      const activities = await rosterActivities(page, { alreadyOnTheRegimeTab: true });
+      const job = latestJob(now);
+      const prisoner = now.prisoners[0];
+      const line =
+        `t${now.tick}(${dayTickOf(now.tick)}) ${prisoner === undefined ? 'no prisoner' : `(${prisoner.tile.x},${prisoner.tile.y}) ${ACTION_IDS[prisoner.actionIndex] ?? prisoner.actionIndex}/${ACTION_PHASES[prisoner.actionPhase]}`}` +
+        ` | job ${job?.state ?? '-'}/${job?.leg ?? '-'} | store ${stock(now, CONSTRUCTION_CONTAINER, BRICK).quantity} | ROSTER ${JSON.stringify(activities)}`;
+      const comparable = line.replace(/^t\d+\(\d+\) /, '');
+      if (comparable !== resumeLine) {
+        log(`RESUME ${line}`);
+        resumeLine = comparable;
+      }
+      if (job?.state === 'completed' && restoredCompletedAt < 0) {
+        restoredCompletedAt = now.tick;
+        log(
+          `>> THE RESTORED ERRAND COMPLETED at tick ${now.tick}.` +
+            ` The save was taken at ${capture.reading.tick}, so ${now.tick - capture.reading.tick} ticks elapsed across the restore.`,
+        );
+        break;
+      }
+      if (job?.state === 'failed' || job?.state === 'cancelled') {
+        log(`>> THE RESTORED ERRAND ${job.state.toUpperCase()} at tick ${now.tick}: ${describeJob(job)}`);
+        break;
+      }
+    }
+    if (restoredCompletedAt < 0) log('the restored errand did not reach `completed` inside the resume window');
   });
 });
