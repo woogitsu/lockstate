@@ -60,6 +60,7 @@ const primitiveFiles = collectTypeScriptFiles(PRIMITIVES_ROOT);
 const HUD_MODULE_NAMES = [
   'alert-row-label.ts',
   'build-panel.ts',
+  'dismiss-arming.ts',
   'event-band-dwell.ts',
   'hud-state.ts',
   'hud.ts',

@@ -3647,8 +3647,45 @@ test.describe('the assembled application', () => {
        * on the projection read that publication triggers, so a press timed
        * between the two would name somebody already dismissed and be refused as
        * `dismiss.unknown-staff`.
+       *
+       * **Two presses per dismissal, and this loop used to make one** (issue
+       * #877, the owner's ruling of 2026-09-03). A dismissal is confirmed now:
+       * the first press arms the row and states who is about to be sacked, the
+       * second sends the command. Nothing else about the gesture changed -- same
+       * control, no modal, no second button -- so the count assertions below are
+       * untouched and still fail if either press stops working.
+       *
+       * `.first()` is re-resolved for the second press deliberately rather than
+       * held: it selects `[data-staff]`, the arm publishes nothing, and a
+       * re-resolution that found a different row would mean the roster moved
+       * between the two presses, which is exactly what #877's fix forbids. If
+       * that ever happens the confirmed press lands on a row the arm was not on
+       * and `pressDismiss` arms *that* row instead of sending anything -- so the
+       * metric below does not move and this sweep goes red rather than quiet.
        */
       for (let remaining = STAFF_ROSTER_ROW_LIMIT - 1; remaining >= 0; remaining -= 1) {
+        await rosterRows.first().locator('.ui-action').click();
+        /*
+         * Armed, not sent -- asserted rather than assumed, so a confirm step
+         * that silently stopped arming would fail here instead of leaving the
+         * dismissals below to pass for the wrong reason.
+         *
+         * **Once per viewport, on the first of the three, and the reason is this
+         * test's budget rather than tidiness.** It is the most expensive test in
+         * the suite, `test.slow()` triples its 60 s and its own comment above
+         * records 14-28 s on an idle machine -- but it has been measured at
+         * **2.9 m against that 3.0 m** on a box running other suites
+         * (`docs/AGENT_WORKFLOW.md`, the contention canaries). The confirm step
+         * already doubles this block's presses from 15 to 30 across the sweep,
+         * which is irreducible; a poll per press is not, so it is spent where it
+         * proves the same thing.
+         */
+        if (remaining === STAFF_ROSTER_ROW_LIMIT - 1) {
+          await expect(
+            page.locator('.hud-staff__roster .hud-staff__held-row[data-dismiss="armed"]'),
+            `the first press did not arm a roster row at ${width}x${height}`,
+          ).toHaveCount(1);
+        }
         await rosterRows.first().locator('.ui-action').click();
         await expect(
           staffMetric,
