@@ -514,14 +514,30 @@ test.describe('the whole screen at once', () => {
      * should pass, and a pass is the refuting sample for event one.
      */
     log(`===== ACT 3 / event 2: spend into the overdraft, while looking at REGIME =====`);
+    /*
+     * **The order is placed from the Build tab and then the player goes back to
+     * Regime**, and the first version of this act got that wrong in a way worth
+     * recording: it called `buy` while the Regime tab was open, and `buy`
+     * addresses `.hud-build__list [data-buildable="wall-brick"]`, which is not
+     * laid out there. Playwright's click has no default timeout, so the act sat
+     * on an invisible control until the 600 s test timeout and event 2 produced
+     * nothing at all. The event under test is the *balance crossing into the
+     * overdraft*, which happens over the seconds after the press as deliveries
+     * are paid for -- so the press being on another tab costs the measurement
+     * nothing, as long as the watching is done from Regime.
+     */
+    await tab(page, 'build').click();
+    await page.waitForTimeout(400);
+    log(`   funds chip before the order: ${await fundsOnScreen(page)}`);
+    await buy(page, 'wall-brick', 600);
     await tab(page, 'regime').click();
     await page.waitForTimeout(400);
     const beforeSpend = await readCurrentView(page);
-    log(`   funds chip before: ${await fundsOnScreen(page)}`);
-    await buy(page, 'wall-brick', 400);
-    await page.waitForTimeout(4000);
-    await tab(page, 'regime').click();
-    await page.waitForTimeout(600);
+    log(`   funds chip on returning to Regime: ${await fundsOnScreen(page)}`);
+    for (let i = 0; i < 12; i += 1) {
+      await page.waitForTimeout(5000);
+      log(`   t+${(i + 1) * 5}s on Regime: funds chip ${JSON.stringify(await fundsOnScreen(page))}`);
+    }
     const afterSpend = await readCurrentView(page);
     const d2 = diffLines(beforeSpend, afterSpend);
     log(`   funds chip after: ${await fundsOnScreen(page)}`);

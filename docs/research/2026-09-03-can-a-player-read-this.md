@@ -36,9 +36,54 @@ different populations, and are told apart by nothing on screen
 
 *(evidence pending act 7; see §1.3)*
 
-## 2. DEFECT — the minimap says it is not available and then answers a click
+## 2. DEFECT — the minimap says it is not available, and then answers a click
 
-*(evidence pending act 8)*
+**Reproduction** (`act 8`, 27.6 s, no build needed): open the app, press
+**New prison**, wait, read the minimap panel; press once in the surface;
+read it again.
+
+| | on arrival, nothing pressed | after one press |
+| --- | --- | --- |
+| sentence on it | `Minimap is not available yet` | `No map is drawn here yet — click to jump the camera there` |
+| surface `cursor` | `pointer` | `pointer` |
+| placeholder `cursor` | `pointer` | `pointer` |
+| listeners on the surface | `click` | `click` |
+| `role` / `tabIndex` / `aria-label` / `title` | `(none)` / `-1` / `(none)` / `(none)` | same |
+| surface box | `224x224@99,501` | same |
+| panel `data-collapsed` | `false` | `false` |
+
+**The sentence swap is the proof the camera moved.** `src/ui/hud/hud.ts:1479`
+is `if (navigated) minimapPlaceholder.textContent =
+t(HUD_MESSAGE_KEY.minimapNavigable);`, and `navigated` is
+`onMinimapNavigate`'s return — `false` exactly when the click "lands while no
+world has ever been loaded". So the second row of that table cannot be reached
+without the camera having actually gone somewhere.
+
+**What a new player is therefore told.** A 224x224 panel, open on arrival and
+present on all five tabs, states in its only sentence that a feature does not
+exist. The feature works. **The only player who is ever corrected is the one
+who ignored the sentence** — and the correction is a one-way latch
+(`hud.ts:1479` is the sole writer; nothing resets it), so it is the *first*
+press that is wasted, once per session, for every player who reads before
+pressing.
+
+**The refuting sample, taken.** `cursor: pointer` on both the surface and the
+placeholder is a genuine affordance, so this is not a wholly hidden feature for
+a mouse player — which is why it is filed as a defect about a *sentence* rather
+than as HIDDEN. What that sample also shows is the shape of the problem: the
+cursor says press me and the words say there is nothing here, on the same
+224x224 box. And it does not rescue a keyboard player at all: `<div>`,
+`tabIndex -1`, no `role`, no `aria-label`, no `title` — the surface cannot be
+focused, so the swap can never fire and the sentence denying the feature is the
+only thing that player will ever be told.
+
+**What the words must convey**, without this pass authoring them: that the
+square is a camera control now, and that what is missing is the drawn map
+rather than the ability to jump. The second sentence already in the catalogue
+(`hud.minimap.navigable`) says exactly that. The change is *when* it is shown,
+not what it says — and choosing that is a player-visible promise, so it is the
+owner's.
+
 
 ## 3. REFUTED — "the numbers on screen are not labelled"
 
