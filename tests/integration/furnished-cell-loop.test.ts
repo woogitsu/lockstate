@@ -301,7 +301,17 @@ describe('what the toilet does and does not change in the running prison', () =>
       // `600 - 40` rather than as `560` so that the two facts stay separate: a
       // prison of one occupied place earns 600 over two days, and this one is
       // charged for one unmet need on one of them.
-      expect(runtime.treasury.balanceMinorUnits).toBe(25_000 - 65 - 40 + 600 - 40);
+      //
+      // **The second 40 is gone since the owner's ruling of 2026-09-03**,
+      // which set `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0`
+      // for now (their words are in that constant's docblock). The paragraph
+      // above is left as it stands rather than rewritten: the `safety`
+      // crossing it derives is a fact about this fixture and is unchanged --
+      // only what the crossing costs is (`docs/AGENT_WORKFLOW.md` §4). The two
+      // facts stay separate for the same reason they always did: a prison of
+      // one occupied place earns 600 over two days, and nothing is now
+      // withheld for the unmet need on the second.
+      expect(runtime.treasury.balanceMinorUnits).toBe(25_000 - 65 - 40 + 600);
     }
 
     // **The measurement that keeps this phase honest.** `action.use-toilet`

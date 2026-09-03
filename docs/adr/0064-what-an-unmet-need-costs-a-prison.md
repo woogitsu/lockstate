@@ -76,6 +76,91 @@ prisoner is held in, evaluated per occupied place.**
    type is added, no RNG stream is taken, no state is added, and
    `SAVE_SCHEMA_VERSION` stays at 4.
 
+### Amendment, 2026-09-03: the owner suspended the withheld share at zero
+
+**This records the repository owner's own ruling, dated, in their words. It is
+not a recommendation of this repository's and it was not self-approved** — per
+`docs/AGENT_WORKFLOW.md` §3, an implementing agent does not approve its own
+work, and this section exists because the decision was the owner's to take.
+**Nothing in this ADR's `Status` moves and no word of decisions 1 to 5 above is
+edited**: they are quoted below rather than rewritten, because what the owner
+suspended is a *rate*, and a reader restoring it needs the decision exactly as
+it was taken.
+
+#### What was put to the owner, and what they answered
+
+They were shown the shipped mechanic measured in play: the grant pays 300 per
+prisoner-day and withholds 40 for every unmet need, so a fully served prisoner
+is worth **five times** a neglected one, and in a measured twenty-day run a
+prison took **1,196 a day where 2,700–3,600 was available** — roughly two
+thirds of the grant withheld daily, with **nothing on screen saying so**. They
+were offered four ways to surface it. They chose none of them and ruled
+instead:
+
+> usuń na razie kary, zobaczymy jak pogram i ocenię łatwość
+
+("remove the penalties for now, we'll see how it plays and I'll judge the
+ease.")
+
+#### What that suspends, quoted rather than overwritten
+
+Decision 2 above reads:
+
+> One place pays `stateIncomeForPrisonerDay(unmetNeeds)` =
+> `max(0, 300 − 40 × unmetNeeds)`, where `unmetNeeds` counts how many of that
+> place's occupant's six needs stand at or below **51** — a fifth of
+> `NEED_MAX`. The schedule is `300, 260, 220, 180, 140, 100, 60`.
+
+**The `40` in that sentence is `0` while the owner plays**, so the schedule is
+`300, 300, 300, 300, 300, 300, 300` and an unmet need costs a prison nothing.
+`export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 0;`
+(verbatim in `src/simulation/economy/income.ts`), with the ruling and the
+owner's words recorded in that constant's own docblock.
+
+Everything else decisions 1 to 5 settle is **untouched and still in force**: the
+grant is still paid per occupied place per in-game day holding no state (1); a
+day's income is still the sum of per-place terms and never a mean (3); the
+"earned today" readout is still derived from the same walk (4); and nothing
+retunes the risk policy, adds an incident type, takes an RNG stream, adds state
+or moves `SAVE_SCHEMA_VERSION` (5). `STATE_INCOME_UNMET_NEED_LEVEL` (51) is
+**not** suspended — it still decides which needs count as unmet, which is what
+the projected flag on the Regime panel's need bar reports and what the money
+will be priced from again when the rate returns.
+
+#### Why "na razie" is load-bearing, and what keeps the mechanic from rotting
+
+**"na razie" means "for now".** The ruling is an experiment the owner runs while
+playing and judging difficulty, not a withdrawal of this decision, so the
+mechanic is switched off rather than removed:
+
+- The constant, every reader of it, and `stateIncomeForPrisonerDay`'s formula
+  all stay. **Restoring the mechanic is one number.**
+- The schedule is still gated. `stateIncomeForPrisonerDayAt` takes the withheld
+  rate as an argument, and `tests/unit/economy-state-income.test.ts` drives it
+  at `40`, at the shipped constant, and at a rate high enough that decision 2's
+  `max(0, …)` clamp actually binds — a case no shipped rate has ever made
+  observable. Deleting the withheld term as dead arithmetic turns eight
+  assertions red across five test files, measured.
+- Every driven measurement this ADR rests on is re-run at `40` rather than
+  deleted: `tests/integration/needs-state-grant-loop.test.ts` still prices its
+  ten measured days into 20,800 and still prices the two rooms at 3,200, off
+  the same measured unmet-need series.
+
+#### This ADR predicted this ruling, which is the reason to record it here
+
+"What would change my mind" already reads:
+
+> **The owner deciding the readout cannot be built.** A consequence a player
+> cannot understand is a worse game than no consequence, and I would rather
+> this were reverted than shipped permanently unexplained.
+
+The owner was offered the readout in four shapes and took none of them. So this
+is that falsifier arriving, and the response is the weaker of the two it names:
+**suspended pending play, not reverted.** Open question 1 above — *"Should the
+withheld share be steeper?"* — now has a prior question in front of it, and it
+is the one the owner has taken for themselves: whether the share should be
+anything at all. **That question is theirs and is not answered here.**
+
 ### The property that decided it: there is no new promise to make
 
 **"Earned today" is already on the status strip.** It is an existing, shipped,

@@ -329,6 +329,21 @@ the same eight cells with a shower room and a yard earn 24,000
 untouched, deliberately: the staffed row still reads 0.4824 and still riots
 zero times, which is the measurement #477 exists to present.
 
+**Suspended 2026-09-03, and the paragraph above is kept because it is the
+mechanic, not a mistake.** The repository owner set
+`STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0` while they play and
+judge difficulty — their ruling, in their own words and dated, is in
+[ADR 0064](./adr/0064-what-an-unmet-need-costs-a-prison.md)'s amendment of that
+date. So **"no consequence anywhere" is true again on the income line**: the
+prison above earns 300 a prisoner-day on all ten days and 24,000 over the run,
+where the withheld schedule earned it 20,800.
+`tests/integration/needs-state-grant-loop.test.ts` still measures the same day
+each need crosses and still prices the 20,800 and the two rooms' 3,200 at the
+suspended rate, so nothing above is a claim that stopped being checkable —
+only one that stopped being current (`docs/AGENT_WORKFLOW.md` §4: mark both
+directions). `STATE_INCOME_UNMET_NEED_LEVEL` (51) is not suspended and still
+decides which needs count as unmet.
+
 Two consequences of that shape are worth stating here rather than leaving to be
 found. It is **per occupant and never a mean**, so seven contented prisoners
 cannot hide an eighth — the same distinction ADR 0061 draws between the assault
@@ -354,6 +369,16 @@ it is narrower than the question above:
 
 - It says **the state is withholding grant for this need**, which
   `stateIncomeForPrisonerDay` really does.
+  **Corrected 2026-09-03: it does not, for now.** With the withheld share at
+  `0` the band's honest meaning is *this need is at or below
+  `STATE_INCOME_UNMET_NEED_LEVEL`* — the line the state reads when it settles a
+  day, whatever it currently charges for crossing it. That is what
+  `PrisonerNeedViewModel.unmetForStateIncome` reports and always reported; the
+  claim that broke is the money attached to it, and the sentence above is kept
+  because it is what the band will mean again when the rate returns. **No
+  player-visible sentence changed**: the band is a colour plus the need's own
+  word plus a spoken percentage, and no shipped string ever asserted the
+  withholding.
 - It does **not** say the prisoner is in danger, and the bar is never toned
   `danger` for exactly that reason. The player-facing "warning"/"critical" band
   gap 7 describes is still undefined and still the owner's, and so is whether it
