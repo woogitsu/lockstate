@@ -339,11 +339,14 @@ locale strings are drafted and flagged**, and no more" bullet is now five:
 sentence rather than a draft for review.
 
 **2. "The expanded height of the new roster block has not been measured."** It
-is measured now, and the browser job did confirm it, which is what that bullet
-asked for: `tests/browser/ui-staff-dismiss.spec.ts` reads every roster row's
-control box at 1280x1024 and refuses one that is not inside the window, and
+is measured now, which is what that bullet asked for:
+`tests/browser/ui-staff-dismiss.spec.ts` reads every roster row's control box at
+1280x1024 and at 900x600 and refuses one that is not inside the window, and
 `tests/browser/app-shell.spec.ts` has driven the block open at all five
-viewports since it landed. What the new spec adds at 900x600 is the
+viewports since it landed — that file is where the five-viewport claim lives, and
+on this branch it is the pull request's own `browser` job that runs it, because
+the three local attempts all exhausted its 180 s budget on a box carrying other
+agents' suites. What the new spec adds at 900x600 is the
 confirmation's own box, which is exempted from that viewport's single-line clamp
 in `src/ui/hud/hud.css` for the reason issue #884 established one element over:
 without the exemption the owner's sentence measures `scrollHeight` 26 against
