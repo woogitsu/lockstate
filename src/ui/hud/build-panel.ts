@@ -2402,7 +2402,33 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     freedAtMs: number | undefined;
   }
 
-  const queueRows: readonly QueueRow[] = Array.from({ length: BUILD_QUEUE_ROW_LIMIT }, (): QueueRow => {
+  /**
+   * The pool: at most `BUILD_QUEUE_ROW_LIMIT` rows, created as the queue first
+   * needs them and reused for ever after.
+   *
+   * **Lazily rather than all at once, and that changed with #862 for a reason
+   * a test found.** The pool used to be built eagerly, `Array.from({ length:
+   * BUILD_QUEUE_ROW_LIMIT })`, which was free while the limit was three and is
+   * not free at sixty-four: `tests/browser/app-shell.spec.ts`'s #88 sweep
+   * asserts that the set of controls *never laid out in any state* equals an
+   * explicit exempt list, and sixty-four rows against the six orders that test
+   * places would have put fifty-eight `Cancel` buttons on that list. Extending
+   * a pinned list is allowed here; extending it by fifty-eight entries that
+   * move whenever this constant does is not the same thing as recording a
+   * genuine exemption, and the sweep's finding is real: a control that is never
+   * drawn is a control nothing can vouch for.
+   *
+   * Growing on demand costs nothing the eager version did not, and gives two
+   * things back. A session that never queues anything holds no rows at all, and
+   * the HUD's busy group -- `add` with no `remove` -- gains a member only when
+   * a queue has actually been that long. The bound the group depends on is
+   * unchanged, because it was never "created up front": it is that the pool has
+   * a **ceiling** and rows past it are reused rather than built.
+   */
+  const queueRows: QueueRow[] = [];
+
+  /** One row: two lines of readout, and the one control that withdraws it. */
+  function createQueueRow(): QueueRow {
     const label = valueText('', 'hud-build__queue-label');
     const state = eyebrowText('', 'hud-build__queue-state');
     const row: QueueRow = {
@@ -2449,7 +2475,20 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     row.element.hidden = true;
     queueList.append(row.element);
     return row;
-  });
+  }
+
+  /**
+   * Grows the pool until it can draw `count` orders, and never past its
+   * ceiling.
+   *
+   * The clamp is here rather than at the call site because it is the invariant
+   * the busy group depends on, and an invariant that lives at one call site is
+   * one refactor away from living nowhere.
+   */
+  function ensureQueueRows(count: number): void {
+    const wanted = Math.min(count, BUILD_QUEUE_ROW_LIMIT);
+    while (queueRows.length < wanted) queueRows.push(createQueueRow());
+  }
 
   /**
    * Takes a row out of the list entirely: no order, no box, and nothing left on
@@ -2659,6 +2698,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      */
     panel.element.dataset['queued'] = String(shown.total);
 
+    // The pool grows to what this publication needs before anything below reads
+    // `queueRows`, so a queue that has just become longer than any before it
+    // draws every order it can reach this pass rather than next time (#862).
+    // Capped at `BUILD_QUEUE_ROW_LIMIT`, same as `assignPooledRows`'s own input
+    // below is -- growing past what the loop can assign would be a pool no
+    // publication could ever fill.
+    ensureQueueRows(shown.orders.length);
+
     /*
      * Which row names which order -- `assignPooledRows`, not `orders[index]`,
      * and that substitution is the whole of #860's fix. Its header carries the
@@ -2747,10 +2794,6 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     }
 
     /*
-     * How many are behind the last row, and no control to reach them --
-     * `BUILD_QUEUE_ROW_LIMIT` argues that out, and the sentence itself points at
-     * the control that does take a whole run back.
-     *
      * Counted against the rows this pass actually **drew** rather than against
      * `shown.orders.length`, because those two are no longer the same number: a
      * row holding its box open for one publication is a row the arriving order
