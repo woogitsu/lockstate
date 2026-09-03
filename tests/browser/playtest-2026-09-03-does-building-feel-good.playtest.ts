@@ -471,13 +471,18 @@ test('act C: can I tell what I can afford, before and after the limit', async ({
 
   // Now the real question: buy until the money is gone, in affordable steps,
   // and see whether the game warns before the wall or only at it.
+  // 500 first, then 100s: six rounds of 100 is six minutes on a loaded box.
+  await qty.fill('500');
+  await submit.click();
+  await page.waitForTimeout(600);
+  note(`[C] one press of Buy 500 took funds to ${JSON.stringify((await sample(page, started)).funds)}`);
   await qty.fill('100');
   let round = 0;
   for (;;) {
     round += 1;
     const beforeSample = await sample(page, started);
-    const disabledBefore = await submit.getAttribute('disabled');
-    if (disabledBefore !== null) {
+    const disabledBefore = await submit.getAttribute('aria-disabled');
+    if (disabledBefore === 'true') {
       note(`[C] round ${round}: Buy is disabled BEFORE the press. funds=${beforeSample.funds} shortfall=${JSON.stringify(await panelText(page, '.hud-build__buy-shortfall'))}`);
       break;
     }
@@ -503,7 +508,7 @@ test('act C: can I tell what I can afford, before and after the limit', async ({
   for (const n of [1, 2, 5, 20, 100]) {
     await qty.fill(String(n));
     await page.waitForTimeout(250);
-    note(`[C] at the limit, qty=${n}: disabled=${await submit.getAttribute('disabled')} shortfall=${JSON.stringify(await panelText(page, '.hud-build__buy-shortfall'))}`);
+    note(`[C] at the limit, qty=${n}: aria-disabled=${await submit.getAttribute('aria-disabled')} shortfall=${JSON.stringify(await panelText(page, '.hud-build__buy-shortfall'))} label=${JSON.stringify((await submit.innerText()).trim())}`);
   }
   await shot(page, 'C05-shortfall-line');
 
