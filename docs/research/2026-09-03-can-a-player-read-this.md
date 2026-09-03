@@ -51,7 +51,7 @@ either.
 | 1 | DEFECT | Four numbers about guards on one screen, two of them called coverage — and hiring a second guard moves neither of the two, while the wage bill triples |
 | 2 | DEFECT | The minimap says it is not available and then answers a click; only a player who ignored the sentence is ever told |
 | 3 | DEFECT | The tab a session opens on gains no sentence at all between an empty prison and a working one |
-| 4 | DEFECT | A roster row is `name / activity / need / risk tier` with no heading over any column, and this pass misread it (§12) |
+| 4 | DEFECT | A roster row is `name / activity / need / risk tier` with no heading over any column and no label on any cell, and this pass misread it (§4) |
 | 5 | REFUTED | "The numbers are not labelled." One unlabelled readout on the whole screen |
 | 6 | FIXED | The clock says `PAUSED`, in a word and a second channel (#629 §1 closed) |
 | 7 | CONFIRMED | A refusal from tick 0, in two places at once, still on screen on day 7 (#894) |
@@ -159,6 +159,25 @@ an incident can be answered — but it is its neighbour, measured from the other
 side: the same `1 of 1 · Covered · This prison has the guards it asks for.`
 renders at one guard and at three, with six prisoners either way.
 
+**Half of that is the game being right, and the half that is left is a hidden
+rule.** `required` is
+`Math.max(scheduledGuardCount, Math.ceil(occupants / DEFAULT_SECTOR_PRISONERS_PER_GUARD))`
+with the constant at **8** (`src/simulation/security/sector-staffing.ts:147,190`),
+so a prison of six or eight genuinely asks for one guard and the second hire
+genuinely buys nothing. The sentence `This prison has the guards it asks for.`
+is therefore true and *is* the signal not to hire again — credit where it is
+due, and it is the reason this is filed as a legibility defect rather than a
+balance one.
+
+**What is nowhere on screen is the ratio.** `grep` over
+`src/content/default-locale-en.ts` for `per guard`, `for every`, `each guard`
+and `one guard` returns nothing about it, and `DEFAULT_SECTOR_PRISONERS_PER_GUARD`
+has no reference in `src/ui/` or `src/content/` at all. So a player can read
+`1 of 1` and cannot work out that admitting a **ninth** prisoner turns it into
+`1 of 2` — the rule that decides the whole of their security budget is
+discoverable only by crossing it. That is the owner's *"nie jakieś ukryte
+funkcje"* exactly: a mechanic that works and cannot be anticipated.
+
 **What the words must convey**, without this pass authoring them: which
 population each number counts. The strip's chip is the one that needs it — the
 panel already says `Guard`.
@@ -244,7 +263,7 @@ Saved (generation gen-mtlvhvhs-8).
 ```
 
 Six numbers, all of them on the status strip that is on screen on every tab
-anyway; the speed readout; **a refusal from tick 0 (§7)**; an autosave notice.
+anyway; the speed readout; **a refusal from tick 0 (§8)**; an autosave notice.
 **Not one sentence about the prison.** The Intake panel's only prose is the
 same hint it carried when the prison was empty — *"A prison needs a cell before
 it can admit anyone. It does not need a free bed: an arrival with none waits
@@ -288,7 +307,61 @@ session opens on, what the prison is currently doing to the people in it.
 Which facts those are is a design call and therefore the owner's; the gap is
 that the count is presently zero.
 
-## 4. REFUTED — "the numbers on screen are not labelled"
+## 4. DEFECT — a roster row is four bare words, and this pass misread it
+
+**This is the finding the pass would have missed by reading the code first**, so
+the misreading is the evidence and is recorded as such. Act 3's prose dump of
+the Regime tab produced rows like
+
+```
+Carla Okafor
+Association
+Hygiene
+Minimal
+```
+
+and this record's first draft read the last two as one fact: *minimal hygiene*.
+That is wrong. `Minimal / Low / Medium / High` is the **risk tier**
+(`src/content/simulation-message-keys.ts:255`; `regime-panel.ts`'s own docblock
+opens *"The word is the risk tier once classification has run — Minimal, Low,
+Medium, High"*). The word above it is the prisoner's **lowest need**. Two
+different scales, adjacent, with nothing between them.
+
+**The refuting sample, taken** (`act 9`): ask the DOM what names each cell of a
+row, walking up for every `aria-label` and `title`.
+
+```
+-- row "Adan Engel / Sleeping / Hygiene / Low"
+   class=hud-regime__roster-row  aria="(none)"  title="(none)"
+   cell "Adan Engel"  class=ui-value hud-regime__roster-name        aria-label on section.ui-panel: Regime
+   cell "Sleeping"    class=ui-eyebrow hud-regime__roster-activity  aria-label on section.ui-panel: Regime
+   cell "Hygiene"     class=ui-eyebrow hud-regime__roster-need-name aria-label on section.ui-panel: Regime
+   cell "Low"         class=ui-badge__text                          aria-label on section.ui-panel: Regime
+```
+
+- **No column headings.** The probe's search for `th`, `[role=columnheader]` or
+  anything class-matching `header` inside the block returned one hit and it is
+  the block's own title, `Prisoners 4 of 8`.
+- **No `aria-label` and no `title`** on the row or on any of its four cells.
+  The nearest naming anything is `aria-label="Regime"` on the whole panel.
+- The DOM knows what each cell is — `roster-name`, `roster-activity`,
+  `roster-need-name` — and **the screen says none of it**. The tier cell does
+  not even have a class of its own: it is a bare `ui-badge__text`, the same
+  class carrying `Warning`, `Info` and `Covered` elsewhere on the same screen.
+
+**Why `Low` is the worst possible word here.** All four rows on screen read
+`Hygiene / Low` or `Hunger / Low`. Read as a need level, `Low` means *this
+prisoner is badly off* — a thing to act on. Read as a risk tier, `Low` means
+*this prisoner is no trouble* — a thing to ignore. **The two readings point in
+opposite directions**, and nothing on the row picks one. `Minimal` is the same
+trap one rung down.
+
+**What the words must convey**, without this pass authoring them: which of the
+four values on a row is a need and which is a classification. Two headings, or
+two words per row, or a separator — the choice is player-visible copy and
+therefore the owner's.
+
+## 5. REFUTED — "the numbers on screen are not labelled"
 
 This pass opened by assuming a legibility problem it could not find.
 
@@ -297,7 +370,7 @@ contains a digit, and reports **`hops`**: the number of steps from that leaf up
 to the nearest ancestor whose *visible* text (screen-reader-only spans removed)
 contains a word of three or more letters, together with that ancestor's text.
 It is a distance rather than a verdict because the verdict version got the
-answer wrong — see §11.
+answer wrong — see §12.
 
 Measured across all five tabs, at 1440x900:
 
@@ -320,7 +393,7 @@ The chip values are labelled one hop away — `span.ui-stat__body` reading
 while keeping its value. This pass measured 1440x900 only; the sibling pass
 measures 375x812.
 
-## 5. FIXED — the clock now says whether it is running
+## 6. FIXED — the clock now says whether it is running
 
 `2026-08-30-what-the-game-never-says.md` §1 recorded that a new session's clock
 is constructed paused and *"no word on screen says so — the whole sighted clock
@@ -341,7 +414,7 @@ Cross-checked against the worker rather than the paint: the tick moved
 after Pause. Two channels, both moving, both agreeing with the simulation. The
 readout named in #629 §1 is closed.
 
-## 6. CONFIRMED (#894) — one refusal from tick 0, rendered twice, still on
+## 7. CONFIRMED (#894) — one refusal from tick 0, rendered twice, still on
 screen on day 7
 
 The `calibrate` helper presses one empty tile with the Remove tool at the very
@@ -368,7 +441,7 @@ the day-9-from-tick-0 one already on file and because **the same sentence
 occupies two places on the screen at once**, which the existing record does not
 say.
 
-## 7. CONFIRMED — all nine status chips are inert, measured by pressing them
+## 8. CONFIRMED — all nine status chips are inert, measured by pressing them
 
 Already on file and not re-filed; recorded because the measurement is stronger
 than the one it confirms. `installListenerCensus` patches
@@ -403,7 +476,7 @@ PRESS funds         changed 6 line(s) on screen: ["607","51%","40% THROUGH","All
 for §3 is that the one surface a player has on every tab is a row of nine
 numbers that goes nowhere.
 
-## 8. NOT A DEFECT — an important change *is* visible on a tab that does not
+## 9. NOT A DEFECT — an important change *is* visible on a tab that does not
 report it
 
 This was the pass's third hypothesis and the strip answers it.
@@ -437,7 +510,7 @@ do is carry a *sentence*, and §3 is what that costs. Both are true — the stri
 is the reason an urgent change is never missed and the reason an ordinary one is
 never explained.
 
-## 9. TASTE — `EARNED TODAY` is a number with no reference point anywhere on
+## 10. TASTE — `EARNED TODAY` is a number with no reference point anywhere on
 screen
 
 `EARNED TODAY` is `counts.stateIncomeAccruedTodayMinorUnits` unmodified
@@ -461,7 +534,7 @@ several seconds apart on a clock running at x4, and the chip is that field
 read directly with no arithmetic. Recorded because the suspicion was wrong and
 the reason it was wrong is a sampling rule this record depends on elsewhere.
 
-## 10. MEASURED, and already the owner's call — the one sentence that explains
+## 11. MEASURED, and already the owner's call — the one sentence that explains
 the overdraft badge is hover-only
 
 Recorded rather than filed, because the owner ruled on it on 2026-09-01 and the
@@ -489,7 +562,7 @@ elsewhere (a strip carrying every badge is 1,627px of content in a 1,256px row
 at 1280). This record only notes that the trade landed the *explanation* of a
 number on a hover, and that a hover is not a channel a player is told exists.
 
-## 11. This pass's instrument was wrong twice, and both are recorded
+## 12. This pass's instrument was wrong twice, and both are recorded
 
 - **The number probe measured itself.** The first `probeNumbers` asked whether
   a word appeared inside the number's "smallest grouping" and stopped its
