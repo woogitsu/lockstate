@@ -134,6 +134,24 @@ test.describe('a refused press says how much more money the prison needs (#772, 
     page,
   }) => {
     /*
+     * **A real-session test on the assembled page, so it gets the budget
+     * `app-shell.spec.ts` gives its own real presses.** This one loads
+     * `/index.html`, starts a worker, creates a prison, opens a disclosure,
+     * fills a stepper, presses a control for real and then waits out a
+     * repaint. Measured at **1.1m against the 60s default** with two other
+     * Playwright suites and three `vitest` runs on the box, and the step
+     * holding the clock when the budget ran out was the *last* one -- every
+     * assertion about the sentence had already passed, and the page snapshot
+     * taken at the timeout carries `Not enough money — you need 3,975 more.`
+     * beside the band.
+     *
+     * So this is a budget for a serial narrative on a loaded machine, not a
+     * timeout raised over a race: nothing here polls for something that may
+     * never arrive, and the two `expect.poll` calls settle on the first
+     * attempt when the page has already repainted.
+     */
+    test.slow();
+    /*
      * **The arithmetic first, asserted rather than merely computed.** Each
      * figure is derived above and pinned here, so a constant that moves fails
      * with the number that moved instead of quietly re-deriving a new
