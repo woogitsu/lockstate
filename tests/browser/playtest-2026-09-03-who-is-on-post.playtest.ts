@@ -727,9 +727,21 @@ test.describe('the unguarded rung, reached by playing', () => {
     note(`the sentence returned after ${String(returned.ms)}ms / ${String(returned.polls)} polls: ${JSON.stringify(returned.value)}`);
     const afterFire = await rawCounts(page);
     note(`FUNDS ${String(beforeFireFunds)} -> ${String(await funds(page))}`);
+    /*
+     * **This figure is not a severance measurement, and saying so is the
+     * point of the comment.** The clock has to keep running for the census
+     * walk to re-rate the sector and for the sentence to come back at all --
+     * `SafetyCoverageSystem` is `intervalTicks: 10` and a paused kernel never
+     * steps it -- so this window also carries state income and a payroll
+     * boundary at x4. The controlled reading is the paused one in the second
+     * act of the first test, which measured exactly `0`. What this line is
+     * for is the *wage bill*, which is a level and not a flow: it goes to 0
+     * and stays there, which is what `hud.security.roster-hint` promises.
+     */
     note(
       `treasury across the Dismiss press: ${String(Number(afterFire?.['treasuryMinorUnits'] ?? 0) - Number(beforeFire?.['treasuryMinorUnits'] ?? 0))}`
-        + ` -- ADR 0070 decision 3 says a dismissal moves no money, in a populated prison too.`,
+        + ' -- NOT a severance reading: the clock is running at x4 here because the census needs ticks.'
+        + ' See act 2 of the first test for the paused measurement.',
     );
     note(`wage bill: ${String(beforeFire?.['dailyWageBillMinorUnits'])} -> ${String(afterFire?.['dailyWageBillMinorUnits'])}`);
     note(`census: ${JSON.stringify(afterFire)}`);
