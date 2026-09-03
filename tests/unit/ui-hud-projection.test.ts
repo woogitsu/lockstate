@@ -1067,5 +1067,40 @@ describe('refusalMessageKey: what a refused control says', () => {
     expect(refusalMessageKey('set-clock', 'past-the-overdraft-floor')).toBe(HUD_MESSAGE_KEY.refusalSetClock);
     expect(refusalMessageKey('undo', 'past-the-overdraft-floor')).toBe(HUD_MESSAGE_KEY.refusalUndo);
     expect(refusalMessageKey('select-tab', 'past-the-overdraft-floor')).toBeUndefined();
+    // The second reason obeys the same rule, and this is the half that matters:
+    // 'no-room-to-hold-anybody' on a control that admits nobody would be a
+    // claim about beds on a button that buys bricks.
+    expect(refusalMessageKey('purchase-materials', 'no-room-to-hold-anybody')).toBe(
+      HUD_MESSAGE_KEY.refusalPurchaseMaterials,
+    );
+    expect(refusalMessageKey('set-clock', 'no-room-to-hold-anybody')).toBe(HUD_MESSAGE_KEY.refusalSetClock);
+    expect(refusalMessageKey('select-tab', 'no-room-to-hold-anybody')).toBeUndefined();
+  });
+
+  it('says what a refused Admit is missing, which is the owner\'s ruling of 2026-09-03', () => {
+    /*
+     * **Before the ruling, a refused Admit said only the generic sentence** and
+     * the real reason went to `console.warn`: `src/main.ts` threw a plain
+     * `Error`, and the message on a thrown value is diagnostic English that
+     * ADR 0011 says deliberately never reaches a player. So the game knew what
+     * was missing and told nobody (issue #869 -- whose first filing prescribed
+     * "throw the other type, the sentence already exists" and was **wrong**,
+     * because the sentence did not exist and had to be ruled).
+     *
+     * The generic sentence is deliberately kept reachable: a refused Admit for
+     * any other reason still reads it, which is what stops this reason from
+     * becoming the only thing an Admit can ever say.
+     */
+    expect(refusalMessageKey('admit-prisoner', 'no-room-to-hold-anybody')).toBe(
+      HUD_MESSAGE_KEY.refusalAdmitPrisonerNoRoom,
+    );
+    expect(refusalMessageKey('admit-prisoner')).toBe(HUD_MESSAGE_KEY.refusalAdmitPrisoner);
+    expect(refusalMessageKey('admit-prisoner', 'past-the-overdraft-floor')).toBe(
+      HUD_MESSAGE_KEY.refusalAdmitPrisoner,
+    );
+    // Two different sentences, so a player can tell the two refusals apart.
+    expect(refusalMessageKey('admit-prisoner', 'no-room-to-hold-anybody')).not.toBe(
+      refusalMessageKey('admit-prisoner'),
+    );
   });
 });
