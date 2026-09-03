@@ -258,18 +258,32 @@ test('act B: how many presses is one cell with a bed and a toilet', async ({ pag
   const origin = await calibrate(page);
   note(`[B] origin (${origin.originX}, ${origin.originY})`);
 
-  // A 4x4 cell: tiles (6,6)-(9,9). Perimeter drawn with the reliable route
-  // where the mouse cannot be trusted, so the count is honest about what a
-  // player would actually have to do. Both routes are counted below.
-  //
-  // First: try the mouse, because that is what a player does.
+  /*
+   * A 4x4 cell on tiles **(13,11)-(16,14)**, and the tiles are the correction
+   * this act needed most.
+   *
+   * It was written against (6,6)-(9,9). With the real world origin of
+   * (-304, -574) that puts the room's north gridline at screen y = -190 and
+   * its west gridline at x = 80 -- one off the top of the window, the other
+   * under the minimap panel. Every mouse gesture in the act would have missed
+   * the canvas, fallen through to the typed route, and reported a press count
+   * that measured Playwright's aim rather than the game's.
+   *
+   * (13,11)-(16,14) spans screen x 528..784 and y 130..386, which is inside
+   * the one rectangle of canvas that no HUD island covers at 1440x900:
+   * roughly x 420..1160, y 90..430. The status strip takes the top ~82px, the
+   * minimap and alerts take x 10..410 below y 430, the right-hand rail takes
+   * x 1164 rightwards, and the tab bar takes the bottom ~70px.
+   *
+   * First: try the mouse, because that is what a player does.
+   */
   await presses.click(page.locator('.hud-build__list [data-buildable="wall-brick"]'), 'select Brick wall');
   await presses.click(page.locator('.hud-build__arm'), 'arm');
 
-  const west = origin.originX + 6 * TILE;
-  const east = origin.originX + 10 * TILE;
-  const north = origin.originY + 6 * TILE;
-  const south = origin.originY + 10 * TILE;
+  const west = origin.originX + 13 * TILE;
+  const east = origin.originX + 17 * TILE;
+  const north = origin.originY + 11 * TILE;
+  const south = origin.originY + 15 * TILE;
   const runs = [
     { name: 'north', a: { x: west + TILE / 2, y: north }, b: { x: east - TILE / 2, y: north } },
     { name: 'south', a: { x: west + TILE / 2, y: south }, b: { x: east - TILE / 2, y: south } },
@@ -299,13 +313,13 @@ test('act B: how many presses is one cell with a bed and a toilet', async ({ pag
   note(`[B] segments the mouse actually submitted: ${JSON.stringify([...submitted])}`);
 
   const wanted: { tx: number; ty: number; edge: string }[] = [];
-  for (let tx = 6; tx <= 9; tx += 1) {
-    wanted.push({ tx, ty: 6, edge: 'north' });
-    wanted.push({ tx, ty: 9, edge: 'south' });
+  for (let tx = 13; tx <= 16; tx += 1) {
+    wanted.push({ tx, ty: 11, edge: 'north' });
+    wanted.push({ tx, ty: 14, edge: 'south' });
   }
-  for (let ty = 6; ty <= 9; ty += 1) {
-    wanted.push({ tx: 6, ty, edge: 'west' });
-    wanted.push({ tx: 9, ty, edge: 'east' });
+  for (let ty = 11; ty <= 14; ty += 1) {
+    wanted.push({ tx: 13, ty, edge: 'west' });
+    wanted.push({ tx: 16, ty, edge: 'east' });
   }
   let typed = 0;
   for (const seg of wanted) {
@@ -351,7 +365,7 @@ test('act B: how many presses is one cell with a bed and a toilet', async ({ pag
   let attempts = 0;
   for (;;) {
     attempts += 1;
-    await presses.drag(page, centreOf(origin, 6, 6), centreOf(origin, 9, 9), `zone drag attempt ${attempts}`);
+    await presses.drag(page, centreOf(origin, 13, 11), centreOf(origin, 16, 14), `zone drag attempt ${attempts}`);
     note(`[B] rooms panel after the drag:\n${await panelText(page, '.hud-rooms')}`);
     await presses.click(page.locator('.hud-rooms__confirm'), `confirm the room (attempt ${attempts})`);
     await page.waitForTimeout(900);
@@ -375,28 +389,28 @@ test('act B: how many presses is one cell with a bed and a toilet', async ({ pag
   await presses.click(page.locator('.hud-build__list [data-buildable="bed-wooden"]'), 'select Wooden bed');
   note(`[B] bed arm control reads: ${JSON.stringify((await page.locator('.hud-build__arm').innerText()).trim())}`);
   await presses.click(page.locator('.hud-build__arm'), 'arm the bed');
-  const bedPoint = centreOf(origin, 7, 7);
-  const bedCmds = await presses.press(page, bedPoint.x, bedPoint.y, 'place the bed at (7,7)');
+  const bedPoint = centreOf(origin, 14, 12);
+  const bedCmds = await presses.press(page, bedPoint.x, bedPoint.y, 'place the bed at (14,12)');
   note(`[B] bed press produced ${bedCmds.length} command(s): ${JSON.stringify(bedCmds)}`);
   if (bedCmds.length === 0) {
     note('[B] the bed press produced nothing; falling back to the typed route');
     await presses.click(page.locator('.hud-build__list [data-buildable="bed-wooden"]'), 'select Wooden bed (typed)');
     await openCoordinates(page);
-    await presses.fill(page.getByRole('spinbutton', { name: 'Tile X' }), '7', 'Tile X');
-    await presses.fill(page.getByRole('spinbutton', { name: 'Tile Y' }), '7', 'Tile Y');
+    await presses.fill(page.getByRole('spinbutton', { name: 'Tile X' }), '14', 'Tile X');
+    await presses.fill(page.getByRole('spinbutton', { name: 'Tile Y' }), '12', 'Tile Y');
     await presses.click(page.locator('.hud-build__coordinates .ui-action'), 'Place order');
   }
   await presses.click(page.locator('.hud-build__list [data-buildable="toilet-brick"]'), 'select Toilet');
   await presses.click(page.locator('.hud-build__arm'), 'arm the toilet');
-  const wcPoint = centreOf(origin, 8, 8);
-  const wcCmds = await presses.press(page, wcPoint.x, wcPoint.y, 'place the toilet at (8,8)');
+  const wcPoint = centreOf(origin, 15, 13);
+  const wcCmds = await presses.press(page, wcPoint.x, wcPoint.y, 'place the toilet at (15,13)');
   note(`[B] toilet press produced ${wcCmds.length} command(s): ${JSON.stringify(wcCmds)}`);
   if (wcCmds.length === 0) {
     note('[B] the toilet press produced nothing; falling back to the typed route');
     await presses.click(page.locator('.hud-build__list [data-buildable="toilet-brick"]'), 'select Toilet (typed)');
     await openCoordinates(page);
-    await presses.fill(page.getByRole('spinbutton', { name: 'Tile X' }), '8', 'Tile X');
-    await presses.fill(page.getByRole('spinbutton', { name: 'Tile Y' }), '8', 'Tile Y');
+    await presses.fill(page.getByRole('spinbutton', { name: 'Tile X' }), '15', 'Tile X');
+    await presses.fill(page.getByRole('spinbutton', { name: 'Tile Y' }), '13', 'Tile Y');
     await presses.click(page.locator('.hud-build__coordinates .ui-action'), 'Place order');
   }
   await shot(page, 'B06-furniture-ordered');
@@ -1039,4 +1053,165 @@ test('act G: the refuting samples', async ({ page }) => {
   note(`[G3] band at the end: ${JSON.stringify(end.refusal)}`);
   note(`[G3] deliveries at the end:\n${await panelText(page, '.hud-build__deliveries')}`);
   await shot(page, 'G05-after-cancelling-paused');
+});
+
+/* ------------------------------------------------------------------ ACT H */
+
+/**
+ * The three samples still outstanding, all of them inside the one rectangle
+ * of canvas no HUD island covers.
+ *
+ * **Why that rectangle is stated as a constant here.** Acts F and G lost most
+ * of their pointer measurements to it. `press` at a point the HUD covers
+ * submits **nothing at all** -- no command, no refusal, no band -- so a
+ * measurement taken there reads exactly like a game that ignored the press.
+ * Act F's "single presses produce zero commands while a drag produces five"
+ * and act G's "a bed at a tile centre produces nothing" were both this, not a
+ * finding: F's wall was at screen y = -62 and G's bed at x = 1264, behind the
+ * Build panel. That HUD occlusion is #878's subject and is not re-derived
+ * here; what it cost this playtest is recorded because it will cost the next
+ * one the same three runs otherwise.
+ *
+ * H1 **does a refusal clear when the same action succeeds**, which is what
+ *    `src/ui/hud/hud.ts` promises and what act F could not test. Refuse a
+ *    build order (place the same wall twice), then place a *different* wall
+ *    that must succeed, and read the band. Clock stopped throughout.
+ * H2 **what the Build tab does not say about furniture.** Act G's bed was
+ *    refused with *"it has to stand in a room you have zoned"* -- so 19 of
+ *    the 21 catalogue rows are unplaceable on a fresh prison. This walks the
+ *    catalogue on an unzoned prison and counts how many rows the panel offers
+ *    that the simulation will refuse, and checks whether the panel says so
+ *    anywhere before the press.
+ * H3 **cancel, with the clock genuinely stopped.**
+ */
+
+/** The one rectangle of canvas no HUD island covers at 1440x900, in tiles. */
+const CLEAR_TILES = { minX: 12, maxX: 22, minY: 11, maxY: 15 } as const;
+
+test('act H: what the panel does not say, and what cancel gives back', async ({ page }) => {
+  test.setTimeout(600_000);
+  await installTee(page);
+  await openApp(page);
+  const started = Date.now();
+
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await tab(page, 'build').click();
+  const origin = await calibrate(page);
+
+  // Prove the clear rectangle really is clear, rather than asserting it.
+  const cover = await page.evaluate(
+    ([ox, oy, tile, box]) => {
+      const islands = Array.from(document.querySelectorAll('.hud-strip, .hud__tabs, .ui-panel, .save-panel, .hud__corner, .hud__rail'))
+        .map((n) => (n as HTMLElement).getBoundingClientRect())
+        .filter((b) => b.width > 0 && b.height > 0);
+      const out: string[] = [];
+      const r = box as { minX: number; maxX: number; minY: number; maxY: number };
+      for (let tx = r.minX; tx <= r.maxX; tx += 1) {
+        for (let ty = r.minY; ty <= r.maxY; ty += 1) {
+          const cx = (ox as number) + tx * (tile as number) + (tile as number) / 2;
+          const cy = (oy as number) + ty * (tile as number) + (tile as number) / 2;
+          const hit = islands.find((b) => cx >= b.left && cx <= b.right && cy >= b.top && cy <= b.bottom);
+          if (hit !== undefined) out.push(`${tx},${ty}`);
+        }
+      }
+      return { covered: out, viewport: { w: window.innerWidth, h: window.innerHeight } };
+    },
+    [origin.originX, origin.originY, TILE, CLEAR_TILES] as const,
+  );
+  note(`[H] at ${cover.viewport.w}x${cover.viewport.h}, of the ${(CLEAR_TILES.maxX - CLEAR_TILES.minX + 1) * (CLEAR_TILES.maxY - CLEAR_TILES.minY + 1)} tile centres in the rectangle this act uses, ${cover.covered.length} are under a HUD island: ${JSON.stringify(cover.covered)}`);
+
+  /* --- H1: does a refusal clear when the same action succeeds? --- */
+  await armBuildable(page, 'wall-brick');
+  const edgeAt = (tx: number, ty: number) => ({ x: origin.originX + tx * TILE + TILE / 2, y: origin.originY + ty * TILE + TILE / 2 });
+  const first = edgeAt(18, 12);
+  const one = await press(page, first.x, first.y - TILE / 2 + 40);
+  await page.waitForTimeout(900);
+  note(`[H1] the first wall: ${one.length} command(s) ${JSON.stringify(one.map((c) => `${String(c['x'])},${String(c['y'])} ${String(c['edge'])}`))} | band ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  const two = await press(page, first.x, first.y - TILE / 2 + 40);
+  await page.waitForTimeout(1200);
+  const refusedBand = await panelText(page, '.hud__refusal');
+  note(`[H1] the SAME wall again: ${two.length} command(s) | band ${JSON.stringify(refusedBand)}`);
+  const three = await press(page, edgeAt(20, 12).x, edgeAt(20, 12).y - TILE / 2 + 40);
+  await page.waitForTimeout(1500);
+  const afterSuccess = await panelText(page, '.hud__refusal');
+  note(`[H1] a DIFFERENT wall, which must succeed: ${three.length} command(s) ${JSON.stringify(three.map((c) => `${String(c['x'])},${String(c['y'])} ${String(c['edge'])}`))}`);
+  note(`[H1] band after that success: ${JSON.stringify(afterSuccess)}`);
+  note(`[H1] DID THE REFUSAL CLEAR WHEN THE SAME ACTION SUCCEEDED? ${refusedBand === afterSuccess ? 'NO -- identical text' : 'YES'}`);
+  note(`[H1] alerts list now: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+  await shot(page, 'H01-refusal-then-success');
+
+  /* --- H2: which catalogue rows can a fresh prison actually place? --- */
+  const catalogue = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('.hud-build__list [data-buildable]')).map((n) => n.getAttribute('data-buildable') ?? ''),
+  );
+  const refused: string[] = [];
+  const accepted: string[] = [];
+  const silent: string[] = [];
+  let ty = CLEAR_TILES.minY;
+  let tx = CLEAR_TILES.minX;
+  for (const id of catalogue) {
+    if (id === 'wall-brick' || id === 'door-wooden' || id === 'loading-dock-door-wooden') continue;
+    tx += 1;
+    if (tx > CLEAR_TILES.maxX) {
+      tx = CLEAR_TILES.minX;
+      ty += 1;
+    }
+    if (ty > CLEAR_TILES.maxY) break;
+    const rowText = (await page.locator(`.hud-build__list [data-buildable="${id}"]`).innerText()).replace(/\n/g, ' / ').trim();
+    await armBuildable(page, id);
+    const point = centreOf(origin, tx, ty);
+    const cmds = await press(page, point.x, point.y);
+    await page.waitForTimeout(1100);
+    const band = await panelText(page, '.hud__refusal');
+    const queue = await panelText(page, '.hud-build__queue');
+    const verdict = cmds.length === 0 ? 'NO COMMAND' : /was not placed|failed|not enough/i.test(band) ? 'REFUSED' : 'accepted';
+    if (verdict === 'REFUSED') refused.push(id);
+    else if (verdict === 'NO COMMAND') silent.push(id);
+    else accepted.push(id);
+    note(`[H2] ${id.padEnd(26)} row says ${JSON.stringify(rowText)} -> pressed (${tx},${ty}): ${verdict} | band ${JSON.stringify(band)} | queue ${JSON.stringify(queue)}`);
+  }
+  note(`[H2] on a prison with no rooms zoned: ${accepted.length} accepted, ${refused.length} REFUSED, ${silent.length} sent nothing`);
+  note(`[H2] refused: ${JSON.stringify(refused)}`);
+  note(`[H2] accepted: ${JSON.stringify(accepted)}`);
+  note(`[H2] does the Build panel say anywhere that furniture needs a room first? panel text:\n${await panelText(page, '.hud-build')}`);
+  await shot(page, 'H02-furniture-on-an-unzoned-prison');
+
+  /* --- H3: cancel with nothing running --- */
+  const beforeOrder = await sample(page, started);
+  await armBuildable(page, 'wall-brick');
+  const runBefore = (await sentCommands(page)).length;
+  await drag(page, { x: origin.originX + 13 * TILE, y: origin.originY + 15 * TILE }, { x: origin.originX + 17 * TILE, y: origin.originY + 15 * TILE });
+  const runCmds = (await sentCommands(page)).slice(runBefore);
+  await page.waitForTimeout(1500);
+  const afterOrder = await sample(page, started);
+  note(`[H3] a 4-tile run: ${runCmds.length} order(s), treasury ${beforeOrder.treasury} -> ${afterOrder.treasury} (it took ${beforeOrder.treasury - afterOrder.treasury})`);
+  note(`[H3] the queue block:\n${await panelText(page, '.hud-build__queue')}`);
+  const rows = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('.hud-build__queue-row')).map((n) => {
+      const el = n as HTMLElement;
+      return { text: el.innerText.replace(/\n/g, ' / '), laidOut: el.getClientRects().length > 0 };
+    }),
+  );
+  note(`[H3] ${rows.length} row element(s), ${rows.filter((r) => r.laidOut).length} laid out, for ${runCmds.length} order(s):`);
+  for (const row of rows) note(`[H3]   ${JSON.stringify(row)}`);
+  note(`[H3] the "more" line: ${JSON.stringify(await panelText(page, '.hud-build__queue-more'))}`);
+  await shot(page, 'H03-run-queued-clock-stopped');
+
+  for (let n = 0; n < 10; n += 1) {
+    const buttons = page.locator('.hud-build__queue-row button:visible');
+    if ((await buttons.count()) === 0) {
+      note(`[H3] after ${n} cancel(s) the panel offers no more controls; queue says ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+      break;
+    }
+    const before = await sample(page, started);
+    await buttons.nth(0).click();
+    await page.waitForTimeout(900);
+    const after = await sample(page, started);
+    note(`[H3] cancel ${n + 1}: treasury ${before.treasury} -> ${after.treasury} (+${after.treasury - before.treasury}) | queue ${JSON.stringify(after.queue)} | band ${JSON.stringify(after.refusal)}`);
+  }
+  const end = await sample(page, started);
+  note(`[H3] TOTAL: the run took ${beforeOrder.treasury - afterOrder.treasury}, cancelling returned ${end.treasury - afterOrder.treasury}, net loss ${beforeOrder.treasury - end.treasury}`);
+  note(`[H3] deliveries at the end:\n${await panelText(page, '.hud-build__deliveries')}`);
+  await shot(page, 'H04-after-cancelling-clock-stopped');
 });
