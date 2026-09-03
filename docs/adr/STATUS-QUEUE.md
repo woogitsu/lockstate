@@ -6553,9 +6553,24 @@ still the only two) under a `- Status:` bullet, out of **87** documents. The
 index agrees on its status column: `grep -cE '^\|.*\| *\*{0,2}Proposed'
 docs/adr/README.md` returns **39** against **48** `Accepted` across **87**
 rows. Gap unchanged at **four** (0051, 0082, 0084, 0088), re-enumerated by
-subtracting the two greps. **Next free number: 0094**, and the held-number
+subtracting the two greps. **Next free number: 0095**, and the held-number
 sweep is empty for the **fourth** consecutive reading: **469** remote heads
-(ten more than 459), highest prefix **0093**, on `main`.
+(ten more than 459), highest prefix **0093**, on `main`. **That number read
+0094 at this pass's own anchor and is corrected in place rather than in a new
+pass, because only the number moved**: `docs/adr/0094-which-names-a-prison-draws-from.md`
+reserved 0094 with its row in the index, so the index now states 0095 and this
+file has to agree or the positional gate two paragraphs down fires -- which it
+did, naming `:6424`, and is how this correction was found rather than
+remembered. **The counters above are deliberately not re-read**, because that
+needs a pass and this is not one; 0094 is `Proposed`, so a pass will find one
+more Proposed document and one more index row than the figures above.
+**A pass should also settle a disagreement that predates 0094**: at
+`98e05058` (v0.0.388) the on-disk count by this sequence's own method is
+**40** (38 under a `## Status` heading, 2 under a `- Status:` bullet) while
+`grep -cE '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **39** --
+the two agreed at 39 five releases earlier, and one of them moved without the
+other. Recorded here rather than resolved, because resolving it means deciding
+which of the two is wrong about which document, and that is the pass's job.
 
 **Still THIRTY-NINE at `98e05058` (v0.0.388), five releases later — every
 counter unmoved for the third consecutive window, and the instrument that
@@ -6564,7 +6579,23 @@ counted them changed.** `Proposed` **39** against **48** `Accepted` across
 `grep -cE '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **39**
 against **48** `Accepted` across **88** rows — 87 documents plus the kept
 `0018` row the index carries to explain where that number went. **Next free
-number: 0094**, matching the index. The split by where a status lives is
+number: 0095**, matching the index — it read 0094 when this anchor was
+written, and ADR 0094 landing on this branch is what moved it. The number is
+restated here rather than left at the value the anchor pass measured, because
+`tests/foundation/adr-status-queue-anchor-contract.test.ts` treats a
+restatement after this pass's own marker as a **live** claim about the index,
+and a live claim has to be true on the tree it ships on rather than true on
+the tree it was drafted against. The pass's other figures are deliberately
+**not** moved with it, and the difference is the convention rather than an
+oversight: `39`/`48` across `87` documents and `88` rows is a **dated** claim
+about `98e05058`, where it was measured and where it is true, and this file
+keeps a dated pass standing rather than rewriting it. On the tree this branch
+ships, ADR 0094 makes it **40** `Proposed` against **48** `Accepted` across
+**88** documents and **89** rows — stated here so a reader is not left to
+infer it, and left out of the dated paragraph so the paragraph stays a record
+of one commit. Only the next-free restatement had to move, because the gate
+reads that one as a live claim about the index and nothing else in the
+paragraph as live. The split by where a status lives is
 unchanged and was re-run rather than carried: **37** of the 39 `Proposed`
 under a `## Status` heading and **two** (0064, 0067, still the only two) under
 a `- Status:` bullet, against **8** documents in total that use the bullet
