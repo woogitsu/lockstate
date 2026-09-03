@@ -663,6 +663,26 @@ export const HUD_MESSAGE_KEY = {
    */
   securityRosterWageBill: 'hud.security.roster-wage-bill',
   securityRosterDismiss: 'hud.security.roster-dismiss',
+  /**
+   * The question the armed dismiss control asks, and the consequence it states
+   * (the owner's ruling of 2026-09-03, issue #877).
+   *
+   * The **fourth** key in this block, so the count two docblocks up -- "three
+   * keys, and the count is deliberate" -- is no longer three. That sentence is
+   * left standing rather than corrected away, because the rule it records is
+   * what produced this one: every string the roster block adds is the owner's,
+   * and this is the owner's own sentence, supplied with the ruling that asked
+   * for a confirmation step at all.
+   *
+   * `{name}` is the point of it and not decoration. #877 is that the dismiss
+   * row fired at somebody other than the person its label named, four times out
+   * of four; a confirmation that named nobody would be a second press bought
+   * with none of the safety a confirmation is for. What fills it is the row's
+   * own label, verbatim -- see `DismissArming` in `hud/dismiss-arming.ts` for
+   * why it is quoted from the press rather than re-read every publication, and
+   * `formatStaffRosterText` for what the row can say about a person today.
+   */
+  securityRosterDismissConfirm: 'hud.security.roster-dismiss-confirm',
   securityRosterHint: 'hud.security.roster-hint',
 
   /**
