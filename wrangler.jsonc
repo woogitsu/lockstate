@@ -1,10 +1,28 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "lockstate-development",
+  // This project's first server-side execution surface. It exists to carry the
+  // telemetry ingest ADR 0046 needs and nothing else; the threat model is in
+  // the module's own docblock. See `docs/DEPLOYMENT.md`, "The first server
+  // entry point lands with the ingest, not before", and ADR 0002's amendment
+  // of 2026-09-03 -- this line is what makes that ADR's Decision bullet false.
+  "main": "./src/worker/index.ts",
   "compatibility_date": "2026-08-22",
   "workers_dev": true,
   "preview_urls": true,
   "assets": {
+    // `single-page-application` makes the asset router match every path it is
+    // asked about, so under the default assets-first routing the Worker would
+    // never be reached. `run_worker_first` is therefore not a preference: it
+    // is what makes any Worker route reachable beside SPA fallback. The
+    // handler answers one configured path and hands every other request back
+    // to this binding untouched.
+    //
+    // `not_found_handling` is unchanged in all three environments, which
+    // `docs/DEPLOYMENT.md`'s pre-merge checklist item 2 requires and
+    // `scripts/verify-cloudflare-build.mjs` asserts on the built output.
+    "binding": "ASSETS",
+    "run_worker_first": true,
     "not_found_handling": "single-page-application"
   },
   "env": {
@@ -12,7 +30,13 @@
       "name": "lockstate-staging",
       "workers_dev": true,
       "preview_urls": true,
+      // An `env` block replaces the top-level `assets` rather than merging
+      // into it, so all three keys are restated here and below. Dropping
+      // `binding` from one environment would leave `env.ASSETS` undefined and
+      // take that environment's whole site down on the first request.
       "assets": {
+        "binding": "ASSETS",
+        "run_worker_first": true,
         "not_found_handling": "single-page-application"
       }
     },
@@ -27,6 +51,8 @@
         }
       ],
       "assets": {
+        "binding": "ASSETS",
+        "run_worker_first": true,
         "not_found_handling": "single-page-application"
       }
     }

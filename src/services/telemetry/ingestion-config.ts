@@ -86,30 +86,65 @@ function isTelemetryEnvironment(value: string): value is TelemetryEnvironment {
   return (TELEMETRY_ENVIRONMENTS as readonly string[]).includes(value);
 }
 
-export function resolveTelemetryIngestion(raw: RawTelemetryIngestionConfig): TelemetryIngestionResolution {
-  const path = (raw.path ?? '').trim();
-  const environment = (raw.environment ?? '').trim();
+export type SameOriginPathResolution =
+  | { readonly ok: true; readonly path: string }
+  | {
+      readonly ok: false;
+      readonly reason: Extract<TelemetryIngestionRefusal, 'absent' | 'not-same-origin' | 'malformed-path'>;
+    };
+
+/**
+ * What counts as a legal ingest path, in the one place that decides it.
+ *
+ * Exported because the **sender and the receiver have to agree**, and the only
+ * way to make them agree by construction rather than by convention is for both
+ * to reach the same regex. `src/worker/telemetry-ingest-route.ts` validates
+ * the path the Worker claims through this function; the browser validates the
+ * path it posts to through `resolveTelemetryIngestion` below, which is this
+ * function plus the environment requirement. A second copy of the pattern on
+ * the Worker side would be a configuration nothing in this repository could
+ * check for agreement: a deployment could set a path the client accepts and
+ * the route refuses, and every batch would go to the SPA shell and be counted
+ * as delivered.
+ *
+ * It takes and returns nothing but strings and never throws: a hostile or
+ * absent configuration value is a refusal, not an exception. That matters more
+ * on the Worker side than here, because `assets.run_worker_first` puts the
+ * handler in front of every request to the domain, so a throw while resolving
+ * configuration would take the whole site down rather than one route.
+ */
+export function resolveSameOriginIngestPath(raw: string | undefined): SameOriginPathResolution {
+  const path = (raw ?? '').trim();
 
   // Absent first, and absent means the *destination* is absent: an
   // environment on its own configures nothing to send to.
-  if (path === '') return { configured: false, reason: 'absent' };
+  if (path === '') return { ok: false, reason: 'absent' };
 
   // Reported separately from `malformed-path` because it is the refusal with a
   // consequence a reader needs to see: it is the one that would have required
   // `connect-src` to be widened.
   if (path.includes('://') || path.startsWith('//')) {
-    return { configured: false, reason: 'not-same-origin' };
+    return { ok: false, reason: 'not-same-origin' };
   }
   // `.` is an unreserved character, so `..` satisfies the pattern above. A
   // traversal cannot escape an origin, but a destination that resolves
   // somewhere other than where it reads is a configuration nobody can review
   // by reading it.
   if (!SAME_ORIGIN_PATH.test(path) || path.split('/').some((segment) => segment === '.' || segment === '..')) {
-    return { configured: false, reason: 'malformed-path' };
+    return { ok: false, reason: 'malformed-path' };
   }
+
+  return { ok: true, path };
+}
+
+export function resolveTelemetryIngestion(raw: RawTelemetryIngestionConfig): TelemetryIngestionResolution {
+  const resolvedPath = resolveSameOriginIngestPath(raw.path);
+  if (!resolvedPath.ok) return { configured: false, reason: resolvedPath.reason };
+
+  const environment = (raw.environment ?? '').trim();
   if (!isTelemetryEnvironment(environment)) return { configured: false, reason: 'unknown-environment' };
 
-  return { configured: true, ingestion: { path, environment } };
+  return { configured: true, ingestion: { path: resolvedPath.path, environment } };
 }
 
 /**
