@@ -6,39 +6,61 @@
  * **Not a CI gate** -- `.playtest.ts` is collected only by
  * `tests/browser/playwright.playtest.config.ts`.
  *
- * ## Why this is the question, and why it is A/B
+ * ## Why the arms are staged inside one prison rather than run as two
  *
- * `playtest-2026-09-03-does-the-incidents-chip-lie.playtest.ts` runs the *same*
- * prison with **zero** guards. This one runs it with **exactly the number the
- * Staff panel asks for**, changing nothing else: same room, same six beds,
- * same twelve admissions, same clock, same watch length. So the two runs
- * differ in one variable and the difference between them is what a guard buys.
+ * Both arms are the same prison, in the same session, at the same tick rate:
+ * six beds, twelve prisoners, one cell. Phase A hires **exactly what the Staff
+ * panel asks for**; phase B hires four more and changes nothing else. A second
+ * run would have differed in its whole build as well as its roster; staging
+ * removes everything but the hire.
  *
- * Three things are read on both sides, and the third is the one that matters:
+ * ## The trap the phases are chosen to test, and where it is written
  *
- * 1. **Is the hire posted at all?** `DeploymentSystem.assignUnassignedGuards`
- *    posts up to the sector's requirement, and `requiredGuardCountFor`
- *    (`src/simulation/security/deployment-system.ts:100`) scales it with
- *    occupancy -- `Math.ceil(occupants / DEFAULT_SECTOR_PRISONERS_PER_GUARD)`
- *    against a floor of 1. Twelve prisoners therefore ask for two.
- * 2. **Does an incident end differently?** With no guards
- *    `claimableResponders` can never fill a response, so every incident times
- *    out and `lapse` runs: every participant injured, property damaged
- *    (`response-system.ts:604`). With the requirement filled, the response can
- *    mount and `advanceResponse` can reach `resolved` instead.
- * 3. **Can the player tell which of those two happened?** Both terminal
- *    transitions run `reportAllClearIfCalm`
- *    (`src/simulation/incidents/response-system.ts:268`), which is suppressed
- *    only when an escape was announced -- so a fight that guards contained and
- *    a fight that burned out unanswered both end with the same alert row. This
- *    instrument reads the alerts column verbatim on both sides so the two can
- *    be compared word for word.
+ * Two different systems draw guards from one roster, and only one of them can
+ * use a *posted* guard:
  *
- * The ground truth for 2 is pulled off the worker rather than inferred:
- * `hud/incidents` answers `summary.resolved`, `summary.lapsed`,
- * `summary.totalInjured`, `summary.totalPropertyDamage` and
- * `responseMetrics`. Nothing in `src/ui` pulls that route -- which is itself
- * one of the readings this instrument takes.
+ * - `DeploymentSystem.assignUnassignedGuards` posts guards up to the sector's
+ *   requirement. `requiredGuardCountFor`
+ *   (`src/simulation/security/deployment-system.ts:100`) scales that
+ *   requirement with occupancy -- `Math.ceil(occupants /
+ *   DEFAULT_SECTOR_PRISONERS_PER_GUARD)` over a floor of 1 -- so twelve
+ *   prisoners ask for two, and the panel says so in the game's own words:
+ *   *"0 of 2 | Unguarded | Nobody is on duty. Hire 2 to cover this
+ *   population."*
+ * - `IncidentResponseSystem.claimableResponders`
+ *   (`src/simulation/incidents/response-system.ts:453`) needs
+ *   `requiredResponderCount(severity)` guards, which is
+ *   `Math.max(1, ceil(severity * 0.5))` (`:299`) -- and it draws them from
+ *   `claimableGuardIds`, which is `unassignedGuardIds()` filtered by post
+ *   eligibility (`src/simulation/security/post-eligibility.ts:103`).
+ *
+ * **`unassignedGuardIds()`. A guard standing on a post is not in that list.**
+ * So a player who hires exactly the two the panel asks for gets both of them
+ * posted and leaves the responder pool empty, and every incident still times
+ * out through `lapse` (`response-system.ts:604`: every participant injured,
+ * property damaged, and disciplinary points with a surcharge for lapsing --
+ * `LAPSED_INCIDENT_SURCHARGE_POINTS` in
+ * `src/simulation/prisoners/disciplinary-record.ts`).
+ *
+ * That is a prediction, and it is why the phases exist rather than an
+ * argument: phase A should show `respondersDispatched: 0` with coverage
+ * reading *Covered*, and phase B -- two posted, four spare -- should be the
+ * first time a response can mount at all.
+ *
+ * ## The third reading, which is the one about the game
+ *
+ * Whether the player can tell those two apart. `reportAllClearIfCalm`
+ * (`response-system.ts:268`) runs on **both** terminal transitions and is
+ * suppressed only when an escape was announced -- so a fight guards contained
+ * and a fight that burned out unanswered close with the same alert row. The
+ * alerts column is printed verbatim at the end of each phase so the two can be
+ * compared word for word. This is the shape of #683, which the owner's ruling
+ * of 2026-08-30 fixed for the escape and only for the escape.
+ *
+ * It also sweeps all five tabs for the word "incident" outside the status
+ * strip, because `hud/incidents` and `hud/incident-detail` are built,
+ * schema'd and paged, and no file under `src/ui/` or `src/main.ts` references
+ * either id.
  */
 import { expect, test, type Page } from '@playwright/test';
 import {
@@ -171,36 +193,71 @@ test('what does the one ongoing cost buy that a player can see', async ({ page }
   await sweepForAnIncidentSurface(page);
   await tab(page, 'overview').click();
 
-  const beforeTick = await currentTick(page);
-  log(`armed at tick ${beforeTick}. counts=${JSON.stringify(await latestCounts(page))}`);
-
-  const WATCH_MS = Number(process.env['GUARD_WATCH_MS'] ?? 600_000);
-  const startedAt = Date.now();
-  while (Date.now() - startedAt < WATCH_MS) {
-    await page.waitForTimeout(30_000);
+  /** Everything worth reading at the end of a phase, in one block. */
+  async function reportPhase(name: string, sinceTick: number): Promise<void> {
     const events = await eventSeries(page);
     const pull = await pullIncidents(page);
-    log(
-      `${Math.round((Date.now() - startedAt) / 1000)}s tick=${await currentTick(page)}` +
-        ` | incident events=${events.filter((event) => event.type.startsWith('incidents.')).length}` +
-        ` | ground truth ${JSON.stringify(pull.view?.summary ?? pull.error)}` +
-        ` | states ${JSON.stringify(pull.view?.countsByState?.map((entry) => `${entry.state}=${entry.count}`) ?? [])}`,
-    );
+    await tab(page, 'security').click();
+    log(`=== END OF PHASE ${name} ===`);
+    log(`  ticks ${sinceTick} -> ${await currentTick(page)}`);
+    log(`  ground truth summary: ${JSON.stringify(pull.view?.summary ?? pull.error)}`);
+    log(`  states: ${JSON.stringify(pull.view?.countsByState?.map((entry) => `${entry.state}=${entry.count}`) ?? [])}`);
+    log(`  responseMetrics: ${JSON.stringify(pull.view?.responseMetrics ?? {})}`);
+    log(`  triggerMetrics: ${JSON.stringify(pull.view?.triggerMetrics ?? {})}`);
+    log(`  every incidents.* event so far: ${JSON.stringify(events.filter((event) => event.type.startsWith('incidents.')))}`);
+    log(`  staff panel: ${(await panelText(page, '.hud-staff')).replace(/\n/g, ' | ')}`);
+    log(`  strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+    log(`  ALERTS COLUMN, VERBATIM: ${(await panelText(page, '.hud-alerts__list')).replace(/\n/g, ' ; ')}`);
+    log(`  counts: ${JSON.stringify(await latestCounts(page))}`);
+    await tab(page, 'overview').click();
   }
 
-  const events = await eventSeries(page);
-  const finalPull = await pullIncidents(page);
-  const endTick = await currentTick(page);
+  async function watch(name: string, milliseconds: number): Promise<void> {
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < milliseconds) {
+      await page.waitForTimeout(30_000);
+      const pull = await pullIncidents(page);
+      log(
+        `${name} ${Math.round((Date.now() - startedAt) / 1000)}s tick=${await currentTick(page)}` +
+          ` | summary ${JSON.stringify(pull.view?.summary ?? pull.error)}` +
+          ` | responders ${JSON.stringify(pull.view?.responseMetrics ?? {})}`,
+      );
+    }
+  }
 
-  log('=== VERDICT DATA ===');
-  log(`ticks ${beforeTick} -> ${endTick} (${endTick - beforeTick} ticks, ${((endTick - beforeTick) / 2400).toFixed(1)} in-game days)`);
-  log(`every incidents.* event, with the tick it happened on: ${JSON.stringify(events.filter((event) => event.type.startsWith('incidents.')))}`);
-  log(`ground truth at the end: ${JSON.stringify(finalPull)}`);
-  await tab(page, 'security').click();
-  log(`staff panel at the end: ${(await panelText(page, '.hud-staff')).replace(/\n/g, ' | ')}`);
-  log(`strip at the end: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
-  log(`ALERTS COLUMN AT THE END, VERBATIM: ${(await panelText(page, '.hud-alerts__list')).replace(/\n/g, ' ; ')}`);
-  log(`counts at the end: ${JSON.stringify(await latestCounts(page))}`);
+  /** Hires `count` more guards through the Security tab's own control. */
+  async function hireMore(count: number): Promise<void> {
+    await tab(page, 'security').click();
+    const row = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
+    if ((await row.count()) > 0) await row.first().click();
+    for (let index = 0; index < count; index += 1) {
+      await page.locator('.hud-staff__hire').click();
+      await page.waitForTimeout(400);
+    }
+    await page.waitForTimeout(4000);
+    log(`after hiring ${count} more: ${(await panelText(page, '.hud-staff')).replace(/\n/g, ' | ')}`);
+    await tab(page, 'overview').click();
+  }
+
+  const PHASE_MS = Number(process.env['GUARD_PHASE_MS'] ?? 330_000);
+
+  // ---- phase A: exactly the two the panel asked for --------------------
+  const phaseAStart = await currentTick(page);
+  log(`PHASE A armed at tick ${phaseAStart} with the two guards the panel asked for`);
+  await watch('A', PHASE_MS);
+  await reportPhase('A (2 hired, both posted)', phaseAStart);
+
+  // ---- phase B: four more, so the responder pool is not empty ----------
+  await hireMore(4);
+  const phaseBStart = await currentTick(page);
+  log(`PHASE B armed at tick ${phaseBStart} with six guards hired`);
+  await watch('B', PHASE_MS);
+  await reportPhase('B (6 hired, two posted, four spare)', phaseBStart);
+
+  const finalPull = await pullIncidents(page);
+  log(`incidents opened across the whole run: ${finalPull.view?.summary.total ?? 'UNREADABLE'}`);
+  expect(finalPull.error, 'the ground-truth pull never answered, so nothing here is evidence').toBeUndefined();
+
   await page.screenshot({ path: 'playtest-out/what-a-guard-buys.png' });
 
   /*
