@@ -40,49 +40,6 @@ import { DEFAULT_SANCTION_POLICY, SanctionSystem, SOLITARY_SANCTION_ROOM_CATALOG
 const PRISONER_COMPONENT_ID = 0;
 
 /**
- * What a restore may do differently, and the one thing it currently can.
- *
- * ## `resumeRestoredCarriers`
- *
- * **Off, and the decision to turn it on is not this code's to make.**
- *
- * `loadSnapshot` drops every `travelling` prisoner to `'idle'`, which for every
- * other action costs the two reconsideration cycles
- * [ADR 0059](../../../docs/adr/0059-who-owns-a-walking-prisoners-position.md)
- * open question 3 already prices. For a **carry** it costs more, because going
- * idle is what forces `ActionSystem.planIdleSelection` to ask an eligibility
- * question continuous play never asks: `action.carry` is category `work`, so a
- * carrier restored near the end of a work block is filtered out of their own
- * errand and walks off with the goods until the next work block opens.
- * Measured on `f7adf652` at **1,280 ticks** against
- * [ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 5's
- * corrected bound of 40 -- issue #882, and
- * `docs/research/2026-09-03-what-a-restore-costs-an-errand.md` for the
- * construction and for the three terms the number is made of.
- *
- * With this option set, a restored prisoner whose action targets the job board
- * keeps `'travelling'` instead. Nothing is re-selected, so no eligibility
- * question is asked, and the errand costs the same two cycles every other
- * action costs. That is ADR 0093 decision 5's own words -- *"A carrier is
- * instead **re-seated from the board** after it loads -- `actionIndex` the
- * carry, `travelling`, no request"* -- which the landing change did not build.
- *
- * **Why it is not simply on.** ADR 0093 carries two accepted sentences that
- * disagree the moment anything asks an in-flight carrier to choose again:
- * decision 2's *"A prisoner is offered a carry iff they are idle at a
- * reconsideration, intake is `completed`, and their active block allows
- * `work`"*, and Consequences' *"A carry outlasts its block. Like every action,
- * it is not cut at a regime boundary."* Which of the two an amendment should
- * keep is a decision about behaviour a player watches, and `AGENTS.md`'s fourth
- * exclusion reserves it. This option exists so that the answer can be measured
- * before it is chosen, not so that it can be chosen here.
- */
-export interface PrisonerRestoreOptions {
-  readonly resumeRestoredCarriers?: boolean;
-}
-
-
-/**
  * Why an admission the player asked for was not carried out (#261 step 4).
  *
  * Two reasons, and both are conditions the runtime can state about itself
@@ -877,13 +834,8 @@ export class PrisonerOperationsRuntime {
    * `atTick = 0`. `restoreSessionSystems` passes the real one; a fixture that
    * round-trips a snapshot without one gets a window that says it opened at 0,
    * which is what a fixture with no clock means.
-   *
-   * `options.resumeRestoredCarriers` is the gate described on
-   * `PrisonerRestoreOptions`. It is **off** by default and no production caller
-   * passes it, so the restore this method performs is byte-for-byte the one it
-   * performed before the option existed.
    */
-  public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot>, atTick = 0, options: PrisonerRestoreOptions = {}): void {
+  public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot>, atTick = 0): void {
     this.entityStore.loadSnapshot(snapshot.entityStore);
     this.records.loadSnapshot(snapshot.records);
     this.needs.loadSnapshot(snapshot.needs);
@@ -913,6 +865,15 @@ export class PrisonerOperationsRuntime {
     // method's own snapshot-scope doc) never received it and would never
     // resolve it, leaving that entity stuck forever. Drop back to 'idle' so
     // the next reconsideration cycle re-selects and re-requests instead.
+    //
+    // **This comment used to describe every traveller and now describes every
+    // traveller but one** (issue #882). It is corrected rather than
+    // overwritten, because the reason it gives is still the reason: a restored
+    // carrier's path request is gone too. What differs is only that the
+    // carrier keeps `'travelling'` rather than being dropped, and asks for the
+    // leg again instead of re-selecting the errand. The exception, and the
+    // measurement that is the argument for it, are in the block inside the
+    // loop.
     const travellingPhase = ACTION_PHASES.indexOf('travelling');
     const idlePhase = ACTION_PHASES.indexOf('idle');
     for (let index = 0; index <= this.entityStore.maxActiveIndex; index += 1) {
@@ -920,9 +881,31 @@ export class PrisonerOperationsRuntime {
       if (this.currentAction.phase[index] !== travellingPhase) continue;
       const entityId = this.entityStore.getIdByIndex(index);
       /*
-       * **The gate: a carrier stays a carrier across the load.** See
-       * `PrisonerRestoreOptions.resumeRestoredCarriers` for the measurement
-       * that is the argument for it and for why it is off.
+       * **A carrier stays a carrier across the load** -- ADR 0093 decision 5's
+       * one restore rule, in its own accepted words: *"A carrier is instead
+       * **re-seated from the board** after it loads -- `actionIndex` the carry,
+       * `travelling`, no request"*
+       * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 5).
+       *
+       * **Why the phase is the thing that matters, when for every other action
+       * it is not.** Going idle costs an ordinary action the two
+       * reconsideration cycles ADR 0059 open question 3 already prices, and
+       * nothing else. It costs a *carry* more, because being idle is what
+       * forces `ActionSystem.planIdleSelection` to ask an eligibility question
+       * continuous play never asks: `action.carry` is category `work`, and
+       * `planIdleSelection` reads `isActionCategoryAllowed(CARRY_ACTION, ...)`
+       * before it asks whether this prisoner already holds an errand, so a
+       * carrier restored near the end of a work block is filtered out of the
+       * errand whose goods are in their hands and wanders off with them until
+       * the next work block opens. Measured at **1,280 ticks** against decision
+       * 5's corrected bound of 40 -- issue #882, and
+       * `docs/research/2026-09-03-what-a-restore-costs-an-errand.md` for the
+       * construction and the three terms the number is made of.
+       *
+       * Keeping the phase asks nobody anything. The prisoner is never idle, so
+       * decision 2's *"offered a carry iff they are idle at a reconsideration"*
+       * never applies to them, and the errand outlasts its block exactly as
+       * that ADR's Consequences say a carry does.
        *
        * Decided from the *action*, not from the board: `JobBoard.loadSnapshot`
        * runs after this method (`restoreSessionSystems` step 4, this is step 3),
@@ -932,16 +915,21 @@ export class PrisonerOperationsRuntime {
        * the next cycle: a carrier whose job survived re-requests the leg
        * (`ActionSystem.continueTravelling`'s stranded-request exit), and one
        * whose job `CarryJobExecutor.reconcileRestoredJobs` ended drops to idle
-       * on the check that opens the same method.
+       * on the check that opens the same method. No new path.
        *
-       * The stale `pathRequestId` still goes, for the reason the comment above
-       * gives -- it names a request the rebuilt `NavigationSystem` never
-       * received -- and the target is left alone because a carry writes none.
+       * **Nothing else has to be undone here, and that was checked rather than
+       * assumed.** The stale request id is already gone: `PrisonerColdState`
+       * does not emit `currentActionPathRequestId` from `getSnapshot` at all
+       * and its `loadSnapshot` clears that map wholesale, which ran at the top
+       * of this method -- so a re-seated carrier arrives at
+       * `continueTravelling` with no request by construction, which is exactly
+       * the state its stranded-request arm reads. An explicit
+       * `setPathRequestId(entityId, undefined)` here was written first and
+       * removed: it could not be observed by any mutation, because the map it
+       * would delete from is empty. The target is left alone for a different
+       * reason -- a carry writes none.
        */
-      if (options.resumeRestoredCarriers === true && DEFAULT_ACTIONS[this.currentAction.actionIndex[index]!]?.target.kind === 'job-board') {
-        this.coldState.setPathRequestId(entityId, undefined);
-        continue;
-      }
+      if (DEFAULT_ACTIONS[this.currentAction.actionIndex[index]!]?.target.kind === 'job-board') continue;
       this.currentAction.phase[index] = idlePhase;
       this.coldState.setActionTarget(entityId, undefined);
       this.coldState.setPathRequestId(entityId, undefined);
@@ -955,6 +943,16 @@ export class PrisonerOperationsRuntime {
     // target -- so this scan sees exactly the prisoners who are genuinely still
     // performing, and cannot reinstate a claim for a journey that no longer
     // exists.
+    //
+    // **The re-seated carrier above is the one traveller that sentence no
+    // longer covers, and it changes nothing here** (issue #882): it is kept
+    // `travelling` rather than dropped, so it survives the loop with a phase
+    // this scan skips -- and even if it did not, `action.carry`'s target kind
+    // is `job-board`, which the scan skips too. It is excluded twice over
+    // rather than by the phase alone, which is why keeping a carrier walking
+    // cannot leak a room seat. Kept beside the sentence rather than folded
+    // into it, because *"dropped every traveller"* is what the rest of this
+    // method's order still rests on.
     this.actionSystem.reinstateUseClaims();
 
     // **After the components, because it clears rather than reads them.** A

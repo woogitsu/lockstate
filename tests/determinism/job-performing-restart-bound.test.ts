@@ -47,14 +47,20 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *   with the prisoner, so `continuePerforming`'s `elapsed >=
  *   action.minDurationTicks` test resumes where it was rather than restarting.
  * - **A save taken mid-walk costs at most two `ActionSystem` reconsideration
- *   cycles**, because `PrisonerOperationsRuntime.loadSnapshot` drops every
- *   traveller to `idle` -- their path request belonged to a `NavigationSystem`
- *   that no longer exists -- and the carrier re-selects the errand on the next
- *   cycle. That is the *same* exclusion every other action already has (ADR
- *   0059 open question 3), which is the point: a carry is no longer a special
- *   case of anything. **The ADR predicted one cycle and the measurement is
- *   two**; see `RESTORED_TRAVEL_BOUND_TICKS` for why, and for why the
- *   prediction is corrected rather than the code.
+ *   cycles**, because a restored carrier's path request belonged to a
+ *   `NavigationSystem` that no longer exists, so `continueTravelling` asks for
+ *   the leg again on the next cycle and collects the answer on the one after.
+ *   That is the *same* exclusion every other action already has (ADR 0059
+ *   open question 3), which is the point: a carry is no longer a special case
+ *   of anything. **The ADR predicted one cycle and the measurement is two**;
+ *   see `RESTORED_TRAVEL_BOUND_TICKS` for why, and for why the prediction is
+ *   corrected rather than the code.
+ *
+ *   **This bullet used to say the two cycles were paid by `loadSnapshot`
+ *   dropping *every* traveller to `idle` and the carrier then re-selecting the
+ *   errand.** That was true of the tree it was written for and is the very
+ *   thing issue #882 costed at 1,280 ticks across a block boundary; the two
+ *   cycles are unchanged, only the route to them is. See the section below.
  *
  * The capture ticks are **found by running the scenario** rather than written
  * down, so a change to any cadence moves what is captured instead of making
@@ -69,25 +75,54 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * never put. Played through the UI, issue #882 crossed it and measured **380
  * ticks** against the 40 this file pins.
  *
- * The mechanism is that going idle is not free for a carry the way it is for
- * every other action. `PrisonerOperationsRuntime.loadSnapshot` drops a
+ * The mechanism was that going idle is not free for a carry the way it is for
+ * every other action. `PrisonerOperationsRuntime.loadSnapshot` dropped a
  * restored traveller to `'idle'`, which forces
  * `ActionSystem.planIdleSelection` to ask an eligibility question continuous
  * play never asks -- and `action.carry` is category `work`, so a carrier
- * restored near the end of a work block is filtered out of the errand they are
- * already holding the goods for. `describe('an errand saved across a block
- * boundary')` below is that case, measured at the worst boundary rather than
- * the one the playtest happened to hit:
+ * restored near the end of a work block was filtered out of the errand they
+ * are already holding the goods for. `describe('an errand saved across a
+ * block boundary')` below is that case, measured at the worst boundary rather
+ * than the one the playtest happened to hit:
  * **1,280 ticks, 32 times the bound this file pins**, because the gap between
  * the end of the 1,300-1,800 work block and the start of the next day's
  * 500-1,000 one is 1,100 ticks.
  *
  * `docs/research/2026-09-03-what-a-restore-costs-an-errand.md` is the
  * construction, the three terms the 1,280 is made of, and the four attempts
- * that failed to lose the goods. The **candidate** that collapses it back to
- * 40 is `PrisonerRestoreOptions.resumeRestoredCarriers`, off by default,
- * measured here in both positions -- and which of ADR 0093's two disagreeing
- * sentences an amendment should keep is not this file's to decide.
+ * that failed to lose the goods.
+ *
+ * ## What fixed it, and why that is a conformance change rather than a design one
+ *
+ * **ADR 0093 decision 5 had already decided this, and the landing change did
+ * not build what it decided.** Its words are *"A carrier is instead
+ * **re-seated from the board** after it loads -- `actionIndex` the carry,
+ * `travelling`, no request"*; the landing change dropped the carrier to
+ * `'idle'` like every other traveller and let `planIdleSelection` re-select
+ * the errand instead, recording the substitution as *"the same one restore
+ * rule, reached without adding a path"*. The 1,280 above is the measurement
+ * that refutes that sentence: the two routes agree inside a work block and
+ * diverge across a boundary, because re-selection asks whether `work` is
+ * allowed *now* and re-seating asks nobody anything.
+ * `PrisonerOperationsRuntime.loadSnapshot` now keeps a restored carrier
+ * `travelling`, and the numbers below are what that costs.
+ *
+ * **The 1,280 is kept in this header rather than deleted**, for the same
+ * reason the five ticks above it are: *"it used to cost 1,280 and now costs
+ * 40"* is only checkable against a written-down 1,280.
+ *
+ * **What is deliberately NOT changed, and is the class this fix does not
+ * close.** `planIdleSelection` still reads
+ * `isActionCategoryAllowed(CARRY_ACTION, block.allowedCategories)` before it
+ * asks `carryAvailableFor`, and `&&` still short-circuits -- so *any* future
+ * path that leaves a prisoner idle while a non-terminal errand is still
+ * assigned to them inherits this whole cost. No path in `src/` does that
+ * today (every exit that idles a carrier fails the job first; see
+ * `ActionSystem.carryAvailableFor`). Reordering that gate is issue #882's own
+ * proposal and it would offer a carry in a block that does not allow `work`,
+ * which contradicts decision 2's *"offered a carry iff they are idle at a
+ * reconsideration ... and their active block allows `work`"* -- an amendment
+ * to an accepted decision, and not this file's to make.
  */
 
 /** `ActionSystem.schedule.intervalTicks` -- the reconsideration cycle a restored traveller can lose. */
@@ -147,10 +182,10 @@ const OFFER_THE_LATE_ERRAND_AT = 1_640;
 const LATE_HORIZON_TICKS = 4_000;
 
 /**
- * **What the boundary costs today, measured, and the three terms it is made
- * of.** Asserted exactly rather than as an upper bound, because each term is a
- * property of authored data and a change in any of them should be read rather
- * than absorbed:
+ * **What the boundary cost before ADR 0093 decision 5 was built as written,
+ * and the three terms it was made of.** No longer asserted as a cost -- the
+ * restore no longer pays it -- but kept as the number the fix removed, and
+ * used below only to state how large a factor that is:
  *
  * - **1,100** ticks: the gap from the end of the 1,300-1,800 work block to the
  *   start of the next day's 500-1,000 one (`prisoners/regime.ts`). This is the
@@ -165,11 +200,13 @@ const LATE_HORIZON_TICKS = 4_000;
  *   goods home to its cell (arriving 1,877) and has to walk back out to the
  *   drop-off tile, 2,981-3,069, plus the dwell.
  *
- * So 3,081 against a continuous 1,801. If this number moves, the question is
- * which term moved; if it *falls to 40*, the gate below was turned on in
- * production and this test is the one that should be rewritten, not silenced.
+ * So 3,081 against a continuous 1,801, on `f7adf652` (v0.0.419), which is the
+ * commit the research note measured. **The assertions below no longer expect
+ * it**: with a restored carrier kept `travelling` the same captures cost
+ * `RESTORED_TRAVEL_BOUND_TICKS`, and the mutation that shows this file would
+ * notice is dropping the carrier to `idle` again, which puts the 1,280 back.
  */
-const BLOCK_BOUNDARY_COST_TICKS = 1_280;
+const BLOCK_BOUNDARY_COST_TICKS_BEFORE_THE_FIX = 1_280;
 
 const T = (x: number, y: number): TilePosition => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
@@ -353,22 +390,29 @@ function restoreAt(captureTick: number): SimulationRuntime {
 }
 
 /**
- * The same restore, for an errand offered late in the second work block, with
- * `PrisonerRestoreOptions.resumeRestoredCarriers` in whichever position is
- * asked for.
+ * The same restore, for an errand offered late in the second work block.
  *
- * `resume: false` is written as the **two-argument** call rather than as an
- * explicit `false`, which is what makes the assertions below a statement about
- * the default and not only about the option: the pair of tests is the evidence
- * that the gate is off in production, and no grep is required to believe it.
+ * The **two-argument** call production uses, deliberately: what the tests
+ * below measure is the restore every save gets, not a mode one of them asks
+ * for. An earlier revision of this file took a `resume: boolean` and drove an
+ * off-by-default option; the option is gone, because ADR 0093 decision 5 is a
+ * rule and not a setting.
  */
-function restoreLateErrandAt(captureTick: number, resume: boolean): SimulationRuntime {
+function restoreLateErrandAt(captureTick: number): SimulationRuntime {
   const interrupted = buildScenario(OFFER_THE_LATE_ERRAND_AT);
   stepTo(interrupted, captureTick);
-  const bundle = captureSessionSnapshot(interrupted);
-  return resume
-    ? restoreSimulationRuntime(bundle, SEED, { resumeRestoredCarriers: true }).runtime
-    : restoreSimulationRuntime(bundle, SEED).runtime;
+  return restoreSimulationRuntime(captureSessionSnapshot(interrupted), SEED).runtime;
+}
+
+/**
+ * The phase name of the one prisoner in the fixture.
+ *
+ * A helper rather than the expression inlined three times, because the
+ * index-of-id-of-index round trip is what the assertion is *not* about.
+ */
+function phaseOf(runtime: SimulationRuntime): string | undefined {
+  const entityId = runtime.prisoners.entityStore.getIdByIndex(0);
+  return ACTION_PHASES[runtime.prisoners.currentAction.phase[runtime.prisoners.entityStore.getIndex(entityId)]!];
 }
 
 /** Bricks in the depot plus bricks at the site plus bricks in a carrier's hands. */
@@ -477,50 +521,43 @@ describe('an errand saved across a block boundary: what the restore costs', () =
     expect(walking[walking.length - 1], 'the last walking tick is not inside the work block').toBeLessThan(1_800);
   });
 
-  it('costs 1,280 ticks with the restore as production performs it', () => {
+  it('costs the ordinary two cycles across the boundary, at the worst capture there is', () => {
     const continuous = completionTick(buildScenario(OFFER_THE_LATE_ERRAND_AT), LATE_HORIZON_TICKS);
     const walking = ticksCarryingIn('travelling', OFFER_THE_LATE_ERRAND_AT, LATE_HORIZON_TICKS);
     const lastWalkingTick = walking[walking.length - 1]!;
 
-    const restored = restoreLateErrandAt(lastWalkingTick, false);
-    // The carrier comes back holding the goods and holding the job, and idle:
-    // the state that makes `planIdleSelection` ask the question.
+    const restored = restoreLateErrandAt(lastWalkingTick);
+    // The carrier comes back holding the goods, holding the job, and *walking*.
+    // The phase is the whole of the fix: an idle carrier here is what made
+    // `planIdleSelection` ask whether `work` is allowed, twenty ticks after a
+    // work block that has already ended.
     expect(restored.jobs.activeJobFor(restored.prisoners.entityStore.getIdByIndex(0))?.leg).toBe('dropoff');
     expect(restored.containers.require('site').quantityOf('item.brick')).toBe(0);
+    expect(phaseOf(restored), `captured mid-walk at tick ${lastWalkingTick}`).toBe('travelling');
 
     const completed = completionTick(restored, LATE_HORIZON_TICKS + 4_000);
     expect(completed, `captured mid-walk at tick ${lastWalkingTick}`).toBeGreaterThan(0);
-    expect(completed - continuous, `captured mid-walk at tick ${lastWalkingTick}`).toBe(BLOCK_BOUNDARY_COST_TICKS);
-    // Thirty-two times the bound the first half of this file pins, and the
-    // reason the two halves disagree is the boundary and nothing else.
-    expect(BLOCK_BOUNDARY_COST_TICKS / RESTORED_TRAVEL_BOUND_TICKS).toBe(32);
+    expect(completed - continuous, `captured mid-walk at tick ${lastWalkingTick}`).toBeLessThanOrEqual(RESTORED_TRAVEL_BOUND_TICKS);
+    // The capture the research note found the cliff at, named so that a reader
+    // can see this is the worst case and not a convenient one: 1,780 cost 20
+    // and 1,781 cost 1,280, because the next reconsideration fell the other
+    // side of the work block's end at 1,800.
+    expect(lastWalkingTick).toBeGreaterThan(1_780);
+    // What the fix is worth, stated as the factor rather than as a second copy
+    // of the arithmetic.
+    expect(BLOCK_BOUNDARY_COST_TICKS_BEFORE_THE_FIX / RESTORED_TRAVEL_BOUND_TICKS).toBe(32);
   });
 
-  it('loses none of the goods while it is late, which is the one thing the delay does not cost', () => {
-    const walking = ticksCarryingIn('travelling', OFFER_THE_LATE_ERRAND_AT, LATE_HORIZON_TICKS);
-    for (const captureTick of sample(walking)) {
-      const restored = restoreLateErrandAt(captureTick, false);
-      expect(bricksInTheWorld(restored), `at restore, captured at ${captureTick}`).toBe(100);
-      expect(completionTick(restored, LATE_HORIZON_TICKS + 4_000), `captured at ${captureTick}`).toBeGreaterThan(0);
-      expect(bricksInTheWorld(restored), `after completion, captured at ${captureTick}`).toBe(100);
-      expect(restored.containers.require('site').quantityOf('item.brick'), `captured at ${captureTick}`).toBe(10);
-      expect(restored.containers.require('depot').reservedOf('item.brick'), `captured at ${captureTick}`).toBe(0);
-    }
-  });
-
-  it('costs the ordinary two cycles instead, with resumeRestoredCarriers set', () => {
+  it('costs at most that at every capture on the boundary, not only the last one', () => {
     const continuous = completionTick(buildScenario(OFFER_THE_LATE_ERRAND_AT), LATE_HORIZON_TICKS);
     const walking = ticksCarryingIn('travelling', OFFER_THE_LATE_ERRAND_AT, LATE_HORIZON_TICKS);
 
     let anyDelay = false;
     for (const captureTick of [...sample(walking), walking[walking.length - 1]!]) {
-      const restored = restoreLateErrandAt(captureTick, true);
+      const restored = restoreLateErrandAt(captureTick);
       // Never idle, so no eligibility question is asked -- which is the whole
-      // of what the gate changes.
-      expect(
-        ACTION_PHASES[restored.prisoners.currentAction.phase[restored.prisoners.entityStore.getIndex(restored.prisoners.entityStore.getIdByIndex(0))]!],
-        `captured at ${captureTick}`,
-      ).toBe('travelling');
+      // of what decision 5's re-seating changes.
+      expect(phaseOf(restored), `captured at ${captureTick}`).toBe('travelling');
 
       const completed = completionTick(restored, LATE_HORIZON_TICKS + 4_000);
       expect(completed, `captured at ${captureTick}`).toBeGreaterThan(0);
@@ -531,17 +568,31 @@ describe('an errand saved across a block boundary: what the restore costs', () =
       expect(restored.containers.require('site').quantityOf('item.brick'), `captured at ${captureTick}`).toBe(10);
       if (delay > 0) anyDelay = true;
     }
+    // Without this the bound above is satisfied by a restore that costs
+    // nothing anywhere, which would not test a bound at all.
     expect(anyDelay, 'no sampled capture cost anything, so the bound above is untested').toBe(true);
   });
 
-  it('gives the goods back when the board fails the errand under a resumed carrier', () => {
+  it('loses none of the goods across the boundary, which the delay never cost either', () => {
+    const walking = ticksCarryingIn('travelling', OFFER_THE_LATE_ERRAND_AT, LATE_HORIZON_TICKS);
+    for (const captureTick of sample(walking)) {
+      const restored = restoreLateErrandAt(captureTick);
+      expect(bricksInTheWorld(restored), `at restore, captured at ${captureTick}`).toBe(100);
+      expect(completionTick(restored, LATE_HORIZON_TICKS + 4_000), `captured at ${captureTick}`).toBeGreaterThan(0);
+      expect(bricksInTheWorld(restored), `after completion, captured at ${captureTick}`).toBe(100);
+      expect(restored.containers.require('site').quantityOf('item.brick'), `captured at ${captureTick}`).toBe(10);
+      expect(restored.containers.require('depot').reservedOf('item.brick'), `captured at ${captureTick}`).toBe(0);
+    }
+  });
+
+  it('gives the goods back when the board fails the errand under a re-seated carrier', () => {
     /*
-     * The other direction of ADR 0093 decision 5's restore rule, with the gate
-     * on. A carrier kept `'travelling'` whose job `reconcileRestoredJobs` ends
-     * -- here by naming a worker id this session does not hold -- must not walk
-     * on for an errand that no longer exists, and the goods must come back.
+     * The other direction of ADR 0093 decision 5's restore rule. A carrier kept
+     * `'travelling'` whose job `reconcileRestoredJobs` ends -- here by naming a
+     * worker id this session does not hold -- must not walk on for an errand
+     * that no longer exists, and the goods must come back.
      * `ActionSystem.continueTravelling` checks exactly this before it advances
-     * a carry, which is why the gate needs no extra path of its own.
+     * a carry, which is why re-seating needs no extra path of its own.
      */
     const walking = ticksCarryingIn('travelling', OFFER_THE_LATE_ERRAND_AT, LATE_HORIZON_TICKS);
     const interrupted = buildScenario(OFFER_THE_LATE_ERRAND_AT);
@@ -551,7 +602,7 @@ describe('an errand saved across a block boundary: what the restore costs', () =
     expect(jobs.length).toBe(1);
     jobs[0]!.assignedWorkerId = 999;
 
-    const restored = restoreSimulationRuntime(bundle, SEED, { resumeRestoredCarriers: true }).runtime;
+    const restored = restoreSimulationRuntime(bundle, SEED).runtime;
     expect(restored.jobs.getById('errand-1')?.state).toBe('failed');
     expect(restored.jobs.getById('errand-1')?.failReason).toBe('carrier-departed');
     expect(restored.containers.require('depot').quantityOf('item.brick')).toBe(100);

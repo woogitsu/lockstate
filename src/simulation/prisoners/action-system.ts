@@ -561,10 +561,19 @@ export class ActionSystem implements SystemRegistration {
    * granted is not a grant and has no ceiling to check; see that method for why
    * silently dropping the excess would be the worse of the two errors.
    *
-   * `travelling` needs no equivalent and must not have one: the caller has
-   * already dropped those prisoners back to `idle` (their path request died
-   * with the previous `NavigationSystem`), and a traveller holds no claim in a
-   * live session either.
+   * `travelling` needs no equivalent and must not have one, and the second of
+   * the two reasons is the durable one: a traveller holds no claim in a live
+   * session either, so there is nothing to reinstate whatever the phase says.
+   *
+   * **The first reason used to read *"the caller has already dropped those
+   * prisoners back to `idle`"*, and issue #882 made it false of one traveller**
+   * -- `PrisonerOperationsRuntime.loadSnapshot` now keeps a restored carrier
+   * `travelling`, per ADR 0093 decision 5. It is corrected rather than
+   * overwritten because a reader who finds a `travelling` prisoner alive after
+   * a load needs to know it is expected. This scan is unaffected in two
+   * independent ways: it tests the phase, which excludes the carrier, and it
+   * tests `target.kind === 'room-catalog-id'`, which excludes `action.carry`'s
+   * `job-board` a second time.
    */
   public reinstateUseClaims(): void {
     const performingPhase = phaseIndex('performing');
@@ -775,18 +784,28 @@ export class ActionSystem implements SystemRegistration {
    *   mirror of `continuePerforming`'s unreadable action index, which also
    *   releases, resets and does not count.
    *
-   * **Only the middle exit is reachable in play, and it was measured rather
-   * than reasoned about.** `RoomZoningService.unzone` refuses on
+   * **The middle exit is reachable in play, and it was measured rather than
+   * reasoned about.** `RoomZoningService.unzone` refuses on
    * `claimCountOf > 0`, and by ADR 0029 decision 2 a traveller holds no claim,
    * so a player may un-zone a canteen a prisoner is walking to. Driven through
    * the real commands: the prisoner is `travelling` to `room.canteen:8:8` at
    * tick 2,021 with `claimCountOf` 0, `UnzoneRoom` is accepted with no refusal,
-   * and twenty ticks later this method finds the instance gone. The first exit
-   * has no such path -- `beginNextAction` writes the request in the same
-   * statement run that writes the phase, and `PrisonerOperationsRuntime.loadSnapshot`
-   * drops every restored traveller to `idle` and clears both -- so it is
-   * defence in depth, and `tests/integration/unzoned-target-mid-journey.test.ts`
-   * covers the one that is not.
+   * and twenty ticks later this method finds the instance gone.
+   * `tests/integration/unzoned-target-mid-journey.test.ts` covers it.
+   *
+   * **This paragraph opened *"Only the middle exit is reachable in play"* and
+   * issue #882 made that false of the first one.** It said the missing-request
+   * exit had no path, because `beginNextAction` writes the request in the same
+   * statement run that writes the phase and
+   * `PrisonerOperationsRuntime.loadSnapshot` dropped every restored traveller
+   * to `idle` and cleared both. That second half no longer holds for a
+   * **carrier**: per ADR 0093 decision 5 a restored carrier now keeps
+   * `travelling` and has its request cleared, which is precisely the state
+   * this exit reads -- so for a carry it is a **live path taken on every load
+   * mid-leg**, and the `strandedJob` arm below is what takes it. It remains
+   * defence in depth for every other action, and the correction is kept beside
+   * the claim rather than replacing it because the reasoning for the other
+   * actions is unchanged.
    */
   /**
    * Gives back the route this prisoner had asked for, and forgets its id.
@@ -876,17 +895,26 @@ export class ActionSystem implements SystemRegistration {
     const requestId = this.coldState.getPathRequestId(entityId);
     if (requestId === undefined) {
       /*
-       * **A carrier asks for the leg again instead of giving up.** For every
-       * other action this is bookkeeping that cannot be read back, and the
-       * prisoner goes idle and re-selects. A carry differs because the errand
-       * outlives the selection: the job is still `'assigned'` to this prisoner,
-       * so going idle would leave the goods reserved and unmoved until the next
-       * work block came round. Asking again is `JobSystem.continueTravelling`'s
-       * own shape (`if (job.pathRequestId === undefined) this.beginLeg(...)`)
-       * kept, and it is defence in depth rather than a live path:
+       * **A carrier asks for the leg again instead of giving up, and this is
+       * how a restored errand resumes.** For every other action a missing
+       * request is bookkeeping that cannot be read back, and the prisoner goes
+       * idle and re-selects. A carry differs because the errand outlives the
+       * selection: the job is still `'assigned'` to this prisoner, so going
+       * idle would leave the goods reserved and unmoved until the next work
+       * block came round. Asking again is `JobSystem.continueTravelling`'s own
+       * shape (`if (job.pathRequestId === undefined) this.beginLeg(...)`) kept.
+       *
+       * **This arm was documented as *"defence in depth rather than a live
+       * path"* and issue #882 is what made it live.** The argument was that
        * `beginNextAction` and `beginCarryLeg` each write the request in the
-       * same statement run as the phase, and `loadSnapshot` clears both *and*
-       * drops the prisoner to `idle`.
+       * same statement run as the phase, and that `loadSnapshot` cleared both
+       * *and* dropped the prisoner to `idle`. The last of those changed: per
+       * ADR 0093 decision 5 `PrisonerOperationsRuntime.loadSnapshot` keeps a
+       * restored carrier `travelling` and clears only the request, so **every**
+       * load taken mid-leg arrives here on the next cycle and this is the one
+       * statement that resumes the errand. Corrected rather than overwritten,
+       * because the two write-sites named above are still why nothing *else*
+       * reaches it.
        */
       const strandedJob = travellingAction?.target.kind === 'job-board' ? this.carriedJob(entityId) : undefined;
       if (strandedJob !== undefined) {
@@ -1198,23 +1226,33 @@ export class ActionSystem implements SystemRegistration {
   /**
    * Is there an errand this prisoner could be given right now?
    *
-   * **Two ways, and the second is what makes a restore need no new field**
-   * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decisions 2
-   * and 5):
+   * **Two ways** ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md)
+   * decisions 2 and 5):
    *
    * - the board has an `available` job, which is the fact decision 2 states;
-   * - or this prisoner already holds one, which is how a carrier restored from
-   *   a save resumes. `PrisonerOperationsRuntime.loadSnapshot` drops every
-   *   `travelling` prisoner to `idle`, so a carrier comes back idle with the
-   *   carry still in `actionIndex` and its job still `'assigned'` on the
-   *   board -- and because their own active job makes the carry providable
-   *   again, the next reconsideration cycle re-selects it and
-   *   `resolveTargetInstance` resumes the leg the job records. The ADR's own
-   *   sketch re-seated the carrier as `travelling` with no request; this
-   *   reaches the same state through the path that already exists instead of
-   *   adding one, and it is the same one restore rule -- the board is the
-   *   authority on where the goods are, in both readings. The other direction
-   *   is `CarryJobExecutor.reconcileRestoredJobs`.
+   * - or this prisoner already holds one, which is now a recovery net rather
+   *   than a route anything takes. Every exit that leaves a carrier `idle`
+   *   fails the job first -- `pickUp` and `dropOff` return `false` only after
+   *   `failJob`, `continueCarry`, `arrive` and `continueTravelling` each check
+   *   `carriedJob` and drop out when it is gone -- so an idle prisoner holding
+   *   a **non-terminal** carry job is a state no path in `src/` produces. If
+   *   one ever did, this clause is what would let them pick the errand back
+   *   up, and the gate in `planIdleSelection` below is why that recovery would
+   *   wait for a `work` block.
+   *
+   * **This bullet used to read *"which is how a carrier restored from a save
+   * resumes"*, and issue #882 is why it does not.** That was the landing
+   * change's substitute for ADR 0093 decision 5, whose own words are *"a
+   * carrier is instead re-seated from the board after it loads"*; it recorded
+   * the substitution as *"the same one restore rule, reached without adding a
+   * path"*, and measured, the two routes diverge by up to **1,280 ticks**
+   * across a regime block boundary, because re-selection asks whether `work`
+   * is allowed *now* and re-seating asks nobody anything. Decision 5 is built
+   * as written, in `PrisonerOperationsRuntime.loadSnapshot`, and the
+   * measurement is
+   * `docs/research/2026-09-03-what-a-restore-costs-an-errand.md`. The other
+   * direction of that restore rule -- a job whose carrier is not in this
+   * session -- is `CarryJobExecutor.reconcileRestoredJobs`, unchanged.
    *
    * **The second clause reads this prisoner's own claim and no one else's**,
    * which is what keeps it inside ADR 0062 decision 3's rule that the ordering
