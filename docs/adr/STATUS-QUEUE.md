@@ -8003,11 +8003,26 @@ still four `.css` files under `src/ui/`; `docs/research/README.md`'s rule at
 `:9` is word for word; and §6's two cleared status references held through a
 window that edited both files.
 
-**Next free number: 0095.** `docs/adr/README.md` states it and this file agrees
-with it; the number is unmoved by this window, which added no ADR. The remote
-sweep is **not** re-run here and this line is not warranted by one: the index's
-own paragraph records the sweep that set 0095 (481 heads, at `98e05058`), and
-nothing in this window touches `docs/adr/` except this file. **A pass that
+**Next free number: 0096.** `docs/adr/README.md` states it and this file agrees
+with it.
+
+> **This line read `0095` and was moved to `0096` by the branch that added
+> [ADR 0095](./0095-what-the-guard-requirement-is-a-requirement-for.md)
+> (issue #893), which is the mechanism this file's anchor gate exists to
+> catch.** It said *"the number is unmoved by this window, which added no
+> ADR"*, which was true of that window and stopped being true the moment
+> another branch added one. `tests/foundation/adr-status-queue-anchor-contract.test.ts`
+> reported it rather than a reader finding it: the assertion
+> *restates the index's Next free number wherever the restatement is live*
+> failed naming this line, which is exactly the mutation it was written for.
+> **The sentence is corrected rather than deleted**, because *what moved it*
+> is the finding — a live restatement here is a claim about a number owned
+> elsewhere, and the owner of that number is a different branch every time.
+
+The remote sweep for 0095 was performed on that branch and is recorded in the
+index's own paragraph (146 heads, at `ac58c457`, highest prefix anywhere 0094,
+no ADR file on any of the six open pull requests) rather than re-run here.
+Nothing in *this* window touches `docs/adr/` except this file. **A pass that
 restates a number it did not sweep for should say which it is doing**, which
 is what this sentence is for.
 

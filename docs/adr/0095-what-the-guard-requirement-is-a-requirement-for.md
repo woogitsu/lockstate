@@ -212,12 +212,16 @@ the block below it says it has none spare.
 The families ADR 0053 identified split again on this axis, and the split is
 informative.
 
-**Prison Architect** is the closest comparison and it is a two-budget design
-with both budgets named. The deployment screen assigns guards to sectors and
-patrol routes; guards not so assigned are free, and free guards are what answer
-a callout. The game's own guidance is to keep a reserve, and the staff totals
-are visible beside the deployment. The design Lockstate has is Prison
-Architect's design; what Lockstate lacks is Prison Architect's readout.
+**Prison Architect** is the closest comparison, and it is a two-budget design
+in which the player can see both budgets. Deployment assigns guards to sectors
+and to patrol routes; a guard not so assigned is free, and free guards are what
+answer a callout — the same split Lockstate has. The difference is that the
+assignment is the player's explicit gesture there and derived here, so a
+Prison Architect player who posts every guard has *chosen* to, and can see on
+the same screen that they have. **Stated as a shape rather than quoted**: ADR
+0053 did the sourced version of this research and this document does not repeat
+it, so what is claimed here is only the structure, and the structure is the part
+the argument uses.
 
 **RimWorld** is the one-budget design: there is no post, and drafting a colonist
 pulls them off whatever they were doing, with the interruption as the cost. That
@@ -226,9 +230,10 @@ is candidate 3 below, and note what it implies — RimWorld can do it because
 identified as absent here for its competence scalar.
 
 **Two Point Hospital** splits the difference: staff assigned to a room stay in
-it, and a roaming pool handles what arrives. It also does the thing this
-document recommends — the staff screen states the shortfall *per duty*, not one
-aggregate.
+it, and a roaming pool handles what arrives. What is worth borrowing is that
+its staffing readouts are **per duty** — a room states the staff type it wants
+and says when it is short of one — rather than one aggregate over the whole
+payroll, which is the shape decision 1 proposes.
 
 ## Decision
 
@@ -266,9 +271,12 @@ architecture:
   `ceil(10 × 0.5) = 5`, against the 4 that actually sufficed in the measured
   prison.
 - a reserve derived from the sector's current risk band, so a calm prison is
-  asked for less. It tracks the prison the player has, and it moves — which is
-  a readout that changes without the player doing anything, the failure mode
-  `docs/adr/0086-what-refreshes-a-pulled-hud-readout.md` is about.
+  asked for less. It tracks the prison the player has, and it moves on its own
+  between pulls — which puts it in
+  [ADR 0086](./0086-what-refreshes-a-pulled-hud-readout.md)'s territory, since
+  the Staff panel's coverage block is a *pulled* readout on a cadence
+  (`StaffCoverageReader`) and a figure that drifts while nothing is pressed is
+  a figure whose refresh rule has to be decided before the figure exists.
 
 The first is a constant and honest about being a ceiling; the second is
 informative and unstable. **The first is recommended** on the same ground ADR
