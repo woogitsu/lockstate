@@ -1215,3 +1215,172 @@ test('act H: what the panel does not say, and what cancel gives back', async ({ 
   note(`[H3] deliveries at the end:\n${await panelText(page, '.hud-build__deliveries')}`);
   await shot(page, 'H04-after-cancelling-clock-stopped');
 });
+
+/* ------------------------------------------------------------------ ACT I */
+
+/**
+ * The last four samples, each one aimed at refuting a reading acts A-H
+ * produced rather than at confirming it.
+ *
+ * I1 **the QUEUED block is a fold, so open it.** Act D read "3 row elements,
+ *    0 laid out" and that is *by design*: `BUILD_QUEUE_ROW_LIMIT`'s comment
+ *    says the block *"is collapsed when it appears, so a queue costs a header
+ *    and not a list until the player asks for one"*. So the question is not
+ *    whether the rows are hidden but whether a player can find the press that
+ *    shows them, and whether a Cancel works once they have.
+ * I2 **Undo.** `hud.build.queue-more` tells a player *"undo takes back a whole
+ *    run"* and `src/input/bindings.ts:64` binds it to bare **KeyZ**. There is
+ *    no Undo control in the Build panel. So: press Z with a run queued, and
+ *    separately enumerate everything on screen that could have told a player
+ *    the key exists.
+ * I3 **the panel's overflow.** Act D measured the body at scrollHeight 803 in
+ *    a clientHeight of 461 with `overflow-y: visible`. This lists which
+ *    sections fall outside the box, so the report can name them.
+ * I4 **the placement hint with a non-wall row selected.** Act H's panel text
+ *    read *"Click a tile edge to place a wall"* with Storage Rack selected.
+ *    `build-panel.ts:1271` swaps that line for the *remove* hint only, so this
+ *    checks it against a bed rather than trusting one reading.
+ */
+test('act I: the fold, the key nobody is told about, and the overflow', async ({ page }) => {
+  test.setTimeout(600_000);
+  await installTee(page);
+  await openApp(page);
+  const started = Date.now();
+
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await tab(page, 'build').click();
+  const origin = await calibrate(page);
+
+  /* --- I4: the hint, per row --- */
+  for (const id of ['wall-brick', 'door-wooden', 'bed-wooden', 'toilet-brick', 'storage-rack-wooden']) {
+    await page.locator(`.hud-build__list [data-buildable="${id}"]`).click();
+    await page.waitForTimeout(150);
+    note(`[I4] with ${id.padEnd(22)} selected, the hint reads ${JSON.stringify((await page.locator('.hud-build__note').first().innerText()).trim())}`);
+  }
+
+  /* --- I2 part one: what on screen names a key at all? --- */
+  const keyMentions = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('.hud, .save-panel'))
+      .flatMap((root) => ((root as HTMLElement).innerText ?? '').split('\n'))
+      .filter((line) => /\bkey|keyboard|press [A-Z]\b|\bZ\b|shortcut|undo/i.test(line))
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0),
+  );
+  note(`[I2] every line on screen that mentions a key, a shortcut or undo: ${JSON.stringify(keyMentions)}`);
+
+  /* --- queue a run so there is something to cancel and to undo --- */
+  await armBuildable(page, 'wall-brick');
+  const before = await sample(page, started);
+  const runBefore = (await sentCommands(page)).length;
+  await drag(page, { x: origin.originX + 13 * TILE, y: origin.originY + 13 * TILE }, { x: origin.originX + 18 * TILE, y: origin.originY + 13 * TILE });
+  const runCmds = (await sentCommands(page)).slice(runBefore);
+  await page.waitForTimeout(1500);
+  const queued = await sample(page, started);
+  note(`[I1] a 5-tile run: ${runCmds.length} order(s), treasury ${before.treasury} -> ${queued.treasury} (took ${before.treasury - queued.treasury})`);
+
+  /* --- I1: is the QUEUED block openable, and does it look openable? --- */
+  const foldBefore = await page.evaluate(() => {
+    const section = document.querySelector<HTMLElement>('.hud-build__queue');
+    const header = section?.querySelector<HTMLElement>('.ui-section__header') ?? null;
+    return {
+      sectionFound: section !== null,
+      headerFound: header !== null,
+      headerTag: header?.tagName ?? '',
+      headerText: (header?.innerText ?? '').replace(/\n/g, ' / '),
+      ariaExpanded: header?.getAttribute('aria-expanded') ?? 'ABSENT',
+      headerRole: header?.getAttribute('role') ?? 'ABSENT',
+      headerHasIcon: (header?.querySelector('svg, .ui-icon, [class*="chevron"], [class*="caret"]') ?? null) !== null,
+      headerHtmlHead: (header?.innerHTML ?? '').slice(0, 300),
+    };
+  });
+  note(`[I1] the QUEUED header, before any press: ${JSON.stringify(foldBefore, null, 1)}`);
+  await shot(page, 'I01-queue-fold-shut');
+
+  const header = page.locator('.hud-build__queue .ui-section__header');
+  if ((await header.count()) > 0) {
+    await header.click();
+    await page.waitForTimeout(700);
+    const opened = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.hud-build__queue-row')).map((n) => {
+        const el = n as HTMLElement;
+        const b = el.getBoundingClientRect();
+        const button = el.querySelector('button');
+        const bb = button === null ? null : (button as HTMLElement).getBoundingClientRect();
+        return {
+          text: el.innerText.replace(/\n/g, ' / '),
+          hidden: el.hidden,
+          laidOut: el.getClientRects().length > 0,
+          y: Math.round(b.top),
+          insideViewport: b.top >= 0 && b.bottom <= window.innerHeight,
+          cancelAt: bb === null ? null : { x: Math.round(bb.x + bb.width / 2), y: Math.round(bb.y + bb.height / 2), w: Math.round(bb.width), h: Math.round(bb.height) },
+        };
+      }),
+    );
+    note(`[I1] after ONE press on the QUEUED header, ${opened.filter((r) => r.laidOut).length} of ${opened.length} rows are laid out:`);
+    for (const row of opened) note(`[I1]   ${JSON.stringify(row)}`);
+    note(`[I1] the "more" line now: ${JSON.stringify(await panelText(page, '.hud-build__queue-more'))}`);
+    note(`[I1] aria-expanded now: ${JSON.stringify(await header.getAttribute('aria-expanded'))}`);
+    await shot(page, 'I02-queue-fold-open');
+
+    // And can a Cancel actually be pressed, and does it pay back?
+    const button = page.locator('.hud-build__queue-row button:visible').first();
+    if ((await button.count()) > 0) {
+      const pre = await sample(page, started);
+      await button.click();
+      await page.waitForTimeout(1000);
+      const post = await sample(page, started);
+      note(`[I1] one Cancel, pressed: treasury ${pre.treasury} -> ${post.treasury} (+${post.treasury - pre.treasury}) | queue ${JSON.stringify(post.queue)} | band ${JSON.stringify(post.refusal)}`);
+    } else {
+      note('[I1] NO cancel control is pressable even with the fold open');
+    }
+  }
+
+  /* --- I3: what falls outside the panel's box --- */
+  const overflow = await page.evaluate(() => {
+    const body = document.querySelector<HTMLElement>('.hud-build > .ui-panel__body');
+    if (body === null) return null;
+    const box = body.getBoundingClientRect();
+    const style = getComputedStyle(body);
+    const sections = Array.from(body.querySelectorAll(':scope > *, :scope > * > .ui-section__header'))
+      .map((n) => {
+        const el = n as HTMLElement;
+        const b = el.getBoundingClientRect();
+        if (b.height === 0) return null;
+        return {
+          cls: el.className.toString().slice(0, 46),
+          text: (el.innerText ?? '').split('\n')[0]?.slice(0, 40) ?? '',
+          top: Math.round(b.top),
+          bottom: Math.round(b.bottom),
+          belowThePanel: b.top > box.bottom,
+          clippedByThePanel: b.bottom > box.bottom && b.top < box.bottom,
+        };
+      })
+      .filter((v) => v !== null);
+    return {
+      body: { top: Math.round(box.top), bottom: Math.round(box.bottom), clientHeight: body.clientHeight, scrollHeight: body.scrollHeight, overflowY: style.overflowY, maxHeight: style.maxHeight },
+      sections,
+    };
+  });
+  note(`[I3] the Build panel's body: ${JSON.stringify(overflow?.body)}`);
+  for (const s of overflow?.sections ?? []) {
+    note(`[I3]   ${s.belowThePanel ? 'BELOW THE PANEL ' : s.clippedByThePanel ? 'CLIPPED         ' : 'inside          '} ${JSON.stringify(s)}`);
+  }
+  await shot(page, 'I03-panel-overflow');
+
+  /* --- I2 part two: does Z undo, and does anything say it happened? --- */
+  const preUndo = await sample(page, started);
+  note(`[I2] before Z: treasury ${preUndo.treasury} | queue ${JSON.stringify(preUndo.queue)}`);
+  await page.locator('#game-root canvas').click({ position: { x: 5, y: 5 } });
+  await page.waitForTimeout(200);
+  const preKeyCommands = (await sentCommands(page)).length;
+  await page.keyboard.press('KeyZ');
+  await page.waitForTimeout(1500);
+  const zCommands = (await sentCommands(page)).slice(preKeyCommands);
+  const postUndo = await sample(page, started);
+  note(`[I2] pressing Z sent ${zCommands.length} command(s): ${JSON.stringify(zCommands)}`);
+  note(`[I2] after Z: treasury ${preUndo.treasury} -> ${postUndo.treasury} (+${postUndo.treasury - preUndo.treasury}) | queue ${JSON.stringify(postUndo.queue)}`);
+  note(`[I2] band ${JSON.stringify(postUndo.refusal)} | event band ${JSON.stringify(await panelText(page, '.hud__event'))}`);
+  note(`[I2] alerts ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+  await shot(page, 'I04-after-pressing-z');
+});
