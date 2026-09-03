@@ -692,14 +692,31 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * exists (#89). A purchase spends now and delivers later; the delivery
    * lands in the container construction draws from.
    *
-   * **Directly, and that is scaffolding.** #96 describes the materials
-   * arriving at `room.delivery-bay` and being carried to the site. No session
-   * instantiates that room: a `ZoneRoom` command can zone one since #261, and
-   * nothing in the application sends that command (`room.delivery-bay` is
-   * still content with no reader, #141) -- so there is no bay to deliver to,
-   * and inventing one would mean deciding where a new prison's bay sits and
-   * when a carry job is raised. Recorded on #96 rather than left to be
-   * discovered from the absence.
+   * **Directly only where the player has not built the route.** #96 describes
+   * the materials arriving at `room.delivery-bay` and being carried to the
+   * site, and since
+   * [ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) that is what
+   * happens: `deliveryCarryRoute` is constructed further down this same
+   * function and handed to `ProcurementSystem`, so a delivery lands in a
+   * *furnished* bay's own container and a prisoner in a `work` block carries it
+   * to a *furnished* storeroom. The direct deposit is the fallback for a prison
+   * with neither room, which is decision 2's graceful fallback and is still
+   * `docs/OPERATIONS.md`'s second no-teleport exception there.
+   *
+   * **This paragraph asserted the feature's absence and is corrected rather
+   * than overwritten** (`docs/AGENT_WORKFLOW.md` §4: mark both directions). It
+   * read: *"**Directly, and that is scaffolding.** ... No session instantiates
+   * that room: a `ZoneRoom` command can zone one since #261, and nothing in the
+   * application sends that command (`room.delivery-bay` is still content with
+   * no reader, #141) -- so there is no bay to deliver to, and inventing one
+   * would mean deciding where a new prison's bay sits and when a carry job is
+   * raised."* The Rooms panel sends `ZoneRoom` for any id in the room
+   * catalogue, so the "nothing in the application sends that command" clause
+   * was a statement about a *new* session rather than about the application;
+   * and the two questions it declined to answer are answered by ADR 0093
+   * decision 2 -- the bay's anchor tile, and the tick a delivery comes due.
+   * Zoned, furnished and watched through the shipped panels on 2026-09-03:
+   * `docs/research/2026-09-03-does-the-errand-walk.md`.
    *
    * **Constructed before `ConstructionSystem` rather than after it**, which is
    * where these two lines used to sit. `JustInTimeMaterialsService` is the

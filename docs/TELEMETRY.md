@@ -242,6 +242,46 @@ an abort deadline, and it never retries: a failed batch is dropped by the sink,
 silently, because a diagnostics pipeline that reports its own failures can spam a
 player about a problem they did not have.
 
+### And what is on the other end, as of 2026-09-03
+
+There is now a receiving half, and **it accepts nothing.**
+
+The owner authorised this project's first server-side entry point on
+2026-09-03, for this ingest and for nothing else (`AGENTS.md`, "The owner's
+standing mandate", carries their words and the date; `docs/DEPLOYMENT.md`, "What
+actually landed", answers the nine pre-merge items). `wrangler.jsonc` declares
+`main`, and `src/worker/` holds a handler whose own docblock carries the threat
+model for what it accepts from the open internet.
+
+What it does before it would store anything: `POST` only, `application/json`
+only, a bounded body checked against both the declared and the delivered length,
+strict UTF-8, `JSON.parse`, a `.strict()` wire schema, a bounded batch, and then
+every envelope through the **same** admission function the sink calls — envelope
+schema, registration, category agreement, redaction fixed point. One bad
+envelope refuses the whole batch; nothing is coerced, truncated or partially
+stored; and a refusal is one machine-readable code with no part of the request
+echoed back. The stored arrival time is the server's and the sample rate comes
+from the receiver's own registry copy, so neither of the two fields this
+document warns about below is trusted.
+
+**Three things are still absent, and the middle one is why nothing collects.**
+
+1. **A destination.** The `telemetry_events` table, its insert function and the
+   dedicated least-privilege database role are `supabase/migrations/`, which is
+   the owner's. With no destination the handler refuses a well-formed batch with
+   `destination-unconfigured` *before it reads the body* — a stricter posture
+   than validating and discarding.
+2. **A configured path, on either side.** The Worker claims a route only when
+   its own binding names one, and no environment sets it; the client sends only
+   when its two compile-time strings are set, and no workflow sets those. Both
+   default to absent. **Set the Worker binding first**: a client path with no
+   matching Worker route reaches the SPA shell with `200`, and the sink counts
+   that as a delivered batch.
+3. **A request-rate bound.** Deliberately not in the Worker: a limiter must key
+   on something, and the only value available is the caller's IP, which this
+   document and ADR 0046 both forbid retaining. It belongs at the edge, in
+   configuration.
+
 ## Release correlation without public source maps
 
 `vite.config.ts` keeps `sourcemap: false` for shipped assets, and
@@ -262,6 +302,18 @@ wrong fix and is explicitly rejected.
 **These numbers are not enforced by anything today.** Retention is the
 ingestion side's to enforce and no ingestion side exists; the client's
 obligation is only to send the minimum that makes them meaningful, and it does.
+
+**Still true on 2026-09-03, and the clause that changed is worth being precise
+about.** An *endpoint* now exists (see "And what is on the other end" above) and
+nothing about retention does: there is no table for a window to run over and no
+job to run one. What the endpoint does supply is the value a window would have
+to key on — `receivedAt`, stamped by the server from its own clock and
+unsettable from the body — which is the precondition ADR 0046 §7 item 1 spends
+its whole correction on. The retention job itself is a different kind of thing
+from the ingest: ADR 0008's scope amendment puts it **inside** §3, because
+deciding which events survive *is* the half §2 assigns to Z2, so it owes an
+audit of what rule it applied over what window and what it removed. The ingest
+owes none of that and the job owes all of it.
 [ADR 0046](./adr/0046-shipping-the-telemetry-pipeline.md) lists what the
 ingestion side must do before this table is true — a scheduled deletion job, no
 stored IP address, no join from a session id to anything, server-side schema
