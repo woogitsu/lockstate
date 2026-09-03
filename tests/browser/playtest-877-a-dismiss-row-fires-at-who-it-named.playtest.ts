@@ -476,12 +476,31 @@ test.describe('the delivery rows fire at what they named', () => {
      * leave -- which is the only state in which an index-bound row can
      * re-point, and the state a player buying a few loads is in.
      */
+    /*
+     * Runs to a tick and stops, polling **inside the page**.
+     *
+     * The obvious shape -- `await currentTick(page)` in a loop with a
+     * `waitForTimeout` -- is one Playwright round trip per sample, and on a box
+     * at load average 25 each of those took seconds: nine calls asking for tick
+     * 100 overshot to tick **862**, by which time every delivery had landed and
+     * `data-pending` read `null`. `waitForFunction` polls in the page at 20ms,
+     * so the overshoot is bounded by the clock publication interval instead of
+     * by how busy the machine is.
+     */
     const advanceTo = async (target: number): Promise<void> => {
       await transport(page, 'play').click();
-      for (;;) {
-        if ((await currentTick(page)) >= target) break;
-        await page.waitForTimeout(120);
-      }
+      await page.waitForFunction(
+        (wanted) => {
+          const messages = (window as unknown as { lockstateFromWorker?: unknown[] }).lockstateFromWorker ?? [];
+          for (let index = messages.length - 1; index >= 0; index -= 1) {
+            const message = messages[index] as { kind?: string; payload?: { tick?: number } };
+            if (message.kind === 'simulation/clock-state') return (message.payload?.tick ?? -1) >= wanted;
+          }
+          return false;
+        },
+        target,
+        { polling: 20, timeout: 120_000 },
+      );
       await transport(page, 'pause').click();
     };
 
