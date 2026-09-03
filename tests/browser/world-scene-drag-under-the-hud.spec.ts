@@ -46,7 +46,20 @@ import { TILE, armBuildable, calibrate, installTee, openApp, sentCommands, tab }
  * The island geometry moves with the page, so the blocked band is a different
  * shape at every size and a gate pinned to one viewport would be a gate for one
  * shape. Each viewport is a test of its own: they cost a page load each, and one
- * test covering three would report the first failure and hide the rest.
+ * test covering three would report the first failure and hide the rest -- and,
+ * more practically, would have to fit all three inside one `test.slow()`
+ * budget, which measurement says it would not on a loaded machine.
+ *
+ * ## What it costs, and where that went
+ *
+ * Measured on this container under a load average of about 24, with six other
+ * agents running suites: 174 s for one viewport, of which the calibration
+ * bisection was 72 s, the three drags 45 s, the page load 18 s and arming the
+ * tool 11 s. Almost all of it is Playwright round trips rather than work, so the
+ * cuts are round-trip cuts: `calibrate` at a quarter-tile precision instead of
+ * a pixel (four presses fewer per axis), four mouse steps a leg instead of
+ * eight, and the counter-assertions folded in here instead of costing a fourth
+ * page load and a fourth prison.
  */
 
 /** A tile centre in page pixels, carrying the tile it belongs to. */
@@ -261,11 +274,14 @@ function longestFreeRun(map: ReachabilityMap, axis: 'x' | 'y', avoidLines: reado
 /**
  * Drags along a run and answers the `PlaceBuildOrder` commands it produced.
  *
- * The gesture is the one `playtest-harness.ts`'s `drag` performs -- press, a
- * move to the midpoint in eight steps, a move to the end in eight more, release
- * -- because a single jump to the end is a gesture no hand makes and would hide
- * exactly the defect under test: the truncation comes from the *intermediate*
- * moves stopping, so a drag with no intermediate moves has nothing to lose.
+ * The gesture is the shape `playtest-harness.ts`'s `drag` performs -- press, a
+ * move to the midpoint in several steps, a move to the end in several more,
+ * release -- because a single jump to the end is a gesture no hand makes and
+ * would hide exactly the defect under test: the truncation comes from the
+ * *intermediate* moves stopping, so a drag with no intermediate moves has
+ * nothing to lose. Four steps a leg rather than that helper's eight: each step
+ * is a separate dispatch and a separate round trip, and four is already several
+ * moves inside the island.
  */
 async function dragAlong(
   page: Page,
@@ -275,8 +291,8 @@ async function dragAlong(
   const before = (await sentCommands(page)).length;
   await page.mouse.move(a.x, a.y);
   await page.mouse.down({ button: 'left' });
-  await page.mouse.move((a.x + b.x) / 2, (a.y + b.y) / 2, { steps: 8 });
-  await page.mouse.move(b.x, b.y, { steps: 8 });
+  await page.mouse.move((a.x + b.x) / 2, (a.y + b.y) / 2, { steps: 4 });
+  await page.mouse.move(b.x, b.y, { steps: 4 });
   await page.mouse.up({ button: 'left' });
   /*
    * Submission is synchronous with the release, so this is the tee's round trip
@@ -314,7 +330,15 @@ test.describe('a wall drag that passes under a HUD island (#878)', () => {
       await expect(page.locator('.hud-clock__day')).toHaveText('1');
       await tab(page, 'build').click();
 
-      const origin = await calibrate(page, await freeCalibrationSquare(page));
+      /*
+       * A quarter of a tile is all the precision this file needs, and it is
+       * four presses cheaper per axis than `calibrate`'s default. Every point
+       * below is a tile *centre*, so an origin known to 16px still names the
+       * right tile with 16px to spare -- and the presses were the single
+       * largest cost in this test, measured at 72 s of a 174 s run before the
+       * dial existed.
+       */
+      const origin = await calibrate(page, await freeCalibrationSquare(page), TILE / 4);
       const map = await reachability(page, origin);
       const centre = (line: number, along: number, axis: 'x' | 'y'): TileCentre => {
         const tx = axis === 'x' ? along : line;
@@ -396,12 +420,36 @@ test.describe('a wall drag that passes under a HUD island (#878)', () => {
       for (const crossing of crossings) await assertRunBuilt(crossing);
 
       /*
-       * And the islands still take their own clicks, in the page state the
-       * drags just left. A fix that made the drag work by taking the pointer
-       * away from the HUD would be a worse defect than the one it closed, so
-       * this presses the tab bar -- `.hud-tabs__inner`, one of the five
-       * selectors in the rule that causes the truncation -- and a rail control
-       * with a state of its own.
+       * ---- and now the other half of the contract ---------------------
+       *
+       * A fix that made the drag work by taking the pointer away from the HUD
+       * would be a worse defect than the one it closed, so the counter-claims
+       * are asserted at every viewport, in the page state the drags just left,
+       * rather than once in a test of their own -- they cost six round trips
+       * here against a whole page load and a whole prison there.
+       *
+       * First: a press that *starts* on an island belongs to the island. The
+       * gesture is the one a player makes when they mean to scroll the
+       * catalogue and overshoot onto the world -- press on the panel, drag off
+       * it, release over the map. It must place no wall.
+       */
+      const list = (await page.locator('.hud-build__list').boundingBox())!;
+      const beforeIslandPress = (await sentCommands(page)).length;
+      await page.mouse.move(list.x + list.width / 2, list.y + 8);
+      await page.mouse.down({ button: 'left' });
+      await page.mouse.move(list.x - 320, list.y + 8, { steps: 4 });
+      await page.mouse.up({ button: 'left' });
+      await page.waitForTimeout(400);
+      expect(
+        (await sentCommands(page)).slice(beforeIslandPress).filter((command) => command['type'] === 'PlaceBuildOrder'),
+        `a drag that started on the Build panel placed a wall at ${viewport.width}x${viewport.height}. A press that lands on an island belongs to the island.`,
+      ).toEqual([]);
+
+      /*
+       * Second: the islands still answer their own clicks. The tab bar is
+       * `.hud-tabs__inner`, one of the five selectors in the rule that causes
+       * the truncation, and `Remove` is a rail control with a state only the
+       * panel can change.
        */
       await tab(page, 'overview').click();
       await expect(page.locator('.ui-tab[data-tab="overview"]')).toHaveAttribute('aria-current', 'true');
@@ -413,45 +461,4 @@ test.describe('a wall drag that passes under a HUD island (#878)', () => {
       await expect(page.locator('.hud-build__remove')).toHaveAttribute('aria-pressed', 'false');
     });
   }
-
-  /**
-   * The other half of the contract, and the half a careless fix breaks.
-   *
-   * A press that *starts* on an island belongs to the island. Nothing may turn
-   * a drag off the Build panel into a wall, and nothing may stop the panel
-   * hearing the press -- so this asserts both, on the same gesture: no build
-   * order was submitted, and the panel still changes state on a click.
-   */
-  test('leaves a press that starts on a HUD island to the island (#878)', async ({ page }) => {
-    test.slow();
-
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await installTee(page);
-    await openApp(page);
-    await page.getByRole('button', { name: 'New prison' }).click();
-    await expect(page.locator('.hud-clock__day')).toHaveText('1');
-    await tab(page, 'build').click();
-    await armBuildable(page, 'wall-brick');
-
-    const before = (await sentCommands(page)).length;
-
-    // The shape a player makes when they mean to scroll the catalogue and
-    // overshoot onto the world: press on the panel, drag off it, release.
-    const list = (await page.locator('.hud-build__list').boundingBox())!;
-    await page.mouse.move(list.x + list.width / 2, list.y + 8);
-    await page.mouse.down({ button: 'left' });
-    await page.mouse.move(list.x - 320, list.y + 8, { steps: 12 });
-    await page.mouse.up({ button: 'left' });
-    await page.waitForTimeout(400);
-
-    expect(
-      (await sentCommands(page)).slice(before).filter((command) => command['type'] === 'PlaceBuildOrder'),
-      'a drag that started on the Build panel placed a wall. A press that lands on an island belongs to the island.',
-    ).toEqual([]);
-
-    // And the panel is still live: `Remove` is a toggle whose state only the
-    // panel can change.
-    await page.locator('.hud-build__remove').click();
-    await expect(page.locator('.hud-build__remove')).toHaveAttribute('aria-pressed', 'true');
-  });
 });
