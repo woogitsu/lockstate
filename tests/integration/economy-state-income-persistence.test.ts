@@ -180,20 +180,52 @@ const ONE_DAY_WAGES = 400;
  * construction container starts empty, and ADR 0017 decision 7 -- *"materials
  * are just-in-time by default; holding is permitted, never required"* -- means
  * an order now buys what it needs at the moment it is placed. Measured on this
- * tree: **two** of the four buy, for 2 `item.brick` each at 40, and the other
- * two buy nothing because the scenario's own carry jobs have moved twelve
- * bricks into that container by the time they are placed. So 4 x 40 = 160, once,
- * at tick 0, and never again.
+ * tree: **three** of the four buy, for 2 `item.brick` each at 40, and the
+ * fourth buys nothing because the scenario's own carry jobs have moved bricks
+ * into that container by the time it is placed. So 6 x 40 = 240, once, at tick
+ * 0, and never again.
  *
- * That the other two buy nothing is the *"holding is permitted"* half working,
- * and it is why this constant is 160 rather than 320. It is written out here
+ * That the fourth buys nothing is the *"holding is permitted"* half working,
+ * and it is why this constant is 240 rather than 320. It is written out here
  * rather than read off the runtime for `ONE_DAY_WAGES`'s reason -- a figure
  * derived from the code under test agrees with any implementation -- and the
  * first case below anchors it against the scenario that produces it.
+ *
+ * **It is no longer spent all at once, and that is the second thing ADR 0093
+ * moved here.** At tick 40 three orders have bought (240); the fourth buys its
+ * two bricks later in the first day, as the container drains and the carry has
+ * still not delivered, taking the settled figure to 320. So this file needs two
+ * constants where it needed one, and the pair is the measurement: the
+ * by-tick-40 figure anchors the first case and the settled figure anchors every
+ * balance from tick 1,200 onwards. Nothing buys after that -- the day-two assertions hold against the
+ * same settled figure.
+ *
+ * **This constant was 160 until
+ * [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md), and the old value is
+ * kept here rather than overwritten because the *reason* it moved is the
+ * decision.** Two of the four used to buy nothing, because the scenario's two
+ * carry jobs had moved *twelve* bricks into the container by the time the
+ * fourth order was placed: `operations.jobs` ran at order 260 every five ticks
+ * and resolved each leg into a teleport, so both jobs finished almost
+ * immediately whatever the regime said. A carry is an action now -- chosen by
+ * an idle prisoner whose block allows `work`, and **walked** -- so fewer bricks
+ * have arrived by tick 0 and one more wall pays for its own.
+ *
+ * ADR 0093 decision 6 names the files whose numbers move for exactly this
+ * reason and says why it is acceptable: *"determinism is a promise of
+ * reproducibility, not of stability across a decided change in behaviour"*. It
+ * names `tests/helpers/determinism-scenario.ts` and its determinism
+ * dependants; **this file is a fourth dependant it did not name**, reached
+ * through the same helper, and that is worth recording rather than silently
+ * fixing.
  */
-const SCENARIO_JUST_IN_TIME_MATERIALS = 160;
-/** What the scenario holds once its walls have paid for themselves. */
-const OPENING_BALANCE = 25_000 - SCENARIO_JUST_IN_TIME_MATERIALS;
+const SCENARIO_JUST_IN_TIME_MATERIALS_BY_TICK_40 = 240;
+/** And what the four of them have spent by the time the first day settles. */
+const SCENARIO_JUST_IN_TIME_MATERIALS_SETTLED = 320;
+/** What the scenario holds at tick 40, with one wall still to pay for itself. */
+const BALANCE_AT_TICK_40 = 25_000 - SCENARIO_JUST_IN_TIME_MATERIALS_BY_TICK_40;
+/** What the scenario holds once every wall has paid for itself. */
+const OPENING_BALANCE = 25_000 - SCENARIO_JUST_IN_TIME_MATERIALS_SETTLED;
 /** What one settled in-game day actually moves the balance by: 1,200 in, 400 out. */
 const ONE_DAY_NET = ONE_DAY_PAYMENT - ONE_DAY_WAGES;
 
@@ -209,15 +241,17 @@ describe('a mid-day save neither loses the partial day nor pays for it twice', (
     expect(runtime.payroll.dailyWageBillMinorUnits(), 'five guards at the catalogue`s 80 a day').toBe(ONE_DAY_WAGES);
     expect(
       runtime.treasury.balanceMinorUnits,
-      'nothing has been paid yet: the first day boundary is at tick 2,399 -- but the walls have bought their bricks (#627)',
-    ).toBe(OPENING_BALANCE);
-    // The anchor for the literal above: exactly two just-in-time purchases,
-    // for the two orders placed before the carry jobs had delivered anything.
-    // A third would mean the deficit stopped netting off stock already held.
+      'no state income has been paid yet: the first day boundary is at tick 2,399 -- but three of the walls have bought their bricks (#627)',
+    ).toBe(BALANCE_AT_TICK_40);
+    // The anchor for the literal above: exactly three just-in-time purchases at
+    // this tick, for the three orders placed before the carry jobs had
+    // delivered anything. A fourth here would mean the deficit stopped netting
+    // off stock already held.
     expect(
       runtime.procurement.pendingDeliveries.map((delivery) => [delivery.itemId, delivery.quantity, delivery.paidMinorUnits]),
-      'two orders bought two bricks each; the other two found bricks already in the container',
+      'three orders bought two bricks each; the fourth found bricks already in the container',
     ).toEqual([
+      ['item.brick', 2, 80],
       ['item.brick', 2, 80],
       ['item.brick', 2, 80],
     ]);

@@ -650,6 +650,34 @@ export const HUD_MESSAGE_KEY = {
   securityCoverageShortHint: 'hud.security.coverage-short-hint',
   securityCoverageUnguarded: 'hud.security.coverage-unguarded',
   securityCoverageUnguardedHint: 'hud.security.coverage-unguarded-hint',
+  /**
+   * **What an empty post costs, on the one rung where the cost is total** --
+   * the owner's chosen sentence of 2026-09-03, and the only sentence in this
+   * registry that states a consequence of a staffing state rather than the
+   * state or the action.
+   *
+   * The paragraph above says two of the three hints "name the **action**
+   * rather than restating the diagnosis". This is the third thing a coverage
+   * block can be about and it is neither: `securityCoverageUnguardedHint`
+   * keeps the action and its count, and this says what is being paid while
+   * nobody presses it. It is a separate key rather than a longer hint because
+   * the two have different lifetimes -- a rebalanced requirement rewords the
+   * action, a rebalanced provisioning table rewords this -- and because the
+   * hint is line-clamped at short viewports and this sentence is a whole
+   * clause or nothing (`.hud-staff__coverage-consequence` in `./hud.css`,
+   * which follows `.hud-staff__hire-unassigned`'s exemption).
+   *
+   * **Only on the `unguarded` rung, and that is a fact about the multiplier
+   * rather than about emphasis.** `SAFETY_COVERAGE_PROVISION_MULTIPLIER`
+   * (`src/simulation/prisoners/needs.ts`) is `1` / `0.5` / `0` over
+   * `covered` / `understaffed` / `unguarded`, so this is the one rung where
+   * the provisioning is *nothing* and the sentence's "nobody" is exact. The
+   * middle rung still costs a long-stayer their safety and is deliberately
+   * left unsaid here: at half provisioning the net rate is -0.01 a tick and
+   * the sentence would need a different verb, which is copy nobody has
+   * authored.
+   */
+  securityCoverageUnguardedConsequence: 'hud.security.coverage-unguarded-consequence',
 
   /**
    * Labels for the two `BUILDABLE_REGISTRY` entries whose ids name no content

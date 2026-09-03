@@ -71,6 +71,47 @@ describe('Container: transactional reserve/withdraw/deposit', () => {
     expect(container.reservedOf('item.brick')).toBe(0);
   });
 
+  /**
+   * **A snapshot is a fixed point of itself**, which is the property
+   * `tests/determinism/snapshot-restore-fidelity.test.ts` requires of every
+   * subsystem and which this class did not have.
+   *
+   * `withdrawReserved` writes `stock.set(itemId, 0)` rather than deleting the
+   * key, so an emptied item used to keep emitting `[itemId, 0, 0]` -- while
+   * `loadSnapshot` writes back only rows with a positive quantity or
+   * reservation. `getSnapshot() -> loadSnapshot() -> getSnapshot()` therefore
+   * lost the row, silently.
+   *
+   * **It was latent for as long as the class has existed and was found from
+   * the other end**: the determinism scenario's containers only *end* a run
+   * empty of an item since
+   * [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) made a carry take
+   * a work block to happen, and the fidelity gate then failed on
+   * `[["item.brick",0,0]]` against `[]`. That gate is a whole-runtime
+   * comparison, so it can only fail while some scenario happens to reach the
+   * state; this asserts the property directly, on the two lines that decide
+   * it.
+   */
+  it('is a fixed point of its own snapshot, including for an item emptied to zero', () => {
+    const container = new Container('c1');
+    container.deposit('item.brick', 4);
+    container.reserve('item.brick', 4);
+    expect(container.withdrawReserved('item.brick', 4).ok).toBe(true);
+    // The state that used to break the round trip: the key is still in `stock`,
+    // holding 0. Asserted through the public reading, so this does not depend
+    // on the private map.
+    expect(container.quantityOf('item.brick')).toBe(0);
+    expect(container.reservedOf('item.brick')).toBe(0);
+
+    const once = container.getSnapshot();
+    const restored = new Container('c1');
+    restored.loadSnapshot(once);
+    expect(restored.getSnapshot(), 'the snapshot did not survive its own round trip').toEqual(once);
+    // And the row is omitted rather than carried as zeroes, which is the half
+    // that makes the two sides agree.
+    expect(once).toEqual([]);
+  });
+
   it('snapshot/restore round-trips stock and reservations', () => {
     const container = new Container('c1');
     container.deposit('item.brick', 10);

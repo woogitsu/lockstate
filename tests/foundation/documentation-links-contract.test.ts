@@ -246,6 +246,46 @@ const ABSENT_BY_DESIGN: ReadonlyMap<string, string> = new Map([
     // subdirectory, which is why a planted one was needed at all.
     'named by that note as the offender it planted below a non-recursive scan root, removed after measuring',
   ],
+  /*
+   * **Four dated audit records naming two files ADR 0093 deleted.**
+   *
+   * The 2026-08-26 audit pass measured `JobSystem` and the test file that
+   * covered it, at line numbers that were correct that day.
+   * [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 4 retired
+   * the class -- a carry is an `ActionDefinition` now, so the walk belongs to
+   * `prisoners.actions` and the stock half survives as
+   * `src/simulation/operations/carry-executor.ts` -- and the test file was
+   * renamed with it.
+   *
+   * **These are allowlisted rather than edited, and `docs/research/README.md`
+   * is why**: *"a record here does not become wrong, it becomes older."* An
+   * audit note is a statement about the tree on the day it was taken, and
+   * repointing its citations at a file that did not exist then would make the
+   * record less true rather than more. `documentation-source-anchor-contract.test.ts`
+   * already takes the same position from the other side -- it does not police
+   * ranges under `docs/research/` at all, and pins the broken ones as a
+   * positive control instead.
+   *
+   * Each is true as written of the commit it was written at, which is the
+   * standard this allowlist sets. They are keyed on the pair, so none of them
+   * excuses a *new* citation of either path anywhere else.
+   */
+  [
+    'docs/research/audit-2026-08-26/04-architecture.md -> src/simulation/operations/job-system.ts',
+    'named by the 2026-08-26 architecture audit, at a commit where the file existed; ADR 0093 deleted it',
+  ],
+  [
+    'docs/research/audit-2026-08-26/05-performance.md -> src/simulation/operations/job-system.ts',
+    'named by the 2026-08-26 performance audit, at a commit where the file existed; ADR 0093 deleted it',
+  ],
+  [
+    'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts',
+    'named by the 2026-08-26 bug hunt, at a commit where the file existed; ADR 0093 deleted it',
+  ],
+  [
+    'docs/research/audit-2026-08-26/09-bug-hunt.md -> tests/unit/operations-job-system.test.ts',
+    'named by the 2026-08-26 bug hunt; ADR 0093 renamed the file operations-carry-executor.test.ts with the class it tests',
+  ],
 ]);
 
 /** `source -> path`, the key `ABSENT_BY_DESIGN` is written in. */
@@ -377,8 +417,23 @@ describe('every rooted path cited in the documentation is on disk', () => {
  *   `docs/adr/0007-navigation-work-budgets-and-flow-fields.md`. The contract
  *   written to catch confident pointers at files that are not there carried
  *   one in its own explanation of what it catches, for as long as it has
- *   existed: `7a887b3` wrote that sentence on 2026-08-24 and nothing touched
- *   the filename in it until 2026-08-28. That is the best argument this block
+ *   existed: `ea98c353` wrote that sentence on 2026-08-24 and nothing touched
+ *   the filename in it until 2026-08-28.
+ *
+ *   **This cited an intermediate commit of its own branch until 2026-09-03,
+ *   when a branch cleanup orphaned it.** That commit's subject was
+ *   byte-identical to `ea98c353`'s apart from the issue number the squash
+ *   renumbered, and it carried this very sentence with this very filename in
+ *   it -- but it was only ever reachable from
+ *   `claude/doc-path-citation-gate`, so deleting that branch left the
+ *   citation resolvable by nobody, `documentation-commit-citation-contract`
+ *   included. **The orphaned sha is deliberately not quoted here**: writing it
+ *   in the citation form fails the same gate, `UNPUBLISHED_BY_ORIGIN` is empty
+ *   by design and its own comment calls that emptiness *"a state to defend
+ *   rather than a gap"*, and the one entry it ever held was settled by naming
+ *   the published commit instead. Squash-merging leaves every intermediate
+ *   commit on the branch and nowhere else, so a citation naming one carries a
+ *   deletion date it does not print. That is the best argument this block
  *   has for existing, so it is written here rather than left in a commit
  *   message.
  *

@@ -1369,6 +1369,15 @@
 
 .hud-staff__coverage-summary { color: var(--text-heading); }
 
+/* The consequence sentence under the coverage hint, on the `unguarded` rung
+   only (the owner's wording of 2026-09-03). `--text-heading` rather than the
+   eyebrow's own muted colour, and no tone of its own: the block already carries
+   `data-tone="danger"` and the badge already carries the colour, so a third red
+   thing in one block would state one fact three times and leave the badge
+   nothing to be louder than. What this rule buys is that the sentence does not
+   read as a footnote to the instruction above it -- it is the reason for it. */
+.hud-staff__coverage-consequence { color: var(--text-heading); }
+
 /* The held-guards section (ADR 0034). Same gutter and hairline as
    `.hud-staff__actions` above it, so the two regions of one panel do not read as
    two designs -- and `display: none` on `[hidden]` for the trap
@@ -2410,6 +2419,26 @@
      This note is never hidden in any case: it quotes no figure, so there is no
      state in which it is unsafe to say. */
   .hud-staff__hire-unassigned {
+    display: block;
+    -webkit-line-clamp: none;
+    overflow: visible;
+  }
+
+  /* The coverage block's consequence sentence, exempted on exactly the terms
+     the note above is and for the reason that note's own comment gives: the
+     clamp keeps the notes "a clipped line still leaves usable", and this one is
+     not one of those. *"No guard is posted here, so nobody in this"* is not a
+     shorter version of the sentence, it is a different and worse one -- the
+     clause the clamp would cut is the whole of what the sentence adds to the
+     `Unguarded` badge three lines up. A whole clause or nothing, and it is
+     already nothing on the two rungs where it has nothing to say.
+
+     `.hud-staff__note[hidden]` above still wins over this rule for the reason
+     stated there -- a class and an attribute against one class -- which this
+     one relies on rather than merely tolerates: unlike
+     `.hud-staff__hire-unassigned` this note *is* hidden, on two of the three
+     rungs. */
+  .hud-staff__coverage-consequence {
     display: block;
     -webkit-line-clamp: none;
     overflow: visible;

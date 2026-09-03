@@ -374,18 +374,59 @@ describe('a populated prison survives save -> load', () => {
     expect(restored.navigation.doors.getById('door-1')?.state).toBe(originalState);
   });
 
-  it('keeps its operations running: container stock, carry jobs and job workers', () => {
+  it('keeps its operations running: container stock and carry jobs, with their carriers derived', () => {
     const runtime = buildPopulatedPrison();
+    /*
+     * **Stepped past the first work block, and only in this test.**
+     * `buildPopulatedPrison` stops at 200 ticks, which was enough while
+     * `operations.jobs` ran every five ticks from tick 0 and teleported each
+     * leg. Since [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) a
+     * carry is chosen by an idle prisoner whose block allows `work`, and
+     * `GENERAL_POPULATION_REGIME`'s first work block opens at 500 -- so at 200
+     * no job has a carrier and the assertion below would be vacuous.
+     *
+     * The extra ticks are taken here rather than in the fixture because the
+     * other fifteen tests in this file are about states that exist at 200 and
+     * moving the fixture would re-time all of them for one test's benefit.
+     *
+     * Stepped until a carry is genuinely **in flight** rather than to a fixed
+     * tick: the derived link this test is about only exists while a job is
+     * non-terminal, so a horizon past completion would make the assertion
+     * vacuous and a horizon pinned to a measured tick would fail on any change
+     * that moved it by one.
+     */
+    const inFlight = (): boolean =>
+      runtime.jobs.allSorted().some((job) => job.assignedWorkerId !== undefined && job.state !== 'completed' && job.state !== 'failed' && job.state !== 'cancelled');
+    for (let tick = 0; tick < 900 && !inFlight(); tick += 1) step(runtime, 1);
+    expect(inFlight(), `no carry was in flight within 900 ticks: ${JSON.stringify(runtime.jobs.allSorted())}`).toBe(true);
 
     const storeBefore = runtime.containers.require('store').quantityOf('item.brick');
-    const jobsBefore = runtime.jobs.allSorted().map((job) => ({ id: job.id, state: job.state }));
+    const jobsBefore = runtime.jobs.allSorted().map((job) => ({ id: job.id, state: job.state, worker: job.assignedWorkerId }));
     expect(jobsBefore.length).toBeGreaterThan(0);
-    expect(runtime.jobWorkers.getSnapshot().workers.length).toBeGreaterThan(0);
+    /*
+     * **The worker pool used to be asserted here and is gone**
+     * ([ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 4).
+     * This read `expect(runtime.jobWorkers.getSnapshot().workers.length)
+     * .toBeGreaterThan(0)` and then compared the restored pool against it;
+     * `JobWorkerPool` is retired, `operations.jobWorkers` is written empty and
+     * ignored on read (decision 5), and the fact the pool carried -- which
+     * prisoner is on which errand -- is `assignedWorkerId` on the job. So the
+     * assertion moved to the job rather than being dropped, and it is a
+     * stronger one: the link comes back **derived**, rebuilt by
+     * `JobBoard.loadSnapshot` from a field the save already held.
+     */
+    const carriersBefore = jobsBefore.filter(
+      (job) => job.worker !== undefined && job.state !== 'completed' && job.state !== 'failed' && job.state !== 'cancelled',
+    );
+    expect(carriersBefore.length, 'the fixture is only meaningful if some job actually has a carrier').toBeGreaterThan(0);
 
     const restored = saveAndLoad(runtime);
 
     expect(restored.containers.require('store').quantityOf('item.brick')).toBe(storeBefore);
-    expect(restored.jobWorkers.getSnapshot().workers).toEqual(runtime.jobWorkers.getSnapshot().workers);
+    expect(restored.jobs.allSorted().map((job) => job.assignedWorkerId)).toEqual(jobsBefore.map((job) => job.worker));
+    for (const job of carriersBefore) {
+      expect(restored.jobs.activeJobFor(job.worker!)?.id, `the carrier of ${job.id} came back from the board`).toBe(job.id);
+    }
     // Travel is deliberately restarted (a path request belonged to the old
     // navigation queue), so job identity and progress are what must survive,
     // not the exact lifecycle state of a job mid-leg.

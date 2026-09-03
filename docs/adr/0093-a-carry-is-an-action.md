@@ -2,23 +2,51 @@
 
 ## Status
 
-**Proposed, 2026-09-02. Not self-approved.** Nothing below is implemented and
-no code on this branch does any of it; the branch carries this document and one
-foundation test that pins the incoherence the document is about, as the tree
-has it today. A reader who disagrees with a decision here should treat it as
-open — the argument is the whole of the warrant.
+**Accepted, 2026-09-03, by the repository owner — all six decisions, and
+nothing this document reserves.** Shown this document's six decisions as
+written — including the amendment of 2026-09-02 already inside it and the three
+player-facing sentences it says it cannot write — they answered *"Zaakceptuj
+ADR 0093 i wdrożę mechanikę"* (accept ADR 0093 and the mechanic will be
+implemented). That approves decisions 1 through 6 and the costs each states,
+and it approves nothing wider:
 
-**What the owner decided, and what they did not.** On 2026-09-02 the owner
-ruled on issue [#600](https://github.com/matmaxalez/lockstate/issues/600)
-between the three options pull request #811 priced for *who owns a working
-prisoner's body*, and chose the third with its cost in front of them: **a carry
-is an action** — the job system's carry becomes a `work`-category
-`ActionDefinition` whose target is a job on the board, so one authority moves
-the prisoner and the use claim *is* the job. That ruling is why this document
-is about option (c) and not about (a) or (b), and it is recorded below as the
-reason the option is taken. **It is not a signature on the design of (c) that
-follows.** Everything under *Decision* is this document's own answer to what
-(c) leaves open, and every one of those answers is proposed.
+- **The three sentences under *What is owed to the owner* are still owed.** The
+  action's label, the standing condition for a delivery waiting in a bay with
+  nobody to carry it, and whatever the detail panel says about goods in hand
+  remain the owner's under `AGENTS.md`'s fourth exclusion. An approval to build
+  the mechanic is not an approval to write them.
+- **The three open questions are still open.** Whether a carrier is
+  interruptible by a regime change, what the cancel path owes a player, and
+  whether a `'carrier-departed'` job deserves a notice were put to the owner as
+  the owner's and were not answered by this ruling.
+- **Nothing in *What would change my mind* is retracted by the acceptance.** The
+  passage records what the document thought its weakest claim was, and the
+  owner's amendment already overruled it; both are kept as they stand.
+
+**This cell read `Proposed, 2026-09-02. Not self-approved` until the
+acceptance, and what it said is kept rather than overwritten**
+(`docs/AGENT_WORKFLOW.md` §4: mark both directions). It read: *"Nothing below
+is implemented and no code on this branch does any of it; the branch carries
+this document and one foundation test that pins the incoherence the document is
+about, as the tree has it today. A reader who disagrees with a decision here
+should treat it as open — the argument is the whole of the warrant."* The first
+half of that stopped being true with the change that landed the mechanic; the
+second half is what the acceptance replaces.
+
+**What the owner decided on 2026-09-02, and what they did not decide then.** On
+2026-09-02 the owner ruled on issue
+[#600](https://github.com/matmaxalez/lockstate/issues/600) between the three
+options pull request #811 priced for *who owns a working prisoner's body*, and
+chose the third with its cost in front of them: **a carry is an action** — the
+job system's carry becomes a `work`-category `ActionDefinition` whose target is
+a job on the board, so one authority moves the prisoner and the use claim *is*
+the job. That ruling is why this document is about option (c) and not about (a)
+or (b), and it is recorded below as the reason the option is taken. **It was not
+a signature on the design of (c) that follows** — that came separately, on
+2026-09-03, and is the section above. This paragraph used to end *"and every one
+of those answers is proposed"*; it is kept in its corrected form because the
+two-stage shape is the record: the option was chosen on one day and its design
+signed on another.
 
 Measured on v0.0.364 (`1547c7f6`), the head of `main` when this branch was cut.
 Every `file:line` below was opened at that commit.
@@ -48,7 +76,9 @@ lands first turns out to hold 0093: this file, its row in `docs/adr/README.md`
 and every citation of "ADR 0093" move together.
 
 **The document sets its own status and the index only reports it.** The row
-added in this commit says `Proposed`, because this section does.
+added in this commit said `Proposed`, because this section did; it says
+`Accepted` now, because this section does. The direction of that dependency is
+the point and has not changed.
 
 ### What this document rests on, and where it corrects its own brief
 
@@ -96,7 +126,7 @@ was written. No save version moves.
 `JobSystem` is constructed at `src/simulation/runtime/new-session.ts:860` and
 registered at `src/simulation/runtime/new-session.ts:1400`. It declares
 `id = 'operations.jobs'`, `order = 260` and `schedule = { intervalTicks: 5 }`
-(`src/simulation/operations/job-system.ts:78-80`), and the order is pinned at
+(`job-system.ts:78-80`, a file this decision **deletes**), and the order is pinned at
 `tests/determinism/kernel-system-order.test.ts:434`. So it is not dead code and
 not declared-and-never-called: it runs on every session's kernel, every five
 ticks.
@@ -104,14 +134,14 @@ ticks.
 What it is handed is nothing. `JobBoard.submitCarryItem` has exactly one
 occurrence under `src/` and it is the declaration
 (`src/simulation/operations/job.ts:106`); `JobWorkerPool.register`
-(`src/simulation/operations/job-system.ts:28`) is called from no file under
+(`job-system.ts:28`, in the file this decision **deletes**) is called from no file under
 `src/`. The only things in this repository that ever put a job on a board or a
 prisoner in the pool are two test helpers doing so by hand
 (`tests/helpers/determinism-scenario.ts:188` and `:195`;
 `tests/determinism/job-performing-restart-bound.test.ts:62` and `:65`). The
 adapter that would move a prisoner for a job says of itself that no prisoner is
 registered by default and that doing so is *"a session/scenario/future-regime
-decision"* (`src/simulation/prisoners/job-worker-adapter.ts:12-16`). #811 calls
+decision"* (`job-worker-adapter.ts:12-16`, in the file this decision **deletes**). #811 calls
 this a consumer with no writer, the mirror image of the dead-room shape, and
 that is exact.
 
@@ -157,7 +187,7 @@ were found working:
 
 The carry completed at tick 691 — pickup dwell, `withdrawReserved`, a route to
 the depot, and `PrisonerJobWorkerAdapter.setPositionTile`
-(`src/simulation/prisoners/job-worker-adapter.ts:40`) writing the destination
+(`job-worker-adapter.ts:40`, in the file this decision **deletes**) writing the destination
 tile when the route resolved. From that tick the prisoner stands **26 tiles**,
 by Manhattan distance, from the nearest tile of the kitchen rectangle (#811's
 "eighteen" is the Chebyshev distance from the room's anchor; both say *out of
@@ -196,7 +226,7 @@ checked rather than asserted:
   `writeTile` closure `LocomotionSystem` advances a walk through.
 - `src/simulation/prisoners/prisoner-operations-runtime.ts:959` — admission,
   placing a new prisoner on the origin tile before intake.
-- `src/simulation/prisoners/job-worker-adapter.ts:43` — the job system's
+- `job-worker-adapter.ts:43` (in the file this decision **deletes**) — the job system's
   write, and the one that is *external* to the action path.
 
 And every caller of `LocomotionStore.cancelWalk` on a prisoner:
@@ -291,9 +321,13 @@ ever *told* that a prisoner skipped an errand because they were hungry. That is
 a player-facing sentence and therefore the owner's; it joins the three
 sentences this document already owes them.
 
-**This amendment does not make the document `Accepted`.** The owner ruled on
-decision 2's ordering and on nothing else; the other five decisions carry the
-same warrant they had, which is the argument and not a signature.
+**This amendment did not make the document `Accepted`.** The owner ruled on
+decision 2's ordering and on nothing else; the other five decisions carried the
+same warrant they had, which was the argument and not a signature. **The
+signature came the next day** — 2026-09-03, recorded in the *Status* section
+above — and this paragraph is kept in the past tense rather than deleted,
+because the gap between the ruling and the acceptance is a fact about how this
+decision was made.
 
 ## Decision
 
@@ -334,7 +368,7 @@ below is a balance number:
   ceiling to read; the ceiling on how many prisoners carry is how many jobs are
   on the board.
 - **`minDurationTicks: 5`**, which is `PICKUP_DROPOFF_DURATION_TICKS`
-  (`src/simulation/operations/job-system.ts:63`) moved into the catalogue: the
+  (`job-system.ts:63`, in the file this decision **deletes**) moved into the catalogue: the
   dwell at *each end* of a leg, not the action's life. **A carry's life is the
   job's**: it ends when the job reaches `completed`, `failed` or `cancelled`,
   and `continuePerforming`'s `elapsed >= action.minDurationTicks` test means,
@@ -569,7 +603,7 @@ nothing that names an entity model. What moves where:
   behaviour. **ADR 0037 holds without amendment**: the two cases it decides
   (a reservation on the pickup leg, goods in hand on the drop-off leg) are
   still exhaustive, `compensateHeldStock` is still the one implementation for
-  both paths, and `tests/unit/operations-job-system.test.ts`'s conservation
+  both paths, and `operations-job-system.test.ts`'s conservation
   pins move with the code rather than being rewritten.
 - `performingSince` is deleted: the dwell timer is `phaseStartedAtTick`, which
   the save carries (decision 5).
@@ -708,7 +742,61 @@ is *"not a candidate"* rather than *"ranked last"*.
 ## What this changes in the code, if it stands
 
 Named so the landing change can be reviewed against a list rather than
-discovered. Nothing here is done on this branch.
+discovered.
+
+**BUILT, and the sentence that used to end this paragraph is kept because it
+is what changed.** It read *"Nothing here is done on this branch."* Every item
+below except **9** landed with the owner's acceptance of 2026-09-03; item 9 is
+the `PrisonCondition` member, and it is **deliberately not built** because its
+sentence is one of the three under *What is owed to the owner* and
+`AGENTS.md`'s fourth exclusion reserves it. A condition with no authored
+sentence behind it is exactly the defect that exclusion exists for.
+
+**Three things the landing change found that this document had wrong, recorded
+here rather than in a commit message nobody keeps:**
+
+1. **The route gates on each room being *furnished*, not merely zoned.**
+   Decision 2 says the producer applies *"when a delivery comes due and both
+   rooms exist"*. Built to that letter, **it bricks a new prison**, and it was
+   measured rather than argued: zone a bay and a storeroom before the first
+   cell is furnished and every delivery lands in the bay needing a carrier —
+   but the only carriers are prisoners, a prisoner is not admitted without a
+   bed, and the bed is a build order waiting on the bricks in the bay. On the
+   probe prison intake never completed, `actionIndex` stayed `-1` for 2,400
+   ticks, and 24 delivery jobs sat `available` for ever. The gate is therefore
+   *"both rooms work"*, tested the way every other room-gated behaviour in this
+   repository is tested — the capability the room's own authored requirement
+   names is standing in it (`'delivery-access'`, `'item-storage'`, both of
+   which `tests/foundation/content-vocabulary-contract.test.ts` already
+   recorded as awaiting exactly this consumer). No balance number, and the
+   bootstrap dissolves by construction: the dock door and the racks are build
+   orders paid for by deliveries that still land directly.
+2. **A restored carrier is resumed by re-selection, not re-seated as
+   `travelling`.** Decision 5 sketched *"a carrier is instead re-seated from
+   the board after it loads — `actionIndex` the carry, `travelling`, no
+   request"*. `PrisonerOperationsRuntime.loadSnapshot` already drops every
+   traveller to `idle`, and a prisoner's own active job makes the carry
+   providable again, so the existing path resolves the leg the job records from
+   the tile the save carried. Same one restore rule, reached without adding a
+   path. The other direction — a job whose carrier is not in this session — is
+   `CarryJobExecutor.reconcileRestoredJobs`, as decision 5 requires.
+3. **Decision 5's restore bound is two reconsideration cycles, not one.** It
+   predicted *"a restored carrier loses at most one reconsideration cycle to
+   the travel restart"*; measured, the worst mid-walk capture costs **40
+   ticks**, because a restored traveller pays the cycle twice — dropped to
+   `idle` (up to 20), then the request-then-collect handshake (up to 20 more).
+   That is what *every* action costs across a restore (ADR 0059 open question
+   3), so the prediction is corrected and the code is not.
+
+**And one thing outside this document's own surface, found by building it:**
+`Container.getSnapshot` was not a fixed point of `Container.loadSnapshot`.
+`withdrawReserved` writes `stock.set(id, 0)` rather than deleting the key, so
+an emptied item kept emitting `[id, 0, 0]` while the reader wrote back only
+positive rows. Latent for as long as the class has existed; reachable for the
+first time because a carry now takes a work block to happen, so the
+determinism scenario's container *ends* a run empty. Fixed by omitting rows
+that hold nothing, which changes no behaviour — `quantityOf`, `reservedOf` and
+`availableOf` answer `0` either way.
 
 1. `src/simulation/prisoners/actions.ts` — the third `ActionTarget` kind and
    one appended entry.
@@ -716,11 +804,11 @@ discovered. Nothing here is done on this branch.
    `planIdleSelection`, `prisonProvides`, `resolveTargetInstance`,
    `beginNextAction`, `continueTravelling`, `arrive`, `continuePerforming`;
    the constructor takes the board and the executor.
-3. `src/simulation/operations/job-system.ts` — `JobSystem` and
+3. `operations/job-system.ts` (**deleted**) — `JobSystem` and
    `JobWorkerPool` removed; the executor extracted; `JobWorkerAdapter`
    removed. `src/simulation/operations/job.ts` — `activeJobFor` and its
    derived map; `'carrier-departed'` appended to `CARRY_JOB_FAIL_REASONS`.
-4. `src/simulation/prisoners/job-worker-adapter.ts` — deleted.
+4. `prisoners/job-worker-adapter.ts` — deleted.
 5. `src/simulation/prisoners/release.ts` and
    `prisoner-operations-runtime.ts` — the release port and the restore rule.
 6. `src/simulation/runtime/new-session.ts` and `session-systems.ts` — no
@@ -730,15 +818,32 @@ discovered. Nothing here is done on this branch.
    `operations/` — the landing change decides the file; this document decides
    that it is derived.
 9. `src/simulation/protocol/types.ts` — one `PrisonCondition` member for a
-   delivery waiting for a carrier (sentence owed).
+   delivery waiting for a carrier (sentence owed). **NOT BUILT**: see the
+   paragraph above this list.
 10. Tests: the catalogue gate extended; the order pin moved; the determinism
-    scenario and its three dependants re-pinned; `job-performing-restart-bound`
-    rewritten; `operations-job-system.test.ts` retargeted at the executor;
+    scenario and its dependants re-pinned; `job-performing-restart-bound`
+    rewritten; `operations-job-system.test.ts` retargeted at the executor and
+    renamed `operations-carry-executor.test.ts` with the class it tests;
     `two-authorities-one-prisoner-contract.test.ts`'s second half rewritten to
-    say what a carrying prisoner *is*.
+    say what a carrying prisoner *is*. **Two additions this list did not
+    foresee:** `job-production-contract.test.ts` is rewritten rather than
+    re-pinned — both of its zeroes move and its call-site scan inverts from
+    `toEqual([])` to exactly one caller — and
+    `tests/integration/carry-need-threshold.test.ts` is new, because the
+    owner's amendment of 2026-09-02 had no guard at all. **A fourth
+    determinism dependant appeared** that "its three dependants" did not name:
+    `tests/integration/economy-state-income-persistence.test.ts`, whose
+    just-in-time figure moves because fewer bricks have been carried into the
+    construction container by tick 0.
 11. Documents: ADR 0059's two sentences, `docs/OPERATIONS.md`'s exception,
-    `docs/PERSISTENCE.md:519`, `docs/DETERMINISM.md`'s matching limitation,
-    `docs/adr/README.md` rows for 0037 and 0059 if their status prose changes.
+    `docs/PERSISTENCE.md`'s `performingSince` exclusion,
+    `docs/DETERMINISM.md`'s matching limitation. **The `README.md` rows for
+    0037 and 0059 did not need changing**, because neither ADR's *status*
+    moved: 0037 holds without amendment and 0059's two sentences are corrected
+    in place inside the document. Also needed, and not on this list: the six
+    dated citations in `docs/research/audit-2026-08-26/` that point at the
+    deleted file, allowlisted rather than edited because
+    `docs/research/README.md` keeps those records read-only.
 
 ---
 
