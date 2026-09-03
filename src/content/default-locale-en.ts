@@ -1810,6 +1810,16 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // in the status strip changes.
   'display.scale.region': 'Interface scale',
   'display.scale.cycle': 'Change the interface scale',
+
+  // The accessible name of `<main id="app">` -- the whole application, not one
+  // region of it, which is why the namespace is `app.` and not `hud.` or
+  // `brand.`. It used to be `aria-label="Lockstate game application"` baked
+  // into `index.html` itself: correct text, wrong home, because the HTML shell
+  // loads before any `Localizer` exists and that string never passed through
+  // this catalogue or the pseudo-locale sweep that checks it. `src/main.ts`
+  // now sets it here, on the same element, as soon as the localizer is built.
+  // The wording is carried across unchanged; see `src/ui/app-shell-messages.ts`.
+  'app.shell.label': 'Lockstate game application',
 };
 
 /**
