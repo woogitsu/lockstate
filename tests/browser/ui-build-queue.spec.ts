@@ -62,6 +62,12 @@ function order(index: number, state: HudBuildQueueViewModel['orders'][number]['s
     tile: { x: 12, y: 30 + index },
     edge: index % 2 === 0 ? ('north' as const) : ('west' as const),
     state,
+    // Arbitrary and fixed: this file is about the block's layout and which
+    // control cancels which order, never about the figure's arithmetic --
+    // `tests/unit/construction-preview-cancel-refund.test.ts` and
+    // `tests/integration/construction-queue-row-pays-what-it-shows.test.ts`
+    // are where that is measured.
+    cancelRefundMinorUnits: 80,
   };
 }
 
