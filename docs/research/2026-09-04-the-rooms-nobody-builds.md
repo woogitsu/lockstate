@@ -408,9 +408,128 @@ free.
 
 ## 6. The four-room prison, one room at a time — act 3
 
-*(written from act 3's run; each phase is: wall, door, designate, furnish,
-then three in-game days at 4×, with the Regime roster and the inspector read
-at each day boundary.)*
+One prison, four prisoners, one guard, `prisonersCovered: 4` throughout. Each
+phase is wall → door → designate → furnish → three in-game days at 4×, with
+the Regime roster and the prisoner inspector read at each day boundary. Every
+room was **accepted on the first designation attempt**.
+
+### 6.1 The cell alone already serves four of the six needs
+
+**MEASURED, act 3, phase 0.** The furnished cell — 5 × 3, four beds, one
+toilet, one wooden door — published `roomCapacity: 4`,
+`accommodationCapacity: 4`, and once four prisoners were admitted
+`roomOccupants: 4`, `occupiedPlaces: 4`, `conditions: []`. The inspector on
+one prisoner, at admission and two days later:
+
+| | Hunger | Sleep | Hygiene | Bladder | Safety | Recreation |
+| --- | --- | --- | --- | --- | --- | --- |
+| day 0 | 89% | 92% | 91% | 80% | 91% | 93% |
+| day +2 | **97%** | **89%** | 50% | **51%** | **100%** | 62% |
+
+and the roster's worst-need column over the three days, all four prisoners:
+
+| | worst need on each row |
+| --- | --- |
+| day 0 | `Bladder 79, 68, 73, 80%` |
+| day +1 | `Bladder 44, 44, 44, 45%` |
+| day +2 | `Hygiene 50` / `Bladder 50, 50, 49%` |
+| day +3 | `Hygiene 29, 31, 32, 33%` |
+
+**Hunger rises to 97% in a prison with no canteen**, because
+`action.eat-in-cell` targets `own-accommodation`, needs no object capability
+and pays `hunger: 3` a tick (`src/simulation/prisoners/actions.ts:124-127`,
+VERIFIED, read). Sleep and bladder are the bed and the toilet; safety is the
+guard. **Only `hygiene` and `recreation` fall**, which is precisely what
+ADR 0054 decision 1 rules they should: they are room-gated by design.
+
+Of the twenty-one counts, over three days:
+
+```
+[act3] DELTA phase 0, cell only
+ticks 7988 -> 16180 (8192 ticks)
+  MOVED (2/21): stateIncomeAccruedTodayMinorUnits: 394 -> 890 | treasuryMinorUnits: 18175 -> 21535
+```
+
+### 6.2 The canteen is used, and it changes nothing a player can see
+
+**MEASURED, act 3, phase 1.** The canteen — 6 × 6, two dining tables, four
+benches, one door, 2,830 of materials — was accepted on the first attempt and
+furnished with no refusal. Building it took **7,087 ticks, nearly three
+in-game days** of clock, and in that time hygiene reached 0% and recreation
+2%, so the prison the canteen opened into was already at `Hunger 99%`.
+
+```
+[act3] DELTA the canteen arriving
+  MOVED (3/21): rooms: 1 -> 2 | stateIncomeAccruedTodayMinorUnits: 890 -> 834 | treasuryMinorUnits: 21535 -> 24895
+[act3] DELTA phase 1, three days with a canteen
+  MOVED (2/21): stateIncomeAccruedTodayMinorUnits: 834 -> 277 | treasuryMinorUnits: 24895 -> 29375
+```
+
+**`rooms: 1 → 2`, and that is the whole of it.** The accrual and the treasury
+are the clock's own — the accrual resets at each boundary and the treasury
+grows because a place pays 300 a day and a guard costs 80. Hunger over the
+three days that followed: `99% → 90%`. It was 97% before the canteen existed.
+
+**The canteen IS used, and the roster is where that shows.** MEASURED,
+phase 2 day +1 and day +2 — the first samples that happened to land outside
+the sleep block:
+
+> `Jonas Varga | Minimal | **Eating** | …` · `Viktor Yilmaz | Minimal |
+> **Eating** | …`
+>
+> and one day later, all four: `**Heading to Eating**`
+
+`Eating` is `action.eat-meal`, the canteen action; the cell-side sibling has
+its own distinct word, `Eating in Cell`
+(`src/content/simulation-message-keys.ts:165-166`, VERIFIED, read). So
+prisoners really do walk to the canteen and eat there.
+
+**And it makes no difference to anything.** `action.eat-meal` pays
+`hunger: 4` a tick against `action.eat-in-cell`'s `3`, into a need that was
+already sitting at 97% without it. **DERIVED:** hunger decays at 0.05 a tick
+(`NEED_DECAY_PER_TICK`, `src/simulation/prisoners/needs.ts:113`) and the three
+`meal` blocks total 300 ticks a day (`GENERAL_POPULATION_REGIME`,
+`src/simulation/prisoners/regime.ts:108,111,114`), so a day loses 120 levels
+and the cell route alone returns up to 900. **The canteen is a 33% faster
+route to a need that is not scarce.** It is the most expensive room in the
+game and, at four prisoners in a cell with a toilet, it is a no-op.
+
+That is the direct answer to the brief's *"build a canteen and there might be
+something to do"*: **there is not, and it is not because the canteen is
+broken — it is because the cell already feeds everybody.**
+
+### 6.3 The shower room is the room that works, and it works loudly
+
+**MEASURED, act 3, phase 2.** A 3 × 3 shower room with two shower heads and a
+door, 1,040 of materials, accepted on the first attempt. Hygiene had been at
+**0%** on every prisoner for four in-game days when it opened. Two days later
+the inspector read:
+
+> `Wanda Tamm | Medium | Hunger 88% | Sleep 90% | **Hygiene 90%** | Bladder
+> 75% | Safety 100% | Recreation 0%`
+
+**0% → 90% in two in-game days**, and the roster's worst-need column moved off
+`Hygiene` and onto `Recreation` by itself — which reproduces
+`2026-09-04-is-there-anything-to-do.md` §2.3's result on a different tree, a
+different layout and a different seed, and is the third and fourth
+independent replication of it.
+
+Of the twenty-one counts, the room's arrival moved `rooms: 2 → 3` and nothing
+else; the three days after it moved six, and **five of the six are one
+prisoner's sentence ending**, not the shower:
+
+```
+[act3] DELTA phase 2, three days with a shower room
+ticks 36597 -> 44796 (8199 ticks)
+  MOVED (6/21): occupiedPlaces: 4 -> 3 | prisoners: 4 -> 3 | prisonersCovered: 4 -> 3 |
+    roomOccupants: 4 -> 3 | stateIncomeAccruedTodayMinorUnits: 299 -> 598 |
+    treasuryMinorUnits: 31615 -> 34975
+```
+
+**So the best thing that happened in this record — a need going from nothing
+to nearly full because the player built the right room — moved exactly one
+published count, by one, at the moment of designation, and nothing at all
+afterwards.**
 
 ## 7. What a player is told about a room they built: the census
 
