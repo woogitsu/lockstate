@@ -244,12 +244,16 @@ test.describe('what the game tells you', () => {
   });
 
   /**
-   * Act 2 -- the long session.
+   * Act 2 -- the long session, and a census of its words.
    *
-   * A twelve-bed prison with **no guards**, so incidents open and lapse: that
-   * is the shape `docs/research/2026-09-04-does-anyone-answer-an-incident.md`
+   * A twelve-prisoner prison with **no guards**, so incidents open and lapse:
+   * the shape `docs/research/2026-09-04-does-anyone-answer-an-incident.md`
    * measured as producing 19 lapsed incidents out of 19. The point is not the
    * incidents, it is the sentences they leave behind.
+   *
+   * Every sample carries the HUD's words **and** the worker's facts at the
+   * same tick, so "is this sentence still true" is answered offline over the
+   * samples rather than by a second run.
    */
   test('act 2: a long session, and a census of its words', async ({ page }) => {
     test.setTimeout(600_000);
@@ -257,117 +261,229 @@ test.describe('what the game tells you', () => {
     await buildAndPopulate(page, { beds: 8, admits: 12, guards: 0, label: 'census' });
     await fastForwardToMax(page);
 
-    const samples: WordSample[] = [];
+    const samples: { readonly words: WordSample; readonly facts: Record<string, unknown> }[] = [];
     const started = Date.now();
-    const budgetMs = 380_000;
+    const budgetMs = 250_000;
     for (;;) {
-      const sample = await wordSample(page);
-      samples.push(sample);
-      if (samples.length % 10 === 1) logSample(`census#${samples.length}`, sample);
+      const words = await wordSample(page);
+      const facts = await rawCounts(page);
+      samples.push({ words, facts });
+      if (samples.length % 12 === 1) {
+        logSample(`census#${samples.length}`, words);
+        console.log(
+          `      facts: activeIncidents=${String(facts['activeIncidents'])}` +
+            ` conditions=${JSON.stringify(facts['conditions'])}` +
+            ` unpaidWages=${String(facts['unpaidWagesMinorUnits'])}` +
+            ` treasury=${String(facts['treasuryMinorUnits'])}`,
+        );
+      }
       if (Date.now() - started > budgetMs) break;
-      await page.waitForTimeout(4000);
+      await page.waitForTimeout(3500);
     }
 
     const events = await eventStream(page);
-    const counts = await rawCounts(page);
-    const finalSample = samples[samples.length - 1];
-    if (finalSample === undefined) throw new Error('no samples');
+    const last = samples[samples.length - 1];
+    if (last === undefined) throw new Error('no samples');
 
     console.log('=== CENSUS: every distinct sentence, first tick, last tick ===');
-    const lifetimes = new Map<string, { region: string; first: number; last: number; seen: number }>();
-    for (const sample of samples) {
+    const lifetimes = new Map<string, { region: string; text: string; first: number; last: number; seen: number }>();
+    for (const { words } of samples) {
       const entries: readonly (readonly [string, string])[] = [
-        ['band', sample.refusal],
-        ['event-band', sample.eventBand],
-        ...sample.alerts.map((row) => ['alerts', row.text] as const),
+        ['band', words.refusal],
+        ['event-band', words.eventBand],
+        ...words.alerts.map((row) => ['alerts', row.text] as const),
       ];
       for (const [region, text] of entries) {
         if (text === '') continue;
-        const key = `${region} ${text}`;
+        const key = `${region}||${text}`;
         const existing = lifetimes.get(key);
-        if (existing === undefined) lifetimes.set(key, { region, first: sample.tick, last: sample.tick, seen: 1 });
+        if (existing === undefined) lifetimes.set(key, { region, text, first: words.tick, last: words.tick, seen: 1 });
         else {
-          existing.last = sample.tick;
+          existing.last = words.tick;
           existing.seen += 1;
         }
       }
     }
-    for (const [key, life] of [...lifetimes.entries()].sort((a, b) => a[1].first - b[1].first)) {
-      const text = key.split(' ')[1] ?? '';
+    for (const life of [...lifetimes.values()].sort((a, b) => a.first - b.first)) {
       console.log(
         `  ${life.region.padEnd(10)} ticks ${String(life.first).padStart(6)}..${String(life.last).padStart(6)}` +
-          ` (${life.last - life.first} ticks, ${life.seen} samples) :: ${text}`,
+          ` (${life.last - life.first} ticks over ${life.seen} samples) :: ${life.text}`,
       );
     }
+
+    console.log('=== TRUTH AUDIT: a standing sentence against the fact at that tick ===');
+    /*
+     * Two families of sentence assert a *present state* and therefore have a
+     * checkable truth value at every later tick. Each predicate reads the
+     * worker's own published counts at the same sample, never the HUD.
+     */
+    let allClearSamples = 0;
+    let allClearFalse = 0;
+    let refusedSamples = 0;
+    let refusedFalse = 0;
+    let firstFalseAllClear: { tick: number; day: string; open: number; text: string } | undefined;
+    let firstFalseRefused: { tick: number; day: string; conditions: readonly string[]; text: string } | undefined;
+    for (const { words, facts } of samples) {
+      const open = Number(facts['activeIncidents'] ?? -1);
+      const conditions = (facts['conditions'] ?? []) as readonly string[];
+      for (const row of words.alerts) {
+        if (/no incident is still open/i.test(row.text)) {
+          allClearSamples += 1;
+          if (open > 0) {
+            allClearFalse += 1;
+            firstFalseAllClear ??= { tick: words.tick, day: words.day, open, text: row.text };
+          }
+        }
+        if (/right now/.test(row.text)) {
+          refusedSamples += 1;
+          const stillRefusing =
+            conditions.includes('treasury.deliveries-refused') || conditions.includes('treasury.construction-refused');
+          if (!stillRefusing) {
+            refusedFalse += 1;
+            firstFalseRefused ??= { tick: words.tick, day: words.day, conditions, text: row.text };
+          }
+        }
+      }
+    }
+    console.log(`  "no incident is still open" standing in ${allClearSamples} sample(s); FALSE in ${allClearFalse}`);
+    console.log(`  first false one: ${JSON.stringify(firstFalseAllClear)}`);
+    console.log(`  "... right now" standing in ${refusedSamples} sample(s); FALSE in ${refusedFalse}`);
+    console.log(`  first false one: ${JSON.stringify(firstFalseRefused)}`);
 
     console.log('=== SILENCE GAP: worker events vs rows on screen ===');
     const byType = new Map<string, number>();
     for (const event of events) byType.set(event.type, (byType.get(event.type) ?? 0) + 1);
     console.log(`  ${events.length} event(s) published, by type:`);
-    for (const [type, count] of [...byType.entries()].sort()) console.log(`     ${count}x ${type}`);
-    console.log(`  first tick ${events[0]?.tick ?? -1}, last tick ${events[events.length - 1]?.tick ?? -1}`);
-    console.log(`  rows standing at the end: ${finalSample.alerts.length}`);
+    for (const [type, count] of [...byType.entries()].sort()) console.log(`     ${String(count).padStart(3)}x ${type}`);
+    console.log(`  first event tick ${events[0]?.tick ?? -1}, last ${events[events.length - 1]?.tick ?? -1}`);
+    console.log(`  rows standing at the end: ${last.words.alerts.length}`);
+    const bandSentences = new Set(samples.map((s) => s.words.refusal).filter((text) => text !== ''));
+    const eventBandSentences = new Set(samples.map((s) => s.words.eventBand).filter((text) => text !== ''));
+    console.log(`  distinct sentences the refusal band showed across the whole run: ${bandSentences.size}`);
+    console.log(`  distinct sentences the event band showed across the whole run: ${eventBandSentences.size}`);
+    console.log(`  they were: ${JSON.stringify([...eventBandSentences])}`);
 
     console.log('=== THE STATE AT THE END ===');
-    console.log(`  tick ${finalSample.tick}, day ${finalSample.day}`);
-    console.log(`  counts: ${JSON.stringify(counts)}`);
-    console.log(`  strip: ${JSON.stringify(finalSample.strip)}`);
-    logSample('final', finalSample);
+    console.log(`  counts: ${JSON.stringify(last.facts)}`);
+    console.log(`  strip: ${JSON.stringify(last.words.strip)}`);
+    logSample('final', last.words);
 
     console.log('=== CLEARABILITY ===');
-    const dismissible = finalSample.alerts.filter((row) => row.dismissible);
-    console.log(`  ${dismissible.length} of ${finalSample.alerts.length} rows carry a control.`);
-    console.log(`  without a control: ${JSON.stringify(finalSample.alerts.filter((r) => !r.dismissible).map((r) => r.id))}`);
+    const dismissible = last.words.alerts.filter((row) => row.dismissible);
+    console.log(`  ${dismissible.length} of ${last.words.alerts.length} row(s) carry a control.`);
+    console.log(
+      `  no control: ${JSON.stringify(last.words.alerts.filter((row) => !row.dismissible).map((row) => `${row.id}: ${row.text}`))}`,
+    );
     for (const row of dismissible) {
-      await page.locator(`.hud-alerts__list [data-alert="${row.id}"] .ui-icon-button`).click();
+      const control = page.locator(`.hud-alerts__list [data-alert="${row.id}"] .ui-icon-button`);
+      if ((await control.count()) === 0) {
+        console.log(`  row ${row.id} claimed a control and has none`);
+        continue;
+      }
+      await control.first().click();
       await page.waitForTimeout(250);
     }
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(2000);
     const afterDismiss = await wordSample(page);
     logSample('after dismissing everything a player can', afterDismiss);
     console.log(`  band after dismissing everything: ${JSON.stringify(afterDismiss.refusal)}`);
+    console.log(`  worker still says activeIncidents=${String((await rawCounts(page))['activeIncidents'])}`);
   });
 
-  /**
-   * Act 3 -- the two sentences an all-clear leaves behind, at close range.
-   *
-   * Same prison shape as act 2 but sampled fast and short, so an `all-clear`
-   * row and a later incident can be caught standing at the same moment.
-   */
-  test('act 3: is the all-clear still true', async ({ page }) => {
-    test.setTimeout(600_000);
-    await openApp(page);
-    await buildAndPopulate(page, { beds: 8, admits: 12, guards: 0, label: 'allclear' });
-    await fastForwardToMax(page);
 
-    let contradictions = 0;
-    const started = Date.now();
-    for (;;) {
-      const sample = await wordSample(page);
-      const counts = await rawCounts(page);
-      const openIncidents = Number(counts['incidentsOpen'] ?? counts['incidents'] ?? -1);
-      const allClearRows = sample.alerts.filter((row) => row.text.includes('No incident is still open') || row.text.includes('no incident is still open'));
-      if (allClearRows.length > 0 && openIncidents > 0) {
-        contradictions += 1;
-        if (contradictions <= 6) {
-          console.log(
-            `[contradiction ${contradictions}] tick=${sample.tick} day=${sample.day} openIncidents=${openIncidents}\n` +
-              allClearRows.map((row) => `    standing row: ${row.text}`).join('\n') +
-              `\n    strip: ${JSON.stringify(sample.strip)}` +
-              `\n    band : ${JSON.stringify(sample.refusal)}`,
-          );
-        }
-      }
-      if (Date.now() - started > 300_000) {
-        console.log(`=== end: ${contradictions} sample(s) had an all-clear row standing while an incident was open ===`);
-        logSample('act3-final', sample);
-        console.log(`counts: ${JSON.stringify(counts)}`);
-        console.log(`events: ${JSON.stringify(await eventStream(page))}`);
-        console.log(`clock: ${JSON.stringify(await currentClock(page))}`);
-        console.log(`counts series length: ${(await countsSeries(page)).length}`);
-        break;
-      }
-      await page.waitForTimeout(2500);
+  /**
+   * Act 3 -- what, if anything, retires a sentence.
+   *
+   * Three probes, each about one sentence and each cheap:
+   *
+   * (a) A **host** refusal, and the alerts column that denies it exists.
+   * (b) The Rooms panel's Confirm control on a rectangle that is genuinely not
+   *     enclosed -- the first version of this act spent ten minutes waiting for
+   *     it, which is the measurement.
+   * (c) The two things ADR 0091 says retire a simulation refusal: another
+   *     refusal, and the session ending. Both are pressed, and the band is read
+   *     after each.
+   */
+  test('act 3: what retires a sentence', async ({ page }) => {
+    test.setTimeout(560_000);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    console.log('=== 3a: a host refusal, and what the log says about it ===');
+    await tab(page, 'overview').click();
+    await page.locator('.hud-intake__admit').click();
+    await page.waitForTimeout(900);
+    const hostSample = await wordSample(page);
+    logSample('3a', hostSample);
+    console.log(`  counts: ${JSON.stringify(await rawCounts(page))}`);
+
+    console.log('=== 3b: Confirm, on a rectangle that really is not enclosed ===');
+    await tab(page, 'build').click();
+    const origin = await calibrate(page);
+    await tab(page, 'rooms').click();
+    const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
+    if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+    await page.locator('.hud-rooms__arm').click();
+    await drag(page, centreOf(origin, 22, 22), centreOf(origin, 27, 27));
+    await page.waitForTimeout(600);
+    const confirm = page.locator('.hud-rooms__confirm');
+    console.log(`  Confirm disabled attribute: ${JSON.stringify(await confirm.getAttribute('disabled'))}`);
+    console.log(`  Confirm reads: ${JSON.stringify((await confirm.innerText()).trim())}`);
+    console.log(`  Rooms panel note: ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
+    const afterDraw = await wordSample(page);
+    logSample('3b-after-drawing-an-open-rectangle', afterDraw);
+
+    console.log('=== 3c-i: another refusal is what replaces one ===');
+    await tab(page, 'build').click();
+    await page.locator('.hud-build__remove').click();
+    // A point the calibration itself proved is canvas, not a computed tile:
+    // the first version of this act pressed a tile whose centre fell outside
+    // the window and got no command at all.
+    const emptyA = { x: 700 + TILE, y: 300 + TILE };
+    console.log(
+      `  under the press: ${await page.evaluate(
+        (point) => document.elementFromPoint(point[0], point[1])?.className ?? '?',
+        [emptyA.x, emptyA.y] as [number, number],
+      )}`,
+    );
+    const removalCommands = await press(page, emptyA.x, emptyA.y);
+    console.log(`  the press produced: ${JSON.stringify(removalCommands)}`);
+    await page.waitForTimeout(900);
+    logSample('3c-i-removal-refused', await wordSample(page));
+
+    // A different route's refusal: buy a quantity the treasury cannot carry.
+    await page.locator('.hud-build__remove').click();
+    await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+    const buyRow = page.locator('.hud-build__buy');
+    if (await buyRow.isHidden()) await page.locator('.hud-build__buy-toggle').click();
+    await page.locator('.hud-build__buy .ui-number__input').fill('4000');
+    const submit = page.locator('.hud-build__buy-submit');
+    // Read *after* the panel has had time to recompute. The first version read
+    // it in the same turn as the `fill` and got `null`, then waited for ever on
+    // a control that had disabled itself a frame later.
+    await page.waitForTimeout(1000);
+    const submitDisabled = await submit.getAttribute('disabled');
+    console.log(`  Buy submit disabled attribute after 1s: ${JSON.stringify(submitDisabled)}`);
+    console.log(`  Buy row reads: ${JSON.stringify((await panelText(page, '.hud-build__buy')).replace(/\n/g, ' | '))}`);
+    if (submitDisabled === null) {
+      await submit.click({ timeout: 10_000 });
+      await page.waitForTimeout(1200);
+    } else {
+      console.log('  the control disabled itself, so this refusal has no sentence to give');
     }
+    logSample('3c-i-after-an-unaffordable-purchase', await wordSample(page));
+
+    console.log('=== 3c-ii: the session ending is the other thing that clears it ===');
+    const beforeNewPrison = await wordSample(page);
+    console.log(`  band before New prison: ${JSON.stringify(beforeNewPrison.refusal)}`);
+    console.log(`  alerts before New prison: ${JSON.stringify(beforeNewPrison.alerts.map((row) => row.text))}`);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await page.waitForTimeout(1500);
+    const afterNewPrison = await wordSample(page);
+    logSample('3c-ii-after-New-prison', afterNewPrison);
+    console.log(`  events across the whole act: ${JSON.stringify(await eventStream(page))}`);
   });
 });
