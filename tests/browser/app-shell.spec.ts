@@ -5884,13 +5884,31 @@ test.describe('the assembled application', () => {
       );
       const expectedItem = (objectKey: string, count: string): string =>
         localeText('hud.rooms.needs-object').replace('{count}', count).replace('{object}', localeText(objectKey));
+      /*
+       * **The doorway line came first, and finding it here is what #938 is.**
+       *
+       * This assertion read `[bed, toilet]` and `data-needs` `'4'` until then,
+       * and both were true of what the panel drew and false of the prison:
+       * `wallRectanglesFromTheKeyboard` builds a `wall-brick` on **every**
+       * perimeter segment and no door anywhere, so the two cells this test
+       * zones are rooms no prisoner can ever walk into -- which is the exact
+       * state #938 measured, sitting inside this suite's own fixture, green,
+       * for as long as the readout had no way to say it.
+       *
+       * So this is the fix arriving on the assembled page rather than a
+       * fixture repaired to suit it: three lines per cell now, six unmet
+       * things across the two, and the door named before the furniture because
+       * nothing can be carried into a room nobody can enter.
+       */
       expect(shown.items, `the readout does not enumerate what the room needs at ${width}x${height}`).toEqual([
+        localeText('hud.rooms.needs-doorway'),
         expectedItem('object.bed.name', '1'),
         expectedItem('object.toilet.name', '1'),
       ]);
       // The same figure as a number rather than as prose, so the count above is
-      // not being read off the sentence it is meant to be checking.
-      expect(shown.needs, `the readout does not report every unmet requirement at ${width}x${height}`).toBe('4');
+      // not being read off the sentence it is meant to be checking. Six: a
+      // door, a bed and a toilet, twice over.
+      expect(shown.needs, `the readout does not report every unmet requirement at ${width}x${height}`).toBe('6');
 
       // 5. Nothing else in the panel was pushed out to make room. The
       // catalogue list is deliberately absent: it is the one box here that is
