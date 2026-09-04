@@ -967,9 +967,9 @@ async function playTheGame(page: Page, client: CDPSession, label: string): Promi
   // Four wall runs, drawn with a finger.
   await touchArm(page, 'wall-brick');
   const westX = origin.originX + x0 * TILE;
-  const eastX = origin.originX + (x0 + 6) * TILE;
+  const eastX = origin.originX + (x0 + cellSize) * TILE;
   const northY = origin.originY + y0 * TILE;
-  const southY = origin.originY + (y0 + 6) * TILE;
+  const southY = origin.originY + (y0 + cellSize) * TILE;
   for (const run of [
     { name: 'north', a: { x: westX + TILE / 2, y: northY }, b: { x: eastX - TILE / 2, y: northY } },
     { name: 'south', a: { x: westX + TILE / 2, y: southY }, b: { x: eastX - TILE / 2, y: southY } },
@@ -998,7 +998,7 @@ async function playTheGame(page: Page, client: CDPSession, label: string): Promi
     await tapRowScrollingIfNeeded(page, '.hud-rooms__list [data-room="room.cell"]', label);
     await tapControl(page, '.hud-rooms__arm');
     const a = centreOf(origin, x0, y0);
-    const b = centreOf(origin, x0 + 5, y0 + 5);
+    const b = centreOf(origin, x0 + cellSize - 1, y0 + cellSize - 1);
     await assertCanvasAt(page, a.x, a.y, `${label} zone start`);
     await assertCanvasAt(page, b.x, b.y, `${label} zone end`);
     await touchDrag(client, page, a, b);
@@ -1016,7 +1016,7 @@ async function playTheGame(page: Page, client: CDPSession, label: string): Promi
   await tapControl(page, '.hud__tabs [data-tab="build"]');
   await touchArm(page, 'bed-wooden');
   let placed = 0;
-  for (let column = x0 + 1; column <= x0 + 4 && placed < 3; column += 1) {
+  for (let column = x0 + 1; column <= x0 + cellSize - 2 && placed < 3; column += 1) {
     const point = centreOf(origin, column, y0 + 1);
     await assertCanvasAt(page, point.x, point.y, `${label} bed ${column}`);
     const commands = await touchPress(page, point.x, point.y);
@@ -1132,6 +1132,28 @@ test('act 6: what a finger can undo', async ({ page }) => {
     })),
   );
   log(`controls inside the build queue while the wall is pending: ${JSON.stringify(queueRows)}`);
+  /*
+   * And what a queue costs the catalogue. `hud.css:1740` is
+   * `.hud-build[data-queued] { --hud-build-catalogue-floor: var(--tap-target); }`
+   * -- two rows down to one while a queue exists, to pay for the queue block's
+   * 45px header. Act 8 could not reach this state, because *buying materials*
+   * is a purchase and sets no `data-queued`; a build order does.
+   */
+  log(
+    `data-queued = ${JSON.stringify(await page.locator('.hud-build').getAttribute('data-queued'))}; ` +
+      (await page.evaluate(() => {
+        const list = document.querySelector<HTMLElement>('.hud-build__list');
+        if (list === null) return 'catalogue ABSENT';
+        const rect = list.getBoundingClientRect();
+        const rows = [...list.querySelectorAll<HTMLElement>('[data-buildable]')];
+        const tappable = rows.filter((row) => {
+          const r = row.getBoundingClientRect();
+          const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+          return top !== null && (top === row || row.contains(top));
+        });
+        return `catalogue ${Math.round(rect.width)}x${Math.round(rect.height)}, ${list.scrollHeight} of content, ${rows.length} rows, ${tappable.length} tappable: ${JSON.stringify(tappable.map((r) => r.dataset['buildable']))}`;
+      })),
+  );
   log(`queue text: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
 
   // Let it finish.

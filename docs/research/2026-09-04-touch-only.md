@@ -35,8 +35,8 @@ walls, a zoned room, objects, the clock, a guard and a prisoner — and every
 single thing they cannot do is a thing they cannot *undo*.** The gesture layer
 is the strongest part of this game: measured with real touch events, a
 one-finger pan delivers exactly what it is asked for (+4 tiles for 256px) even
-when the finger ends **on** the HUD rail (−5 of −6) or **on** the status strip
-(+3 of +3.3); two fingers pan the camera while the wall tool is armed and
+when the finger ends **on** the HUD rail (−5 of −6 at landscape, −9 of −8.4 at
+portrait); two fingers pan the camera while the wall tool is armed and
 submit **zero** build commands; a pinch zooms and un-zooms; the minimap takes a
 tap; and across all five tabs at both viewports **not one visible control is
 below the 44px tap target**. What fails is everything around the gesture. The
@@ -320,7 +320,7 @@ third that applies is the one a tablet player is least likely to guess. Under
 the rule there is *verify, then write*, so the replacement has to name what the
 code actually binds for the device it is being read on.
 
-### 6. At tablet landscape the largest cell a finger can draw without moving the camera is 5×5, and a canteen needs 6×6
+### 6. At tablet landscape the largest cell a finger can draw without moving the camera is 4×4, and three room types need more
 
 **MEASURED**, act 4 and act 5, after a real touch calibration of the
 screen-to-tile transform:
@@ -328,22 +328,30 @@ screen-to-tile transform:
 ```
 [landscape 1024x768] calibration: tile (0,0) top-left at (-512, -640)
 [landscape 1024x768] tiles a finger can reach without moving the camera: 92 spanning x 8..23, y 11..21
-[landscape 1024x768] the largest square cell a finger can draw in one camera position … 5x5 at {"x0":14,"y0":11}
+[landscape 1024x768] the largest square cell a finger can draw in one camera position -- every point of its
+                     closed rectangle, sampled every half tile, on canvas: 4x4 at {"x0":15,"y0":12}
 [portrait 768x1024]  tiles a finger can reach without moving the camera: 80 spanning x 10..21, y 9..23
+[portrait 768x1024]  the largest square cell a finger can draw in one camera position … 6x6 at {"x0":10,"y0":10}
 ```
+
+**Turning the tablet is the fix, and it is a large one.** Portrait has *fewer*
+reachable tiles than landscape — 80 against 92 — and a **larger drawable cell**:
+6×6 against 4×4, because the rail takes a column out of the middle of a
+landscape screen and leaves an L, while a portrait screen leaves a tall
+rectangle. Nothing in the game says so.
 
 The 92 reproduces #899's *"92/192 press-reachable tiles"* at this viewport to
 the tile, from an independent instrument. **What is new is the second line**:
 92 reachable tiles are not 92 *usable* ones, because a wall run is aimed at a
 tile **edge**, so a cell of side `s` needs every point of its closed rectangle
-— sampled every half tile, `(2s+1)²` lattice points — on canvas.
+— sampled every half tile, `(2s+1)²` lattice points — on canvas. That takes
+the landscape figure from a **reachable** 92 tiles to a **drawable** 4×4.
 
-**VERIFIED, read.** `src/content/room-catalog.ts:124` —
-`room.canteen` carries `{ type: 'minimum-size', minWidth: 6, minHeight: 6,
-minTiles: 36 }`. `:144` and `:149` carry two more at 5×5. `room.cell`'s own
-minimum is only 2×3 (`:94`), so **the starter cell is not what this blocks** —
-a canteen is, and so is the 6×6 the shared harness and every prior playtest
-build.
+**VERIFIED, read.** `src/content/room-catalog.ts:124` — `room.canteen` carries
+`{ type: 'minimum-size', minWidth: 6, minHeight: 6, minTiles: 36 }`, and `:144`
+and `:149` carry two more at **5×5**. `room.cell`'s own minimum is only 2×3
+(`:94`), so **the starter cell is not what this blocks** — three room types
+are, and so is the 6×6 the shared harness and every prior playtest build.
 
 **The workaround exists and is not free.** Two fingers pan while the tool is
 armed (§8), so a player can pan mid-build; and a pinch zooms out, which shrinks
@@ -364,23 +372,58 @@ Reported because an empty category backed by numbers is a result, and because
 this is the half of boundary 10 that is kept.
 
 **MEASURED**, act 2, at both viewports, with the whole gesture inside the
-measured unobstructed square:
+measured unobstructed square. The instrument reads the tile under a fixed
+screen point through a real `Remove` press, so it is quantised to **±1 tile**;
+that matters below.
 
 ```
-[landscape] one-finger drag of 256px leftward, entirely on canvas, no tool armed -> tile 17 -> 21 (a full pan would move it +4 tiles)
-[landscape] one-finger drag of 384px rightward that ends ON the HUD rail        -> tile 21 -> 16 (a full pan would move it -6.0 tiles)
-[landscape] one-finger drag of 214px upward, ending ON the status strip          -> tile y 13 -> 16 (a full pan would move it +3.3 tiles)
+[landscape] one-finger drag of 256px leftward, entirely on canvas, no tool armed -> tile x 17 -> 21 (a full pan: +4 tiles)
+[portrait ] one-finger drag of 408px leftward, entirely on canvas, no tool armed -> tile x 13 -> 20 (a full pan: +6.375 tiles)
+[landscape] one-finger drag of 384px rightward that ends ON the HUD rail        -> tile x 21 -> 16 (a full pan: -6.0 tiles)
+[portrait ] one-finger drag of 536px rightward that ends ON the HUD rail        -> tile x 20 -> 11 (a full pan: -8.4 tiles)
 [landscape] one-finger drag while armed produced 4 command(s) … wall-brick x=15..18 y=17 edge=north
-[landscape] two-finger pan of 128px while the wall tool is armed: 0 build command(s), tile under the midpoint 16 -> 18
+[portrait ] one-finger drag while armed produced 4 command(s) … wall-brick x=10..13 y=17 edge=north
+[landscape] two-finger pan of 128px while the wall tool is armed: 0 build command(s), tile x 16 -> 18
+[portrait ] two-finger pan of 204px while the wall tool is armed: 0 build command(s), tile x 11 -> 15
+[landscape] pinch out 100->240px (x2.40): ~240px per tile;  after eight more pinches out: ~240px per tile
+[landscape] pinch back in 240->100px: ~60px per tile;       after sixteen pinches in:    ~13px per tile
+[portrait ] pinch out 100->240px (x2.40): ~131px per tile;  after eight more pinches out: ~196px per tile
+[portrait ] pinch back in 240->100px: ~49px per tile;       after sixteen pinches in:    ~13px per tile
 ```
 
-So: a one-finger pan is exact; **a pan that crosses or ends on the HUD is not
-stolen** (−5 of −6 and +3 of +3.3 are inside this instrument's ±1-tile
-quantisation); a one-finger drag while armed builds instead of panning, exactly
-as the modal arbitration promises; and two fingers pan the camera *while a tool
-is armed* and submit **nothing**, which is the property `docs/INPUT.md`'s
-gesture bullet asserts and `src/rendering/scene/world-scene.ts:558-563`
-implements.
+So: **a one-finger pan is exact** (+4 of +4, +7 of +6.375); **a horizontal pan
+that ends on the HUD rail is not stolen** (−5 of −6 and −9 of −8.4, both inside
+±1); a one-finger drag while armed builds instead of panning, exactly as the
+modal arbitration promises; two fingers pan the camera *while a tool is armed*
+and submit **nothing**, which is the property `docs/INPUT.md`'s gesture bullet
+asserts and `src/rendering/scene/world-scene.ts:558-563` implements; and
+**both ends of `ZOOM_BOUNDS` are reachable by finger** — the clamped-out
+reading of ~196px per tile at portrait against the 192px that `max: 3` predicts
+for a 64px tile, and ~13px against the 12.8px `min: 0.2` predicts, at both
+viewports.
+
+**One reading in this set is not clean and is reported as unresolved.** The
+*vertical* pan that ends on the status strip came back **+3 tiles at both
+viewports**:
+
+```
+[landscape] one-finger drag of 214px upward, ending ON the status strip (bottom edge y=78) -> tile y 13 -> 16 (a full pan: +3.3 tiles)
+[portrait ] one-finger drag of 290px upward, ending ON the status strip (bottom edge y=78) -> tile y 13 -> 16 (a full pan: +4.5 tiles)
+```
+
+Landscape is complete within ±1. **Portrait is a tile and a half short**, and
++3 is what a pan truncated where the finger crosses `y=78` would give
+(328 − 78 = 250px = 3.9 tiles) rather than what the full 290px would. That is
+one sample per viewport and the two disagree, so this is a **measurement, not a
+diagnosis**: I do not know whether the vertical crossing loses part of the
+gesture, and I have not established a cause or a cost. What would settle it is
+the same drag repeated at several lengths with the *camera* read directly
+(`world-scene-harness.html` exposes `scroll()`, which is not quantised) rather
+than through a tile press. **No camera bound is involved** — `grep -rn
+"setBounds\|worldBounds" src/rendering/` is empty. Note also that the
+horizontal crossing at **portrait** is unambiguous (full travel, truncation
+would have given −7), so whatever this is, it is not "the HUD always takes the
+rest of the gesture".
 
 **Every visible control clears the tap target, everywhere.** Act 1, all five
 tabs, both viewports: *"17 visible control(s); **0 below the 44px tap
@@ -435,15 +478,19 @@ route is 58 taps.
 
 ## Two things this round refutes
 
-**A pan that crosses the HUD is not truncated on touch.** This act's *first*
-run reported a one-finger pan delivering about a third of what it was asked
-for, and the finger had ended under the status strip. That reading was an
+**A horizontal pan that crosses the HUD is not truncated on touch.** This act's
+*first* run reported a one-finger pan delivering about a third of what it was
+asked for, and the finger had ended under the status strip. That reading was an
 instrument fault — the gesture started 40px inside the free square's corner and
-left the square almost immediately — and the corrected act measures the
-crossing deliberately, in both axes, and finds the pan complete (§8). #878's
-truncation was a *mouse* defect (#898 fixed it) and #899 says so in terms:
-*"It is not a touch-input problem. Touch never lost its moves."* Confirmed,
-independently, on a tablet.
+left the square almost immediately. The corrected act measures the crossing
+deliberately in both axes: **horizontally it is complete at both viewports,
+unambiguously so at portrait**; vertically it is complete at landscape and a
+tile and a half short at portrait, which §8 reports as unresolved rather than
+resolving in either direction. #878's truncation was a *mouse* defect (#898
+fixed it) and #899 says so in terms: *"It is not a touch-input problem. Touch
+never lost its moves."* That holds for the horizontal case here, measured
+independently on a tablet; the vertical sample is the one thing in this round I
+would not put weight on.
 
 **`touch-action` is not what stops a flick, and the flick that failed was my
 instrument.** Act 8 measured two one-finger scrolls of the same list
@@ -489,7 +536,10 @@ Three, all mine, all caught by the guard rather than by luck.
    which are fine at 1440×900 and off-screen at 1024×768 where the calibrated
    origin is `(-512,-640)`: `mistaken wall start: (-96,-256) is covered by
    NOTHING`. Both end-to-end acts and the mistake act now take their
-   coordinates from the measured reachable block.
+   coordinates from the measured reachable block. **This corrected the headline
+   figure in §6 downward**: the centres-only search answered 5×5 at landscape
+   and the half-tile search answers **4×4**. The 5×5 figure appears nowhere in
+   this record.
 
 And one belonging to somebody else's surface, noted in one line and not chased:
 **a world tap before `New prison` submits nothing and says nothing.** The
