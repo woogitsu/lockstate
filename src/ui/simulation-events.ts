@@ -296,6 +296,41 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  * unread simulation event of equal or higher severity, which is exactly the
  * cost this paragraph was written to name. The producer here is unchanged; what
  * changed is that something downstream now arbitrates.
+ *
+ * ## `rooms.zoned` is `'info'`, and the grade is the whole of the design in it
+ * (issue #966 site 2)
+ *
+ * The first row on this table that acknowledges something a player did. Every
+ * other member is bad news, an undo, a recovery, or `prisoners.discharged`,
+ * whose gate is a clock -- the acknowledgement census filed as #960 and #966
+ * counted them. (That record is cited by issue rather than by path: it lives on
+ * an unmerged branch, and `documentation-links-contract.test.ts` is right to
+ * refuse a rooted path to a file that is not on disk.)
+ *
+ * **`'info'` is not the mild option, it is the only defensible one, and the
+ * machinery says why rather than the tone.** `admitToEventBand`
+ * ([`hud/event-band-dwell.ts`](./hud/event-band-dwell.ts)) promotes on
+ * *strictly* greater severity, so an `'info'` arrival can never take the line
+ * from a `'warning'` or a `'danger'` incumbent -- it waits in the dwell floor's
+ * one slot and loses even that slot to anything more severe, which is exactly
+ * the priority an acknowledgement deserves against a riot. Graded
+ * `'warning'` it would do the opposite: `outranks` would hand it the line and
+ * **discard** the incumbent, so designating a room would delete the sentence
+ * about the escape attempt the player had not finished reading. That is
+ * `objects.removed-spend-destroyed`'s mechanism read from the other end, and
+ * this is the case it was waiting for.
+ *
+ * `SEVERITY_EVICTION_ORDER` decides the other half the same way: it drops
+ * `'info'` first from `MAX_EVENT_ALERT_ROWS`, so a player who designates eight
+ * rooms in a row evicts their own confirmations and the other `'info'` rows
+ * before touching a warning. And with the payload being the room type alone
+ * (see the schema), a run of designations of *one* type does not even do that
+ * -- `simulationEventIdentity` collapses it into a single counted row.
+ *
+ * **There is no grade below `'info'`.** `HudSeverity` has three members and no
+ * fourth tone for a good thing to wear, which is the census's finding about
+ * this table restated as a type: the channel can say "wrong", "worse" and
+ * "not wrong", and an acknowledgement has to wear the third.
  */
 const EVENT_PRESENTATION: Readonly<
   Record<SimulationEventType, { readonly labelKey: LocalizationKey; readonly severity: HudSeverity }>
@@ -341,6 +376,7 @@ const EVENT_PRESENTATION: Readonly<
   },
   'prisoners.discharged': { labelKey: 'hud.alert.event.prisoners.discharged', severity: 'info' },
   'prisoners.relocated': { labelKey: 'hud.alert.event.prisoners.relocated', severity: 'info' },
+  'rooms.zoned': { labelKey: 'hud.alert.event.rooms.zoned', severity: 'info' },
 };
 
 /**
@@ -938,6 +974,12 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     // contraband category, whose word lives in the catalog under a `nameKey`.
     case 'contraband.discovered':
       return {};
+    // #966 site 2's `{room}`: a room type, resolved below from the room
+    // catalog's own `nameKey`, exactly as the relocation notice's is. No
+    // figure -- the rectangle and the anchor tile are both in the accepted
+    // outcome and both deliberately left off the wire; the schema says why.
+    case 'rooms.zoned':
+      return {};
     // Four members with nothing to substitute, and an empty object rather than
     // `undefined`: a `switch` that sometimes returned nothing would make an
     // absent `labelParameters` mean two different things at the two call
@@ -1054,6 +1096,13 @@ function eventParameterMessages(
       return { name: prisonerName(event.entityId, event.name), room: { key: event.roomNameKey } };
     case 'incidents.escape-succeeded':
       return { name: prisonerName(event.entityId, event.name) };
+    // #966 site 2's `{room}`, and it is the first bullet's `{room}` again
+    // rather than a third kind of thing: the same catalog field, passed
+    // through, resolved by the renderer. Nothing here authors a room's name and
+    // nothing here looks one up -- `RoomZoningService.zone` read it from the
+    // definition it decided the request against.
+    case 'rooms.zoned':
+      return { room: { key: event.roomNameKey } };
     // #703 ruling 13's `{item}`: the contraband catalog's own `nameKey`, passed
     // through exactly as the relocation notice's `{room}` is. This module
     // resolves nothing and authors nothing -- the five words a player can read

@@ -3,7 +3,7 @@ import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
 import { projectPrisonerDetail, projectPrisonerPopulationCounts, projectPrisonerRoster } from '../../src/simulation/presentation/prisoner-projection';
 import { packCommand } from '../../src/simulation/protocol/commands';
-import { SIMULATION_PROTOCOL_VERSION, workerToMainMessageSchema, type WorkerToMainMessage } from '../../src/simulation/protocol/types';
+import { SIMULATION_PROTOCOL_VERSION, workerToMainMessageSchema, type SimulationEvent, type WorkerToMainMessage } from '../../src/simulation/protocol/types';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import { hudEventAlertsFromWorkerMessage, hudEventNoticeFromWorkerMessage } from '../../src/ui/simulation-events';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -96,6 +96,24 @@ function housedIn(runtime: SimulationRuntime, entityId: number): string {
 
 function population(runtime: SimulationRuntime): number {
   return projectPrisonerPopulationCounts(runtime.prisoners).total;
+}
+
+/**
+ * What this file's subject is on the events channel: the discharge, and nothing
+ * else the session may have had to say.
+ *
+ * **Introduced on 2026-09-04 (#966 site 2), replacing three uses of
+ * `runtime.events.since(0)` where the whole log stood in for "what the prison
+ * said about a release".** That was the widest available net while the fixtures'
+ * own presses were silent; an accepted `ZoneRoom` now records an event, and
+ * `twoCellPrison` zones two of them, so the whole log would make these cases
+ * assertions about the fixture. Every property they were pinning -- that
+ * nothing is said before the discharge, that a cohort leaving together is one
+ * event and not several, that a restore does not re-announce -- is a property
+ * of this filtered list.
+ */
+function dischargesOf(runtime: SimulationRuntime): readonly SimulationEvent[] {
+  return runtime.events.since(0).filter((event) => event.type === 'prisoners.discharged');
 }
 
 function saveAndLoad(runtime: SimulationRuntime): SimulationRuntime {
@@ -413,7 +431,7 @@ describe('a sentence that ends says so (#507)', () => {
     // Nothing has been said yet, and that is the state this test exists to see
     // change. Asserted before the discharge rather than after, so a channel
     // that announced a release on every tick could not pass.
-    expect(runtime.events.since(0), 'a prison that has released nobody has nothing to say about a release').toEqual([]);
+    expect(dischargesOf(runtime), 'a prison that has released nobody has nothing to say about a release').toEqual([]);
 
     stepTo(runtime, endTick + 20);
     expect(runtime.prisoners.entityStore.isAlive(prisoner), 'the sentence must actually have ended for this test to mean anything').toBe(false);
@@ -421,7 +439,7 @@ describe('a sentence that ends says so (#507)', () => {
 
     // What the worker would post. Built through the protocol schema rather than
     // hand-shaped, so a payload the real boundary would reject cannot pass here.
-    const recorded = runtime.events.since(0);
+    const recorded = dischargesOf(runtime);
     expect(recorded.length, 'exactly one thing happened, so the prison says one thing').toBe(1);
     const message = workerToMainMessageSchema.parse({
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -483,7 +501,7 @@ describe('a sentence that ends says so (#507)', () => {
     stepTo(runtime, endTick + 20);
     expect(population(runtime), 'both sentences must have ended for this test to mean anything').toBe(0);
 
-    const recorded = runtime.events.since(0);
+    const recorded = dischargesOf(runtime);
     expect(recorded.length, 'two prisoners leaving on one tick is one occurrence, not two').toBe(1);
     expect(recorded[0]).toMatchObject({ type: 'prisoners.discharged', count: 2 });
 
@@ -533,12 +551,19 @@ describe('a sentence that ends says so (#507)', () => {
     housedIn(runtime, prisoner);
     const endTick = runtime.prisoners.records.sentenceEndTick[runtime.prisoners.entityStore.getIndex(prisoner)]!;
     stepTo(runtime, endTick + 20);
+    expect(dischargesOf(runtime).length, 'the release must have been announced before the save').toBe(1);
+    // The whole log here, and not `dischargesOf`: what this case claims is that
+    // everything the player was reading survives the round trip, which is a
+    // claim about the log rather than about the discharge -- so the two zonings
+    // this fixture presses are part of the subject and their absence would be
+    // the defect. The discharge is picked out of it below by type.
     const announced = runtime.events.since(0);
-    expect(announced.length, 'the release must have been announced before the save').toBe(1);
 
     const restored = saveAndLoad(runtime);
     const carried = restored.events.since(0);
     expect(carried, 'the log the player was reading comes back exactly as it was').toEqual(announced);
+    const carriedDischarge = dischargesOf(restored)[0];
+    expect(carriedDischarge, 'and the release is one of the records that came back').toBeDefined();
 
     // And the band is still silent about it. The worker marks a replayed
     // record on the wire (`SimulationWorkerStateMachine` sets `restored` from
@@ -549,7 +574,7 @@ describe('a sentence that ends says so (#507)', () => {
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
       messageId: '00000000-0000-4000-8000-000000000084',
       kind: 'simulation/event',
-      payload: { tick: restored.kernel.tick, event: carried[0]!, restored: true },
+      payload: { tick: restored.kernel.tick, event: carriedDischarge!, restored: true },
     }) as WorkerToMainMessage;
     expect(
       hudEventNoticeFromWorkerMessage(replay),

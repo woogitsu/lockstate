@@ -15,7 +15,8 @@ import {
   hudEventAlertsFromWorkerMessage,
   hudEventNoticeFromWorkerMessage,
 } from '../../src/ui/simulation-events';
-import type { HudAlertViewModel } from '../../src/ui/hud/view-model';
+import type { HudAlertViewModel, HudEventNoticeViewModel } from '../../src/ui/hud/view-model';
+import { EMPTY_EVENT_BAND_DWELL_STATE, admitToEventBand } from '../../src/ui/hud/event-band-dwell';
 import { resolveHudLabelParameters } from '../../src/ui/hud/label-parameters';
 
 /**
@@ -91,6 +92,13 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
     name: { givenName: 'Ada', familyName: 'Bell' },
     roomNameKey: 'room.cell.name',
   }),
+  // #966 site 2's acknowledgement. `room.yard.name` and not the
+  // `room.cell.name` above it, so the two members carrying a `{room}` cannot
+  // agree by accident about which key a renderer resolved -- and the yard is
+  // the one room type that authors no object requirement, which is the room a
+  // sentence promising *function* would have been true of and false for the
+  // other seventeen.
+  'rooms.zoned': (sequence) => ({ sequence, tick: 100, type: 'rooms.zoned', roomNameKey: 'room.yard.name' }),
 };
 
 /**
@@ -185,6 +193,91 @@ describe('what the prison says when nothing went wrong', () => {
     );
     expect(sentence).toBe('Prisoner 3 had nowhere to sleep and moved to Cell.');
     expect(sentence, 'and no placeholder survives the fallback').not.toContain('{');
+  });
+
+  /**
+   * **The first sentence this game says when a player gets something right**
+   * (issue [#966](https://github.com/matmaxalez/lockstate/issues/966) site 2).
+   *
+   * The sweep at the top of this file already proves it resolves and leaves no
+   * `{` behind, which a row reading *"Cell designated."* and a row reading
+   * *"Cell designated — prisoners can use it now."* both satisfy identically.
+   * What is pinned here is the sentence **word for word**, because under
+   * `AGENTS.md` reservation 4's release of 2026-09-04 the wording is ours and
+   * its *truth* is not, and every clause of it is a claim about code:
+   *
+   * - **`{room}` is the type the press named**, resolved from the key the
+   *   event carried rather than from a word anybody wrote here -- which is why
+   *   both types are formatted and why the sample carries the yard.
+   * - **"designated" and nothing further.** The accepted outcome also holds the
+   *   rectangle, the anchor tile and an `enclosure` reading, and a sentence
+   *   mentioning any of them would claim more than the world has confirmed: a
+   *   `'sealed'` perimeter is #938's trap (identical for a reachable room and a
+   *   doorless one), and a registered instance has `residentCapacity: 0` until
+   *   an object stands in it.
+   *
+   * So this is a `toBe` rather than a `toContain`: any clause added to that
+   * sentence is a claim that has to be proved here first.
+   */
+  it('says which type was designated, and claims nothing further (#966)', () => {
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const sentenceFor = (roomNameKey: string): string => {
+      const notice = hudEventNoticeFromWorkerMessage(
+        publication({ sequence: 1, tick: 100, type: 'rooms.zoned', roomNameKey }),
+      );
+      if (notice === undefined || notice === 'none') throw new Error(`${roomNameKey} produced no notice`);
+      return localizer.format(
+        notice.labelKey,
+        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+      );
+    };
+
+    expect(sentenceFor('room.cell.name')).toBe('Cell designated.');
+    // The room type whose designation is complete on the tick it is created --
+    // `room.yard` authors no `object` requirement -- and still the same
+    // sentence, because "designated" is all either of them has earned.
+    expect(sentenceFor('room.yard.name')).toBe('Yard designated.');
+  });
+
+  /**
+   * **The grade, and it is a claim about the band rather than about the tone**
+   * (issue #966 site 2).
+   *
+   * `EVENT_PRESENTATION` grading this `'info'` is not a preference: it is what
+   * stops an acknowledgement deleting bad news. `admitToEventBand` promotes on
+   * *strictly* greater severity and **discards** the incumbent when it does, so
+   * a `'warning'` acknowledgement would take the line from an escape-attempt
+   * sentence the player had not finished reading, and the row it displaced
+   * would be gone below 720px where `hud.css` drops the alerts list.
+   *
+   * Asserted through the real translator rather than a hand-built notice --
+   * which is what `tests/unit/event-band-dwell.test.ts` uses, correctly, to
+   * prove the *decision* -- so that what is pinned here is this event type's
+   * grade and not the rule it is graded by.
+   */
+  it('grades the acknowledgement so it can never take the line from bad news (#966)', () => {
+    const noticeFor = (event: SimulationEvent): HudEventNoticeViewModel => {
+      const notice = hudEventNoticeFromWorkerMessage(publication(event));
+      if (notice === undefined || notice === 'none') throw new Error(`${event.type} produced no notice`);
+      return notice;
+    };
+    const zoned = noticeFor(SAMPLE['rooms.zoned'](1));
+    const escape = noticeFor(SAMPLE['incidents.escape-attempt-opened'](2));
+
+    expect(zoned.severity, 'the acknowledgement is the least severe thing this channel can say').toBe('info');
+
+    // Bad news on the line, the acknowledgement arriving well inside the floor:
+    // it must not paint, and it waits instead.
+    const showing = admitToEventBand(EMPTY_EVENT_BAND_DWELL_STATE, escape, 0);
+    const arriving = admitToEventBand(showing.state, zoned, 100);
+    expect(arriving.paint, 'the escape sentence keeps the line').toBe(escape);
+    expect(arriving.state.waiting, 'and the acknowledgement waits rather than being dropped').toBe(zoned);
+
+    // And the other direction, which is the half a `'warning'` grade would
+    // break: bad news arriving over an acknowledgement takes the line at once.
+    const acknowledged = admitToEventBand(EMPTY_EVENT_BAND_DWELL_STATE, zoned, 0);
+    const interrupted = admitToEventBand(acknowledged.state, escape, 100);
+    expect(interrupted.paint, 'bad news never waits behind an acknowledgement').toBe(escape);
   });
 
   it('carries a severity that says whether anything is wrong, which is the whole point of #507', () => {

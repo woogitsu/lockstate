@@ -1122,6 +1122,61 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // writes it.
   'hud.alert.event.prisoners.relocated': '{name} had nowhere to sleep and moved to {room}.',
 
+  /*
+   * The first thing this game says when a player gets something right (issue
+   * #966 site 2, from the acknowledgement census that issue and #960 carry:
+   * twenty event types, nineteen reachable, nine bad news, six undos, two
+   * recoveries, and no acknowledgement of anything anybody did).
+   *
+   * **Authored here rather than asked for, under `AGENTS.md` reservation 4's
+   * partial release of 2026-09-04** -- *"the CHOICE OF WORDS is ours now; the
+   * requirement that a sentence be TRUE is not"* -- so what follows is the
+   * proof of each clause against the code that renders it, which is what that
+   * release asks for in exchange.
+   *
+   * **`{room}`.** The room *type* that was designated, resolved from the room
+   * catalog's own `nameKey` -- `ZoneRoomAccepted.roomNameKey`, read in
+   * `RoomZoningService.zone` from the very definition that decided the
+   * request, and the same field `prisoners.relocated`'s `{room}` above
+   * resolves. It renders as "Cell", "Yard", "Canteen": the eighteen
+   * `room.*.name` entries at the top of this file. The instance the world
+   * registered carries `roomCatalogId: definition.id`, so the word and the
+   * type cannot disagree.
+   *
+   * **"designated".** The verb of the control the player pressed --
+   * `hud.rooms.confirm` is *"Designate {width} × {height}"* -- and the word
+   * this panel already uses for a room that exists but is not yet ready (see
+   * `hud.rooms.needs`: *"a room the player already designated"*). It is true
+   * at the moment this event is recorded: `zone` reaches its accepted outcome
+   * only after `SparseWorld.setZoning` has painted every tile of the rectangle
+   * with the definition's `numericId` and `RoomInstanceRegistry.register` has
+   * taken the instance, and the command handler records the event on that
+   * outcome.
+   *
+   * **And the full stop, which is the load-bearing part.** Two things the
+   * accepted outcome *knows* and this sentence must not say, both of them paid
+   * for already:
+   *
+   * - **Not that anybody can get in.** `ZoneRoomAccepted.enclosure` may read
+   *   `'sealed'` for a room with no doorway at all, which is
+   *   [#938](https://github.com/matmaxalez/lockstate/issues/938): the Rooms
+   *   panel's *"Walled in on every side"* renders identically for a reachable
+   *   room and a sealed box, and a prisoner in a doorless shower room measured
+   *   hygiene 0 of 255 with 162 route failures. So no clause here implies the
+   *   room will be *used*.
+   * - **Not that it works.** A registered instance has `residentCapacity: 0`
+   *   until an object stands in it, and every room type but `room.yard`
+   *   authors an `object` requirement -- which is why the needs readout
+   *   (`hud.rooms.needs-room`) exists at all. So no clause here promises
+   *   *function*, and none names what is still missing either: that is one
+   *   readout's job and it is already done.
+   *
+   * What is left is the narrow claim, which is also the one the player
+   * currently gets no word about: this designation was accepted and the world
+   * now holds this room.
+   */
+  'hud.alert.event.rooms.zoned': '{room} designated.',
+
   // The incident sentences (issue #555). Same family, same voice, written
   // against two constraints the two above did not have.
   //

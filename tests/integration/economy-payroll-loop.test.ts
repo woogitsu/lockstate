@@ -302,9 +302,34 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * only when. Kept rather than rewritten for that reason
      * (`docs/AGENT_WORKFLOW.md` §4).
      */
-    expect(runtime.events.since(0), 'the two rungs above the wages floor, crossed together before any payday is missed').toEqual([
-      { sequence: 1, tick: DAY_LENGTH_TICKS * 8 - 1, type: 'economy.deliveries-refused' },
-      { sequence: 2, tick: DAY_LENGTH_TICKS * 8 - 1, type: 'economy.construction-refused' },
+    /*
+     * **Narrowed to the `economy.*` family on 2026-09-04 (#966 site 2), and the
+     * old line is quoted rather than deleted** (`docs/AGENT_WORKFLOW.md` §4):
+     *
+     * > expect(runtime.events.since(0), '…').toEqual([
+     * >   { sequence: 1, tick: DAY_LENGTH_TICKS * 8 - 1, type: 'economy.deliveries-refused' },
+     * >   { sequence: 2, tick: DAY_LENGTH_TICKS * 8 - 1, type: 'economy.construction-refused' },
+     * > ]);
+     *
+     * An accepted `ZoneRoom` now says so, and this fixture zones its cells
+     * through the real command -- so the two crossings are no longer the first
+     * two things the session said, and the ordinals `1` and `2` were a fact
+     * about the fixture rather than about the ladder. The claim in the message
+     * is *which* rungs fire and that they fire **together**, and the shared
+     * tick is what carries "together"; the ordinals never did. What is dropped
+     * with them is nothing this case asserted: the filter still fails a ladder
+     * that fires a third `economy.*` event, in the wrong order, or on two
+     * different ticks.
+     */
+    expect(
+      runtime.events
+        .since(0)
+        .filter((event) => event.type.startsWith('economy.'))
+        .map((event) => ({ tick: event.tick, type: event.type })),
+      'the two rungs above the wages floor, crossed together before any payday is missed',
+    ).toEqual([
+      { tick: DAY_LENGTH_TICKS * 8 - 1, type: 'economy.deliveries-refused' },
+      { tick: DAY_LENGTH_TICKS * 8 - 1, type: 'economy.construction-refused' },
     ]);
 
     // **Day 12 is the first it cannot meet, and this read day 10 until the
@@ -381,7 +406,13 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     // And the ladder's whole shape in one assertion: two rung crossings while
     // solvent, then one wages-unpaid sentence per missed payday thereafter --
     // six events for six real things that happened, none of them repeated.
-    expect(runtime.events.since(0).map((event) => event.type)).toEqual([
+    //
+    // **Filtered to the `economy.*` family on 2026-09-04 (#966 site 2)**, for
+    // the reason the assertion earlier in this case is: an accepted `ZoneRoom`
+    // now says so, and this fixture zones eight cells through the real command,
+    // so the whole log is no longer this case's subject. The ladder's shape is,
+    // and none of it moves.
+    expect(runtime.events.since(0).map((event) => event.type).filter((type) => type.startsWith('economy.'))).toEqual([
       'economy.deliveries-refused',
       'economy.construction-refused',
       'economy.wages-unpaid',
