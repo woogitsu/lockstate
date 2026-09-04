@@ -28,10 +28,10 @@
  * - **act 2** -- a bed for everybody (6 beds, 6 prisoners). This is the
  *   discriminating comparison: if the hypothesis is the answer, six prisoners
  *   with six beds stand on six tiles.
- * - **act 3** -- the same prison twice over: 6 prisoners and **no** beds, then
- *   six beds placed **away from the room's anchor tile** while they stand
- *   there. Whichever tile they end up on, no bed is on it -- which is what
- *   separates "they stand on their bed" from "they stand on the room".
+ * - **act 3** -- act 2's prison, and then the bed standing on the tile they are
+ *   all on is **removed under them**. Nothing about the room changes; the tile
+ *   simply stops having a sleep surface on it. That is what separates "they
+ *   stand on their bed" from "they stand on the room".
  *
  * ## Two channels, read separately, and neither of them the DOM
  *
@@ -88,19 +88,15 @@
 import { test, type Page } from '@playwright/test';
 
 import {
-  armBuildable,
   buildAndPopulate,
-  buy,
   centreOf,
   currentTick,
   installTee,
   latestCounts,
   openApp,
-  panelText,
   press,
   runUntilTick,
   tab,
-  waitForQueueEmpty,
   TILE,
 } from './playtest-harness';
 
@@ -442,53 +438,61 @@ test('act 2: a bed for everybody -- the discriminating comparison', async ({ pag
   await readBothChannels(page, 'act2-again');
 });
 
-test('act 3: the same six prisoners, before and after beds that are not on the anchor', async ({ page }) => {
+test('act 3: take the bed off the anchor tile and see whether anybody moves', async ({ page }) => {
   await arrive(page);
-  // No beds at all. A zoned but unfurnished cell is a *wait* rather than a
-  // failure -- `IntakeSystem.hasAccommodationTarget`'s docblock says placing a
-  // bed later makes the find succeed on the next scheduled intake tick -- so
-  // this is the same six prisoners in both halves of the comparison.
-  const origin = await buildAndPopulate(page, { beds: 0, admits: 6, guards: 0, label: 'act3' });
+  /*
+   * **Act 2's prison exactly, and that is the point.** The first version of
+   * this act built a bedless cell and placed six beds itself on rows 14 and 16;
+   * it never got that far, because `waitForQueueEmpty` answered
+   * *"the queue is empty"* five seconds after twenty-four wall orders -- the
+   * Build panel's queue readout was `not laid out` and the helper treats that
+   * as empty (`playtest-harness.ts`) -- and the zoning that followed was then
+   * refused *"open on at least one side"* eleven times over ten minutes. That
+   * is the same instrument failure the previous pass recorded as its §9.1, hit
+   * from the other end, and it is recorded here rather than worked around
+   * because it cost this act a run.
+   *
+   * So this act reuses the one build sequence that has been measured working
+   * twice today and changes the prison **after** it is populated, which is a
+   * within-run differential in one prison rather than a comparison across two.
+   */
+  const origin = await buildAndPopulate(page, { beds: 6, admits: 6, guards: 0, label: 'act3' });
   await admitUntil(page, 6, 'act3');
+  await runUntilTick(page, (await currentTick(page)) + 4000);
 
-  await runUntilTick(page, (await currentTick(page)) + 3000);
-  console.log('[act3] --- BEFORE: six prisoners, one zoned cell, no bed in it ---');
+  console.log('[act3] --- BEFORE: six prisoners, six beds, one of them standing on the room anchor tile (12,12) ---');
   const before = await readBothChannels(page, 'act3-before');
 
-  // Six beds, on rows 14 and 16, columns 13..15 -- deliberately *not* on
-  // (12,12), which is the room's anchor tile and the id the registry mints the
-  // instance under (`roomInstanceIdFor`, `src/simulation/rooms/zoning.ts:404`).
-  // `buildAndPopulate` bought `beds + 2`, which is 2, so the rest are bought
-  // here.
+  /*
+   * `buildAndPopulate` places its beds along row 12 from column 12, so the
+   * first one stands on **(12,12)** -- which is also the rectangle's anchor and
+   * the tile the registry mints the instance id from (`roomInstanceIdFor`,
+   * `src/simulation/rooms/zoning.ts:404`, and the roster's own
+   * `accommodation=room.cell:12:12` above). Removing that one bed leaves five
+   * beds on (13,12)..(17,12) and **no sleep surface at all on (12,12)**.
+   *
+   * If the prisoners are standing on a bed, this is the moment somebody moves.
+   */
   await tab(page, 'build').click({ timeout: 15_000 });
-  await buy(page, 'bed-wooden', 8);
-  await armBuildable(page, 'bed-wooden');
-  const bedTiles: { tx: number; ty: number }[] = [];
-  for (const ty of [14, 16]) {
-    for (const tx of [13, 14, 15]) {
-      const point = centreOf(origin, tx, ty);
-      const commands = await press(page, point.x, point.y);
-      console.log(`[act3] bed order at (${tx},${ty}): ${commands.length} command(s) ${JSON.stringify(commands.map((c) => c['type']))}`);
-      bedTiles.push({ tx, ty });
-    }
-  }
-  console.log(`[act3] bed tiles ordered: ${JSON.stringify(bedTiles.map((t) => `${t.tx},${t.ty}`))} -- note (12,12) is NOT among them`);
-  await waitForQueueEmpty(page);
+  await page.locator('.hud-build__remove').click({ timeout: 15_000 });
+  const anchor = centreOf(origin, 12, 12);
+  const removal = await press(page, anchor.x, anchor.y);
+  console.log(`[act3] press on the anchor tile (12,12) at (${anchor.x},${anchor.y}) produced ${JSON.stringify(removal)}`);
+  await page.locator('.hud-build__remove').click({ timeout: 15_000 });
+  await runUntilTick(page, (await currentTick(page)) + 2000);
 
-  await runUntilTick(page, (await currentTick(page)) + 3000);
   const counts = await latestCounts(page);
   console.log(
-    `[act3] counts after the beds, tick ${counts?.tick}: accommodationCapacity=${counts?.accommodationCapacity}` +
-      ` roomOccupants=${counts?.roomOccupants}`,
+    `[act3] counts after removing the anchor bed, tick ${counts?.tick}: roomCapacity=${counts?.roomCapacity}` +
+      ` accommodationCapacity=${counts?.accommodationCapacity} roomOccupants=${counts?.roomOccupants}`,
   );
-  console.log('[act3] --- AFTER: the same six prisoners, six beds, none of them on the anchor tile ---');
+  console.log('[act3] --- AFTER: the same six prisoners, five beds, none of them on (12,12) ---');
   const after = await readBothChannels(page, 'act3-after');
 
+  const tiles = (rows: readonly RosterRow[]) => new Set(rows.map((r) => `${r.tile.x},${r.tile.y}`));
   console.log(
-    `[act3] the differential: before, ${before.roster.length} prisoner(s) on ` +
-      `${new Set(before.roster.map((r) => `${r.tile.x},${r.tile.y}`)).size} tile(s); after, ${after.roster.length} on ` +
-      `${new Set(after.roster.map((r) => `${r.tile.x},${r.tile.y}`)).size} tile(s)`,
+    `[act3] the differential: before, ${before.roster.length} prisoner(s) on ${[...tiles(before.roster)].join(' ')};` +
+      ` after, ${after.roster.length} on ${[...tiles(after.roster)].join(' ')}`,
   );
-  console.log(`[act3] rooms panel at the end: ${await panelText(page, '.hud-rooms')}`);
   console.log(`[act3] world origin was (${origin.originX},${origin.originY}); one tile is ${TILE}px`);
 });
