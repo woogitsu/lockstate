@@ -235,6 +235,10 @@ entity index … then guards"*, and the same two blocks in
 `render-actors-keyframe.ts`). So on a shared tile **the guard always wins and
 the prisoners are always the ones hidden.**
 
+**Corroborated by a natural experiment in act 3, and §11 has the frames**: the
+same tile drew an orange prisoner while six prisoners and no guard stood on it,
+and a blue guard once a guard joined them.
+
 **Two separate things, and they should not be merged.** (a) The simulation puts
 six prisoners on one tile — that is not the renderer's doing and is not this
 pass's finding to diagnose. (b) Given co-located actors, the renderer draws one
@@ -468,16 +472,29 @@ reading three files, but I never drew two actors on one tile *in a controlled
 way and swapped their order* — so "the guard wins because it is later in the
 array" is a reasoned explanation of a measured fact, not itself a measurement.
 
-**What would settle it:** two actors on one tile whose array order is known and
-reversed between two frames, with the sprite on top identified either way.
+**Act 3 turned out to contain the experiment I thought I lacked, and it makes
+this the *second*-weakest claim rather than the weakest.** Tile (12,12) held the
+same six prisoners throughout act 3's watching window, and the worker's own
+readout says a guard joined them between the first sample and the second:
 
-**Act 3 removed the one alternative explanation I was worried about.** *"Prisoner
-sprites are simply never drawn"* is excluded: `31-twenty-odd-actors-full-frame.png`
-draws an orange prisoner at (12,12), where the worker put six prisoners and no
-guard at that moment, and a guard at (16,16), where it put sixteen prisoners and
-six guards. So the population that wins a shared tile is the one the array puts
-last, exactly as the reading predicts — which is corroboration rather than the
-controlled swap, and I still call it the weakest claim here.
+```
+  t0 tick 21912: guards at 6 x "16.00,16.00"                       <- no guard at (12,12)
+  t2 tick 23800: guards at [...,"12.00,12.00",...]                 <- one guard at (12,12)
+```
+
+`30-watching-t0.png` draws an **orange prisoner** on that tile.
+`30-watching-t2.png` draws a **blue guard** on the same tile, with the same six
+prisoners still under it. So the sprite on top changed population exactly when
+the array gained a later member on that tile, which is the prediction. What is
+still not measured is a *deliberate* reversal of the array order.
+
+**So the weakest claim in this record is instead §6b's "the move is a
+teleport".** It is REASONED from 400 keyframes that never carried a non-zero
+velocity, a non-integer position, or an intermediate distance — but it is an
+argument from an absence over one 3,533-tick window in one prison shape.
+**What would change my mind:** a single keyframe anywhere carrying a non-zero
+`velocitySubX`/`velocitySubY`, or one position with a sub-tile component, in any
+prison.
 
 ---
 
