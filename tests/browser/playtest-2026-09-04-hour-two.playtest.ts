@@ -642,6 +642,140 @@ test.describe('Hour two — the prison after the first prisoner', () => {
   });
 
   /**
+   * **act 5 — twenty presses of Hire Guard, counted one at a time.**
+   *
+   * Cheap and dedicated, because three runs disagreed. Act 1 pressed Hire six
+   * times and got six guards; act 4 pressed four and got four; act 3 pressed
+   * **eight and got three**, with 43,040 in the treasury and no refusal about
+   * hiring anywhere on screen. That is either five presses my instrument lost
+   * or five hires the game dropped, and the difference matters enough to spend
+   * two minutes on: this act reads the staff count, the treasury, the control's
+   * own disabled state and the refusal band after **every single press**, and
+   * counts the commands the worker actually received.
+   *
+   * No prison is built. Hiring needs a duty for the role, and the default
+   * security sector is derived at `New prison`
+   * (`src/simulation/security/default-sector.ts`), so the Security tab is live
+   * on a bare prison.
+   */
+  test('act 5 — twenty presses of Hire Guard, one press at a time', async ({ page }) => {
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await tab(page, 'security').click();
+    const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
+    if ((await guardRow.count()) > 0) await guardRow.first().click();
+    console.log(`[act5] hire control reads: ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);
+    await fastForwardToMax(page);
+
+    const hireCommands = async (): Promise<number> =>
+      (await sentCommands(page)).filter((c) => c['type'] === 'HireStaff' || c['type'] === 'HireStaffMember').length;
+    console.log(`[act5] command types the tee has seen so far: ${JSON.stringify([...new Set((await sentCommands(page)).map((c) => String(c['type'])))])}`);
+
+    for (let index = 1; index <= 20; index += 1) {
+      const before = await hireCommands();
+      let threw = '';
+      try {
+        await page.locator('.hud-staff__hire').click({ timeout: 5_000 });
+      } catch (error) {
+        threw = String(error).split('\n')[0] ?? 'threw';
+      }
+      await page.waitForTimeout(400);
+      const counts = await latestCounts(page);
+      console.log(
+        `[act5] press ${index}: commands ${before}->${await hireCommands()}` +
+          ` | staff=${counts?.staff} wageBill=${counts?.dailyWageBillMinorUnits} funds=${counts?.treasuryMinorUnits}` +
+          ` | aria-disabled=${await page.locator('.hud-staff__hire').getAttribute('aria-disabled')}` +
+          ` | refusal=${JSON.stringify(await panelText(page, '.hud__refusal'))}${threw === '' ? '' : ` | PRESS THREW: ${threw}`}`,
+      );
+    }
+    await page.waitForTimeout(2_000);
+    console.log(`[act5] FINAL counts: ${JSON.stringify(await latestCounts(page))}`);
+    console.log(`[act5] FINAL staff panel: ${(await panelText(page, '.hud-staff')).replace(/\n/g, ' / ')}`);
+    console.log(`[act5] FINAL strip: ${(await panelText(page, '.hud-strip__metrics')).replace(/\n/g, ' | ')}`);
+    console.log(`[act5] FINAL alerts: ${(await panelText(page, '.hud-alerts__list')).replace(/\n/g, ' / ')}`);
+  });
+
+  /**
+   * **act 6 — what one more room costs, in ticks, with the clock stopped while
+   * it is drawn.**
+   *
+   * Acts 1, 3 and 4 all reached a populated prison somewhere around in-game day
+   * 11, but none of them can say how much of that was *construction* and how
+   * much was this instrument's own round trips at 4x — a loaded box turns every
+   * `page.evaluate` into tens of simulation ticks. So this act draws the
+   * perimeter **paused**, which costs the clock nothing, and only then starts
+   * it and polls. What comes out is the number a player actually waits: from
+   * "the orders are in" to "the panel says nothing is left".
+   */
+  test('act 6 — the cost of a perimeter, drawn while paused', async ({ page }) => {
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await tab(page, 'build').click();
+    const origin = await calibrate(page, { x: 700, y: 300 }, 16);
+    console.log(`[act6] calibration: (${origin.originX}, ${origin.originY})`);
+
+    await buy(page, 'wall-brick', 60);
+    await fastForwardToMax(page);
+    // Let the delivery land, and time it.
+    const orderedAt = await currentTick(page);
+    for (let poll = 0; poll < 60; poll += 1) {
+      const deliveries = await panelText(page, '.hud-build__deliveries');
+      if (deliveries.includes('not laid out') || deliveries.includes('ABSENT')) {
+        console.log(`[act6] the 60 bricks landed by tick ${await currentTick(page)} (${(await currentTick(page)) - orderedAt} ticks after the clock started)`);
+        break;
+      }
+      await page.waitForTimeout(1_000);
+    }
+
+    await page.locator('.hud-strip__transport button').nth(0).click();
+    await page.waitForTimeout(500);
+    const pausedAt = await currentTick(page);
+    console.log(`[act6] paused at tick ${pausedAt}, clock ${JSON.stringify(await currentClock(page))}`);
+
+    await armBuildable(page, 'wall-brick');
+    const westX = origin.originX + 12 * TILE;
+    const eastX = origin.originX + 18 * TILE;
+    const northY = origin.originY + 12 * TILE;
+    const southY = origin.originY + 18 * TILE;
+    let placed = 0;
+    for (const run of [
+      { name: 'north', a: { x: westX + TILE / 2, y: northY }, b: { x: eastX - TILE / 2, y: northY } },
+      { name: 'south', a: { x: westX + TILE / 2, y: southY }, b: { x: eastX - TILE / 2, y: southY } },
+      { name: 'west', a: { x: westX, y: northY + TILE / 2 }, b: { x: westX, y: southY - TILE / 2 } },
+      { name: 'east', a: { x: eastX, y: northY + TILE / 2 }, b: { x: eastX, y: southY - TILE / 2 } },
+    ]) {
+      const before = (await sentCommands(page)).length;
+      await drag(page, run.a, run.b);
+      placed += (await sentCommands(page)).slice(before).length;
+    }
+    const drawnAt = await currentTick(page);
+    console.log(`[act6] ${placed} order(s) drawn while paused; the clock moved ${drawnAt - pausedAt} tick(s) while drawing`);
+    console.log(`[act6] queue with the clock stopped: ${JSON.stringify((await panelText(page, '.hud-build__queue')).replace(/\n/g, ' '))}`);
+
+    await fastForwardToMax(page);
+    const startedAt = await currentTick(page);
+    let lastText = '';
+    for (let poll = 0; poll < 400; poll += 1) {
+      const text = (await panelText(page, '.hud-build__queue')).replace(/\n/g, ' ');
+      const tick = await currentTick(page);
+      if (text !== lastText) {
+        console.log(`[act6] tick ${tick} (+${tick - startedAt}): ${JSON.stringify(text)}`);
+        lastText = text;
+      }
+      if (/(?<![0-9])0 waiting . 0 being built/.test(text) || text.includes('not laid out') || text.includes('ABSENT')) {
+        const done = await currentTick(page);
+        console.log(
+          `[act6] THE PERIMETER IS UP at tick ${done}: ${done - startedAt} ticks for ${placed} wall segments` +
+            ` = ${((done - startedAt) / placed).toFixed(1)} ticks each, ${((done - startedAt) / DAY_LENGTH_TICKS).toFixed(2)} in-game days for the room`,
+        );
+        break;
+      }
+      await page.waitForTimeout(500);
+    }
+    console.log(`[act6] FINAL counts: ${JSON.stringify(await latestCounts(page))}`);
+  });
+
+  /**
    * **act 4 — the long hands-off run.** The cheapest build that houses
    * everybody it admits (17 beds on rows two apart, so none collides), then
    * eight more admissions than there are beds, four guards, and then **nothing
