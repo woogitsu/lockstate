@@ -1,7 +1,7 @@
 import type { SimulationSpeed } from '../simulation/clock/fixed-step-clock';
 import type { SimulationCommand } from '../simulation/protocol/commands';
 import { packCommand } from '../simulation/protocol/commands';
-import type { MainToWorkerMessage, WorkerToMainMessage } from '../simulation/protocol/types';
+import type { MainToWorkerMessage, ProtocolFaultCode, WorkerToMainMessage } from '../simulation/protocol/types';
 import { SIMULATION_PROTOCOL_VERSION } from '../simulation/protocol/types';
 import {
   SESSION_SNAPSHOT_SCHEMA_ID,
@@ -33,7 +33,9 @@ import {
  * command was posted carries a stale count, and letting it pull the counter
  * back would manufacture the duplicate it was trying to avoid. A rejection
  * clears the sync flag instead, so the next snapshot re-baselines in either
- * direction.
+ * direction -- except the one refusal that states the kernel's own count, for
+ * which waiting on a snapshot is what turned one dropped press into a dropped
+ * run (#942, `observeRejection`).
  *
  * **The tick is held to the same rule, and for a sharper reason.** The
  * *estimate* of where the kernel has got to is allowed to move backwards -- a
@@ -68,15 +70,59 @@ export interface SimulationCommandSenderOptions {
    * throttled or non-compositing tab stops the render feed polling, at which
    * point the report is tens of seconds stale and every order is rejected as
    * "scheduled in the past".
+   *
+   * **Denominated in ticks at ×1, and therefore in real time.** What it has
+   * to cover is a *real-time* latency -- how long a tick report takes to
+   * reach this thread, and how long this thread's own message takes to reach
+   * the worker -- so `projectFromClock` scales it by the clock speed exactly
+   * as it scales elapsed time. Twenty is one second of tolerance at every
+   * speed rather than at one of them (#942, below).
    */
   readonly leadTicks?: number;
   /** Injected so a test is not tied to a real clock. */
   readonly now?: () => number;
 }
 
-const DEFAULT_LEAD_TICKS = 20; // 1 second at the kernel's 20 Hz.
+/**
+ * One second of real-time tolerance, expressed in the kernel's own step.
+ *
+ * **The number is unchanged; what it means is fixed (#942).** This was `20`
+ * with the comment *"1 second at the kernel's 20 Hz"*, and that sentence was
+ * true at ×1 and false at every other speed: the worker converts `elapsed *
+ * speed` into whole steps of `TICK_MILLISECONDS`, so twenty ticks of *kernel*
+ * time is 500 ms of real time at ×2 and **250 ms at ×4**.
+ *
+ * **What has to fit inside it is the interval between a tick report being
+ * produced and being read**, and that is narrower than it sounds: a main
+ * thread that is merely *busy* and then presses is fine, because
+ * `projectFromClock` carries its anchor forward by however long ago it read
+ * it. What the margin covers is the work that happens between a message
+ * arriving and this class reading it -- the deserialisation of a session
+ * bundle, and every listener registered ahead of this one, which in
+ * `src/main.ts` means the whole render feed. Longer than the margin, and the
+ * command is refused as `past-tick`; before #942 that refusal also disabled
+ * the whole control surface until the next snapshot (see `observeRejection`).
+ * Measured live at ×4: twenty-five `Admit` presses produced seventeen
+ * prisoners, and eight `Hire Guard` presses produced three guards. Measured
+ * in the assembled page at ×4 with a report read 400 ms late: *"Cannot
+ * schedule command in the past: tick 905 < current 923"*, and nothing on
+ * screen or in the console saying so
+ * (`tests/browser/command-lead-at-speed.spec.ts`).
+ *
+ * So the margin is scaled by speed in `projectFromClock` and the comment is
+ * true again at every speed. What it costs a player is unchanged in the units
+ * they experience -- an order still starts up to one *real* second after the
+ * press -- and it costs more *kernel* ticks at speed, which is the same
+ * statement.
+ */
+const DEFAULT_LEAD_TICKS = 20;
 /** `FixedStepClock`'s step. The worker converts `elapsed * speed` into whole steps of this size. */
 const TICK_MILLISECONDS = 50;
+/**
+ * The fault code a `past-tick` refusal arrives as. See `observeRejection` for
+ * why that is `invalid-state` and what makes reading it back sound.
+ */
+const PAST_TICK_FAULT_CODE: ProtocolFaultCode = 'invalid-state';
 
 export class SimulationCommandSender {
   private ready = false;
@@ -184,11 +230,24 @@ export class SimulationCommandSender {
    * the kernel has got to*, and it is allowed to move backwards when a pause
    * replaces an estimate with the exact truth. `highestSubmittedTick` is about
    * *what has already been submitted*, and it is the half that must not.
+   *
+   * **Both terms are the same kind of quantity, and are converted the same
+   * way (#942).** Elapsed time and the margin are both *real* milliseconds --
+   * one of them measured, one of them budgeted -- and the kernel converts real
+   * time into ticks at `speed / TICK_MILLISECONDS`. The margin used to be
+   * added afterwards, in ticks, which silently made it a real-time budget of
+   * `1000 / speed` milliseconds: one second at ×1 and 250 ms at ×4. Adding it
+   * before the conversion is what makes one line cover latency at every speed.
+   *
+   * At ×1 this is arithmetically the expression it replaces, tick for tick:
+   * `leadTicks * speed` is an integer, so moving it inside `Math.ceil` cannot
+   * change the result.
    */
   private projectFromClock(): number {
     if (!this.clockRunning) return this.lastTick;
     const elapsed = Math.max(0, this.now() - this.lastTickAt);
-    return this.lastTick + Math.ceil((elapsed * this.clockSpeed) / TICK_MILLISECONDS) + this.leadTicks;
+    const margin = this.leadTicks * TICK_MILLISECONDS;
+    return this.lastTick + Math.ceil(((elapsed + margin) * this.clockSpeed) / TICK_MILLISECONDS);
   }
 
   private noteTick(tick: number): void {
@@ -323,9 +382,10 @@ export class SimulationCommandSender {
         break;
 
       case 'simulation/command-result':
-        // A rejection means our idea of the sequence is wrong in an unknown
-        // direction. Drop the baseline and let the next snapshot restate it.
-        if (message.payload.status === 'rejected') this.sequenceSynced = false;
+        // A rejection is *usually* our idea of the sequence being wrong in an
+        // unknown direction, and then the baseline is dropped and the next
+        // snapshot restates it. `observeRejection` carries the one exception.
+        if (message.payload.status === 'rejected') this.observeRejection(message.payload);
         // Acceptance is what marks the session dirty (#146). This branch is
         // the main thread's only observation of "the simulation has taken
         // something the player did", which is the semantics that issue calls
@@ -359,6 +419,80 @@ export class SimulationCommandSender {
     }
   }
 
+  /**
+   * What a refusal says about where the command count now stands.
+   *
+   * **Why this is not one line any more (#942).** Dropping the baseline on
+   * every rejection is right for a rejection *"wrong in an unknown
+   * direction"*, and `canSend` then reports `false` until a snapshot restates
+   * the count -- which is at most one render-feed consistency poll away, and
+   * that poll is **thirty seconds** long (`DEFAULT_POLL_INTERVAL_SECONDS`,
+   * `src/rendering/feed/simulation-snapshot-feed.ts`; the feed marks itself
+   * dirty on a `queued` result and not on a `rejected` one, so nothing brings
+   * the snapshot forward). Every press in that window throws instead of
+   * becoming a command. One refused press disabled the control surface.
+   *
+   * **One of the three refusals is wrong in a known direction, and it is the
+   * one this defect produces.** `Kernel.submitCommand` checks the sequence
+   * before the tick, so a `past-tick` refusal is *proof* that the sequence was
+   * exactly the one the kernel expected -- and it throws before
+   * `_expectedSequence++`, so the kernel still expects it. The baseline is
+   * therefore not unknown: it is the sequence just refused. Rewinding to it
+   * keeps the count synchronised, and the next press is a command again rather
+   * than a throw.
+   *
+   * The other two are genuinely unknown. `duplicate-sequence` says the
+   * kernel's count is *above* ours by an amount only a snapshot carries;
+   * `sequence-gap` says it is *below* ours, and re-sending the same number
+   * would earn the same refusal for ever. Both keep the old behaviour.
+   *
+   * ### Reading `past-tick` off `invalid-state`
+   *
+   * The reason arrives as a `ProtocolFaultCode`, and `past-tick` maps to
+   * `invalid-state` (`COMMAND_REJECTION_FAULT_CODES`,
+   * `src/simulation/worker/state-machine.ts`) because the twelve-code
+   * vocabulary has no member for scheduling in the past. On the
+   * `simulation/command-result` channel that mapping is currently one-to-one:
+   * the only value posted with `status: 'rejected'` is the one built in
+   * `handleSubmitCommand`'s `catch`, and the only thrower inside that `try` is
+   * `Kernel.submitCommand`, whose three typed refusals map to three distinct
+   * codes. The inference is therefore sound today and **not pinned by this
+   * file's own fixture**: `tests/unit/ui-simulation-commands.test.ts` drives a
+   * real `SimulationWorkerStateMachine` with a real `Kernel` for these cases,
+   * so a change to that mapping fails here rather than going quietly.
+   *
+   * **And being wrong costs one press, not a session.** If some future
+   * untyped throw inside that `try` reported `invalid-state` for a command the
+   * kernel *had* counted, this rewind would resend a number already taken; the
+   * kernel answers `duplicate-sequence`, which lands in the branch below and
+   * drops the baseline exactly as it does today. That is the whole exposure,
+   * and it is why the narrow reading is preferred to leaving the cascade in
+   * place.
+   *
+   * Only a refusal of the command most recently submitted says anything about
+   * where the count stands -- `sequence` is compared against the counter this
+   * class advanced when it sent that command. Anything else is out of date,
+   * and "drop the baseline" is the honest answer to a message this class
+   * cannot place.
+   *
+   * `highestSubmittedTick` is deliberately left where it is. A `past-tick`
+   * refusal proves that floor is already behind the kernel, so
+   * `projectFromClock` dominates it from the next press onward and lowering it
+   * would only reopen the inversion ADR 0056 closed.
+   */
+  private observeRejection(
+    payload: Extract<
+      Extract<WorkerToMainMessage, { kind: 'simulation/command-result' }>['payload'],
+      { status: 'rejected' }
+    >,
+  ): void {
+    if (payload.fault.code === PAST_TICK_FAULT_CODE && payload.sequence === this.nextSequence - 1) {
+      this.nextSequence = payload.sequence;
+      return;
+    }
+    this.sequenceSynced = false;
+  }
+
   private baseline(payload: Extract<WorkerToMainMessage, { kind: 'simulation/snapshot' }>['payload']): void {
     const { snapshot } = payload;
     if (snapshot.schemaId !== SESSION_SNAPSHOT_SCHEMA_ID || snapshot.transport !== 'structured-clone') return;
@@ -387,11 +521,19 @@ export class SimulationCommandSender {
    * (`tests/helpers/determinism-scenario.ts`), restored paused at tick 0.
    *
    * **What it costs a player is one lead, not one queue.** Every command a
-   * shipped sender submits carries at most `lastTick + elapsed + leadTicks`,
-   * so a save this application wrote can hold nothing more than a lead ahead
-   * of the tick it resumes at -- the same one second the live case already
-   * pays, and the reason the seed is not gated on how far ahead the queue
-   * reaches. A save carrying a command *far* ahead is reachable only by a hand
+   * shipped sender submits carries at most
+   * `lastTick + ceil((elapsed + margin) * speed / 50)`, so a save this
+   * application wrote can hold nothing more than a lead ahead of the tick it
+   * resumes at -- the same one *real* second the live case already pays, and
+   * the reason the seed is not gated on how far ahead the queue reaches.
+   * **Since #942 that lead is speed-scaled**, so a save captured at ×4 can
+   * carry a command up to eighty ticks ahead rather than twenty, and a session
+   * that resumes it at ×1 waits four seconds of game time for its first order
+   * instead of one. Recorded rather than capped, for the reason the paragraph
+   * below gives about caps: one real second of latency tolerance at the speed
+   * the order was given is the property that keeps a run of presses a run, and
+   * trading it for a shorter worst case after a load would reopen the defect
+   * live. A save carrying a command *far* ahead is reachable only by a hand
    * written or corrupted bundle: `kernelSnapshotSchema` validates `tick` and
    * each `executeAtTick` as independent non-negative integers and never the
    * relation between them (`src/persistence/save-schema.ts`). Such a bundle
