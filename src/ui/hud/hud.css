@@ -1756,6 +1756,25 @@
    panel has least of. */
 .hud-build__queue-shortfall[hidden] { display: none; }
 
+/*
+ * And once more, for the sentence that says a queue waits on the clock
+ * (`hud.build.note`, #920 and the owner's first ruling of 2026-08-30 in #639).
+ *
+ * This one has to beat **two** author `display` declarations rather than one.
+ * `.hud-build__note` takes `display: -webkit-box` from the `max-height: 700px`
+ * block at the foot of this file, and `.hud-build__order-note` takes
+ * `display: block` from that block's own clamp exemption below -- so the user
+ * agent's `[hidden] { display: none }` loses twice. A class and an attribute
+ * beats one class either way, which is what makes one rule enough.
+ *
+ * It is hidden in the arrival state, which is every state a player loads the
+ * game into, and that is exactly the state this panel has no height for: an
+ * always-laid-out line measured 27px of panel overflow at 1280x720 and 9px at
+ * 900x600 against 0 without it. See `orderNote` in `build-panel.ts` for the
+ * whole table and for what replaced PR #647's.
+ */
+.hud-build__order-note[hidden] { display: none; }
+
 /* The same trap once more, for the line that says what stops a Buy press (the
    owner's sentence of 2026-09-03, `hud.build.buy-shortfall`). It is hidden in
    every state a solvent prison has, and it lives *inside* `.hud-build__buy`,
@@ -2600,9 +2619,18 @@
 
   /* The one `.hud-staff__note` that is not clamped (#639, the owner's ruling of
      2026-08-30). The shape is PR #647's, which exempts `.hud-build__order-note`
-     from this same block for the same kind of sentence -- that branch is not
-     merged as this is written, so the selector it adds is not in this file yet
-     and the citation is to the pull request rather than to a rule below.
+     from this same block for the same kind of sentence.
+
+     **The two sentences after that used to read** *"that branch is not merged
+     as this is written, so the selector it adds is not in this file yet and the
+     citation is to the pull request rather than to a rule below."* True on
+     2026-08-31: PR #647 merged with the note's renderer dropped, and the
+     selector came in with it. **False from 2026-09-04**, when #920 landed the
+     renderer on the one predicate the arrival state can afford -- the rule is
+     the next one below and the citation is to it as well as to the pull
+     request. Marked rather than overwritten, because the interval is the
+     finding: a citation into a *rule* rots when the rule arrives, which is the
+     opposite direction from the one `docs/AGENT_WORKFLOW.md` §4 warns about.
      `hud.security.hire-unassigned` -- "A new guard
      starts unassigned." -- is the half of the old hire hint the approved
      wording displaced, and the measurement that displaced it is why it comes
@@ -2629,8 +2657,43 @@
     overflow: visible;
   }
 
-  /* The priced hire sentence itself, exempted on the same terms as the two
-     rules below and above it -- and this one was forced by the owner's second
+  /* The Build panel's queued-order sentence, exempted on the same terms and by
+     the same argument -- and this is the selector the block above cites as
+     *"not in this file yet"*, because PR #647 added it on a branch whose
+     renderer was dropped before the merge. It is here now (#920), under the
+     same class name that branch chose.
+
+     **Half of this sentence is worse than none, which is what makes an
+     exemption the only option rather than the generous one.** Clamped to one
+     line at 900x600 the box is 238x13.2 with `scrollHeight` over
+     `clientHeight`, and what survives is *"An order is queued now and built
+     while the..."* -- the half saying the order was taken, with the half saying
+     nothing happens until the clock runs cut off. A player who has just spent
+     1,920 on twenty-four orders reads that as a confirmation. Measured on the
+     assembled page at 900x600 on 2026-09-04; PR #647 measured the identical
+     `scrollHeight` 26 against `clientHeight` 13 at the same viewport in August
+     and drew the same conclusion.
+
+     What the exemption costs, in the only state it is laid out in: two lines
+     instead of one, so 26.4px instead of 13.2px, and the panel's overflow in
+     the queued state goes from 191 to about 208 at 900x600. That is height in a
+     box which is already 178px over its content there and is `overflow-y: auto`
+     -- the same currency `.hud-staff__hire-unassigned` above is paid in, and
+     the same reason: one more line of eyebrow text moves a scroll threshold and
+     loses nothing. The sentence's own box stays inside the panel's unscrolled
+     fold at y=424.9..451.3 of 521.7, which is the property that matters and the
+     one the fold placement could not deliver at any viewport.
+
+     `.hud-build__order-note[hidden]` above still wins over this rule -- a class
+     and an attribute against one class -- so the arrival state stays free. */
+  .hud-build__order-note {
+    display: block;
+    -webkit-line-clamp: none;
+    overflow: visible;
+  }
+
+  /* The priced hire sentence itself, exempted on the same terms as the other
+     exemptions in this block -- and this one was forced by the owner's second
      ruling of 2026-09-03 rather than chosen. `hud.security.hire-hint` gained
      the words *"including today"* because without them it was false on the
      first press of a new game: hiring bills two days' wage for the day it
