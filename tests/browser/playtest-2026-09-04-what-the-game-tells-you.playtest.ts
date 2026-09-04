@@ -493,4 +493,64 @@ test.describe('what the game tells you', () => {
     logSample('3c-ii-after-New-prison', afterNewPrison);
     console.log(`  events across the whole act: ${JSON.stringify(await eventStream(page))}`);
   });
+  /**
+   * Act 4 -- does anything survive a reload, and does the same order cancelled
+   * two ways say two things.
+   *
+   * Two questions the census left open. ADR 0084 decision 4 makes an *event*
+   * row survive a reload; nothing says what happens to the refusal row and the
+   * band beside it. If the refusal does not come back, **reloading the page is
+   * the second clearing gesture a player has** -- and it is not in any
+   * document.
+   */
+  test('act 4: a reload, and one order cancelled two ways', async ({ page }) => {
+    test.setTimeout(560_000);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    // A refusal on the band, from the calibration's presses on empty tiles.
+    await tab(page, 'build').click();
+    const origin = await calibrate(page);
+
+    // An event row, the cheapest one available: a build order placed against a
+    // paused clock and then cancelled from the Build panel's queue row.
+    await buy(page, 'wall-brick', 10);
+    await armBuildable(page, 'wall-brick');
+    const wall = centreOf(origin, 14, 10);
+    const placed = await press(page, wall.x, wall.y);
+    console.log(`  the wall press produced: ${JSON.stringify(placed)}`);
+    await page.waitForTimeout(800);
+    console.log(`  queue: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+    const cancelRow = page.locator('.hud-build__queue [data-order] .ui-icon-button, .hud-build__queue .ui-icon-button');
+    console.log(`  cancel controls in the queue: ${await cancelRow.count()}`);
+    if ((await cancelRow.count()) > 0) {
+      await cancelRow.first().click({ timeout: 15_000 });
+      await page.waitForTimeout(1200);
+    }
+    const beforeReload = await wordSample(page);
+    logSample('4a-before-the-reload', beforeReload);
+    console.log(`  events: ${JSON.stringify(await eventStream(page))}`);
+
+    console.log('=== 4b: save, reload the page, load it back ===');
+    await page.getByRole('button', { name: 'Save now' }).click();
+    await page.waitForTimeout(2500);
+    console.log(`  save panel: ${JSON.stringify((await panelText(page, '.save-panel')).replace(/\n/g, ' | '))}`);
+    await page.reload();
+    await page.waitForSelector('#game-root canvas');
+    await page.waitForSelector('.save-panel');
+    await page.waitForTimeout(1500);
+    const afterReloadBeforeLoad = await wordSample(page);
+    logSample('4b-after-reload-nothing-loaded', afterReloadBeforeLoad);
+    const rows = page.locator('.save-panel__item');
+    console.log(`  prison rows on the panel: ${await rows.count()}`);
+    if ((await rows.count()) > 0) {
+      await rows.first().click({ timeout: 15_000 });
+      await page.waitForTimeout(3000);
+    }
+    const afterLoad = await wordSample(page);
+    logSample('4b-after-loading-the-prison-back', afterLoad);
+    console.log(`  counts: ${JSON.stringify(await rawCounts(page))}`);
+    console.log(`  events after the reload: ${JSON.stringify(await eventStream(page))}`);
+  });
 });

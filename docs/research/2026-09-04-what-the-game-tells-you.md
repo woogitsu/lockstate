@@ -74,6 +74,7 @@ LOCKSTATE_BROWSER_TEST_PORT=5325 node node_modules/@playwright/test/cli.js test 
 | `act 1` | a new prison, one Admit press, a cell built round it, and the band watched for 60 s of play | passed (2.5m) |
 | `act 2` | twelve prisoners, no guards, 56 samples of every region over ticks 8,697–28,824, then the clearability pass | passed (6.9m) |
 | `act 3` | what retires a sentence: a host refusal, an unenclosed rectangle, two identical refusals, an unaffordable purchase, and `New prison` | passed (1.0m) |
+| `act 4` | a reload: a refusal on the band, `Save now`, `page.reload()`, and the prison loaded back | passed (56s) |
 
 ## 1. The band held one sentence for the whole session, and it was false
 
@@ -323,6 +324,44 @@ purchase attempt — and cleared by exactly one gesture:
 
 **JUDGEMENT.** "Throw the prison away" is not a dismissal gesture.
 
+## 5b. Reloading the page is the second clearing gesture, and nothing says so
+
+**MEASURED, act 4.** A prison with a removal refusal standing, saved, the page
+reloaded, and the same prison loaded back:
+
+```
+[4a-before-the-reload] tick=-1 day=1
+  BAND    : "Nothing was removed — there is no object on that tile, and none being built there."
+  ALERTS  : 1 row(s)
+      [ ] refusal-13 :: Nothing was removed — there is no object on that tile, and none being built there. Warning
+
+  save panel: "PRISONS | New prison | Save now | Export | Import | New Prison (3 gen) | Load | Delete | Saved (generation gen-mtnm3dg0-3)."
+
+[4b-after-loading-the-prison-back] tick=-1 day=1
+  BAND    : ""
+  ALERTS  : 1 row(s)
+      [ ] empty :: No active alerts
+  counts: {... "treasuryMinorUnits":24600 ...}
+```
+
+The prison came back — the treasury is 24,600, which is the opening 25,000 less
+the 400 the ten bricks cost — and **the sentence did not**. So a player has two
+ways to clear the band after all: throw the prison away, or reload the browser.
+**JUDGEMENT:** the second is not a gesture anyone would find, and neither is
+documented; `docs/HUD_PROJECTIONS.md` gap 34 says *"there is no **player**
+gesture that dismisses a refusal"*, which is true of anything inside the game
+and misses that F5 is one.
+
+**What this does NOT establish.** Whether ADR 0084 decision 4's promise — that a
+dismissed *event* row stays dismissed and a restored session republishes its
+rows — survives the same reload. This run produced **no events at all**
+(`events: []`), because the queue-row cancel control I reached for was not where
+I looked: the rows are `.hud-build__queue-row` inside `.hud-build__queue-list`
+(`src/ui/hud/build-panel.ts:2128`, `:2195`), and my selector was
+`.hud-build__queue .ui-icon-button`, which found none. **The `cancel controls in
+the queue: 0` line in the log is a selector miss and not a finding**, and it is
+recorded here so nobody reads it as one.
+
 ## 6. The same event, twice, saying the identical thing — and one event with two sentences
 
 **MEASURED, act 3.** Two presses of `Remove` on empty tiles, the second on a
@@ -566,10 +605,10 @@ defect.
   approached and **I did not measure what a full column does or which rows
   `SEVERITY_EVICTION_ORDER` drops in play**. The collapsing rule makes the cap
   much harder to reach than the row count suggests.
-- **A reload.** Whether the alerts log comes back after a page reload (ADR 0084
-  decision 4 says event rows do) and whether the stale refusal does — which
-  would make reloading the page a second, accidental clearing gesture. Not
-  played.
+- **Whether an *event* row survives a reload.** Act 4 established that the
+  refusal and its row do not (§5b), and produced no event rows to test the other
+  half with, for the selector reason §5b records. ADR 0084 decision 4 says they
+  should; nobody has played it.
 - **The panel notes.** The census covers the two bands, the alerts column and the
   strip. The Build, Rooms, Staff and Regime panels each carry sentences I sampled
   only incidentally.
