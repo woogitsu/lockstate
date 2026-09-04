@@ -500,6 +500,42 @@ async function runAndWatch(page: Page, label: string, targetTick: number, starte
   }
 }
 
+/**
+ * Every `simulation/event` the worker published, by type, with the ticks.
+ *
+ * The four-prisoner note's §5.1 read the incident story off the event *band* --
+ * one sentence at a time, whatever was on screen when it looked -- and found
+ * the strongest thing in the file that way. This reads the channel instead, so
+ * the sequence is complete rather than sampled: `incidents.riot-opened` carries
+ * a `participantCount`, and the ceiling `DEFAULT_SECTOR_RISK_POLICY`'s docblock
+ * derives for a *built* prison ("two of six at zero is a ceiling of about 0.48
+ * on `needsPressure`, under the 0.65 line") predicts there will be none of
+ * them here.
+ */
+async function printEvents(page: Page, label: string): Promise<void> {
+  const events = (await page.evaluate(() => {
+    const messages = (window as unknown as { lockstateFromWorker?: unknown[] }).lockstateFromWorker ?? [];
+    const out: { tick: number; type: string; extra: string }[] = [];
+    for (const message of messages) {
+      const envelope = message as { kind?: string; payload?: { tick: number; event?: Record<string, unknown> } };
+      if (envelope.kind !== 'simulation/event' || envelope.payload?.event === undefined) continue;
+      const event = envelope.payload.event;
+      const extra: Record<string, unknown> = {};
+      for (const key of ['participantCount', 'severity', 'sectorId', 'contained', 'injured'])
+        if (event[key] !== undefined) extra[key] = event[key];
+      out.push({ tick: envelope.payload.tick, type: String(event['type'] ?? '?'), extra: JSON.stringify(extra) });
+    }
+    return out;
+  })) as { tick: number; type: string; extra: string }[];
+  const tally = new Map<string, number>();
+  for (const event of events) tally.set(event.type, (tally.get(event.type) ?? 0) + 1);
+  note(`[${label}] ===== ${events.length} simulation/event(s), by type =====`);
+  for (const [type, count] of [...tally.entries()].sort()) note(`[${label}] event ${type} x${count}`);
+  for (const event of events.filter((candidate) => candidate.type.startsWith('incidents.'))) {
+    note(`[${label}] incident event tick=${event.tick} ${event.type} ${event.extra}`);
+  }
+}
+
 /** Prints the treasury at every in-game day boundary the counts series crossed. */
 function printCurve(label: string, series: readonly Counts[]): void {
   note(`[${label}] ===== the treasury curve, read at every in-game day boundary =====`);
@@ -721,6 +757,30 @@ async function zoneTheYard(page: Page, label: string, origin: { originX: number;
   return false;
 }
 
+/**
+ * Stops the clock, so that a phase costing wall-clock time costs no in-game
+ * time.
+ *
+ * **The reason is discharge, and act F's first run is the evidence.** A
+ * sentence is drawn uniformly from 14 to 90 in-game days
+ * (`MIN_SENTENCE_DAYS`/`MAX_SENTENCE_DAYS`, `src/simulation/prisoners/sentence.ts`),
+ * so a prison stays fifty strong for exactly fourteen days after its intake
+ * and then starts losing people. That run spent **597 seconds of wall clock**
+ * pressing Hire Guard 130 times with the clock at 4x -- about 40,000 ticks,
+ * seventeen in-game days -- and by the time it could measure anything the
+ * roster had fallen from 50 to **38** and the income line with it. The
+ * measurement it produced was of a thirty-eight-prisoner prison.
+ *
+ * `.hud-strip__transport` is pause, play, fast-forward in that order
+ * (`src/ui/hud/status-strip.ts`), so `nth(0)` is pause and `fastForwardToMax`
+ * is two presses of `nth(2)`.
+ */
+async function pauseClock(page: Page, label: string): Promise<void> {
+  await page.locator('.hud-strip__transport button').first().click();
+  await page.waitForTimeout(300);
+  note(`[${label}] clock paused at tick ${await currentTick(page)}`);
+}
+
 async function admit(page: Page, label: string, wanted: number): Promise<number> {
   await tab(page, 'overview').click();
   let admitted = 0;
@@ -744,14 +804,23 @@ async function hire(page: Page, label: string, wanted: number): Promise<void> {
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   const control = page.locator('.hud-staff__hire');
   note(`[${label}] hire control reads: ${JSON.stringify((await control.innerText()).trim())}`);
+  /*
+   * The affordability check is every tenth press rather than every press, and
+   * the settle is 40 ms rather than 220. A hundred and thirty presses at the
+   * old cadence cost 597 seconds of wall clock, which is the cost act F's
+   * first run paid in discharged prisoners; the check is kept at all because a
+   * hire refused for money would otherwise be invisible.
+   */
+  const startedHiringAt = Date.now();
   for (let index = 0; index < wanted; index += 1) {
-    if ((await control.getAttribute('disabled')) !== null) {
+    if (index % 10 === 0 && (await control.getAttribute('disabled')) !== null) {
       note(`[${label}] Hire Guard went disabled after ${index} press(es) of ${wanted}`);
       break;
     }
-    await control.click({ timeout: 10_000 });
-    await page.waitForTimeout(220);
+    await control.click({ timeout: 15_000 });
+    await page.waitForTimeout(40);
   }
+  note(`[${label}] ${wanted} hire press(es) took ${((Date.now() - startedHiringAt) / 1000).toFixed(1)}s of wall clock`);
   await page.waitForTimeout(2000);
   const counts = await latestCounts(page);
   note(
@@ -802,6 +871,7 @@ async function playTheFiftyBedPrison(page: Page, label: string, days: number, wi
   await tab(page, 'security').click();
   note(`[${label}] staff panel at the end: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
   printCurve(label, await countsSeries(page));
+  await printEvents(page, label);
   note(`[${label}] done in ${((Date.now() - startedAt) / 1000).toFixed(1)}s wall clock`);
 }
 
@@ -838,14 +908,18 @@ async function playToTheBreakEven(page: Page, label: string, firstStage: number,
   await reportNeeds(page, label, 'SETTLED');
   printCurve(`${label} settling`, await countsSeries(page));
 
+  await pauseClock(page, label);
   await hire(page, label, firstStage - GUARDS);
+  await fastForwardToMax(page);
   logScreen(label, 'STAGE-1 READY', await readScreen(page, startedAt));
   from = await currentTick(page);
   note(`[${label}] STAGE 1 (${firstStage} guards in total): watching from tick ${from} for ${daysPerStage} day(s)`);
   await runAndWatch(page, label, from + TICKS_PER_DAY * daysPerStage, startedAt, 220_000);
   logScreen(label, 'STAGE-1 END', await readScreen(page, startedAt));
 
+  await pauseClock(page, label);
   await hire(page, label, 1);
+  await fastForwardToMax(page);
   logScreen(label, 'STAGE-2 READY', await readScreen(page, startedAt));
   from = await currentTick(page);
   note(`[${label}] STAGE 2 (one more guard, ${firstStage + 1} in total): watching from tick ${from} for ${daysPerStage} day(s)`);
@@ -855,6 +929,7 @@ async function playToTheBreakEven(page: Page, label: string, firstStage: number,
   await tab(page, 'security').click();
   note(`[${label}] staff panel at the end: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
   printCurve(label, await countsSeries(page));
+  await printEvents(page, label);
   note(`[${label}] done in ${((Date.now() - startedAt) / 1000).toFixed(1)}s wall clock`);
 }
 
@@ -869,7 +944,7 @@ async function playToTheBreakEven(page: Page, label: string, firstStage: number,
  * assertion in this file waits on anything, and every reading is printed as it
  * is taken so a kill loses only the readings not yet taken.
  */
-const ACT_TIMEOUT_MS = 1_500_000;
+const ACT_TIMEOUT_MS = 2_400_000;
 
 test.describe('What pressure there is at fifty', () => {
   /** **B -- the shipped curve at fifty.** Unmodified tree, `withheld = 0`. */
