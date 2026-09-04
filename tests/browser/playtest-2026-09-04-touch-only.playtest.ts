@@ -810,8 +810,17 @@ test('act 3: is every control reachable and scrollable by finger', async ({ page
       });
       console.log(`[${label} · ${id}] controls a tap at their own centre does NOT reach: ${JSON.stringify(unreachable, null, 1)}`);
 
-      // Can a finger scroll them into view? A real touch scroll gesture,
-      // synthesised by the browser's own input pipeline.
+      /*
+       * Can a finger scroll them into view?
+       *
+       * **These readings are void and are kept only for the record.** This uses
+       * `Input.synthesizeScrollGesture`, and act 9 established that it is inert
+       * on this page -- it answers `scrollTop 0 -> 0` even with `html`/`body`
+       * relaxed to `touch-action: auto`, while a raw `dispatchTouchEvent` drag
+       * moves the same list by 185 and does respect `touch-action`. Every
+       * `scrollTop 0 -> 0` printed below is this instrument and not the game.
+       * `tapRowScrollingIfNeeded` is the one that scrolls for real.
+       */
       const scrollTargets = [...new Set(unreachable.map((entry) => entry.scroller).filter((s): s is string => s !== null))];
       for (const target of scrollTargets) {
         const box = await page.locator(target.replace('.', ' .').trim().split(' ').join('')).first().boundingBox().catch(() => null);
