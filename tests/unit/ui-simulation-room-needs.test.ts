@@ -504,6 +504,50 @@ describe('a room with no way into it (#938)', () => {
     });
   });
 
+  /*
+   * **The prison `tests/browser/app-shell.spec.ts` builds, projected here
+   * because that spec cannot be run in this container.**
+   *
+   * That test walls two `room.cell` rectangles with a `wall-brick` on every
+   * perimeter segment and no door, places nothing in either, and asserts what
+   * the panel draws. This is the same prison through the same reader, so the
+   * figures the spec expects are established somewhere a `vitest` run can
+   * reach them: `data-needs` is `totalNeeds`, and the lines drawn are the
+   * needs of the one room `ROOM_NEEDS_ROOMS_LIMIT` allows the reader to ask
+   * about.
+   *
+   * It is not a substitute for that spec -- only the assembled page can say
+   * whether five lines still sit inside the Rooms panel's unscrolled fold at
+   * 900x600 -- and it is not a fixture agreeing with an assertion either:
+   * every number here comes out of the real projections over a real world.
+   */
+  it('reports six things short for two sealed, empty cells, and names one room three lines deep', () => {
+    const source = registryOf(cell(4, 4, []), cell(10, 10, []));
+    const world = ownedWorld();
+    wallRoomPerimeter(world, { x: 4, y: 4, width: 2, height: 3 });
+    wallRoomPerimeter(world, { x: 10, y: 10, width: 2, height: 3 });
+    const { list, details } = projectWithWalls(source, world, new DoorRegistry());
+
+    const needs = roomNeedsFromProjections(list, details);
+    expect(needs.unfinishedRooms, 'both cells are unfinished').toBe(2);
+    expect(needs.totalRooms).toBe(2);
+    // A door, a bed and a toilet, twice over -- the `data-needs` the panel
+    // publishes and `app-shell.spec.ts` reads.
+    expect(needs.totalNeeds).toBe(6);
+    // And one room's worth of lines, in the order the panel draws them.
+    expect(details).toHaveLength(ROOM_NEEDS_ROOMS_LIMIT);
+    // `room.cell:10:10` and not `room.cell:4:4`: the two rooms are short the
+    // same three things, so the tie breaks on `compareInstanceIds`, which is a
+    // code-unit comparison -- `'1' < '4'` -- and is `rows`' own published
+    // order rather than a second opinion about it.
+    expect(needs.needs.map((need) => need.instanceId)).toEqual([
+      'room.cell:10:10',
+      'room.cell:10:10',
+      'room.cell:10:10',
+    ]);
+    expect(needs.needs.map((need) => need.kind)).toEqual(['doorway', 'object', 'object']);
+  });
+
   it('says nothing about a room with a door in its wall, which is the sample that refutes the other two', () => {
     const source = registryOf(cell(4, 4, ['sleep-surface', 'sanitation']));
     const world = ownedWorld();
