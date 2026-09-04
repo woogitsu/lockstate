@@ -14,8 +14,8 @@ import { pressArm, toggleRemovalMode } from './tool-arming';
 import type {
   HudLocalizer,
   HudRoomEnclosureRequirement,
-  HudRoomNeedsViewModel,
   HudRoomNeedViewModel,
+  HudRoomNeedsViewModel,
   HudRoomViewModel,
   HudRoomsViewModel,
   HudZoningNoticeViewModel,
@@ -1458,16 +1458,14 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    *   in (#938). No placeholder: there is one door to be short of, and the
    *   locale entry carries the proof of each clause.
    * - an object with a count -- the shortfall, which is what the player has
-   *   to build.
+   *   to build, under the object's own name or the stand-in for one the
+   *   catalogue does not define.
    * - an object with none -- `missingQuantity` is absent exactly when the
    *   projection was handed nothing to count with, and the sentence then has
    *   to be the one without a figure in it. Choosing between two keys rather
    *   than substituting an invented `1` is the whole point: the alternative
    *   dresses an uncounted answer as a counted one, on the same line, in the
    *   same words, where nothing distinguishes them.
-   *
-   * The object's own name, or the stand-in for one the catalogue does not
-   * define.
    */
   function needSentence(need: HudRoomNeedViewModel): string {
     if (need.kind === 'doorway') return t(HUD_MESSAGE_KEY.roomsNeedsDoorway);
