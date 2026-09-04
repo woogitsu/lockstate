@@ -359,7 +359,7 @@ Nothing else.
 
 ### 2.3 The sample that could have refuted it — act 5, and it did not
 
-**MEASURED, act 5.** The same prison, hand-built rather than through
+**MEASURED, act 5 run A.** The same prison, hand-built rather than through
 `buildAndPopulate`, with **one wooden door in each room** and nothing else
 different: the cell at (12,12)–(17,17) walled except the east edge `18,14
 west`, the shower room at (19,15)–(21,17) walled except the west edge `19,16
@@ -379,8 +379,8 @@ object went in with one command and no refusal: four beds, a toilet, two shower
 heads. Four prisoners were admitted and one guard hired, at
 `accommodationCapacity: 4`, `occupiedPlaces: 4`.
 
-**Then four in-game days, the same budget act 3 gave the doorless prison. This
-is the whole result:**
+**Then four in-game days, the same budget act 3 run B gave the doorless prison.
+This is the whole result, and §2.4 shows it reproducing twice more:**
 
 | reading | lowest need on each of the four roster rows | what they were doing |
 | --- | --- | --- |
