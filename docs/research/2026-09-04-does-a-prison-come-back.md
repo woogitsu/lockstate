@@ -151,12 +151,18 @@ Nothing on screen says the prison in front of the player is orphaned; the one
 cue is a sentence in a different panel asserting that no prison is active, next
 to a clock that is visibly running one.
 
-**The sample that could have refuted it and did not.** Two independent runs of
-act 4 (ports 5417 and 5420, separate browsers, separate IndexedDB) produced
-identical behaviour, including the enabled `Admit`. The refutation this looked
-for was the session being torn down by the delete — a stopped clock, a
-`.hud__unavailable` notice, or a `protocol/error` from the projection probe.
-None appeared: the projection answered, and the tick moved.
+**The sample that could have refuted it and did not, stated exactly.** Act 4 was
+run twice, on separate ports with separate browsers and separate IndexedDB.
+**Both runs** measured the orphaned session: the empty list, the strip still
+painting the prison with its funds and clock position, and *Save now* answering
+*"No active prison"*. **The clock-and-command half was added for the second run
+and is therefore one observation** — `Play` advancing the kernel 1063 → 1140,
+`Admit` enabled, the press submitted and refused with a real simulation
+sentence. The refutation this looked for was the session being torn down by the
+delete: a stopped clock, a `.hud__unavailable` notice, or a `protocol/error`
+from the projection probe. None appeared — the projection answered and the tick
+moved — but a second run of the clock-and-command probe is what would harden it
+from one sighting to two.
 
 **What words would have to convey** (no shipped string is authored here — the
 locale file is another agent's this hour): the delete of the *active* prison
@@ -666,4 +672,5 @@ either confirm it or reveal a producer of dirt I have not found.
 
 **§1 is the one I would most like to be wrong about**, and the sample that
 would refute it is a run where the deleted prison's clock refuses to start or
-its projection stops answering. Two runs said otherwise.
+its projection stops answering. Two runs saw the orphaned session; **one** saw
+it run and accept a command.
