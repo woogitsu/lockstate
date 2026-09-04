@@ -509,6 +509,13 @@ export function describeHireCharge(role: HudStaffRoleViewModel | undefined): Sta
  * header is the one place a figure survives the fold, which is the mechanism
  * the Build panel's queue header already uses.
  *
+ * That quotation is **what the block said when #639 was measured**, and it is
+ * left standing as the measurement rather than updated: the second half of it
+ * is retired since issue #941, and `hud.security.coverage-met-hint` now reads
+ * *"Only free guards answer incidents."* The badge is unchanged, and so is
+ * everything this paragraph argues -- a figure on a shut fold is still the
+ * mechanism.
+ *
  * ## The two absences, which are different facts
  *
  * - **No roster, or nobody on it.** There is no payroll, so there is no bill,
