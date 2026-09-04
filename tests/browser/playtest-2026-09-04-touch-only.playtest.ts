@@ -166,30 +166,40 @@ async function tapControl(page: Page, selector: string, options: { readonly nth?
 }
 
 /**
- * A tap on a list row, scrolling the list with a finger first if the row is
- * not where a tap would reach it.
+ * A tap on a list row, dragging the list with a finger first when the row is
+ * not where a tap would reach it. **The number of drags is the measurement.**
  *
- * This exists because act 4's first landscape run died on it, and the death was
- * the game rather than the instrument: with the Buy disclosure open at
- * 1024x768, `[data-buildable="bed-wooden"]`'s own box is at (880, 400.6) and
+ * This exists because act 4's first landscape run died here, and the death was
+ * the game and not the instrument: with the Buy disclosure open at 1024x768,
+ * `[data-buildable="bed-wooden"]`'s own box is at (880, 400.6) and
  * `document.elementFromPoint` there returns
- * **`button.ui-action hud-build__remove`** -- the catalogue's rows run on past
- * the bottom of the box that clips them, and the Build panel's own action row
- * is painted where the Bed row's coordinates say it is. A player has to scroll
- * the catalogue. **How many flicks that costs is the measurement**, and it is
- * logged every time this is called.
+ * **`button.ui-action hud-build__remove`**. The catalogue's rows run on past
+ * the bottom of the 88px box that clips them, and the Build panel's own action
+ * row is painted where the Bed row's coordinates say it is. A player has to
+ * scroll the catalogue to reach 19 of its 21 rows.
+ *
+ * **The gesture is a raw `dispatchTouchEvent` drag, not
+ * `Input.synthesizeScrollGesture`, and act 9 is why.** Both are one finger, and
+ * on this page they disagree: the raw drag moves `.hud-build__list` by 185 and
+ * the synthesised one by 0, at the same point, with the same distance.
+ * `synthesizeScrollGesture` also answers 0 with `html`/`body` relaxed to
+ * `touch-action: auto`, so it is not being blocked -- it is inert here, and it
+ * is the instrument that is wrong. The raw drag is the one that can be trusted,
+ * because it was shown to *respect* `touch-action`: the same drag answers 0
+ * when the list itself is given `touch-action: none` and 185 when that is put
+ * back.
  */
 async function tapRowScrollingIfNeeded(page: Page, selector: string, label: string): Promise<void> {
   const client = await page.context().newCDPSession(page);
-  for (let flicks = 0; flicks <= 8; flicks += 1) {
+  for (let drags = 0; drags <= 12; drags += 1) {
     const { verdict, centre } = await whatIsOnTopOf(page, selector, 0);
     if (verdict === 'OK') {
-      if (flicks > 0) console.log(`[${label}] ${selector} needed ${flicks} finger flick(s) before a tap could reach it`);
+      if (drags > 0) console.log(`[${label}] ${selector} needed ${drags} finger drag(s) on the list before a tap could reach it`);
       await page.touchscreen.tap(centre.x, centre.y);
       await page.waitForTimeout(120);
       return;
     }
-    if (flicks === 0) console.log(`[${label}] a tap where ${selector} says it is lands on ${verdict} instead; scrolling the list by finger`);
+    if (drags === 0) console.log(`[${label}] a tap where ${selector} says it is lands on ${verdict} instead; dragging the list with a finger`);
     const scroller = await page.evaluate((sel: string) => {
       const node = document.querySelector<HTMLElement>(sel);
       if (node === null) return null;
@@ -201,6 +211,7 @@ async function tapRowScrollingIfNeeded(page: Page, selector: string, label: stri
             selector: `${parent.tagName.toLowerCase()}.${String(parent.className).split(/\s+/)[0] ?? ''}`,
             x: Math.round(rect.x + rect.width / 2),
             y: Math.round(rect.y + rect.height / 2),
+            height: Math.round(rect.height),
             scrollTop: parent.scrollTop,
             scrollHeight: parent.scrollHeight,
             clientHeight: parent.clientHeight,
@@ -211,38 +222,25 @@ async function tapRowScrollingIfNeeded(page: Page, selector: string, label: stri
       return null;
     }, selector);
     if (scroller === null) throw new Error(`${selector} is unreachable (${verdict}) and nothing above it scrolls`);
-    await client.send('Input.synthesizeScrollGesture', {
-      x: scroller.x,
-      y: scroller.y,
-      yDistance: -120,
-      gestureSourceType: 'touch',
-      speed: 1200,
-    });
-    await page.waitForTimeout(300);
+    // A drag no longer than the box it is inside: a finger cannot travel
+    // further than the list is tall without leaving it, and how short that is
+    // is exactly the cost this measures.
+    const travel = Math.max(40, scroller.height - 16);
+    await dispatch(client, 'touchStart', [{ id: 0, x: scroller.x, y: scroller.y + travel / 2 }]);
+    for (let step = 1; step <= 10; step += 1) {
+      await dispatch(client, 'touchMove', [{ id: 0, x: scroller.x, y: scroller.y + travel / 2 - (travel * step) / 10 }]);
+    }
+    await dispatch(client, 'touchEnd', []);
+    await page.waitForTimeout(350);
     const moved = await page.evaluate((sel: string) => document.querySelector<HTMLElement>(sel)?.scrollTop ?? -1, scroller.selector);
     if (moved === scroller.scrollTop) {
-      /*
-       * The finger could not scroll the list. That is the finding, and act 8
-       * measures it properly. Here the act keeps playing, with the row brought
-       * into view by `scrollIntoView` -- which is **not a touch route** and is
-       * labelled as such in the log, so no reading after this point can be
-       * mistaken for one a player could reproduce with a finger.
-       */
-      console.log(
-        `[${label}] A ONE-FINGER FLICK DID NOT SCROLL ${scroller.selector}` +
-          ` (scrollTop stayed ${moved}; scrollHeight ${scroller.scrollHeight} vs clientHeight ${scroller.clientHeight}).` +
-          ` Falling back to scrollIntoView, WHICH IS NOT A TOUCH ROUTE, so the rest of this act can run.`,
+      throw new Error(
+        `a one-finger drag of ${travel}px on ${scroller.selector} did not scroll it` +
+          ` (scrollTop stayed ${moved}; ${scroller.scrollHeight} of content in ${scroller.clientHeight}), and ${selector} stays unreachable`,
       );
-      await page.evaluate((sel: string) => document.querySelector(sel)?.scrollIntoView({ block: 'center' }), selector);
-      await page.waitForTimeout(250);
-      const after = await whatIsOnTopOf(page, selector, 0);
-      if (after.verdict !== 'OK') throw new Error(`${selector} is unreachable even after scrollIntoView: ${after.verdict}`);
-      await page.touchscreen.tap(after.centre.x, after.centre.y);
-      await page.waitForTimeout(120);
-      return;
     }
   }
-  throw new Error(`${selector} was still unreachable after eight finger flicks`);
+  throw new Error(`${selector} was still unreachable after twelve finger drags`);
 }
 
 /* ------------------------------------------------------------------ */
@@ -1473,7 +1471,42 @@ test('act 9: is it touch-action that stops the flick', async ({ page }) => {
   await page.waitForTimeout(200);
   console.log(`[touch-action] put back to none: scrollTop 0 -> ${await flick()}`);
 
-  // And the same three readings for the page's other two scroll containers,
+  /*
+   * The hypothesis above came back **refuted** -- relaxing html/body changed
+   * nothing -- which leaves `synthesizeScrollGesture` inert in this
+   * environment rather than blocked, and puts the whole weight on the raw
+   * `dispatchTouchEvent` drag that *did* scroll the list by 185.
+   *
+   * So: does that raw drag respect `touch-action` at all? If it scrolls a list
+   * whose own `touch-action` is `none`, it is ignoring the property and cannot
+   * be used to conclude anything about a real thumb either. This is the second
+   * discriminator, and between them they decide whether act 8's split result
+   * is a defect in the game or two instruments that disagree for reasons of
+   * their own.
+   */
+  const rawDrag = async (): Promise<number> => {
+    await reset();
+    await dispatch(client, 'touchStart', [{ id: 0, x: centre!.x, y: centre!.y + 20 }]);
+    for (let step = 1; step <= 10; step += 1) await dispatch(client, 'touchMove', [{ id: 0, x: centre!.x, y: centre!.y + 20 - step * 20 }]);
+    await dispatch(client, 'touchEnd', []);
+    await page.waitForTimeout(400);
+    return readTop();
+  };
+  console.log(`[touch-action] a raw one-finger drag, as shipped: scrollTop 0 -> ${await rawDrag()}`);
+  await page.evaluate(() => {
+    const list = document.querySelector<HTMLElement>('.hud-build__list');
+    if (list !== null) list.style.touchAction = 'none';
+  });
+  await page.waitForTimeout(200);
+  console.log(`[touch-action] the same raw drag with the LIST ITSELF set to touch-action: none: scrollTop 0 -> ${await rawDrag()}`);
+  await page.evaluate(() => {
+    const list = document.querySelector<HTMLElement>('.hud-build__list');
+    if (list !== null) list.style.touchAction = '';
+  });
+  await page.waitForTimeout(200);
+  console.log(`[touch-action] and with it put back: scrollTop 0 -> ${await rawDrag()}`);
+
+  // And the same readings for the page's other two scroll containers,
   // because whatever is true of the catalogue is true of them.
   for (const selector of ['.save-panel', '.ui-panel.hud-build']) {
     const box = await page.evaluate((sel: string) => {
