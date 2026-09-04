@@ -231,11 +231,17 @@ export class IncidentResponseSystem implements SystemRegistration {
    * producer cannot outpace the one in `IncidentTriggerSystem` that it exists
    * to close off.
    *
-   * It is also the only true thing to say after a **lapse**. An incident that
-   * ran its course was not "resolved" -- participants were injured, and an
-   * escape attempt means somebody is gone -- but the prison does have nothing
-   * open, and that is all this claims. What it cost is `IncidentOutcome`, which
-   * the `hud/incidents` projection renders per incident.
+   * It read *"it is also the only true thing to say after a **lapse**"*, and
+   * that is the claim issue #914 measured and this method no longer makes; the
+   * section at the end of this docblock carries the numbers. The paragraph as
+   * it stood: *"An incident that ran its course was not 'resolved' --
+   * participants were injured, and an escape attempt means somebody is gone --
+   * but the prison does have nothing open, and that is all this claims. What
+   * it cost is `IncidentOutcome`, which the `hud/incidents` projection renders
+   * per incident."* The last clause defers to a projection **nothing under
+   * `src/ui/` requests** (`tests/foundation/projection-reachability-contract.test.ts`
+   * names it in `UNPAINTED_PROJECTION_IDS`), so on the shipped screen the
+   * deferral resolved to nothing at all.
    *
    * **That paragraph was true about this method and false about the screen,
    * and the owner ruled on it on 2026-08-31 (#703, ruling 6).** "Nothing is
@@ -264,10 +270,50 @@ export class IncidentResponseSystem implements SystemRegistration {
    * emits one event fewer rather than a different one. A future route to
    * `escaped: true` that wants its own closing sentence owes the owner that
    * sentence first, exactly as `lapse`'s own comment says of the escape line.
+   *
+   * ## The two endings say two things now (issue #914's finding 4)
+   *
+   * **The paragraph above beginning "It is also the only true thing to say
+   * after a lapse" is kept and is superseded, in that order, because it is the
+   * claim that was measured.**
+   * `docs/research/2026-09-04-does-anyone-answer-an-incident.md` played the
+   * same prison twice: with six guards, **15 incidents out of 15** ended
+   * `'resolved'` with **zero injuries**; with none, **19 out of 19** ended
+   * `'lapsed'` with **114 prisoner-injuries and three escapes** -- and both
+   * alert columns held the same rows in the same order saying the same
+   * sentence. "Nothing is open" was honest about `openIncidentCount` and the
+   * screen was not honest about the prison.
+   *
+   * So `endedByLapse` chooses between two events rather than gating one. It is
+   * a parameter and not a field read off the incident for the reason
+   * `escapeAnnounced` is one: **this method is called from the two terminal
+   * transitions and from nowhere else**, each of which knows which of the two
+   * it is by construction, and threading it means the `'resolved'` branch
+   * cannot accidentally claim a lapse or the reverse. `lapse` passes `true`
+   * and `advanceResponse`'s `'resolved'` branch passes the literal `false`,
+   * exactly as it already passes `escapeAnnounced`'s.
+   *
+   * **What the lapse row may claim is bounded by `lapse` itself**, which
+   * writes `injuredEntityIds: [...incident.participantIds]` unconditionally
+   * while the `'resolved'` branch writes `[]`. That is why the sentence can
+   * assert that everyone caught in it was hurt: the cost is a property of the
+   * transition. No count crosses the wire -- see the schema in
+   * `src/simulation/protocol/types.ts` for why a figure would need a plural
+   * rule this catalogue's HUD localizer does not expose.
+   *
+   * **Still at most one row per return to calm.** The `openIncidentCount`
+   * guard is untouched and runs first, so two incidents closing on the same
+   * tick produce one sentence, and it describes the transition that emptied
+   * the log. The `escapeAnnounced` gate is untouched too and suppresses either
+   * one.
    */
-  private reportAllClearIfCalm(tick: number, escapeAnnounced: boolean): void {
+  private reportAllClearIfCalm(tick: number, escapeAnnounced: boolean, endedByLapse: boolean): void {
     if (this.incidents.openIncidentCount > 0) return;
     if (escapeAnnounced) return;
+    if (endedByLapse) {
+      this.events.recordIncidentsAllClearAfterLapse(tick);
+      return;
+    }
     this.events.recordIncidentsAllClear(tick);
   }
 
@@ -656,7 +702,10 @@ export class IncidentResponseSystem implements SystemRegistration {
     }
 
     this.adjudicateAssaultIfAny(incident, tick);
-    this.reportAllClearIfCalm(tick, escapeAnnounced);
+    // `true`: this is the lapse, so the row a calm prison gets from here is
+    // the one that says the last incident ran out of time rather than the one
+    // that says it was contained.
+    this.reportAllClearIfCalm(tick, escapeAnnounced, true);
 
     // The one close `releaseResponse` cannot serve, because there is no record
     // for it to read: an incident whose response was interrupted by a save
@@ -847,7 +896,11 @@ export class IncidentResponseSystem implements SystemRegistration {
     // escape. Written as the literal rather than threaded from a variable so
     // that anyone adding an escape route to this branch has to touch this line
     // to keep it honest, instead of a `false` flowing through unexamined.
-    this.reportAllClearIfCalm(tick, false);
+    //
+    // The second `false` is the same argument about the same line: this branch
+    // is a containment, and `injuredEntityIds` a few lines above is `[]`
+    // because of it.
+    this.reportAllClearIfCalm(tick, false, false);
   }
 
   public getSnapshot(): { readonly metrics: IncidentResponseMetrics } {

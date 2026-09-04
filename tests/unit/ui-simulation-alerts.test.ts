@@ -203,12 +203,22 @@ describe('what the player is told is a key, and the key is real', () => {
      * not the fixture supplying both sides of the comparison
      * (`docs/TESTING.md`): the expected text comes from the ruling, and the
      * code under test is the table that chooses which key each reason gets.
+     *
+     * **The tail was rewritten on 2026-09-04 and the transcription follows it
+     * rather than the 2026-09-01 words.** Ruling 19's requirement is *name
+     * what stops, not the number it stops at*, and the clause that carried it
+     * -- *"until the state pays what it owes"* -- is false of a prison that is
+     * not earning: `StateIncomeSystem.update` credits nothing when
+     * `stateIncomeForCompletedDay` is zero, and that fold counts only
+     * prisoners holding a furnished bed
+     * (`src/simulation/economy/income.ts`; issue #913). *"Until the prison
+     * earns the money"* is the same shape with the false promise removed.
      */
     expect(alertSentence('purchase.insufficient-funds')).toBe(
-      'Nothing was bought — deliveries are refused until the state pays what it owes.',
+      'Nothing was bought — deliveries are refused until the prison earns the money.',
     );
     expect(alertSentence('hire.insufficient-funds')).toBe(
-      'Nobody was hired — hiring is refused until the state pays what it owes.',
+      'Nobody was hired — hiring is refused until the prison earns the money.',
     );
 
     // And still not each other's. The namespace exists so that somebody who
@@ -239,7 +249,7 @@ describe('what the player is told is a key, and the key is real', () => {
       );
 
     expect(alertSentence('construction.materials-unfunded')).toBe(
-      'The build queue is stalled — no more materials until the state pays what it owes.',
+      'The build queue is stalled — no more materials until the prison earns the money.',
     );
 
     const ladder = [
@@ -249,9 +259,12 @@ describe('what the player is told is a key, and the key is real', () => {
     ];
     expect(new Set(ladder).size, 'three rungs, three sentences').toBe(3);
     // And they are one ladder rather than three unrelated rules: the tail is
-    // the owner's, shared on purpose, and a rung that lost it would read as a
-    // different kind of refusal.
-    for (const sentence of ladder) expect(sentence).toContain('until the state pays what it owes');
+    // shared on purpose, and a rung that lost it would read as a different
+    // kind of refusal. The clause itself changed on 2026-09-04 (issue #913 --
+    // the state owes nothing to a prison that is not earning); what ruling 19
+    // asked for, a tail naming what stops rather than the threshold, is what
+    // is checked here.
+    for (const sentence of ladder) expect(sentence).toContain('until the prison earns the money');
   });
 
   it('carries no simulation text and no reason id into the view model', () => {

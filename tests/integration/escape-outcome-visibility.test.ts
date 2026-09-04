@@ -325,9 +325,17 @@ describe('a prisoner who got out, and one the guards stopped (#683)', () => {
      */
     const refused = runAttempt(0, () => undefined);
     expect(refused.escaped, 'the attempt still lapsed and the record still says so').toBe(true);
-    expect(sentencesFor(refused.events), 'and the channel says only what it always said').toEqual([
+    /*
+     * **Two rows, and the second one is the lapse's since issue #914's finding
+     * 4.** This attempt lapsed -- it is `escaped: true` one line above -- so
+     * the closing row is the one that says the incident ran out of time
+     * instead of being contained, not the containment row a guarded prison
+     * gets. What this case is about is unchanged and is the *first* row's
+     * absence of a partner: nobody left, so nothing says anybody did.
+     */
+    expect(sentencesFor(refused.events), 'and the channel still says nobody left').toEqual([
       'danger: A prisoner is trying to break out.',
-      'info: The prison is under control again — no incident is still open.',
+      'warning: No incident is still open — but the last one ran out of time instead of being contained, and everyone caught in it was hurt.',
     ]);
   });
 
