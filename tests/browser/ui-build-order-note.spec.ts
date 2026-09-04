@@ -100,6 +100,22 @@ interface NoteReading {
   readonly hudMentionsTheClock: boolean;
   /** The sentences that match it, so a `true` can be read rather than trusted. */
   readonly clockMentions: readonly string[];
+  /**
+   * #703 ruling 2's guarantee, re-asserted here because this change is what
+   * puts pressure on it: the money the game spent and the control that gives it
+   * back are on screen with nothing opened and nothing scrolled. The sentence
+   * is laid out immediately above that block, so a note that is not paid for
+   * pushes the refund out of the panel -- measured doing exactly that before
+   * `hud.css` paid for it out of the arm hint's fourth line.
+   */
+  readonly deliveriesPending: string | null;
+  readonly spendInFold: boolean | null;
+  readonly firstRefundInFold: boolean | null;
+  readonly firstRefundBottom: number | null;
+  /** The arm hint: how much of it is shown, and whether its text is intact. */
+  readonly armHintLinesShown: number | null;
+  readonly armHintLinesTotal: number | null;
+  readonly armHintTextIntact: boolean | null;
 }
 
 async function readNote(page: Page, sentence: string, pausedWord: string): Promise<NoteReading> {
@@ -161,7 +177,26 @@ async function readNote(page: Page, sentence: string, pausedWord: string): Promi
       const hud = document.querySelector<HTMLElement>('.hud');
       const hudText = sighted(hud);
 
+      const deliveries = document.querySelector('.hud-build__deliveries');
+      const spend = document.querySelector('.hud-build__deliveries-count');
+      const spendRect = spend === null || spend.getClientRects().length === 0 ? null : spend.getBoundingClientRect();
+      const refund = document.querySelector('.hud-build__delivery-row .ui-action');
+      const refundRect = refund === null || refund.getClientRects().length === 0 ? null : refund.getBoundingClientRect();
+      const armHint = document.querySelector<HTMLElement>('.hud-build__arm-hint');
+      const armLine = armHint === null ? 0 : Number.parseFloat(getComputedStyle(armHint).lineHeight);
+
       return {
+        deliveriesPending: deliveries?.getAttribute('data-pending') ?? null,
+        spendInFold:
+          spendRect === null ? null : spendRect.top >= panelRect.top - 0.5 && spendRect.bottom <= fold + 0.5,
+        firstRefundInFold:
+          refundRect === null ? null : refundRect.top >= panelRect.top - 0.5 && refundRect.bottom <= fold + 0.5,
+        firstRefundBottom: refundRect === null ? null : Math.round(refundRect.bottom * 10) / 10,
+        armHintLinesShown:
+          armHint === null || armLine === 0 ? null : Math.round((armHint.clientHeight / armLine) * 10) / 10,
+        armHintLinesTotal:
+          armHint === null || armLine === 0 ? null : Math.round((armHint.scrollHeight / armLine) * 10) / 10,
+        armHintTextIntact: armHint === null ? null : (armHint.textContent ?? '').length > 100,
         matches: laidOut.length,
         inDocument: carriers.length,
         box: rect === null ? null : { width: Math.round(rect.width * 10) / 10, height: Math.round(rect.height * 10) / 10 },
@@ -265,6 +300,14 @@ test.describe('the Build panel says what a queued order is waiting for', () => {
         arrival.clockMentions,
         `something on the arriving HUD mentions the clock at ${width}x${height}`,
       ).toEqual([]);
+      // `hud.css` pays for the sentence out of the arm hint's fourth line, and
+      // that clamp is scoped to `.hud-build[data-queued]`. With nothing queued
+      // the hint must be exactly as long as it was: whatever the viewport's own
+      // rules leave it, no line taken by this change.
+      expect(
+        arrival.armHintLinesShown,
+        `the arm hint is clamped with nothing queued at ${width}x${height}`,
+      ).toBe(height > 700 ? arrival.armHintLinesTotal : 1);
     }
   });
 
@@ -325,6 +368,44 @@ test.describe('the Build panel says what a queued order is waiting for', () => {
         queued.hudMentionsTheClock,
         `/clock/i still matches nothing in the laid-out HUD at ${width}x${height}, which is the playtest's own probe`,
       ).toBe(true);
+
+      /*
+       * #703 ruling 2, under this change's pressure -- and this is the
+       * assertion that caught the first attempt at it.
+       *
+       * A queued order buys its own materials (#640), so the state above always
+       * carries pending deliveries too, and their block is the last thing in
+       * `.hud-build__map` -- immediately below the sentence. With the sentence
+       * added and nothing given back, the first refund's Cancel left the
+       * panel's unscrolled box at 1280x720 and 900x600. The vacuity guard is
+       * first: without a pending delivery there is nothing to displace and the
+       * two assertions under it would pass on any layout at all.
+       */
+      expect(
+        queued.deliveriesPending,
+        `nothing is on its way at ${width}x${height}, so the displacement this asserts about cannot happen`,
+      ).not.toBeNull();
+      expect(queued.spendInFold, `the spend line left the panel's fold at ${width}x${height}`).toBe(true);
+      expect(
+        queued.firstRefundInFold,
+        `the first refund's Cancel left the panel's fold at ${width}x${height}: it ends at y=${queued.firstRefundBottom} in a panel clipped at y=${queued.fold}`,
+      ).toBe(true);
+
+      // And what was taken to pay for it: three of the arm hint's four lines
+      // stay, which is what keeps both of its gesture sentences -- 62
+      // characters of the wall hint, 73 of the object one, against about 34 per
+      // line. Two lines would cut "One press, one object" (#904). Below 701px
+      // tall the hint is already on the one-line clamp `hud.css` gives every
+      // note, and this change adds nothing there.
+      expect(
+        queued.armHintLinesShown,
+        `the arm hint shows too few lines at ${width}x${height}`,
+      ).toBeGreaterThanOrEqual(height > 700 ? Math.min(3, queued.armHintLinesTotal ?? 3) : 1);
+      // The text itself is never replaced -- the clamp cuts the box, and a
+      // screen reader still gets the whole sentence.
+      expect(queued.armHintTextIntact, `the arm hint's text was truncated rather than clipped at ${width}x${height}`).toBe(
+        true,
+      );
     }
   });
 });

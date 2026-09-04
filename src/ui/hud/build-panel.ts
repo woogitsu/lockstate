@@ -1234,7 +1234,16 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     children: [eyebrowText(t(HUD_MESSAGE_KEY.buildPlacement)), targetValue],
   });
 
-  const armHint = eyebrowText(t(HUD_MESSAGE_KEY.buildArmHint), 'hud-build__note');
+  /*
+   * Its own class beside `.hud-build__note`, for the reason
+   * `.hud-build__queue-shortfall` has one: a rule has to be able to name *this*
+   * note and not the three others in this panel. `hud.css` needs it since #920
+   * -- the queued-order sentence is paid for out of this hint's fourth line --
+   * and a structural selector (`.hud-build__map > .hud-build__note`) would have
+   * meant a rule that silently changes meaning the next time a note joins or
+   * leaves this block.
+   */
+  const armHint = eyebrowText(t(HUD_MESSAGE_KEY.buildArmHint), 'hud-build__note hud-build__arm-hint');
 
   /*
    * `hud.build.note` -- "An order is queued now and built while the clock
@@ -1332,18 +1341,51 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * queue in it. The map block is the second thing in the body, which is why
    * the same sentence is visible from here and invisible from there.
    *
-   * What the placement costs, stated: the note pushes "Enter coordinates" and
-   * the queue block's header down by its own height -- 34px at the three tall
-   * viewports, 30px at 900x600 with the clamp exemption below, 21px at 375x812.
-   * **Both of those headers are already below the panel's fold in this state
-   * before the note exists** (coordinates at y=777.2 and the queue header at
-   * y=822.2 against a 637.6 fold at 1280x720; the same shape at the other
-   * four), so what moves is content the player already reaches by scrolling,
-   * and the distance it moves is one line of eyebrow text. Nothing that is
-   * inside the fold in the queued state leaves it.
+   * ### And it is not free here either -- what the first attempt broke
    *
-   * The fold route is still refused for the reason it always was: a fold that
-   * starts shut is what #627 measured reaching nobody.
+   * `.hud-build__map` ends in the deliveries block (#703 ruling 2), and that
+   * block's spend line and **first refund** are guaranteed on screen with
+   * nothing opened and nothing scrolled -- the owner's ruling of 2026-08-31,
+   * asserted at every viewport by
+   * `tests/browser/build-deliveries-outside-the-fold.spec.ts`. In the loaded
+   * state it sits right against the panel's fold. Adding this sentence above it
+   * and giving nothing back pushed the first refund's Cancel *out*: y=607..651
+   * against a fold at 637.6 at 1280x720, and y=478.6..522.6 against 521.7 at
+   * 900x600. That went red, which is the gate doing its job, and it is why
+   * `hud.css` pays for this sentence out of the arm hint's fourth line rather
+   * than out of nothing. The table of what that comes to is there, beside the
+   * rule.
+   *
+   * What still moves: "Enter coordinates" and the queue block's header go down
+   * by 13.2px at the viewports where the clamp applies and 26.4px at 900x600.
+   * **Both are already below the panel's fold in this state before the note
+   * exists** -- coordinates at y=777.2 and the queue header at y=822.2 against
+   * a 637.6 fold at 1280x720, on unmodified `main` -- so what moves is content
+   * the player already reaches by scrolling, and it moves by one line.
+   *
+   * (That last fact is worth someone's attention separately: `hud.css`'s
+   * `.hud-build[data-queued]` block bought 45px specifically to keep the queue
+   * block's header above the fold, and #703's deliveries block has since taken
+   * it. Not this branch's to fix, and not caused by it.)
+   *
+   * ### The two placements that were measured and lost
+   *
+   * **Beside the queue block**, where `queueShortfall` lives, and which #920
+   * names as a candidate: appended immediately after `queueSection.element` the
+   * sentence lands at y=776.2 of a 637.6 fold at 1280x720, 821.2 of 817.6,
+   * 788.2 of 685.6, 609.4 of 521.7 and 786 of 717.8 -- **below the fold at five
+   * of the five short viewports**, in the fold only at 1920x1080. The queue
+   * block is the last thing in the body and the panel grows downward into its
+   * own scroll, so anything after it is past the fold in every state that has a
+   * queue in it.
+   *
+   * **After the deliveries block**, which costs that block nothing and was the
+   * obvious answer to the paragraph above: y=802.5, 847.5, 814.5, 635.8, 799.2
+   * against the same folds. Same verdict, same reason.
+   *
+   * A fold is still refused for the reason it always was: a fold that starts
+   * shut is what #627 measured reaching nobody. And a sentence below an
+   * unscrolled fold is the same defect wearing a scrollbar.
    */
   const orderNote = eyebrowText(t(HUD_MESSAGE_KEY.buildNote), 'hud-build__note hud-build__order-note');
   /*
