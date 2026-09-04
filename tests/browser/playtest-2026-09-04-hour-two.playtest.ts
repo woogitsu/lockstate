@@ -333,11 +333,30 @@ async function buildGrownPrison(
   const built = await latestCounts(page);
   log(`furnished at tick ${built?.tick}: rooms=${built?.rooms} roomCapacity=${built?.roomCapacity} accommodationCapacity=${built?.accommodationCapacity}`);
 
+  /*
+   * Counted through the tee, not assumed. Act 4 pressed Admit twenty-five
+   * times into a seventeen-bed prison and the roster settled at seventeen,
+   * which is either eight commands that were never submitted or eight
+   * admissions the simulation dropped -- and those are different findings.
+   * The count below separates them.
+   */
   await tab(page, 'overview').click();
+  const admitCommandsBefore = (await sentCommands(page)).filter((c) => c['type'] === 'AdmitPrisoner').length;
+  let admitPressesThatThrew = 0;
   for (let index = 0; index < options.admits; index += 1) {
-    await page.locator('.hud-intake__admit').click();
+    try {
+      await page.locator('.hud-intake__admit').click({ timeout: 5_000 });
+    } catch {
+      admitPressesThatThrew += 1;
+    }
     await page.waitForTimeout(120);
   }
+  const admitCommandsAfter = (await sentCommands(page)).filter((c) => c['type'] === 'AdmitPrisoner').length;
+  log(
+    `${options.admits} Admit press(es): ${admitCommandsAfter - admitCommandsBefore} AdmitPrisoner command(s) reached the worker,` +
+      ` ${admitPressesThatThrew} press(es) threw, control aria-disabled=${await page.locator('.hud-intake__admit').getAttribute('aria-disabled')}`,
+  );
+  log(`refusal band right after admitting: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
   await page.waitForTimeout(2_000);
   const admitted = await latestCounts(page);
   log(`after ${options.admits} admissions at tick ${admitted?.tick}: prisoners=${admitted?.prisoners} inIntake=${admitted?.prisonersInIntake} residents=${admitted?.roomOccupants}`);
