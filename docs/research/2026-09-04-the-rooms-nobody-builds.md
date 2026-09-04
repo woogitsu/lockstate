@@ -753,7 +753,7 @@ falls in:
 
    **Two counts, both the clock's own, and not one simulation event.**
 
-## 8b. A four-room prison's Overview screen is 83% word-for-word identical to a one-cell prison's
+## 8.1 A four-room prison's Overview screen is 83% word-for-word identical to a one-cell prison's
 
 The brief asks this record to test, from the other side, the claim that a
 prison with everything going wrong is *"62% word-for-word identical to an empty
@@ -797,6 +797,7 @@ being a wish-list. A player who spends 3,870 on a canteen and a shower room
 gets, for their money, the digit `1` changing to `3` on a badge labelled
 `ROOMS`. Everything that actually changed — and a great deal did change — is
 on the Regime tab, one column wide, and has to be looked for.
+
 
 ## 9. The enclosure verdict said `Open on at least one side` at three designations out of three, and every one of them was sealed
 
@@ -992,6 +993,31 @@ and the need's name and **must not** colour it as good or bad until that
 ruling exists; the existing bar's toning off `STATE_INCOME_UNMET_NEED_LEVEL`
 is the precedent to follow, not to extend.
 
+## P6. The work block is 42% of a prisoner's day and nothing fills it — the case for #592, measured
+
+**MEASURED, §8.** In a four-room prison with every need above 82%, `Association`
+is 16 of 44 prisoner-samples across a whole day, and every sample inside the two
+`work / education / association` blocks is `Association`.
+**VERIFIED, read:** `action.free-association` declares
+`needEffectsPerTick: {}` and its own comment says *"It fulfils no need"*
+(`src/simulation/prisoners/actions.ts:220-228`).
+
+**This is not a proposal for new mechanics — it is the measurement issue #592
+was missing.** #592 argues that kitchen labour and laundry make the work window
+*"a real pie rather than a second income slider"*. What this record adds is the
+size of the pie: `[500, 1000)` and `[1300, 1800)` are **1,000 ticks, 42% of
+every prisoner's day**, and in the best prison anybody has built here they are
+spent entirely on an action authored to change nothing. Three room types with
+live actions already exist to fill it — `room.kitchen`
+(`action.kitchen-work`), `room.laundry` (`action.laundry-work`) and
+`room.classroom` (`action.classroom-education`) — and **none of them has ever
+been built in a playtest in this repository.** The cheapest, a 3 × 3 laundry, is
+**1,120** (§2).
+
+**So the smallest useful next playtest is not a new feature at all: build the
+kitchen, the laundry and the classroom, and find out whether the work block
+fills.** That is a one-act question and this pass did not reach it.
+
 ## P5. A question for the owner, not a proposal: the yard does not fit
 
 **MEASURED, §2 and §5.** `room.yard` needs 64 contiguous tiles; the clear
@@ -1024,9 +1050,10 @@ contribution; the choice is a balance decision.**
   common room and classroom all have live readers (§3) and none of them was
   played; nor was any of the seven dead ones, so this record's statement that
   they do nothing is VERIFIED-from-code and not MEASURED-from-play.
-- **The `work` block.** `action.kitchen-work` and `action.laundry-work` are the
-  two rooms that turn prison labour into a need, and #592 is the open design
-  for them. Untouched here.
+- **The `work` block's three rooms.** `room.kitchen`, `room.laundry` and
+  `room.classroom` all have live actions and none was built. §8 measures how
+  big the hole they would fill is — 42% of the day — and P6 says why that is
+  the next playtest, but this pass did not run it.
 - **`room.solitary-cell` and the sanction path.** Alive, unplayed.
 - **The camera.** Every act ran at 1440 × 900 at zoom 1. The yard's fit problem
   (§P5) may be entirely dissolved by `camera.zoom.out`; measuring that needs a
