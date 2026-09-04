@@ -531,6 +531,72 @@ to nearly full because the player built the right room — moved exactly one
 published count, by one, at the moment of designation, and nothing at all
 afterwards.**
 
+### 6.4 The yard is the best room in the game, it is free, and it is the hardest to place
+
+**MEASURED, act 3, phase 3.** After a six-press `ArrowRight` pan moved the
+world origin from `(−304, −574)` to `(−665, −574)`, the yard went in at world
+tiles **(18,10)–(25,17)** — 64 tiles of bare ground, no walls, no objects, no
+money:
+
+```
+[yard] 53 candidate rectangle(s) miss every room and fit the map
+[act3] the yard rectangle chosen: {"x0":18,"y0":10,"x1":25,"y1":17}
+[act3] designate room.yard attempt 1: rooms=4 (was 3) | panel said
+  ["NEEDS AT LEAST 8 × 8 TILES","MUST BE OUTDOORS","NO OBJECTS NEEDED","ENCLOSURE"]
+[act3] the yard was accepted on attempt 1
+```
+
+**This is the second `room.yard` ever placed in a Lockstate playtest** — act 2
+placed the first, ninety minutes earlier — and both went in on the first
+attempt. Everything that made the three prior attempts fail was the
+instrument's: the fix was to reject a candidate rectangle that *overlaps a
+room this run built* as well as one the HUD covers, because a room's tiles are
+canvas and `document.elementFromPoint` calls them clear.
+
+`recreation` had been pinned at **0%** on every prisoner for six in-game days.
+One day after the yard opened, all three remaining prisoners were `Yard Time`
+or `Heading to Yard Time` and `recreation` was no longer the worst need on any
+row. Two days after:
+
+> `Wanda Tamm | Minimal | Hunger **60%** | Sleep **95%** | Hygiene **91%** |
+> Bladder **66%** | Safety **100%** | Recreation **93%**`
+
+**Every one of the six needs above 60%, in a prison of four rooms, with one
+guard.** That is the healthiest prisoner in this repository's play record.
+
+### 6.5 The comparison the brief asked for
+
+One prison, four states, same four prisoners, same guard, same instrument:
+
+| the prison | worst need on the roster | risk tiers | incidents | what the screen said was different |
+| --- | --- | --- | --- | --- |
+| **act 2**: four rooms, **no beds** | every need `0%` for 18 days | all four `High` | **2 assaults, 8 riots** | `4 with no bed`, `4 HIGH RISK`, riot alerts graded `Critical` |
+| **act 3 phase 0**: one cell | `Hygiene 29–33%`, falling | `Medium`/`Minimal` | none | — |
+| **act 3 phase 1**: + canteen | `Hygiene 0%` | `Medium`/`Minimal` | none | `ROOMS 1 → 2` |
+| **act 3 phase 2**: + shower | `Recreation 0%` | `Medium`/`Minimal` | none | `ROOMS 2 → 3` |
+| **act 3 phase 3**: + yard | **`Bladder 60–66%`**, and every need ≥ 60% | **all `Minimal`** | none | `ROOMS 3 → 4` |
+
+**So the answer to "does more rooms make the prison better" is yes, clearly,
+and it is measurable in two places.** The worst need in the population goes
+from `0%` to `60%+`; and every prisoner's risk tier settles at `Minimal`,
+which is on the roster and feeds the strip's `HIGH RISK` badge.
+
+**And the answer to "does the player learn that it worked" is: only if they
+open the Regime tab and read one column.** Building each of the three
+buildable rooms moved exactly one of the twenty-one published counts —
+`rooms`, by one, at the moment of designation. No event fired. No alert. No
+sentence anywhere named a room, a need, or a change. The `EARNED TODAY` and
+`FUNDS` figures moved identically in the neglected prison and the healthy one,
+because **`STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 0`** — the
+owner's ruling of 2026-09-03, *"usuń na razie kary"*, recorded in
+`docs/adr/0064-what-an-unmet-need-costs-a-prison.md`'s amendment. So the one
+channel that was designed to price neglect is switched off on purpose, and
+with it off **the money says nothing about rooms at all.** That is not a
+defect; it is a consequence of a decision the owner took deliberately and
+described as *"na razie"*, and it is worth them knowing that with the
+penalties at zero, *the only feedback a four-room prison gets is a need
+percentage on a tab a newcomer opens last.*
+
 ## 7. What a player is told about a room they built: the census
 
 **MEASURED, act 3.** The Rooms tab, dumped with a working cell and a working

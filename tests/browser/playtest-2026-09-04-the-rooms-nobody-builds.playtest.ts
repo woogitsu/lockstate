@@ -890,4 +890,195 @@ test.describe('the rooms nobody builds', () => {
     }
   });
 
+
+  /**
+   * **Act 4 — one whole in-game day, sampled across it, in the finished
+   * four-room prison.**
+   *
+   * Acts 2 and 3 read the roster at *day boundaries*, and a day boundary in
+   * `GENERAL_POPULATION_REGIME` is inside the `[0, 400)` sleep block
+   * (`src/simulation/prisoners/regime.ts:107`). So both acts sampled the same
+   * ninety seconds of every prisoner's day and could not have seen a meal, a
+   * shower or a yard session however well the rooms worked — the meal blocks
+   * are `[400, 500)`, `[1200, 1300)` and `[2000, 2100)`, hygiene is
+   * `[400, 500)`, `[1800, 2000)` and `[2100, 2300)`, and recreation is
+   * `[1000, 1200)`, `[1800, 2000)` and `[2100, 2300)`.
+   *
+   * **That is a defect in acts 2 and 3 as instruments and this act is the
+   * repair.** It builds the same four rooms in one pass with no phase days,
+   * lets the prison settle for two in-game days, and then samples the whole
+   * roster roughly every two seconds of page time for one full 2,400-tick day,
+   * printing the tick, the tick-of-day, the regime block it falls in and what
+   * each of the four prisoners is doing. What a room is *for* is a verb on
+   * that roster: `Eating`, `Showering`, `Yard Time`, `Heading to …`.
+   */
+  test('act 4 - a whole day in the four-room prison, sampled across it', async ({ page }) => {
+    test.setTimeout(2_400_000);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click({ timeout: 30_000 });
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await tab(page, 'build').click({ timeout: 15_000 });
+    const origin = await calibrate(page);
+    console.log(`[act4] calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
+
+    for (const order of [
+      { id: 'wall-brick', quantity: 120 },
+      { id: 'door-wooden', quantity: 5 },
+      { id: 'bed-wooden', quantity: 6 },
+      { id: 'toilet-brick', quantity: 3 },
+      { id: 'shower-head-brick', quantity: 6 },
+      { id: 'dining-table-wooden', quantity: 8 },
+      { id: 'bench-wooden', quantity: 10 },
+    ]) {
+      await buy(page, order.id, order.quantity);
+    }
+    await fastForwardToMax(page);
+    await page.waitForTimeout(6000);
+
+    const edgeX = (tx: number) => origin.originX + tx * TILE;
+    const edgeY = (ty: number) => origin.originY + ty * TILE;
+    const midX = (tx: number) => centreOf(origin, tx, 0).x;
+    const midY = (ty: number) => centreOf(origin, 0, ty).y;
+    const place = async (buildableId: string, tiles: readonly (readonly [number, number])[]): Promise<void> => {
+      await tab(page, 'build').click({ timeout: 15_000 });
+      await armBuildable(page, buildableId);
+      for (const [x, y] of tiles) {
+        const point = centreOf(origin, x, y);
+        // eslint-disable-next-line no-await-in-loop -- one real pointer.
+        await assertCanvasAt(page, point.x, point.y, `act4 ${buildableId} at (${x},${y})`);
+        // eslint-disable-next-line no-await-in-loop -- one real pointer.
+        const produced = await press(page, point.x, point.y);
+        console.log(
+          // eslint-disable-next-line no-await-in-loop -- one real pointer.
+          `[act4] ${buildableId} at (${x},${y}): ${produced.length} command(s) | band ${JSON.stringify(await panelText(page, '.hud__refusal'))}`,
+        );
+      }
+    };
+
+    // All three perimeters and all three doors in one pass, then zone, then furnish.
+    await tab(page, 'build').click({ timeout: 15_000 });
+    await armBuildable(page, 'wall-brick');
+    await wallSide(page, 'act4 cell north', origin, { x: midX(CELL.x0), y: edgeY(CELL.y0) }, { x: midX(CELL.x1), y: edgeY(CELL.y0) });
+    await wallSide(page, 'act4 cell south', origin, { x: midX(CELL.x0), y: edgeY(CELL.y1 + 1) }, { x: midX(CELL.x1), y: edgeY(CELL.y1 + 1) });
+    await wallSide(page, 'act4 cell west', origin, { x: edgeX(CELL.x0), y: midY(CELL.y0) }, { x: edgeX(CELL.x0), y: midY(CELL.y1) });
+    await wallSide(page, 'act4 cell east above door', origin, { x: edgeX(CELL.x1 + 1), y: midY(18) }, { x: edgeX(CELL.x1 + 1), y: midY(18) });
+    await wallSide(page, 'act4 cell east below door', origin, { x: edgeX(CELL.x1 + 1), y: midY(20) }, { x: edgeX(CELL.x1 + 1), y: midY(20) });
+    await wallSide(page, 'act4 canteen north', origin, { x: midX(CANTEEN.x0), y: edgeY(CANTEEN.y0) }, { x: midX(CANTEEN.x1), y: edgeY(CANTEEN.y0) });
+    await wallSide(page, 'act4 canteen south', origin, { x: midX(CANTEEN.x0), y: edgeY(CANTEEN.y1 + 1) }, { x: midX(CANTEEN.x1), y: edgeY(CANTEEN.y1 + 1) });
+    await wallSide(page, 'act4 canteen west', origin, { x: edgeX(CANTEEN.x0), y: midY(CANTEEN.y0) }, { x: edgeX(CANTEEN.x0), y: midY(CANTEEN.y1) });
+    await wallSide(page, 'act4 canteen east above door', origin, { x: edgeX(CANTEEN.x1 + 1), y: midY(CANTEEN.y0) }, { x: edgeX(CANTEEN.x1 + 1), y: midY(12) });
+    await wallSide(page, 'act4 canteen east below door', origin, { x: edgeX(CANTEEN.x1 + 1), y: midY(14) }, { x: edgeX(CANTEEN.x1 + 1), y: midY(CANTEEN.y1) });
+    await wallSide(page, 'act4 shower north', origin, { x: midX(SHOWER.x0), y: edgeY(SHOWER.y0) }, { x: midX(SHOWER.x1), y: edgeY(SHOWER.y0) });
+    await wallSide(page, 'act4 shower south', origin, { x: midX(SHOWER.x0), y: edgeY(SHOWER.y1 + 1) }, { x: midX(SHOWER.x1), y: edgeY(SHOWER.y1 + 1) });
+    await wallSide(page, 'act4 shower east', origin, { x: edgeX(SHOWER.x1 + 1), y: midY(SHOWER.y0) }, { x: edgeX(SHOWER.x1 + 1), y: midY(SHOWER.y1) });
+    await wallSide(page, 'act4 shower west above door', origin, { x: edgeX(SHOWER.x0), y: midY(18) }, { x: edgeX(SHOWER.x0), y: midY(18) });
+    await wallSide(page, 'act4 shower west below door', origin, { x: edgeX(SHOWER.x0), y: midY(20) }, { x: edgeX(SHOWER.x0), y: midY(20) });
+    await armBuildable(page, 'door-wooden');
+    for (const door of [
+      { name: 'cell door', x: edgeX(CELL.x1 + 1), y: midY(19) },
+      { name: 'canteen door', x: edgeX(CANTEEN.x1 + 1), y: midY(13) },
+      { name: 'shower door', x: edgeX(SHOWER.x0), y: midY(19) },
+    ]) {
+      await assertCanvasAt(page, door.x, door.y, `act4 ${door.name}`);
+      console.log(`[act4] ${door.name}: ${JSON.stringify(await press(page, door.x, door.y))}`);
+    }
+    await waitForQueueEmpty(page, 500_000);
+    await page.waitForTimeout(2000);
+
+    for (const room of [
+      { id: 'room.cell', bounds: CELL },
+      { id: 'room.canteen', bounds: CANTEEN },
+      { id: 'room.shower-room', bounds: SHOWER },
+    ]) {
+      const attempts = await designate(page, 'act4', room.id, origin, room.bounds);
+      console.log(`[act4] ${room.id} was accepted on attempt ${attempts}`);
+      expect(attempts, `${room.id} was never accepted`).toBeGreaterThan(0);
+    }
+    await place('bed-wooden', [[12, 18], [13, 18], [14, 18], [15, 18]]);
+    await place('toilet-brick', [[12, 20]]);
+    await place('dining-table-wooden', [[12, 11], [15, 11]]);
+    await place('bench-wooden', [[12, 14], [14, 14], [16, 14], [12, 16]]);
+    await place('shower-head-brick', [[20, 18], [20, 20]]);
+    await waitForQueueEmpty(page, 500_000);
+    await page.waitForTimeout(3000);
+
+    // The yard, after a pan.
+    const focus = centreOf(origin, 21, 12);
+    await assertCanvasAt(page, focus.x, focus.y, 'act4 camera-focus point');
+    await page.mouse.click(focus.x, focus.y);
+    for (let index = 0; index < 6; index += 1) {
+      await page.keyboard.press('ArrowRight');
+      await page.waitForTimeout(120);
+    }
+    await page.waitForTimeout(1500);
+    await tab(page, 'build').click({ timeout: 15_000 });
+    const panned = await calibrate(page);
+    const yard = await firstClearYard(page, panned);
+    console.log(`[act4] the yard rectangle chosen: ${JSON.stringify(yard)}`);
+    expect(yard, 'no 8x8 rectangle both misses the three rooms and is clear canvas').toBeDefined();
+    if (yard === undefined) return;
+    const yardAttempts = await designate(page, 'act4', 'room.yard', panned, yard);
+    console.log(`[act4] the yard was accepted on attempt ${yardAttempts}`);
+    console.log(`[act4] four rooms standing: ${JSON.stringify(await latestRawCounts(page))}`);
+
+    // Populate and settle.
+    await tab(page, 'overview').click({ timeout: 15_000 });
+    for (let index = 0; index < 4; index += 1) {
+      await page.locator('.hud-intake__admit').click({ timeout: 30_000 });
+      await page.waitForTimeout(250);
+    }
+    await tab(page, 'security').click({ timeout: 15_000 });
+    await page.locator('.hud-staff__hire').click({ timeout: 30_000 });
+    await page.waitForTimeout(2500);
+    const admitted = await latestRawCounts(page);
+    console.log(`[act4] four prisoners, one guard, four rooms: ${JSON.stringify(admitted)}`);
+    const settleFrom = await currentTick(page);
+    await runToTick(page, 'act4', settleFrom + 2 * 2400, 3000, 400_000);
+    console.log(`[act4] ${await needsReadout(page, 'after two settling days')}`);
+
+    /*
+     * **The scan.** One whole in-game day, every ~2s of page time, printing
+     * the tick-of-day, the regime block that tick falls in, and what each
+     * prisoner is doing — read from `.hud-regime__roster`, which is the only
+     * surface in the game that names a room-targeted action.
+     */
+    await tab(page, 'regime').click({ timeout: 15_000 });
+    const blocks: readonly (readonly [number, number, string])[] = [
+      [0, 400, 'sleep'],
+      [400, 500, 'meal+hygiene'],
+      [500, 1000, 'work/education/association'],
+      [1000, 1200, 'recreation+association'],
+      [1200, 1300, 'meal'],
+      [1300, 1800, 'work/education/association'],
+      [1800, 2000, 'recreation+hygiene+association'],
+      [2000, 2100, 'meal'],
+      [2100, 2300, 'recreation+association+hygiene'],
+      [2300, 2400, 'sleep'],
+    ];
+    const scanStart = await currentTick(page);
+    const seen = new Map<string, number>();
+    for (;;) {
+      const tick = await currentTick(page);
+      if (tick >= scanStart + 2400) break;
+      const tickOfDay = ((tick % 2400) + 2400) % 2400;
+      const block = blocks.find(([from, to]) => tickOfDay >= from && tickOfDay < to)?.[2] ?? '?';
+      const roster = (await panelText(page, '.hud-regime__roster')).replace(/\n/g, ' | ');
+      for (const verb of ['Eating in Cell', 'Eating', 'Showering', 'Yard Time', 'Common Room', 'Sleeping', 'Using Toilet', 'Association', 'Idle', 'Class', 'Kitchen', 'Laundry', 'Errand']) {
+        const count = roster.split(verb).length - 1;
+        if (count > 0) seen.set(verb, (seen.get(verb) ?? 0) + count);
+      }
+      console.log(`[act4] t=${tick} tickOfDay=${tickOfDay} block=${block} :: ${roster}`);
+      await page.waitForTimeout(2000);
+    }
+    console.log(`[act4] verbs seen across one whole day, with how many prisoner-samples each: ${JSON.stringify([...seen.entries()].sort((a, b) => b[1] - a[1]))}`);
+    console.log(`[act4] ${await needsReadout(page, 'at the end of the scanned day')}`);
+    const ended = await latestRawCounts(page);
+    if (admitted !== undefined && ended !== undefined) console.log(`[act4] DELTA admission -> end of the scanned day\n${deltaVector(admitted, ended)}`);
+    console.log(`[act4] events over the whole act: ${JSON.stringify(await eventTypes(page))}`);
+    for (const which of ['overview', 'rooms'] as const) {
+      await tab(page, which).click({ timeout: 15_000 });
+      console.log(`[act4] the four-room prison, ${which} (UPPER BOUND):\n${await screen(page)}`);
+    }
+  });
+
 });
