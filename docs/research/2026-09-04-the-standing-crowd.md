@@ -542,3 +542,204 @@ was written for, and it is the first time it has been played.
   read-only outside its own two files.
 - **ADR 0088's `response-system.ts:818` has drifted to `:867`** at v0.0.470.
   Its `search-system.ts:372` citation is still exact.
+
+---
+
+## 10. Improvement proposals
+
+Each is grounded in something measured above, and each says where the player
+sees it, when, and instead of what. **None of them is landed here — this pass is
+read-only on `src/`.** Where a proposal carries a string, the code that would
+render it is opened and the sentence is checked against it, per `AGENTS.md`
+reservation 4 as released on 2026-09-04.
+
+### A. The Intake panel should say what having no bed *does* — one new line
+
+**Grounded in:** act 1 (sixteen rows at `action=NONE` for ten in-game days) and
+§2 (the three code sites that make it so).
+
+**What a player sees today:** `2 waiting with no bed to sleep in` in the Intake
+panel and `2 with no bed` on the strip. Both are true. Both invite the reading
+*"they sleep badly"*, and what actually happens is that those prisoners begin no
+action of any kind.
+
+**Proposal:** a second, quieter line inside the same block, under the count:
+
+> **Until a bed frees up they cannot sleep or use a toilet.**
+
+**Where:** the `.hud-intake__no-place` block in `src/ui/hud/intake-panel.ts` —
+built at `:245`, shown and filled at `:275-283`, gated by
+`isIntakeWithoutPlaceWorthShowing` at `:181-182`. Putting the new line inside
+that same gate is what makes it impossible for the consequence to appear without
+the count it is about.
+
+**Why it would be true, opened rather than asserted.** `action.sleep`
+(`src/simulation/prisoners/actions.ts:116-117`) and `action.use-toilet`
+(`:128-129`) are the only entries in `DEFAULT_ACTIONS` serving `sleep` and
+`bladder`, and both target `own-accommodation`.
+`resolveTargetInstance`'s own-accommodation arm answers `undefined` whenever
+`getAccommodation` does (`action-system.ts:1555-1559`), and `getAccommodation`
+is written only when `IntakeSystem` finds a free instance
+(`intake-system.ts:565-570`). `waitingWithoutPlace` — the number the line sits
+under — counts exactly the arrivals at `accommodation-assignment` for whom no
+free place exists (`prisoner-projection.ts:616-638`). So for every person that
+count is about, both verbs hold in every prison, whatever else is built.
+
+**Why those two verbs and not more.** *"They cannot eat"* would be **false** in a
+prison with a canteen (`action.eat-meal` targets `room.canteen`, `:120-121`) and
+*"they can do nothing"* would be false in a prison with a yard
+(`action.yard-recreation`, `:165-166`, needs no object). The sentence has to
+survive the prison the player builds next, not only the one in front of them.
+
+**Why not simply reword the two existing strings.**
+`hud.status.prisoners-without-bed` is **the owner's own wording, approved before
+it was built** (`src/content/default-locale-en.ts:159-160`), and
+`hud.intake.no-place` is documented as its deliberate long form *"so the same
+fact reads the same way in both places"*. Adding a line keeps that pairing
+intact; rewriting either breaks something the owner already decided.
+
+### B. Sixteen inert prisoners can be invisible in every panel — and that is a decision to revisit, not a patch
+
+**Grounded in:** act 1. Twenty-two prisoners in two states, and
+`PRISONER_ROSTER_ROW_LIMIT` is **4** (`src/ui/hud/regime-panel.ts:293`). The
+projection orders those four **by risk tier**, on the owner's #703 ruling
+(`src/simulation/presentation/prisoner-projection.ts:432-460`, which explains at
+length why arrival order was wrong). Risk tier has no relationship to whether a
+prisoner can act, so a player can open every panel in the game and never see one
+of the sixteen.
+
+**Proposal, as a question rather than a patch, because #703 is an owner ruling:**
+the roster block's header already carries an *"N of M"*. It could carry a state
+summary from the same projection walk — *"22 prisoners · 6 in a cell · 16
+waiting for a bed"* — without touching the window's ordering or its four-row
+budget. That keeps the ruling and answers the question the ruling does not: what
+the eighteen rows a player cannot see are doing.
+
+**What I did not do:** cost it. `projectPrisonerPopulationCounts` already walks
+the whole population and already computes `waitingWithoutPlace`
+(`prisoner-projection.ts:645+`), so the figure is a field rather than a second
+pass — but whether the *header* is the right surface is a layout decision I did
+not measure.
+
+### C. Where an arrival stands — the placeholder both docblocks already name
+
+**Grounded in:** §1–§3. Sixteen prisoners and six guards share (16,16) because
+one constant and one derivation independently answer *"the middle of owned
+land"*.
+
+`NEW_PRISON_ORIGIN_TILE`'s docblock already states the fix and its cost:
+
+> when a session can contain a room a staff member or an arrival belongs in, the
+> arrival tile becomes that room's anchor and the change is to this file alone:
+> both commands already carry a tile.
+
+**And that room already exists in the catalogue, twice, with no consumer.**
+`room.reception` (`src/content/room-catalog.ts:109`) and `room.holding-cell`
+(`:98`) are zonable and buildable; `grep -rn "room.reception\|room.holding-cell"
+src/ --include=*.ts` returns the catalogue, the locale and three comments, and
+no behaviour. Giving the arrival tile to a zoned reception is the same shape
+ADR 0054 decision 3 used to give `room.laundry` its first consumer.
+
+**Stated honestly: this moves the crowd, it does not dissolve it.** The
+arrivals would stack on the reception's anchor instead, by §8's rule. It is
+still worth taking, for three reasons this pass can point at: it separates the
+homeless population from the guard post (§3), it turns a placeholder into
+something a player *did*, and it gives two authored rooms a reason to exist.
+**It needs an ADR** — it changes where an incident responder is dispatched
+(`response-system.ts:471-473` reads the sector's post, not the arrival tile, so
+the two would stop coinciding) and it is a content decision.
+
+### D. The load-bearing simulation change is already written down — and act 2 sharpens it
+
+`docs/research/2026-09-04-why-they-stack.md` §4 names it: an action's
+destination is a room-level answer to an actor-level question, and the fix is to
+give `destinationTileOf` a tile *inside* the room. I am not re-proposing it; I am
+adding the one thing act 2 contributes to it.
+
+**The fix must not be framed as crowd relief.** At **two** prisoners with a bed
+each and nobody waiting, the whole prison is already on one tile (§7). So a
+change shaped like *"fan actors out when a tile gets busy"* would be a fix to
+the wrong quantity: the room-level destination is wrong at n=2, when there is no
+crowd to relieve. What is wrong is the *destination*, not the *density*.
+
+### E. A sector whose guard requirement scales with occupancy still has one post tile
+
+**Grounded in:** act 1's six guards on one tile for the whole run.
+`requiredGuardCountFor` scales the requirement with sector occupancy
+(`src/simulation/security/deployment-system.ts:100-107`) — the strip read
+`COVERAGE 22 · Covered` with six guards hired — while `isAtPost` is exact tile
+equality (`src/simulation/security/deployment-phase.ts:14-16`) against a single
+`postTile`. So the better a player staffs a growing prison, the taller the
+column of guards on one square.
+
+**A question rather than a proposal**, because it is ADR 0036's territory and
+that ADR is Accepted: does a sector want *n* post tiles, or a post *area*?
+Either changes what `displayedDeploymentPhase` means, which is why it is not a
+patch.
+
+---
+
+## 11. Every gate run, and its actual result
+
+- **`node /workspace/lockstate/node_modules/typescript/bin/tsc -b --pretty false`**
+  in the worktree — **clean, no output**, run after each edit to the instrument.
+- **act 1, run 1** — `1 passed (5.3m)` at `LOCKSTATE_BROWSER_TEST_PORT=5323`.
+- **act 2** — `1 passed (4.1m)`.
+- **act 3** — `1 passed (3.8m)`.
+- **act 1, run 2** — the same act after the instrument fix in §12, as a second
+  independent reproduction.
+- **Machine idleness, reported rather than claimed.** It was **not** idle:
+  `ps -eo etime,args | grep -E "[p]laywright/test/cli|[v]itest"` found the other
+  tester's playtest running when act 1 started, and `/proc/loadavg` read
+  `3.59 2.85 3.18`. `docs/AGENT_WORKFLOW.md` §2's rule about contention is about
+  *timing-sensitive gate tests*, and two testers running at once on separate
+  ports is this round's design — but the rule says report it, so it is reported.
+  Nothing in this record is a wall-clock claim: every tick is from
+  `simulation/clock-state` and every position from a decoded worker payload.
+- **Not run, and named rather than implied:** `pnpm test`, the browser gate
+  suite, and the production build. This branch adds one `*.playtest.ts` and one
+  document and changes nothing under `src/`, so no `.spec.ts` presses anything
+  it touches — but *"I did not run the suite"* is the honest sentence and this
+  is it.
+- **No mutation of production code**, by the brief. The evidence shape is
+  differential play instead: act 2's ladder against itself across eight
+  populations, and act 3's before/after inside one prison.
+
+---
+
+## 12. Instrument failures, and which readings they touched
+
+Two, both found by the instrument contradicting itself, both recorded rather
+than quietly fixed.
+
+1. **The tile-change map was keyed on the entity id alone, and `EntityStore`
+   ids are allocated per population.** Prisoner 0 and guard 0 both publish
+   `entityId: 0`, so the two overwrote each other on every keyframe and act 1
+   run 1's `moves` list filled with **about 180 fabricated eight-tile "moves"
+   between (12,12) and (16,16) across a zero-tick gap**, which hit the 200-entry
+   cap and evicted every real transition after tick 8,180.
+   **Which readings that touches: only that list.** The velocity and sub-tile
+   counters are read off each record and never compared across frames, so §5's
+   aggregate is unaffected — and it was the counters *disagreeing* with the
+   moves list (ten sightings, all at ticks 4,649–5,133, against 180 "moves" at
+   7,784–8,180) that exposed the bug. The map is now keyed `population:id`, the
+   cap is 400, and the velocity counters are split per population; acts 2 and 3
+   ran with the fix and have no guards to collide with in any case.
+2. **`.hud-alerts` is not a class.** Act 1 run 1 read
+   `".hud-alerts: ABSENT"` for the alert column; the list is
+   `.hud-alerts__list` (`src/ui/hud/hud.ts:1525`). No claim in this record rests
+   on it — the incident evidence is the worker's own `simulation/event` log, on
+   a different channel — and the selector is corrected in the file.
+
+**And one thing that did *not* go wrong, worth recording because a previous pass
+was bitten by it.** `2026-09-04-why-they-stack.md` §7.2 measured that six Admit
+presses could produce three prisoners, because
+`SimulationCommandSender.submit` throws while it is waiting for the command
+sequence and a press inside that window submits nothing. **That did not
+reproduce here**: act 1's twenty-two presses produced twenty-two prisoners
+(`22 prisoner(s) alive after 0 extra Admit press(es)`) and act 3's eight
+produced eight, on a x4 clock. Act 2 needed two extra presses per rung, which is
+its own `admitUntil` racing the counts publication rather than a refusal. #942
+(*"a run of presses is a run"*) landed between v0.0.451 and v0.0.469 and is the
+other tester's surface this round; this is one line of corroboration and not a
+finding of mine.
