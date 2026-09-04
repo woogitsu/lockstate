@@ -321,6 +321,37 @@ export function edgeChooserShown(buildable: HudBuildableViewModel | undefined, r
 }
 
 /**
+ * Which sentence the armed tool's one hint line carries (issue #904).
+ *
+ * **The line described the wall gesture for every row in the catalogue, and
+ * nineteen of the twenty-one place an object on a tile instead.** Arming a Bed,
+ * a Toilet or a Storage Rack read *"Click a tile edge to place a wall. Drag
+ * along it to lay a run."* -- two instructions, neither of which does anything
+ * for such a row: `ObjectTool.place` is one press on one tile
+ * (`src/ui/object-tool.ts`), and the dragged-run producer is
+ * `BuildTool.attachOrders`, which lays walls and nothing else.
+ *
+ * Keyed on `placesObject`, which is the same field `HudPlaceIntent`'s consumer
+ * in `hud.ts` branches on to send `place-object` rather than
+ * `place-build-order`. That is the point of reading it here as well: the
+ * sentence and the command are then two readings of one fact instead of two
+ * rules that can disagree, which is the argument `edgeChooserShown` above
+ * makes about a hidden control and a submitted value.
+ *
+ * Removal wins over both, for the reason it hides the edge chooser: it names no
+ * buildable at all, so the selected row decides nothing about it.
+ *
+ * Exported and pure so that the choice is checkable without a DOM, exactly as
+ * the two functions above are -- `paintArmed` is otherwise reachable only
+ * through a mounted panel, and the wrong sentence there is invisible to every
+ * headless test.
+ */
+export function armedHintKey(buildable: HudBuildableViewModel | undefined, removing: boolean): LocalizationKey {
+  if (removing) return HUD_MESSAGE_KEY.buildRemoveHint;
+  return buildable?.placesObject === true ? HUD_MESSAGE_KEY.buildArmHintObject : HUD_MESSAGE_KEY.buildArmHint;
+}
+
+/**
  * The edge a submitted intent carries: the player's choice while the chooser is
  * on screen, and `HUD_DEFAULT_BUILD_EDGE` while it is not.
  *
@@ -1268,7 +1299,22 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
     // One line either way, so the controls under it never move: the hint says
     // what the armed gesture does, and a removal does something else.
-    armHint.textContent = t(removing ? HUD_MESSAGE_KEY.buildRemoveHint : HUD_MESSAGE_KEY.buildArmHint);
+    //
+    // **Three sentences reach this line since issue #904, not two, and the
+    // third is a correction rather than an addition.** `buildArmHint`
+    // describes the wall gesture -- an edge click and a dragged run -- and was
+    // shown for every row in the catalogue, including the nineteen of twenty-one that place
+    // an object on a tile. There is no drag route for those at all
+    // (`ObjectTool.place` is one press, one tile) and they are addressed by a
+    // tile rather than by an edge, so the hint told a player arming a bed to
+    // do two things neither of which works.
+    //
+    // Chosen on `placesObject`, which is the same shape fact `onPlace` in
+    // `hud.ts` branches on to decide whether the numeric route sends
+    // `place-object` or `place-build-order`. Reading one field for both means
+    // the sentence cannot describe a gesture other than the one the panel
+    // would perform. Removal still wins over both: it names no row.
+    armHint.textContent = t(armedHintKey(selectedBuildable(), removing));
 
     // The numeric route follows the mode too, or the one submit button would
     // say "Place order" and clear a tile.

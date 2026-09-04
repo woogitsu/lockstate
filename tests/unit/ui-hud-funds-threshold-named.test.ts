@@ -53,6 +53,31 @@ const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMess
 const WHAT_STOPS = /deliver/i;
 
 /**
+ * What lifts it, in the words a player reads -- and this constant is the
+ * repair issue #913 asked for rather than a tidying of the two literals it
+ * replaced.
+ *
+ * The tail used to be pinned here as `/until the state pays what it owes/`,
+ * transcribed from the owner's ruling of 2026-09-01, and it was measured
+ * false. `StateIncomeSystem.update` credits nothing at all when
+ * `stateIncomeForCompletedDay` is zero, and that sum folds over
+ * `RoomInstanceRegistry.residentIdsWithExistingPlace()` -- prisoners holding a
+ * unit of residency capacity that currently exists
+ * (`src/simulation/economy/income.ts`). So a prison holding nobody is owed
+ * nothing by the state, and a floored one read
+ * `stateIncomeAccruedTodayMinorUnits: 0` at all 29 samples of
+ * `docs/research/2026-09-04-can-this-prison-fail.md`. The sentence named
+ * waiting as the way out of a state that waiting cannot leave, and this file
+ * required it to.
+ *
+ * What ruling 19 actually asked of these six sentences is that each **name
+ * what stops rather than the threshold it stops at**, and that they share one
+ * tail so the ladder reads as one rule. Both properties are unchanged; only
+ * the tail's claim about who owes whom is gone.
+ */
+const WHAT_LIFTS_IT = /until the prison earns the money/;
+
+/**
  * The two sentences the chip carries on its `title` and in its screen-reader
  * text above and at the deliveries rung -- `overdraftDescription` in
  * `src/ui/hud/projection.ts` chooses between them on the same boundary
@@ -112,10 +137,11 @@ describe('the deliveries rung is named where a player will meet it (the ruling o
    * of 2026-09-01) asked for two facts a player at this balance needs: that
    * no further spending of any kind is possible, and what would lift it. Not
    * pinned verbatim, for the same reason `CHIP_DESCRIPTION_KEYS`'s prose is
-   * not: the words are player-facing copy `AGENTS.md`'s fourth exclusion
-   * reserves to the owner (flagged owner-pending in the copy's own comment in
-   * `src/content/default-locale-en.ts`), and this checks the property the
-   * ruling is about rather than the draft.
+   * not: the wording is open to the owner's unifying pass under their release
+   * of 2026-09-04, and this checks the properties the ruling is about rather
+   * than the draft. Since #913 there is one more property than the ruling
+   * named -- that it does not claim the state owes this prison money -- and
+   * `WHAT_LIFTS_IT` above says why that had to become a check.
    */
   it('names the treasury floor as its own state, in a full sentence that says what lifts it', () => {
     const sentence = localizer.format(HUD_MESSAGE_KEY.fundsTreasuryFloorExhausted);
@@ -128,7 +154,16 @@ describe('the deliveries rung is named where a player will meet it (the ruling o
     // this sentence exists to be told apart from.
     expect(sentence, 'does not say spending has stopped entirely').toMatch(/nothing|no .*spen|exhaust/i);
     // What lifts it, the same tail every sibling refusal sentence carries.
-    expect(sentence, 'does not say what would lift it').toMatch(/until the state pays what it owes/);
+    expect(sentence, 'does not say what would lift it').toMatch(WHAT_LIFTS_IT);
+    /*
+     * **And it does not promise a payment instead** (issue #913). This is the
+     * one assertion here that is about a *falsehood* rather than about an
+     * omission: the sentence a player reads at the floor of an empty prison
+     * used to say the state owed it money, and the state owes a prison that
+     * houses nobody nothing at all. Pinned as a negative because any tail
+     * asserting a debt is wrong here, not only the one wording that did.
+     */
+    expect(sentence, 'promises a payment the state does not owe').not.toMatch(/owes|owed/i);
     // And it must actually differ from the rung's sentence -- the whole
     // point of the ruling, pinned again in `tests/unit/ui-hud-projection.test.ts`
     // with a mutation proving this comparison is load-bearing.
@@ -146,7 +181,8 @@ describe('the deliveries rung is named where a player will meet it (the ruling o
       const sentence = defaultMessageCatalogEn.messages[key];
       expect(sentence, `${key} is not in the default catalogue`).toBeTypeOf('string');
       expect(String(sentence), `${key} does not say what has stopped`).toMatch(/deliver|hiring|build queue/i);
-      expect(String(sentence), `${key} does not say what would lift it`).toMatch(/until the state pays what it owes/);
+      expect(String(sentence), `${key} does not say what would lift it`).toMatch(WHAT_LIFTS_IT);
+      expect(String(sentence), `${key} promises a payment the state does not owe`).not.toMatch(/owes|owed/i);
     }
     /*
      * And the one that is about deliveries names them, rather than the whole

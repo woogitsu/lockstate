@@ -229,14 +229,33 @@ describe('what a player is told when the prison stops being under control', () =
      * rather than anything this issue changed.
      */
     const incidentEvents = incidentEventsOf(runtime);
+    /*
+     * **`-after-lapse`, and the suffix is the assertion** (issue #914's
+     * finding 4). This prison has no guards, so the comment above is right
+     * that it "did not win it" -- and until this change the row it got was
+     * `incidents.all-clear`, the same row a prison that contained fifteen
+     * incidents with nobody hurt gets. Measured over two full acts in
+     * `docs/research/2026-09-04-does-anyone-answer-an-incident.md`: 15/15
+     * resolved with zero injuries against 19/19 lapsed with 114
+     * prisoner-injuries, and byte-for-byte identical alert columns. The
+     * counterpart this test exists to demand is still demanded; what is
+     * demanded as well is that it be the counterpart for *this* ending.
+     */
     expect(
       incidentEvents.slice(-2).map((event) => event.type),
-      'the prison says the riot opened and then says it is over -- nothing on this channel is ever retracted',
-    ).toEqual(['incidents.riot-opened', 'incidents.all-clear']);
+      'the prison says the riot opened and then says how it ended -- nothing on this channel is ever retracted',
+    ).toEqual(['incidents.riot-opened', 'incidents.all-clear-after-lapse']);
 
     const { text, severity } = sentenceFor(incidentEvents.at(-1)!, clearTick);
-    expect(severity, 'nothing is wrong any more, so nothing should be painted as if it were').toBe('info');
+    /*
+     * Not `'info'`: every participant of a lapsed incident is injured by
+     * `IncidentResponseSystem.lapse`, so something did go wrong here and
+     * `'info'` was the grade that said otherwise. Still not `'danger'` --
+     * nothing is running any more, which is the rest of this test's subject.
+     */
+    expect(severity, 'a prison that was hurt is not calm news').toBe('warning');
     expect(text).not.toContain('hud.alert.event');
+    expect(text, 'and the row says which of the two endings it was').toContain('ran out of time');
 
     /*
      * **The band is what this is really about.** It holds the newest event
@@ -248,7 +267,7 @@ describe('what a player is told when the prison stops being under control', () =
     let band = hudEventNoticeFromWorkerMessage(publication(incidentEvents.at(-2)!, clearTick));
     expect(band).toMatchObject({ severity: 'danger' });
     band = hudEventNoticeFromWorkerMessage(publication(incidentEvents.at(-1)!, clearTick));
-    expect(band, 'the last word on a calm prison must not be the riot').toMatchObject({ severity: 'info' });
+    expect(band, 'the last word on a calm prison must not be the riot').toMatchObject({ severity: 'warning' });
   });
 
   it('says it once per incident however long the prison is left in trouble', () => {
@@ -271,7 +290,12 @@ describe('what a player is told when the prison stops being under control', () =
 
     const incidentEvents = incidentEventsOf(runtime);
     const openings = incidentEvents.filter((event) => event.type.endsWith('-opened'));
-    const allClears = incidentEvents.filter((event) => event.type === 'incidents.all-clear').length;
+    // Both endings count as a return to calm here: the volume rule this test
+    // is about is one row per *return*, and which of the two rows it is is
+    // finding 4's subject and the previous case's.
+    const allClears = incidentEvents.filter(
+      (event) => event.type === 'incidents.all-clear' || event.type === 'incidents.all-clear-after-lapse',
+    ).length;
 
     expect(
       openings.filter((event) => event.type === 'incidents.riot-opened').length,
