@@ -404,3 +404,59 @@ publishes:**
 
 `rooms: 3 → 4`. The treasury move is the wage bill, not the yard: a yard is
 free.
+
+
+## 6. The four-room prison, one room at a time — act 3
+
+*(written from act 3's run; each phase is: wall, door, designate, furnish,
+then three in-game days at 4×, with the Regime roster and the inspector read
+at each day boundary.)*
+
+## 7. What a player is told about a room they built: the census
+
+**MEASURED, act 3.** The Rooms tab, dumped with a working cell and a working
+canteen standing — four prisoners housed in one and two dining tables in the
+other — is, in full and in order: the eighteen-row *type* catalogue with
+`Selected` on whichever row was last clicked, the coordinate entry, `Draw on
+map`, `Remove rooms`, the drag hint, and the selected **type's** requirement
+rules. **There is no list of the rooms the prison has.** The only figure on
+any screen that is about the prison's actual rooms is the status strip's
+`2 ROOMS`.
+
+**VERIFIED, read, and this is the part that makes it a defect rather than a
+gap in a pre-alpha.** The projection layer already computes, per room
+instance, its catalog id, its category, its coordinate, its occupancy, its
+free places, its utilization and every requirement's status
+(`RoomListViewModel` / `RoomDetailViewModel`,
+`src/simulation/presentation/room-projection.ts:236-258`), and the UI already
+subscribes to that channel — `src/ui/simulation-room-needs.ts` is the reader.
+**It renders one field of it.** `unfinishedRoomIds` filters to rooms with
+`requirementSummary.missingCapability > 0` and the panel draws at most
+**one** of them, deliberately and with a documented reason:
+`export const ROOM_NEEDS_ROOMS_LIMIT = 1;`
+(`src/ui/hud/rooms-panel.ts:406`, whose docblock argues for naming one room
+*completely* rather than several partially, and calls the constant a request
+budget). That block is real and it works — act 2's four-room prison showed
+
+> `NOT READY` / `3 of 4` / `Shower Room at 18, 18 is missing` / `2 × Shower Head`
+
+— so a player is told, well, about the *worst* thing wrong with one room.
+**A room that is finished and working produces no line anywhere.**
+
+**And nothing at all reports use.** There is no published count of how many
+prisoners are in a canteen, a shower room or a yard. The two room counts the
+worker publishes are both about *housing*: `roomOccupants` is residency
+assignments and `occupiedPlaces` is residency places that still exist
+(`src/simulation/protocol/types.ts:807` and `:873`, both opened). The
+concurrent-use ceiling the rooms actually gate on lives in
+`RoomInstanceRegistry.concurrentUseCapacityByCapability`, and
+`room-projection.ts:214` says of it, in its own words:
+
+> The concurrent-use figure is **not projected at all yet**, and that is a
+> gap rather than a decision.
+
+**So the only channel in the whole game through which a player can learn that
+a room is being used is the verb on a Regime roster row** — `Showering`,
+`Eating`, `Yard Time`, `Heading to …`, from
+`src/content/simulation-message-keys.ts:164-176`. One tab, one column, four
+words.
