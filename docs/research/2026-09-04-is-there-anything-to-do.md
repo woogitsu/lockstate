@@ -69,7 +69,7 @@ LOCKSTATE_BROWSER_TEST_PORT=43303 node node_modules/@playwright/test/cli.js test
 | --- | --- | --- |
 | 1 | one cell, four prisoners, one guard, then **nothing pressed for three in-game days** | `1 passed (7.3m)` |
 | 2 | **growth**: twelve beds in the same room, twelve prisoners, then a second cell | `1 passed (7.3m)` |
-| 3 | the two rooms a cell cannot replace — a shower room and a yard | run A `1 failed (8.4m)` (§10b), run B `1 passed (10.2m)` |
+| 3 | the two rooms a cell cannot replace — a shower room and a yard | run A `1 failed (8.4m)` (§10b), run B `1 passed (9.7m)` |
 | 4 | twenty in-game days at 4×, watching for a sentence to end | *(see §12)* |
 | 5 | **the same prison with a door in each room** — act 3's refuting sample | `1 passed (7.3m)` |
 
@@ -1057,10 +1057,15 @@ type would refute the narrow claim.
 **And what is not there, precisely:** no goal, no objective, no milestone, no
 unlock, no research. **MEASURED**, both directions:
 `grep -rn -iwE 'milestone|objective|progression|reputation' src/simulation/`
-returns seven hits, of which six are the word *reputation* on a gang registry
-that `new-session.ts` constructs empty, and one is a comment. No string in
-`src/content/default-locale-en.ts` matches `goal`, `objective`, `milestone` or
-`unlock`. **Nothing in the game ever states what a player is trying to
+returns **seven** hits in the whole simulation. Six are the word *reputation*
+on the gang model — two of them its own header comments, two its save and
+restore, two the projection field — and nothing in `src/` ever registers a
+gang, which `src/simulation/presentation/prisoner-projection.ts:93` states in
+those words. The seventh is a comment in
+`src/simulation/prisoners/discharge-system.ts:81` naming a reputation effect a
+discharge does **not** have. And
+`grep -c -iE '\bgoal\b|\bobjective\b|\bmilestone\b|\bunlock'
+src/content/default-locale-en.ts` returns **0**. **Nothing in the game ever states what a player is trying to
 achieve**, which is the same conclusion
 `docs/research/2026-09-04-the-first-ten-minutes.md` §8 reached about the first
 ten minutes, holding equally at hour two.
