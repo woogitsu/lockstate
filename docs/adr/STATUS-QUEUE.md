@@ -6773,6 +6773,53 @@ migration and two deploy variables land. It is deleted by the change that
 brings those, which is also the change that first makes
 `docs/TELEMETRY.md`'s 90/90/30 retention table capable of being true.
 
+**Updated 2026-09-04, narrower again, and still not deleted.** The migration
+content exists — one file, applied nowhere:
+`supabase/migrations/20260904090000_create_telemetry_events.sql`, carrying the
+`telemetry_events` table, the `record_telemetry_events(jsonb)` insert function,
+the `telemetry_ingest` role, and the retention job, which is a function plus the
+audit table [ADR 0008](./0008-trusted-service-boundary.md) §3 step 6 makes it
+owe. The first three were authorised on 2026-09-03; the fourth was put to the
+owner on 2026-09-04 as three objects or four and they answered *"Cztery — dopisz
+też retencję"* ("Four — add the retention too."), against the integrator's own
+recommendation of three. That migration quotes them, dated, beside the paragraph
+that argued for three, which is left standing.
+
+**The sharp half this row named is discharged.** It said *"that role is swept by
+nothing unless `supabase/tests/003_data_api_grants.test.sql`'s role list is
+extended in the same change that creates it."* It was, in the same change: that
+suite now names `telemetry_ingest` in every sweep and pins it to one EXECUTE and
+no relation at all, and `supabase/tests/012_telemetry_ingest.test.sql` drives
+each of those claims **as the role itself** rather than reading the grant back.
+Measured: narrowing the retention function's `revoke execute` to omit `public`
+and `telemetry_ingest` turns five assertions red in suite 003 as well as four in
+012.
+
+**Why the row survives a third time.** Three things, none of them in this
+repository's gift, and the third is new:
+
+- **Applying the migration**, which is [ADR 0016](./0016-migration-delivery-mechanism.md)'s
+  mechanism and the owner's. `pnpm verify:sql` executes the whole directory
+  against a local PostgreSQL 16.13 with pgTAP and passes 412 assertions; that is
+  the only place any of it has run.
+- **The two Worker variables, and how the Worker becomes the role.**
+  `telemetry_ingest` is `nologin` with no password, deliberately — a password in
+  a migration is a credential in the repository — so either a password set
+  outside this repository or `grant telemetry_ingest to authenticator` is owed,
+  and both are deploy configuration.
+- **A schedule for the retention job, which is one command.** Both invocations
+  are written out ready to run in that migration's section 7, with which is the
+  owner's to pick and why neither is in the file: `pg_cron` has to be enabled per
+  project from a dashboard this repository cannot read, and a `create extension`
+  that fails because it is unavailable would fail the whole migration.
+
+**And the last sentence above needs one word read carefully rather than
+corrected.** It said this change is the one that first makes the 90/90/30 table
+*"capable of being true"*. Capable, yes — the three windows are expressed, keyed
+on a column no caller can move, and audited per run per category. **True, no**: a
+function nothing calls enforces nothing, and `docs/TELEMETRY.md` now says that in
+those terms rather than claiming enforcement.
+
 ### ADR 0056 (2026-08-28) — the fix is decided, the second of simulated time it costs a player is not
 
 **Filed by the change that implements it, which is what §2's rule asks for.**

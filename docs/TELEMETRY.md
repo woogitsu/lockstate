@@ -303,6 +303,18 @@ wrong fix and is explicitly rejected.
 ingestion side's to enforce and no ingestion side exists; the client's
 obligation is only to send the minimum that makes them meaningful, and it does.
 
+**Both paragraphs below this one are superseded as of 2026-09-04 and are left
+standing, because each was true of the tree it was written against and the
+direction is the finding.** The first says the numbers are *"not enforced by
+anything today"*; the second says *"there is no table for a window to run over
+and no job to run one"*. There is now a table, a retention function and an audit
+table for its runs, in
+`supabase/migrations/20260904090000_create_telemetry_events.sql`, authorised by
+the owner on 2026-09-04 in the words that file quotes and dates. **What replaces
+those two sentences is not the word "enforced"** — see "What exists, and what one
+command away means" below, which is the current statement and the one to read
+first.
+
 **Still true on 2026-09-03, and the clause that changed is worth being precise
 about.** An *endpoint* now exists (see "And what is on the other end" above) and
 nothing about retention does: there is no table for a window to run over and no
@@ -335,6 +347,52 @@ deletion or data request, telemetry associated with that account is deleted
 identifier by design, which is the intended outcome rather than a gap. No
 attempt is made to re-identify a session id, and session ids are never
 joined to account records.
+
+### What exists, and what "one command away" means
+
+**Added 2026-09-04, and it is the current statement of this section's status.**
+Two things landed together: the ingest destination itself and a retention rule
+for it, both in one migration and neither applied anywhere.
+
+**The rule is expressed in code.** `public.enforce_telemetry_retention()` runs
+the three windows above, one per category, and deletes strictly on the
+server-stamped `received_at` — never on the client's `occurredAt`, which arrives
+as a separate `claimed_occurred_at` that the window does not read. Every run
+writes one row per category into `public.telemetry_retention_runs`, in the same
+transaction as the delete it describes, recording the rule applied, the boundary
+used, the role it ran as and how many rows stopped existing. That audit is not a
+nicety: [ADR 0008](./adr/0008-trusted-service-boundary.md)'s 2026-08-27 scope
+amendment puts a *scheduled* job **inside** its §3, unlike the ingest, and §3
+step 6 asks for one. The audit table holds counts, boundaries and the rule and
+no part of any row it deleted, because an audit of a privacy deletion that
+copies the deleted data has deleted nothing. The column that names the key is
+pinned by a constraint:
+`check (keyed_on = 'received_at')` (verbatim in `supabase/migrations/20260904090000_create_telemetry_events.sql`),
+so a run cannot record a window it did not run.
+
+**And "enforced" is still the wrong word, which is why this heading does not use
+it: a function nothing calls enforces nothing.** No schedule exists in this
+repository. Scheduling it is one command, and both forms — a `pg_cron` entry and
+an external caller — are written out ready to run in that migration's own
+section 7, with a sentence saying which is the owner's to pick. Enabling an
+extension and adding a deploy schedule are both outside what this repository
+decides. **Until one of those commands is run, and a destination is configured,
+these numbers are a rule the database knows and does not apply.**
+
+**One row of the table above does not describe the same thing the code selects,
+and it is named here rather than quietly reinterpreted.** Rows one and two say
+`events`; row three says `aggregates`, and nothing stores an aggregate — ADR 0008's
+same amendment expects aggregates to be *"folded from the stored events, never
+written independently"*. The job applies 30 days to the rows `category =
+'gameplay'` selects, on the reading that "aggregates" describes that category,
+which is how this document's own category table introduces it: "Coarse
+aggregates for scenario/tutorial design". What settles the reading is the
+direction of the risk rather than the grammar — a retention number is a
+**ceiling**, so 30 days over those rows keeps the promise under either reading,
+while leaving the window out would keep it under neither and let those rows grow
+without bound. If the intended reading was ever "a future rollup gets 30 days
+and raw gameplay events get 90", that is a decision somebody has to write down,
+and until they do the honest thing is to apply the number this table prints.
 
 ## Adding an event
 
