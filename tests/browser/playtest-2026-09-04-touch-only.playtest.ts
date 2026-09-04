@@ -836,42 +836,33 @@ test('act 3: is every control reachable and scrollable by finger', async ({ page
   }
 });
 
-/* ================================================================== */
-/* act 4 — the whole game, with fingers, landscape                     */
-/* ================================================================== */
 
-async function playTheGame(page: Page, client: CDPSession, label: string): Promise<void> {
-  const log = (line: string): void => console.log(`[${label}] ${line}`);
+interface ReachableGrid {
+  readonly reachable: readonly { x: number; y: number }[];
+  readonly bestSize: number;
+  readonly bestAt: { x0: number; y0: number } | null;
+}
 
-  await tapControl(page, '.save-panel__button', { nth: 0 });
-  await expect(page.locator('.hud-clock__day')).toHaveText('1');
-  log('New prison: day reads 1');
-
-  await tapControl(page, '.hud__tabs [data-tab="build"]');
-  const reach = await measureReach(page);
-  reportReach(`${label} build tab`, reach);
-  const anchor = reach.freeSquareAt!;
-  const origin = await touchCalibrate(page, { x: Math.round(anchor.x + 48), y: Math.round(anchor.y + 48) });
-  log(`calibration: tile (0,0) top-left at (${origin.originX}, ${origin.originY})`);
-
-  /*
-   * Which tiles a finger can reach without moving the camera, and the biggest
-   * square cell it can draw in one camera position.
-   *
-   * **The lattice is half a tile, and that is a correction this act paid for.**
-   * The first version required only tile *centres* to be canvas, and the run
-   * then died at `wall north start: (416,64) is covered by
-   * span.ui-eyebrow.ui-stat__label` -- because a wall run is aimed at a tile
-   * *edge*, not a centre, and the north edge of the block it chose was 20px
-   * inside the status strip. A cell of side `s` needs the whole closed
-   * rectangle from its north-west corner to its south-east one, sampled every
-   * half tile: `(2s+1)²` lattice points, all canvas. That is exactly what the
-   * four drags touch, and nothing less is enough.
-   *
-   * One `page.evaluate` for the whole thing rather than three per tile: the
-   * first version made 4,800 round trips and took minutes.
-   */
-  const grid = await page.evaluate(
+/**
+ * Which tiles a finger can reach without moving the camera, and the biggest
+ * square cell it can draw in one camera position.
+ *
+ * **The lattice is half a tile, and that is a correction this round paid for
+ * twice.** The first version required only tile *centres* to be canvas, and
+ * both end-to-end acts then died -- at `wall north start: (416,64) is covered
+ * by span.ui-eyebrow.ui-stat__label` and at `(32,64) is covered by
+ * div.ui-stat` -- because a wall run is aimed at a tile *edge*, not a centre,
+ * and the north edge of the block chosen was inside the status strip. A cell of
+ * side `s` needs the whole closed rectangle from its north-west corner to its
+ * south-east one, sampled every half tile: `(2s+1)^2` lattice points, all
+ * canvas. That is exactly what the four drags touch, and nothing less is
+ * enough.
+ *
+ * One `page.evaluate` for the whole thing rather than three per tile: the first
+ * version made 4,800 round trips and took minutes.
+ */
+async function reachableGrid(page: Page, origin: { originX: number; originY: number }): Promise<ReachableGrid> {
+  return page.evaluate(
     ([ox, oy, tile]: readonly number[]) => {
       const step = (tile as number) / 2;
       const LATTICE = 96; // 48 tiles in each axis, at half-tile resolution.
@@ -923,6 +914,27 @@ async function playTheGame(page: Page, client: CDPSession, label: string): Promi
     },
     [origin.originX, origin.originY, TILE] as const,
   );
+}
+
+/* ================================================================== */
+/* act 4 — the whole game, with fingers, landscape                     */
+/* ================================================================== */
+
+async function playTheGame(page: Page, client: CDPSession, label: string): Promise<void> {
+  const log = (line: string): void => console.log(`[${label}] ${line}`);
+
+  await tapControl(page, '.save-panel__button', { nth: 0 });
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  log('New prison: day reads 1');
+
+  await tapControl(page, '.hud__tabs [data-tab="build"]');
+  const reach = await measureReach(page);
+  reportReach(`${label} build tab`, reach);
+  const anchor = reach.freeSquareAt!;
+  const origin = await touchCalibrate(page, { x: Math.round(anchor.x + 48), y: Math.round(anchor.y + 48) });
+  log(`calibration: tile (0,0) top-left at (${origin.originX}, ${origin.originY})`);
+
+  const grid = await reachableGrid(page, origin);
   const xs = grid.reachable.map((t) => t.x);
   const ys = grid.reachable.map((t) => t.y);
   log(
@@ -1067,6 +1079,19 @@ test('act 6: what a finger can undo', async ({ page }) => {
   const reach = await measureReach(page);
   const origin = await touchCalibrate(page, { x: Math.round(reach.freeSquareAt!.x + 48), y: Math.round(reach.freeSquareAt!.y + 48) });
   log(`origin (${origin.originX}, ${origin.originY})`);
+  /*
+   * Every tile this act aims at comes out of the reachable block rather than
+   * being written down. The first version used tiles (6,6), (12,6) and (6,10)
+   * -- fine at 1440x900 where the shared harness works, and at 1024x768 the
+   * calibrated origin is (-512,-640), which puts tile 6 at screen x=-96. The
+   * run died on `mistaken wall start: (-96,-256) is covered by NOTHING`, which
+   * is the guard doing its job on a point that is not on the page at all.
+   */
+  const grid = await reachableGrid(page, origin);
+  expect(grid.bestAt, 'no reachable block at all').not.toBeNull();
+  const bx = grid.bestAt!.x0;
+  const by = grid.bestAt!.y0;
+  log(`the reachable block for this act: ${grid.bestSize}x${grid.bestSize} at (${bx},${by}), ${grid.reachable.length} reachable tiles`);
 
   // The tap-count cost of the stepper, which is the touch route that needs no
   // soft keyboard.
@@ -1087,8 +1112,8 @@ test('act 6: what a finger can undo', async ({ page }) => {
 
   // Draw a wall the player did not want.
   await touchArm(page, 'wall-brick');
-  const runStart = centreOf(origin, 6, 6);
-  const runEnd = centreOf(origin, 9, 6);
+  const runStart = centreOf(origin, bx, by + 1);
+  const runEnd = centreOf(origin, bx + Math.min(3, grid.bestSize - 1), by + 1);
   const wallA = { x: runStart.x, y: runStart.y - TILE / 2 };
   const wallB = { x: runEnd.x, y: runEnd.y - TILE / 2 };
   await assertCanvasAt(page, wallA.x, wallA.y, 'mistaken wall start');
@@ -1124,7 +1149,7 @@ test('act 6: what a finger can undo', async ({ page }) => {
   await touchPress(page, wallA.x, wallA.y);
   const onEdge = (await sentCommands(page)).slice(before);
   log(`Remove tapped exactly on the wall edge: ${JSON.stringify(onEdge)}`);
-  const insideTile = centreOf(origin, 6, 6);
+  const insideTile = centreOf(origin, bx, by + 1);
   before = (await sentCommands(page)).length;
   await assertCanvasAt(page, insideTile.x, insideTile.y, 'remove inside the walled tile');
   await touchPress(page, insideTile.x, insideTile.y);
@@ -1146,7 +1171,7 @@ test('act 6: what a finger can undo', async ({ page }) => {
 
   // 3. A misplaced object, which does have a touch route.
   await touchArm(page, 'bed-wooden');
-  const bedAt = centreOf(origin, 12, 6);
+  const bedAt = centreOf(origin, bx + 1, by + 3);
   await assertCanvasAt(page, bedAt.x, bedAt.y, 'misplaced bed');
   before = (await sentCommands(page)).length;
   await touchPress(page, bedAt.x, bedAt.y);
@@ -1165,19 +1190,21 @@ test('act 6: what a finger can undo', async ({ page }) => {
   //    else; the only touch analogue is a second finger, which `pointermove`
   //    documents as cancelling the run.
   await touchArm(page, 'wall-brick');
-  const cancelA = { x: centreOf(origin, 6, 10).x, y: centreOf(origin, 6, 10).y - TILE / 2 };
+  const cancelA = { x: centreOf(origin, bx, by + grid.bestSize).x, y: centreOf(origin, bx, by + grid.bestSize).y - TILE / 2 };
   await assertCanvasAt(page, cancelA.x, cancelA.y, 'cancel probe');
   before = (await sentCommands(page)).length;
   await dispatch(client, 'touchStart', [{ id: 0, ...cancelA }]);
-  for (let step = 1; step <= 6; step += 1) await dispatch(client, 'touchMove', [{ id: 0, x: cancelA.x + step * 32, y: cancelA.y }]);
-  // A second finger arrives mid-run.
+  const span = Math.max(2, grid.bestSize - 1) * TILE;
+  for (let step = 1; step <= 6; step += 1) await dispatch(client, 'touchMove', [{ id: 0, x: cancelA.x + (span * step) / 6, y: cancelA.y }]);
+  // A second finger arrives mid-run, which `world-scene.ts:558-563` documents
+  // as handing the gesture back to the camera and abandoning the run.
   await dispatch(client, 'touchMove', [
-    { id: 0, x: cancelA.x + 192, y: cancelA.y },
-    { id: 1, x: cancelA.x + 292, y: cancelA.y },
+    { id: 0, x: cancelA.x + span, y: cancelA.y },
+    { id: 1, x: cancelA.x + span - 100, y: cancelA.y },
   ]);
   await dispatch(client, 'touchMove', [
-    { id: 0, x: cancelA.x + 182, y: cancelA.y },
-    { id: 1, x: cancelA.x + 302, y: cancelA.y },
+    { id: 0, x: cancelA.x + span - 10, y: cancelA.y },
+    { id: 1, x: cancelA.x + span - 110, y: cancelA.y },
   ]);
   await dispatch(client, 'touchEnd', []);
   await page.waitForTimeout(300);
