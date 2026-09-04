@@ -369,3 +369,176 @@ day 10), and the riot lapses on its deadline. **The crowd is a display of a
 capacity problem, not a deadlock.**
 
 ---
+
+## 7. Where the crowd starts: two prisoners, everybody housed
+
+**MEASURED, act 2.** Six beds, no guards, and prisoners admitted one at a time
+with a tile tally between each. (The `admitUntil` helper reads the worker's own
+count, which lags a press by one publication, so the populations it settled on
+are even numbers rather than 1..8 — the curve is the same curve and the reading
+is the worker's.)
+
+| prisoners | rail's no-place readout | distinct tiles | tally |
+| --- | --- | --- | --- |
+| 2 (tick 6,371) | `null` | **1** | `(12,12): 2 prisoners` |
+| 2 (tick 7,617) | `null` | **1** | `(12,12): 2 prisoners` |
+| 4 (tick 9,155) | `null` | **1** | `(12,12): 4 prisoners` |
+| 4 (tick 10,415) | `null` | **1** | `(12,12): 4 prisoners` |
+| 6 (tick 11,978) | `null` | **1** | `(12,12): 6 prisoners` |
+| 6 (tick 13,263) | `null` | **1** | `(12,12): 6 prisoners` |
+| 8 (tick 14,873) | `2` | **2** | `(12,12): 6`, `(16,16): 2` |
+| 8 (tick 16,301) | `2` | **2** | `(12,12): 6`, `(16,16): 2` |
+
+**The crowd starts at two.** It does not need overcrowding, it does not need a
+riot, and it does not need a population: with a bed for every prisoner, a
+no-place readout of `null` and six beds standing on six different tiles, the
+**whole prison is on one tile**. The second tile appears at exactly the moment
+the first prisoner the prison cannot house arrives, and holds exactly the
+`waitingWithoutPlace` count.
+
+The roster says why at every rung, and the answer is never the same action
+twice:
+
+```
+2 prisoners, tick 6431:   2x (12,12) phase=performing action=action.free-association
+2 prisoners, tick 7698:   2x (12,12) phase=performing action=action.sleep
+4 prisoners, tick 9233:   2x (12,12) phase=idle action=action.use-toilet
+                          2x (12,12) phase=performing action=action.use-toilet
+6 prisoners, tick 13367:  6x (12,12) phase=performing action=action.eat-in-cell
+8 prisoners, tick 14964:  6x (12,12) phase=performing action=action.sleep
+                          2x (16,16) phase=idle action=NONE accommodation=NONE
+```
+
+**Four different actions, one tile.** Sleeping, eating in the cell, using the
+toilet and free association are the four `own-accommodation` entries in
+`DEFAULT_ACTIONS`, and `destinationTileOf` answers `instance.anchorTile` for
+every one of them — so a prisoner going about a full and varied day never leaves
+the north-west corner of their room. **That is the strongest form of the
+finding, and it is what "a crowd of people all doing the same thing is a
+different bug from a crowd of people each doing something" resolves to here:
+they are each doing something, and it all happens on one tile.**
+
+**It also kills the hypothesis the brief handed me, as an explanation of the
+crowd.** *"A prisoner with nowhere to go stands where they arrived"* is exactly
+true of the two at (16,16) — and it predicts that beds unstack prisoners, which
+this table measures false at every rung from two upward. The earlier record
+(`2026-09-04-why-they-stack.md` §5) refuted it at six prisoners; act 2 refutes
+it at **two**, with the rail itself confirming that nobody is waiting.
+
+**And the walk shows up here too, independently of act 1.**
+
+```
+[act2] 1935 keyframe(s) spanning ticks 1..16301; 6446 actor-sample(s);
+       12 actor-sample(s) with a NON-ZERO velocity (12 prisoner, 0 guard);
+       2 with a NON-INTEGER position
+[act2] every tile change seen (18): "#0 pop0 (16,16)->(14,16) 2 tile(s) across ticks 5177->5185",
+       "#0 pop0 (14,16)->(12,14) 4 tile(s) across ticks 5185->5193",
+       "#0 pop0 (12,14)->(12,12) 2 tile(s) across ticks 5193->5202", …
+```
+
+Six prisoners, three sampled steps each, **eighteen tile changes and not one of
+them longer than the walk speed allows**: four tiles across an eight-tick
+sampling gap is exactly `DEFAULT_WALK_SUBTILE_UNITS_PER_TICK`'s half a tile per
+tick. `(14.500,16.000)` and `(12.000,14.500)` are the two sub-tile positions.
+**The two prisoners with no bed produced no tile change at all**, and after tick
+11,019 nothing in the prison moved again.
+
+---
+
+## 8. Nobody ever leaves — the tile is not the room, it is the last place an action worked
+
+**MEASURED, act 3.** Eight prisoners, six beds, both stacks — and then **all six
+beds removed under the six who are housed**, with six accepted `RemoveObject`
+commands and the counts confirming the removal landed:
+
+```
+[act3] counts after removing every bed, tick 11511: roomCapacity=0 accommodationCapacity=0 roomOccupants=6
+```
+
+*Before*, tick 10,432 / 10,520:
+
+```
+    (12.00,12.00): 6 prisoner(s)      (16.00,16.00): 2 prisoner(s)
+    3x (12,12) phase=performing action=action.free-association accommodation=room.cell:12:12
+    3x (12,12) phase=idle       action=action.free-association accommodation=room.cell:12:12
+    2x (16,16) stage=accommodation-assignment phase=idle action=NONE accommodation=NONE
+```
+
+*After*, tick 14,691 / 14,775 — three thousand ticks after the last bed was
+destroyed:
+
+```
+    (12.00,12.00): 6 prisoner(s)      (16.00,16.00): 2 prisoner(s)
+    3x (12,12) phase=idle       action=action.sleep accommodation=room.cell:12:12
+    3x (12,12) phase=performing action=action.sleep accommodation=room.cell:12:12
+    2x (16,16) stage=accommodation-assignment phase=idle action=NONE accommodation=NONE
+[act3] the differential: before, 8 prisoner(s) on 12,12 16,16; after, 8 on 12,12 16,16
+```
+
+**Nobody moved, and six of them are asleep in a room with no bed in it.**
+`roomCapacity=0`, `accommodationCapacity=0`, `roomOccupants=6`,
+`accommodation=room.cell:12:12`, `action=action.sleep`, `phase=performing` — and
+`action.sleep` declares `requiredObjectCapability: 'sleep-surface'`
+(`actions.ts:116-117`). They cannot have been mid-block since the removal:
+`minDurationTicks` is 200 and the reading is 3,400 ticks later.
+
+**That is decided too, and the code says so at the site.**
+`resolveTargetInstance`'s own-accommodation arm resolves by id and checks
+nothing (`src/simulation/prisoners/action-system.ts:1555-1560`), under a comment
+that states the consequence in advance:
+
+> The `own-accommodation` branch above re-checks neither gate -- it resolves by
+> id -- which is why a prisoner who holds a cell keeps sleeping, eating in cell
+> and using the toilet whatever stands in the room, and why the first bed placed
+> buys three needs rather than one.
+
+So act 3's answer to *"is the crowd tile the room?"* is **no, it is weaker than
+that**: it is *the last tile an arrival was written on*. A prisoner's
+accommodation outlives the object that justified it, the room's anchor outlives
+the room's capacity, and no code path anywhere writes a position downwards. The
+earlier record separated *"they stand on their bed"* from *"they stand on the
+room"* by removing one bed; removing all six separates *"they stand on the
+room"* from *"they stand where the last successful arrival put them"*, and it is
+the second.
+
+**One reading disagrees with another and both are right**, which is worth
+recording because it looks like a defect and is not. The strip read `8 with no
+bed` after the removal while the Intake panel's readout still read `2`. The
+locale comment on `hud.status.prisoners-without-bed` says exactly why:
+*"the strip's is the wider count of the two, since a prisoner whose bed was
+removed under them is not waiting for anything"*
+(`src/content/default-locale-en.ts:160-167`). Act 3 is the case that sentence
+was written for, and it is the first time it has been played.
+
+---
+
+## 9. What this changes about the record so far
+
+- **`docs/research/2026-09-04-why-they-stack.md` holds at v0.0.470.** Its three
+  write sites are the same three lines at the same numbers
+  (`prisoner-operations-runtime.ts:981-982`, `action-system.ts:1125-1126`,
+  `:1438`), its `destinationTileOf` citation is exact, and its refutation of the
+  arrival hypothesis reproduces at a population of two rather than six. Nothing
+  in it needs correcting; this pass extends it to the guards, the riot, the
+  threshold and the walk.
+- **#944 §5 and `can-i-see-my-prison.md` §6b are overturned**, by the evidence
+  #944 §7 itself specified. See §5 above.
+- **`docs/PRISONER_OPERATIONS.md` names a constant that has never existed.**
+  *"filled by `src/main.ts` from the same `STARTING_ORIGIN_TILE` the Build
+  panel's numeric fields start at"* — the constant is `NEW_PRISON_ORIGIN_TILE`
+  and always was. **It was false the day it was written**, and establishing
+  *when* took one detour worth recording: this repository's first-parent
+  history begins at a squashed commit (`f00c7d15`, 1,290 files, 420,887
+  insertions), so `git log --first-parent -S` on the document returns only
+  that and dates nothing. The reachable pre-history does date it.
+  `git show 1db8c16a -- docs/PRISONER_OPERATIONS.md` **adds** the sentence
+  (*"Let the player admit a prisoner…"*, 2026-08-25), and
+  `git show 1db8c16a^:src/main.ts` already holds
+  `const NEW_PRISON_ORIGIN_TILE = { x: 16, y: 16 } as const;` at its line 338 —
+  so the constant carried today's name before the sentence naming a different
+  one existed. `git log --all -S "STARTING_ORIGIN_TILE"` returns three commits,
+  all of them documents: that one, the squash, and the release that merged it.
+  A one-word documentation fix, handed over rather than made — this pass is
+  read-only outside its own two files.
+- **ADR 0088's `response-system.ts:818` has drifted to `:867`** at v0.0.470.
+  Its `search-system.ts:372` citation is still exact.
