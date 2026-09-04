@@ -1554,16 +1554,30 @@
  * button becomes 108.4px, its label gets 66.4px, and "Place on map" lands on
  * two 15px lines inside the 44px tap target instead of three.
  *
- * **The height is the point.** `.hud-build__actions` is `align-items:
- * stretch`, so the row is as tall as its tallest member and everything below
- * it moves when that grows. Measured at all five viewports, in the arrival,
- * armed and removing states: this row and `.hud-rooms__actions` are **44px
- * with this rule and 47px without it**, while the label stops painting
- * outside its button either way. So this rule is not what fixes #926 --
- * `primitives.css`'s `.ui-action__label` is -- it is what makes that fix cost
- * the panel's height budget nothing, which for the most height-constrained
- * surface in the game (#174, #143, ADR 0022, ADR 0028) is the difference
- * between a fix and a trade.
+ * **The height is the point, and this rule is load-bearing for it.**
+ * `.hud-build__actions` is `align-items: stretch`, so the row is as tall as
+ * its tallest member and everything below it moves when that grows. Measured
+ * at all five viewports in the arrival, armed and removing states: both rows
+ * are **44px with this rule**. Deleting it while leaving
+ * `primitives.css`'s label rule in place -- measured, as the mutation that
+ * proves this rule is guarded -- takes the arm button to **92px tall at
+ * 1280x720 in the arrival state**, because `min-width: 0` on the label then
+ * lets the span shrink to the 18.4px the padding leaves it and
+ * `overflow-wrap: break-word` breaks the words to fit that. So the label stops
+ * painting outside its button either way, and without this rule it does so by
+ * turning a 44px row into a 92px one.
+ *
+ * (An earlier reading of this said "47px without it". That figure is real but
+ * it belongs to a different tree: it was measured with `white-space: normal`
+ * alone, before `min-width: 0` and `overflow-wrap: break-word` joined it, and
+ * it is kept in `primitives.css`'s block where it is true. Corrected here
+ * rather than overwritten, per `docs/AGENT_WORKFLOW.md` §4.)
+ *
+ * So this rule is not what fixes #926 -- `primitives.css`'s
+ * `.ui-action__label` is -- it is what makes that fix cost the panel's height
+ * budget nothing, which for the most height-constrained surface in the game
+ * (#174, #143, ADR 0022, ADR 0028) is the difference between a fix and a
+ * trade.
  *
  * Both rows, in one rule, because they are one pattern: `.hud-rooms__actions`
  * is where `min-width: 0` above was copied from, and the sweep that found the

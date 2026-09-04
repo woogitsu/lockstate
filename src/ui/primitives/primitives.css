@@ -691,12 +691,28 @@
  * Nothing, in height -- and that is not luck, it is `.ui-action`'s
  * `min-height: var(--tap-target)` above. Two 15px lines are 30px inside a
  * 44px button, so `.hud-build__actions`, which is `align-items: stretch`,
- * stays 44px tall and no control below it moves. Three lines would not fit:
- * this rule alone put the arm label on three lines and grew both rows to
- * 47px, which is why `hud.css` gives the two actions rows the horizontal room
- * to land on two. `tests/browser/ui-build-arm-label-fit.spec.ts` asserts the
- * height as well as the fit, so a future label that needs a third line fails
- * there rather than silently pushing the panel down.
+ * stays 44px tall and no control below it moves.
+ *
+ * Three lines would not fit, and both halves of the pair were measured
+ * against that: `white-space: normal` **alone** put the arm label on three
+ * lines and grew both rows to 47px, and the shipped rule with `min-width: 0`
+ * on it takes the arm button to **92px** if the room is not there. Which is
+ * why `hud.css` gives the two actions rows the horizontal room -- half the
+ * `.ui-action` padding, 48px of a 238px row -- for the wrap to land on two
+ * lines. `tests/browser/ui-build-arm-label-fit.spec.ts` asserts the height
+ * as well as the fit, so a future label that needs a third line fails there
+ * rather than silently pushing the panel down.
+ *
+ * ## The pair is not invented here
+ *
+ * `.ui-row--wrap .ui-row__label` in this file is `white-space: normal;
+ * overflow-wrap: break-word` already, for a HUD row's label, with its own
+ * measurement of what the wrap costs the rows around it -- and `.ui-row__label`
+ * above it carries `flex: 1; min-width: 0`. So all three declarations of this
+ * rule already sit on one label in this file, and this is the same decision
+ * one primitive over rather than a new one. What `.ui-action__label` did
+ * differently, and what #926 cost, is that it had the `nowrap` and none of
+ * the rest.
  */
 .ui-action__label {
   white-space: normal;
