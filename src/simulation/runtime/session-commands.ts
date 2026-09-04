@@ -695,31 +695,24 @@ export function createSessionCommandHandler(
         // standing `nothing-to-remove` about this one.
         refusals.supersede(removeKey);
         /*
-         * And a removal that destroyed a purchase says so
-         * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+         * **A removal that destroyed a purchase says so, and this branch is not
+         * where it says it** ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
          *
-         * **Only the `'removed'` arm, and the `kind` check is the whole of what
-         * makes the sentence true.** `remove` answers two successes and they are
-         * different facts about money. `'removed'` took a *standing* object out
-         * of `PlacedObjectRegistry`: nothing is credited, nothing goes back in
-         * the container, and the owner's ruling of 2026-09-01 -- *"Taking a
-         * finished object away returns nothing. Not its materials, not its
-         * money."* -- is why. `'order-cancelled'` reached
-         * `ConstructionSystem.cancelOrder` for a placement still in flight,
-         * which refunds the money for every state before the crew starts; a
-         * sentence about spend that stays spent would be false of it, and false
-         * in the direction that scares a player off a control that costs them
-         * nothing.
+         * The notice is raised inside `ObjectPlacementService.remove`, on the
+         * line that drops the registry row, through
+         * `RemovedObjectNoticePort` -- which is wired to this session's
+         * `SimulationEventLog` in `createNewSimulationRuntime`. **Not here**,
+         * for a reason that is about the band and not about layering: a removal
+         * can also raise `prisoners.relocated`, `admitToEventBand` discards an
+         * `'info'` incumbent that a `'warning'` displaces, and a `'warning'`
+         * recorded *after* the relocation would paint over the sentence naming
+         * the prisoner who moved and lose it. Recorded before, both are read.
+         * That port's docblock carries the whole argument.
          *
-         * **Why #932 did not already cover this.** That change made `Undo` and
-         * `CancelBuildOrder` state-aware, and a standing object reaches
-         * neither: `ObjectPlacementService.remove`'s first arm goes to
-         * `PlacedObjectRegistry.remove` and never to `cancelOrder`, so the state
-         * those two channels switch on does not exist here. The order channel's
-         * sentences are no help either -- no order changed state, and *"the
-         * order was cancelled"* would name a thing the player did not do.
+         * Left as a comment rather than as nothing, because the other nine
+         * routes' successes are answered in this file and a reader looking for
+         * the tenth would otherwise conclude it is still silent.
          */
-        if (outcome.kind === 'removed') events.recordObjectRemoved(context.tick);
       }
       return;
     }

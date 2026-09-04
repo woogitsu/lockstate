@@ -686,6 +686,73 @@ describe('a removal that destroys what an object cost says so (#945)', () => {
     expect(session.stateOf('bed-flight'), 'the press really did cancel the order').toBe('cancelled');
     expect(session.types().slice(before), 'a refund is not the loss sentence').toEqual([]);
   });
+
+  it('records the loss before the relocation it caused, so the band paints both sentences', () => {
+    /*
+     * **The order of the two sentences one press can raise, and it is
+     * load-bearing rather than cosmetic.** A removal that drops a room's
+     * `residentCapacity` below its occupancy also relocates whoever lost their
+     * place (ADR 0076 decision A(i)) and says so, naming them --
+     * *"{name} had nowhere to sleep and moved to {room}."*, `'info'`. This
+     * change adds a `'warning'` to the same press.
+     *
+     * `admitToEventBand` (`src/ui/hud/event-band-dwell.ts`) gives an arriving
+     * `'warning'` the line immediately over an `'info'` incumbent and
+     * **discards the incumbent rather than queueing it** -- the same mechanism
+     * that settled #932's shape. So recorded in the wrong order the money
+     * sentence paints over the prisoner's name and loses it, and loses it
+     * outright below 720px where `hud.css` drops the alerts list that would
+     * otherwise still hold the row. Recorded in this order the `'info'` arrives
+     * second, does not outrank the `'warning'`, and therefore **waits** in the
+     * dwell floor's one slot until `releaseEventBandFloor` puts it up.
+     *
+     * That is why the notice is raised inside `ObjectPlacementService.remove`
+     * rather than in `createSessionCommandHandler`'s `RemoveObject` branch,
+     * where the other nine command successes are answered: the handler runs
+     * after `remove` has already announced the relocation. **A change that
+     * moves the recording back to the handler fails here**, which is the whole
+     * reason this case exists.
+     *
+     * The fixture is `tests/browser/ui-relocation-notice.spec.ts`'s, seed
+     * included, so the two files agree about which press rehouses whom.
+     */
+    const session = createSession(0x0b1ec7);
+    const cellRect = { x: 4, y: 6, width: 2, height: 3 } as const;
+    const secondCellRect = { x: 7, y: 6, width: 2, height: 3 } as const;
+    session.send({ type: 'PurchaseMaterials', orderId: 'buy-945', itemId: 'item.wood-plank', quantity: 2 });
+    for (const [index, rect] of [cellRect, secondCellRect].entries()) {
+      wallRoomPerimeter(session.runtime.world, rect, { doors: session.runtime.navigation.doors });
+      session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...rect });
+      session.send({
+        type: 'PlaceObject',
+        orderId: `bed-${String(index)}`,
+        definitionId: 'bed-wooden',
+        x: rect.x,
+        y: rect.y,
+      });
+    }
+    // Both beds standing, then a prisoner admitted and housed on the first.
+    while (session.runtime.kernel.tick < 600) session.runtime.kernel.step();
+    session.send({ type: 'AdmitPrisoner', x: 16, y: 16, sentenceLengthTicks: 100_000, priorIncidents: 0 });
+    while (session.runtime.kernel.tick < 700) session.runtime.kernel.step();
+    const prisoner = session.runtime.prisoners.entityStore.getIdByIndex(0);
+    expect(
+      session.runtime.prisoners.coldState.getAccommodation(prisoner),
+      'housed on the bed about to be taken',
+    ).toBe(`room.cell:${String(cellRect.x)}:${String(cellRect.y)}`);
+
+    const before = session.types().length;
+    session.send({ type: 'RemoveObject', x: cellRect.x, y: cellRect.y });
+
+    expect(
+      session.runtime.prisoners.coldState.getAccommodation(prisoner),
+      'the press really did rehouse them, which is what there is to say',
+    ).toBe(`room.cell:${String(secondCellRect.x)}:${String(secondCellRect.y)}`);
+    // The whole assertion: both sentences, in severity order. `toEqual` on the
+    // sequence rather than two `toContain`s, because the defect this guards is
+    // *only* the order.
+    expect(session.types().slice(before)).toEqual(['objects.removed-spend-destroyed', 'prisoners.relocated']);
+  });
 });
 
 describe('nothing else on the channel changed', () => {
