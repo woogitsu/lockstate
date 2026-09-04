@@ -192,9 +192,18 @@ import { describe, expect, it } from 'vitest';
  * off:
  *
  * - Every gap in `ATTRIBUTION` is `\s` now, in all four places a wrap can land.
- *   Four written-out fixtures cover the four, because the corpus contains no
- *   wrapped attribution today and so cannot notice the pattern going literal
- *   again.
+ *   Four written-out fixtures cover the four, and `docs/AGENT_WORKFLOW.md`
+ *   carries one deliberately wrapped attribution so the corpus itself would
+ *   notice the pattern going literal again.
+ * - **`TRAILING_QUOTE` had the same assumption, found by using the fix.** The
+ *   first wrapped citation written after the fix wrapped its *quotation* too,
+ *   and the quotation span was `[^`\n]+`. That one does not fail silently --
+ *   the attribution now matches, nothing binds to it, and it is reported as an
+ *   orphan -- but a correct citation accused of being an orphan is a false red
+ *   that gets "fixed" by unwrapping a 130-column line or by deleting the
+ *   attribution. Same class, so fixed with the rest: a code span may wrap
+ *   (CommonMark makes its line endings spaces, which is what
+ *   `normalizeQuotation` already does) and may not cross a blank line.
  * - `ATTRIBUTION_SHAPED` reports what `ATTRIBUTION` cannot match. A pattern
  *   cannot report its own misses, so the *only* way an unmatched attribution
  *   becomes visible is a second, looser reading of the same words. Its own
@@ -285,8 +294,16 @@ const ATTRIBUTION = /\(\s*(?:(both|all)\s+)?verbatim\s+in\s+`([^`\n]+)`\s*\)/g;
  */
 const ATTRIBUTION_SHAPED = /verbatim\s+in\s+`([^`\n]+)`/g;
 
-/** A backtick span with the whitespace that may separate it from the next one, read right to left. */
-const TRAILING_QUOTE = /`([^`\n]+)`\s*$/;
+/**
+ * A backtick span with the whitespace that may separate it from the next one, read right to left.
+ *
+ * **The span may itself wrap**, for the same reason `ATTRIBUTION`'s gaps are
+ * `\s`: a quotation of a long line of source is a long line of markdown, and
+ * CommonMark defines a code span's line endings as spaces -- which is exactly
+ * what `normalizeQuotation` does to them. What it may not contain is a blank
+ * line, because a code span cannot cross a paragraph break either.
+ */
+const TRAILING_QUOTE = /`((?:[^`\n]|\n(?!\s*(?:\n|$)))+)`\s*$/;
 
 interface Binding {
   readonly path: string;
@@ -504,6 +521,24 @@ describe('the extractor and the comparison, against written-out inputs', () => {
         orphans: [],
         unreadable: [],
       })),
+    );
+  });
+
+  it('binds a quotation that wraps, and stops at a paragraph break', () => {
+    const { bindings } = bindCitations(
+      'the comment says:\n`The first shape of this test did it the other way round and\ntimed out at sixty seconds.`\n(verbatim in `src/a.ts`)',
+    );
+
+    expect(bindings).toEqual([
+      {
+        path: 'src/a.ts',
+        countWord: undefined,
+        quotations: ['The first shape of this test did it the other way round and\ntimed out at sixty seconds.'],
+      },
+    ]);
+    // And the normalisation is what makes such a quotation comparable at all.
+    expect(normalizeQuotation(bindings[0]!.quotations[0]!)).toBe(
+      'The first shape of this test did it the other way round and timed out at sixty seconds.',
     );
   });
 

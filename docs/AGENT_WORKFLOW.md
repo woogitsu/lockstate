@@ -109,9 +109,10 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
     - **Why, and why it is not a repository fact.** `filter.lfs.smudge`,
       `filter.lfs.process` and `filter.lfs.required` are set in
       **`/etc/gitconfig`** — system scope, put there when git-lfs was installed
-      in the container image, and *not* by this repository:
-      `scripts/provision-git-lfs.sh` says in its own header that it **"DOES NOT
-      TOUCH GIT FILTER CONFIGURATION"**. So a checkout in this container runs
+      in the container image, and *not* by this repository. Its provisioning
+      script says so in its own header:
+      `DOES NOT TOUCH GIT FILTER CONFIGURATION.`
+      (verbatim in `scripts/provision-git-lfs.sh`). So a checkout in this container runs
       the smudge filter, `git worktree add` included, and gets real bytes. The
       primary checkout's working tree was materialised without that and nothing
       has re-smudged it since — which is an observation about one container's
@@ -277,6 +278,65 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   spinning on an already-idle machine on 2026-08-28 before one of them worked out
   why. Append `| grep -v "bash -c"`, or just run the check by hand between runs —
   the point is a decision, not a wait.
+  **Added 2026-09-04: two more belong on this list, and a third red in the same
+  file emphatically does not — it fails on an idle machine.** So the opening
+  sentence's tally is stale and is left rather than renumbered, per §4: the
+  count was never the finding, and *"three"* is the form §4 says rots first.
+  All of the below measured in this container on a worktree at `194f31f5`
+  (v0.0.468) with no `src/` change in it, so the application under test is
+  `origin/main`.
+  - **Two more contention canaries.** `app-shell.spec.ts` *"zones a room and
+    admits a prisoner with the keyboard alone (#411)"* and *"takes a room back
+    with the keyboard alone, through the same confirm control (#411)"*. Both
+    take `test.slow()`'s 180 s and both exceeded it, and both died inside the
+    shared `walkFocus` helper — one at its `page.keyboard.press`, one at the
+    `page.evaluate` that reads `document.activeElement` — which is **a walk
+    that ran out of budget mid-hop, not an assertion about focus landing
+    somewhere wrong.** Read *where* it stopped before reading it as a defect,
+    exactly as with the #88 sweep above. Nothing is hung and nothing is broken:
+    run with `--timeout 0`, the first of them **passes in 6.7 m** at load
+    average 9.6–10.4, with another agent's full browser suite and a `vitest`
+    run alongside it. What was not obtained is an idle run of these two, so
+    they are recorded here as failing under load and the precondition in the
+    paragraph above still applies to them.
+  - **`app-shell.spec.ts` *"no room type in the catalogue pushes the Rooms panel
+    past its fold (#529)"* is NOT contention, and putting it on this list
+    unqualified would be wrong.** It carries no `test.slow()`, so it gets
+    `playwright.config.ts`'s bare `timeout: 60_000`, and it does not fit inside
+    it on this box at any load. Measured on a genuinely idle machine — `ps`
+    clear of `[p]laywright/test/cli` and `[v]itest`, load average **1.55**:
+    `Test timeout of 60000ms exceeded` on `locator.click` at
+    `tests/browser/app-shell.spec.ts:5247`, the call log showing the row
+    *resolved*, *"visible, enabled and stable"* and *"done scrolling"* before
+    the budget ran out — so not a locator that stopped matching. **Same tree,
+    same idle box, `--timeout 180000`: `1 passed (1.9m)`, the test itself
+    1.8 m.** It needs roughly 108 s and is given 60, and no amount of idleness
+    will change that. Its own comment already carries the history:
+    `The first shape of this test did it the other way round and timed out at
+    sixty seconds.`
+    (verbatim in
+    `tests/browser/app-shell.spec.ts`)
+    — and the sweep is 18 rooms × 5 viewports, so the second shape bought a 5×
+    saving on clicks and still does not fit. **That attribution is deliberately
+    wrapped**, after `verbatim in`, because until 2026-09-04
+    `tests/foundation/adr-quotation-verbatim-contract.test.ts` could not match a
+    wrapped one and then silently checked nothing; the corpus now contains the
+    case, so the fix cannot regress unnoticed.
+    **Why `main` is not red on it:** the CI runner is much faster than this
+    container. `main`'s `browser` job at `198fc120` on 2026-09-04 was green
+    with *"Run the real-browser suite"* taking **14m07s for the whole suite**,
+    which is roughly what two of these tests cost here. So it is a property of
+    where it runs, like the others, and that is why it is listed — but the
+    entry to carry forward is *"too slow for its own budget on this
+    container"*, which is a different fact from contention and asks for a
+    different fix. That fix is a decision about `test.slow()` on the spec and
+    it is deliberately not taken here: recording a measurement and changing a
+    test's budget are separate acts, and the second belongs to whoever owns the
+    spec.
+  - `tests/unit/prisoners-sentence.test.ts` was checked against this list and
+    **is already on it** — see the bullet above about the two tests sitting
+    close to their 5 s budget. Re-measured alone on 2026-09-04 at load average
+    3.49: `7 passed`, `Duration 2.60s`. Nothing to add.
 - **A local browser run in the worktree you are editing is not a baseline.** Vite
   serves `src/**` live, so a run started before your edits reads them off disk as
   they land, and a "before" measurement taken that way is a measurement of the
