@@ -179,13 +179,24 @@ function ringRuns(origin: { originX: number; originY: number }): readonly {
  *
  * The drag is taken twice, because a tile centre is a mid-line and the first
  * drag of a pair has been observed to be swallowed.
+ *
+ * **A pending rectangle is discarded first, and that is a measured
+ * requirement rather than tidiness.** While `pending` is set the panel swaps
+ * its arm row for `Designate 2 x 3` / `Discard`, so `.hud-rooms__arm` is not
+ * laid out — and Playwright's default action timeout in this config is
+ * unlimited, so a click on it waits for ever and the whole act stalls with no
+ * error. It cost one run of act 1 its last two readings. Every click here
+ * therefore carries an explicit timeout as well, so a hang becomes a message.
  */
 async function enclosureVerdict(page: Page, origin: { originX: number; originY: number }): Promise<string> {
-  await tab(page, 'rooms').click();
+  const CLICK = { timeout: 15_000 } as const;
+  await tab(page, 'rooms').click(CLICK);
   const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
-  if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
-  await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
-  await page.locator('.hud-rooms__arm').click();
+  if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click(CLICK);
+  const discard = page.locator('.hud-rooms__cancel');
+  if (await discard.isVisible()) await discard.click(CLICK);
+  await page.locator('.hud-rooms__list [data-room="room.cell"]').click(CLICK);
+  await page.locator('.hud-rooms__arm').click(CLICK);
   const a = centreOf(origin, CELL.west, CELL.north);
   const b = centreOf(origin, CELL.east, CELL.south);
   await drag(page, a, b);
