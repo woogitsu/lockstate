@@ -56,7 +56,7 @@ import {
  * | phase | what exists | days | the need under test |
  * | --- | --- | --- | --- |
  * | 0 | the cell alone | 3 | the baseline: hunger, hygiene, recreation all falling |
- * | 1 | + `room.canteen` | 2 | `hunger` — and `action.eat-in-cell` already serves it at 3/tick against the canteen's 4 (`src/simulation/prisoners/actions.ts:120-127`), so this phase is a test of whether the canteen is a *no-op* |
+ * | 1 | + `room.canteen` | 2 | `hunger` — and `action.eat-in-cell` already serves it at 3/tick against the canteen's 4 (`src/simulation/prisoners/actions.ts:120-126`), so this phase is a test of whether the canteen is a *no-op* |
  * | 2 | + `room.shower-room` | 3 | `hygiene`, whose only other route is `action.laundry-work` at 1/tick |
  * | 3 | + `room.yard` | 3 | `recreation`, decaying at 0.015/tick with nothing in a cell serving it |
  *

@@ -183,7 +183,7 @@ they are buying. §3 says which of the eighteen are buying nothing at all.
 
 — twenty-one rows, each a name, plus a `Selected` badge on the one chosen.
 **VERIFIED, read.** That is all a row is:
-`src/ui/hud/build-panel.ts:985-987` constructs it as
+`src/ui/hud/build-panel.ts:985-988` constructs it as
 `createListRow({ icon: 'build', label: t(buildable.labelKey), … })`, and
 nothing else is appended to it anywhere in the file. No material, no
 quantity, no work, no price.
@@ -482,7 +482,7 @@ and the roster's worst-need column over the three days, all four prisoners:
 
 **Hunger rises to 97% in a prison with no canteen**, because
 `action.eat-in-cell` targets `own-accommodation`, needs no object capability
-and pays `hunger: 3` a tick (`src/simulation/prisoners/actions.ts:124-127`,
+and pays `hunger: 3` a tick (`src/simulation/prisoners/actions.ts:124-126`,
 VERIFIED, read). Sleep and bladder are the bed and the toilet; safety is the
 guard. **Only `hygiene` and `recreation` fall**, which is precisely what
 ADR 0054 decision 1 rules they should: they are room-gated by design.
@@ -745,7 +745,8 @@ falls in:
    ticks wide.** `[500, 1000)` and `[1300, 1800)` are 42% of the day, and all
    four samples inside them are `Association` — `action.free-association`,
    which declares `needEffectsPerTick: {}` and *"fulfils no need"*
-   (`src/simulation/prisoners/actions.ts:220-228`, VERIFIED, read). **36% of
+   (`src/simulation/prisoners/actions.ts:226-228`, and its comment three lines
+   above at `:221-222`; VERIFIED, read). **36% of
    all prisoner-samples across the whole day are a prisoner doing something
    that is authored to do nothing.** The three rooms that would fill it —
    `room.kitchen`, `room.laundry`, `room.classroom` — all have live actions
@@ -966,7 +967,7 @@ a dining table three planks. **DERIVED §2:** a canteen is 2,830 and a yard is
 1. **A Build row gains its bill:** `Dining Table · 3 × Wood Plank`. Everything
    needed is in `BUILDABLE_REGISTRY`'s `materialsRequired`
    (`src/simulation/construction/definition.ts`) and the row is built at
-   `src/ui/hud/build-panel.ts:985-987`, which today passes only `labelKey`.
+   `src/ui/hud/build-panel.ts:985-988`, which today passes only `labelKey`.
 2. **The Rooms panel's area line gains an estimate** once a rectangle is
    drawn: beside `hud.rooms.area-value` (`'{width} × {height} tiles at {x},
    {y}'`), a second line — `About 2,830 to build: 24 wall segments, 2 ×
