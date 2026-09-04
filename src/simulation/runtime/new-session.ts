@@ -880,6 +880,24 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
       // system to serve a notice.
       tick: () => kernel.tick,
     }),
+    /*
+     * And what the player is told when a *standing* object is taken away
+     * ([#945](https://github.com/matmaxalez/lockstate/issues/945)): the log
+     * itself, not an adapter, because `RemovedObjectNoticePort` is one method
+     * taking a tick and `SimulationEventLog` satisfies it as written. The
+     * relocation notice above needs an adapter only because its sentence names
+     * a prisoner and a room, which `src/simulation/objects/` does not know
+     * about; this one names neither and carries no figure.
+     *
+     * **Passed to the service rather than recorded in the command handler**,
+     * which is where the other nine command successes are answered. A removal
+     * can raise the relocation sentence above as well, and the events band
+     * discards an `'info'` that an arriving `'warning'` displaces
+     * (`admitToEventBand`) -- so the two have to be recorded in severity order
+     * or the prisoner who moved is never named on screen. That ordering only
+     * exists inside `remove`. See `RemovedObjectNoticePort`.
+     */
+    events,
   );
 
   // ADR 0017 decision 3's income line, on decision 6's basis: the state pays

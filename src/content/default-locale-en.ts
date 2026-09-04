@@ -936,7 +936,9 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * `ProcurementSystem.cancel` already answers `refundedMinorUnits`, so
    * `{total}` is nearly free; `ConstructionSystem.cancelOrder` answers `void`,
    * so the two order sentences cannot name an amount without plumbing the
-   * ruling declines. `{total}` is minor units, unconverted, exactly as the
+   * ruling declines -- and `PlacedObjectRegistry.remove` answers `boolean`, so
+   * #945's removal sentence at the end of this family cannot either.
+   * `{total}` is minor units, unconverted, exactly as the
    * unpaid-payday sentence above -- and it is the same word the Build panel's
    * own delivery row already uses for the same money (`hud.build.delivery`,
    * "{total} back").
@@ -1024,6 +1026,78 @@ const authoredMessages: Readonly<Record<string, string>> = {
     'The last change to the build queue was undone — anything already spent past the point of no return stays spent.',
   'hud.alert.event.construction.redone': 'The last change to the build queue was redone.',
   'hud.alert.event.economy.delivery-cancelled': 'The delivery was cancelled — {total} back.',
+
+  /*
+   * **A standing object taken away, and the money it cost gone with it**
+   * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+   *
+   * The seventh sentence in this family and the first that is not about a build
+   * *order*. It exists because #945 measured `RemoveObject` on a finished bed
+   * destroying its 65 (`25,000 -> 24,935` on placement, `24,935 -> 24,935` on
+   * removal) with the sentence band **`hidden`** -- an absence rather than a
+   * collision -- and because #932, which made `Undo` and `CancelBuildOrder`
+   * state-aware about exactly this loss, does not reach this press:
+   * `ObjectPlacementService.remove`'s standing-object arm goes to
+   * `PlacedObjectRegistry.remove` and never to `ConstructionSystem.cancelOrder`.
+   *
+   * **Authored here rather than reused, under the owner's release of
+   * `AGENTS.md` reservation 4 on 2026-09-04** (*"the choice of words is ours;
+   * the requirement that a sentence be TRUE is not"*). The near-miss it was
+   * nearly built as is `hud.alert.event.construction.order-cancelled-underway`
+   * above -- *"The order was cancelled. Anything already spent past the point of
+   * no return stays spent."* -- and the reason it is a near-miss is the first
+   * clause and not the second: **a standing bed is not an order any more.** No
+   * order changed state at this press, `cancelOrder` was not called, and the
+   * order that built the bed stays `'completed'` (asserted in
+   * `tests/integration/object-removal-loop.test.ts`, *"refuses a second press on
+   * a tile whose object has already gone"*). Saying *"the order was cancelled"*
+   * would name a thing the player did not do -- the same singular-subject
+   * objection #927's weakest claim raised against reuse on the Undo channel.
+   *
+   * **Verified true, not merely plausible.** Both halves were opened:
+   *
+   * - *"The object was removed"* -- `createSessionCommandHandler`'s
+   *   `RemoveObject` branch records this only for
+   *   `RemoveObjectOutcome.kind === 'removed'`, the arm that has already dropped
+   *   the row from `PlacedObjectRegistry`. The `'order-cancelled'` arm, which
+   *   refunds, records nothing here.
+   * - *"the money it cost does not come back"* -- that arm removes the registry
+   *   row, re-derives the room's capacity and relocates whoever lost a place. It
+   *   holds no treasury and no container reference and writes to neither, which
+   *   is the owner's ruling of 2026-09-01: *"Taking a finished object away
+   *   returns nothing. Not its materials, not its money."* (ADR 0076's amendment
+   *   of that date). `tests/integration/economy-bed-recycling.test.ts` measures
+   *   it from the other side -- the next bed is bought at 65 like anybody
+   *   else's, and recycling is now strictly worse than playing it straight.
+   *
+   *   It is *"the money"* and not *"the materials"* because money is what the
+   *   player watches move: the object was built out of materials some deliveries
+   *   ago, and what the FUNDS badge showed leaving was 65. Neither comes back,
+   *   so the sentence is true of both readings and legible in only one.
+   *
+   * **It names no figure**, which is the ruling of 2026-09-01 kept on a third
+   * route. `PlacedObjectRegistry.remove` answers `boolean` and `PlacedObject`
+   * carries no price, so the amount is not reachable at the call site any more
+   * than it is through `cancelOrder`; a sentence saying *that* the money is gone
+   * without saying how much is within what exists. **And no count**, vacuously
+   * rather than by suppression: a removal is one press on one tile taking one
+   * object, so unlike Undo there is no transaction size to leak.
+   *
+   * **Why not the em dash plus *"stays spent"* the two loss sentences above
+   * use.** Those two are about a *cancellation*, where the hedge -- *"anything
+   * already spent past the point of no return"* -- is load-bearing, because some
+   * of what a mixed transaction spent does come back. Nothing about a standing
+   * object is hedged: all of it is past that point and none of it returns, so
+   * the plain inverse of `order-cancelled`'s *"the money it cost is refunded"*
+   * says more with less. The two read as a pair on purpose.
+   *
+   * It also matches the vocabulary the Build panel already uses for this exact
+   * press: `hud.build.remove-hint` says *"nothing comes back once the crew has
+   * started it. A finished one is not refunded."*, and *"the object"* is what
+   * every `hud.alert.refusal.place-object.*` and
+   * `hud.alert.refusal.remove-object.*` sentence calls the thing.
+   */
+  'hud.alert.event.objects.removed-spend-destroyed': 'The object was removed — the money it cost does not come back.',
 
   // ADR 0076 decision A(i)'s notice: a prisoner whose bed was taken away has
   // been moved to one that exists.

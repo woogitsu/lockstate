@@ -109,12 +109,36 @@ import { tileCoordinate } from '../world/coordinates';
  * `events` is the session's `SimulationEventLog`, and it is `refusals`' mirror
  * for the case that log could never carry: a command that **worked** (the
  * owner's ruling of 2026-09-01 on
- * [#749](https://github.com/matmaxalez/lockstate/issues/749)). Only two of the
- * ten routes write to it today -- this file's `CancelMaterialPurchase`, and
- * `CancelBuildOrder`/`Undo`/`Redo` inside the construction handler it
- * constructs -- because those are the four controls #749 measured saying
- * nothing when they succeeded. The other six are outside that ruling's scope
- * and are left silent rather than given sentences nobody has written.
+ * [#749](https://github.com/matmaxalez/lockstate/issues/749)).
+ *
+ * **Three of the ten routes write to it, and the third was not in #749's scope
+ * -- it is [#945](https://github.com/matmaxalez/lockstate/issues/945), a
+ * command that destroys money.** The paragraph below is kept as it stood
+ * because its reasoning is what left the third one silent, and the reasoning
+ * was about *scope* rather than about whether the silence was defensible. It
+ * read:
+ *
+ * > Only two of the ten routes write to it today -- this file's
+ * > `CancelMaterialPurchase`, and `CancelBuildOrder`/`Undo`/`Redo` inside the
+ * > construction handler it constructs -- because those are the four controls
+ * > #749 measured saying nothing when they succeeded. The other six are outside
+ * > that ruling's scope and are left silent rather than given sentences nobody
+ * > has written.
+ *
+ * `RemoveObject` was one of those six, and it is not like the other five.
+ * Un-zoning a room, hiring, admitting, placing and releasing a guard either
+ * move no money or produce something the player can see arrive. Removing a
+ * *standing* object destroys what it cost and leaves nothing on screen at all:
+ * #945 measured a bed costing 65 to place (`25,000 -> 24,935`) and the removal
+ * moving the treasury not at all, with the sentence band `hidden`. So this
+ * route now speaks on its standing-object success, and the remaining five stay
+ * silent -- whether *every* success should speak is the design question #945
+ * declines to settle here and marks as needing an ADR.
+ *
+ * The wording is ours under the owner's release of `AGENTS.md` reservation 4 on
+ * 2026-09-04; the truth is not, which is why the sentence is authored against
+ * `ObjectPlacementService.remove`'s standing-object arm and quoted in the commit
+ * that landed it.
  */
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
@@ -670,6 +694,25 @@ export function createSessionCommandHandler(
         // Issue #492: the tile. A removal elsewhere must not silence a
         // standing `nothing-to-remove` about this one.
         refusals.supersede(removeKey);
+        /*
+         * **A removal that destroyed a purchase says so, and this branch is not
+         * where it says it** ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+         *
+         * The notice is raised inside `ObjectPlacementService.remove`, on the
+         * line that drops the registry row, through
+         * `RemovedObjectNoticePort` -- which is wired to this session's
+         * `SimulationEventLog` in `createNewSimulationRuntime`. **Not here**,
+         * for a reason that is about the band and not about layering: a removal
+         * can also raise `prisoners.relocated`, `admitToEventBand` discards an
+         * `'info'` incumbent that a `'warning'` displaces, and a `'warning'`
+         * recorded *after* the relocation would paint over the sentence naming
+         * the prisoner who moved and lose it. Recorded before, both are read.
+         * That port's docblock carries the whole argument.
+         *
+         * Left as a comment rather than as nothing, because the other nine
+         * routes' successes are answered in this file and a reader looking for
+         * the tenth would otherwise conclude it is still silent.
+         */
       }
       return;
     }

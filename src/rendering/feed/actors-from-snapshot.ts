@@ -162,8 +162,18 @@ export function actorsFromSnapshot(
   // `EntityQuery.execute` walks, ADR 0005), then guards in `allGuardIds`'
   // ascending entity-id order (`GuardRoster`) -- two deterministic blocks, one
   // after the other, so the array is the same on every client and after a
-  // save/restore round trip. No hash reads it -- `ActorLayer` keys sprites by
-  // id, so order decides nothing about identity -- but a projection with an
-  // arbitrary order is a needless place for two clients to differ.
+  // save/restore round trip.
+  //
+  // **This order is now load-bearing for what a player sees, and the note here
+  // used to say it was not.** It read: *"No hash reads it -- `ActorLayer` keys
+  // sprites by id, so order decides nothing about identity -- but a projection
+  // with an arbitrary order is a needless place for two clients to differ."*
+  // Both halves of that were true of the renderer it described. What changed is
+  // `src/rendering/actors/crowd-spread.ts` (#944): actors drawn on the same
+  // point are separated by rank, and the rank is this array's order, so the
+  // order now decides *which point inside a shared tile* each actor stands on
+  // and therefore which of them the others overlap. Still no hash reads it, and
+  // nothing about identity moved -- but changing this order is now a change to
+  // the picture, not only to a projection nobody compares.
   return actors;
 }
