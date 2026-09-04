@@ -54,6 +54,11 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   'construction.order-cancelled': (sequence) => ({ sequence, tick: 100, type: 'construction.order-cancelled' }),
   'construction.order-cancelled-underway': (sequence) => ({ sequence, tick: 100, type: 'construction.order-cancelled-underway' }),
   'construction.undone': (sequence) => ({ sequence, tick: 100, type: 'construction.undone' }),
+  'construction.undone-spend-destroyed': (sequence) => ({
+    sequence,
+    tick: 100,
+    type: 'construction.undone-spend-destroyed',
+  }),
   'construction.redone': (sequence) => ({ sequence, tick: 100, type: 'construction.redone' }),
   'economy.delivery-cancelled': (sequence) => ({ sequence, tick: 100, type: 'economy.delivery-cancelled', refundedMinorUnits: 1250 }),
   'economy.wages-unpaid': (sequence) => ({ sequence, tick: 100, type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 360 }),
@@ -447,6 +452,38 @@ describe('what a control says when it works (#749)', () => {
     expect(sentenceOf(SAMPLE['construction.redone'](1)), 'no count').not.toMatch(/\d/);
   });
 
+  it('says what an undo destroyed, in the sentence that says the undo happened (#927)', () => {
+    /*
+     * Issue [#927](https://github.com/matmaxalez/lockstate/issues/927): `Z` on a
+     * finished wall takes the wall down, refunds nothing and destroys the
+     * materials, and the only thing the game said was *"The last change to the
+     * build queue was undone."* -- true, and not the part that mattered.
+     *
+     * **Asserted as a whole sentence and as its difference from the plain
+     * undo**, the shape ruling 2's pair is asserted in above and for the same
+     * reason: a presentation table mapping both types onto one key satisfies any
+     * assertion made about either alone.
+     *
+     * **And asserted as containing the plain undo's own clause**, which is the
+     * assertion that would catch the near-miss this fix was nearly built as:
+     * reusing `order-cancelled-underway` on this channel would have said *"The
+     * order was cancelled"* over a press that cancelled no single order and was
+     * not the Cancel control. The player has to be told the change was undone
+     * *and* what it cost, in one sentence, because the band shows one.
+     */
+    const destroyed = sentenceOf(SAMPLE['construction.undone-spend-destroyed'](1));
+
+    expect(destroyed).toBe(
+      'The last change to the build queue was undone — anything already spent past the point of no return stays spent.',
+    );
+    expect(destroyed, 'the two outcomes must not read the same').not.toBe(
+      sentenceOf(SAMPLE['construction.undone'](1)),
+    );
+    expect(destroyed, 'it still says the undo happened').toContain('The last change to the build queue was undone');
+    expect(destroyed, 'and it does not claim a control the player did not press').not.toContain('The order was cancelled');
+    expect(destroyed, 'no count, which is ruling 4').not.toMatch(/\d/);
+  });
+
   it('paints the one that reports a loss differently from the three that do not', () => {
     /*
      * The band's severity is the only thing separating "you got your money
@@ -465,6 +502,11 @@ describe('what a control says when it works (#749)', () => {
     expect(severityOf(SAMPLE['construction.undone'](1))).toBe('info');
     expect(severityOf(SAMPLE['construction.redone'](1))).toBe('info');
     expect(severityOf(SAMPLE['economy.delivery-cancelled'](1))).toBe('info');
+    // #927's row, graded by the same rule as the cancellation that reports a
+    // loss: an undo that destroyed a finished order's materials is not the loop
+    // working quietly, and `'info'` beside the plain undo would take back in
+    // the tone what the second sentence exists to distinguish.
+    expect(severityOf(SAMPLE['construction.undone-spend-destroyed'](1))).toBe('warning');
   });
 
   it('refuses a refund that is not a whole non-negative number of minor units', () => {
