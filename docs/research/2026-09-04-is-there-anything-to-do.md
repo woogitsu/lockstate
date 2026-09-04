@@ -71,7 +71,7 @@ LOCKSTATE_BROWSER_TEST_PORT=43303 node node_modules/@playwright/test/cli.js test
 | 2 | **growth**: twelve beds in the same room, twelve prisoners, then a second cell | `1 passed (7.3m)` |
 | 3 | the two rooms a cell cannot replace — a shower room and a yard | run A `1 failed (8.4m)` (§10b), run B `1 passed (9.7m)` |
 | 4 | twenty in-game days at 4×, watching for a sentence to end | `1 passed (13.9m)` |
-| 5 | **the same prison with a door in each room** — act 3's refuting sample | `1 passed (7.3m)` |
+| 5 | **the same prison with a door in each room** — act 3's refuting sample; runs B and C add the yard | run A `1 passed (7.3m)`, run B `1 passed (10.6m)`, run C `1 passed (12.4m)` |
 
 ## Claim tiers
 
@@ -438,7 +438,56 @@ this record** — this one measured with the *fixed* event reader (§10a), so th
 zero is a reading rather than a bug. A prison where four prisoners are showering
 on schedule with full hygiene publishes exactly what an idle one does.
 
-### 2.4 What a fix must convey, without authoring the sentence
+### 2.4 The second step of the sequence, and it could not be taken
+
+**Act 5's first half reproduced across three independent runs**, which is worth
+stating before the negative result. All three reached full or near-full
+`Hygiene` with doors — 98%, 100% and 96% at day +4 — and all three watched the
+lowest-need column re-point onto `Recreation` and fall over the same four days:
+
+| run | `Recreation` on the roster, day 0 → +4 | `Hygiene` in the inspector at day +4 |
+| --- | --- | --- |
+| A | 89 → 70 → 57 → 43 → **30%** | **98%** |
+| B | 74 → 61 → 45 → **31%** | **100%** |
+| C | 76 → 62 → 48 → **33%** | **96%** |
+
+Different prisoners, different sentence draws, same shape. **The shower room
+working is a replication, not a single reading.**
+
+**MEASURED, act 5 runs B and C: the yard the roster was pointing at could not
+be placed, three times, for three different reasons — and every refusal was
+correctly and clearly worded.**
+
+| attempt | rectangle | what stopped it |
+| --- | --- | --- |
+| act 3, no pan | (19,13)–(26,20) | two corners land on the HUD: `div.save-panel__actions` and `button.ui-action hud-intake__admit`. **No command is submitted at all** — the silent failure this file guards every press against |
+| act 5 run B, 12 presses east | (26,10)–(33,17) | `The room was not zoned — part of that area is outside the map.` Tiles 32 and 33 are past the single 32×32 chunk (§6.1) |
+| act 5 run C, 6 presses east | (17,10)–(24,17) | `The room was not zoned — it overlaps a room that is already there.` — eight times over eight retries, the same refusal each time |
+
+**DERIVED, and this is the finding rather than the instrument's clumsiness.**
+`room.yard` needs **64 contiguous tiles** (`8 × 8`,
+`src/content/room-catalog.ts:138-141`). The reachable clear area on the default
+viewport is **12 × 11** (§0). Once a 6×6 cell sits at (12,12)–(17,17) and a 3×3
+shower room at (19,15)–(21,17), **no 8×8 rectangle remains inside it** — every
+candidate either crosses one of those two rooms, runs into the HUD, or runs off
+the map at tile 31. So a player who builds a cell and then the room the game's
+own readout asks for has, on the default screen, **nowhere left to put the room
+its readout asks for next.**
+
+The escape exists and this pass did not use it: `camera.zoom.out` is bound to
+`Minus` (`src/input/bindings.ts:35`), and zooming out puts more tiles on
+screen. That changes the pixels-per-tile the whole instrument is built on, so
+measuring it needs a calibration this harness does not have (§14). **Nothing on
+screen suggests zooming**, and the size requirement — `NEEDS AT LEAST 8 × 8
+TILES` — is only shown once `Yard` is the selected row in the Rooms list, which
+is after the player has already built the cell.
+
+**And a discharge landed in run C**, unasked: `prisoners` 4 → 3 at about tick
+50,000, roughly 13 in-game days after admission, with
+`{"prisoners.discharged":1}` the only event of the act. That is §12's loop
+arriving in a second, independent prison.
+
+### 2.5 What a fix must convey, without authoring the sentence
 
 **No player-visible string is authored here** (the locale file is another
 agent's this wave). What has to be said, and where, from the measurements
@@ -1197,6 +1246,11 @@ ten minutes, holding equally at hour two.
 
 ## 14. What this pass did not reach
 
+- **No yard was ever opened**, so this record says nothing about whether
+  `action.yard-recreation` serves `recreation` in play. §2.4 has the three
+  refusals and the geometry; what would settle it is a run that zooms the
+  camera out, which needs a calibration this harness does not have — every
+  helper here is built on `TILE = 64` and `camera.zoom.out` changes it.
 - **No inert room was played.** §11 names the remedy.
 - **No prison was grown past twelve prisoners.** The ratios in §3 and §4 are
   constants and do not change with scale, but the panels might: the Regime
