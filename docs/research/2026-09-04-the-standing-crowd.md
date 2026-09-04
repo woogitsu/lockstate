@@ -369,3 +369,76 @@ day 10), and the riot lapses on its deadline. **The crowd is a display of a
 capacity problem, not a deadlock.**
 
 ---
+
+## 7. Where the crowd starts: two prisoners, everybody housed
+
+**MEASURED, act 2.** Six beds, no guards, and prisoners admitted one at a time
+with a tile tally between each. (The `admitUntil` helper reads the worker's own
+count, which lags a press by one publication, so the populations it settled on
+are even numbers rather than 1..8 — the curve is the same curve and the reading
+is the worker's.)
+
+| prisoners | rail's no-place readout | distinct tiles | tally |
+| --- | --- | --- | --- |
+| 2 (tick 6,371) | `null` | **1** | `(12,12): 2 prisoners` |
+| 2 (tick 7,617) | `null` | **1** | `(12,12): 2 prisoners` |
+| 4 (tick 9,155) | `null` | **1** | `(12,12): 4 prisoners` |
+| 4 (tick 10,415) | `null` | **1** | `(12,12): 4 prisoners` |
+| 6 (tick 11,978) | `null` | **1** | `(12,12): 6 prisoners` |
+| 6 (tick 13,263) | `null` | **1** | `(12,12): 6 prisoners` |
+| 8 (tick 14,873) | `2` | **2** | `(12,12): 6`, `(16,16): 2` |
+| 8 (tick 16,301) | `2` | **2** | `(12,12): 6`, `(16,16): 2` |
+
+**The crowd starts at two.** It does not need overcrowding, it does not need a
+riot, and it does not need a population: with a bed for every prisoner, a
+no-place readout of `null` and six beds standing on six different tiles, the
+**whole prison is on one tile**. The second tile appears at exactly the moment
+the first prisoner the prison cannot house arrives, and holds exactly the
+`waitingWithoutPlace` count.
+
+The roster says why at every rung, and the answer is never the same action
+twice:
+
+```
+2 prisoners, tick 6431:   2x (12,12) phase=performing action=action.free-association
+2 prisoners, tick 7698:   2x (12,12) phase=performing action=action.sleep
+4 prisoners, tick 9233:   2x (12,12) phase=idle action=action.use-toilet
+                          2x (12,12) phase=performing action=action.use-toilet
+6 prisoners, tick 13367:  6x (12,12) phase=performing action=action.eat-in-cell
+8 prisoners, tick 14964:  6x (12,12) phase=performing action=action.sleep
+                          2x (16,16) phase=idle action=NONE accommodation=NONE
+```
+
+**Four different actions, one tile.** Sleeping, eating in the cell, using the
+toilet and free association are the four `own-accommodation` entries in
+`DEFAULT_ACTIONS`, and `destinationTileOf` answers `instance.anchorTile` for
+every one of them — so a prisoner going about a full and varied day never leaves
+the north-west corner of their room. **That is the strongest form of the
+finding, and it is what "a crowd of people all doing the same thing is a
+different bug from a crowd of people each doing something" resolves to here:
+they are each doing something, and it all happens on one tile.**
+
+**It also kills the hypothesis the brief handed me, as an explanation of the
+crowd.** *"A prisoner with nowhere to go stands where they arrived"* is exactly
+true of the two at (16,16) — and it predicts that beds unstack prisoners, which
+this table measures false at every rung from two upward. The earlier record
+(`2026-09-04-why-they-stack.md` §5) refuted it at six prisoners; act 2 refutes
+it at **two**, with the rail itself confirming that nobody is waiting.
+
+**And the walk shows up here too, independently of act 1.**
+
+```
+[act2] 1935 keyframe(s) spanning ticks 1..16301; 6446 actor-sample(s);
+       12 actor-sample(s) with a NON-ZERO velocity (12 prisoner, 0 guard);
+       2 with a NON-INTEGER position
+[act2] every tile change seen (18): "#0 pop0 (16,16)->(14,16) 2 tile(s) across ticks 5177->5185",
+       "#0 pop0 (14,16)->(12,14) 4 tile(s) across ticks 5185->5193",
+       "#0 pop0 (12,14)->(12,12) 2 tile(s) across ticks 5193->5202", …
+```
+
+Six prisoners, three sampled steps each, **eighteen tile changes and not one of
+them longer than the walk speed allows**: four tiles across an eight-tick
+sampling gap is exactly `DEFAULT_WALK_SUBTILE_UNITS_PER_TICK`'s half a tile per
+tick. `(14.500,16.000)` and `(12.000,14.500)` are the two sub-tile positions.
+**The two prisoners with no bed produced no tile change at all**, and after tick
+11,019 nothing in the prison moved again.
