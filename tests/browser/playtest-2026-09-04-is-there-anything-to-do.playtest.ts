@@ -342,8 +342,23 @@ async function needsReadout(page: Page, label: string): Promise<string> {
   if (box === null) return `${label}: the first roster row has no box`;
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
   await page.waitForTimeout(600);
-  const detail = await panelText(page, '.hud-regime__detail');
-  return `${label}: ${count} roster row(s); detail = ${JSON.stringify(detail.replace(/\n/g, ' | '))}`;
+  let detail = await panelText(page, '.hud-regime__detail');
+  /*
+   * **A second press, because one is not reliably enough and the first run of
+   * act 3 read `.hud-regime__detail: not laid out` here.** The inspector is
+   * a toggle on the row: pressing the row a player is already inspecting
+   * closes it. So a run that inherits a selection from an earlier read gets an
+   * empty inspector from a press that worked perfectly. Re-pressing is the
+   * cheap fix; the roster text is dumped either way so the act still carries a
+   * reading when the inspector will not open.
+   */
+  if (detail.includes('not laid out')) {
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await page.waitForTimeout(600);
+    detail = await panelText(page, '.hud-regime__detail');
+  }
+  const roster = (await panelText(page, '.hud-regime__roster')).replace(/\n/g, ' | ');
+  return `${label}: ${count} roster row(s); detail = ${JSON.stringify(detail.replace(/\n/g, ' | '))}; roster = ${JSON.stringify(roster)}`;
 }
 
 test.describe('is there anything to do', () => {
@@ -600,6 +615,23 @@ test.describe('is there anything to do', () => {
     await armBuildable(page, 'wall-brick');
     await wallRectangle(page, 'act3', origin, shower);
     await waitForQueueEmpty(page);
+
+    /*
+     * **Designate BEFORE placing the shower heads, and this order is the
+     * game's rather than a preference.** An object may only be placed inside a
+     * room that is already zoned -- the refusal is *"The object was not placed
+     * -- it has to stand in a room you have zoned."* -- and a designation is
+     * accepted without the objects its room type asks for. `buildAndPopulate`
+     * encodes exactly that sequence (walls, zone, objects) and this file got it
+     * wrong on its first run of this act and of act 2 phase C; §10 of the note
+     * records both. The consequence of getting it wrong is not a failed act but
+     * a *measured empty box*: a designated Shower Room with no shower head has
+     * no `'hygiene'` capability, so `action.shower` is never provided and the
+     * act would answer its own question with a room that cannot work.
+     */
+    const showerAttempts = await designate(page, 'act3', 'room.shower-room', origin, shower);
+    console.log(`[act3] the shower room was accepted on attempt ${showerAttempts}`);
+    await tab(page, 'build').click({ timeout: 15_000 });
     await armBuildable(page, 'shower-head-brick');
     for (const [x, y] of [
       [shower.x0, shower.y0],
@@ -607,11 +639,15 @@ test.describe('is there anything to do', () => {
     ] as const) {
       const point = centreOf(origin, x, y);
       const commands = await press(page, point.x, point.y);
-      if (commands.length === 0) console.log(`[act3] shower head at (${x},${y}) produced NO command`);
+      console.log(
+        `[act3] shower head at (${x},${y}): ${commands.length} command(s)` +
+          ` | band ${JSON.stringify(await panelText(page, '.hud__refusal'))}`,
+      );
     }
     await waitForQueueEmpty(page);
-    const showerAttempts = await designate(page, 'act3', 'room.shower-room', origin, shower);
-    console.log(`[act3] the shower room was accepted on attempt ${showerAttempts}`);
+    await page.waitForTimeout(2000);
+    await tab(page, 'rooms').click({ timeout: 15_000 });
+    console.log(`[act3] the Rooms tab once the shower heads are in (UPPER BOUND):\n${await screen(page)}`);
 
     const withShower = await latestRawCounts(page);
     console.log(`[act3] counts with a shower room: ${JSON.stringify(withShower)}`);
@@ -673,6 +709,16 @@ test.describe('is there anything to do', () => {
       await page.waitForTimeout(120);
     }
     await page.waitForTimeout(1500);
+    /*
+     * **The Build tab first, and this cost an act.** `calibrate` opens with
+     * `page.locator('.hud-build__remove').click()`
+     * (`tests/browser/playtest-harness.ts:256`), which is only laid out while
+     * the Build panel is the visible tab -- and
+     * `playwright.playtest.config.ts` sets no `actionTimeout`, so on any other
+     * tab that click waits on an element that will never have a box. The first
+     * run of this act reached this line from the Rooms tab and died there.
+     */
+    await tab(page, 'build').click({ timeout: 15_000 });
     const panned = await calibrate(page);
     console.log(
       `[act3] after ${panPresses} ArrowRight press(es) the world origin is (${panned.originX}, ${panned.originY}); ` +
