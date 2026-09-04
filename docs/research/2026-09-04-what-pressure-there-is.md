@@ -27,7 +27,7 @@ this branch.** Balance is the owner's; this record is a set of numbers.
 | --- | --- | --- | --- | --- |
 | **B** the shipped curve | `withheld = 0` | 3×4 cell, 4 beds, 1 toilet, 4 prisoners, **1 guard** — `ceil(4/8)`, exactly what the game asks | 529 s | 35,431 |
 | **P** the penalty restored | `withheld = 40` | identical script | 465 s | 29,795 |
-| **Y** the yard | `withheld = 40` | act P plus an 8×8 `room.yard` | 600 s (timed out, see [§6](#6-instrument-failures)) | 39,264 |
+| **Y** the yard | `withheld = 40` | act P plus an 8×8 `room.yard` | 600 s (timed out, see [§9](#9-instrument-failures)) | 39,264 |
 | **D** one guard too many | `withheld = 40` | act P with **6 guards** instead of 1 | 437 s | 26,566 |
 | **N** pure neglect | `withheld = 0` | admit, build nothing, hire nobody | 280 s | 19,451 |
 
@@ -225,7 +225,7 @@ Side by side, at the settled composition:
 merely a slow day rather than a floor?* Four consecutive boundaries at exactly
 +320 with the composition unchanged at 5 unmet, and the fifth row of the
 schedule is 100 — the sixth, 60, is not reachable by this prison at all
-([§4](#4-measured--60-is-not-a-number-a-staffed-prison-can-reach)). If it were
+([§4](#4-measured--60-is-not-a-number-a-staffed-prison-can-reach-and-the-schedules-bottom-row-is-unreachable)). If it were
 going to fall further, day 13 was where.
 
 ---
@@ -463,7 +463,7 @@ things need correcting, and one of them changes the answer.
    permille and `unmet: false` on every prisoner in every closing reading of
    four acts. The staffed floor is **100**, so the penalty's effect is a **67%**
    cut to income and not 80%, and break-even is 1.25 guards a prisoner rather
-   than 0.75 ([§4](#4-measured--60-is-not-a-number-a-staffed-prison-can-reach)).
+   than 0.75 ([§4](#4-measured--60-is-not-a-number-a-staffed-prison-can-reach-and-the-schedules-bottom-row-is-unreachable)).
 
 3. **"does this game apply any pressure at all"** — the brief expected the
    answer to be about the penalty, and half of that is wrong. Measured, the
