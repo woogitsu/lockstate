@@ -535,7 +535,7 @@ function atTreasuryFloor(counts: HudCountsViewModel): boolean {
  * and a prison at -1,300 are not the same state told louder: the first can
  * still buy the plank that finishes the cell, and the second can buy nothing
  * at all -- every press that costs money is refused, and none of them will
- * stop being refused until the state pays. That is exactly the distinction the
+ * stop being refused until the prison earns some. That is exactly the distinction the
  * coverage ladder draws between understaffed and unguarded, *"the rung where
  * the cheapest possible action changes the outcome"*.
  *
