@@ -712,6 +712,39 @@ The other eleven are wired, each **VERIFIED, read**:
 change what prisoners do.** Nothing lies to a player who builds an Infirmary;
 nothing tells them either.
 
+### 6.1 The whole prison is one 32×32 chunk, and no command adds another
+
+**VERIFIED, read, and this is the hard ceiling on growth.**
+`createNewSimulationRuntime` builds `new SparseWorld(32)`, loads chunk `(0,0)`
+and marks it owned, and does nothing else
+(`src/simulation/runtime/new-session.ts:421-434`). So **every prison a player
+can start is tiles 0..31 on both axes — 1,024 tiles — and everything beyond is
+refused.**
+
+**MEASURED, act 5.** The refusal is real and it is worded well. An 8×8 yard
+placed at (26,10)–(33,17) — eight columns of clear canvas, two of them past
+tile 31 — was refused:
+
+> `The room was not zoned — part of that area is outside the map.`
+
+**VERIFIED, read, both directions.** Nothing widens it.
+`grep -rn 'setOwned' src/` returns three hits: the one call at session creation,
+the method itself, and a comment — and that comment is
+`src/simulation/prisoners/discharge-system.ts:77-78` explaining why a released
+prisoner does not walk to a gate: *"there is no gate: `world.setOwned` has one
+call site at session creation."* There is no `BuyLand`, no `ClaimChunk` and no
+`ExpandPrison` among the fifteen commands (§5), and
+`hud.alert.refusal.zone.unowned-land` — *"you do not own all of that land"* —
+is a sentence about land a player can never come to own.
+
+**DERIVED, and it is the arithmetic of the whole growth question.** 1,024 tiles
+at about 6 tiles per bed once walls and a toilet are paid for is a few hundred
+prisoners in principle, so the cap is not what stops a player *today*. What it
+means is that **the map is not a thing that grows.** Every other management game
+in this lineage sells land; here, the prison a player finishes on day 1 is the
+same size as the one they finish on day 90, and the only expansion available is
+subdividing what is already there.
+
 **And the cheapest room in the game cannot be placed beside the starter cell.**
 `room.yard` asks only for `outdoors` and 8×8 tiles — no walls, no objects, no
 money (`src/content/room-catalog.ts:138-141`) — and it is the only thing that
@@ -922,7 +955,7 @@ ceremony, an inspection consequence or a reputation effect — those are #31"*
 
 ---
 
-## 10. This pass's own instruments failed five times, and all five are recorded
+## 10. This pass's own instruments failed seven times, and all seven are recorded
 
 **(a) The event reader filtered on a message kind that does not exist.** It
 looked for `kind === 'simulation/events'` and a `payload.events` array. The
@@ -965,7 +998,26 @@ now re-presses and dumps the roster block beside the inspector either way —
 which is why §2's second reading is quoted from the roster rather than the
 inspector.
 
-**(e) This record itself was wrong twice, and the foundation gate caught both.**
+**(e) `designate` reported a refused designation as accepted.** Its success
+test was `rooms > 0`, which is true of every designation after the first — so
+act 5's yard printed *"accepted on attempt 1"* with
+*"The room was not zoned — part of that area is outside the map."* on the same
+line, and the note's first draft of §6.1 would have said a yard opened where
+none had. **Caught only because the act prints the refusal band beside the
+count**, which is rule 1 of this file's instrumentation doing its job. Success
+is now an *increase* over a baseline read before the loop, and the log line
+prints both numbers.
+
+**(f) The square scan did not know where the map ends.** `firstClearSquare`
+searched the viewport for eight clear tiles and found (26,10)–(33,17) after
+twelve `ArrowRight` presses — clear canvas, and two columns past tile 31. It now
+clamps to the world (§6.1) and act 5 pans six presses instead of twelve. This
+is the third geometry mistake this file made about the same 8×8 square: once
+into the save panel, once into the minimap, once off the map. **The measurement
+that should have come first is where the room fits**, and it is now a function
+rather than a typed-in rectangle.
+
+**(g) This record itself was wrong twice, and the foundation gate caught both.**
 The first draft failed `tests/foundation` 473/475, on two of its own claims:
 
 - `documentation-source-anchor-contract` rejected the range I had written for
@@ -985,7 +1037,7 @@ Worth recording because it is the same class of error the note reports in the
 game — a sentence that reads as true and is not — caught here by a gate that
 exists for exactly that. Re-run: **475/475**.
 
-**(f) Not a failure, but a limit worth stating.** `installTee` drops
+**(h) Not a failure, but a limit worth stating.** `installTee` drops
 `simulation/projection`, `simulation/delta` and `simulation/snapshot` to bound
 its array. Every "the worker published only these kinds" reading here is
 therefore about the *small* messages only, and no claim depends on a projection
