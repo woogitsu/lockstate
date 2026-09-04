@@ -190,8 +190,23 @@ function deltaVector(
 }
 
 /**
+ * The last tile a new prison has any ground on.
+ *
+ * **A fresh session materialises exactly one 32x32 chunk.**
+ * `createNewSimulationRuntime` builds `new SparseWorld(32)`, loads chunk
+ * `(0,0)` and marks it owned, and nothing else
+ * (`src/simulation/runtime/new-session.ts:421-434`), so the whole buildable
+ * world is tiles 0..31 on both axes and everything beyond is refused
+ * `out-of-bounds`. Act 5's first yard attempt landed on (26,10)-(33,17) --
+ * eight clear tiles of canvas, two columns of which are off the map -- and was
+ * refused "The room was not zoned -- part of that area is outside the map."
+ */
+const WORLD_LAST_TILE = 31;
+
+/**
  * The first `size`x`size` tile square in the visible grid where every tile
- * centre is clear canvas, scanned in row-major order.
+ * centre is clear canvas **and every tile is inside the materialised world**,
+ * scanned in row-major order.
  *
  * Written because act 3's first two runs both picked an 8x8 for `room.yard` by
  * hand off a printed map and both picked one that overlapped the HUD -- once
@@ -204,12 +219,13 @@ async function firstClearSquare(
   page: Page,
   origin: { originX: number; originY: number },
   size: number,
+  maxTile = WORLD_LAST_TILE,
 ): Promise<{ x0: number; y0: number; x1: number; y1: number } | undefined> {
   const viewport = page.viewportSize() ?? { width: 1440, height: 900 };
-  const firstX = Math.ceil(-origin.originX / TILE);
-  const lastX = Math.floor((viewport.width - origin.originX) / TILE) - 1;
-  const firstY = Math.ceil(-origin.originY / TILE);
-  const lastY = Math.floor((viewport.height - origin.originY) / TILE) - 1;
+  const firstX = Math.max(0, Math.ceil(-origin.originX / TILE));
+  const lastX = Math.min(maxTile, Math.floor((viewport.width - origin.originX) / TILE) - 1);
+  const firstY = Math.max(0, Math.ceil(-origin.originY / TILE));
+  const lastY = Math.min(maxTile, Math.floor((viewport.height - origin.originY) / TILE) - 1);
   const clear = new Map<string, boolean>();
   const isClear = async (x: number, y: number): Promise<boolean> => {
     const key = `${x},${y}`;
@@ -355,6 +371,15 @@ async function designate(
   bounds: { x0: number; y0: number; x1: number; y1: number },
   maxAttempts = 8,
 ): Promise<number> {
+  /*
+   * **The baseline, and its absence was a measured instrument defect.** This
+   * loop used to accept `rooms > 0`, which is true of every designation after
+   * the first -- so act 5's yard was reported *accepted on attempt 1* while the
+   * band beside it read "The room was not zoned -- part of that area is
+   * outside the map." The prison already had two rooms; the test asked whether
+   * it had any. Success is now an *increase*.
+   */
+  const before = Number((await latestRawCounts(page))?.counts['rooms'] ?? 0);
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     await tab(page, 'rooms').click({ timeout: 15_000 });
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
@@ -367,12 +392,12 @@ async function designate(
     await page.waitForTimeout(900);
     const counts = await latestRawCounts(page);
     console.log(
-      `[${label}] designate ${roomId} attempt ${attempt}: rooms=${String(counts?.counts['rooms'])}` +
+      `[${label}] designate ${roomId} attempt ${attempt}: rooms=${String(counts?.counts['rooms'])} (was ${before})` +
         ` | panel said ${JSON.stringify(note.split('\n').filter((line) => /OPEN|ENCLOS|OUTDOOR|SIZE|need/i.test(line)))}` +
         ` | band ${JSON.stringify(await panelText(page, '.hud__refusal'))}`,
     );
     const rooms = Number(counts?.counts['rooms'] ?? 0);
-    if (rooms > 0) return attempt;
+    if (rooms > before) return attempt;
     await page.waitForTimeout(3000);
   }
   return -1;
@@ -1047,10 +1072,18 @@ test.describe('is there anything to do', () => {
     }
     console.log(`[act5] an 8x8 yard east of the cell, BEFORE panning: ${JSON.stringify(cornerReport)}`);
 
+    /*
+     * **Six presses, not twelve, and the difference is the map's edge.** Twelve
+     * moved the origin 969px -- about fifteen tiles -- which put the clear
+     * rectangle at x=26..37 while the world ends at tile 31, so the only
+     * fully-clear 8x8 the scan could find was (26,10)-(33,17) and it was
+     * refused for being partly off the map. Six presses put the clear
+     * rectangle inside the world with room for the square.
+     */
     const focusPoint = centreOf(origin, 20, 19);
     await assertCanvasAt(page, focusPoint.x, focusPoint.y, 'act5 camera-focus point');
     await page.mouse.click(focusPoint.x, focusPoint.y);
-    for (let index = 0; index < 12; index += 1) {
+    for (let index = 0; index < 6; index += 1) {
       await page.keyboard.press('ArrowRight');
       await page.waitForTimeout(120);
     }
@@ -1058,7 +1091,7 @@ test.describe('is there anything to do', () => {
     await tab(page, 'build').click({ timeout: 15_000 });
     const panned = await calibrate(page);
     console.log(
-      `[act5] after 12 ArrowRight press(es) the world origin is (${panned.originX}, ${panned.originY});` +
+      `[act5] after 6 ArrowRight press(es) the world origin is (${panned.originX}, ${panned.originY});` +
         ` it was (${origin.originX}, ${origin.originY})`,
     );
     const yard = await firstClearSquare(page, panned, 8);
