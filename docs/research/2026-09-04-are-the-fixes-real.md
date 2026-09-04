@@ -551,7 +551,175 @@ and reaches the player.**
   that viewport that answered with a `RemoveObject`; act 5d re-used the
   1440×900 origin and verified it by the tile the command reported.
 
-## 8. My weakest claim, and what would change my mind
+## 8. Improvement proposals
+
+Each is grounded in a measurement above. **Proposals only — this branch is
+read-only on `src/`.** Where one would put a sentence on screen, the code that
+would render it is opened and the sentence is shown to be true, per
+`AGENTS.md` reservation 4's partial release of 2026-09-04.
+
+### 8.1 Close #945's sibling with the sentence that already exists — no new string
+
+**What a player sees today:** cancelling an object order from the Build panel's
+queue row says *"The order was cancelled — the money it cost is refunded."*;
+cancelling the same order by arming `Remove` and pressing its tile says
+nothing, and leaves the previous press's *"the money it cost does not come
+back"* on the band (§5, MEASURED).
+
+**What to do:** at
+`src/simulation/objects/object-placement-service.ts:671-674` the pending arm
+already holds `pending.order`, so `pending.order.state` is at the call site.
+Hand it to the same `RemovedObjectNoticePort` shape #945 added — or a second
+method on it — and let it reach
+`SimulationEventLog.recordBuildOrderCancelled(stateAtCancellation, tick)`
+(`src/simulation/events/event-log.ts:655-666`, VERIFIED), which switches on the
+state and picks between `construction.order-cancelled` and
+`construction.order-cancelled-underway`.
+
+**Why no new string is needed, and why the objection #945 raised does not
+apply here.** #945 refused to reuse *"the order was cancelled"* for a standing
+bed because a standing bed **is not an order any more**. A pending object
+placement **is** an order — `cancelOrder` is what this arm calls — so the
+sentence names exactly what the player did. And the refund clause is true of
+this arm by the owner's ruling 20 of 2026-08-31 (ADR 0076's amendment), quoted
+in `object-placement-service.ts:246-259`: money back for an order the crew has
+not started, nothing for one it has, which is precisely the split
+`recordBuildOrderCancelled` already makes.
+
+**Cost:** one field through one port, no schema change, no locale change, no
+new event type. **What it buys:** the same order cancelled two ways stops
+saying two different things, and the sticky band stops asserting a loss that
+did not happen.
+
+### 8.2 Put the free-guard count where the `Covered` badge is
+
+**What a player sees today:** `3 of 3 / Covered` in `GUARD COVERAGE`, and
+`3 held · 0 free` in `ON DUTY`, separated by `WHO TO HIRE`, a price, two notes
+and a three-row roster (§1, MEASURED). The sentence between them —
+*"Only free guards answer incidents."* — is true and names the quantity the
+player cannot see from where they are reading.
+
+**What to do, in ascending cost:**
+
+1. **Move nothing, add nothing: render `hud.security.held-summary` in the
+   coverage header as well**, beside `3 of 3`. The key already exists and
+   already renders `{held} held · {unassigned} free`
+   (`src/ui/hud/staff-panel.ts:1168-1171`, VERIFIED). Drawing an existing true
+   string in a second place carries no truth burden at all. The header would
+   read `GUARD COVERAGE 3 of 3 · 3 held · 0 free · Covered`.
+2. **Take the tone off `success` when nobody is free.** `describeStaffCoverage`
+   takes only `HudStaffCoverageViewModel`, which carries `required`,
+   `assigned`, `shortage` and **not** `unassigned`
+   (`src/ui/hud/view-model.ts:1860-1867`, VERIFIED); `unassigned` lives on
+   `HudHeldGuardsViewModel` (`:975-982`). So this costs one argument. With it,
+   `shortage <= 0 && unassigned === 0` returns `tone: 'warning'` with the badge
+   word **unchanged** — the requirement really is met, and the badge says only
+   that.
+3. **Fill the consequence line, which is empty on this rung** (measured
+   `consequence: "" (laid out: false)`) while the `Unguarded` rung has one. A
+   sentence that would be true on the `unassigned === 0` branch:
+
+   > **No guard is free, so nobody can be sent to an incident.**
+
+   **Opened to establish it, not inferred.** `unassigned` is
+   `entityIds.length - rows.length` over the whole roster
+   (`src/simulation/presentation/guard-release-projection.ts:213-216`,
+   VERIFIED), so `unassigned === 0` means every roster member is held and in
+   particular no guard is unassigned. The only thing that puts a guard on an
+   incident is `IncidentResponseSystem.claimableResponders`
+   (`src/simulation/incidents/response-system.ts:499`; its two callers are
+   `:482` and `:635` and there is no other, VERIFIED by grep over
+   `src/simulation`), which draws from `claimableGuardIds(this.guards)`
+   (`:509`) → `GuardRoster.unassignedGuardIds()` filtered by role
+   (`src/simulation/security/post-eligibility.ts:103`,
+   `src/simulation/security/guard-roster.ts:236`). With no unassigned guard
+   that set is empty, and `requiredResponderCount` is `max(1, …)` — never
+   zero — so no incident can be claimed. It promises **no outcome**: it says
+   who can be sent, not that an incident is coming and not that sending
+   anybody would contain it, which keeps it inside `describeStaffCoverage`'s
+   own refusal to predict and PR #854's refusal of a containment claim.
+
+   Measured against this: 8 incidents, 8 lapsed, `respondersDispatched: 0`.
+
+**What this does not do, deliberately:** name a number to hire. The reserve is
+2 to 5 and depends on what happens, which is balance and the owner's (#941
+option 1). Options 1–3 make the *state* visible; they do not size it.
+
+### 8.3 A count on a crowded tile, with the threshold derived rather than chosen
+
+**What a player sees today:** six actors on a tile read as six figures; 22 read
+as one orange slab and one guard (§2, MEASURED, screenshots).
+
+**The threshold is computable rather than a matter of taste.** The step between
+adjacent ranks is `CROWD_SPREAD_SPAN_TILES_X / (n - 1)` tiles = `28.16 / (n-1)`
+screen pixels at `TILE` 64 (VERIFIED, `crowd-spread.ts:86,:176-178`). It falls
+below 4 px — under a tenth of a figure's width — at **n ≥ 9**. So: draw a small
+count over a tile whose group exceeds eight, and leave the cascade alone below
+that, where it already works.
+
+This is a new world-space affordance and #944 §4.3 says so; it wants an ADR,
+and this record does not write one. What it adds to #944's own pricing is the
+number 8 and the reason for it.
+
+**What would be worse, and why:** widening the fan. The renderer does not know
+where the room's walls are, so a fan that leaves the tile claims ground no
+snapshot named — `crowd-spread.ts:63-73` argues this and is right.
+
+### 8.4 Stop the Intake panel moving the button a player is pressing
+
+**What a player sees today:** 25 presses, 9 prisoners, the button 57.7 px from
+where it started, the first miss at press 5 (§3, MEASURED).
+
+**What to do:** the two blocks that appear are the *"N waiting with no bed to
+sleep in"* line and the `IN INTAKE` section, and both appear **below the
+panel's header and above `Admit a prisoner`**. Either
+
+1. **reserve their height** — render them always, empty, at their occupied
+   height, so the control never moves; or
+2. **put `Admit a prisoner` above everything that can grow**, so nothing that
+   arrives can displace it.
+
+Option 2 costs no layout budget and is the one the row order already almost
+has. Neither needs a string. **Grounded on:** a run at a fixed point loses 16
+of 25 presses, and the same run with the position re-read loses none — the
+difference is entirely the geometry.
+
+**And the class, not the instance:** any panel that grows a row while a control
+below it is being pressed has this defect. The sweep worth running is every
+`.hud-*__list`/section that appears conditionally above a button.
+
+### 8.5 `Load` on the live prison: capture, or ask
+
+**What a player sees today:** 90 s of running clock produces no save, and
+pressing `Load` on that prison's own row takes the treasury from 25,975 to
+23,015 and the clock back to Day 3, with zero dialogs (§4, MEASURED).
+
+#943's own commit rules out capturing on this path, and the reasoning is
+sound: a save written into the retained window `loadPrison` is walking makes
+`no-valid-generation` unreachable and turns a real refusal into a fake
+recovery. It names what is actually needed — *"a confirmation before the
+revert … a sentence for the player and a change to `src/ui/save-panel.ts`"* —
+and says neither is in that commit.
+
+**Two candidates, and the second is cheaper than it looks:**
+
+1. **The confirmation** #943 names. It needs a sentence, and the sentence has
+   to be true of a save panel that cannot currently say how much would be lost:
+   `getLastOutgoingCapture()` describes the *outgoing* save, not the gap.
+2. **Make the autosave play-driven as well as command-driven.** The 90-second
+   loss exists because `src/main.ts` marks the session dirty only on
+   `onCommandAccepted` — which #943's own commit quotes as the reason its
+   capture cannot be conditional on dirtiness. A prison that has advanced
+   thousands of ticks has changed, whether or not anybody pressed anything, and
+   a tick-count threshold beside the command hook would close both this row and
+   the *"watched rather than played"* case #943 measured. That is a persistence
+   decision and probably an ADR.
+
+**What is measured and what is not:** the loss is measured. Which of the two
+answers is right is a decision, not a finding, and this record does not take
+it.
+
+## 9. My weakest claim, and what would change my mind
 
 **That the 22-actor tile "still reads as two figures" to a player.** It rests
 on one screenshot at one zoom level, judged by eye, plus a step-size
