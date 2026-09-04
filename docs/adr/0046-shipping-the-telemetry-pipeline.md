@@ -321,6 +321,12 @@ the same change, as that gate's failure message demands.
 
 ### 7. Retention and deletion are **not** implemented here, and are unenforced
 
+**Read the "Amendment, 2026-09-04" section at the foot of this document before
+this one.** Three sentences below were dated by the owner's ruling of that date:
+the job item 1 asks for is written, unscheduled, and the "Proposed migration
+content, not written" paragraph is the sentence that went false. Nothing in this
+section is edited, because it is the text that was dated.
+
 No retention or deletion enforcement is added to the client, because neither can
 live there: a client cannot delete what a server has, and a client that could
 would be a client that could delete other players' data.
@@ -592,3 +598,118 @@ process is sufficient.
   parked-tier decision whose open question 2 this answers.
 - [TELEMETRY.md](../TELEMETRY.md) — the tier document, corrected in the same
   change.
+
+## Amendment, 2026-09-04: §7 item 1's job is written, and the three sentences that said it was not are dated
+
+*The decision recorded here is the **owner's**, and the wording below is not
+theirs. On 2026-09-04 they were asked whether to land the three objects
+`AGENTS.md` reservation 1's release paragraph names or four, including the
+retention job `docs/DEPLOYMENT.md`'s "What is still owed" lists beside them, and
+they answered:*
+
+> Cztery — dopisz też retencję
+
+*("Four — add the retention too.") That overrode the integrator's own
+recommendation of three, which is why it is recorded in their words with the
+date on it, per `docs/AGENT_WORKFLOW.md` §3's rule that an implementing agent
+does not approve its own work. **Every consequence drawn below is this editor's
+work under that choice** — the shape of the audit, the reading of the third
+retention row, and the account of what is still unenforced. A reader who
+disagrees with a consequence should treat that consequence as open; the ruling
+itself is not open. **Status is untouched**: this document remains `Proposed`,
+and nothing here is a self-approval.*
+
+*This is the first amendment to this ADR. An earlier brief described one already
+standing here, headed "the migration content is written"; there was none, on
+this branch or on `main`, so this section is authored rather than extended.*
+
+### What is now written, and where
+
+One migration, `supabase/migrations/20260904090000_create_telemetry_events.sql`,
+applied nowhere. It carries five objects: the `telemetry_events` table, the
+`record_telemetry_events(jsonb)` insert function, the `telemetry_ingest` role,
+and — the part this amendment is about — `enforce_telemetry_retention()` with
+its audit table `telemetry_retention_runs`.
+
+**The fourth object is two SQL objects, and the reason is ADR 0008 rather than
+convenience.** Its 2026-08-27 scope amendment puts a *scheduled* job **inside**
+§3, unlike the ingest, and states the obligation that follows: *"the job records
+what rule it applied, over what window, and what it removed."* A function that
+returns those three facts to whoever called it has not recorded them — it has
+handed them to a caller to record, and there is no caller: no schedule exists.
+So the job writes one row per run per category, in the same transaction as the
+delete it describes, naming the rule, the boundary, the role it ran as and the
+count removed. §3 step 6's *"actor, reason, source, and prior/next value"* is
+mapped column by column in that migration's section 5. The audit table holds no
+part of any row it deleted: an audit of a privacy deletion that copies the
+deleted data has deleted nothing.
+
+### The three sentences this section dates, quoted rather than replaced
+
+**1. Item 1's own wording is met except for one word.** It asks for *"A
+retention job that actually deletes, keyed on a timestamp the client did not
+supply. Scheduled, per category, with the deletion itself observable"*. Written:
+the delete is keyed strictly on the server-stamped `received_at`, it is per
+category, and the audit table is what makes it observable. **"Scheduled" is the
+word still owed**, and deliberately: a schedule is either a `pg_cron` extension
+or a deploy-configured caller, and both are `AGENTS.md` reservation 3. That
+migration's section 7 carries both invocations ready to run and says which is
+the owner's to pick.
+
+**2. The correction inside item 1 is now enforced by a column, not only by
+prose.** That paragraph's conclusion — *"Retention must run on a **server-stamped
+`received_at`**, written by the endpoint, never read from the body, and never
+overwritable by a replay"* — was checked against the columns rather than taken
+on trust, and the table is stronger than the sentence needed: there is no
+`occurred_at` column at all. The client's value is stored as
+`claimed_occurred_at`, a `bigint` of epoch milliseconds, so a window over it
+would have to be written as an explicit cast a reviewer sees. `received_at` is
+`default now()` on a table with no INSERT grant for any role, the insert function
+never names it, and `on conflict (event_id) do nothing` contains no UPDATE, so a
+replay cannot move it. Suite 012 drives the property in both directions: a row
+dated the year 4000 whose arrival is 200 days old **is deleted**, and a row that
+arrived at `now()` claiming 1970 **survives**.
+
+**3. "Proposed migration content, not written" is the sentence that is now
+false.** §7's closing paragraph opens *"**Proposed migration content, not
+written, because `supabase/migrations/` is history and not mine to add to.**"*
+and ends *"and a scheduled deletion by `received_at` and `category` implementing
+item 1. That is a sketch for review, not a specification."* Both are left
+standing, because they were true of every tree until 2026-09-04 and the reason
+they were true — that migrations are the owner's — has not changed; what changed
+is that the owner ruled on this one. The sketch was followed rather than
+departed from, including the clause about `received_at` and `category`, which is
+exactly the predicate the function runs.
+
+**And §7's opening claim is still true, which is the part not to overstate.**
+*"Those promises are unenforced today and this change does not make them
+true."* A function nothing calls enforces nothing. What changed is that keeping
+`docs/TELEMETRY.md`'s 90/90/30 promise is now one command rather than a design,
+and that the command is written out for the owner to run.
+
+### The one place the promise and the schema do not describe the same thing
+
+`docs/TELEMETRY.md`'s retention table reads *"`diagnostics` events"*,
+*"`performance` events"* and *"`gameplay` aggregates"*. Nothing stores an
+aggregate — ADR 0008's same amendment expects aggregates to be *"folded from the
+stored events, never written independently"* — so the third row and the third
+category are not the same kind of thing, and the migration says so rather than
+quietly reinterpreting the promise.
+
+The reading applied is that the word describes the **category**, which
+`docs/TELEMETRY.md`'s own category table introduces as *"Coarse aggregates for
+scenario/tutorial design"* and whose one registered event declares
+*"Aggregate completion rates for scenario/tutorial design, never per-player
+behaviour."* — so 30 days over the rows `category = 'gameplay'` selects is that
+row of the table.
+
+**What settles it is the direction of the risk, not the grammar.** A retention
+number is a **ceiling** on how long data is kept, so deleting a `gameplay` row
+at 30 days satisfies the promise under either reading, while declining to
+express the window satisfies it under neither and lets those rows grow without
+bound — which is the defect this object exists to remove. If the intended
+reading was ever "a future rollup gets 30 days and raw gameplay events get 90",
+that is a decision somebody has to write down; until they do, the honest thing
+is to apply the number the document prints. **This is the consequence in this
+amendment most worth disagreeing with, and it is the one to overturn first if
+the owner reads the row differently.**
