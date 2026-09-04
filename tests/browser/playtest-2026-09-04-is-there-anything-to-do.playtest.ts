@@ -136,14 +136,27 @@ async function messageKinds(page: Page): Promise<Record<string, number>> {
   });
 }
 
-/** Every simulation event the worker has pushed, flattened to `type` strings in order. */
+/**
+ * Every simulation event the worker has pushed, flattened to `type` strings in order.
+ *
+ * **`'simulation/event'`, singular, and this reader had it wrong on its first
+ * run.** It filtered on `'simulation/events'` and on a `payload.events` array,
+ * and the message is one event per message under `payload.event`
+ * (`src/simulation/worker/state-machine.ts:728`, *"One message per event rather
+ * than one carrying an array"*). Act 1's `[]` was therefore produced by a
+ * reader that could never have returned anything else. What kept act 1's
+ * conclusion standing is that `messageKinds` is kind-agnostic and reported no
+ * `simulation/event` message at all -- so the finding was carried by the second
+ * instrument, which is the only reason it survived. Recorded rather than
+ * quietly fixed, per `docs/AGENT_WORKFLOW.md` on instrument failures.
+ */
 async function eventTypes(page: Page): Promise<readonly string[]> {
   return page.evaluate(() => {
     const out: string[] = [];
     for (const message of (window as unknown as { lockstateFromWorker?: readonly unknown[] }).lockstateFromWorker ?? []) {
-      const typed = message as { kind?: string; payload?: { events?: readonly { type?: string }[] } };
-      if (typed.kind !== 'simulation/events') continue;
-      for (const event of typed.payload?.events ?? []) out.push(event.type ?? '(untyped)');
+      const typed = message as { kind?: string; payload?: { event?: { type?: string } } };
+      if (typed.kind !== 'simulation/event') continue;
+      out.push(typed.payload?.event?.type ?? '(untyped)');
     }
     return out;
   });
@@ -397,8 +410,8 @@ test.describe('is there anything to do', () => {
     }
   });
 
-  test('act 2 - growth: a second cell block and twelve prisoners', async ({ page }) => {
-    test.setTimeout(1_200_000);
+  test('act 2 - growth: is there any reason to build a second cell', async ({ page }) => {
+    test.setTimeout(1_500_000);
     await openApp(page);
     const origin = await buildAndPopulate(page, { beds: 4, admits: 4, guards: 1, label: 'act2-first-cell' });
     const oneCell = await latestRawCounts(page);
@@ -406,53 +419,53 @@ test.describe('is there anything to do', () => {
     await tab(page, 'overview').click({ timeout: 15_000 });
     console.log(`[act2] the screen at one cell (UPPER BOUND):\n${await screen(page)}`);
 
-    // A second 6x6 cell in a measured-clear rectangle. (19,12)-(24,17) is east
-    // of the first; the clearance map act 1 prints is what says whether it is
-    // reachable, and every press below is guarded anyway.
-    const bounds = { x0: 19, y0: 12, x1: 24, y1: 17 };
+    /*
+     * **Phase B first, and the order is the whole point of this act.**
+     *
+     * Residency capacity is the sum of the *footprint widths* of the objects
+     * in a room that declare `'sleep-surface'` -- `deriveRoomCapacity`
+     * (`src/simulation/objects/room-capacity.ts:172-190`) -- with no per-room
+     * ceiling, no tiles-per-occupant rule, and nothing else contributing. And
+     * `rateCellSharing` (`src/simulation/prisoners/cell-sharing.ts:74`) is a
+     * *preference* over occupied cells, not a limit: its own docblock says
+     * "some pairings are unwise rather than forbidden".
+     *
+     * So before spending a brick on a second room, the honest question is
+     * whether a player needs one at all: eight more beds go into the 6x6 cell
+     * that is already standing, and if twelve prisoners are then housed and
+     * paid for in one room, the second cell is a thing the game never asks
+     * for. Phase C builds one anyway, to see whether anything differs.
+     */
     await tab(page, 'build').click({ timeout: 15_000 });
-    for (const [x, y] of [
-      [bounds.x0, bounds.y0],
-      [bounds.x1, bounds.y0],
-      [bounds.x0, bounds.y1],
-      [bounds.x1, bounds.y1],
-    ] as const) {
-      const point = centreOf(origin, x, y);
-      await assertCanvasAt(page, point.x, point.y, `act2 second-cell corner (${x},${y})`);
-    }
-
-    await buy(page, 'wall-brick', 60);
     await buy(page, 'bed-wooden', 10);
-    console.log(`[act2] strip after buying for the second cell: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
     await fastForwardToMax(page);
     await page.waitForTimeout(4000);
-
-    await armBuildable(page, 'wall-brick');
-    await wallRectangle(page, 'act2', origin, bounds);
-    await waitForQueueEmpty(page);
-    const attempts = await designate(page, 'act2', 'room.cell', origin, bounds);
-    console.log(`[act2] the second cell was accepted on attempt ${attempts}`);
-
-    await tab(page, 'build').click({ timeout: 15_000 });
     await armBuildable(page, 'bed-wooden');
-    let placed = 0;
-    for (const row of [12, 14] as const) {
-      for (let column = bounds.x0; column <= bounds.x1 && placed < 8; column += 1) {
-        const point = centreOf(origin, column, row);
-        const commands = await press(page, point.x, point.y);
-        if (commands.length === 0) console.log(`[act2] bed at (${column},${row}) produced NO command`);
-        placed += 1;
-      }
+    let packed = 0;
+    const packTargets: readonly (readonly [number, number])[] = [
+      [12, 14],
+      [13, 14],
+      [14, 14],
+      [15, 14],
+      [16, 14],
+      [17, 14],
+      [13, 16],
+      [14, 16],
+    ];
+    for (const [x, y] of packTargets) {
+      const point = centreOf(origin, x, y);
+      await assertCanvasAt(page, point.x, point.y, `act2 packed bed (${x},${y})`);
+      const commands = await press(page, point.x, point.y);
+      if (commands.length === 0) console.log(`[act2] packed bed at (${x},${y}) produced NO command`);
+      else packed += 1;
     }
-    await armBuildable(page, 'toilet-brick');
-    const toilet = centreOf(origin, bounds.x0, 16);
-    await press(page, toilet.x, toilet.y);
-    console.log(`[act2] ${placed} bed order(s) + 1 toilet in the second cell`);
+    console.log(`[act2] ${packed} extra bed order(s) placed INSIDE the existing 6x6 cell`);
     await waitForQueueEmpty(page);
     await page.waitForTimeout(3000);
-
-    const twoCells = await latestRawCounts(page);
-    console.log(`[act2] TWO CELLS, before admitting: ${JSON.stringify(twoCells)}`);
+    const packedCounts = await latestRawCounts(page);
+    console.log(`[act2] ONE CELL with twelve beds: ${JSON.stringify(packedCounts)}`);
+    await tab(page, 'rooms').click({ timeout: 15_000 });
+    console.log(`[act2] the Rooms tab with twelve beds in one 6x6 cell (UPPER BOUND):\n${await screen(page)}`);
 
     // Admit eight more, one press at a time, reading the refusal band each time.
     await tab(page, 'overview').click({ timeout: 15_000 });
@@ -466,14 +479,18 @@ test.describe('is there anything to do', () => {
     }
     await page.waitForTimeout(3000);
     const twelve = await latestRawCounts(page);
-    console.log(`[act2] TWELVE prisoners: ${JSON.stringify(twelve)}`);
-    if (oneCell !== undefined && twelve !== undefined) console.log(`[act2] DELTA one cell -> two cells\n${deltaVector(oneCell, twelve)}`);
+    console.log(`[act2] TWELVE prisoners in ONE room: ${JSON.stringify(twelve)}`);
+    if (oneCell !== undefined && twelve !== undefined) console.log(`[act2] DELTA four in one room -> twelve in one room\n${deltaVector(oneCell, twelve)}`);
 
-    // What does the screen say about the guard requirement now?
+    // What does the screen say about the guard requirement now? One guard
+    // covers `DEFAULT_SECTOR_PRISONERS_PER_GUARD` = 8 occupants
+    // (`src/simulation/security/sector-staffing.ts:147`), so twelve occupants
+    // need two and the prison is one short. This is the only pressure growth
+    // is known to generate; the measurement is whether the screen says so.
     await tab(page, 'security').click({ timeout: 15_000 });
-    console.log(`[act2] Security tab at twelve prisoners (UPPER BOUND):\n${await screen(page)}`);
+    console.log(`[act2] Security tab at twelve prisoners, ONE guard (UPPER BOUND):\n${await screen(page)}`);
     await tab(page, 'overview').click({ timeout: 15_000 });
-    console.log(`[act2] Overview at twelve prisoners (UPPER BOUND):\n${await screen(page)}`);
+    console.log(`[act2] Overview at twelve prisoners, ONE guard (UPPER BOUND):\n${await screen(page)}`);
     console.log(`[act2] ${await needsReadout(page, 'needs at twelve')}`);
 
     // One in-game day at twelve, for the income slope.
@@ -482,8 +499,63 @@ test.describe('is there anything to do', () => {
     await runToTick(page, 'act2', startTick + 2400);
     const after = await latestRawCounts(page);
     if (before !== undefined && after !== undefined) console.log(`[act2] DELTA over one day at twelve prisoners\n${deltaVector(before, after)}`);
-    console.log(`[act2] events over the whole act: ${JSON.stringify(await eventTypes(page))}`);
+    console.log(`[act2] events after a day at twelve: ${JSON.stringify(await eventTypes(page))}`);
     console.log(`[act2] the screen after a day at twelve (UPPER BOUND):\n${await screen(page)}`);
+
+    /*
+     * **Phase C: the second cell, built anyway.**
+     *
+     * 3x4 at (19,11)-(21,14), which is inside the clear rectangle act 1
+     * measured (x=11..22, y=11..21) and clear of the first cell's walls. It is
+     * not 6x6 because a second 6x6 does not fit on the default screen beside
+     * the first one -- that is act 3's yard measurement and it is reported
+     * there. `room.cell` asks for 2x3 and six tiles
+     * (`src/content/room-catalog.ts:92-97`), so 3x4 is a legal cell.
+     */
+    const second = { x0: 19, y0: 11, x1: 21, y1: 14 };
+    await tab(page, 'build').click({ timeout: 15_000 });
+    for (const [x, y] of [
+      [second.x0, second.y0],
+      [second.x1, second.y0],
+      [second.x0, second.y1],
+      [second.x1, second.y1],
+    ] as const) {
+      const point = centreOf(origin, x, y);
+      await assertCanvasAt(page, point.x, point.y, `act2 second-cell corner (${x},${y})`);
+    }
+    await buy(page, 'wall-brick', 30);
+    await buy(page, 'bed-wooden', 6);
+    await page.waitForTimeout(3000);
+    await armBuildable(page, 'wall-brick');
+    await wallRectangle(page, 'act2', origin, second);
+    await waitForQueueEmpty(page);
+    await armBuildable(page, 'bed-wooden');
+    for (const [x, y] of [
+      [19, 11],
+      [20, 11],
+      [21, 11],
+      [19, 13],
+    ] as const) {
+      const point = centreOf(origin, x, y);
+      const commands = await press(page, point.x, point.y);
+      if (commands.length === 0) console.log(`[act2] second-cell bed at (${x},${y}) produced NO command`);
+    }
+    await armBuildable(page, 'toilet-brick');
+    const toilet = centreOf(origin, 21, 13);
+    await press(page, toilet.x, toilet.y);
+    await waitForQueueEmpty(page);
+    const attempts = await designate(page, 'act2', 'room.cell', origin, second);
+    console.log(`[act2] the second cell was accepted on attempt ${attempts}`);
+    await page.waitForTimeout(3000);
+    const twoRooms = await latestRawCounts(page);
+    console.log(`[act2] TWO ROOMS: ${JSON.stringify(twoRooms)}`);
+    if (after !== undefined && twoRooms !== undefined) console.log(`[act2] DELTA one room -> two rooms\n${deltaVector(after, twoRooms)}`);
+    await tab(page, 'rooms').click({ timeout: 15_000 });
+    console.log(`[act2] the Rooms tab with two cells (UPPER BOUND):\n${await screen(page)}`);
+    await tab(page, 'overview').click({ timeout: 15_000 });
+    console.log(`[act2] the Overview with two cells (UPPER BOUND):\n${await screen(page)}`);
+    console.log(`[act2] events over the whole act: ${JSON.stringify(await eventTypes(page))}`);
+    console.log(`[act2] worker message kinds over the whole act: ${JSON.stringify(await messageKinds(page))}`);
   });
 
   test('act 3 - the two rooms a cell cannot replace', async ({ page }) => {
@@ -509,8 +581,10 @@ test.describe('is there anything to do', () => {
     console.log(`[act3] ${await screen(page)}`);
 
     // Now build the shower room: 3x3 enclosed, two shower heads
-    // (`src/content/room-catalog.ts:128-132`).
-    const shower = { x0: 8, y0: 12, x1: 10, y1: 14 };
+    // (`src/content/room-catalog.ts:128-132`). (19,15)-(21,17) is inside the
+    // clear rectangle act 1 measured -- x=11..22, y=11..21 -- and clear of the
+    // first cell's east wall at the x=18/19 boundary.
+    const shower = { x0: 19, y0: 15, x1: 21, y1: 17 };
     for (const [x, y] of [
       [shower.x0, shower.y0],
       [shower.x1, shower.y1],
@@ -554,25 +628,76 @@ test.describe('is there anything to do', () => {
     console.log(`[act3] ${await needsReadout(page, 'needs two days after the shower room')}`);
     console.log(`[act3] events over the whole act: ${JSON.stringify(await eventTypes(page))}`);
 
-    // And the yard: `room.yard` needs only `outdoors` and 8x8 tiles -- no
-    // walls, no objects, no money (`src/content/room-catalog.ts:138-141`). The
-    // measurement is whether it fits on the default screen at all.
-    const yard = { x0: 19, y0: 13, x1: 26, y1: 20 };
-    const corners: string[] = [];
+    /*
+     * And the yard. `room.yard` is the cheapest room in the game: `outdoors`
+     * and 8x8 tiles, no walls, no objects, no money at all
+     * (`src/content/room-catalog.ts:138-141`), and it is the only thing that
+     * serves `recreation` at 3 a tick with no `requiredObjectCapability`
+     * (`src/simulation/prisoners/actions.ts:165-168`).
+     *
+     * **It does not fit on the default screen beside the starter cell, and
+     * that is measured rather than assumed.** Act 1's clearance map gives the
+     * clear rectangle as x=11..22 by y=11..21 -- twelve by eleven tiles -- and
+     * the 6x6 cell at (12,12)-(17,17) sits in the middle of it, leaving no 8x8
+     * anywhere. So the yard needs the camera moved, which is `camera.right`
+     * bound to `KeyD` and `ArrowRight` (`src/input/bindings.ts:13,32`). The
+     * measurement is how many presses that costs and whether anything on
+     * screen suggests it.
+     */
+    const beforePanCorners: string[] = [];
+    for (const [x, y] of [
+      [19, 13],
+      [26, 13],
+      [19, 20],
+      [26, 20],
+    ] as const) {
+      const point = centreOf(origin, x, y);
+      beforePanCorners.push(`(${x},${y}) at screen (${Math.round(point.x)},${Math.round(point.y)}) -> ${await topmostAt(page, point.x, point.y)}`);
+    }
+    console.log(`[act3] an 8x8 yard at (19,13)-(26,20) BEFORE panning: ${JSON.stringify(beforePanCorners)}`);
+    console.log(
+      `[act3] does an 8x8 yard fit in clear canvas at 1440x900 without moving the camera? ` +
+        `${beforePanCorners.every((line) => line.includes('canvas')) ? 'YES' : 'NO'}`,
+    );
+
+    // Pan right. The canvas has to hold focus for a keybinding in the `world`
+    // context to reach the camera, so the press is preceded by a click on a
+    // point already proved to be canvas.
+    const focusPoint = centreOf(origin, 20, 19);
+    await assertCanvasAt(page, focusPoint.x, focusPoint.y, 'act3 camera-focus point');
+    await page.mouse.click(focusPoint.x, focusPoint.y);
+    let panPresses = 0;
+    for (let index = 0; index < 12; index += 1) {
+      await page.keyboard.press('ArrowRight');
+      panPresses += 1;
+      await page.waitForTimeout(120);
+    }
+    await page.waitForTimeout(1500);
+    const panned = await calibrate(page);
+    console.log(
+      `[act3] after ${panPresses} ArrowRight press(es) the world origin is (${panned.originX}, ${panned.originY}); ` +
+        `it was (${origin.originX}, ${origin.originY})`,
+    );
+    const shifted = panned.originX !== origin.originX || panned.originY !== origin.originY;
+    console.log(`[act3] did the camera move at all? ${shifted ? 'YES' : 'NO'}`);
+    console.log(`[act3] the clearance map after panning:\n${await clearanceMap(page, panned)}`);
+
+    // Where an 8x8 lands now is a function of the panned origin, so it is
+    // chosen from the panned map's clear core rather than named up front.
+    const yard = { x0: 21, y0: 11, x1: 28, y1: 18 };
+    const cornersAfter: string[] = [];
     for (const [x, y] of [
       [yard.x0, yard.y0],
       [yard.x1, yard.y0],
       [yard.x0, yard.y1],
       [yard.x1, yard.y1],
     ] as const) {
-      const point = centreOf(origin, x, y);
-      corners.push(`(${x},${y}) at screen (${Math.round(point.x)},${Math.round(point.y)}) -> ${await topmostAt(page, point.x, point.y)}`);
+      const point = centreOf(panned, x, y);
+      cornersAfter.push(`(${x},${y}) at screen (${Math.round(point.x)},${Math.round(point.y)}) -> ${await topmostAt(page, point.x, point.y)}`);
     }
-    console.log(`[act3] the 8x8 yard's four corners: ${JSON.stringify(corners)}`);
-    const allClear = corners.every((line) => line.includes('canvas'));
-    console.log(`[act3] does an 8x8 yard fit in clear canvas at 1440x900? ${allClear ? 'YES' : 'NO'}`);
-    if (allClear) {
-      const yardAttempts = await designate(page, 'act3', 'room.yard', origin, yard);
+    console.log(`[act3] the 8x8 yard's corners after panning: ${JSON.stringify(cornersAfter)}`);
+    if (cornersAfter.every((line) => line.includes('canvas'))) {
+      const yardAttempts = await designate(page, 'act3', 'room.yard', panned, yard);
       console.log(`[act3] the yard was accepted on attempt ${yardAttempts}`);
       const withYard = await latestRawCounts(page);
       if (used !== undefined && withYard !== undefined) console.log(`[act3] DELTA shower room -> shower room + yard\n${deltaVector(used, withYard)}`);
@@ -580,11 +705,15 @@ test.describe('is there anything to do', () => {
       await runToTick(page, 'act3', yardStart + 2 * 2400);
       const afterYard = await latestRawCounts(page);
       console.log(`[act3] two days after the yard opened: ${JSON.stringify(afterYard)}`);
+      if (withYard !== undefined && afterYard !== undefined) console.log(`[act3] DELTA over two days with a yard\n${deltaVector(withYard, afterYard)}`);
       console.log(`[act3] ${await needsReadout(page, 'needs two days after the yard')}`);
       await tab(page, 'overview').click({ timeout: 15_000 });
       console.log(`[act3] the screen with a cell, a shower room and a yard (UPPER BOUND):\n${await screen(page)}`);
+    } else {
+      console.log(`[act3] the yard could not be placed even after panning; the designation was not attempted`);
     }
     console.log(`[act3] events at the end: ${JSON.stringify(await eventTypes(page))}`);
+    console.log(`[act3] worker message kinds at the end: ${JSON.stringify(await messageKinds(page))}`);
   });
 
   test('act 4 - twenty in-game days at 4x, watching for a sentence to end', async ({ page }) => {
