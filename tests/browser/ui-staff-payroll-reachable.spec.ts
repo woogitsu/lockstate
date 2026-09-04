@@ -52,6 +52,19 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  * over -- *"a disclosure that reveals a control the player cannot see has not
  * revealed it."*
  *
+ * ## Why `app-shell.spec.ts` could not have caught this
+ *
+ * It presses this very fold at every one of the five viewports and then asserts
+ * every control on the page is reachable -- and it passed on unfixed `main`,
+ * with all three of these controls outside the panel's fold. The reason is in
+ * `controlReachability`: before it hit-tests a control it calls
+ * `control.scrollIntoView({ block: 'nearest', inline: 'nearest' })` itself. That
+ * is the right thing for the question that sweep asks -- *is anything covering
+ * this control?* -- and it is precisely the gesture a player has to make by hand
+ * and has no reason to know is needed. So that sweep certifies the control is
+ * not occluded once you are looking at it, and this file is what asks whether
+ * you are looking at it.
+ *
  * ## Why a browser, and why five viewports
  *
  * `vitest.config.ts` is `environment: 'node'`, so `createStaffPanel` is not
