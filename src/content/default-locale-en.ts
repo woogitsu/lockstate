@@ -221,9 +221,27 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * "Materials" rather than "anything": a payday can still spend to -2,500,
    * so a sentence saying *nothing* can be bought would be false about the
    * prison even while it is true about every press the player can make. And
-   * *"until the state pays what it owes"* is the tail the three refusal
-   * sentences share, so the chip and the alert read as one rule rather than
+   * *"until the prison earns the money"* is the tail every sibling refusal
+   * sentence shares, so the chip and the alert read as one rule rather than
    * two.
+   *
+   * **The tail used to read *"until the state pays what it owes"* and that
+   * was measured false, which is why it is gone from all eight sentences that
+   * carried it** (`docs/research/2026-09-04-can-this-prison-fail.md` finding
+   * 1, issue #913). The state does not carry a debt to the prison: income is
+   * `StateIncomeSystem`, which credits
+   * `stateIncomeForCompletedDay(source)` at the last tick of each in-game day
+   * and returns before crediting anything when that sum is zero
+   * (`src/simulation/economy/income.ts`). The sum folds over
+   * `RoomInstanceRegistry.residentIdsWithExistingPlace()` -- prisoners holding
+   * a unit of residency capacity that currently exists -- so a prison with no
+   * furnished bed accrues nothing, is owed nothing, and waits for a payment
+   * that is not coming. Measured: `stateIncomeAccruedTodayMinorUnits` was `0`
+   * at all 29 samples of a floored prison holding nobody.
+   *
+   * So the tail now names the only thing that actually lifts the balance --
+   * the prison earning -- and this chip's second sentence says how earning
+   * works, because the tooltip is where there is room to say it.
    *
    * **This paragraph also named the build queue as spending past this rung,
    * to -2,000, and that stopped being true on 2026-09-01.** The owner's
@@ -234,7 +252,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * right word instead of "anything".
    */
   'hud.status.funds-before-deliveries-stop':
-    '{remaining} left before deliveries stop — past that, no materials can be ordered until the state pays what it owes.',
+    '{remaining} left before deliveries stop — past that, no materials can be ordered until the prison earns the money. The state pays at the end of each day, for prisoners who have a bed.',
   /*
    * The same sentence once the remainder is nothing, in the tense that is then
    * true. `overdraftTone` paints the chip red at exactly this point and
@@ -246,9 +264,14 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * `ProcurementSystem` does not cancel it. The second clause is what makes
    * that unambiguous, and it is the same clause the warning above and the
    * refusal alert below carry.
+   *
+   * Same tail and same closing sentence as the warning above, for the reason
+   * given there: the state holds no debt to the prison, so what lifts this is
+   * the prison earning, and this is one of the two places with room to say
+   * what earning takes.
    */
   'hud.status.funds-deliveries-stopped':
-    'Deliveries have stopped — no materials can be ordered until the state pays what it owes.',
+    'Deliveries have stopped — no materials can be ordered until the prison earns the money. The state pays at the end of each day, for prisoners who have a bed.',
   /*
    * The chip's tooltip at the treasury floor itself -- `critical`, the ruling
    * on issue #768's third tone, one step past everything the sentence above
@@ -258,19 +281,56 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * nothing else**: that no further spending of *any* kind is possible right
    * now (not deliveries alone -- the sentence above already says that -- but
    * construction, hiring and even the wage payment the deliveries rung still
-   * lets through), and what lifts it. "Until the state pays what it owes" is
-   * kept as the tail rather than invented fresh, because it is the true
-   * mechanism (the per-prisoner-day grant, `src/simulation/economy/income.ts`)
-   * and it is what every sibling refusal sentence already says; a different
-   * tail here would read as a different escape hatch where there is only one.
+   * lets through), and what lifts it.
    *
-   * **This copy is owner-pending** (`AGENTS.md`'s fourth exclusion: a
-   * player-facing promise is not an agent's to finalise). Written to be the
-   * clearest available sentence rather than a placeholder, not to be the
-   * owner's last word on it.
+   * **This sentence was measured to be false and is rewritten, which is the
+   * one change here that was not a matter of taste** (issue #913,
+   * `docs/research/2026-09-04-can-this-prison-fail.md` finding 1). It read
+   * *"The treasury is exhausted -- nothing can be spent at all until the state
+   * pays what it owes."* Sixty guards hired on day 1 pins a prison at this
+   * floor by day 4, and it was held there across twelve samples and four
+   * paydays with `stateIncomeAccruedTodayMinorUnits: 0` at all 29 readings.
+   * The state owed that prison nothing, and the sentence named waiting as the
+   * way out when waiting is the one thing that cannot work.
+   *
+   * **What the three clauses now claim, and where each is true.**
+   *  - *"at its floor -- nothing can be spent at all"*: this key is chosen on
+   *    `atTreasuryFloor` (`src/ui/hud/projection.ts`), and at
+   *    `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` every rung of
+   *    `INSOLVENCY_RUNG_FLOORS_MINOR_UNITS` refuses -- including `'wages'`,
+   *    the deepest, so even the payday that spends past the deliveries rung
+   *    pays nothing here (`src/simulation/economy/treasury.ts`).
+   *  - *"until the prison earns the money"*: `StateIncomeSystem.update` is the
+   *    prison's only positive inflow, in its own comment's words, and a
+   *    refund of a cancelled delivery is the prison's own money coming back
+   *    rather than income (`src/simulation/economy/income.ts`). `LoanBook`
+   *    exists and is not wired -- nothing in `src/` passes `loanTerms` -- so
+   *    there is no borrowing to name either.
+   *  - *"at the end of each day and only for prisoners who have a bed"*: the
+   *    day is paid on its last tick (`schedule.phaseTicks = DAY_LENGTH_TICKS
+   *    - 1`), and `stateIncomeForOccupiedPlaces` folds over
+   *    `residentIdsWithExistingPlace()`, which is a prisoner holding a unit of
+   *    residency capacity **that currently exists**. Residency capacity comes
+   *    only from an object declaring `'sleep-surface'` -- `object.bed` and
+   *    `object.medical-bed` (`src/simulation/objects/room-capacity.ts`) -- so
+   *    "has a bed" is the rule and not a paraphrase of it: an arrival still in
+   *    intake, a resident whose bed was taken away, and the second of two
+   *    residents over one bed are each unpaid.
+   *  - *"a prison housing nobody earns nothing"*: `update` returns without
+   *    crediting when the fold is zero, which is the state act A measured for
+   *    ten days with twenty-four prisoners in intake.
+   *
+   * No amount is quoted, deliberately: what a place pays is
+   * `stateIncomeForPrisonerDay`, which withholds per unmet need, and a figure
+   * in this sentence would go stale the day
+   * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` moves off zero.
+   *
+   * Authored by an agent under the owner's release of 2026-09-04
+   * (*"Sam decyduj zawsze, jak zacznę grać to ujednolicimy"*), so the voice is
+   * open to a unifying pass; the facts above are not.
    */
   'hud.status.funds-treasury-floor-exhausted':
-    'The treasury is exhausted — nothing can be spent at all until the state pays what it owes.',
+    'The treasury is at its floor — nothing can be spent at all until the prison earns the money. The state pays at the end of each day and only for prisoners who have a bed, so a prison housing nobody earns nothing.',
   // What this in-game day has earned so far (#29). The state pays per
   // prisoner-day at the end of the day, so this is the day's accrual and the
   // wording says so: "Earned today", never "Income" -- there is no rate, no
@@ -539,8 +599,8 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * construction tick, so the wall the player drew is still theirs and a
    * sentence saying it failed would be false.
    *
-   * **Why it shares the other four's tail.** *"Until the state pays what it
-   * owes"* is the same clause `hud.alert.refusal.purchase.insufficient-funds`
+   * **Why it shares the other four's tail.** *"Until the prison earns the
+   * money"* is the same clause `hud.alert.refusal.purchase.insufficient-funds`
    * and `hud.alert.refusal.hire.insufficient-funds` carry, so the three rungs
    * read as one ladder with three things stopping on it rather than as three
    * unrelated rules that happen to be about money. And no number: the rung is
@@ -564,7 +624,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * because the two now fire together.
    */
   'hud.alert.refusal.construction.materials-unfunded':
-    'The build queue is stalled — no more materials until the state pays what it owes.',
+    'The build queue is stalled — no more materials until the prison earns the money.',
   // `hire.insufficient-funds` describes the same condition as
   // `purchase.insufficient-funds` below and gets its own sentence, for the
   // reason the `zone.*` pair further down does: the treasury refuses a hire
@@ -626,7 +686,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // lists all four keys as owed a sentence per rung."*
   //
   // **The owner ruled on 2026-09-01 and the four keys now name what stops
-  // rather than the number they stop at.** The shape chosen is *"deliveries
+  // rather than the number they stop at.** The shape chosen was *"deliveries
   // are refused until the state pays what it owes"* over *"the state will not
   // pay past -1,250"*, and it is the shape rather than the digits that is
   // load-bearing: a sentence spelling out -1,250 would be a second copy of
@@ -649,7 +709,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   //
   // The rung-2 sentence that pairs with these -- a build queue stalled -- is
   // `hud.alert.refusal.construction.materials-unfunded` above, and it
-  // deliberately shares this one's *"until the state pays what it owes"*
+  // deliberately shares this one's *"until the prison earns the money"*
   // tail so the ladder reads as one thing rather than unrelated rules. It
   // stalled at -2,000 under ruling 19; the owner's ruling on #771
   // (2026-09-01, ADR 0017's equalisation amendment) moved it to the same
@@ -657,7 +717,24 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // naming what stops rather than the number was the right call two
   // paragraphs up -- this sentence needed no edit when the number under it
   // moved.
-  'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — hiring is refused until the state pays what it owes.',
+  //
+  // **The tail moved on 2026-09-04, and the ruling above is what says it
+  // could.** Ruling 19's requirement is *name what stops, not the number it
+  // stops at*, and the words that carried it -- *"until the state pays what
+  // it owes"* -- were measured false: the state holds no debt to a prison
+  // that is not earning, because `StateIncomeSystem` credits nothing at all
+  // when `stateIncomeForCompletedDay` is zero, and that sum is a fold over
+  // prisoners holding a furnished bed
+  // (`src/simulation/economy/income.ts`; issue #913 and
+  // `docs/research/2026-09-04-can-this-prison-fail.md` finding 1, where a
+  // floored prison read `stateIncomeAccruedTodayMinorUnits: 0` at all 29
+  // samples). *"Until the prison earns the money"* names the same stop with
+  // no number in it and is true whether or not anybody is housed; the two
+  // chip tooltips at `hud.status.funds-*` above are where there is room to
+  // say what earning takes. Authored by an agent under the owner's release of
+  // 2026-09-04 (*"Wybierz sam a potem się ujednolici sposób pisania"*), so
+  // the wording is open to a unifying pass and the fact it rests on is not.
+  'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — hiring is refused until the prison earns the money.',
   // ADR 0053: the only work a staff member can be sent to do today is a
   // security duty, so a role outside the security department is a wage with
   // nothing behind it. The sentence names the rule rather than the department
@@ -699,7 +776,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // refusal to `unprocurable` instead, *"because the prison is not short of
   // money for them and telling the player it is would be a sentence that is
   // false"* -- so the tail of this sentence is true on both routes.
-  'hud.alert.refusal.purchase.insufficient-funds': 'Nothing was bought — deliveries are refused until the state pays what it owes.',
+  'hud.alert.refusal.purchase.insufficient-funds': 'Nothing was bought — deliveries are refused until the prison earns the money.',
   'hud.alert.refusal.purchase.invalid-quantity': 'The materials were not ordered — that quantity cannot be bought.',
   'hud.alert.refusal.purchase.unknown-material': 'The materials were not ordered — that material is not for sale.',
   /*
@@ -1723,8 +1800,8 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // słowa co host"* -- which is where the whole argument for the new wording
   // is written. `tests/unit/ui-simulation-alerts.test.ts` pins both the
   // equality and the words.
-  'hud.refusal.purchase-materials-past-floor': 'Nothing was bought — deliveries are refused until the state pays what it owes.',
-  'hud.refusal.hire-staff-past-floor': 'Nobody was hired — hiring is refused until the state pays what it owes.',
+  'hud.refusal.purchase-materials-past-floor': 'Nothing was bought — deliveries are refused until the prison earns the money.',
+  'hud.refusal.hire-staff-past-floor': 'Nobody was hired — hiring is refused until the prison earns the money.',
   'hud.refusal.undo': 'Nothing was undone — the request was refused.',
   'hud.refusal.redo': 'Nothing was redone — the request was refused.',
   'hud.refusal.zone-room': 'The room was not designated — the request was refused.',

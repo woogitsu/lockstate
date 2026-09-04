@@ -566,7 +566,7 @@ function atTreasuryFloor(counts: HudCountsViewModel): boolean {
  * #771 (2026-09-01, ADR 0017's equalisation amendment) moved the construction
  * rung onto the same -1,250 this tone already keys off.** `danger` now means
  * exactly what it reads as: no discretionary spend of any kind, player-pressed
- * or scheduled, moves the balance again until the state pays what it owes.
+ * or scheduled, moves the balance again until the prison earns the money.
  * Only the payday exception survives, and it is named above rather than
  * implied. **And it does not mean "the deepest a prison can go" either** --
  * that is `critical` now, the ruling on issue #768's own boundary.

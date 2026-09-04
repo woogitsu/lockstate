@@ -334,7 +334,7 @@ export interface HudCountsViewModel {
    * both strings**, so neither is empty any more. The chip takes a tone and a
    * `{remaining} left` badge whenever the balance is negative (`overdraftTone`
    * and `overdraftBadge` in `./projection.ts`), and a charge the rung cannot
-   * carry reads *"deliveries are refused until the state pays what it owes"*
+   * carry reads *"deliveries are refused until the prison earns the money"*
    * rather than the generic refusal
    * (`hud.refusal.purchase-materials-past-floor`).
    *

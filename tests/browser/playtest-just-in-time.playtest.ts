@@ -555,7 +555,7 @@ test('act 3: how much wall 25,000 buys, and what the game says when it runs out'
    * kept, so this instrument still reads a branch or a log from before either
    * ruling instead of reporting that the band never named money.
    */
-  const FUNDS_SENTENCE = /not enough funds|past what the state will carry|until the state pays what it owes/i;
+  const FUNDS_SENTENCE = /not enough funds|past what the state will carry|until the state pays what it owes|until the prison earns the money/i;
   let ordered = 0;
   let fundsRefusalAtSegment = -1;
   let fundsRefusalText = '';

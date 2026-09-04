@@ -125,7 +125,7 @@ const newLines = (baseline: ReadonlySet<string>, visibleText: string): readonly 
  * `hud.alert.refusal.construction.materials-unfunded`. Both are covered by the
  * shared tail. Every wording is kept; none is replaced.
  */
-const FUNDS_SENTENCE = /not enough funds|past what the state will carry|until the state pays what it owes/i;
+const FUNDS_SENTENCE = /not enough funds|past what the state will carry|until the state pays what it owes|until the prison earns the money/i;
 
 interface HudDump {
   readonly visibleText: string;

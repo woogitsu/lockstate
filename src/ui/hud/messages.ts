@@ -178,14 +178,20 @@ export const HUD_MESSAGE_KEY = {
    * `counts.treasuryOverdraftFloorMinorUnits`), not a new judgement -- see
    * `overdraftDescription`.
    *
-   * **The words are player-facing copy and are owner-pending**
-   * (`AGENTS.md`'s fourth exclusion): written to be the clearest available
-   * sentence rather than a placeholder, but subject to the owner's revision.
-   * It says two things `fundsDeliveriesStopped` does not: that the *overdraft
-   * itself*, not only deliveries, is exhausted, and that nothing at all --
-   * not construction, not hiring, not even the wage payment the ladder's
-   * other two rungs still let through -- can spend from this balance until
-   * the state pays what it owes.
+   * **The words are player-facing copy, authored by an agent under the
+   * owner's release of 2026-09-04** (*"Sam decyduj zawsze, jak zaczne grac to
+   * ujednolicimy"* -- decide yourself, and the style is unified later), so the
+   * voice is open to a unifying pass. It says two things
+   * `fundsDeliveriesStopped` does not: that the *overdraft itself*, not only
+   * deliveries, is spent, and that nothing at all -- not construction, not
+   * hiring, not even the wage payment the ladder's other two rungs still let
+   * through -- can spend from this balance until the prison earns the money.
+   *
+   * **It also no longer says the state owes this prison anything, which is
+   * the defect it was rewritten for** (issue #913): a prison holding nobody
+   * accrues nothing, so the old tail described a wait that could not end.
+   * `src/content/default-locale-en.ts` carries the clause-by-clause proof at
+   * the key itself.
    */
   fundsTreasuryFloorExhausted: 'hud.status.funds-treasury-floor-exhausted',
   /**
