@@ -996,8 +996,17 @@ test.describe('the misplay, part two', () => {
     );
 
     // --- 6b. a wall drawn straight across the zoned yard ---
-    const acrossA = { x: origin.originX + 8 * TILE + TILE / 2, y: origin.originY + 16 * TILE };
-    const acrossB = { x: origin.originX + 13 * TILE + TILE / 2, y: origin.originY + 16 * TILE };
+    /*
+     * Row **13**'s north edge, tiles 10..13, and the row number is a
+     * measurement rather than a choice. At 1440x900 the world points for row
+     * 16 on the left of the map — (240,450) and (368,450) — both answer
+     * `nothing` to `elementFromPoint`: the HUD's left rail reaches them, so a
+     * press there submits no command at all and reads exactly like the game
+     * ignoring the player. `assertCanvasAt` caught both, twice, which is the
+     * whole reason it is in front of every world press in this file.
+     */
+    const acrossA = { x: origin.originX + 10 * TILE + TILE / 2, y: origin.originY + 13 * TILE };
+    const acrossB = { x: origin.originX + 13 * TILE + TILE / 2, y: origin.originY + 13 * TILE };
     await assertCanvasAt(page, acrossA.x, acrossA.y, `${L} across a`);
     await assertCanvasAt(page, acrossB.x, acrossB.y, `${L} across b`);
     const beforeAcross = await funds(page);
@@ -1028,60 +1037,122 @@ test.describe('the misplay, part two', () => {
     console.log(`[${L}] 6b after cancelling those back: worker=${(await funds(page)).worker}`);
 
     /*
-     * --- 6c. the same six-segment mistake, with the clock at 4x ---
+     * --- 6c and 6d. the same six-segment mistake, with the clock running ---
      *
      * The row is read, then pressed, with nothing in between, and the two are
-     * compared. `2026-09-03-what-cancel-actually-gives-back.md` established
-     * that a running clock puts 36-55 ticks of lead between the two; this is
-     * the same thing asked as "did the button pay what it promised".
+     * compared against each other, against the wire, and against the sentence
+     * the game puts up. The `what-cancel-actually-gives-back` record of
+     * 2026-09-03 established that a running clock puts 36-55 ticks of lead
+     * between the pricing and the press; this asks the player's version of
+     * that question — **did the button pay what it promised, and did the
+     * sentence tell the truth?**
+     *
+     * **Run at both speeds, and the two speeds are not the same experiment.**
+     * At 1x a player gets several presses in before the crew finishes the run;
+     * at 4x the run is built underneath them. Two arms, so a reader can see
+     * which figures belong to which.
      */
-    await page.locator('.hud-strip__transport button').nth(2).click();
-    await page.waitForTimeout(200);
-    await page.locator('.hud-strip__transport button').nth(2).click();
-    await page.waitForTimeout(300);
-    console.log(`[${L}] 6c clock: ${JSON.stringify(await currentClock(page))}`);
-
+    const runningArm = async (arm: string, speedPresses: number, row: number): Promise<void> => {
     await armBuild(page, 'wall-brick');
-    const runA = { x: origin.originX + 20 * TILE + TILE / 2, y: origin.originY + 20 * TILE };
-    const runB = { x: origin.originX + 25 * TILE + TILE / 2, y: origin.originY + 20 * TILE };
-    await assertCanvasAt(page, runA.x, runA.y, `${L} running run a`);
-    await assertCanvasAt(page, runB.x, runB.y, `${L} running run b`);
+    // Tiles 15..20 on the given row's north edge. Tile 25 on row 20 is
+    // x=1328, which the HUD's right-hand rail covers at 1440x900 —
+    // `assertCanvasAt` caught it — and (1008,706) is the rightmost point
+    // measured clear on that row.
+    const runA = { x: origin.originX + 15 * TILE + TILE / 2, y: origin.originY + row * TILE };
+    const runB = { x: origin.originX + 20 * TILE + TILE / 2, y: origin.originY + row * TILE };
+    await assertCanvasAt(page, runA.x, runA.y, `${L} ${arm} run a`);
+    await assertCanvasAt(page, runB.x, runB.y, `${L} ${arm} run b`);
     const beforeRun = await funds(page);
     mark = (await sentCommands(page)).length;
     await drag(page, runA, runB);
     const run = (await sentCommands(page)).slice(mark);
     const afterRun = await funds(page);
-    console.log(`[${L}] 6c the wrong run at 4x: ${run.length} order(s), worker ${beforeRun.worker} -> ${afterRun.worker}`);
+    console.log(`[${L}] ${arm} the wrong run: ${run.length} order(s), worker ${beforeRun.worker} -> ${afterRun.worker}`);
 
     await openQueue(page);
     let honoured = 0;
     let presses = 0;
-    for (let index = 0; index < 6; index += 1) {
+    let vanished = 0;
+    let aimedElsewhere = 0;
+    for (let index = 0; index < speedPresses; index += 1) {
       const live = await queueRows(page);
-      const row = live.find((candidate) => candidate.pressable && candidate.order !== '(no data-order)');
+      const which = live.findIndex((candidate) => candidate.pressable && candidate.order !== '(no data-order)');
+      const row = live[which];
       if (row === undefined) break;
       const promised = /·\s*([\d,]+)\s*back/.exec(row.text);
       const promisedMinorUnits = promised === null ? -1 : Number(promised[1]?.replace(/,/g, '') ?? '-1');
       const fundsBefore = await funds(page);
-      await page.locator(`.hud-build__queue-row[data-order="${row.order}"] button`).last().click();
+      const wireBefore = (await sentCommands(page)).length;
+      /*
+       * Pressed by **position**, with a short timeout, because addressing the
+       * row by the `data-order` it had a moment ago does not work while the
+       * clock runs: the pool is re-pointed on every publication, so the
+       * attribute selector stops resolving and a 60s stall is the result.
+       * That stall is itself the measurement — `vanished` counts it — and it
+       * is the same churn `2026-09-03-what-cancel-actually-gives-back.md` §4.1
+       * recorded from the other side ("a pooled queue row can submit a
+       * `CancelBuildOrder` for a different order than its label described").
+       */
+      try {
+        await page
+          .locator('.hud-build__queue-row')
+          .nth(which)
+          .locator('button')
+          .last()
+          .click({ timeout: 4_000 });
+      } catch {
+        vanished += 1;
+        console.log(`[${L}] ${arm} press ${presses + 1}: the control read as ${JSON.stringify(row.text)} was gone before it could be pressed`);
+        continue;
+      }
       await page.waitForTimeout(700);
+      const submitted = (await sentCommands(page))
+        .slice(wireBefore)
+        .filter((command) => command['type'] === 'CancelBuildOrder');
+      const namedOnTheWire = submitted[0]?.['orderId'];
       const fundsAfter = await funds(page);
       const paid = fundsAfter.worker - fundsBefore.worker;
       presses += 1;
       if (paid === promisedMinorUnits) honoured += 1;
+      if (namedOnTheWire !== undefined && namedOnTheWire !== row.order) aimedElsewhere += 1;
       console.log(
-        `[${L}] 6c press ${presses}: row promised ${promisedMinorUnits}, paid ${paid}` +
+        `[${L}] ${arm} press ${presses}: row promised ${promisedMinorUnits}, paid ${paid}` +
           ` — ${paid === promisedMinorUnits ? 'HONOURED' : 'DID NOT MATCH'}` +
+          ` | the wire named ${namedOnTheWire === row.order ? 'the order the row described' : `a DIFFERENT order (${String(namedOnTheWire).slice(0, 14)}… vs ${row.order.slice(0, 14)}…)`}` +
           ` | tick ${await currentTick(page)} | row was ${JSON.stringify(row.text)}` +
           ` | ${JSON.stringify((await say(page)).event)}`,
       );
     }
+    console.log(`[${L}] ${arm} ${vanished} press(es) found the control gone; ${aimedElsewhere} named a different order than the row described`);
     const end = await funds(page);
+    /*
+     * **The net figure is reported and is deliberately NOT a recovery
+     * measure.** While the clock runs the just-in-time pass buys materials for
+     * the orders that are still going, so the treasury moves for reasons that
+     * are not this player's cancellations. Only the per-press deltas above are
+     * clean, because each was read across a 700 ms window in which no purchase
+     * happened (every one of them was exactly the advertised figure).
+     */
     console.log(
-      `[${L}] 6c ${honoured} of ${presses} press(es) paid what their row said` +
-        ` | spent ${beforeRun.worker - afterRun.worker}, recovered ${end.worker - afterRun.worker}` +
-        ` | net loss ${beforeRun.worker - end.worker}`,
+      `[${L}] ${arm} ${honoured} of ${presses} press(es) paid what their row said` +
+        ` | treasury across the whole arm ${beforeRun.worker} -> ${end.worker}` +
+        ` (NOT a recovery figure: just-in-time purchases move it too)`,
     );
-    console.log(`[${L}] 6c queue at the end: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+    console.log(`[${L}] ${arm} queue at the end: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+    };
+
+    // 6c: 1x, where a player gets several presses in.
+    await page.locator('.hud-strip__transport button').nth(1).click();
+    await page.waitForTimeout(300);
+    console.log(`[${L}] 6c clock: ${JSON.stringify(await currentClock(page))}`);
+    await runningArm('6c 1x', 6, 20);
+
+    // 6d: 4x, where the crew finishes the run underneath the player.
+    await page.locator('.hud-strip__transport button').nth(2).click();
+    await page.waitForTimeout(200);
+    await page.locator('.hud-strip__transport button').nth(2).click();
+    await page.waitForTimeout(300);
+    console.log(`[${L}] 6d clock: ${JSON.stringify(await currentClock(page))}`);
+    await runningArm('6d 4x', 6, 21);
   });
 });
