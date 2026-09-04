@@ -362,9 +362,98 @@ the Rooms hint, which is the panel where a canteen is drawn (§5).
 player; they simply cannot complete one gesture, and the failure mode of trying
 is a rectangle that ends where the HUD begins.
 
-### 7. A finished wall is still permanent on this device (#928), and the mistake act says what the touch routes actually do
+### 0. The whole game does come out, at portrait, with nothing but fingers
 
-*(act 6, see the numbers section below)*
+Recorded first among the numbers because it is the answer to the question as
+asked. **MEASURED**, act 5, one uninterrupted touch run at 768×1024:
+
+```
+[portrait 768x1024] the largest square cell a finger can draw in one camera position … 6x6 at {"x0":10,"y0":10}
+[portrait 768x1024] wall run north: 6 command(s)   south: 6   west: 6   east: 6
+[portrait 768x1024] queue after the four runs: "QUEUED\n11 waiting · 1 being built"
+[portrait 768x1024] the Build panel says the queue is empty … tick 2815
+[portrait 768x1024] designate attempt 1: rooms=1 | panel said ["OPEN ON AT LEAST ONE SIDE","MUST BE ENCLOSED"]
+[portrait 768x1024] bed at (11,11): 1 command(s)   (12,11): 1   (13,11): 1
+[portrait 768x1024] after building: rooms=1 accommodationCapacity=3
+[portrait 768x1024] after one Hire tap: staff=1
+[portrait 768x1024] after one Admit tap: prisoners=1 roomOccupants=1
+[portrait 768x1024] status strip: … 1 PRISONERS … 1 STAFF … 1 COVERAGE Covered … 1 ROOMS … 22,260 FUNDS | 161 EARNED TODAY | DAY 3 …
+```
+
+New prison, materials bought, clock started, a 6×6 cell walled in four
+finger drags, the rectangle **accepted on the first designation attempt**,
+three beds placed, a guard hired and a prisoner admitted **into a bed**
+(`roomOccupants=1`, not merely `prisoners=1`) and earning — all of it with
+`page.touchscreen` and `Input.dispatchTouchEvent` and nothing else. Two finger
+drags on a catalogue were needed along the way (§1); nothing was blocked.
+
+That is boundary 10 kept, at one of the two orientations, and it is the
+strongest single result of this round.
+
+### 7. Getting out of a mistake: #928 reproduced with a finger, and the only visible way-back control on the Build tab is one that cannot do it
+
+**#928 already owns the headline** — a finished wall comes down only with
+`KeyZ`. Its evidence was six *mouse* presses. **MEASURED here with a finger**,
+act 6, at 1024×768, after a four-segment wall run was placed and built:
+
+```
+[mistake] the mistaken wall run: 4 × PlaceBuildOrder wall-brick x=15..18 y=13 edge=north
+[mistake] the Remove control reads "Stop removing"
+[mistake] Remove tapped exactly on the wall edge:            [{"type":"RemoveObject","x":15,"y":13}]
+[mistake] Remove tapped on the tile the wall belongs to:     [{"type":"RemoveObject","x":15,"y":13}]
+[mistake] refusal band: "Nothing was removed — there is no object on that tile, and none being built there."
+[mistake] re-arming and re-tapping the same edge: [{"type":"PlaceBuildOrder", … x=15,y=13,edge:"north"}]
+[mistake] refusal band after re-tapping the edge: "The build order failed — that order already exists."
+```
+
+So the touch route submits a real command and is answered with a sentence
+saying **there is nothing there**, on a tile a wall is standing on. The second
+probe is weaker than it looks and is reported as such: *"that order already
+exists"* establishes that the order at that edge persists, which is consistent
+with a standing wall but is not the same statement.
+
+**VERIFIED, read.** `src/simulation/objects/object-placement-service.ts:582-620`
+— `remove` looks at `this.placedObjects.objectAt(tile)` and then at
+`this.orderBuildingObjectAt(tile)`, and refuses `'nothing-to-remove'`
+otherwise. **No wall edge appears anywhere in it.** That is #928's protocol
+sweep confirmed from the other end.
+
+**And the whole vocabulary of getting back is invisible here.** Act 6's last
+reading is every control on screen whose words suggest undoing something, at
+1024×768 on the Build tab with one order queued:
+
+```
+[{"text":"Delete","className":"save-panel__button","visible":true},
+ {"text":"Remove","className":"ui-action","visible":true},
+ {"text":"Cancel","label":"Cancel: 2 × Wood Plank · 130 back","visible":false},
+ {"text":"Cancel","label":"Cancel: 20 × Brick · 800 back","visible":false},
+ {"text":"Cancel","visible":false}, {"text":"Cancel","visible":false},
+ {"text":"Cancel","visible":false}, {"text":"Cancel","visible":false},
+ {"text":"Remove rooms","visible":false}]
+```
+
+**Two visible, seven not.** The two are `Remove` — which the lines above show
+cannot take a wall down — and the save panel's `Delete`, which deletes the
+whole prison. Six `Cancel` controls exist and none of them is laid out.
+
+**Why they are not laid out, exactly, and it is milder than it looks.** The
+queue block arrives **folded**: `.hud-build__queue` reads *"not laid out"* while
+`data-queued` is `"1"` and the queued section's own header is a live 246×44 tap
+target at `(757, 695.9)` reading `Queued1 waiting · 1 being built`. And that
+fold is deliberate — `src/ui/hud/build-panel.ts:2010` says *"`queueSection`
+opens collapsed, on purpose and with a measurement behind it"*, with #625 cited
+as the record of what putting a *requirement* inside it once cost. So the
+cancel of a **pending** order is one tap on a reachable header away. It is the
+cancel of a **finished** one that does not exist, which is #928.
+
+**The one thing that does work, and nothing says it does.** A second finger
+arriving mid-run abandons the run: `[mistake] a second finger mid-run produced:
+[]` — zero commands from a six-step wall drag that was interrupted. That is
+`src/rendering/scene/world-scene.ts:558-563`'s claim, executed with fingers at
+a tablet viewport (#517 measured it at 375×812). It is the touch analogue of
+`Escape`, which `src/input/bindings.ts:36` binds to the keyboard and nothing
+else — and **the on-screen sentence describes two fingers as the way to move
+the camera, never as the way to cancel** (§5).
 
 ### 8. What works, and it is most of the gesture layer
 
