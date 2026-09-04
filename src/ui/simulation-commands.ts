@@ -90,14 +90,24 @@ export interface SimulationCommandSenderOptions {
  * with the comment *"1 second at the kernel's 20 Hz"*, and that sentence was
  * true at ×1 and false at every other speed: the worker converts `elapsed *
  * speed` into whole steps of `TICK_MILLISECONDS`, so twenty ticks of *kernel*
- * time is 500 ms of real time at ×2 and **250 ms at ×4**. A main-thread stall
- * longer than that margin -- a long task, a heavy snapshot arriving on this
- * thread, anything that puts real time between the tick a message reports and
- * the moment this class reads it -- then made the next command `past-tick`,
- * and one refusal used to disable the whole control surface until the next
- * snapshot (see `observe`'s `command-result` branch). Measured live at 4×:
- * twenty-five `Admit` presses produced seventeen prisoners, and eight `Hire
- * Guard` presses produced three guards.
+ * time is 500 ms of real time at ×2 and **250 ms at ×4**.
+ *
+ * **What has to fit inside it is the interval between a tick report being
+ * produced and being read**, and that is narrower than it sounds: a main
+ * thread that is merely *busy* and then presses is fine, because
+ * `projectFromClock` carries its anchor forward by however long ago it read
+ * it. What the margin covers is the work that happens between a message
+ * arriving and this class reading it -- the deserialisation of a session
+ * bundle, and every listener registered ahead of this one, which in
+ * `src/main.ts` means the whole render feed. Longer than the margin, and the
+ * command is refused as `past-tick`; before #942 that refusal also disabled
+ * the whole control surface until the next snapshot (see `observeRejection`).
+ * Measured live at ×4: twenty-five `Admit` presses produced seventeen
+ * prisoners, and eight `Hire Guard` presses produced three guards. Measured
+ * in the assembled page at ×4 with a report read 400 ms late: *"Cannot
+ * schedule command in the past: tick 905 < current 923"*, and nothing on
+ * screen or in the console saying so
+ * (`tests/browser/command-lead-at-speed.spec.ts`).
  *
  * So the margin is scaled by speed in `projectFromClock` and the comment is
  * true again at every speed. What it costs a player is unchanged in the units
