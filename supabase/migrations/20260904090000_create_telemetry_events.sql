@@ -311,12 +311,23 @@ create table if not exists public.telemetry_events (
   --
   -- THE BOUND. 12 KiB, which is `MAX_ENVELOPE_BYTES` -- the byte budget the
   -- Worker allots one whole envelope -- so this column cannot hold more than
-  -- the endpoint admits for the entire record it belongs to. The worst case
-  -- the shared schema can actually produce is 8,017 bytes (24 entries of a
-  -- 128-character key and a 200-character value, plus 23 commas and 2 braces),
-  -- so nothing the TypeScript contract can build is refused. That direction is
-  -- the convention 20260824101000 states: "Every bound below is chosen so that
-  -- SQL refuses nothing the TypeScript contract can produce."
+  -- the endpoint admits for the entire record it belongs to.
+  --
+  -- The worst case the shared schema can actually produce is **8,064 bytes as
+  -- this constraint measures it**, and that number is measured rather than
+  -- derived: 24 entries of a 128-character key and a 200-character value
+  -- serialise to 8,017 bytes on the wire, and `jsonb::text` re-renders them
+  -- with a space after every colon and comma, which is the 47 bytes of
+  -- difference. Suite 012 builds that worst case from
+  -- `MAX_TELEMETRY_ATTRIBUTES` and `MAX_TELEMETRY_STRING_LENGTH`, asserts it is
+  -- accepted, and asserts the 8,064 -- so raising a cap in `events.ts` without
+  -- raising this one fails a test rather than silently refusing legitimate
+  -- crash reports, which is the same guard
+  -- `tests/unit/worker-telemetry-ingest.test.ts` holds over
+  -- `MAX_ENVELOPE_BYTES`. 12,288 sits 1.5x above it, so nothing the TypeScript
+  -- contract can build is refused -- the direction 20260824101000 states as the
+  -- convention: "Every bound below is chosen so that SQL refuses nothing the
+  -- TypeScript contract can produce."
   --
   -- `octet_length(attributes::text)` is the same measure
   -- `user_settings_payload_bytes_check` uses, and is legal in a CHECK because
