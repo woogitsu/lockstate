@@ -419,6 +419,36 @@ test('act 1: what a tablet shows on arrival, landscape and portrait', async ({ p
 
     reportReach(label, await measureReach(page));
 
+    /*
+     * Everything on screen whose text lives in a `title` tooltip.
+     *
+     * A tooltip opens on hover, and a touchscreen has no hover -- so whatever
+     * is in one is text a tablet player can never read. What matters is the
+     * *difference*: a `title` repeating a label that is already painted costs
+     * nothing, and a `title` carrying a sentence that appears nowhere else is
+     * information the game keeps from this player. `.ui-sr-only` is stripped
+     * before the comparison because it is `clip-path: inset(50%)`
+     * (`src/ui/primitives/primitives.css:73`) -- present to `innerText`,
+     * invisible on the glass.
+     */
+    const tooltips = await page.evaluate(() => {
+      return [...document.querySelectorAll<HTMLElement>('[title]')]
+        .filter((node) => node.getClientRects().length > 0)
+        .map((node) => {
+          const clone = node.cloneNode(true) as HTMLElement;
+          for (const hidden of clone.querySelectorAll('.ui-sr-only')) hidden.remove();
+          const painted = (clone.textContent ?? '').replace(/\s+/g, ' ').trim();
+          const title = node.getAttribute('title') ?? '';
+          return {
+            selector: `${node.tagName.toLowerCase()}.${String(node.className).split(/\s+/)[0] ?? ''}`,
+            title,
+            paintedText: painted,
+            titleIsAlsoPainted: painted.includes(title),
+          };
+        });
+    });
+    console.log(`[${label}] text that exists only in a hover tooltip: ${JSON.stringify(tooltips, null, 1)}`);
+
     for (const id of TABS) {
       await tapControl(page, `.hud__tabs [data-tab="${id}"]`);
       await page.waitForTimeout(250);
@@ -441,14 +471,39 @@ test('act 2: pan and zoom with fingers only', async ({ page }) => {
   ] as const) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await openApp(page);
+    // A world tap before this produces no command at all: the intent reaches
+    // `ObjectTool.place` and the host refuses it with "No simulation session is
+    // running yet", to `console.warn` and nowhere a player can see. Measured
+    // once by this act failing without it; not a touch finding, so it is only
+    // recorded here.
+    await tapControl(page, '.save-panel__button', { nth: 0 });
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
     await tapControl(page, '.hud__tabs [data-tab="build"]');
     await page.waitForTimeout(500);
 
+    /*
+     * Every gesture below happens inside the largest unobstructed square, and
+     * that is a correction to this act's first run rather than a precaution.
+     *
+     * The first version anchored 40px inside the square's top-left corner. At
+     * portrait that put the midpoint at x=44, so a pinch starting 100px apart
+     * placed one finger at **x=-6**, off the viewport, and the readings that
+     * came back were nonsense in both directions (`3 -> 2 -> 1` for a pinch out
+     * followed by a pinch back in). At landscape the one-finger pan ran from
+     * y=124 to y=4 -- under the status strip -- and moved the camera about a
+     * third of what it was asked for. Both are instrument faults. The
+     * *question* one of them raises is real and is now measured on purpose
+     * below: what a one-finger pan does when the finger crosses onto the HUD.
+     */
     const reach = await measureReach(page);
     const anchor = reach.freeSquareAt;
     expect(anchor, `${label}: no unobstructed canvas at all`).not.toBeNull();
-    const probe = { x: Math.round(anchor!.x + 40), y: Math.round(anchor!.y + 40) };
-    console.log(`\n[${label}] ===== CAMERA =====  probing at ${JSON.stringify(probe)}`);
+    const side = reach.largestFreeSquarePx;
+    const probe = { x: Math.round(anchor!.x + side / 2), y: Math.round(anchor!.y + side / 2) };
+    console.log(
+      `\n[${label}] ===== CAMERA =====  the unobstructed square is ${side}px at ${JSON.stringify(anchor)};` +
+        ` every gesture below is inside it, midpoint ${JSON.stringify(probe)}`,
+    );
 
     /** The tile under a fixed screen point, read the way a player's press reads it. */
     const tileUnderProbe = async (): Promise<{ x: number; y: number }> => {
@@ -460,58 +515,117 @@ test('act 2: pan and zoom with fingers only', async ({ page }) => {
       if (removal === undefined) throw new Error(`no RemoveObject at the probe: ${JSON.stringify(commands)}`);
       return { x: removal['x'] as number, y: removal['y'] as number };
     };
-    /** Tiles per 320 screen px, at the current zoom: how big the world looks. */
-    const tilePitch = async (): Promise<number> => {
+    /**
+     * How wide a tile is on screen, from two presses a fixed span apart.
+     *
+     * The span is as wide as the unobstructed square allows, because the
+     * instrument is quantised to whole tiles and a wider span is a finer
+     * reading. It is still coarse -- the answer is `span / an integer` -- and
+     * that is enough for the question here, which is whether a pinch changes
+     * the zoom at all and puts it back. The exact anchored-zoom arithmetic is
+     * already measured against a real camera by
+     * `tests/browser/world-scene-touch.spec.ts`.
+     */
+    const pitchSpan = Math.max(128, side - 96);
+    const tilePixels = async (): Promise<string> => {
+      const left = Math.round(probe.x - pitchSpan / 2);
+      const right = Math.round(probe.x + pitchSpan / 2);
       await tapControl(page, '.hud-build__remove');
-      await assertCanvasAt(page, probe.x, probe.y, `${label} pitch probe a`);
-      const a = (await touchPress(page, probe.x, probe.y)).find((c) => c['type'] === 'RemoveObject');
-      await assertCanvasAt(page, probe.x + 320, probe.y, `${label} pitch probe b`);
-      const b = (await touchPress(page, probe.x + 320, probe.y)).find((c) => c['type'] === 'RemoveObject');
+      await assertCanvasAt(page, left, probe.y, `${label} pitch probe a`);
+      const a = (await touchPress(page, left, probe.y)).find((c) => c['type'] === 'RemoveObject');
+      await assertCanvasAt(page, right, probe.y, `${label} pitch probe b`);
+      const b = (await touchPress(page, right, probe.y)).find((c) => c['type'] === 'RemoveObject');
       await tapControl(page, '.hud-build__remove');
       if (a === undefined || b === undefined) throw new Error('pitch probe missed');
-      return (b['x'] as number) - (a['x'] as number);
+      const tiles = (b['x'] as number) - (a['x'] as number);
+      return `${tiles} tile(s) across ${pitchSpan}px = ~${tiles === 0 ? '>span' : (pitchSpan / tiles).toFixed(0)}px per tile`;
     };
 
     const restTile = await tileUnderProbe();
-    const restPitch = await tilePitch();
-    console.log(`[${label}] at rest: tile under the probe = ${JSON.stringify(restTile)}, tiles per 320px = ${restPitch}`);
+    console.log(`[${label}] at rest: tile under the midpoint = ${JSON.stringify(restTile)}, ${await tilePixels()}`);
 
-    // 1. One finger, nothing armed.
-    await touchDrag(client, page, probe, { x: probe.x - 200, y: probe.y - 120 });
+    // 1. One finger, nothing armed, wholly inside the unobstructed square.
+    const inSquare = Math.round(side / 2 - 40);
+    await touchDrag(client, page, { x: probe.x + inSquare, y: probe.y }, { x: probe.x - inSquare, y: probe.y });
     const afterOneFinger = await tileUnderProbe();
-    console.log(`[${label}] one-finger drag (-200,-120), no tool armed -> tile under the probe ${JSON.stringify(afterOneFinger)}`);
+    console.log(
+      `[${label}] one-finger drag of ${2 * inSquare}px leftward, entirely on canvas, no tool armed ->` +
+        ` tile under the midpoint ${JSON.stringify(restTile)} -> ${JSON.stringify(afterOneFinger)}` +
+        ` (a full pan would move it +${(2 * inSquare) / TILE} tiles in x)`,
+    );
 
-    // 2. Two fingers, nothing armed.
-    await twoFingerPan(client, page, probe, { x: 200, y: 120 });
-    const afterTwoFinger = await tileUnderProbe();
-    console.log(`[${label}] two-finger pan (+200,+120) -> tile under the probe ${JSON.stringify(afterTwoFinger)}`);
+    // 2. The same drag, but the finger crosses onto the HUD rail on its way.
+    //    Half the tablet screen is HUD, so this is the ordinary case, not an
+    //    edge case: a player pushing the map left ends up over the rail.
+    const beforeCross = await tileUnderProbe();
+    const railX = await page.evaluate(() => {
+      const rail = document.querySelector('.hud__aside') ?? document.querySelector('.hud__side');
+      const rect = rail?.getBoundingClientRect();
+      return rect === undefined ? -1 : Math.round(rect.left + Math.min(60, rect.width / 2));
+    });
+    console.log(`[${label}] the rail's left edge + 60px is x=${railX}; the drag below crosses it`);
+    if (railX > 0) {
+      await touchDrag(client, page, { x: probe.x - inSquare, y: probe.y }, { x: railX + 40, y: probe.y });
+      const afterCross = await tileUnderProbe();
+      console.log(
+        `[${label}] one-finger drag of ${railX + 40 - (probe.x - inSquare)}px rightward that ends ON the HUD rail ->` +
+          ` tile under the midpoint ${JSON.stringify(beforeCross)} -> ${JSON.stringify(afterCross)}` +
+          ` (a full pan would move it -${((railX + 40 - (probe.x - inSquare)) / TILE).toFixed(1)} tiles in x)`,
+      );
+    }
+
+    // 2b. The same again, vertically, ending under the status strip. This is
+    //     the gesture whose first reading (before the square was used) came
+    //     back about a third of what it was asked for, so it is measured on
+    //     purpose rather than left as an anecdote.
+    const beforeStrip = await tileUnderProbe();
+    const stripBottom = await page.evaluate(() => {
+      const rect = document.querySelector('.hud-strip')?.getBoundingClientRect();
+      return rect === undefined ? -1 : Math.round(rect.bottom);
+    });
+    await touchDrag(client, page, { x: probe.x, y: probe.y }, { x: probe.x, y: Math.max(4, stripBottom - 40) });
+    const afterStrip = await tileUnderProbe();
+    console.log(
+      `[${label}] one-finger drag of ${probe.y - Math.max(4, stripBottom - 40)}px upward, ending ON the status strip` +
+        ` (its bottom edge is y=${stripBottom}) -> tile under the midpoint ${JSON.stringify(beforeStrip)} -> ${JSON.stringify(afterStrip)}` +
+        ` (a full pan would move it +${((probe.y - Math.max(4, stripBottom - 40)) / TILE).toFixed(1)} tiles in y)`,
+    );
 
     // 3. One finger with the wall tool armed: does it build instead of panning?
     await touchArm(page, 'wall-brick');
     const before = (await sentCommands(page)).length;
-    await touchDrag(client, page, probe, { x: probe.x + 128, y: probe.y });
+    await touchDrag(client, page, { x: probe.x - 96, y: probe.y }, { x: probe.x + 96, y: probe.y });
     const produced = (await sentCommands(page)).slice(before);
     console.log(`[${label}] one-finger drag while armed produced ${produced.length} command(s): ${JSON.stringify(produced.slice(0, 4))}`);
     await tapControl(page, '.hud-build__arm');
 
     // 4. Two fingers while armed: the hint promises this still moves the camera.
+    // `tileUnderProbe` arms and disarms Remove, so the wall tool is re-armed
+    // after it and the command counter is taken after that.
+    const beforeArmedPan = await tileUnderProbe();
     await touchArm(page, 'wall-brick');
     const armedBefore = (await sentCommands(page)).length;
-    await twoFingerPan(client, page, probe, { x: -160, y: 0 });
+    await twoFingerPan(client, page, probe, { x: -inSquare, y: 0 }, 100);
     const armedProduced = (await sentCommands(page)).slice(armedBefore);
     await tapControl(page, '.hud-build__arm');
     const afterArmedPan = await tileUnderProbe();
     console.log(
-      `[${label}] two-finger pan while armed: ${armedProduced.length} build command(s), tile under the probe ${JSON.stringify(afterArmedPan)}`,
+      `[${label}] two-finger pan of ${inSquare}px while the wall tool is armed: ${armedProduced.length} build command(s),` +
+        ` tile under the midpoint ${JSON.stringify(beforeArmedPan)} -> ${JSON.stringify(afterArmedPan)}`,
     );
 
-    // 5. Pinch.
-    await pinch(client, page, probe, 100, 240);
-    const pinchedOutPitch = await tilePitch();
-    console.log(`[${label}] pinch out 100->240px: tiles per 320px went ${restPitch} -> ${pinchedOutPitch}`);
-    await pinch(client, page, probe, 240, 100);
-    const pinchedBackPitch = await tilePitch();
-    console.log(`[${label}] pinch back in 240->100px: tiles per 320px now ${pinchedBackPitch}`);
+    // 5. Pinch, about the midpoint, with both fingers inside the square.
+    const wideGap = Math.min(240, side - 48);
+    const narrowGap = Math.round(wideGap / 2.4);
+    await pinch(client, page, probe, narrowGap, wideGap);
+    console.log(`[${label}] pinch out ${narrowGap}->${wideGap}px (x${(wideGap / narrowGap).toFixed(2)}): ${await tilePixels()}`);
+    await pinch(client, page, probe, wideGap, narrowGap);
+    console.log(`[${label}] pinch back in ${wideGap}->${narrowGap}px: ${await tilePixels()}`);
+    // And the clamp at the far end: eight pinches out in a row.
+    for (let index = 0; index < 8; index += 1) await pinch(client, page, probe, narrowGap, wideGap);
+    console.log(`[${label}] after eight more pinches out: ${await tilePixels()}`);
+    for (let index = 0; index < 16; index += 1) await pinch(client, page, probe, wideGap, narrowGap);
+    console.log(`[${label}] after sixteen pinches in: ${await tilePixels()}`);
 
     // 6. The sentence the panel shows a touch player about all this.
     const note = await panelText(page, '.hud-build__note');
@@ -539,7 +653,7 @@ test('act 3: is every control reachable and scrollable by finger', async ({ page
   ] as const) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await openApp(page);
-    await tapControl(page, '.save-panel button >> nth=0');
+    await tapControl(page, '.save-panel__button', { nth: 0 });
     await page.waitForTimeout(800);
     console.log(`\n[${label}] ===== PANELS =====`);
 
@@ -559,21 +673,69 @@ test('act 3: is every control reachable and scrollable by finger', async ({ page
       );
       console.log(`[${label} · ${id}] scroll containers with content below the fold: ${JSON.stringify(scrollers)}`);
 
-      // Anything below the fold that a finger has to scroll to.
-      const belowFold = await page.evaluate(() =>
-        [...document.querySelectorAll<HTMLElement>('.hud button, .hud input, .save-panel button')]
+      /*
+       * A control whose own box is inside the viewport but *outside the box of
+       * the scroller it lives in* is the thing a finger cannot press: the row
+       * is laid out, `getBoundingClientRect` answers happily, and a tap at that
+       * point reaches whatever is painted there instead. Act 1 saw eight of
+       * these on the Build tab and this is what they are.
+       */
+      const unreachable = await page.evaluate(() => {
+        const scrollerOf = (node: HTMLElement): HTMLElement | null => {
+          let parent = node.parentElement;
+          while (parent !== null) {
+            const style = getComputedStyle(parent);
+            if (/auto|scroll|hidden/.test(style.overflowY) || /auto|scroll|hidden/.test(style.overflowX)) return parent;
+            parent = parent.parentElement;
+          }
+          return null;
+        };
+        return [...document.querySelectorAll<HTMLElement>('.hud button, .hud input, .hud select, .save-panel button')]
           .filter((node) => node.getClientRects().length > 0)
-          .filter((node) => {
+          .map((node) => {
             const rect = node.getBoundingClientRect();
-            return rect.bottom > window.innerHeight || rect.top < 0 || rect.right > window.innerWidth || rect.left < 0;
+            const centre = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+            const top = document.elementFromPoint(centre.x, centre.y);
+            const reached = top !== null && (top === node || node.contains(top));
+            const scroller = scrollerOf(node);
+            const clip = scroller?.getBoundingClientRect();
+            return {
+              selector: `${node.tagName.toLowerCase()}.${String(node.className).split(/\s+/)[0] ?? ''}`,
+              text: (node.textContent ?? node.getAttribute('aria-label') ?? '').trim().slice(0, 28),
+              reached,
+              hitInstead: reached ? null : `${top?.tagName.toLowerCase() ?? 'null'}.${String((top as HTMLElement | null)?.className ?? '').split(/\s+/)[0] ?? ''}`,
+              outsideScroller:
+                clip === undefined ? null : centre.y < clip.top || centre.y > clip.bottom || centre.x < clip.left || centre.x > clip.right,
+              scroller: scroller === null ? null : `${scroller.tagName.toLowerCase()}.${String(scroller.className).split(/\s+/)[0] ?? ''}`,
+              scrollerCanScroll: scroller === null ? null : scroller.scrollHeight > scroller.clientHeight + 1,
+            };
           })
-          .map((node) => ({
-            selector: `${node.tagName.toLowerCase()}.${String(node.className).split(/\s+/)[0] ?? ''}`,
-            text: (node.textContent ?? '').trim().slice(0, 30),
-            rect: node.getBoundingClientRect().toJSON(),
-          })),
-      );
-      console.log(`[${label} · ${id}] controls outside the viewport: ${JSON.stringify(belowFold)}`);
+          .filter((entry) => !entry.reached);
+      });
+      console.log(`[${label} · ${id}] controls a tap at their own centre does NOT reach: ${JSON.stringify(unreachable, null, 1)}`);
+
+      // Can a finger scroll them into view? A real touch scroll gesture,
+      // synthesised by the browser's own input pipeline.
+      const scrollTargets = [...new Set(unreachable.map((entry) => entry.scroller).filter((s): s is string => s !== null))];
+      for (const target of scrollTargets) {
+        const box = await page.locator(target.replace('.', ' .').trim().split(' ').join('')).first().boundingBox().catch(() => null);
+        const selector = target;
+        const before = await page.evaluate((sel: string) => document.querySelector<HTMLElement>(sel)?.scrollTop ?? -1, selector);
+        const centre = box === null ? null : { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+        if (centre === null) continue;
+        await page.context().newCDPSession(page).then(async (client) => {
+          await client.send('Input.synthesizeScrollGesture', {
+            x: centre.x,
+            y: centre.y,
+            yDistance: -240,
+            gestureSourceType: 'touch',
+            speed: 800,
+          });
+        });
+        await page.waitForTimeout(400);
+        const after = await page.evaluate((sel: string) => document.querySelector<HTMLElement>(sel)?.scrollTop ?? -1, selector);
+        console.log(`[${label} · ${id}] one-finger scroll flick on ${selector}: scrollTop ${before} -> ${after}`);
+      }
     }
   }
 });
@@ -585,7 +747,7 @@ test('act 3: is every control reachable and scrollable by finger', async ({ page
 async function playTheGame(page: Page, client: CDPSession, label: string): Promise<void> {
   const log = (line: string): void => console.log(`[${label}] ${line}`);
 
-  await tapControl(page, '.save-panel button >> nth=0');
+  await tapControl(page, '.save-panel__button', { nth: 0 });
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
   log('New prison: day reads 1');
 
@@ -596,50 +758,64 @@ async function playTheGame(page: Page, client: CDPSession, label: string): Promi
   const origin = await touchCalibrate(page, { x: Math.round(anchor.x + 48), y: Math.round(anchor.y + 48) });
   log(`calibration: tile (0,0) top-left at (${origin.originX}, ${origin.originY})`);
 
-  // Which tiles a finger can actually reach, in this viewport, at this camera.
-  const reachableTiles: { x: number; y: number }[] = [];
-  for (let ty = 0; ty < 40; ty += 1) {
-    for (let tx = 0; tx < 40; tx += 1) {
-      const point = centreOf(origin, tx, ty);
-      if (point.x < 0 || point.y < 0) continue;
-      if (point.x > (await page.evaluate(() => window.innerWidth)) || point.y > (await page.evaluate(() => window.innerHeight))) continue;
-      if ((await topAt(page, point.x, point.y)) === 'canvas') reachableTiles.push({ x: tx, y: ty });
-    }
-  }
-  const xs = reachableTiles.map((t) => t.x);
-  const ys = reachableTiles.map((t) => t.y);
+  /*
+   * Which tiles a finger can reach without moving the camera, and the biggest
+   * square cell that fits among them.
+   *
+   * One `page.evaluate` over the whole grid rather than three per tile: the
+   * first version of this made 4,800 round trips and took minutes. What it
+   * answers is the load-bearing number of this act -- a wall run's two
+   * endpoints must both be on canvas, so the size of the largest reachable
+   * block is the size of the largest cell a touch player can draw in one go.
+   */
+  const grid = await page.evaluate(
+    ([ox, oy, tile]: readonly number[]) => {
+      const reachable: { x: number; y: number }[] = [];
+      for (let ty = 0; ty < 48; ty += 1) {
+        for (let tx = 0; tx < 48; tx += 1) {
+          // The wall runs of a cell at (tx,ty) touch the tile's own top-left
+          // corner as well as its centre, so both are required to be canvas.
+          const cx = (ox as number) + tx * (tile as number) + (tile as number) / 2;
+          const cy = (oy as number) + ty * (tile as number) + (tile as number) / 2;
+          if (cx < 0 || cy < 0 || cx > window.innerWidth || cy > window.innerHeight) continue;
+          const node = document.elementFromPoint(cx, cy);
+          if (node !== null && node.tagName === 'CANVAS') reachable.push({ x: tx, y: ty });
+        }
+      }
+      const set = new Set(reachable.map((t) => `${t.x},${t.y}`));
+      const fits = (x0: number, y0: number, size: number): boolean => {
+        for (let dy = 0; dy <= size; dy += 1) for (let dx = 0; dx <= size; dx += 1) if (!set.has(`${x0 + dx},${y0 + dy}`)) return false;
+        return true;
+      };
+      let bestSize = 0;
+      let bestAt: { x0: number; y0: number } | null = null;
+      for (const tile of reachable) {
+        for (let size = bestSize + 1; size <= 12; size += 1) {
+          if (!fits(tile.x, tile.y, size)) break;
+          bestSize = size;
+          bestAt = { x0: tile.x, y0: tile.y };
+        }
+      }
+      return { reachable, bestSize, bestAt };
+    },
+    [origin.originX, origin.originY, TILE] as const,
+  );
+  const xs = grid.reachable.map((t) => t.x);
+  const ys = grid.reachable.map((t) => t.y);
   log(
-    `tiles a finger can reach without moving the camera: ${reachableTiles.length}` +
+    `tiles a finger can reach without moving the camera: ${grid.reachable.length}` +
       ` spanning x ${Math.min(...xs)}..${Math.max(...xs)}, y ${Math.min(...ys)}..${Math.max(...ys)}`,
   );
-
-  // A 6x6 cell placed inside the reachable band rather than at the harness's
-  // fixed (12,12): the whole question is whether a finger can reach it.
-  const columnCounts = new Map<number, number>();
-  for (const tile of reachableTiles) columnCounts.set(tile.x, (columnCounts.get(tile.x) ?? 0) + 1);
-  const fullRows = new Map<number, number[]>();
-  for (const tile of reachableTiles) {
-    const row = fullRows.get(tile.y) ?? [];
-    row.push(tile.x);
-    fullRows.set(tile.y, row);
-  }
-  let best: { x0: number; y0: number } | null = null;
-  for (const [y0, columns] of [...fullRows.entries()].sort((a, b) => a[0] - b[0])) {
-    for (const x0 of [...columns].sort((a, b) => a - b)) {
-      const fits = [0, 1, 2, 3, 4, 5, 6].every((dy) =>
-        [0, 1, 2, 3, 4, 5, 6].every((dx) => reachableTiles.some((t) => t.x === x0 + dx && t.y === y0 + dy)),
-      );
-      if (fits) {
-        best = { x0, y0 };
-        break;
-      }
-    }
-    if (best !== null) break;
-  }
-  log(`smallest reachable 7x7 tile block (a 6x6 cell plus its far wall): ${JSON.stringify(best)}`);
-  expect(best, `${label}: no 6x6 cell fits in the canvas a finger can reach`).not.toBeNull();
-  const x0 = best!.x0;
-  const y0 = best!.y0;
+  log(
+    `the largest square cell whose every tile AND far wall a finger can reach in one camera position:` +
+      ` ${grid.bestSize}x${grid.bestSize} at ${JSON.stringify(grid.bestAt)}` +
+      ` (the harness's own starter cell, and the one every prior playtest builds, is 6x6)`,
+  );
+  expect(grid.bestAt, `${label}: no cell of any size fits in the canvas a finger can reach`).not.toBeNull();
+  const cellSize = Math.min(6, grid.bestSize);
+  const x0 = grid.bestAt!.x0;
+  const y0 = grid.bestAt!.y0;
+  log(`building a ${cellSize}x${cellSize} cell at tiles (${x0},${y0})-(${x0 + cellSize - 1},${y0 + cellSize - 1})`);
 
   await touchBuy(page, 'wall-brick', 60);
   await touchBuy(page, 'bed-wooden', 4);
@@ -761,7 +937,7 @@ test('act 6: what a finger can undo', async ({ page }) => {
   await openApp(page);
   const log = (line: string): void => console.log(`[mistake] ${line}`);
 
-  await tapControl(page, '.save-panel button >> nth=0');
+  await tapControl(page, '.save-panel__button', { nth: 0 });
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
   await tapControl(page, '.hud__tabs [data-tab="build"]');
   const reach = await measureReach(page);
