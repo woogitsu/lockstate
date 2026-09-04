@@ -17,11 +17,17 @@ import {
 } from './playtest-harness';
 
 /**
- * **The same question as
- * `tests/browser/playtest-2026-09-04-what-pressure-there-is.playtest.ts`, at
- * fifty prisoners instead of four.**
+ * **The same question as the four-prisoner instrument, at fifty prisoners
+ * instead of four.**
  *
- * That file measured the shipped treasury curve and the curve with
+ * That instrument is `playtest-2026-09-04-what-pressure-there-is.playtest.ts`
+ * beside this file, and it is cited without a rooted path deliberately: it
+ * lives on branch `measure/what-pressure-there-is` (PR #971), which is not
+ * merged, so a rooted citation of it is a dangling path here and
+ * `tests/foundation/documentation-links-contract.test.ts` fails on it. That
+ * failure is how this file's own header was found to carry two of them.
+ *
+ * That instrument measured the shipped treasury curve and the curve with
  * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` restored to `40`, and
  * closed by naming its own open item: *"every ratio here is at `n = 4`, so a
  * fifty-prisoner prison is unmeasured and is the one balance actually needs."*
@@ -172,10 +178,13 @@ const note = (line: string): void => {
  * pushes nothing.
  *
  * Correlation is by `messageId`, and the ids here are `probe-N` while the
- * application's requester mints `crypto.randomUUID()` -- so neither can settle
- * the other's request (`ProjectionRequester.handleMessage` returns early on an
- * id it does not hold, and this map does the same). The listener is a second
- * `addEventListener`, so the application still receives every reply.
+ * application's requester mints `crypto.randomUUID()`
+ * (`SimulationProjectionRequester`, `src/ui/simulation-projections.ts:123`) --
+ * so neither can settle the other's request
+ * (`SimulationProjectionRequester.handleMessage` returns early on an id it does
+ * not hold, `src/ui/simulation-projections.ts:139`, and this map does the
+ * same). The listener is a second `addEventListener`, so the application still
+ * receives every reply.
  */
 async function installProbe(page: Page): Promise<void> {
   await page.addInitScript(() => {
