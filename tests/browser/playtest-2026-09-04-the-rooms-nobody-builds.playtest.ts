@@ -41,12 +41,17 @@ import {
  *
  * ## The design, and why it is within-subject
  *
- * One prison. **Everything physical is built first** — the canteen's walls,
- * tables and benches; the cell's walls, beds and toilet; the shower room's
- * walls and heads; three wooden doors — in a single queue drain. Then the
- * rooms are **designated one at a time**, with in-game days between, so each
- * room's arrival is a step change against the same four prisoners rather than
- * against a differently-seeded run:
+ * One prison, grown a room at a time, so that each room's arrival is a step
+ * change against the same four prisoners rather than against a
+ * differently-seeded run. **Act 2 tried to build everything physically first
+ * and then designate; the game refuses that order** (every object placement is
+ * refused until the room is zoned), so **act 3 is the corrected shape: wall →
+ * door → designate → furnish, per room, with in-game days between.** Act 4
+ * then repairs a second defect both share — they read the roster at day
+ * boundaries, which land inside the sleep block — by sampling a settled
+ * four-room prison across one whole day.
+ *
+ * Act 3's phases:
  *
  * | phase | what exists | days | the need under test |
  * | --- | --- | --- | --- |

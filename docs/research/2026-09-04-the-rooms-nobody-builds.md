@@ -39,10 +39,12 @@ LOCKSTATE_BROWSER_TEST_PORT=5324 node node_modules/@playwright/test/cli.js test 
 **Yes — serving a need does something a player can see, and it is dramatic;
 but the *only* place it can be seen is one column of one tab, and the moment
 of purchase says nothing at all.** Four rooms were built in one prison for the
-first time in this repository: a 5 × 3 cell (905 of materials), a 6 × 6
-canteen (2,830), a 3 × 3 shower room (1,040), and an 8 × 8 yard (**0** — and
-the first and second `room.yard` ever placed in a Lockstate playtest, both
-accepted on the first attempt). All four are genuinely used, and act 4 proves it across a whole day rather
+first time in this repository, for **5,405** of materials all told — a 5 × 3
+cell with four beds (1,565), a 6 × 6 canteen (2,815, and the most expensive
+room type in the game), a 3 × 3 shower room (1,025), and an 8 × 8 yard (**0**
+— and the
+first `room.yard` ever placed in a Lockstate playtest; acts 2, 3 and 4 placed
+one each, all three accepted on the first designation attempt). All four are genuinely used, and act 4 proves it across a whole day rather
 than by luck: eleven samples of a settled four-room prison show `Eating` in
 the meal block, `Yard Time` in the recreation blocks and `Showering` in the
 hygiene ones, with `Eating in Cell` never appearing at all. `hygiene` went
@@ -451,7 +453,8 @@ room was **accepted on the first designation attempt**.
 ### 6.1 The cell alone already serves four of the six needs
 
 **MEASURED, act 3, phase 0.** The furnished cell — 5 × 3, four beds, one
-toilet, one wooden door — published `roomCapacity: 4`,
+toilet, one wooden door, **1,565** as built (§2's table prices the *minimum*
+2 × 3 cell with one bed at 905) — published `roomCapacity: 4`,
 `accommodationCapacity: 4`, and once four prisoners were admitted
 `roomOccupants: 4`, `occupiedPlaces: 4`, `conditions: []`. The inspector on
 one prisoner, at admission and two days later:
@@ -488,7 +491,8 @@ ticks 7988 -> 16180 (8192 ticks)
 ### 6.2 The canteen is used, and it changes nothing a player can see
 
 **MEASURED, act 3, phase 1.** The canteen — 6 × 6, two dining tables, four
-benches, one door, 2,830 of materials — was accepted on the first attempt and
+benches, one door: 23 wall segments, a wooden door and the minimum objects,
+**2,815** as built against §2's 2,830 for an all-wall perimeter — was accepted on the first attempt and
 furnished with no refusal. Building it took **7,087 ticks, nearly three
 in-game days** of clock, and in that time hygiene reached 0% and recreation
 2%, so the prison the canteen opened into was already at `Hunger 99%`.
@@ -536,7 +540,7 @@ broken — it is because the cell already feeds everybody.**
 ### 6.3 The shower room is the room that works, and it works loudly
 
 **MEASURED, act 3, phase 2.** A 3 × 3 shower room with two shower heads and a
-door, 1,040 of materials, accepted on the first attempt. Hygiene had been at
+door, **1,025** as built, accepted on the first attempt. Hygiene had been at
 **0%** on every prisoner for four in-game days when it opened. Two days later
 the inspector read:
 
@@ -582,8 +586,9 @@ money:
 ```
 
 **This is the second `room.yard` ever placed in a Lockstate playtest** — act 2
-placed the first, ninety minutes earlier — and both went in on the first
-attempt. Everything that made the three prior attempts fail was the
+placed the first and act 4 placed a third, all in this session, and all three
+went in on the first attempt, at the same rectangle (18,10)–(25,17) after the
+same six-press pan. Everything that made the three prior attempts fail was the
 instrument's: the fix was to reject a candidate rectangle that *overlaps a
 room this run built* as well as one the HUD covers, because a room's tiles are
 canvas and `document.elementFromPoint` calls them clear.
@@ -793,7 +798,7 @@ hygiene was at 29% and falling — and the 17% that differs is the calendar, the
 bank and a discharge.
 
 **JUDGEMENT.** This is what makes §7's missing readouts matter rather than
-being a wish-list. A player who spends 3,870 on a canteen and a shower room
+being a wish-list. A player who spends **3,840** on a canteen and a shower room
 gets, for their money, the digit `1` changing to `3` on a badge labelled
 `ROOMS`. Everything that actually changed — and a great deal did change — is
 on the Regime tab, one column wide, and has to be looked for.
