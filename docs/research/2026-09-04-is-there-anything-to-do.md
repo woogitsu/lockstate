@@ -70,7 +70,7 @@ LOCKSTATE_BROWSER_TEST_PORT=43303 node node_modules/@playwright/test/cli.js test
 | 1 | one cell, four prisoners, one guard, then **nothing pressed for three in-game days** | `1 passed (7.3m)` |
 | 2 | **growth**: twelve beds in the same room, twelve prisoners, then a second cell | `1 passed (7.3m)` |
 | 3 | the two rooms a cell cannot replace — a shower room and a yard | run A `1 failed (8.4m)` (§10b), run B `1 passed (9.7m)` |
-| 4 | twenty in-game days at 4×, watching for a sentence to end | *(see §12)* |
+| 4 | twenty in-game days at 4×, watching for a sentence to end | `1 passed (13.9m)` |
 | 5 | **the same prison with a door in each room** — act 3's refuting sample | `1 passed (7.3m)` |
 
 ## Claim tiers
@@ -417,7 +417,7 @@ act 3's prison was missing was a door.**
    (`action.yard-recreation`, the only unblocked provider of `recreation`,
    `src/simulation/prisoners/actions.ts:165-167`). **That column is a working
    to-do list**, it re-points itself as each item is done, and it is on a tab a
-   newcomer opens last. §13 says what it costs to read.
+   newcomer opens last. §14 says what it costs to read.
 
 **And the delta vector is the same as an empty prison's**, which is §7's point
 arriving from a different direction:
@@ -1033,7 +1033,78 @@ type would refute the narrow claim.
 
 ---
 
-## 12. Straight answers to the commissioned question
+## 12. Run it long: seventeen in-game days, one event
+
+**MEASURED, act 4.** A twelve-bed prison, twelve prisoners, **two** guards — so
+covered rather than understaffed — and then nothing pressed for as long as the
+clock would run at 4×. The whole series, one line per in-game day, both channels
+sampled at each:
+
+```
+day  +1 tick 20432: treasury=30070 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day  +2 tick 22961: treasury=33510 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day  +3 tick 25250: treasury=36950 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day  +4 tick 27698: treasury=40390 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day  +5 tick 30196: treasury=43830 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day  +6 tick 32441: treasury=47270 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day  +7 tick 34972: treasury=50710 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day  +8 tick 37462: treasury=54150 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day  +9 tick 39701: treasury=57590 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day +10 tick 42190: treasury=61030 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day +11 tick 44438: treasury=64470 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day +12 tick 47009: treasury=67910 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day +13 tick 49213: treasury=71350 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day +14 tick 51746: treasury=74790 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day +15 tick 54279: treasury=78230 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day +16 tick 56487: treasury=81670 prisoners=12 occupiedPlaces=12 incidents=0 events=0
+day +17 tick 58977: treasury=85110 prisoners=11 occupiedPlaces=11 incidents=0 events=1
+```
+
+**`+3,440` every single day for sixteen days, to the unit** — which is
+`12 × 300 − 2 × 80` exactly, and is the third independent confirmation of §3's
+arithmetic. Sixteen days in which **nothing else on the wire moved at all**: not
+an incident, not an event, not a count.
+
+**Then, at day +17, the one thing in this game that takes something away from
+the player without their pressing anything:**
+
+```
+[act4] A SENTENCE ENDED at day +17, tick 58977
+[act4] every event type and its count: {"prisoners.discharged":1}
+[act4] DELTA over the whole long run
+ticks 17599 -> 59140 (41541 ticks)
+  MOVED (6/21): occupiedPlaces: 12 -> 11 | prisoners: 12 -> 11 | prisonersCovered: 12 -> 11 |
+    roomOccupants: 12 -> 11 | stateIncomeAccruedTodayMinorUnits: 1200 -> 2118 |
+    treasuryMinorUnits: 26630 -> 85110
+```
+
+and the screen said so, in a sentence graded `Info` (UPPER BOUND):
+
+> `ALERTS` / `1 released — their sentences are served. Day 25` / `Info` /
+> `Clear this alert`
+
+**One event in 41,541 ticks — seventeen in-game days, about fourteen minutes of
+wall clock at the top speed the game offers.** That is the whole of what
+happens to a well-run prison left alone: the treasury quadruples, and on day 17
+somebody goes home and the day's income drops by 300.
+
+**Three things follow, and they are the honest shape of the loop.**
+
+1. **The loop is real.** Population decays; income follows; the player must
+   admit again. It is not a ratchet.
+2. **Its period is longer than a session.** A sentence is 14 to 90 days
+   (§9.2), and the *earliest* of twelve draws landed on day 17. At 4× — the
+   maximum, `SIMULATION_SPEEDS = [1, 2, 4]`,
+   `src/simulation/clock/fixed-step-clock.ts:17` — that is fourteen minutes for
+   the first one, and the mean draw of 52 days is **26 minutes each**.
+3. **A player cannot see it coming.** The figure exists, is published, and is
+   dropped by the reader for a reason that expired the day before this run
+   (§9.2). What they get instead is `Info` on a band that scrolls, once, after
+   the fact.
+
+---
+
+## 13. Straight answers to the commissioned question
 
 **Is there anything to do?** Yes, three things, and they are not the same size.
 
@@ -1049,7 +1120,7 @@ type would refute the narrow claim.
    thing the game has to an objective list: it names the need, it re-points
    itself as each room opens, and it is a per-prisoner figure a player can act
    on. Its two costs are that it shows four prisoners of any population
-   (§13) and that nothing ever converts the need's name into a room's name
+   (§14) and that nothing ever converts the need's name into a room's name
    (§11).
 4. **Watch `EARNED TODAY`.** It moves every tick and it responds to what you
    built. It is the only figure in the game that does both.
@@ -1072,7 +1143,7 @@ ten minutes, holding equally at hour two.
 
 ---
 
-## 13. What this pass did not reach
+## 14. What this pass did not reach
 
 - **No inert room was played.** §11 names the remedy.
 - **No prison was grown past twelve prisoners.** The ratios in §3 and §4 are
