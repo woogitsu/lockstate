@@ -120,6 +120,8 @@ interface ActorAggregate {
   actorSamplesSeen: number;
   actorSamplesWithVelocity: number;
   actorSamplesWithSubtile: number;
+  prisonerSamplesWithVelocity: number;
+  guardSamplesWithVelocity: number;
   firstTick: number;
   lastTick: number;
   moves: MoveRecord[];
@@ -163,12 +165,26 @@ async function installActorTee(page: Page): Promise<void> {
       actorSamplesSeen: 0,
       actorSamplesWithVelocity: 0,
       actorSamplesWithSubtile: 0,
+      prisonerSamplesWithVelocity: 0,
+      guardSamplesWithVelocity: 0,
       firstTick: -1,
       lastTick: -1,
       moves: [],
       velocitySightings: [],
     };
-    const lastSeen = new Map<number, { tick: number; x: number; y: number; population: number }>();
+    /*
+     * **Keyed by population *and* entity id, and the first run of this file
+     * proved why.** `EntityStore` ids are allocated per population, so prisoner
+     * 0 and guard 0 are two different actors that both publish `entityId: 0`.
+     * Keying this map on the id alone made the two overwrite each other every
+     * keyframe and produced 180 fabricated eight-tile "moves" between (12,12)
+     * and (16,16) across a zero-tick gap -- an artefact that filled the cap and
+     * evicted every real transition after it. The velocity counters were never
+     * affected, because they are read off each record and never compared across
+     * frames, which is what let the artefact be told apart from a real
+     * teleport.
+     */
+    const lastSeen = new Map<string, { tick: number; x: number; y: number }>();
     /*
      * The projection replies are collected here rather than out of
      * `installTee`'s array, and that is a measured instrument failure inherited
@@ -232,6 +248,8 @@ async function installActorTee(page: Page): Promise<void> {
               const subtile = !Number.isInteger(row.x) || !Number.isInteger(row.y);
               if (moving) {
                 aggregate.actorSamplesWithVelocity += 1;
+                if (row.population === 0) aggregate.prisonerSamplesWithVelocity += 1;
+                else aggregate.guardSamplesWithVelocity += 1;
                 frameHasVelocity = true;
               }
               if (subtile) {
@@ -243,10 +261,11 @@ async function installActorTee(page: Page): Promise<void> {
                   `tick ${String(tick)} #${String(row.id)} pop${String(row.population)} at (${row.x.toFixed(3)},${row.y.toFixed(3)}) v=(${row.vx.toFixed(3)},${row.vy.toFixed(3)})`,
                 );
               }
-              const previous = lastSeen.get(row.id);
+              const actorKey = `${String(row.population)}:${String(row.id)}`;
+              const previous = lastSeen.get(actorKey);
               const tileX = Math.floor(row.x);
               const tileY = Math.floor(row.y);
-              if (previous !== undefined && (previous.x !== tileX || previous.y !== tileY) && aggregate.moves.length < 200) {
+              if (previous !== undefined && (previous.x !== tileX || previous.y !== tileY) && aggregate.moves.length < 400) {
                 aggregate.moves.push({
                   id: row.id,
                   population: row.population,
@@ -257,7 +276,7 @@ async function installActorTee(page: Page): Promise<void> {
                   tiles: Math.abs(tileX - previous.x) + Math.abs(tileY - previous.y),
                 });
               }
-              lastSeen.set(row.id, { tick, x: tileX, y: tileY, population: row.population });
+              lastSeen.set(actorKey, { tick, x: tileX, y: tileY });
             }
             aggregate.keyframes += 1;
             if (frameHasVelocity) aggregate.framesWithVelocity += 1;
@@ -305,7 +324,8 @@ function reportAggregate(label: string, aggregate: ActorAggregate | undefined): 
   console.log(
     `[${label}] whole-run keyframe aggregate: ${String(aggregate.keyframes)} keyframe(s) spanning ticks ${String(aggregate.firstTick)}..${String(aggregate.lastTick)};` +
       ` ${String(aggregate.actorSamplesSeen)} actor-sample(s);` +
-      ` ${String(aggregate.framesWithVelocity)} keyframe(s) and ${String(aggregate.actorSamplesWithVelocity)} actor-sample(s) with a NON-ZERO velocity;` +
+      ` ${String(aggregate.framesWithVelocity)} keyframe(s) and ${String(aggregate.actorSamplesWithVelocity)} actor-sample(s) with a NON-ZERO velocity` +
+      ` (${String(aggregate.prisonerSamplesWithVelocity)} prisoner, ${String(aggregate.guardSamplesWithVelocity)} guard);` +
       ` ${String(aggregate.framesWithSubtile)} keyframe(s) and ${String(aggregate.actorSamplesWithSubtile)} actor-sample(s) with a NON-INTEGER position`,
   );
   console.log(`[${label}] first ${String(Math.min(aggregate.velocitySightings.length, 60))} moving/sub-tile sighting(s): ${JSON.stringify(aggregate.velocitySightings)}`);
@@ -557,7 +577,7 @@ test('act 1: the reported crowd, reproduced whole, and every body accounted for'
   await railReadout(page, 'act1-late');
   await readBothChannels(page, 'act1-late');
   console.log(`[act1-late] the worker's whole event log: ${JSON.stringify(await events(page))}`);
-  console.log(`[act1-late] alert column: ${JSON.stringify(await panelText(page, '.hud-alerts'))}`);
+  console.log(`[act1-late] alert column: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
   reportAggregate('act1', await actorAggregate(page));
 });
 
