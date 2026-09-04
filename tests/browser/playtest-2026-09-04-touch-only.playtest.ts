@@ -207,6 +207,7 @@ async function tapRowScrollingIfNeeded(page: Page, selector: string, label: stri
       while (parent !== null) {
         if (/auto|scroll/.test(getComputedStyle(parent).overflowY) && parent.scrollHeight > parent.clientHeight + 1) {
           const rect = parent.getBoundingClientRect();
+          const target = node.getBoundingClientRect();
           return {
             selector: `${parent.tagName.toLowerCase()}.${String(parent.className).split(/\s+/)[0] ?? ''}`,
             x: Math.round(rect.x + rect.width / 2),
@@ -215,6 +216,9 @@ async function tapRowScrollingIfNeeded(page: Page, selector: string, label: stri
             scrollTop: parent.scrollTop,
             scrollHeight: parent.scrollHeight,
             clientHeight: parent.clientHeight,
+            // Which way the row lies from the box that clips it: below means
+            // the finger drags up, above means it drags down.
+            rowIsBelow: target.top >= rect.top,
           };
         }
         parent = parent.parentElement;
@@ -222,13 +226,23 @@ async function tapRowScrollingIfNeeded(page: Page, selector: string, label: stri
       return null;
     }, selector);
     if (scroller === null) throw new Error(`${selector} is unreachable (${verdict}) and nothing above it scrolls`);
-    // A drag no longer than the box it is inside: a finger cannot travel
-    // further than the list is tall without leaving it, and how short that is
-    // is exactly the cost this measures.
+    /*
+     * A drag no longer than the box it is inside, in the direction the row
+     * actually lies. A finger cannot travel further than the list is tall
+     * without leaving it, and how short that box is *is* the cost this
+     * measures: an 88px catalogue moves ~72px of a 924px list per stroke.
+     *
+     * The direction matters and its absence cost a run: the catalogue keeps
+     * its scroll position, so after scrolling down to Bed, arming Wall -- the
+     * **first** row -- needs strokes the other way, and a helper that only
+     * ever dragged upward looped until it gave up.
+     */
     const travel = Math.max(40, scroller.height - 16);
-    await dispatch(client, 'touchStart', [{ id: 0, x: scroller.x, y: scroller.y + travel / 2 }]);
+    const sign = scroller.rowIsBelow ? -1 : 1;
+    const startY = scroller.y - (sign * travel) / 2;
+    await dispatch(client, 'touchStart', [{ id: 0, x: scroller.x, y: startY }]);
     for (let step = 1; step <= 10; step += 1) {
-      await dispatch(client, 'touchMove', [{ id: 0, x: scroller.x, y: scroller.y + travel / 2 - (travel * step) / 10 }]);
+      await dispatch(client, 'touchMove', [{ id: 0, x: scroller.x, y: startY + (sign * travel * step) / 10 }]);
     }
     await dispatch(client, 'touchEnd', []);
     await page.waitForTimeout(350);
@@ -1356,6 +1370,27 @@ test('act 8: can a finger scroll the Build catalogue', async ({ page }) => {
       [...document.querySelectorAll<HTMLElement>('.hud-build__list [data-buildable]')].map((row) => row.dataset['buildable'] ?? '?'),
     );
     console.log(`[${label}] of ${allRows.length} catalogue rows a finger can tap ${reachableRows.length}: ${JSON.stringify(reachableRows)}`);
+
+    /*
+     * 5b. And the same, once an order is queued.
+     *
+     * `hud.css:1740` is `.hud-build[data-queued] { --hud-build-catalogue-floor:
+     * var(--tap-target); }` -- the catalogue's floor drops from two rows to
+     * **one** while a queue exists, to pay for the queue block's 45px header.
+     * Its docblock says the donation happens only "at the two short viewports
+     * that were over their box" and names 1024x768 among the three where the
+     * catalogue "keeps both rows". Whether that holds with the Buy disclosure
+     * open -- the state a player is in the moment they have bought materials --
+     * is measured here rather than taken from the comment.
+     */
+    await tapRowScrollingIfNeeded(page, '.hud-build__list [data-buildable="wall-brick"]', label);
+    await page.locator('.hud-build__buy .ui-number__input').fill('4');
+    await tapControl(page, '.hud-build__buy-submit');
+    await page.waitForTimeout(400);
+    console.log(
+      `[${label}] Build panel data-queued = ${JSON.stringify(await page.locator('.hud-build').getAttribute('data-queued'))};` +
+        ` catalogue now: ${await geometry()}`,
+    );
 
     // 6. The same question for the Rooms catalogue, which is the other list a
     //    player has to get a specific row out of.
