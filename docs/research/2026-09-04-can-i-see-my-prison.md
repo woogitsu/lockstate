@@ -64,6 +64,13 @@ LOCKSTATE_BROWSER_TEST_PORT=5312 node node_modules/@playwright/test/cli.js test 
   tests/browser/playtest-2026-09-04-can-i-see-my-prison.playtest.ts -g "act 1"
 ```
 
+| act | what it plays | result |
+| --- | --- | --- |
+| 1 | one wall run and one bed, from order to built thing, watched frame by frame with the tick beside each; then the zoning drag and the zoned floor | §1, §2, §3 |
+| 2 | a 6x6 cell, 6 beds, a toilet, 6 prisoners, 3 guards, run to day 7; per-actor crops at the coordinates the worker gave; wheel in and out | §5, §6, §7, §8 |
+| 3 | the same build with **22** prisoners and **6** guards, run to day 11; seven pictures over ~40 s against 400 actor keyframes and the worker's event log | §5b, §6b |
+| 4 | the two actor atlases, cut with the manifest's own rectangles, at true in-game size and at 2x | §4 |
+
 Every screenshot cited below is written by the run into the scratchpad
 directory named in the instrument's `SHOTS` constant, under the filename
 quoted.
@@ -105,7 +112,7 @@ opacity, and 35 % of `wall-brick`'s `topFill` `0x9a6a52`
 **JUDGEMENT, and this is the part that matters for the question:** a player
 who has just paid for twenty-four wall segments and is looking at the world
 cannot see that anything is pending there. Act 1's own instrument was fooled by
-this first — see §7.
+this first — see §9.
 
 **Not "the art is not done yet".** The finished wall has art and looks
 excellent. What is missing is a *distinguishing mark for the pending state*,
@@ -263,6 +270,83 @@ machinery is real (`LOCOMOTION_SUBTILE_UNITS` is 256,
 `src/simulation/locomotion/locomotion.ts:76`, and layout 2 of the payload
 carries a velocity for exactly this), and I saw it carry zeroes.
 
+## 5b. Twenty-eight people, two tiles, two figures — and a riot nobody can see
+
+**MEASURED, act 3, and this is the strongest version of §5.** The same prison,
+built again, with **22 prisoners admitted and 6 guards hired**, run to day 11.
+
+*The worker*, at tick 21912:
+
+```
+22 prisoner(s), 6 guard(s), 0 of them with a non-zero velocity
+  prisoners at 6 x "12.00,12.00" and 16 x "16.00,16.00"
+  guards at    6 x "16.00,16.00"
+```
+
+**Twenty-eight actors on two tiles**, and sixteen prisoners plus six guards
+sharing one of them.
+
+*The screen*, `31-twenty-odd-actors-full-frame.png` and
+`33-twenty-odd-actors-magnified.png` at 3x: **two figures.** One orange
+prisoner at (12,12) — clipped at the top of the frame — and one guard at
+(16,16). Twenty-six of the twenty-eight are drawn and invisible.
+
+*The strip and the rail at the same moment*: `22 PRISONERS`, `16 with no bed`,
+`6 STAFF`, and an alert column reading *"A fight has broken out between two
+prisoners. 4× Day 10"*, *"A riot has broken out — 22 prisoners have stopped
+taking orders. 2× Day 11"*, *"Contraband found: Currency. Day 9"*, *"Contraband
+found: Phone. Day 9"*.
+
+**The event ledger, from the worker, over the same window:** fourteen
+`simulation/event` messages — `incidents.assault-opened` at ticks 15400, 19150,
+21550 and 23950; **`incidents.riot-opened` with `participantCount: 22` at ticks
+18150 and 25450**; `contraband.discovered` at 20420 and 21080; five all-clears.
+
+**Two riots involving every prisoner in the building happened while the canvas
+showed one motionless orange figure.** That is the answer to *"can you tell what
+is happening"*, measured on both channels at once.
+
+## 6b. Nothing walks — measured on the render channel, for both populations
+
+**MEASURED, act 3.** Over **400 consecutive actor keyframes** spanning ticks
+23758 to 27291 (~3,533 ticks; the channel's ceiling is 100 ms, so the samples
+are ~8.8 ticks apart):
+
+- **every published velocity was zero**, at all seven printed samples and in
+  every keyframe the displacement pass walked;
+- **every published position was an exact integer tile** — no sub-tile
+  component appeared once;
+- six actors changed tile in the window (five prisoners `16,16 → 12,12`, one
+  guard `12,12 → 16,16`), each by exactly `5.657` tiles, which is
+  `sqrt(4² + 4²)` — the straight-line distance between the only two tiles in
+  play;
+- and the line that settles it: `furthest any actor ever got from where this
+  window found it` is **`0.00` or `5.66` for every single actor and nothing in
+  between.** In 400 samples, not one actor was ever observed at an intermediate
+  position.
+
+**REASONED from that, and I think it is tight:** the move is a **teleport**, not
+a walk. A locomotion walk across 5.66 tiles cannot complete inside 8.8 ticks, so
+a walk would have had to appear in dozens of consecutive keyframes as a
+non-integer position with a non-zero velocity, and none did.
+
+**What that costs on screen:** `selectActorPose` chooses the walk clip from the
+movement vector (`docs/RENDERING.md`, *Actors*, step 1) and the movement vector
+is always zero, so **the eight-frame walk cycle in `40-actor-contact-sheet.png`
+can never be selected in this prison.** The good animation is there and nothing
+can reach it.
+
+**Against #740, precisely.** #740 says a deployed guard is snapped to its post
+so nothing walks, and marks its own claim REASONED. This pass **confirms it
+visually and on the wire, and widens it to prisoners** — where #740 had 95
+roster samples of a label, this has 400 render keyframes of a position, and it
+is the render channel rather than the roster. It does **not** contradict ADR
+0088: that ADR gave guards locomotion for deployment travel and patrol legs
+only, and warned in its own status section that a guard hired into an
+early-game prison spawns on its post and has no distance to cross. My guard's
+one 5.66-tile move was not a deployment leg I could identify, so whether ADR
+0088's walk works when it is actually invoked is **still unmeasured here**.
+
 ## 7. Things happen, and the world does not draw any of them
 
 **MEASURED, act 2.** By day 8 the strip read `2 CONTRABAND` and the Alerts
@@ -271,6 +355,14 @@ Phone. Day 8"* (`23-zoomed-in-full-frame.png`, `24-standing-back-full-frame.png`
 Two things happened, in two different places, on two different days. **The
 canvas is identical before and after either of them** — no marker, no flash, no
 icon, nothing at the tile, nothing on the actor who was carrying it.
+
+**And act 3 makes it a ledger rather than an anecdote.** Fourteen
+`simulation/event` messages crossed the boundary in one window — four
+`incidents.assault-opened`, **two `incidents.riot-opened` with
+`participantCount: 22`**, two `contraband.discovered`, five all-clears — while
+the seven pictures of the same patch (`30-watching-t0.png` … `t6.png`) differ
+only in which of the two actor stacks has a figure on top. Nothing on the canvas
+marks an assault, a riot, a discovery or a resolution.
 
 **JUDGEMENT, and this is the honest shape of the answer to the question:** the
 world is a *floor plan*, not a view of a running prison. Everything that
@@ -358,6 +450,12 @@ reason this pass keeps the two channels apart.**
 - **A dozen rooms.** Every act here has exactly one room, so "a dozen rooms"
   is unmeasured and the seven colour collisions in §8 are read off the tables
   rather than seen side by side on one screen.
+- **Why the simulation stacks everybody on two tiles.** That is the fact that
+  makes the drawing unreadable and it is not a rendering question; §5's split
+  says so. Somebody should ask it — 22 prisoners and 6 guards on tiles
+  (12,12) and (16,16), which are the room's north-west corner and
+  `NEW_PRISON_ORIGIN_TILE`, for thousands of ticks — but it is not this pass's
+  surface.
 - **A `uiScale` other than 100 %**, and any viewport other than 1440x900.
 
 ## 11. Weakest claim, and what would change my mind
@@ -371,12 +469,15 @@ way and swapped their order* — so "the guard wins because it is later in the
 array" is a reasoned explanation of a measured fact, not itself a measurement.
 
 **What would settle it:** two actors on one tile whose array order is known and
-reversed between two frames, with the sprite on top identified either way. A
-single prisoner alone on a tile appearing correctly (which act 3's crowd should
-show, since 22 prisoners cannot all fit the same bed) would also weaken the
-alternative explanation — that prisoner sprites are not drawn at all — which I
-consider already excluded by the contact sheet in §4 loading the same atlas the
-renderer resolves, but not excluded by anything I saw on the game canvas.
+reversed between two frames, with the sprite on top identified either way.
+
+**Act 3 removed the one alternative explanation I was worried about.** *"Prisoner
+sprites are simply never drawn"* is excluded: `31-twenty-odd-actors-full-frame.png`
+draws an orange prisoner at (12,12), where the worker put six prisoners and no
+guard at that moment, and a guard at (16,16), where it put sixteen prisoners and
+six guards. So the population that wins a shared tile is the one the array puts
+last, exactly as the reading predicts — which is corroboration rather than the
+controlled swap, and I still call it the weakest claim here.
 
 ---
 
