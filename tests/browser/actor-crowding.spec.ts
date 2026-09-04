@@ -37,8 +37,8 @@ import type { LockstateActorMotionHarness } from './actor-motion-harness-api';
  * - **It says nothing about a stack of twenty-two.** The spread stays inside
  *   one tile on purpose, so a large stack reads as a crowd on one tile and not
  *   as a countable population. The simulation is what stacks them
- *   (`docs/research/2026-09-04-why-they-stack.md`) and nothing in the renderer
- *   changes that.
+ *   (#944 section 3's measurement record) and nothing in the renderer changes
+ *   that.
  *
  * Requires the git-LFS actor atlases, same precondition as
  * `actor-guard-rendering.spec.ts` and `actor-motion.spec.ts`:

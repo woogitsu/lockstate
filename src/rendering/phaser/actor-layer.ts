@@ -46,8 +46,8 @@ import { TILE_SIZE_PX, tileCentreToWorld, tileRangeContains, type TileRange } fr
  *
  * A snapshot legitimately puts several actors on the same tile -- a room's
  * `anchorTile` is where every actor performing an action in that room stands
- * (`docs/research/2026-09-04-why-they-stack.md`), so a housed population
- * stacks by construction. Drawn at one point they are one figure, which is
+ * (#944 section 3's measurement record), so a housed population stacks by
+ * construction. Drawn at one point they are one figure, which is
  * issue #944: 28 actors on two tiles drew two figures. So before drawing, this
  * layer walks the visible actors once to find which of them share a drawn
  * point, and `crowd-spread.ts` turns each one's rank in its group into a

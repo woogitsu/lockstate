@@ -19,12 +19,19 @@
  *
  * ## What it does not fix, said in the same breath
  *
- * `docs/research/2026-09-04-why-they-stack.md` measured *why* they stack, and
- * it is the simulation: a prisoner's position is written on admission, per
- * tile crossed, and on arrival to **the room instance's `anchorTile`** -- one
- * tile per room in use, plus the arrival tile for everyone the prison cannot
- * house. Giving every prisoner a bed put six of them on **one** tile instead
- * of two. So the stack is by construction and nothing in this file removes it.
+ * #944 section 3 asked *why* they stack, and the measurement record that
+ * answered it -- the note under `docs/research/` dated 2026-09-04 and titled
+ * *"Why does the simulation stack twenty-two prisoners on one tile?"* -- found
+ * the simulation. A prisoner's position is written on admission, per tile
+ * crossed, and on arrival to **the room instance's `anchorTile`** -- one tile
+ * per room in use, plus the arrival tile for everyone the prison cannot house.
+ * Giving every prisoner a bed put six of them on **one** tile instead of two.
+ * So the stack is by construction and nothing in this file removes it.
+ *
+ * (Cited by title rather than by path on purpose: that record is a separate
+ * branch's work at the time of writing, and
+ * `tests/foundation/documentation-links-contract.test.ts` rightly fails a
+ * comment citing a path this tree does not have.)
  *
  * A tile is one tile wide, and this spread stays inside it deliberately (see
  * below), so it separates as many figures as fit across one tile and no more:
@@ -60,9 +67,9 @@
  *   `CROWD_SPREAD_SPAN_TILES_X`/`_Y` from the centre, both under half a tile,
  *   so a drawn position never claims a tile the simulation did not name. A
  *   wider fan would read better and would be a lie: the renderer does not know
- *   where the room's walls are, and `docs/research/2026-09-04-why-they-stack.md`
- *   §4 says of a fan-out that leaves the tile that it is "better to look at,
- *   and no more true".
+ *   where the room's walls are, and #944 section 3's measurement record says
+ *   of a fan-out that leaves the tile that it is "better to look at, and no
+ *   more true".
  *
  * ## Determinism
  *
