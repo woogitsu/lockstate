@@ -149,6 +149,37 @@ select cmp_ok(
 -- every row to every non-owning role, so the table becomes unreadable
 -- instead of unprotected. That fails closed, which is why it needs its own
 -- assertion -- it is the one RLS mistake that never shows up as a leak.
+--
+-- TWO TABLES ARE EXCLUDED, and they are named rather than pattern-matched, the
+-- way `challenge_definitions_public_read` is named in the identity rule below.
+-- `public.telemetry_events` (20260904090000, ADR 0046) is the first table in
+-- this schema for which deny-all is the **intent**: no role holds any
+-- privilege on it, its single write path is a SECURITY DEFINER function that
+-- runs as the table owner and therefore bypasses RLS, and ADR 0046 requires
+-- "no RLS policy granting `anon` or `authenticated` any verb". RLS is enabled
+-- on it for one purpose -- so that a later migration granting a client role
+-- SELECT gets deny-all instead of every row -- and a `using (false)` policy
+-- written only to satisfy this assertion would be an object that protects
+-- nothing, which is the "control that reads as protection" shape this
+-- repository keeps finding.
+--
+-- `public.telemetry_retention_runs` (same migration) is the second, on exactly
+-- the same ground and with one addition of its own: it is the audit trail of a
+-- deletion, so a read grant on it would tell a reader when telemetry was
+-- deleted and how much -- which is a second capability for a credential whose
+-- whole point is that it has one. Its only writer is
+-- `enforce_telemetry_retention()`, which is SECURITY DEFINER and runs as the
+-- owner.
+--
+-- **This comment read "ONE TABLE IS EXCLUDED" until 2026-09-04**, when the
+-- owner ruled for a fourth object and the retention job landed as a function
+-- and this audit table. The count is the part that changed; the argument for
+-- excluding a deliberate deny-all is unedited.
+--
+-- What the exclusion costs: if either table is ever meant to become readable,
+-- nothing here notices that it has no policy. What holds that instead is
+-- suite 012's assertions that no role can read either of them, which fail in
+-- the same change that grants one.
 select is(
   (select string_agg(c.relname, ' ' order by c.relname)
      from pg_class c
@@ -156,9 +187,10 @@ select is(
     where n.nspname = 'public'
       and c.relkind in ('r', 'p')
       and c.relrowsecurity
+      and c.relname not in ('telemetry_events', 'telemetry_retention_runs')
       and not exists (select 1 from pg_policy p where p.polrelid = c.oid)),
   null,
-  'every RLS-enabled table in public carries at least one policy, so none of them is enabled into a deny-all'
+  'every RLS-enabled table in public except the two deliberate deny-all telemetry tables carries at least one policy'
 );
 
 -- The literal the challenge read policy used to be. `using (true)` on a
