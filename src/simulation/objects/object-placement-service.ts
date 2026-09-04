@@ -387,6 +387,49 @@ export interface ExcessResidentRelocationNoticePort {
   announceRelocations(relocated: readonly { readonly entityId: number; readonly toInstanceId: string }[]): void;
 }
 
+/**
+ * What the player is told when a *standing* object is taken away
+ * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+ *
+ * **A structural port rather than `SimulationEventLog`**, exactly as
+ * `ObjectOrderSink` above is a port rather than `ConstructionSystem`: this
+ * module holds no sentence, imports nothing from `src/simulation/events/` and
+ * gains no dependency on the events channel. `SimulationEventLog` satisfies it
+ * as written, so the composition root passes the log itself rather than an
+ * adapter -- unlike `ExcessResidentRelocationNoticePort` above, which needs one
+ * because a relocation sentence names a prisoner and a room and this module
+ * knows about neither.
+ *
+ * ## Why the notice is raised here and not at the command handler
+ *
+ * **Because two sentences on one press have to arrive in the right order, and
+ * the band drops the loser rather than queueing it.** A removal can raise
+ * `prisoners.relocated` as well -- `relocateResidentsLeftWithoutAPlace` below,
+ * ADR 0076 decision A(i) -- and `admitToEventBand`
+ * (`src/ui/hud/event-band-dwell.ts`) gives an arriving `'warning'` the line
+ * immediately over an `'info'` incumbent and **discards the incumbent**. So a
+ * removal recorded *after* the relocation would paint the money sentence over
+ * *"{name} had nowhere to sleep and moved to {room}."* and lose it -- and lose
+ * it outright below 720px, where `hud.css` drops the alerts list that would
+ * otherwise still hold it.
+ *
+ * Recorded before the relocation, the same two sentences both reach the player:
+ * the `'warning'` takes the line, the `'info'` that arrives inside the 600 ms
+ * dwell floor does not outrank it and therefore **waits**, and
+ * `releaseEventBandFloor` puts it up when the floor lapses. That is the case
+ * ADR 0084 decision 4's waiting slot exists for.
+ *
+ * ## Why only this method calls it
+ *
+ * `onOrderReverted` below destroys spend too, and it must not raise this: it is
+ * the `Undo` route, and `construction.undone-spend-destroyed` already says so
+ * for that press (#927). Two sentences for one `Z` is what #932 refused. So the
+ * port is asked on the arm `RemoveObject` alone can reach.
+ */
+export interface RemovedObjectNoticePort {
+  recordObjectRemoved(tick: number): void;
+}
+
 /** The orientation every placement gets, until a rotate control exists. See `ObjectOrientation`. */
 const DEFAULT_PLACEMENT_ORIENTATION: ObjectOrientation = 0;
 
@@ -407,6 +450,8 @@ export class ObjectPlacementService {
     private readonly residentRelocation?: ExcessResidentRelocationPort,
     /** ADR 0076 decision A(i)'s notice. Absent in a fixture; wired to the events channel in a real session. See `ExcessResidentRelocationNoticePort`. */
     private readonly relocationNotice?: ExcessResidentRelocationNoticePort,
+    /** #945's notice. Absent in a fixture; the session's `SimulationEventLog` in a real session. See `RemovedObjectNoticePort`. */
+    private readonly removalNotice?: RemovedObjectNoticePort,
   ) {}
 
   /**
@@ -585,6 +630,27 @@ export class ObjectPlacementService {
     const object = this.placedObjects.objectAt(tile);
     if (object !== undefined) {
       this.placedObjects.remove(object.placedObjectId);
+      /*
+       * And the player is told what that cost them
+       * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+       *
+       * **On this line and not at the command handler**, and not merged into
+       * the relocation notice two lines down: `RemovedObjectNoticePort` carries
+       * the whole argument, which is that the band discards an `'info'` a
+       * `'warning'` displaces, so the order of the two sentences a removal can
+       * raise decides whether the player reads both or one.
+       *
+       * **After the registry write, so the notice cannot outrun the fact.**
+       * `PlacedObjectRegistry.remove` answers `boolean` and this arm is only
+       * reached with an object in hand, so there is nothing to check -- but a
+       * sentence recorded before the row was dropped would be a claim about a
+       * removal that had not happened yet, which is the promise-the-code-does-
+       * not-keep `AGENTS.md`'s fourth exclusion reserves.
+       *
+       * The pending-order arm below records nothing: it refunds, and a sentence
+       * about money that does not come back is false of it.
+       */
+      this.removalNotice?.recordObjectRemoved(tick);
       // Re-derived from the **anchor**, not from the pressed tile: containment
       // is a statement about the anchor (ADR 0028 decision 2), and a bed whose
       // second tile pokes out of the cell would otherwise re-derive whatever
