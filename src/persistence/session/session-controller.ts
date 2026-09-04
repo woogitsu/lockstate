@@ -1,6 +1,7 @@
 import { restoredScopeFor, type RestoredScope, type SessionSnapshotBundle } from '../../simulation/runtime/restore-session';
 import type { SnapshotRefusalReason } from '../../simulation/runtime/restore-refusal';
 import { AutosaveScheduler } from '../local/autosave';
+import { classifyStoreError } from '../local/errors';
 import type { PrisonSaveRepository, SaveImportResult, SaveResult } from '../local/repository';
 import type { PrisonSlotMetadata } from '../local/store';
 import { createSaveEnvelope, type SaveEnvelope, type TrustedSaveEnvelope } from '../save-schema';
@@ -19,6 +20,23 @@ export interface ActiveSession {
 export type SessionLoadOutcome =
   | { readonly ok: true; readonly recovered: boolean; readonly scope: RestoredScope }
   | { readonly ok: false; readonly reason: 'not-found' | 'no-valid-generation' };
+
+/**
+ * What the save taken on a session's way out did (#943).
+ *
+ * Reported rather than swallowed, for the same reason
+ * `getLastRetirementFailure` is: this save is the only thing standing between
+ * a player and the loss of everything they have not saved by hand, and a
+ * failure nothing can observe is indistinguishable from a capture that stopped
+ * running. See `SessionController.captureOutgoingSession` for why a failure
+ * does not refuse the new session.
+ */
+export interface OutgoingSessionCapture {
+  /** The prison whose live session was about to be replaced. */
+  readonly prisonId: string;
+  /** Durable success/failure evidence for the save taken on its behalf. */
+  readonly result: SaveResult;
+}
 
 export interface SessionControllerOptions {
   readonly gameVersion: string;
@@ -86,6 +104,7 @@ export class SessionController {
   private session: ActiveSession | undefined;
   private lastSaveResult: SaveResult | undefined;
   private retirementFailure: unknown;
+  private outgoingCapture: OutgoingSessionCapture | undefined;
 
   public constructor(
     private readonly repository: PrisonSaveRepository,
@@ -132,6 +151,21 @@ export class SessionController {
     return this.retirementFailure;
   }
 
+  /**
+   * What happened to the session that the most recent `createPrison` or
+   * `loadPrison` replaced (#943), or `undefined` if that call replaced
+   * nothing.
+   *
+   * Reset by every such call, so it always describes the latest replacement
+   * rather than the latest failure. Nothing in `src/ui/` reads it yet: the
+   * save panel's status line is occupied by the create/load the player
+   * actually pressed, and a sentence about the *other* prison needs a place
+   * of its own on that panel to be worth writing.
+   */
+  public getLastOutgoingCapture(): OutgoingSessionCapture | undefined {
+    return this.outgoingCapture;
+  }
+
   public hasPendingAutosave(): boolean {
     return this.session !== undefined && this.autosave.isPending(this.session.prisonId);
   }
@@ -145,6 +179,16 @@ export class SessionController {
    * prison is durable before the player does anything -- a crash right
    * after "New prison" must not leave an empty slot that
    * `loadCurrent` would report as `no-valid-generation`.
+   *
+   * **And it saves the prison it is about to replace first (#943).** Until
+   * that call existed this method's two lines
+   * `await this.host.startNew(masterSeed); this.adoptSession(prisonId);`
+   * threw the outgoing session away twice over: `startNew` replaced the
+   * simulation, and `adoptSession` then disposed the autosave that belonged
+   * to it. Measured on v0.0.451: prison A at kernel tick **211** with
+   * **1,600** spent came back at tick **0** with **25,000**, with zero
+   * dialogs of any kind. See `captureOutgoingSession` for why the save is
+   * unconditional and why its failure does not refuse the new prison.
    */
   public async createPrison(prisonId: string, displayName?: string): Promise<SaveResult> {
     await this.repository.create({
@@ -163,6 +207,12 @@ export class SessionController {
     let adopted = false;
     let result: SaveResult;
     try {
+      // Immediately before the line that replaces the outgoing simulation,
+      // not at the top of the method: a `repository.create` that fails leaves
+      // the player exactly where they were, and a prison that is still being
+      // played should not spend a generation of its retained window on a
+      // creation that never happened.
+      await this.captureOutgoingSession();
       await this.host.startNew(masterSeed);
       this.adoptSession(prisonId);
       adopted = true;
@@ -178,6 +228,65 @@ export class SessionController {
     // exactly the slot this method promises not to leave.
     if (!result.ok) await this.discardFailedCreation(prisonId, adopted);
     return result;
+  }
+
+  /**
+   * Saves whatever session is live right now, because the caller is about to
+   * replace it (#943).
+   *
+   * ### Why it cannot be conditional on the session being dirty
+   *
+   * Because the never-dirtied session is the one that loses everything. The
+   * autosave is **command-driven, not play-driven**: `src/main.ts` wires
+   * `commandSender?.onCommandAccepted(() => controller.markDirty())`, whose
+   * callback fires only on an accepted command, so a prison that has been
+   * *watched* rather than played has never been marked dirty and has never
+   * been saved, however long it ran --
+   * `docs/research/2026-09-04-does-a-prison-come-back.md` measured 80 s of
+   * running clock, nothing pressed, 1,626 ticks and zero saves. A dirty check
+   * here would therefore keep the whole defect for exactly that case while
+   * looking like a fix, which is why there is no such check and this comment
+   * exists instead of one.
+   *
+   * ### Why a failure does not refuse the new session
+   *
+   * The plausible causes are a worker that has faulted, hung or gone away
+   * (`capture()` rejects, or `WorkerSessionHost` times out after 15 s) and
+   * storage that will not take a write. In the first, refusing would leave
+   * the player wedged in a session that cannot be saved *and* unable to start
+   * one that can -- the opposite of ADR 0096's *"zawsze musi istnieć droga
+   * powrotu"*. In the second, the create or load being attempted is about to
+   * fail on its own and report itself. So the outgoing save is attempted,
+   * recorded on `getLastOutgoingCapture()`, and never allowed to become the
+   * caller's verdict.
+   *
+   * `saveNow` reports failure as a value (see there: a faulted worker must
+   * never throw into a click handler), and the residual throw a store can
+   * still raise past it is classified exactly as `AutosaveScheduler` does --
+   * one vocabulary for a failed background write, not a second blunter one.
+   *
+   * Not routed through `onSaveResult`, deliberately. That callback reaches
+   * `SavePanel.reportBackgroundSave`, which writes the panel's single status
+   * line -- the line the create or load the player actually pressed is about
+   * to overwrite. Surfacing this properly needs somewhere on that panel to say
+   * it, which is a change to `src/ui/save-panel.ts` and a sentence for the
+   * player, so the controller records the evidence and leaves the wording to
+   * whoever adds the place for it.
+   */
+  private async captureOutgoingSession(): Promise<void> {
+    this.outgoingCapture = undefined;
+    const outgoing = this.session;
+    if (outgoing === undefined) return;
+
+    let result: SaveResult;
+    try {
+      result = await this.saveNow();
+    } catch (error) {
+      const classified = classifyStoreError(error);
+      result = { ok: false, error: { code: classified.code, message: `Saving the outgoing prison failed: ${classified.message}` } };
+      this.lastSaveResult = result;
+    }
+    this.outgoingCapture = { prisonId: outgoing.prisonId, result };
   }
 
   /**
@@ -299,6 +408,11 @@ export class SessionController {
    * ours does not license. A throw reaches the save panel's
    * `save.failure.load` instead -- "Loading failed: {detail}" -- carrying the
    * message the restore actually produced.
+   *
+   * **A load into a *different* prison saves the one it replaces first
+   * (#943).** Loading the prison that is already live does not, and the block
+   * inside the walk says why -- it is the difference between replacing a
+   * player's session with somebody else's and reverting their own.
    */
   public async loadPrison(prisonId: string): Promise<SessionLoadOutcome> {
     // Every generation this walk has tried. It is what `loadCurrent` skips and
@@ -317,6 +431,10 @@ export class SessionController {
     // restores, because a later generation restoring means the player has
     // their prison and our defect cost them nothing.
     let firstCodeFault: SnapshotRestoreFaultError | undefined;
+    // Whether the decision about the outgoing session has been taken. It is
+    // taken once, inside the loop -- see the block that reads it for both
+    // halves of why.
+    let outgoingSettled = false;
 
     for (;;) {
       const result = await this.repository.loadCurrent(prisonId, { skip: attempted });
@@ -341,6 +459,57 @@ export class SessionController {
       // sections actually arrived. A migrated V1/V2 save carries no
       // `simulation` or `identity`, and the scope has to say so (#109).
       const bundle = result.envelope.payload as unknown as SessionSnapshotBundle;
+
+      if (!outgoingSettled) {
+        outgoingSettled = true;
+        // **Here, not at the top of the method**, for two reasons that both
+        // reduce to "capture at the moment of replacement". `loadCurrent` has
+        // now produced something to restore, so a load that finds nothing
+        // (`not-found`, an empty slot) costs the prison the player is playing
+        // no generation at all -- and in production the outgoing session stops
+        // existing inside the very next line, because
+        // `WorkerPerSessionHost.beginSession` shuts the outgoing worker down
+        // before it claims the next one. **Once only**, for the same reason:
+        // after the first attempt there is no outgoing world left to capture,
+        // so a second pass would either read the replacement's state or reject.
+        //
+        // **Loading the prison that is already live is left alone**, and that
+        // is an identity check, never a dirty check -- a never-pressed prison
+        // B is still saved when prison A is loaded over it, which is the case
+        // #943 and `docs/research/2026-09-04-does-a-prison-come-back.md` are
+        // about.
+        //
+        // The reason is the walk this block sits inside. A save of the live
+        // session writes a **new generation of the prison being loaded**, into
+        // the very retained window the walk above is iterating -- so the next
+        // `loadCurrent(prisonId, { skip: attempted })` offers it back as the
+        // newest readable generation. A prison whose own saves all refuse to
+        // restore would then be "recovered" to the state the player was
+        // already in: `no-valid-generation` becomes unreachable, the panel's
+        // Import (which imports a generation and then loads *the same prison*
+        // -- `src/ui/save-panel.ts`'s `requestImport`) would report success
+        // having restored the pre-import session, and a real refusal would be
+        // hidden behind a fake recovery. It also spends one of the three
+        // retained slots -- the recovery window, not a save-slot feature
+        // (`docs/PERSISTENCE.md`) -- on state the player is deliberately
+        // reverting away from.
+        //
+        // What it would *not* do is break the happy path, and an earlier
+        // version of this comment claimed it would. `loadCurrent` has already
+        // read `bundle` by the time this block runs, so a capture here cannot
+        // become what *this* load restores; a mutation that removed the check
+        // left both the Import round trip and the revert intact and was caught
+        // only by the walk. Corrected rather than deleted, because the
+        // plausible-and-false reading is the one a later editor will have too.
+        //
+        // So Load on the active row keeps the defect the research measured --
+        // 2,461 ticks discarded, zero dialogs -- and a save is the wrong
+        // instrument for it. What it needs is the asking: a confirmation on
+        // the panel before the revert, which is a sentence for the player and
+        // a change to `src/ui/save-panel.ts`.
+        if (this.session?.prisonId === prisonId) this.outgoingCapture = undefined;
+        else await this.captureOutgoingSession();
+      }
 
       try {
         await this.host.startFromSnapshot(bundle);
