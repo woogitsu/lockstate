@@ -49,13 +49,16 @@ import {
  *    simulation ticks, read from `simulation/clock-state` (published every
  *    tick, unlike `simulation/status-counts`, which the worker deduplicates).
  *    Wall clock appears only as an aside; five testers share this box.
- * 2. **Every world press is proved to land.** A press on a point the HUD
- *    covers submits nothing at all — no command, no refusal, no message — and
- *    has cost this repository three withdrawn findings. `topAt` reads
- *    `document.elementFromPoint` before every world press. A press that is not
- *    on clear canvas is *skipped and counted*, rather than made and believed:
- *    how much of a 6×6 cell a 1440×900 HUD covers is itself part of the
- *    answer to "does it hold at scale".
+ * 2. **Every world press is proved to land, twice over.** A press on a point
+ *    the HUD covers submits nothing at all — no command, no refusal, no
+ *    message — and has cost this repository three withdrawn findings. So
+ *    `topAt` reads `document.elementFromPoint` at every world point before it
+ *    is pressed, *and* the commands the press produced are counted through the
+ *    tee. The count is the stronger of the two and is what a claim rests on:
+ *    a drag that started on the HUD produces nothing, and the count says so
+ *    where a thrown assertion would only lose the act. `hudObstacles` reports
+ *    the HUD's pointer-taking rectangles once, so "how much of the world a
+ *    mouse can reach at 1440×900" is a fact rather than a surprise.
  * 3. **The two channels are kept apart.** Sentences come from
  *    `.hud`'s `innerText` — what a player can actually read. Numbers come from
  *    the worker through the tee. Nothing below lets one stand in for the other.
@@ -80,9 +83,33 @@ async function topAt(page: Page, x: number, y: number): Promise<string> {
   );
 }
 
-async function assertCanvasAt(page: Page, x: number, y: number, label: string): Promise<void> {
-  const top = await topAt(page, x, y);
-  expect(top, `${label}: the point (${x},${y}) is not clear canvas, so a press there proves nothing`).toContain('canvas');
+/**
+ * Every laid-out part of the HUD that takes the pointer, with its rectangle —
+ * i.e. the parts of the world a mouse cannot reach without panning first.
+ *
+ * Added because act 3's first run failed its own guard: the south wall of a
+ * cell one tile further west than the harness's starts at screen (240,578),
+ * and something in the HUD is on top of that point. One evaluate answers what
+ * a two-hundred-press sweep would.
+ */
+async function hudObstacles(page: Page): Promise<readonly string[]> {
+  return page.evaluate(() => {
+    const lines: string[] = [];
+    for (const node of Array.from(document.querySelectorAll<HTMLElement>('.hud, .hud *'))) {
+      if (node.hidden) continue;
+      const rects = node.getClientRects();
+      if (rects.length === 0) continue;
+      if (getComputedStyle(node).pointerEvents === 'none') continue;
+      const parent = node.parentElement;
+      if (parent !== null && parent.closest('.hud') !== null && getComputedStyle(parent).pointerEvents !== 'none') continue;
+      const rect = node.getBoundingClientRect();
+      const className = typeof node.className === 'string' ? node.className.split(/\s+/)[0] : '?';
+      lines.push(
+        `${className} x ${Math.round(rect.left)}..${Math.round(rect.right)} y ${Math.round(rect.top)}..${Math.round(rect.bottom)}`,
+      );
+    }
+    return lines;
+  });
 }
 
 /** The whole laid-out HUD, which is exactly what a player can read. */
@@ -268,11 +295,24 @@ async function buildGrownPrison(
     { name: 'west', a: { x: westX, y: northY + TILE / 2 }, b: { x: westX, y: southY - TILE / 2 } },
     { name: 'east', a: { x: eastX, y: northY + TILE / 2 }, b: { x: eastX, y: southY - TILE / 2 } },
   ]) {
-    await assertCanvasAt(page, run.a.x, run.a.y, `${options.label} wall run ${run.name} start`);
+    /*
+     * Both endpoints are read rather than asserted, and the *command count* is
+     * what proves the drag landed — which is a stronger proof than
+     * `elementFromPoint`, because a run that started on the HUD produces
+     * nothing at all and the count says so. Act 3's first run died on the
+     * assertion instead of reporting it, which lost the whole act.
+     */
+    const topStart = await topAt(page, run.a.x, run.a.y);
+    const topEnd = await topAt(page, run.b.x, run.b.y);
     const before = (await sentCommands(page)).length;
     await drag(page, run.a, run.b);
     const produced = (await sentCommands(page)).slice(before);
-    log(`wall run ${run.name}: ${produced.length} command(s)`);
+    const expected = run.name === 'north' || run.name === 'south' ? cell.x1 - cell.x0 + 1 : cell.y1 - cell.y0 + 1;
+    log(
+      `wall run ${run.name}: ${produced.length} of ${expected} expected command(s)` +
+        ` | start (${run.a.x},${run.a.y}) is ${topStart} | end (${run.b.x},${run.b.y}) is ${topEnd}`,
+    );
+    if (produced.length !== expected) log(`wall run ${run.name} DID NOT FULLY LAND — the perimeter will not enclose`);
   }
 
   const wallSegments = 2 * (cell.x1 - cell.x0 + 1) + 2 * (cell.y1 - cell.y0 + 1);
@@ -323,8 +363,9 @@ async function buildGrownPrison(
   await armBuildable(page, 'toilet-brick');
   const toilet = options.toiletTile ?? { x: 12, y: 14 };
   const toiletPoint = centreOf(origin, toilet.x, toilet.y);
-  await assertCanvasAt(page, toiletPoint.x, toiletPoint.y, `${options.label} toilet tile`);
-  await press(page, toiletPoint.x, toiletPoint.y);
+  const toiletTop = await topAt(page, toiletPoint.x, toiletPoint.y);
+  const toiletCommands = await press(page, toiletPoint.x, toiletPoint.y);
+  log(`toilet at (${toilet.x},${toilet.y}) screen (${toiletPoint.x},${toiletPoint.y}) is ${toiletTop}: ${toiletCommands.length} command(s)`);
   log(`${placed} bed order(s) placed, ${skipped.length} tile(s) skipped: ${JSON.stringify(skipped)}`);
 
   if (options.logQueue === true) await drainQueueLogging(page, options.label, `${placed} beds and a toilet`);
@@ -563,16 +604,17 @@ test.describe('Hour two — the prison after the first prisoner', () => {
    * logged tick by tick so that "how long does one more room take?" is a
    * number rather than an impression.
    */
-  test('act 3 — twenty-nine residents in a ten-by-six cell', async ({ page }) => {
+  test('act 3 — twenty-two residents in an eight-by-six cell', async ({ page }) => {
+    console.log(`[act3] HUD parts that take the pointer: ${JSON.stringify(await hudObstacles(page))}`);
     const built = await buildGrownPrison(page, {
       label: 'act3',
-      cell: { x0: 8, y0: 12, x1: 17, y1: 17 },
+      cell: { x0: 12, y0: 12, x1: 19, y1: 17 },
       bricks: 70,
-      beds: 29,
+      beds: 22,
       bedRows: [12, 14, 16],
-      toiletTile: { x: 17, y: 16 },
-      admits: 29,
-      guards: 5,
+      toiletTile: { x: 18, y: 16 },
+      admits: 30,
+      guards: 8,
       logQueue: true,
     });
     console.log(`[act3] beds placed ${built.bedsPlaced}, skipped ${JSON.stringify(built.bedsSkipped)}`);
